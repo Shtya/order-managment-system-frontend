@@ -1,0 +1,829 @@
+{
+  "sidebar": {
+    "dashboard": "لوحة التحكم",
+    "products": "المنتجات",
+    "orders": "الطلبات",
+    "employees": "الموظفين",
+    "accounts": "الحسابات",
+    "reports": "التقارير",
+    "purchases": "المشتريات",
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج",
+    "suppliers": "الموردين",
+    "shipping-companies": "شركات الشحن",
+    "store-integration": "دمج المتاجر",
+    "purchases-return": "فواتير الاسترجاع"
+  },
+  "header": {
+    "brand": "طلباتي تك",
+    "fullscreen": "ملء الشاشة",
+    "theme": "تبديل المظهر",
+    "notifications": "الإشعارات",
+    "notificationsTitle": "الإشعارات",
+    "notificationsSubtitle": "آخر التحديثات على النظام",
+    "lang": {
+      "ar": "العربية",
+      "en": "English"
+    },
+    "notif": {
+      "newOrder": {
+        "title": "تم إنشاء طلب جديد",
+        "desc": "طلب #1024 تم إنشاؤه بنجاح",
+        "time": "قبل 5 دقائق"
+      },
+      "stockAlert": {
+        "title": "تنبيه مخزون",
+        "desc": "منتج SKU SRF56 على وشك النفاد",
+        "time": "قبل ساعة"
+      },
+      "shippingUpdate": {
+        "title": "تحديث شحن",
+        "desc": "تم تسليم شحنة شركة الشحن",
+        "time": "أمس"
+      }
+    },
+    "profile": {
+      "initial": "ص",
+      "greeting": "صباح الخير يسرا",
+      "role": "مدير النظام"
+    }
+  },
+  "products": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "products": "المنتجات"
+    },
+    "tabs": {
+      "mine": "منتجات خاص بي",
+      "ship": "منتجات مطلوبة للنقل",
+      "idle": "منتجات راكدة"
+    },
+    "actions": {
+      "addProduct": "إضافة منتج",
+      "howToUse": "شرح الاستخدام",
+      "delete": "حذف",
+      "edit": "تعديل",
+      "add": "إضافة",
+      "view": "عرض"
+    },
+    "toolbar": {
+      "searchPlaceholder": "ابحث عن ما تريد...",
+      "filter": "فلتر",
+      "refresh": "إعادة بحث",
+      "export": "تصدير"
+    },
+    "filters": {
+      "storageShelf": "رف التخزين",
+      "storagePlaceholder": "مثال: B612",
+      "category": "التصنيف",
+      "categoryPlaceholder": "اختر التصنيف",
+      "categoryAll": "الكل",
+      "categoryHome": "أدوات منزلية",
+      "categoryMedical": "طبي",
+      "sku": "كود SKU",
+      "skuPlaceholder": "مثال: SRF56",
+      "apply": "تطبيق"
+    },
+    "table": {
+      "sku": "كود SKU",
+      "name": "اسم المنتج",
+      "wholesalePrice": "سعر الجملة",
+      "category": "التصنيف",
+      "createdAt": "تاريخ الإنشاء",
+      "storage": "رف التخزين",
+      "options": "خيارات"
+    },
+    "stats": {
+      "withShippingCompanies": "لدي شركات الشحن",
+      "returnedPieces": "القطع المرتجعة",
+      "soldPieces": "القطع المباعة",
+      "remainingPieces": "القطع المتبقية",
+      "totalProducts": "إجمالي المنتجات"
+    },
+    "empty": "لا توجد منتجات",
+    "mock": {
+      "wholesalePrice": "300 ر.س",
+      "category": "أدوات منزلية",
+      "name": "وعاء طبي"
+    }
+  },
+  "addProduct": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "products": "المنتجات",
+      "addProduct": "إضافة منتج"
+    },
+    "actions": {
+      "howToUse": "شرح الاستخدام",
+      "save": "حفظ"
+    },
+    "fields": {
+      "productName": "اسم المنتج",
+      "wholesalePrice": "سعر الجملة",
+      "warehouse": "اختيار المستودع",
+      "storageShelf": "رف التخزين",
+      "sku": "كود SKU",
+      "store": "المتجر الخاص بالمنتج",
+      "description": "وصف المنتج"
+    },
+    "placeholders": {
+      "productName": "KUG5a",
+      "wholesalePrice": "B612",
+      "warehouse": "B612",
+      "storageShelf": "KUG5a",
+      "sku": "KUG5a",
+      "store": "B612",
+      "description": "KUG54",
+      "variantCategory": "الوان"
+    },
+    "options": {
+      "branch1": "فرع العبور",
+      "branch2": "فرع العبور"
+    },
+    "variants": {
+      "title": "المتغيرات",
+      "add": "إضافة متغير جديد",
+      "variant": "متغير",
+      "delete": "حذف",
+      "categoryValue": "قيمة التصنيف",
+      "variantValue": "قيمة المتغير",
+      "wholesalePrice": "السعر (سعر الجملة)",
+      "retailPrice": "السعر (سعر التجزئة)",
+      "quantity": "الكمية",
+      "defaultPrice": "السعر الافتراضي"
+    },
+    "upsell": {
+      "callCenterDesc": "وصف الكول سنتر للمنتج",
+      "minPrice": "أقل سعر للمنتج",
+      "execution": "Up selling تنفيذ",
+      "products": "منتجات upselling",
+      "yes": "نعم",
+      "no": "لا"
+    },
+    "uploads": {
+      "mainImage": "صوره المنتج الاساسيه",
+      "otherImages": "صور اخري",
+      "dragHere": "اسحب الملف/الملفات هنا لبدء الرفع",
+      "or": "أو",
+      "attach": "إرفاق الملفات",
+      "remove": "حذف الملف"
+    },
+    "mock": {
+      "upsell1": "شنطة ضهر",
+      "upsell2": "ساعة",
+      "variantCategoryValue": "الوان",
+      "tagRed": "أحمر",
+      "tagBlue": "أزرق",
+      "tagOrange": "برتقالي"
+    }
+  },
+  "employees": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "employees": "الموظفين"
+    },
+    "tabs": {
+      "all": "جميع الموظفين",
+      "callCenter": "كول سنتر",
+      "warehouse": "موظف مخزن",
+      "warehouseStaff": "موظفين المخازن",
+      "dataEntry": "مدخل البيانات",
+      "customerService": "خدمة العملاء"
+    },
+    "stats": {
+      "totalEmployees": "إجمالي الموظفين",
+      "dataEntry": "مدخل البيانات",
+      "customerService": "خدمة العملاء",
+      "warehouseStaff": "موظفين المخازن"
+    },
+    "toolbar": {
+      "searchPlaceholder": "ابحث عن ما تريد.....",
+      "filter": "تصفية",
+      "refresh": "تحديث",
+      "export": "تصدير"
+    },
+    "filters": {
+      "role": "الوظيفة",
+      "rolePlaceholder": "اختر الوظيفة",
+      "roleAll": "جميع الوظائف",
+      "roleDataEntry": "مدخل بيانات",
+      "roleWarehouse": "موظف مخزن",
+      "roleCustomerService": "خدمة عملاء",
+      "name": "اسم الموظف",
+      "namePlaceholder": "ابحث بالاسم",
+      "apply": "تطبيق"
+    },
+    "table": {
+      "name": "اسم الموظف",
+      "joinDate": "تاريخ الانضمام",
+      "email": "البريد الالكتروني",
+      "phone": "رقم الهاتف",
+      "role": "الوظيفة",
+      "options": "خيارات"
+    },
+    "actions": {
+      "addEmployee": "إضافة موظف",
+      "howToUse": "شرح الاستخدام",
+      "delete": "حذف",
+      "edit": "تعديل",
+      "view": "عرض"
+    },
+    "empty": "لا يوجد موظفين"
+  },
+  "addEmployee": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "employees": "الموظفين",
+      "addEmployee": "إضافة موظف"
+    },
+    "actions": {
+      "howToUse": "شرح الاستخدام",
+      "save": "حفظ"
+    },
+    "sections": {
+      "employeeType": "نوع الموظف",
+      "employeeInfo": "معلومات الموظف",
+      "employeeImage": "صورة الموظف"
+    },
+    "roles": {
+      "dataEntry": "مدخل بيانات",
+      "warehouse": "موظف مخزن",
+      "customerService": "خدمة عملاء"
+    },
+    "fields": {
+      "name": "اسم الموظف",
+      "email": "البريد الالكتروني",
+      "phone": "رقم الهاتف",
+      "joinDate": "تاريخ الانضمام"
+    },
+    "placeholders": {
+      "name": "يسرا علام",
+      "email": "yosra@gmail.com",
+      "phone": "01002888976"
+    },
+    "upload": {
+      "dragHere": "اسحب الصورة هنا",
+      "clickToChoose": "أو انقر للاختيار من جهازك",
+      "chooseImage": "اختيار صورة",
+      "changeImage": "تغيير الصورة",
+      "remove": "إزالة",
+      "imageAlt": "صورة الموظف"
+    },
+    "note": {
+      "title": "ملاحظة:",
+      "text": "يُفضل أن تكون الصورة بأبعاد 400×400 بكسل على الأقل"
+    },
+    "common": {
+      "or": "أو"
+    }
+  },
+  "purchases": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "purchases": "المشتريات"
+    },
+    "tabs": {
+      "accepted": "الفواتير المقبولة",
+      "pending": "الفواتير المعلّقة",
+      "rejected": "الفواتير المرفوضة"
+    },
+    "stats": {
+      "acceptedInvoices": "الفواتير المقبولة",
+      "pendingInvoices": "الفواتير المعلّقة",
+      "rejectedInvoices": "الفواتير المرفوضة"
+    },
+    "toolbar": {
+      "searchPlaceholder": "ابحث عن ما تريد.....",
+      "filter": "تصفية",
+      "refresh": "تحديث",
+      "export": "تصدير"
+    },
+    "filters": {
+      "supplier": "اسم المورد",
+      "supplierPlaceholder": "ابحث بالمورد",
+      "paymentMethod": "طريقة الدفع",
+      "paymentMethodPlaceholder": "اختر طريقة الدفع",
+      "paymentMethodAll": "جميع الطرق",
+      "paymentMethodCash": "كاش",
+      "paymentMethodBank": "بنكي",
+      "sku": "كود SKU",
+      "skuPlaceholder": "ابحث بالكود",
+      "apply": "تطبيق"
+    },
+    "table": {
+      "sku": "كود SKU",
+      "productName": "اسم المنتج",
+      "productPrice": "سعر المنتج",
+      "unitPrice": "سعر شراء القطعة",
+      "quantity": "عدد القطع",
+      "supplierName": "اسم المورد",
+      "totalAmount": "المبلغ الكلي",
+      "dueAmount": "المبلغ المستحق",
+      "remainingAmount": "المبلغ المتبقي",
+      "safeName": "اسم الخزنة",
+      "paymentMethod": "طريقة الدفع",
+      "actions": "قبول أو رفض الفاتورة"
+    },
+    "actions": {
+      "createInvoice": "إنشاء فاتورة مشتريات",
+      "howToUse": "شرح الاستخدام",
+      "approve": "قبول",
+      "reject": "رفض"
+    },
+    "empty": "لا توجد فواتير"
+  },
+  "purchaseInvoice": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "purchases": "المشتريات",
+      "createPurchaseInvoice": "إنشاء فاتورة مشتريات"
+    },
+    "actions": {
+      "howToUse": "شرح الاستخدام",
+      "save": "حفظ",
+      "delete": "حذف",
+      "remove": "إزالة"
+    },
+    "sections": {
+      "supplierInfo": "معلومات المورد",
+      "receiptImage": "صورة إيصال الشراء",
+      "addProducts": "إضافة المنتجات",
+      "productsTable": "جداول المنتجات",
+      "notes": "ملاحظات",
+      "invoiceSummary": "ملخص الفاتورة"
+    },
+    "fields": {
+      "supplierName": "اسم المورد",
+      "supplierCode": "كود المورد",
+      "receiptNumber": "رقم إيصال الشراء",
+      "safe": "حدد الخزنة",
+      "paymentMethod": "طريقة الدفع"
+    },
+    "placeholders": {
+      "supplierName": "يسرا علام",
+      "supplierCode": "B612",
+      "receiptNumber": "0284jlkljk",
+      "safe": "خزنة كاش",
+      "paymentMethod": "كاش",
+      "scanOrEnter": "مسح الباركود أو إدخال كود المنتج",
+      "notes": "لا توجد ملاحظات"
+    },
+    "options": {
+      "safe": {
+        "cash": "خزنة كاش",
+        "safe1": "خزنة رقم 1",
+        "safe2": "خزنة رقم 2"
+      },
+      "payment": {
+        "cash": "كاش",
+        "bankCIB": "بنكي CIB",
+        "bankQNB": "بنكي QNB"
+      }
+    },
+    "table": {
+      "sku": "كود SKU",
+      "name": "اسم المنتج",
+      "unitCost": "تكلفة القطعة",
+      "quantity": "عدد القطع",
+      "productCost": "تكلفة المنتج",
+      "taxInclusive": "شامل الضريبة",
+      "taxRate": "قيمة الضريبة",
+      "totalAmount": "المبلغ الكلي",
+      "actions": "خيارات"
+    },
+    "upload": {
+      "dragHere": "اسحب الملف/الملفات هنا لبدء الرفع",
+      "attachFiles": "إرفاق الملفات",
+      "receiptAlt": "إيصال الشراء"
+    },
+    "summary": {
+      "productCount": "عدد المنتجات",
+      "subtotal": "إجمالي قبل الضريبة",
+      "taxRate": "إجمالي الضريبة",
+      "taxTotal": "المبلغ المدفوع",
+      "paidAmount": "المبلغ المستحق",
+      "dueAmount": "المبلغ المتبقي",
+      "remainingAmount": "المبلغ الكلي"
+    },
+    "common": {
+      "or": "أو"
+    }
+  },
+  "returns": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "returns": "مرتجعات المشتريات"
+    },
+    "stats": {
+      "returnInvoicesCount": "عدد فواتير الاسترجاع",
+      "totalReturnValue": "إجمالي قيمة الاسترجاعات"
+    },
+    "toolbar": {
+      "searchPlaceholder": "ابحث عن ما تريد.....",
+      "filter": "فلتر",
+      "refresh": "إعادة",
+      "export": "تصدير"
+    },
+    "filters": {
+      "status": "حالة الفاتورة",
+      "statusPlaceholder": "اختر الحالة",
+      "statusAll": "جميع الحالات",
+      "statusCompleted": "مكتملة",
+      "statusPending": "معلّقة",
+      "statusCancelled": "ملغاة",
+      "returnType": "نوع الاسترجاع",
+      "returnTypePlaceholder": "اختر نوع الاسترجاع",
+      "returnTypeAll": "جميع الأنواع",
+      "returnTypeCash": "كاش",
+      "returnTypeBank": "بنكي",
+      "returnTypeDeduct": "خصم من حساب المورد",
+      "supplier": "اسم المورد",
+      "supplierPlaceholder": "ابحث بالمورد",
+      "apply": "بحث"
+    },
+    "table": {
+      "returnNumber": "رقم الاسترجاع",
+      "invoiceNumber": "رقم فاتورة الشراء",
+      "returnDate": "تاريخ الاسترجاع",
+      "status": "حالة الفاتورة",
+      "createdBy": "أنشأ بواسطة",
+      "supplierName": "اسم المورد",
+      "returnType": "نوع الاسترجاع",
+      "subtotal": "إجمالي قبل الضريبة",
+      "tax": "إجمالي الضريبة",
+      "total": "إجمالي مبلغ الاسترجاع",
+      "options": "خيارات"
+    },
+    "actions": {
+      "createReturn": "إنشاء فاتورة استرجاع",
+      "howToUse": "شرح الاستخدام",
+      "view": "عرض"
+    },
+    "empty": "لا توجد فواتير استرجاع"
+  },
+  "returnInvoice": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "returns": "مرتجعات المشتريات",
+      "createReturnInvoice": "إنشاء فاتورة استرجاع"
+    },
+    "actions": {
+      "howToUse": "شرح الاستخدام",
+      "save": "حفظ",
+      "delete": "حذف"
+    },
+    "sections": {
+      "returnInfo": "معلومات الاسترجاع",
+      "addProducts": "إضافة المنتجات",
+      "productsTable": "جداول المنتجات",
+      "notes": "ملاحظات",
+      "summaryTitle": "ملخص فاتورة الاسترجاع"
+    },
+    "fields": {
+      "supplierName": "اسم المورد",
+      "supplierCode": "كود المورد",
+      "invoiceNumber": "رقم فاتورة الشراء",
+      "returnReason": "سبب الاسترجاع",
+      "returnType": "نوع الاسترجاع",
+      "safe": "حدد الخزنة"
+    },
+    "placeholders": {
+      "supplierName": "يسرا علام",
+      "supplierCode": "B612",
+      "invoiceNumber": "0284jlkljk",
+      "returnReason": "المنتجات خاطئة",
+      "returnType": "استرداد نقدي",
+      "safe": "خزنة كاش",
+      "scanOrEnter": "مسح الباركود أو إدخال كود المنتج",
+      "notes": "لا توجد ملاحظات"
+    },
+    "options": {
+      "safe": {
+        "cash": "خزنة كاش",
+        "safe1": "خزنة رقم 1",
+        "safe2": "خزنة رقم 2"
+      },
+      "returnReason": {
+        "wrongProducts": "المنتجات خاطئة",
+        "damaged": "منتجات تالفة",
+        "expired": "منتجات منتهية الصلاحية",
+        "excess": "فائض عن الحاجة"
+      },
+      "returnType": {
+        "cashRefund": "استرداد نقدي",
+        "bankTransfer": "تحويل بنكي",
+        "supplierDeduction": "خصم من حساب المورد"
+      }
+    },
+    "labels": {
+      "returnReason": {
+        "wrong_products": "المنتجات خاطئة",
+        "damaged": "منتجات تالفة",
+        "expired": "منتجات منتهية الصلاحية",
+        "excess": "فائض عن الحاجة"
+      },
+      "returnType": {
+        "cash_refund": "استرداد نقدي",
+        "bank_transfer": "تحويل بنكي",
+        "supplier_deduction": "خصم من حساب المورد"
+      }
+    },
+    "table": {
+      "sku": "كود SKU",
+      "name": "اسم المنتج",
+      "returnedQuantity": "الكمية المرتجعة",
+      "unitCost": "تكلفة القطعة",
+      "returnCost": "تكلفة المرتجعات",
+      "taxInclusive": "شامل الضريبة",
+      "totalAmount": "المبلغ الكلي",
+      "actions": "خيارات"
+    },
+    "summary": {
+      "productCount": "عدد المنتجات المرتجعة",
+      "subtotal": "إجمالي قبل الضريبة",
+      "taxRate": "إجمالي الضريبة",
+      "totalReturn": "إجمالي مبلغ الاسترجاع"
+    }
+  },
+  "suppliers": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "suppliers": "الموردين"
+    },
+    "stats": {
+      "totalPurchases": "إجمالي المشتريات من جميع الموردين",
+      "totalDue": "إجمالي المستحق للموردين"
+    },
+    "toolbar": {
+      "searchPlaceholder": "ابحث عن ما تريد.....",
+      "filter": "فلتر",
+      "refresh": "إعادة",
+      "export": "تصدير"
+    },
+    "filters": {
+      "supplierName": "اسم المورد",
+      "supplierNamePlaceholder": "ابحث بالاسم",
+      "supplierCode": "كود المورد",
+      "supplierCodePlaceholder": "ابحث بالكود",
+      "apply": "تطبيق"
+    },
+    "table": {
+      "name": "اسم المورد",
+      "code": "كود المورد",
+      "joinDate": "تاريخ الانضمام",
+      "phone": "رقم الهاتف",
+      "dueBalance": "الرصيد المستحق",
+      "purchaseValue": "قيمة المشتريات",
+      "options": "خيارات"
+    },
+    "actions": {
+      "addSupplier": "إضافة مورد",
+      "howToUse": "شرح الاستخدام",
+      "view": "عرض"
+    },
+    "empty": "لا يوجد موردين"
+  },
+  "addSupplier": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "suppliers": "الموردين",
+      "addSupplier": "إضافة مورد"
+    },
+    "actions": {
+      "howToUse": "شرح الاستخدام",
+      "save": "حفظ"
+    },
+    "form": {
+      "name": "اسم المورد",
+      "namePlaceholder": "يسرا علام",
+      "code": "كود المورد",
+      "codePlaceholder": "KUG54",
+      "address": "عنوان المورد",
+      "addressPlaceholder": "KUG54",
+      "description": "وصف المورد",
+      "descriptionPlaceholder": "وصف المورد",
+      "phone": "رقم الهاتف",
+      "phonePlaceholder": "01002888976",
+      "email": "البريد الالكتروني",
+      "emailPlaceholder": "yosra@gmail.com",
+      "joinDate": "تاريخ الانضمام",
+      "joinDatePlaceholder": "2/2/2025",
+      "categories": "الاقسام"
+    },
+    "categories": {
+      "beauty": "تجميل",
+      "homeTools": "ادوات منزلية"
+    }
+  },
+
+  "shipping": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "shipping": "شركات الشحن"
+    },
+    "tabs": {
+      "custom": "شركات الشحن الخاصة بك",
+      "integrated": "شركات الشحن المدمجة",
+      "products": "اقتراح المنتجات"
+    },
+    "integrated": {
+      "title": "شركات الشحن المدمجة",
+      "companyLink": "رابط الشركة",
+      "description": "شريك شحن موثوق ودمج كامل لتتبع أسرع وتسليم آمن.",
+      "editSettings": "تعديل الاعدادت"
+    },
+    "products": {
+      "empty": "لا توجد اقتراحات منتجات"
+    },
+    "toolbar": {
+      "searchPlaceholder": "ابحث عن ما تريد.....",
+      "export": "تصدير"
+    },
+    "table": {
+      "name": "شركة الشحن",
+      "emiratesCount": "عدد الامارات",
+      "minDelivery": "اقل مدة للتوصيل",
+      "maxDelivery": "اقصي مدة للتوصيل",
+      "options": "خيارات"
+    },
+    "actions": {
+      "addCompany": "إضافة شركة شحن",
+      "howToUse": "شرح الاستخدام",
+      "view": "عرض",
+      "delete": "حذف"
+    },
+    "empty": "لا توجد شركات شحن"
+  },
+
+  "addShipping": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "shipping": "شركات الشحن",
+      "addShipping": "إضافة شركة شحن"
+    },
+    "actions": {
+      "howToUse": "شرح الاستخدام",
+      "save": "حفظ"
+    },
+    "form": {
+      "name": "اسم شركة الشحن",
+      "namePlaceholder": "جي تي",
+      "cities": "المدينة ( الامارة)",
+      "cityDetails": "تفاصيل الشحن للمدن",
+      "company": "شركة الشحن",
+      "shippingFee": "رسوم الشحن",
+      "returnFee": "رسوم الارجاع",
+      "minDelivery": "أقل مدة للتوصيل",
+      "maxDelivery": "أقصي مدة للتوصيل",
+      "noCitiesSelected": "لم يتم اختيار أي مدينة",
+      "selectCitiesHint": "الرجاء اختيار مدينة أو أكثر لتحديد تفاصيل الشحن"
+    },
+    "cities": {
+      "sharjah": "الشارقة",
+      "alain": "العين",
+      "dubai": "دبي",
+      "abudhabi": "أبوظبي",
+      "rak": "رأس الخيمة",
+      "fujairah": "الفجيرة",
+      "ajman": "عجمان"
+    }
+  },
+  "shippingDetails": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "details": "تفاصيل شركات الشحن"
+    },
+    "toolbar": {
+      "searchPlaceholder": "ابحث عن ما تريد.....",
+      "export": "تصدير"
+    },
+    "table": {
+      "emirate": "اسم الامارة",
+      "shippingFee": "رسوم الشحن",
+      "returnFee": "رسوم الارجاع",
+      "totalDue": "المبلغ المستحق",
+      "minDelivery": "اقل مدة للتوصيل",
+      "maxDelivery": "اقصي مدة للتوصيل"
+    },
+    "actions": {
+      "howToUse": "شرح الاستخدام"
+    },
+    "empty": "لا توجد بيانات"
+  },
+  "storeIntegrations": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "integrations": "دمج المتاجر"
+    },
+    "integrated": {
+      "platformLink": "رابط الشركة",
+      "description": "شريك شحن موثوق ودمج كامل لتتبع أسرع وتسليم آمن.",
+      "editSettings": "تعديل الاعدادت"
+    },
+    "toolbar": {
+      "searchPlaceholder": "ابحث عن ما تريد.....",
+      "export": "تصدير"
+    },
+    "table": {
+      "storeName": "اسم المتجر",
+      "storeUrl": "رابط المتجر",
+      "platform": "المنصة",
+      "email": "البريد الالكتروني",
+      "joinDate": "تاريخ الانضمام",
+      "status": "حالة التفعيل",
+      "sendToInventory": "ارسال الطلبات لمخزون",
+      "options": "خيارات"
+    },
+    "actions": {
+      "howToUse": "شرح الاستخدام",
+      "delete": "حذف"
+    },
+    "empty": "لا توجد متاجر"
+  },
+  "integrated": {
+    "edit_settings": "تعديل الاعدادت",
+    "link": "تعديل الاعدادت"
+  },
+  "orders": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "orders": "إدارة الطلبات"
+    },
+    "tabs": {
+      "new": "جديد",
+      "pending": "قيد التنفيذ",
+      "shipped": "مشحون",
+      "delivered": "تم التسليم",
+      "returned": "مرتجع",
+      "cancelled": "ملغي"
+    },
+    "stats": {
+      "new": "جديد",
+      "pending": "قيد التنفيذ",
+      "shipped": "مشحون",
+      "delivered": "تم التسليم",
+      "returned": "مرتجع",
+      "cancelled": "ملغي"
+    },
+    "toolbar": {
+      "searchPlaceholder": "ابحث عن ما تريد.....",
+      "assignEmployee": "تعيين موظف",
+      "filter": "فلتر",
+      "refresh": "إعادة",
+      "export": "تصدير"
+    },
+    "filters": {
+      "customerInfo": "معلومات العميل",
+      "orderDetails": "تفاصيل الطلب",
+      "assignment": "التعيين والتاريخ",
+      "customerName": "اسم العميل",
+      "customerNamePlaceholder": "يسرا علام",
+      "assignedEmployee": "الموظف المعين",
+      "employeePlaceholder": "يسرا علام",
+      "date": "التاريخ",
+      "productName": "اسم المنتج",
+      "productNamePlaceholder": "ساعة شنطة ضهر",
+      "orderType": "نوع الطلبات",
+      "orderTypePlaceholder": "اختر نوع الطلب",
+      "orderTypeAll": "جميع الطلبات",
+      "orderTypeDistributed": "طلبات موزعة",
+      "orderTypeNormal": "طلبات عادية",
+      "orderStatus": "حالة الطلب",
+      "orderStatusPlaceholder": "قيد التنفيذ",
+      "apply": "تطبيق"
+    },
+    "table": {
+      "orderCode": "كود الطلب",
+      "customerName": "اسم العميل",
+      "phone": "رقم الهاتف",
+      "products": "المنتجات",
+      "orderStatus": "حالة الطلب",
+      "paymentMethod": "طريقة الدفع",
+      "confirmOrder": "تأكيد الطلب (قبول ، رفض)",
+      "options": "خيارات",
+      "assignedEmployee": "الموظف المعين",
+      "distributor": "موزع الطلب",
+      "trackingCode": "كود تتبع الطلب",
+      "city": "المدينة",
+      "address": "العنوان",
+      "shippingCompany": "شركة الشحن",
+      "shippingCost": "تكلفة الشحن",
+      "deposit": "العربون",
+      "receivedAmount": "المبلغ المستلم",
+      "allowReturn": "السماح بالاسترجاع",
+      "allowExchange": "السماح بالاستبدال",
+      "allowOpenProduct": "السماح بفتح المنتج",
+      "lastUpdate": "آخر تحديث",
+      "store": "المتجر"
+    },
+    "actions": {
+      "howToUse": "شرح الاستخدام",
+      "addOrder": "إضافة طلب",
+      "importOrders": "استيراد الطلبات",
+      "view": "عرض",
+      "delete": "حذف",
+      "cancel": "إلغاء"
+    },
+    "empty": "لا توجد طلبات"
+  }
+}

@@ -1,0 +1,827 @@
+{
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "products": "Products",
+    "orders": "Orders",
+    "employees": "Employees",
+    "accounts": "Accounts",
+    "reports": "Reports",
+    "purchases": "Purchases",
+    "settings": "Settings",
+    "logout": "Logout",
+    "suppliers": "Suppliers",
+    "shipping-companies": "Shipping Companies",
+    "store-integration": "Store Integration",
+    "purchases-return": "Return Invoices"
+  },
+  "header": {
+    "brand": "MyOrders Tech",
+    "fullscreen": "Fullscreen",
+    "theme": "Toggle Theme",
+    "notifications": "Notifications",
+    "notificationsTitle": "Notifications",
+    "notificationsSubtitle": "Latest system updates",
+    "lang": {
+      "ar": "Arabic",
+      "en": "English"
+    },
+    "notif": {
+      "newOrder": {
+        "title": "New order created",
+        "desc": "Order #1024 created successfully",
+        "time": "5 minutes ago"
+      },
+      "stockAlert": {
+        "title": "Stock Alert",
+        "desc": "Product SKU SRF56 is about to run out",
+        "time": "1 hour ago"
+      },
+      "shippingUpdate": {
+        "title": "Shipping Update",
+        "desc": "Shipping company shipment delivered",
+        "time": "Yesterday"
+      }
+    },
+    "profile": {
+      "initial": "Y",
+      "greeting": "Good morning, Yosra",
+      "role": "System Manager"
+    }
+  },
+  "products": {
+    "breadcrumb": {
+      "home": "Home",
+      "products": "Products"
+    },
+    "tabs": {
+      "mine": "My Products",
+      "ship": "Products Required for Shipping",
+      "idle": "Idle Products"
+    },
+    "actions": {
+      "addProduct": "Add Product",
+      "howToUse": "Usage Guide",
+      "delete": "Delete",
+      "edit": "Edit",
+      "add": "Add",
+      "view": "View"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Search for what you want...",
+      "filter": "Filter",
+      "refresh": "Refresh Search",
+      "export": "Export"
+    },
+    "filters": {
+      "storageShelf": "Storage Shelf",
+      "storagePlaceholder": "Example: B612",
+      "category": "Category",
+      "categoryPlaceholder": "Choose Category",
+      "categoryAll": "All",
+      "categoryHome": "Home Tools",
+      "categoryMedical": "Medical",
+      "sku": "SKU Code",
+      "skuPlaceholder": "Example: SRF56",
+      "apply": "Apply"
+    },
+    "table": {
+      "sku": "SKU Code",
+      "name": "Product Name",
+      "wholesalePrice": "Wholesale Price",
+      "category": "Category",
+      "createdAt": "Creation Date",
+      "storage": "Storage Shelf",
+      "options": "Options"
+    },
+    "stats": {
+      "withShippingCompanies": "With Shipping Companies",
+      "returnedPieces": "Returned Pieces",
+      "soldPieces": "Sold Pieces",
+      "remainingPieces": "Remaining Pieces",
+      "totalProducts": "Total Products"
+    },
+    "empty": "No products",
+    "mock": {
+      "wholesalePrice": "300 SAR",
+      "category": "Home Tools",
+      "name": "Medical Bowl"
+    }
+  },
+  "addProduct": {
+    "breadcrumb": {
+      "home": "Home",
+      "products": "Products",
+      "addProduct": "Add Product"
+    },
+    "actions": {
+      "howToUse": "Usage Guide",
+      "save": "Save"
+    },
+    "fields": {
+      "productName": "Product Name",
+      "wholesalePrice": "Wholesale Price",
+      "warehouse": "Select Warehouse",
+      "storageShelf": "Storage Shelf",
+      "sku": "SKU Code",
+      "store": "Product Store",
+      "description": "Product Description"
+    },
+    "placeholders": {
+      "productName": "KUG5a",
+      "wholesalePrice": "B612",
+      "warehouse": "B612",
+      "storageShelf": "KUG5a",
+      "sku": "KUG5a",
+      "store": "B612",
+      "description": "KUG54",
+      "variantCategory": "Colors"
+    },
+    "options": {
+      "branch1": "Transition Branch",
+      "branch2": "Transition Branch"
+    },
+    "variants": {
+      "title": "Variants",
+      "add": "Add New Variant",
+      "variant": "Variant",
+      "delete": "Delete",
+      "categoryValue": "Category Value",
+      "variantValue": "Variant Value",
+      "wholesalePrice": "Price (Wholesale)",
+      "retailPrice": "Price (Retail)",
+      "quantity": "Quantity",
+      "defaultPrice": "Default Price"
+    },
+    "upsell": {
+      "callCenterDesc": "Call Center Product Description",
+      "minPrice": "Minimum Product Price",
+      "execution": "Up selling Execution",
+      "products": "Upselling Products",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "uploads": {
+      "mainImage": "Main Product Image",
+      "otherImages": "Other Images",
+      "dragHere": "Drag file(s) here to start upload",
+      "or": "Or",
+      "attach": "Attach Files",
+      "remove": "Delete File"
+    },
+    "mock": {
+      "upsell1": "Backpack",
+      "upsell2": "Watch",
+      "variantCategoryValue": "Colors",
+      "tagRed": "Red",
+      "tagBlue": "Blue",
+      "tagOrange": "Orange"
+    }
+  },
+  "employees": {
+    "breadcrumb": {
+      "home": "Home",
+      "employees": "Employees"
+    },
+    "tabs": {
+      "all": "All Employees",
+      "callCenter": "Call Center",
+      "warehouse": "Warehouse Employee",
+      "warehouseStaff": "Warehouse Staff",
+      "dataEntry": "Data Entry",
+      "customerService": "Customer Service"
+    },
+    "stats": {
+      "totalEmployees": "Total Employees",
+      "dataEntry": "Data Entry",
+      "customerService": "Customer Service",
+      "warehouseStaff": "Warehouse Staff"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Search for what you want.....",
+      "filter": "Filter",
+      "refresh": "Refresh",
+      "export": "Export"
+    },
+    "filters": {
+      "role": "Role",
+      "rolePlaceholder": "Choose Role",
+      "roleAll": "All Roles",
+      "roleDataEntry": "Data Entry",
+      "roleWarehouse": "Warehouse Employee",
+      "roleCustomerService": "Customer Service",
+      "name": "Employee Name",
+      "namePlaceholder": "Search by name",
+      "apply": "Apply"
+    },
+    "table": {
+      "name": "Employee Name",
+      "joinDate": "Join Date",
+      "email": "Email",
+      "phone": "Phone Number",
+      "role": "Role",
+      "options": "Options"
+    },
+    "actions": {
+      "addEmployee": "Add Employee",
+      "howToUse": "Usage Guide",
+      "delete": "Delete",
+      "edit": "Edit",
+      "view": "View"
+    },
+    "empty": "No employees"
+  },
+  "addEmployee": {
+    "breadcrumb": {
+      "home": "Home",
+      "employees": "Employees",
+      "addEmployee": "Add Employee"
+    },
+    "actions": {
+      "howToUse": "Usage Guide",
+      "save": "Save"
+    },
+    "sections": {
+      "employeeType": "Employee Type",
+      "employeeInfo": "Employee Information",
+      "employeeImage": "Employee Image"
+    },
+    "roles": {
+      "dataEntry": "Data Entry",
+      "warehouse": "Warehouse Employee",
+      "customerService": "Customer Service"
+    },
+    "fields": {
+      "name": "Employee Name",
+      "email": "Email",
+      "phone": "Phone Number",
+      "joinDate": "Join Date"
+    },
+    "placeholders": {
+      "name": "Yosra Allam",
+      "email": "yosra@gmail.com",
+      "phone": "01002888976"
+    },
+    "upload": {
+      "dragHere": "Drag image here",
+      "clickToChoose": "Or click to choose from your device",
+      "chooseImage": "Choose Image",
+      "changeImage": "Change Image",
+      "remove": "Remove",
+      "imageAlt": "Employee Image"
+    },
+    "note": {
+      "title": "Note:",
+      "text": "Preferably the image is at least 400×400 pixels in size"
+    },
+    "common": {
+      "or": "Or"
+    }
+  },
+  "purchases": {
+    "breadcrumb": {
+      "home": "Home",
+      "purchases": "Purchases"
+    },
+    "tabs": {
+      "accepted": "Accepted Invoices",
+      "pending": "Pending Invoices",
+      "rejected": "Rejected Invoices"
+    },
+    "stats": {
+      "acceptedInvoices": "Accepted Invoices",
+      "pendingInvoices": "Pending Invoices",
+      "rejectedInvoices": "Rejected Invoices"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Search for what you want.....",
+      "filter": "Filter",
+      "refresh": "Refresh",
+      "export": "Export"
+    },
+    "filters": {
+      "supplier": "Supplier Name",
+      "supplierPlaceholder": "Search by supplier",
+      "paymentMethod": "Payment Method",
+      "paymentMethodPlaceholder": "Choose Payment Method",
+      "paymentMethodAll": "All Methods",
+      "paymentMethodCash": "Cash",
+      "paymentMethodBank": "Bank",
+      "sku": "SKU Code",
+      "skuPlaceholder": "Search by code",
+      "apply": "Apply"
+    },
+    "table": {
+      "sku": "SKU Code",
+      "productName": "Product Name",
+      "productPrice": "Product Price",
+      "unitPrice": "Unit Purchase Price",
+      "quantity": "Number of Pieces",
+      "supplierName": "Supplier Name",
+      "totalAmount": "Total Amount",
+      "dueAmount": "Due Amount",
+      "remainingAmount": "Remaining Amount",
+      "safeName": "Safe Name",
+      "paymentMethod": "Payment Method",
+      "actions": "Approve or Reject Invoice"
+    },
+    "actions": {
+      "createInvoice": "Create Purchase Invoice",
+      "howToUse": "Usage Guide",
+      "approve": "Approve",
+      "reject": "Reject"
+    },
+    "empty": "No invoices"
+  },
+  "purchaseInvoice": {
+    "breadcrumb": {
+      "home": "Home",
+      "purchases": "Purchases",
+      "createPurchaseInvoice": "Create Purchase Invoice"
+    },
+    "actions": {
+      "howToUse": "Usage Guide",
+      "save": "Save",
+      "delete": "Delete",
+      "remove": "Remove"
+    },
+    "sections": {
+      "supplierInfo": "Supplier Information",
+      "receiptImage": "Purchase Receipt Image",
+      "addProducts": "Add Products",
+      "productsTable": "Products Tables",
+      "notes": "Notes",
+      "invoiceSummary": "Invoice Summary"
+    },
+    "fields": {
+      "supplierName": "Supplier Name",
+      "supplierCode": "Supplier Code",
+      "receiptNumber": "Purchase Receipt Number",
+      "safe": "Select Safe",
+      "paymentMethod": "Payment Method"
+    },
+    "placeholders": {
+      "supplierName": "Yosra Allam",
+      "supplierCode": "B612",
+      "receiptNumber": "0284jlkljk",
+      "safe": "Cash Safe",
+      "paymentMethod": "Cash",
+      "scanOrEnter": "Scan barcode or enter product code",
+      "notes": "No notes"
+    },
+    "options": {
+      "safe": {
+        "cash": "Cash Safe",
+        "safe1": "Safe #1",
+        "safe2": "Safe #2"
+      },
+      "payment": {
+        "cash": "Cash",
+        "bankCIB": "Bank CIB",
+        "bankQNB": "Bank QNB"
+      }
+    },
+    "table": {
+      "sku": "SKU Code",
+      "name": "Product Name",
+      "unitCost": "Unit Cost",
+      "quantity": "Number of Pieces",
+      "productCost": "Product Cost",
+      "taxInclusive": "Tax Inclusive",
+      "taxRate": "Tax Value",
+      "totalAmount": "Total Amount",
+      "actions": "Options"
+    },
+    "upload": {
+      "dragHere": "Drag file(s) here to start upload",
+      "attachFiles": "Attach Files",
+      "receiptAlt": "Purchase Receipt"
+    },
+    "summary": {
+      "productCount": "Number of Products",
+      "subtotal": "Subtotal Before Tax",
+      "taxRate": "Total Tax",
+      "taxTotal": "Amount Paid",
+      "paidAmount": "Due Amount",
+      "dueAmount": "Remaining Amount",
+      "remainingAmount": "Total Amount"
+    },
+    "common": {
+      "or": "Or"
+    }
+  },
+  "returns": {
+    "breadcrumb": {
+      "home": "Home",
+      "returns": "Purchase Returns"
+    },
+    "stats": {
+      "returnInvoicesCount": "Number of Return Invoices",
+      "totalReturnValue": "Total Return Value"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Search for what you want.....",
+      "filter": "Filter",
+      "refresh": "Refresh",
+      "export": "Export"
+    },
+    "filters": {
+      "status": "Invoice Status",
+      "statusPlaceholder": "Choose Status",
+      "statusAll": "All Statuses",
+      "statusCompleted": "Completed",
+      "statusPending": "Pending",
+      "statusCancelled": "Cancelled",
+      "returnType": "Return Type",
+      "returnTypePlaceholder": "Choose Return Type",
+      "returnTypeAll": "All Types",
+      "returnTypeCash": "Cash",
+      "returnTypeBank": "Bank",
+      "returnTypeDeduct": "Deduct from Supplier Account",
+      "supplier": "Supplier Name",
+      "supplierPlaceholder": "Search by supplier",
+      "apply": "Search"
+    },
+    "table": {
+      "returnNumber": "Return Number",
+      "invoiceNumber": "Purchase Invoice Number",
+      "returnDate": "Return Date",
+      "status": "Invoice Status",
+      "createdBy": "Created By",
+      "supplierName": "Supplier Name",
+      "returnType": "Return Type",
+      "subtotal": "Subtotal Before Tax",
+      "tax": "Total Tax",
+      "total": "Total Return Amount",
+      "options": "Options"
+    },
+    "actions": {
+      "createReturn": "Create Return Invoice",
+      "howToUse": "Usage Guide",
+      "view": "View"
+    },
+    "empty": "No return invoices"
+  },
+  "returnInvoice": {
+    "breadcrumb": {
+      "home": "Home",
+      "returns": "Purchase Returns",
+      "createReturnInvoice": "Create Return Invoice"
+    },
+    "actions": {
+      "howToUse": "Usage Guide",
+      "save": "Save",
+      "delete": "Delete"
+    },
+    "sections": {
+      "returnInfo": "Return Information",
+      "addProducts": "Add Products",
+      "productsTable": "Products Tables",
+      "notes": "Notes",
+      "summaryTitle": "Return Invoice Summary"
+    },
+    "fields": {
+      "supplierName": "Supplier Name",
+      "supplierCode": "Supplier Code",
+      "invoiceNumber": "Purchase Invoice Number",
+      "returnReason": "Return Reason",
+      "returnType": "Return Type",
+      "safe": "Select Safe"
+    },
+    "placeholders": {
+      "supplierName": "Yosra Allam",
+      "supplierCode": "B612",
+      "invoiceNumber": "0284jlkljk",
+      "returnReason": "Incorrect Products",
+      "returnType": "Cash Refund",
+      "safe": "Cash Safe",
+      "scanOrEnter": "Scan barcode or enter product code",
+      "notes": "No notes"
+    },
+    "options": {
+      "safe": {
+        "cash": "Cash Safe",
+        "safe1": "Safe #1",
+        "safe2": "Safe #2"
+      },
+      "returnReason": {
+        "wrongProducts": "Incorrect Products",
+        "damaged": "Damaged Products",
+        "expired": "Expired Products",
+        "excess": "Excess Stock"
+      },
+      "returnType": {
+        "cashRefund": "Cash Refund",
+        "bankTransfer": "Bank Transfer",
+        "supplierDeduction": "Deduct from Supplier Account"
+      }
+    },
+    "labels": {
+      "returnReason": {
+        "wrong_products": "Incorrect Products",
+        "damaged": "Damaged Products",
+        "expired": "Expired Products",
+        "excess": "Excess Stock"
+      },
+      "returnType": {
+        "cash_refund": "Cash Refund",
+        "bank_transfer": "Bank Transfer",
+        "supplier_deduction": "Deduct from Supplier Account"
+      }
+    },
+    "table": {
+      "sku": "SKU Code",
+      "name": "Product Name",
+      "returnedQuantity": "Returned Quantity",
+      "unitCost": "Unit Cost",
+      "returnCost": "Return Cost",
+      "taxInclusive": "Tax Inclusive",
+      "totalAmount": "Total Amount",
+      "actions": "Options"
+    },
+    "summary": {
+      "productCount": "Number of Returned Products",
+      "subtotal": "Subtotal Before Tax",
+      "taxRate": "Total Tax",
+      "totalReturn": "Total Return Amount"
+    }
+  },
+  "suppliers": {
+    "breadcrumb": {
+      "home": "Home",
+      "suppliers": "Suppliers"
+    },
+    "stats": {
+      "totalPurchases": "Total Purchases from All Suppliers",
+      "totalDue": "Total Due to Suppliers"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Search for what you want.....",
+      "filter": "Filter",
+      "refresh": "Refresh",
+      "export": "Export"
+    },
+    "filters": {
+      "supplierName": "Supplier Name",
+      "supplierNamePlaceholder": "Search by name",
+      "supplierCode": "Supplier Code",
+      "supplierCodePlaceholder": "Search by code",
+      "apply": "Apply"
+    },
+    "table": {
+      "name": "Supplier Name",
+      "code": "Supplier Code",
+      "joinDate": "Join Date",
+      "phone": "Phone Number",
+      "dueBalance": "Due Balance",
+      "purchaseValue": "Purchase Value",
+      "options": "Options"
+    },
+    "actions": {
+      "addSupplier": "Add Supplier",
+      "howToUse": "Usage Guide",
+      "view": "View"
+    },
+    "empty": "No suppliers"
+  },
+  "addSupplier": {
+    "breadcrumb": {
+      "home": "Home",
+      "suppliers": "Suppliers",
+      "addSupplier": "Add Supplier"
+    },
+    "actions": {
+      "howToUse": "Usage Guide",
+      "save": "Save"
+    },
+    "form": {
+      "name": "Supplier Name",
+      "namePlaceholder": "Yosra Allam",
+      "code": "Supplier Code",
+      "codePlaceholder": "KUG54",
+      "address": "Supplier Address",
+      "addressPlaceholder": "KUG54",
+      "description": "Supplier Description",
+      "descriptionPlaceholder": "Supplier Description",
+      "phone": "Phone Number",
+      "phonePlaceholder": "01002888976",
+      "email": "Email",
+      "emailPlaceholder": "yosra@gmail.com",
+      "joinDate": "Join Date",
+      "joinDatePlaceholder": "2/2/2025",
+      "categories": "Categories"
+    },
+    "categories": {
+      "beauty": "Beauty",
+      "homeTools": "Home Tools"
+    }
+  },
+  "shipping": {
+    "breadcrumb": {
+      "home": "Home",
+      "shipping": "Shipping Companies"
+    },
+    "tabs": {
+      "custom": "Your Shipping Companies",
+      "integrated": "Integrated Shipping Companies",
+      "products": "Product Suggestions"
+    },
+    "integrated": {
+      "title": "Integrated Shipping Companies",
+      "companyLink": "Company Link",
+      "description": "Trusted shipping partner with full integration for faster tracking and secure delivery.",
+      "editSettings": "Edit Settings"
+    },
+    "products": {
+      "empty": "No product suggestions"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Search for what you want.....",
+      "export": "Export"
+    },
+    "table": {
+      "name": "Shipping Company",
+      "emiratesCount": "Number of Emirates",
+      "minDelivery": "Minimum Delivery Time",
+      "maxDelivery": "Maximum Delivery Time",
+      "options": "Options"
+    },
+    "actions": {
+      "addCompany": "Add Shipping Company",
+      "howToUse": "Usage Guide",
+      "view": "View",
+      "delete": "Delete"
+    },
+    "empty": "No shipping companies"
+  },
+  "addShipping": {
+    "breadcrumb": {
+      "home": "Home",
+      "shipping": "Shipping Companies",
+      "addShipping": "Add Shipping Company"
+    },
+    "actions": {
+      "howToUse": "Usage Guide",
+      "save": "Save"
+    },
+    "form": {
+      "name": "Shipping Company Name",
+      "namePlaceholder": "GT",
+      "cities": "City (Emirate)",
+      "cityDetails": "Shipping Details for Cities",
+      "company": "Shipping Company",
+      "shippingFee": "Shipping Fee",
+      "returnFee": "Return Fee",
+      "minDelivery": "Minimum Delivery Time",
+      "maxDelivery": "Maximum Delivery Time",
+      "noCitiesSelected": "No cities selected",
+      "selectCitiesHint": "Please select one or more cities to define shipping details"
+    },
+    "cities": {
+      "sharjah": "Sharjah",
+      "alain": "Al Ain",
+      "dubai": "Dubai",
+      "abudhabi": "Abu Dhabi",
+      "rak": "Ras Al Khaimah",
+      "fujairah": "Fujairah",
+      "ajman": "Ajman"
+    }
+  },
+  "shippingDetails": {
+    "breadcrumb": {
+      "home": "Home",
+      "details": "Shipping Companies Details"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Search for what you want.....",
+      "export": "Export"
+    },
+    "table": {
+      "emirate": "Emirate Name",
+      "shippingFee": "Shipping Fee",
+      "returnFee": "Return Fee",
+      "totalDue": "Total Due Amount",
+      "minDelivery": "Minimum Delivery Time",
+      "maxDelivery": "Maximum Delivery Time"
+    },
+    "actions": {
+      "howToUse": "Usage Guide"
+    },
+    "empty": "No data"
+  },
+  "storeIntegrations": {
+    "breadcrumb": {
+      "home": "Home",
+      "integrations": "Store Integration"
+    },
+    "integrated": {
+      "platformLink": "Company Link",
+      "description": "Trusted shipping partner with full integration for faster tracking and secure delivery.",
+      "editSettings": "Edit Settings"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Search for what you want.....",
+      "export": "Export"
+    },
+    "table": {
+      "storeName": "Store Name",
+      "storeUrl": "Store URL",
+      "platform": "Platform",
+      "email": "Email",
+      "joinDate": "Join Date",
+      "status": "Activation Status",
+      "sendToInventory": "Send Orders to Inventory",
+      "options": "Options"
+    },
+    "actions": {
+      "howToUse": "Usage Guide",
+      "delete": "Delete"
+    },
+    "empty": "No stores"
+  },
+  "integrated": {
+    "edit_settings": "Edit Settings",
+    "link": "Edit Settings"
+  },
+  "orders": {
+    "breadcrumb": {
+      "home": "Home",
+      "orders": "Order Management"
+    },
+    "tabs": {
+      "new": "New",
+      "pending": "In Progress",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "returned": "Returned",
+      "cancelled": "Cancelled"
+    },
+    "stats": {
+      "new": "New",
+      "pending": "In Progress",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "returned": "Returned",
+      "cancelled": "Cancelled"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Search for what you want.....",
+      "assignEmployee": "Assign Employee",
+      "filter": "Filter",
+      "refresh": "Refresh",
+      "export": "Export"
+    },
+    "filters": {
+      "customerInfo": "Customer Information",
+      "orderDetails": "Order Details",
+      "assignment": "Assignment and Date",
+      "customerName": "Customer Name",
+      "customerNamePlaceholder": "Yosra Allam",
+      "assignedEmployee": "Assigned Employee",
+      "employeePlaceholder": "Yosra Allam",
+      "date": "Date",
+      "productName": "Product Name",
+      "productNamePlaceholder": "Backpack Watch",
+      "orderType": "Order Type",
+      "orderTypePlaceholder": "Choose Order Type",
+      "orderTypeAll": "All Orders",
+      "orderTypeDistributed": "Distributed Orders",
+      "orderTypeNormal": "Normal Orders",
+      "orderStatus": "Order Status",
+      "orderStatusPlaceholder": "In Progress",
+      "apply": "Apply"
+    },
+    "table": {
+      "orderCode": "Order Code",
+      "customerName": "Customer Name",
+      "phone": "Phone Number",
+      "products": "Products",
+      "orderStatus": "Order Status",
+      "paymentMethod": "Payment Method",
+      "confirmOrder": "Confirm Order (Approve, Reject)",
+      "options": "Options",
+      "assignedEmployee": "Assigned Employee",
+      "distributor": "Order Distributor",
+      "trackingCode": "Order Tracking Code",
+      "city": "City",
+      "address": "Address",
+      "shippingCompany": "Shipping Company",
+      "shippingCost": "Shipping Cost",
+      "deposit": "Deposit",
+      "receivedAmount": "Received Amount",
+      "allowReturn": "Allow Return",
+      "allowExchange": "Allow Exchange",
+      "allowOpenProduct": "Allow Opening Product",
+      "lastUpdate": "Last Update",
+      "store": "Store"
+    },
+    "actions": {
+      "howToUse": "Usage Guide",
+      "addOrder": "Add Order",
+      "importOrders": "Import Orders",
+      "view": "View",
+      "delete": "Delete",
+      "cancel": "Cancel"
+    },
+    "empty": "No orders"
+  }
+}

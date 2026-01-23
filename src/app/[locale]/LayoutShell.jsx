@@ -1,47 +1,71 @@
 // app/[locale]/LayoutShell.jsx
 'use client';
 
-import React, { useState }  from 'react';
+import React, { useState } from 'react';
 import { ThemeProvider } from 'next-themes';
 import { useLocale } from 'next-intl';
 import { cn } from '@/utils/cn';
 import Header from '@/components/molecules/Header';
 import Sidebar from '@/components/molecules/Sidebar';
- 
+import { usePathname } from 'next/navigation';
+import { Toaster } from 'react-hot-toast';
 
- 
-export default function LayoutShell({children}) {
-  return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-      <DashboardLayout>{children}</DashboardLayout>
-    </ThemeProvider>
-  );
+
+
+export default function LayoutShell({ children }) {
+	return (
+		<ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+			<DashboardLayout>{children}</DashboardLayout>
+		</ThemeProvider>
+	);
 }
 
 
 
 
-function DashboardLayout({children}) {
-  const locale = useLocale();
-  const isRTL = locale === 'ar';
+function DashboardLayout({ children }) {
+	const locale = useLocale();
+	const isRTL = locale === 'ar';
+	const AllPathname = usePathname();
+	const pathname = AllPathname?.slice(3,1000)
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  return (
-    <div className={isRTL ? 'rtl' : 'ltr'} dir={isRTL ? 'rtl' : 'ltr'}>
-      <Header
-        toggleSidebar={() => setIsSidebarOpen((v) => !v)}
-        isSidebarOpen={isSidebarOpen}
-      />
-      <Sidebar isRTL={isRTL} isOpen={isSidebarOpen} />
- 
-      <div
-        className={` bg-[#f3f6fa] dark:bg-[#19243950]  relative transition-all duration-300 ${
-          isSidebarOpen ? (isRTL ? 'mr-[280px]' : 'ml-[280px]') : (isRTL ? 'mr-[80px]' : 'ml-[80px]')
-        } mt-16`}
-      >
-        {children}
-      </div>
-    </div>
-  );
+	const isAuthRoute =
+		pathname?.startsWith('/auth') ||
+		pathname?.includes('reset-password') ||
+		pathname?.includes('forgot-password');
+
+	// لو Auth route: لا Header ولا Sidebar
+	if (isAuthRoute) {
+		return (
+			<div className={isRTL ? 'rtl' : 'ltr'} dir={isRTL ? 'rtl' : 'ltr'}>
+				{children}
+			</div>
+		);
+	}
+
+	return (
+		<div className={isRTL ? 'rtl' : 'ltr'} dir={isRTL ? 'rtl' : 'ltr'}>
+			<Header
+				toggleSidebar={() => setIsSidebarOpen((v) => !v)}
+				isSidebarOpen={isSidebarOpen}
+			/>
+			<Sidebar isRTL={isRTL} isOpen={isSidebarOpen} />
+			<Toaster position="top-center" />
+
+			<div
+				className={`bg-[#f3f6fa] dark:bg-[#19243950] relative transition-all duration-300 ${isSidebarOpen
+						? isRTL
+							? 'mr-[280px]'
+							: 'ml-[280px]'
+						: isRTL
+							? 'mr-[80px]'
+							: 'ml-[80px]'
+					} mt-16`}
+			>
+				{children}
+			</div>
+		</div>
+	);
 }

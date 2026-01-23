@@ -12,8 +12,7 @@ export default function SwitcherTabs({
 	activeClassName = "",
 	inactiveClassName = "",
 	underlineClassName = "",
-	dir = "rtl",
-}) {
+ }) {
 	return (
 		<div className={["w-full", className].join(" ")} >
 			<div className="relative flex items-center justify-start  gap-10">

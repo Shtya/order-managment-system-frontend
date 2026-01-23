@@ -823,5 +823,92 @@
       "cancel": "Cancel"
     },
     "empty": "No orders"
+  },
+
+  "auth": {
+    "title": "Order Management System",
+    "steps": {
+      "forgot": "Recover",
+      "verify": "Verify",
+      "reset": "Reset"
+    },
+
+    "login": {
+      "welcomeBack": "Welcome Back",
+      "description": "Manage and track your orders easily through the integrated order management system",
+      "title": "Login",
+      "subtitle": "Enter your details to access the dashboard",
+      "email": "Email",
+      "emailPlaceholder": "yourmail@gmail.com",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••••",
+      "forgotPassword": "Forgot password?",
+      "submit": "Login",
+      "orContinueWith": "Or continue with",
+      "googleSignIn": "Sign in with Google",
+      "feature1": "Easy order management",
+      "feature2": "Real-time order tracking",
+      "feature3": "Comprehensive reports and analytics",
+      "copyright": "All rights reserved © 2025" ,
+			"success": "Logged in successfully"
+    },
+
+    "forgotPassword": {
+      "back": "Back to login",
+      "title": "Recover Password",
+      "description": "Enter your email and we will send you a verification code to reset your password",
+      "email": "Email",
+      "emailPlaceholder": "yourmail@gmail.com",
+      "submit": "Send verification code",
+      "successTitle": "Sent successfully",
+      "successDescription": "The verification code has been sent to", 
+			"backToLogin" :  "Back to login" ,
+			"otpSent": "Verification code sent"
+    },
+
+    "otp": {
+      "back": "Back",
+      "title": "Email Verification",
+      "description": "Enter the 6-digit OTP code sent to",
+      "verify": "Verify",
+      "timeRemaining": "Time remaining",
+      "codeExpired": "The code has expired",
+      "resend": "Resend",
+      "invalidCode": "Invalid verification code",
+      "error": "An error occurred, please try again",
+      "helpText": "Didn't receive the code? Check your spam folder"
+    },
+
+    "resetPassword": {
+      "title": "Reset Password",
+      "description": "Enter your new password",
+      "newPassword": "New password",
+      "passwordPlaceholder": "••••••••••",
+      "confirmPassword": "Confirm password",
+      "confirmPasswordPlaceholder": "••••••••••",
+      "requirement": {
+        "length": "At least 8 characters",
+        "uppercase": "At least one uppercase letter",
+        "lowercase": "At least one lowercase letter",
+        "number": "At least one number"
+      },
+      "submit": "Reset password",
+      "successTitle": "Success!",
+      "successDescription": "Your password has been changed successfully. You will be redirected to login" ,
+			"redirecting": "Redirecting..."
+    },
+
+    "validation": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email address",
+      "passwordRequired": "Password is required",
+      "passwordMin": "Password must be at least 6 characters",
+      "passwordMinLength": "Password must be at least 8 characters",
+      "passwordUppercase": "Password must contain at least one uppercase letter",
+      "passwordLowercase": "Password must contain at least one lowercase letter",
+      "passwordNumber": "Password must contain at least one number",
+      "confirmPasswordRequired": "Confirm password is required",
+      "passwordsMustMatch": "Passwords do not match"
+    }
   }
 }

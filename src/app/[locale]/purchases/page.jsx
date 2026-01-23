@@ -1,67 +1,106 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-	Check,
-	X,
 	ChevronLeft,
 	Filter,
-	RefreshCw,
-	Package,
-	FileText,
 	CheckCircle,
 	XCircle,
 	Clock,
+	MoreVertical,
+	Check,
+	X,
+	Pause,
+	Edit,
+	Eye,
+	FileText,
+	ScrollText,
+	Loader2,
+	Package,
+	TrendingUp,
+	DollarSign,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 
 import InfoCard from "@/components/atoms/InfoCard";
-import SwitcherTabs from "@/components/atoms/SwitcherTabs";
 import DataTable from "@/components/atoms/DataTable";
+
+import { ChevronDown } from "lucide-react";
+
+
 
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import Button_ from "@/components/atoms/Button";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import api from "@/utils/api";
+import toast from "react-hot-toast";
+import Flatpickr from "react-flatpickr";
+import "flatpickr/dist/themes/material_blue.css";
+import { baseImg } from "@/utils/axios";
+import { Badge } from "@/components/ui/badge";
 
-/** ✅ Toolbar (JSX) */
-function PurchasesTableToolbar({
-	t,
-	searchValue,
-	onSearchChange,
-	onExport,
-	onRefresh,
-	onToggleFilters,
-	isFiltersOpen,
-}) {
+const isImagePath = (p) => !!p && /\.(png|jpg|jpeg|webp|gif)$/i.test(p);
+const isPdfPath = (p) => !!p && /\.pdf$/i.test(p);
+
+// Loading Spinner Component
+function LoadingSpinner({ size = "default", text }) {
+	const sizeClasses = {
+		small: "w-8 h-8",
+		default: "w-12 h-12",
+		large: "w-16 h-16",
+	};
+
+	return (
+		<div className="flex flex-col items-center justify-center py-12">
+			<div className="relative">
+				<div className={cn(sizeClasses[size], "border-4 border-primary/20 rounded-full")}></div>
+				<div className={cn(sizeClasses[size], "border-4 border-primary border-t-transparent rounded-full animate-spin absolute top-0 left-0")}></div>
+			</div>
+			{text && (
+				<p className="text-sm text-gray-600 dark:text-slate-400 mt-3 animate-pulse font-medium">
+					{text}
+				</p>
+			)}
+		</div>
+	);
+}
+
+function PurchasesTableToolbar({ t, searchValue, onSearchChange, onToggleFilters, isFiltersOpen }) {
 	return (
 		<div className="flex items-center justify-between gap-4">
 			<div className="relative w-[300px] focus-within:w-[350px] transition-all duration-300">
-				<svg
-					className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-					width="18"
-					height="18"
-					viewBox="0 0 18 18"
-					fill="none"
-					xmlns="http://www.w3.org/2000/svg"
-				>
-					<path d="M15 4.3125H10.5C10.1925 4.3125 9.9375 4.0575 9.9375 3.75C9.9375 3.4425 10.1925 3.1875 10.5 3.1875H15C15.3075 3.1875 15.5625 3.4425 15.5625 3.75C15.5625 4.0575 15.3075 4.3125 15 4.3125Z" fill="#A6ACBD" />
-					<path d="M12.75 6.5625H10.5C10.1925 6.5625 9.9375 6.3075 9.9375 6C9.9375 5.6925 10.1925 5.4375 10.5 5.4375H12.75C13.0575 5.4375 13.3125 5.6925 13.3125 6C13.3125 6.3075 13.0575 6.5625 12.75 6.5625Z" fill="#A6ACBD" />
-					<path d="M8.625 16.3125C4.3875 16.3125 0.9375 12.8625 0.9375 8.625C0.9375 4.3875 4.3875 0.9375 8.625 0.9375C8.9325 0.9375 9.1875 1.1925 9.1875 1.5C9.1875 1.8075 8.9325 2.0625 8.625 2.0625C5.0025 2.0625 2.0625 5.01 2.0625 8.625C2.0625 12.24 5.0025 15.1875 8.625 15.1875C12.2475 15.1875 15.1875 12.24 15.1875 8.625C15.1875 8.3175 15.4425 8.0625 15.75 8.0625C16.0575 8.0625 16.3125 8.3175 16.3125 8.625C16.3125 12.8625 12.8625 16.3125 8.625 16.3125Z" fill="#A6ACBD" />
-					<path d="M16.5001 17.0626C16.3576 17.0626 16.2151 17.0101 16.1026 16.8976L14.6026 15.3976C14.3851 15.1801 14.3851 14.8201 14.6026 14.6026C14.8201 14.3851 15.1801 14.3851 15.3976 14.6026L16.8976 16.1026C17.1151 16.3201 17.1151 16.6801 16.8976 16.8976C16.7851 17.0101 16.6426 17.0626 16.5001 17.0626Z" fill="#A6ACBD" />
-				</svg>
-
 				<Input
 					value={searchValue}
 					onChange={(e) => onSearchChange?.(e.target.value)}
 					placeholder={t("toolbar.searchPlaceholder")}
-					className="rtl:pr-10 h-[40px] ltr:pl-10 rounded-full bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 placeholder:text-gray-400 dark:placeholder:text-slate-400 text-gray-700 dark:text-slate-100"
+					className="rtl:pr-10 h-[40px] ltr:pl-10 rounded-full bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700"
 				/>
 			</div>
 
@@ -69,41 +108,20 @@ function PurchasesTableToolbar({
 				<Button
 					variant="outline"
 					className={cn(
-						" bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700  text-gray-700 dark:text-slate-100  flex items-center gap-1 !px-4 rounded-full  hover:bg-gray-50 dark:hover:bg-slate-800",
-						isFiltersOpen && "border-[rgb(var(--primary))]/50"
+						"bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-100 flex items-center gap-2 px-4 rounded-full transition-all",
+						isFiltersOpen && "border-primary/50 bg-primary/5"
 					)}
 					onClick={onToggleFilters}
 				>
-					<Filter size={18} className="text-[#A7A7A7] rtl:mr-[-3px] ltr:ml-[-3px]" />
+					<Filter size={18} />
 					{t("toolbar.filter")}
-				</Button>
-
-				<Button
-					variant="outline"
-					className=" bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700  text-gray-700 dark:text-slate-100  flex items-center gap-1 !px-4 rounded-full  hover:bg-gray-50 dark:hover:bg-slate-800"
-					onClick={onRefresh}
-				>
-					<RefreshCw size={18} className=" text-[#A7A7A7] rtl:mr-[-3px] ltr:ml-[-3px]" />
-					{t("toolbar.refresh")}
-				</Button>
-
-				<Button
-					variant="outline"
-					className=" bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700  text-gray-700 dark:text-slate-100  flex items-center gap-1 !px-4 rounded-full  hover:bg-gray-50 dark:hover:bg-slate-800"
-					onClick={onExport}
-				>
-					<svg className="rtl:mr-[-3px] ltr:ml-[-3px]" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<path d="M15.8333 9.16675C15.8333 8.48508 15.8333 7.85841 15.7067 7.55258C15.58 7.24675 15.3392 7.00508 14.8567 6.52341L10.91 2.57675C10.4942 2.16091 10.2867 1.95341 10.0283 1.83008C9.97487 1.8044 9.92007 1.78159 9.86417 1.76175C9.595 1.66675 9.30083 1.66675 8.71333 1.66675C6.00917 1.66675 4.65667 1.66675 3.74083 2.40508C3.55591 2.5542 3.38745 2.72265 3.23833 2.90758C2.5 3.82508 2.5 5.17591 2.5 7.88008V11.6667C2.5 14.8092 2.5 16.3809 3.47667 17.3567C4.45333 18.3326 6.02417 18.3334 9.16667 18.3334H15.8333M10 2.08341V2.50008C10 4.85675 10 6.03591 10.7325 6.76758C11.4642 7.50008 12.6433 7.50008 15 7.50008H15.4167" stroke="#A7A7A7" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
-						<path d="M17.5002 11.6667H15.8335C15.6125 11.6667 15.4005 11.7545 15.2442 11.9108C15.088 12.0671 15.0002 12.2791 15.0002 12.5001V13.7501M15.0002 13.7501V15.8334M15.0002 13.7501H17.0835M5.8335 15.8334V14.1667M5.8335 14.1667V11.6667H7.0835C7.41502 11.6667 7.73296 11.7984 7.96738 12.0329C8.2018 12.2673 8.3335 12.5852 8.3335 12.9167C8.3335 13.2483 8.2018 13.5662 7.96738 13.8006C7.73296 14.0351 7.41502 14.1667 7.0835 14.1667H5.8335ZM10.4168 11.6667H11.4885C12.2777 11.6667 12.9168 12.2884 12.9168 13.0559V14.4442C12.9168 15.2109 12.2768 15.8334 11.4885 15.8334H10.4168V11.6667Z" stroke="#A7A7A7" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
-					</svg>
-					{t("toolbar.export")}
 				</Button>
 			</div>
 		</div>
 	);
 }
 
-function FiltersPanel({ t, value, onChange, onApply }) {
+function FiltersPanel({ t, value, onChange, onApply, suppliers }) {
 	return (
 		<motion.div
 			initial={{ height: 0, opacity: 0, y: -6 }}
@@ -112,42 +130,71 @@ function FiltersPanel({ t, value, onChange, onApply }) {
 			transition={{ duration: 0.25 }}
 		>
 			<div className="bg-card !p-4 mt-4">
-				<div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+				<div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
 					<div className="space-y-2">
 						<Label>{t("filters.supplier")}</Label>
-						<Input
-							value={value.supplier}
-							onChange={(e) => onChange({ ...value, supplier: e.target.value })}
-							placeholder={t("filters.supplierPlaceholder")}
-							className="rounded-full h-[45px] bg-[#fafafa]  dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
-						/>
-					</div>
-
-					<div className="space-y-2">
-						<Label>{t("filters.paymentMethod")}</Label>
-						<Select
-							value={value.paymentMethod}
-							onValueChange={(v) => onChange({ ...value, paymentMethod: v })}
-						>
-							<SelectTrigger className=" w-full rounded-full !h-[45px] bg-[#fafafa]  dark:bg-slate-800/50">
-								<SelectValue placeholder={t("filters.paymentMethodPlaceholder")} />
+						<Select value={value.supplierId} onValueChange={(v) => onChange({ ...value, supplierId: v })}>
+							<SelectTrigger className="w-full rounded-full !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
+								<SelectValue placeholder={t("filters.supplierPlaceholder")} />
 							</SelectTrigger>
-							<SelectContent className={"bg-card-select"}>
-								<SelectItem value="all">{t("filters.paymentMethodAll")}</SelectItem>
-								<SelectItem value="cash">{t("filters.paymentMethodCash")}</SelectItem>
-								<SelectItem value="bank">{t("filters.paymentMethodBank")}</SelectItem>
+							<SelectContent className="bg-card-select">
+								<SelectItem value="none">{t("filters.all")}</SelectItem>
+								{suppliers.map((s) => (
+									<SelectItem key={s.id} value={String(s.id)}>
+										{s.name}
+									</SelectItem>
+								))}
 							</SelectContent>
 						</Select>
 					</div>
 
 					<div className="space-y-2">
-						<Label>{t("filters.sku")}</Label>
-						<Input
-							value={value.sku}
-							onChange={(e) => onChange({ ...value, sku: e.target.value })}
-							placeholder={t("filters.skuPlaceholder")}
-							className="rounded-full h-[45px] bg-[#fafafa]  dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
+						<Label>{t("filters.status")}</Label>
+						<Select value={value.status} onValueChange={(v) => onChange({ ...value, status: v })}>
+							<SelectTrigger className="w-full rounded-full !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
+								<SelectValue placeholder={t("filters.statusPlaceholder")} />
+							</SelectTrigger>
+							<SelectContent className="bg-card-select">
+								<SelectItem value="all">{t("filters.all")}</SelectItem>
+								<SelectItem value="accepted">{t("status.accepted")}</SelectItem>
+								<SelectItem value="pending">{t("status.pending")}</SelectItem>
+								<SelectItem value="rejected">{t("status.rejected")}</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+
+					<div className="space-y-2">
+						<Label>{t("filters.dateRange")}</Label>
+						<Flatpickr
+							value={[
+								value.startDate ? new Date(value.startDate) : null,
+								value.endDate ? new Date(value.endDate) : null,
+							]}
+							onChange={([start, end]) => {
+								onChange({
+									...value,
+									startDate: start ? start.toISOString().split("T")[0] : null,
+									endDate: end ? end.toISOString().split("T")[0] : null,
+								});
+							}}
+							options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
+							className="w-full rounded-full h-[45px] px-4 bg-[#fafafa] dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700"
+							placeholder={t("filters.selectDateRange")}
 						/>
+					</div>
+
+					<div className="space-y-2">
+						<Label>{t("filters.hasReceipt")}</Label>
+						<Select value={value.hasReceipt} onValueChange={(v) => onChange({ ...value, hasReceipt: v })}>
+							<SelectTrigger className="w-full rounded-full !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
+								<SelectValue placeholder={t("filters.hasReceiptPlaceholder")} />
+							</SelectTrigger>
+							<SelectContent className="bg-card-select">
+								<SelectItem value="all">{t("filters.all")}</SelectItem>
+								<SelectItem value="yes">{t("filters.yes")}</SelectItem>
+								<SelectItem value="no">{t("filters.no")}</SelectItem>
+							</SelectContent>
+						</Select>
 					</div>
 
 					<div className="flex md:justify-end">
@@ -157,14 +204,7 @@ function FiltersPanel({ t, value, onChange, onApply }) {
 							label={t("filters.apply")}
 							tone="purple"
 							variant="solid"
-							icon={
-								<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<path d="M15 4.3125H10.5C10.1925 4.3125 9.9375 4.0575 9.9375 3.75C9.9375 3.4425 10.1925 3.1875 10.5 3.1875H15C15.3075 3.1875 15.5625 3.4425 15.5625 3.75C15.5625 4.0575 15.3075 4.3125 15 4.3125Z" fill="white" />
-									<path d="M12.75 6.5625H10.5C10.1925 6.5625 9.9375 6.3075 9.9375 6C9.9375 5.6925 10.1925 5.4375 10.5 5.4375H12.75C13.0575 5.4375 13.3125 5.6925 13.3125 6C13.3125 6.3075 13.0575 6.5625 12.75 6.5625Z" fill="white" />
-									<path d="M8.625 16.3125C4.3875 16.3125 0.9375 12.8625 0.9375 8.625C0.9375 4.3875 4.3875 0.9375 8.625 0.9375C8.9325 0.9375 9.1875 1.1925 9.1875 1.5C9.1875 1.8075 8.9325 2.0625 8.625 2.0625C5.0025 2.0625 2.0625 5.01 2.0625 8.625C2.0625 12.24 5.0025 15.1875 8.625 15.1875C12.2475 15.1875 15.1875 12.24 15.1875 8.625C15.1875 8.3175 15.4425 8.0625 15.75 8.0625C16.0575 8.0625 16.3125 8.3175 16.3125 8.625C16.3125 12.8625 12.8625 16.3125 8.625 16.3125Z" fill="white" />
-									<path d="M16.5001 17.0626C16.3576 17.0626 16.2151 17.0101 16.1026 16.8976L14.6026 15.3976C14.3851 15.1801 14.3851 14.8201 14.6026 14.6026C14.8201 14.3851 15.1801 14.3851 15.3976 14.6026L16.8976 16.1026C17.1151 16.3201 17.1151 16.6801 16.8976 16.8976C16.7851 17.0101 16.6426 17.0626 16.5001 17.0626Z" fill="white" />
-								</svg>
-							}
+							icon={<Filter size={18} />}
 						/>
 					</div>
 				</div>
@@ -173,30 +213,936 @@ function FiltersPanel({ t, value, onChange, onApply }) {
 	);
 }
 
+// function LogsModal({ isOpen, onClose, invoiceId, t }) {
+// 	const [loading, setLoading] = useState(false);
+// 	const [logs, setLogs] = useState([]);
+
+// 	useEffect(() => {
+// 		if (!isOpen || !invoiceId) return;
+// 		(async () => {
+// 			setLoading(true);
+// 			try {
+// 				const res = await api.get(`/purchases/${invoiceId}/audit-logs`);
+// 				setLogs(res.data || []);
+// 			} catch (e) {
+// 				console.error(e);
+// 				toast.error(e?.response?.data?.message || t("messages.logsFailed"));
+// 			} finally {
+// 				setLoading(false);
+// 			}
+// 		})();
+// 	}, [isOpen, invoiceId, t]);
+
+// 	return (
+// 		<Dialog open={isOpen} onOpenChange={onClose}>
+// 			<DialogContent className="!max-w-4xl max-h-[85vh] flex flex-col">
+// 				<DialogHeader className="border-b border-gray-200 dark:border-slate-700 pb-4">
+// 					<DialogTitle className="flex items-center gap-3 text-xl">
+// 						<div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+// 							<ScrollText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+// 						</div>
+// 						{t("logs.title")}
+// 					</DialogTitle>
+// 					<DialogDescription className="text-sm mt-2">
+// 						{t("logs.description")} <span className="font-semibold text-primary">#{invoiceId}</span>
+// 					</DialogDescription>
+// 				</DialogHeader>
+
+// 				<div className="flex-1 overflow-y-auto py-4">
+// 					{loading ? (
+// 						<LoadingSpinner text={t("logs.loading")} />
+// 					) : logs.length === 0 ? (
+// 						<div className="flex flex-col items-center justify-center py-16">
+// 							<div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+// 								<ScrollText className="w-8 h-8 text-gray-400 dark:text-slate-600" />
+// 							</div>
+// 							<p className="text-sm text-gray-500 dark:text-slate-400 font-medium">{t("logs.empty")}</p>
+// 						</div>
+// 					) : (
+// 						<div className="space-y-3 px-1" dir="ltr" >
+// 							{logs.map((log, idx) => (
+// 								<motion.div
+// 									key={log.id}
+// 									initial={{ opacity: 0, x: -20 }}
+// 									animate={{ opacity: 1, x: 0 }}
+// 									transition={{ delay: idx * 0.05 }}
+// 									className="p-4 rounded-xl border-2 border-gray-200 dark:border-slate-700 bg-gradient-to-br from-white to-gray-50 dark:from-slate-900 dark:to-slate-800 hover:shadow-md transition-all"
+// 								>
+// 									<div className="flex items-start justify-between gap-4">
+// 										<div className="flex-1 space-y-2">
+// 											<div className="flex items-center justify-between flex-wrap" >
+// 												<div className="flex items-center gap-2">
+// 													<span className=" font-[Inter] px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase">
+// 														{log.action}
+// 													</span>
+// 													<span className="font-[Inter]  text-[10px] px-2 py-1 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300">
+// 														#{log.id}
+// 													</span>
+// 												</div>
+
+// 												<div className=" font-[Inter]  flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
+// 													<Clock className="w-3 h-3" />
+// 													{log.created_at ? new Date(log.created_at).toLocaleString() : "-"}
+// 												</div>
+// 											</div>
+// 											{log.description && (
+// 												<p className="font-[Inter]  text-sm text-gray-700 dark:text-slate-300">{log.description}</p>
+// 											)}
+
+// 										</div>
+// 									</div>
+
+// 									{log.changes && (
+// 										<details className="mt-3">
+// 											<summary className="cursor-pointer text-xs text-primary font-semibold hover:underline">
+// 												{t("logs.showChanges")}
+// 											</summary>
+// 											<pre className="mt-2 text-[11px] leading-5 p-3 rounded-lg bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 overflow-auto">
+// 												{JSON.stringify(log.changes, null, 2)}
+// 											</pre>
+// 										</details>
+// 									)}
+// 								</motion.div>
+// 							))}
+// 						</div>
+// 					)}
+// 				</div>
+
+// 				<DialogFooter className="border-t border-gray-200 dark:border-slate-700 pt-4">
+// 					<Button onClick={onClose} className="px-6 rounded-xl">
+// 						{t("actions.close")}
+// 					</Button>
+// 				</DialogFooter>
+// 			</DialogContent>
+// 		</Dialog>
+// 	);
+// }
+
+
+
+function TinyBadge({ children }) {
+	return (
+		<span className="font-[Inter] text-[10px] px-2 py-1 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300">
+			{children}
+		</span>
+	);
+}
+
+function JsonBlock({ value }) {
+	return (
+		<pre className="mt-2 text-[11px] leading-5 p-3 rounded-lg bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 overflow-auto">
+			{JSON.stringify(value, null, 2)}
+		</pre>
+	);
+}
+
+function LogsModal({ isOpen, onClose, invoiceId, t }) {
+	const [loading, setLoading] = useState(false);
+	const [logs, setLogs] = useState([]);
+
+	useEffect(() => {
+		if (!isOpen || !invoiceId) return;
+
+		(async () => {
+			setLoading(true);
+			try {
+				const res = await api.get(`/purchases/${invoiceId}/audit-logs`);
+				setLogs(res.data || []);
+			} catch (e) {
+				console.error(e);
+				toast.error(e?.response?.data?.message || t("messages.logsFailed"));
+			} finally {
+				setLoading(false);
+			}
+		})();
+	}, [isOpen, invoiceId, t]);
+
+	return (
+		<Dialog open={isOpen} onOpenChange={onClose}>
+			<DialogContent className="!max-w-4xl max-h-[85vh] flex flex-col">
+				<DialogHeader className="border-b border-gray-200 dark:border-slate-700 pb-4">
+					<DialogTitle className="flex items-center gap-3 text-xl">
+						<div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+							<ScrollText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+						</div>
+						{t("logs.title")}
+					</DialogTitle>
+
+					<DialogDescription className="text-sm mt-2">
+						{t("logs.description")}{" "}
+						<span className="font-semibold text-primary">#{invoiceId}</span>
+					</DialogDescription>
+				</DialogHeader>
+
+				<div className="flex-1 overflow-y-auto py-4">
+					{loading ? (
+						<LoadingSpinner text={t("logs.loading")} />
+					) : logs.length === 0 ? (
+						<div className="flex flex-col items-center justify-center py-16">
+							<div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+								<ScrollText className="w-8 h-8 text-gray-400 dark:text-slate-600" />
+							</div>
+							<p className="text-sm text-gray-500 dark:text-slate-400 font-medium">
+								{t("logs.empty")}
+							</p>
+						</div>
+					) : (
+						<div className="space-y-3 px-1" dir="ltr">
+							{logs.map((log, idx) => {
+								const user = log.user || null;
+								const userName = user?.name || "System";
+								const userEmail = user?.email || "";
+								const avatar = user?.avatarUrl || "";
+
+								const hasDetails = !!(log.oldData || log.newData || log.changes);
+
+								return (
+									<motion.div
+										key={log.id}
+										initial={{ opacity: 0, x: -20 }}
+										animate={{ opacity: 1, x: 0 }}
+										transition={{ delay: idx * 0.05 }}
+										className="p-4 rounded-xl border-2 border-gray-200 dark:border-slate-700 bg-gradient-to-br from-white to-gray-50 dark:from-slate-900 dark:to-slate-800 hover:shadow-md transition-all"
+									>
+										{/* Top row */}
+										<div className="flex items-start justify-between gap-4">
+											<div className="flex-1 space-y-2">
+												<div className="flex items-center justify-between flex-wrap">
+													<div className="flex items-center gap-2">
+														<Badge>{log.action}</Badge>
+														<TinyBadge>#{log.id}</TinyBadge>
+													</div>
+
+													<div className="font-[Inter] flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
+														<Clock className="w-3 h-3" />
+														{log.created_at
+															? new Date(log.created_at).toLocaleString()
+															: "-"}
+													</div>
+												</div>
+
+												{/* Who did it */}
+												<div className="flex items-center gap-3 pt-1">
+													{avatar ? (
+														<img
+															src={baseImg + avatar}
+															alt={userName}
+															className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-slate-700"
+														/>
+													) : (
+														<div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-700" />
+													)}
+
+													<div className="flex flex-col">
+														<div className="text-sm font-semibold text-gray-900 dark:text-white">
+															{userName}
+															{userEmail ? (
+																<span className="ml-2 text-xs font-normal text-gray-500 dark:text-slate-400">
+																	{userEmail}
+																</span>
+															) : null}
+														</div>
+
+														{/* IP optional */}
+														{log.ipAddress ? (
+															<div className="text-[11px] text-gray-400 dark:text-slate-500">
+																IP: {log.ipAddress}
+															</div>
+														) : null}
+													</div>
+												</div>
+
+												{/* Description */}
+												{log.description ? (
+													<p className="font-[Inter] text-sm text-gray-700 dark:text-slate-300">
+														{log.description}
+													</p>
+												) : null}
+											</div>
+										</div>
+
+										{/* Details: oldData / newData / changes */}
+										{hasDetails ? (
+											<details className="mt-3">
+												<summary className="cursor-pointer text-xs text-primary font-semibold hover:underline flex items-center gap-2">
+													<ChevronDown className="w-4 h-4" />
+													{t("logs.showDetails")}
+												</summary>
+
+												<div className="mt-2 space-y-3">
+													{log.oldData ? (
+														<div>
+															<div className="text-[11px] font-bold text-gray-500 dark:text-slate-400 mb-1">
+																oldData
+															</div>
+															<JsonBlock value={log.oldData} />
+														</div>
+													) : null}
+
+													{log.newData ? (
+														<div>
+															<div className="text-[11px] font-bold text-gray-500 dark:text-slate-400 mb-1">
+																newData
+															</div>
+															<JsonBlock value={log.newData} />
+														</div>
+													) : null}
+
+													{log.changes ? (
+														<div>
+															<div className="text-[11px] font-bold text-gray-500 dark:text-slate-400 mb-1">
+																changes
+															</div>
+															<JsonBlock value={log.changes} />
+														</div>
+													) : null}
+												</div>
+											</details>
+										) : null}
+									</motion.div>
+								);
+							})}
+						</div>
+					)}
+				</div>
+
+				<DialogFooter className="border-t border-gray-200 dark:border-slate-700 pt-4">
+					<Button onClick={() => onClose(false)} className="px-6 rounded-xl">
+						{t("actions.close")}
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+
+
+
+
+function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
+	const [loading, setLoading] = useState(false);
+	const [preview, setPreview] = useState(null);
+
+	useEffect(() => {
+		if (!isOpen || !invoiceId) return;
+		(async () => {
+			setLoading(true);
+			try {
+				const res = await api.get(`/purchases/${invoiceId}/accept-preview`);
+				setPreview(res.data);
+			} catch (e) {
+				console.error(e);
+				toast.error(e?.response?.data?.message || t("messages.previewFailed"));
+			} finally {
+				setLoading(false);
+			}
+		})();
+	}, [isOpen, invoiceId, t]);
+
+	const rows = preview?.rows ?? [];
+	const hasErrors = rows.some((r) => r.error);
+	const hasPriceChanges = rows.some((r) => r.priceWillChange);
+
+	return (
+		<Dialog open={isOpen} onOpenChange={onClose}>
+			<DialogContent className="!max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+				<DialogHeader className="px-6 pt-5 pb-4 border-b-2 border-primary/20">
+					<div className="flex items-center justify-between">
+						<div>
+							<DialogTitle className="text-2xl font-bold text-primary flex items-center gap-3">
+								<div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+									<Package className="w-5 h-5 text-primary" />
+								</div>
+								{t("acceptPreview.title")}
+							</DialogTitle>
+							<DialogDescription className="text-sm text-gray-600 dark:text-slate-400 mt-2">
+								{t("acceptPreview.receiptNumber")}: <span className="font-bold text-primary">{preview?.receiptNumber || invoiceId}</span>
+							</DialogDescription>
+						</div>
+						{preview && !loading && (
+							<span className={cn(
+								"px-4 py-2 rounded-full text-sm font-bold border-2 flex items-center gap-2",
+								preview.currentStatus === "pending" && "bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-300"
+							)}>
+								<Clock className="w-4 h-4" />
+								{preview.currentStatus}
+							</span>
+						)}
+					</div>
+				</DialogHeader>
+
+				<div className="flex-1 overflow-y-auto px-6 py-4">
+					{loading ? (
+						<LoadingSpinner text={t("acceptPreview.loading")} />
+					) : !preview ? (
+						<div className="flex flex-col items-center justify-center py-16">
+							<div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+								<XCircle className="w-10 h-10 text-gray-400 dark:text-slate-600" />
+							</div>
+							<p className="text-base font-semibold text-gray-700 dark:text-slate-300 mb-2">{t("acceptPreview.empty")}</p>
+							<p className="text-sm text-gray-500 dark:text-slate-400">{t("acceptPreview.emptyDescription")}</p>
+						</div>
+					) : (
+						<div className="space-y-5">
+							{/* Stats Cards */}
+							<div className="grid grid-cols-3 gap-4">
+								<motion.div
+									initial={{ opacity: 0, y: 20 }}
+									animate={{ opacity: 1, y: 0 }}
+									className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-4 border-2 border-primary/20"
+								>
+									<div className="flex items-center gap-3">
+										<div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+											<Package className="w-6 h-6 text-primary" />
+										</div>
+										<div>
+											<div className="text-3xl font-bold text-primary">{rows.length}</div>
+											<div className="text-xs text-gray-600 dark:text-slate-400 font-semibold">{t("acceptPreview.totalItems")}</div>
+										</div>
+									</div>
+								</motion.div>
+
+								<motion.div
+									initial={{ opacity: 0, y: 20 }}
+									animate={{ opacity: 1, y: 0 }}
+									transition={{ delay: 0.1 }}
+									className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-2xl p-4 border-2 border-green-200 dark:border-green-800"
+								>
+									<div className="flex items-center gap-3">
+										<div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/50 flex items-center justify-center flex-shrink-0">
+											<TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
+										</div>
+										<div>
+											<div className="text-3xl font-bold text-green-600 dark:text-green-400">
+												+{rows.reduce((sum, r) => sum + (r.addQty || 0), 0)}
+											</div>
+											<div className="text-xs text-gray-600 dark:text-slate-400 font-semibold">{t("acceptPreview.totalQuantity")}</div>
+										</div>
+									</div>
+								</motion.div>
+
+								<motion.div
+									initial={{ opacity: 0, y: 20 }}
+									animate={{ opacity: 1, y: 0 }}
+									transition={{ delay: 0.2 }}
+									className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 rounded-2xl p-4 border-2 border-orange-200 dark:border-orange-800"
+								>
+									<div className="flex items-center gap-3">
+										<div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-900/50 flex items-center justify-center flex-shrink-0">
+											<DollarSign className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+										</div>
+										<div>
+											<div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
+												{rows.filter(r => r.priceWillChange).length}
+											</div>
+											<div className="text-xs text-gray-600 dark:text-slate-400 font-semibold">{t("acceptPreview.priceUpdates")}</div>
+										</div>
+									</div>
+								</motion.div>
+							</div>
+
+							{/* Formula Explanation */}
+							{hasPriceChanges && (
+								<motion.div
+									initial={{ opacity: 0, y: -10 }}
+									animate={{ opacity: 1, y: 0 }}
+									className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/8 to-blue-50/50 dark:from-primary/15 dark:to-blue-950/30 border-2 border-primary/30 shadow-lg"
+								>
+									<div className="relative p-6">
+										<div className="flex items-start gap-4">
+											<div className="relative">
+												<div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center flex-shrink-0 shadow-xl">
+													<svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+													</svg>
+												</div>
+												<div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center shadow-md">
+													<Check className="w-3 h-3 text-white" strokeWidth={3} />
+												</div>
+											</div>
+
+											<div className="flex-1 space-y-3">
+												<h4 className="text-base font-bold text-primary uppercase tracking-wide">
+													{t("acceptPreview.calculationFormula")}
+												</h4>
+
+												<p className="text-sm text-gray-600 dark:text-slate-400 leading-relaxed">
+													{t("acceptPreview.formulaDescription")}
+												</p>
+
+												<div className="relative group">
+													<div className="relative bg-white dark:bg-slate-900 rounded-xl overflow-hidden border-2 border-primary/30 shadow-sm">
+														<div className="text-sm text-gray-800 dark:text-slate-200 bg-gray-50 dark:bg-slate-800/50 px-5 py-4">
+															<div className="flex flex-wrap items-center gap-2 justify-center text-center">
+																<span className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg font-bold">
+																	({t("acceptPreview.oldPrice")} × {t("acceptPreview.oldStock")})
+																</span>
+																<span className="text-primary font-bold text-lg">+</span>
+																<span className="px-3 py-1.5 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg font-bold">
+																	({t("acceptPreview.incomingAvg")} × {t("acceptPreview.incomingQty")})
+																</span>
+															</div>
+															<div className="text-center my-3">
+																<div className="inline-block w-full max-w-md h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent"></div>
+															</div>
+															<div className="flex items-center justify-center gap-2">
+																<span className="px-3 py-1.5 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-lg font-bold">
+																	{t("acceptPreview.newStock")}
+																</span>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</motion.div>
+							)}
+
+							{/* Items Table */}
+							<motion.div
+								initial={{ opacity: 0, y: 10 }}
+								animate={{ opacity: 1, y: 0 }}
+								className="border-2 border-gray-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-md"
+							>
+								<div className="overflow-x-auto">
+									<table className="w-full">
+										<thead>
+											<tr className="bg-gradient-to-r from-gray-50 via-gray-100 to-gray-50 dark:from-slate-800 dark:via-slate-750 dark:to-slate-800">
+												<th className="text-right p-4 text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
+													{t("acceptPreview.sku")}
+												</th>
+												<th className="text-center p-4 text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
+													{t("acceptPreview.stockBefore")}
+												</th>
+												<th className="text-center p-4 text-xs font-bold text-green-600 dark:text-green-400 uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
+													{t("acceptPreview.addQty")}
+												</th>
+												<th className="text-center p-4 text-xs font-bold text-primary uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
+													{t("acceptPreview.stockAfter")}
+												</th>
+												<th className="text-center p-4 text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
+													{t("acceptPreview.oldPrice")}
+												</th>
+												<th className="text-center p-4 text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
+													{t("acceptPreview.incomingAvg")}
+												</th>
+												<th className="text-center p-4 text-xs font-bold text-primary uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
+													{t("acceptPreview.newPrice")}
+												</th>
+											</tr>
+										</thead>
+										<tbody className="bg-white dark:bg-slate-900">
+											{rows.map((r, idx) => (
+												<motion.tr
+													key={r.variantId}
+													initial={{ opacity: 0, x: -10 }}
+													animate={{ opacity: 1, x: 0 }}
+													transition={{ delay: idx * 0.03 }}
+													className={cn(
+														"border-b border-gray-100 dark:border-slate-800 transition-all",
+														r.error
+															? "bg-red-50 dark:bg-red-950/20"
+															: "hover:bg-primary/5 dark:hover:bg-primary/10"
+													)}
+												>
+													<td className="p-4">
+														<div className="flex items-center gap-2">
+															<span className="text-sm font-bold text-gray-800 dark:text-slate-200">
+																{r.sku || `#${r.variantId}`}
+															</span>
+															{r.priceWillChange && (
+																<span className="text-[9px] px-2 py-1 rounded-full bg-primary/10 text-primary font-bold uppercase">
+																	{t("acceptPreview.updated")}
+																</span>
+															)}
+														</div>
+														{r.error && (
+															<div className="flex items-start gap-1 mt-1">
+																<XCircle className="w-3 h-3 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+																<p className="text-[10px] text-red-700 dark:text-red-300 font-medium">{r.error}</p>
+															</div>
+														)}
+													</td>
+													<td className="p-4 text-center">
+														<span className="text-base font-semibold text-gray-500 dark:text-slate-400">
+															{r.oldStock ?? 0}
+														</span>
+													</td>
+													<td className="p-4 text-center">
+														<span className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-sm font-bold">
+															+{r.addQty || 0}
+														</span>
+													</td>
+													<td className="p-4 text-center">
+														<span className="text-lg font-bold text-primary">
+															{r.newStock ?? 0}
+														</span>
+													</td>
+													<td className="p-4 text-center">
+														<span className="text-base font-semibold text-gray-500 dark:text-slate-400">
+															{r.oldPrice ?? 0}
+														</span>
+													</td>
+													<td className="p-4 text-center">
+														<span className="text-base font-bold text-blue-600 dark:text-blue-400">
+															{r.incomingAvgCost ?? 0}
+														</span>
+													</td>
+													<td className="p-4 text-center">
+														<span className={cn(
+															"text-lg font-bold",
+															r.priceWillChange
+																? "text-primary"
+																: "text-gray-600 dark:text-slate-400"
+														)}>
+															{r.newPrice ?? 0}
+														</span>
+													</td>
+												</motion.tr>
+											))}
+										</tbody>
+									</table>
+								</div>
+							</motion.div>
+
+							{/* Error Alert */}
+							{hasErrors && (
+								<motion.div
+									initial={{ opacity: 0, scale: 0.95 }}
+									animate={{ opacity: 1, scale: 1 }}
+									className="bg-red-50 dark:bg-red-950/30 border-2 border-red-300 dark:border-red-800 rounded-2xl p-5 flex items-start gap-4"
+								>
+									<div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/50 flex items-center justify-center flex-shrink-0">
+										<XCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+									</div>
+									<div>
+										<p className="text-base font-bold text-red-900 dark:text-red-200 mb-1">
+											{t("acceptPreview.hasErrors")}
+										</p>
+										<p className="text-sm text-red-700 dark:text-red-300">
+											{t("acceptPreview.hasErrorsDescription")}
+										</p>
+									</div>
+								</motion.div>
+							)}
+						</div>
+					)}
+				</div>
+
+				<DialogFooter className="px-6 py-4 border-t-2 border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50">
+					<div className="flex items-center justify-between w-full">
+						<div className="text-xs text-gray-500 dark:text-slate-400">
+							{!loading && preview && !hasErrors && (
+								<span className="flex items-center gap-2">
+									<div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+									<span className="font-semibold">{t("acceptPreview.previewReady")}</span>
+								</span>
+							)}
+						</div>
+						<div className="flex items-center gap-3">
+							<Button
+								variant="outline"
+								onClick={onClose}
+								className="px-8 py-2.5 rounded-xl font-semibold border-2"
+							>
+								{t("actions.cancel")}
+							</Button>
+							<Button
+								onClick={() => onApply?.()}
+								disabled={loading || !preview || hasErrors || !preview?.canApply}
+								className={cn(
+									"px-10 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/30 transition-all transform hover:scale-105",
+									(loading || !preview || hasErrors || !preview?.canApply) && "opacity-50 cursor-not-allowed hover:scale-100"
+								)}
+							>
+								<Check className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
+								{t("acceptPreview.apply")}
+							</Button>
+						</div>
+					</div>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+function DetailsModal({ isOpen, onClose, invoice, t }) {
+	const [loading, setLoading] = useState(!invoice);
+
+	useEffect(() => {
+		if (invoice) {
+			setLoading(false);
+		}
+	}, [invoice]);
+
+	if (!invoice && !loading) return null;
+
+	const receipt = invoice?.receiptAsset || null;
+
+	return (
+		<Dialog open={isOpen} onOpenChange={onClose}>
+			<DialogContent className="!max-w-5xl max-h-[90vh] flex flex-col">
+				<DialogHeader className="border-b-2 border-gray-200 dark:border-slate-700 pb-4">
+					<DialogTitle className="flex items-center gap-3 text-2xl">
+						<div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+							<FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+						</div>
+						{t("details.title")}
+					</DialogTitle>
+					<DialogDescription className="text-sm mt-2">
+						{t("details.invoiceNumber")}: <span className="font-bold text-primary">{invoice?.receiptNumber}</span>
+					</DialogDescription>
+				</DialogHeader>
+
+				<div className="flex-1 overflow-y-auto py-4">
+					{loading ? (
+						<LoadingSpinner text={t("details.loading")} />
+					) : (
+						<div className="space-y-6 px-2">
+							{/* Info Grid */}
+							<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+								<div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-750 border border-gray-200 dark:border-slate-700">
+									<Label className="text-xs text-gray-500 dark:text-slate-400 mb-1">{t("details.supplier")}</Label>
+									<p className="text-sm font-bold text-gray-900 dark:text-white">
+										{invoice.supplierId ? invoice.supplier?.name : t("details.noSupplier")}
+									</p>
+								</div>
+								<div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-750 border border-gray-200 dark:border-slate-700">
+									<Label className="text-xs text-gray-500 dark:text-slate-400 mb-1">{t("details.safe")}</Label>
+									<p className="text-sm font-bold text-gray-900 dark:text-white">{invoice.safeId ? String(invoice.safeId) : "-"}</p>
+								</div>
+								<div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-750 border border-gray-200 dark:border-slate-700">
+									<Label className="text-xs text-gray-500 dark:text-slate-400 mb-1">{t("details.date")}</Label>
+									<p className="text-sm font-bold text-gray-900 dark:text-white">
+										{invoice.created_at ? new Date(invoice.created_at).toLocaleDateString() : "-"}
+									</p>
+								</div>
+								<div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-750 border border-gray-200 dark:border-slate-700">
+									<Label className="text-xs text-gray-500 dark:text-slate-400 mb-1">{t("details.status")}</Label>
+									<span className={cn(
+										"inline-flex items-center px-3 py-1 rounded-full text-xs font-bold",
+										invoice.status === "accepted" && "bg-green-100 text-green-700",
+										invoice.status === "pending" && "bg-yellow-100 text-yellow-700",
+										invoice.status === "rejected" && "bg-red-100 text-red-700"
+									)}>
+										{t(`status.${invoice.status}`)}
+									</span>
+								</div>
+							</div>
+
+							{/* Items Table */}
+							<div>
+								<h3 className="text-base font-bold mb-3 flex items-center gap-2">
+									<Package className="w-5 h-5 text-primary" />
+									{t("details.items")}
+								</h3>
+								<div className="border-2 border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden">
+									<table className="w-full text-sm">
+										<thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-750">
+											<tr>
+												<th className="text-right p-4 font-bold">{t("table.sku")}</th>
+												<th className="text-right p-4 font-bold">{t("table.name")}</th>
+												<th className="text-right p-4 font-bold">{t("table.unitCost")}</th>
+												<th className="text-right p-4 font-bold">{t("table.quantityCount")}</th>
+												<th className="text-right p-4 font-bold">{t("table.invoiceTotal")}</th>
+											</tr>
+										</thead>
+										<tbody>
+											{invoice.items?.map((item, idx) => (
+												<tr key={idx} className="border-t hover:bg-primary/5 transition-colors">
+													<td className="p-4">{item.variant?.sku || "-"}</td>
+													<td className="p-4 font-medium">{item.variant?.product?.name || "-"}</td>
+													<td className="p-4">{item.purchaseCost} {t("currency")}</td>
+													<td className="p-4 text-center font-semibold">{item.quantity}</td>
+													<td className="p-4 font-bold text-primary">{item.lineTotal} {t("currency")}</td>
+												</tr>
+											))}
+										</tbody>
+									</table>
+								</div>
+							</div>
+
+							{/* Summary */}
+							<div className="bg-gradient-to-br from-primary/5 to-blue-50/50 dark:from-primary/10 dark:to-blue-950/30 p-6 rounded-2xl border-2 border-primary/30">
+								<div className="space-y-3">
+									<div className="flex justify-between text-sm">
+										<span className="font-semibold text-gray-700 dark:text-slate-300">{t("summary.subtotal")}</span>
+										<span className="font-bold text-gray-900 dark:text-white">{invoice.subtotal} {t("currency")}</span>
+									</div>
+									<div className="flex justify-between text-sm">
+										<span className="font-semibold text-gray-700 dark:text-slate-300">{t("summary.paidAmount")}</span>
+										<span className="font-bold text-green-600">{invoice.paidAmount} {t("currency")}</span>
+									</div>
+									<div className="flex justify-between text-lg font-bold border-t-2 border-primary/30 pt-3">
+										<span className="text-gray-900 dark:text-white">{t("summary.remainingAmount")}</span>
+										<span className="text-primary text-xl">{invoice.remainingAmount} {t("currency")}</span>
+									</div>
+								</div>
+							</div>
+
+							{/* Receipt */}
+							{receipt && (
+								<div>
+									<Label className="text-base font-bold mb-3 block flex items-center gap-2">
+										<FileText className="w-5 h-5 text-primary" />
+										{t("details.receiptAsset")}
+									</Label>
+
+									{isImagePath(receipt) ? (
+										<img src={baseImg + receipt} alt="Receipt" className="w-full max-h-96 object-contain rounded-2xl border-2 border-gray-200 dark:border-slate-700 shadow-lg" />
+									) : isPdfPath(receipt) ? (
+										<a href={baseImg + receipt} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-all">
+											<FileText size={20} />
+											<span>{t("details.openPdf")}</span>
+										</a>
+									) : (
+										<a href={baseImg + receipt} target="_blank" rel="noreferrer" className="text-sm text-primary underline font-semibold">
+											{t("details.openAsset")}
+										</a>
+									)}
+								</div>
+							)}
+
+							{/* Notes */}
+							{invoice.notes && (
+								<div className="p-4 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
+									<Label className="text-xs text-gray-500 dark:text-slate-400 mb-2 block">{t("details.notes")}</Label>
+									<p className="text-sm text-gray-700 dark:text-slate-300 leading-relaxed">{invoice.notes}</p>
+								</div>
+							)}
+						</div>
+					)}
+				</div>
+
+				<DialogFooter className="border-t-2 border-gray-200 dark:border-slate-700 pt-4">
+					<Button onClick={onClose} className="px-8 rounded-xl font-semibold">
+						{t("actions.close")}
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+function EditPaidAmountModal({ isOpen, onClose, invoice, t, onSave }) {
+	const [paidAmount, setPaidAmount] = useState(0);
+	const [loading, setLoading] = useState(false);
+
+	useEffect(() => {
+		if (invoice) setPaidAmount(invoice.paidAmount || 0);
+	}, [invoice]);
+
+	const handleSave = async () => {
+		setLoading(true);
+		try {
+			await onSave(invoice.id, paidAmount);
+			onClose();
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	if (!invoice) return null;
+	const remaining = (invoice.total || 0) - paidAmount;
+
+	return (
+		<Dialog open={isOpen} onOpenChange={onClose}>
+			<DialogContent className="!max-w-md">
+				<DialogHeader className="border-b border-gray-200 dark:border-slate-700 pb-4">
+					<DialogTitle className="flex items-center gap-3">
+						<div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+							<DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
+						</div>
+						{t("editPaidAmount.title")}
+					</DialogTitle>
+					<DialogDescription className="text-sm mt-2">{t("editPaidAmount.description")}</DialogDescription>
+				</DialogHeader>
+
+				<div className="space-y-4 py-4">
+					<div className="p-4 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
+						<Label className="text-xs text-gray-500 dark:text-slate-400 mb-2">{t("editPaidAmount.total")}</Label>
+						<Input value={invoice.total} disabled className="bg-white dark:bg-slate-900 font-bold text-lg" />
+					</div>
+
+					<div>
+						<Label className="mb-2">{t("editPaidAmount.paidAmount")}</Label>
+						<Input
+							type="number"
+							value={paidAmount}
+							onChange={(e) => setPaidAmount(Number(e.target.value))}
+							min="0"
+							max={invoice.total}
+							className="text-lg font-semibold"
+						/>
+					</div>
+
+					<div className="p-4 rounded-xl bg-orange-50 dark:bg-orange-950/30 border-2 border-orange-200 dark:border-orange-800">
+						<Label className="text-xs text-orange-600 dark:text-orange-400 mb-2">{t("editPaidAmount.remaining")}</Label>
+						<div className={cn(
+							"text-2xl font-bold",
+							remaining > 0 ? "text-orange-600 dark:text-orange-400" : "text-green-600 dark:text-green-400"
+						)}>
+							{remaining} {t("currency")}
+						</div>
+					</div>
+				</div>
+
+				<DialogFooter className="border-t border-gray-200 dark:border-slate-700 pt-4">
+					<Button variant="outline" onClick={onClose} className="px-6 rounded-xl">
+						{t("actions.cancel")}
+					</Button>
+					<Button onClick={handleSave} disabled={loading} className="px-8 rounded-xl">
+						{loading ? (
+							<>
+								<Loader2 className="w-4 h-4 ltr:mr-2 rtl:ml-2 animate-spin" />
+								{t("actions.saving")}
+							</>
+						) : (
+							t("actions.save")
+						)}
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
 export default function PurchasesPage() {
 	const t = useTranslations("purchases");
+	const router = useRouter();
 
-	const [active, setActive] = useState("accepted");
 	const [search, setSearch] = useState("");
-
 	const [filtersOpen, setFiltersOpen] = useState(false);
-	const [filters, setFilters] = useState({ supplier: "", paymentMethod: "all", sku: "" });
+	const [filters, setFilters] = useState({
+		supplierId: "none",
+		status: "all",
+		startDate: null,
+		endDate: null,
+		hasReceipt: "all",
+	});
 
-	/** ✅ Switcher */
-	const items = useMemo(
-		() => [
-			{ id: "accepted", label: t("tabs.accepted"), icon: CheckCircle },
-			{ id: "pending", label: t("tabs.pending"), icon: Clock },
-			{ id: "rejected", label: t("tabs.rejected"), icon: XCircle },
-		],
-		[t]
-	);
+	const [loading, setLoading] = useState(false);
+	const [suppliers, setSuppliers] = useState([]);
+	const [detailsModal, setDetailsModal] = useState({ isOpen: false, invoice: null });
+	const [editModal, setEditModal] = useState({ isOpen: false, invoice: null });
+	const [logsModal, setLogsModal] = useState({ isOpen: false, invoiceId: null });
+	const [acceptModal, setAcceptModal] = useState({ isOpen: false, invoiceId: null });
 
-	const stats = useMemo(
+	const [stats, setStats] = useState({ accepted: 0, pending: 0, rejected: 0 });
+	const [pager, setPager] = useState({
+		total_records: 0,
+		current_page: 1,
+		per_page: 10,
+		records: [],
+	});
+
+	const statsCards = useMemo(
 		() => [
 			{
 				title: t("stats.acceptedInvoices"),
-				value: "34",
+				value: String(stats.accepted),
 				icon: CheckCircle,
 				bg: "bg-[#F0FDF4] dark:bg-[#0E1A0C]",
 				iconColor: "text-[#22C55E] dark:text-[#4ADE80]",
@@ -204,7 +1150,7 @@ export default function PurchasesPage() {
 			},
 			{
 				title: t("stats.pendingInvoices"),
-				value: "500",
+				value: String(stats.pending),
 				icon: Clock,
 				bg: "bg-[#FFF9F0] dark:bg-[#1A1208]",
 				iconColor: "text-[#F59E0B] dark:text-[#FBBF24]",
@@ -212,190 +1158,289 @@ export default function PurchasesPage() {
 			},
 			{
 				title: t("stats.rejectedInvoices"),
-				value: "500",
+				value: String(stats.rejected),
 				icon: XCircle,
 				bg: "bg-[#FEF2F2] dark:bg-[#1F0A0A]",
 				iconColor: "text-[#EF4444] dark:text-[#F87171]",
 				iconBorder: "border-[#EF4444] dark:border-[#F87171]",
 			},
 		],
-		[t]
+		[t, stats]
 	);
 
-	const [pager, setPager] = useState(() => ({
-		total_records: 671,
-		current_page: 1,
-		per_page: 6,
-		records: Array.from({ length: 13 }).map((_, i) => ({
-			id: i + 1,
-			sku: "SRF56",
-			productName: "وعاء طهي",
-			productPrice: "20 د.آ",
-			unitPrice: "١٥ د.آ",
-			quantity: "250",
-			supplierName: "نور صالح",
-			totalAmount: "20 د.آ",
-			dueAmount: "20 د.آ",
-			remainingAmount: "20 د.آ",
-			safeName: i % 3 === 0 ? "خزنة رقم 1" : "خزنة رقم 2",
-			paymentMethod: i % 3 === 0 ? "كاش" : i % 3 === 1 ? "بنكي CIB" : "بنكي  QNB",
-		})),
-	}));
-
-	/** ✅ update query params + (مكان API call) */
-	function updateQuery({ page, per_page }) {
-		const url = new URL(window.location.href);
-		url.searchParams.set("page", String(page));
-		url.searchParams.set("limit", String(per_page));
-		window.history.replaceState({}, "", url.toString());
-	}
-
-	function handlePageChange({ page, per_page }) {
-		updateQuery({ page, per_page });
-		setPager((prev) => ({
-			...prev,
-			current_page: page,
-			per_page,
-			records: Array.from({ length: per_page }).map((_, i) => ({
-				id: (page - 1) * per_page + (i + 1),
-				sku: "SRF56",
-				productName: "وعاء طهي",
-				productPrice: "20 د.آ",
-				unitPrice: "١٥ د.آ",
-				quantity: "250",
-				supplierName: "نور صالح",
-				totalAmount: "20 د.آ",
-				dueAmount: "20 د.آ",
-				remainingAmount: "20 د.آ",
-				safeName: i % 3 === 0 ? "خزنة رقم 1" : "خزنة رقم 2",
-				paymentMethod: i % 3 === 0 ? "كاش" : i % 3 === 1 ? "بنكي CIB" : "بنكي  QNB",
-			})),
-		}));
-	}
-
-	const applyFilters = () => {
-		// TODO: replace with API params call
-		console.log("apply filters", filters);
+	const fetchStats = async () => {
+		try {
+			const res = await api.get("/purchases/stats");
+			setStats(res.data);
+		} catch (error) {
+			console.error(error);
+			toast.error(t("messages.statsFailed"));
+		}
 	};
 
-	const handleApprove = (id) => {
-		console.log("Approve invoice:", id);
-		// Add your approval logic here
+	const fetchSuppliers = async () => {
+		try {
+			const res = await api.get("/lookups/suppliers", { params: { limit: 200 } });
+			setSuppliers(res.data || []);
+		} catch (error) {
+			console.error(error);
+		}
 	};
 
-	const handleReject = (id) => {
-		console.log("Reject invoice:", id);
-		// Add your rejection logic here
+	const fetchPurchases = async (page = 1, perPage = 10) => {
+		setLoading(true);
+		try {
+			const params = { page, limit: perPage, search };
+
+			if (filters.supplierId && filters.supplierId !== "none") params.supplierId = filters.supplierId;
+			if (filters.status && filters.status !== "all") params.status = filters.status;
+			if (filters.startDate) params.startDate = filters.startDate;
+			if (filters.endDate) params.endDate = filters.endDate;
+			if (filters.hasReceipt && filters.hasReceipt !== "all") params.hasReceipt = filters.hasReceipt;
+
+			const res = await api.get("/purchases", { params });
+
+			setPager({
+				total_records: res.data.total_records || 0,
+				current_page: res.data.current_page || 1,
+				per_page: res.data.per_page || 10,
+				records: res.data.records || [],
+			});
+		} catch (error) {
+			console.error(error);
+			toast.error(t("messages.fetchFailed"));
+		} finally {
+			setLoading(false);
+		}
 	};
 
-	/** ✅ Table columns */
+	useEffect(() => {
+		fetchStats();
+		fetchSuppliers();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	useEffect(() => {
+		fetchPurchases(1, pager.per_page);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [search]);
+
+	const handlePageChange = ({ page, per_page }) => fetchPurchases(page, per_page);
+
+	const handleStatusChange = async (id, newStatus) => {
+		try {
+			await api.patch(`/purchases/${id}/status`, { status: newStatus });
+			toast.success(t("messages.statusUpdated"));
+			fetchPurchases(pager.current_page, pager.per_page);
+			fetchStats();
+		} catch (error) {
+			console.error(error);
+			toast.error(t("messages.statusFailed"));
+		}
+	};
+
+	const handleUpdatePaidAmount = async (id, paidAmount) => {
+		try {
+			await api.patch(`/purchases/${id}/paid-amount`, { paidAmount });
+			toast.success(t("messages.paidAmountUpdated"));
+			fetchPurchases(pager.current_page, pager.per_page);
+		} catch (error) {
+			console.error(error);
+			toast.error(t("messages.paidAmountFailed"));
+		}
+	};
+
+	const applyFilters = () => fetchPurchases(1, pager.per_page);
+
+	const handleViewDetails = async (row) => {
+		try {
+			const res = await api.get(`/purchases/${row.id}`);
+			setDetailsModal({ isOpen: true, invoice: res.data });
+		} catch (error) {
+			console.error(error);
+			toast.error(t("messages.fetchDetailsFailed"));
+		}
+	};
+
+	const handleAcceptClick = (row) => {
+		setAcceptModal({ isOpen: true, invoiceId: row.id });
+	};
+
 	const columns = useMemo(() => {
 		return [
 			{
-				key: "sku",
-				header: t("table.sku"),
+				key: "receiptNumber",
+				header: t("table.receiptNumber"),
 				cell: (row) => (
-					<div className="inline-flex items-center gap-2 text-gray-500 dark:text-slate-300">
-						<span className="text-gray-600 dark:text-slate-200">{row.sku}</span>
-					</div>
+					<span className="text-gray-600 dark:text-slate-200 font-medium">{row.receiptNumber}</span>
 				),
 			},
-			{ 
-				key: "productName", 
-				header: t("table.productName"), 
-				className: "text-gray-700 dark:text-slate-200 font-semibold" 
+			{
+				key: "supplier",
+				header: t("table.supplier"),
+				cell: (row) => (
+					<span className=" font-[inter] text-gray-600 dark:text-slate-200">
+						{row?.supplier?.name ? row?.supplier?.name : t("table.noSupplier")}
+					</span>
+				),
 			},
-			{ 
-				key: "productPrice", 
-				header: t("table.productPrice"), 
-				className: "text-gray-600 dark:text-slate-200" 
+			{
+				key: "created_at",
+				header: t("table.date"),
+				cell: (row) => (
+					<span className="text-gray-600 dark:text-slate-200">
+						{row.created_at ? new Date(row.created_at).toLocaleDateString() : "-"}
+					</span>
+				),
 			},
-			{ 
-				key: "unitPrice", 
-				header: t("table.unitPrice"), 
-				className: "text-gray-600 dark:text-slate-200" 
+			{
+				key: "subtotal",
+				header: t("table.subtotal"),
+				cell: (row) => (
+					<span className="text-gray-600 dark:text-slate-200">
+						{row.subtotal || 0} {t("currency")}
+					</span>
+				),
 			},
-			{ 
-				key: "quantity", 
-				header: t("table.quantity"), 
-				className: "text-gray-600 dark:text-slate-200" 
+			{
+				key: "paidAmount",
+				header: t("table.paidAmount"),
+				cell: (row) => (
+					<span className="text-green-600 dark:text-green-400 font-medium">
+						{row.paidAmount || 0} {t("currency")}
+					</span>
+				),
 			},
-			{ 
-				key: "supplierName", 
-				header: t("table.supplierName"), 
-				className: "text-gray-700 dark:text-slate-200 font-semibold" 
+			{
+				key: "remainingAmount",
+				header: t("table.remainingAmount"),
+				cell: (row) => (
+					<span className={cn(
+						"font-medium",
+						row.remainingAmount > 0 ? "text-orange-600 dark:text-orange-400" : "text-gray-500 dark:text-slate-400"
+					)}>
+						{row.remainingAmount || 0} {t("currency")}
+					</span>
+				),
 			},
-			{ 
-				key: "totalAmount", 
-				header: t("table.totalAmount"), 
-				className: "text-gray-600 dark:text-slate-200" 
+			{
+				key: "receiptAsset",
+				header: t("table.receipt"),
+				className: "w-[90px]",
+				cell: (row) => {
+					const asset = baseImg + row.receiptAsset;
+					if (!row.receiptAsset) return <span className="text-xs text-gray-400 text-center block">{t("table.noReceipt")}</span>;
+
+					if (isImagePath(asset)) {
+						return (
+							<button type="button" onClick={() => handleViewDetails(row)} className="inline-flex items-center gap-2">
+								<div className="w-10 h-10 rounded-xl overflow-hidden border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800">
+									<img src={asset} alt="receipt" className="w-full h-full object-cover" />
+								</div>
+							</button>
+						);
+					}
+
+					if (isPdfPath(asset)) {
+						return (
+							<a href={asset} target="_blank" rel="noreferrer" className="inline-flex justify-center w-full items-center gap-2 text-primary">
+								<FileText size={18} />
+							</a>
+						);
+					}
+
+					return <span className="text-center block">-</span>;
+				},
 			},
-			{ 
-				key: "dueAmount", 
-				header: t("table.dueAmount"), 
-				className: "text-gray-600 dark:text-slate-200" 
-			},
-			{ 
-				key: "remainingAmount", 
-				header: t("table.remainingAmount"), 
-				className: "text-gray-600 dark:text-slate-200" 
-			},
-			{ 
-				key: "safeName", 
-				header: t("table.safeName"), 
-				className: "text-gray-500 dark:text-slate-300" 
-			},
-			{ 
-				key: "paymentMethod", 
-				header: t("table.paymentMethod"), 
-				className: "text-gray-500 dark:text-slate-300" 
+			{
+				key: "status",
+				header: t("table.status"),
+				cell: (row) => {
+					const statusConfig = {
+						accepted: {
+							label: t("status.accepted"),
+							className: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700",
+						},
+						pending: {
+							label: t("status.pending"),
+							className: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-300 dark:border-yellow-700",
+						},
+						rejected: {
+							label: t("status.rejected"),
+							className: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-300 dark:border-red-700",
+						},
+					};
+					const config = statusConfig[row.status] || statusConfig.pending;
+
+					return (
+						<span className={cn("inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border", config.className)}>
+							{config.label}
+						</span>
+					);
+				},
 			},
 			{
 				key: "actions",
 				header: t("table.actions"),
-				className: "w-[120px]",
+				className: "w-[110px]",
 				cell: (row) => (
-					<TooltipProvider>
-						<div className="flex items-center gap-2">
-							{/* Approve */}
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.1 }}
-										whileTap={{ scale: 0.95 }}
-										className={cn(
-											"group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
-											"border-green-200 bg-green-50 text-green-600 hover:bg-green-600 hover:border-green-600 hover:text-white hover:shadow-xl hover:shadow-green-500/40",
-											"dark:border-green-900/50 dark:bg-green-950/30 dark:text-green-300 dark:hover:bg-green-600 dark:hover:border-green-600 dark:hover:text-white dark:hover:shadow-green-500/30"
-										)}
-										onClick={() => handleApprove(row.id)}
-									>
-										<Check size={16} className="transition-transform group-hover:scale-110" />
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>{t("actions.approve")}</TooltipContent>
-							</Tooltip>
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button variant="ghost" className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg">
+								<MoreVertical className="h-4 w-4 text-gray-600 dark:text-slate-300" />
+							</Button>
+						</DropdownMenuTrigger>
 
-							{/* Reject */}
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.1 }}
-										whileTap={{ scale: 0.95 }}
-										className={cn(
-											"group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
-											"border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:border-red-600 hover:text-white hover:shadow-xl hover:shadow-red-500/40",
-											"dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300 dark:hover:bg-red-600 dark:hover:border-red-600 dark:hover:text-white dark:hover:shadow-red-500/30"
-										)}
-										onClick={() => handleReject(row.id)}
-									>
-										<X size={16} className="transition-transform group-hover:scale-110 group-hover:rotate-90" />
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>{t("actions.reject")}</TooltipContent>
-							</Tooltip>
-						</div>
-					</TooltipProvider>
+						<DropdownMenuContent align="start" className="w-56">
+							<DropdownMenuItem onClick={() => handleViewDetails(row)} className="flex items-center gap-2 cursor-pointer">
+								<Eye size={16} className="text-blue-600" />
+								<span>{t("actions.view")}</span>
+							</DropdownMenuItem>
+
+							<DropdownMenuItem onClick={() => setLogsModal({ isOpen: true, invoiceId: row.id })} className="flex items-center gap-2 cursor-pointer">
+								<ScrollText size={16} className="text-purple-600" />
+								<span>{t("actions.logs")}</span>
+							</DropdownMenuItem>
+
+							<DropdownMenuItem onClick={() => setEditModal({ isOpen: true, invoice: row })} className="flex items-center gap-2 cursor-pointer">
+								<Edit size={16} className="text-gray-600" />
+								<span>{t("actions.editPaidAmount")}</span>
+							</DropdownMenuItem>
+
+							<DropdownMenuSeparator />
+
+							<div className="px-2 py-1.5 text-xs font-semibold text-gray-500 dark:text-slate-400">
+								{t("actions.changeStatus")}
+							</div>
+
+							<DropdownMenuItem
+								onClick={() => handleAcceptClick(row)}
+								className="flex items-center gap-2 cursor-pointer"
+								disabled={row.status === "accepted"}
+							>
+								<Check size={16} className="text-green-600" />
+								<span>{t("actions.accept")}</span>
+							</DropdownMenuItem>
+
+							<DropdownMenuItem
+								onClick={() => handleStatusChange(row.id, "pending")}
+								className="flex items-center gap-2 cursor-pointer"
+								disabled={row.status === "pending"}
+							>
+								<Pause size={16} className="text-yellow-600" />
+								<span>{t("actions.suspend")}</span>
+							</DropdownMenuItem>
+
+							<DropdownMenuItem
+								onClick={() => handleStatusChange(row.id, "rejected")}
+								className="flex items-center gap-2 cursor-pointer"
+								disabled={row.status === "rejected"}
+							>
+								<X size={16} className="text-red-600" />
+								<span>{t("actions.reject")}</span>
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				),
 			},
 		];
@@ -403,82 +1448,35 @@ export default function PurchasesPage() {
 
 	return (
 		<div className="min-h-screen p-6">
-			<div className="bg-card !pb-0 flex flex-col gap-2 mb-4">
+			<div className="bg-card !pb-4 flex flex-col gap-2 mb-4">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-2 text-lg font-semibold">
 						<span className="text-gray-400">{t("breadcrumb.home")}</span>
 						<ChevronLeft className="text-gray-400" size={18} />
-						<span className="text-[rgb(var(--primary))]">{t("breadcrumb.purchases")}</span>
-						<span className="ml-3 inline-flex w-3.5 h-3.5 rounded-full bg-[rgb(var(--primary))]" />
+						<span className="text-primary">{t("breadcrumb.purchases")}</span>
+						<span className="ml-3 inline-flex w-3.5 h-3.5 rounded-full bg-primary" />
 					</div>
 
 					<div className="flex items-center gap-4">
-						<Button_
-							href="/purchases/new"
-							size="sm"
-							label={t("actions.createInvoice")}
-							tone="purple"
-							variant="solid"
-							icon={
-								<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<path
-										fillRule="evenodd"
-										clipRule="evenodd"
-										d="M6.12078 3.34752C8.69901 3.06206 11.3009 3.06206 13.8791 3.34752C15.3066 3.50752 16.4583 4.63169 16.6258 6.06419C16.9313 8.67918 16.9313 11.3209 16.6258 13.9359C16.4583 15.3684 15.3066 16.4925 13.8791 16.6525C11.3009 16.938 8.69901 16.938 6.12078 16.6525C4.69328 16.4925 3.54161 15.3684 3.37411 13.9359C3.06866 11.3211 3.06866 8.67974 3.37411 6.06502C3.45883 5.36908 3.77609 4.72214 4.27447 4.22906C4.77285 3.73597 5.42314 3.42564 6.11994 3.34835M9.99994 5.83919C10.1657 5.83919 10.3247 5.90503 10.4419 6.02224C10.5591 6.13945 10.6249 6.29842 10.6249 6.46419V9.37502H13.5358C13.7015 9.37502 13.8605 9.44087 13.9777 9.55808C14.0949 9.67529 14.1608 9.83426 14.1608 10C14.1608 10.1658 14.0949 10.3247 13.9777 10.442C13.8605 10.5592 13.7015 10.625 13.5358 10.625H10.6249V13.5359C10.6249 13.7016 10.5591 13.8606 10.4419 13.9778C10.3247 14.095 10.1657 14.1609 9.99994 14.1609C9.83418 14.1609 9.67521 14.095 9.558 13.9778C9.44079 13.8606 9.37494 13.7016 9.37494 13.5359V10.625H6.46411C6.29835 10.625 6.13938 10.5592 6.02217 10.442C5.90496 10.3247 5.83911 10.1658 5.83911 10C5.83911 9.83426 5.90496 9.67529 6.02217 9.55808C6.13938 9.44087 6.29835 9.37502 6.46411 9.37502H9.37494V6.46419C9.37494 6.29842 9.44079 6.13945 9.558 6.02224C9.67521 5.90503 9.83418 5.83919 9.99994 5.83919Z"
-										fill="white"
-									/>
-								</svg>
-							}
-						/>
-
-						<Button_
-							size="sm"
-							label={t("actions.howToUse")}
-							tone="white"
-							variant="solid"
-							icon={
-								<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<path
-										d="M18.3848 5.7832C18.2851 5.41218 18.0898 5.07384 17.8184 4.80202C17.5469 4.53021 17.2088 4.33446 16.8379 4.23438C15.4727 3.86719 10 3.86719 10 3.86719C10 3.86719 4.52734 3.86719 3.16211 4.23242C2.79106 4.33219 2.45278 4.52782 2.18126 4.79969C1.90974 5.07155 1.71453 5.41007 1.61523 5.78125C1.25 7.14844 1.25 10 1.25 10C1.25 10 1.25 12.8516 1.61523 14.2168C1.81641 14.9707 2.41016 15.5645 3.16211 15.7656C4.52734 16.1328 10 16.1328 10 16.1328C10 16.1328 15.4727 16.1328 16.8379 15.7656C17.5918 15.5645 18.1836 14.9707 18.3848 14.2168C18.75 12.8516 18.75 10 18.75 10C18.75 10 18.75 7.14844 18.3848 5.7832ZM8.26172 12.6172V7.38281L12.793 9.98047L8.26172 12.6172Z"
-										fill="#A7A7A7"
-									/>
-								</svg>
-							}
-						/>
+						<Button_ href="/purchases/new" size="sm" label={t("actions.createInvoice")} tone="purple" variant="solid" />
+						<Button_ size="sm" label={t("actions.howToUse")} tone="white" variant="solid" />
 					</div>
 				</div>
 
-				<SwitcherTabs items={items} activeId={active} onChange={setActive} className="w-full" />
-
-				<div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-6">
-					{stats.map((stat, index) => (
-						<motion.div
-							key={stat.title}
-							initial={{ opacity: 0, y: 18 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: index * 0.06 }}
-						>
-							<InfoCard
-								title={stat.title}
-								value={stat.value}
-								icon={stat.icon}
-								bg={stat.bg}
-								iconColor={stat.iconColor}
-								iconBorder={stat.iconBorder}
-							/>
+				<div className="mt-6 grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4">
+					{statsCards.map((stat, index) => (
+						<motion.div key={stat.title} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.06 }}>
+							<InfoCard title={stat.title} value={stat.value} icon={stat.icon} bg={stat.bg} iconColor={stat.iconColor} iconBorder={stat.iconBorder} />
 						</motion.div>
 					))}
 				</div>
 			</div>
 
-			{/* Toolbar + Filters + Table */}
 			<div className="bg-card rounded-sm">
 				<PurchasesTableToolbar
 					t={t}
 					searchValue={search}
 					onSearchChange={setSearch}
-					onExport={() => console.log("export")}
-					onRefresh={() => console.log("refresh")}
 					isFiltersOpen={filtersOpen}
 					onToggleFilters={() => setFiltersOpen((v) => !v)}
 				/>
@@ -490,6 +1488,7 @@ export default function PurchasesPage() {
 							value={filters}
 							onChange={setFilters}
 							onApply={applyFilters}
+							suppliers={suppliers}
 						/>
 					)}
 				</AnimatePresence>
@@ -503,11 +1502,46 @@ export default function PurchasesPage() {
 							current_page: pager.current_page,
 							per_page: pager.per_page,
 						}}
-						onPageChange={({ page, per_page }) => handlePageChange({ page, per_page })}
+						onPageChange={({ page, per_page }) => fetchPurchases(page, per_page)}
 						emptyState={t("empty")}
+						loading={loading}
 					/>
 				</div>
 			</div>
+
+			<DetailsModal
+				isOpen={detailsModal.isOpen}
+				onClose={() => setDetailsModal({ isOpen: false, invoice: null })}
+				invoice={detailsModal.invoice}
+				t={t}
+			/>
+
+			<LogsModal
+				isOpen={logsModal.isOpen}
+				onClose={() => setLogsModal({ isOpen: false, invoiceId: null })}
+				invoiceId={logsModal.invoiceId}
+				t={t}
+			/>
+
+			<EditPaidAmountModal
+				isOpen={editModal.isOpen}
+				onClose={() => setEditModal({ isOpen: false, invoice: null })}
+				invoice={editModal.invoice}
+				t={t}
+				onSave={handleUpdatePaidAmount}
+			/>
+
+			<AcceptPreviewModal
+				isOpen={acceptModal.isOpen}
+				onClose={() => setAcceptModal({ isOpen: false, invoiceId: null })}
+				invoiceId={acceptModal.invoiceId}
+				t={t}
+				onApply={async () => {
+					if (!acceptModal.invoiceId) return;
+					await handleStatusChange(acceptModal.invoiceId, "accepted");
+					setAcceptModal({ isOpen: false, invoiceId: null });
+				}}
+			/>
 		</div>
 	);
 }

@@ -1,18 +1,32 @@
 {
+  "profile": {
+    "guest": "زائر",
+    "noEmail": "لا يوجد بريد"
+  },
+
   "sidebar": {
     "dashboard": "لوحة التحكم",
-    "products": "المنتجات",
+    "users": "المستخدمين",
+    "roles": "الصلاحيات",
+    "plans": "الخطط",
     "orders": "الطلبات",
+    "products": "المنتجات",
+    "warehouse": "المستودع",
+    "suppliers": "الموردين",
+    "categories": "التصنيفات",
+    "purchases": "المشتريات",
+    "purchases-return": "مرتجعات المشتريات",
+    "sales": "فواتير المبيعات",
+    "shipping-companies": "شركات الشحن",
     "employees": "الموظفين",
     "accounts": "الحسابات",
     "reports": "التقارير",
-    "purchases": "المشتريات",
+    "store-integration": "ربط المتاجر",
     "settings": "الإعدادات",
     "logout": "تسجيل الخروج",
-    "suppliers": "الموردين",
-    "shipping-companies": "شركات الشحن",
-    "store-integration": "دمج المتاجر",
-    "purchases-return": "فواتير الاسترجاع"
+    "subItems": "عنصر فرعي",
+    "newProduct": "إضافة منتج",
+    "newBundle": "إضافة باقة"
   },
   "header": {
     "brand": "طلباتي تك",
@@ -21,6 +35,12 @@
     "notifications": "الإشعارات",
     "notificationsTitle": "الإشعارات",
     "notificationsSubtitle": "آخر التحديثات على النظام",
+
+    "roles": {
+      "admin": "أدمن",
+      "super_admin": "سوبر أدمن",
+      "user": "مستخدم"
+    },
     "lang": {
       "ar": "العربية",
       "en": "English"
@@ -45,136 +65,9 @@
     "profile": {
       "initial": "ص",
       "greeting": "صباح الخير يسرا",
-      "role": "مدير النظام"
-    }
-  },
-  "products": {
-    "breadcrumb": {
-      "home": "الرئيسية",
-      "products": "المنتجات"
-    },
-    "tabs": {
-      "mine": "منتجات خاص بي",
-      "ship": "منتجات مطلوبة للنقل",
-      "idle": "منتجات راكدة"
-    },
-    "actions": {
-      "addProduct": "إضافة منتج",
-      "howToUse": "شرح الاستخدام",
-      "delete": "حذف",
-      "edit": "تعديل",
-      "add": "إضافة",
-      "view": "عرض"
-    },
-    "toolbar": {
-      "searchPlaceholder": "ابحث عن ما تريد...",
-      "filter": "فلتر",
-      "refresh": "إعادة بحث",
-      "export": "تصدير"
-    },
-    "filters": {
-      "storageShelf": "رف التخزين",
-      "storagePlaceholder": "مثال: B612",
-      "category": "التصنيف",
-      "categoryPlaceholder": "اختر التصنيف",
-      "categoryAll": "الكل",
-      "categoryHome": "أدوات منزلية",
-      "categoryMedical": "طبي",
-      "sku": "كود SKU",
-      "skuPlaceholder": "مثال: SRF56",
-      "apply": "تطبيق"
-    },
-    "table": {
-      "sku": "كود SKU",
-      "name": "اسم المنتج",
-      "wholesalePrice": "سعر الجملة",
-      "category": "التصنيف",
-      "createdAt": "تاريخ الإنشاء",
-      "storage": "رف التخزين",
-      "options": "خيارات"
-    },
-    "stats": {
-      "withShippingCompanies": "لدي شركات الشحن",
-      "returnedPieces": "القطع المرتجعة",
-      "soldPieces": "القطع المباعة",
-      "remainingPieces": "القطع المتبقية",
-      "totalProducts": "إجمالي المنتجات"
-    },
-    "empty": "لا توجد منتجات",
-    "mock": {
-      "wholesalePrice": "300 ر.س",
-      "category": "أدوات منزلية",
-      "name": "وعاء طبي"
-    }
-  },
-  "addProduct": {
-    "breadcrumb": {
-      "home": "الرئيسية",
-      "products": "المنتجات",
-      "addProduct": "إضافة منتج"
-    },
-    "actions": {
-      "howToUse": "شرح الاستخدام",
-      "save": "حفظ"
-    },
-    "fields": {
-      "productName": "اسم المنتج",
-      "wholesalePrice": "سعر الجملة",
-      "warehouse": "اختيار المستودع",
-      "storageShelf": "رف التخزين",
-      "sku": "كود SKU",
-      "store": "المتجر الخاص بالمنتج",
-      "description": "وصف المنتج"
-    },
-    "placeholders": {
-      "productName": "KUG5a",
-      "wholesalePrice": "B612",
-      "warehouse": "B612",
-      "storageShelf": "KUG5a",
-      "sku": "KUG5a",
-      "store": "B612",
-      "description": "KUG54",
-      "variantCategory": "الوان"
-    },
-    "options": {
-      "branch1": "فرع العبور",
-      "branch2": "فرع العبور"
-    },
-    "variants": {
-      "title": "المتغيرات",
-      "add": "إضافة متغير جديد",
-      "variant": "متغير",
-      "delete": "حذف",
-      "categoryValue": "قيمة التصنيف",
-      "variantValue": "قيمة المتغير",
-      "wholesalePrice": "السعر (سعر الجملة)",
-      "retailPrice": "السعر (سعر التجزئة)",
-      "quantity": "الكمية",
-      "defaultPrice": "السعر الافتراضي"
-    },
-    "upsell": {
-      "callCenterDesc": "وصف الكول سنتر للمنتج",
-      "minPrice": "أقل سعر للمنتج",
-      "execution": "Up selling تنفيذ",
-      "products": "منتجات upselling",
-      "yes": "نعم",
-      "no": "لا"
-    },
-    "uploads": {
-      "mainImage": "صوره المنتج الاساسيه",
-      "otherImages": "صور اخري",
-      "dragHere": "اسحب الملف/الملفات هنا لبدء الرفع",
-      "or": "أو",
-      "attach": "إرفاق الملفات",
-      "remove": "حذف الملف"
-    },
-    "mock": {
-      "upsell1": "شنطة ضهر",
-      "upsell2": "ساعة",
-      "variantCategoryValue": "الوان",
-      "tagRed": "أحمر",
-      "tagBlue": "أزرق",
-      "tagOrange": "برتقالي"
+      "role": "مدير النظام",
+      "guest": "زائر",
+      "noEmail": "لا يوجد بريد"
     }
   },
   "employees": {
@@ -182,53 +75,57 @@
       "home": "الرئيسية",
       "employees": "الموظفين"
     },
-    "tabs": {
-      "all": "جميع الموظفين",
-      "callCenter": "كول سنتر",
-      "warehouse": "موظف مخزن",
-      "warehouseStaff": "موظفين المخازن",
-      "dataEntry": "مدخل البيانات",
-      "customerService": "خدمة العملاء"
-    },
-    "stats": {
-      "totalEmployees": "إجمالي الموظفين",
-      "dataEntry": "مدخل البيانات",
-      "customerService": "خدمة العملاء",
-      "warehouseStaff": "موظفين المخازن"
-    },
     "toolbar": {
-      "searchPlaceholder": "ابحث عن ما تريد.....",
-      "filter": "تصفية",
-      "refresh": "تحديث",
+      "searchPlaceholder": "ابحث بالاسم أو البريد أو الهاتف...",
       "export": "تصدير"
     },
-    "filters": {
-      "role": "الوظيفة",
-      "rolePlaceholder": "اختر الوظيفة",
-      "roleAll": "جميع الوظائف",
-      "roleDataEntry": "مدخل بيانات",
-      "roleWarehouse": "موظف مخزن",
-      "roleCustomerService": "خدمة عملاء",
-      "name": "اسم الموظف",
-      "namePlaceholder": "ابحث بالاسم",
-      "apply": "تطبيق"
+    "tabs": {
+      "all": "الكل",
+      "call_center": "الكول سنتر",
+      "warehouse": "المخزن",
+      "warehouse_staff": "عمال المخزن",
+      "data_entry": "إدخال بيانات",
+      "customer_service": "خدمة العملاء",
+      "call center": "خدمة العملاء"
+    },
+    "stats": {
+      "totalEmployees": "إجمالي الموظفين"
     },
     "table": {
-      "name": "اسم الموظف",
-      "joinDate": "تاريخ الانضمام",
-      "email": "البريد الالكتروني",
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
       "phone": "رقم الهاتف",
-      "role": "الوظيفة",
-      "options": "خيارات"
+      "role": "النوع",
+      "status": "الحالة",
+      "options": "الإجراءات"
     },
     "actions": {
       "addEmployee": "إضافة موظف",
-      "howToUse": "شرح الاستخدام",
-      "delete": "حذف",
       "edit": "تعديل",
-      "view": "عرض"
+      "view": "عرض",
+      "delete": "حذف",
+      "cancel": "إلغاء",
+      "save": "حفظ",
+      "activate": "تفعيل",
+      "deactivate": "إيقاف"
     },
-    "empty": "لا يوجد موظفين"
+    "view": {
+      "title": "تفاصيل الموظف"
+    },
+    "edit": {
+      "title": "تعديل بيانات الموظف"
+    },
+    "delete": {
+      "title": "حذف موظف",
+      "desc": "هل أنت متأكد؟ سيتم حذف الموظف نهائيًا ولا يمكن التراجع عن هذا الإجراء."
+    },
+    "messages": {
+      "updated": "تم التحديث بنجاح",
+      "deleted": "تم الحذف بنجاح",
+      "statusUpdated": "تم تحديث الحالة بنجاح"
+    },
+    "loading": "جارٍ التحميل...",
+    "empty": "لا توجد بيانات"
   },
   "addEmployee": {
     "breadcrumb": {
@@ -236,352 +133,94 @@
       "employees": "الموظفين",
       "addEmployee": "إضافة موظف"
     },
-    "actions": {
-      "howToUse": "شرح الاستخدام",
-      "save": "حفظ"
-    },
+
     "sections": {
       "employeeType": "نوع الموظف",
-      "employeeInfo": "معلومات الموظف",
+      "employeeInfo": "بيانات الموظف",
       "employeeImage": "صورة الموظف"
     },
+
     "roles": {
       "dataEntry": "مدخل بيانات",
-      "warehouse": "موظف مخزن",
-      "customerService": "خدمة عملاء"
+      "warehouse": "المستودع",
+      "customerService": "خدمة العملاء",
+      "custom": "مخصص"
     },
+
     "fields": {
-      "name": "اسم الموظف",
-      "email": "البريد الالكتروني",
-      "phone": "رقم الهاتف",
-      "joinDate": "تاريخ الانضمام"
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "phone": "رقم الجوال",
+      "roleSelect": "الدور / الصلاحية",
+      "password": "كلمة المرور"
     },
+
     "placeholders": {
-      "name": "يسرا علام",
-      "email": "yosra@gmail.com",
-      "phone": "01002888976"
+      "name": "اكتب الاسم",
+      "email": "example@email.com",
+      "phone": "05xxxxxxxx",
+      "selectRole": "اختر الدور",
+      "password": "اكتب كلمة المرور",
+      "customType": "اكتب نوع الموظف",
+      "selectCountry": "اختر الدولة"
     },
+
+    "actions": {
+      "save": "حفظ",
+      "saving": "جارٍ الحفظ...",
+      "close": "إغلاق",
+      "openWhatsapp": "فتح واتساب"
+    },
+
+    "toasts": {
+      "createSuccess": "تم إنشاء الموظف بنجاح",
+      "createFailed": "فشل إنشاء الموظف",
+      "limitReached": "تم الوصول للحد الأقصى من المستخدمين"
+    },
+
+    "validation": {
+      "nameRequired": "الاسم مطلوب",
+      "emailRequired": "البريد الإلكتروني مطلوب",
+      "emailInvalid": "البريد الإلكتروني غير صحيح",
+      "roleRequired": "الدور مطلوب",
+      "passwordRequired": "كلمة المرور مطلوبة",
+      "passwordMin": "كلمة المرور يجب ألا تقل عن 6 أحرف",
+      "employeeTypeRequired": "يرجى اختيار نوع الموظف",
+      "customTypeRequired": "يرجى إدخال نوع الموظف",
+      "phoneRequired": "رقم الجوال مطلوب",
+      "phoneInvalid": "يرجى إدخال رقم جوال صحيح حسب الدولة المختارة"
+    },
+
     "upload": {
       "dragHere": "اسحب الصورة هنا",
-      "clickToChoose": "أو انقر للاختيار من جهازك",
-      "chooseImage": "اختيار صورة",
+      "clickToChoose": "أو اضغط لاختيار صورة",
+      "chooseImage": "اختر صورة",
       "changeImage": "تغيير الصورة",
-      "remove": "إزالة",
+      "remove": "حذف الصورة",
       "imageAlt": "صورة الموظف"
     },
+
     "note": {
       "title": "ملاحظة:",
-      "text": "يُفضل أن تكون الصورة بأبعاد 400×400 بكسل على الأقل"
+      "text": "يفضل رفع صورة واضحة للموظف."
     },
+
     "common": {
       "or": "أو"
+    },
+
+    "credentials": {
+      "password": "كلمة المرور"
+    },
+
+    "whatsapp": {
+      "title": "إرسال عبر واتساب",
+      "subtitle": "اختر الدولة وأدخل رقم الواتساب",
+      "phone": "رقم الواتساب",
+      "includePassword": "إدراج كلمة المرور داخل الرسالة",
+      "preview": "معاينة الرسالة",
+      "note": "تنبيه: كلمة المرور تظهر فقط عند الإنشاء/إعادة التعيين. إذا أغلقت هذه الشاشة لن تستطيع قراءتها مرة أخرى."
     }
-  },
-  "purchases": {
-    "breadcrumb": {
-      "home": "الرئيسية",
-      "purchases": "المشتريات"
-    },
-    "tabs": {
-      "accepted": "الفواتير المقبولة",
-      "pending": "الفواتير المعلّقة",
-      "rejected": "الفواتير المرفوضة"
-    },
-    "stats": {
-      "acceptedInvoices": "الفواتير المقبولة",
-      "pendingInvoices": "الفواتير المعلّقة",
-      "rejectedInvoices": "الفواتير المرفوضة"
-    },
-    "toolbar": {
-      "searchPlaceholder": "ابحث عن ما تريد.....",
-      "filter": "تصفية",
-      "refresh": "تحديث",
-      "export": "تصدير"
-    },
-    "filters": {
-      "supplier": "اسم المورد",
-      "supplierPlaceholder": "ابحث بالمورد",
-      "paymentMethod": "طريقة الدفع",
-      "paymentMethodPlaceholder": "اختر طريقة الدفع",
-      "paymentMethodAll": "جميع الطرق",
-      "paymentMethodCash": "كاش",
-      "paymentMethodBank": "بنكي",
-      "sku": "كود SKU",
-      "skuPlaceholder": "ابحث بالكود",
-      "apply": "تطبيق"
-    },
-    "table": {
-      "sku": "كود SKU",
-      "productName": "اسم المنتج",
-      "productPrice": "سعر المنتج",
-      "unitPrice": "سعر شراء القطعة",
-      "quantity": "عدد القطع",
-      "supplierName": "اسم المورد",
-      "totalAmount": "المبلغ الكلي",
-      "dueAmount": "المبلغ المستحق",
-      "remainingAmount": "المبلغ المتبقي",
-      "safeName": "اسم الخزنة",
-      "paymentMethod": "طريقة الدفع",
-      "actions": "قبول أو رفض الفاتورة"
-    },
-    "actions": {
-      "createInvoice": "إنشاء فاتورة مشتريات",
-      "howToUse": "شرح الاستخدام",
-      "approve": "قبول",
-      "reject": "رفض"
-    },
-    "empty": "لا توجد فواتير"
-  },
-  "purchaseInvoice": {
-    "breadcrumb": {
-      "home": "الرئيسية",
-      "purchases": "المشتريات",
-      "createPurchaseInvoice": "إنشاء فاتورة مشتريات"
-    },
-    "actions": {
-      "howToUse": "شرح الاستخدام",
-      "save": "حفظ",
-      "delete": "حذف",
-      "remove": "إزالة"
-    },
-    "sections": {
-      "supplierInfo": "معلومات المورد",
-      "receiptImage": "صورة إيصال الشراء",
-      "addProducts": "إضافة المنتجات",
-      "productsTable": "جداول المنتجات",
-      "notes": "ملاحظات",
-      "invoiceSummary": "ملخص الفاتورة"
-    },
-    "fields": {
-      "supplierName": "اسم المورد",
-      "supplierCode": "كود المورد",
-      "receiptNumber": "رقم إيصال الشراء",
-      "safe": "حدد الخزنة",
-      "paymentMethod": "طريقة الدفع"
-    },
-    "placeholders": {
-      "supplierName": "يسرا علام",
-      "supplierCode": "B612",
-      "receiptNumber": "0284jlkljk",
-      "safe": "خزنة كاش",
-      "paymentMethod": "كاش",
-      "scanOrEnter": "مسح الباركود أو إدخال كود المنتج",
-      "notes": "لا توجد ملاحظات"
-    },
-    "options": {
-      "safe": {
-        "cash": "خزنة كاش",
-        "safe1": "خزنة رقم 1",
-        "safe2": "خزنة رقم 2"
-      },
-      "payment": {
-        "cash": "كاش",
-        "bankCIB": "بنكي CIB",
-        "bankQNB": "بنكي QNB"
-      }
-    },
-    "table": {
-      "sku": "كود SKU",
-      "name": "اسم المنتج",
-      "unitCost": "تكلفة القطعة",
-      "quantity": "عدد القطع",
-      "productCost": "تكلفة المنتج",
-      "taxInclusive": "شامل الضريبة",
-      "taxRate": "قيمة الضريبة",
-      "totalAmount": "المبلغ الكلي",
-      "actions": "خيارات"
-    },
-    "upload": {
-      "dragHere": "اسحب الملف/الملفات هنا لبدء الرفع",
-      "attachFiles": "إرفاق الملفات",
-      "receiptAlt": "إيصال الشراء"
-    },
-    "summary": {
-      "productCount": "عدد المنتجات",
-      "subtotal": "إجمالي قبل الضريبة",
-      "taxRate": "إجمالي الضريبة",
-      "taxTotal": "المبلغ المدفوع",
-      "paidAmount": "المبلغ المستحق",
-      "dueAmount": "المبلغ المتبقي",
-      "remainingAmount": "المبلغ الكلي"
-    },
-    "common": {
-      "or": "أو"
-    }
-  },
-  "returns": {
-    "breadcrumb": {
-      "home": "الرئيسية",
-      "returns": "مرتجعات المشتريات"
-    },
-    "stats": {
-      "returnInvoicesCount": "عدد فواتير الاسترجاع",
-      "totalReturnValue": "إجمالي قيمة الاسترجاعات"
-    },
-    "toolbar": {
-      "searchPlaceholder": "ابحث عن ما تريد.....",
-      "filter": "فلتر",
-      "refresh": "إعادة",
-      "export": "تصدير"
-    },
-    "filters": {
-      "status": "حالة الفاتورة",
-      "statusPlaceholder": "اختر الحالة",
-      "statusAll": "جميع الحالات",
-      "statusCompleted": "مكتملة",
-      "statusPending": "معلّقة",
-      "statusCancelled": "ملغاة",
-      "returnType": "نوع الاسترجاع",
-      "returnTypePlaceholder": "اختر نوع الاسترجاع",
-      "returnTypeAll": "جميع الأنواع",
-      "returnTypeCash": "كاش",
-      "returnTypeBank": "بنكي",
-      "returnTypeDeduct": "خصم من حساب المورد",
-      "supplier": "اسم المورد",
-      "supplierPlaceholder": "ابحث بالمورد",
-      "apply": "بحث"
-    },
-    "table": {
-      "returnNumber": "رقم الاسترجاع",
-      "invoiceNumber": "رقم فاتورة الشراء",
-      "returnDate": "تاريخ الاسترجاع",
-      "status": "حالة الفاتورة",
-      "createdBy": "أنشأ بواسطة",
-      "supplierName": "اسم المورد",
-      "returnType": "نوع الاسترجاع",
-      "subtotal": "إجمالي قبل الضريبة",
-      "tax": "إجمالي الضريبة",
-      "total": "إجمالي مبلغ الاسترجاع",
-      "options": "خيارات"
-    },
-    "actions": {
-      "createReturn": "إنشاء فاتورة استرجاع",
-      "howToUse": "شرح الاستخدام",
-      "view": "عرض"
-    },
-    "empty": "لا توجد فواتير استرجاع"
-  },
-  "returnInvoice": {
-    "breadcrumb": {
-      "home": "الرئيسية",
-      "returns": "مرتجعات المشتريات",
-      "createReturnInvoice": "إنشاء فاتورة استرجاع"
-    },
-    "actions": {
-      "howToUse": "شرح الاستخدام",
-      "save": "حفظ",
-      "delete": "حذف"
-    },
-    "sections": {
-      "returnInfo": "معلومات الاسترجاع",
-      "addProducts": "إضافة المنتجات",
-      "productsTable": "جداول المنتجات",
-      "notes": "ملاحظات",
-      "summaryTitle": "ملخص فاتورة الاسترجاع"
-    },
-    "fields": {
-      "supplierName": "اسم المورد",
-      "supplierCode": "كود المورد",
-      "invoiceNumber": "رقم فاتورة الشراء",
-      "returnReason": "سبب الاسترجاع",
-      "returnType": "نوع الاسترجاع",
-      "safe": "حدد الخزنة"
-    },
-    "placeholders": {
-      "supplierName": "يسرا علام",
-      "supplierCode": "B612",
-      "invoiceNumber": "0284jlkljk",
-      "returnReason": "المنتجات خاطئة",
-      "returnType": "استرداد نقدي",
-      "safe": "خزنة كاش",
-      "scanOrEnter": "مسح الباركود أو إدخال كود المنتج",
-      "notes": "لا توجد ملاحظات"
-    },
-    "options": {
-      "safe": {
-        "cash": "خزنة كاش",
-        "safe1": "خزنة رقم 1",
-        "safe2": "خزنة رقم 2"
-      },
-      "returnReason": {
-        "wrongProducts": "المنتجات خاطئة",
-        "damaged": "منتجات تالفة",
-        "expired": "منتجات منتهية الصلاحية",
-        "excess": "فائض عن الحاجة"
-      },
-      "returnType": {
-        "cashRefund": "استرداد نقدي",
-        "bankTransfer": "تحويل بنكي",
-        "supplierDeduction": "خصم من حساب المورد"
-      }
-    },
-    "labels": {
-      "returnReason": {
-        "wrong_products": "المنتجات خاطئة",
-        "damaged": "منتجات تالفة",
-        "expired": "منتجات منتهية الصلاحية",
-        "excess": "فائض عن الحاجة"
-      },
-      "returnType": {
-        "cash_refund": "استرداد نقدي",
-        "bank_transfer": "تحويل بنكي",
-        "supplier_deduction": "خصم من حساب المورد"
-      }
-    },
-    "table": {
-      "sku": "كود SKU",
-      "name": "اسم المنتج",
-      "returnedQuantity": "الكمية المرتجعة",
-      "unitCost": "تكلفة القطعة",
-      "returnCost": "تكلفة المرتجعات",
-      "taxInclusive": "شامل الضريبة",
-      "totalAmount": "المبلغ الكلي",
-      "actions": "خيارات"
-    },
-    "summary": {
-      "productCount": "عدد المنتجات المرتجعة",
-      "subtotal": "إجمالي قبل الضريبة",
-      "taxRate": "إجمالي الضريبة",
-      "totalReturn": "إجمالي مبلغ الاسترجاع"
-    }
-  },
-  "suppliers": {
-    "breadcrumb": {
-      "home": "الرئيسية",
-      "suppliers": "الموردين"
-    },
-    "stats": {
-      "totalPurchases": "إجمالي المشتريات من جميع الموردين",
-      "totalDue": "إجمالي المستحق للموردين"
-    },
-    "toolbar": {
-      "searchPlaceholder": "ابحث عن ما تريد.....",
-      "filter": "فلتر",
-      "refresh": "إعادة",
-      "export": "تصدير"
-    },
-    "filters": {
-      "supplierName": "اسم المورد",
-      "supplierNamePlaceholder": "ابحث بالاسم",
-      "supplierCode": "كود المورد",
-      "supplierCodePlaceholder": "ابحث بالكود",
-      "apply": "تطبيق"
-    },
-    "table": {
-      "name": "اسم المورد",
-      "code": "كود المورد",
-      "joinDate": "تاريخ الانضمام",
-      "phone": "رقم الهاتف",
-      "dueBalance": "الرصيد المستحق",
-      "purchaseValue": "قيمة المشتريات",
-      "options": "خيارات"
-    },
-    "actions": {
-      "addSupplier": "إضافة مورد",
-      "howToUse": "شرح الاستخدام",
-      "view": "عرض"
-    },
-    "empty": "لا يوجد موردين"
   },
   "addSupplier": {
     "breadcrumb": {
@@ -744,86 +383,2152 @@
     "edit_settings": "تعديل الاعدادت",
     "link": "تعديل الاعدادت"
   },
-  "orders": {
+  "auth": {
+    "title": "نظام إدارة الطلبات",
+    "steps": {
+      "forgot": "استعادة",
+      "verify": "تحقق",
+      "reset": "إعادة تعيين"
+    },
+
+    "login": {
+      "welcomeBack": "مرحباً بعودتك",
+      "description": "قم بإدارة طلباتك وتتبعها بكل سهولة من خلال نظام إدارة الطلبات المتكامل",
+      "title": "تسجيل الدخول",
+      "subtitle": "أدخل بياناتك للوصول إلى لوحة التحكم",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "yourmail@gmail.com",
+      "password": "كلمة المرور",
+      "passwordPlaceholder": "••••••••••",
+      "forgotPassword": "نسيت كلمة المرور؟",
+      "submit": "تسجيل الدخول",
+      "orContinueWith": "أو تابع باستخدام",
+      "googleSignIn": "تسجيل الدخول عبر جوجل",
+      "feature1": "إدارة الطلبات بسهولة",
+      "feature2": "تتبع حالة الطلبات لحظياً",
+      "feature3": "تقارير وإحصائيات شاملة",
+      "copyright": "جميع الحقوق محفوظة © 2025",
+      "success": "تم تسجيل الدخول بنجاح"
+    },
+
+    "forgotPassword": {
+      "back": "العودة للدخول",
+      "title": "استعادة كلمة المرور",
+      "description": "أدخل بريدك الإلكتروني وسنرسل لك رمز التحقق لإعادة تعيين كلمة المرور",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "yourmail@gmail.com",
+      "submit": "إرسال رمز التحقق",
+      "successTitle": "تم الإرسال بنجاح",
+      "successDescription": "تم إرسال رمز التحقق إلى",
+      "backToLogin": "العودة إلى تسجيل الدخول",
+      "otpSent": "تم إرسال رمز التحقق"
+    },
+
+    "otp": {
+      "back": "العودة",
+      "title": "تأكيد البريد الإلكتروني",
+      "description": "أدخل رمز OTP المكون من 6 أرقام المرسل إلى",
+      "verify": "تأكيد",
+      "timeRemaining": "الوقت المتبقي",
+      "codeExpired": "انتهت صلاحية الرمز",
+      "resend": "إعادة الإرسال",
+      "invalidCode": "رمز التحقق غير صحيح",
+      "error": "حدث خطأ، يرجى المحاولة مرة أخرى",
+      "helpText": "لم تستلم الرمز؟ تحقق من مجلد البريد المزعج"
+    },
+
+    "resetPassword": {
+      "title": "إعادة تعيين كلمة المرور",
+      "description": "أدخل كلمة المرور الجديدة الخاصة بك",
+      "newPassword": "كلمة المرور الجديدة",
+      "passwordPlaceholder": "••••••••••",
+      "confirmPassword": "تأكيد كلمة المرور",
+      "confirmPasswordPlaceholder": "••••••••••",
+      "requirement": {
+        "length": "8 أحرف على الأقل",
+        "uppercase": "حرف كبير واحد على الأقل",
+        "lowercase": "حرف صغير واحد على الأقل",
+        "number": "رقم واحد على الأقل"
+      },
+      "submit": "إعادة تعيين كلمة المرور",
+      "successTitle": "تم بنجاح!",
+      "successDescription": "تم تغيير كلمة المرور بنجاح. سيتم توجيهك لتسجيل الدخول",
+      "redirecting": "جاري التوجيه..."
+    },
+
+    "validation": {
+      "emailRequired": "البريد الإلكتروني مطلوب",
+      "emailInvalid": "البريد الإلكتروني غير صالح",
+      "passwordRequired": "كلمة المرور مطلوبة",
+      "passwordMin": "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
+      "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+      "passwordUppercase": "كلمة المرور يجب أن تحتوي على حرف كبير واحد على الأقل",
+      "passwordLowercase": "كلمة المرور يجب أن تحتوي على حرف صغير واحد على الأقل",
+      "passwordNumber": "كلمة المرور يجب أن تحتوي على رقم واحد على الأقل",
+      "confirmPasswordRequired": "تأكيد كلمة المرور مطلوب",
+      "passwordsMustMatch": "كلمات المرور غير متطابقة"
+    }
+  },
+
+  "users": {
     "breadcrumb": {
       "home": "الرئيسية",
-      "orders": "إدارة الطلبات"
+      "users": "المستخدمون"
     },
+
     "tabs": {
-      "new": "جديد",
-      "pending": "قيد التنفيذ",
-      "shipped": "مشحون",
-      "delivered": "تم التسليم",
-      "returned": "مرتجع",
-      "cancelled": "ملغي"
+      "all": "الكل",
+      "active": "نشط",
+      "inactive": "غير نشط"
     },
+
     "stats": {
-      "new": "جديد",
-      "pending": "قيد التنفيذ",
-      "shipped": "مشحون",
-      "delivered": "تم التسليم",
-      "returned": "مرتجع",
-      "cancelled": "ملغي"
+      "total": "إجمالي المستخدمين",
+      "active": "نشط",
+      "inactive": "غير نشط"
     },
+
     "toolbar": {
-      "searchPlaceholder": "ابحث عن ما تريد.....",
-      "assignEmployee": "تعيين موظف",
-      "filter": "فلتر",
-      "refresh": "إعادة",
+      "searchPlaceholder": "ابحث بالاسم أو البريد الإلكتروني",
+      "filter": "تصفية",
+      "refresh": "تحديث",
       "export": "تصدير"
     },
+
     "filters": {
-      "customerInfo": "معلومات العميل",
-      "orderDetails": "تفاصيل الطلب",
-      "assignment": "التعيين والتاريخ",
-      "customerName": "اسم العميل",
-      "customerNamePlaceholder": "يسرا علام",
-      "assignedEmployee": "الموظف المعين",
-      "employeePlaceholder": "يسرا علام",
-      "date": "التاريخ",
-      "productName": "اسم المنتج",
-      "productNamePlaceholder": "ساعة شنطة ضهر",
-      "orderType": "نوع الطلبات",
-      "orderTypePlaceholder": "اختر نوع الطلب",
-      "orderTypeAll": "جميع الطلبات",
-      "orderTypeDistributed": "طلبات موزعة",
-      "orderTypeNormal": "طلبات عادية",
-      "orderStatus": "حالة الطلب",
-      "orderStatusPlaceholder": "قيد التنفيذ",
+      "basic": "أساسي",
+      "status": "الحالة",
+      "admin": "إدارة",
+      "role": "الدور يحتوي على",
+      "active": "نشط",
+      "adminId": "رقم الهاتف",
+      "rolePlaceholder": "ADMIN / USER / SUPER_ADMIN",
+      "activePlaceholder": "all / true / false",
+      "adminIdPlaceholder": "رقم الهاتف (اختياري)",
       "apply": "تطبيق"
     },
+
     "table": {
-      "orderCode": "كود الطلب",
-      "customerName": "اسم العميل",
-      "phone": "رقم الهاتف",
-      "products": "المنتجات",
-      "orderStatus": "حالة الطلب",
-      "paymentMethod": "طريقة الدفع",
-      "confirmOrder": "تأكيد الطلب (قبول ، رفض)",
-      "options": "خيارات",
-      "assignedEmployee": "الموظف المعين",
-      "distributor": "موزع الطلب",
-      "trackingCode": "كود تتبع الطلب",
-      "city": "المدينة",
-      "address": "العنوان",
-      "shippingCompany": "شركة الشحن",
-      "shippingCost": "تكلفة الشحن",
-      "deposit": "العربون",
-      "receivedAmount": "المبلغ المستلم",
-      "allowReturn": "السماح بالاسترجاع",
-      "allowExchange": "السماح بالاستبدال",
-      "allowOpenProduct": "السماح بفتح المنتج",
-      "lastUpdate": "آخر تحديث",
-      "store": "المتجر"
+      "id": "المعرف",
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "role": "الدور",
+      "adminId": "رقم الهاتف",
+      "status": "الحالة",
+      "credentials": "بيانات الدخول",
+      "options": "الإجراءات",
+      "plan": "الخطة"
     },
+
     "actions": {
-      "howToUse": "شرح الاستخدام",
-      "addOrder": "إضافة طلب",
-      "importOrders": "استيراد الطلبات",
-      "view": "عرض",
+      "createUser": "إنشاء مستخدم",
+      "refresh": "تحديث",
+      "export": "تصدير",
+      "filter": "تصفية",
+      "create": "إنشاء",
+      "save": "حفظ",
+      "edit": "تعديل",
+      "deactivate": "تعطيل",
+      "cancel": "إلغاء",
+      "close": "إغلاق",
+      "resetAndShow": "إعادة تعيين وعرض كلمة المرور",
+      "sendWhatsapp": "إرسال عبر واتساب",
+      "openWhatsapp": "فتح واتساب"
+    },
+
+    "loading": "جاري التحميل...",
+    "empty": "لا يوجد مستخدمون",
+
+    "messages": {
+      "userCreated": "تم إنشاء المستخدم بنجاح",
+      "userUpdated": "تم تحديث المستخدم بنجاح",
+      "userDeactivated": "تم تعطيل المستخدم"
+    },
+
+    "create": {
+      "title": "إنشاء مستخدم جديد",
+      "subtitle": "يمكن للمشرف إنشاء أي حساب عبر /users/admin-create"
+    },
+
+    "edit": {
+      "title": "تعديل المستخدم"
+    },
+
+    "deactivate": {
+      "title": "تعطيل المستخدم",
+      "desc": "سيتم تعيين الحالة إلى غير نشط ولن يتمكن المستخدم من تسجيل الدخول."
+    },
+
+    "fields": {
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "role": "الدور",
+      "roleId": "الدور",
+      "passwordOptional": "كلمة المرور (اختياري)",
+      "isActive": "الحالة",
+      "plan": "الخطة",
+      "noPlan": "بدون خطة"
+    },
+
+    "placeholders": {
+      "name": "الاسم الكامل",
+      "email": "user@email.com",
+      "role": "اختر الدور",
+      "passwordOptional": "اتركه فارغًا للتوليد التلقائي"
+    },
+
+    "hints": {
+      "roleDropdown": "تم تحميل الأدوار من قائمة الأدوار"
+    },
+
+    "credentials": {
+      "title": "بيانات الدخول",
+      "subtitle": "هذه أحدث بيانات تم إنشاؤها عند الإنشاء أو إعادة تعيين كلمة المرور",
+      "password": "كلمة المرور",
+      "note": "ملاحظة: كلمة المرور تظهر فقط عند الإنشاء أو إعادة التعيين ولا يمكن عرض القديمة."
+    },
+
+    "whatsapp": {
+      "title": "إرسال عبر واتساب",
+      "subtitle": "اختر الدولة وأدخل رقم الواتساب",
+      "phone": "رقم الهاتف",
+      "phonePlaceholder": "أدخل رقم الهاتف",
+      "includePassword": "تضمين كلمة المرور في الرسالة",
+      "preview": "معاينة الرسالة",
+      "note": "تنبيه: كلمة المرور متاحة فقط إذا تم إنشاؤها أو إعادة تعيينها."
+    }
+  },
+  "roles": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "roles": "الأدوار"
+    },
+    "admin": "أدمن",
+    "super_admin": "سوبر أدمن",
+    "user": "مستخدم",
+    "tabs": {
+      "all": "الكل",
+      "system": "أدوار النظام",
+      "custom": "أدوار مخصصة"
+    },
+
+    "stats": {
+      "total": "إجمالي الأدوار",
+      "system": "النظام",
+      "custom": "مخصص",
+      "wildcard": "صلاحية *"
+    },
+
+    "toolbar": {
+      "searchPlaceholder": "ابحث باسم الدور أو الصلاحيات",
+      "filter": "تصفية",
+      "refresh": "تحديث",
+      "export": "تصدير"
+    },
+
+    "filters": {
+      "basic": "أساسي",
+      "permissions": "الصلاحيات",
+      "star": "خاص",
+      "type": "النوع",
+      "all": "الكل",
+      "system": "نظام",
+      "custom": "مخصص",
+      "hasPermission": "يحتوي على صلاحية",
+      "permissionPlaceholder": "users.read / roles.update ...",
+      "wildcard": "صلاحية * فقط",
+      "onlyWildcard": "أدوار تحتوي * فقط",
+      "noWildcard": "بدون *",
+      "apply": "تطبيق"
+    },
+
+    "table": {
+      "id": "المعرف",
+      "name": "الاسم",
+      "description": "الوصف",
+      "permissions": "الصلاحيات",
+      "options": "الإجراءات"
+    },
+
+    "actions": {
+      "refresh": "تحديث",
+      "createRole": "إنشاء دور",
+      "addPermission": "إضافة صلاحية",
+      "create": "إنشاء",
+      "edit": "تعديل",
+      "save": "حفظ",
       "delete": "حذف",
       "cancel": "إلغاء"
     },
-    "empty": "لا توجد طلبات"
+
+    "messages": {
+      "roleCreated": "تم إنشاء الدور بنجاح",
+      "roleUpdated": "تم تحديث الدور بنجاح",
+      "roleDeleted": "تم حذف الدور",
+      "permissionCreated": "تم إنشاء الصلاحية",
+      "permissionDeleted": "تم حذف الصلاحية"
+    },
+
+    "create": {
+      "title": "إنشاء دور",
+      "subtitle": "إنشاء دور مخصص مع الصلاحيات"
+    },
+
+    "edit": {
+      "title": "تعديل دور"
+    },
+
+    "delete": {
+      "title": "حذف الدور",
+      "desc": "لا يمكن التراجع عن هذا الإجراء."
+    },
+
+    "fields": {
+      "name": "اسم الدور",
+      "description": "الوصف",
+      "permissions": "الصلاحيات"
+    },
+
+    "hints": {
+      "wildcard": "معلومة: إضافة * تمنح جميع الصلاحيات (استخدمها بحذر).",
+      "nameLocked": "اسم الدور ثابت بعد الإنشاء ولا يمكن تغييره."
+    },
+
+    "permissions": {
+      "title": "الصلاحيات",
+      "empty": "لا توجد صلاحيات بعد",
+
+      "createTitle": "إنشاء صلاحية",
+      "createSubtitle": "أضف مفتاح صلاحية مثل users.read",
+      "fieldName": "مفتاح الصلاحية",
+
+      "deleteTitle": "حذف الصلاحية",
+      "deleteDesc": "سيتم حذف الصلاحية من النظام."
+    },
+
+    "loading": "جاري التحميل...",
+    "empty": "لا توجد أدوار"
+  },
+
+  "settings": {
+    "header": {
+      "title": "الإعدادات",
+      "subtitle": "إدارة حسابك وتفضيلاتك"
+    },
+    "quickStats": {
+      "title": "إحصائيات سريعة",
+      "totalCategories": "إجمالي التصنيفات",
+      "activeStores": "المتاجر النشطة",
+      "warehouses": "المستودعات"
+    },
+    "tabs": {
+      "categories": {
+        "label": "التصنيفات",
+        "description": "إدارة تصنيفات المنتجات"
+      },
+      "stores": {
+        "label": "المتاجر",
+        "description": "إدارة مواقع المتاجر"
+      },
+      "warehouses": {
+        "label": "المستودعات",
+        "description": "إدارة المستودعات"
+      },
+      "account": {
+        "label": "الحساب",
+        "description": "إعدادات الحساب"
+      },
+      "notifications": {
+        "label": "الإشعارات",
+        "description": "تفضيلات الإشعارات"
+      },
+      "security": {
+        "label": "الأمان",
+        "description": "الأمان والخصوصية"
+      },
+      "appearance": {
+        "label": "المظهر",
+        "description": "السمة والعرض"
+      }
+    },
+    "categories": {
+      "toast": {
+        "creating": "جاري إنشاء التصنيف...",
+        "created": "تم إنشاء التصنيف بنجاح",
+        "updating": "جاري تحديث التصنيف...",
+        "updated": "تم تحديث التصنيف بنجاح",
+        "deleting": "جاري حذف التصنيف...",
+        "deleted": "تم حذف التصنيف بنجاح",
+        "toggling": "جاري تغيير الحالة...",
+        "toggled": "تم تغيير الحالة",
+
+        "duplicating": "جاري التكرار...",
+        "duplicated": "تم تكرار التصنيف بنجاح",
+        "archiving": "جاري الأرشفة...",
+        "archived": "تم أرشفة التصنيف بنجاح"
+      },
+      "delete": {
+        "confirm": "هل تريد حذف هذا التصنيف؟"
+      },
+      "title": "إدارة التصنيفات",
+      "subtitle": "تنظيم منتجاتك في تصنيفات",
+      "addButton": "إضافة تصنيف",
+      "searchPlaceholder": "البحث في التصنيفات...",
+      "loading": "جاري التحميل...",
+      "dialogs": {
+        "delete": {
+          "title": "تأكيد الحذف",
+          "description": "هل أنت متأكد من حذف التصنيف \"{name}\"؟",
+          "warning": "هذا الإجراء لا يمكن التراجع عنه!"
+        }
+      },
+      "addForm": {
+        "title": "إضافة تصنيف جديد"
+      },
+      "editForm": {
+        "title": "تعديل التصنيف"
+      },
+      "form": {
+        "currentImage": "هناك صورة حالية (يمكنك رفع صورة جديدة)",
+        "name": "اسم التصنيف",
+        "namePlaceholder": "مثال: إلكترونيات",
+        "slug": "الرابط المختصر",
+        "slugPlaceholder": "مثال: electronics",
+        "image": "صورة التصنيف",
+        "uploadImage": "رفع صورة",
+        "noFileChosen": "لم يتم اختيار ملف",
+        "active": "نشط",
+        "save": "حفظ التصنيف",
+        "cancel": "إلغاء"
+      },
+      "list": {
+        "toggle": "تغيير الحالة",
+        "products": "منتجات",
+        "active": "نشط",
+        "inactive": "غير نشط",
+        "edit": "تعديل",
+        "delete": "حذف",
+        "view": "عرض التفاصيل",
+        "duplicate": "تكرار",
+        "archive": "أرشفة",
+        "activate": "تفعيل",
+        "deactivate": "إلغاء التفعيل",
+        "toggleStatus": "تغيير الحالة",
+        "moreActions": "المزيد من الإجراءات",
+        "actions": "الإجراءات"
+      },
+      "common": {
+        "loading": "جاري التحميل...",
+        "saving": "جاري الحفظ...",
+        "deleting": "جاري الحذف...",
+        "cancel": "إلغاء",
+        "delete": "حذف",
+        "save": "حفظ",
+        "edit": "تعديل",
+        "view": "عرض",
+        "search": "بحث"
+      },
+      "global": {
+        "lockedHint": "العناصر العامة لا يمكن تعديلها أو حذفها",
+        "lockedToast": "لا يمكن تعديل أو حذف العناصر العامة",
+        "globalItem": "عنصر عام",
+        "badge": "عام"
+      }
+    },
+    "stores": {
+      "title": "إدارة المتاجر",
+      "subtitle": "إدارة مواقع متاجرك",
+      "addButton": "إضافة متجر",
+      "addForm": {
+        "title": "إضافة متجر جديد"
+      },
+      "form": {
+        "name": "اسم المتجر",
+        "namePlaceholder": "مثال: الفرع الرئيسي",
+        "code": "كود المتجر",
+        "codePlaceholder": "مثال: MB-001",
+        "location": "الموقع",
+        "locationPlaceholder": "مثال: وسط المدينة",
+        "phone": "الهاتف",
+        "phonePlaceholder": "+1234567890",
+        "address": "العنوان",
+        "addressPlaceholder": "العنوان الكامل",
+        "active": "نشط",
+        "save": "حفظ المتجر",
+        "cancel": "إلغاء"
+      },
+      "list": {
+        "active": "نشط",
+        "inactive": "غير نشط",
+        "edit": "تعديل",
+        "delete": "حذف"
+      }
+    },
+    "account": {
+      "title": "إعدادات الحساب",
+      "subtitle": "إدارة معلومات حسابك",
+      "loading": "جاري تحميل بيانات الحساب...",
+      "toast": {
+        "saving": "جاري حفظ التغييرات...",
+        "saved": "تم حفظ التغييرات بنجاح",
+        "uploadingAvatar": "جاري رفع الصورة...",
+        "avatarUpdated": "تم تحديث الصورة بنجاح"
+      },
+      "errors": {
+        "missingMeEndpoint": "لا يوجد endpoint /users/me — أضفه أو احفظ userId في localStorage",
+        "missingAvatarEndpoint": "لا يوجد endpoint /users/me/avatar — أضفه لرفع صورة الحساب"
+      },
+      "profile": {
+        "role": "الدور",
+        "plan": "الخطة",
+        "active": "نشط",
+        "inactive": "غير نشط",
+        "employeeType": "نوع الموظف",
+        "employeeTypePlaceholder": "مثال: sales / support / manager",
+        "isActive": "تفعيل الحساب",
+        "userId": "رقم المستخدم",
+        "adminId": "رقم الأدمن",
+        "createdAt": "تاريخ الإنشاء",
+        "updatedAt": "آخر تحديث",
+        "changePhoto": "تغيير الصورة",
+        "fullName": "الاسم الكامل",
+        "email": "البريد الإلكتروني",
+        "phone": "الهاتف",
+        "company": "الشركة",
+        "saveChanges": "حفظ التغييرات"
+      },
+      "password": {
+        "title": "كلمة المرور",
+        "subtitle": "تحديث كلمة المرور الخاصة بك",
+        "change": "تغيير كلمة المرور",
+        "cancel": "إلغاء",
+        "current": "كلمة المرور الحالية",
+        "new": "كلمة المرور الجديدة",
+        "confirm": "تأكيد كلمة المرور الجديدة",
+        "update": "تحديث كلمة المرور"
+      },
+
+      "phone": {
+        "label": "رقم الجوال",
+        "countryPlaceholder": "اختر الدولة",
+        "invalid": "رقم الجوال غير صحيح"
+      }
+    },
+    "notifications": {
+      "title": "تفضيلات الإشعارات",
+      "subtitle": "إدارة كيفية تلقي الإشعارات",
+      "items": {
+        "orderUpdates": {
+          "title": "تحديثات الطلبات",
+          "description": "احصل على إشعارات حول تغييرات حالة الطلب"
+        },
+        "newProducts": {
+          "title": "منتجات جديدة",
+          "description": "إشعارات عند إضافة منتجات جديدة"
+        },
+        "lowStock": {
+          "title": "تنبيهات المخزون المنخفض",
+          "description": "احصل على تنبيهات عندما تكون المنتجات منخفضة في المخزون"
+        },
+        "marketing": {
+          "title": "رسائل التسويق",
+          "description": "تلقي رسائل البريد الإلكتروني التسويقية والترويجية"
+        }
+      }
+    },
+    "security": {
+      "title": "إعدادات الأمان",
+      "subtitle": "إدارة أمان حسابك",
+      "twoFactor": {
+        "title": "المصادقة الثنائية",
+        "description": "أضف طبقة إضافية من الأمان إلى حسابك",
+        "enable": "تفعيل المصادقة الثنائية"
+      },
+      "sessions": {
+        "title": "الجلسات النشطة",
+        "current": "الجلسة الحالية",
+        "details": "Chrome على Windows • نشط الآن",
+        "active": "نشط",
+
+        "subtitle": "الأجهزة والجلسات التي سجّلت الدخول على حسابك",
+        "refresh": "تحديث",
+        "loading": "جاري تحميل الجلسات...",
+        "empty": "لا توجد جلسات متاحة للعرض حالياً",
+        "deviceUnknown": "جهاز غير معروف",
+        "locationUnknown": "موقع غير معروف",
+        "other": "جلسة أخرى",
+        "lastSeen": "آخر نشاط",
+        "ip": "IP"
+      },
+      "danger": {
+        "title": "منطقة الخطر",
+        "description": "حذف حسابك وجميع البيانات بشكل دائم",
+        "delete": "حذف الحساب"
+      }
+    },
+    "appearance": {
+      "title": "إعدادات المظهر",
+      "subtitle": "تخصيص شكل التطبيق",
+      "theme": {
+        "title": "السمة",
+        "light": "فاتح",
+        "dark": "داكن",
+        "system": "النظام"
+      },
+      "language": {
+        "title": "اللغة",
+        "current": "العربية",
+        "ar": "العربية",
+        "en": "الإنجليزية",
+        "label": "اللغة"
+      },
+
+      "mode": {
+        "title": "وضع العرض",
+        "light": "فاتح",
+        "dark": "داكن",
+        "system": "حسب النظام"
+      },
+      "palette": {
+        "title": "ألوان الواجهة (6 لوحات)",
+        "note": "هذه اللوحات للعرض الآن — ستستخدمها لاحقًا لتطبيق ألوان النظام بالكامل."
+      },
+      "palettes": {
+        "royal": "ملكي",
+        "emerald": "زمردي",
+        "sunset": "غروب",
+        "rose": "وردي",
+        "cyan": "سماوي",
+        "mono": "أحادي"
+      },
+      "language2": {
+        "title": "اللغة الافتراضية",
+        "label": "اختر اللغة",
+        "ar": "العربية",
+        "en": "الإنجليزية",
+        "note": "سيتم حفظ الاختيار في المتصفح الآن — ويمكن ربطه لاحقًا بإعدادات المستخدم."
+      },
+      "layout": {
+        "title": "إعدادات التخطيط",
+        "sidebar": "توسيع القائمة الجانبية",
+        "sidebarDesc": "عرض القائمة بشكل موسّع أو مختصر",
+        "compact": "وضع مدمج",
+        "compactDesc": "تقليل المسافات في الواجهة (للشاشات الصغيرة/كثافة أعلى)"
+      }
+    }
+  },
+
+  "mediaLibrary": {
+    "title": "مكتبة الوسائط",
+    "description": "ارفع ملفاتك واختر صورة/ملف لاستخدامه داخل النموذج.",
+    "actions": {
+      "close": "إغلاق",
+      "cancel": "إلغاء",
+      "copyUrl": "نسخ الرابط",
+      "delete": "حذف",
+      "select": "تحديد",
+      "unselect": "إلغاء التحديد",
+      "insertSelected": "إدراج المحدد ({count})"
+    },
+    "view": {
+      "grid": "عرض شبكي",
+      "list": "عرض قائمة"
+    },
+    "selectedCount": "المحدد: {count}",
+    "upload": {
+      "aria": "رفع ملفات",
+      "title": "ارفع ملفاتك",
+      "uploading": "جاري الرفع...",
+      "subtitle": "اسحب الملفات هنا أو اضغط لاختيار ملفات من جهازك",
+      "hint": "يدعم رفع متعدد"
+    },
+    "dropOverlay": {
+      "title": "افلت الملفات للرفع",
+      "subtitle": "سيتم رفع الملفات تلقائياً"
+    },
+    "empty": {
+      "noAssetsTitle": "لا توجد ملفات بعد",
+      "noAssetsDesc": "قم برفع صور أو ملفات لتظهر هنا."
+    },
+    "badges": {
+      "selected": "محدد"
+    },
+    "labels": {
+      "unknownType": "نوع غير معروف"
+    },
+    "tooltips": {
+      "copyUrl": "نسخ الرابط",
+      "copied": "تم النسخ",
+      "delete": "حذف"
+    },
+    "toast": {
+      "loadFailed": "فشل تحميل الملفات",
+      "uploadFailed": "فشل رفع الملفات",
+      "uploaded": "تم رفع {count} ملف/ملفات بنجاح",
+      "copied": "تم نسخ الرابط",
+      "copyFailed": "فشل نسخ الرابط",
+      "deleted": "تم الحذف بنجاح",
+      "deleteFailed": "فشل حذف الملف"
+    },
+    "footer": {
+      "singleHint": "اضغط على ملف لاختياره وإرجاع الرابط مباشرة.",
+      "multiHint": "حدد عدة ملفات ثم اضغط إدراج المحدد."
+    },
+    "delete": {
+      "title": "تأكيد الحذف",
+      "description": "هل أنت متأكد أنك تريد حذف هذا الملف؟ لا يمكن التراجع عن هذا الإجراء.",
+      "confirm": "حذف",
+      "deleting": "جاري الحذف..."
+    }
+  },
+  "roles-client": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "roles": "الأدوار والصلاحيات"
+    },
+    "tabs": {
+      "all": "الكل",
+      "system": "النظام",
+      "custom": "مخصص"
+    },
+    "stats": {
+      "totalRoles": "إجمالي الأدوار",
+      "globalRoles": "أدوار النظام",
+      "customRoles": "أدوار مخصصة",
+      "wildcard": "صلاحيات شاملة",
+      "total": "إجمالي الأدوار",
+      "system": "النظام",
+      "custom": "مخصص"
+    },
+    "toolbar": {
+      "searchPlaceholder": "ابحث عن دور أو صلاحية...",
+      "addRole": "إضافة دور",
+      "filter": "تصفية",
+      "refresh": "تحديث",
+      "export": "تصدير"
+    },
+    "filters": {
+      "basic": "أساسي",
+      "permissions": "الصلاحيات",
+      "star": "خاص",
+      "type": "النوع",
+      "all": "الكل",
+      "system": "النظام",
+      "custom": "مخصص",
+      "hasPermission": "يحتوي على صلاحية",
+      "permissionPlaceholder": "users.read / roles.update ...",
+      "wildcard": "صلاحيات شاملة فقط",
+      "onlyWildcard": "الأدوار التي تحتوي على * فقط",
+      "noWildcard": "بدون صلاحية *",
+      "apply": "تطبيق"
+    },
+    "table": {
+      "id": "المعرف",
+      "roleName": "اسم الدور",
+      "name": "الاسم",
+      "description": "الوصف",
+      "type": "النوع",
+      "permissions": "الصلاحيات",
+      "permissionsCount": "صلاحية",
+      "allPermissions": "جميع الصلاحيات",
+      "options": "الخيارات",
+      "global": "عام",
+      "system": "نظام",
+      "custom": "مخصص"
+    },
+    "actions": {
+      "edit": "تعديل",
+      "delete": "حذف",
+      "preview": "معاينة",
+      "locked": "مقفل",
+      "protected": "محمي",
+      "cancel": "إلغاء",
+      "save": "حفظ",
+      "create": "إنشاء",
+      "createRole": "إنشاء دور",
+      "refresh": "تحديث"
+    },
+    "dialog": {
+      "addRole": "إضافة دور جديد",
+      "editRole": "تعديل الدور",
+      "roleDescription": "قم بإنشاء أو تعديل دور مع تحديد الصلاحيات",
+      "roleName": "اسم الدور",
+      "roleNamePlaceholder": "مثال: SALES_ADMIN",
+      "roleDescriptionPlaceholder": "وصف الدور...",
+      "save": "حفظ"
+    },
+    "create": {
+      "title": "إنشاء دور جديد",
+      "subtitle": "قم بإنشاء دور مخصص مع الصلاحيات"
+    },
+    "edit": {
+      "title": "تعديل الدور"
+    },
+    "delete": {
+      "title": "حذف الدور",
+      "desc": "لا يمكن التراجع عن هذا الإجراء."
+    },
+    "deleteDialog": {
+      "title": "حذف الدور",
+      "description": "هل أنت متأكد من حذف هذا الدور؟ لا يمكن التراجع عن هذا الإجراء.",
+      "cancel": "إلغاء",
+      "confirm": "حذف"
+    },
+    "preview": {
+      "title": "معاينة الدور",
+      "description": "عرض تفاصيل الدور والصلاحيات المرتبطة به",
+      "noDescription": "لا يوجد وصف",
+      "permissions": "الصلاحيات",
+      "noPermissions": "لا توجد صلاحيات",
+      "close": "إغلاق"
+    },
+    "fields": {
+      "name": "الاسم",
+      "description": "الوصف",
+      "permissions": "الصلاحيات"
+    },
+    "hints": {
+      "wildcard": "نصيحة: أضف * لمنح جميع الصلاحيات (استخدم بحذر).",
+      "nameLocked": "اسم الدور مقفل بعد الإنشاء."
+    },
+    "messages": {
+      "roleCreated": "تم إنشاء الدور بنجاح",
+      "roleUpdated": "تم تحديث الدور بنجاح",
+      "roleDeleted": "تم حذف الدور بنجاح"
+    },
+    "empty": "لا توجد أدوار",
+    "loading": "جاري التحميل..."
+  },
+  "permissions": {
+    "selectAll": "تحديد الكل",
+    "unselectAll": "إلغاء الكل",
+    "selectedPermissions": "الصلاحيات المحددة",
+    "permissionsCount": "صلاحية",
+    "modules": {
+      "users": "المستخدمين",
+      "roles": "الأدوار",
+      "permissions": "الصلاحيات",
+      "orders": "الطلبات",
+      "products": "المنتجات",
+      "settings": "الإعدادات",
+      "reports": "التقارير",
+      "general": "عام"
+    },
+    "actions": {
+      "read": "عرض",
+      "create": "إنشاء",
+      "update": "تعديل",
+      "delete": "حذف",
+      "create_admin": "إنشاء من قبل المدير",
+      "view_credentials": "عرض بيانات الاعتماد",
+      "deactivate": "تعطيل"
+    }
+  },
+
+  "dataTable": {
+    "emptyState": {
+      "title": "لا توجد بيانات",
+      "subtitle": "لا توجد نتائج لعرضها في الوقت الحالي"
+    },
+    "pagination": {
+      "total": "الإجمالي:",
+      "first": "الأول",
+      "prev": "السابق",
+      "next": "التالي",
+      "last": "الأخير",
+      "limit": "عدد النتائج",
+      "goTo": "اذهب إلى صفحة {page}"
+    },
+    "image": {
+      "preview": "معاينة",
+      "modalTitle": "معاينة الصورة",
+      "zoom": "تكبير/تصغير",
+      "download": "تحميل الصورة",
+      "close": "إغلاق"
+    }
+  },
+
+  "warehouses": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "warehouses": "المستودعات"
+    },
+    "stats": {
+      "totalWarehouses": "إجمالي المستودعات",
+      "activeWarehouses": "المستودعات النشطة",
+      "inactiveWarehouses": "المستودعات غير النشطة"
+    },
+    "actions": {
+      "add": "إضافة مستودع",
+      "delete": "حذف",
+      "edit": "تعديل",
+      "view": "عرض"
+    },
+    "toolbar": {
+      "searchPlaceholder": "ابحث عن مستودع...",
+      "export": "تصدير"
+    },
+    "table": {
+      "id": "الرقم",
+      "name": "اسم المستودع",
+      "location": "الموقع",
+      "phone": "رقم الهاتف",
+      "manager": "المدير",
+      "status": "الحالة",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "createdAt": "تاريخ الإنشاء",
+      "options": "خيارات"
+    },
+    "form": {
+      "createTitle": "إضافة مستودع جديد",
+      "editTitle": "تعديل المستودع",
+      "name": "اسم المستودع",
+      "namePlaceholder": "أدخل اسم المستودع",
+      "location": "الموقع",
+      "locationPlaceholder": "اختر الموقع من الخريطة",
+      "locationHint": "انقر على الخريطة لتحديد الموقع",
+      "phone": "رقم الهاتف",
+      "phonePlaceholder": "+20 123 456 7890",
+      "manager": "المدير",
+      "managerPlaceholder": "اختر المدير",
+      "noManager": "بدون مدير",
+      "isActive": "حالة المستودع",
+      "isActiveHint": "تفعيل أو إلغاء تفعيل المستودع",
+      "cancel": "إلغاء",
+      "create": "إضافة",
+      "update": "تحديث",
+      "saving": "جاري الحفظ..."
+    },
+    "validation": {
+      "nameRequired": "اسم المستودع مطلوب",
+      "nameMax": "اسم المستودع يجب أن لا يتجاوز 120 حرف",
+      "locationMax": "الموقع يجب أن لا يتجاوز 160 حرف",
+      "required": "رقم الهاتف مطلوب",
+      "phoneInvalid": "رقم الهاتف غير صحيح"
+    },
+    "messages": {
+      "created": "تم إنشاء المستودع بنجاح",
+      "updated": "تم تحديث المستودع بنجاح"
+    },
+    "view": {
+      "title": "تفاصيل المستودع",
+      "location": "الموقع",
+      "phone": "رقم الهاتف",
+      "manager": "المدير",
+      "createdAt": "تاريخ الإنشاء",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "close": "إغلاق"
+    },
+    "delete": {
+      "title": "تأكيد الحذف",
+      "desc": "هل أنت متأكد من حذف هذا المستودع؟ لا يمكن التراجع عن هذا الإجراء.",
+      "confirm": "حذف",
+      "cancel": "إلغاء",
+      "success": "تم حذف المستودع بنجاح"
+    },
+    "empty": "لا توجد مستودعات"
+  },
+
+  "inputPhone": {
+    "placeholders": {
+      "selectCountry": "اختر الدولة"
+    }
+  },
+  "mapPicker": {
+    "searchPlaceholder": "ابحث عن مكان (مثال: المعادي، القاهرة)",
+    "hint": "اكتب 3 أحرف أو أكثر — سيتم الانتقال تلقائياً لأول نتيجة",
+    "searching": "بحث...",
+    "noResults": "لا توجد نتائج لهذا البحث",
+    "error": "حدث خطأ أثناء البحث",
+    "clear": "مسح",
+    "clickHint": "انقر على الخريطة لاختيار الموقع",
+    "jumpedTo": "تم الانتقال إلى",
+    "myLocation": "موقعي",
+    "geoDenied": "تم رفض إذن الموقع",
+    "geoNotSupported": "المتصفح لا يدعم تحديد الموقع"
+  },
+  "suppliers": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "suppliers": "الموردين"
+    },
+    "stats": {
+      "totalPurchases": "إجمالي المشتريات من جميع الموردين",
+      "totalDue": "إجمالي المستحق للموردين"
+    },
+    "actions": {
+      "addSupplier": "إضافة مورد",
+      "manageCategories": "إدارة الفئات",
+      "delete": "حذف",
+      "edit": "تعديل",
+      "view": "عرض"
+    },
+    "toolbar": {
+      "searchPlaceholder": "ابحث عن مورد...",
+      "filter": "تصفية",
+      "export": "تصدير"
+    },
+    "filters": {
+      "supplierName": "اسم المورد",
+      "supplierNamePlaceholder": "أدخل اسم المورد",
+      "phone": "رقم الهاتف",
+      "phonePlaceholder": "أدخل رقم الهاتف",
+      "category": "الفئة",
+      "categoryPlaceholder": "اختر الفئة",
+      "any": "الكل",
+      "apply": "تطبيق"
+    },
+    "table": {
+      "id": "الرقم",
+      "name": "اسم المورد",
+      "phone": "رقم الهاتف",
+      "secondPhone": "رقم الهاتف الثاني",
+      "email": "البريد الإلكتروني",
+      "categories": "الفئات",
+      "options": "خيارات",
+      "dueBalance": "الرصيد المستحق",
+      "purchaseValue": "قيمة المشتريات"
+    },
+    "form": {
+      "createTitle": "إضافة مورد جديد",
+      "editTitle": "تعديل المورد",
+      "name": "اسم المورد",
+      "namePlaceholder": "أدخل اسم المورد",
+      "address": "العنوان",
+      "addressPlaceholder": "أدخل عنوان المورد",
+      "description": "الوصف",
+      "descriptionPlaceholder": "أدخل وصف المورد",
+      "phone": "رقم الهاتف",
+      "secondPhone": "رقم الهاتف الثاني",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "supplier@example.com",
+      "categories": "فئات المورد",
+      "noCategories": "لا توجد فئات متاحة",
+      "addCategoryLink": "إضافة فئة جديدة",
+      "cancel": "إلغاء",
+      "create": "إضافة",
+      "update": "تحديث",
+      "saving": "جاري الحفظ..."
+    },
+    "validation": {
+      "nameRequired": "اسم المورد مطلوب",
+      "nameMax": "اسم المورد يجب أن لا يتجاوز 120 حرف",
+      "addressMax": "العنوان يجب أن لا يتجاوز 200 حرف",
+      "descriptionMax": "الوصف يجب أن لا يتجاوز 255 حرف",
+      "phoneInvalid": "رقم الهاتف غير صحيح",
+      "emailInvalid": "البريد الإلكتروني غير صحيح",
+      "emailMax": "البريد الإلكتروني يجب أن لا يتجاوز 100 حرف",
+      "categoryRequired": "يجب اختيار فئة واحدة على الأقل"
+    },
+    "messages": {
+      "created": "تم إنشاء المورد بنجاح",
+      "updated": "تم تحديث المورد بنجاح"
+    },
+    "view": {
+      "title": "تفاصيل المورد",
+      "phone": "رقم الهاتف",
+      "secondPhone": "رقم الهاتف الثاني",
+      "email": "البريد الإلكتروني",
+      "address": "العنوان",
+      "description": "الوصف",
+      "purchaseValue": "قيمة المشتريات",
+      "dueBalance": "الرصيد المستحق",
+      "createdAt": "تاريخ الإنشاء",
+      "close": "إغلاق"
+    },
+    "delete": {
+      "title": "تأكيد الحذف",
+      "desc": "هل أنت متأكد من حذف هذا المورد؟ لا يمكن التراجع عن هذا الإجراء.",
+      "confirm": "حذف",
+      "cancel": "إلغاء",
+      "success": "تم حذف المورد بنجاح"
+    },
+    "empty": "لا يوجد موردين"
+  },
+  "supplierCategories": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "suppliers": "الموردين",
+      "categories": "فئات الموردين"
+    },
+    "stats": {
+      "totalCategories": "إجمالي الفئات"
+    },
+    "actions": {
+      "add": "إضافة فئة",
+      "delete": "حذف",
+      "edit": "تعديل",
+      "view": "عرض"
+    },
+    "toolbar": {
+      "searchPlaceholder": "ابحث عن فئة..."
+    },
+    "table": {
+      "id": "الرقم",
+      "name": "اسم الفئة",
+      "description": "الوصف",
+      "createdAt": "تاريخ الإنشاء",
+      "options": "خيارات"
+    },
+    "form": {
+      "createTitle": "إضافة فئة جديدة",
+      "editTitle": "تعديل الفئة",
+      "name": "اسم الفئة",
+      "namePlaceholder": "أدخل اسم الفئة",
+      "description": "الوصف",
+      "descriptionPlaceholder": "أدخل وصف الفئة (اختياري)",
+      "cancel": "إلغاء",
+      "create": "إضافة",
+      "update": "تحديث",
+      "saving": "جاري الحفظ..."
+    },
+    "validation": {
+      "nameRequired": "اسم الفئة مطلوب",
+      "nameMax": "اسم الفئة يجب أن لا يتجاوز 100 حرف",
+      "descriptionMax": "الوصف يجب أن لا يتجاوز 500 حرف"
+    },
+    "messages": {
+      "created": "تم إنشاء الفئة بنجاح",
+      "updated": "تم تحديث الفئة بنجاح"
+    },
+    "view": {
+      "title": "تفاصيل الفئة",
+      "description": "الوصف",
+      "createdAt": "تاريخ الإنشاء",
+      "close": "إغلاق"
+    },
+    "delete": {
+      "title": "تأكيد الحذف",
+      "desc": "هل أنت متأكد من حذف هذه الفئة؟ لا يمكن التراجع عن هذا الإجراء.",
+      "confirm": "حذف",
+      "cancel": "إلغاء",
+      "success": "تم حذف الفئة بنجاح"
+    },
+    "empty": "لا توجد فئات"
+  },
+
+  "returns": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "returns": "مرتجعات المشتريات"
+    },
+    "stats": {
+      "returnInvoicesCount": "عدد فواتير الإرجاع",
+      "totalReturnValue": "إجمالي قيمة الإرجاع"
+    },
+    "toolbar": {
+      "searchPlaceholder": "ابحث في المرتجعات...",
+      "filter": "تصفية",
+      "refresh": "تحديث",
+      "export": "تصدير"
+    },
+    "filters": {
+      "status": "الحالة",
+      "statusPlaceholder": "اختر الحالة",
+      "statusAll": "الكل",
+      "statusPending": "معلق",
+      "statusApproved": "مقبول",
+      "statusRejected": "مرفوض",
+      "returnType": "نوع الإرجاع",
+      "returnTypePlaceholder": "اختر النوع",
+      "returnTypeAll": "الكل",
+      "returnTypeCash": "استرداد نقدي",
+      "returnTypeBank": "تحويل بنكي",
+      "returnTypeDeduct": "خصم من حساب المورد",
+      "supplier": "المورد",
+      "supplierPlaceholder": "اختر المورد",
+      "apply": "تطبيق",
+      "all": "الكل"
+    },
+    "table": {
+      "returnNumber": "رقم الإرجاع",
+      "invoiceNumber": "رقم الفاتورة",
+      "returnDate": "تاريخ الإرجاع",
+      "status": "الحالة",
+      "createdBy": "أنشئ بواسطة",
+      "supplierName": "اسم المورد",
+      "returnType": "نوع الإرجاع",
+      "subtotal": "المجموع الفرعي",
+      "tax": "الضريبة",
+      "total": "الإجمالي",
+      "options": "الخيارات"
+    },
+    "statuses": {
+      "pending": "معلق",
+      "approved": "مقبول",
+      "rejected": "مرفوض"
+    },
+    "returnTypes": {
+      "cashRefund": "استرداد نقدي",
+      "bankTransfer": "تحويل بنكي",
+      "supplierDeduction": "خصم من حساب المورد"
+    },
+    "actions": {
+      "createReturn": "إنشاء فاتورة إرجاع",
+      "howToUse": "كيفية الاستخدام",
+      "view": "عرض"
+    },
+    "currency": "ج.م",
+    "empty": "لا توجد فواتير إرجاع"
+  },
+  "returnInvoice": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "returns": "مرتجعات المشتريات",
+      "createReturnInvoice": "إنشاء فاتورة إرجاع"
+    },
+    "fields": {
+      "returnNumber": "رقم الإرجاع",
+      "supplierName": "اسم المورد",
+      "invoiceNumber": "رقم الفاتورة",
+      "returnReason": "سبب الإرجاع",
+      "returnType": "نوع الإرجاع",
+      "safe": "الخزنة"
+    },
+    "placeholders": {
+      "returnNumber": "أدخل رقم الإرجاع",
+      "supplierName": "اختر المورد",
+      "invoiceNumber": "أدخل رقم الفاتورة",
+      "returnReason": "أدخل سبب الإرجاع",
+      "safe": "اختر الخزنة",
+      "notes": "أضف ملاحظات"
+    },
+    "options": {
+      "returnType": {
+        "cashRefund": "استرداد نقدي",
+        "bankTransfer": "تحويل بنكي",
+        "supplierDeduction": "خصم من حساب المورد"
+      },
+      "safe": {
+        "cash": "كاش",
+        "safe1": "خزنة رقم 1",
+        "safe2": "خزنة رقم 2"
+      }
+    },
+    "sections": {
+      "returnInfo": "معلومات الإرجاع",
+      "addProducts": "إضافة المنتجات",
+      "productsTable": "جدول المنتجات",
+      "notes": "ملاحظات",
+      "summaryTitle": "ملخص الإرجاع"
+    },
+    "table": {
+      "sku": "SKU",
+      "name": "الاسم",
+      "returnedQuantity": "الكمية المرتجعة",
+      "unitCost": "التكلفة للقطعة",
+      "taxInclusive": "شامل الضريبة",
+      "taxRate": "نسبة الضريبة",
+      "actions": "الإجراءات"
+    },
+    "summary": {
+      "productCount": "عدد المنتجات",
+      "subtotal": "المجموع الفرعي",
+      "taxTotal": "إجمالي الضريبة",
+      "totalReturn": "إجمالي الإرجاع"
+    },
+    "actions": {
+      "howToUse": "كيفية الاستخدام",
+      "save": "حفظ"
+    },
+    "yes": "نعم",
+    "no": "لا",
+    "currency": "ج.م"
+  },
+  "salesInvoices": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "salesInvoices": "فواتير المبيعات"
+    },
+    "stats": {
+      "totalInvoices": "إجمالي الفواتير",
+      "totalSales": "إجمالي المبيعات",
+      "totalPaid": "إجمالي المدفوع",
+      "totalRemaining": "إجمالي المتبقي"
+    },
+    "toolbar": {
+      "searchPlaceholder": "ابحث في الفواتير...",
+      "filter": "تصفية",
+      "refresh": "تحديث",
+      "export": "تصدير"
+    },
+    "filters": {
+      "paymentStatus": "حالة الدفع",
+      "paymentStatusPlaceholder": "اختر حالة الدفع",
+      "paymentMethod": "طريقة الدفع",
+      "paymentMethodPlaceholder": "اختر طريقة الدفع",
+      "customerName": "اسم العميل",
+      "customerNamePlaceholder": "أدخل اسم العميل",
+      "apply": "تطبيق",
+      "all": "الكل",
+      "paid": "مدفوع",
+      "unpaid": "غير مدفوع",
+      "partiallyPaid": "مدفوع جزئياً",
+      "cash": "نقدي",
+      "card": "بطاقة",
+      "transfer": "تحويل"
+    },
+    "table": {
+      "invoiceNumber": "رقم الفاتورة",
+      "customerName": "اسم العميل",
+      "phone": "رقم الهاتف",
+      "total": "الإجمالي",
+      "paidAmount": "المبلغ المدفوع",
+      "remainingAmount": "المبلغ المتبقي",
+      "paymentMethod": "طريقة الدفع",
+      "paymentStatus": "حالة الدفع",
+      "date": "التاريخ",
+      "options": "الخيارات"
+    },
+    "statuses": {
+      "paid": "مدفوع",
+      "unpaid": "غير مدفوع",
+      "partially_paid": "مدفوع جزئياً"
+    },
+    "actions": {
+      "createInvoice": "إنشاء فاتورة مبيعات",
+      "howToUse": "كيفية الاستخدام",
+      "view": "عرض"
+    },
+    "currency": "ج.م",
+    "empty": "لا توجد فواتير مبيعات"
+  },
+  "salesInvoice": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "salesInvoices": "فواتير المبيعات",
+      "createInvoice": "إنشاء فاتورة مبيعات"
+    },
+    "fields": {
+      "invoiceNumber": "رقم الفاتورة",
+      "customerName": "اسم العميل",
+      "phone": "رقم الهاتف",
+      "paymentMethod": "طريقة الدفع"
+    },
+    "placeholders": {
+      "invoiceNumber": "أدخل رقم الفاتورة",
+      "customerName": "أدخل اسم العميل",
+      "phone": "أدخل رقم الهاتف",
+      "paymentMethod": "اختر طريقة الدفع"
+    },
+    "options": {
+      "paymentMethod": {
+        "cash": "نقدي",
+        "card": "بطاقة",
+        "transfer": "تحويل"
+      }
+    },
+    "sections": {
+      "addProducts": "إضافة المنتجات",
+      "productsTable": "جدول المنتجات",
+      "invoiceSummary": "ملخص الفاتورة"
+    },
+    "table": {
+      "sku": "SKU",
+      "name": "الاسم",
+      "unitPrice": "سعر الوحدة",
+      "quantity": "الكمية",
+      "discount": "الخصم",
+      "taxInclusive": "شامل الضريبة",
+      "taxRate": "نسبة الضريبة",
+      "actions": "الإجراءات"
+    },
+    "summary": {
+      "productCount": "عدد المنتجات",
+      "subtotal": "المجموع الفرعي",
+      "taxTotal": "إجمالي الضريبة",
+      "shippingCost": "تكلفة الشحن",
+      "paidAmount": "المبلغ المدفوع",
+      "total": "الإجمالي",
+      "remainingAmount": "المبلغ المتبقي"
+    },
+    "actions": {
+      "howToUse": "كيفية الاستخدام",
+      "save": "حفظ",
+      "cancel": "إلغاء"
+    },
+    "yes": "نعم",
+    "no": "لا",
+    "currency": "ج.م"
+  },
+
+  "productSearch": {
+    "triggerPlaceholder": "ابحث عن منتج أو SKU...",
+    "title": "بحث المنتجات",
+    "subtitle": "ابحث باسم المنتج، SKU، أو الخصائص",
+    "inputPlaceholder": "أدخل اسم المنتج أو رمز SKU...",
+    "select": "اختيار",
+    "searching": "جاري البحث...",
+    "noResults": "لم يتم العثور على نتائج",
+    "tryDifferent": "جرب البحث بكلمات مختلفة",
+    "results": "نتائج",
+    "result": "نتيجة",
+    "selected": "محدد",
+    "stock": "المخزون",
+    "available": "متاح",
+    "reserved": "محجوز",
+    "outOfStock": "نفذ",
+    "lowStock": "قليل",
+    "inStock": "متاح"
+  },
+
+  "addProduct": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "products": "المنتجات",
+      "addProduct": "إضافة منتج",
+      "editProduct": "تعديل منتج",
+      "addBundle": "إضافة باقة",
+      "editBundle": "تعديل باقة"
+    },
+    "loading": {
+      "message": "جاري تحميل بيانات المنتج...",
+      "notFound": "المنتج غير موجود"
+    },
+    "actions": {
+      "back": "رجوع",
+      "save": "حفظ",
+      "saving": "جاري الحفظ...",
+      "addProduct": "إضافة منتج",
+      "addBundle": "إضافة باقة"
+    },
+    "tabs": {
+      "product": "منتج",
+      "bundle": "باقة"
+    },
+    "sections": {
+      "productInfo": "معلومات المنتج",
+      "bundleInfo": "معلومات الباقة",
+      "upselling": "البيع الإضافي"
+    },
+    "fields": {
+      "productName": "اسم المنتج",
+      "bundleName": "اسم الباقة",
+      "wholesalePrice": "سعر الجملة",
+      "lowestPrice": "أقل سعر",
+      "storageRack": "رف التخزين",
+      "category": "الفئة",
+      "store": "المتجر",
+      "warehouse": "المستودع",
+      "description": "الوصف",
+      "totalPrice": "السعر الإجمالي"
+    },
+    "placeholders": {
+      "productName": "أدخل اسم المنتج",
+      "bundleName": "أدخل اسم الباقة",
+      "wholesalePrice": "أدخل سعر الجملة",
+      "lowestPrice": "أدخل أقل سعر",
+      "storageRack": "أدخل رف التخزين",
+      "category": "اختر الفئة",
+      "store": "اختر المتجر",
+      "warehouse": "اختر المستودع",
+      "description": "أدخل الوصف",
+      "callCenterDesc": "أدخل وصف المنتج لمركز الاتصال",
+      "totalPrice": "السعر الإجمالي للباقة",
+      "bundleDescription": "وصف الباقة"
+    },
+    "common": {
+      "none": "بدون"
+    },
+    "validation": {
+      "nameRequired": "اسم المنتج مطلوب",
+      "invalidNumber": "رقم غير صحيح",
+      "attributeNameRequired": "اسم الخاصية مطلوب",
+      "attributeValueRequired": "قيمة الخاصية مطلوبة",
+      "atLeastOneValue": "يجب إضافة قيمة واحدة على الأقل",
+      "combinationKeyRequired": "مفتاح المتغير مطلوب",
+      "combinationSkuMax": "يجب ألا يتجاوز رمز SKU 120 حرفًا",
+      "combinationAttrsRequired": "خصائص المتغير مطلوبة",
+      "stockNonNegative": "المخزون يجب أن يكون غير سالب",
+      "upsellProductRequired": "المنتج مطلوب",
+      "priceRequired": "السعر مطلوب لجميع المتغيرات",
+      "productRequired": "المنتج مطلوب",
+      "quantityMinOne": "الكمية يجب أن تكون 1 على الأقل",
+      "quantityRequired": "الكمية مطلوبة"
+    },
+    "attributes": {
+      "title": "الخصائص والمتغيرات",
+      "addCustom": "إضافة خاصية مخصصة",
+      "quickAdd": "إضافة سريعة",
+      "values": "قيم",
+      "empty": "لا توجد خصائص",
+      "attribute": "الخاصية",
+      "deleteAttribute": "حذف الخاصية",
+      "name": "اسم الخاصية",
+      "placeholders": {
+        "name": "مثال: اللون، الحجم",
+        "value": "أدخل القيمة واضغط Enter"
+      }
+    },
+    "combinations": {
+      "title": "المتغيرات",
+      "count": "العدد",
+      "empty": "لا توجد متغيرات",
+      "combinationName": "اسم المتغير",
+      "price": "السعر",
+      "quantity": "الكمية",
+      "placeholders": {
+        "sku": "يتم توليده تلقائيًا",
+        "price": "أدخل السعر"
+      }
+    },
+    "bundles": {
+      "title": "المنتجات في الباقة",
+      "addProduct": "إضافة منتج",
+      "addSku": "إضافة SKU",
+      "empty": "لا توجد منتجات في الباقة",
+      "selectProduct": "اختر منتج",
+      "selectSku": "اختر SKU",
+      "quantity": "الكمية",
+      "quantityPlaceholder": "الكمية",
+      "atLeastOne": "يجب إضافة منتج واحد على الأقل للباقة",
+      "totalPriceRequired": "السعر الإجمالي مطلوب للباقة"
+    },
+    "upsell": {
+      "callCenterDesc": "وصف مركز الاتصال",
+      "enableUpselling": "تفعيل البيع الإضافي",
+      "selectProducts": "اختر المنتجات",
+      "searchProducts": "ابحث عن المنتجات",
+      "failedToLoad": "فشل تحميل المنتجات",
+      "selectedProducts": "المنتجات المختارة",
+      "callCenterItemDesc": "وصف المنتج لمركز الاتصال",
+      "callCenterItemDescPlaceholder": "أدخل الوصف",
+      "searchResultsCount": "نتائج البحث",
+      "clickToSelect": "اضغط لاختيار المنتج",
+      "loading": "جاري التحميل...",
+      "noResults": "لا توجد نتائج",
+      "tryDifferent": "جرّب كلمة بحث مختلفة"
+    },
+    "uploads": {
+      "mainImage": "الصورة الرئيسية",
+      "otherImages": "صور أخرى",
+      "dragHere": "اسحب الصور هنا",
+      "or": "أو",
+      "attach": "إرفاق ملف",
+      "fromLibrary": "من المكتبة",
+      "remove": "حذف",
+      "existingImage": "صورة موجودة"
+    },
+    "messages": {
+      "saving": "جاري الحفظ...",
+      "created": "تم إنشاء المنتج بنجاح",
+      "updated": "تم تحديث المنتج بنجاح"
+    },
+    "errors": {
+      "mainImageRequired": "الصورة الرئيسية مطلوبة",
+      "missingPrices": "يجب إدخال السعر لجميع المتغيرات",
+      "bundleItemsRequired": "يجب إضافة منتج واحد على الأقل للباقة"
+    }
+  },
+
+  "products": {
+    "common": {
+      "na": "—",
+      "id": "ID",
+      "sku": "SKU",
+      "price": "السعر",
+      "variant": "Variant",
+      "qty": "الكمية",
+      "stock": "المخزون",
+      "attributes": "الخصائص",
+      "variantId": "VariantId",
+      "itemId": "ItemId",
+      "onHand": "onHand",
+      "reserved": "reserved",
+      "available": "available",
+      "key": "Key",
+      "general": "عام",
+      "callCenter": "خدمة العملاء",
+      "storageRack": "Storage Rack",
+      "images": "الصور",
+      "description": "الوصف",
+      "stockSummary": "ملخص المخزون",
+      "skus": "المتغيرات / SKUs",
+      "upsellingProducts": "منتجات Upselling",
+      "productId": "ProductId",
+      "label": "Label",
+      "callCenterDesc": "وصف خدمة العملاء",
+      "exportBuilderNotReady": "مُنشئ التصدير غير جاهز"
+    },
+    "bundleModal": {
+      "title": "تفاصيل الباندل",
+      "noData": "لا توجد بيانات.",
+      "contents": "محتويات الباندل",
+      "noItems": "لا يوجد عناصر."
+    },
+    "productModal": {
+      "title": "تفاصيل المنتج",
+      "noData": "لا توجد بيانات.",
+      "category": "الفئة",
+      "store": "المتجر",
+      "warehouse": "المخزن",
+      "wholesale": "جملة",
+      "lowestPrice": "أقل سعر",
+      "upsellEnabled": "Upsell مفعّل",
+      "upsellDisabled": "Upsell غير مفعّل",
+      "imagesEmpty": "لا توجد صور إضافية.",
+      "skusEmpty": "لا يوجد SKUs.",
+      "upsellingEmpty": "لا يوجد Upselling."
+    },
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "products": "المنتجات"
+    },
+    "actions": {
+      "addProduct": "إضافة منتج",
+      "addBundle": "إضافة باقة",
+      "howToUse": "كيفية الاستخدام",
+      "delete": "حذف",
+      "edit": "تعديل",
+      "view": "عرض"
+    },
+    "tabs": {
+      "products": "المنتجات",
+      "bundles": "الباقات",
+      "mine": "منتجاتي",
+      "idle": "المنتجات الراكدة"
+    },
+    "stats": {
+      "withShippingCompanies": "مع شركات الشحن",
+      "returnedPieces": "قطع مرتجعة",
+      "soldPieces": "قطع مباعة",
+      "remainingPieces": "قطع متبقية",
+      "totalProducts": "إجمالي المنتجات"
+    },
+    "toolbar": {
+      "searchPlaceholder": "البحث عن المنتجات...",
+      "filter": "تصفية",
+      "export": "تصدير"
+    },
+    "filters": {
+      "storageRack": "رف التخزين",
+      "storageRackPlaceholder": "أدخل رف التخزين",
+      "category": "الفئة",
+      "categoryPlaceholder": "اختر الفئة",
+      "store": "المتجر",
+      "storePlaceholder": "اختر المتجر",
+      "warehouse": "المستودع",
+      "warehousePlaceholder": "اختر المستودع",
+      "priceFrom": "السعر من",
+      "priceFromPlaceholder": "أدخل السعر من",
+      "priceTo": "السعر إلى",
+      "priceToPlaceholder": "أدخل السعر إلى",
+      "any": "أي",
+      "apply": "تطبيق",
+      "reset": "إعادة تعيين"
+    },
+    "idle": {
+      "label": "عرض المنتجات الراكدة من تاريخ:",
+      "fromDate": "من تاريخ",
+      "applyDate": "تطبيق التاريخ"
+    },
+    "table": {
+      "id": "الرقم",
+      "mainImage": "الصورة الرئيسية",
+      "imagesCount": "عدد الصور",
+      "name": "الاسم",
+      "sku": "رمز SKU",
+      "category": "الفئة",
+      "store": "المتجر",
+      "warehouse": "المستودع",
+      "storageRack": "رف التخزين",
+      "wholesalePrice": "سعر الجملة",
+      "lowestPrice": "أقل سعر",
+      "totalStock": "إجمالي المخزون",
+      "upsellingEnabled": "البيع الإضافي",
+      "createdAt": "تاريخ الإنشاء",
+      "options": "الخيارات",
+      "items": "قطعة",
+      "bundleItems": "المنتجات في الباقة",
+      "price": "السعر"
+    },
+    "yes": "نعم",
+    "no": "لا",
+    "empty": "لا توجد منتجات",
+    "delete": {
+      "title": "تأكيد الحذف",
+      "desc": "هل أنت متأكد من حذف هذا المنتج؟ لا يمكن التراجع عن هذا الإجراء.",
+      "confirm": "حذف",
+      "cancel": "إلغاء",
+      "success": "تم حذف المنتج بنجاح"
+    },
+    "view": {
+      "title": "عرض المنتج",
+      "noData": "لا توجد بيانات",
+      "close": "إغلاق",
+      "wholesalePrice": "سعر الجملة",
+      "lowestPrice": "أقل سعر",
+      "storageRack": "رف التخزين",
+      "category": "الفئة",
+      "store": "المتجر",
+      "warehouse": "المستودع",
+      "combinations": "المتغيرات",
+      "sku": "رمز SKU",
+      "attributes": "الخصائص",
+      "price": "السعر",
+      "stock": "المخزون",
+      "reserved": "محجوز",
+      "available": "متاح",
+      "gallery": "معرض الصور",
+      "bundlePrice": "السعر",
+      "bundleType": "باقة",
+      "bundleProducts": "منتجات",
+      "bundleItemsTitle": "المنتجات في الباقة",
+      "quantity": "الكمية",
+      "product": "منتج"
+    }
+  },
+  "purchaseDetails": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "purchases": "المشتريات",
+      "invoiceDetails": "تفاصيل الفاتورة"
+    },
+    "title": "فاتورة مشتريات",
+    "invoiceNumber": "رقم الفاتورة",
+    "loading": "جاري التحميل...",
+    "status": {
+      "accepted": "مقبولة",
+      "pending": "معلقة",
+      "rejected": "مرفوضة"
+    },
+    "actions": {
+      "print": "طباعة",
+      "download": "تحميل",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "changeStatus": "تغيير الحالة",
+      "accept": "قبول",
+      "suspend": "تعليق",
+      "reject": "رفض"
+    },
+    "fields": {
+      "date": "التاريخ",
+      "supplier": "المورد",
+      "noSupplier": "بدون مورد",
+      "safe": "الخزنة",
+      "items": "العناصر",
+      "products": "منتج",
+      "notes": "الملاحظات"
+    },
+    "sections": {
+      "items": "عناصر الفاتورة",
+      "summary": "ملخص الفاتورة",
+      "receiptImage": "صورة الإيصال"
+    },
+    "table": {
+      "product": "المنتج",
+      "quantity": "الكمية",
+      "purchaseCost": "تكلفة الشراء",
+      "taxRate": "نسبة الضريبة",
+      "lineTotal": "الإجمالي",
+      "unknownProduct": "منتج غير معروف",
+      "taxInclusive": "شامل الضريبة"
+    },
+    "summary": {
+      "subtotal": "المجموع الفرعي",
+      "taxTotal": "إجمالي الضريبة",
+      "total": "الإجمالي",
+      "paidAmount": "المبلغ المدفوع",
+      "remainingAmount": "المبلغ المتبقي"
+    },
+    "currency": "ج.م",
+    "messages": {
+      "fetchFailed": "فشل في تحميل تفاصيل الفاتورة",
+      "statusUpdated": "تم تحديث الحالة بنجاح",
+      "statusFailed": "فشل في تحديث الحالة",
+      "confirmDelete": "هل أنت متأكد من حذف هذه الفاتورة؟",
+      "deleteSuccess": "تم حذف الفاتورة بنجاح",
+      "deleteFailed": "فشل في حذف الفاتورة",
+      "downloadStarted": "بدأ تحميل الفاتورة"
+    }
+  },
+
+  "validation": {
+    "supplierRequired": "المورد مطلوب",
+    "receiptNumberRequired": "رقم الإيصال مطلوب",
+    "safeRequired": "الخزنة مطلوبة",
+    "mustBePositive": "يجب أن يكون الرقم موجباً",
+    "itemsRequired": "يجب إضافة عنصر واحد على الأقل",
+    "unitCostPositive": "يجب أن تكون تكلفة القطعة موجبة",
+    "unitCostRequired": "تكلفة القطعة مطلوبة",
+    "quantityMinimum": "يجب أن تكون الكمية 1 على الأقل",
+    "quantityRequired": "عدد القطع مطلوب",
+    "productRequired": "المنتج مطلوب"
+  },
+  "purchases": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "purchases": "المشتريات"
+    },
+    "stats": {
+      "acceptedInvoices": "الفواتير المقبولة",
+      "pendingInvoices": "الفواتير قيد الانتظار",
+      "rejectedInvoices": "الفواتير المرفوضة"
+    },
+    "toolbar": {
+      "searchPlaceholder": "البحث في المشتريات...",
+      "filter": "تصفية"
+    },
+    "filters": {
+      "supplier": "المورد",
+      "supplierPlaceholder": "اختر المورد",
+      "status": "الحالة",
+      "statusPlaceholder": "اختر الحالة",
+      "dateRange": "نطاق التاريخ",
+      "selectDateRange": "اختر نطاق التاريخ",
+      "hasReceipt": "يحتوي على إيصال",
+      "hasReceiptPlaceholder": "اختر",
+      "all": "الكل",
+      "yes": "نعم",
+      "no": "لا",
+      "apply": "تطبيق"
+    },
+    "table": {
+      "receiptNumber": "رقم الإيصال",
+      "supplier": "المورد",
+      "noSupplier": "بدون مورد",
+      "date": "التاريخ",
+      "subtotal": "المجموع الفرعي",
+      "paidAmount": "المبلغ المدفوع",
+      "remainingAmount": "المبلغ المتبقي",
+      "receipt": "الإيصال",
+      "noReceipt": "لا يوجد إيصال",
+      "openAsset": "فتح الملف",
+      "status": "الحالة",
+      "actions": "الإجراءات",
+      "sku": "رمز المنتج",
+      "name": "الاسم",
+      "unitCost": "تكلفة الوحدة",
+      "quantityCount": "عدد الكمية",
+      "invoiceTotal": "إجمالي الفاتورة"
+    },
+    "status": {
+      "accepted": "مقبول",
+      "pending": "قيد الانتظار",
+      "rejected": "مرفوض"
+    },
+    "actions": {
+      "loading": "جاري التحميل...",
+      "cancel": "إلغاء",
+      "close": "إغلاق",
+      "save": "حفظ",
+      "saving": "جاري الحفظ...",
+      "accept": "قبول",
+      "reject": "رفض",
+      "suspend": "تعليق",
+      "view": "عرض",
+      "logs": "السجلات",
+      "editPaidAmount": "تعديل المبلغ المدفوع",
+      "createInvoice": "إنشاء فاتورة جديدة",
+      "howToUse": "كيفية الاستخدام",
+      "changeStatus": "تغيير الحالة"
+    },
+    "acceptPreview": {
+      "title": "معاينة القبول",
+      "receiptNumber": "رقم الإيصال",
+      "loading": "جاري تحميل معاينة القبول...",
+      "empty": "لا توجد بيانات للمعاينة",
+      "emptyDescription": "لا توجد بيانات معاينة متاحة لهذه الفاتورة",
+      "totalItems": "إجمالي الأصناف",
+      "totalQuantity": "إجمالي الكمية",
+      "priceUpdates": "تحديثات الأسعار",
+      "calculationFormula": "معادلة حساب السعر الجديد",
+      "formulaDescription": "يتم حساب السعر الجديد باستخدام المتوسط المرجح للمخزون القديم والوارد الجديد لضمان دقة التسعير",
+      "formula": "المعادلة",
+      "newAvgPrice": "السعر الجديد",
+      "oldPrice": "السعر القديم",
+      "oldStock": "المخزون القديم",
+      "incomingAvg": "  سعر الوارد",
+      "incomingQty": "الكمية الواردة",
+      "newStock": "المخزون الجديد",
+      "formulaExample": "مثال: إذا كان المخزون القديم 60 بسعر 60 ريال، والوارد 554 بسعر 100 ريال، فإن السعر الجديد = (60×60 + 100×554) ÷ 614 = 99 ريال",
+      "autoCalculated": "يتم الحساب تلقائياً",
+      "sku": "رمز المنتج",
+      "stockBefore": "المخزون قبل",
+      "addQty": "الكمية المضافة",
+      "stockAfter": "المخزون بعد",
+      "newPrice": "السعر الجديد",
+      "updated": "محدث",
+      "hasErrors": "يوجد أخطاء في بعض الأصناف",
+      "hasErrorsDescription": "بعض الأصناف تحتوي على أخطاء ويجب مراجعتها قبل أن تتمكن من المتابعة بقبول هذه الفاتورة",
+      "previewReady": "المعاينة جاهزة - راجع التغييرات قبل القبول",
+      "apply": "تطبيق القبول"
+    },
+    "details": {
+      "title": "تفاصيل الفاتورة",
+      "invoiceNumber": "رقم الفاتورة",
+      "loading": "جاري تحميل تفاصيل الفاتورة...",
+      "supplier": "المورد",
+      "noSupplier": "بدون مورد",
+      "safe": "الخزنة",
+      "date": "التاريخ",
+      "status": "الحالة",
+      "items": "الأصناف",
+      "receiptAsset": "ملف الإيصال",
+      "openPdf": "فتح ملف PDF",
+      "openAsset": "فتح الملف",
+      "notes": "ملاحظات"
+    },
+    "summary": {
+      "subtotal": "المجموع الفرعي",
+      "paidAmount": "المبلغ المدفوع",
+      "remainingAmount": "المبلغ المتبقي"
+    },
+    "logs": {
+      "title": "سجلات التدقيق",
+      "description": "سجل جميع التغييرات والإجراءات للفاتورة",
+      "loading": "جاري تحميل السجلات...",
+      "empty": "لا توجد سجلات لهذه الفاتورة",
+      "showChanges": "عرض التغييرات",
+      "showDetails": "عرض التفاصيل"
+    },
+    "editPaidAmount": {
+      "title": "تعديل المبلغ المدفوع",
+      "description": "قم بتحديث المبلغ المدفوع من إجمالي الفاتورة",
+      "total": "الإجمالي",
+      "paidAmount": "المبلغ المدفوع",
+      "remaining": "المبلغ المتبقي"
+    },
+    "messages": {
+      "previewFailed": "فشل في تحميل معاينة القبول",
+      "statusUpdated": "تم تحديث حالة الفاتورة بنجاح",
+      "statusFailed": "فشل في تحديث حالة الفاتورة",
+      "paidAmountUpdated": "تم تحديث المبلغ المدفوع بنجاح",
+      "paidAmountFailed": "فشل في تحديث المبلغ المدفوع",
+      "fetchFailed": "فشل في تحميل قائمة المشتريات",
+      "fetchDetailsFailed": "فشل في تحميل تفاصيل الفاتورة",
+      "statsFailed": "فشل في تحميل إحصائيات المشتريات",
+      "logsFailed": "فشل في تحميل سجلات التدقيق"
+    },
+    "empty": "لا توجد فواتير مشتريات",
+    "currency": "ج.م"
+  },
+  "purchaseInvoice": {
+    "current_price": "السعر الحالي",
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "purchases": "المشتريات",
+      "createPurchaseInvoice": "إنشاء فاتورة مشتريات"
+    },
+    "actions": {
+      "howToUse": "كيفية الاستخدام",
+      "save": "حفظ"
+    },
+    "fields": {
+      "supplierName": "اسم المورد",
+      "receiptNumber": "رقم الإيصال",
+      "safe": "الخزنة",
+      "notes": "ملاحظات"
+    },
+    "placeholders": {
+      "supplierName": "اختر المورد",
+      "receiptNumber": "أدخل رقم الإيصال",
+      "safe": "اختر الخزنة",
+      "notes": "أدخل ملاحظات إضافية"
+    },
+    "options": {
+      "safe": {
+        "cash": "نقدي",
+        "safe1": "خزنة 1",
+        "safe2": "خزنة 2"
+      }
+    },
+    "sections": {
+      "notes": "ملاحظات",
+      "addProducts": "إضافة منتجات",
+      "productsTable": "جدول المنتجات",
+      "receiptImage": "صورة الإيصال",
+      "invoiceSummary": "ملخص الفاتورة"
+    },
+    "table": {
+      "sku": "رمز المنتج",
+      "name": "الاسم",
+      "unitCost": "تكلفة القطعة",
+      "quantityCount": "عدد القطع",
+      "invoiceTotal": "إجمالي الفاتورة",
+      "actions": "الإجراءات"
+    },
+    "upload": {
+      "receiptAlt": "صورة الإيصال"
+    },
+    "summary": {
+      "productCount": "عدد المنتجات",
+      "subtotal": "المجموع الفرعي",
+      "paidAmount": "المبلغ المدفوع",
+      "invoiceTotal": "إجمالي الفاتورة",
+      "remainingAmount": "المبلغ المتبقي"
+    },
+    "currency": "ج.م",
+    "messages": {
+      "createSuccess": "تم إنشاء فاتورة المشتريات بنجاح",
+      "createFailed": "فشل في إنشاء فاتورة المشتريات",
+      "loadSuppliersFailed": "فشل في تحميل الموردين"
+    }
+  },
+
+  "orders": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "orders": "الطلبات"
+    },
+    "actions": {
+      "createOrder": "إضافة طلب جديد",
+      "howToUse": "كيفية الاستخدام",
+      "view": "عرض",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "changeStatus": "تغيير الحالة"
+    },
+    "toolbar": {
+      "searchPlaceholder": "البحث برقم الطلب، اسم العميل أو رقم الهاتف...",
+      "filter": "تصفية",
+      "refresh": "تحديث"
+    },
+    "filters": {
+      "status": "حالة الطلب",
+      "statusPlaceholder": "اختر حالة الطلب",
+      "paymentStatus": "حالة الدفع",
+      "paymentStatusPlaceholder": "اختر حالة الدفع",
+      "paymentMethod": "طريقة الدفع",
+      "paymentMethodPlaceholder": "اختر طريقة الدفع",
+      "dateRange": "نطاق التاريخ",
+      "selectDateRange": "اختر نطاق التاريخ",
+      "all": "الكل",
+      "apply": "تطبيق"
+    },
+    "stats": {
+      "newOrders": "طلبات جديدة",
+      "underReview": "قيد المراجعة",
+      "preparing": "قيد التحضير",
+      "readyForShipping": "جاهز للشحن",
+      "shipped": "تم الشحن",
+      "delivered": "تم التوصيل",
+      "cancelled": "ملغى",
+      "returned": "مرتجع"
+    },
+    "table": {
+      "orderNumber": "رقم الطلب",
+      "customerName": "اسم العميل",
+      "address": "العنوان",
+      "orderDate": "تاريخ الطلب",
+      "paymentMethod": "طريقة الدفع",
+      "total": "المجموع",
+      "shippingCompany": "شركة الشحن",
+      "status": "الحالة",
+      "actions": "الخيارات"
+    },
+    "statuses": {
+      "new": "جديد",
+      "under_review": "قيد المراجعة",
+      "preparing": "قيد التحضير",
+      "ready": "جاهز للشحن",
+      "shipped": "تم الشحن",
+      "delivered": "تم التوصيل",
+      "cancelled": "ملغى",
+      "returned": "مرتجع"
+    },
+    "paymentStatuses": {
+      "pending": "معلق",
+      "paid": "مدفوع",
+      "partial": "دفع جزئي",
+      "refunded": "مسترد"
+    },
+    "paymentMethods": {
+      "cash": "نقدي",
+      "card": "بطاقة ائتمان",
+      "bank_transfer": "تحويل بنكي",
+      "cod": "الدفع عند الاستلام"
+    },
+    "messages": {
+      "statsFailed": "فشل تحميل الإحصائيات",
+      "fetchFailed": "فشل تحميل الطلبات",
+      "confirmDelete": "هل أنت متأكد من حذف هذا الطلب؟",
+      "deleteSuccess": "تم حذف الطلب بنجاح",
+      "deleteFailed": "فشل حذف الطلب"
+    },
+    "currency": "جنيه",
+    "empty": "لا توجد طلبات حتى الآن"
+  },
+  "createOrder": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "orders": "الطلبات",
+      "createOrder": "إضافة طلب جديد"
+    },
+    "actions": {
+      "howToUse": "كيفية الاستخدام",
+      "save": "حفظ الطلب"
+    },
+    "sections": {
+      "customerInfo": "معلومات العميل",
+      "paymentShipping": "الدفع والشحن",
+      "addProducts": "إضافة المنتجات",
+      "productsTable": "جدول المنتجات",
+      "notes": "الملاحظات",
+      "orderSummary": "ملخص الطلب"
+    },
+    "fields": {
+      "customerName": "اسم العميل",
+      "phoneNumber": "رقم الهاتف",
+      "email": "البريد الإلكتروني",
+      "address": "العنوان",
+      "city": "المدينة",
+      "area": "المنطقة",
+      "paymentMethod": "طريقة الدفع",
+      "shippingCompany": "شركة الشحن",
+      "shippingCost": "تكلفة الشحن",
+      "discount": "الخصم",
+      "notes": "ملاحظات داخلية",
+      "customerNotes": "ملاحظات العميل"
+    },
+    "placeholders": {
+      "customerName": "أدخل اسم العميل",
+      "phoneNumber": "أدخل رقم الهاتف",
+      "email": "أدخل البريد الإلكتروني",
+      "address": "أدخل العنوان الكامل",
+      "city": "أدخل المدينة",
+      "area": "أدخل المنطقة",
+      "shippingCompany": "اختر شركة الشحن",
+      "notes": "ملاحظات داخلية للطلب",
+      "customerNotes": "ملاحظات العميل"
+    },
+    "paymentMethods": {
+      "cash": "نقدي",
+      "card": "بطاقة ائتمان",
+      "bankTransfer": "تحويل بنكي",
+      "cod": "الدفع عند الاستلام"
+    },
+    "table": {
+      "sku": "الباركود",
+      "name": "اسم المنتج",
+      "unitPrice": "سعر الوحدة",
+      "quantity": "الكمية",
+      "total": "المجموع",
+      "actions": "الخيارات"
+    },
+    "summary": {
+      "productCount": "عدد المنتجات",
+      "productsTotal": "مجموع المنتجات",
+      "shippingCost": "تكلفة الشحن",
+      "discount": "الخصم",
+      "finalTotal": "المجموع النهائي"
+    },
+    "validation": {
+      "customerNameRequired": "اسم العميل مطلوب",
+      "phoneNumberRequired": "رقم الهاتف مطلوب",
+      "invalidEmail": "البريد الإلكتروني غير صحيح",
+      "addressRequired": "العنوان مطلوب",
+      "cityRequired": "المدينة مطلوبة",
+      "paymentMethodRequired": "طريقة الدفع مطلوبة",
+      "itemsRequired": "يجب إضافة منتج واحد على الأقل"
+    },
+    "messages": {
+      "createSuccess": "تم إنشاء الطلب بنجاح",
+      "createFailed": "فشل إنشاء الطلب"
+    },
+    "currency": "ج.م"
   }
 }

@@ -1,95 +1,542 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
+	Trash2,
+	CalendarDays,
 	ChevronLeft,
+	Edit2,
 	Filter,
-	RefreshCw,
 	Eye,
-	Users,
+	FileDown,
+	X,
+	Loader2,
+	Plus,
+	Phone,
+	Mail,
+	MapPin,
+	User,
+	Tag,
+	Copy,
+	Check,
 	TrendingUp,
 	DollarSign,
+	FileText,
+	ReceiptText,
+	Wallet,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
+import { useForm, Controller } from "react-hook-form";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
 
 import InfoCard from "@/components/atoms/InfoCard";
 import DataTable from "@/components/atoms/DataTable";
-
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import Button_ from "@/components/atoms/Button";
 import { Label } from "@/components/ui/label";
-
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import InputPhone, { validatePhone } from "@/components/atoms/InputPhone";
 
-/** ✅ Toolbar (JSX) */
-function SuppliersTableToolbar({
-	t,
-	searchValue,
-	onSearchChange,
-	onExport,
-	onRefresh,
-	onToggleFilters,
-	isFiltersOpen,
-}) {
+import api from "@/utils/api";
+import toast from "react-hot-toast";
+
+function normalizeAxiosError(err) {
+	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
+	return Array.isArray(msg) ? msg.join(", ") : String(msg);
+}
+
+const makeSchema = (t, countries) =>
+	yup.object({
+		name: yup.string().trim().required(t("validation.nameRequired")).max(120, t("validation.nameMax")),
+		address: yup.string().trim().nullable().max(200, t("validation.addressMax")),
+		description: yup.string().trim().nullable().max(255, t("validation.descriptionMax")),
+
+		phoneCountry: yup.string().required(),
+		phoneNumber: yup.string().test("phone-valid", t("validation.phoneInvalid"), function (value) {
+			const country = countries.find((c) => c.key === this.parent.phoneCountry) || countries[0];
+			const error = validatePhone(value, country);
+			return !error;
+		}),
+
+		secondPhoneCountry: yup.string().nullable(),
+		secondPhoneNumber: yup
+			.string()
+			.nullable()
+			.test("phone-valid", t("validation.phoneInvalid"), function (value) {
+				if (!value) return true;
+				const country = countries.find((c) => c.key === this.parent.secondPhoneCountry) || countries[0];
+				const error = validatePhone(value, country);
+				return !error;
+			}),
+
+		email: yup.string().trim().nullable().email(t("validation.emailInvalid")).max(100, t("validation.emailMax")),
+		categoryIds: yup.array().of(yup.number()).min(1, t("validation.categoryRequired")),
+	});
+
+function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess, t, countries }) {
+	const [categories, setCategories] = useState([]);
+	const [loadingCategories, setLoadingCategories] = useState(false);
+
+	const schema = useMemo(() => makeSchema(t, countries), [t, countries]);
+
+	const {
+		control,
+		register,
+		handleSubmit,
+		setValue,
+		reset,
+		watch,
+		formState: { errors, isSubmitting },
+	} = useForm({
+		defaultValues: {
+			name: "",
+			address: "",
+			description: "",
+			phoneCountry: "EG",
+			phoneNumber: "",
+			secondPhoneCountry: "EG",
+			secondPhoneNumber: "",
+			email: "",
+			categoryIds: [],
+		},
+		resolver: yupResolver(schema),
+	});
+
+	const selectedCategories = watch("categoryIds") || [];
+
+	useEffect(() => {
+		(async () => {
+			setLoadingCategories(true);
+			try {
+				const res = await api.get("/supplier-categories", { params: { limit: 200 } });
+				const catsList = Array.isArray(res.data?.records) ? res.data.records : Array.isArray(res.data) ? res.data : [];
+				setCategories(catsList);
+			} catch (e) {
+				console.error("Failed to load categories:", e);
+			} finally {
+				setLoadingCategories(false);
+			}
+		})();
+	}, []);
+
+	useEffect(() => {
+		if (supplier) {
+			reset({
+				name: supplier.name || "",
+				address: supplier.address || "",
+				description: supplier.description || "",
+				phoneCountry: supplier.phoneCountry || "EG",
+				phoneNumber: supplier.phone || "",
+				secondPhoneCountry: supplier.secondPhoneCountry || "EG",
+				secondPhoneNumber: supplier.secondPhone || "",
+				email: supplier.email || "",
+				categoryIds: supplier.categories?.map((c) => c.id) || [],
+			});
+		} else {
+			reset({
+				name: "",
+				address: "",
+				description: "",
+				phoneCountry: "EG",
+				phoneNumber: "",
+				secondPhoneCountry: "EG",
+				secondPhoneNumber: "",
+				email: "",
+				categoryIds: [],
+			});
+		}
+	}, [supplier, reset]);
+
+	const onSubmit = async (data) => {
+		try {
+			const payload = {
+				name: data.name.trim(),
+				address: data.address?.trim() || null,
+				description: data.description?.trim() || null,
+				phone: data.phoneNumber,
+				phoneCountry: data.phoneCountry,
+				secondPhone: data.secondPhoneNumber || null,
+				secondPhoneCountry: data.secondPhoneNumber ? data.secondPhoneCountry : null,
+				email: data.email?.trim() || null,
+				categoryIds: data.categoryIds,
+			};
+
+			if (supplier) {
+				await api.patch(`/suppliers/${supplier.id}`, payload);
+				toast.success(t("messages.updated"));
+			} else {
+				await api.post("/suppliers", payload);
+				toast.success(t("messages.created"));
+			}
+
+			onSuccess();
+			onOpenChange(false);
+		} catch (error) {
+			toast.error(normalizeAxiosError(error));
+		}
+	};
+
+	const toggleCategory = (categoryId) => {
+		const current = selectedCategories || [];
+		if (current.includes(categoryId)) {
+			setValue(
+				"categoryIds",
+				current.filter((id) => id !== categoryId),
+				{ shouldValidate: true }
+			);
+		} else {
+			setValue("categoryIds", [...current, categoryId], { shouldValidate: true });
+		}
+	};
+
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent className="!max-w-3xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900">
+				<DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
+					<DialogTitle className="text-xl font-bold flex items-center gap-2">
+						<User className="w-6 h-6 text-primary" />
+						{supplier ? t("form.editTitle") : t("form.createTitle")}
+					</DialogTitle>
+				</DialogHeader>
+
+				<form onSubmit={handleSubmit(onSubmit)} className="space-y-6 p-6">
+					<div className="space-y-2">
+						<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300 flex items-center gap-1">
+							<User size={16} />
+							{t("form.name")}
+						</Label>
+						<Input
+							{...register("name")}
+							placeholder={t("form.namePlaceholder")}
+							className="rounded-xl h-[50px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
+						/>
+						{errors.name && <p className="text-xs text-red-600">{errors.name.message}</p>}
+					</div>
+
+					<div className="space-y-2">
+						<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300 flex items-center gap-1">
+							<MapPin size={16} />
+							{t("form.address")}
+						</Label>
+						<Input
+							{...register("address")}
+							placeholder={t("form.addressPlaceholder")}
+							className="rounded-xl h-[50px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
+						/>
+						{errors.address && <p className="text-xs text-red-600">{errors.address.message}</p>}
+					</div>
+
+					<div className="space-y-2">
+						<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300 flex items-center gap-1">
+							<FileText size={16} />
+							{t("form.description")}
+						</Label>
+						<Input
+							{...register("description")}
+							placeholder={t("form.descriptionPlaceholder")}
+							className="rounded-xl h-[50px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
+						/>
+						{errors.description && <p className="text-xs text-red-600">{errors.description.message}</p>}
+					</div>
+
+					<InputPhone
+						label={t("form.phone")}
+						icon={Phone}
+						control={control}
+						nameCountry="phoneCountry"
+						nameNumber="phoneNumber"
+						error={errors.phoneNumber?.message}
+					/>
+
+					<InputPhone
+						label={t("form.secondPhone")}
+						icon={Phone}
+						control={control}
+						nameCountry="secondPhoneCountry"
+						nameNumber="secondPhoneNumber"
+						error={errors.secondPhoneNumber?.message}
+					/>
+
+					<div className="space-y-2">
+						<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300 flex items-center gap-1">
+							<Mail size={16} />
+							{t("form.email")}
+						</Label>
+						<Input
+							{...register("email")}
+							type="email"
+							placeholder={t("form.emailPlaceholder")}
+							dir="ltr"
+							className="rounded-xl h-[50px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
+						/>
+						{errors.email && <p className="text-xs text-red-600">{errors.email.message}</p>}
+					</div>
+
+					<div className="space-y-3">
+						<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300 flex items-center gap-1">
+							<Tag size={16} />
+							{t("form.categories")}
+						</Label>
+
+						{loadingCategories ? (
+							<div className="flex items-center justify-center p-8">
+								<Loader2 className="w-6 h-6 animate-spin text-primary" />
+							</div>
+						) : categories.length === 0 ? (
+							<div className="text-center p-8 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+								<Tag size={32} className="mx-auto mb-3 text-slate-300" />
+								<p className="text-sm text-slate-500">{t("form.noCategories")}</p>
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									className="mt-3"
+									onClick={() => window.open("/supplier-categories", "_blank")}
+								>
+									{t("form.addCategoryLink")}
+								</Button>
+							</div>
+						) : (
+							<div className="flex flex-wrap gap-3">
+								{categories.map((category) => (
+									<motion.button
+										key={category.id}
+										type="button"
+										whileHover={{ scale: 1.02 }}
+										whileTap={{ scale: 0.98 }}
+										onClick={() => toggleCategory(category.id)}
+										className={cn(
+											"px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200",
+											selectedCategories.includes(category.id)
+												? "bg-primary text-white shadow-lg shadow-primary/30"
+												: "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:text-slate-300"
+										)}
+									>
+										{category.name}
+									</motion.button>
+								))}
+							</div>
+						)}
+
+						{errors.categoryIds && <p className="text-xs text-red-600">{errors.categoryIds.message}</p>}
+					</div>
+
+					<div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+						<Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting} className="rounded-xl">
+							{t("form.cancel")}
+						</Button>
+						<Button type="submit" disabled={isSubmitting} className="rounded-xl bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20">
+							{isSubmitting ? (
+								<>
+									<Loader2 className="w-4 h-4 animate-spin mr-2" />
+									{t("form.saving")}
+								</>
+							) : supplier ? (
+								t("form.update")
+							) : (
+								t("form.create")
+							)}
+						</Button>
+					</div>
+				</form>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+function CopyButton({ text }) {
+	const [copied, setCopied] = useState(false);
+
+	const handleCopy = async () => {
+		try {
+			await navigator.clipboard.writeText(text);
+			setCopied(true);
+			setTimeout(() => setCopied(false), 2000);
+		} catch (err) {
+			console.error("Failed to copy:", err);
+		}
+	};
+
+	return (
+		<Tooltip>
+			<TooltipTrigger asChild>
+				<button
+					onClick={handleCopy}
+					className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+				>
+					{copied ? <Check size={14} className="text-green-600" /> : <Copy size={14} className="text-slate-400" />}
+				</button>
+			</TooltipTrigger>
+			<TooltipContent>{copied ? "تم النسخ!" : "نسخ"}</TooltipContent>
+		</Tooltip>
+	);
+}
+
+function ViewSupplierDialog({ open, onOpenChange, supplier, t }) {
+	if (!supplier) return null;
+
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent className="!max-w-3xl bg-white dark:bg-slate-900 max-h-[90vh] overflow-y-auto">
+				<DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
+					<DialogTitle className="text-xl font-bold flex items-center gap-2">
+						<Eye className="w-6 h-6 text-primary" />
+						{t("view.title")}
+					</DialogTitle>
+				</DialogHeader>
+
+				<div className="p-6 space-y-6">
+					<div>
+						<h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{supplier.name}</h3>
+						{supplier.categories && supplier.categories.length > 0 && (
+							<div className="flex flex-wrap gap-2 mt-2">
+								{supplier.categories.map((cat) => (
+									<Badge key={cat.id} className="rounded-full bg-primary/10 text-primary border border-primary/20">
+										{cat.name}
+									</Badge>
+								))}
+							</div>
+						)}
+					</div>
+
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div className="rounded-xl border-2 border-slate-200 dark:border-slate-700 p-4">
+							<div className="flex items-center gap-2 mb-2">
+								<Phone size={16} className="text-slate-500" />
+								<span className="text-xs font-semibold text-slate-500 uppercase">{t("view.phone")}</span>
+							</div>
+							<div className="font-semibold text-slate-900 dark:text-white font-[Inter]">{supplier.phone || "—"}</div>
+						</div>
+
+						{supplier.secondPhone && (
+							<div className="rounded-xl border-2 border-slate-200 dark:border-slate-700 p-4">
+								<div className="flex items-center gap-2 mb-2">
+									<Phone size={16} className="text-slate-500" />
+									<span className="text-xs font-semibold text-slate-500 uppercase">{t("view.secondPhone")}</span>
+								</div>
+								<div className="font-semibold text-slate-900 dark:text-white font-[Inter]">{supplier.secondPhone}</div>
+							</div>
+						)}
+
+						{supplier.email && (
+							<div className="rounded-xl border-2 border-slate-200 dark:border-slate-700 p-4">
+								<div className="flex items-center gap-2 mb-2">
+									<Mail size={16} className="text-slate-500" />
+									<span className="text-xs font-semibold text-slate-500 uppercase">{t("view.email")}</span>
+								</div>
+								<div className="font-semibold text-slate-900 dark:text-white">{supplier.email}</div>
+							</div>
+						)}
+
+						{supplier.address && (
+							<div className="rounded-xl border-2 border-slate-200 dark:border-slate-700 p-4">
+								<div className="flex items-center gap-2 mb-2">
+									<MapPin size={16} className="text-slate-500" />
+									<span className="text-xs font-semibold text-slate-500 uppercase">{t("view.address")}</span>
+								</div>
+								<div className="font-semibold text-slate-900 dark:text-white">{supplier.address}</div>
+							</div>
+						)}
+
+						<div className="rounded-xl border-2 border-green-200 dark:border-green-700 p-4 bg-green-50 dark:bg-green-900/20">
+							<div className="flex items-center gap-2 mb-2">
+								<DollarSign size={16} className="text-green-600" />
+								<span className="text-xs font-semibold text-green-600 uppercase">{t("view.purchaseValue")}</span>
+							</div>
+							<div className="font-bold text-lg text-green-700 dark:text-green-400">{supplier.purchaseValue || 0} د.أ</div>
+						</div>
+
+						<div className="rounded-xl border-2 border-orange-200 dark:border-orange-700 p-4 bg-orange-50 dark:bg-orange-900/20">
+							<div className="flex items-center gap-2 mb-2">
+								<TrendingUp size={16} className="text-orange-600" />
+								<span className="text-xs font-semibold text-orange-600 uppercase">{t("view.dueBalance")}</span>
+							</div>
+							<div className="font-bold text-lg text-orange-700 dark:text-orange-400">{supplier.dueBalance || 0} د.أ</div>
+						</div>
+
+						<div className="rounded-xl border-2 border-slate-200 dark:border-slate-700 p-4">
+							<div className="flex items-center gap-2 mb-2">
+								<CalendarDays size={16} className="text-slate-500" />
+								<span className="text-xs font-semibold text-slate-500 uppercase">{t("view.createdAt")}</span>
+							</div>
+							<div className="font-semibold text-slate-900 dark:text-white">
+								{supplier.created_at ? new Date(supplier.created_at).toLocaleDateString("ar-EG") : "—"}
+							</div>
+						</div>
+					</div>
+
+					{supplier.description && (
+						<div className="rounded-xl border-2 border-slate-200 dark:border-slate-700 p-4">
+							<div className="text-xs font-semibold text-slate-500 uppercase mb-2">{t("view.description")}</div>
+							<div className="text-sm text-slate-700 dark:text-slate-200">{supplier.description}</div>
+						</div>
+					)}
+				</div>
+
+				<div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end">
+					<Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl">
+						{t("view.close")}
+					</Button>
+				</div>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+function ConfirmDialog({ open, onOpenChange, title, description, confirmText, cancelText, onConfirm, loading = false }) {
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent className="!max-w-md bg-white dark:bg-slate-900 rounded-2xl">
+				<div className="space-y-4 p-6">
+					<h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">{title}</h3>
+					{description && <p className="text-sm text-gray-500 dark:text-slate-400">{description}</p>}
+
+					<div className="flex items-center justify-end gap-2 pt-4">
+						<Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+							{cancelText}
+						</Button>
+						<Button variant="destructive" onClick={onConfirm} disabled={loading}>
+							{loading ? <Loader2 className="w-4 h-4 animate-spin" /> : confirmText}
+						</Button>
+					</div>
+				</div>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+function SuppliersTableToolbar({ t, searchValue, onSearchChange, onExport, isFiltersOpen, onToggleFilters }) {
 	return (
 		<div className="flex items-center justify-between gap-4">
 			<div className="relative w-[300px] focus-within:w-[350px] transition-all duration-300">
-				<svg
-					className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-					width="18"
-					height="18"
-					viewBox="0 0 18 18"
-					fill="none"
-					xmlns="http://www.w3.org/2000/svg"
-				>
-					<path d="M15 4.3125H10.5C10.1925 4.3125 9.9375 4.0575 9.9375 3.75C9.9375 3.4425 10.1925 3.1875 10.5 3.1875H15C15.3075 3.1875 15.5625 3.4425 15.5625 3.75C15.5625 4.0575 15.3075 4.3125 15 4.3125Z" fill="#A6ACBD" />
-					<path d="M12.75 6.5625H10.5C10.1925 6.5625 9.9375 6.3075 9.9375 6C9.9375 5.6925 10.1925 5.4375 10.5 5.4375H12.75C13.0575 5.4375 13.3125 5.6925 13.3125 6C13.3125 6.3075 13.0575 6.5625 12.75 6.5625Z" fill="#A6ACBD" />
-					<path d="M8.625 16.3125C4.3875 16.3125 0.9375 12.8625 0.9375 8.625C0.9375 4.3875 4.3875 0.9375 8.625 0.9375C8.9325 0.9375 9.1875 1.1925 9.1875 1.5C9.1875 1.8075 8.9325 2.0625 8.625 2.0625C5.0025 2.0625 2.0625 5.01 2.0625 8.625C2.0625 12.24 5.0025 15.1875 8.625 15.1875C12.2475 15.1875 15.1875 12.24 15.1875 8.625C15.1875 8.3175 15.4425 8.0625 15.75 8.0625C16.0575 8.0625 16.3125 8.3175 16.3125 8.625C16.3125 12.8625 12.8625 16.3125 8.625 16.3125Z" fill="#A6ACBD" />
-					<path d="M16.5001 17.0626C16.3576 17.0626 16.2151 17.0101 16.1026 16.8976L14.6026 15.3976C14.3851 15.1801 14.3851 14.8201 14.6026 14.6026C14.8201 14.3851 15.1801 14.3851 15.3976 14.6026L16.8976 16.1026C17.1151 16.3201 17.1151 16.6801 16.8976 16.8976C16.7851 17.0101 16.6426 17.0626 16.5001 17.0626Z" fill="#A6ACBD" />
-				</svg>
-
 				<Input
 					value={searchValue}
 					onChange={(e) => onSearchChange?.(e.target.value)}
 					placeholder={t("toolbar.searchPlaceholder")}
-					className="rtl:pr-10 h-[40px] ltr:pl-10 rounded-full bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 placeholder:text-gray-400 dark:placeholder:text-slate-400 text-gray-700 dark:text-slate-100"
+					className="rtl:pr-10 h-[40px] ltr:pl-10 rounded-full bg-gray-50 dark:bg-slate-800"
 				/>
 			</div>
 
 			<div className="flex items-center gap-2">
 				<Button
 					variant="outline"
-					className={cn(
-						" bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700  text-gray-700 dark:text-slate-100  flex items-center gap-1 !px-4 rounded-full  hover:bg-gray-50 dark:hover:bg-slate-800",
-						isFiltersOpen && "border-[rgb(var(--primary))]/50"
-					)}
+					className={cn("bg-gray-50 dark:bg-slate-800 flex items-center gap-1 !px-4 rounded-full", isFiltersOpen && "border-primary/50")}
 					onClick={onToggleFilters}
 				>
-					<Filter size={18} className="text-[#A7A7A7] rtl:mr-[-3px] ltr:ml-[-3px]" />
+					<Filter size={18} className="text-[#A7A7A7]" />
 					{t("toolbar.filter")}
 				</Button>
 
-				<Button
-					variant="outline"
-					className=" bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700  text-gray-700 dark:text-slate-100  flex items-center gap-1 !px-4 rounded-full  hover:bg-gray-50 dark:hover:bg-slate-800"
-					onClick={onRefresh}
-				>
-					<RefreshCw size={18} className=" text-[#A7A7A7] rtl:mr-[-3px] ltr:ml-[-3px]" />
-					{t("toolbar.refresh")}
-				</Button>
-
-				<Button
-					variant="outline"
-					className=" bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700  text-gray-700 dark:text-slate-100  flex items-center gap-1 !px-4 rounded-full  hover:bg-gray-50 dark:hover:bg-slate-800"
-					onClick={onExport}
-				>
-					<svg className="rtl:mr-[-3px] ltr:ml-[-3px]" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<path d="M15.8333 9.16675C15.8333 8.48508 15.8333 7.85841 15.7067 7.55258C15.58 7.24675 15.3392 7.00508 14.8567 6.52341L10.91 2.57675C10.4942 2.16091 10.2867 1.95341 10.0283 1.83008C9.97487 1.8044 9.92007 1.78159 9.86417 1.76175C9.595 1.66675 9.30083 1.66675 8.71333 1.66675C6.00917 1.66675 4.65667 1.66675 3.74083 2.40508C3.55591 2.5542 3.38745 2.72265 3.23833 2.90758C2.5 3.82508 2.5 5.17591 2.5 7.88008V11.6667C2.5 14.8092 2.5 16.3809 3.47667 17.3567C4.45333 18.3326 6.02417 18.3334 9.16667 18.3334H15.8333M10 2.08341V2.50008C10 4.85675 10 6.03591 10.7325 6.76758C11.4642 7.50008 12.6433 7.50008 15 7.50008H15.4167" stroke="#A7A7A7" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
-						<path d="M17.5002 11.6667H15.8335C15.6125 11.6667 15.4005 11.7545 15.2442 11.9108C15.088 12.0671 15.0002 12.2791 15.0002 12.5001V13.7501M15.0002 13.7501V15.8334M15.0002 13.7501H17.0835M5.8335 15.8334V14.1667M5.8335 14.1667V11.6667H7.0835C7.41502 11.6667 7.73296 11.7984 7.96738 12.0329C8.2018 12.2673 8.3335 12.5852 8.3335 12.9167C8.3335 13.2483 8.2018 13.5662 7.96738 13.8006C7.73296 14.0351 7.41502 14.1667 7.0835 14.1667H5.8335ZM10.4168 11.6667H11.4885C12.2777 11.6667 12.9168 12.2884 12.9168 13.0559V14.4442C12.9168 15.2109 12.2768 15.8334 11.4885 15.8334H10.4168V11.6667Z" stroke="#A7A7A7" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
-					</svg>
+				<Button variant="outline" className="bg-gray-50 dark:bg-slate-800 flex items-center gap-1 !px-4 rounded-full" onClick={onExport}>
+					<FileDown size={18} className="text-[#A7A7A7]" />
 					{t("toolbar.export")}
 				</Button>
 			</div>
@@ -97,52 +544,50 @@ function SuppliersTableToolbar({
 	);
 }
 
-function FiltersPanel({ t, value, onChange, onApply }) {
+function FiltersPanel({ t, value, onChange, onApply, categories }) {
 	return (
-		<motion.div
-			initial={{ height: 0, opacity: 0, y: -6 }}
-			animate={{ height: "auto", opacity: 1, y: 0 }}
-			exit={{ height: 0, opacity: 0, y: -6 }}
-			transition={{ duration: 0.25 }}
-		>
+		<motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
 			<div className="bg-card !p-4 mt-4">
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+				<div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
 					<div className="space-y-2">
 						<Label>{t("filters.supplierName")}</Label>
 						<Input
 							value={value.name}
 							onChange={(e) => onChange({ ...value, name: e.target.value })}
 							placeholder={t("filters.supplierNamePlaceholder")}
-							className="rounded-full h-[45px] bg-[#fafafa]  dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
+							className="rounded-full h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
 						/>
 					</div>
 
 					<div className="space-y-2">
-						<Label>{t("filters.supplierCode")}</Label>
+						<Label>{t("filters.phone")}</Label>
 						<Input
-							value={value.code}
-							onChange={(e) => onChange({ ...value, code: e.target.value })}
-							placeholder={t("filters.supplierCodePlaceholder")}
-							className="rounded-full h-[45px] bg-[#fafafa]  dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
+							value={value.phone}
+							onChange={(e) => onChange({ ...value, phone: e.target.value })}
+							placeholder={t("filters.phonePlaceholder")}
+							className="rounded-full h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
 						/>
 					</div>
 
+					<div className="space-y-2">
+						<Label>{t("filters.category")}</Label>
+						<Select value={value.categoryId || ""} onValueChange={(v) => onChange({ ...value, categoryId: v })}>
+							<SelectTrigger className="w-full rounded-full !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
+								<SelectValue placeholder={t("filters.categoryPlaceholder")} />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="none">{t("filters.any")}</SelectItem>
+								{(categories || []).map((c) => (
+									<SelectItem key={c.id} value={String(c.id)}>
+										{c.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+
 					<div className="flex md:justify-end">
-						<Button_
-							onClick={onApply}
-							size="sm"
-							label={t("filters.apply")}
-							tone="purple"
-							variant="solid"
-							icon={
-								<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<path d="M15 4.3125H10.5C10.1925 4.3125 9.9375 4.0575 9.9375 3.75C9.9375 3.4425 10.1925 3.1875 10.5 3.1875H15C15.3075 3.1875 15.5625 3.4425 15.5625 3.75C15.5625 4.0575 15.3075 4.3125 15 4.3125Z" fill="white" />
-									<path d="M12.75 6.5625H10.5C10.1925 6.5625 9.9375 6.3075 9.9375 6C9.9375 5.6925 10.1925 5.4375 10.5 5.4375H12.75C13.0575 5.4375 13.3125 5.6925 13.3125 6C13.3125 6.3075 13.0575 6.5625 12.75 6.5625Z" fill="white" />
-									<path d="M8.625 16.3125C4.3875 16.3125 0.9375 12.8625 0.9375 8.625C0.9375 4.3875 4.3875 0.9375 8.625 0.9375C8.9325 0.9375 9.1875 1.1925 9.1875 1.5C9.1875 1.8075 8.9325 2.0625 8.625 2.0625C5.0025 2.0625 2.0625 5.01 2.0625 8.625C2.0625 12.24 5.0025 15.1875 8.625 15.1875C12.2475 15.1875 15.1875 12.24 15.1875 8.625C15.1875 8.3175 15.4425 8.0625 15.75 8.0625C16.0575 8.0625 16.3125 8.3175 16.3125 8.625C16.3125 12.8625 12.8625 16.3125 8.625 16.3125Z" fill="white" />
-									<path d="M16.5001 17.0626C16.3576 17.0626 16.2151 17.0101 16.1026 16.8976L14.6026 15.3976C14.3851 15.1801 14.3851 14.8201 14.6026 14.6026C14.8201 14.3851 15.1801 14.3851 15.3976 14.6026L16.8976 16.1026C17.1151 16.3201 17.1151 16.6801 16.8976 16.8976C16.7851 17.0101 16.6426 17.0626 16.5001 17.0626Z" fill="white" />
-								</svg>
-							}
-						/>
+						<Button_ onClick={onApply} size="sm" label={t("filters.apply")} tone="purple" variant="solid" icon={<Filter size={18} />} />
 					</div>
 				</div>
 			</div>
@@ -152,16 +597,82 @@ function FiltersPanel({ t, value, onChange, onApply }) {
 
 export default function SuppliersPage() {
 	const t = useTranslations("suppliers");
+	const router = useRouter();
 
 	const [search, setSearch] = useState("");
+	const [loading, setLoading] = useState(false);
 	const [filtersOpen, setFiltersOpen] = useState(false);
-	const [filters, setFilters] = useState({ name: "", code: "" });
+	const [filters, setFilters] = useState({ name: "", phone: "", categoryId: "" });
+	const [categories, setCategories] = useState([]);
+	const [stats, setStats] = useState({ totalPurchases: "0", totalDue: "0" });
 
-	const stats = useMemo(
+	const [pager, setPager] = useState({
+		total_records: 0,
+		current_page: 1,
+		per_page: 10,
+		records: [],
+	});
+
+	const [formOpen, setFormOpen] = useState(false);
+	const [editingSupplier, setEditingSupplier] = useState(null);
+
+	const [viewOpen, setViewOpen] = useState(false);
+	const [viewingSupplier, setViewingSupplier] = useState(null);
+
+	const [deleteState, setDeleteState] = useState({ open: false, id: null });
+	const [deleting, setDeleting] = useState(false);
+
+	const countries = useMemo(() => {
+		return (
+			[
+				{
+					key: "EG",
+					nameAr: "مصر",
+					dialCode: "+20",
+					placeholder: "1234567890",
+					phone: { min: 10, max: 10, regex: /^(10|11|12|15)\d{8}$/ },
+				},
+				{
+					key: "SA",
+					nameAr: "السعودية",
+					dialCode: "+966",
+					placeholder: "512345678",
+					phone: { min: 9, max: 9, regex: /^5\d{8}$/ },
+				},
+			] || []
+		);
+	}, []);
+
+	useEffect(() => {
+		(async () => {
+			try {
+				const res = await api.get("/supplier-categories", { params: { limit: 200 } });
+				setCategories(Array.isArray(res.data?.records) ? res.data.records : []);
+			} catch (e) {
+				console.error(e);
+			}
+		})();
+	}, []);
+
+	useEffect(() => {
+		(async () => {
+			try {
+				const res = await api.get("/suppliers/stats");
+				setStats({
+					totalPurchases: res.data.totalPurchases?.toFixed(2) || "0",
+					totalDue: res.data.totalDue?.toFixed(2) || "0",
+				});
+			} catch (e) {
+				console.error(e);
+			}
+		})();
+	}, []);
+
+	const statsCards = useMemo(
 		() => [
 			{
 				title: t("stats.totalPurchases"),
-				value: "5000 د .أ",
+				value: `${stats.totalPurchases} د.أ`,
 				icon: TrendingUp,
 				bg: "bg-[#F3F6FF] dark:bg-[#0B1220]",
 				iconColor: "text-[#6B7CFF] dark:text-[#8A96FF]",
@@ -169,121 +680,247 @@ export default function SuppliersPage() {
 			},
 			{
 				title: t("stats.totalDue"),
-				value: "5000 د .أ",
+				value: `${stats.totalDue} د.أ`,
 				icon: DollarSign,
 				bg: "bg-[#FFF9F0] dark:bg-[#1A1208]",
 				iconColor: "text-[#F59E0B] dark:text-[#FBBF24]",
 				iconBorder: "border-[#F59E0B] dark:border-[#FBBF24]",
 			},
 		],
-		[t]
+		[t, stats]
 	);
 
-	const [pager, setPager] = useState(() => ({
-		total_records: 671,
-		current_page: 1,
-		per_page: 6,
-		records: Array.from({ length: 13 }).map((_, i) => ({
-			id: i + 1,
-			name: "يسرا علام",
-			code: i % 3 === 0 ? "خدمة عملاء" : i % 3 === 1 ? "مدخل بيانات" : "موظف مخزن",
-			joinDate: "17-6-2025",
-			phone: "01002766592",
-			dueBalance: "500 د.أ",
-			purchaseValue: "500 د.أ",
-		})),
-	}));
+	const fetchSuppliers = useCallback(
+		async ({ page = 1, per_page = 10 } = {}) => {
+			setLoading(true);
+			try {
+				const params = new URLSearchParams();
+				params.set("page", String(page));
+				params.set("limit", String(per_page));
+				if (search?.trim()) params.set("search", search.trim());
+				if (filters.categoryId && filters.categoryId !== "none") params.set("categoryId", filters.categoryId);
+				params.set("sortBy", "created_at");
+				params.set("sortOrder", "DESC");
 
-	function updateQuery({ page, per_page }) {
-		const url = new URL(window.location.href);
-		url.searchParams.set("page", String(page));
-		url.searchParams.set("limit", String(per_page));
-		window.history.replaceState({}, "", url.toString());
-	}
+				const res = await api.get(`/suppliers?${params.toString()}`);
+				setPager({
+					total_records: res.data?.total_records ?? 0,
+					current_page: res.data?.current_page ?? page,
+					per_page: res.data?.per_page ?? per_page,
+					records: res.data?.records ?? [],
+				});
+			} catch (e) {
+				toast.error(normalizeAxiosError(e));
+			} finally {
+				setLoading(false);
+			}
+		},
+		[search, filters]
+	);
 
-	function handlePageChange({ page, per_page }) {
-		updateQuery({ page, per_page });
-		setPager((prev) => ({
-			...prev,
-			current_page: page,
-			per_page,
-			records: Array.from({ length: per_page }).map((_, i) => ({
-				id: (page - 1) * per_page + (i + 1),
-				name: "يسرا علام",
-				code: i % 3 === 0 ? "خدمة عملاء" : i % 3 === 1 ? "مدخل بيانات" : "موظف مخزن",
-				joinDate: "17-6-2025",
-				phone: "01002766592",
-				dueBalance: "500 د.أ",
-				purchaseValue: "500 د.أ",
-			})),
-		}));
-	}
+	useEffect(() => {
+		fetchSuppliers({ page: 1, per_page: 10 });
+	}, [fetchSuppliers]);
 
-	const applyFilters = () => {
-		console.log("apply filters", filters);
+	const handlePageChange = ({ page, per_page }) => {
+		fetchSuppliers({ page, per_page });
 	};
 
-	/** ✅ Table columns */
-	const columns = useMemo(() => {
-		return [
+	const openCreate = () => {
+		setEditingSupplier(null);
+		setFormOpen(true);
+	};
+
+	const openEdit = (supplier) => {
+		setEditingSupplier(supplier);
+		setFormOpen(true);
+	};
+
+	const openView = (supplier) => {
+		setViewingSupplier(supplier);
+		setViewOpen(true);
+	};
+
+	const handleFormSuccess = () => {
+		fetchSuppliers({ page: pager.current_page, per_page: pager.per_page });
+	};
+
+	const confirmDelete = async () => {
+		setDeleting(true);
+		try {
+			await api.delete(`/suppliers/${deleteState.id}`);
+			setDeleteState({ open: false, id: null });
+			await fetchSuppliers({ page: pager.current_page, per_page: pager.per_page });
+			toast.success(t("delete.success"));
+		} catch (e) {
+			toast.error(normalizeAxiosError(e));
+		} finally {
+			setDeleting(false);
+		}
+	};
+
+	const onExport = async () => {
+		try {
+			const res = await api.get("/suppliers/export", { responseType: "blob" });
+			const blob = new Blob([res.data], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+			const link = document.createElement("a");
+			link.href = window.URL.createObjectURL(blob);
+			link.download = "suppliers.xlsx";
+			link.click();
+		} catch (error) {
+			toast.error(normalizeAxiosError(error));
+		}
+	};
+
+	const columns = useMemo(
+		() => [
+			{
+				key: "id",
+				header: t("table.id"),
+				className: "font-semibold text-primary w-[80px]",
+			},
 			{
 				key: "name",
 				header: t("table.name"),
-				className: "text-gray-700 dark:text-slate-200 font-semibold",
-			},
-			{
-				key: "code",
-				header: t("table.code"),
-				className: "text-gray-600 dark:text-slate-200",
-			},
-			{
-				key: "joinDate",
-				header: t("table.joinDate"),
-				className: "text-gray-500 dark:text-slate-300",
+				className: "text-gray-700 dark:text-slate-200 font-semibold min-w-[200px]",
 			},
 			{
 				key: "phone",
 				header: t("table.phone"),
-				className: "text-gray-600 dark:text-slate-200",
+				className: "min-w-[180px]",
+				cell: (row) => (
+					<TooltipProvider>
+						<div className="flex items-center gap-2">
+							{row.phone && <CopyButton text={row.phone} />}
+							<span className="font-[Inter] text-sm">{row.phone || "—"}</span>
+						</div>
+					</TooltipProvider>
+				),
+			},
+			{
+				key: "secondPhone",
+				header: t("table.secondPhone"),
+				className: "min-w-[180px]",
+				cell: (row) =>
+					row.secondPhone ? (
+						<TooltipProvider>
+							<div className="flex items-center gap-2">
+								<CopyButton text={row.secondPhone} />
+								<span className="font-[Inter] text-sm">{row.secondPhone}</span>
+							</div>
+						</TooltipProvider>
+					) : (
+						"—"
+					),
+			},
+			{
+				key: "categories",
+				header: t("table.categories"),
+				className: "min-w-[150px]",
+				cell: (row) =>
+					row.categories && row.categories.length > 0 ? (
+						<div className="flex flex-wrap gap-1">
+							{row.categories.slice(0, 2).map((cat) => (
+								<Badge key={cat.id} className="rounded-full bg-primary/10 text-primary text-xs">
+									{cat.name}
+								</Badge>
+							))}
+							{row.categories.length > 2 && <Badge className="rounded-full bg-slate-100 text-slate-600 text-xs">+{row.categories.length - 2}</Badge>}
+						</div>
+					) : (
+						"—"
+					),
 			},
 			{
 				key: "dueBalance",
 				header: t("table.dueBalance"),
-				className: "text-gray-600 dark:text-slate-200",
+				className: "min-w-[180px]",
+				cell: (row) => (
+					<TooltipProvider>
+						<div className="flex items-center gap-2">
+							<Wallet className="size-4 text-muted-foreground" />
+							<span className="font-[Inter] font-[700] text-sm">{row.dueBalance || "—"}</span>
+						</div>
+					</TooltipProvider>
+				),
 			},
 			{
 				key: "purchaseValue",
 				header: t("table.purchaseValue"),
-				className: "text-gray-600 dark:text-slate-200",
+				className: "min-w-[180px]",
+				cell: (row) => (
+					<TooltipProvider>
+						<div className="flex items-center gap-2">
+							<ReceiptText className="size-4 text-muted-foreground" />
+							<span className="font-[Inter] font-[700] text-sm">{row.purchaseValue || "—"}</span>
+						</div>
+					</TooltipProvider>
+				),
 			},
 			{
 				key: "options",
 				header: t("table.options"),
-				className: "w-[80px]",
+				className: " ",
 				cell: (row) => (
 					<TooltipProvider>
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<motion.button
-									whileHover={{ scale: 1.1 }}
-									whileTap={{ scale: 0.95 }}
-									className={cn(
-										"group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
-										"border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:border-purple-600 hover:text-white hover:shadow-xl hover:shadow-purple-500/40",
-										"dark:border-purple-900/50 dark:bg-purple-950/30 dark:text-purple-300 dark:hover:bg-purple-600 dark:hover:border-purple-600 dark:hover:text-white dark:hover:shadow-purple-500/30"
-									)}
-									onClick={() => console.log("view", row.id)}
-								>
-									<Eye size={16} className="transition-transform group-hover:scale-110" />
-								</motion.button>
-							</TooltipTrigger>
-							<TooltipContent>{t("actions.view")}</TooltipContent>
-						</Tooltip>
+						<div className="flex items-center gap-2">
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<motion.button
+										whileHover={{ scale: 1.1 }}
+										whileTap={{ scale: 0.95 }}
+										className={cn(
+											"group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
+											"border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white"
+										)}
+										onClick={() => setDeleteState({ open: true, id: row.id })}
+									>
+										<Trash2 size={16} />
+									</motion.button>
+								</TooltipTrigger>
+								<TooltipContent>{t("actions.delete")}</TooltipContent>
+							</Tooltip>
+
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<motion.button
+										whileHover={{ scale: 1.1 }}
+										whileTap={{ scale: 0.95 }}
+										className={cn(
+											"group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
+											"border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white"
+										)}
+										onClick={() => openEdit(row)}
+									>
+										<Edit2 size={16} />
+									</motion.button>
+								</TooltipTrigger>
+								<TooltipContent>{t("actions.edit")}</TooltipContent>
+							</Tooltip>
+
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<motion.button
+										whileHover={{ scale: 1.1 }}
+										whileTap={{ scale: 0.95 }}
+										className={cn(
+											"group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
+											"border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white"
+										)}
+										onClick={() => openView(row)}
+									>
+										<Eye size={16} />
+									</motion.button>
+								</TooltipTrigger>
+								<TooltipContent>{t("actions.view")}</TooltipContent>
+							</Tooltip>
+						</div>
 					</TooltipProvider>
 				),
 			},
-		];
-	}, [t]);
+		],
+		[t]
+	);
 
 	return (
 		<div className="min-h-screen p-6">
@@ -297,77 +934,46 @@ export default function SuppliersPage() {
 					</div>
 
 					<div className="flex items-center gap-4">
-						<Button_
-							href="/suppliers/new"
-							size="sm"
-							label={t("actions.addSupplier")}
-							tone="purple"
-							variant="solid"
-							icon={
-								<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<path
-										fillRule="evenodd"
-										clipRule="evenodd"
-										d="M6.12078 3.34752C8.69901 3.06206 11.3009 3.06206 13.8791 3.34752C15.3066 3.50752 16.4583 4.63169 16.6258 6.06419C16.9313 8.67918 16.9313 11.3209 16.6258 13.9359C16.4583 15.3684 15.3066 16.4925 13.8791 16.6525C11.3009 16.938 8.69901 16.938 6.12078 16.6525C4.69328 16.4925 3.54161 15.3684 3.37411 13.9359C3.06866 11.3211 3.06866 8.67974 3.37411 6.06502C3.45883 5.36908 3.77609 4.72214 4.27447 4.22906C4.77285 3.73597 5.42314 3.42564 6.11994 3.34835M9.99994 5.83919C10.1657 5.83919 10.3247 5.90503 10.4419 6.02224C10.5591 6.13945 10.6249 6.29842 10.6249 6.46419V9.37502H13.5358C13.7015 9.37502 13.8605 9.44087 13.9777 9.55808C14.0949 9.67529 14.1608 9.83426 14.1608 10C14.1608 10.1658 14.0949 10.3247 13.9777 10.442C13.8605 10.5592 13.7015 10.625 13.5358 10.625H10.6249V13.5359C10.6249 13.7016 10.5591 13.8606 10.4419 13.9778C10.3247 14.095 10.1657 14.1609 9.99994 14.1609C9.83418 14.1609 9.67521 14.095 9.558 13.9778C9.44079 13.8606 9.37494 13.7016 9.37494 13.5359V10.625H6.46411C6.29835 10.625 6.13938 10.5592 6.02217 10.442C5.90496 10.3247 5.83911 10.1658 5.83911 10C5.83911 9.83426 5.90496 9.67529 6.02217 9.55808C6.13938 9.44087 6.29835 9.37502 6.46411 9.37502H9.37494V6.46419C9.37494 6.29842 9.44079 6.13945 9.558 6.02224C9.67521 5.90503 9.83418 5.83919 9.99994 5.83919Z"
-										fill="white"
-									/>
-								</svg>
-							}
-						/>
-
+						<Button_ size="sm" onClick={openCreate} label={t("actions.addSupplier")} tone="purple" variant="solid" icon={<Plus size={18} />} />
 						<Button_
 							size="sm"
-							label={t("actions.howToUse")}
+							href="/supplier-categories"
+							label={t("actions.manageCategories")}
 							tone="white"
 							variant="solid"
-							icon={
-								<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<path
-										d="M18.3848 5.7832C18.2851 5.41218 18.0898 5.07384 17.8184 4.80202C17.5469 4.53021 17.2088 4.33446 16.8379 4.23438C15.4727 3.86719 10 3.86719 10 3.86719C10 3.86719 4.52734 3.86719 3.16211 4.23242C2.79106 4.33219 2.45278 4.52782 2.18126 4.79969C1.90974 5.07155 1.71453 5.41007 1.61523 5.78125C1.25 7.14844 1.25 10 1.25 10C1.25 10 1.25 12.8516 1.61523 14.2168C1.81641 14.9707 2.41016 15.5645 3.16211 15.7656C4.52734 16.1328 10 16.1328 10 16.1328C10 16.1328 15.4727 16.1328 16.8379 15.7656C17.5918 15.5645 18.1836 14.9707 18.3848 14.2168C18.75 12.8516 18.75 10 18.75 10C18.75 10 18.75 7.14844 18.3848 5.7832ZM8.26172 12.6172V7.38281L12.793 9.98047L8.26172 12.6172Z"
-										fill="#A7A7A7"
-									/>
-								</svg>
-							}
+							icon={<Tag size={18} className="text-[#A7A7A7]" />}
 						/>
 					</div>
 				</div>
 
 				<div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-6">
-					{stats.map((stat, index) => (
-						<motion.div
-							key={stat.title}
-							initial={{ opacity: 0, y: 18 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: index * 0.06 }}
-						>
-							<InfoCard
-								title={stat.title}
-								value={stat.value}
-								icon={stat.icon}
-								bg={stat.bg}
-								iconColor={stat.iconColor}
-								iconBorder={stat.iconBorder}
-							/>
+					{statsCards.map((stat, index) => (
+						<motion.div key={stat.title} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.06 }}>
+							<InfoCard title={stat.title} value={stat.value} icon={stat.icon} bg={stat.bg} iconColor={stat.iconColor} iconBorder={stat.iconBorder} />
 						</motion.div>
 					))}
 				</div>
 			</div>
 
-			{/* Toolbar + Filters + Table */}
-			<div className="bg-card rounded-sm">
+			<div className="bg-card rounded-sm p-4">
 				<SuppliersTableToolbar
 					t={t}
 					searchValue={search}
 					onSearchChange={setSearch}
-					onExport={() => console.log("export")}
-					onRefresh={() => console.log("refresh")}
+					onExport={onExport}
 					isFiltersOpen={filtersOpen}
 					onToggleFilters={() => setFiltersOpen((v) => !v)}
 				/>
 
 				<AnimatePresence>
 					{filtersOpen && (
-						<FiltersPanel t={t} value={filters} onChange={setFilters} onApply={applyFilters} />
+						<FiltersPanel
+							t={t}
+							value={filters}
+							onChange={setFilters}
+							onApply={() => fetchSuppliers({ page: 1, per_page: pager.per_page })}
+							categories={categories}
+						/>
 					)}
 				</AnimatePresence>
 
@@ -375,16 +981,32 @@ export default function SuppliersPage() {
 					<DataTable
 						columns={columns}
 						data={pager.records}
+						isLoading={loading}
 						pagination={{
 							total_records: pager.total_records,
 							current_page: pager.current_page,
 							per_page: pager.per_page,
 						}}
-						onPageChange={({ page, per_page }) => handlePageChange({ page, per_page })}
+						onPageChange={handlePageChange}
 						emptyState={t("empty")}
 					/>
 				</div>
 			</div>
+
+			<SupplierFormDialog open={formOpen} onOpenChange={setFormOpen} supplier={editingSupplier} onSuccess={handleFormSuccess} t={t} countries={countries} />
+
+			<ViewSupplierDialog open={viewOpen} onOpenChange={setViewOpen} supplier={viewingSupplier} t={t} />
+
+			<ConfirmDialog
+				open={deleteState.open}
+				onOpenChange={(open) => setDeleteState((s) => ({ ...s, open }))}
+				title={t("delete.title")}
+				description={t("delete.desc")}
+				confirmText={t("delete.confirm")}
+				cancelText={t("delete.cancel")}
+				loading={deleting}
+				onConfirm={confirmDelete}
+			/>
 		</div>
 	);
 }

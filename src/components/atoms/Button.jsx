@@ -52,6 +52,7 @@ export default function Button_({
 	rounded = "full",
 	className = "",
 	disabled = false,
+	loading = false,
 	type = "button",
 	onClick,
 	...rest
@@ -63,7 +64,7 @@ export default function Button_({
 	const theme = TONES[tone] || TONES.purple;
 
 	const base =
-		"relative cursor-pointer hover:scale-[1.04] duration-300 inline-flex items-center justify-center gap-1 select-none " +
+		"relative cursor-pointer hover:scale-[1.04] duration-300 inline-flex items-center justify-center gap-1 select-none " + // ✅ Changed gap to accommodate spinner
 		"font-semibold tracking-tight " +
 		"focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 " +
 		"active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed " +
@@ -74,10 +75,13 @@ export default function Button_({
 	return (
 		<motion.button
 			type={type}
-			disabled={disabled}
-			onClick={() => href ? router?.push(href) : onClick}
-			whileHover={!disabled ? { y: -1, scale: 1.01 } : undefined}
-			whileTap={!disabled ? { scale: 0.98 } : undefined}
+			disabled={disabled || loading}
+			onClick={() => {
+				if (loading || disabled) return;
+				href ? router?.push(href) : onClick?.();
+			}}
+			whileHover={!disabled && !loading ? { y: -1, scale: 1.01 } : undefined}
+			whileTap={!disabled && !loading ? { scale: 0.98 } : undefined}
 			transition={{ type: "spring", stiffness: 500, damping: 30 }}
 			className={[
 				base,
@@ -86,11 +90,12 @@ export default function Button_({
 				s.btn,
 				"border",
 				theme.btn,
+				loading && "cursor-wait",
 				className,
 			].join(" ")}
 			{...rest}
-		>
-			{/* Glow / shine */}
+		// ✅ Don't pass loading to DOM element
+		> 
 			<span
 				aria-hidden
 				className={[
@@ -104,18 +109,42 @@ export default function Button_({
 				}}
 			/>
 
-			{icon ? (
+			{/* ✅ Loading spinner - simple version */}
+			{loading && (
+				<svg
+					className="animate-spin h-4 w-4"
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+				>
+					<circle
+						className="opacity-25"
+						cx="12"
+						cy="12"
+						r="10"
+						stroke="currentColor"
+						strokeWidth="4"
+					></circle>
+					<path
+						className="opacity-75"
+						fill="currentColor"
+						d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+					></path>
+				</svg>
+			)}
+
+			{icon && !loading && (
 				<span
 					className={[
 						"relative rtl:!mr-[-6px] ltr:!ml-[-6px] grid place-items-center",
 						roundedCls,
 						s.iconWrap,
- 						theme.iconWrap,
+						theme.iconWrap,
 					].join(" ")}
 				>
 					<span className={["leading-none", s.icon].join(" ")}>{icon}</span>
 				</span>
-			) : null}
+			)}
 
 			<span className="relative whitespace-nowrap">{label}</span>
 		</motion.button>

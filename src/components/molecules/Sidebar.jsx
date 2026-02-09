@@ -161,6 +161,18 @@ export default function Sidebar({ isOpen, isRTL }) {
 				href: '/orders',
 				badge: '12',
 				roles: ['ADMIN'],
+				children: [
+					{
+						icon: MdInventory,
+						labelKey: 'employeeOrders',
+						href: '/orders/employee-orders',
+					},
+					{
+						icon: MdInventory,
+						labelKey: 'createPurchaseReturn',
+						href: '/orders/create-purchase-return',
+					}
+				],
 			},
 			{
 				icon: MdInventory,

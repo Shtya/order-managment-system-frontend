@@ -26,7 +26,9 @@
     "logout": "تسجيل الخروج",
     "subItems": "عنصر فرعي",
     "newProduct": "إضافة منتج",
-    "newBundle": "إضافة باقة"
+    "newBundle": "إضافة باقة",
+		"employeeOrders": "طلبات الموظفين",
+		"createPurchaseReturn" : "إنشاء طلب استبدال"
   },
   "header": {
     "brand": "طلباتي تك",
@@ -2369,99 +2371,307 @@
     }
   },
 
+  "common": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "close": "إغلاق",
+    "back": "رجوع",
+    "search": "بحث",
+    "filter": "فلترة",
+    "export": "تصدير",
+    "import": "استيراد",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "view": "عرض",
+    "create": "إنشاء",
+    "currency": "جنيه"
+  },
   "orders": {
+    "currency": "جنيه",
+
     "breadcrumb": {
       "home": "الرئيسية",
       "orders": "الطلبات"
     },
+
+    "common": {
+      "cancel": "إلغاء",
+      "back": "رجوع"
+    },
+
     "actions": {
-      "createOrder": "إضافة طلب جديد",
-      "howToUse": "كيفية الاستخدام",
       "view": "عرض",
       "edit": "تعديل",
       "delete": "حذف",
-      "changeStatus": "تغيير الحالة"
+      "createOrder": "إنشاء طلب",
+      "settings": "الإعدادات"
     },
-    "toolbar": {
-      "searchPlaceholder": "البحث برقم الطلب، اسم العميل أو رقم الهاتف...",
-      "filter": "تصفية",
-      "refresh": "تحديث"
+
+    "empty": "لا توجد بيانات للعرض",
+
+    "messages": {
+      "filtersApplied": "تم تطبيق الفلاتر بنجاح",
+      "exportStarted": "بدأ تصدير البيانات",
+      "settingsSaved": "تم حفظ الإعدادات بنجاح"
     },
-    "filters": {
-      "status": "حالة الطلب",
-      "statusPlaceholder": "اختر حالة الطلب",
-      "paymentStatus": "حالة الدفع",
-      "paymentStatusPlaceholder": "اختر حالة الدفع",
-      "paymentMethod": "طريقة الدفع",
-      "paymentMethodPlaceholder": "اختر طريقة الدفع",
-      "dateRange": "نطاق التاريخ",
-      "selectDateRange": "اختر نطاق التاريخ",
-      "all": "الكل",
-      "apply": "تطبيق"
-    },
+
     "stats": {
-      "newOrders": "طلبات جديدة",
-      "underReview": "قيد المراجعة",
-      "preparing": "قيد التحضير",
-      "readyForShipping": "جاهز للشحن",
-      "shipped": "تم الشحن",
-      "delivered": "تم التوصيل",
-      "cancelled": "ملغى",
-      "returned": "مرتجع"
+      "pendingConfirmation": "بانتظار التأكيد",
+      "confirmed": "تم التأكيد",
+      "new": "طلبات جديدة",
+      "total": "إجمالي الطلبات",
+      "wrongNumber": "رقم خاطئ",
+      "duplicate": "مكرر",
+      "postponed": "مؤجل",
+      "delivered": "تم التسليم",
+      "inShipping": "قيد الشحن",
+      "waitingStock": "بانتظار المخزون",
+      "noAnswerShipping": "لا رد من الشحن",
+      "cancelledShipping": "ملغي من الشحن"
     },
-    "table": {
-      "orderNumber": "رقم الطلب",
-      "customerName": "اسم العميل",
-      "address": "العنوان",
-      "orderDate": "تاريخ الطلب",
-      "paymentMethod": "طريقة الدفع",
-      "total": "المجموع",
-      "shippingCompany": "شركة الشحن",
-      "status": "الحالة",
-      "actions": "الخيارات"
-    },
+
     "statuses": {
       "new": "جديد",
-      "under_review": "قيد المراجعة",
-      "preparing": "قيد التحضير",
-      "ready": "جاهز للشحن",
-      "shipped": "تم الشحن",
-      "delivered": "تم التوصيل",
-      "cancelled": "ملغى",
-      "returned": "مرتجع"
+      "confirmed": "مؤكد",
+      "pendingConfirmation": "بانتظار التأكيد",
+      "wrong_number": "رقم خاطئ",
+      "duplicate": "مكرر",
+      "postponed": "مؤجل",
+      "delivered": "تم التسليم",
+      "in_shipping": "قيد الشحن",
+      "waiting_stock": "بانتظار المخزون",
+      "no_answer_shipping": "لا رد من الشحن",
+      "cancelled_shipping": "ملغي من الشحن",
+      "cancelledShipping": "ملغي من الشحن",
+      "cancelled": "ملغي"
     },
-    "paymentStatuses": {
-      "pending": "معلق",
-      "paid": "مدفوع",
-      "partial": "دفع جزئي",
-      "refunded": "مسترد"
-    },
+
     "paymentMethods": {
-      "cash": "نقدي",
-      "card": "بطاقة ائتمان",
+      "cash": "نقدًا",
+      "card": "بطاقة",
       "bank_transfer": "تحويل بنكي",
       "cod": "الدفع عند الاستلام"
     },
-    "messages": {
-      "statsFailed": "فشل تحميل الإحصائيات",
-      "fetchFailed": "فشل تحميل الطلبات",
-      "confirmDelete": "هل أنت متأكد من حذف هذا الطلب؟",
-      "deleteSuccess": "تم حذف الطلب بنجاح",
-      "deleteFailed": "فشل حذف الطلب"
+
+    "paymentStatuses": {
+      "pending": "غير مدفوع",
+      "paid": "مدفوع",
+      "partial": "مدفوع جزئيًا"
     },
-    "currency": "جنيه",
-    "empty": "لا توجد طلبات حتى الآن"
+
+    "toolbar": {
+      "searchPlaceholder": "ابحث برقم الطلب، اسم العميل أو الهاتف",
+      "filter": "فلترة",
+      "export": "تصدير",
+      "distribute": "توزيع",
+      "bulkUpload": "رفع جماعي"
+    },
+
+    "filters": {
+      "all": "الكل",
+      "status": "حالة الطلب",
+      "statusPlaceholder": "اختر الحالة",
+      "paymentStatus": "حالة الدفع",
+      "paymentStatusPlaceholder": "اختر حالة الدفع",
+      "employee": "الموظف",
+      "employeePlaceholder": "اختر الموظف",
+      "date": "التاريخ",
+      "datePlaceholder": "اختر الفترة",
+      "product": "المنتج",
+      "productPlaceholder": "اختر المنتج",
+      "area": "المنطقة",
+      "areaPlaceholder": "اختر المنطقة",
+      "store": "المتجر",
+      "storePlaceholder": "اختر المتجر",
+      "shippingCompany": "شركة الشحن",
+      "shippingCompanyPlaceholder": "اختر شركة الشحن",
+      "apply": "تطبيق",
+
+      "products": {
+        "ring": "خاتم",
+        "necklace": "سلسلة",
+        "bracelet": "سوار",
+        "earring": "حلق"
+      },
+
+      "areas": {
+        "cairo": "القاهرة",
+        "alex": "الإسكندرية",
+        "giza": "الجيزة"
+      },
+
+      "stores": {
+        "main": "المخزن الرئيسي",
+        "branch": "الفرع"
+      }
+    },
+
+    "table": {
+      "orderNumber": "رقم الطلب",
+      "assignedEmployee": "الموظف المسؤول",
+      "notAssigned": "غير محدد",
+      "customerName": "اسم العميل",
+      "phoneNumber": "رقم الهاتف",
+      "products": "المنتجات",
+      "shippingCost": "تكلفة الشحن",
+      "status": "الحالة",
+      "confirmOrder": "تأكيد الطلب",
+      "trackingCode": "كود التتبع",
+      "paymentMethod": "طريقة الدفع",
+      "city": "المدينة",
+      "address": "العنوان",
+      "shippingCompany": "شركة الشحن",
+      "deposit": "العربون",
+      "amountReceived": "المبلغ المستلم",
+      "lastUpdate": "آخر تحديث",
+      "actions": "الإجراءات"
+    },
+
+    "bulkUpload": {
+      "title": "رفع طلبات جماعي",
+      "description": "يمكنك رفع عدد كبير من الطلبات دفعة واحدة باستخدام ملف CSV",
+      "step1Title": "تحميل النموذج",
+      "step1Description": "قم بتحميل نموذج CSV وملئه ببيانات الطلبات",
+      "step2Title": "إدخال البيانات",
+      "step2Description": "املأ بيانات العملاء والطلبات بدقة",
+      "step3Title": "رفع الملف",
+      "step3Description": "ارفع الملف بعد الانتهاء",
+      "downloadTemplate": "تحميل النموذج",
+      "dragDrop": "اسحب الملف هنا أو اضغط للاختيار",
+      "supportedFormats": "الصيغة المدعومة: CSV",
+      "upload": "رفع",
+      "uploading": "جارٍ الرفع...",
+      "templateDownloaded": "تم تحميل النموذج بنجاح",
+      "invalidFileType": "صيغة الملف غير مدعومة",
+      "noFileSelected": "يرجى اختيار ملف أولًا",
+      "uploadSuccess": "تم رفع الطلبات بنجاح"
+    },
+
+    "distribution": {
+      "title": "توزيع الطلبات",
+      "normalTitle": "توزيع يدوي",
+      "normalDescription": "توزيع الطلبات على موظف محدد",
+      "smartTitle": "توزيع ذكي",
+      "smartDescription": "توزيع تلقائي حسب الحمل",
+      "fromDate": "من تاريخ",
+      "toDate": "إلى تاريخ",
+      "orderStatus": "حالة الطلب",
+      "selectEmployee": "اختر الموظف",
+      "selectEmployeePlaceholder": "اختر موظفًا",
+      "currentOrders": "طلبات حالية",
+      "selectOrders": "اختر الطلبات",
+      "available": "متاح",
+      "employeeCount": "عدد الموظفين",
+      "preview": "معاينة التوزيع",
+      "newOrders": "طلبات جديدة",
+      "distribute": "تنفيذ التوزيع",
+      "selectEmployeeAndOrders": "يرجى اختيار موظف وطلبات",
+      "normalSuccess": "تم توزيع {{count}} طلب على {{employee}}",
+      "smartSuccess": "تم توزيع {{count}} طلب على {{employees}} موظفين"
+    },
+
+    "retrySettings": {
+      "globalTitle": "إعدادات إعادة المحاولة",
+      "globalDescription": "إعدادات عامة لإعادة الاتصال والمتابعة التلقائية",
+      "tabs": {
+        "general": "عام",
+        "automation": "أتمتة",
+        "notifications": "إشعارات"
+      },
+      "enableRetry": "تفعيل إعادة المحاولة",
+      "enableRetryDesc": "إعادة المحاولة تلقائيًا عند عدم الرد",
+      "maxRetries": "عدد المحاولات",
+      "maxRetriesDesc": "الحد الأقصى لعدد المحاولات",
+      "retryInterval": "الفاصل الزمني",
+      "retryIntervalDesc": "المدة بين كل محاولة",
+      "minutes": "دقيقة",
+      "workingHours": "ساعات العمل",
+      "startTime": "من",
+      "endTime": "إلى",
+      "autoMoveStatus": "تغيير الحالة تلقائيًا",
+      "autoMoveStatusDesc": "نقل الطلب لحالة أخرى بعد فشل المحاولات",
+      "retryStatuses": "الحالات القابلة لإعادة المحاولة"
+    }
+  },
+  "callCenter": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "callCenter": "مركز الاتصال"
+    },
+    "title": "مركز الاتصال",
+    "tabs": {
+      "createOrder": "إنشاء طلب",
+      "ordersList": "قائمة الطلبات"
+    },
+    "quickStats": {
+      "newOrders": "جديد",
+      "postponed": "مؤجل",
+      "totalOrders": "إجمالي الطلبات",
+      "wrongNumber": "الرقم غلط",
+      "cancelled": "ملغي",
+      "waitingStock": "انتظار الاستوك"
+    },
+    "customerInfo": {
+      "title": "بيانات العميل",
+      "name": "اسم العميل",
+      "phone": "رقم الهاتف",
+      "alternativePhone": "رقم بديل",
+      "location": "الموقع والعنوان",
+      "city": "المدينة",
+      "area": "المنطقة",
+      "fullAddress": "العنوان الكامل"
+    },
+    "orderInfo": {
+      "title": "بيانات الطلب",
+      "products": "المنتجات",
+      "quantity": "الكمية",
+      "price": "السعر",
+      "shippingCost": "تكلفة الشحن",
+      "total": "الإجمالي",
+      "paymentMethod": "طريقة الدفع",
+      "deposit": "العربون المقدم",
+      "remaining": "المبلغ المتبقي"
+    },
+    "productSelection": {
+      "title": "اختيار المنتجات",
+      "addProduct": "إضافة منتج"
+    },
+    "notes": {
+      "title": "ملاحظات",
+      "placeholder": "أضف أي ملاحظات على الطلب..."
+    },
+    "actions": {
+      "confirm": "تأكيد الطلب",
+      "cancel": "إلغاء",
+      "save": "حفظ مسودة",
+      "cancelOrder": "إلغاء الطلب",
+      "postpone": "تأجيل",
+      "wrongNumber": "رقم غلط",
+      "exportRange": "تصدير نطاق",
+      "importTemplate": "استيراد قالب"
+    },
+    "bottomActions": {
+      "delete": "إلغاء",
+      "exportRange": "خارج نطاق التوصيل",
+      "importTemplate": "البرنامج غلط",
+      "wrongNumber": "طلب مكرر",
+      "postpone": "لا يرد ولا",
+      "callCenter": "تأكيد الطلب"
+    },
+    "messages": {
+      "orderConfirmed": "تم تأكيد الطلب بنجاح",
+      "orderCancelled": "تم إلغاء الطلب",
+      "orderPostponed": "تم تأجيل الطلب",
+      "draftSaved": "تم حفظ المسودة"
+    }
   },
   "createOrder": {
     "breadcrumb": {
       "home": "الرئيسية",
       "orders": "الطلبات",
-      "createOrder": "إضافة طلب جديد"
+      "createOrder": "إنشاء طلب جديد"
     },
-    "actions": {
-      "howToUse": "كيفية الاستخدام",
-      "save": "حفظ الطلب"
-    },
+    "title": "إنشاء طلب جديد",
     "sections": {
       "customerInfo": "معلومات العميل",
       "paymentShipping": "الدفع والشحن",
@@ -2473,27 +2683,33 @@
     "fields": {
       "customerName": "اسم العميل",
       "phoneNumber": "رقم الهاتف",
+      "alternativePhone": "رقم هاتف بديل",
       "email": "البريد الإلكتروني",
       "address": "العنوان",
       "city": "المدينة",
       "area": "المنطقة",
+      "landmark": "علامة مميزة",
       "paymentMethod": "طريقة الدفع",
+      "paymentStatus": "حالة الدفع",
       "shippingCompany": "شركة الشحن",
       "shippingCost": "تكلفة الشحن",
       "discount": "الخصم",
+      "deposit": "العربون",
       "notes": "ملاحظات داخلية",
       "customerNotes": "ملاحظات العميل"
     },
     "placeholders": {
       "customerName": "أدخل اسم العميل",
-      "phoneNumber": "أدخل رقم الهاتف",
-      "email": "أدخل البريد الإلكتروني",
+      "phoneNumber": "مثال: 01234567890",
+      "alternativePhone": "رقم هاتف إضافي (اختياري)",
+      "email": "example@email.com",
       "address": "أدخل العنوان الكامل",
       "city": "أدخل المدينة",
       "area": "أدخل المنطقة",
-      "shippingCompany": "اختر شركة الشحن",
-      "notes": "ملاحظات داخلية للطلب",
-      "customerNotes": "ملاحظات العميل"
+      "landmark": "مثال: بجوار مسجد النور",
+      "shippingCompany": "أدخل اسم شركة الشحن",
+      "notes": "أضف ملاحظات داخلية على الطلب...",
+      "customerNotes": "أضف ملاحظات من العميل..."
     },
     "paymentMethods": {
       "cash": "نقدي",
@@ -2501,20 +2717,33 @@
       "bankTransfer": "تحويل بنكي",
       "cod": "الدفع عند الاستلام"
     },
+    "paymentStatuses": {
+      "pending": "معلق",
+      "paid": "مدفوع",
+      "partial": "مدفوع جزئياً"
+    },
     "table": {
-      "sku": "الباركود",
+      "sku": "رمز المنتج",
       "name": "اسم المنتج",
       "unitPrice": "سعر الوحدة",
       "quantity": "الكمية",
-      "total": "المجموع",
-      "actions": "الخيارات"
+      "total": "الإجمالي",
+      "actions": "الإجراءات"
     },
     "summary": {
       "productCount": "عدد المنتجات",
       "productsTotal": "مجموع المنتجات",
       "shippingCost": "تكلفة الشحن",
       "discount": "الخصم",
-      "finalTotal": "المجموع النهائي"
+      "finalTotal": "الإجمالي النهائي",
+      "deposit": "العربون المدفوع",
+      "remaining": "المبلغ المتبقي"
+    },
+    "actions": {
+      "save": "حفظ الطلب",
+      "saving": "جاري الحفظ...",
+      "cancel": "إلغاء",
+      "howToUse": "كيفية الاستخدام"
     },
     "validation": {
       "customerNameRequired": "اسم العميل مطلوب",
@@ -2527,8 +2756,54 @@
     },
     "messages": {
       "createSuccess": "تم إنشاء الطلب بنجاح",
-      "createFailed": "فشل إنشاء الطلب"
+      "createFailed": "فشل إنشاء الطلب",
+      "fillRequired": "الرجاء ملء جميع الحقول المطلوبة",
+      "noProducts": "لم يتم إضافة أي منتجات"
     },
-    "currency": "ج.م"
+    "currency": "جنيه"
+  },
+	"employeeOrders": {
+    "title": "طلباتي",
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "myOrders": "طلباتي"
+    },
+    "totalOrders": "إجمالي {count} طلب في {date}",
+    "backToHome": "العودة للرئيسية",
+    "viewDetails": "التفاصيل",
+    "currency": "ج.م",
+    "orderMoved": "تم نقل الطلب إلى {status}",
+    "statuses": {
+      "new": "جديد",
+      "confirmed": "مؤكد",
+      "pendingConfirmation": "قيد التأكيد",
+      "inShipping": "قيد التوصيل",
+      "delivered": "تم التوصيل",
+      "retry": "إعادة المحاولة"
+    },
+    "retry": {
+      "attempt": "المحاولة {current} من {max}",
+      "available": "متاح",
+      "locked": "مقفل",
+      "interval": "الفترة الزمنية: {minutes} دقيقة",
+      "waitMessage": "يجب الانتظار {time} للمحاولة التالية",
+      "cannotMove": "لا يمكن نقل الطلب أثناء فترة الانتظار"
+    },
+    "todo": {
+      "title": "قائمة المهام اليومية",
+      "pending": "المهام المعلقة",
+      "completedTasks": "المهام المكتملة",
+      "completed": "{completed} من {total} تم إنجازه",
+      "noTasks": "لا توجد مهام لهذا اليوم",
+      "taskCompleted": "تم إنجاز المهمة ✓",
+      "taskUncompleted": "تم إلغاء المهمة"
+    },
+    "calendar": {
+      "today": "اليوم",
+      "previousDay": "اليوم السابق",
+      "nextDay": "اليوم التالي"
+    }
   }
+
+
 }

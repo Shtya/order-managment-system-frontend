@@ -3,7 +3,7 @@
 
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, Trash2 } from "lucide-react";
+import { ChevronLeft, Trash2, Plus, Minus } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -31,15 +31,18 @@ const createSchema = (t) =>
 	yup.object({
 		customerName: yup.string().required(t("validation.customerNameRequired")),
 		phoneNumber: yup.string().required(t("validation.phoneNumberRequired")),
+		alternativePhone: yup.string().optional(),
 		email: yup.string().email(t("validation.invalidEmail")).optional(),
 		address: yup.string().required(t("validation.addressRequired")),
 		city: yup.string().required(t("validation.cityRequired")),
 		area: yup.string().optional(),
+		landmark: yup.string().optional(),
 		paymentMethod: yup.string().required(t("validation.paymentMethodRequired")),
 		paymentStatus: yup.string().optional(),
 		shippingCompany: yup.string().optional(),
 		shippingCost: yup.number().min(0).optional(),
 		discount: yup.number().min(0).optional(),
+		deposit: yup.number().min(0).optional(),
 		notes: yup.string().optional(),
 		customerNotes: yup.string().optional(),
 		items: yup
@@ -54,7 +57,7 @@ const createSchema = (t) =>
 			.min(1, t("validation.itemsRequired")),
 	});
 
-export default function CreateOrderPage() {
+export default function CreateOrderPageComplete() {
 	const navigate = useRouter();
 	const locale = useLocale();
 	const isRTL = locale === "ar";
@@ -76,15 +79,18 @@ export default function CreateOrderPage() {
 		defaultValues: {
 			customerName: "",
 			phoneNumber: "",
+			alternativePhone: "",
 			email: "",
 			address: "",
 			city: "",
 			area: "",
+			landmark: "",
 			paymentMethod: "cod",
 			paymentStatus: "pending",
 			shippingCompany: "",
 			shippingCost: 0,
 			discount: 0,
+			deposit: 0,
 			notes: "",
 			customerNotes: "",
 			items: [],
@@ -94,6 +100,7 @@ export default function CreateOrderPage() {
 	const watchedItems = watch("items");
 	const watchedShippingCost = watch("shippingCost");
 	const watchedDiscount = watch("discount");
+	const watchedDeposit = watch("deposit");
 
 	// ✅ Handle product selection
 	const handleSelectSku = (sku) => {
@@ -108,7 +115,7 @@ export default function CreateOrderPage() {
 			attributes: sku.attributes || {},
 			quantity: 1,
 			unitPrice: sku.price || 0,
-			unitCost: sku.price || 0,
+			unitCost: sku.cost || sku.price || 0,
 		};
 
 		setValue("items", [...watchedItems, newItem]);
@@ -129,6 +136,14 @@ export default function CreateOrderPage() {
 		setValue("items", newItems);
 	};
 
+	// ✅ Handle quantity increment/decrement
+	const handleQuantityChange = (index, delta) => {
+		const newItems = [...watchedItems];
+		const newQuantity = Math.max(1, (newItems[index].quantity || 1) + delta);
+		newItems[index] = { ...newItems[index], quantity: newQuantity };
+		setValue("items", newItems);
+	};
+
 	// ✅ Calculate summary
 	const summary = useMemo(() => {
 		const productsTotal = watchedItems.reduce((sum, item) => {
@@ -139,16 +154,20 @@ export default function CreateOrderPage() {
 
 		const shippingCost = parseFloat(watchedShippingCost) || 0;
 		const discount = parseFloat(watchedDiscount) || 0;
+		const deposit = parseFloat(watchedDeposit) || 0;
 		const finalTotal = productsTotal + shippingCost - discount;
+		const remaining = finalTotal - deposit;
 
 		return {
 			productCount: watchedItems.length,
 			productsTotal,
 			shippingCost,
 			discount,
+			deposit,
 			finalTotal,
+			remaining,
 		};
-	}, [watchedItems, watchedShippingCost, watchedDiscount]);
+	}, [watchedItems, watchedShippingCost, watchedDiscount, watchedDeposit]);
 
 	// ✅ Submit handler
 	const onSubmit = async (data) => {
@@ -157,15 +176,18 @@ export default function CreateOrderPage() {
 			const payload = {
 				customerName: data.customerName,
 				phoneNumber: data.phoneNumber,
+				alternativePhone: data.alternativePhone || undefined,
 				email: data.email || undefined,
 				address: data.address,
 				city: data.city,
 				area: data.area || undefined,
+				landmark: data.landmark || undefined,
 				paymentMethod: data.paymentMethod,
 				paymentStatus: data.paymentStatus || undefined,
 				shippingCompany: data.shippingCompany || undefined,
 				shippingCost: Number(data.shippingCost || 0),
 				discount: Number(data.discount || 0),
+				deposit: Number(data.deposit || 0),
 				notes: data.notes || undefined,
 				customerNotes: data.customerNotes || undefined,
 				items: data.items.map((item) => ({
@@ -218,7 +240,7 @@ export default function CreateOrderPage() {
 						<Button_
 							onClick={handleSubmit(onSubmit)}
 							size="sm"
-							label={t("actions.save")}
+							label={loading ? t("actions.saving") : t("actions.save")}
 							tone="purple"
 							variant="solid"
 							disabled={loading}
@@ -228,8 +250,9 @@ export default function CreateOrderPage() {
 			</div>
 
 			<form onSubmit={handleSubmit(onSubmit)}>
-				<div className="flex gap-6">
+				<div className="flex flex-col lg:flex-row gap-6">
 					<div className="flex-1 space-y-6">
+						{/* Customer Info */}
 						<motion.div
 							className="bg-card"
 							initial={{ opacity: 0, x: -20 }}
@@ -240,7 +263,7 @@ export default function CreateOrderPage() {
 								{t("sections.customerInfo")}
 							</h3>
 
-							<div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4">
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
 										{t("fields.customerName")} *
@@ -283,6 +306,23 @@ export default function CreateOrderPage() {
 
 								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
+										{t("fields.alternativePhone")}
+									</Label>
+									<Controller
+										name="alternativePhone"
+										control={control}
+										render={({ field }) => (
+											<Input
+												{...field}
+												placeholder={t("placeholders.alternativePhone")}
+												className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
+											/>
+										)}
+									/>
+								</div>
+
+								<div className="space-y-2">
+									<Label className="text-sm text-gray-600 dark:text-slate-300">
 										{t("fields.email")}
 									</Label>
 									<Controller
@@ -302,25 +342,6 @@ export default function CreateOrderPage() {
 									)}
 								</div>
 
-								<div className="space-y-2">
-									<Label className="text-sm text-gray-600 dark:text-slate-300">
-										{t("fields.address")} *
-									</Label>
-									<Controller
-										name="address"
-										control={control}
-										render={({ field }) => (
-											<Textarea
-												{...field}
-												placeholder={t("placeholders.address")}
-												className="rounded-xl min-h-[80px] bg-[#fafafa] dark:bg-slate-800/50"
-											/>
-										)}
-									/>
-									{errors.address && (
-										<p className="text-xs text-red-500">{errors.address.message}</p>
-									)}
-								</div>
 								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
 										{t("fields.city")} *
@@ -357,9 +378,47 @@ export default function CreateOrderPage() {
 										)}
 									/>
 								</div>
+
+								<div className="md:col-span-2 space-y-2">
+									<Label className="text-sm text-gray-600 dark:text-slate-300">
+										{t("fields.address")} *
+									</Label>
+									<Controller
+										name="address"
+										control={control}
+										render={({ field }) => (
+											<Textarea
+												{...field}
+												placeholder={t("placeholders.address")}
+												className="rounded-xl min-h-[80px] bg-[#fafafa] dark:bg-slate-800/50"
+											/>
+										)}
+									/>
+									{errors.address && (
+										<p className="text-xs text-red-500">{errors.address.message}</p>
+									)}
+								</div>
+
+								<div className="md:col-span-2 space-y-2">
+									<Label className="text-sm text-gray-600 dark:text-slate-300">
+										{t("fields.landmark")}
+									</Label>
+									<Controller
+										name="landmark"
+										control={control}
+										render={({ field }) => (
+											<Input
+												{...field}
+												placeholder={t("placeholders.landmark")}
+												className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
+											/>
+										)}
+									/>
+								</div>
 							</div>
 						</motion.div>
 
+						{/* Payment & Shipping */}
 						<motion.div
 							className="bg-card"
 							initial={{ opacity: 0, x: -20 }}
@@ -370,7 +429,7 @@ export default function CreateOrderPage() {
 								{t("sections.paymentShipping")}
 							</h3>
 
-							<div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4">
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
 										{t("fields.paymentMethod")} *
@@ -399,11 +458,10 @@ export default function CreateOrderPage() {
 
 								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
-										{t("fields.shippingCompany")}
+										{t("fields.paymentStatus")}
 									</Label>
-
 									<Controller
-										name="shippingCompany"
+										name="paymentStatus"
 										control={control}
 										render={({ field }) => (
 											<Select value={field.value} onValueChange={field.onChange}>
@@ -411,57 +469,95 @@ export default function CreateOrderPage() {
 													<SelectValue />
 												</SelectTrigger>
 												<SelectContent className="bg-card-select">
-													<SelectItem value="company 1">company 1</SelectItem>
-													<SelectItem value="company 2">company 2</SelectItem>
+													<SelectItem value="pending">{t("paymentStatuses.pending")}</SelectItem>
+													<SelectItem value="paid">{t("paymentStatuses.paid")}</SelectItem>
+													<SelectItem value="partial">{t("paymentStatuses.partial")}</SelectItem>
 												</SelectContent>
 											</Select>
 										)}
 									/>
-
 								</div>
 
-								<div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4" >
-									<div className="space-y-2">
-										<Label className="text-sm text-gray-600 dark:text-slate-300">
-											{t("fields.shippingCost")}
-										</Label>
-										<Controller
-											name="shippingCost"
-											control={control}
-											render={({ field }) => (
-												<Input
-													{...field}
-													type="number"
-													min="0"
-													placeholder="0"
-													className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
-												/>
-											)}
-										/>
-									</div>
-
-									<div className="space-y-2">
-										<Label className="text-sm text-gray-600 dark:text-slate-300">
-											{t("fields.discount")}
-										</Label>
-										<Controller
-											name="discount"
-											control={control}
-											render={({ field }) => (
-												<Input
-													{...field}
-													type="number"
-													min="0"
-													placeholder="0"
-													className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
-												/>
-											)}
-										/>
-									</div>
+								<div className="space-y-2">
+									<Label className="text-sm text-gray-600 dark:text-slate-300">
+										{t("fields.shippingCompany")}
+									</Label>
+									<Controller
+										name="shippingCompany"
+										control={control}
+										render={({ field }) => (
+											<Input
+												{...field}
+												placeholder={t("placeholders.shippingCompany")}
+												className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
+											/>
+										)}
+									/>
 								</div>
 
+								<div className="space-y-2">
+									<Label className="text-sm text-gray-600 dark:text-slate-300">
+										{t("fields.shippingCost")}
+									</Label>
+									<Controller
+										name="shippingCost"
+										control={control}
+										render={({ field }) => (
+											<Input
+												{...field}
+												type="number"
+												min="0"
+												step="0.01"
+												placeholder="0.00"
+												className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
+											/>
+										)}
+									/>
+								</div>
+
+								<div className="space-y-2">
+									<Label className="text-sm text-gray-600 dark:text-slate-300">
+										{t("fields.discount")}
+									</Label>
+									<Controller
+										name="discount"
+										control={control}
+										render={({ field }) => (
+											<Input
+												{...field}
+												type="number"
+												min="0"
+												step="0.01"
+												placeholder="0.00"
+												className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
+											/>
+										)}
+									/>
+								</div>
+
+								<div className="space-y-2">
+									<Label className="text-sm text-gray-600 dark:text-slate-300">
+										{t("fields.deposit")}
+									</Label>
+									<Controller
+										name="deposit"
+										control={control}
+										render={({ field }) => (
+											<Input
+												{...field}
+												type="number"
+												min="0"
+												step="0.01"
+												placeholder="0.00"
+												className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
+											/>
+										)}
+									/>
+								</div>
 							</div>
 						</motion.div>
+
+						{/* Add Products */}
 						<motion.div
 							className="bg-card"
 							initial={{ opacity: 0, y: 20 }}
@@ -472,10 +568,15 @@ export default function CreateOrderPage() {
 								{t("sections.addProducts")}
 							</h3>
 
-							<ProductSkuSearchPopover closeOnSelect={false} handleSelectSku={handleSelectSku} selectedSkus={selectedSkus} />
+							<ProductSkuSearchPopover 
+								closeOnSelect={false} 
+								handleSelectSku={handleSelectSku} 
+								selectedSkus={selectedSkus} 
+							/>
 							{errors.items && <p className="text-xs text-red-500 mt-2">{errors.items.message}</p>}
 						</motion.div>
 
+						{/* Products Table */}
 						{watchedItems.length > 0 && (
 							<motion.div
 								className="bg-card"
@@ -544,21 +645,41 @@ export default function CreateOrderPage() {
 																onChange={(e) =>
 																	handleProductFieldChange(index, "unitPrice", e.target.value)
 																}
-																className="h-8 w-24"
+																className="h-9 w-28"
 																min="0"
 																step="0.01"
 															/>
 														</td>
 														<td className="p-3">
-															<Input
-																type="number"
-																value={product.quantity}
-																onChange={(e) =>
-																	handleProductFieldChange(index, "quantity", e.target.value)
-																}
-																className="h-8 w-20"
-																min="1"
-															/>
+															<div className="flex items-center gap-1">
+																<motion.button
+																	type="button"
+																	whileHover={{ scale: 1.1 }}
+																	whileTap={{ scale: 0.9 }}
+																	onClick={() => handleQuantityChange(index, -1)}
+																	className="w-7 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600 flex items-center justify-center"
+																>
+																	<Minus size={14} />
+																</motion.button>
+																<Input
+																	type="number"
+																	value={product.quantity}
+																	onChange={(e) =>
+																		handleProductFieldChange(index, "quantity", e.target.value)
+																	}
+																	className="h-9 w-16 text-center"
+																	min="1"
+																/>
+																<motion.button
+																	type="button"
+																	whileHover={{ scale: 1.1 }}
+																	whileTap={{ scale: 0.9 }}
+																	onClick={() => handleQuantityChange(index, 1)}
+																	className="w-7 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600 flex items-center justify-center"
+																>
+																	<Plus size={14} />
+																</motion.button>
+															</div>
 														</td>
 														<td className="p-3 text-sm font-semibold text-green-600 dark:text-green-400">
 															{lineTotal.toFixed(2)} {t("currency")}
@@ -583,6 +704,7 @@ export default function CreateOrderPage() {
 							</motion.div>
 						)}
 
+						{/* Notes */}
 						<motion.div
 							className="bg-card"
 							initial={{ opacity: 0, y: 20 }}
@@ -632,7 +754,7 @@ export default function CreateOrderPage() {
 					</div>
 
 					{/* Right Column - Summary */}
-					<div className="w-full max-w-[350px]">
+					<div className="w-full lg:w-[350px]">
 						<OrderSummary t={t} summary={summary} />
 					</div>
 				</div>
@@ -690,14 +812,36 @@ function OrderSummary({ t, summary }) {
 					</span>
 				</div>
 
-				<div className="flex items-center justify-between p-4 rounded-xl bg-purple-50 dark:bg-purple-950/20 border-2 border-purple-200 dark:border-purple-900/50">
+				<div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-br from-primary/10 to-purple-500/10 border-2 border-primary/30">
 					<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
 						{t("summary.finalTotal")}
 					</span>
-					<span className="text-xl font-bold text-purple-600 dark:text-purple-400">
+					<span className="text-xl font-bold text-primary">
 						{summary.finalTotal.toFixed(2)} {t("currency")}
 					</span>
 				</div>
+
+				{summary.deposit > 0 && (
+					<>
+						<div className="flex items-center justify-between p-3 rounded-xl bg-blue-50 dark:bg-blue-950/20">
+							<span className="text-sm text-gray-600 dark:text-slate-300">
+								{t("summary.deposit")}
+							</span>
+							<span className="text-base font-semibold text-blue-600 dark:text-blue-400">
+								{summary.deposit.toFixed(2)} {t("currency")}
+							</span>
+						</div>
+
+						<div className="flex items-center justify-between p-4 rounded-xl bg-orange-50 dark:bg-orange-950/20 border-2 border-orange-200 dark:border-orange-900/50">
+							<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
+								{t("summary.remaining")}
+							</span>
+							<span className="text-xl font-bold text-orange-600 dark:text-orange-400">
+								{summary.remaining.toFixed(2)} {t("currency")}
+							</span>
+						</div>
+					</>
+				)}
 			</div>
 		</motion.div>
 	);

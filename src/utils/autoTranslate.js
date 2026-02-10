@@ -17,5 +17,14 @@ export function useAutoTranslate() {
     return data.responseData.translatedText;
   }
 
-  return { autoTranslate };
+  async function translate(text, targetLang) {
+    const isArabic = /[\u0600-\u06FF]/.test(text);
+
+    const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${isArabic ? 'ar|en' : 'en|ar'}`);
+
+    const data = await res.json();
+    return data.responseData.translatedText;
+  }
+
+  return { autoTranslate, translate };
 }

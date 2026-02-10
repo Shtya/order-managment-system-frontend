@@ -824,7 +824,6 @@
     },
     "empty": "No orders"
   },
-
   "auth": {
     "title": "Order Management System",
     "steps": {
@@ -832,7 +831,6 @@
       "verify": "Verify",
       "reset": "Reset"
     },
-
     "login": {
       "welcomeBack": "Welcome Back",
       "description": "Manage and track your orders easily through the integrated order management system",
@@ -849,10 +847,9 @@
       "feature1": "Easy order management",
       "feature2": "Real-time order tracking",
       "feature3": "Comprehensive reports and analytics",
-      "copyright": "All rights reserved © 2025" ,
-			"success": "Logged in successfully"
+      "copyright": "All rights reserved © 2025",
+      "success": "Logged in successfully"
     },
-
     "forgotPassword": {
       "back": "Back to login",
       "title": "Recover Password",
@@ -861,11 +858,10 @@
       "emailPlaceholder": "yourmail@gmail.com",
       "submit": "Send verification code",
       "successTitle": "Sent successfully",
-      "successDescription": "The verification code has been sent to", 
-			"backToLogin" :  "Back to login" ,
-			"otpSent": "Verification code sent"
+      "successDescription": "The verification code has been sent to",
+      "backToLogin": "Back to login",
+      "otpSent": "Verification code sent"
     },
-
     "otp": {
       "back": "Back",
       "title": "Email Verification",
@@ -878,7 +874,6 @@
       "error": "An error occurred, please try again",
       "helpText": "Didn't receive the code? Check your spam folder"
     },
-
     "resetPassword": {
       "title": "Reset Password",
       "description": "Enter your new password",
@@ -894,10 +889,9 @@
       },
       "submit": "Reset password",
       "successTitle": "Success!",
-      "successDescription": "Your password has been changed successfully. You will be redirected to login" ,
-			"redirecting": "Redirecting..."
+      "successDescription": "Your password has been changed successfully. You will be redirected to login",
+      "redirecting": "Redirecting..."
     },
-
     "validation": {
       "emailRequired": "Email is required",
       "emailInvalid": "Invalid email address",

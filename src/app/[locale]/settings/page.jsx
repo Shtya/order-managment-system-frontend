@@ -80,6 +80,7 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/utils/cn';
 import { getUser } from '../../../hook/getUser';
+import SlugInput from '@/components/atoms/SlugInput';
 
 
 
@@ -197,6 +198,7 @@ function parsePhoneToCountry(phone) {
  * ========================= */
 const categorySchema = yup.object({
 	name: yup.string().trim().required('Name is required'),
+	slug: yup.string().trim().required('Slug is required'),
 });
 
 const accountSchema = yup.object({
@@ -341,12 +343,15 @@ function CategoriesTab() {
 		reset,
 		formState: { errors },
 		setValue,
+		watch
 	} = useForm({
 		resolver: yupResolver(categorySchema),
-		defaultValues: { name: '' },
+		defaultValues: { name: '', slug: '' },
 		mode: 'onTouched',
 	});
 
+	const slug = watch('slug')
+	const name = watch('name')
 
 	// ============= DATA LOADING =============
 	async function loadCategories() {
@@ -394,7 +399,7 @@ function CategoriesTab() {
 		setShowForm(true);
 	}
 	const user = getUser()
-	
+
 	async function onSubmit(values) {
 		setSaving(true);
 		try {
@@ -402,7 +407,8 @@ function CategoriesTab() {
 			if (editing?.id) {
 				await toast.promise(
 					api.patch(`/categories/${editing.id}`, {
-						name: `${values.name}`
+						name: `${values.name}`,
+						slug: `${values.slug}`
 					}),
 					{
 						loading: t('toast.updating'),
@@ -413,8 +419,9 @@ function CategoriesTab() {
 			} else {
 				await toast.promise(
 					api.post('/categories', {
-						name: `${values.name}` ,
-						adminId : user?.id
+						name: `${values.name}`,
+						slug: `${values.slug}`,
+						adminId: user?.id
 					}),
 					{
 						loading: t('toast.creating'),
@@ -467,6 +474,34 @@ function CategoriesTab() {
 		} catch { }
 	}
 
+
+	const [slugStatus, setSlugStatus] = useState(null); // 'checking', 'unique', 'taken'
+	useEffect(() => {
+		if (!slug || errors.slug) {
+			setSlugStatus(null);
+			return;
+		}
+
+		const checkUnique = setTimeout(async () => {
+			setSlugStatus('checking');
+			try {
+				const params = new URLSearchParams({ slug: slug.trim() }); // [2025-12-24] Remember to trim.
+
+				if (editing?.id) {
+					params.append('category', editing.id.toString());
+				}
+
+				const res = await api.get(`/categories/check-slug?${params.toString()}`);
+
+				setSlugStatus(res.data.isUnique ? 'unique' : 'taken');
+			} catch (e) {
+				setSlugStatus(null);
+			}
+		}, 280); // Debounce للتحقق من التوفر
+
+		return () => clearTimeout(checkUnique);
+	}, [slug, errors.slug, editing?.id]);
+
 	// ============= RENDER =============
 	return (
 		<div className="space-y-6">
@@ -509,7 +544,9 @@ function CategoriesTab() {
 									)}
 								</div>
 
-
+								<SlugInput errors={errors} register={register} name={name} slugStatus={slugStatus} slug={slug} setValue={setValue}
+									className="h-11"
+								/>
 
 								<div className="flex gap-3 mt-2 col-span-2">
 									<Button className="bg-primary" type="submit" disabled={saving}>

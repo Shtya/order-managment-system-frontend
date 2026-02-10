@@ -1,347 +1,731 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, Trash2 } from "lucide-react";
+import { ChevronLeft, Settings, RefreshCw, Loader2, AlertCircle, CheckCircle2, Clock, Zap } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import DataTable from "@/components/atoms/DataTable";
 
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import Button_ from "@/components/atoms/Button";
-import IntegratedCompanyCard from "@/components/atoms/IntegatedCompanyCard";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
 
-/** ✅ Integrated Platform Card */
-function IntegratedPlatformCard({ platform, onToggle, onEditSettings, t }) {
+import api, { BASE_URL } from "@/utils/api";
+import toast from "react-hot-toast";
+import { Controller, useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from 'yup';
+import { getUser } from "@/hook/getUser";
+// ─── helpers ─────────────────────────────────────────────────────────────────
+
+function normalizeAxiosError(err) {
+	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
+	return Array.isArray(msg) ? msg.join(", ") : String(msg);
+}
+
+const PROVIDERS = ["easyorder", "shopify", "woocommerce"];
+
+const PROVIDER_META = {
+	easyorder: {
+		label: "EasyOrder",
+		logo: "/integrate/easyorder.png",   // ← swap to your actual logo asset path
+		website: "easy-orders.net",
+		description: "ربط متجرك مع منصة EasyOrder واستفد من إدارة الطلبات والمزامنة التلقائية بسهولة.",
+		bg: "background: #F3F0FF",
+	},
+	shopify: {
+		label: "Shopify",
+		logo: "/integrate/shopify.png",
+		website: "shopify.com",
+		description: "صل متجرك بـ Shopify وأدر منتجاتك وطلباتك من مكان واحد.",
+		bg: "background: #F0FFF4",
+	},
+	woocommerce: {
+		label: "WooCommerce",
+		logo: "/integrate/woocommerce.png",
+		website: "woocommerce.com",
+		description: "اربط متجر WooCommerce الخاص بك وأدر كل شيء بطريقة سهلة والأمان أولًا.",
+		bg: "background: #FFF0F5",
+	},
+};
+
+// ─── SyncStatus badge ────────────────────────────────────────────────────────
+
+function SyncBadge({ status, t }) {
+	const map = {
+		pending: { color: "text-[#F59E0B] bg-[#FFF9F0] dark:bg-[#1A1208] dark:text-[#FBBF24]", Icon: Clock },
+		syncing: { color: "text-[#6366f1] bg-[#F3F0FF] dark:bg-[#1A1630] dark:text-[#A78BFA]", Icon: Loader2 },
+		synced: { color: "text-[#22C55E] bg-[#F0FFF4] dark:bg-[#0E1A0C] dark:text-[#4ADE80]", Icon: CheckCircle2 },
+		failed: { color: "text-[#EF4444] bg-[#FFF0F0] dark:bg-[#1A0C0C] dark:text-[#F87171]", Icon: AlertCircle },
+	};
+
+	const entry = map[status] || map.pending;
+	const { Icon } = entry;
+
+	return (
+		<span className={cn("inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full", entry.color)}>
+			<Icon size={13} className={status === "syncing" ? "animate-spin" : ""} />
+			{t(`syncStatus.${status}`)}
+		</span>
+	);
+}
+
+// ─── StoreCard ───────────────────────────────────────────────────────────────
+
+function StoreCard({ provider, store, t, onConfigure, onSync, fetchStores, index }) {
+	const meta = PROVIDER_META[provider];
+	const hasStore = !!store;
+	const isSyncing = store?.syncStatus === "syncing";
+	const [togglingActive, setTogglingActive] = useState(false);
+
+	const handleToggleActive = async () => {
+		if (togglingActive) return;
+		setTogglingActive(true);
+		try {
+			await api.patch(`/stores/${store.id}`, { isActive: !store.isActive });
+			await fetchStores();
+		} catch (e) {
+			toast.error(normalizeAxiosError(e));
+		} finally {
+			setTogglingActive(false);
+		}
+	};
+
+
 	return (
 		<motion.div
-			initial={{ opacity: 0, y: 20 }}
+			initial={{ opacity: 0, y: 18 }}
 			animate={{ opacity: 1, y: 0 }}
-			className="p-6 rounded-2xl bg-white dark:bg-slate-800/50 border-2 border-gray-100 dark:border-slate-700 transition-all duration-200 shadow-sm"
+			transition={{ delay: index * 0.07 }}
+			className="relative rounded-2xl p-5 shadow-sm border border-border"
+			style={{ background: meta.bg?.replace("background:", "") }}
 		>
-			{/* Platform Logo/Name */}
-			<div className="flex items-center justify-between mb-4">
-				<div className="flex items-center gap-3">
-					{platform.logo ? (
-						<img src={platform.logo} alt={platform.name} className="h-12 object-contain" />
-					) : (
-						<div className="text-2xl font-bold text-primary">
-							{platform.name}
+			{/* ── Header: title + website left, logo right ── */}
+			<div className="flex items-start justify-between gap-3">
+				<div>
+					<h3 className="font-semibold text-base">{meta.label}</h3>
+					<a
+						href={`https://${meta.website}`}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="text-sm text-primary underline"
+					>
+						{meta.website}
+					</a>
+				</div>
+				<img
+					src={meta.logo}
+					alt={meta.label}
+					className="w-full max-w-[150px] h-[60px] object-contain"
+				/>
+			</div>
+
+			{/* ── Description ── */}
+			<p className="mt-4 text-sm text-muted-foreground leading-relaxed">
+				{meta.description}
+			</p>
+
+			{/* ── Sync badge + error row (only when store is connected) ── */}
+			{/* {hasStore && (
+				<div className="mt-3 flex flex-wrap items-center gap-2">
+			
+					{store.lastSyncError && (
+						<div className="flex items-center gap-1.5 text-xs text-[#EF4444] dark:text-[#F87171] bg-red-50 dark:bg-red-950/40 rounded-lg px-2 py-1">
+							<AlertCircle size={12} className="shrink-0" />
+							<span className="truncate max-w-[180px]">{store.lastSyncError}</span>
 						</div>
 					)}
 				</div>
+			)} */}
 
-				{/* Toggle Switch */}
+			{/* ── Footer: settings btn left  |  switch + sync btn right ── */}
+			<div className="mt-5 flex justify-between items-center">
 				<button
-					onClick={() => onToggle(platform.id)}
-					className={cn(
-						"relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-						platform.enabled ? "bg-primary" : "bg-gray-300 dark:bg-slate-600"
-					)}
+					onClick={() => onConfigure(provider, store)}
+					className="flex items-center gap-2 rounded-full border px-4 py-2 text-sm hover:bg-muted transition"
 				>
-					<span
-						className={cn(
-							"inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-							platform.enabled ? "translate-x-6" : "translate-x-1"
-						)}
-					/>
+					<Settings size={16} />
+					{hasStore ? t("card.editSettings") : t("card.configureSettings")}
 				</button>
-			</div>
 
-			{/* Platform Link */}
-			<div className="mb-3">
-				<div className="text-sm font-semibold text-gray-600 dark:text-slate-300 mb-1">
-					{t("integrated.platformLink")}
+				<div className="flex items-center gap-2">
+					{/* Sync button — only visible when store exists AND is active */}
+					{hasStore && store.isActive && (
+						<button
+							onClick={() => onSync(store.id)}
+							disabled={isSyncing}
+							className={cn(
+								"inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors",
+								isSyncing
+									? "bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-slate-500 cursor-not-allowed"
+									: "border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800  hover:opacity-90 "
+							)}
+						>
+							<RefreshCw size={14} className={isSyncing ? "animate-spin" : ""} />
+							{t("card.sync")}
+						</button>
+					)}
+
+					{/* isActive toggle — only visible when store is connected */}
+					{hasStore && (
+						<div className="flex items-center gap-1.5">
+							{togglingActive && <Loader2 size={14} className="animate-spin text-[rgb(var(--primary))]" />}
+							<Switch
+								checked={store.isActive}
+								disabled={togglingActive}
+								onCheckedChange={handleToggleActive}
+							/>
+						</div>
+					)}
 				</div>
-				<a
-					href={platform.website}
-					target="_blank"
-					rel="noopener noreferrer"
-					className="text-sm text-primary hover:underline"
-					dir="ltr"
-				>
-					{platform.website}
-				</a>
 			</div>
-
-			{/* Description */}
-			<p className="text-sm text-gray-600 dark:text-slate-400 mb-4 leading-relaxed">
-				{platform.description}
-			</p>
-
-			{/* Edit Settings Button */}
-			<motion.button
-				whileHover={{ scale: 1.02 }}
-				whileTap={{ scale: 0.98 }}
-				onClick={() => onEditSettings(platform.id)}
-				className="w-full py-2.5 rounded-full border-2 border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-700 dark:text-slate-200 hover:border-primary/50 dark:hover:border-primary/50 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all"
-			>
-				{t("integrated.editSettings")}
-			</motion.button>
 		</motion.div>
 	);
 }
 
-/** ✅ Toolbar (JSX) */
-function StoresTableToolbar({ t, searchValue, onSearchChange, onExport }) {
+// ─── Instruction block (reusable inside dialogs) ────────────────────────────
+
+function InstructionStep({ step, children }) {
 	return (
-		<div className="flex items-center justify-between gap-4">
-			<div className="relative w-[300px] focus-within:w-[350px] transition-all duration-300">
-				<svg
-					className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-					width="18"
-					height="18"
-					viewBox="0 0 18 18"
-					fill="none"
-					xmlns="http://www.w3.org/2000/svg"
-				>
-					<path d="M15 4.3125H10.5C10.1925 4.3125 9.9375 4.0575 9.9375 3.75C9.9375 3.4425 10.1925 3.1875 10.5 3.1875H15C15.3075 3.1875 15.5625 3.4425 15.5625 3.75C15.5625 4.0575 15.3075 4.3125 15 4.3125Z" fill="#A6ACBD" />
-					<path d="M12.75 6.5625H10.5C10.1925 6.5625 9.9375 6.3075 9.9375 6C9.9375 5.6925 10.1925 5.4375 10.5 5.4375H12.75C13.0575 5.4375 13.3125 5.6925 13.3125 6C13.3125 6.3075 13.0575 6.5625 12.75 6.5625Z" fill="#A6ACBD" />
-					<path d="M8.625 16.3125C4.3875 16.3125 0.9375 12.8625 0.9375 8.625C0.9375 4.3875 4.3875 0.9375 8.625 0.9375C8.9325 0.9375 9.1875 1.1925 9.1875 1.5C9.1875 1.8075 8.9325 2.0625 8.625 2.0625C5.0025 2.0625 2.0625 5.01 2.0625 8.625C2.0625 12.24 5.0025 15.1875 8.625 15.1875C12.2475 15.1875 15.1875 12.24 15.1875 8.625C15.1875 8.3175 15.4425 8.0625 15.75 8.0625C16.0575 8.0625 16.3125 8.3175 16.3125 8.625C16.3125 12.8625 12.8625 16.3125 8.625 16.3125Z" fill="#A6ACBD" />
-					<path d="M16.5001 17.0626C16.3576 17.0626 16.2151 17.0101 16.1026 16.8976L14.6026 15.3976C14.3851 15.1801 14.3851 14.8201 14.6026 14.6026C14.8201 14.3851 15.1801 14.3851 15.3976 14.6026L16.8976 16.1026C17.1151 16.3201 17.1151 16.6801 16.8976 16.8976C16.7851 17.0101 16.6426 17.0626 16.5001 17.0626Z" fill="#A6ACBD" />
-				</svg>
-
-				<Input
-					value={searchValue}
-					onChange={(e) => onSearchChange?.(e.target.value)}
-					placeholder={t("toolbar.searchPlaceholder")}
-					className="rtl:pr-10 h-[40px] ltr:pl-10 rounded-full bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 placeholder:text-gray-400 dark:placeholder:text-slate-400 text-gray-700 dark:text-slate-100"
-				/>
+		<div className="flex gap-2.5">
+			<div className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 text-[rgb(var(--primary))] flex items-center justify-center text-xs font-bold mt-0.5">
+				{step}
 			</div>
-
-			<div className="flex items-center gap-2">
-				<Button
-					variant="outline"
-					className=" bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700  text-gray-700 dark:text-slate-100  flex items-center gap-1 !px-4 rounded-full  hover:bg-gray-50 dark:hover:bg-slate-800"
-					onClick={onExport}
-				>
-					<svg className="rtl:mr-[-3px] ltr:ml-[-3px]" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<path d="M15.8333 9.16675C15.8333 8.48508 15.8333 7.85841 15.7067 7.55258C15.58 7.24675 15.3392 7.00508 14.8567 6.52341L10.91 2.57675C10.4942 2.16091 10.2867 1.95341 10.0283 1.83008C9.97487 1.8044 9.92007 1.78159 9.86417 1.76175C9.595 1.66675 9.30083 1.66675 8.71333 1.66675C6.00917 1.66675 4.65667 1.66675 3.74083 2.40508C3.55591 2.5542 3.38745 2.72265 3.23833 2.90758C2.5 3.82508 2.5 5.17591 2.5 7.88008V11.6667C2.5 14.8092 2.5 16.3809 3.47667 17.3567C4.45333 18.3326 6.02417 18.3334 9.16667 18.3334H15.8333M10 2.08341V2.50008C10 4.85675 10 6.03591 10.7325 6.76758C11.4642 7.50008 12.6433 7.50008 15 7.50008H15.4167" stroke="#A7A7A7" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
-						<path d="M17.5002 11.6667H15.8335C15.6125 11.6667 15.4005 11.7545 15.2442 11.9108C15.088 12.0671 15.0002 12.2791 15.0002 12.5001V13.7501M15.0002 13.7501V15.8334M15.0002 13.7501H17.0835M5.8335 15.8334V14.1667M5.8335 14.1667V11.6667H7.0835C7.41502 11.6667 7.73296 11.7984 7.96738 12.0329C8.2018 12.2673 8.3335 12.5852 8.3335 12.9167C8.3335 13.2483 8.2018 13.5662 7.96738 13.8006C7.73296 14.0351 7.41502 14.1667 7.0835 14.1667H5.8335ZM10.4168 11.6667H11.4885C12.2777 11.6667 12.9168 12.2884 12.9168 13.0559V14.4442C12.9168 15.2109 12.2768 15.8334 11.4885 15.8334H10.4168V11.6667Z" stroke="#A7A7A7" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
-					</svg>
-					{t("toolbar.export")}
-				</Button>
-			</div>
+			<p className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed">{children}</p>
 		</div>
 	);
 }
 
-export default function StoreIntegrationsPage() {
-	const t = useTranslations("storeIntegrations");
+function CopyableCode({ text }) {
+	const [copied, setCopied] = useState(false);
+	return (
+		<div className="flex items-center gap-2 mt-1 bg-gray-100 dark:bg-slate-800 rounded-lg px-3 py-1.5">
+			<code className="text-xs font-mono text-[rgb(var(--primary))] break-all flex-1">{text}</code>
+			<button
+				type="button"
+				onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+				className="text-xs text-gray-400 hover:text-[rgb(var(--primary))] transition-colors shrink-0"
+			>
+				{copied ? "✓" : "📋"}
+			</button>
+		</div>
+	);
+}
 
-	const [search, setSearch] = useState("");
+// ─── EasyOrder Dialog ────────────────────────────────────────────────────────
 
-	// Integrated platforms
+const makeSchema = (t) =>
+	yup.object({
+		name: yup.string().trim().required(t("validation.nameRequired")),
+		code: yup.string().trim().required(t("validation.codeRequired")),
+		storeUrl: yup.string().trim().required(t("validation.storeUrlRequired")),
+		isActive: yup.boolean().default(true),
+		autoSync: yup.boolean().default(true),
 
-	const [integratedCompanies, setIntegratedCompanies] = useState([
-		{
-			id: 1,
-			name: "J&T",
-			logo: "/integrate/1.png",
-			website: "J&T_shipping.com",
-			bg: "linear-gradient(300.09deg, #FAFAFA 74.95%, #B5CBE9 129.29%)",
-			description: t("integrated.description"),
-			enabled: true,
-		},
-		{
-			id: 2,
-			name: "ShipBlu",
-			logo: "/integrate/5.png",
-			website: "J&T_shipping.com",
-			bg: "linear-gradient(300.09deg, #FAFAFA 74.95%, #E9B5B5 129.29%)",
-			description: t("integrated.description"),
-			enabled: false,
-		},
-		{
-			id: 3,
-			name: "Mylerz",
-			logo: "/integrate/2.png",
-			website: "J&T_shipping.com",
-			bg: "linear-gradient(300.09deg, #FAFAFA 74.95%, #E9C6B5 129.29%)",
-			description: t("integrated.description"),
-			enabled: false,
-		},
-		{
-			id: 4,
-			name: "Turbo",
-			logo: "/integrate/4.png",
-			website: "J&T_shipping.com",
-			bg: "linear-gradient(300.09deg, #FAFAFA 74.95%, #CCB5E9 129.29%)",
-			description: t("integrated.description"),
-			enabled: false,
-		},
-		{
-			id: 5,
-			name: "Speedaf",
-			logo: "/integrate/3.png",
-			website: "J&T_shipping.com",
-			bg: "linear-gradient(300.09deg, #FAFAFA 74.95%, #D4B9EF 129.29%)",
-			description: t("integrated.description"),
-			enabled: true,
-		},
-	]);
+		// Secret Validation Logic
+		// apiKey: isEdit
+		// 	? yup.string().trim().nullable() // Optional on edit
+		// 	: yup.string().trim().required(t("validation.apiKeyRequired")), // Required on create
+
+		// webhookCreateSecret: isEdit
+		// 	? yup.string().trim().nullable()
+		// 	: yup.string().trim().required(t("validation.webhookCreateSecretRequired")),
+
+		// webhookUpdateSecret: isEdit
+		// 	? yup.string().trim().nullable()
+		// 	: yup.string().trim().required(t("validation.webhookUpdateSecretRequired")),
+	}).required();
 
 
-	const handleToggleCompany = (id) => {
-		setIntegratedCompanies(prev =>
-			prev.map(company =>
-				company.id === id ? { ...company, enabled: !company.enabled } : company
-			)
-		);
+function EasyOrderDialog({ open, onClose, existingStore, fetchStores, t }) {
+	const isEdit = !!existingStore;
+	const [fetchingStore, setFetchingStore] = useState(false);
+	const user = getUser()
+	// ── yup schema memoised on t ──
+	const schema = useMemo(() => makeSchema(t), [t]);
+
+	// ── react-hook-form ──
+	const {
+		register,
+		control,
+		handleSubmit,
+		reset,
+		formState: { errors, isSubmitting },
+	} = useForm({
+		defaultValues: { name: "", code: "", storeUrl: "", isActive: true, autoSync: true },
+		resolver: yupResolver(schema),
+	});
+
+	// ── secrets live in plain state (touched-gate logic, NOT part of RHF validation) ──
+	const [apiKey, setApiKey] = useState("");
+	const [webhookCreateSecret, setWebhookCreateSecret] = useState("");
+	const [webhookUpdateSecret, setWebhookUpdateSecret] = useState("");
+	const [touched, setTouched] = useState({ apiKey: false, webhookCreateSecret: false, webhookUpdateSecret: false });
+	const [secretErrors, setSecretErrors] = useState({ apiKey: null, webhookCreateSecret: null, webhookUpdateSecret: null });
+	const [masks, setMasks] = useState({ apiKey: "", webhookCreateSecret: "", webhookUpdateSecret: "" });
+
+	// ── load / reset when dialog opens ──
+	useEffect(() => {
+		if (!open) return;
+
+		if (isEdit) {
+			(async () => {
+				setFetchingStore(true);
+				try {
+					const res = await api.get(`/stores/${existingStore.id}`);
+					const d = res.data;
+
+					// populate RHF fields (base fields only)
+					reset({
+						name: d.name || "",
+						code: d.code || "",
+						storeUrl: d.storeUrl || "",
+						isActive: d.isActive ?? true,
+						autoSync: d.autoSync ?? true,
+
+					});
+
+					// store masked values as placeholders
+					const integ = d.integrations || {};
+					setMasks({
+						apiKey: integ.apiKey || "",
+						webhookCreateSecret: integ.webhookCreateOrderSecret || "",
+						webhookUpdateSecret: integ.webhookUpdateStatusSecret || "",
+					});
+				} catch (e) {
+					toast.error(normalizeAxiosError(e));
+					onClose();
+				} finally {
+					setFetchingStore(false);
+				}
+			})();
+		} else {
+			reset({ name: "", code: "", storeUrl: "", isActive: true, autoSync: true });
+			setMasks({ apiKey: "", webhookCreateSecret: "", webhookUpdateSecret: "" });
+		}
+
+		// always clear secret inputs + touched on open
+		setApiKey(""); setWebhookCreateSecret(""); setWebhookUpdateSecret("");
+		setTouched({ apiKey: false, webhookCreateSecret: false, webhookUpdateSecret: false });
+	}, [open, isEdit, existingStore?.id]);
+
+	const markTouched = (field) => setTouched((prev) => ({ ...prev, [field]: true }));
+
+	// ── submit handler — receives already-validated base fields from RHF ──
+	const onSubmit = async (data) => {
+		// create-mode guard: all three secrets required
+		if (!isEdit) {
+			let hasError = false;
+			if (!apiKey.trim()) {
+				setSecretErrors((prev) => ({ ...prev, apiKey: t(`validation.apiKeyRequired`) }))
+				hasError = true;
+			}
+			if (!webhookCreateSecret.trim()) {
+				setSecretErrors((prev) => ({ ...prev, webhookCreateSecret: t(`validation.webhookCreateSecretRequired`) }))
+				hasError = true;
+			}
+			if (!webhookUpdateSecret.trim()) {
+				setSecretErrors((prev) => ({ ...prev, webhookUpdateSecret: t(`validation.webhookUpdateSecretRequired`) }))
+				hasError = true;
+			}
+			if (hasError) return;
+			setSecretErrors({ apiKey: null, webhookCreateSecret: null, webhookUpdateSecret: null })
+		}
+
+		try {
+			if (isEdit) {
+				// only include secret keys the user actually touched
+				const integrations = {};
+				if (touched.apiKey && apiKey.trim()) integrations.apiKey = apiKey.trim();
+				if (touched.webhookCreateSecret && webhookCreateSecret.trim()) integrations.webhookCreateOrderSecret = webhookCreateSecret.trim();
+				if (touched.webhookUpdateSecret && webhookUpdateSecret.trim()) integrations.webhookUpdateStatusSecret = webhookUpdateSecret.trim();
+
+				const payload = {
+					name: data.name.trim(),
+					code: data.code.trim(),
+					storeUrl: data.storeUrl.trim(),
+					isActive: data.isActive,
+					autoSync: data.autoSync,
+				};
+				if (Object.keys(integrations).length > 0) payload.integrations = integrations;
+
+				const res = await api.patch(`/stores/${existingStore.id}`, payload);
+
+				// ── reset secrets: clear inputs, drop touched, refresh masks from fresh response ──
+				setApiKey(""); setWebhookCreateSecret(""); setWebhookUpdateSecret("");
+				setTouched({ apiKey: false, webhookCreateSecret: false, webhookUpdateSecret: false });
+				const freshInteg = res.data?.integrations || {};
+				setMasks({
+					apiKey: freshInteg.apiKey || "",
+					webhookCreateSecret: freshInteg.webhookCreateOrderSecret || "",
+					webhookUpdateSecret: freshInteg.webhookUpdateStatusSecret || "",
+				});
+
+				toast.success(t("form.updateSuccess"));
+			} else {
+				await api.post("/stores", {
+					name: data.name.trim(),
+					code: data.code.trim(),
+					storeUrl: data.storeUrl.trim(),
+					provider: "easyorder",
+					isActive: data.isActive,
+					autoSync: data.autoSync,
+					integrations: {
+						apiKey: apiKey.trim(),
+						webhookCreateOrderSecret: webhookCreateSecret.trim(),
+						webhookUpdateStatusSecret: webhookUpdateSecret.trim(),
+					},
+				});
+				toast.success(t("form.createSuccess"));
+			}
+			onClose();
+			await fetchStores()
+		} catch (e) {
+			toast.error(normalizeAxiosError(e));
+		}
 	};
 
-	const handleEditSettings = (id) => {
-		console.log("Edit settings for company:", id);
-	};
-
-	const [pager, setPager] = useState(() => ({
-		total_records: 671,
-		current_page: 1,
-		per_page: 6,
-		records: Array.from({ length: 13 }).map((_, i) => ({
-			id: i + 1,
-			storeName: "فاشون شو",
-			storeUrl: "htps://easyorder",
-			platform: i % 2 === 0 ? "eazy order" : "youcan",
-			email: "yosr@gmail.com",
-			joinDate: "17-6-2025",
-			status: "تلقائى",
-			sendToInventory: i % 2 === 0,
-		})),
-	}));
-
-	function updateQuery({ page, per_page }) {
-		const url = new URL(window.location.href);
-		url.searchParams.set("page", String(page));
-		url.searchParams.set("limit", String(per_page));
-		window.history.replaceState({}, "", url.toString());
-	}
-
-	function handlePageChange({ page, per_page }) {
-		updateQuery({ page, per_page });
-		setPager((prev) => ({
-			...prev,
-			current_page: page,
-			per_page,
-			records: Array.from({ length: per_page }).map((_, i) => ({
-				id: (page - 1) * per_page + (i + 1),
-				storeName: "فاشون شو",
-				storeUrl: "htps://easyorder",
-				platform: i % 2 === 0 ? "eazy order" : "youcan",
-				email: "yosr@gmail.com",
-				joinDate: "17-6-2025",
-				status: "تلقائى",
-				sendToInventory: i % 2 === 0,
-			})),
-		}));
-	}
-
-	/** ✅ Table columns */
-	const columns = useMemo(() => {
-		return [
-			{
-				key: "storeName",
-				header: t("table.storeName"),
-				className: "text-gray-700 dark:text-slate-200 font-semibold",
-			},
-			{
-				key: "storeUrl",
-				header: t("table.storeUrl"),
-				cell: (row) => (
-					<a
-						href={row.storeUrl}
-						target="_blank"
-						rel="noopener noreferrer"
-						className="text-primary hover:underline"
-						dir="ltr"
-					>
-						{row.storeUrl}
-					</a>
-				),
-			},
-			{
-				key: "platform",
-				header: t("table.platform"),
-				className: "text-gray-600 dark:text-slate-200",
-			},
-			{
-				key: "email",
-				header: t("table.email"),
-				className: "text-gray-600 dark:text-slate-200",
-				cell: (row) => <span dir="ltr">{row.email}</span>,
-			},
-			{
-				key: "joinDate",
-				header: t("table.joinDate"),
-				className: "text-gray-600 dark:text-slate-200",
-			},
-			{
-				key: "status",
-				header: t("table.status"),
-				className: "text-gray-600 dark:text-slate-200",
-			},
-			{
-				key: "sendToInventory",
-				header: t("table.sendToInventory"),
-				className: "w-[150px]",
-				cell: (row) => (
-					<button
-						className={cn(
-							"relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-							row.sendToInventory ? "bg-primary" : "bg-gray-300 dark:bg-slate-600"
-						)}
-					>
-						<span
-							className={cn(
-								"inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-								row.sendToInventory ? "rtl:-translate-x-6 ltr:translate-x-6 " : "rtl:-translate-x-[4px] ltr:translate-x-[4px]"
-							)}
-						/>
-					</button>
-				),
-			},
-			{
-				key: "options",
-				header: t("table.options"),
-				className: "w-[80px]",
-				cell: (row) => (
-					<TooltipProvider>
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<motion.button
-									whileHover={{ scale: 1.1 }}
-									whileTap={{ scale: 0.95 }}
-									className={cn(
-										"group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
-										"border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:border-red-600 hover:text-white hover:shadow-xl hover:shadow-red-500/40",
-										"dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300 dark:hover:bg-red-600 dark:hover:border-red-600 dark:hover:text-white dark:hover:shadow-red-500/30"
-									)}
-									onClick={() => console.log("delete", row.id)}
-								>
-									<Trash2 size={16} className="transition-transform group-hover:scale-110" />
-								</motion.button>
-							</TooltipTrigger>
-							<TooltipContent>{t("actions.delete")}</TooltipContent>
-						</Tooltip>
-					</TooltipProvider>
-				),
-			},
-		];
-	}, [t]);
+	console.log(errors)
+	// ── shared input style ──
+	const inputCls = "rounded-xl h-[46px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-[rgb(var(--primary))]/20";
 
 	return (
+		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+			<DialogContent className="!max-w-2xl bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
+
+				{fetchingStore ? (
+					<div className="flex items-center justify-center py-16">
+						<Loader2 size={28} className="animate-spin text-[rgb(var(--primary))]" />
+					</div>
+				) : (
+					<>
+						{/* header */}
+						<div className="flex items-center gap-3 mb-1">
+							<div className="w-10 h-10 rounded-xl bg-[#F3F0FF] dark:bg-[#1A1630] flex items-center justify-center text-lg">⚡</div>
+							<div>
+								<h3 className="text-base font-bold text-gray-900 dark:text-slate-100">
+									{isEdit ? t("dialog.editTitle", { provider: "EasyOrder" }) : t("dialog.createTitle", { provider: "EasyOrder" })}
+								</h3>
+								<p className="text-xs text-gray-500 dark:text-slate-400">{t("dialog.subtitle")}</p>
+							</div>
+						</div>
+
+						<form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-4">
+							{/* ── store info section ── */}
+							<div className="space-y-4">
+								<div className="flex items-center gap-2 mb-2">
+									<div className="w-0.5 h-5 bg-primary rounded-full" />
+									<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">{t("form.storeInfoSection")}</span>
+								</div>
+
+								<div className="grid grid-cols-2 gap-3">
+									<div className="space-y-1.5">
+										<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.storeName")}</Label>
+										<Input {...register("name")} placeholder={t("form.storeNamePlaceholder")} className={inputCls} />
+										{errors?.name?.message && <div className="text-xs text-red-600">{errors.name.message}</div>}
+									</div>
+									<div className="space-y-1.5">
+										<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.storeCode")}</Label>
+										<Input {...register("code")} placeholder={t("form.storeCodePlaceholder")} className={inputCls} />
+										{errors?.code?.message && <div className="text-xs text-red-600">{errors.code.message}</div>}
+									</div>
+								</div>
+
+								<div className="space-y-1.5">
+									<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.storeUrl")}</Label>
+									<Input {...register("storeUrl")} placeholder="https://your-store.com" className={inputCls} />
+									{errors?.storeUrl?.message && <div className="text-xs text-red-600">{errors.storeUrl.message}</div>}
+								</div>
+
+								<div className="flex items-center gap-6 pt-1">
+									<div className="flex items-center gap-2.5">
+										{!isEdit && <> <Controller
+											control={control}
+											name="isActive"
+											render={({ field }) => (
+												<Switch checked={field.value} onCheckedChange={field.onChange} id="isActive" />
+											)}
+										/>
+											<Label htmlFor="isActive" className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.activeStore")}</Label></>}
+									</div>
+									<div className="flex items-center gap-2.5">
+										<Controller
+											control={control}
+											name="autoSync"
+											render={({ field }) => (
+												<Switch checked={field.value} onCheckedChange={field.onChange} id="autoSync" />
+											)}
+										/>
+										<Label htmlFor="autoSync" className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.autoSync")}</Label>
+									</div>
+								</div>
+							</div>
+
+							{/* ── API Key section ── */}
+							<div className="space-y-3">
+								<div className="flex items-center gap-2">
+									<div className="w-0.5 h-5 bg-primary rounded-full" />
+									<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">{t("form.apiKeySection")}</span>
+								</div>
+
+								{/* instructions */}
+								<div className="bg-[#FAFBFF] dark:bg-[#1E1E2E] border border-[#E8E8F0] dark:border-[#3A3A4A] rounded-xl p-3.5 space-y-2">
+									<p className="text-xs font-semibold text-gray-700 dark:text-slate-200 flex items-center gap-1.5">
+										<Zap size={13} className="text-[rgb(var(--primary))]" />
+										{t("instructions.apiKeyTitle")}
+									</p>
+									<InstructionStep step={1}>{t("instructions.apiKey1")}</InstructionStep>
+									<InstructionStep step={2}>{t("instructions.apiKey2")}</InstructionStep>
+									<InstructionStep step={3}>{t("instructions.apiKey3")}</InstructionStep>
+									<InstructionStep step={4}>{t("instructions.apiKey4")}</InstructionStep>
+									<InstructionStep step={5}>{t("instructions.apiKey5")}</InstructionStep>
+								</div>
+
+								<div className="space-y-1.5">
+									<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.apiKey")}</Label>
+									<Input
+										value={apiKey}
+										placeholder={isEdit ? (masks.apiKey || t("form.maskedPlaceholder")) : t("form.apiKeyPlaceholder")}
+										onChange={(e) => { setApiKey(e.target.value); markTouched("apiKey"); }}
+										className={inputCls}
+									/>
+									{secretErrors.apiKey && <div className="text-xs text-red-600">{secretErrors.apiKey}</div>}
+
+								</div>
+							</div>
+
+							{/* ── Webhooks section ── */}
+							<div className="space-y-3">
+								<div className="flex items-center gap-2">
+									<div className="w-0.5 h-5 bg-primary rounded-full" />
+									<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">{t("form.webhooksSection")}</span>
+								</div>
+
+								<div className="bg-[#FAFBFF] dark:bg-[#1E1E2E] border border-[#E8E8F0] dark:border-[#3A3A4A] rounded-xl p-3.5 space-y-3">
+									<p className="text-xs font-semibold text-gray-700 dark:text-slate-200 flex items-center gap-1.5">
+										<Zap size={13} className="text-[rgb(var(--primary))]" />
+										{t("instructions.webhooksTitle")}
+									</p>
+									<InstructionStep step={1}>{t("instructions.webhook1")}</InstructionStep>
+									<InstructionStep step={2}>{t("instructions.webhook2")}</InstructionStep>
+									<InstructionStep step={3}>{t("instructions.webhook3")}</InstructionStep>
+
+									{/* create-order webhook URL */}
+									<div className="space-y-0.5">
+										<p className="text-xs text-gray-500 dark:text-slate-400 font-semibold">{t("instructions.webhookCreateOrderLabel")}</p>
+										<CopyableCode
+											text={`https://binaural-taryn-unprecipitatively.ngrok-free.dev/webhooks/${String(user?.id).trim()}/easy-order/orders/create`}
+										/>
+									</div>
+									<InstructionStep step={4}>{t("instructions.webhook4")}</InstructionStep>
+
+									{/* update-status webhook URL */}
+									<div className="space-y-0.5">
+										<p className="text-xs text-gray-500 dark:text-slate-400 font-semibold">{t("instructions.webhookUpdateStatusLabel")}</p>
+										<CopyableCode
+											text={`https://binaural-taryn-unprecipitatively.ngrok-free.dev/webhooks/${String(user?.id).trim()}/easy-order/orders/status`}
+										/>
+									</div>
+									<InstructionStep step={5}>{t("instructions.webhook5")}</InstructionStep>
+								</div>
+
+								{/* secret inputs */}
+								<div className="grid grid-cols-2 gap-3">
+									<div className="space-y-1.5">
+										<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.webhookCreateOrderSecret")}</Label>
+										<Input
+											value={webhookCreateSecret}
+											placeholder={isEdit ? (masks.webhookCreateSecret || t("form.maskedPlaceholder")) : t("form.secretPlaceholder")}
+											onChange={(e) => { setWebhookCreateSecret(e.target.value); markTouched("webhookCreateSecret"); }}
+											className={inputCls}
+										/>
+										{secretErrors.webhookCreateSecret && <div className="text-xs text-red-600">{secretErrors.webhookCreateSecret}</div>}
+									</div>
+									<div className="space-y-1.5">
+										<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.webhookUpdateStatusSecret")}</Label>
+										<Input
+											value={webhookUpdateSecret}
+											placeholder={isEdit ? (masks.webhookUpdateSecret || t("form.maskedPlaceholder")) : t("form.secretPlaceholder")}
+											onChange={(e) => { setWebhookUpdateSecret(e.target.value); markTouched("webhookUpdateSecret"); }}
+											className={inputCls}
+										/>
+										{secretErrors.webhookUpdateSecret && <div className="text-xs text-red-600">{secretErrors.webhookUpdateSecret}</div>}
+									</div>
+								</div>
+							</div>
+
+							{/* ── footer buttons ── */}
+							<div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-200 dark:border-slate-700">
+								<button type="button" onClick={onClose} disabled={isSubmitting}
+									className="px-4 py-2 text-sm font-semibold rounded-xl border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
+									{t("form.cancel")}
+								</button>
+								<button type="submit" disabled={isSubmitting}
+									className="inline-flex items-center gap-1.5 px-5 py-2 text-sm font-semibold rounded-xl bg-primary text-white hover:opacity-90 transition-opacity shadow-sm disabled:opacity-60">
+									{isSubmitting ? <Loader2 size={15} className="animate-spin" /> : null}
+									{isEdit ? t("form.saveChanges") : t("form.createStore")}
+								</button>
+							</div>
+						</form>
+					</>
+				)}
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+// ─── Shopify / WooCommerce mock dialogs ──────────────────────────────────────
+
+function MockProviderDialog({ open, onClose, provider, existingStore, fetchStores, t }) {
+	const meta = PROVIDER_META[provider];
+	const isEdit = !!existingStore;
+
+	return (
+		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+			<DialogContent className="!max-w-md bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800">
+				<div className="flex items-center gap-3 mb-4">
+					<div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-lg", meta.bg)}>{meta.icon}</div>
+					<div>
+						<h3 className="text-base font-bold text-gray-900 dark:text-slate-100">
+							{isEdit ? t("dialog.editTitle", { provider: meta.label }) : t("dialog.createTitle", { provider: meta.label })}
+						</h3>
+						<p className="text-xs text-gray-500 dark:text-slate-400">{t("dialog.subtitle")}</p>
+					</div>
+				</div>
+
+				<div className="bg-amber-50 dark:bg-[#2A2310] border border-amber-200 dark:border-amber-900/40 rounded-xl p-4 flex items-start gap-2.5">
+					<AlertCircle size={18} className="text-amber-500 shrink-0 mt-0.5" />
+					<div>
+						<p className="text-sm font-semibold text-amber-700 dark:text-amber-300">{t("mock.comingSoonTitle")}</p>
+						<p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">{t("mock.comingSoonDesc", { provider: meta.label })}</p>
+					</div>
+				</div>
+
+				<div className="mt-5 flex justify-end">
+					<button type="button" onClick={onClose}
+						className="px-4 py-2 text-sm font-semibold rounded-xl border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
+						{t("form.close")}
+					</button>
+				</div>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+// ─── Delete confirmation ─────────────────────────────────────────────────────
+
+function DeleteConfirmDialog({ open, onClose, store, onConfirm, loading, t }) {
+	return (
+		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+			<DialogContent className="!max-w-md bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800">
+				<div className="space-y-2">
+					<h3 className="text-base font-semibold text-gray-900 dark:text-slate-100">{t("delete.title")}</h3>
+					<p className="text-sm text-gray-500 dark:text-slate-400">{t("delete.desc", { name: store?.name || "" })}</p>
+				</div>
+				<div className="mt-6 flex items-center justify-end gap-2">
+					<button type="button" onClick={onClose} disabled={loading}
+						className="px-4 py-2 text-sm font-semibold rounded-xl border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
+						{t("form.cancel")}
+					</button>
+					<button type="button" onClick={onConfirm} disabled={loading}
+						className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-xl bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-60">
+						{loading ? <Loader2 size={15} className="animate-spin" /> : null}
+						{t("delete.confirm")}
+					</button>
+				</div>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+// ─── Main Page ───────────────────────────────────────────────────────────────
+
+export default function StoresIntegrationPage() {
+	const t = useTranslations("storeIntegration");
+
+	// stores fetched from backend — keyed by provider
+	const [storesByProvider, setStoresByProvider] = useState({});
+	const [pageLoading, setPageLoading] = useState(true);
+
+	// dialog state
+	const [dialogProvider, setDialogProvider] = useState(null); // "easyorder" | "shopify" | "woocommerce" | null
+	const [dialogStore, setDialogStore] = useState(null); // existing StoreEntity or null (create mode)
+
+	// delete
+	const [deleteStore, setDeleteStore] = useState(null);
+	const [deleting, setDeleting] = useState(false);
+
+	// ── fetch all stores and bucket by provider ──
+	const fetchStores = useCallback(async () => {
+		setPageLoading(true);
+		try {
+			const res = await api.get("/stores", { params: { limit: 50 } });
+			const records = res.data?.records ?? res.data ?? [];
+			const map = {};
+			records.forEach((s) => { map[s.provider] = s; });
+			setStoresByProvider(map);
+		} catch (e) {
+			toast.error(normalizeAxiosError(e));
+		} finally {
+			setPageLoading(false);
+		}
+	}, []);
+
+	useEffect(() => { fetchStores(); }, [fetchStores]);
+
+	// ── open configure / edit dialog ──
+	const handleConfigure = (provider, store) => {
+		setDialogProvider(provider);
+		setDialogStore(store || null);
+	};
+
+	const handleDialogClose = () => {
+		setDialogProvider(null);
+		setDialogStore(null);
+	};
+
+	// ── manual sync ──
+	const handleSync = async (storeId) => {
+		try {
+			await api.post(`/stores/${storeId}/sync`);
+			toast.success(t("sync.queued"));
+			// small delay then refetch to reflect "syncing" status
+			setTimeout(fetchStores, 800);
+		} catch (e) {
+			toast.error(normalizeAxiosError(e));
+		}
+	};
+
+	// ── delete ──
+	const handleDeleteConfirm = async () => {
+		if (!deleteStore) return;
+		setDeleting(true);
+		try {
+			await api.delete(`/stores/${deleteStore.id}`);
+			toast.success(t("delete.success"));
+			setDeleteStore(null);
+			fetchStores();
+		} catch (e) {
+			toast.error(normalizeAxiosError(e));
+		} finally {
+			setDeleting(false);
+		}
+	};
+
+	// ── render ──
+	return (
 		<div className="min-h-screen p-6">
-			<div className="bg-card  flex flex-col gap-2 mb-4">
+			{/* breadcrumb header */}
+			<div className="bg-card flex flex-col gap-2 mb-4">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-2 text-lg font-semibold">
 						<span className="text-gray-400">{t("breadcrumb.home")}</span>
 						<ChevronLeft className="text-gray-400" size={18} />
 						<span className="text-[rgb(var(--primary))]">{t("breadcrumb.integrations")}</span>
-						<span className="ml-3 inline-flex w-3.5 h-3.5 rounded-full bg-[rgb(var(--primary))]" />
+						<span className="ml-3 inline-flex w-3.5 h-3.5 rounded-full bg-primary" />
 					</div>
 
 					<div className="flex items-center gap-4">
@@ -363,57 +747,67 @@ export default function StoreIntegrationsPage() {
 				</div>
 			</div>
 
-			{/* Integrated Platforms Section */}
-			<motion.div
-				key="integrated"
-				initial={{ opacity: 0, y: 20 }}
-				animate={{ opacity: 1, y: 0 }}
-				exit={{ opacity: 0, y: -20 }}
-				transition={{ duration: 0.3 }}
-				className="bg-card mb-6"
-			>
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-					{integratedCompanies.map((company, index) => (
-						<motion.div
-							key={company.id}
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: index * 0.1 }}
-						>
-							<IntegratedCompanyCard
-								company={company}
-								onToggle={handleToggleCompany}
-								onEditSettings={handleEditSettings}
-								t={t}
-							/>
-						</motion.div>
+			{/* ── store cards grid ── */}
+			{pageLoading ? (
+				<div className="flex items-center justify-center py-24">
+					<Loader2 size={32} className="animate-spin text-[rgb(var(--primary))]" />
+				</div>
+			) : (
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+					{PROVIDERS.map((provider, idx) => (
+						<StoreCard
+							key={provider}
+							provider={provider}
+							store={storesByProvider[provider] || null}
+							t={t}
+							index={idx}
+							onConfigure={handleConfigure}
+							onSync={handleSync}
+							fetchStores={fetchStores}
+						/>
 					))}
 				</div>
-			</motion.div>
+			)}
 
-			{/* Stores Table */}
-			<div className="bg-card rounded-sm">
-				<StoresTableToolbar
-					t={t}
-					searchValue={search}
-					onSearchChange={setSearch}
-					onExport={() => console.log("export")}
-				/>
+			{/* ── dialogs ── */}
+			{/* EasyOrder */}
+			<EasyOrderDialog
+				open={dialogProvider === "easyorder"}
+				onClose={handleDialogClose}
+				existingStore={dialogStore}
+				fetchStores={fetchStores}
+				t={t}
+			/>
 
-				<div className="mt-4">
-					<DataTable
-						columns={columns}
-						data={pager.records}
-						pagination={{
-							total_records: pager.total_records,
-							current_page: pager.current_page,
-							per_page: pager.per_page,
-						}}
-						onPageChange={({ page, per_page }) => handlePageChange({ page, per_page })}
-						emptyState={t("empty")}
-					/>
-				</div>
-			</div>
+			{/* Shopify (mock) */}
+			<MockProviderDialog
+				open={dialogProvider === "shopify"}
+				onClose={handleDialogClose}
+				provider="shopify"
+				existingStore={dialogStore}
+				fetchStores={fetchStores}
+				t={t}
+			/>
+
+			{/* WooCommerce (mock) */}
+			<MockProviderDialog
+				open={dialogProvider === "woocommerce"}
+				onClose={handleDialogClose}
+				provider="woocommerce"
+				existingStore={dialogStore}
+				fetchStores={fetchStores}
+				t={t}
+			/>
+
+			{/* Delete confirmation */}
+			<DeleteConfirmDialog
+				open={!!deleteStore}
+				onClose={() => setDeleteStore(null)}
+				store={deleteStore}
+				loading={deleting}
+				onConfirm={handleDeleteConfirm}
+				t={t}
+			/>
 		</div>
 	);
 }

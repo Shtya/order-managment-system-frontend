@@ -42,6 +42,8 @@ import { Textarea } from '../../../../components/ui/textarea';
 import { TagInput } from '@/components/atoms/TagInput';
 import LANG from '@/components/atoms/LANG';
 import { baseImg } from '@/utils/axios';
+import { useAutoTranslate } from '@/utils/autoTranslate';
+import SlugInput from '@/components/atoms/SlugInput';
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? 'Unexpected error';
@@ -166,7 +168,11 @@ const makeSchema = (t) =>
 	yup
 		.object({
 			name: yup.string().trim().required(t('validation.nameRequired')),
-
+			slug: yup
+				.string()
+				.trim()
+				.required(t('validation.slugRequired'))
+				.matches(/^[a-z0-9-]+$/, t('validation.slugInvalid')),
 			wholesalePrice: yup
 				.string()
 				.nullable()
@@ -244,6 +250,7 @@ function defaultAttribute() {
 function defaultValues() {
 	return {
 		name: '',
+		slug: '',
 		wholesalePrice: '',
 		lowestPrice: '',
 		storageRack: '',
@@ -285,6 +292,7 @@ function extractAttributesFromSkus(skus) {
 
 export default function AddProductPage({ isEditMode = false, existingProduct = null, productId = null }) {
 	const t = useTranslations('addProduct');
+
 	const navigate = useRouter();
 
 	const [categories, setCategories] = useState([]);
@@ -313,6 +321,8 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 	const upsellingEnabled = watch('upsellingEnabled');
 	const productName = watch('name');
+
+
 	const wholesalePrice = watch('wholesalePrice');
 	const attributesWatch = useWatch({ control, name: 'attributes' });
 	const combinationsWatch = useWatch({ control, name: 'combinations' });
@@ -445,6 +455,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			if (lp !== '') fd.append('lowestPrice', lp);
 
 			if ((data.storageRack ?? '').trim()) fd.append('storageRack', data.storageRack.trim());
+			if ((data.slug ?? '').trim()) fd.append('slug', data.slug.trim());
 
 			if (data.categoryId && data.categoryId !== 'none') fd.append('categoryId', data.categoryId);
 			if (data.storeId && data.storeId !== 'none') fd.append('storeId', data.storeId);
@@ -499,6 +510,9 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				if (f.isFromLibrary || f.isExisting) return;
 				if (f.file) fd.append('images', f.file);
 			});
+			if (!isEditMode) {
+				fd.append('combinations', JSON.stringify([...data.combinations]));
+			}
 
 			const apiCall = isEditMode
 				? api.patch(`/products/${productId}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
@@ -524,6 +538,8 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				});
 			}
 
+
+
 			navigate.push('/products');
 		} catch (error) {
 			toast.error(normalizeAxiosError(error));
@@ -545,6 +561,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 		reset({
 			name: existingProduct.name || '',
+			slug: existingProduct.slug || '',
 			wholesalePrice: existingProduct.wholesalePrice?.toString() || '',
 			lowestPrice: existingProduct.lowestPrice?.toString() || '',
 			storageRack: existingProduct.storageRack || '',
@@ -586,6 +603,36 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		}
 	}, [isEditMode, existingProduct, reset]);
 
+
+	const [slugStatus, setSlugStatus] = useState(null); // 'checking', 'unique', 'taken'
+
+	const watchSlug = watch('slug');
+	const storeId = watch('storeId');
+	useEffect(() => {
+		if (!watchSlug || errors.slug) {
+			setSlugStatus(null);
+			return;
+		}
+
+		const checkUnique = setTimeout(async () => {
+			setSlugStatus('checking');
+			try {
+				const params = new URLSearchParams({ slug: watchSlug.trim() }); // [2025-12-24] Remember to trim.
+
+				if (storeId) params.append('storeId', storeId);
+				if (productId) params.append('productId', productId);
+
+				const res = await api.get(`/products/check-slug?${params.toString()}`);
+
+				setSlugStatus(res.data.isUnique ? 'unique' : 'takenStore');
+			} catch (e) {
+				setSlugStatus(null);
+			}
+		}, 280); // Debounce للتحقق من التوفر
+
+		return () => clearTimeout(checkUnique);
+	}, [watchSlug, errors.slug, productId]);
+
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: 20, scale: 0.98 }}
@@ -593,6 +640,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.15 }}
 			className="min-h-screen p-6"
 		>
+
 			<div className="duration-300 !p-4 !sticky top-[80px] z-[10] bg-card mb-6 rounded-2xl shadow-sm">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-2 text-lg font-semibold">
@@ -642,6 +690,10 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 									/>
 									{errors?.name?.message && <div className="text-xs text-red-600">{errors.name.message}</div>}
 								</div>
+
+								<SlugInput errors={errors} register={register} name={productName} slugStatus={slugStatus} slug={watchSlug} setValue={setValue}
+									labelClassName="text-sm font-semibold text-gray-600 dark:text-slate-300"
+									className="rounded-xl h-[50px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20" />
 
 								<div className="space-y-2">
 									<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('fields.wholesalePrice')}</Label>

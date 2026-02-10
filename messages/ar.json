@@ -3,7 +3,6 @@
     "guest": "زائر",
     "noEmail": "لا يوجد بريد"
   },
-
   "sidebar": {
     "dashboard": "لوحة التحكم",
     "users": "المستخدمين",
@@ -35,7 +34,6 @@
     "notifications": "الإشعارات",
     "notificationsTitle": "الإشعارات",
     "notificationsSubtitle": "آخر التحديثات على النظام",
-
     "roles": {
       "admin": "أدمن",
       "super_admin": "سوبر أدمن",
@@ -133,20 +131,17 @@
       "employees": "الموظفين",
       "addEmployee": "إضافة موظف"
     },
-
     "sections": {
       "employeeType": "نوع الموظف",
       "employeeInfo": "بيانات الموظف",
       "employeeImage": "صورة الموظف"
     },
-
     "roles": {
       "dataEntry": "مدخل بيانات",
       "warehouse": "المستودع",
       "customerService": "خدمة العملاء",
       "custom": "مخصص"
     },
-
     "fields": {
       "name": "الاسم",
       "email": "البريد الإلكتروني",
@@ -154,7 +149,6 @@
       "roleSelect": "الدور / الصلاحية",
       "password": "كلمة المرور"
     },
-
     "placeholders": {
       "name": "اكتب الاسم",
       "email": "example@email.com",
@@ -164,20 +158,17 @@
       "customType": "اكتب نوع الموظف",
       "selectCountry": "اختر الدولة"
     },
-
     "actions": {
       "save": "حفظ",
       "saving": "جارٍ الحفظ...",
       "close": "إغلاق",
       "openWhatsapp": "فتح واتساب"
     },
-
     "toasts": {
       "createSuccess": "تم إنشاء الموظف بنجاح",
       "createFailed": "فشل إنشاء الموظف",
       "limitReached": "تم الوصول للحد الأقصى من المستخدمين"
     },
-
     "validation": {
       "nameRequired": "الاسم مطلوب",
       "emailRequired": "البريد الإلكتروني مطلوب",
@@ -190,7 +181,6 @@
       "phoneRequired": "رقم الجوال مطلوب",
       "phoneInvalid": "يرجى إدخال رقم جوال صحيح حسب الدولة المختارة"
     },
-
     "upload": {
       "dragHere": "اسحب الصورة هنا",
       "clickToChoose": "أو اضغط لاختيار صورة",
@@ -199,20 +189,16 @@
       "remove": "حذف الصورة",
       "imageAlt": "صورة الموظف"
     },
-
     "note": {
       "title": "ملاحظة:",
       "text": "يفضل رفع صورة واضحة للموظف."
     },
-
     "common": {
       "or": "أو"
     },
-
     "credentials": {
       "password": "كلمة المرور"
     },
-
     "whatsapp": {
       "title": "إرسال عبر واتساب",
       "subtitle": "اختر الدولة وأدخل رقم الواتساب",
@@ -254,7 +240,6 @@
       "homeTools": "ادوات منزلية"
     }
   },
-
   "shipping": {
     "breadcrumb": {
       "home": "الرئيسية",
@@ -293,7 +278,6 @@
     },
     "empty": "لا توجد شركات شحن"
   },
-
   "addShipping": {
     "breadcrumb": {
       "home": "الرئيسية",
@@ -349,35 +333,93 @@
     },
     "empty": "لا توجد بيانات"
   },
-  "storeIntegrations": {
+  "storeIntegration": {
     "breadcrumb": {
       "home": "الرئيسية",
-      "integrations": "دمج المتاجر"
-    },
-    "integrated": {
-      "platformLink": "رابط الشركة",
-      "description": "شريك شحن موثوق ودمج كامل لتتبع أسرع وتسليم آمن.",
-      "editSettings": "تعديل الاعدادت"
-    },
-    "toolbar": {
-      "searchPlaceholder": "ابحث عن ما تريد.....",
-      "export": "تصدير"
-    },
-    "table": {
-      "storeName": "اسم المتجر",
-      "storeUrl": "رابط المتجر",
-      "platform": "المنصة",
-      "email": "البريد الالكتروني",
-      "joinDate": "تاريخ الانضمام",
-      "status": "حالة التفعيل",
-      "sendToInventory": "ارسال الطلبات لمخزون",
-      "options": "خيارات"
+      "integrations": "التكاملات"
     },
     "actions": {
-      "howToUse": "شرح الاستخدام",
-      "delete": "حذف"
+      "howToUse": "كيف أستخدمه؟"
     },
-    "empty": "لا توجد متاجر"
+    "validation": {
+      "nameRequired": "اسم المتجر مطلوب",
+      "codeRequired": "كود المتجر مطلوب",
+      "storeUrlRequired": "رابط المتجر مطلوب",
+      "apiKeyRequired": "مفتاح API مطلوب",
+      "webhookCreateSecretRequired": "سر إنشاء الطلب مطلوب",
+      "webhookUpdateSecretRequired": "سر تحديث الحالة مطلوب"
+    },
+    "card": {
+      "editSettings": "إعدادات",
+      "configureSettings": "إعداد المتجر",
+      "sync": "مزامنة"
+    },
+    "syncStatus": {
+      "pending": "انتظار",
+      "syncing": "جاري المزامنة",
+      "synced": "متزامن",
+      "failed": "فشل"
+    },
+    "sync": {
+      "queued": "تم إضافة طلب المزامنة إلى قائمة الانتظار"
+    },
+    "dialog": {
+      "editTitle": "تعديل متجر {provider}",
+      "createTitle": "إعداد متجر {provider}",
+      "subtitle": "أدخل المعلومات المطلوبة للربط"
+    },
+    "form": {
+      "storeInfoSection": "معلومات المتجر",
+      "apiKeySection": "مفتاح API",
+      "webhooksSection": "الـ Webhooks",
+      "storeName": "اسم المتجر",
+      "storeNamePlaceholder": "مثال: متجري على EasyOrder",
+      "storeCode": "كود المتجر",
+      "storeCodePlaceholder": "مثال: my-store",
+      "storeUrl": "رابط المتجر",
+      "activeStore": "المتجر فعّال",
+      "autoSync": "المزامنة التلقائية",
+      "apiKey": "مفتاح API",
+      "apiKeyPlaceholder": "الصق مفتاح API هنا",
+      "webhookCreateOrderSecret": "سر Webhook إنشاء الطلب",
+      "webhookUpdateStatusSecret": "سر Webhook تحديث الحالة",
+      "secretPlaceholder": "الصق السر هنا",
+      "maskedPlaceholder": "****",
+      "requiredFieldsError": "الحقول الأساسية مطلوبة (الاسم، الكود، الرابط)",
+      "secretsRequiredError": "جميع المفاتيح والأسرار مطلوبة عند إنشاء متجر جديد",
+      "createSuccess": "تم إنشاء المتجر بنجاح",
+      "updateSuccess": "تم تحديث المتجر بنجاح",
+      "cancel": "إلغاء",
+      "close": "إغلاق",
+      "saveChanges": "حفظ التعديلات",
+      "createStore": "إنشاء المتجر"
+    },
+    "instructions": {
+      "apiKeyTitle": "كيف تحصل على مفتاح API؟",
+      "apiKey1": "انتقل إلى لوحة التحكم البائع في حساب EasyOrder.",
+      "apiKey2": "من الإعدادات، انتقل إلى قسم Public API",
+      "apiKey3": "اضغط على \"Create New API Key\".",
+      "apiKey4": "أعط مفتاحك اسمًا وحدّد كل الصلاحيات ثم اضغط حفظ.",
+      "apiKey5": "سيظهر مفتاح API على الشاشة. تأكد من نسخه.",
+      "webhooksTitle": "كيف تُنشئ الـ Webhooks؟",
+      "webhook1": "سجّل الدخول إلى لوحة التحكم البائع في EasyOrder.",
+      "webhook2": "اذهب إلى قسم Public API.",
+      "webhook3": "انتقل إلى قسم Webhooks واضغط على \"Create Webhook\".",
+      "webhook4": "أنشئ Webhook من نوع \"orders\" والصق الرابط الـسابق المعطى؛ سيظهر لك \"السر\" (Secret) تلقائياً، تأكد من نسخه ",
+      "webhook5": "أنشئ Webhook آخر من نوع \"order status update\" والصق الرابط السابق المعطى؛ سيظهر لك \"السر\" (Secret) تلقائياً، تأكد من نسخه.",
+      "webhookCreateOrderLabel": "Webhook — إنشاء الطلب (orders)",
+      "webhookUpdateStatusLabel": "Webhook — تحديث الحالة (order status update)"
+    },
+    "mock": {
+      "comingSoonTitle": "قريبًا",
+      "comingSoonDesc": "سيتوفر الربط مع {provider} قريبًا. تابعنا للإعلانات القادمة."
+    },
+    "delete": {
+      "title": "حذف المتجر",
+      "desc": "هل أنت متأكد أنك تريد حذف المتجر \"{name}\"؟ لا يمكن التراجع عن هذا الإجراء.",
+      "confirm": "حذف",
+      "success": "تم حذف المتجر بنجاح"
+    }
   },
   "integrated": {
     "edit_settings": "تعديل الاعدادت",
@@ -390,7 +432,6 @@
       "verify": "تحقق",
       "reset": "إعادة تعيين"
     },
-
     "login": {
       "welcomeBack": "مرحباً بعودتك",
       "description": "قم بإدارة طلباتك وتتبعها بكل سهولة من خلال نظام إدارة الطلبات المتكامل",
@@ -410,7 +451,6 @@
       "copyright": "جميع الحقوق محفوظة © 2025",
       "success": "تم تسجيل الدخول بنجاح"
     },
-
     "forgotPassword": {
       "back": "العودة للدخول",
       "title": "استعادة كلمة المرور",
@@ -423,7 +463,6 @@
       "backToLogin": "العودة إلى تسجيل الدخول",
       "otpSent": "تم إرسال رمز التحقق"
     },
-
     "otp": {
       "back": "العودة",
       "title": "تأكيد البريد الإلكتروني",
@@ -436,7 +475,6 @@
       "error": "حدث خطأ، يرجى المحاولة مرة أخرى",
       "helpText": "لم تستلم الرمز؟ تحقق من مجلد البريد المزعج"
     },
-
     "resetPassword": {
       "title": "إعادة تعيين كلمة المرور",
       "description": "أدخل كلمة المرور الجديدة الخاصة بك",
@@ -455,7 +493,6 @@
       "successDescription": "تم تغيير كلمة المرور بنجاح. سيتم توجيهك لتسجيل الدخول",
       "redirecting": "جاري التوجيه..."
     },
-
     "validation": {
       "emailRequired": "البريد الإلكتروني مطلوب",
       "emailInvalid": "البريد الإلكتروني غير صالح",
@@ -469,32 +506,27 @@
       "passwordsMustMatch": "كلمات المرور غير متطابقة"
     }
   },
-
   "users": {
     "breadcrumb": {
       "home": "الرئيسية",
       "users": "المستخدمون"
     },
-
     "tabs": {
       "all": "الكل",
       "active": "نشط",
       "inactive": "غير نشط"
     },
-
     "stats": {
       "total": "إجمالي المستخدمين",
       "active": "نشط",
       "inactive": "غير نشط"
     },
-
     "toolbar": {
       "searchPlaceholder": "ابحث بالاسم أو البريد الإلكتروني",
       "filter": "تصفية",
       "refresh": "تحديث",
       "export": "تصدير"
     },
-
     "filters": {
       "basic": "أساسي",
       "status": "الحالة",
@@ -507,7 +539,6 @@
       "adminIdPlaceholder": "رقم الهاتف (اختياري)",
       "apply": "تطبيق"
     },
-
     "table": {
       "id": "المعرف",
       "name": "الاسم",
@@ -519,7 +550,6 @@
       "options": "الإجراءات",
       "plan": "الخطة"
     },
-
     "actions": {
       "createUser": "إنشاء مستخدم",
       "refresh": "تحديث",
@@ -535,30 +565,24 @@
       "sendWhatsapp": "إرسال عبر واتساب",
       "openWhatsapp": "فتح واتساب"
     },
-
     "loading": "جاري التحميل...",
     "empty": "لا يوجد مستخدمون",
-
     "messages": {
       "userCreated": "تم إنشاء المستخدم بنجاح",
       "userUpdated": "تم تحديث المستخدم بنجاح",
       "userDeactivated": "تم تعطيل المستخدم"
     },
-
     "create": {
       "title": "إنشاء مستخدم جديد",
       "subtitle": "يمكن للمشرف إنشاء أي حساب عبر /users/admin-create"
     },
-
     "edit": {
       "title": "تعديل المستخدم"
     },
-
     "deactivate": {
       "title": "تعطيل المستخدم",
       "desc": "سيتم تعيين الحالة إلى غير نشط ولن يتمكن المستخدم من تسجيل الدخول."
     },
-
     "fields": {
       "name": "الاسم",
       "email": "البريد الإلكتروني",
@@ -569,25 +593,21 @@
       "plan": "الخطة",
       "noPlan": "بدون خطة"
     },
-
     "placeholders": {
       "name": "الاسم الكامل",
       "email": "user@email.com",
       "role": "اختر الدور",
       "passwordOptional": "اتركه فارغًا للتوليد التلقائي"
     },
-
     "hints": {
       "roleDropdown": "تم تحميل الأدوار من قائمة الأدوار"
     },
-
     "credentials": {
       "title": "بيانات الدخول",
       "subtitle": "هذه أحدث بيانات تم إنشاؤها عند الإنشاء أو إعادة تعيين كلمة المرور",
       "password": "كلمة المرور",
       "note": "ملاحظة: كلمة المرور تظهر فقط عند الإنشاء أو إعادة التعيين ولا يمكن عرض القديمة."
     },
-
     "whatsapp": {
       "title": "إرسال عبر واتساب",
       "subtitle": "اختر الدولة وأدخل رقم الواتساب",
@@ -611,21 +631,18 @@
       "system": "أدوار النظام",
       "custom": "أدوار مخصصة"
     },
-
     "stats": {
       "total": "إجمالي الأدوار",
       "system": "النظام",
       "custom": "مخصص",
       "wildcard": "صلاحية *"
     },
-
     "toolbar": {
       "searchPlaceholder": "ابحث باسم الدور أو الصلاحيات",
       "filter": "تصفية",
       "refresh": "تحديث",
       "export": "تصدير"
     },
-
     "filters": {
       "basic": "أساسي",
       "permissions": "الصلاحيات",
@@ -641,7 +658,6 @@
       "noWildcard": "بدون *",
       "apply": "تطبيق"
     },
-
     "table": {
       "id": "المعرف",
       "name": "الاسم",
@@ -649,7 +665,6 @@
       "permissions": "الصلاحيات",
       "options": "الإجراءات"
     },
-
     "actions": {
       "refresh": "تحديث",
       "createRole": "إنشاء دور",
@@ -660,7 +675,6 @@
       "delete": "حذف",
       "cancel": "إلغاء"
     },
-
     "messages": {
       "roleCreated": "تم إنشاء الدور بنجاح",
       "roleUpdated": "تم تحديث الدور بنجاح",
@@ -668,48 +682,38 @@
       "permissionCreated": "تم إنشاء الصلاحية",
       "permissionDeleted": "تم حذف الصلاحية"
     },
-
     "create": {
       "title": "إنشاء دور",
       "subtitle": "إنشاء دور مخصص مع الصلاحيات"
     },
-
     "edit": {
       "title": "تعديل دور"
     },
-
     "delete": {
       "title": "حذف الدور",
       "desc": "لا يمكن التراجع عن هذا الإجراء."
     },
-
     "fields": {
       "name": "اسم الدور",
       "description": "الوصف",
       "permissions": "الصلاحيات"
     },
-
     "hints": {
       "wildcard": "معلومة: إضافة * تمنح جميع الصلاحيات (استخدمها بحذر).",
       "nameLocked": "اسم الدور ثابت بعد الإنشاء ولا يمكن تغييره."
     },
-
     "permissions": {
       "title": "الصلاحيات",
       "empty": "لا توجد صلاحيات بعد",
-
       "createTitle": "إنشاء صلاحية",
       "createSubtitle": "أضف مفتاح صلاحية مثل users.read",
       "fieldName": "مفتاح الصلاحية",
-
       "deleteTitle": "حذف الصلاحية",
       "deleteDesc": "سيتم حذف الصلاحية من النظام."
     },
-
     "loading": "جاري التحميل...",
     "empty": "لا توجد أدوار"
   },
-
   "settings": {
     "header": {
       "title": "الإعدادات",
@@ -761,7 +765,6 @@
         "deleted": "تم حذف التصنيف بنجاح",
         "toggling": "جاري تغيير الحالة...",
         "toggled": "تم تغيير الحالة",
-
         "duplicating": "جاري التكرار...",
         "duplicated": "تم تكرار التصنيف بنجاح",
         "archiving": "جاري الأرشفة...",
@@ -907,7 +910,6 @@
         "confirm": "تأكيد كلمة المرور الجديدة",
         "update": "تحديث كلمة المرور"
       },
-
       "phone": {
         "label": "رقم الجوال",
         "countryPlaceholder": "اختر الدولة",
@@ -949,7 +951,6 @@
         "current": "الجلسة الحالية",
         "details": "Chrome على Windows • نشط الآن",
         "active": "نشط",
-
         "subtitle": "الأجهزة والجلسات التي سجّلت الدخول على حسابك",
         "refresh": "تحديث",
         "loading": "جاري تحميل الجلسات...",
@@ -982,7 +983,6 @@
         "en": "الإنجليزية",
         "label": "اللغة"
       },
-
       "mode": {
         "title": "وضع العرض",
         "light": "فاتح",
@@ -1017,7 +1017,6 @@
       }
     }
   },
-
   "mediaLibrary": {
     "title": "مكتبة الوسائط",
     "description": "ارفع ملفاتك واختر صورة/ملف لاستخدامه داخل النموذج.",
@@ -1224,7 +1223,6 @@
       "deactivate": "تعطيل"
     }
   },
-
   "dataTable": {
     "emptyState": {
       "title": "لا توجد بيانات",
@@ -1247,7 +1245,6 @@
       "close": "إغلاق"
     }
   },
-
   "warehouses": {
     "breadcrumb": {
       "home": "الرئيسية",
@@ -1330,7 +1327,6 @@
     },
     "empty": "لا توجد مستودعات"
   },
-
   "inputPhone": {
     "placeholders": {
       "selectCountry": "اختر الدولة"
@@ -1508,7 +1504,6 @@
     },
     "empty": "لا توجد فئات"
   },
-
   "returns": {
     "breadcrumb": {
       "home": "الرئيسية",
@@ -1753,7 +1748,6 @@
     "no": "لا",
     "currency": "ج.م"
   },
-
   "productSearch": {
     "triggerPlaceholder": "ابحث عن منتج أو SKU...",
     "title": "بحث المنتجات",
@@ -1773,7 +1767,6 @@
     "lowStock": "قليل",
     "inStock": "متاح"
   },
-
   "addProduct": {
     "breadcrumb": {
       "home": "الرئيسية",
@@ -1805,6 +1798,7 @@
     },
     "fields": {
       "productName": "اسم المنتج",
+      "productSlug": "الرابط (Slug)",
       "bundleName": "اسم الباقة",
       "wholesalePrice": "سعر الجملة",
       "lowestPrice": "أقل سعر",
@@ -1817,6 +1811,7 @@
     },
     "placeholders": {
       "productName": "أدخل اسم المنتج",
+      "productSlug": "الرابط (Slug)",
       "bundleName": "أدخل اسم الباقة",
       "wholesalePrice": "أدخل سعر الجملة",
       "lowestPrice": "أدخل أقل سعر",
@@ -1832,8 +1827,17 @@
     "common": {
       "none": "بدون"
     },
+    "status": {
+      "translating": "جاري الترجمة...",
+      "checking": "جاري التحقق من التوفر..."
+    },
     "validation": {
       "nameRequired": "اسم المنتج مطلوب",
+      "slugRequired": "الرابط مطلوب",
+      "slugInvalid": "يجب أن يحتوي الرابط على أحرف إنجليزية صغيرة، أرقام، وشرطات فقط (مثل: name-101)",
+      "slugAvailable": "هذا الرابط متاح للاستخدام",
+      "slugTakenStore": "هذا الرابط مستخدم بالفعل في هذا المتجر",
+      "slugTaken": "هذا الرابط مستخدم بالفعل",
       "invalidNumber": "رقم غير صحيح",
       "attributeNameRequired": "اسم الخاصية مطلوب",
       "attributeValueRequired": "قيمة الخاصية مطلوبة",
@@ -1922,7 +1926,6 @@
       "bundleItemsRequired": "يجب إضافة منتج واحد على الأقل للباقة"
     }
   },
-
   "products": {
     "common": {
       "na": "—",
@@ -2145,7 +2148,6 @@
       "downloadStarted": "بدأ تحميل الفاتورة"
     }
   },
-
   "validation": {
     "supplierRequired": "المورد مطلوب",
     "receiptNumberRequired": "رقم الإيصال مطلوب",
@@ -2368,7 +2370,6 @@
       "loadSuppliersFailed": "فشل في تحميل الموردين"
     }
   },
-
   "orders": {
     "breadcrumb": {
       "home": "الرئيسية",

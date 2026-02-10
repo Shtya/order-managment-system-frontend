@@ -7,6 +7,7 @@ import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AddProductPage from '../../new/page';
 import api from '@/utils/api';
+import { useTranslations } from 'next-intl';
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? 'Unexpected error';
@@ -14,6 +15,7 @@ function normalizeAxiosError(err) {
 }
 
 export default function EditProductPage() {
+	const t = useTranslations('editProduct');
 	const params = useParams();
 	const productId = params?.id;
 

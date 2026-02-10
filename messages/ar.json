@@ -1836,6 +1836,7 @@
     "validation": {
       "nameRequired": "اسم المنتج مطلوب",
       "slugRequired": "الرابط مطلوب",
+      "categoryRequired": "يجب اختيار فئة",
       "slugInvalid": "يجب أن يحتوي الرابط على أحرف إنجليزية صغيرة، أرقام، وشرطات فقط (مثل: name-101)",
       "slugAvailable": "هذا الرابط متاح للاستخدام",
       "slugTakenStore": "هذا الرابط مستخدم بالفعل في هذا المتجر",

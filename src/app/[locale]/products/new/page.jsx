@@ -184,7 +184,7 @@ const makeSchema = (t) =>
 				.test('is-num', t('validation.invalidNumber'), (v) => !v || Number.isFinite(Number(v))),
 
 			storageRack: yup.string().nullable(),
-			categoryId: yup.string().trim().required(t('validation.categoryRequired')),
+			categoryId: yup.string().nullable(),
 			storeId: yup.string().nullable(),
 			warehouseId: yup.string().nullable(),
 			description: yup.string().nullable(),
@@ -457,9 +457,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			if ((data.storageRack ?? '').trim()) fd.append('storageRack', data.storageRack.trim());
 			if ((data.slug ?? '').trim()) fd.append('slug', data.slug.trim());
 
-			// if (data.categoryId && data.categoryId !== 'none')
-			if (data.categoryId)
-				fd.append('categoryId', data.categoryId);
+			if (data.categoryId && data.categoryId !== 'none') fd.append('categoryId', data.categoryId);
 			if (data.storeId && data.storeId !== 'none') fd.append('storeId', data.storeId);
 			if (data.warehouseId && data.warehouseId !== 'none') fd.append('warehouseId', data.warehouseId);
 
@@ -567,8 +565,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			wholesalePrice: existingProduct.wholesalePrice?.toString() || '',
 			lowestPrice: existingProduct.lowestPrice?.toString() || '',
 			storageRack: existingProduct.storageRack || '',
-			// categoryId: existingProduct.categoryId ? String(existingProduct.categoryId) : 'none',
-			categoryId: String(existingProduct.categoryId),
+			categoryId: existingProduct.categoryId ? String(existingProduct.categoryId) : 'none',
 			storeId: existingProduct.storeId ? String(existingProduct.storeId) : 'none',
 			warehouseId: existingProduct.warehouseId ? String(existingProduct.warehouseId) : 'none',
 			description: existingProduct.description || '',
@@ -743,7 +740,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 													<SelectValue placeholder={t('placeholders.category')} />
 												</SelectTrigger>
 												<SelectContent>
-													{/* <SelectItem value="none">{t('common.none')}</SelectItem> */}
+													<SelectItem value="none">{t('common.none')}</SelectItem>
 													{categories.map((c) => (
 														<SelectItem key={c.id} value={String(c.id)}>
 															{c.label ?? c.name ?? `#${c.id}`}

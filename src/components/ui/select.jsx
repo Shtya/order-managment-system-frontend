@@ -7,26 +7,29 @@ import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
 import { cn } from "@/utils/cn"
 
 function useUnlockBodyScrollWhileMounted(enabled) {
-	React.useEffect(() => {
-		if (!enabled) return
+  React.useEffect(() => {
+    if (!enabled) return
 
-		const body = document.body
+    const body = document.body
 
-		const unlock = () => {
-			body.removeAttribute("data-scroll-locked")
-			if (body.style.overflow === "hidden") body.style.overflow = ""
-			if (body.style.pointerEvents === "none") body.style.pointerEvents = ""
-			body.style.paddingRight = ""
-		}
+    const unlock = () => {
+      body.removeAttribute("data-scroll-locked")
+      if (body.style.overflow === "hidden") body.style.overflow = ""
+      body.style.paddingRight = ""
+    }
 
-		unlock()
+    unlock()
 
-		const obs = new MutationObserver(() => unlock())
-		obs.observe(body, { attributes: true, attributeFilter: ["style", "data-scroll-locked"] })
+    const obs = new MutationObserver(unlock)
+    obs.observe(body, {
+      attributes: true,
+      attributeFilter: ["style", "data-scroll-locked"],
+    })
 
-		return () => obs.disconnect()
-	}, [enabled])
+    return () => obs.disconnect()
+  }, [enabled])
 }
+
 
 function Select(props) {
 	return <SelectPrimitive.Root data-slot="select" {...props} />
@@ -186,17 +189,7 @@ function SelectItem({
 			)}
 			{...props}
 		> 
-			<span
-				className={cn(
-					"flex size-8 items-center justify-center rounded-lg border border-border/60 bg-background/50 text-muted-foreground transition-colors",
-					"group-focus:text-accent-foreground group-focus:border-transparent group-focus:bg-accent/60"
-				)}
-			>
-				<SelectPrimitive.ItemIndicator>
-					<CheckIcon className="size-4" />
-				</SelectPrimitive.ItemIndicator>
-			</span>
-
+			
 			<SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
 
 			{/* subtle hover highlight */}

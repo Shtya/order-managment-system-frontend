@@ -2409,6 +2409,20 @@
     "currency": "جنيه"
   },
   "orders": {
+    "deleteStatus": {
+      "title": "حذف الحالة",
+      "subtitle": "هذا الإجراء لا يمكن التراجع عنه",
+      "warning": "سيؤدي حذف هذه الحالة إلى إزالتها نهائيًا من النظام. قد تحتاج إلى تحديث الطلبات المرتبطة بها يدويًا.",
+      "statusName": "الحالة المراد حذفها",
+      "ordersWithStatus": "طلب بهذه الحالة",
+      "confirmLabel": "تأكيد الحذف",
+      "confirmHint": "اكتب اسم الحالة للتأكيد",
+      "impactWarning": "قد تتأثر الطلبات الموجودة بحذف هذه الحالة",
+      "cancel": "إلغاء",
+      "confirm": "حذف الحالة",
+      "deleting": "جاري الحذف...",
+      "errorMismatch": "اسم الحالة غير متطابق"
+    },
     "currency": "جنيه",
     "breadcrumb": {
       "home": "الرئيسية",
@@ -2416,23 +2430,37 @@
     },
     "common": {
       "cancel": "إلغاء",
-      "back": "رجوع"
+      "back": "رجوع",
+      "save": "حفظ"
     },
     "actions": {
       "view": "عرض",
       "edit": "تعديل",
       "delete": "حذف",
       "createOrder": "إنشاء طلب",
-      "settings": "الإعدادات"
+      "settings": "الإعدادات",
+      "addStatus": "إضافة حالة",
+      "export": "تصدير",
+      "filter": "تصفية",
+      "bulkUpload": "رفع جماعي",
+      "distribute": "توزيع"
     },
     "empty": "لا توجد بيانات للعرض",
     "messages": {
       "filtersApplied": "تم تطبيق الفلاتر بنجاح",
       "exportStarted": "بدأ تصدير البيانات",
-      "settingsSaved": "تم حفظ الإعدادات بنجاح"
+      "settingsSaved": "تم حفظ الإعدادات بنجاح",
+      "statusCreated": "تم إنشاء الحالة بنجاح",
+      "statusUpdated": "تم تحديث الحالة بنجاح",
+      "statusDeleted": "تم حذف الحالة بنجاح",
+      "errorSavingStatus": "حدث خطأ أثناء حفظ الحالة",
+      "errorDeletingStatus": "حدث خطأ أثناء حذف الحالة",
+      "errorFetchingStats": "حدث خطأ أثناء تحميل الإحصائيات",
+      "confirmDeleteStatus": "هل أنت متأكد من حذف الحالة \"{{name}}\"؟"
     },
     "stats": {
       "pendingConfirmation": "بانتظار التأكيد",
+      "pending_confirmation": "بانتظار التأكيد",
       "confirmed": "تم التأكيد",
       "new": "طلبات جديدة",
       "total": "إجمالي الطلبات",
@@ -2449,6 +2477,7 @@
       "new": "جديد",
       "confirmed": "مؤكد",
       "pendingConfirmation": "بانتظار التأكيد",
+      "pending_confirmation": "بانتظار التأكيد",
       "wrong_number": "رقم خاطئ",
       "duplicate": "مكرر",
       "postponed": "مؤجل",
@@ -2458,7 +2487,37 @@
       "no_answer_shipping": "لا رد من الشحن",
       "cancelled_shipping": "ملغي من الشحن",
       "cancelledShipping": "ملغي من الشحن",
-      "cancelled": "ملغي"
+      "cancelled": "ملغي",
+      "noAnswerShipping": "لا رد من الشحن",
+      "inShipping": "في الشحن",
+      "waitingStock": "بانتظار المخزون",
+      "wrongNumber": "رقم خاطئ",
+      "under_review": "قيد المراجعة",
+      "preparing": "قيد التحضير",
+      "ready": "جاهز",
+      "shipped": "تم الشحن",
+      "returned": "مرتجع"
+    },
+    "statusForm": {
+      "addTitle": "إضافة حالة جديدة",
+      "editTitle": "تعديل الحالة",
+      "name": "اسم الحالة",
+      "namePlaceholder": "مثال: جاهز للاستلام",
+      "description": "الوصف",
+      "descriptionPlaceholder": "وصف اختياري للحالة...",
+      "color": "اللون",
+      "sortOrder": "ترتيب العرض",
+      "sortOrderHelp": "يستخدم لترتيب البطاقات في واجهة المستخدم",
+      "create": "إنشاء الحالة",
+      "update": "تحديث الحالة",
+      "cancel": "إلغاء",
+      "saving": "جاري الحفظ..."
+    },
+    "validation": {
+      "statusNameRequired": "اسم الحالة مطلوب",
+      "statusNameMaxLength": "اسم الحالة يجب ألا يتجاوز 50 حرفًا",
+      "invalidColorCode": "رمز اللون غير صالح (استخدم صيغة #000000)",
+      "sortOrderMin": "ترتيب العرض يجب أن يكون رقمًا موجبًا"
     },
     "paymentMethods": {
       "cash": "نقدًا",
@@ -2577,6 +2636,12 @@
     "retrySettings": {
       "globalTitle": "إعدادات إعادة المحاولة",
       "globalDescription": "إعدادات عامة لإعادة الاتصال والمتابعة التلقائية",
+      "notifyEmployee": "إشعار الموظف",
+      "notifyEmployeeDesc": "سيتم إرسال إشعار إلى الموظف عند إعادة المحاولة.",
+      "notifyAdmin": "إشعار المدير",
+      "notifyAdminDesc": "سيتم إرسال إشعار إلى المدير عند إعادة المحاولة.",
+      "notificationPreview": "معاينة الإشعار",
+      "notificationPreviewText": "سيتم إرسال إشعار فوري عند حدوث إعادة محاولة للطلب حسب الإعدادات المحددة أعلاه.",
       "tabs": {
         "general": "عام",
         "automation": "أتمتة",

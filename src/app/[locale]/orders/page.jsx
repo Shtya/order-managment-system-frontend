@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
 	ChevronLeft,
@@ -31,6 +31,10 @@ import {
 	Settings,
 	Bell,
 	Save,
+	Edit2,
+	Loader2,
+	RotateCcw,
+	AlertTriangle,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -67,12 +71,16 @@ import {
 	DialogFooter,
 	DialogDescription,
 } from "@/components/ui/dialog";
+import api from "@/utils/api";
 import { Checkbox } from "@/components/ui/checkbox";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/material_blue.css";
 import { Tabs } from "@radix-ui/react-tabs";
 import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+
+
 
 // Fake Data Generator
 const generateFakeOrders = (count = 50) => {
@@ -121,7 +129,8 @@ const generateFakeOrders = (count = 50) => {
 };
 
 // Bulk Upload Modal
-function BulkUploadModal({ isOpen, onClose, t }) {
+function BulkUploadModal({ isOpen, onClose }) {
+	const t = useTranslations("orders");
 	const [file, setFile] = useState(null);
 	const [uploading, setUploading] = useState(false);
 
@@ -312,7 +321,6 @@ function BulkUploadModal({ isOpen, onClose, t }) {
 
 // Toolbar Component
 function OrdersTableToolbar({
-	t,
 	searchValue,
 	onSearchChange,
 	onExport,
@@ -321,6 +329,8 @@ function OrdersTableToolbar({
 	onBulkUpload,
 	isFiltersOpen,
 }) {
+	const t = useTranslations("orders");
+
 	return (
 		<div className="flex items-center justify-between gap-4 flex-wrap">
 			<div className="relative w-full md:w-[300px] focus-within:w-full md:focus-within:w-[350px] transition-all duration-300">
@@ -377,7 +387,8 @@ function OrdersTableToolbar({
 }
 
 // Filters Panel Component (keeping the same as before)
-function FiltersPanel({ t, value, onChange, onApply }) {
+function FiltersPanel({ value, onChange, onApply }) {
+	const t = useTranslations("orders");
 	const [products] = useState([
 		{ value: "ring", label: t("filters.products.ring") },
 		{ value: "necklace", label: t("filters.products.necklace") },
@@ -489,7 +500,7 @@ function FiltersPanel({ t, value, onChange, onApply }) {
 						/>
 					</div>
 
-					<div className="space-y-2">
+					{/* <div className="space-y-2">
 						<Label>{t("filters.product")}</Label>
 						<Select
 							value={value.product}
@@ -523,7 +534,7 @@ function FiltersPanel({ t, value, onChange, onApply }) {
 								))}
 							</SelectContent>
 						</Select>
-					</div>
+					</div>	 */}
 
 					<div className="space-y-2">
 						<Label>{t("filters.store")}</Label>
@@ -561,7 +572,7 @@ function FiltersPanel({ t, value, onChange, onApply }) {
 						</Select>
 					</div>
 
-					<div className="flex md:justify-end">
+					<div className="flex md:justify-start col-span-1 md:col-span-4">
 						<Button_
 							onClick={onApply}
 							size="sm"
@@ -578,7 +589,8 @@ function FiltersPanel({ t, value, onChange, onApply }) {
 }
 
 // Distribution Modal (keeping the same as before with translations)
-function DistributionModal({ isOpen, onClose, orders, t }) {
+function DistributionModal({ isOpen, onClose, orders }) {
+	const t = useTranslations("orders");
 	const [distributionType, setDistributionType] = useState(null);
 	const [dateRange, setDateRange] = useState({
 		from: new Date().toISOString().split("T")[0],
@@ -798,7 +810,11 @@ function DistributionModal({ isOpen, onClose, orders, t }) {
 export default function OrdersPageEnhanced() {
 	const t = useTranslations("orders");
 	const router = useRouter();
-  const [retrySettingsOpen, setRetrySettingsOpen] = useState(false);
+	const [retrySettingsOpen, setRetrySettingsOpen] = useState(false);
+	const [statusFormOpen, setStatusFormOpen] = useState(false);
+	const [editingStatus, setEditingStatus] = useState(null);
+	const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+	const [deletingStatus, setDeletingStatus] = useState(null);
 
 	const [search, setSearch] = useState("");
 	const [filtersOpen, setFiltersOpen] = useState(false);
@@ -810,28 +826,16 @@ export default function OrdersPageEnhanced() {
 		employee: "all",
 		startDate: null,
 		endDate: null,
-		product: "all",
-		area: "all",
+		// product: "all",
+		// area: "all",
 		store: "all",
 		shippingCompany: "all",
 	});
 
-	const [loading, setLoading] = useState(false);
-	const [stats, setStats] = useState({
-		pending_confirmation: 45,
-		confirmed: 128,
-		new: 87,
-		total: 523,
-		wrong_number: 23,
-		duplicate: 15,
-		postponed: 34,
-		delivered: 289,
-		in_shipping: 67,
-		waiting_stock: 12,
-		no_answer_shipping: 8,
-		cancelled_shipping: 19,
-	});
 
+	const [loading, setLoading] = useState(false);
+	const [statsLoading, setStatsLoading] = useState(true);
+	const [stats, setStats] = useState([]);
 	const [allOrders] = useState(generateFakeOrders(50));
 	const [pager, setPager] = useState({
 		total_records: 50,
@@ -839,108 +843,121 @@ export default function OrdersPageEnhanced() {
 		per_page: 10,
 		records: allOrders.slice(0, 10),
 	});
+	useEffect(() => {
+		fetchStats();
+	}, []);
 
-	const statsCards = useMemo(
-		() => [
-			{
-				title: t("stats.pendingConfirmation"),
-				value: String(stats.pending_confirmation),
-				icon: AlertCircle,
-				bg: "bg-[#FFF3E0] dark:bg-[#1A1108]",
-				iconColor: "text-[#FF9800] dark:text-[#FFB74D]",
-				iconBorder: "border-[#FF9800] dark:border-[#FFB74D]",
-			},
-			{
-				title: t("stats.confirmed"),
-				value: String(stats.confirmed),
-				icon: CheckCircle,
-				bg: "bg-[#E8F5E9] dark:bg-[#0E1A0C]",
-				iconColor: "text-[#4CAF50] dark:text-[#81C784]",
-				iconBorder: "border-[#4CAF50] dark:border-[#81C784]",
-			},
-			{
-				title: t("stats.new"),
-				value: String(stats.new),
-				icon: Package,
-				bg: "bg-[#E3F2FD] dark:bg-[#0A1220]",
-				iconColor: "text-[#2196F3] dark:text-[#64B5F6]",
-				iconBorder: "border-[#2196F3] dark:border-[#64B5F6]",
-			},
-			{
-				title: t("stats.total"),
-				value: String(stats.total),
-				icon: TrendingUp,
-				bg: "bg-[#F3E5F5] dark:bg-[#1A0E1F]",
-				iconColor: "text-[#9C27B0] dark:text-[#BA68C8]",
-				iconBorder: "border-[#9C27B0] dark:border-[#BA68C8]",
-			},
-			{
-				title: t("stats.wrongNumber"),
-				value: String(stats.wrong_number),
-				icon: Phone,
-				bg: "bg-[#FFEBEE] dark:bg-[#1F0A0A]",
-				iconColor: "text-[#F44336] dark:text-[#EF5350]",
-				iconBorder: "border-[#F44336] dark:border-[#EF5350]",
-			},
-			{
-				title: t("stats.duplicate"),
-				value: String(stats.duplicate),
-				icon: Copy,
-				bg: "bg-[#FFF8E1] dark:bg-[#1A1608]",
-				iconColor: "text-[#FFC107] dark:text-[#FFD54F]",
-				iconBorder: "border-[#FFC107] dark:border-[#FFD54F]",
-			},
-			{
-				title: t("stats.postponed"),
-				value: String(stats.postponed),
-				icon: Clock,
-				bg: "bg-[#E0F2F1] dark:bg-[#0A1A18]",
-				iconColor: "text-[#009688] dark:text-[#4DB6AC]",
-				iconBorder: "border-[#009688] dark:border-[#4DB6AC]",
-			},
-			{
-				title: t("stats.delivered"),
-				value: String(stats.delivered),
-				icon: CheckCircle,
-				bg: "bg-[#E8F5E9] dark:bg-[#0E1A0C]",
-				iconColor: "text-[#4CAF50] dark:text-[#81C784]",
-				iconBorder: "border-[#4CAF50] dark:border-[#81C784]",
-			},
-			{
-				title: t("stats.inShipping"),
-				value: String(stats.in_shipping),
-				icon: Truck,
-				bg: "bg-[#E1F5FE] dark:bg-[#0A1820]",
-				iconColor: "text-[#03A9F4] dark:text-[#4FC3F7]",
-				iconBorder: "border-[#03A9F4] dark:border-[#4FC3F7]",
-			},
-			{
-				title: t("stats.waitingStock"),
-				value: String(stats.waiting_stock),
-				icon: Package,
-				bg: "bg-[#FFF3E0] dark:bg-[#1A1108]",
-				iconColor: "text-[#FF9800] dark:text-[#FFB74D]",
-				iconBorder: "border-[#FF9800] dark:border-[#FFB74D]",
-			},
-			{
-				title: t("stats.noAnswerShipping"),
-				value: String(stats.no_answer_shipping),
-				icon: AlertCircle,
-				bg: "bg-[#FCE4EC] dark:bg-[#1F0A14]",
-				iconColor: "text-[#E91E63] dark:text-[#F06292]",
-				iconBorder: "border-[#E91E63] dark:border-[#F06292]",
-			},
-			{
-				title: t("stats.cancelledShipping"),
-				value: String(stats.cancelled_shipping),
-				icon: XCircle,
-				bg: "bg-[#FFEBEE] dark:bg-[#1F0A0A]",
-				iconColor: "text-[#F44336] dark:text-[#EF5350]",
-				iconBorder: "border-[#F44336] dark:border-[#EF5350]",
-			},
-		],
-		[t, stats]
-	);
+
+	const fetchStats = async () => {
+		try {
+			setStatsLoading(true);
+			const response = await api.get("/orders/stats");
+			setStats(response.data || []);
+		} catch (error) {
+			console.error("Error fetching stats:", error);
+			toast.error(t("messages.errorFetchingStats"));
+		} finally {
+			setStatsLoading(false);
+		}
+	};
+
+
+	const handleDeleteStatus = (status) => {
+		setDeletingStatus(status);
+		setDeleteModalOpen(true);
+	};
+
+	const handleEditStatus = (status) => {
+		setEditingStatus(status);
+		setStatusFormOpen(true);
+	};
+
+	const handleAddStatus = () => {
+		setEditingStatus(null);
+		setStatusFormOpen(true);
+	};
+
+	// Icon mapping for system statuses
+	const getIconForStatus = (code) => {
+		const iconMap = {
+			new: Package,
+			under_review: AlertCircle,
+			preparing: Clock,
+			ready: CheckCircle,
+			shipped: Truck,
+			delivered: CheckCircle,
+			cancelled: XCircle,
+			returned: RotateCcw, // make sure to import from lucide-react
+		};
+
+		return iconMap[code] || Package;
+	};
+
+
+	// Generate stats cards dynamically from fetched statuses
+	const statsCards = useMemo(() => {
+		if (!stats.length) return [];
+
+		// Generate background colors from the color
+		const generateBgColors = (hex) => {
+			const hexToRgb = (h) => {
+				const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h);
+				return result ? {
+					r: parseInt(result[1], 16),
+					g: parseInt(result[2], 16),
+					b: parseInt(result[3], 16)
+				} : null;
+			};
+
+			const rgb = hexToRgb(hex);
+			if (!rgb) return { light: "#f5f5f5", dark: "#1a1a1a" };
+
+			return {
+				light: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`,
+				dark: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.15)`,
+			};
+		};
+
+		return stats
+			.sort((a, b) => a.sortOrder - b.sortOrder)
+			.map((stat) => {
+				const Icon = getIconForStatus(stat.code);
+				const bgColors = generateBgColors(stat.color);
+
+				return {
+					id: stat.id,
+					title: stat.system ? t(`statuses.${stat.code}`) : stat.name,
+					value: String(stat.count || 0),
+					icon: Icon,
+					bg: `bg-[${bgColors.light}] dark:bg-[${bgColors.dark}]`,
+					bgInlineLight: bgColors.light,
+					bgInlineDark: bgColors.dark,
+					iconColor: `text-[${stat.color}]`,
+					iconColorInline: stat.color,
+					iconBorder: `border-[${stat.color}]`,
+					iconBorderInline: stat.color,
+					code: stat.code,
+					system: stat.system,
+					sortOrder: stat.sortOrder,
+					fullData: stat,
+				};
+			});
+	}, [stats]);
+
+	// Create statusesMap for filters and dropdowns
+	const statusesMap = useMemo(() => {
+		const map = {};
+		stats.forEach(stat => {
+			map[stat.code] = {
+				id: stat.id,
+				name: stat.name,
+				color: stat.color,
+				system: stat.system,
+				count: stat.count,
+			};
+		});
+		return map;
+	}, [stats]);
 
 	const handlePageChange = ({ page, per_page }) => {
 		const start = (page - 1) * per_page;
@@ -961,21 +978,30 @@ export default function OrdersPageEnhanced() {
 		toast.success(t("messages.exportStarted"));
 	};
 
-	const getStatusBadge = (status) => {
-		const styles = {
-			new: "bg-blue-100 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400",
-			confirmed: "bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-400",
-			pending_confirmation: "bg-orange-100 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400",
-			wrong_number: "bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400",
-			duplicate: "bg-yellow-100 text-yellow-700 dark:bg-yellow-950/30 dark:text-yellow-400",
-			postponed: "bg-teal-100 text-teal-700 dark:bg-teal-950/30 dark:text-teal-400",
-			delivered: "bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-400",
-			in_shipping: "bg-blue-100 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400",
-			waiting_stock: "bg-orange-100 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400",
-			no_answer_shipping: "bg-pink-100 text-pink-700 dark:bg-pink-950/30 dark:text-pink-400",
-			cancelled_shipping: "bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400",
+	const getStatusBadge = (statusCode) => {
+		const status = statusesMap[statusCode];
+		if (!status) {
+			return "bg-gray-100 text-gray-700 dark:bg-gray-950/30 dark:text-gray-400";
+		}
+
+		// Generate badge colors from status color
+		const hexToRgb = (hex) => {
+			const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+			return result ? {
+				r: parseInt(result[1], 16),
+				g: parseInt(result[2], 16),
+				b: parseInt(result[3], 16)
+			} : null;
 		};
-		return styles[status] || styles.new;
+
+		const rgb = hexToRgb(status.color);
+		return {
+			style: rgb ? {
+				backgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`,
+				color: status.color,
+			} : {},
+			className: "rounded-md",
+		};
 	};
 
 	const columns = useMemo(() => {
@@ -1166,6 +1192,107 @@ export default function OrdersPageEnhanced() {
 			},
 		];
 	}, [t, router]);
+	// const statsCards = useMemo(
+	// 	() => [
+	// 		{
+	// 			title: t("stats.pendingConfirmation"),
+	// 			value: String(stats.pending_confirmation),
+	// 			icon: AlertCircle,
+	// 			bg: "bg-[#FFF3E0] dark:bg-[#1A1108]",
+	// 			iconColor: "text-[#FF9800] dark:text-[#FFB74D]",
+	// 			iconBorder: "border-[#FF9800] dark:border-[#FFB74D]",
+	// 		},
+	// 		{
+	// 			title: t("stats.confirmed"),
+	// 			value: String(stats.confirmed),
+	// 			icon: CheckCircle,
+	// 			bg: "bg-[#E8F5E9] dark:bg-[#0E1A0C]",
+	// 			iconColor: "text-[#4CAF50] dark:text-[#81C784]",
+	// 			iconBorder: "border-[#4CAF50] dark:border-[#81C784]",
+	// 		},
+	// 		{
+	// 			title: t("stats.new"),
+	// 			value: String(stats.new),
+	// 			icon: Package,
+	// 			bg: "bg-[#E3F2FD] dark:bg-[#0A1220]",
+	// 			iconColor: "text-[#2196F3] dark:text-[#64B5F6]",
+	// 			iconBorder: "border-[#2196F3] dark:border-[#64B5F6]",
+	// 		},
+	// 		{
+	// 			title: t("stats.total"),
+	// 			value: String(stats.total),
+	// 			icon: TrendingUp,
+	// 			bg: "bg-[#F3E5F5] dark:bg-[#1A0E1F]",
+	// 			iconColor: "text-[#9C27B0] dark:text-[#BA68C8]",
+	// 			iconBorder: "border-[#9C27B0] dark:border-[#BA68C8]",
+	// 		},
+	// 		{
+	// 			title: t("stats.wrongNumber"),
+	// 			value: String(stats.wrong_number),
+	// 			icon: Phone,
+	// 			bg: "bg-[#FFEBEE] dark:bg-[#1F0A0A]",
+	// 			iconColor: "text-[#F44336] dark:text-[#EF5350]",
+	// 			iconBorder: "border-[#F44336] dark:border-[#EF5350]",
+	// 		},
+	// 		{
+	// 			title: t("stats.duplicate"),
+	// 			value: String(stats.duplicate),
+	// 			icon: Copy,
+	// 			bg: "bg-[#FFF8E1] dark:bg-[#1A1608]",
+	// 			iconColor: "text-[#FFC107] dark:text-[#FFD54F]",
+	// 			iconBorder: "border-[#FFC107] dark:border-[#FFD54F]",
+	// 		},
+	// 		{
+	// 			title: t("stats.postponed"),
+	// 			value: String(stats.postponed),
+	// 			icon: Clock,
+	// 			bg: "bg-[#E0F2F1] dark:bg-[#0A1A18]",
+	// 			iconColor: "text-[#009688] dark:text-[#4DB6AC]",
+	// 			iconBorder: "border-[#009688] dark:border-[#4DB6AC]",
+	// 		},
+	// 		{
+	// 			title: t("stats.delivered"),
+	// 			value: String(stats.delivered),
+	// 			icon: CheckCircle,
+	// 			bg: "bg-[#E8F5E9] dark:bg-[#0E1A0C]",
+	// 			iconColor: "text-[#4CAF50] dark:text-[#81C784]",
+	// 			iconBorder: "border-[#4CAF50] dark:border-[#81C784]",
+	// 		},
+	// 		{
+	// 			title: t("stats.inShipping"),
+	// 			value: String(stats.in_shipping),
+	// 			icon: Truck,
+	// 			bg: "bg-[#E1F5FE] dark:bg-[#0A1820]",
+	// 			iconColor: "text-[#03A9F4] dark:text-[#4FC3F7]",
+	// 			iconBorder: "border-[#03A9F4] dark:border-[#4FC3F7]",
+	// 		},
+	// 		{
+	// 			title: t("stats.waitingStock"),
+	// 			value: String(stats.waiting_stock),
+	// 			icon: Package,
+	// 			bg: "bg-[#FFF3E0] dark:bg-[#1A1108]",
+	// 			iconColor: "text-[#FF9800] dark:text-[#FFB74D]",
+	// 			iconBorder: "border-[#FF9800] dark:border-[#FFB74D]",
+	// 		},
+	// 		{
+	// 			title: t("stats.noAnswerShipping"),
+	// 			value: String(stats.no_answer_shipping),
+	// 			icon: AlertCircle,
+	// 			bg: "bg-[#FCE4EC] dark:bg-[#1F0A14]",
+	// 			iconColor: "text-[#E91E63] dark:text-[#F06292]",
+	// 			iconBorder: "border-[#E91E63] dark:border-[#F06292]",
+	// 		},
+	// 		{
+	// 			title: t("stats.cancelledShipping"),
+	// 			value: String(stats.cancelled_shipping),
+	// 			icon: XCircle,
+	// 			bg: "bg-[#FFEBEE] dark:bg-[#1F0A0A]",
+	// 			iconColor: "text-[#F44336] dark:text-[#EF5350]",
+	// 			iconBorder: "border-[#F44336] dark:border-[#EF5350]",
+	// 		},
+	// 	],
+	// 	[t, stats]
+	// );
 
 	return (
 		<div className="min-h-screen p-6">
@@ -1198,29 +1325,68 @@ export default function OrdersPageEnhanced() {
 				</div>
 
 				<div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-6">
-					{statsCards.map((stat, index) => (
-						<motion.div
-							key={stat.title}
-							initial={{ opacity: 0, y: 18 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: index * 0.06 }}
-						>
-							<InfoCard
-								title={stat.title}
-								value={stat.value}
-								icon={stat.icon}
-								bg={stat.bg}
-								iconColor={stat.iconColor}
-								iconBorder={stat.iconBorder}
-							/>
-						</motion.div>
-					))}
+					{statsLoading ? (
+						<div className="col-span-full flex items-center justify-center py-12">
+							<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+						</div>
+					) : (
+						<>
+							{statsCards.map((stat, index) => (
+								<motion.div
+									style={{ order: stat.sortOrder }}
+									key={stat.id}
+									initial={{ opacity: 0, y: 18 }}
+									animate={{ opacity: 1, y: 0 }}
+									transition={{ delay: index * 0.06 }}
+								>
+									<div
+										style={{
+											background: `linear-gradient(135deg, ${stat.bgInlineLight} 0%, ${stat.bgInlineLight} 100%)`,
+										}}
+										className="rounded-lg"
+									>
+										<InfoCard
+											title={stat.title}
+											value={stat.value}
+											icon={stat.icon}
+											bg=""
+											iconColor=""
+											iconBorder=""
+											editable={!stat.system}
+											onEdit={() => handleEditStatus(stat.fullData)}
+											onDelete={() => handleDeleteStatus(stat)}
+											customStyles={{
+												iconColor: stat.iconColorInline,
+												iconBorder: stat.iconColorInline,
+											}}
+										/>
+									</div>
+								</motion.div>
+							))}
+
+							{/* Add Status Card */}
+							<motion.div
+								initial={{ opacity: 0, y: 18 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ delay: statsCards.length * 0.06 }}
+							>
+								<InfoCard
+									title={t("actions.addStatus")}
+									icon={Plus}
+									isAddCard={true}
+									onClick={handleAddStatus}
+								/>
+							</motion.div>
+						</>
+					)}
 				</div>
 			</div>
 
+			{/* <StatusManagementModal isOpen={true} t={t} /> */}
+
 			<div className="bg-card rounded-sm">
 				<OrdersTableToolbar
-					t={t}
+
 					searchValue={search}
 					onSearchChange={setSearch}
 					onExport={handleExport}
@@ -1233,7 +1399,7 @@ export default function OrdersPageEnhanced() {
 				<AnimatePresence>
 					{filtersOpen && (
 						<FiltersPanel
-							t={t}
+
 							value={filters}
 							onChange={setFilters}
 							onApply={applyFilters}
@@ -1261,20 +1427,42 @@ export default function OrdersPageEnhanced() {
 				isOpen={distributionOpen}
 				onClose={() => setDistributionOpen(false)}
 				orders={allOrders}
-				t={t}
+
 			/>
 
 
 			<GlobalRetrySettingsModal
 				isOpen={retrySettingsOpen}
 				onClose={() => setRetrySettingsOpen(false)}
-				t={t}
+
 			/>
 
 			<BulkUploadModal
 				isOpen={bulkUploadOpen}
 				onClose={() => setBulkUploadOpen(false)}
-				t={t}
+
+			/>
+
+			<StatusFormModal
+				isOpen={statusFormOpen}
+				onClose={() => {
+					setStatusFormOpen(false);
+					setEditingStatus(null);
+				}}
+				status={editingStatus}
+				onSuccess={fetchStats}
+
+			/>
+
+			<DeleteStatusModal
+				isOpen={deleteModalOpen}
+				onClose={() => {
+					setDeleteModalOpen(false);
+					setDeletingStatus(null);
+				}}
+				status={deletingStatus}
+				onSuccess={fetchStats}
+
 			/>
 		</div>
 	);
@@ -1283,235 +1471,710 @@ export default function OrdersPageEnhanced() {
 
 
 // Global Retry Settings Modal
-function GlobalRetrySettingsModal({ isOpen, onClose, t }) {
-  const [settings, setSettings] = useState({
-    enabled: true,
-    maxRetries: 3,
-    retryInterval: 30,
-    autoMoveStatus: "cancelled",
-    retryStatuses: ["pending_confirmation", "no_answer_shipping"],
-    notifyEmployee: true,
-    notifyAdmin: false,
-    workingHours: {
-      enabled: true,
-      start: "09:00",
-      end: "18:00"
-    }
-  });
+function GlobalRetrySettingsModal({ isOpen, onClose }) {
+	const t = useTranslations("orders");
+	const [settings, setSettings] = useState({
+		enabled: true,
+		maxRetries: 3,
+		retryInterval: 30,
+		autoMoveStatus: "cancelled",
+		retryStatuses: ["pending_confirmation", "no_answer_shipping"],
+		notifyEmployee: true,
+		notifyAdmin: false,
+		workingHours: {
+			enabled: true,
+			start: "09:00",
+			end: "18:00"
+		}
+	});
 
-  const handleSave = () => {
-    toast.success(t("messages.settingsSaved"));
-    onClose();
-  };
+	const handleSave = () => {
+		toast.success(t("messages.settingsSaved"));
+		onClose();
+	};
 
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center">
-              <Settings className="text-white" size={24} />
-            </div>
-            {t("retrySettings.globalTitle")}
-          </DialogTitle>
-          <DialogDescription>
-            {t("retrySettings.globalDescription")}
-          </DialogDescription>
-        </DialogHeader>
+	return (
+		<Dialog open={isOpen} onOpenChange={onClose}>
+			<DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+				<DialogHeader>
+					<DialogTitle className="text-2xl font-bold flex items-center gap-3">
+						<div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center">
+							<Settings className="text-white" size={24} />
+						</div>
+						{t("retrySettings.globalTitle")}
+					</DialogTitle>
+					<DialogDescription>
+						{t("retrySettings.globalDescription")}
+					</DialogDescription>
+				</DialogHeader>
 
-        <Tabs defaultValue="general" className="py-4">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="general">{t("retrySettings.tabs.general")}</TabsTrigger>
-            <TabsTrigger value="automation">{t("retrySettings.tabs.automation")}</TabsTrigger>
-            <TabsTrigger value="notifications">{t("retrySettings.tabs.notifications")}</TabsTrigger>
-          </TabsList>
+				<Tabs defaultValue="general" className="py-4">
+					<TabsList className="grid w-full grid-cols-3">
+						<TabsTrigger value="general">{t("retrySettings.tabs.general")}</TabsTrigger>
+						<TabsTrigger value="automation">{t("retrySettings.tabs.automation")}</TabsTrigger>
+						<TabsTrigger value="notifications">{t("retrySettings.tabs.notifications")}</TabsTrigger>
+					</TabsList>
 
-          <TabsContent value="general" className="space-y-6 mt-6">
-            {/* Enable/Disable */}
-            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
-              <div>
-                <Label className="text-base font-semibold">{t("retrySettings.enableRetry")}</Label>
-                <p className="text-sm text-gray-500 mt-1">{t("retrySettings.enableRetryDesc")}</p>
-              </div>
-              <Switch
-                checked={settings.enabled}
-                onCheckedChange={(checked) => setSettings({ ...settings, enabled: checked })}
-              />
-            </div>
+					<TabsContent value="general" className="space-y-6 mt-6">
+						{/* Enable/Disable */}
+						<div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
+							<div>
+								<Label className="text-base font-semibold">{t("retrySettings.enableRetry")}</Label>
+								<p className="text-sm text-gray-500 mt-1">{t("retrySettings.enableRetryDesc")}</p>
+							</div>
+							<Switch
+								checked={settings.enabled}
+								onCheckedChange={(checked) => setSettings({ ...settings, enabled: checked })}
+							/>
+						</div>
 
-            {/* Max Retries */}
-            <div className="space-y-2">
-              <Label>{t("retrySettings.maxRetries")}</Label>
-              <Input
-                type="number"
-                min="1"
-                max="10"
-                value={settings.maxRetries}
-                onChange={(e) => setSettings({ ...settings, maxRetries: parseInt(e.target.value) })}
-                className="rounded-xl"
-              />
-              <p className="text-xs text-gray-500">{t("retrySettings.maxRetriesDesc")}</p>
-            </div>
+						{/* Max Retries */}
+						<div className="space-y-2">
+							<Label>{t("retrySettings.maxRetries")}</Label>
+							<Input
+								type="number"
+								min="1"
+								max="10"
+								value={settings.maxRetries}
+								onChange={(e) => setSettings({ ...settings, maxRetries: parseInt(e.target.value) })}
+								className="rounded-xl"
+							/>
+							<p className="text-xs text-gray-500">{t("retrySettings.maxRetriesDesc")}</p>
+						</div>
 
-            {/* Retry Interval */}
-            <div className="space-y-2">
-              <Label>{t("retrySettings.retryInterval")}</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  type="number"
-                  min="5"
-                  max="1440"
-                  value={settings.retryInterval}
-                  onChange={(e) => setSettings({ ...settings, retryInterval: parseInt(e.target.value) })}
-                  className="rounded-xl"
-                />
-                <span className="text-sm text-gray-500">{t("retrySettings.minutes")}</span>
-              </div>
-              <p className="text-xs text-gray-500">{t("retrySettings.retryIntervalDesc")}</p>
-            </div>
+						{/* Retry Interval */}
+						<div className="space-y-2">
+							<Label>{t("retrySettings.retryInterval")}</Label>
+							<div className="flex items-center gap-2">
+								<Input
+									type="number"
+									min="5"
+									max="1440"
+									value={settings.retryInterval}
+									onChange={(e) => setSettings({ ...settings, retryInterval: parseInt(e.target.value) })}
+									className="rounded-xl"
+								/>
+								<span className="text-sm text-gray-500">{t("retrySettings.minutes")}</span>
+							</div>
+							<p className="text-xs text-gray-500">{t("retrySettings.retryIntervalDesc")}</p>
+						</div>
 
-            {/* Working Hours */}
-            <div className="space-y-4 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-xl">
-              <div className="flex items-center justify-between">
-                <Label className="text-base font-semibold">{t("retrySettings.workingHours")}</Label>
-                <Switch
-                  checked={settings.workingHours.enabled}
-                  onCheckedChange={(checked) => setSettings({ 
-                    ...settings, 
-                    workingHours: { ...settings.workingHours, enabled: checked }
-                  })}
-                />
-              </div>
-              
-              {settings.workingHours.enabled && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm">{t("retrySettings.startTime")}</Label>
-                    <Input
-                      type="time"
-                      value={settings.workingHours.start}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        workingHours: { ...settings.workingHours, start: e.target.value }
-                      })}
-                      className="rounded-xl"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm">{t("retrySettings.endTime")}</Label>
-                    <Input
-                      type="time"
-                      value={settings.workingHours.end}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        workingHours: { ...settings.workingHours, end: e.target.value }
-                      })}
-                      className="rounded-xl"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          </TabsContent>
+						{/* Working Hours */}
+						<div className="space-y-4 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-xl">
+							<div className="flex items-center justify-between">
+								<Label className="text-base font-semibold">{t("retrySettings.workingHours")}</Label>
+								<Switch
+									checked={settings.workingHours.enabled}
+									onCheckedChange={(checked) => setSettings({
+										...settings,
+										workingHours: { ...settings.workingHours, enabled: checked }
+									})}
+								/>
+							</div>
 
-          <TabsContent value="automation" className="space-y-6 mt-6">
-            {/* Auto Move Status */}
-            <div className="space-y-2">
-              <Label>{t("retrySettings.autoMoveStatus")}</Label>
-              <Select value={settings.autoMoveStatus} onValueChange={(v) => setSettings({ ...settings, autoMoveStatus: v })}>
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cancelled">{t("statuses.cancelled")}</SelectItem>
-                  <SelectItem value="postponed">{t("statuses.postponed")}</SelectItem>
-                  <SelectItem value="pending_confirmation">{t("statuses.pendingConfirmation")}</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-gray-500">{t("retrySettings.autoMoveStatusDesc")}</p>
-            </div>
+							{settings.workingHours.enabled && (
+								<div className="grid grid-cols-2 gap-4">
+									<div className="space-y-2">
+										<Label className="text-sm">{t("retrySettings.startTime")}</Label>
+										<Input
+											type="time"
+											value={settings.workingHours.start}
+											onChange={(e) => setSettings({
+												...settings,
+												workingHours: { ...settings.workingHours, start: e.target.value }
+											})}
+											className="rounded-xl"
+										/>
+									</div>
+									<div className="space-y-2">
+										<Label className="text-sm">{t("retrySettings.endTime")}</Label>
+										<Input
+											type="time"
+											value={settings.workingHours.end}
+											onChange={(e) => setSettings({
+												...settings,
+												workingHours: { ...settings.workingHours, end: e.target.value }
+											})}
+											className="rounded-xl"
+										/>
+									</div>
+								</div>
+							)}
+						</div>
+					</TabsContent>
 
-            {/* Retry Statuses */}
-            <div className="space-y-3">
-              <Label>{t("retrySettings.retryStatuses")}</Label>
-              <div className="space-y-2">
-                {[
-                  { value: "pending_confirmation", label: t("statuses.pendingConfirmation") },
-                  { value: "no_answer_shipping", label: t("statuses.noAnswerShipping") },
-                  { value: "wrong_number", label: t("statuses.wrongNumber") },
-                  { value: "postponed", label: t("statuses.postponed") }
-                ].map((status) => (
-                  <div key={status.value} className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
-                    <Checkbox
-                      checked={settings.retryStatuses.includes(status.value)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setSettings({ ...settings, retryStatuses: [...settings.retryStatuses, status.value] });
-                        } else {
-                          setSettings({ 
-                            ...settings, 
-                            retryStatuses: settings.retryStatuses.filter(s => s !== status.value) 
-                          });
-                        }
-                      }}
-                    />
-                    <Label className="cursor-pointer">{status.label}</Label>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </TabsContent>
+					<TabsContent value="automation" className="space-y-6 mt-6">
+						{/* Auto Move Status */}
+						<div className="space-y-2">
+							<Label>{t("retrySettings.autoMoveStatus")}</Label>
+							<Select value={settings.autoMoveStatus} onValueChange={(v) => setSettings({ ...settings, autoMoveStatus: v })}>
+								<SelectTrigger className="rounded-xl">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="cancelled">{t("statuses.cancelled")}</SelectItem>
+									<SelectItem value="postponed">{t("statuses.postponed")}</SelectItem>
+									<SelectItem value="pending_confirmation">{t("statuses.pendingConfirmation")}</SelectItem>
+								</SelectContent>
+							</Select>
+							<p className="text-xs text-gray-500">{t("retrySettings.autoMoveStatusDesc")}</p>
+						</div>
 
-          <TabsContent value="notifications" className="space-y-6 mt-6">
-            {/* Notify Employee */}
-            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
-              <div>
-                <Label className="text-base font-semibold">{t("retrySettings.notifyEmployee")}</Label>
-                <p className="text-sm text-gray-500 mt-1">{t("retrySettings.notifyEmployeeDesc")}</p>
-              </div>
-              <Switch
-                checked={settings.notifyEmployee}
-                onCheckedChange={(checked) => setSettings({ ...settings, notifyEmployee: checked })}
-              />
-            </div>
+						{/* Retry Statuses */}
+						<div className="space-y-3">
+							<Label>{t("retrySettings.retryStatuses")}</Label>
+							<div className="space-y-2">
+								{[
+									{ value: "pending_confirmation", label: t("statuses.pendingConfirmation") },
+									{ value: "no_answer_shipping", label: t("statuses.noAnswerShipping") },
+									{ value: "wrong_number", label: t("statuses.wrongNumber") },
+									{ value: "postponed", label: t("statuses.postponed") }
+								].map((status) => (
+									<div key={status.value} className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
+										<Checkbox
+											checked={settings.retryStatuses.includes(status.value)}
+											onCheckedChange={(checked) => {
+												if (checked) {
+													setSettings({ ...settings, retryStatuses: [...settings.retryStatuses, status.value] });
+												} else {
+													setSettings({
+														...settings,
+														retryStatuses: settings.retryStatuses.filter(s => s !== status.value)
+													});
+												}
+											}}
+										/>
+										<Label className="cursor-pointer">{status.label}</Label>
+									</div>
+								))}
+							</div>
+						</div>
+					</TabsContent>
 
-            {/* Notify Admin */}
-            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
-              <div>
-                <Label className="text-base font-semibold">{t("retrySettings.notifyAdmin")}</Label>
-                <p className="text-sm text-gray-500 mt-1">{t("retrySettings.notifyAdminDesc")}</p>
-              </div>
-              <Switch
-                checked={settings.notifyAdmin}
-                onCheckedChange={(checked) => setSettings({ ...settings, notifyAdmin: checked })}
-              />
-            </div>
+					<TabsContent value="notifications" className="space-y-6 mt-6">
+						{/* Notify Employee */}
+						<div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
+							<div>
+								<Label className="text-base font-semibold">{t("retrySettings.notifyEmployee")}</Label>
+								<p className="text-sm text-gray-500 mt-1">{t("retrySettings.notifyEmployeeDesc")}</p>
+							</div>
+							<Switch
+								checked={settings.notifyEmployee}
+								onCheckedChange={(checked) => setSettings({ ...settings, notifyEmployee: checked })}
+							/>
+						</div>
 
-            {/* Preview */}
-            <div className="p-4 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 rounded-xl">
-              <div className="flex items-start gap-3">
-                <Bell size={20} className="text-purple-600 mt-1" />
-                <div>
-                  <h4 className="font-bold mb-2">{t("retrySettings.notificationPreview")}</h4>
-                  <p className="text-sm text-gray-600 dark:text-slate-400">
-                    {t("retrySettings.notificationPreviewText")}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
+						{/* Notify Admin */}
+						<div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
+							<div>
+								<Label className="text-base font-semibold">{t("retrySettings.notifyAdmin")}</Label>
+								<p className="text-sm text-gray-500 mt-1">{t("retrySettings.notifyAdminDesc")}</p>
+							</div>
+							<Switch
+								checked={settings.notifyAdmin}
+								onCheckedChange={(checked) => setSettings({ ...settings, notifyAdmin: checked })}
+							/>
+						</div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} className="rounded-xl">
-            {t("common.cancel")}
-          </Button>
-          <Button onClick={handleSave} className="rounded-xl bg-gradient-to-r from-primary to-purple-600">
-            <Save size={18} className="ml-2" />
-            {t("common.save")}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
+						{/* Preview */}
+						<div className="p-4 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 rounded-xl">
+							<div className="flex items-start gap-3">
+								<Bell size={20} className="text-purple-600 mt-1" />
+								<div>
+									<h4 className="font-bold mb-2">{t("retrySettings.notificationPreview")}</h4>
+									<p className="text-sm text-gray-600 dark:text-slate-400">
+										{t("retrySettings.notificationPreviewText")}
+									</p>
+								</div>
+							</div>
+						</div>
+					</TabsContent>
+				</Tabs>
+
+				<DialogFooter>
+					<Button variant="outline" onClick={onClose} className="rounded-xl">
+						{t("common.cancel")}
+					</Button>
+					<Button onClick={handleSave} className="rounded-xl bg-gradient-to-r from-primary to-purple-600">
+						<Save size={18} className="ml-2" />
+						{t("common.save")}
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+
+
+function isValidHex(color) {
+	return /^#([0-9A-F]{6})$/i.test(color);
+}
+
+const ColorPicker = ({ value, onChange, disabled }) => {
+	const [showPicker, setShowPicker] = useState(false);
+	const wrapperRef = useRef(null);
+
+	// Local state for input typing
+	const [inputValue, setInputValue] = useState(value);
+
+	// Sync when parent value changes
+	useEffect(() => {
+		setInputValue(value);
+	}, [value]);
+
+	// Debounce effect
+	useEffect(() => {
+		const handler = setTimeout(() => {
+			if (isValidHex(inputValue)) {
+				onChange(inputValue.toUpperCase());
+			}
+		}, 400); // 400ms debounce
+
+		return () => clearTimeout(handler);
+	}, [inputValue])
+	const presetColors = [
+		"#F44336", "#E91E63", "#9C27B0", "#673AB7",
+		"#3F51B5", "#2196F3", "#03A9F4", "#00BCD4",
+		"#009688", "#4CAF50", "#8BC34A", "#CDDC39",
+		"#FFEB3B", "#FFC107", "#FF9800", "#FF5722",
+		"#795548", "#9E9E9E", "#607D8B", "#000000",
+	];
+
+	// ✅ Outside click detection
+	useEffect(() => {
+		const handleClickOutside = (event) => {
+			if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+				setShowPicker(false);
+			}
+		};
+
+		if (showPicker) {
+			document.addEventListener("mousedown", handleClickOutside);
+		}
+
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, [showPicker]);
+
+	return (
+		<div className="relative" ref={wrapperRef}>
+			<div className="flex gap-2">
+				{/* Color Preview Button */}
+				<button
+					type="button"
+					disabled={disabled}
+					onClick={() => !disabled && setShowPicker(!showPicker)}
+					className="w-12 h-12 rounded-lg border-2 border-gray-300 dark:border-slate-600"
+					style={{ backgroundColor: value }}
+				/>
+
+				{/* Manual HEX Input */}
+				<Input
+					value={inputValue}
+					onChange={(e) => setInputValue(e.target.value)}
+					disabled={disabled}
+					placeholder="#000000"
+					className="flex-1 h-12 font-mono rounded-lg"
+					maxLength={7}
+				/>
+			</div>
+
+			{showPicker && !disabled && (
+				<div className="absolute z-50 mt-2 p-4 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-200 dark:border-slate-700 space-y-4">
+
+					{/* Native Color Picker (Any Hex) */}
+					<div>
+						<label className="text-sm font-medium mb-2 block">
+							Custom Color
+						</label>
+						<input
+							type="color"
+							value={value}
+							onChange={(e) => {
+								setInputValue(e.target.value);
+							}}
+							className="w-full h-10 cursor-pointer"
+						/>
+					</div>
+
+					{/* Preset Colors */}
+					<div>
+						<label className="text-sm font-medium mb-2 block">
+							Preset Colors
+						</label>
+						<div className="grid grid-cols-6 gap-2">
+							{presetColors.map((color) => (
+								<button
+									key={color}
+									type="button"
+									onClick={() => onChange(color)}
+									className={[
+										"w-8 h-8 rounded-md border-2 transition-all",
+										value === color
+											? "border-black dark:border-white scale-110"
+											: "border-gray-300 dark:border-slate-600 hover:scale-110"
+									].join(" ")}
+									style={{ backgroundColor: color }}
+								/>
+							))}
+						</div>
+					</div>
+
+				</div>
+			)}
+		</div>
+	);
+};
+
+
+function StatusFormModal({ isOpen, onClose, status, onSuccess }) {
+	const t = useTranslations("orders");
+	const [formData, setFormData] = useState({
+		name: "",
+		description: "",
+		color: "#2196F3",
+		sortOrder: 0,
+	});
+
+	const [errors, setErrors] = useState({});
+	const [loading, setLoading] = useState(false);
+
+	useEffect(() => {
+		if (status) {
+			setFormData({
+				name: status.name || "",
+				description: status.description || "",
+				color: status.color || "#2196F3",
+				sortOrder: status.sortOrder || 0,
+			});
+		} else {
+			setFormData({
+				name: "",
+				description: "",
+				color: "#2196F3",
+				sortOrder: 0,
+			});
+		}
+		setErrors({});
+	}, [status, isOpen]);
+
+	const validate = () => {
+		const newErrors = {};
+
+		if (!formData.name.trim()) {
+			newErrors.name = t("validation.statusNameRequired");
+		} else if (formData.name.length > 50) {
+			newErrors.name = t("validation.statusNameMaxLength");
+		}
+
+		if (!/^#[0-9A-F]{6}$/i.test(formData.color)) {
+			newErrors.color = t("validation.invalidColorCode");
+		}
+
+		if (formData.sortOrder < 0) {
+			newErrors.sortOrder = t("validation.sortOrderMin");
+		}
+
+		setErrors(newErrors);
+		return Object.keys(newErrors).length === 0;
+	};
+
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+
+		if (!validate()) {
+			return;
+		}
+
+		try {
+			setLoading(true);
+
+			if (status) {
+				// Update existing status
+				await api.patch(`/orders/statuses/${status.id}`, formData);
+				toast.success(t("messages.statusUpdated"));
+			} else {
+				// Create new status
+				await api.post("/orders/statuses", formData);
+				toast.success(t("messages.statusCreated"));
+			}
+
+			onClose();
+			onSuccess();
+		} catch (error) {
+			console.error("Error saving status:", error);
+			toast.error(error.response?.data?.message || t("messages.errorSavingStatus"));
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	return (
+		<Dialog open={isOpen} onOpenChange={onClose}>
+			<DialogContent className="max-w-2xl">
+				<DialogHeader>
+					<DialogTitle className="text-2xl font-bold">
+						{status ? t("statusForm.editTitle") : t("statusForm.addTitle")}
+					</DialogTitle>
+				</DialogHeader>
+
+				<form onSubmit={handleSubmit} className="space-y-4 py-4">
+					<div className="space-y-2">
+						<Label className="text-sm text-gray-600 dark:text-slate-300">
+							{t("statusForm.name")} *
+						</Label>
+						<Input
+							value={formData.name}
+							onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+							placeholder={t("statusForm.namePlaceholder")}
+							className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
+							maxLength={50}
+						/>
+						{errors.name && (
+							<p className="text-xs text-red-500 flex items-center gap-1">
+								<AlertCircle size={12} />
+								{errors.name}
+							</p>
+						)}
+					</div>
+
+					<div className="space-y-2">
+						<Label className="text-sm text-gray-600 dark:text-slate-300">
+							{t("statusForm.description")}
+						</Label>
+						<Textarea
+							value={formData.description}
+							onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+							placeholder={t("statusForm.descriptionPlaceholder")}
+							className="rounded-lg bg-[#fafafa] dark:bg-slate-800/50 min-h-[100px]"
+						/>
+					</div>
+
+					<div className="space-y-2">
+						<Label className="text-sm text-gray-600 dark:text-slate-300">
+							{t("statusForm.color")} *
+						</Label>
+						<ColorPicker
+							value={formData.color}
+							onChange={(color) => setFormData({ ...formData, color: color })}
+						/>
+						{errors.color && (
+							<p className="text-xs text-red-500 flex items-center gap-1">
+								<AlertCircle size={12} />
+								{errors.color}
+							</p>
+						)}
+					</div>
+
+					<div className="space-y-2">
+						<Label className="text-sm text-gray-600 dark:text-slate-300">
+							{t("statusForm.sortOrder")}
+						</Label>
+						<Input
+							type="number"
+							value={formData.sortOrder}
+							onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
+							className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
+							min={0}
+						/>
+						{errors.sortOrder && (
+							<p className="text-xs text-red-500 flex items-center gap-1">
+								<AlertCircle size={12} />
+								{errors.sortOrder}
+							</p>
+						)}
+						<p className="text-xs text-gray-500 dark:text-slate-400">
+							{t("statusForm.sortOrderHelp")}
+						</p>
+					</div>
+
+					<div className="flex gap-3 pt-4">
+						<Button
+							type="submit"
+							disabled={loading}
+							className="flex-1 h-[45px]"
+						>
+							{loading ? (
+								<>
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									{t("statusForm.saving")}
+								</>
+							) : (
+								<>
+									<Save className="mr-2 h-4 w-4" />
+									{status ? t("statusForm.update") : t("statusForm.create")}
+								</>
+							)}
+						</Button>
+						<Button
+							type="button"
+							variant="outline"
+							onClick={onClose}
+							disabled={loading}
+							className="h-[45px] px-8"
+						>
+							{t("statusForm.cancel")}
+						</Button>
+					</div>
+				</form>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+
+
+function DeleteStatusModal({ isOpen, onClose, status, onSuccess }) {
+	const t = useTranslations("orders");
+	const [confirmText, setConfirmText] = useState("");
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState("");
+
+	const handleDelete = async (e) => {
+		e.preventDefault();
+		setError("");
+
+		// Validate confirmation text
+		if (confirmText.trim().toLowerCase() !== status?.title.toLowerCase()) {
+			setError(t("deleteStatus.errorMismatch"));
+			return;
+		}
+
+		try {
+			setLoading(true);
+			await api.delete(`/orders/statuses/${status.id}`);
+			toast.success(t("messages.statusDeleted"));
+			onSuccess();
+			handleClose();
+		} catch (error) {
+			console.error("Error deleting status:", error);
+			toast.error(error.response?.data?.message || t("messages.errorDeletingStatus"));
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const handleClose = () => {
+		setConfirmText("");
+		setError("");
+		onClose();
+	};
+
+	if (!status) return null;
+	const isConfirmValid = confirmText.trim().toLowerCase() === status?.title.toLowerCase();
+
+	return (
+		<Dialog open={isOpen} onOpenChange={handleClose}>
+			<DialogContent className="max-w-lg">
+				<DialogHeader>
+					<div className="flex items-center gap-3">
+						<div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
+							<AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+						</div>
+						<div className="flex-1">
+							<DialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">
+								{t("deleteStatus.title")}
+							</DialogTitle>
+							<DialogDescription className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+								{t("deleteStatus.subtitle")}
+							</DialogDescription>
+						</div>
+					</div>
+				</DialogHeader>
+
+				<form onSubmit={handleDelete} className="space-y-4 pt-4">
+					{/* Warning message */}
+					<div className="p-4 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800">
+						<p className="text-sm text-red-800 dark:text-red-200">
+							{t("deleteStatus.warning")}
+						</p>
+						<p className="text-sm text-red-700 dark:text-red-300 mt-2 font-semibold">
+							{t("deleteStatus.statusName")}: <span className="font-bold">{status?.title}</span>
+						</p>
+					</div>
+
+					{/* Status details */}
+					<div className="p-4 rounded-lg bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700">
+						<div className="flex items-center gap-3">
+							<div
+								className="w-10 h-10 rounded-full border-2 border-dashed flex items-center justify-center"
+								style={{ borderColor: status?.iconBorderInline }}
+							>
+								<div
+									className="w-4 h-4 rounded-full"
+									style={{ backgroundColor: status?.bgInlineLight  }}
+								/>
+							</div>
+							<div className="flex-1">
+								<p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+									{status?.title}
+								</p>
+								<p className="text-xs text-gray-500 dark:text-gray-400">
+									{status?.count} {t("deleteStatus.ordersWithStatus")}
+								</p>
+							</div>
+						</div>
+					</div>
+
+					{/* Confirmation input */}
+					<div className="space-y-2">
+						<Label className="text-sm text-gray-600 dark:text-slate-300">
+							{t("deleteStatus.confirmLabel")}
+						</Label>
+						<p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+							{t("deleteStatus.confirmHint")} <span className="font-mono font-semibold text-gray-900 dark:text-gray-100">{status?.name}</span>
+						</p>
+						<Input
+							value={confirmText}
+							onChange={(e) => {
+								setConfirmText(e.target.value);
+								setError("");
+							}}
+							placeholder={status?.name}
+							className="rounded-lg h-[45px] bg-white dark:bg-slate-800 border-2"
+							autoComplete="off"
+						/>
+						{error && (
+							<p className="text-xs text-red-500 flex items-center gap-1">
+								<AlertTriangle size={12} />
+								{error}
+							</p>
+						)}
+					</div>
+
+					{/* Action buttons */}
+					<div className="flex gap-3 pt-2">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={handleClose}
+							disabled={loading}
+							className="flex-1 h-[45px]"
+						>
+							{t("deleteStatus.cancel")}
+						</Button>
+						<Button
+							type="submit"
+							disabled={loading || !isConfirmValid}
+							className="flex-1 h-[45px] bg-red-600 hover:bg-red-700 text-white"
+						>
+							{loading ? (
+								<>
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									{t("deleteStatus.deleting")}
+								</>
+							) : (
+								<>
+									<Trash2 className="mr-2 h-4 w-4" />
+									{t("deleteStatus.confirm")}
+								</>
+							)}
+						</Button>
+					</div>
+				</form>
+			</DialogContent>
+		</Dialog>
+	);
 }

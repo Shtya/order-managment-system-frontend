@@ -19,6 +19,8 @@ import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from 'yup';
 import { getUser } from "@/hook/getUser";
+import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
 function normalizeAxiosError(err) {
@@ -577,6 +579,289 @@ function EasyOrderDialog({ open, onClose, existingStore, fetchStores, t }) {
 	);
 }
 
+
+const makeShopifySchema = (t) =>
+	yup.object({
+		name: yup.string().trim().required(t("validation.nameRequired")),
+		code: yup.string().trim().required(t("validation.codeRequired")),
+		storeUrl: yup.string().trim().required(t("validation.storeUrlRequired")),
+		isActive: yup.boolean().default(true),
+		autoSync: yup.boolean().default(true),
+	}).required();
+
+function ShopifyDialog({ open, onClose, existingStore, fetchStores, t }) {
+	const isEdit = !!existingStore;
+	const [fetchingStore, setFetchingStore] = useState(false);
+	const user = getUser();
+
+	const schema = useMemo(() => makeShopifySchema(t), [t]);
+
+	const {
+		register,
+		control,
+		handleSubmit,
+		reset,
+		formState: { errors, isSubmitting },
+	} = useForm({
+		defaultValues: { name: "", code: "", storeUrl: "", isActive: true, autoSync: true },
+		resolver: yupResolver(schema),
+	});
+
+	// ── secrets (clientKey, clientSecret) ──
+	const [clientKey, setClientKey] = useState("");
+	const [clientSecret, setClientSecret] = useState("");
+	const [touched, setTouched] = useState({ clientKey: false, clientSecret: false });
+	const [secretErrors, setSecretErrors] = useState({ clientKey: null, clientSecret: null });
+	const [masks, setMasks] = useState({ clientKey: "", clientSecret: "" });
+
+	useEffect(() => {
+		if (!open) return;
+
+		if (isEdit) {
+			(async () => {
+				setFetchingStore(true);
+				try {
+					const res = await api.get(`/stores/${existingStore.id}`);
+					const d = res.data;
+
+					reset({
+						name: d.name || "",
+						code: d.code || "",
+						storeUrl: d.storeUrl || "",
+						isActive: d.isActive ?? true,
+						autoSync: d.autoSync ?? true,
+					});
+
+					const integ = d.integrations || {};
+					setMasks({
+						clientKey: integ.clientKey || "",
+						clientSecret: integ.clientSecret || "",
+					});
+				} catch (e) {
+					toast.error(normalizeAxiosError(e));
+					onClose();
+				} finally {
+					setFetchingStore(false);
+				}
+			})();
+		} else {
+			reset({ name: "", code: "", storeUrl: "", isActive: true, autoSync: true });
+			setMasks({ clientKey: "", clientSecret: "" });
+		}
+
+		setClientKey(""); setClientSecret("");
+		setTouched({ clientKey: false, clientSecret: false });
+	}, [open, isEdit, existingStore?.id]);
+
+	const markTouched = (field) => setTouched((prev) => ({ ...prev, [field]: true }));
+
+	const onSubmit = async (data) => {
+		// create-mode guard: both secrets required
+		if (!isEdit) {
+			let hasError = false;
+			if (!clientKey.trim()) {
+				setSecretErrors((prev) => ({ ...prev, clientKey: t("validation.clientKeyRequired") }));
+				hasError = true;
+			}
+			if (!clientSecret.trim()) {
+				setSecretErrors((prev) => ({ ...prev, clientSecret: t("validation.clientSecretRequired") }));
+				hasError = true;
+			}
+			if (hasError) return;
+			setSecretErrors({ clientKey: null, clientSecret: null });
+		}
+
+		try {
+			if (isEdit) {
+				const integrations = {};
+				if (touched.clientKey && clientKey.trim()) integrations.clientKey = clientKey.trim();
+				if (touched.clientSecret && clientSecret.trim()) integrations.clientSecret = clientSecret.trim();
+
+				const payload = {
+					name: data.name.trim(),
+					code: data.code.trim(),
+					storeUrl: data.storeUrl.trim(),
+					isActive: data.isActive,
+					autoSync: data.autoSync,
+				};
+				if (Object.keys(integrations).length > 0) payload.integrations = integrations;
+
+				const res = await api.patch(`/stores/${existingStore.id}`, payload);
+
+				setClientKey(""); setClientSecret("");
+				setTouched({ clientKey: false, clientSecret: false });
+				const freshInteg = res.data?.integrations || {};
+				setMasks({
+					clientKey: freshInteg.clientKey || "",
+					clientSecret: freshInteg.clientSecret || "",
+				});
+
+				toast.success(t("form.updateSuccess"));
+			} else {
+				await api.post("/stores", {
+					name: data.name.trim(),
+					code: data.code.trim(),
+					storeUrl: data.storeUrl.trim(),
+					provider: "shopify",
+					isActive: data.isActive,
+					autoSync: data.autoSync,
+					integrations: {
+						clientKey: clientKey.trim(),
+						clientSecret: clientSecret.trim(),
+					},
+				});
+				toast.success(t("form.createSuccess"));
+			}
+			onClose();
+			await fetchStores();
+		} catch (e) {
+			toast.error(normalizeAxiosError(e));
+		}
+	};
+
+	const inputCls = "rounded-xl h-[46px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-[rgb(var(--primary))]/20";
+
+	return (
+		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+			<DialogContent className="!max-w-2xl bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
+				{fetchingStore ? (
+					<div className="flex items-center justify-center py-16">
+						<Loader2 size={28} className="animate-spin text-[rgb(var(--primary))]" />
+					</div>
+				) : (
+					<>
+						<div className="flex items-center gap-3 mb-1">
+							<div className="w-10 h-10 rounded-xl bg-[#F0FFF4] dark:bg-[#0E1A0C] flex items-center justify-center text-lg">🛍️</div>
+							<div>
+								<h3 className="text-base font-bold text-gray-900 dark:text-slate-100">
+									{isEdit ? t("dialog.editTitle", { provider: "Shopify" }) : t("dialog.createTitle", { provider: "Shopify" })}
+								</h3>
+								<p className="text-xs text-gray-500 dark:text-slate-400">{t("dialog.subtitle")}</p>
+							</div>
+						</div>
+
+						<form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-4">
+							{/* ── store info section ── */}
+							<div className="space-y-4">
+								<div className="flex items-center gap-2 mb-2">
+									<div className="w-0.5 h-5 bg-primary rounded-full" />
+									<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">{t("form.storeInfoSection")}</span>
+								</div>
+
+								<div className="grid grid-cols-2 gap-3">
+									<div className="space-y-1.5">
+										<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.storeName")}</Label>
+										<Input {...register("name")} placeholder={t("form.storeNamePlaceholder")} className={inputCls} />
+										{errors?.name?.message && <div className="text-xs text-red-600">{errors.name.message}</div>}
+									</div>
+									<div className="space-y-1.5">
+										<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.storeCode")}</Label>
+										<Input {...register("code")} placeholder={t("form.storeCodePlaceholder")} className={inputCls} />
+										{errors?.code?.message && <div className="text-xs text-red-600">{errors.code.message}</div>}
+									</div>
+								</div>
+
+								<div className="space-y-1.5">
+									<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.storeUrl")}</Label>
+									<Input {...register("storeUrl")} placeholder="https://your-store.myshopify.com" className={inputCls} />
+									{errors?.storeUrl?.message && <div className="text-xs text-red-600">{errors.storeUrl.message}</div>}
+								</div>
+
+								<div className="flex items-center gap-6 pt-1">
+									<div className="flex items-center gap-2.5">
+										{!isEdit && (
+											<>
+												<Controller control={control} name="isActive" render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} id="isActive-shopify" />} />
+												<Label htmlFor="isActive-shopify" className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.activeStore")}</Label>
+											</>
+										)}
+									</div>
+									<div className="flex items-center gap-2.5">
+										<Controller control={control} name="autoSync" render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} id="autoSync-shopify" />} />
+										<Label htmlFor="autoSync-shopify" className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.autoSync")}</Label>
+									</div>
+								</div>
+							</div>
+
+							{/* ── Credentials section ── */}
+							<div className="space-y-3">
+								<div className="flex items-center gap-2">
+									<div className="w-0.5 h-5 bg-primary rounded-full" />
+									<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">{t("form.shopifyCredentialsSection")}</span>
+								</div>
+
+								{/* instructions */}
+								<div className="bg-[#FAFBFF] dark:bg-[#1E1E2E] border border-[#E8E8F0] dark:border-[#3A3A4A] rounded-xl p-3.5 space-y-2">
+									<p className="text-xs font-semibold text-gray-700 dark:text-slate-200 flex items-center gap-1.5">
+										<Zap size={13} className="text-[rgb(var(--primary))]" />
+										{t("instructions.shopifyTitle")}
+									</p>
+									<InstructionStep step={1}>{t("instructions.shopify1")}</InstructionStep>
+									<InstructionStep step={2}>{t("instructions.shopify2")}</InstructionStep>
+									<InstructionStep step={3}>{t("instructions.shopify3")}</InstructionStep>
+								</div>
+
+								<div className="grid grid-cols-2 gap-3">
+									<div className="space-y-1.5">
+										<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.clientKey")}</Label>
+										<Input
+											value={clientKey}
+											placeholder={isEdit ? (masks.clientKey || t("form.maskedPlaceholder")) : t("form.clientKeyPlaceholder")}
+											onChange={(e) => { setClientKey(e.target.value); markTouched("clientKey"); }}
+											className={inputCls}
+										/>
+										{secretErrors.clientKey && <div className="text-xs text-red-600">{secretErrors.clientKey}</div>}
+									</div>
+									<div className="space-y-1.5">
+										<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.clientSecret")}</Label>
+										<Input
+											value={clientSecret}
+											placeholder={isEdit ? (masks.clientSecret || t("form.maskedPlaceholder")) : t("form.clientSecretPlaceholder")}
+											onChange={(e) => { setClientSecret(e.target.value); markTouched("clientSecret"); }}
+											className={inputCls}
+										/>
+										{secretErrors.clientSecret && <div className="text-xs text-red-600">{secretErrors.clientSecret}</div>}
+									</div>
+								</div>
+							</div>
+
+							{/* ── Redirect URL section ── */}
+							<div className="space-y-3">
+								<div className="flex items-center gap-2">
+									<div className="w-0.5 h-5 bg-primary rounded-full" />
+									<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">{t("form.shopifyRedirectSection")}</span>
+								</div>
+
+								<div className="bg-[#FAFBFF] dark:bg-[#1E1E2E] border border-[#E8E8F0] dark:border-[#3A3A4A] rounded-xl p-3.5 space-y-3">
+									<p className="text-xs font-semibold text-gray-700 dark:text-slate-200 flex items-center gap-1.5">
+										<AlertCircle size={13} className="text-[rgb(var(--primary))]" />
+										{t("instructions.shopifyRedirectTitle")}
+									</p>
+									<p className="text-xs text-gray-600 dark:text-slate-300">{t("instructions.shopifyRedirect1")}</p>
+									<CopyableCode text={`https://binaural-taryn-unprecipitatively.ngrok-free.dev/webhooks/${String(user?.id).trim()}/shopify/redirect`} />
+								</div>
+							</div>
+
+							{/* ── footer buttons ── */}
+							<div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-200 dark:border-slate-700">
+								<button type="button" onClick={onClose} disabled={isSubmitting}
+									className="px-4 py-2 text-sm font-semibold rounded-xl border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
+									{t("form.cancel")}
+								</button>
+								<button type="submit" disabled={isSubmitting}
+									className="inline-flex items-center gap-1.5 px-5 py-2 text-sm font-semibold rounded-xl bg-primary text-white hover:opacity-90 transition-opacity shadow-sm disabled:opacity-60">
+									{isSubmitting ? <Loader2 size={15} className="animate-spin" /> : null}
+									{isEdit ? t("form.saveChanges") : t("form.createStore")}
+								</button>
+							</div>
+						</form>
+					</>
+				)}
+			</DialogContent>
+		</Dialog>
+	);
+}
+
 // ─── Shopify / WooCommerce mock dialogs ──────────────────────────────────────
 
 function MockProviderDialog({ open, onClose, provider, existingStore, fetchStores, t }) {
@@ -645,6 +930,45 @@ function DeleteConfirmDialog({ open, onClose, store, onConfirm, loading, t }) {
 
 export default function StoresIntegrationPage() {
 	const t = useTranslations("storeIntegration");
+	const searchParams = useSearchParams();
+	const router = useRouter();
+	const pathname = usePathname();
+
+	useEffect(() => {
+		const errorType = searchParams.get('error');
+		const shop = searchParams.get('shop');
+
+		if (errorType) {
+			let messageKey;
+
+			// Determine which localization key to use
+			switch (errorType) {
+				case 'shopify_invalid_session':
+				case 'shopify_store_not_found':
+				case 'shopify_security_verification_failed':
+					messageKey = `errors.${errorType}`;
+					break;
+				default:
+					// Fallback for any unknown error codes
+					messageKey = 'errors.system_error';
+					break;
+			}
+
+			// 1. Get and show localized message
+			const message = t(messageKey, { shop: shop || '' });
+			toast.error(message);
+			// 2. Clear the URL parameters without reloading the page
+			// This removes '?error=...&shop=...' from the address bar
+			const params = new URLSearchParams(searchParams.toString());
+			params.delete('error');
+			params.delete('shop');
+
+			const queryString = params.toString();
+			const cleanUrl = queryString ? `${pathname}?${queryString}` : pathname;
+
+			router.replace(cleanUrl, { scroll: false });
+		}
+	}, [searchParams, pathname, router, t]);
 
 	// stores fetched from backend — keyed by provider
 	const [storesByProvider, setStoresByProvider] = useState({});
@@ -779,11 +1103,10 @@ export default function StoresIntegrationPage() {
 				t={t}
 			/>
 
-			{/* Shopify (mock) */}
-			<MockProviderDialog
+			{/* Shopify */}
+			<ShopifyDialog
 				open={dialogProvider === "shopify"}
 				onClose={handleDialogClose}
-				provider="shopify"
 				existingStore={dialogStore}
 				fetchStores={fetchStores}
 				t={t}

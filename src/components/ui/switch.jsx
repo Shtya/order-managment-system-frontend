@@ -4,34 +4,11 @@ import * as React from "react";
 import * as SwitchPrimitive from "@radix-ui/react-switch";
 import { cn } from "@/utils/cn";
 import { useLocale } from "next-intl";
-
-function useDocumentDir() {
-	const [dir, setDir] = React.useState("ltr");
-
-	React.useEffect(() => {
-		const getDir = () =>
-			(document?.documentElement?.getAttribute("dir") || "ltr").toLowerCase();
-
-		setDir(getDir());
-
-		// لو اتجاه الصفحة ممكن يتغير ديناميكياً
-		const observer = new MutationObserver(() => setDir(getDir()));
-		observer.observe(document.documentElement, {
-			attributes: true,
-			attributeFilter: ["dir"],
-		});
-
-		return () => observer.disconnect();
-	}, []);
-
-	return dir;
-}
-
+ 
 function Switch({ className, ...props }) {
 	const dir = useLocale();
 	const isRTL = dir === "en";
-	console.log(dir);
-
+ 
 	return (
 		<SwitchPrimitive.Root
 			data-slot="switch"
@@ -52,7 +29,7 @@ function Switch({ className, ...props }) {
 					"transition-transform duration-200 ease-out",
 					isRTL
 						? "data-[state=unchecked]:translate-x-[18px] data-[state=checked]:translate-x-0"
-						: "data-[state=checked]:-translate-x-[18px] data-[state=unchecked]:translate-x-[1px]"
+						: "data-[state=checked]:translate-x-[18px] data-[state=unchecked]:translate-x-[1px]"
 				)}
 			/>
 		</SwitchPrimitive.Root>

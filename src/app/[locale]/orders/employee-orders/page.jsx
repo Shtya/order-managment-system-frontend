@@ -49,6 +49,7 @@ import {
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
+import api from "@/utils/api";
 
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
@@ -170,11 +171,12 @@ function SortableOrderCard({ order, onViewDetails }) {
 
 	const statusConfig = {
 		new: { color: "bg-primary", label: t("statuses.new"), icon: Package },
-		confirmed: { color: "bg-green-500", label: t("statuses.confirmed"), icon: CheckCircle },
-		pending_confirmation: { color: "bg-amber-500", label: t("statuses.pendingConfirmation"), icon: AlertCircle },
-		in_shipping: { color: "bg-purple-500", label: t("statuses.inShipping"), icon: Truck },
+		under_review: { color: "bg-amber-500", label: t("statuses.underReview"), icon: AlertCircle },
+		preparing: { color: "bg-teal-500", label: t("statuses.preparing"), icon: Package },
+		ready: { color: "bg-green-500", label: t("statuses.ready"), icon: CheckCircle },
+		shipped: { color: "bg-purple-500", label: t("statuses.shipped"), icon: Truck },
 		delivered: { color: "bg-green-600", label: t("statuses.delivered"), icon: CheckCheck },
-		retry: { color: "bg-orange-500", label: t("statuses.retry"), icon: RefreshCw },
+		cancelled: { color: "bg-red-500", label: t("statuses.cancelled"), icon: XCircle },
 	};
 
 	const priorityConfig = {
@@ -374,15 +376,16 @@ function TodoItem({ order, onToggle, completed = false }) {
 
 	const statusConfig = {
 		new: { color: "bg-primary", label: t("statuses.new") },
-		confirmed: { color: "bg-green-500", label: t("statuses.confirmed") },
-		pending_confirmation: { color: "bg-amber-500", label: t("statuses.pendingConfirmation") },
-		in_shipping: { color: "bg-purple-500", label: t("statuses.inShipping") },
+		under_review: { color: "bg-amber-500", label: t("statuses.underReview") },
+		preparing: { color: "bg-teal-500", label: t("statuses.preparing") },
+		ready: { color: "bg-green-500", label: t("statuses.ready") },
+		shipped: { color: "bg-purple-500", label: t("statuses.shipped") },
 		delivered: { color: "bg-green-600", label: t("statuses.delivered") },
-		retry: { color: "bg-orange-500", label: t("statuses.retry") },
+		cancelled: { color: "bg-red-500", label: t("statuses.cancelled") },
 	};
 
-	const config = statusConfig[order.status];
-	const isRetryLocked = order.status === "retry" && retryTime.isLocked;
+	const config = statusConfig[order.status] || statusConfig.new;
+	const isRetryLocked = false;
 	const retryProgress = order.retryConfig 
 		? ((order.retryConfig.currentAttempt / order.retryConfig.maxAttempts) * 100)
 		: 0;
@@ -790,14 +793,15 @@ function DragOverlayCard({ order }) {
 	
 	const statusConfig = {
 		new: { color: "bg-primary", label: t("statuses.new"), icon: Package },
-		confirmed: { color: "bg-green-500", label: t("statuses.confirmed"), icon: CheckCircle },
-		pending_confirmation: { color: "bg-amber-500", label: t("statuses.pendingConfirmation"), icon: AlertCircle },
-		in_shipping: { color: "bg-purple-500", label: t("statuses.inShipping"), icon: Truck },
+		under_review: { color: "bg-amber-500", label: t("statuses.underReview"), icon: AlertCircle },
+		preparing: { color: "bg-teal-500", label: t("statuses.preparing"), icon: Package },
+		ready: { color: "bg-green-500", label: t("statuses.ready"), icon: CheckCircle },
+		shipped: { color: "bg-purple-500", label: t("statuses.shipped"), icon: Truck },
 		delivered: { color: "bg-green-600", label: t("statuses.delivered"), icon: CheckCheck },
-		retry: { color: "bg-orange-500", label: t("statuses.retry"), icon: RefreshCw },
+		cancelled: { color: "bg-red-500", label: t("statuses.cancelled"), icon: XCircle },
 	};
 
-	const config = statusConfig[order.status];
+	const config = statusConfig[order.status] || statusConfig.new;
 	const StatusIcon = config.icon;
 
 	return (
@@ -917,15 +921,47 @@ function DroppableColumn({ id, title, icon: Icon, color, orders, onViewDetails }
 	);
 }
 
+// Map API order to card format
+function mapOrderFromApi(order) {
+	return {
+		id: order.id,
+		orderNumber: order.orderNumber || `#${order.id}`,
+		customerName: order.customerName,
+		phoneNumber: order.phoneNumber,
+		city: order.city,
+		product: order.items?.[0]?.variant?.product?.name || order.items?.[0]?.variant?.sku || "-",
+		quantity: order.items?.reduce((s, i) => s + (i.quantity || 0), 0) || 0,
+		status: order.status || "new",
+		total: order.finalTotal ?? 0,
+		assignedDate: order.assignedAt ? new Date(order.assignedAt) : new Date(),
+		priority: "medium",
+		todoCompleted: false,
+		notes: order.notes,
+	};
+}
+
 // Main Component
 export default function EmployeeOrdersPerfect() {
 	const t = useTranslations("employeeOrders");
 	const router = useRouter();
-	const [orders, setOrders] = useState(generateEmployeeOrders());
+	const [orders, setOrders] = useState([]);
+	const [loading, setLoading] = useState(true);
 	const [selectedDate, setSelectedDate] = useState(new Date());
 	const [activeStatus, setActiveStatus] = useState("all");
 	const [todoSidePanelOpen, setTodoSidePanelOpen] = useState(false);
 	const [activeId, setActiveId] = useState(null);
+
+	useEffect(() => {
+		setLoading(true);
+		const dateStr = selectedDate.toISOString().split("T")[0];
+		api.get("/orders/employee-orders", { params: { date: dateStr, status: activeStatus !== "all" ? activeStatus : undefined, limit: 100 } })
+			.then((res) => {
+				const records = res.data?.records ?? [];
+				setOrders(records.map(mapOrderFromApi));
+			})
+			.catch(() => setOrders([]))
+			.finally(() => setLoading(false));
+	}, [selectedDate, activeStatus]);
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
@@ -955,25 +991,24 @@ export default function EmployeeOrdersPerfect() {
 		return filtered;
 	}, [orders, selectedDate, activeStatus]);
 
-	// Group orders by status
+	// Group orders by status (backend statuses)
 	const groupedOrders = useMemo(() => {
-		const statuses = ["new", "confirmed", "pending_confirmation", "in_shipping", "delivered", "retry"];
+		const statuses = ["new", "under_review", "preparing", "ready", "shipped", "delivered", "cancelled"];
 		const groups = {};
-
-		statuses.forEach(status => {
-			groups[status] = filteredOrders.filter(order => order.status === status);
+		statuses.forEach((status) => {
+			groups[status] = filteredOrders.filter((order) => order.status === status);
 		});
-
 		return groups;
 	}, [filteredOrders]);
 
 	const statusColumns = [
 		{ key: "new", label: t("statuses.new"), icon: Package, color: "from-primary to-primary/80" },
-		{ key: "confirmed", label: t("statuses.confirmed"), icon: CheckCircle, color: "from-green-500 to-green-600" },
-		{ key: "pending_confirmation", label: t("statuses.pendingConfirmation"), icon: AlertCircle, color: "from-amber-500 to-orange-600" },
-		{ key: "retry", label: t("statuses.retry"), icon: RefreshCw, color: "from-orange-500 to-red-600" },
-		{ key: "in_shipping", label: t("statuses.inShipping"), icon: Truck, color: "from-purple-500 to-purple-600" },
+		{ key: "under_review", label: t("statuses.underReview"), icon: AlertCircle, color: "from-amber-500 to-orange-600" },
+		{ key: "preparing", label: t("statuses.preparing"), icon: Package, color: "from-teal-500 to-cyan-600" },
+		{ key: "ready", label: t("statuses.ready"), icon: CheckCircle, color: "from-green-500 to-green-600" },
+		{ key: "shipped", label: t("statuses.shipped"), icon: Truck, color: "from-purple-500 to-purple-600" },
 		{ key: "delivered", label: t("statuses.delivered"), icon: CheckCheck, color: "from-green-600 to-green-700" },
+		{ key: "cancelled", label: t("statuses.cancelled"), icon: XCircle, color: "from-red-500 to-red-600" },
 	];
 
 	const handleDragStart = (event) => {
@@ -1004,9 +1039,11 @@ export default function EmployeeOrdersPerfect() {
 		// Check if we're over a column
 		const overColumn = statusColumns.find(col => col.key === overId);
 		if (overColumn) {
+			const newStatus = overColumn.key;
 			setOrders(orders.map(order =>
-				order.id === activeId ? { ...order, status: overColumn.key } : order
+				order.id === activeId ? { ...order, status: newStatus } : order
 			));
+			api.patch(`/orders/${activeId}/status`, { status: newStatus }).catch(() => toast.error(t("retry.cannotMove")));
 			return;
 		}
 
@@ -1016,9 +1053,11 @@ export default function EmployeeOrdersPerfect() {
 
 		// If different status, change status
 		if (activeOrder.status !== overOrder.status) {
+			const newStatus = overOrder.status;
 			setOrders(orders.map(order =>
-				order.id === activeId ? { ...order, status: overOrder.status } : order
+				order.id === activeId ? { ...order, status: newStatus } : order
 			));
+			api.patch(`/orders/${activeId}/status`, { status: newStatus }).catch(() => toast.error(t("retry.cannotMove")));
 		}
 	};
 
@@ -1054,7 +1093,7 @@ export default function EmployeeOrdersPerfect() {
 	};
 
 	const handleViewDetails = (order) => {
-		router.push(`/orders/employee-orders/${order.id}`);
+		router.push(`/orders/show/${order.id}`);
 	};
 
 	const handleToggleTodo = (orderId) => {

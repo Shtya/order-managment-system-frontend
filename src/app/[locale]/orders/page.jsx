@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import api from "@/utils/api";
 import {
 	ChevronLeft,
 	Filter,
@@ -74,125 +75,137 @@ import { Tabs } from "@radix-ui/react-tabs";
 import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 
-// Fake Data Generator
-const generateFakeOrders = (count = 50) => {
-	const statuses = [
-		"new", "confirmed", "pending_confirmation", "wrong_number",
-		"duplicate", "postponed", "delivered", "in_shipping",
-		"waiting_stock", "no_answer_shipping", "cancelled_shipping"
-	];
-
-	const cities = ["القاهرة", "الإسكندرية", "الجيزة", "طنطا", "المنصورة"];
-	const areas = ["المعادي", "مصر الجديدة", "الدقي", "سموحة", "ميامي"];
-	const products = ["خاتم فضة", "سلسلة ذهب", "أساور فضة", "حلق ذهب"];
-	const shippingCompanies = ["أرامكس", "فيدكس", "DHL", "سمسا"];
-	const employees = ["أحمد محمد", "فاطمة علي", "محمود حسن", "سارة إبراهيم", "خالد أحمد"];
-	const paymentMethods = ["cash", "card", "bank_transfer", "cod"];
-
-	return Array.from({ length: count }, (_, i) => ({
-		id: i + 1,
-		orderNumber: `ORD-${String(i + 1).padStart(6, "0")}`,
-		customerName: `عميل ${i + 1}`,
-		phoneNumber: `0${Math.floor(Math.random() * 1000000000)}`,
-		city: cities[Math.floor(Math.random() * cities.length)],
-		area: areas[Math.floor(Math.random() * areas.length)],
-		address: `شارع ${Math.floor(Math.random() * 100)} - مبنى ${Math.floor(Math.random() * 50)}`,
-		products: [
-			{
-				name: products[Math.floor(Math.random() * products.length)],
-				quantity: Math.floor(Math.random() * 3) + 1,
-				price: Math.floor(Math.random() * 500) + 100
-			}
-		],
-		shippingCost: Math.floor(Math.random() * 50) + 30,
-		status: statuses[Math.floor(Math.random() * statuses.length)],
-		assignedEmployee: Math.random() > 0.3 ? employees[Math.floor(Math.random() * employees.length)] : null,
-		trackingCode: `TRK-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-		paymentMethod: paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
-		shippingCompany: Math.random() > 0.4 ? shippingCompanies[Math.floor(Math.random() * shippingCompanies.length)] : null,
-		deposit: Math.floor(Math.random() * 200),
-		amountReceived: Math.floor(Math.random() * 500),
-		finalTotal: Math.floor(Math.random() * 1000) + 300,
-		created_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-		updated_at: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-		retryCount: Math.floor(Math.random() * 5),
-		lastRetry: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString(),
-	}));
-};
-
-// Bulk Upload Modal
+// Bulk Upload Modal – supports Excel (.xlsx) and calls POST /orders/bulk
 function BulkUploadModal({ isOpen, onClose, t }) {
 	const [file, setFile] = useState(null);
 	const [uploading, setUploading] = useState(false);
+	const [validOrders, setValidOrders] = useState([]);
+	const [errors, setErrors] = useState([]);
 
-	const handleDownloadTemplate = () => {
-		// Create CSV template
-		const headers = [
-			"اسم العميل",
-			"رقم الهاتف",
-			"رقم بديل",
-			"المدينة",
-			"المنطقة",
-			"العنوان",
-			"اسم المنتج",
-			"الكمية",
-			"السعر",
-			"تكلفة الشحن",
-			"طريقة الدفع",
-			"ملاحظات"
-		].join(",");
-
-		const exampleRow = [
-			"أحمد محمد",
-			"01234567890",
-			"01098765432",
-			"القاهرة",
-			"المعادي",
-			"شارع 9 - مبنى 15",
-			"خاتم فضة",
-			"2",
-			"350",
-			"50",
-			"cod",
-			"يفضل التواصل مساءً"
-		].join(",");
-
-		const csvContent = `${headers}\n${exampleRow}`;
-		const blob = new Blob(["\ufeff" + csvContent], { type: "text/csv;charset=utf-8;" });
-		const link = document.createElement("a");
-		link.href = URL.createObjectURL(blob);
-		link.download = "orders_template.csv";
-		link.click();
-
-		toast.success(t("bulkUpload.templateDownloaded"));
+	const handleDownloadTemplate = async () => {
+		try {
+			const XLSX = (await import("xlsx")).default;
+			const EXAMPLE_ROW = {
+				customerName: "أحمد محمد",
+				phoneNumber: "501234567",
+				city: "الرياض",
+				address: "حي الملقا، شارع الأمير سلطان",
+				paymentMethod: "cod",
+				shippingCost: 20,
+				discount: 0,
+				notes: "",
+				itemsJson: '[{"variantId":1,"quantity":2,"unitPrice":50,"unitCost":40}]',
+			};
+			const headers = Object.keys(EXAMPLE_ROW);
+			const ws = XLSX.utils.json_to_sheet([EXAMPLE_ROW], { header: headers });
+			const wb = XLSX.utils.book_new();
+			XLSX.utils.book_append_sheet(wb, ws, "Orders");
+			XLSX.writeFile(wb, "orders_template.xlsx");
+			toast.success(t("bulkUpload.templateDownloaded"));
+		} catch (e) {
+			toast.error(t("bulkUpload.templateError"));
+		}
 	};
 
-	const handleFileChange = (e) => {
-		const selectedFile = e.target.files[0];
-		if (selectedFile) {
-			if (selectedFile.type === "text/csv" || selectedFile.name.endsWith(".csv")) {
-				setFile(selectedFile);
-			} else {
-				toast.error(t("bulkUpload.invalidFileType"));
+	const parseAndValidate = (rows) => {
+		const errs = [];
+		const valid = [];
+		rows.forEach((r, i) => {
+			const rowNum = i + 2;
+			if (!r.customerName || !r.phoneNumber || !r.city || !r.paymentMethod) {
+				errs.push(`${t("bulkUpload.row")} ${rowNum}: ${t("bulkUpload.requiredFields")}`);
+				return;
 			}
+			let items = [];
+			try {
+				items = r.itemsJson ? JSON.parse(r.itemsJson) : [];
+			} catch (_) {
+				errs.push(`${t("bulkUpload.row")} ${rowNum}: itemsJson ${t("bulkUpload.invalidJson")}`);
+				return;
+			}
+			if (!Array.isArray(items) || items.length === 0) {
+				errs.push(`${t("bulkUpload.row")} ${rowNum}: ${t("bulkUpload.itemsRequired")}`);
+				return;
+			}
+			valid.push({
+				customerName: String(r.customerName).trim(),
+				phoneNumber: String(r.phoneNumber).trim(),
+				email: r.email ? String(r.email).trim() : undefined,
+				city: String(r.city).trim(),
+				address: String(r.address || "").trim() || undefined,
+				area: r.area ? String(r.area).trim() : undefined,
+				paymentMethod: String(r.paymentMethod || "cod").trim(),
+				shippingCompany: r.shippingCompany ? String(r.shippingCompany).trim() : undefined,
+				shippingCost: Number(r.shippingCost || 0),
+				discount: Number(r.discount || 0),
+				notes: r.notes ? String(r.notes).trim() : undefined,
+				items: items.map((it) => ({
+					variantId: Number(it.variantId),
+					quantity: Number(it.quantity),
+					unitPrice: Number(it.unitPrice),
+					unitCost: it.unitCost != null ? Number(it.unitCost) : undefined,
+				})),
+			});
+		});
+		return { valid, errors: errs };
+	};
+
+	const handleFileChange = async (e) => {
+		const f = e?.target?.files?.[0];
+		if (!f) return;
+		if (!f.name.endsWith(".xlsx") && !f.name.endsWith(".xls")) {
+			toast.error(t("bulkUpload.invalidFileType"));
+			return;
+		}
+		setFile(f);
+		setValidOrders([]);
+		setErrors([]);
+		try {
+			const XLSX = (await import("xlsx")).default;
+			const data = await new Promise((res, rej) => {
+				const reader = new FileReader();
+				reader.onload = (ev) => {
+					try {
+						const wb = XLSX.read(new Uint8Array(ev.target.result), { type: "array" });
+						const ws = wb.Sheets[wb.SheetNames[0]];
+						res(XLSX.utils.sheet_to_json(ws, { defval: "" }));
+					} catch (err) {
+						rej(err);
+					}
+				};
+				reader.onerror = rej;
+				reader.readAsArrayBuffer(f);
+			});
+			const { valid, errors: errs } = parseAndValidate(data);
+			setValidOrders(valid);
+			setErrors(errs);
+			if (errs.length) toast.error(t("bulkUpload.validationErrors"));
+			else if (valid.length) toast.success(t("bulkUpload.fileReady", { count: valid.length }));
+		} catch (err) {
+			toast.error(t("bulkUpload.fileReadFailed"));
 		}
 	};
 
 	const handleUpload = async () => {
-		if (!file) {
-			toast.error(t("bulkUpload.noFileSelected"));
+		if (!validOrders.length) {
+			toast.error(t("bulkUpload.noValidOrders"));
 			return;
 		}
-
 		setUploading(true);
-
-		// Simulate upload
-		setTimeout(() => {
-			setUploading(false);
-			toast.success(t("bulkUpload.uploadSuccess"));
+		try {
+			const res = await api.post("/orders/bulk", { orders: validOrders });
+			toast.success(t("bulkUpload.uploadSuccess"), {
+				description: `${res.data?.created ?? validOrders.length} ${t("bulkUpload.ordersCreated")}`,
+			});
 			setFile(null);
+			setValidOrders([]);
+			setErrors([]);
 			onClose();
-		}, 2000);
+		} catch (err) {
+			toast.error(err.response?.data?.message || t("bulkUpload.uploadFailed"));
+		} finally {
+			setUploading(false);
+		}
 	};
 
 	return (
@@ -264,18 +277,21 @@ function BulkUploadModal({ isOpen, onClose, t }) {
 									<input
 										type="file"
 										id="file-upload"
-										accept=".csv"
+										accept=".xlsx,.xls"
 										onChange={handleFileChange}
 										className="hidden"
 									/>
 									<label htmlFor="file-upload" className="cursor-pointer">
 										<Upload size={48} className="mx-auto mb-4 text-gray-400" />
 										<p className="text-sm font-semibold mb-2">
-											{file ? file.name : t("bulkUpload.dragDrop")}
+											{file ? `${file.name}${validOrders.length ? ` (${validOrders.length})` : ""}` : t("bulkUpload.dragDrop")}
 										</p>
 										<p className="text-xs text-gray-500">
-											{t("bulkUpload.supportedFormats")}
+											{t("bulkUpload.supportedFormats")} (.xlsx)
 										</p>
+										{errors.length > 0 && (
+											<p className="text-xs text-red-600 mt-2">{errors.length} {t("bulkUpload.validationErrors")}</p>
+										)}
 									</label>
 								</div>
 							</div>
@@ -289,7 +305,7 @@ function BulkUploadModal({ isOpen, onClose, t }) {
 					</Button>
 					<Button
 						onClick={handleUpload}
-						disabled={!file || uploading}
+						disabled={!validOrders.length || uploading}
 						className="rounded-xl bg-gradient-to-r from-green-500 to-emerald-600"
 					>
 						{uploading ? (
@@ -376,8 +392,8 @@ function OrdersTableToolbar({
 	);
 }
 
-// Filters Panel Component (keeping the same as before)
-function FiltersPanel({ t, value, onChange, onApply }) {
+// Filters Panel – receives stores and employees from parent (loaded from API)
+function FiltersPanel({ t, value, onChange, onApply, stores = [], employees = [] }) {
 	const [products] = useState([
 		{ value: "ring", label: t("filters.products.ring") },
 		{ value: "necklace", label: t("filters.products.necklace") },
@@ -385,21 +401,10 @@ function FiltersPanel({ t, value, onChange, onApply }) {
 		{ value: "earring", label: t("filters.products.earring") }
 	]);
 
-	const [employees] = useState([
-		{ value: "emp1", label: "أحمد محمد" },
-		{ value: "emp2", label: "فاطمة علي" },
-		{ value: "emp3", label: "محمود حسن" }
-	]);
-
 	const [areas] = useState([
 		{ value: "cairo", label: t("filters.areas.cairo") },
 		{ value: "alex", label: t("filters.areas.alex") },
 		{ value: "giza", label: t("filters.areas.giza") }
-	]);
-
-	const [stores] = useState([
-		{ value: "store1", label: t("filters.stores.main") },
-		{ value: "store2", label: t("filters.stores.branch") }
 	]);
 
 	const [shippingCompanies] = useState([
@@ -462,8 +467,9 @@ function FiltersPanel({ t, value, onChange, onApply }) {
 							</SelectTrigger>
 							<SelectContent className="bg-card-select">
 								<SelectItem value="all">{t("filters.all")}</SelectItem>
-								{employees.map(emp => (
-									<SelectItem key={emp.value} value={emp.value}>{emp.label}</SelectItem>
+								<SelectItem value="unassigned">{t("filters.unassigned")}</SelectItem>
+								{(employees || []).map((emp) => (
+									<SelectItem key={emp.id} value={String(emp.id)}>{emp.name || emp.label}</SelectItem>
 								))}
 							</SelectContent>
 						</Select>
@@ -536,8 +542,8 @@ function FiltersPanel({ t, value, onChange, onApply }) {
 							</SelectTrigger>
 							<SelectContent className="bg-card-select">
 								<SelectItem value="all">{t("filters.all")}</SelectItem>
-								{stores.map(store => (
-									<SelectItem key={store.value} value={store.value}>{store.label}</SelectItem>
+								{(stores || []).map((s) => (
+									<SelectItem key={s.id} value={String(s.id)}>{s.name || s.label}</SelectItem>
 								))}
 							</SelectContent>
 						</Select>
@@ -577,8 +583,8 @@ function FiltersPanel({ t, value, onChange, onApply }) {
 	);
 }
 
-// Distribution Modal (keeping the same as before with translations)
-function DistributionModal({ isOpen, onClose, orders, t }) {
+// Distribution Modal – assign orders to user via API
+function DistributionModal({ isOpen, onClose, orders, employees = [], t, onAssigned }) {
 	const [distributionType, setDistributionType] = useState(null);
 	const [dateRange, setDateRange] = useState({
 		from: new Date().toISOString().split("T")[0],
@@ -588,32 +594,54 @@ function DistributionModal({ isOpen, onClose, orders, t }) {
 	const [selectedEmployee, setSelectedEmployee] = useState("");
 	const [selectedOrders, setSelectedOrders] = useState([]);
 	const [employeeCount, setEmployeeCount] = useState(3);
+	const [assigning, setAssigning] = useState(false);
 
-	const employees = [
-		{ id: "emp1", name: "أحمد محمد", currentOrders: 12 },
-		{ id: "emp2", name: "فاطمة علي", currentOrders: 8 },
-		{ id: "emp3", name: "محمود حسن", currentOrders: 15 },
-		{ id: "emp4", name: "سارة إبراهيم", currentOrders: 10 },
-		{ id: "emp5", name: "خالد أحمد", currentOrders: 6 },
-	];
-
-	const handleDistribute = () => {
+	const handleDistribute = async () => {
 		if (distributionType === "normal") {
 			if (!selectedEmployee || selectedOrders.length === 0) {
 				toast.error(t("distribution.selectEmployeeAndOrders"));
 				return;
 			}
-			toast.success(t("distribution.normalSuccess", {
-				count: selectedOrders.length,
-				employee: employees.find(e => e.id === selectedEmployee)?.name
-			}));
+			setAssigning(true);
+			try {
+				for (const orderId of selectedOrders) {
+					await api.patch(`/orders/${orderId}/assign`, { userId: Number(selectedEmployee) });
+				}
+				toast.success(t("distribution.normalSuccess"), {
+					count: selectedOrders.length,
+					employee: employees.find((e) => String(e.id) === selectedEmployee)?.name || selectedEmployee
+				});
+				onAssigned?.();
+				onClose();
+			} catch (err) {
+				toast.error(err.response?.data?.message || t("distribution.assignFailed"));
+			} finally {
+				setAssigning(false);
+			}
 		} else {
-			toast.success(t("distribution.smartSuccess", {
-				count: orders.length,
-				employees: employeeCount
-			}));
+			// Smart: simple round-robin for now
+			if (!employees.length || employeeCount < 1) {
+				toast.error(t("distribution.selectEmployees"));
+				return;
+			}
+			const toAssign = orders.slice(0, 50);
+			const ids = employees.slice(0, Math.min(employeeCount, employees.length)).map((e) => e.id);
+			setAssigning(true);
+			try {
+				for (let i = 0; i < toAssign.length; i++) {
+					const orderId = toAssign[i].id;
+					const userId = ids[i % ids.length];
+					await api.patch(`/orders/${orderId}/assign`, { userId });
+				}
+				toast.success(t("distribution.smartSuccess", { count: toAssign.length, employees: ids.length }));
+				onAssigned?.();
+				onClose();
+			} catch (err) {
+				toast.error(err.response?.data?.message || t("distribution.assignFailed"));
+			} finally {
+				setAssigning(false);
+			}
 		}
-		onClose();
 	};
 
 	return (
@@ -703,9 +731,9 @@ function DistributionModal({ isOpen, onClose, orders, t }) {
 											<SelectValue placeholder={t("distribution.selectEmployeePlaceholder")} />
 										</SelectTrigger>
 										<SelectContent>
-											{employees.map(emp => (
-												<SelectItem key={emp.id} value={emp.id}>
-													{emp.name} - ({emp.currentOrders} {t("distribution.currentOrders")})
+											{(employees || []).map((emp) => (
+												<SelectItem key={emp.id} value={String(emp.id)}>
+													{emp.name || emp.label}
 												</SelectItem>
 											))}
 										</SelectContent>
@@ -713,9 +741,9 @@ function DistributionModal({ isOpen, onClose, orders, t }) {
 								</div>
 
 								<div className="space-y-2">
-									<Label>{t("distribution.selectOrders")} ({orders.length} {t("distribution.available")})</Label>
+									<Label>{t("distribution.selectOrders")} ({(orders || []).length} {t("distribution.available")})</Label>
 									<div className="max-h-64 overflow-y-auto border rounded-xl p-4 space-y-2">
-										{orders.slice(0, 10).map(order => (
+										{(orders || []).slice(0, 20).map((order) => (
 											<div key={order.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg">
 												<Checkbox
 													checked={selectedOrders.includes(order.id)}
@@ -723,7 +751,7 @@ function DistributionModal({ isOpen, onClose, orders, t }) {
 														if (checked) {
 															setSelectedOrders([...selectedOrders, order.id]);
 														} else {
-															setSelectedOrders(selectedOrders.filter(id => id !== order.id));
+															setSelectedOrders(selectedOrders.filter((id) => id !== order.id));
 														}
 													}}
 												/>
@@ -753,8 +781,8 @@ function DistributionModal({ isOpen, onClose, orders, t }) {
 										{t("distribution.preview")}
 									</h4>
 									<div className="space-y-2">
-										{employees.slice(0, employeeCount).map((emp, idx) => {
-											const ordersToAssign = Math.ceil(orders.length / employeeCount);
+										{(employees || []).slice(0, employeeCount).map((emp, idx) => {
+											const ordersToAssign = Math.ceil((orders || []).length / employeeCount);
 											return (
 												<div key={emp.id} className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-lg">
 													<span className="font-semibold">{emp.name}</span>
@@ -784,9 +812,9 @@ function DistributionModal({ isOpen, onClose, orders, t }) {
 					<Button
 						onClick={distributionType ? handleDistribute : onClose}
 						className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600"
-						disabled={distributionType === "normal" && (!selectedEmployee || selectedOrders.length === 0)}
+						disabled={(distributionType === "normal" && (!selectedEmployee || selectedOrders.length === 0)) || assigning}
 					>
-						{distributionType ? t("distribution.distribute") : t("common.cancel")}
+						{assigning ? t("distribution.assigning") : distributionType ? t("distribution.distribute") : t("common.cancel")}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
@@ -818,144 +846,103 @@ export default function OrdersPageEnhanced() {
 
 	const [loading, setLoading] = useState(false);
 	const [stats, setStats] = useState({
-		pending_confirmation: 45,
-		confirmed: 128,
-		new: 87,
-		total: 523,
-		wrong_number: 23,
-		duplicate: 15,
-		postponed: 34,
-		delivered: 289,
-		in_shipping: 67,
-		waiting_stock: 12,
-		no_answer_shipping: 8,
-		cancelled_shipping: 19,
+		new: 0,
+		underReview: 0,
+		preparing: 0,
+		ready: 0,
+		shipped: 0,
+		delivered: 0,
+		cancelled: 0,
+		returned: 0,
 	});
-
-	const [allOrders] = useState(generateFakeOrders(50));
+	const [stores, setStores] = useState([]);
+	const [employees, setEmployees] = useState([]);
 	const [pager, setPager] = useState({
-		total_records: 50,
+		total_records: 0,
 		current_page: 1,
 		per_page: 10,
-		records: allOrders.slice(0, 10),
+		records: [],
 	});
 
+	const fetchStats = () => {
+		api.get("/orders/stats").then((res) => {
+			setStats((prev) => ({ ...prev, ...res.data }));
+		}).catch(() => {});
+	};
+
+	const fetchList = (page = pager.current_page, perPage = pager.per_page, filterOverrides = null) => {
+		setLoading(true);
+		const f = filterOverrides ?? filters;
+		const params = {
+			page,
+			limit: perPage,
+			search: search.trim() || undefined,
+			status: f.status !== "all" ? f.status : undefined,
+			paymentStatus: f.paymentStatus !== "all" ? f.paymentStatus : undefined,
+			storeId: f.store && f.store !== "all" ? Number(f.store) : undefined,
+			assignedToUserId: f.employee && f.employee !== "all" ? (f.employee === "unassigned" ? "unassigned" : Number(f.employee)) : undefined,
+			startDate: f.startDate || undefined,
+			endDate: f.endDate || undefined,
+		};
+		api.get("/orders", { params })
+			.then((res) => {
+				setPager({
+					total_records: res.data.total_records ?? 0,
+					current_page: res.data.current_page ?? 1,
+					per_page: res.data.per_page ?? 10,
+					records: res.data.records ?? [],
+				});
+			})
+			.catch(() => setPager((prev) => ({ ...prev, records: [] })))
+			.finally(() => setLoading(false));
+	};
+
+	useEffect(() => {
+		fetchStats();
+	}, []);
+
+	useEffect(() => {
+		fetchList(pager.current_page, pager.per_page);
+	}, [filters, search]);
+
+	useEffect(() => {
+		Promise.all([
+			api.get("/lookups/stores", { params: { limit: 200 } }).then((r) => setStores(Array.isArray(r.data) ? r.data : [])),
+			api.get("/lookups/users", { params: { limit: 100 } }).then((r) => setEmployees(Array.isArray(r.data) ? r.data : [])),
+		]).catch(() => {});
+	}, []);
+
+	const totalOrders = (stats.new ?? 0) + (stats.underReview ?? 0) + (stats.preparing ?? 0) + (stats.ready ?? 0) + (stats.shipped ?? 0) + (stats.delivered ?? 0) + (stats.cancelled ?? 0) + (stats.returned ?? 0);
 	const statsCards = useMemo(
 		() => [
-			{
-				title: t("stats.pendingConfirmation"),
-				value: String(stats.pending_confirmation),
-				icon: AlertCircle,
-				bg: "bg-[#FFF3E0] dark:bg-[#1A1108]",
-				iconColor: "text-[#FF9800] dark:text-[#FFB74D]",
-				iconBorder: "border-[#FF9800] dark:border-[#FFB74D]",
-			},
-			{
-				title: t("stats.confirmed"),
-				value: String(stats.confirmed),
-				icon: CheckCircle,
-				bg: "bg-[#E8F5E9] dark:bg-[#0E1A0C]",
-				iconColor: "text-[#4CAF50] dark:text-[#81C784]",
-				iconBorder: "border-[#4CAF50] dark:border-[#81C784]",
-			},
-			{
-				title: t("stats.new"),
-				value: String(stats.new),
-				icon: Package,
-				bg: "bg-[#E3F2FD] dark:bg-[#0A1220]",
-				iconColor: "text-[#2196F3] dark:text-[#64B5F6]",
-				iconBorder: "border-[#2196F3] dark:border-[#64B5F6]",
-			},
-			{
-				title: t("stats.total"),
-				value: String(stats.total),
-				icon: TrendingUp,
-				bg: "bg-[#F3E5F5] dark:bg-[#1A0E1F]",
-				iconColor: "text-[#9C27B0] dark:text-[#BA68C8]",
-				iconBorder: "border-[#9C27B0] dark:border-[#BA68C8]",
-			},
-			{
-				title: t("stats.wrongNumber"),
-				value: String(stats.wrong_number),
-				icon: Phone,
-				bg: "bg-[#FFEBEE] dark:bg-[#1F0A0A]",
-				iconColor: "text-[#F44336] dark:text-[#EF5350]",
-				iconBorder: "border-[#F44336] dark:border-[#EF5350]",
-			},
-			{
-				title: t("stats.duplicate"),
-				value: String(stats.duplicate),
-				icon: Copy,
-				bg: "bg-[#FFF8E1] dark:bg-[#1A1608]",
-				iconColor: "text-[#FFC107] dark:text-[#FFD54F]",
-				iconBorder: "border-[#FFC107] dark:border-[#FFD54F]",
-			},
-			{
-				title: t("stats.postponed"),
-				value: String(stats.postponed),
-				icon: Clock,
-				bg: "bg-[#E0F2F1] dark:bg-[#0A1A18]",
-				iconColor: "text-[#009688] dark:text-[#4DB6AC]",
-				iconBorder: "border-[#009688] dark:border-[#4DB6AC]",
-			},
-			{
-				title: t("stats.delivered"),
-				value: String(stats.delivered),
-				icon: CheckCircle,
-				bg: "bg-[#E8F5E9] dark:bg-[#0E1A0C]",
-				iconColor: "text-[#4CAF50] dark:text-[#81C784]",
-				iconBorder: "border-[#4CAF50] dark:border-[#81C784]",
-			},
-			{
-				title: t("stats.inShipping"),
-				value: String(stats.in_shipping),
-				icon: Truck,
-				bg: "bg-[#E1F5FE] dark:bg-[#0A1820]",
-				iconColor: "text-[#03A9F4] dark:text-[#4FC3F7]",
-				iconBorder: "border-[#03A9F4] dark:border-[#4FC3F7]",
-			},
-			{
-				title: t("stats.waitingStock"),
-				value: String(stats.waiting_stock),
-				icon: Package,
-				bg: "bg-[#FFF3E0] dark:bg-[#1A1108]",
-				iconColor: "text-[#FF9800] dark:text-[#FFB74D]",
-				iconBorder: "border-[#FF9800] dark:border-[#FFB74D]",
-			},
-			{
-				title: t("stats.noAnswerShipping"),
-				value: String(stats.no_answer_shipping),
-				icon: AlertCircle,
-				bg: "bg-[#FCE4EC] dark:bg-[#1F0A14]",
-				iconColor: "text-[#E91E63] dark:text-[#F06292]",
-				iconBorder: "border-[#E91E63] dark:border-[#F06292]",
-			},
-			{
-				title: t("stats.cancelledShipping"),
-				value: String(stats.cancelled_shipping),
-				icon: XCircle,
-				bg: "bg-[#FFEBEE] dark:bg-[#1F0A0A]",
-				iconColor: "text-[#F44336] dark:text-[#EF5350]",
-				iconBorder: "border-[#F44336] dark:border-[#EF5350]",
-			},
+			{ title: t("stats.new"), value: String(stats.new ?? 0), icon: Package, bg: "bg-[#E3F2FD] dark:bg-[#0A1220]", iconColor: "text-[#2196F3] dark:text-[#64B5F6]", iconBorder: "border-[#2196F3] dark:border-[#64B5F6]" },
+			{ title: t("stats.underReview"), value: String(stats.underReview ?? 0), icon: AlertCircle, bg: "bg-[#FFF3E0] dark:bg-[#1A1108]", iconColor: "text-[#FF9800] dark:text-[#FFB74D]", iconBorder: "border-[#FF9800] dark:border-[#FFB74D]" },
+			{ title: t("stats.preparing"), value: String(stats.preparing ?? 0), icon: Package, bg: "bg-[#E0F2F1] dark:bg-[#0A1A18]", iconColor: "text-[#009688] dark:text-[#4DB6AC]", iconBorder: "border-[#009688] dark:border-[#4DB6AC]" },
+			{ title: t("stats.ready"), value: String(stats.ready ?? 0), icon: CheckCircle, bg: "bg-[#E8F5E9] dark:bg-[#0E1A0C]", iconColor: "text-[#4CAF50] dark:text-[#81C784]", iconBorder: "border-[#4CAF50] dark:border-[#81C784]" },
+			{ title: t("stats.shipped"), value: String(stats.shipped ?? 0), icon: Truck, bg: "bg-[#E1F5FE] dark:bg-[#0A1820]", iconColor: "text-[#03A9F4] dark:text-[#4FC3F7]", iconBorder: "border-[#03A9F4] dark:border-[#4FC3F7]" },
+			{ title: t("stats.delivered"), value: String(stats.delivered ?? 0), icon: CheckCircle, bg: "bg-[#E8F5E9] dark:bg-[#0E1A0C]", iconColor: "text-[#4CAF50] dark:text-[#81C784]", iconBorder: "border-[#4CAF50] dark:border-[#81C784]" },
+			{ title: t("stats.cancelled"), value: String(stats.cancelled ?? 0), icon: XCircle, bg: "bg-[#FFEBEE] dark:bg-[#1F0A0A]", iconColor: "text-[#F44336] dark:text-[#EF5350]", iconBorder: "border-[#F44336] dark:border-[#EF5350]" },
+			{ title: t("stats.returned"), value: String(stats.returned ?? 0), icon: RefreshCw, bg: "bg-[#FFF8E1] dark:bg-[#1A1608]", iconColor: "text-[#FFC107] dark:text-[#FFD54F]", iconBorder: "border-[#FFC107] dark:border-[#FFD54F]" },
+			{ title: t("stats.total"), value: String(totalOrders), icon: TrendingUp, bg: "bg-[#F3E5F5] dark:bg-[#1A0E1F]", iconColor: "text-[#9C27B0] dark:text-[#BA68C8]", iconBorder: "border-[#9C27B0] dark:border-[#BA68C8]" },
 		],
 		[t, stats]
 	);
 
 	const handlePageChange = ({ page, per_page }) => {
-		const start = (page - 1) * per_page;
-		const end = start + per_page;
-		setPager({
-			...pager,
-			current_page: page,
-			per_page,
-			records: allOrders.slice(start, end),
-		});
+		setPager((prev) => ({ ...prev, current_page: page, per_page }));
+		fetchList(page, per_page);
 	};
 
 	const applyFilters = () => {
+		fetchList(1, pager.per_page);
 		toast.success(t("messages.filtersApplied"));
 	};
+
+	const employeeMap = useMemo(() => {
+		const m = {};
+		(employees || []).forEach((e) => { m[e.id] = e.name || e.label; });
+		return m;
+	}, [employees]);
 
 	const handleExport = () => {
 		toast.success(t("messages.exportStarted"));
@@ -964,18 +951,26 @@ export default function OrdersPageEnhanced() {
 	const getStatusBadge = (status) => {
 		const styles = {
 			new: "bg-blue-100 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400",
-			confirmed: "bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-400",
-			pending_confirmation: "bg-orange-100 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400",
-			wrong_number: "bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400",
-			duplicate: "bg-yellow-100 text-yellow-700 dark:bg-yellow-950/30 dark:text-yellow-400",
-			postponed: "bg-teal-100 text-teal-700 dark:bg-teal-950/30 dark:text-teal-400",
+			under_review: "bg-orange-100 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400",
+			preparing: "bg-teal-100 text-teal-700 dark:bg-teal-950/30 dark:text-teal-400",
+			ready: "bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-400",
+			shipped: "bg-blue-100 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400",
 			delivered: "bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-400",
-			in_shipping: "bg-blue-100 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400",
-			waiting_stock: "bg-orange-100 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400",
-			no_answer_shipping: "bg-pink-100 text-pink-700 dark:bg-pink-950/30 dark:text-pink-400",
-			cancelled_shipping: "bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400",
+			cancelled: "bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400",
+			returned: "bg-yellow-100 text-yellow-700 dark:bg-yellow-950/30 dark:text-yellow-400",
 		};
 		return styles[status] || styles.new;
+	};
+
+	const handleStatusChange = async (orderId, newStatus) => {
+		try {
+			await api.patch(`/orders/${orderId}/status`, { status: newStatus });
+			toast.success(t("messages.statusUpdated"));
+			fetchList(pager.current_page, pager.per_page);
+			fetchStats();
+		} catch (err) {
+			toast.error(err.response?.data?.message || t("messages.statusUpdateFailed"));
+		}
 	};
 
 	const columns = useMemo(() => {
@@ -992,7 +987,7 @@ export default function OrdersPageEnhanced() {
 				header: t("table.assignedEmployee"),
 				cell: (row) => (
 					<span className="text-gray-700 dark:text-slate-200">
-						{row.assignedEmployee || t("table.notAssigned")}
+						{row.assignedToUserId ? (employeeMap[row.assignedToUserId] ?? row.assignedToUserId) : t("table.notAssigned")}
 					</span>
 				),
 			},
@@ -1020,8 +1015,10 @@ export default function OrdersPageEnhanced() {
 				header: t("table.products"),
 				cell: (row) => (
 					<div className="text-sm">
-						{row.products.map((p, i) => (
-							<div key={i}>{p.name} (x{p.quantity})</div>
+						{(row.items || []).map((item, i) => (
+							<div key={i}>
+								{item.variant?.product?.name || item.variant?.sku || "-"} (x{item.quantity})
+							</div>
 						))}
 					</div>
 				),
@@ -1031,7 +1028,7 @@ export default function OrdersPageEnhanced() {
 				header: t("table.shippingCost"),
 				cell: (row) => (
 					<span className="text-gray-600 dark:text-slate-200">
-						{row.shippingCost} {t("currency")}
+						{row.shippingCost ?? 0} {t("currency")}
 					</span>
 				),
 			},
@@ -1048,15 +1045,19 @@ export default function OrdersPageEnhanced() {
 				key: "confirmStatus",
 				header: t("table.confirmOrder"),
 				cell: (row) => (
-					<Select defaultValue={row.status}>
+					<Select value={row.status} onValueChange={(v) => handleStatusChange(row.id, v)}>
 						<SelectTrigger className="w-[150px] h-8">
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
 							<SelectItem value="new">{t("statuses.new")}</SelectItem>
-							<SelectItem value="confirmed">{t("statuses.confirmed")}</SelectItem>
-							<SelectItem value="pending_confirmation">{t("statuses.pendingConfirmation")}</SelectItem>
-							<SelectItem value="cancelled_shipping">{t("statuses.cancelledShipping")}</SelectItem>
+							<SelectItem value="under_review">{t("statuses.underReview")}</SelectItem>
+							<SelectItem value="preparing">{t("statuses.preparing")}</SelectItem>
+							<SelectItem value="ready">{t("statuses.ready")}</SelectItem>
+							<SelectItem value="shipped">{t("statuses.shipped")}</SelectItem>
+							<SelectItem value="delivered">{t("statuses.delivered")}</SelectItem>
+							<SelectItem value="cancelled">{t("statuses.cancelled")}</SelectItem>
+							<SelectItem value="returned">{t("statuses.returned")}</SelectItem>
 						</SelectContent>
 					</Select>
 				),
@@ -1066,7 +1067,7 @@ export default function OrdersPageEnhanced() {
 				header: t("table.trackingCode"),
 				cell: (row) => (
 					<span className="font-mono text-xs bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded">
-						{row.trackingCode}
+						{row.trackingNumber || "—"}
 					</span>
 				),
 			},
@@ -1106,18 +1107,11 @@ export default function OrdersPageEnhanced() {
 				),
 			},
 			{
-				key: "deposit",
-				header: t("table.deposit"),
-				cell: (row) => (
-					<span className="text-sm">{row.deposit} {t("currency")}</span>
-				),
-			},
-			{
-				key: "amountReceived",
-				header: t("table.amountReceived"),
+				key: "finalTotal",
+				header: t("table.finalTotal"),
 				cell: (row) => (
 					<span className="text-sm font-semibold text-green-600">
-						{row.amountReceived} {t("currency")}
+						{row.finalTotal ?? 0} {t("currency")}
 					</span>
 				),
 			},
@@ -1142,7 +1136,7 @@ export default function OrdersPageEnhanced() {
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="start">
 							<DropdownMenuItem
-								onClick={() => router.push(`/orders/${row.id}`)}
+								onClick={() => router.push(`/orders/show/${row.id}`)}
 								className="flex items-center gap-2"
 							>
 								<Eye size={16} />
@@ -1165,7 +1159,7 @@ export default function OrdersPageEnhanced() {
 				),
 			},
 		];
-	}, [t, router]);
+	}, [t, router, employeeMap, handleStatusChange]);
 
 	return (
 		<div className="min-h-screen p-6">
@@ -1237,6 +1231,8 @@ export default function OrdersPageEnhanced() {
 							value={filters}
 							onChange={setFilters}
 							onApply={applyFilters}
+							stores={stores}
+							employees={employees}
 						/>
 					)}
 				</AnimatePresence>
@@ -1260,8 +1256,10 @@ export default function OrdersPageEnhanced() {
 			<DistributionModal
 				isOpen={distributionOpen}
 				onClose={() => setDistributionOpen(false)}
-				orders={allOrders}
+				orders={pager.records}
+				employees={employees}
 				t={t}
+				onAssigned={() => { fetchList(pager.current_page, pager.per_page); fetchStats(); }}
 			/>
 
 

@@ -1,4 +1,4 @@
-"use client"
+"use client" 
 
 import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
@@ -53,7 +53,7 @@ function SelectTrigger({ className, size = "default", children, ...props }) {
 				[
  					"relative rtl:flex-row-reverse inline-flex w-full items-center justify-between gap-2",
  					"data-[size=default]:h-10 data-[size=sm]:h-9 data-[size=lg]:h-11 ",
-					"rounded-xl border border-input bg-background/60",
+					"rounded-md border border-input bg-background/60",
 					"px-3.5 text-sm text-foreground",
 					"shadow-sm",
 					"transition-all duration-200",
@@ -69,7 +69,7 @@ function SelectTrigger({ className, size = "default", children, ...props }) {
 			{...props}
 		>
 			{/* subtle inner glow */}
-			<span className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-b from-white/30 to-transparent opacity-0 transition-opacity duration-200 dark:from-white/10 group-hover:opacity-100" />
+			<span className="pointer-events-none absolute inset-0 rounded-md bg-gradient-to-b from-white/30 to-transparent opacity-0 transition-opacity duration-200 dark:from-white/10 group-hover:opacity-100" />
 			<span className="relative  z-10 flex min-w-0   items-center">{children}</span>
 
 			<SelectPrimitive.Icon asChild>
@@ -114,8 +114,6 @@ function SelectContent({
 				position={position}
 				align={resolvedAlign}
 				sideOffset={8}
-				// ✅ IMPORTANT FIX:
-				// Use trigger width var to match dropdown to trigger width in both LTR/RTL
 				style={{
 					width: "var(--radix-select-trigger-width)",
 					minWidth: "var(--radix-select-trigger-width)",
@@ -123,15 +121,12 @@ function SelectContent({
 				className={cn(
 					[
 						"relative z-50 overflow-hidden",
-						// modern container
-						"rounded-2xl border border-border/70 bg-popover text-popover-foreground shadow-xl",
-						// animation
+						"rounded-md border !backdrop-blur-xl border-border/70 bg-popover text-popover-foreground shadow-xl",
 						"data-[state=open]:animate-in data-[state=closed]:animate-out",
 						"data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
 						"data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
 						"data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2",
 						"data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2",
-						// max height (valid token)
 						"max-h-[var(--radix-select-content-available-height)]",
 					].join(" "),
 					className
@@ -180,7 +175,7 @@ function SelectItem({
 			data-slot="select-item"
 			className={cn(
 				[
-					"group relative rtl:flex-row-reverse flex w-full cursor-default select-none items-center gap-2 rounded-xl px-3 py-2 text-sm outline-none",
+					"group relative rtl:flex-row-reverse flex w-full cursor-default select-none items-center gap-2 rounded-md px-3 py-2 text-sm outline-none",
 					"transition-colors",
 					"focus:bg-accent focus:text-accent-foreground",
 					"data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
@@ -193,7 +188,7 @@ function SelectItem({
 			<SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
 
 			{/* subtle hover highlight */}
-			<span className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-r from-primary/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+			<span className="pointer-events-none absolute inset-0 rounded-md bg-gradient-to-r from-primary/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
 		</SelectPrimitive.Item>
 	)
 }

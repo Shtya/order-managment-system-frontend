@@ -27,8 +27,8 @@
     "subItems": "عنصر فرعي",
     "newProduct": "إضافة منتج",
     "newBundle": "إضافة باقة",
-		"employeeOrders": "طلبات الموظفين",
-		"createPurchaseReturn" : "إنشاء طلب استبدال"
+    "employeeOrders": "طلبات الموظفين",
+    "createPurchaseReturn": "إنشاء طلب استبدال"
   },
   "header": {
     "brand": "طلباتي تك",
@@ -2664,6 +2664,68 @@
       "orderPostponed": "تم تأجيل الطلب",
       "draftSaved": "تم حفظ المسودة"
     }
+  }, 
+	"bulkOrders": {
+    "title": "رفع اكثر من طلبات ",
+    "description": "قم بتحميل قالب Excel، املأه بالطلبات، ثم قم برفعه هنا لإضافة عدة طلبات دفعة واحدة",
+    "steps": {
+      "downloadTemplate": "تحميل القالب",
+      "uploadFile": "رفع الملف",
+      "review": "المراجعة والرفع"
+    },
+    "template": {
+      "title": "تحميل قالب Excel",
+      "description": "قم بتحميل القالب وملء البيانات المطلوبة في كل عمود",
+      "download": "تحميل القالب",
+      "downloadSuccess": "تم تحميل القالب بنجاح"
+    },
+    "upload": {
+      "dragDrop": "اسحب وأفلت ملف Excel هنا",
+      "dropHere": "أفلت الملف هنا",
+      "orClick": "أو انقر للاختيار من جهازك",
+      "acceptedFormat": "يقبل ملفات .xlsx فقط"
+    },
+    "stats": {
+      "totalRows": "إجمالي الصفوف",
+      "validOrders": "طلبات صالحة",
+      "errors": "أخطاء"
+    },
+    "errors": {
+      "title": "الأخطاء المكتشفة",
+      "found": "خطأ",
+      "showingFirst": "عرض أول {count} خطأ فقط"
+    },
+    "validation": {
+      "row": "سطر",
+      "customerNameRequired": "اسم العميل مطلوب",
+      "phoneNumberRequired": "رقم الهاتف مطلوب",
+      "cityRequired": "المدينة مطلوبة",
+      "paymentMethodRequired": "طريقة الدفع مطلوبة",
+      "itemsRequired": "يجب أن يحتوي على منتج واحد على الأقل",
+      "itemsJsonInvalid": "صيغة المنتجات غير صحيحة (يجب أن تكون JSON صحيح)"
+    },
+    "messages": {
+      "validationFailed": "فشل التحقق من الملف",
+      "checkErrors": "يرجى مراجعة الأخطاء المدرجة أدناه",
+      "fileReady": "الملف جاهز للرفع",
+      "readyToUpload": "{count} طلب جاهز للرفع",
+      "fileReadFailed": "فشل قراءة الملف. تأكد من أنه ملف XLSX صحيح",
+      "invalidFileType": "نوع الملف غير صحيح. يرجى رفع ملف .xlsx",
+      "noValidOrders": "لا توجد طلبات صالحة للرفع",
+      "uploadSuccess": "تم رفع الطلبات بنجاح",
+      "ordersUploaded": "تم رفع {count} طلب بنجاح",
+      "uploadFailed": "فشل رفع الطلبات",
+      "allValid": "جميع الطلبات صالحة!"
+    },
+    "processing": {
+      "title": "جاري معالجة الملف...",
+      "description": "يرجى الانتظار حتى يتم التحقق من البيانات"
+    },
+    "actions": {
+      "cancel": "إلغاء",
+      "upload": "رفع الطلبات",
+      "uploading": "جاري الرفع..."
+    }
   },
   "createOrder": {
     "breadcrumb": {
@@ -2671,56 +2733,46 @@
       "orders": "الطلبات",
       "createOrder": "إنشاء طلب جديد"
     },
-    "title": "إنشاء طلب جديد",
+    "actions": {
+      "save": "حفظ الطلب",
+      "saving": "جاري الحفظ...",
+      "bulkOrders": "رفع اكثر من طلبات "
+    },
     "sections": {
       "customerInfo": "معلومات العميل",
       "paymentShipping": "الدفع والشحن",
       "addProducts": "إضافة المنتجات",
       "productsTable": "جدول المنتجات",
-      "notes": "الملاحظات",
       "orderSummary": "ملخص الطلب"
     },
     "fields": {
       "customerName": "اسم العميل",
       "phoneNumber": "رقم الهاتف",
-      "alternativePhone": "رقم هاتف بديل",
       "email": "البريد الإلكتروني",
-      "address": "العنوان",
       "city": "المدينة",
-      "area": "المنطقة",
-      "landmark": "علامة مميزة",
+      "address": "العنوان",
+      "notes": "ملاحظات",
+      "orderDate": "تاريخ الطلب",
       "paymentMethod": "طريقة الدفع",
-      "paymentStatus": "حالة الدفع",
       "shippingCompany": "شركة الشحن",
       "shippingCost": "تكلفة الشحن",
       "discount": "الخصم",
-      "deposit": "العربون",
-      "notes": "ملاحظات داخلية",
-      "customerNotes": "ملاحظات العميل"
+      "price": "المبلغ المدفوع"
     },
     "placeholders": {
       "customerName": "أدخل اسم العميل",
-      "phoneNumber": "مثال: 01234567890",
-      "alternativePhone": "رقم هاتف إضافي (اختياري)",
-      "email": "example@email.com",
-      "address": "أدخل العنوان الكامل",
+      "phoneNumber": "أدخل رقم الهاتف",
+      "email": "أدخل البريد الإلكتروني",
       "city": "أدخل المدينة",
-      "area": "أدخل المنطقة",
-      "landmark": "مثال: بجوار مسجد النور",
-      "shippingCompany": "أدخل اسم شركة الشحن",
-      "notes": "أضف ملاحظات داخلية على الطلب...",
-      "customerNotes": "أضف ملاحظات من العميل..."
+      "address": "أدخل العنوان",
+      "notes": "أدخل ملاحظات إضافية",
+      "orderDate": "اختر تاريخ الطلب"
     },
     "paymentMethods": {
       "cash": "نقدي",
-      "card": "بطاقة ائتمان",
+      "card": "بطاقة ائتمانية",
       "bankTransfer": "تحويل بنكي",
       "cod": "الدفع عند الاستلام"
-    },
-    "paymentStatuses": {
-      "pending": "معلق",
-      "paid": "مدفوع",
-      "partial": "مدفوع جزئياً"
     },
     "table": {
       "sku": "رمز المنتج",
@@ -2736,33 +2788,30 @@
       "shippingCost": "تكلفة الشحن",
       "discount": "الخصم",
       "finalTotal": "الإجمالي النهائي",
-      "deposit": "العربون المدفوع",
-      "remaining": "المبلغ المتبقي"
-    },
-    "actions": {
-      "save": "حفظ الطلب",
-      "saving": "جاري الحفظ...",
-      "cancel": "إلغاء",
-      "howToUse": "كيفية الاستخدام"
+      "price": "المبلغ المدفوع",
+      "remaining": "المبلغ المتبقي",
+      "overPaid": "زيادة في الدفع"
     },
     "validation": {
       "customerNameRequired": "اسم العميل مطلوب",
       "phoneNumberRequired": "رقم الهاتف مطلوب",
       "invalidEmail": "البريد الإلكتروني غير صحيح",
-      "addressRequired": "العنوان مطلوب",
       "cityRequired": "المدينة مطلوبة",
+      "orderDateRequired": "تاريخ الطلب مطلوب",
       "paymentMethodRequired": "طريقة الدفع مطلوبة",
+      "shippingCompanyRequired": "شركة الشحن مطلوبة عند وجود تكلفة شحن",
+      "number": "يجب أن يكون رقماً",
+      "minZero": "يجب أن يكون صفر أو أكثر",
+      "minOne": "يجب أن يكون 1 أو أكثر",
       "itemsRequired": "يجب إضافة منتج واحد على الأقل"
     },
     "messages": {
       "createSuccess": "تم إنشاء الطلب بنجاح",
-      "createFailed": "فشل إنشاء الطلب",
-      "fillRequired": "الرجاء ملء جميع الحقول المطلوبة",
-      "noProducts": "لم يتم إضافة أي منتجات"
+      "createFailed": "فشل إنشاء الطلب"
     },
-    "currency": "جنيه"
+    "currency": "ر.س"
   },
-	"employeeOrders": {
+  "employeeOrders": {
     "title": "طلباتي",
     "breadcrumb": {
       "home": "الرئيسية",
@@ -2803,7 +2852,13 @@
       "previousDay": "اليوم السابق",
       "nextDay": "اليوم التالي"
     }
+  },
+  "orderDatePicker": {
+    "date": {
+      "label": "تاريخ الطلب",
+      "placeholder": "اختر التاريخ",
+      "helper": "اختر تاريخًا صحيحًا من التقويم",
+      "required": "تاريخ الطلب مطلوب"
+    }
   }
-
-
 }

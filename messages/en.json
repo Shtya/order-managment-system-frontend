@@ -757,11 +757,25 @@
     },
     "stats": {
       "new": "New",
-      "pending": "In Progress",
+      "underReview": "Under Review",
+      "preparing": "Preparing",
+      "ready": "Ready",
       "shipped": "Shipped",
       "delivered": "Delivered",
       "returned": "Returned",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "total": "Total"
+    },
+    "statuses": {
+      "new": "New",
+      "under_review": "Under Review",
+      "underReview": "Under Review",
+      "preparing": "Preparing",
+      "ready": "Ready",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled",
+      "returned": "Returned"
     },
     "toolbar": {
       "searchPlaceholder": "Search for what you want.....",
@@ -788,7 +802,8 @@
       "orderTypeNormal": "Normal Orders",
       "orderStatus": "Order Status",
       "orderStatusPlaceholder": "In Progress",
-      "apply": "Apply"
+      "apply": "Apply",
+      "unassigned": "Unassigned"
     },
     "table": {
       "orderCode": "Order Code",
@@ -812,7 +827,32 @@
       "allowExchange": "Allow Exchange",
       "allowOpenProduct": "Allow Opening Product",
       "lastUpdate": "Last Update",
-      "store": "Store"
+      "store": "Store",
+      "finalTotal": "Final Total",
+      "notAssigned": "Not assigned",
+      "trackingCode": "Tracking Code"
+    },
+    "bulkUpload": {
+      "row": "Row",
+      "requiredFields": "Required fields missing",
+      "invalidJson": "invalid",
+      "itemsRequired": "At least one item required",
+      "fileReady": "{{count}} orders ready",
+      "noValidOrders": "No valid orders",
+      "ordersCreated": "created",
+      "templateError": "Template error",
+      "validationErrors": "validation errors",
+      "fileReadFailed": "Failed to read file",
+      "orders": "orders"
+    },
+    "distribution": {
+      "assignFailed": "Assign failed",
+      "assigning": "Assigning...",
+      "selectEmployees": "Select employees"
+    },
+    "messages": {
+      "statusUpdated": "Status updated",
+      "statusUpdateFailed": "Status update failed"
     },
     "actions": {
       "howToUse": "Usage Guide",

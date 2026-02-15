@@ -128,58 +128,42 @@ const generateFakeOrders = (count = 50) => {
 	}));
 };
 
-// Bulk Upload Modal
-function BulkUploadModal({ isOpen, onClose }) {
+// Bulk Upload Modal – template matches CreateOrderDto (no IDs); backend resolves SKU → variantId, shipping name → id
+function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 	const t = useTranslations("orders");
 	const [file, setFile] = useState(null);
 	const [uploading, setUploading] = useState(false);
+	const [downloadLoading, setDownloadLoading] = useState(false);
 
-	const handleDownloadTemplate = () => {
-		// Create CSV template
-		const headers = [
-			"اسم العميل",
-			"رقم الهاتف",
-			"رقم بديل",
-			"المدينة",
-			"المنطقة",
-			"العنوان",
-			"اسم المنتج",
-			"الكمية",
-			"السعر",
-			"تكلفة الشحن",
-			"طريقة الدفع",
-			"ملاحظات"
-		].join(",");
-
-		const exampleRow = [
-			"أحمد محمد",
-			"01234567890",
-			"01098765432",
-			"القاهرة",
-			"المعادي",
-			"شارع 9 - مبنى 15",
-			"خاتم فضة",
-			"2",
-			"350",
-			"50",
-			"cod",
-			"يفضل التواصل مساءً"
-		].join(",");
-
-		const csvContent = `${headers}\n${exampleRow}`;
-		const blob = new Blob(["\ufeff" + csvContent], { type: "text/csv;charset=utf-8;" });
-		const link = document.createElement("a");
-		link.href = URL.createObjectURL(blob);
-		link.download = "orders_template.csv";
-		link.click();
-
-		toast.success(t("bulkUpload.templateDownloaded"));
+	const handleDownloadTemplate = async () => {
+		setDownloadLoading(true);
+		try {
+			const res = await api.get("/orders/bulk/template", { responseType: "blob" });
+			const blob = new Blob([res.data], {
+				type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+			});
+			const url = URL.createObjectURL(blob);
+			const link = document.createElement("a");
+			link.href = url;
+			link.download = "orders_bulk_template.xlsx";
+			link.click();
+			URL.revokeObjectURL(url);
+			toast.success(t("bulkUpload.templateDownloaded"));
+		} catch (err) {
+			console.error(err);
+			toast.error(err.response?.data?.message || t("bulkUpload.templateDownloadFailed"));
+		} finally {
+			setDownloadLoading(false);
+		}
 	};
 
 	const handleFileChange = (e) => {
 		const selectedFile = e.target.files[0];
 		if (selectedFile) {
-			if (selectedFile.type === "text/csv" || selectedFile.name.endsWith(".csv")) {
+			const isXlsx =
+				selectedFile.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+				selectedFile.name.endsWith(".xlsx");
+			if (isXlsx) {
 				setFile(selectedFile);
 			} else {
 				toast.error(t("bulkUpload.invalidFileType"));
@@ -194,14 +178,36 @@ function BulkUploadModal({ isOpen, onClose }) {
 		}
 
 		setUploading(true);
+		try {
+			const formData = new FormData();
+			formData.append("file", file);
+			const res = await api.post("/orders/bulk", formData, {
+				headers: { "Content-Type": "multipart/form-data" },
+			});
+			const data = res.data || {};
+			const created = data.created ?? 0;
+			const failed = data.failed ?? 0;
+			const errors = data.errors ?? [];
 
-		// Simulate upload
-		setTimeout(() => {
+			if (created > 0) {
+				toast.success(t("bulkUpload.uploadSuccessCount", { count: created }));
+				onSuccess?.();
+				setFile(null);
+				onClose();
+			}
+			if (failed > 0 && errors.length > 0) {
+				errors.slice(0, 5).forEach((e) => toast.error(`${e.orderRef}: ${e.message}`));
+				if (errors.length > 5) toast.error(t("bulkUpload.moreErrors", { count: errors.length - 5 }));
+			}
+			if (created === 0 && failed > 0) {
+				toast.error(t("bulkUpload.uploadNoCreated"));
+			}
+		} catch (err) {
+			console.error(err);
+			toast.error(err.response?.data?.message || t("bulkUpload.uploadFailed"));
+		} finally {
 			setUploading(false);
-			toast.success(t("bulkUpload.uploadSuccess"));
-			setFile(null);
-			onClose();
-		}, 2000);
+		}
 	};
 
 	return (
@@ -233,9 +239,14 @@ function BulkUploadModal({ isOpen, onClose }) {
 								</p>
 								<Button
 									onClick={handleDownloadTemplate}
+									disabled={downloadLoading}
 									className="rounded-xl bg-gradient-to-r from-blue-500 to-cyan-600 flex items-center gap-2"
 								>
-									<FileSpreadsheet size={18} />
+									{downloadLoading ? (
+										<RefreshCw size={18} className="animate-spin" />
+									) : (
+										<FileSpreadsheet size={18} />
+									)}
 									{t("bulkUpload.downloadTemplate")}
 								</Button>
 							</div>
@@ -273,7 +284,7 @@ function BulkUploadModal({ isOpen, onClose }) {
 									<input
 										type="file"
 										id="file-upload"
-										accept=".csv"
+										accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 										onChange={handleFileChange}
 										className="hidden"
 									/>
@@ -328,8 +339,16 @@ function OrdersTableToolbar({
 	onToggleDistribution,
 	onBulkUpload,
 	isFiltersOpen,
+	onSearch,
 }) {
 	const t = useTranslations("orders");
+
+	const handleKeyDown = (e) => {
+		if (e.key === "Enter") {
+			e.preventDefault();
+			onSearch?.();
+		}
+	};
 
 	return (
 		<div className="flex items-center justify-between gap-4 flex-wrap">
@@ -337,6 +356,7 @@ function OrdersTableToolbar({
 				<Input
 					value={searchValue}
 					onChange={(e) => onSearchChange?.(e.target.value)}
+					onKeyDown={handleKeyDown}
 					placeholder={t("toolbar.searchPlaceholder")}
 					className="rtl:pr-10 h-[40px] ltr:pl-10 rounded-full bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700"
 				/>
@@ -387,37 +407,8 @@ function OrdersTableToolbar({
 }
 
 // Filters Panel Component (keeping the same as before)
-function FiltersPanel({ value, onChange, onApply }) {
+function FiltersPanel({ value, onChange, onApply, stores = [], shippingCompanies = [], statuses = [] }) {
 	const t = useTranslations("orders");
-	const [products] = useState([
-		{ value: "ring", label: t("filters.products.ring") },
-		{ value: "necklace", label: t("filters.products.necklace") },
-		{ value: "bracelet", label: t("filters.products.bracelet") },
-		{ value: "earring", label: t("filters.products.earring") }
-	]);
-
-	const [employees] = useState([
-		{ value: "emp1", label: "أحمد محمد" },
-		{ value: "emp2", label: "فاطمة علي" },
-		{ value: "emp3", label: "محمود حسن" }
-	]);
-
-	const [areas] = useState([
-		{ value: "cairo", label: t("filters.areas.cairo") },
-		{ value: "alex", label: t("filters.areas.alex") },
-		{ value: "giza", label: t("filters.areas.giza") }
-	]);
-
-	const [stores] = useState([
-		{ value: "store1", label: t("filters.stores.main") },
-		{ value: "store2", label: t("filters.stores.branch") }
-	]);
-
-	const [shippingCompanies] = useState([
-		{ value: "aramex", label: "أرامكس" },
-		{ value: "fedex", label: "فيدكس" },
-		{ value: "dhl", label: "DHL" }
-	]);
 
 	return (
 		<motion.div
@@ -436,10 +427,20 @@ function FiltersPanel({ value, onChange, onApply }) {
 							</SelectTrigger>
 							<SelectContent className="bg-card-select">
 								<SelectItem value="all">{t("filters.all")}</SelectItem>
-								<SelectItem value="new">{t("statuses.new")}</SelectItem>
-								<SelectItem value="confirmed">{t("statuses.confirmed")}</SelectItem>
-								<SelectItem value="pending_confirmation">{t("statuses.pendingConfirmation")}</SelectItem>
-								<SelectItem value="cancelled_shipping">{t("statuses.cancelledShipping")}</SelectItem>
+								{Array.isArray(statuses) && statuses.length > 0 ? (
+									statuses.map(s => (
+										<SelectItem key={s.code || s.id} value={s.code || String(s.id)}>
+											{s.system ? t(`statuses.${s.code}`) : (s.name || s.code)}
+										</SelectItem>
+									))
+								) : (
+									<>
+										<SelectItem value="new">{t("statuses.new")}</SelectItem>
+										<SelectItem value="confirmed">{t("statuses.confirmed")}</SelectItem>
+										<SelectItem value="pending_confirmation">{t("statuses.pendingConfirmation")}</SelectItem>
+										<SelectItem value="cancelled_shipping">{t("statuses.cancelledShipping")}</SelectItem>
+									</>
+								)}
 							</SelectContent>
 						</Select>
 					</div>
@@ -462,7 +463,7 @@ function FiltersPanel({ value, onChange, onApply }) {
 						</Select>
 					</div>
 
-					<div className="space-y-2">
+					{/* <div className="space-y-2">
 						<Label>{t("filters.employee")}</Label>
 						<Select
 							value={value.employee}
@@ -478,7 +479,7 @@ function FiltersPanel({ value, onChange, onApply }) {
 								))}
 							</SelectContent>
 						</Select>
-					</div>
+					</div> */}
 
 					<div className="space-y-2">
 						<Label>{t("filters.date")}</Label>
@@ -547,8 +548,10 @@ function FiltersPanel({ value, onChange, onApply }) {
 							</SelectTrigger>
 							<SelectContent className="bg-card-select">
 								<SelectItem value="all">{t("filters.all")}</SelectItem>
-								{stores.map(store => (
-									<SelectItem key={store.value} value={store.value}>{store.label}</SelectItem>
+								{(stores || []).map((store) => (
+									<SelectItem key={store.id ?? store.value} value={String(store.id ?? store.value)}>
+										{store.name ?? store.label}
+									</SelectItem>
 								))}
 							</SelectContent>
 						</Select>
@@ -565,8 +568,10 @@ function FiltersPanel({ value, onChange, onApply }) {
 							</SelectTrigger>
 							<SelectContent className="bg-card-select">
 								<SelectItem value="all">{t("filters.all")}</SelectItem>
-								{shippingCompanies.map(company => (
-									<SelectItem key={company.value} value={company.value}>{company.label}</SelectItem>
+								{(shippingCompanies || []).map((c) => (
+									<SelectItem key={c.id ?? c.value} value={String(c.id ?? c.value)}>
+										{c.name ?? c.label}
+									</SelectItem>
 								))}
 							</SelectContent>
 						</Select>
@@ -815,6 +820,8 @@ export default function OrdersPageEnhanced() {
 	const [editingStatus, setEditingStatus] = useState(null);
 	const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 	const [deletingStatus, setDeletingStatus] = useState(null);
+	const [deleteOrderModalOpen, setDeleteOrderModalOpen] = useState(false);
+	const [deletingOrder, setDeletingOrder] = useState(null);
 
 	const [search, setSearch] = useState("");
 	const [filtersOpen, setFiltersOpen] = useState(false);
@@ -836,15 +843,20 @@ export default function OrdersPageEnhanced() {
 	const [loading, setLoading] = useState(false);
 	const [statsLoading, setStatsLoading] = useState(true);
 	const [stats, setStats] = useState([]);
-	const [allOrders] = useState(generateFakeOrders(50));
+	const [orders, setOrders] = useState([]);
 	const [pager, setPager] = useState({
-		total_records: 50,
+		total_records: 0,
 		current_page: 1,
-		per_page: 10,
-		records: allOrders.slice(0, 10),
+		per_page: 12,
+		records: [],
 	});
+	const [storesList, setStoresList] = useState([]);
+	const [shippingCompaniesList, setShippingCompaniesList] = useState([]);
+	const [ordersLoading, setOrdersLoading] = useState(false);
 	useEffect(() => {
 		fetchStats();
+		fetchLookups();
+		fetchOrders();
 	}, []);
 
 
@@ -858,6 +870,59 @@ export default function OrdersPageEnhanced() {
 			toast.error(t("messages.errorFetchingStats"));
 		} finally {
 			setStatsLoading(false);
+		}
+	};
+
+	const fetchLookups = async () => {
+		try {
+			const [storesRes, shippingRes] = await Promise.all([
+				api.get('/lookups/stores', { params: { limit: 200, isActive: true } }),
+				api.get('/shipping-companies', { params: { limit: 200, isActive: true } }),
+			]);
+
+			setStoresList(Array.isArray(storesRes.data) ? storesRes.data : (storesRes.data?.records || []));
+			setShippingCompaniesList(Array.isArray(shippingRes.data?.records) ? shippingRes.data.records : (Array.isArray(shippingRes.data) ? shippingRes.data : []));
+		} catch (e) {
+			console.error('Error fetching lookups', e);
+		}
+	};
+
+	const buildParams = (page = pager.current_page, per_page = pager.per_page) => {
+		const params = {
+			page,
+			limit: per_page,
+		};
+
+		if (search) params.search = search;
+		if (filters.status && filters.status !== 'all') params.status = filters.status;
+		if (filters.paymentStatus && filters.paymentStatus !== 'all') params.paymentStatus = filters.paymentStatus;
+		if (filters.paymentMethod && filters.paymentMethod !== 'all') params.paymentMethod = filters.paymentMethod;
+		if (filters.startDate) params.startDate = filters.startDate;
+		if (filters.endDate) params.endDate = filters.endDate;
+		if (filters.shippingCompany && filters.shippingCompany !== 'all') params.shippingCompanyId = filters.shippingCompany;
+		if (filters.store && filters.store !== 'all') params.storeId = filters.store;
+
+		return params;
+	};
+
+	const fetchOrders = async (page = pager.current_page, per_page = pager.per_page) => {
+		try {
+			setOrdersLoading(true);
+			const params = buildParams(page, per_page);
+			const res = await api.get('/orders', { params });
+			const data = res.data || {};
+			setPager({
+				total_records: data.total_records || 0,
+				current_page: data.current_page || page,
+				per_page: data.per_page || per_page,
+				records: Array.isArray(data.records) ? data.records : [],
+			});
+			setOrders(Array.isArray(data.records) ? data.records : []);
+		} catch (e) {
+			console.error('Error fetching orders', e);
+			toast.error(t('messages.errorFetchingOrders'));
+		} finally {
+			setOrdersLoading(false);
 		}
 	};
 
@@ -960,22 +1025,90 @@ export default function OrdersPageEnhanced() {
 	}, [stats]);
 
 	const handlePageChange = ({ page, per_page }) => {
-		const start = (page - 1) * per_page;
-		const end = start + per_page;
-		setPager({
-			...pager,
-			current_page: page,
-			per_page,
-			records: allOrders.slice(start, end),
-		});
+		// Request server for the requested page
+		fetchOrders(page, per_page);
 	};
 
 	const applyFilters = () => {
+		// Apply filters and refresh orders from page 1
 		toast.success(t("messages.filtersApplied"));
+		fetchOrders(1, pager.per_page);
 	};
 
-	const handleExport = () => {
-		toast.success(t("messages.exportStarted"));
+	const handleExport = async () => {
+		try {
+			toast.loading(t("messages.exportStarted"));
+
+			// Build export params (same as list but without pagination)
+			const params = {};
+			if (search) params.search = search;
+			if (filters.status && filters.status !== 'all') params.status = filters.status;
+			if (filters.paymentStatus && filters.paymentStatus !== 'all') params.paymentStatus = filters.paymentStatus;
+			if (filters.paymentMethod && filters.paymentMethod !== 'all') params.paymentMethod = filters.paymentMethod;
+			if (filters.startDate) params.startDate = filters.startDate;
+			if (filters.endDate) params.endDate = filters.endDate;
+			if (filters.shippingCompany && filters.shippingCompany !== 'all') params.shippingCompanyId = filters.shippingCompany;
+			if (filters.store && filters.store !== 'all') params.storeId = filters.store;
+
+			const response = await api.get('/orders/export', {
+				params,
+				responseType: 'blob', // Important for file download
+			});
+
+			// Parse filename from Content-Disposition header
+			const contentDisposition = response.headers['content-disposition'];
+			let filename = `orders_export_${Date.now()}.xlsx`;
+
+			if (contentDisposition) {
+				const match = contentDisposition.match(/filename="?([^";]+)"?/);
+				if (match && match[1]) {
+					filename = match[1];
+				}
+			}
+
+			// Create download link
+			const url = window.URL.createObjectURL(new Blob([response.data], {
+				type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+			}));
+
+			const link = document.createElement('a');
+			link.href = url;
+			link.setAttribute('download', filename);
+			document.body.appendChild(link);
+			link.click();
+
+			// Cleanup
+			link.remove();
+			window.URL.revokeObjectURL(url);
+
+			toast.dismiss();
+			toast.success(t("messages.exportSuccess"));
+		} catch (error) {
+			console.error('Export failed:', error);
+			toast.dismiss();
+			toast.error(error.response?.data?.message || t("messages.exportFailed"));
+		}
+	};
+
+	// Status transition rules (mirror backend)
+	const validTransitions = {
+		new: ["under_review", "cancelled"],
+		under_review: ["preparing", "cancelled"],
+		preparing: ["ready", "cancelled"],
+		ready: ["shipped", "cancelled"],
+		shipped: ["delivered", "returned"],
+		delivered: ["returned"],
+		cancelled: [],
+		returned: [],
+	};
+
+	const [updatingStatuses, setUpdatingStatuses] = useState([]);
+
+	const setUpdating = (id, v) => {
+		setUpdatingStatuses((prev) => {
+			if (v) return Array.from(new Set(prev.concat(id)));
+			return prev.filter((x) => x !== id);
+		});
 	};
 
 	const getStatusBadge = (statusCode) => {
@@ -1013,15 +1146,15 @@ export default function OrdersPageEnhanced() {
 					<span className="text-primary font-bold font-mono">{row.orderNumber}</span>
 				),
 			},
-			{
-				key: "assignedEmployee",
-				header: t("table.assignedEmployee"),
-				cell: (row) => (
-					<span className="text-gray-700 dark:text-slate-200">
-						{row.assignedEmployee || t("table.notAssigned")}
-					</span>
-				),
-			},
+			// {
+			// 	key: "assignedEmployee",
+			// 	header: t("table.assignedEmployee"),
+			// 	cell: (row) => (
+			// 		<span className="text-gray-700 dark:text-slate-200">
+			// 			{row.assignedEmployee || t("table.notAssigned")}
+			// 		</span>
+			// 	),
+			// },
 			{
 				key: "customerName",
 				header: t("table.customerName"),
@@ -1046,8 +1179,8 @@ export default function OrdersPageEnhanced() {
 				header: t("table.products"),
 				cell: (row) => (
 					<div className="text-sm">
-						{row.products.map((p, i) => (
-							<div key={i}>{p.name} (x{p.quantity})</div>
+						{row.items.map((p, i) => (
+							<div key={i}>{p.variant.product.name} (x{p.quantity})</div>
 						))}
 					</div>
 				),
@@ -1066,42 +1199,95 @@ export default function OrdersPageEnhanced() {
 				header: t("table.status"),
 				cell: (row) => (
 					<Badge className={cn("rounded-md", getStatusBadge(row.status))}>
-						{t(`statuses.${row.status}`)}
+						{row.status.system ? t(`statuses.${row.status.code}`) : (row.status.name || row.status.code)}
 					</Badge>
 				),
 			},
 			{
 				key: "confirmStatus",
 				header: t("table.confirmOrder"),
-				cell: (row) => (
-					<Select defaultValue={row.status}>
-						<SelectTrigger className="w-[150px] h-8">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="new">{t("statuses.new")}</SelectItem>
-							<SelectItem value="confirmed">{t("statuses.confirmed")}</SelectItem>
-							<SelectItem value="pending_confirmation">{t("statuses.pendingConfirmation")}</SelectItem>
-							<SelectItem value="cancelled_shipping">{t("statuses.cancelledShipping")}</SelectItem>
-						</SelectContent>
-					</Select>
-				),
+				cell: (row) => {
+					const currentCode = row.status?.code;
+					const currentStatusId = row.status?.id;
+					return (
+						<div className="flex items-center gap-2">
+							<Select
+								defaultValue={String(currentStatusId)}
+								onValueChange={async (val) => {
+									const statusId = Number(val);
+									if (isNaN(statusId) || statusId === currentStatusId) return;
+									const toastId = toast.loading(t("messages.statusUpdating"));
+									try {
+										setUpdating(row.id, true);
+										await api.patch(`/orders/${row.id}/status`, { statusId });
+										toast.success(t("messages.statusUpdated"), { id: toastId });
+										fetchStats();
+										fetchOrders(pager.current_page, pager.per_page);
+									} catch (err) {
+										console.error(err);
+										toast.error(err.response?.data?.message || t("messages.errorUpdatingStatus"), { id: toastId });
+									} finally {
+										setUpdating(row.id, false);
+									}
+								}}
+								disabled={updatingStatuses.includes(row.id)}
+							>
+								<SelectTrigger className="w-[150px] h-8">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{(stats || []).map((s) => {
+										const isSameStatus = String(s.id) === String(row.status?.id);
+										const currentIsSystem = row.status?.system;
+										const targetCode = s.code;
+
+										// [2025-12-24] Trim: Determine if the move is allowed
+										// 1. Never allow moving to the same status
+										// 2. If current is system, target must be in validTransitions map
+										// 3. If current is NOT system, allow all moves (except to itself)
+										const isAllowed = !isSameStatus && (
+											!currentIsSystem ||
+											(validTransitions[currentCode] || []).includes(targetCode) ||
+											!s.system // Allow moving from System to any Custom status
+										);
+
+										const disabled = !isAllowed;
+										return (
+											<SelectItem key={s.id} value={String(s.id)} disabled={disabled}>
+												{s.system ? t(`statuses.${s.code}`) : (s.name || s.code)}
+											</SelectItem>
+										);
+									})}
+								</SelectContent>
+							</Select>
+						</div>
+					);
+				},
 			},
-			{
-				key: "trackingCode",
-				header: t("table.trackingCode"),
-				cell: (row) => (
-					<span className="font-mono text-xs bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded">
-						{row.trackingCode}
-					</span>
-				),
-			},
+			// {
+			// 	key: "trackingCode",
+			// 	header: t("table.trackingCode"),
+			// 	cell: (row) => (
+			// 		<span className="font-mono text-xs bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded">
+			// 			{row.trackingCode}
+			// 		</span>
+			// 	),
+			// },
 			{
 				key: "paymentMethod",
 				header: t("table.paymentMethod"),
 				cell: (row) => (
 					<Badge variant="outline">
 						{t(`paymentMethods.${row.paymentMethod}`)}
+					</Badge>
+				),
+			},
+			{
+				key: "paymentStatus",
+				header: t("table.paymentStatus"),
+				cell: (row) => (
+					<Badge variant="outline">
+						{t(`paymentStatuses.${row.paymentStatus}`)}
 					</Badge>
 				),
 			},
@@ -1128,7 +1314,7 @@ export default function OrdersPageEnhanced() {
 				key: "shippingCompany",
 				header: t("table.shippingCompany"),
 				cell: (row) => (
-					<span className="text-sm">{row.shippingCompany || "-"}</span>
+					<span className="text-sm">{row.shippingCompany?.name || "-"}</span>
 				),
 			},
 			{
@@ -1138,15 +1324,15 @@ export default function OrdersPageEnhanced() {
 					<span className="text-sm">{row.deposit} {t("currency")}</span>
 				),
 			},
-			{
-				key: "amountReceived",
-				header: t("table.amountReceived"),
-				cell: (row) => (
-					<span className="text-sm font-semibold text-green-600">
-						{row.amountReceived} {t("currency")}
-					</span>
-				),
-			},
+			// {
+			// 	key: "amountReceived",
+			// 	header: t("table.amountReceived"),
+			// 	cell: (row) => (
+			// 		<span className="text-sm font-semibold text-green-600">
+			// 			{row.amountReceived} {t("currency")}
+			// 		</span>
+			// 	),
+			// },
 			{
 				key: "updated_at",
 				header: t("table.lastUpdate"),
@@ -1182,7 +1368,14 @@ export default function OrdersPageEnhanced() {
 								{t("actions.edit")}
 							</DropdownMenuItem>
 							<DropdownMenuSeparator />
-							<DropdownMenuItem className="flex items-center gap-2 text-red-600">
+							<DropdownMenuItem
+								disabled={!['new', 'cancelled'].includes(row.status?.code)}
+								onClick={() => {
+									setDeletingOrder(row);
+									setDeleteOrderModalOpen(true);
+								}}
+								className="flex items-center gap-2 text-red-600"
+							>
 								<Trash2 size={16} />
 								{t("actions.delete")}
 							</DropdownMenuItem>
@@ -1191,7 +1384,7 @@ export default function OrdersPageEnhanced() {
 				),
 			},
 		];
-	}, [t, router]);
+	}, [t, router, stats]);
 	// const statsCards = useMemo(
 	// 	() => [
 	// 		{
@@ -1386,7 +1579,6 @@ export default function OrdersPageEnhanced() {
 
 			<div className="bg-card rounded-sm">
 				<OrdersTableToolbar
-
 					searchValue={search}
 					onSearchChange={setSearch}
 					onExport={handleExport}
@@ -1394,15 +1586,18 @@ export default function OrdersPageEnhanced() {
 					onToggleFilters={() => setFiltersOpen((v) => !v)}
 					onToggleDistribution={() => setDistributionOpen(true)}
 					onBulkUpload={() => setBulkUploadOpen(true)}
+					onSearch={applyFilters}
 				/>
 
 				<AnimatePresence>
 					{filtersOpen && (
 						<FiltersPanel
-
 							value={filters}
 							onChange={setFilters}
 							onApply={applyFilters}
+							stores={storesList}
+							shippingCompanies={shippingCompaniesList}
+							statuses={stats}
 						/>
 					)}
 				</AnimatePresence>
@@ -1418,7 +1613,7 @@ export default function OrdersPageEnhanced() {
 						}}
 						onPageChange={handlePageChange}
 						emptyState={t("empty")}
-						loading={loading}
+						loading={ordersLoading || loading}
 					/>
 				</div>
 			</div>
@@ -1426,7 +1621,7 @@ export default function OrdersPageEnhanced() {
 			<DistributionModal
 				isOpen={distributionOpen}
 				onClose={() => setDistributionOpen(false)}
-				orders={allOrders}
+				orders={pager.records}
 
 			/>
 
@@ -1440,7 +1635,10 @@ export default function OrdersPageEnhanced() {
 			<BulkUploadModal
 				isOpen={bulkUploadOpen}
 				onClose={() => setBulkUploadOpen(false)}
-
+				onSuccess={() => {
+					fetchOrders(1, pager.per_page);
+					fetchStats();
+				}}
 			/>
 
 			<StatusFormModal
@@ -1463,6 +1661,19 @@ export default function OrdersPageEnhanced() {
 				status={deletingStatus}
 				onSuccess={fetchStats}
 
+			/>
+
+			<DeleteOrderModal
+				isOpen={deleteOrderModalOpen}
+				onClose={() => {
+					setDeleteOrderModalOpen(false);
+					setDeletingOrder(null);
+				}}
+				order={deletingOrder}
+				onSuccess={() => {
+					fetchOrders(pager.current_page, pager.per_page);
+					fetchStats();
+				}}
 			/>
 		</div>
 	);
@@ -2104,7 +2315,7 @@ function DeleteStatusModal({ isOpen, onClose, status, onSuccess }) {
 							>
 								<div
 									className="w-4 h-4 rounded-full"
-									style={{ backgroundColor: status?.bgInlineLight  }}
+									style={{ backgroundColor: status?.bgInlineLight }}
 								/>
 							</div>
 							<div className="flex-1">
@@ -2169,6 +2380,160 @@ function DeleteStatusModal({ isOpen, onClose, status, onSuccess }) {
 								<>
 									<Trash2 className="mr-2 h-4 w-4" />
 									{t("deleteStatus.confirm")}
+								</>
+							)}
+						</Button>
+					</div>
+				</form>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+function DeleteOrderModal({ isOpen, onClose, order, onSuccess }) {
+	const t = useTranslations("orders");
+	const [confirmText, setConfirmText] = useState("");
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState("");
+
+	const handleDelete = async (e) => {
+		e.preventDefault();
+		setError("");
+
+		// Validate confirmation text
+		if (confirmText.trim().toLowerCase() !== order?.orderNumber?.toLowerCase()) {
+			setError(t("deleteOrder.errorMismatch"));
+			return;
+		}
+
+		try {
+			setLoading(true);
+			await api.delete(`/orders/${order.id}`);
+			toast.success(t("messages.orderDeleted"));
+			onSuccess();
+			handleClose();
+		} catch (error) {
+			console.error("Error deleting order:", error);
+			toast.error(error.response?.data?.message || t("messages.errorDeletingOrder"));
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const handleClose = () => {
+		setConfirmText("");
+		setError("");
+		onClose();
+	};
+
+	if (!order) return null;
+	const isConfirmValid = confirmText.trim().toLowerCase() === order?.orderNumber?.toLowerCase();
+
+	return (
+		<Dialog open={isOpen} onOpenChange={handleClose}>
+			<DialogContent className="max-w-lg">
+				<DialogHeader>
+					<div className="flex items-center gap-3">
+						<div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
+							<AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+						</div>
+						<div className="flex-1">
+							<DialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">
+								{t("deleteOrder.title")}
+							</DialogTitle>
+							<DialogDescription className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+								{t("deleteOrder.subtitle")}
+							</DialogDescription>
+						</div>
+					</div>
+				</DialogHeader>
+
+				<form onSubmit={handleDelete} className="space-y-4 pt-4">
+					{/* Warning message */}
+					<div className="p-4 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800">
+						<p className="text-sm text-red-800 dark:text-red-200">
+							{t("deleteOrder.warning")}
+						</p>
+						<p className="text-sm text-red-700 dark:text-red-300 mt-2 font-semibold">
+							{t("deleteOrder.orderNumber")}: <span className="font-bold">{order?.orderNumber}</span>
+						</p>
+					</div>
+
+					{/* Order details */}
+					<div className="p-4 rounded-lg bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700">
+						<div className="space-y-2">
+							<div className="flex items-center justify-between">
+								<p className="text-xs text-gray-500 dark:text-gray-400">{t("table.orderNumber")}</p>
+								<p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+									{order?.orderNumber}
+								</p>
+							</div>
+							<div className="flex items-center justify-between">
+								<p className="text-xs text-gray-500 dark:text-gray-400">{t("table.customerName")}</p>
+								<p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+									{order?.customerName}
+								</p>
+							</div>
+							<div className="flex items-center justify-between">
+								<p className="text-xs text-gray-500 dark:text-gray-400">{t("table.phoneNumber")}</p>
+								<p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+									{order?.phoneNumber}
+								</p>
+							</div>
+						</div>
+					</div>
+
+					{/* Confirmation input */}
+					<div className="space-y-2">
+						<Label className="text-sm text-gray-600 dark:text-slate-300">
+							{t("deleteOrder.confirmLabel")}
+						</Label>
+						<p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+							{t("deleteOrder.confirmHint")} <span className="font-mono font-semibold text-gray-900 dark:text-gray-100">{order?.orderNumber}</span>
+						</p>
+						<Input
+							value={confirmText}
+							onChange={(e) => {
+								setConfirmText(e.target.value);
+								setError("");
+							}}
+							placeholder={order?.orderNumber}
+							className="rounded-lg h-[45px] bg-white dark:bg-slate-800 border-2"
+							autoComplete="off"
+						/>
+						{error && (
+							<p className="text-xs text-red-500 flex items-center gap-1">
+								<AlertTriangle size={12} />
+								{error}
+							</p>
+						)}
+					</div>
+
+					{/* Action buttons */}
+					<div className="flex gap-3 pt-2">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={handleClose}
+							disabled={loading}
+							className="flex-1 h-[45px]"
+						>
+							{t("deleteOrder.cancel")}
+						</Button>
+						<Button
+							type="submit"
+							disabled={loading || !isConfirmValid}
+							className="flex-1 h-[45px] bg-red-600 hover:bg-red-700 text-white"
+						>
+							{loading ? (
+								<>
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									{t("deleteOrder.deleting")}
+								</>
+							) : (
+								<>
+									<Trash2 className="mr-2 h-4 w-4" />
+									{t("deleteOrder.confirm")}
 								</>
 							)}
 						</Button>

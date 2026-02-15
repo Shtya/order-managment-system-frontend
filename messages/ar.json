@@ -2448,7 +2448,9 @@
     "empty": "لا توجد بيانات للعرض",
     "messages": {
       "filtersApplied": "تم تطبيق الفلاتر بنجاح",
-      "exportStarted": "بدأ تصدير البيانات",
+      "exportStarted": "جاري تصدير البيانات...",
+      "exportSuccess": "تم تصدير البيانات بنجاح",
+      "exportFailed": "فشل تصدير البيانات",
       "settingsSaved": "تم حفظ الإعدادات بنجاح",
       "statusCreated": "تم إنشاء الحالة بنجاح",
       "statusUpdated": "تم تحديث الحالة بنجاح",
@@ -2456,7 +2458,24 @@
       "errorSavingStatus": "حدث خطأ أثناء حفظ الحالة",
       "errorDeletingStatus": "حدث خطأ أثناء حذف الحالة",
       "errorFetchingStats": "حدث خطأ أثناء تحميل الإحصائيات",
-      "confirmDeleteStatus": "هل أنت متأكد من حذف الحالة \"{{name}}\"؟"
+      "confirmDeleteStatus": "هل أنت متأكد من حذف الحالة \"{{name}}\"؟",
+      "orderDeleted": "تم حذف الطلب بنجاح",
+      "errorDeletingOrder": "حدث خطأ أثناء حذف الطلب",
+      "errorFetchingOrders": "حدث خطأ أثناء تحميل الطلبات",
+      "errorUpdatingStatus": "خطأ أثناء تحديث الحالة",
+      "statusUpdating": "جاري تحديث الحالة..."
+    },
+    "deleteOrder": {
+      "title": "حذف الطلب",
+      "subtitle": "هذا الإجراء لا يمكن التراجع عنه",
+      "warning": "سيؤدي حذف هذا الطلب إلى إزالة جميع بياناته نهائيًا من النظام. لا يمكن التراجع عن هذا الإجراء.",
+      "orderNumber": "رقم الطلب المراد حذفه",
+      "confirmLabel": "تأكيد الحذف",
+      "confirmHint": "اكتب رقم الطلب للتأكيد",
+      "cancel": "إلغاء",
+      "confirm": "حذف الطلب",
+      "deleting": "جاري الحذف...",
+      "errorMismatch": "رقم الطلب غير متطابق"
     },
     "stats": {
       "pendingConfirmation": "بانتظار التأكيد",
@@ -2584,6 +2603,7 @@
       "confirmOrder": "تأكيد الطلب",
       "trackingCode": "كود التتبع",
       "paymentMethod": "طريقة الدفع",
+      "paymentStatus": "حالة الدفع",
       "city": "المدينة",
       "address": "العنوان",
       "shippingCompany": "شركة الشحن",
@@ -2594,22 +2614,27 @@
     },
     "bulkUpload": {
       "title": "رفع طلبات جماعي",
-      "description": "يمكنك رفع عدد كبير من الطلبات دفعة واحدة باستخدام ملف CSV",
+      "description": "يمكنك رفع عدد كبير من الطلبات دفعة واحدة باستخدام ملف Excel (نموذج يتوافق مع إنشاء الطلب، بدون معرفات)",
       "step1Title": "تحميل النموذج",
-      "step1Description": "قم بتحميل نموذج CSV وملئه ببيانات الطلبات",
+      "step1Description": "قم بتحميل نموذج Excel وملئه ببيانات الطلبات (OrderRef، العميل، المنتج برمز SKU، الكمية، السعر، إلخ)",
       "step2Title": "إدخال البيانات",
-      "step2Description": "املأ بيانات العملاء والطلبات بدقة",
+      "step2Description": "املأ بيانات العملاء والطلبات بدقة. استخدم نفس OrderRef لجميع صفوف الطلب الواحد، وارسم رمز SKU للمنتج.",
       "step3Title": "رفع الملف",
       "step3Description": "ارفع الملف بعد الانتهاء",
       "downloadTemplate": "تحميل النموذج",
       "dragDrop": "اسحب الملف هنا أو اضغط للاختيار",
-      "supportedFormats": "الصيغة المدعومة: CSV",
+      "supportedFormats": "الصيغة المدعومة: XLSX (Excel)",
       "upload": "رفع",
       "uploading": "جارٍ الرفع...",
       "templateDownloaded": "تم تحميل النموذج بنجاح",
-      "invalidFileType": "صيغة الملف غير مدعومة",
+      "templateDownloadFailed": "فشل تحميل النموذج",
+      "invalidFileType": "صيغة الملف غير مدعومة (استخدم XLSX)",
       "noFileSelected": "يرجى اختيار ملف أولًا",
-      "uploadSuccess": "تم رفع الطلبات بنجاح"
+      "uploadSuccess": "تم رفع الطلبات بنجاح",
+      "uploadSuccessCount": "تم إنشاء {{count}} طلب بنجاح",
+      "uploadFailed": "فشل رفع الطلبات",
+      "uploadNoCreated": "لم يتم إنشاء أي طلب. تحقق من الملف والأخطاء.",
+      "moreErrors": "و {{count}} أخطاء أخرى"
     },
     "distribution": {
       "title": "توزيع الطلبات",
@@ -2738,7 +2763,11 @@
     "breadcrumb": {
       "home": "الرئيسية",
       "orders": "الطلبات",
-      "createOrder": "إنشاء طلب جديد"
+      "createOrder": "إنشاء طلب جديد",
+      "editOrder": "تعديل الطلب"
+    },
+    "common": {
+      "none": "بدون"
     },
     "title": "إنشاء طلب جديد",
     "sections": {
@@ -2776,7 +2805,7 @@
       "city": "أدخل المدينة",
       "area": "أدخل المنطقة",
       "landmark": "مثال: بجوار مسجد النور",
-      "shippingCompany": "أدخل اسم شركة الشحن",
+      "shippingCompany": "اختر شركة الشحن",
       "notes": "أضف ملاحظات داخلية على الطلب...",
       "customerNotes": "أضف ملاحظات من العميل..."
     },
@@ -2811,6 +2840,7 @@
     "actions": {
       "save": "حفظ الطلب",
       "saving": "جاري الحفظ...",
+      "update": "تحديث الطلب",
       "cancel": "إلغاء",
       "howToUse": "كيفية الاستخدام"
     },
@@ -2826,8 +2856,14 @@
     "messages": {
       "createSuccess": "تم إنشاء الطلب بنجاح",
       "createFailed": "فشل إنشاء الطلب",
+      "updateSuccess": "تم تحديث الطلب بنجاح",
+      "updateFailed": "فشل تحديث الطلب",
       "fillRequired": "الرجاء ملء جميع الحقول المطلوبة",
       "noProducts": "لم يتم إضافة أي منتجات"
+    },
+    "loading": {
+      "message": "جاري التحميل...",
+      "notFound": "الطلب غير موجود"
     },
     "currency": "جنيه"
   },

@@ -1,9 +1,9 @@
 // app/[locale]/orders/new/page.jsx
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, Trash2, Plus, Minus } from "lucide-react";
+import { ChevronLeft, Trash2, Plus, Minus, Loader2 } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -26,6 +26,12 @@ import { useLocale, useTranslations } from "next-intl";
 import api from "@/utils/api";
 import { ProductSkuSearchPopover } from "@/components/molecules/ProductSkuSearchPopover";
 
+function normalizeAxiosError(err) {
+	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? 'Unexpected error';
+	return Array.isArray(msg) ? msg.join(', ') : String(msg);
+}
+
+
 // ✅ Validation schema
 const createSchema = (t) =>
 	yup.object({
@@ -39,7 +45,7 @@ const createSchema = (t) =>
 		landmark: yup.string().optional(),
 		paymentMethod: yup.string().required(t("validation.paymentMethodRequired")),
 		paymentStatus: yup.string().optional(),
-		shippingCompany: yup.string().optional(),
+		shippingCompanyId: yup.string().optional(),
 		shippingCost: yup.number().min(0).optional(),
 		discount: yup.number().min(0).optional(),
 		deposit: yup.number().min(0).optional(),
@@ -57,7 +63,7 @@ const createSchema = (t) =>
 			.min(1, t("validation.itemsRequired")),
 	});
 
-export default function CreateOrderPageComplete() {
+export default function CreateOrderPageComplete({ isEditMode = false, existingOrder = null, orderId = null }) {
 	const navigate = useRouter();
 	const locale = useLocale();
 	const isRTL = locale === "ar";
@@ -65,18 +71,42 @@ export default function CreateOrderPageComplete() {
 
 	const [loading, setLoading] = useState(false);
 	const [selectedSkus, setSelectedSkus] = useState([]);
+	const [initialLoading, setInitialLoading] = useState(isEditMode && !existingOrder);
 
 	const schema = useMemo(() => createSchema(t), [t]);
 
-	const {
-		control,
-		handleSubmit,
-		watch,
-		setValue,
-		formState: { errors },
-	} = useForm({
-		resolver: yupResolver(schema),
-		defaultValues: {
+	// Prepare default values based on edit mode
+	const getDefaultValues = () => {
+		if (isEditMode && existingOrder) {
+			return {
+				customerName: existingOrder.customerName || "",
+				phoneNumber: existingOrder.phoneNumber || "",
+				alternativePhone: existingOrder.alternativePhone || "",
+				email: existingOrder.email || "",
+				address: existingOrder.address || "",
+				city: existingOrder.city || "",
+				area: existingOrder.area || "",
+				landmark: existingOrder.landmark || "",
+				paymentMethod: existingOrder.paymentMethod || "cod",
+				paymentStatus: existingOrder.paymentStatus || "pending",
+				shippingCompanyId: existingOrder.shippingCompany?.id ? String(existingOrder.shippingCompany.id) : "",
+				shippingCost: existingOrder.shippingCost || 0,
+				discount: existingOrder.discount || 0,
+				deposit: existingOrder.deposit || 0,
+				notes: existingOrder.notes || "",
+				customerNotes: existingOrder.customerNotes || "",
+				items: existingOrder.items?.map((item) => ({
+					variantId: item.variant?.id || item.variantId,
+					productName: item.variant?.product?.name || item.productName || "",
+					sku: item.variant?.sku || item.sku || "",
+					attributes: item.variant?.attributes || item.attributes || {},
+					quantity: item.quantity || 1,
+					unitPrice: item.unitPrice || 0,
+					unitCost: item.unitCost || item.unitPrice || 0,
+				})) || [],
+			};
+		}
+		return {
 			customerName: "",
 			phoneNumber: "",
 			alternativePhone: "",
@@ -87,15 +117,49 @@ export default function CreateOrderPageComplete() {
 			landmark: "",
 			paymentMethod: "cod",
 			paymentStatus: "pending",
-			shippingCompany: "",
+			shippingCompanyId: "",
 			shippingCost: 0,
 			discount: 0,
 			deposit: 0,
 			notes: "",
 			customerNotes: "",
 			items: [],
-		},
+		};
+	};
+
+	const {
+		control,
+		handleSubmit,
+		watch,
+		setValue,
+		reset,
+		formState: { errors },
+	} = useForm({
+		resolver: yupResolver(schema),
+		defaultValues: getDefaultValues(),
 	});
+
+	// Update form when existingOrder changes
+	useEffect(() => {
+		if (isEditMode && existingOrder) {
+			const defaultValues = getDefaultValues();
+			reset(defaultValues);
+			// Set selected SKUs for edit mode
+			if (existingOrder.items?.length > 0) {
+				const skus = existingOrder.items.map((item) => ({
+					id: item.variant?.id || item.variantId,
+					label: item.variant?.product?.name || item.productName,
+					productName: item.variant?.product?.name || item.productName,
+					sku: item.variant?.sku || item.sku,
+					attributes: item.variant?.attributes || item.attributes || {},
+					price: item.unitPrice || 0,
+					cost: item.unitCost || item.unitPrice || 0,
+				}));
+				setSelectedSkus(skus);
+			}
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isEditMode, existingOrder]);
 
 	const watchedItems = watch("items");
 	const watchedShippingCost = watch("shippingCost");
@@ -184,7 +248,7 @@ export default function CreateOrderPageComplete() {
 				landmark: data.landmark || undefined,
 				paymentMethod: data.paymentMethod,
 				paymentStatus: data.paymentStatus || undefined,
-				shippingCompany: data.shippingCompany || undefined,
+				shippingCompanyId: data.shippingCompanyId && data.shippingCompanyId !== 'none' ? data.shippingCompanyId : undefined,
 				shippingCost: Number(data.shippingCost || 0),
 				discount: Number(data.discount || 0),
 				deposit: Number(data.deposit || 0),
@@ -198,17 +262,53 @@ export default function CreateOrderPageComplete() {
 				})),
 			};
 
-			await api.post("/orders", payload);
-			toast.success(t("messages.createSuccess"));
+			if (isEditMode && orderId) {
+				await api.patch(`/orders/${orderId}`, payload);
+				toast.success(t("messages.updateSuccess"));
+			} else {
+				await api.post("/orders", payload);
+				toast.success(t("messages.createSuccess"));
+			}
 			navigate.push("/orders");
 		} catch (error) {
-			console.error("Failed to create order:", error);
-			toast.error(error.response?.data?.message || t("messages.createFailed"));
+			console.error(`Failed to ${isEditMode ? 'update' : 'create'} order:`, error);
+			toast.error(error.response?.data?.message || (isEditMode ? t("messages.updateFailed") : t("messages.createFailed")));
 		} finally {
 			setLoading(false);
 		}
 	};
 
+	const [shippingCompanies, setShippingCompanies] = useState([])
+
+	useEffect(() => {
+		let mounted = true;
+		(async () => {
+			try {
+				const [shippingRes] = await Promise.all([
+					api.get('/shipping-companies', { params: { limit: 200, isActive: true } }),
+				]);
+				if (!mounted) return;
+				setShippingCompanies(Array.isArray(shippingRes.data?.records) ? shippingRes.data?.records : []);
+			} catch (e) {
+				toast.error(normalizeAxiosError(e));
+			}
+		})();
+		return () => {
+			mounted = false;
+		};
+	}, []);
+
+	// Show loading state while initial data is being loaded
+	if (initialLoading) {
+		return (
+			<div className="min-h-screen flex items-center justify-center">
+				<div className="text-center">
+					<Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
+					<p className="text-slate-600 dark:text-slate-300">{t("loading.message")}</p>
+				</div>
+			</div>
+		);
+	}
 	return (
 		<motion.div
 			dir={isRTL ? "rtl" : "ltr"}
@@ -230,20 +330,24 @@ export default function CreateOrderPageComplete() {
 							{t("breadcrumb.orders")}
 						</button>
 						<ChevronLeft className="text-gray-400" size={18} />
-						<span className="text-primary">{t("breadcrumb.createOrder")}</span>
+						<span className="text-primary">
+							{isEditMode ? t("breadcrumb.editOrder") : t("breadcrumb.createOrder")}
+						</span>
 						<span className="mr-3 inline-flex w-3.5 h-3.5 rounded-xl bg-primary" />
 					</div>
 
 					<div className="flex items-center gap-4">
-						<Button_ size="sm" label={t("actions.howToUse")} tone="white" variant="solid" />
+						{!isEditMode && (
+							<Button_ size="sm" label={t("actions.howToUse")} tone="white" variant="solid" />
+						)}
 
 						<Button_
 							onClick={handleSubmit(onSubmit)}
 							size="sm"
-							label={loading ? t("actions.saving") : t("actions.save")}
+							label={loading ? t("actions.saving") : (isEditMode ? t("actions.update") : t("actions.save"))}
 							tone="purple"
 							variant="solid"
-							disabled={loading}
+							disabled={loading || initialLoading}
 						/>
 					</div>
 				</div>
@@ -478,19 +582,26 @@ export default function CreateOrderPageComplete() {
 									/>
 								</div>
 
+
 								<div className="space-y-2">
-									<Label className="text-sm text-gray-600 dark:text-slate-300">
-										{t("fields.shippingCompany")}
-									</Label>
+									<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('fields.shippingCompany')}</Label>
 									<Controller
-										name="shippingCompany"
 										control={control}
+										name="shippingCompanyId"
 										render={({ field }) => (
-											<Input
-												{...field}
-												placeholder={t("placeholders.shippingCompany")}
-												className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
-											/>
+											<Select value={field.value || ''} onValueChange={field.onChange}>
+												<SelectTrigger className="w-full rounded-xl !h-[50px] bg-[#fafafa] dark:bg-slate-800/50">
+													<SelectValue placeholder={t('placeholders.shippingCompany')} />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectItem value="none">{t('common.none')}</SelectItem>
+													{shippingCompanies.map((s) => (
+														<SelectItem key={s.id} value={String(s.id)}>
+															{s?.label ?? s?.name ?? `#${s?.id}`}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
 										)}
 									/>
 								</div>
@@ -568,10 +679,10 @@ export default function CreateOrderPageComplete() {
 								{t("sections.addProducts")}
 							</h3>
 
-							<ProductSkuSearchPopover 
-								closeOnSelect={false} 
-								handleSelectSku={handleSelectSku} 
-								selectedSkus={selectedSkus} 
+							<ProductSkuSearchPopover
+								closeOnSelect={false}
+								handleSelectSku={handleSelectSku}
+								selectedSkus={selectedSkus}
 							/>
 							{errors.items && <p className="text-xs text-red-500 mt-2">{errors.items.message}</p>}
 						</motion.div>

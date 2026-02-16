@@ -50,9 +50,11 @@ function Switch({ className, ...props }) {
 				className={cn(
 					"pointer-events-none block h-5 w-5 rounded-full bg-background shadow-md ring-0",
 					"transition-transform duration-200 ease-out",
+					// LTR: Unchecked (left: 0), Checked (right: 20px)
+					// RTL: Unchecked (right: 0), Checked (left: -20px)
 					isRTL
-						? "data-[state=unchecked]:translate-x-[18px] data-[state=checked]:translate-x-0"
-						: "data-[state=checked]:-translate-x-[18px] data-[state=unchecked]:translate-x-[1px]"
+						? "data-[state=checked]:-translate-x-5 data-[state=unchecked]:translate-x-0"
+						: "data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0"
 				)}
 			/>
 		</SwitchPrimitive.Root>

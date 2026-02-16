@@ -8,11 +8,7 @@ import toast from 'react-hot-toast';
 import CreateOrderPageComplete from '../../new/page';
 import api from '@/utils/api';
 import { useTranslations } from 'next-intl';
-
-function normalizeAxiosError(err) {
-  const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? 'Unexpected error';
-  return Array.isArray(msg) ? msg.join(', ') : String(msg);
-}
+import { normalizeAxiosError } from '@/utils/axios';
 
 export default function EditOrderPage() {
   const t = useTranslations('createOrder');

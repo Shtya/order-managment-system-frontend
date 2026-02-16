@@ -51,3 +51,10 @@ api.interceptors.response.use(
 );
 
 export default api;
+
+
+
+export function normalizeAxiosError(err) {
+  const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? 'Unexpected error';
+  return Array.isArray(msg) ? msg.join(', ') : String(msg);
+}

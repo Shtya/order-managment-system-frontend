@@ -210,7 +210,8 @@ export default function Header({ toggleSidebar, isSidebarOpen }) {
 
 							<div className="mt-0.5 inline-flex w-fit px-2 py-[1px] rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20"
 							>
-								{t(`roles.${user?.role || "user"}`)}
+								{user?.role || "user"}
+								{/* {t(`roles.${user?.role || "user"}`)} */}
 							</div>
 						</div>
 					</motion.div>

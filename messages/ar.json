@@ -2406,7 +2406,8 @@
     "edit": "تعديل",
     "view": "عرض",
     "create": "إنشاء",
-    "currency": "جنيه"
+    "currency": "جنيه",
+    "loadMore": "تحميل المزيد"
   },
   "orders": {
     "deleteStatus": {
@@ -2431,7 +2432,8 @@
     "common": {
       "cancel": "إلغاء",
       "back": "رجوع",
-      "save": "حفظ"
+      "save": "حفظ",
+      "loading": "جاري التحميل..."
     },
     "actions": {
       "view": "عرض",
@@ -2443,7 +2445,10 @@
       "export": "تصدير",
       "filter": "تصفية",
       "bulkUpload": "رفع جماعي",
-      "distribute": "توزيع"
+      "distribute": "توزيع",
+      "backToOrders": "العودة إلى الطلبات",
+      "print": "طباعة",
+      "refresh": "تحديث"
     },
     "empty": "لا توجد بيانات للعرض",
     "messages": {
@@ -2463,7 +2468,57 @@
       "errorDeletingOrder": "حدث خطأ أثناء حذف الطلب",
       "errorFetchingOrders": "حدث خطأ أثناء تحميل الطلبات",
       "errorUpdatingStatus": "خطأ أثناء تحديث الحالة",
-      "statusUpdating": "جاري تحديث الحالة..."
+      "statusUpdating": "جاري تحديث الحالة...",
+      "loading": "جاري التحميل...",
+      "errorFetchingOrder": "فشل تحميل بيانات الطلب",
+      "orderNotFound": "الطلب غير موجود",
+      "errorFetchingStatuses": "فشل تحميل الحالات المتاحة"
+    },
+    "details": {
+      "customerInfo": "معلومات العميل",
+      "orderItems": "منتجات الطلب",
+      "paymentInfo": "معلومات الدفع",
+      "shippingInfo": "معلومات الشحن",
+      "storeInfo": "معلومات المتجر",
+      "assignedEmployee": "الموظف المسؤول",
+      "statusHistory": "تاريخ تغيير الحالة",
+      "notes": "الملاحظات",
+      "timestamps": "التواريخ",
+      "createdAt": "تاريخ الإنشاء",
+      "updatedAt": "تاريخ التحديث",
+      "subtotal": "المجموع الفرعي",
+      "shippingCost": "تكلفة الشحن",
+      "discount": "الخصم",
+      "deposit": "العربون",
+      "total": "الإجمالي",
+      "finalTotal": "المبلغ النهائي",
+      "unknownProduct": "منتج غير معروف",
+      "unknownEmployee": "موظف غير معروف",
+      "initialStatus": "الحالة الأولية",
+      "shippedAt": "تاريخ الشحن",
+      "deliveredAt": "تاريخ التوصيل",
+      "assignedAt": "تاريخ الإسناد",
+      "retriesUsed": "المحاولات المستخدمة",
+      "maxRetries": "الحد الأقصى للمحاولات",
+      "internalNotes": "ملاحظات داخلية",
+      "customerNotes": "ملاحظات العميل"
+    },
+    "workPage": {
+      "changeStatus": "تغيير حالة الطلب",
+      "notes": "ملاحظات",
+      "notesPlaceholder": "أضف ملاحظات اختيارية...",
+      "selectStatus": "اختر الحالة الجديدة",
+      "updating": "جاري التحديث...",
+      "orderLocked": "الطلب مؤجل حاليًا",
+      "lockedMessage": "يجب الانتظار حتى انتهاء الوقت المحدد",
+      "noOrders": "لا توجد طلبات متاحة",
+      "noOrdersDescription": "لا توجد طلبات جديدة لمعالجتها في الوقت الحالي",
+      "backToMyOrders": "العودة إلى طلباتي",
+      "updatingOrder": "جاري تحديث الطلب",
+      "pleaseWait": "الرجاء الانتظار...",
+      "statusChanged": "تم تغيير الحالة بنجاح",
+      "orderUpdated": "تم تحديث بيانات الطلب",
+      "clickNext": "اضغط السهم للطلب التالي"
     },
     "deleteOrder": {
       "title": "حذف الطلب",
@@ -2515,7 +2570,9 @@
       "preparing": "قيد التحضير",
       "ready": "جاهز",
       "shipped": "تم الشحن",
-      "returned": "مرتجع"
+      "returned": "مرتجع",
+      "no_answer": "لا يوجد رد",
+      "out_of_area": "خارج نطاق التوصيل"
     },
     "statusForm": {
       "addTitle": "إضافة حالة جديدة",
@@ -2610,6 +2667,7 @@
       "deposit": "العربون",
       "amountReceived": "المبلغ المستلم",
       "lastUpdate": "آخر تحديث",
+      "createdat": "تاريخ الطلب",
       "actions": "الإجراءات"
     },
     "bulkUpload": {
@@ -2647,6 +2705,7 @@
       "orderStatus": "حالة الطلب",
       "selectEmployee": "اختر الموظف",
       "selectEmployeePlaceholder": "اختر موظفًا",
+      "noEmployeefound": "لم يتم العثور علي موظفيين",
       "currentOrders": "طلبات حالية",
       "selectOrders": "اختر الطلبات",
       "available": "متاح",
@@ -2655,8 +2714,16 @@
       "newOrders": "طلبات جديدة",
       "distribute": "تنفيذ التوزيع",
       "selectEmployeeAndOrders": "يرجى اختيار موظف وطلبات",
-      "normalSuccess": "تم توزيع {{count}} طلب على {{employee}}",
-      "smartSuccess": "تم توزيع {{count}} طلب على {{employees}} موظفين"
+      "normalSuccess": "تم توزيع {count} طلب على {employee}",
+      "smartSuccess": "تم توزيع {count} طلب على {employees} موظفين",
+      "selectStatusToLoadOrders": "اختر حالة لتحميل الطلبات المتاحة",
+      "noFreeOrders": "لا توجد طلبات متاحة في هذا النطاق",
+      "freeOrdersToDistribute": "{count} طلب متاح للتوزيع التلقائي",
+      "loadingCount": "جاري عد الطلبات المتاحة...",
+      "noEmployeesFound": "لم يتم العثور على موظفين للتوزيع",
+      "autoAssignSuccess": "تم توزيع {count} طلب على {employees} موظف",
+      "autoAssignFailed": "فشل التوزيع التلقائي",
+      "totalActiveNow": "الإجمالي الحالي"
     },
     "retrySettings": {
       "globalTitle": "إعدادات إعادة المحاولة",
@@ -2685,6 +2752,37 @@
       "autoMoveStatus": "تغيير الحالة تلقائيًا",
       "autoMoveStatusDesc": "نقل الطلب لحالة أخرى بعد فشل المحاولات",
       "retryStatuses": "الحالات القابلة لإعادة المحاولة"
+    },
+    "fields": {
+      "customerName": "اسم العميل",
+      "phoneNumber": "رقم الهاتف",
+      "email": "البريد الإلكتروني",
+      "address": "العنوان",
+      "city": "المدينة",
+      "area": "المنطقة",
+      "landmark": "علامة مميزة",
+      "paymentMethod": "طريقة الدفع",
+      "paymentStatus": "حالة الدفع",
+      "shippingCompany": "شركة الشحن",
+      "trackingNumber": "رقم التتبع",
+      "storeName": "اسم المتجر",
+      "storeAddress": "عنوان المتجر"
+    },
+    "myOrders": {
+      "title": "طلباتي المسندة",
+      "subtitle": "عرض جميع الطلبات المسندة إليك",
+      "statistics": "الإحصائيات",
+      "startWork": "ابدأ العمل",
+      "noAssignedOrders": "لا توجد طلبات مسندة",
+      "noOrders": "لا توجد طلبات حاليًا",
+      "noOrdersDescription": "ليس لديك أي طلبات مسندة في الوقت الحالي",
+      "locked": "مؤجل",
+      "total": "الإجمالي",
+      "retries": "المحاولات",
+      "orders": "طلب"
+    },
+    "retry": {
+      "locked": "مقفل"
     }
   },
   "callCenter": {
@@ -2908,5 +3006,10 @@
       "previousDay": "اليوم السابق",
       "nextDay": "اليوم التالي"
     }
-  }
+  },
+  "key-0": "×",
+  "key": "×",
+  "minutes-m-seconds-s": "{0}m {1}s",
+  "hours-h-minutes-m-seconds-s": "{0}h {1}m {2}s",
+  "rgba-rgb-r-rgb-g-rgb-b-0-1": "rgba({0}, {1}, {2}, 0.1)"
 }

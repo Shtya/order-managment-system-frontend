@@ -814,6 +814,15 @@
       "lastUpdate": "Last Update",
       "store": "Store"
     },
+    "distribution": {
+      "freeOrdersToDistribute": "{{count}} free orders to distribute",
+      "loadingCount": "Counting free orders...",
+      "noEmployeesFound": "No employees found for distribution",
+      "autoAssignSuccess": "Assigned {{count}} orders to {{employees}} employee(s)",
+      "autoAssignFailed": "Auto assign failed",
+      "totalActiveNow": "Total active now",
+      "selectStatusToLoadOrders": "Select a status to load free orders"
+    },
     "actions": {
       "howToUse": "Usage Guide",
       "addOrder": "Add Order",

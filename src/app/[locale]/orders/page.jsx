@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
 	ChevronLeft,
@@ -35,6 +35,7 @@ import {
 	Loader2,
 	RotateCcw,
 	AlertTriangle,
+	ChevronDownIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -43,7 +44,7 @@ import toast from "react-hot-toast";
 import InfoCard from "@/components/atoms/InfoCard";
 import DataTable from "@/components/atoms/DataTable";
 import Button_ from "@/components/atoms/Button";
-
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,7 +72,8 @@ import {
 	DialogFooter,
 	DialogDescription,
 } from "@/components/ui/dialog";
-import api from "@/utils/api";
+import api, { BASE_URL } from "@/utils/api";
+import UserSelect, { avatarSrc } from "@/components/atoms/UserSelect";
 import { Checkbox } from "@/components/ui/checkbox";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/material_blue.css";
@@ -79,8 +81,125 @@ import { Tabs } from "@radix-ui/react-tabs";
 import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { normalizeAxiosError } from "@/utils/axios";
 
+export const getIconForStatus = (code) => {
+	const iconMap = {
+		new: Package,
+		confirmed: CheckCircle,
+		pending_confirmation: AlertCircle,
+		wrong_number: Phone,
+		duplicate: Copy,
+		postponed: Clock,
+		delivered: CheckCircle,
+		in_shipping: Truck,
+		waiting_stock: Package,
+		no_answer_shipping: AlertCircle,
+		cancelled_shipping: XCircle,
+		under_review: Clock,
+		preparing: Package,
+		ready: CheckCircle,
+		shipped: Truck,
+		cancelled: XCircle,
+		returned: RefreshCw,
+		no_answer: AlertCircle,
+		out_of_area: MapPin,
+	};
+	return iconMap[code] || Package;
+};
+// ✅ Order Status Constants (Mirroring your Enum)
+export const OrderStatus = {
+	NEW: "new",
+	UNDER_REVIEW: "under_review",
+	CONFIRMED: "confirmed",
+	POSTPONED: "postponed",
+	NO_ANSWER: "no_answer",
+	WRONG_NUMBER: "wrong_number",
+	OUT_OF_DELIVERY_AREA: "out_of_area",
+	DUPLICATE: "duplicate",
+	PREPARING: "preparing",
+	READY: "ready",
+	SHIPPED: "shipped",
+	DELIVERED: "delivered",
+	CANCELLED: "cancelled",
+	RETURNED: "returned",
+};
 
+// ✅ State Machine Transitions
+export const validTransitions = {
+	[OrderStatus.NEW]: [
+		OrderStatus.UNDER_REVIEW,
+		OrderStatus.CONFIRMED,
+		OrderStatus.POSTPONED,
+		OrderStatus.NO_ANSWER,
+		OrderStatus.WRONG_NUMBER,
+		OrderStatus.OUT_OF_DELIVERY_AREA,
+		OrderStatus.DUPLICATE,
+		OrderStatus.CANCELLED,
+	],
+
+	[OrderStatus.UNDER_REVIEW]: [
+		OrderStatus.CONFIRMED,
+		OrderStatus.POSTPONED,
+		OrderStatus.NO_ANSWER,
+		OrderStatus.WRONG_NUMBER,
+		OrderStatus.OUT_OF_DELIVERY_AREA,
+		OrderStatus.DUPLICATE,
+		OrderStatus.CANCELLED,
+	],
+
+	[OrderStatus.POSTPONED]: [
+		OrderStatus.UNDER_REVIEW,
+		OrderStatus.CONFIRMED,
+		OrderStatus.NO_ANSWER,
+		OrderStatus.WRONG_NUMBER,
+		OrderStatus.OUT_OF_DELIVERY_AREA,
+		OrderStatus.DUPLICATE,
+		OrderStatus.CANCELLED,
+	],
+
+	[OrderStatus.NO_ANSWER]: [
+		OrderStatus.UNDER_REVIEW,
+		OrderStatus.CONFIRMED,
+		OrderStatus.POSTPONED,
+		OrderStatus.WRONG_NUMBER,
+		OrderStatus.OUT_OF_DELIVERY_AREA,
+		OrderStatus.DUPLICATE,
+		OrderStatus.CANCELLED,
+	],
+
+	[OrderStatus.CONFIRMED]: [
+		OrderStatus.PREPARING,
+		OrderStatus.CANCELLED
+	],
+
+	[OrderStatus.PREPARING]: [
+		OrderStatus.READY,
+		OrderStatus.CANCELLED
+	],
+
+	[OrderStatus.READY]: [
+		OrderStatus.SHIPPED,
+		OrderStatus.CANCELLED
+	],
+
+	[OrderStatus.SHIPPED]: [
+		OrderStatus.DELIVERED,
+		OrderStatus.RETURNED
+	],
+
+	[OrderStatus.DELIVERED]: [
+		OrderStatus.RETURNED
+	],
+
+	// Terminal States (No outward transitions)
+	[OrderStatus.WRONG_NUMBER]: [],
+	[OrderStatus.OUT_OF_DELIVERY_AREA]: [],
+	[OrderStatus.DUPLICATE]: [],
+	[OrderStatus.CANCELLED]: [],
+	[OrderStatus.RETURNED]: [],
+};
 
 // Fake Data Generator
 const generateFakeOrders = (count = 50) => {
@@ -463,23 +582,18 @@ function FiltersPanel({ value, onChange, onApply, stores = [], shippingCompanies
 						</Select>
 					</div>
 
-					{/* <div className="space-y-2">
+					<div className="space-y-2">
 						<Label>{t("filters.employee")}</Label>
-						<Select
+						<UserSelect
 							value={value.employee}
-							onValueChange={(v) => onChange({ ...value, employee: v })}
-						>
-							<SelectTrigger className="w-full rounded-full !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
-								<SelectValue placeholder={t("filters.employeePlaceholder")} />
-							</SelectTrigger>
-							<SelectContent className="bg-card-select">
-								<SelectItem value="all">{t("filters.all")}</SelectItem>
-								{employees.map(emp => (
-									<SelectItem key={emp.value} value={emp.value}>{emp.label}</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div> */}
+							onSelect={(user) => onChange({ ...value, employee: user ? String(user.id) : "all" })}
+							placeholder={t("filters.employeePlaceholder")}
+							allowAll
+							allLabel={t("filters.all")}
+							className="w-full rounded-full !h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
+							contentClassName="bg-card-select"
+						/>
+					</div>
 
 					<div className="space-y-2">
 						<Label>{t("filters.date")}</Label>
@@ -592,46 +706,246 @@ function FiltersPanel({ value, onChange, onApply, stores = [], shippingCompanies
 		</motion.div>
 	);
 }
-
-// Distribution Modal (keeping the same as before with translations)
-function DistributionModal({ isOpen, onClose, orders }) {
+const PAGE_SIZE = 20;
+// Distribution Modal: manual assign (free-orders + employees-by-load + assign-manual)
+function DistributionModal({ isOpen, onClose, statuses = [], onSuccess }) {
+	const tCommon = useTranslations("common");
 	const t = useTranslations("orders");
 	const [distributionType, setDistributionType] = useState(null);
 	const [dateRange, setDateRange] = useState({
 		from: new Date().toISOString().split("T")[0],
 		to: new Date().toISOString().split("T")[0]
 	});
-	const [selectedStatus, setSelectedStatus] = useState("all");
+	const [selectedStatus, setSelectedStatus] = useState("new");
 	const [selectedEmployee, setSelectedEmployee] = useState("");
 	const [selectedOrders, setSelectedOrders] = useState([]);
 	const [employeeCount, setEmployeeCount] = useState(3);
+	const [freeOrders, setFreeOrders] = useState([]);
+	const [freeOrdersLoading, setFreeOrdersLoading] = useState(false);
+	const [assigning, setAssigning] = useState(false);
+	// Automatic tab: free order count and employees by load
+	const [freeOrderCount, setFreeOrderCount] = useState(null);
+	const [freeOrderCountLoading, setFreeOrderCountLoading] = useState(false);
+	const [autoEmployees, setAutoEmployees] = useState([]);
+	const [autoEmployeesLoading, setAutoEmployeesLoading] = useState(false);
+	const [autoAssignResult, setAutoAssignResult] = useState(null);
+	const autoEmployeeCountDebounceRef = useRef(null);
 
-	const employees = [
-		{ id: "emp1", name: "أحمد محمد", currentOrders: 12 },
-		{ id: "emp2", name: "فاطمة علي", currentOrders: 8 },
-		{ id: "emp3", name: "محمود حسن", currentOrders: 15 },
-		{ id: "emp4", name: "سارة إبراهيم", currentOrders: 10 },
-		{ id: "emp5", name: "خالد أحمد", currentOrders: 6 },
-	];
+	// Fetch free orders when status (not "all") and dates are set (manual assign)
+	useEffect(() => {
+		// 1. Guard clauses
+		if (!isOpen || distributionType !== "normal") return;
 
-	const handleDistribute = () => {
+		if (selectedStatus === "all") {
+			setFreeOrders([]);
+			return;
+		}
+
+		let cancelled = false;
+
+		const fetchOrders = async () => {
+			setFreeOrdersLoading(true);
+			try {
+				const { data } = await api.get("/orders/free-orders", {
+					params: {
+						status: selectedStatus,
+						startDate: dateRange.from,
+						endDate: dateRange.to,
+						limit: 100,
+					},
+				});
+
+				if (!cancelled) {
+					setFreeOrders(data?.data ?? []);
+				}
+			} catch (err) {
+				if (!cancelled) {
+					console.error("Free orders fetch error:", err);
+					toast.error(t("messages.errorFetchingOrders"));
+					setFreeOrders([]);
+				}
+			} finally {
+				if (!cancelled) {
+					setFreeOrdersLoading(false);
+				}
+			}
+		};
+
+		fetchOrders();
+
+		// Cleanup to prevent memory leaks/state updates on unmounted component
+		return () => { cancelled = true; };
+	}, [isOpen, distributionType, selectedStatus, dateRange.from, dateRange.to, t]);
+
+	// Fetch free order count when on automatic tab (for preview)
+	useEffect(() => {
+		if (!isOpen || distributionType !== "smart") return;
+		if (selectedStatus === "all") {
+			setFreeOrderCount(null);
+			return;
+		}
+		let cancelled = false;
+		setFreeOrderCountLoading(true);
+		api.get("/orders/free-orders/count", {
+			params: { status: selectedStatus, startDate: dateRange.from, endDate: dateRange.to },
+		})
+			.then((res) => {
+				if (!cancelled) setFreeOrderCount(res.data?.count ?? 0);
+			})
+			.catch(() => {
+				if (!cancelled) setFreeOrderCount(0);
+			})
+			.finally(() => {
+				if (!cancelled) setFreeOrderCountLoading(false);
+			});
+		return () => { cancelled = true; };
+	}, [isOpen, distributionType, selectedStatus, dateRange.from, dateRange.to]);
+
+	// When switching to automatic tab: reset cursor and fetch employees with limit=employeeCount (debounced when employeeCount changes)
+	useEffect(() => {
+		if (!isOpen || distributionType !== "smart") return;
+
+		setAutoAssignResult(null);
+
+		const fetchAutoEmployees = async () => {
+			setAutoEmployeesLoading(true);
+			setNextCursor(null);
+
+			try {
+				const limit = Math.max(1, Number(employeeCount) || 1);
+				const { data } = await api.get("/orders/employees-by-load", {
+					params: { limit }
+				});
+
+				setAutoEmployees(data?.data ?? []);
+			} catch (error) {
+				console.error("Fetch auto employees error:", error);
+				setAutoEmployees([]);
+			} finally {
+				setAutoEmployeesLoading(false);
+			}
+		};
+
+		// Debounce logic
+		const timer = setTimeout(fetchAutoEmployees, 400);
+
+		return () => clearTimeout(timer);
+	}, [isOpen, distributionType, employeeCount]);
+
+	const handleDistribute = async () => {
 		if (distributionType === "normal") {
 			if (!selectedEmployee || selectedOrders.length === 0) {
 				toast.error(t("distribution.selectEmployeeAndOrders"));
 				return;
 			}
-			toast.success(t("distribution.normalSuccess", {
-				count: selectedOrders.length,
-				employee: employees.find(e => e.id === selectedEmployee)?.name
-			}));
+			setAssigning(true);
+			try {
+				const res = await api.post("/orders/assign-manual", {
+					userId: Number(selectedEmployee),
+					orderIds: selectedOrders,
+				});
+				const data = res.data;
+				toast.success(t("distribution.normalSuccess", { count: data.count, employee: data.user.name }));
+				onSuccess?.();
+				onClose();
+				setDistributionType(null)
+				setSelectedEmployee("");
+				setSelectedOrders([]);
+			} catch (err) {
+				console.error("Assign failed:", err);
+				toast.error(err.response?.data?.message || t("messages.errorUpdatingStatus"));
+			} finally {
+				setAssigning(false);
+			}
 		} else {
-			toast.success(t("distribution.smartSuccess", {
-				count: orders.length,
-				employees: employeeCount
-			}));
+			// Automatic assign
+			if (selectedStatus === "all") {
+				toast.error(t("distribution.selectStatusToLoadOrders"));
+				return;
+			}
+			setAssigning(true);
+			setAutoAssignResult(null);
+			try {
+				const res = await api.post("/orders/assign-auto", {
+					status: selectedStatus,
+					employeeCount: Math.max(1, Number(employeeCount) || 1),
+				});
+				const data = res.data;
+				if (!data?.success) {
+					toast.error(data?.message || t("distribution.autoAssignFailed"));
+					return;
+				}
+				setAutoAssignResult(data.result || []);
+				const totalAssigned = (data.result || []).reduce((sum, r) => sum + (r.assignedThisBatch || 0), 0);
+				toast.success(t("distribution.autoAssignSuccess", { count: totalAssigned, employees: (data.result || []).length }));
+				onSuccess?.();
+				setTimeout(() => {
+					onClose();
+					setDistributionType(null)
+					setAutoAssignResult(null);
+				}, 2000);
+			} catch (err) {
+				console.error("Auto assign failed:", err);
+				toast.error(err.response?.data?.message || t("distribution.autoAssignFailed"));
+			} finally {
+				setAssigning(false);
+			}
 		}
-		onClose();
 	};
+
+	///Employees logic 
+
+	const [open, setOpen] = useState(false);
+	const [items, setItems] = useState([]);
+	const [nextCursor, setNextCursor] = useState(null);
+	const [loading, setLoading] = useState(false);
+	const [loadingMore, setLoadingMore] = useState(false);
+	const [initialized, setInitialized] = useState(false);
+
+	const fetchPage = useCallback(async (cursor = null) => {
+		const isFirst = cursor == null;
+		if (isFirst) setLoading(true);
+		else setLoadingMore(true);
+
+		try {
+			const params = { limit: PAGE_SIZE };
+			if (cursor != null) params.cursor = cursor;
+
+			const { data: res } = await api.get("/orders/employees-by-load", { params });
+			const data = res?.data ?? [];
+			const next = res?.nextCursor ?? null;
+
+			setItems((prev) => (isFirst ? data : [...prev, ...data]));
+			setNextCursor(next);
+		} catch (err) {
+			console.error("Fetch error:", err);
+		} finally {
+			setLoading(false);
+			setLoadingMore(false);
+			setInitialized(true);
+		}
+	}, []);
+
+	// Trigger fetch on mount or when switching back to "normal"
+	useEffect(() => {
+		if (distributionType === "normal") {
+			fetchPage(null); // Force null to reset from start
+		}
+	}, [distributionType, fetchPage]);
+
+	const handleSelect = (item) => {
+		setSelectedEmployee(item?.user ? String(item.user.id) : null);
+		setOpen(false);
+	};
+
+	const selectedItem = useMemo(() => {
+		if (!selectedEmployee) return null;
+		const employeeId = Number(selectedEmployee);
+		return items.find((i) => Number(i.user?.id) === employeeId) || null;
+	}, [items, selectedEmployee]);
+
+	const selectedUser = selectedItem?.user;
+
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
@@ -702,11 +1016,20 @@ function DistributionModal({ isOpen, onClose, orders }) {
 								<SelectTrigger className="rounded-xl">
 									<SelectValue />
 								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="all">{t("filters.all")}</SelectItem>
-									<SelectItem value="new">{t("statuses.new")}</SelectItem>
-									<SelectItem value="confirmed">{t("statuses.confirmed")}</SelectItem>
-									<SelectItem value="pending_confirmation">{t("statuses.pendingConfirmation")}</SelectItem>
+								<SelectContent className="bg-card-select">
+									{Array.isArray(statuses) && statuses.length > 0 ? (
+										statuses.map((s) => (
+											<SelectItem key={s.code || s.id} value={s.code || String(s.id)}>
+												{s.system ? t(`statuses.${s.code}`) : (s.name || s.code)}
+											</SelectItem>
+										))
+									) : (
+										<>
+											<SelectItem value="new">{t("statuses.new")}</SelectItem>
+											<SelectItem value="confirmed">{t("statuses.confirmed")}</SelectItem>
+											<SelectItem value="pending_confirmation">{t("statuses.pendingConfirmation")}</SelectItem>
+										</>
+									)}
 								</SelectContent>
 							</Select>
 						</div>
@@ -715,38 +1038,127 @@ function DistributionModal({ isOpen, onClose, orders }) {
 							<>
 								<div className="space-y-2">
 									<Label>{t("distribution.selectEmployee")}</Label>
-									<Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
-										<SelectTrigger className="rounded-xl">
-											<SelectValue placeholder={t("distribution.selectEmployeePlaceholder")} />
-										</SelectTrigger>
-										<SelectContent>
-											{employees.map(emp => (
-												<SelectItem key={emp.id} value={emp.id}>
-													{emp.name} - ({emp.currentOrders} {t("distribution.currentOrders")})
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
+									<Popover open={open} onOpenChange={setOpen}>
+										<PopoverTrigger asChild>
+											<button
+												type="button"
+												className={cn(
+													"relative inline-flex w-full items-center justify-between gap-2 rounded-xl border border-input bg-background/60 px-3.5 py-2 text-sm text-foreground shadow-sm transition-all hover:bg-background hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-50 h-[45px]"
+												)}
+											>
+												<span className="flex min-w-0 items-center gap-2">
+													{selectedUser ? (
+														<>
+															<Avatar className="h-7 w-7 shrink-0">
+																<AvatarImage src={avatarSrc(selectedUser.avatarUrl)} alt={selectedUser.name} />
+																<AvatarFallback className="text-xs">
+																	{(selectedUser.name || "?").slice(0, 2).toUpperCase()}
+																</AvatarFallback>
+															</Avatar>
+															<span className="truncate">{selectedUser.name}</span>
+															{selectedItem?.activeCount != null && (
+																<span className="text-muted-foreground text-xs">
+																	({selectedItem.activeCount} {t("distribution.currentOrders")})
+																</span>
+															)}
+														</>
+													) : (
+														<span className="text-muted-foreground">{!(loading || loadingMore) && items.length === 0 ? t("distribution.noEmployeefound") : t("distribution.selectEmployeePlaceholder")}</span>
+													)}
+												</span>
+												<ChevronDownIcon className="size-4 shrink-0 opacity-70" />
+											</button>
+										</PopoverTrigger>
+										<PopoverContent align="start" className={cn("w-[var(--radix-popover-trigger-width)] min-w-[280px] p-0")}>
+											<div className="max-h-[280px] overflow-y-auto">
+												{loading ? (
+													<div className="flex items-center justify-center py-6">
+														<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+													</div>
+												) : (
+													<>
+														{items.map((item) => {
+															const u = item.user;
+															const isSelected = Number(selectedEmployee) === Number(u?.id);
+															return (
+																<button
+																	key={u?.id}
+																	type="button"
+																	className={cn(
+																		"flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors hover:bg-accent focus:bg-accent focus:outline-none",
+																		isSelected && "bg-accent"
+																	)}
+																	onClick={() => handleSelect(item)}
+																>
+																	<Avatar className="h-8 w-8 shrink-0">
+																		<AvatarFallback className="text-xs">
+																			{(u?.name || "?").slice(0, 2).toUpperCase()}
+																		</AvatarFallback>
+																		<AvatarImage src={avatarSrc(u?.avatarUrl)} alt={u?.name} />
+																	</Avatar>
+																	<span className="truncate flex-1 text-start">{u?.name}</span>
+																	{item?.activeCount != null && (
+																		<span className="text-muted-foreground text-xs shrink-0">
+																			{item.activeCount} {t('distribution.currentOrders')}
+																		</span>
+																	)}
+																</button>
+															);
+														})}
+														{nextCursor != null && (
+															<div className="border-t p-2">
+																<Button
+																	type="button"
+																	variant="ghost"
+																	size="sm"
+																	className="w-full"
+																	onClick={() => fetchPage(nextCursor)}
+																	disabled={loadingMore}
+																>
+																	{loadingMore ? <Loader2 className="h-4 w-4 animate-spin" /> : tCommon("loadMore")}
+																</Button>
+															</div>
+														)}
+													</>
+												)}
+											</div>
+										</PopoverContent>
+									</Popover>
 								</div>
 
 								<div className="space-y-2">
-									<Label>{t("distribution.selectOrders")} ({orders.length} {t("distribution.available")})</Label>
+									<Label>{t("distribution.selectOrders")} ({freeOrders.length} {t("distribution.available")})</Label>
 									<div className="max-h-64 overflow-y-auto border rounded-xl p-4 space-y-2">
-										{orders.slice(0, 10).map(order => (
-											<div key={order.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg">
-												<Checkbox
-													checked={selectedOrders.includes(order.id)}
-													onCheckedChange={(checked) => {
-														if (checked) {
-															setSelectedOrders([...selectedOrders, order.id]);
-														} else {
-															setSelectedOrders(selectedOrders.filter(id => id !== order.id));
-														}
-													}}
-												/>
-												<span className="text-sm">{order.orderNumber} - {order.customerName}</span>
+										{freeOrdersLoading ? (
+											<div className="flex items-center justify-center py-6 text-muted-foreground text-sm">
+												{t("messages.loading") || "Loading..."}
 											</div>
-										))}
+										) : selectedStatus === "all" ? (
+											<div className="py-4 text-center text-muted-foreground text-sm">
+												{t("distribution.selectStatusToLoadOrders") || "Select a status to load free orders"}
+											</div>
+										) : freeOrders.length === 0 ? (
+											<div className="py-4 text-center text-muted-foreground text-sm">
+												{t("distribution.noFreeOrders") || "No free orders in this range"}
+											</div>
+										) : (
+											freeOrders.map((order) => (
+												<div key={order.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg">
+													<Checkbox
+														checked={selectedOrders.includes(order.id)}
+														onCheckedChange={(checked) => {
+															if (checked) {
+																setSelectedOrders([...selectedOrders, order.id]);
+															} else {
+																setSelectedOrders(selectedOrders.filter((id) => id !== order.id));
+															}
+														}}
+													/>
+													<span className="text-sm">{order.orderNumber} - {order.customerName}</span>
+												</div>
+											))
+
+										)}
 									</div>
 								</div>
 							</>
@@ -759,7 +1171,7 @@ function DistributionModal({ isOpen, onClose, orders }) {
 										min="1"
 										max="10"
 										value={employeeCount}
-										onChange={(e) => setEmployeeCount(parseInt(e.target.value))}
+										onChange={(e) => setEmployeeCount(Math.min(10, Math.max(1, parseInt(e.target.value) || 1)))}
 										className="rounded-xl"
 									/>
 								</div>
@@ -769,19 +1181,44 @@ function DistributionModal({ isOpen, onClose, orders }) {
 										<TrendingUp size={18} />
 										{t("distribution.preview")}
 									</h4>
-									<div className="space-y-2">
-										{employees.slice(0, employeeCount).map((emp, idx) => {
-											const ordersToAssign = Math.ceil(orders.length / employeeCount);
-											return (
-												<div key={emp.id} className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-lg">
-													<span className="font-semibold">{emp.name}</span>
-													<Badge className="bg-emerald-100 text-emerald-700">
-														+{ordersToAssign} {t("distribution.newOrders")}
-													</Badge>
+									{freeOrderCountLoading ? (
+										<p className="text-sm text-muted-foreground">{t("distribution.loadingCount")}</p>
+									) : selectedStatus === "all" ? (
+										<p className="text-sm text-muted-foreground">{t("distribution.selectStatusToLoadOrders")}</p>
+									) : (
+										<>
+											<p className="text-sm text-muted-foreground mb-3">
+												{t("distribution.freeOrdersToDistribute", { count: freeOrderCount ?? 0 })}
+											</p>
+											{autoEmployeesLoading ? (
+												<p className="text-sm text-muted-foreground">{t("messages.loading")}</p>
+											) : autoEmployees.length === 0 ? (
+												<p className="text-sm text-muted-foreground">{t("distribution.noEmployeesFound")}</p>
+											) : autoAssignResult?.length > 0 ? (
+												<div className="space-y-2">
+													{autoAssignResult.map((r) => (
+														<div key={r.user?.id} className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-lg">
+															<span className="font-semibold">{r.user?.name}</span>
+															<Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-200">
+																+{r.assignedThisBatch ?? 0} {t("distribution.newOrders")} ({t("distribution.totalActiveNow")}: {r.totalActiveNow ?? 0})
+															</Badge>
+														</div>
+													))}
 												</div>
-											);
-										})}
-									</div>
+											) : (
+												<div className="space-y-2">
+													{autoEmployees.map((item) => (
+														<div key={item.user?.id} className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-lg">
+															<span className="font-semibold">{item.user?.name}</span>
+															<Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-200">
+																~{freeOrderCount && employeeCount ? Math.ceil(freeOrderCount / employeeCount) : 0} {t("distribution.newOrders")}
+															</Badge>
+														</div>
+													))}
+												</div>
+											)}
+										</>
+									)}
 								</div>
 							</>
 						)}
@@ -801,9 +1238,13 @@ function DistributionModal({ isOpen, onClose, orders }) {
 					<Button
 						onClick={distributionType ? handleDistribute : onClose}
 						className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600"
-						disabled={distributionType === "normal" && (!selectedEmployee || selectedOrders.length === 0)}
+						disabled={
+							assigning ||
+							(distributionType === "normal" && (!selectedEmployee || selectedOrders.length === 0)) ||
+							(distributionType === "smart" && (selectedStatus === "all" || freeOrderCountLoading || (freeOrderCount ?? 0) === 0 || autoEmployees.length === 0))
+						}
 					>
-						{distributionType ? t("distribution.distribute") : t("common.cancel")}
+						{assigning ? (t("messages.loading") || "Loading...") : (distributionType ? t("distribution.distribute") : t("common.cancel"))}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
@@ -901,6 +1342,7 @@ export default function OrdersPageEnhanced() {
 		if (filters.endDate) params.endDate = filters.endDate;
 		if (filters.shippingCompany && filters.shippingCompany !== 'all') params.shippingCompanyId = filters.shippingCompany;
 		if (filters.store && filters.store !== 'all') params.storeId = filters.store;
+		if (filters.employee && filters.employee !== 'all') params.userId = filters.employee;
 
 		return params;
 	};
@@ -943,20 +1385,7 @@ export default function OrdersPageEnhanced() {
 	};
 
 	// Icon mapping for system statuses
-	const getIconForStatus = (code) => {
-		const iconMap = {
-			new: Package,
-			under_review: AlertCircle,
-			preparing: Clock,
-			ready: CheckCircle,
-			shipped: Truck,
-			delivered: CheckCircle,
-			cancelled: XCircle,
-			returned: RotateCcw, // make sure to import from lucide-react
-		};
 
-		return iconMap[code] || Package;
-	};
 
 
 	// Generate stats cards dynamically from fetched statuses
@@ -1049,6 +1478,7 @@ export default function OrdersPageEnhanced() {
 			if (filters.endDate) params.endDate = filters.endDate;
 			if (filters.shippingCompany && filters.shippingCompany !== 'all') params.shippingCompanyId = filters.shippingCompany;
 			if (filters.store && filters.store !== 'all') params.storeId = filters.store;
+			if (filters.employee && filters.employee !== 'all') params.userId = filters.employee;
 
 			const response = await api.get('/orders/export', {
 				params,
@@ -1090,17 +1520,7 @@ export default function OrdersPageEnhanced() {
 		}
 	};
 
-	// Status transition rules (mirror backend)
-	const validTransitions = {
-		new: ["under_review", "cancelled"],
-		under_review: ["preparing", "cancelled"],
-		preparing: ["ready", "cancelled"],
-		ready: ["shipped", "cancelled"],
-		shipped: ["delivered", "returned"],
-		delivered: ["returned"],
-		cancelled: [],
-		returned: [],
-	};
+
 
 	const [updatingStatuses, setUpdatingStatuses] = useState([]);
 
@@ -1334,11 +1754,44 @@ export default function OrdersPageEnhanced() {
 			// 	),
 			// },
 			{
+				key: "assignedUser",
+				header: t("table.assignedEmployee"),
+				cell: (row) => {
+					const assignment = row.assignments?.[0];
+					const user = assignment?.employee;
+					if (!user) return <span className="text-muted-foreground">—</span>;
+					const avatarUrl = user.avatarUrl
+						? (user.avatarUrl.startsWith("http") ? user.avatarUrl : `${(BASE_URL || "").replace(/\/+$/, "")}/${(user.avatarUrl || "").replace(/^\/+/, "")}`)
+						: "";
+					return (
+						<div className="flex items-center gap-2 rounded-lg border border-border/70 bg-muted/30 p-2 min-w-[180px] max-w-[220px]">
+							<Avatar className="h-9 w-9 shrink-0">
+								<AvatarImage src={avatarUrl} alt={user.name} />
+								<AvatarFallback className="text-xs">{(user.name || "?").slice(0, 2).toUpperCase()}</AvatarFallback>
+							</Avatar>
+							<div className="min-w-0 flex-1">
+								<div className="truncate font-medium text-sm">{user.name}</div>
+								{user.employeeType && <div className="text-xs text-muted-foreground">{user.employeeType}</div>}
+							</div>
+						</div>
+					);
+				},
+			},
+			{
 				key: "updated_at",
 				header: t("table.lastUpdate"),
 				cell: (row) => (
 					<span className="text-xs text-gray-500">
 						{new Date(row.updated_at).toLocaleDateString("ar-EG")}
+					</span>
+				),
+			},
+			{
+				key: "created_at",
+				header: t("table.createdat"),
+				cell: (row) => (
+					<span className="text-xs text-gray-500">
+						{new Date(row.created_at).toLocaleDateString("ar-EG")}
 					</span>
 				),
 			},
@@ -1385,107 +1838,7 @@ export default function OrdersPageEnhanced() {
 			},
 		];
 	}, [t, router, stats]);
-	// const statsCards = useMemo(
-	// 	() => [
-	// 		{
-	// 			title: t("stats.pendingConfirmation"),
-	// 			value: String(stats.pending_confirmation),
-	// 			icon: AlertCircle,
-	// 			bg: "bg-[#FFF3E0] dark:bg-[#1A1108]",
-	// 			iconColor: "text-[#FF9800] dark:text-[#FFB74D]",
-	// 			iconBorder: "border-[#FF9800] dark:border-[#FFB74D]",
-	// 		},
-	// 		{
-	// 			title: t("stats.confirmed"),
-	// 			value: String(stats.confirmed),
-	// 			icon: CheckCircle,
-	// 			bg: "bg-[#E8F5E9] dark:bg-[#0E1A0C]",
-	// 			iconColor: "text-[#4CAF50] dark:text-[#81C784]",
-	// 			iconBorder: "border-[#4CAF50] dark:border-[#81C784]",
-	// 		},
-	// 		{
-	// 			title: t("stats.new"),
-	// 			value: String(stats.new),
-	// 			icon: Package,
-	// 			bg: "bg-[#E3F2FD] dark:bg-[#0A1220]",
-	// 			iconColor: "text-[#2196F3] dark:text-[#64B5F6]",
-	// 			iconBorder: "border-[#2196F3] dark:border-[#64B5F6]",
-	// 		},
-	// 		{
-	// 			title: t("stats.total"),
-	// 			value: String(stats.total),
-	// 			icon: TrendingUp,
-	// 			bg: "bg-[#F3E5F5] dark:bg-[#1A0E1F]",
-	// 			iconColor: "text-[#9C27B0] dark:text-[#BA68C8]",
-	// 			iconBorder: "border-[#9C27B0] dark:border-[#BA68C8]",
-	// 		},
-	// 		{
-	// 			title: t("stats.wrongNumber"),
-	// 			value: String(stats.wrong_number),
-	// 			icon: Phone,
-	// 			bg: "bg-[#FFEBEE] dark:bg-[#1F0A0A]",
-	// 			iconColor: "text-[#F44336] dark:text-[#EF5350]",
-	// 			iconBorder: "border-[#F44336] dark:border-[#EF5350]",
-	// 		},
-	// 		{
-	// 			title: t("stats.duplicate"),
-	// 			value: String(stats.duplicate),
-	// 			icon: Copy,
-	// 			bg: "bg-[#FFF8E1] dark:bg-[#1A1608]",
-	// 			iconColor: "text-[#FFC107] dark:text-[#FFD54F]",
-	// 			iconBorder: "border-[#FFC107] dark:border-[#FFD54F]",
-	// 		},
-	// 		{
-	// 			title: t("stats.postponed"),
-	// 			value: String(stats.postponed),
-	// 			icon: Clock,
-	// 			bg: "bg-[#E0F2F1] dark:bg-[#0A1A18]",
-	// 			iconColor: "text-[#009688] dark:text-[#4DB6AC]",
-	// 			iconBorder: "border-[#009688] dark:border-[#4DB6AC]",
-	// 		},
-	// 		{
-	// 			title: t("stats.delivered"),
-	// 			value: String(stats.delivered),
-	// 			icon: CheckCircle,
-	// 			bg: "bg-[#E8F5E9] dark:bg-[#0E1A0C]",
-	// 			iconColor: "text-[#4CAF50] dark:text-[#81C784]",
-	// 			iconBorder: "border-[#4CAF50] dark:border-[#81C784]",
-	// 		},
-	// 		{
-	// 			title: t("stats.inShipping"),
-	// 			value: String(stats.in_shipping),
-	// 			icon: Truck,
-	// 			bg: "bg-[#E1F5FE] dark:bg-[#0A1820]",
-	// 			iconColor: "text-[#03A9F4] dark:text-[#4FC3F7]",
-	// 			iconBorder: "border-[#03A9F4] dark:border-[#4FC3F7]",
-	// 		},
-	// 		{
-	// 			title: t("stats.waitingStock"),
-	// 			value: String(stats.waiting_stock),
-	// 			icon: Package,
-	// 			bg: "bg-[#FFF3E0] dark:bg-[#1A1108]",
-	// 			iconColor: "text-[#FF9800] dark:text-[#FFB74D]",
-	// 			iconBorder: "border-[#FF9800] dark:border-[#FFB74D]",
-	// 		},
-	// 		{
-	// 			title: t("stats.noAnswerShipping"),
-	// 			value: String(stats.no_answer_shipping),
-	// 			icon: AlertCircle,
-	// 			bg: "bg-[#FCE4EC] dark:bg-[#1F0A14]",
-	// 			iconColor: "text-[#E91E63] dark:text-[#F06292]",
-	// 			iconBorder: "border-[#E91E63] dark:border-[#F06292]",
-	// 		},
-	// 		{
-	// 			title: t("stats.cancelledShipping"),
-	// 			value: String(stats.cancelled_shipping),
-	// 			icon: XCircle,
-	// 			bg: "bg-[#FFEBEE] dark:bg-[#1F0A0A]",
-	// 			iconColor: "text-[#F44336] dark:text-[#EF5350]",
-	// 			iconBorder: "border-[#F44336] dark:border-[#EF5350]",
-	// 		},
-	// 	],
-	// 	[t, stats]
-	// );
+
 
 	return (
 		<div className="min-h-screen p-6">
@@ -1621,8 +1974,11 @@ export default function OrdersPageEnhanced() {
 			<DistributionModal
 				isOpen={distributionOpen}
 				onClose={() => setDistributionOpen(false)}
-				orders={pager.records}
-
+				statuses={stats}
+				onSuccess={() => {
+					fetchOrders(1, pager.per_page);
+					fetchStats();
+				}}
 			/>
 
 
@@ -1684,6 +2040,9 @@ export default function OrdersPageEnhanced() {
 // Global Retry Settings Modal
 function GlobalRetrySettingsModal({ isOpen, onClose }) {
 	const t = useTranslations("orders");
+	const [loading, setLoading] = useState(true);
+	const [saving, setSaving] = useState(false);
+
 	const [settings, setSettings] = useState({
 		enabled: true,
 		maxRetries: 3,
@@ -1699,218 +2058,261 @@ function GlobalRetrySettingsModal({ isOpen, onClose }) {
 		}
 	});
 
-	const handleSave = () => {
-		toast.success(t("messages.settingsSaved"));
-		onClose();
+	// Fetch settings whenever the modal opens
+	useEffect(() => {
+
+		(async () => {
+			setLoading(true);
+			try {
+				const res = await api.get(`/orders/retry-settings`);
+				if (res.data) {
+					// Merge with defaults to prevent crashes if backend misses a field
+					setSettings((prev) => ({ ...prev, ...res.data }));
+				}
+			} catch (e) {
+				toast.error(normalizeAxiosError(e));
+			} finally {
+				setLoading(false);
+			}
+		})();
+
+	}, []);
+
+	const handleSave = async () => {
+		setSaving(true);
+		try {
+			const { adminId, ...payload } = settings;
+			await api.post(`/orders/retry-settings`, payload);
+			toast.success(t("messages.settingsSaved"));
+			onClose();
+		} catch (e) {
+			toast.error(normalizeAxiosError(e));
+		} finally {
+			setSaving(false);
+		}
 	};
+
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
 			<DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-				<DialogHeader>
-					<DialogTitle className="text-2xl font-bold flex items-center gap-3">
-						<div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center">
-							<Settings className="text-white" size={24} />
-						</div>
-						{t("retrySettings.globalTitle")}
-					</DialogTitle>
-					<DialogDescription>
-						{t("retrySettings.globalDescription")}
-					</DialogDescription>
-				</DialogHeader>
-
-				<Tabs defaultValue="general" className="py-4">
-					<TabsList className="grid w-full grid-cols-3">
-						<TabsTrigger value="general">{t("retrySettings.tabs.general")}</TabsTrigger>
-						<TabsTrigger value="automation">{t("retrySettings.tabs.automation")}</TabsTrigger>
-						<TabsTrigger value="notifications">{t("retrySettings.tabs.notifications")}</TabsTrigger>
-					</TabsList>
-
-					<TabsContent value="general" className="space-y-6 mt-6">
-						{/* Enable/Disable */}
-						<div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
-							<div>
-								<Label className="text-base font-semibold">{t("retrySettings.enableRetry")}</Label>
-								<p className="text-sm text-gray-500 mt-1">{t("retrySettings.enableRetryDesc")}</p>
-							</div>
-							<Switch
-								checked={settings.enabled}
-								onCheckedChange={(checked) => setSettings({ ...settings, enabled: checked })}
-							/>
-						</div>
-
-						{/* Max Retries */}
-						<div className="space-y-2">
-							<Label>{t("retrySettings.maxRetries")}</Label>
-							<Input
-								type="number"
-								min="1"
-								max="10"
-								value={settings.maxRetries}
-								onChange={(e) => setSettings({ ...settings, maxRetries: parseInt(e.target.value) })}
-								className="rounded-xl"
-							/>
-							<p className="text-xs text-gray-500">{t("retrySettings.maxRetriesDesc")}</p>
-						</div>
-
-						{/* Retry Interval */}
-						<div className="space-y-2">
-							<Label>{t("retrySettings.retryInterval")}</Label>
-							<div className="flex items-center gap-2">
-								<Input
-									type="number"
-									min="5"
-									max="1440"
-									value={settings.retryInterval}
-									onChange={(e) => setSettings({ ...settings, retryInterval: parseInt(e.target.value) })}
-									className="rounded-xl"
-								/>
-								<span className="text-sm text-gray-500">{t("retrySettings.minutes")}</span>
-							</div>
-							<p className="text-xs text-gray-500">{t("retrySettings.retryIntervalDesc")}</p>
-						</div>
-
-						{/* Working Hours */}
-						<div className="space-y-4 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-xl">
-							<div className="flex items-center justify-between">
-								<Label className="text-base font-semibold">{t("retrySettings.workingHours")}</Label>
-								<Switch
-									checked={settings.workingHours.enabled}
-									onCheckedChange={(checked) => setSettings({
-										...settings,
-										workingHours: { ...settings.workingHours, enabled: checked }
-									})}
-								/>
-							</div>
-
-							{settings.workingHours.enabled && (
-								<div className="grid grid-cols-2 gap-4">
-									<div className="space-y-2">
-										<Label className="text-sm">{t("retrySettings.startTime")}</Label>
-										<Input
-											type="time"
-											value={settings.workingHours.start}
-											onChange={(e) => setSettings({
-												...settings,
-												workingHours: { ...settings.workingHours, start: e.target.value }
-											})}
-											className="rounded-xl"
-										/>
-									</div>
-									<div className="space-y-2">
-										<Label className="text-sm">{t("retrySettings.endTime")}</Label>
-										<Input
-											type="time"
-											value={settings.workingHours.end}
-											onChange={(e) => setSettings({
-												...settings,
-												workingHours: { ...settings.workingHours, end: e.target.value }
-											})}
-											className="rounded-xl"
-										/>
-									</div>
+				{loading ? (
+					<div className="flex flex-col items-center justify-center p-12 space-y-4">
+						<Loader2 className="animate-spin text-primary" size={40} />
+						<p className="text-muted-foreground">{t("common.loading")}</p>
+					</div>
+				) : (
+					<>
+						<DialogHeader>
+							<DialogTitle className="text-2xl font-bold flex items-center gap-3">
+								<div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center">
+									<Settings className="text-white" size={24} />
 								</div>
-							)}
-						</div>
-					</TabsContent>
+								{t("retrySettings.globalTitle")}
+							</DialogTitle>
+							<DialogDescription>
+								{t("retrySettings.globalDescription")}
+							</DialogDescription>
+						</DialogHeader>
 
-					<TabsContent value="automation" className="space-y-6 mt-6">
-						{/* Auto Move Status */}
-						<div className="space-y-2">
-							<Label>{t("retrySettings.autoMoveStatus")}</Label>
-							<Select value={settings.autoMoveStatus} onValueChange={(v) => setSettings({ ...settings, autoMoveStatus: v })}>
-								<SelectTrigger className="rounded-xl">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="cancelled">{t("statuses.cancelled")}</SelectItem>
-									<SelectItem value="postponed">{t("statuses.postponed")}</SelectItem>
-									<SelectItem value="pending_confirmation">{t("statuses.pendingConfirmation")}</SelectItem>
-								</SelectContent>
-							</Select>
-							<p className="text-xs text-gray-500">{t("retrySettings.autoMoveStatusDesc")}</p>
-						</div>
+						<Tabs defaultValue="general" className="py-4">
+							<TabsList className="grid w-full grid-cols-3">
+								<TabsTrigger value="general">{t("retrySettings.tabs.general")}</TabsTrigger>
+								<TabsTrigger value="automation">{t("retrySettings.tabs.automation")}</TabsTrigger>
+								<TabsTrigger value="notifications">{t("retrySettings.tabs.notifications")}</TabsTrigger>
+							</TabsList>
 
-						{/* Retry Statuses */}
-						<div className="space-y-3">
-							<Label>{t("retrySettings.retryStatuses")}</Label>
-							<div className="space-y-2">
-								{[
-									{ value: "pending_confirmation", label: t("statuses.pendingConfirmation") },
-									{ value: "no_answer_shipping", label: t("statuses.noAnswerShipping") },
-									{ value: "wrong_number", label: t("statuses.wrongNumber") },
-									{ value: "postponed", label: t("statuses.postponed") }
-								].map((status) => (
-									<div key={status.value} className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
-										<Checkbox
-											checked={settings.retryStatuses.includes(status.value)}
-											onCheckedChange={(checked) => {
-												if (checked) {
-													setSettings({ ...settings, retryStatuses: [...settings.retryStatuses, status.value] });
-												} else {
-													setSettings({
+							<TabsContent value="general" className="space-y-6 mt-6">
+								{/* Enable/Disable */}
+								<div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
+									<div>
+										<Label className="text-base font-semibold">{t("retrySettings.enableRetry")}</Label>
+										<p className="text-sm text-gray-500 mt-1">{t("retrySettings.enableRetryDesc")}</p>
+									</div>
+									<Switch
+										checked={settings.enabled}
+										onCheckedChange={(checked) => setSettings({ ...settings, enabled: checked })}
+									/>
+								</div>
+
+								{/* Max Retries */}
+								<div className="space-y-2">
+									<Label>{t("retrySettings.maxRetries")}</Label>
+									<Input
+										type="number"
+										min="1"
+										max="10"
+										value={settings.maxRetries}
+										onChange={(e) => setSettings({ ...settings, maxRetries: parseInt(e.target.value) })}
+										className="rounded-xl"
+									/>
+									<p className="text-xs text-gray-500">{t("retrySettings.maxRetriesDesc")}</p>
+								</div>
+
+								{/* Retry Interval */}
+								<div className="space-y-2">
+									<Label>{t("retrySettings.retryInterval")}</Label>
+									<div className="flex items-center gap-2">
+										<Input
+											type="number"
+											min="5"
+											max="1440"
+											value={settings.retryInterval}
+											onChange={(e) => setSettings({ ...settings, retryInterval: parseInt(e.target.value) })}
+											className="rounded-xl"
+										/>
+										<span className="text-sm text-gray-500">{t("retrySettings.minutes")}</span>
+									</div>
+									<p className="text-xs text-gray-500">{t("retrySettings.retryIntervalDesc")}</p>
+								</div>
+
+								{/* Working Hours */}
+								<div className="space-y-4 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-xl">
+									<div className="flex items-center justify-between">
+										<Label className="text-base font-semibold">{t("retrySettings.workingHours")}</Label>
+										<Switch
+											checked={settings.workingHours.enabled}
+											onCheckedChange={(checked) => setSettings({
+												...settings,
+												workingHours: { ...settings.workingHours, enabled: checked }
+											})}
+										/>
+									</div>
+
+									{settings.workingHours.enabled && (
+										<div className="grid grid-cols-2 gap-4">
+											<div className="space-y-2">
+												<Label className="text-sm">{t("retrySettings.startTime")}</Label>
+												<Input
+													type="time"
+													value={settings.workingHours.start}
+													onChange={(e) => setSettings({
 														...settings,
-														retryStatuses: settings.retryStatuses.filter(s => s !== status.value)
-													});
-												}
-											}}
-										/>
-										<Label className="cursor-pointer">{status.label}</Label>
-									</div>
-								))}
-							</div>
-						</div>
-					</TabsContent>
-
-					<TabsContent value="notifications" className="space-y-6 mt-6">
-						{/* Notify Employee */}
-						<div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
-							<div>
-								<Label className="text-base font-semibold">{t("retrySettings.notifyEmployee")}</Label>
-								<p className="text-sm text-gray-500 mt-1">{t("retrySettings.notifyEmployeeDesc")}</p>
-							</div>
-							<Switch
-								checked={settings.notifyEmployee}
-								onCheckedChange={(checked) => setSettings({ ...settings, notifyEmployee: checked })}
-							/>
-						</div>
-
-						{/* Notify Admin */}
-						<div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
-							<div>
-								<Label className="text-base font-semibold">{t("retrySettings.notifyAdmin")}</Label>
-								<p className="text-sm text-gray-500 mt-1">{t("retrySettings.notifyAdminDesc")}</p>
-							</div>
-							<Switch
-								checked={settings.notifyAdmin}
-								onCheckedChange={(checked) => setSettings({ ...settings, notifyAdmin: checked })}
-							/>
-						</div>
-
-						{/* Preview */}
-						<div className="p-4 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 rounded-xl">
-							<div className="flex items-start gap-3">
-								<Bell size={20} className="text-purple-600 mt-1" />
-								<div>
-									<h4 className="font-bold mb-2">{t("retrySettings.notificationPreview")}</h4>
-									<p className="text-sm text-gray-600 dark:text-slate-400">
-										{t("retrySettings.notificationPreviewText")}
-									</p>
+														workingHours: { ...settings.workingHours, start: e.target.value }
+													})}
+													className="rounded-xl"
+												/>
+											</div>
+											<div className="space-y-2">
+												<Label className="text-sm">{t("retrySettings.endTime")}</Label>
+												<Input
+													type="time"
+													value={settings.workingHours.end}
+													onChange={(e) => setSettings({
+														...settings,
+														workingHours: { ...settings.workingHours, end: e.target.value }
+													})}
+													className="rounded-xl"
+												/>
+											</div>
+										</div>
+									)}
 								</div>
-							</div>
-						</div>
-					</TabsContent>
-				</Tabs>
+							</TabsContent>
 
-				<DialogFooter>
-					<Button variant="outline" onClick={onClose} className="rounded-xl">
-						{t("common.cancel")}
-					</Button>
-					<Button onClick={handleSave} className="rounded-xl bg-gradient-to-r from-primary to-purple-600">
-						<Save size={18} className="ml-2" />
-						{t("common.save")}
-					</Button>
-				</DialogFooter>
+							<TabsContent value="automation" className="space-y-6 mt-6">
+								{/* Auto Move Status */}
+								<div className="space-y-2">
+									<Label>{t("retrySettings.autoMoveStatus")}</Label>
+									<Select value={settings.autoMoveStatus} onValueChange={(v) => setSettings({ ...settings, autoMoveStatus: v })}>
+										<SelectTrigger className="rounded-xl">
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="cancelled">{t("statuses.cancelled")}</SelectItem>
+											<SelectItem value="postponed">{t("statuses.postponed")}</SelectItem>
+											<SelectItem value="pending_confirmation">{t("statuses.pendingConfirmation")}</SelectItem>
+										</SelectContent>
+									</Select>
+									<p className="text-xs text-gray-500">{t("retrySettings.autoMoveStatusDesc")}</p>
+								</div>
+
+								{/* Retry Statuses */}
+								<div className="space-y-3">
+									<Label>{t("retrySettings.retryStatuses")}</Label>
+									<div className="space-y-2">
+										{[
+											{ value: "pending_confirmation", label: t("statuses.pendingConfirmation") },
+											{ value: "no_answer_shipping", label: t("statuses.noAnswerShipping") },
+											{ value: "wrong_number", label: t("statuses.wrongNumber") },
+											{ value: "postponed", label: t("statuses.postponed") }
+										].map((status) => (
+											<div key={status.value} className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
+												<Checkbox
+													checked={settings.retryStatuses.includes(status.value)}
+													onCheckedChange={(checked) => {
+														if (checked) {
+															setSettings({ ...settings, retryStatuses: [...settings.retryStatuses, status.value] });
+														} else {
+															setSettings({
+																...settings,
+																retryStatuses: settings.retryStatuses.filter(s => s !== status.value)
+															});
+														}
+													}}
+												/>
+												<Label className="cursor-pointer">{status.label}</Label>
+											</div>
+										))}
+									</div>
+								</div>
+							</TabsContent>
+
+							<TabsContent value="notifications" className="space-y-6 mt-6">
+								{/* Notify Employee */}
+								<div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
+									<div>
+										<Label className="text-base font-semibold">{t("retrySettings.notifyEmployee")}</Label>
+										<p className="text-sm text-gray-500 mt-1">{t("retrySettings.notifyEmployeeDesc")}</p>
+									</div>
+									<Switch
+										checked={settings.notifyEmployee}
+										onCheckedChange={(checked) => setSettings({ ...settings, notifyEmployee: checked })}
+									/>
+								</div>
+
+								{/* Notify Admin */}
+								<div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
+									<div>
+										<Label className="text-base font-semibold">{t("retrySettings.notifyAdmin")}</Label>
+										<p className="text-sm text-gray-500 mt-1">{t("retrySettings.notifyAdminDesc")}</p>
+									</div>
+									<Switch
+										checked={settings.notifyAdmin}
+										onCheckedChange={(checked) => setSettings({ ...settings, notifyAdmin: checked })}
+									/>
+								</div>
+
+								{/* Preview */}
+								<div className="p-4 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 rounded-xl">
+									<div className="flex items-start gap-3">
+										<Bell size={20} className="text-purple-600 mt-1" />
+										<div>
+											<h4 className="font-bold mb-2">{t("retrySettings.notificationPreview")}</h4>
+											<p className="text-sm text-gray-600 dark:text-slate-400">
+												{t("retrySettings.notificationPreviewText")}
+											</p>
+										</div>
+									</div>
+								</div>
+							</TabsContent>
+						</Tabs>
+
+						<DialogFooter>
+							<Button variant="outline" onClick={onClose} className="rounded-xl">
+								{t("common.cancel")}
+							</Button>
+							<Button onClick={handleSave} className="rounded-xl bg-gradient-to-r from-primary to-purple-600">
+								{saving ? (
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+								) : (
+									<Save size={18} className="mr-2" />
+								)}
+								{t("common.save")}
+							</Button>
+						</DialogFooter>
+					</>
+				)}
 			</DialogContent>
 		</Dialog>
 	);

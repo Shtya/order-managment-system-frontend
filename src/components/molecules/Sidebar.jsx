@@ -1,112 +1,314 @@
-
+// components/molecules/Sidebar.jsx
 'use client';
 
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-
-// ✅ All icons from react-icons
-import {
-	MdDashboard,
-	MdShoppingCart,
-	MdInventory,
-	MdPeople,
-	MdAccountBalance,
-	MdBarChart,
-	MdDescription,
-	MdLogout,
-	MdSettings,
-	MdSecurity,
-	MdLocalShipping,
-	MdWarehouse,
-	MdCategory,
-} from 'react-icons/md';
-
-import {
-	FaChevronDown,
-	FaChevronRight,
-	FaFileInvoiceDollar,
-	FaUserTie,
-	FaUndo,
-	FaPlug,
-	FaCreditCard,
-	FaIndustry,
-} from 'react-icons/fa';
-
-import {
-	Tooltip,
-	TooltipArrow,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { useRouter } from '@/i18n/navigation';
+import Link from 'next/link';
 import { getUser } from '@/hook/getUser';
+import {
+	LayoutDashboard,
+	ShoppingCart,
+	Package,
+	Users,
+	Wallet,
+	BarChart3,
+	FileText,
+	Shield,
+	CreditCard,
+	Factory,
+	TrendingUp,
+	Truck,
+	Settings,
+	Plug,
+	Undo2,
+	ChevronDown,
+	PackagePlus,
+	Warehouse,
+	FolderTree,
+	Layers,
+	LogOut,
+} from 'lucide-react';
+import { FaUserTie } from 'react-icons/fa6';
+import { useRouter } from '@/i18n/navigation';
 
-// ✅ Firebase logout
-import { getAuth, signOut } from 'firebase/auth';
+const menuItems = [
+	// =========================
+	// SUPER ADMIN
+	// =========================
+	{
+		icon: Users,
+		labelKey: 'users',
+		href: '/dashboard/users',
+		badge: null,
+		roles: ['SUPER_ADMIN'],
+	},
+	{
+		icon: Shield,
+		labelKey: 'roles',
+		href: '/dashboard/roles',
+		badge: null,
+		roles: ['SUPER_ADMIN'],
+	},
+	{
+		icon: CreditCard,
+		labelKey: 'plans',
+		href: '/dashboard/plans',
+		badge: null,
+		roles: ['SUPER_ADMIN'],
+	},
 
-export default function Sidebar({ isOpen, isRTL }) {
-	const pathnameRouter = usePathname();
+	// =========================
+	// ADMIN
+	// =========================
+	{
+		icon: LayoutDashboard,
+		labelKey: 'dashboard',
+		href: '/dashboard',
+		badge: null,
+		roles: ['ADMIN'],
+	},
+	{
+		icon: ShoppingCart,
+		labelKey: 'orders',
+		href: '/orders',
+		badge: '12',
+		roles: ['ADMIN'],
+		children: [
+			{
+				icon: Package,
+				labelKey: 'employeeOrders',
+				href: '/orders',
+			},
+			{
+				icon: Undo2,
+				labelKey: 'order-replacement',
+				href: '/order-replacement',
+			},
+		],
+	},
+	{
+		icon: Package,
+		labelKey: 'products',
+		href: '/products',
+		badge: null,
+		roles: ['ADMIN'],
+		children: [
+			{
+				icon: Package,
+				labelKey: 'products',
+				href: '/products',
+			},
+			{
+				icon: PackagePlus,
+				labelKey: 'newProduct',
+				href: '/products/new',
+			},
+			{
+				icon: Layers,
+				labelKey: 'newBundle',
+				href: '/bundles/new',
+			},
+		],
+	},
+	{
+		icon: Warehouse,
+		labelKey: 'warehouse',
+		href: '/warehouse',
+		badge: null,
+		roles: ['ADMIN'],
+		children: [
+			{
+				icon: PackagePlus,
+				labelKey: 'newWarehouse',
+				href: '/warehouse/new',
+			},
+		],
+	},
+	{
+		icon: Factory,
+		labelKey: 'suppliers',
+		href: '/suppliers',
+		badge: null,
+		roles: ['ADMIN'],
+		children: [
+			{
+				icon: Factory,
+				labelKey: 'suppliers',
+				href: '/suppliers',
+			},
+			{
+				icon: FolderTree,
+				labelKey: 'categories',
+				href: '/suppliers/categories',
+			},
+		],
+	},
+	{
+		icon: FileText,
+		labelKey: 'purchases',
+		href: '/purchases',
+		badge: null,
+		roles: ['ADMIN'],
+		children: [
+			{
+				icon: FileText,
+				labelKey: 'purchases',
+				href: '/purchases',
+			},
+			{
+				icon: Undo2,
+				labelKey: 'purchasesReturn',
+				href: '/purchases/return',
+			},
+		],
+	},
+	{
+		icon: TrendingUp,
+		labelKey: 'sales',
+		href: '/sales',
+		badge: null,
+		roles: ['ADMIN'],
+	},
+	{
+		icon: Truck,
+		labelKey: 'shippingCompanies',
+		href: '/shipping-companies',
+		badge: null,
+		roles: ['ADMIN'],
+	},
+	{
+		icon: FaUserTie,
+		labelKey: 'employees',
+		href: '/employees',
+		badge: null,
+		roles: ['ADMIN'],
+	},
+	{
+		icon: Wallet,
+		labelKey: 'accounts',
+		href: '/accounts',
+		badge: null,
+		roles: ['ADMIN'],
+	},
+	{
+		icon: BarChart3,
+		labelKey: 'reports',
+		href: '/reports',
+		badge: null,
+		roles: ['ADMIN'],
+	},
+	{
+		icon: Plug,
+		labelKey: 'storeIntegration',
+		href: '/store-integration',
+		badge: null,
+		roles: ['ADMIN'],
+	},
+	{
+		icon: CreditCard,
+		labelKey: 'plans',
+		href: '/plans',
+		badge: null,
+		roles: ['ADMIN'],
+	},
+	{
+		icon: Shield,
+		labelKey: 'roles',
+		href: '/roles',
+		badge: null,
+		roles: ['ADMIN'],
+	},
+	{
+		icon: Settings,
+		labelKey: 'settings',
+		href: '/settings',
+		badge: null,
+		roles: ['ADMIN'],
+	},
+];
 
-	const [didMount, setDidMount] = React.useState(false);
-	React.useEffect(() => {
-		setDidMount(true);
-	}, []);
-
-	const pathname = pathnameRouter?.slice(3, 1000);
+const Sidebar = ({ isOpen, isRTL }) => {
+	const pathname = usePathname();
 	const t = useTranslations('sidebar');
+	const [expandedItems, setExpandedItems] = useState(new Set());
+	const [hoveredItem, setHoveredItem] = useState(null);
+	const router = useRouter()
 
+	
+	// Get user role
 	const user = getUser();
-	const role = user?.role?.toUpperCase();
-	const router = useRouter();
+	const userRole = user?.role?.toUpperCase();
 
-	// ✅ Control open/close of sub menus
-	const [openGroups, setOpenGroups] = useState({});
+	// Filter menu items based on user role
+	const filteredMenuItems = useMemo(() => {
+		if (!userRole) return [];
 
-	React.useEffect(() => {
-		if (!isOpen) return;
-		try {
-			const items = menuItemsRef.current || [];
-			for (const item of items) {
-				if (item?.children?.length) {
-					const inGroup =
-						(item.href && (pathname === item.href || pathname?.startsWith(item.href + '/'))) ||
-						item.children.some((c) => pathname === c.href || pathname?.startsWith(c.href + '/'));
-					if (inGroup) {
-						setOpenGroups((prev) => ({ ...prev, [item.labelKey]: true }));
-					}
-				}
+		return menuItems.filter(item => {
+			// If item has roles defined, check if user role is included
+			if (item.roles && item.roles.length > 0) {
+				return item.roles.includes(userRole);
 			}
-		} catch (_) { }
-	}, [pathname, isOpen]);
-
-	// ✅ Toggle group and close others
-	const toggleGroup = useCallback((key) => {
-		setOpenGroups((prev) => {
-			const isCurrentlyOpen = prev[key];
-			// Close all others, toggle current
-			const newState = {};
-			if (!isCurrentlyOpen) {
-				newState[key] = true;
-			}
-			return newState;
+			// If no roles defined, show to everyone
+			return true;
 		});
-	}, []);
+	}, [userRole]);
+
+	const toggleExpanded = (href) => {
+		setExpandedItems((prev) => {
+			const newSet = new Set(prev);
+			if (newSet.has(href)) {
+				newSet.delete(href);
+			} else {
+				newSet.add(href);
+			}
+			return newSet;
+		});
+	};
+
+	const isActive = (href) => pathname.endsWith(href);
+
+	const isParentActive = (item) => {
+		if (item.children?.length) {
+			return isActive(item.href) || item.children.some((c) => isActive(c.href));
+		}
+		return isActive(item.href);
+	};
+
+	// Show loading state or empty state if no role
+	if (!userRole) {
+		return (
+			<motion.aside
+				initial={false}
+				animate={{
+					width: isOpen ? 280 : 80,
+					x: 0,
+				}}
+				transition={{
+					duration: 0.4,
+					ease: [0.25, 0.46, 0.45, 0.94],
+				}}
+				className={`
+          fixed top-16 ${isRTL ? 'right-0' : 'left-0'} h-[calc(100vh-4rem)]
+          bg-gradient-to-b from-background via-background to-card/50
+          border-${isRTL ? 'l' : 'r'} border-border/50 backdrop-blur-xl z-30 overflow-hidden
+          shadow-2xl flex items-center justify-center
+        `}
+			>
+				<div className="text-muted-foreground text-sm">
+					{isOpen ? t('loading') || 'Loading...' : '...'}
+				</div>
+			</motion.aside>
+		);
+	}
+
 
 	const handleLogout = async () => {
 		try {
 			localStorage.removeItem('accessToken');
 			localStorage.removeItem('refreshToken');
-			localStorage.removeItem('user');
-
-			try {
-				const auth = getAuth();
-				if (auth?.currentUser) await signOut(auth);
-			} catch (_) { }
-
+			localStorage.removeItem('user'); 
 			router.replace('/auth');
 		} catch (e) {
 			console.error('Logout failed', e);
@@ -114,616 +316,370 @@ export default function Sidebar({ isOpen, isRTL }) {
 		}
 	};
 
-	const menuItems = useMemo(
-		() => [
-			// =========================
-			// SUPER ADMIN
-			// =========================
-			{
-				icon: MdPeople,
-				labelKey: 'users',
-				href: '/dashboard/users',
-				badge: null,
-				roles: ['SUPER_ADMIN'],
-			},
-			{
-				icon: MdSecurity,
-				labelKey: 'roles',
-				href: '/dashboard/roles',
-				badge: null,
-				roles: ['SUPER_ADMIN'],
-			},
-			{
-				icon: FaCreditCard,
-				labelKey: 'plans',
-				href: '/dashboard/plans',
-				badge: null,
-				roles: ['SUPER_ADMIN'],
-			},
+	return (
+		<motion.aside
+			initial={false}
+			animate={{
+				width: isOpen ? 280 : 80,
+				x: 0,
+			}}
+			transition={{
+				duration: 0.4,
+				ease: [0.25, 0.46, 0.45, 0.94],
+			}}
+			className={`
+        fixed top-16 ${isRTL ? 'right-0' : 'left-0'} h-[calc(100vh-4rem)]
+        bg-gradient-to-b from-background via-background to-card/50
+        border-${isRTL ? 'l' : 'r'} border-border/50 backdrop-blur-xl z-30 overflow-hidden
+        shadow-2xl
+      `}
+			style={{
+				direction: isRTL ? 'rtl' : 'ltr',
+			}}
+		>
+			{/* Animated Background Gradient */}
+			<div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
 
-			// =========================
-			// ADMIN
-			// =========================
-
-			// 1) Dashboard
-			{
-				icon: MdDashboard,
-				labelKey: 'dashboard',
-				href: '/dashboard',
-				badge: null,
-				roles: ['ADMIN'],
-			},
-
-			// 2) Core Operations
-			{
-				icon: MdShoppingCart,
-				labelKey: 'orders',
-				href: '/orders',
-				badge: '12',
-				roles: ['ADMIN'],
-				children: [
-					{
-						icon: MdInventory,
-						labelKey: 'employeeOrders',
-						href: '/orders/employee-orders',
-					},
-					{
-						icon: MdInventory,
-						labelKey: 'createPurchaseReturn',
-						href: '/orders/create-purchase-return',
-					}
-				],
-			},
-			{
-				icon: MdInventory,
-				labelKey: 'products',
-				href: '/products',
-				badge: null,
-				roles: ['ADMIN'],
-				children: [
-					{
-						icon: MdInventory,
-						labelKey: 'products',
-						href: '/products',
-					},
-					{
-						icon: FaIndustry,
-						labelKey: 'newProduct',
-						href: '/products/new',
-					},
-					{
-						icon: MdCategory,
-						labelKey: 'newBundle',
-						href: '/bundles/new',
-					},
-				],
-			},
-			{
-				icon: MdWarehouse,
-				labelKey: 'warehouse',
-				href: '/warehouse',
-				badge: null,
-				roles: ['ADMIN'],
-			},
-
-			// ✅ Suppliers with Sub Tabs
-			{
-				icon: FaIndustry,
-				labelKey: 'suppliers',
-				href: '/suppliers',
-				badge: null,
-				roles: ['ADMIN'],
-				children: [
-					{
-						icon: FaIndustry,
-						labelKey: 'suppliers',
-						href: '/suppliers',
-					},
-					{
-						icon: MdCategory,
-						labelKey: 'categories',
-						href: '/suppliers/categories',
-					},
-				],
-			},
-
-			{
-				icon: MdDescription,
-				labelKey: 'purchases',
-				href: '/purchases',
-				badge: null,
-				roles: ['ADMIN'],
-				children: [
-					{
-						icon: MdDescription,
-						labelKey: 'purchases',
-						href: '/purchases',
-					},
-					{
-						icon: FaUndo,
-						labelKey: 'purchases-return',
-						href: '/purchases/return',
-					},
-				],
-			},
-
-			{
-				icon: FaFileInvoiceDollar,
-				labelKey: 'sales',
-				href: '/sales',
-				badge: null,
-				roles: ['ADMIN'],
-			},
-			{
-				icon: MdLocalShipping,
-				labelKey: 'shipping-companies',
-				href: '/shipping-companies',
-				badge: null,
-				roles: ['ADMIN'],
-			},
-
-			// 4) People
-			{
-				icon: FaUserTie,
-				labelKey: 'employees',
-				href: '/employees',
-				badge: null,
-				roles: ['ADMIN'],
-			},
-
-			// 5) Finance
-			{
-				icon: MdAccountBalance,
-				labelKey: 'accounts',
-				href: '/accounts',
-				badge: null,
-				roles: ['ADMIN'],
-			},
-
-			// 6) Analytics
-			{
-				icon: MdBarChart,
-				labelKey: 'reports',
-				href: '/reports',
-				badge: null,
-				roles: ['ADMIN'],
-			},
-
-			// 7) Integrations
-			{
-				icon: FaPlug,
-				labelKey: 'store-integration',
-				href: '/store-integration',
-				badge: null,
-				roles: ['ADMIN'],
-			},
-
-			// 8) Settings & Security
-			{
-				icon: FaCreditCard,
-				labelKey: 'plans',
-				href: '/plans',
-				badge: null,
-				roles: ['ADMIN'],
-			},
-			{
-				icon: MdSecurity,
-				labelKey: 'roles',
-				href: '/roles',
-				badge: null,
-				roles: ['ADMIN'],
-			},
-			{
-				icon: MdSettings,
-				labelKey: 'settings',
-				href: '/settings',
-				badge: null,
-				roles: ['ADMIN'],
-			},
-		],
-		[]
-	);
-
-	const menuItemsRef = React.useRef(menuItems);
-	React.useEffect(() => {
-		menuItemsRef.current = menuItems;
-	}, [menuItems]);
-
-	const visibleMenuItems = useMemo(() => {
-		return menuItems.filter((item) => {
-			if (!role) return false;
-			if (!item.roles || item.roles.length === 0) return true;
-			return item.roles.includes(role);
-		});
-	}, [menuItems, role]);
-
-	const isActive = useCallback(
-		(href) => {
-			if (!href) return false;
-			if (href === '/') return pathname === '/';
-			return pathname === href || pathname?.endsWith(href + '/');
-		},
-		[pathname]
-	);
-
-	const isGroupActive = useCallback(
-		(item) => {
-			if (!item?.children?.length) return isActive(item.href);
-			return item.children.some((c) => isActive(c.href)) || isActive(item.href);
-		},
-		[isActive]
-	);
-
-	const sidebarVariants = {
-		open: {
-			width: '280px',
-			transition: { type: 'spring', stiffness: 300, damping: 30 },
-		},
-		closed: {
-			width: '80px',
-			transition: { type: 'spring', stiffness: 300, damping: 30 },
-		},
-	};
-
-	const itemVariants = {
-		open: {
-			opacity: 1,
-			x: 0,
-			transition: { type: 'spring', stiffness: 300, damping: 30 },
-		},
-		closed: { opacity: 0, x: 20, transition: { duration: 0.2 } },
-	};
-
-	// ✅ Enhanced SubItem Component
-	const SubItem = ({ sub, index, active }) => {
-		return (
+			{/* Floating Orbs */}
 			<motion.div
-				initial={{ opacity: 0, y: 8 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ delay: 0.04 * index, duration: 0.2 }}
-				className="w-full "
-			>
-				<Link
-					href={sub.href}
-					className={`
-            group relative w-full flex items-center gap-3 p-1 rounded-xl transition-all duration-300
-            ${active
-							? 'bg-gradient-to-r from-primary/20 to-primary/10 text-primary dark:text-primary shadow-md border-l-4 border-primary'
-							: ' bg-slate-100 text-slate-600 dark:text-slate-400  '
-						}
-          `}
-				>
-					{/* Icon Container */}
-					<div
-						className={`
-              relative w-9 h-9 shrink-0 rounded-lg flex items-center justify-center
-              transition-all duration-300 transform
-              ${active
-								? 'bg-primary/20 text-primary scale-110 shadow-lg shadow-primary/20'
-								: 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-500 group-hover:bg-primary/10 group-hover:text-primary group-hover:scale-105'
-							}
-            `}
-					>
-						{sub.icon ? <sub.icon size={18} /> : null}
-
-						{/* Glow effect on hover */}
-						{!active && (
-							<div className="absolute inset-0 rounded-lg bg-primary/0 group-hover:bg-primary/5 transition-all duration-300" />
-						)}
-					</div>
-
-					{/* Label */}
-					<div className="min-w-0 flex-1">
-						<span
-							className={`
-                text-sm transition-all duration-200
-                ${active ? 'font-bold' : 'font-medium group-hover:font-semibold'}
-                truncate block
-              `}
-						>
-							{t(sub.labelKey)}
-						</span>
-					</div>
-
-					{/* Arrow indicator */}
-					<FaChevronRight
-						size={12}
-						className={`
-              shrink-0 transition-all duration-300
-              ${isRTL ? 'rotate-180' : ''}
-              ${active
-								? 'text-primary opacity-100'
-								: 'text-slate-400 dark:text-slate-600 opacity-0 group-hover:opacity-100 group-hover:translate-x-1'
-							}
-            `}
-					/>
-				</Link>
-			</motion.div>
-		);
-	};
-
-	// ✅ Enhanced MenuItem Component
-	const MenuItem = ({ item, index }) => {
-		const active = isGroupActive(item);
-		const hasChildren = Array.isArray(item.children) && item.children.length > 0;
-		const isOpenGroup = !!openGroups[item.labelKey];
-
-		const menuItemContent = (
+				animate={{
+					y: [0, -20, 0],
+					opacity: [0.3, 0.5, 0.3],
+				}}
+				transition={{
+					duration: 4,
+					repeat: Infinity,
+					ease: "easeInOut",
+				}}
+				className="absolute top-10 right-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none"
+			/>
 			<motion.div
-				initial={didMount ? false : { opacity: 0, x: 20 }}
-				animate={{ opacity: 1, x: 0 }}
-				transition={didMount ? { duration: 0 } : { delay: index * 0.05, duration: 0.3 }}
-				whileTap={{ scale: 0.97 }}
-				className="w-full relative"
-			>
-				<div className="w-full">
-					{/* Main Item */}
-					<div
-						className={`
-              w-full flex items-center gap-3 px-3 py-3.5 rounded-xl transition-all duration-300
-              relative overflow-hidden cursor-pointer select-none
-              ${active
-								? 'bg-gradient-to-r from-primary via-primary to-primary/90 text-white shadow-xl shadow-primary/40'
-								: 'text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-white hover:to-slate-50 dark:hover:from-slate-800 dark:hover:to-slate-800/70 hover:shadow-lg'
-							}
-            `}
-						onClick={() => {
-							if (hasChildren && isOpen) {
-								toggleGroup(item.labelKey);
-								return;
-							}
-							router.push(item.href);
-						}}
-						role="button"
-						tabIndex={0}
-						onKeyDown={(e) => {
-							if (e.key === 'Enter' || e.key === ' ') {
-								e.preventDefault();
-								if (hasChildren && isOpen) toggleGroup(item.labelKey);
-								else router.push(item.href);
-							}
-						}}
-					>
-						{/* Active Indicator Bar */}
-						{active && (
-							<motion.div
-								layoutId="activeIndicator"
-								className={`absolute ${isRTL ? 'right-0' : 'left-0'} top-0 bottom-0 w-1.5 bg-white/80 rounded-r-full shadow-lg`}
+				animate={{
+					y: [0, 20, 0],
+					opacity: [0.2, 0.4, 0.2],
+				}}
+				transition={{
+					duration: 5,
+					repeat: Infinity,
+					ease: "easeInOut",
+				}}
+				className="absolute bottom-20 left-10 w-40 h-40 bg-secondary/10 rounded-full blur-3xl pointer-events-none"
+			/>
 
-							/>
-						)}
+			{/* Menu Items */}
+			<nav className={`px-2 w-full  pt-4 pb-4 ${!isOpen && "w-fit"} h-[calc(100%-80px)] overflow-y-auto scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent`}>
+				<div className="space-y-2">
+					{filteredMenuItems.map((item, index) => {
+						const Icon = item.icon;
+						const hasChildren = item.children && item.children.length > 0;
+						const isExpanded = expandedItems.has(item.href);
+						const active = isParentActive(item);
+						const isHovered = hoveredItem === item.href;
 
-						{/* Icon */}
-						<div
-							className={`
-                relative z-10 flex items-center justify-center
-                transition-all duration-300 transform
-                ${active ? 'text-white scale-110' : 'text-slate-600 dark:text-slate-400 group-hover:text-primary dark:group-hover:text-primary group-hover:scale-105'}
-              `}
-						>
-							<item.icon size={22} />
-						</div>
-
-						{/* Label & Badge & Chevron */}
-						<AnimatePresence>
-							{isOpen && (
+						return (
+							<div key={item.href}>
+								{/* Main Item */}
 								<motion.div
-									className="flex-1 flex items-center justify-between relative z-10"
+									initial={{ opacity: 0, y: 20 }}
+									animate={{ opacity: 1, y: 0 }}
+									transition={{ delay: index * 0.03 }}
+									onMouseEnter={() => setHoveredItem(item.href)}
+									onMouseLeave={() => setHoveredItem(null)}
 								>
-									<span className={`font-medium text-sm ${active ? 'font-bold' : ''} transition-all duration-200`}>
-										{t(item.labelKey)}
-									</span>
+									{hasChildren ? (
+										<button
+											onClick={() => toggleExpanded(item.href)}
+											className={`
+                        w-full group relative flex items-center gap-3 ${isOpen ? "px-3 py-3" : ""} rounded-lg
+                        transition-all duration-300
+                        ${active
+													? 'bg-primary  text-white shadow-lg shadow-primary/10'
+													: 'hover:bg-gradient-to-r hover:from-accent/50 hover:to-accent/30 text-muted-foreground hover:text-foreground'
+												}
+                      `}
+										>
+										 
 
-									<div className="flex items-center gap-2.5">
-										{/* Badge */}
-										{item.badge && (
-											<motion.span
+											{/* Icon Container */}
+											<motion.div
+												animate={{
+													scale: isHovered && !active ? 1.1 : 1,
+													rotate: isHovered && !active ? 5 : 0,
+												}}
+												transition={{ duration: 0.2 }}
 												className={`
-                          px-2.5 py-1 rounded-lg text-xs font-bold
+                          relative ${!isOpen && "!w-[55px] !h-[45px]"} flex items-center justify-center w-10 h-10 rounded-lg
+                          transition-all duration-300
                           ${active
-														? 'bg-white/25 text-white backdrop-blur-sm shadow-lg'
-														: 'bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-lg shadow-red-500/30'
+														? 'border-secondary border bg-primary   text-white shadow-xl shadow-primary/40'
+														: 'bg-accent/30 group-hover:bg-accent/50'
 													}
                         `}
 											>
-												{item.badge}
-											</motion.span>
-										)}
+												<Icon className="w-5 h-5 relative z-10" strokeWidth={active ? 2.5 : 2} />
 
-										{/* Chevron for groups */}
-										{hasChildren && (
-											<div
-												className={` ${active ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}
-											>
-												<FaChevronDown className={` ${isOpenGroup ? "rotate-180" : ""} rotate-0 duration-300`} size={14} />
-											</div>
-										)}
-									</div>
-								</motion.div>
-							)}
-						</AnimatePresence>
-
-						{/* Hover gradient overlay */}
-						{!active && (
-							<motion.div
-								className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-transparent rounded-xl opacity-0 hover:opacity-100 transition-opacity duration-300"
-								initial={false}
-							/>
-						)}
-					</div>
-
-					{isOpen && <div style={{ transition: ".5s" }} className={`  overflow-hidden   max-h-0 ${isOpenGroup ? 'max-h-[500px] ' : ' '}  `} >
-						<div className={`  ${isRTL ? 'mr-3 ml-0' : 'ml-3'}`}>
-							<div className={` relative rounded-2xl  `} >
-
-								<div className="space-y-1.5 py-3 ">
-									{item.children && item.children.map((sub, i) => (
-										<SubItem
-											key={sub.href}
-											sub={sub}
-											index={i}
-											active={isActive(sub.href)}
-										/>
-									))}
-								</div>
-							</div>
-						</div> 
-					</div>}
-
-				</div>
-			</motion.div>
-		);
-
-		// Tooltip when sidebar is closed
-		if (!isOpen) {
-			return (
-				<TooltipProvider delayDuration={100}>
-					<Tooltip>
-						<TooltipTrigger asChild>{menuItemContent}</TooltipTrigger>
-						<TooltipContent
-							side={isRTL ? 'left' : 'right'}
-							className="bg-slate-900 dark:bg-slate-800 text-white border-slate-700 shadow-xl px-3 py-2.5"
-							sideOffset={14}
-						>
-							<TooltipArrow className="fill-slate-900 dark:fill-slate-800" />
-							<div className="flex items-center gap-2.5">
-								<span className="font-semibold text-sm">{t(item.labelKey)}</span>
-								{item.badge && (
-									<span className="px-2 py-0.5 rounded-md bg-red-500 text-white text-xs font-bold shadow-lg">
-										{item.badge}
-									</span>
-								)}
-							</div>
-
-							{item.children?.length ? (
-								<div className="mt-2 text-xs text-white/70 flex items-center gap-2">
-									<FaChevronRight size={10} />
-									<span>Has {item.children.length} sub tabs</span>
-								</div>
-							) : null}
-						</TooltipContent>
-					</Tooltip>
-				</TooltipProvider>
-			);
-		}
-
-		return menuItemContent;
-	};
-
-	return (
-		<motion.aside
-			variants={sidebarVariants}
-			initial={isOpen ? 'open' : 'closed'}
-			animate={isOpen ? 'open' : 'closed'}
-			className={`
-        ${isRTL ? 'right-0 border-l' : 'left-0 border-r'}
-        fixed top-16 bottom-0 z-30 shadow-2xl overflow-hidden
-        bg-gradient-to-b backdrop-blur-xl
-        from-slate-50/98 via-white/95 to-slate-100/98 border-slate-200/80
-        dark:from-slate-900/98 dark:via-slate-900/95 dark:to-slate-800/98 dark:border-slate-700/50
-      `}
-		>
-			<div className="h-full overflow-y-auto overflow-x-hidden custom-scrollbar">
-				<div className="p-3 space-y-1.5">
-					{visibleMenuItems.map((item, index) => (
-						<MenuItem key={item.href + item.labelKey} item={item} index={index} />
-					))}
-
-					{/* Elegant Divider */}
-					<div className="py-4">
-						<div className="relative h-px">
-							<div className="absolute inset-0 bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent" />
-							<div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent blur-sm" />
-						</div>
-					</div>
-
-					{/* ✅ Premium Logout Button */}
-					<TooltipProvider delayDuration={100}>
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<motion.button
-									type="button"
-									onClick={handleLogout}
-									whileHover={{ scale: 1.02, x: isRTL ? 3 : -3 }}
-									whileTap={{ scale: 0.97 }}
-									className={`
-                    w-full flex items-center gap-3 px-3 py-3.5 rounded-xl transition-all duration-300
-                    relative overflow-hidden group
-                    text-white
-                    bg-gradient-to-r from-red-600 via-rose-500 to-pink-500
-                    shadow-xl shadow-red-500/30
-                    hover:shadow-2xl hover:shadow-red-500/40
-                  `}
-								>
-									{/* Animated background gradient */}
-									<motion.div
-										className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-										style={{
-											background:
-												'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), transparent 60%)',
-										}}
-									/>
-
-									{/* Animated shine effect */}
-									<motion.div
-										className="absolute inset-0 opacity-0 group-hover:opacity-100"
-										animate={{
-											backgroundPosition: ['0% 0%', '100% 100%'],
-										}}
-										transition={{
-											duration: 3,
-											repeat: Infinity,
-											ease: 'linear',
-										}}
-										style={{
-											background:
-												'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)',
-											backgroundSize: '200% 200%',
-										}}
-									/>
-
-									<motion.div
-										whileHover={{ rotate: -10, scale: 1.1 }}
-										transition={{ type: 'spring', stiffness: 400 }}
-										className="relative z-10 w-10 h-5 rounded-xl flex items-center justify-center "
-									>
-										<MdLogout size={20} />
-									</motion.div>
-
-									<AnimatePresence>
-										{isOpen && (
-											<motion.div
-												variants={itemVariants}
-												initial="closed"
-												animate="open"
-												exit="closed"
-												className="flex-1 flex items-center justify-between relative z-10"
-											>
-												<span className="font-bold text-sm tracking-wide">{t('logout')}</span>
-												<FaChevronRight size={12} className={`${isRTL ? 'rotate-180' : ''} opacity-70`} />
+												{/* Glow effect on hover */}
+												{isHovered && !active && (
+													<motion.div
+														initial={{ opacity: 0 }}
+														animate={{ opacity: 1 }}
+														className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg blur-sm"
+													/>
+												)}
 											</motion.div>
-										)}
-									</AnimatePresence>
-								</motion.button>
-							</TooltipTrigger>
 
-							{!isOpen && (
-								<TooltipContent
-									side={isRTL ? 'left' : 'right'}
-									className="bg-red-600 dark:bg-red-700 text-white border-red-700 shadow-xl px-3 py-2.5"
-									sideOffset={14}
-								>
-									<TooltipArrow className="fill-red-600 dark:fill-red-700" />
-									<span className="font-semibold text-sm">{t('logout')}</span>
-								</TooltipContent>
-							)}
-						</Tooltip>
-					</TooltipProvider>
+											{/* Label */}
+											<AnimatePresence>
+												{isOpen && (
+													<motion.div
+														initial={{ opacity: 0, width: 0 }}
+														animate={{ opacity: 1, width: 'auto' }}
+														exit={{ opacity: 0, width: 0 }}
+														className="flex items-center justify-between flex-1 overflow-hidden"
+													>
+														<span className="font-semibold text-sm whitespace-nowrap">
+															{t(item.labelKey)}
+														</span>
+
+														<motion.div
+															animate={{ rotate: isExpanded ? 180 : 0 }}
+															transition={{ duration: 0.3 }}
+														>
+															<ChevronDown className="w-5 h-5" />
+														</motion.div>
+													</motion.div>
+												)}
+											</AnimatePresence>
+
+											{/* Badge */}
+											{item.badge && isOpen && (
+												<motion.span
+													initial={{ scale: 0 }}
+													animate={{ scale: 1 }}
+													whileHover={{ scale: 1.1 }}
+													className="px-2.5 py-1 text-xs font-bold bg-gradient-to-r from-red-500 to-red-600 text-white rounded-full shadow-lg"
+												>
+													{item.badge}
+												</motion.span>
+											)}
+										</button>
+									) : (
+										<Link
+											href={item.href}
+											className={`
+                        w-full group relative flex items-center gap-3  rounded-lg ${isOpen && "px-3 py-3"}
+                        transition-all duration-300
+                        ${active
+													? 'bg-primary text-white shadow-lg shadow-primary/10'
+													: 'hover:bg-gradient-to-r hover:from-accent/50 hover:to-accent/30 text-muted-foreground hover:text-foreground'
+												}
+                      `}
+										>
+ 
+											<motion.div
+												animate={{
+													scale: isHovered && !active ? 1.1 : 1,
+													rotate: isHovered && !active ? 5 : 0,
+												}}
+												transition={{ duration: 0.2 }}
+												className={`
+                          relative flex items-center justify-center w-10 h-10 rounded-lg
+                          transition-all duration-300 overflow-hidden
+													${!isOpen && "!w-[55px] !h-[45px]"}
+                          ${active
+														? ' border-secondary border bg-primary text-white shadow-xl shadow-primary/40'
+														: 'bg-accent/30 group-hover:bg-accent/50'
+													}
+                        `}
+											>
+												<Icon className="w-5 h-5 relative z-10" strokeWidth={active ? 2.5 : 2} />
+
+												{/* Shine effect */}
+												{active && (
+													<motion.div
+														animate={{
+															x: [-100, 100],
+														}}
+														transition={{
+															duration: 2,
+															repeat: Infinity,
+															repeatDelay: 3,
+														}}
+														className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
+													/>
+												)}
+
+												{/* Glow effect on hover */}
+												{isHovered && !active && (
+													<motion.div
+														initial={{ opacity: 0 }}
+														animate={{ opacity: 1 }}
+														className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg blur-sm"
+													/>
+												)}
+											</motion.div>
+
+											{/* Label */}
+											<AnimatePresence>
+												{isOpen && (
+													<motion.span
+														initial={{ opacity: 0, width: 0 }}
+														animate={{ opacity: 1, width: 'auto' }}
+														exit={{ opacity: 0, width: 0 }}
+														className="font-semibold text-sm whitespace-nowrap overflow-hidden"
+													>
+														{t(item.labelKey)}
+													</motion.span>
+												)}
+											</AnimatePresence>
+
+											{/* Badge */}
+											{item.badge && isOpen && (
+												<motion.span
+													initial={{ scale: 0 }}
+													animate={{ scale: 1 }}
+													whileHover={{ scale: 1.1 }}
+													className="ml-auto px-2.5 py-1 text-xs font-bold bg-gradient-to-r from-red-500 to-red-600 text-white rounded-full shadow-lg"
+												>
+													{item.badge}
+												</motion.span>
+											)}
+										</Link>
+									)}
+								</motion.div>
+
+								{/* Sub Items */}
+								<AnimatePresence>
+									{hasChildren && isExpanded && isOpen && (
+										<motion.div
+											initial={{ height: 0, opacity: 0 }}
+											animate={{ height: 'auto', opacity: 1 }}
+											exit={{ height: 0, opacity: 0 }}
+											transition={{ duration: 0.3, ease: 'easeInOut' }}
+											className="overflow-hidden"
+										>
+											<div className={`space-y-1 mt-1 ${isRTL ? 'pl-3' : 'pr-3'}`}>
+												{item.children?.map((child, childIndex) => {
+													const ChildIcon = child.icon;
+													const childActive = isActive(child.href);
+
+													return (
+														<motion.div
+															key={child.href}
+															initial={{ opacity: 0, x: isRTL ? 20 : -20 }}
+															animate={{ opacity: 1, x: 0 }}
+															transition={{ delay: childIndex * 0.05 }}
+														>
+															<Link
+																href={child.href}
+																className={`
+                                  flex items-center gap-3 px-4 py-2.5 rounded-lg
+                                  transition-all duration-300 group relative
+                                  ${childActive
+																		? 'bg-primary/80  text-white'
+																		: 'hover:bg-accent/40 text-muted-foreground hover:text-foreground'
+																	}
+                                `}
+															>
+																{/* Connection Line */}
+																<div className={`absolute ${isRTL ? 'right-0' : 'left-0'} top-0 bottom-0 w-px bg-border/30`} />
+																<motion.div
+																	animate={{
+																		scale: childActive ? [1, 1.3, 1] : 1,
+																	}}
+																	transition={{
+																		duration: 0.6,
+																		repeat: childActive ? Infinity : 0,
+																		repeatDelay: 2,
+																	}}
+																	className={`
+                                    w-2 h-2 rounded-full transition-all duration-300 relative z-10
+                                    ${childActive
+																			? 'bg-gradient-to-r from-primary to-secondary shadow-lg shadow-primary/50'
+																			: 'bg-muted-foreground/30 group-hover:bg-muted-foreground/60'
+																		}
+                                  `}
+																/>
+
+																{/* Icon */}
+																<ChildIcon
+																	className={`w-4 h-4 transition-all duration-300 ${childActive ? 'text-white' : ''
+																		}`}
+																	strokeWidth={childActive ? 2.5 : 2}
+																/>
+
+																{/* Label */}
+																<span className="text-sm font-medium whitespace-nowrap flex-1">
+																	{t(child.labelKey)}
+																</span>
+
+																{/* Active Indicator */}
+																{childActive && (
+																	<motion.div
+																		layoutId="subActiveIndicator"
+																		className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-primary to-secondary"
+																		transition={{
+																			type: 'spring',
+																			stiffness: 350,
+																			damping: 30,
+																		}}
+																	/>
+																)}
+															</Link>
+														</motion.div>
+													);
+												})}
+											</div>
+										</motion.div>
+									)}
+								</AnimatePresence>
+							</div>
+						);
+					})}
 				</div>
-			</div>
+			</nav>
 
-			{/* Bottom fade overlay */}
-			<div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-slate-100/90 via-slate-100/50 dark:from-slate-800/90 dark:via-slate-800/50 to-transparent pointer-events-none" />
+			{/* Logout Button */}
+			<div className="absolute bottom-0 left-0 right-0 p-3 border-t border-border/50 bg-gradient-to-t from-background via-background to-transparent">
+				<motion.button
+					whileHover={{ scale: 1.02 }}
+					whileTap={{ scale: 0.98 }}
+					onClick={handleLogout}
+					className={`
+            w-full group relative flex items-center gap-3 ${isOpen && "px-3 py-3"} rounded-lg
+            transition-all duration-300
+            bg-gradient-to-r from-red-500/10 to-red-600/5
+            hover:from-red-500/20 hover:to-red-600/10
+            text-red-600 dark:text-red-400
+            border border-red-500/20 hover:border-red-500/40
+          `}
+				>
+					{/* Icon Container */}
+					<motion.div
+						whileHover={{ rotate: 15 }}
+						transition={{ duration: 0.2 }}
+						className="relative flex items-center justify-center w-10 h-10 rounded-lg bg-red-500/10 group-hover:bg-red-500/20 transition-all duration-300"
+					>
+						<LogOut className="w-5 h-5" strokeWidth={2} />
+					</motion.div>
+
+					{/* Label */}
+					<AnimatePresence>
+						{isOpen && (
+							<motion.span
+								initial={{ opacity: 0, width: 0 }}
+								animate={{ opacity: 1, width: 'auto' }}
+								exit={{ opacity: 0, width: 0 }}
+								className="font-semibold text-sm whitespace-nowrap overflow-hidden"
+							>
+								{t('logout')}
+							</motion.span>
+						)}
+					</AnimatePresence>
+				</motion.button>
+			</div>
 		</motion.aside>
 	);
-}
+};
+
+export default Sidebar;

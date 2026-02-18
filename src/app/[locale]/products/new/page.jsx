@@ -1281,7 +1281,7 @@ function UpsellProductSelector({ t, value, onChange }) {
 }
 
 /** Upload Box */
-function ImageUploadBox({ t, title, files, onFilesChange, onRemove, multiple = true, accept = 'image/*', className }) {
+export function ImageUploadBox({ t, title, files, onFilesChange, onRemove, multiple = true, accept = 'image/*', className }) {
 	const inputRef = useRef(null);
 	const [isDragging, setIsDragging] = useState(false);
 

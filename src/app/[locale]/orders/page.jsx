@@ -36,6 +36,7 @@ import {
 	RotateCcw,
 	AlertTriangle,
 	ChevronDownIcon,
+	ChevronDown,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -80,9 +81,12 @@ import "flatpickr/dist/themes/material_blue.css";
 import { Tabs } from "@radix-ui/react-tabs";
 import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
+import BarcodeCell from "@/components/atoms/BarcodeCell";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { normalizeAxiosError } from "@/utils/axios";
+import { useDebounce } from "@/hook/useDebounce";
+
 
 export const getIconForStatus = (code) => {
 	const iconMap = {
@@ -331,10 +335,10 @@ function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
-			<DialogContent className="max-w-2xl">
+			<DialogContent className="max-w-2xl max-h-[95vh] overflow-y-auto">
 				<DialogHeader>
 					<DialogTitle className="text-2xl font-bold flex items-center gap-3">
-						<div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
+						<div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
 							<Upload className="text-white" size={24} />
 						</div>
 						{t("bulkUpload.title")}
@@ -346,20 +350,23 @@ function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 
 				<div className="space-y-6 py-4">
 					{/* Step 1: Download Template */}
-					<div className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-xl">
+					<div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-6 shadow-sm">
 						<div className="flex items-start gap-4">
-							<div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold flex-shrink-0">
-								1
+							<div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
+								<span className="text-lg font-bold text-emerald-700 dark:text-emerald-400">1</span>
 							</div>
 							<div className="flex-1">
-								<h3 className="font-bold text-lg mb-2">{t("bulkUpload.step1Title")}</h3>
+								<h3 className="font-bold text-lg text-gray-900 dark:text-gray-100 mb-2">
+									{t("bulkUpload.step1Title")}
+								</h3>
 								<p className="text-sm text-gray-600 dark:text-slate-400 mb-4">
 									{t("bulkUpload.step1Description")}
 								</p>
 								<Button
 									onClick={handleDownloadTemplate}
 									disabled={downloadLoading}
-									className="rounded-xl bg-gradient-to-r from-blue-500 to-cyan-600 flex items-center gap-2"
+									variant="outline"
+									className="rounded-xl flex items-center gap-2"
 								>
 									{downloadLoading ? (
 										<RefreshCw size={18} className="animate-spin" />
@@ -373,13 +380,15 @@ function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 					</div>
 
 					{/* Step 2: Fill Data */}
-					<div className="p-6 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 rounded-xl">
+					<div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-6 shadow-sm">
 						<div className="flex items-start gap-4">
-							<div className="w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold flex-shrink-0">
-								2
+							<div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
+								<span className="text-lg font-bold text-purple-700 dark:text-purple-400">2</span>
 							</div>
 							<div className="flex-1">
-								<h3 className="font-bold text-lg mb-2">{t("bulkUpload.step2Title")}</h3>
+								<h3 className="font-bold text-lg text-gray-900 dark:text-gray-100 mb-2">
+									{t("bulkUpload.step2Title")}
+								</h3>
 								<p className="text-sm text-gray-600 dark:text-slate-400">
 									{t("bulkUpload.step2Description")}
 								</p>
@@ -388,18 +397,20 @@ function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 					</div>
 
 					{/* Step 3: Upload */}
-					<div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-xl">
+					<div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-6 shadow-sm">
 						<div className="flex items-start gap-4">
-							<div className="w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center font-bold flex-shrink-0">
-								3
+							<div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+								<span className="text-lg font-bold text-primary">3</span>
 							</div>
 							<div className="flex-1">
-								<h3 className="font-bold text-lg mb-2">{t("bulkUpload.step3Title")}</h3>
+								<h3 className="font-bold text-lg text-gray-900 dark:text-gray-100 mb-2">
+									{t("bulkUpload.step3Title")}
+								</h3>
 								<p className="text-sm text-gray-600 dark:text-slate-400 mb-4">
 									{t("bulkUpload.step3Description")}
 								</p>
 
-								<div className="border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-xl p-8 text-center hover:border-primary transition-colors">
+								<div className="border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-xl p-8 text-center hover:border-primary hover:bg-primary/5 transition-all">
 									<input
 										type="file"
 										id="file-upload"
@@ -408,11 +419,11 @@ function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 										className="hidden"
 									/>
 									<label htmlFor="file-upload" className="cursor-pointer">
-										<Upload size={48} className="mx-auto mb-4 text-gray-400" />
-										<p className="text-sm font-semibold mb-2">
+										<Upload size={48} className="mx-auto mb-4 text-gray-400 dark:text-slate-500" />
+										<p className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
 											{file ? file.name : t("bulkUpload.dragDrop")}
 										</p>
-										<p className="text-xs text-gray-500">
+										<p className="text-xs text-gray-500 dark:text-slate-400">
 											{t("bulkUpload.supportedFormats")}
 										</p>
 									</label>
@@ -429,16 +440,16 @@ function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 					<Button
 						onClick={handleUpload}
 						disabled={!file || uploading}
-						className="rounded-xl bg-gradient-to-r from-green-500 to-emerald-600"
+						className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
 					>
 						{uploading ? (
 							<>
-								<RefreshCw size={18} className="animate-spin ml-2" />
+								<RefreshCw size={18} className="animate-spin mr-2" />
 								{t("bulkUpload.uploading")}
 							</>
 						) : (
 							<>
-								<Upload size={18} className="ml-2" />
+								<Upload size={18} className="mr-2" />
 								{t("bulkUpload.upload")}
 							</>
 						)}
@@ -706,37 +717,414 @@ function FiltersPanel({ value, onChange, onApply, stores = [], shippingCompanies
 		</motion.div>
 	);
 }
+
+
 const PAGE_SIZE = 20;
-// Distribution Modal: manual assign (free-orders + employees-by-load + assign-manual)
-function DistributionModal({ isOpen, onClose, statuses = [], onSuccess }) {
+
+const StatusSelect = ({ open, setOpen, selectedStatuses, statuses, setSelectedStatuses }) => {
+	const t = useTranslations("orders");
+	const triggerRef = useRef(null);
+	const dropdownRef = useRef(null);
+
+	const toggleStatus = useCallback((id) => {
+		setSelectedStatuses((prev) => {
+			// Ensure ID types match (e.g., both strings or both numbers)
+			const exists = prev.includes(id);
+
+			if (exists) {
+				return prev.filter((item) => item !== id);
+			}
+
+			return [...prev, id];
+		});
+	}, []);
+
+	// Close on outside click
+	useEffect(() => {
+		const handler = (e) => {
+			if (
+				triggerRef.current && !triggerRef.current.contains(e.target) &&
+				dropdownRef.current && !dropdownRef.current.contains(e.target)
+			) {
+				setOpen(false);
+			}
+		};
+		document.addEventListener("mousedown", handler);
+		return () => document.removeEventListener("mousedown", handler);
+	}, []);
+
+	const selectedObjects = useMemo(() => {
+		if (!selectedStatuses.length) return [];
+
+		// Convert to Set for O(1) lookup performance if the list is large
+		const statusSet = new Set(selectedStatuses.map(String));
+
+		return statuses.filter((s) => statusSet.has(String(s.id)));
+	}, [statuses, selectedStatuses]);
+
+	const hexToRgb = (hex) => {
+		const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+		return r
+			? { r: parseInt(r[1], 16), g: parseInt(r[2], 16), b: parseInt(r[3], 16) }
+			: null;
+	};
+
+	return (
+		<div className="space-y-2">
+			<Label>{t("distribution.orderStatus")}</Label>
+
+			{/* Trigger */}
+			<div className="relative">
+				<button
+					ref={triggerRef}
+					type="button"
+					onClick={() => setOpen((v) => !v)}
+					className={cn(
+						"w-full flex items-center justify-between gap-2 px-3 py-2 h-10",
+						"rounded-xl border border-input bg-background text-sm",
+						"shadow-sm transition-all hover:bg-accent/30",
+						"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+						open && "ring-2 ring-ring/40"
+					)}
+				>
+					<span className="text-muted-foreground truncate">
+						{selectedStatuses.length === 0
+							? t("distribution.selectStatusPlaceholder")
+							: t("distribution.statusesSelected", { count: selectedStatuses.length })}
+					</span>
+					<motion.span
+						animate={{ rotate: open ? 180 : 0 }}
+						transition={{ duration: 0.2 }}
+						className="flex-shrink-0 opacity-60"
+					>
+						<ChevronDown size={16} />
+					</motion.span>
+				</button>
+
+				{/* Dropdown */}
+				<AnimatePresence>
+					{open && (
+						<motion.div
+							ref={dropdownRef}
+							initial={{ opacity: 0, y: -6, scale: 0.98 }}
+							animate={{ opacity: 1, y: 0, scale: 1 }}
+							exit={{ opacity: 0, y: -6, scale: 0.98 }}
+							transition={{ duration: 0.15 }}
+							className={cn(
+								"absolute z-50 mt-1 w-full",
+								"bg-popover border border-border rounded-xl shadow-lg",
+								"max-h-[220px] overflow-y-auto"
+							)}
+						>
+							{statuses.length === 0 ? (
+								<div className="py-4 text-center text-sm text-muted-foreground">
+									{t("messages.loading")}
+								</div>
+							) : (
+								<div className="p-1.5 space-y-0.5">
+									{statuses.map((s) => {
+										const id = String(s.id);
+										const isChecked = selectedStatuses.includes(id);
+										const c = s.color || "#6366f1";
+										const rgb = hexToRgb(c);
+										const bg = rgb
+											? `rgba(${rgb.r},${rgb.g},${rgb.b},${isChecked ? 0.14 : 0})`
+											: "transparent";
+										const label = s.system ? t(`statuses.${s.code}`) : (s.name || s.code);
+
+										return (
+											<button
+												key={id}
+												type="button"
+												onClick={() => toggleStatus(id)}
+												className={cn(
+													"w-full flex items-center gap-2.5 px-3 py-2 rounded-lg",
+													"text-sm text-left transition-colors",
+													"hover:bg-accent/60",
+													isChecked && "font-medium",
+													isChecked && "bg-gray-50"
+
+												)}
+											// style={{ backgroundColor: bg }}
+											>
+												{/* Checkbox visual */}
+												<span
+													className={cn(
+														"flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors"
+													)}
+													style={{
+														borderColor: c,
+														backgroundColor: isChecked ? c : "transparent",
+													}}
+												>
+													{isChecked && (
+														<svg width="9" height="7" viewBox="0 0 9 7" fill="none">
+															<path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+														</svg>
+													)}
+												</span>
+
+												{/* Color dot */}
+												<span
+													className="w-2 h-2 rounded-full flex-shrink-0"
+													style={{ backgroundColor: c }}
+												/>
+
+												<span className="flex-1 truncate" style={{ color: isChecked ? c : undefined }}>
+													{label}
+												</span>
+											</button>
+										);
+									})}
+								</div>
+							)}
+						</motion.div>
+					)}
+				</AnimatePresence>
+			</div>
+
+			{/* Selected tags shown below */}
+			<AnimatePresence>
+				{selectedObjects.length > 0 && (
+					<motion.div
+						initial={{ opacity: 0, height: 0 }}
+						animate={{ opacity: 1, height: "auto" }}
+						exit={{ opacity: 0, height: 0 }}
+						className="flex flex-wrap gap-1.5 overflow-hidden"
+					>
+						{selectedObjects.map((s) => {
+							const id = String(s.id);
+							const c = s.color || "#6366f1";
+							const rgb = hexToRgb(c);
+							const bg = rgb ? `rgba(${rgb.r},${rgb.g},${rgb.b},0.12)` : "#f5f5f5";
+							const label = s.system ? t(`statuses.${s.code}`) : (s.name || s.code);
+
+							return (
+								<motion.span
+									key={id}
+									initial={{ opacity: 0, scale: 0.85 }}
+									animate={{ opacity: 1, scale: 1 }}
+									exit={{ opacity: 0, scale: 0.85 }}
+									className="inline-flex items-center gap-1.5 pl-2 pr-1 py-0.5 rounded-lg text-xs font-semibold border"
+									style={{ backgroundColor: bg, borderColor: c, color: c }}
+								>
+									<span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: c }} />
+									{label}
+									{/* Remove button */}
+									<button
+										type="button"
+										onClick={() => toggleStatus(id)}
+										className="ml-0.5 rounded hover:opacity-70 transition-opacity"
+										style={{ color: c }}
+									>
+										<svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+											<path d="M2 2l7 7M9 2l-7 7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+										</svg>
+									</button>
+								</motion.span>
+							);
+						})}
+
+						{/* Clear all */}
+						{selectedObjects.length > 1 && (
+							<button
+								type="button"
+								onClick={() => setSelectedStatuses([])}
+								className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs text-muted-foreground border border-dashed border-gray-300 dark:border-gray-600 hover:border-red-400 hover:text-red-500 transition-colors"
+							>
+								<svg width="10" height="10" viewBox="0 0 11 11" fill="none">
+									<path d="M2 2l7 7M9 2l-7 7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+								</svg>
+								{t("distribution.clearAll")}
+							</button>
+						)}
+					</motion.div>
+				)}
+			</AnimatePresence>
+		</div>
+	);
+};
+
+const BlockEmployeePopover = ({ block, loadingEmployees, empItems, assignmentBlocks, setBlockEmployee, fetchEmployeePage, loadingMore, nextCursor }) => {
 	const tCommon = useTranslations("common");
 	const t = useTranslations("orders");
+
+	const [open, setOpen] = useState(false);
+	const selectedUser = block.employee?.user;
+	return (
+		<Popover open={open} onOpenChange={setOpen}>
+			<PopoverTrigger asChild>
+				<button
+					type="button"
+					className="relative inline-flex w-full items-center justify-between gap-2 rounded-xl border border-input bg-background/60 px-3.5 py-2 text-sm text-foreground shadow-sm transition-all hover:bg-background hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 h-[45px]"
+				>
+					<span className="flex min-w-0 items-center gap-2">
+						{selectedUser ? (
+							<>
+								<Avatar className="h-7 w-7 shrink-0">
+									<AvatarImage src={avatarSrc(selectedUser.avatarUrl)} alt={selectedUser.name} />
+									<AvatarFallback className="text-xs">{(selectedUser.name || "?").slice(0, 2).toUpperCase()}</AvatarFallback>
+								</Avatar>
+								<span className="truncate">{selectedUser.name}</span>
+								{block.employee?.activeCount != null && (
+									<span className="text-muted-foreground text-xs">({block.employee.activeCount} {t("distribution.currentOrders")})</span>
+								)}
+							</>
+						) : (
+							<span className="text-muted-foreground">
+								{loadingEmployees ? t("messages.loading") : t("distribution.selectEmployeePlaceholder")}
+							</span>
+						)}
+					</span>
+					<ChevronDownIcon className="size-4 shrink-0 opacity-70" />
+				</button>
+			</PopoverTrigger>
+			<PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] min-w-[280px] p-0">
+				<div className="max-h-[280px] overflow-y-auto">
+					{loadingEmployees ? (
+						<div className="flex items-center justify-center py-6"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+					) : (
+						<>
+							{empItems.map((item) => {
+								const u = item.user;
+								const isSelected = Number(block.employee?.user?.id) === Number(u?.id);
+								const usedElsewhere = assignmentBlocks.some(
+									(b) => b.id !== block.id && Number(b.employee?.user?.id) === Number(u?.id)
+								);
+								return (
+									<button
+										key={u?.id}
+										type="button"
+										disabled={usedElsewhere}
+										onClick={() => { if (!usedElsewhere) { setBlockEmployee(block.id, item); setOpen(false); } }}
+										className={cn(
+											"flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors hover:bg-accent focus:bg-accent focus:outline-none",
+											isSelected && "bg-accent",
+											usedElsewhere && "opacity-40 cursor-not-allowed"
+										)}
+									>
+										<Avatar className="h-8 w-8 shrink-0">
+											<AvatarFallback className="text-xs">{(u?.name || "?").slice(0, 2).toUpperCase()}</AvatarFallback>
+											<AvatarImage src={avatarSrc(u?.avatarUrl)} alt={u?.name} />
+										</Avatar>
+										<span className="truncate flex-1 text-start">{u?.name}</span>
+										{item?.activeCount != null && (
+											<span className="text-muted-foreground text-xs shrink-0">{item.activeCount} {t("distribution.currentOrders")}</span>
+										)}
+										{usedElsewhere && (
+											<span className="text-xs text-orange-500 shrink-0">{t("distribution.alreadyAssigned")}</span>
+										)}
+									</button>
+								);
+							})}
+							{nextCursor != null && (
+								<div className="border-t p-2">
+									<Button type="button" variant="ghost" size="sm" className="w-full" onClick={() => fetchEmployeePage(nextCursor)} disabled={loadingMore}>
+										{loadingMore ? <Loader2 className="h-4 w-4 animate-spin" /> : tCommon("loadMore")}
+									</Button>
+								</div>
+							)}
+						</>
+					)}
+				</div>
+			</PopoverContent>
+		</Popover>
+	);
+};
+
+function DistributionModal({ isOpen, onClose, statuses = [], onSuccess }) {
+	const t = useTranslations("orders");
+	// ─── filte (was single "selectedStatus") ───────────────────
+	const [seletOpen, setSelectOpen] = useState(false);
 	const [distributionType, setDistributionType] = useState(null);
 	const [dateRange, setDateRange] = useState({
 		from: new Date().toISOString().split("T")[0],
-		to: new Date().toISOString().split("T")[0]
+		to: new Date().toISOString().split("T")[0],
 	});
-	const [selectedStatus, setSelectedStatus] = useState("new");
-	const [selectedEmployee, setSelectedEmployee] = useState("");
-	const [selectedOrders, setSelectedOrders] = useState([]);
-	const [employeeCount, setEmployeeCount] = useState(3);
+	const [selectedStatuses, setSelectedStatuses] = useState([]);
+	const { debouncedValue: debouncedFrom } = useDebounce({ value: dateRange.from, delay: 300 });
+	const { debouncedValue: debouncedTo } = useDebounce({ value: dateRange.to, delay: 300 });
+
+
+	// ─── Manual: one block per employee ──────────────────────────────────────
+	const [assignmentBlocks, setAssignmentBlocks] = useState([
+		{ id: crypto.randomUUID(), employee: null, orderIds: [] },
+	]);
+	const addBlock = () =>
+		setAssignmentBlocks((prev) => [
+			...prev,
+			{ id: crypto.randomUUID(), employee: null, orderIds: [] },
+		]);
+	const removeBlock = (id) =>
+		setAssignmentBlocks((prev) => prev.filter((b) => b.id !== id));
+
+	const setBlockEmployee = (id, item) =>
+		setAssignmentBlocks((prev) =>
+			prev.map((b) => (b.id === id ? { ...b, employee: item } : b))
+		);
+
+	const toggleBlockOrder = (blockId, orderId) =>
+		setAssignmentBlocks((prev) =>
+			prev.map((b) => {
+				if (b.id !== blockId) return b;
+				return {
+					...b,
+					orderIds: b.orderIds.includes(orderId)
+						? b.orderIds.filter((o) => o !== orderId)
+						: [...b.orderIds, orderId],
+				};
+			})
+		);
+
+	const setBlockAllOrders = (blockId, orderIds) =>
+		setAssignmentBlocks((prev) =>
+			prev.map((b) => (b.id === blockId ? { ...b, orderIds } : b))
+		);
+
+	// ─── free-orders pool ──────────────────────────────────────────────
 	const [freeOrders, setFreeOrders] = useState([]);
 	const [freeOrdersLoading, setFreeOrdersLoading] = useState(false);
 	const [assigning, setAssigning] = useState(false);
-	// Automatic tab: free order count and employees by load
-	const [freeOrderCount, setFreeOrderCount] = useState(null);
-	const [freeOrderCountLoading, setFreeOrderCountLoading] = useState(false);
-	const [autoEmployees, setAutoEmployees] = useState([]);
+
+	// ─── Smart tab state ──────────────────────────────────────────────────────
+	const [employeeCount, setEmployeeCount] = useState(1);
+	const [orderCount, setOrderCount] = useState(1);
 	const [autoEmployeesLoading, setAutoEmployeesLoading] = useState(false);
-	const [autoAssignResult, setAutoAssignResult] = useState(null);
-	const autoEmployeeCountDebounceRef = useRef(null);
+	const [autoAssignResult, setAutoAssignResult] = useState({ maxEmployees: 0, maxOrders: 0, assignments: [] });
 
-	// Fetch free orders when status (not "all") and dates are set (manual assign)
+	// ─── Employee list (loaded once per manual tab open) ──────────────────────
+	const [empItems, setEmpItems] = useState([]);
+	const [nextCursor, setNextCursor] = useState(null);
+	const [loadingEmployees, setLoadingEmployees] = useState(false);
+	const [loadingMore, setLoadingMore] = useState(false);
+
+	const fetchEmployeePage = useCallback(async (cursor = null) => {
+		const isFirst = cursor == null;
+		if (isFirst) setLoadingEmployees(true);
+		else setLoadingMore(true);
+		try {
+			const params = { limit: PAGE_SIZE };
+			if (cursor != null) params.cursor = cursor;
+			const { data: res } = await api.get("/orders/employees-by-load", { params });
+			const data = res?.data ?? [];
+			setEmpItems((prev) => (isFirst ? data : [...prev, ...data]));
+			setNextCursor(res?.nextCursor ?? null);
+		} catch (err) {
+			console.error("Fetch employees error:", err);
+		} finally {
+			setLoadingEmployees(false);
+			setLoadingMore(false);
+		}
+	}, []);
+
 	useEffect(() => {
-		// 1. Guard clauses
-		if (!isOpen || distributionType !== "normal") return;
+		if (distributionType === "normal") fetchEmployeePage(null);
+	}, [distributionType, fetchEmployeePage]);
 
-		if (selectedStatus === "all") {
+	// ─── Fetch free orders (manual tab) ──────────────────────────────────────
+	useEffect(() => {
+		if (!isOpen || distributionType !== "normal") return;
+		if (selectedStatuses.length === 0 || seletOpen) {
 			setFreeOrders([]);
 			return;
 		}
@@ -748,476 +1136,434 @@ function DistributionModal({ isOpen, onClose, statuses = [], onSuccess }) {
 			try {
 				const { data } = await api.get("/orders/free-orders", {
 					params: {
-						status: selectedStatus,
-						startDate: dateRange.from,
-						endDate: dateRange.to,
-						limit: 100,
+						statusIds: selectedStatuses.join(","),
+						startDate: debouncedFrom,
+						endDate: debouncedTo,
+						limit: 200
 					},
 				});
-
+				if (!cancelled) setFreeOrders(data?.data ?? []);
+			} catch (error) {
 				if (!cancelled) {
-					setFreeOrders(data?.data ?? []);
-				}
-			} catch (err) {
-				if (!cancelled) {
-					console.error("Free orders fetch error:", err);
 					toast.error(t("messages.errorFetchingOrders"));
 					setFreeOrders([]);
 				}
 			} finally {
-				if (!cancelled) {
-					setFreeOrdersLoading(false);
-				}
+				if (!cancelled) setFreeOrdersLoading(false);
 			}
 		};
 
 		fetchOrders();
-
-		// Cleanup to prevent memory leaks/state updates on unmounted component
 		return () => { cancelled = true; };
-	}, [isOpen, distributionType, selectedStatus, dateRange.from, dateRange.to, t]);
-
-	// Fetch free order count when on automatic tab (for preview)
-	useEffect(() => {
-		if (!isOpen || distributionType !== "smart") return;
-		if (selectedStatus === "all") {
-			setFreeOrderCount(null);
-			return;
-		}
-		let cancelled = false;
-		setFreeOrderCountLoading(true);
-		api.get("/orders/free-orders/count", {
-			params: { status: selectedStatus, startDate: dateRange.from, endDate: dateRange.to },
-		})
-			.then((res) => {
-				if (!cancelled) setFreeOrderCount(res.data?.count ?? 0);
-			})
-			.catch(() => {
-				if (!cancelled) setFreeOrderCount(0);
-			})
-			.finally(() => {
-				if (!cancelled) setFreeOrderCountLoading(false);
-			});
-		return () => { cancelled = true; };
-	}, [isOpen, distributionType, selectedStatus, dateRange.from, dateRange.to]);
-
-	// When switching to automatic tab: reset cursor and fetch employees with limit=employeeCount (debounced when employeeCount changes)
-	useEffect(() => {
-		if (!isOpen || distributionType !== "smart") return;
-
+	}, [isOpen, distributionType, selectedStatuses, seletOpen, debouncedFrom, debouncedTo, t]);
+	// ─── Reset ────────────────────────────────────────────────────────────────
+	const handleClose = () => {
+		setDistributionType(null);
+		setSelectedStatuses([]);
+		setAssignmentBlocks([{ id: crypto.randomUUID(), employee: null, orderIds: [] }]);
+		setFreeOrders([]);
 		setAutoAssignResult(null);
+		onClose();
+	};
 
-		const fetchAutoEmployees = async () => {
-			setAutoEmployeesLoading(true);
-			setNextCursor(null);
+	// ─── Validation ───────────────────────────────────────────────────────────
+	const isNormalValid = useMemo(() => {
+		return assignmentBlocks.some((block) =>
+			block.employee && block.orderIds?.length > 0
+		);
+	}, [assignmentBlocks]);
+	const isSmartValid = selectedStatuses.length > 0 && autoAssignResult?.assignments?.length > 0;
 
+	// ─── Submit ───────────────────────────────────────────────────────────────
+	const handleDistribute = async () => {
+		if (distributionType === "normal") {
+			const valid = assignmentBlocks.filter((b) => b.employee && b.orderIds.length > 0);
+			if (!valid.length) { toast.error(t("distribution.selectEmployeeAndOrders")); return; }
+			setAssigning(true);
 			try {
-				const limit = Math.max(1, Number(employeeCount) || 1);
-				const { data } = await api.get("/orders/employees-by-load", {
-					params: { limit }
+				await api.post("/orders/assign-manual", {
+					assignments: valid.map((b) => ({
+						userId: Number(b.employee.user.id),
+						orderIds: b.orderIds,
+					})),
+				});
+				const totalOrders = valid.reduce((s, b) => s + b.orderIds.length, 0);
+				toast.success(t("distribution.normalSuccess", { count: totalOrders, employees: valid.length }));
+				onSuccess?.();
+				handleClose();
+			} catch (err) {
+				toast.error(err.response?.data?.message || t("messages.errorUpdatingStatus"));
+			} finally { setAssigning(false); }
+		} else {
+			if (!selectedStatuses.length || seletOpen) { toast.error(t("distribution.selectStatusToLoadOrders")); return; }
+			setAssigning(true); setAutoAssignResult(null);
+			try {
+				const res = await api.post("/orders/assign-auto", {
+					statusIds: selectedStatuses,
+					employeeCount: Math.max(1, Number(employeeCount) || 1),
+					orderCount: Math.max(1, Number(orderCount) || 1),
+					startDate: debouncedFrom,
+					endDate: debouncedTo,
 				});
 
-				setAutoEmployees(data?.data ?? []);
+				const data = res.data;
+				if (!data?.success) { toast.error(data?.message || t("distribution.autoAssignFailed")); return; }
+				setAutoAssignResult(data.result || []);
+				const total = (data.result || []).reduce((s, r) => s + (r.assignedThisBatch || 0), 0);
+				toast.success(t("distribution.autoAssignSuccess", { count: total, employees: (data.result || []).length }));
+				onSuccess?.();
+				setTimeout(() => { handleClose(); setAutoAssignResult(null); }, 2000);
+			} catch (err) {
+				toast.error(err.response?.data?.message || t("distribution.autoAssignFailed"));
+			} finally { setAssigning(false); }
+		}
+	};
+
+	useEffect(() => {
+		// Only fetch if at least one status is selected
+		if (selectedStatuses.length === 0 || seletOpen) {
+			setAutoAssignResult(null);
+			return;
+		}
+
+		const fetchPreview = async () => {
+			setAutoEmployeesLoading(true);
+			try {
+				const response = await api.post("/orders/auto-assign-preview", {
+					statusIds: selectedStatuses.map(s => Number(s)),
+					requestedOrderCount: orderCount,
+					requestedEmployeeCount: employeeCount,
+					startDate: debouncedFrom,
+					endDate: debouncedTo,
+				});
+
+				setAutoAssignResult(response.data);
+
+				if (orderCount > response.data.maxOrders) {
+					setOrderCount(response.data.maxOrders);
+				}
+				if (employeeCount > response.data.maxEmployees) {
+					setEmployeeCount(response.data.maxEmployees);
+				}
+
 			} catch (error) {
-				console.error("Fetch auto employees error:", error);
-				setAutoEmployees([]);
+				console.error("Failed to fetch distribution preview", error);
 			} finally {
 				setAutoEmployeesLoading(false);
 			}
 		};
 
-		// Debounce logic
-		const timer = setTimeout(fetchAutoEmployees, 400);
+		fetchPreview();
 
-		return () => clearTimeout(timer);
-	}, [isOpen, distributionType, employeeCount]);
-
-	const handleDistribute = async () => {
-		if (distributionType === "normal") {
-			if (!selectedEmployee || selectedOrders.length === 0) {
-				toast.error(t("distribution.selectEmployeeAndOrders"));
-				return;
-			}
-			setAssigning(true);
-			try {
-				const res = await api.post("/orders/assign-manual", {
-					userId: Number(selectedEmployee),
-					orderIds: selectedOrders,
-				});
-				const data = res.data;
-				toast.success(t("distribution.normalSuccess", { count: data.count, employee: data.user.name }));
-				onSuccess?.();
-				onClose();
-				setDistributionType(null)
-				setSelectedEmployee("");
-				setSelectedOrders([]);
-			} catch (err) {
-				console.error("Assign failed:", err);
-				toast.error(err.response?.data?.message || t("messages.errorUpdatingStatus"));
-			} finally {
-				setAssigning(false);
-			}
-		} else {
-			// Automatic assign
-			if (selectedStatus === "all") {
-				toast.error(t("distribution.selectStatusToLoadOrders"));
-				return;
-			}
-			setAssigning(true);
-			setAutoAssignResult(null);
-			try {
-				const res = await api.post("/orders/assign-auto", {
-					status: selectedStatus,
-					employeeCount: Math.max(1, Number(employeeCount) || 1),
-				});
-				const data = res.data;
-				if (!data?.success) {
-					toast.error(data?.message || t("distribution.autoAssignFailed"));
-					return;
-				}
-				setAutoAssignResult(data.result || []);
-				const totalAssigned = (data.result || []).reduce((sum, r) => sum + (r.assignedThisBatch || 0), 0);
-				toast.success(t("distribution.autoAssignSuccess", { count: totalAssigned, employees: (data.result || []).length }));
-				onSuccess?.();
-				setTimeout(() => {
-					onClose();
-					setDistributionType(null)
-					setAutoAssignResult(null);
-				}, 2000);
-			} catch (err) {
-				console.error("Auto assign failed:", err);
-				toast.error(err.response?.data?.message || t("distribution.autoAssignFailed"));
-			} finally {
-				setAssigning(false);
-			}
-		}
-	};
-
-	///Employees logic 
-
-	const [open, setOpen] = useState(false);
-	const [items, setItems] = useState([]);
-	const [nextCursor, setNextCursor] = useState(null);
-	const [loading, setLoading] = useState(false);
-	const [loadingMore, setLoadingMore] = useState(false);
-	const [initialized, setInitialized] = useState(false);
-
-	const fetchPage = useCallback(async (cursor = null) => {
-		const isFirst = cursor == null;
-		if (isFirst) setLoading(true);
-		else setLoadingMore(true);
-
-		try {
-			const params = { limit: PAGE_SIZE };
-			if (cursor != null) params.cursor = cursor;
-
-			const { data: res } = await api.get("/orders/employees-by-load", { params });
-			const data = res?.data ?? [];
-			const next = res?.nextCursor ?? null;
-
-			setItems((prev) => (isFirst ? data : [...prev, ...data]));
-			setNextCursor(next);
-		} catch (err) {
-			console.error("Fetch error:", err);
-		} finally {
-			setLoading(false);
-			setLoadingMore(false);
-			setInitialized(true);
-		}
-	}, []);
-
-	// Trigger fetch on mount or when switching back to "normal"
-	useEffect(() => {
-		if (distributionType === "normal") {
-			fetchPage(null); // Force null to reset from start
-		}
-	}, [distributionType, fetchPage]);
-
-	const handleSelect = (item) => {
-		setSelectedEmployee(item?.user ? String(item.user.id) : null);
-		setOpen(false);
-	};
-
-	const selectedItem = useMemo(() => {
-		if (!selectedEmployee) return null;
-		const employeeId = Number(selectedEmployee);
-		return items.find((i) => Number(i.user?.id) === employeeId) || null;
-	}, [items, selectedEmployee]);
-
-	const selectedUser = selectedItem?.user;
-
+	}, [seletOpen, selectedStatuses, orderCount, employeeCount, debouncedFrom, debouncedTo]);
 
 	return (
-		<Dialog open={isOpen} onOpenChange={onClose}>
+		<Dialog open={isOpen} onOpenChange={handleClose}>
 			<DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
 				<DialogHeader>
 					<DialogTitle className="text-2xl font-bold flex items-center gap-3">
 						<div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
 							<Users className="text-white" size={24} />
 						</div>
-						{t("distribution.title")}
+						{distributionType ? distributionType === "normal" ? t("distribution.normalTitle") : t("distribution.smartTitle") : t("distribution.title")}
 					</DialogTitle>
 				</DialogHeader>
 
+				{/* ── Type selection ─────────────────────────────────────────── */}
 				{!distributionType ? (
 					<div className="grid grid-cols-2 gap-4 py-6">
-						<motion.button
-							whileHover={{ scale: 1.02 }}
-							whileTap={{ scale: 0.98 }}
+						<motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
 							onClick={() => setDistributionType("normal")}
 							className="p-8 rounded-2xl border-2 border-gray-200 dark:border-slate-700 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30"
 						>
 							<Users className="mx-auto mb-4 text-emerald-600" size={48} />
 							<h3 className="text-xl font-bold mb-2">{t("distribution.normalTitle")}</h3>
-							<p className="text-sm text-gray-600 dark:text-slate-400">
-								{t("distribution.normalDescription")}
-							</p>
+							<p className="text-sm text-gray-600 dark:text-slate-400">{t("distribution.normalDescription")}</p>
 						</motion.button>
-
-						<motion.button
-							whileHover={{ scale: 1.02 }}
-							whileTap={{ scale: 0.98 }}
+						<motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
 							onClick={() => setDistributionType("smart")}
 							className="p-8 rounded-2xl border-2 border-gray-200 dark:border-slate-700 hover:border-purple-400 dark:hover:border-purple-500 transition-all bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30"
 						>
 							<TrendingUp className="mx-auto mb-4 text-purple-600" size={48} />
 							<h3 className="text-xl font-bold mb-2">{t("distribution.smartTitle")}</h3>
-							<p className="text-sm text-gray-600 dark:text-slate-400">
-								{t("distribution.smartDescription")}
-							</p>
+							<p className="text-sm text-gray-600 dark:text-slate-400">{t("distribution.smartDescription")}</p>
 						</motion.button>
 					</div>
 				) : (
 					<div className="space-y-6 py-4">
+						{/* Shared: date range */}
 						<div className="grid grid-cols-2 gap-4">
 							<div className="space-y-2">
 								<Label>{t("distribution.fromDate")}</Label>
-								<Input
-									type="date"
-									value={dateRange.from}
-									onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })}
-									className="rounded-xl"
-								/>
+								<Input type="date" value={dateRange.from} onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })} className="rounded-xl" />
 							</div>
 							<div className="space-y-2">
 								<Label>{t("distribution.toDate")}</Label>
-								<Input
-									type="date"
-									value={dateRange.to}
-									onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })}
-									className="rounded-xl"
-								/>
+								<Input type="date" value={dateRange.to} onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })} className="rounded-xl" />
 							</div>
 						</div>
 
-						<div className="space-y-2">
-							<Label>{t("distribution.orderStatus")}</Label>
-							<Select value={selectedStatus} onValueChange={setSelectedStatus}>
-								<SelectTrigger className="rounded-xl">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent className="bg-card-select">
-									{Array.isArray(statuses) && statuses.length > 0 ? (
-										statuses.map((s) => (
-											<SelectItem key={s.code || s.id} value={s.code || String(s.id)}>
-												{s.system ? t(`statuses.${s.code}`) : (s.name || s.code)}
-											</SelectItem>
-										))
-									) : (
-										<>
-											<SelectItem value="new">{t("statuses.new")}</SelectItem>
-											<SelectItem value="confirmed">{t("statuses.confirmed")}</SelectItem>
-											<SelectItem value="pending_confirmation">{t("statuses.pendingConfirmation")}</SelectItem>
-										</>
-									)}
-								</SelectContent>
-							</Select>
-						</div>
+						{/* Shared: multi-status filter */}
+						<StatusSelect open={seletOpen} setOpen={setSelectOpen} selectedStatuses={selectedStatuses} setSelectedStatuses={setSelectedStatuses} statuses={statuses} />
 
+						{/* ══ MANUAL TAB ════════════════════════════════════════ */}
 						{distributionType === "normal" ? (
-							<>
-								<div className="space-y-2">
-									<Label>{t("distribution.selectEmployee")}</Label>
-									<Popover open={open} onOpenChange={setOpen}>
-										<PopoverTrigger asChild>
-											<button
-												type="button"
-												className={cn(
-													"relative inline-flex w-full items-center justify-between gap-2 rounded-xl border border-input bg-background/60 px-3.5 py-2 text-sm text-foreground shadow-sm transition-all hover:bg-background hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-50 h-[45px]"
-												)}
+							<div className="space-y-4">
+								{/* Pool count */}
+								<div className="flex items-center justify-between px-1">
+									<span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+										{t("distribution.freeOrdersPool")}: {freeOrdersLoading ? "…" : freeOrders.length}
+									</span>
+									{freeOrdersLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+								</div>
+
+								{/* Employee blocks */}
+								<AnimatePresence>
+									{assignmentBlocks.map((block, idx) => {
+										// Orders not yet claimed by another block
+										const available = freeOrders.filter(
+											(o) => !assignmentBlocks.some((b) => b.id !== block.id && b.orderIds.includes(o.id))
+										);
+										const allPicked = available.length > 0 && available.every((o) => block.orderIds.includes(o.id));
+
+										return (
+											<motion.div
+												key={block.id}
+												initial={{ opacity: 0, y: 10 }}
+												animate={{ opacity: 1, y: 0 }}
+												exit={{ opacity: 0, scale: 0.95 }}
+												className="border-2 border-gray-200 dark:border-slate-700 rounded-xl p-4 space-y-3 bg-white dark:bg-slate-900 shadow-sm"
 											>
-												<span className="flex min-w-0 items-center gap-2">
-													{selectedUser ? (
-														<>
-															<Avatar className="h-7 w-7 shrink-0">
-																<AvatarImage src={avatarSrc(selectedUser.avatarUrl)} alt={selectedUser.name} />
-																<AvatarFallback className="text-xs">
-																	{(selectedUser.name || "?").slice(0, 2).toUpperCase()}
-																</AvatarFallback>
-															</Avatar>
-															<span className="truncate">{selectedUser.name}</span>
-															{selectedItem?.activeCount != null && (
-																<span className="text-muted-foreground text-xs">
-																	({selectedItem.activeCount} {t("distribution.currentOrders")})
-																</span>
-															)}
-														</>
-													) : (
-														<span className="text-muted-foreground">{!(loading || loadingMore) && items.length === 0 ? t("distribution.noEmployeefound") : t("distribution.selectEmployeePlaceholder")}</span>
-													)}
-												</span>
-												<ChevronDownIcon className="size-4 shrink-0 opacity-70" />
-											</button>
-										</PopoverTrigger>
-										<PopoverContent align="start" className={cn("w-[var(--radix-popover-trigger-width)] min-w-[280px] p-0")}>
-											<div className="max-h-[280px] overflow-y-auto">
-												{loading ? (
-													<div className="flex items-center justify-center py-6">
-														<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+												{/* Block header */}
+												<div className="flex items-center justify-between">
+													<div className="flex items-center gap-2">
+														<div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+															<span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">{idx + 1}</span>
+														</div>
+														<span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{t("distribution.employee")}</span>
+														{block.orderIds.length > 0 && (
+															<Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border-0 text-xs">
+																{block.orderIds.length} {t("distribution.ordersSelected")}
+															</Badge>
+														)}
 													</div>
-												) : (
-													<>
-														{items.map((item) => {
-															const u = item.user;
-															const isSelected = Number(selectedEmployee) === Number(u?.id);
-															return (
-																<button
-																	key={u?.id}
-																	type="button"
-																	className={cn(
-																		"flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors hover:bg-accent focus:bg-accent focus:outline-none",
-																		isSelected && "bg-accent"
-																	)}
-																	onClick={() => handleSelect(item)}
-																>
-																	<Avatar className="h-8 w-8 shrink-0">
-																		<AvatarFallback className="text-xs">
-																			{(u?.name || "?").slice(0, 2).toUpperCase()}
-																		</AvatarFallback>
-																		<AvatarImage src={avatarSrc(u?.avatarUrl)} alt={u?.name} />
-																	</Avatar>
-																	<span className="truncate flex-1 text-start">{u?.name}</span>
-																	{item?.activeCount != null && (
-																		<span className="text-muted-foreground text-xs shrink-0">
-																			{item.activeCount} {t('distribution.currentOrders')}
-																		</span>
-																	)}
-																</button>
-															);
-														})}
-														{nextCursor != null && (
-															<div className="border-t p-2">
-																<Button
-																	type="button"
-																	variant="ghost"
-																	size="sm"
-																	className="w-full"
-																	onClick={() => fetchPage(nextCursor)}
-																	disabled={loadingMore}
-																>
-																	{loadingMore ? <Loader2 className="h-4 w-4 animate-spin" /> : tCommon("loadMore")}
-																</Button>
+													{assignmentBlocks.length > 1 && (
+														<button type="button" onClick={() => removeBlock(block.id)}
+															className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition-colors">
+															<XCircle size={16} />
+														</button>
+													)}
+												</div>
+
+												{/* Employee selector */}
+												<BlockEmployeePopover
+													block={block}
+													assignmentBlocks={assignmentBlocks}
+													empItems={empItems}
+													fetchEmployeePage={fetchEmployeePage}
+													loadingEmployees={loadingEmployees}
+													loadingMore={loadingMore}
+													nextCursor={nextCursor}
+													setBlockEmployee={setBlockEmployee}
+												/>
+
+												{/* Order list */}
+												<div className="space-y-1">
+													<div className="flex items-center justify-between">
+														<Label className="text-xs">
+															{t("distribution.selectOrders")} ({available.length} {t("distribution.available")})
+														</Label>
+														{available.length > 0 && (
+															<button type="button"
+																onClick={() => setBlockAllOrders(block.id, allPicked ? [] : available.map((o) => o.id))}
+																className="text-xs text-primary underline hover:no-underline">
+																{allPicked ? t("distribution.deselectAll") : t("distribution.selectAll")}
+															</button>
+														)}
+													</div>
+
+													<div className="max-h-48 overflow-y-auto border rounded-xl bg-gray-50 dark:bg-slate-800/50">
+														{selectedStatuses.length === 0 ? (
+															<div className="py-4 text-center text-muted-foreground text-sm">{t("distribution.selectStatusFirst")}</div>
+														) : freeOrdersLoading ? (
+															<div className="p-2 space-y-1">
+																{[...Array(4)].map((_, i) => (
+																	<div key={i} className="flex items-center gap-2.5 p-2 rounded-lg animate-pulse">
+																		<div className="w-4 h-4 rounded bg-slate-200 dark:bg-slate-700" /> {/* Checkbox */}
+																		<div className="w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-700" /> {/* Status Dot */}
+																		<div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-20" /> {/* Order Number */}
+																		<div className="ml-auto h-3 bg-slate-200 dark:bg-slate-700 rounded w-16" /> {/* Customer Name */}
+																	</div>
+																))}
+															</div>
+														) : available.length === 0 ? (
+															<div className="py-4 text-center text-muted-foreground text-sm">{t("distribution.noFreeOrders")}</div>
+														) : (
+															<div className="p-2 space-y-1">
+																{available.map((order) => {
+																	const checked = block.orderIds.includes(order.id);
+																	const sc = statuses.find((s) => (s.code || String(s.id)) === order.status?.code)?.color || "#888";
+																	return (
+																		<div
+																			key={order.id}
+																			onClick={() => toggleBlockOrder(block.id, order.id)}
+																			className={cn(
+																				"flex items-center gap-2.5 p-2 rounded-lg cursor-pointer transition-colors",
+																				checked
+																					? "bg-emerald-50 dark:bg-emerald-900/20"
+																					: "hover:bg-white dark:hover:bg-slate-700"
+																			)}
+																		>
+																			<Checkbox
+																				checked={checked}
+																				onCheckedChange={() => toggleBlockOrder(block.id, order.id)}
+																			/>
+																			<div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: sc }} />
+																			<span className="text-sm flex-1 truncate">{order.orderNumber}</span>
+																			<span className="text-xs text-muted-foreground truncate max-w-[110px]">{order.customerName}</span>
+																		</div>
+																	);
+																})}
 															</div>
 														)}
-													</>
-												)}
-											</div>
-										</PopoverContent>
-									</Popover>
-								</div>
-
-								<div className="space-y-2">
-									<Label>{t("distribution.selectOrders")} ({freeOrders.length} {t("distribution.available")})</Label>
-									<div className="max-h-64 overflow-y-auto border rounded-xl p-4 space-y-2">
-										{freeOrdersLoading ? (
-											<div className="flex items-center justify-center py-6 text-muted-foreground text-sm">
-												{t("messages.loading") || "Loading..."}
-											</div>
-										) : selectedStatus === "all" ? (
-											<div className="py-4 text-center text-muted-foreground text-sm">
-												{t("distribution.selectStatusToLoadOrders") || "Select a status to load free orders"}
-											</div>
-										) : freeOrders.length === 0 ? (
-											<div className="py-4 text-center text-muted-foreground text-sm">
-												{t("distribution.noFreeOrders") || "No free orders in this range"}
-											</div>
-										) : (
-											freeOrders.map((order) => (
-												<div key={order.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg">
-													<Checkbox
-														checked={selectedOrders.includes(order.id)}
-														onCheckedChange={(checked) => {
-															if (checked) {
-																setSelectedOrders([...selectedOrders, order.id]);
-															} else {
-																setSelectedOrders(selectedOrders.filter((id) => id !== order.id));
-															}
-														}}
-													/>
-													<span className="text-sm">{order.orderNumber} - {order.customerName}</span>
+													</div>
 												</div>
-											))
+											</motion.div>
+										);
+									})}
+								</AnimatePresence>
 
-										)}
-									</div>
-								</div>
-							</>
+								{/* Add employee block */}
+								<button
+									type="button"
+									onClick={addBlock}
+									className="w-full py-3 rounded-xl border-2 border-dashed border-gray-300 dark:border-slate-600 hover:border-emerald-400 dark:hover:border-emerald-500 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 transition-all flex items-center justify-center gap-2 text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-emerald-600"
+								>
+									<Plus size={16} />
+									{t("distribution.addEmployee")}
+								</button>
+
+								{/* Summary */}
+								{isNormalValid && (
+									<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+										className="p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 border border-emerald-200 dark:border-emerald-800">
+										<h4 className="font-bold text-sm text-emerald-800 dark:text-emerald-200 mb-2 flex items-center gap-2">
+											<CheckCircle size={14} /> {t("distribution.summary")}
+										</h4>
+										<div className="space-y-1">
+											{assignmentBlocks.filter((b) => b.employee && b.orderIds.length > 0).map((b) => (
+												<div key={b.id} className="flex items-center justify-between text-sm">
+													<span className="font-medium text-emerald-900 dark:text-emerald-100">{b.employee.user.name}</span>
+													<Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border-0">
+														{b.orderIds.length} {t("distribution.orders")}
+													</Badge>
+												</div>
+											))}
+											<div className="pt-2 border-t border-emerald-200 dark:border-emerald-800 flex justify-between text-sm font-bold text-emerald-900 dark:text-emerald-100">
+												<span>{t("distribution.totalOrders")}</span>
+												<span>{assignmentBlocks.reduce((s, b) => s + b.orderIds.length, 0)}</span>
+											</div>
+										</div>
+									</motion.div>
+								)}
+							</div>
+
 						) : (
+							/* ══ SMART TAB ════════════════════════════════════════ */
 							<>
+								{/* Employee Count Input */}
 								<div className="space-y-2">
-									<Label>{t("distribution.employeeCount")}</Label>
+									<div className="flex justify-between items-center">
+										<Label>{t("distribution.employeeCount")}</Label>
+										<span className="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full text-muted-foreground">
+											{t("distribution.max")}: {autoAssignResult?.maxEmployees || 0}
+										</span>
+									</div>
 									<Input
 										type="number"
-										min="1"
-										max="10"
+										min="0"
 										value={employeeCount}
-										onChange={(e) => setEmployeeCount(Math.min(10, Math.max(1, parseInt(e.target.value) || 1)))}
+										onChange={(e) => {
+											const val = parseInt(e.target.value) || 0;
+											const max = autoAssignResult?.maxEmployees || 0;
+											// setEmployeeCount(Math.min(max, Math.max(0, val)));
+											setEmployeeCount(val);
+										}}
 										className="rounded-xl"
 									/>
 								</div>
 
+								{/* Order Count Input */}
+								<div className="space-y-2">
+									<div className="flex justify-between items-center">
+										<Label>{t("distribution.orderCount")}</Label>
+										<span className="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full text-muted-foreground">
+											{t("distribution.max")}: {autoAssignResult?.maxOrders || 0}
+										</span>
+									</div>
+									<Input
+										type="number"
+										min="0"
+										value={orderCount}
+										onChange={(e) => {
+											const val = parseInt(e.target.value) || 0;
+											const max = autoAssignResult?.maxOrders || 0;
+											// setOrderCount(Math.min(max, Math.max(0, val)));
+											setOrderCount(val);
+										}}
+										className="rounded-xl"
+									/>
+								</div>
+
+								{/* Preview Section */}
 								<div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 rounded-xl p-4">
 									<h4 className="font-bold mb-3 flex items-center gap-2">
 										<TrendingUp size={18} />
 										{t("distribution.preview")}
 									</h4>
-									{freeOrderCountLoading ? (
-										<p className="text-sm text-muted-foreground">{t("distribution.loadingCount")}</p>
-									) : selectedStatus === "all" ? (
-										<p className="text-sm text-muted-foreground">{t("distribution.selectStatusToLoadOrders")}</p>
-									) : (
-										<>
-											<p className="text-sm text-muted-foreground mb-3">
-												{t("distribution.freeOrdersToDistribute", { count: freeOrderCount ?? 0 })}
+
+									{autoEmployeesLoading ? (
+										/* Skeleton State while fetching Preview */
+										<div className="flex flex-col gap-2">
+											{[...Array(3)].map((_, i) => (
+												<div key={i} className="flex items-center justify-between p-3 bg-white/50 dark:bg-slate-900/50 rounded-lg animate-pulse">
+													<div className="space-y-2">
+														<div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded" />
+														<div className="h-3 w-32 bg-slate-100 dark:bg-slate-800 rounded" />
+													</div>
+													<div className="h-6 w-12 bg-slate-200 dark:bg-slate-800 rounded-full" />
+												</div>
+											))}
+										</div>
+									) : !autoAssignResult?.assignments?.length ? (
+										/* Empty State */
+										<div className="text-center py-4">
+											<p className="text-sm text-muted-foreground">
+												{selectedStatuses.length === 0
+													? t("distribution.selectStatusToSeePreview")
+													: t("distribution.noOrdersAvailableForSelection")}
 											</p>
-											{autoEmployeesLoading ? (
-												<p className="text-sm text-muted-foreground">{t("messages.loading")}</p>
-											) : autoEmployees.length === 0 ? (
-												<p className="text-sm text-muted-foreground">{t("distribution.noEmployeesFound")}</p>
-											) : autoAssignResult?.length > 0 ? (
-												<div className="space-y-2">
-													{autoAssignResult.map((r) => (
-														<div key={r.user?.id} className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-lg">
-															<span className="font-semibold">{r.user?.name}</span>
-															<Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-200">
-																+{r.assignedThisBatch ?? 0} {t("distribution.newOrders")} ({t("distribution.totalActiveNow")}: {r.totalActiveNow ?? 0})
-															</Badge>
-														</div>
-													))}
+										</div>
+									) : (
+										/* Real Data from AutoPreview Endpoint */
+										<div className="space-y-2">
+											<p className="text-[11px] text-muted-foreground italic mb-2">
+												{t("distribution.showingActualDistribution", { count: orderCount })}
+											</p>
+											{autoAssignResult.assignments.map((assignment, idx) => (
+												<div key={idx} className="group flex items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-transparent hover:border-purple-200 dark:hover:border-purple-900 transition-colors">
+													<div className="flex flex-col overflow-hidden">
+														<span className="font-semibold text-sm">{assignment.name}</span>
+														{/* <span className="text-[10px] text-muted-foreground truncate">
+															{assignment.orderNumbers.join(", ") || t("distribution.noOrdersMatched")}
+														</span> */}
+													</div>
+													<Badge className="ml-2 bg-purple-100 text-purple-700 hover:bg-purple-100 dark:bg-purple-900/40 dark:text-purple-300 border-none">
+														+{assignment.orderNumbers.length}
+													</Badge>
 												</div>
-											) : (
-												<div className="space-y-2">
-													{autoEmployees.map((item) => (
-														<div key={item.user?.id} className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-lg">
-															<span className="font-semibold">{item.user?.name}</span>
-															<Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-200">
-																~{freeOrderCount && employeeCount ? Math.ceil(freeOrderCount / employeeCount) : 0} {t("distribution.newOrders")}
-															</Badge>
-														</div>
-													))}
-												</div>
-											)}
-										</>
+											))}
+										</div>
 									)}
 								</div>
 							</>
@@ -1227,31 +1573,26 @@ function DistributionModal({ isOpen, onClose, statuses = [], onSuccess }) {
 
 				<DialogFooter>
 					{distributionType && (
-						<Button
-							variant="outline"
-							onClick={() => setDistributionType(null)}
-							className="rounded-xl"
-						>
+						<Button variant="outline" onClick={() => setDistributionType(null)} className="rounded-xl">
 							{t("common.back")}
 						</Button>
 					)}
 					<Button
-						onClick={distributionType ? handleDistribute : onClose}
+						onClick={distributionType ? handleDistribute : handleClose}
 						className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600"
 						disabled={
 							assigning ||
-							(distributionType === "normal" && (!selectedEmployee || selectedOrders.length === 0)) ||
-							(distributionType === "smart" && (selectedStatus === "all" || freeOrderCountLoading || (freeOrderCount ?? 0) === 0 || autoEmployees.length === 0))
+							(distributionType === "normal" && !isNormalValid) ||
+							(distributionType === "smart" && !isSmartValid)
 						}
 					>
-						{assigning ? (t("messages.loading") || "Loading...") : (distributionType ? t("distribution.distribute") : t("common.cancel"))}
+						{assigning ? (t("messages.loading") || "Loading…") : (distributionType ? t("distribution.distribute") : t("common.cancel"))}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
 	);
 }
-
 // Main Orders Page Component
 export default function OrdersPageEnhanced() {
 	const t = useTranslations("orders");
@@ -1566,6 +1907,11 @@ export default function OrdersPageEnhanced() {
 					<span className="text-primary font-bold font-mono">{row.orderNumber}</span>
 				),
 			},
+			{
+				key: "barcode",
+				header: t("table.barcode") || "Barcode", // Ensure you add this key to your i18n JSON
+				cell: (row) => <BarcodeCell value={row.orderNumber} />,
+			},
 			// {
 			// 	key: "assignedEmployee",
 			// 	header: t("table.assignedEmployee"),
@@ -1657,23 +2003,9 @@ export default function OrdersPageEnhanced() {
 								</SelectTrigger>
 								<SelectContent>
 									{(stats || []).map((s) => {
-										const isSameStatus = String(s.id) === String(row.status?.id);
-										const currentIsSystem = row.status?.system;
-										const targetCode = s.code;
 
-										// [2025-12-24] Trim: Determine if the move is allowed
-										// 1. Never allow moving to the same status
-										// 2. If current is system, target must be in validTransitions map
-										// 3. If current is NOT system, allow all moves (except to itself)
-										const isAllowed = !isSameStatus && (
-											!currentIsSystem ||
-											(validTransitions[currentCode] || []).includes(targetCode) ||
-											!s.system // Allow moving from System to any Custom status
-										);
-
-										const disabled = !isAllowed;
 										return (
-											<SelectItem key={s.id} value={String(s.id)} disabled={disabled}>
+											<SelectItem key={s.id} value={String(s.id)}>
 												{s.system ? t(`statuses.${s.code}`) : (s.name || s.code)}
 											</SelectItem>
 										);
@@ -1872,10 +2204,29 @@ export default function OrdersPageEnhanced() {
 
 				<div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-6">
 					{statsLoading ? (
-						<div className="col-span-full flex items-center justify-center py-12">
-							<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-						</div>
+						<>
+							{Array.from({ length: 12 }).map((_, i) => (
+								<div
+									key={i}
+									className="w-full rounded-lg p-5 border border-[#EEEEEE] dark:border-[#1F2937] animate-pulse"
+								>
+									<div className="flex items-start gap-3">
+										{/* Icon circle skeleton */}
+										<div className="w-[40px] h-[40px] rounded-full bg-gray-200 dark:bg-gray-700" />
+
+										<div className="flex-1">
+											{/* Title skeleton */}
+											<div className="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded mb-3" />
+
+											{/* Value skeleton */}
+											<div className="h-4 w-1/2 bg-gray-200 dark:bg-gray-700 rounded" />
+										</div>
+									</div>
+								</div>
+							))}
+						</>
 					) : (
+
 						<>
 							{statsCards.map((stat, index) => (
 								<motion.div
@@ -1966,7 +2317,7 @@ export default function OrdersPageEnhanced() {
 						}}
 						onPageChange={handlePageChange}
 						emptyState={t("empty")}
-						loading={ordersLoading || loading}
+						isLoading={ordersLoading || loading}
 					/>
 				</div>
 			</div>
@@ -1984,6 +2335,7 @@ export default function OrdersPageEnhanced() {
 
 			<GlobalRetrySettingsModal
 				isOpen={retrySettingsOpen}
+				statuses={stats}
 				onClose={() => setRetrySettingsOpen(false)}
 
 			/>
@@ -2038,7 +2390,7 @@ export default function OrdersPageEnhanced() {
 
 
 // Global Retry Settings Modal
-function GlobalRetrySettingsModal({ isOpen, onClose }) {
+function GlobalRetrySettingsModal({ isOpen, onClose, statuses }) {
 	const t = useTranslations("orders");
 	const [loading, setLoading] = useState(true);
 	const [saving, setSaving] = useState(false);
@@ -2047,8 +2399,9 @@ function GlobalRetrySettingsModal({ isOpen, onClose }) {
 		enabled: true,
 		maxRetries: 3,
 		retryInterval: 30,
-		autoMoveStatus: "cancelled",
-		retryStatuses: ["pending_confirmation", "no_answer_shipping"],
+		autoMoveStatus: "",
+		retryStatuses: [],
+		confirmationStatuses: [],
 		notifyEmployee: true,
 		notifyAdmin: false,
 		workingHours: {
@@ -2058,16 +2411,34 @@ function GlobalRetrySettingsModal({ isOpen, onClose }) {
 		}
 	});
 
-	// Fetch settings whenever the modal opens
+	// Fetch settings and statuses whenever modal opens
 	useEffect(() => {
+
 
 		(async () => {
 			setLoading(true);
 			try {
-				const res = await api.get(`/orders/retry-settings`);
-				if (res.data) {
-					// Merge with defaults to prevent crashes if backend misses a field
-					setSettings((prev) => ({ ...prev, ...res.data }));
+				const [settingsRes] = await Promise.all([
+					api.get(`/orders/retry-settings`),
+				]);
+
+				// Merge settings with defaults
+				if (settingsRes.data) {
+					setSettings({
+						enabled: settingsRes.data.enabled,
+						maxRetries: settingsRes.data.maxRetries,
+						retryInterval: settingsRes.data.retryInterval,
+						autoMoveStatus: settingsRes.data.autoMoveStatus,
+						retryStatuses: settingsRes.data.retryStatuses,
+						confirmationStatuses: settingsRes.data.confirmationStatuses,
+						notifyEmployee: settingsRes.data.notifyEmployee,
+						notifyAdmin: settingsRes.data.notifyAdmin,
+						workingHours: {
+							enabled: settingsRes.data.workingHours.notifyAdmin,
+							start: settingsRes.data.workingHours.notifyAdmin,
+							end: settingsRes.data.workingHours.notifyAdmin
+						}
+					});
 				}
 			} catch (e) {
 				toast.error(normalizeAxiosError(e));
@@ -2075,7 +2446,6 @@ function GlobalRetrySettingsModal({ isOpen, onClose }) {
 				setLoading(false);
 			}
 		})();
-
 	}, []);
 
 	const handleSave = async () => {
@@ -2092,6 +2462,23 @@ function GlobalRetrySettingsModal({ isOpen, onClose }) {
 		}
 	};
 
+	const toggleRetryStatus = (code) => {
+		setSettings((prev) => ({
+			...prev,
+			retryStatuses: prev.retryStatuses.includes(code)
+				? prev.retryStatuses.filter((s) => s !== code)
+				: [...prev.retryStatuses, code],
+		}));
+	};
+
+	const toggleConfirmationStatus = (code) => {
+		setSettings((prev) => ({
+			...prev,
+			confirmationStatuses: prev.confirmationStatuses.includes(code)
+				? prev.confirmationStatuses.filter((s) => s !== code)
+				: [...prev.confirmationStatuses, code],
+		}));
+	};
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
@@ -2135,78 +2522,39 @@ function GlobalRetrySettingsModal({ isOpen, onClose }) {
 									/>
 								</div>
 
-								{/* Max Retries */}
-								<div className="space-y-2">
-									<Label>{t("retrySettings.maxRetries")}</Label>
-									<Input
-										type="number"
-										min="1"
-										max="10"
-										value={settings.maxRetries}
-										onChange={(e) => setSettings({ ...settings, maxRetries: parseInt(e.target.value) })}
-										className="rounded-xl"
-									/>
-									<p className="text-xs text-gray-500">{t("retrySettings.maxRetriesDesc")}</p>
-								</div>
+								<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-								{/* Retry Interval */}
-								<div className="space-y-2">
-									<Label>{t("retrySettings.retryInterval")}</Label>
-									<div className="flex items-center gap-2">
+
+									{/* Max Retries */}
+									<div className="space-y-2">
+										<Label>{t("retrySettings.maxRetries")}</Label>
 										<Input
 											type="number"
-											min="5"
-											max="1440"
-											value={settings.retryInterval}
-											onChange={(e) => setSettings({ ...settings, retryInterval: parseInt(e.target.value) })}
+											min="1"
+											max="10"
+											value={settings.maxRetries}
+											onChange={(e) => setSettings({ ...settings, maxRetries: parseInt(e.target.value) || 1 })}
 											className="rounded-xl"
 										/>
-										<span className="text-sm text-gray-500">{t("retrySettings.minutes")}</span>
-									</div>
-									<p className="text-xs text-gray-500">{t("retrySettings.retryIntervalDesc")}</p>
-								</div>
-
-								{/* Working Hours */}
-								<div className="space-y-4 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-xl">
-									<div className="flex items-center justify-between">
-										<Label className="text-base font-semibold">{t("retrySettings.workingHours")}</Label>
-										<Switch
-											checked={settings.workingHours.enabled}
-											onCheckedChange={(checked) => setSettings({
-												...settings,
-												workingHours: { ...settings.workingHours, enabled: checked }
-											})}
-										/>
+										<p className="text-xs text-gray-500">{t("retrySettings.maxRetriesDesc")}</p>
 									</div>
 
-									{settings.workingHours.enabled && (
-										<div className="grid grid-cols-2 gap-4">
-											<div className="space-y-2">
-												<Label className="text-sm">{t("retrySettings.startTime")}</Label>
-												<Input
-													type="time"
-													value={settings.workingHours.start}
-													onChange={(e) => setSettings({
-														...settings,
-														workingHours: { ...settings.workingHours, start: e.target.value }
-													})}
-													className="rounded-xl"
-												/>
-											</div>
-											<div className="space-y-2">
-												<Label className="text-sm">{t("retrySettings.endTime")}</Label>
-												<Input
-													type="time"
-													value={settings.workingHours.end}
-													onChange={(e) => setSettings({
-														...settings,
-														workingHours: { ...settings.workingHours, end: e.target.value }
-													})}
-													className="rounded-xl"
-												/>
-											</div>
+									{/* Retry Interval */}
+									<div className="space-y-2">
+										<Label>{t("retrySettings.retryInterval")}</Label>
+										<div className="flex items-center gap-2">
+											<Input
+												type="number"
+												min="5"
+												max="1440"
+												value={settings.retryInterval}
+												onChange={(e) => setSettings({ ...settings, retryInterval: parseInt(e.target.value) || 5 })}
+												className="rounded-xl"
+											/>
+											<span className="text-sm text-gray-500">{t("retrySettings.minutes")}</span>
 										</div>
-									)}
+										<p className="text-xs text-gray-500">{t("retrySettings.retryIntervalDesc")}</p>
+									</div>
 								</div>
 							</TabsContent>
 
@@ -2214,14 +2562,25 @@ function GlobalRetrySettingsModal({ isOpen, onClose }) {
 								{/* Auto Move Status */}
 								<div className="space-y-2">
 									<Label>{t("retrySettings.autoMoveStatus")}</Label>
-									<Select value={settings.autoMoveStatus} onValueChange={(v) => setSettings({ ...settings, autoMoveStatus: v })}>
+									<Select
+										value={settings.autoMoveStatus}
+										onValueChange={(v) => setSettings({ ...settings, autoMoveStatus: v })}
+									>
 										<SelectTrigger className="rounded-xl">
-											<SelectValue />
+											<SelectValue placeholder={t("retrySettings.selectStatus")} />
 										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="cancelled">{t("statuses.cancelled")}</SelectItem>
-											<SelectItem value="postponed">{t("statuses.postponed")}</SelectItem>
-											<SelectItem value="pending_confirmation">{t("statuses.pendingConfirmation")}</SelectItem>
+										<SelectContent className="max-h-[280px]">
+											{statuses.map((status) => (
+												<SelectItem key={status.code || status.id} value={status.code || String(status.id)}>
+													<span className="flex items-center gap-2">
+														<span
+															className="w-2 h-2 rounded-full flex-shrink-0"
+															style={{ backgroundColor: status.color || "#6366f1" }}
+														/>
+														{status.system ? t(`statuses.${status.code}`) : status.name}
+													</span>
+												</SelectItem>
+											))}
 										</SelectContent>
 									</Select>
 									<p className="text-xs text-gray-500">{t("retrySettings.autoMoveStatusDesc")}</p>
@@ -2229,32 +2588,96 @@ function GlobalRetrySettingsModal({ isOpen, onClose }) {
 
 								{/* Retry Statuses */}
 								<div className="space-y-3">
-									<Label>{t("retrySettings.retryStatuses")}</Label>
-									<div className="space-y-2">
-										{[
-											{ value: "pending_confirmation", label: t("statuses.pendingConfirmation") },
-											{ value: "no_answer_shipping", label: t("statuses.noAnswerShipping") },
-											{ value: "wrong_number", label: t("statuses.wrongNumber") },
-											{ value: "postponed", label: t("statuses.postponed") }
-										].map((status) => (
-											<div key={status.value} className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
-												<Checkbox
-													checked={settings.retryStatuses.includes(status.value)}
-													onCheckedChange={(checked) => {
-														if (checked) {
-															setSettings({ ...settings, retryStatuses: [...settings.retryStatuses, status.value] });
-														} else {
-															setSettings({
-																...settings,
-																retryStatuses: settings.retryStatuses.filter(s => s !== status.value)
-															});
-														}
-													}}
-												/>
-												<Label className="cursor-pointer">{status.label}</Label>
-											</div>
-										))}
+									<div className="flex items-center justify-between">
+										<Label>{t("retrySettings.retryStatuses")}</Label>
+										<span className="text-xs text-muted-foreground">
+											{settings.retryStatuses.length} {t("retrySettings.selected")}
+										</span>
 									</div>
+									<div className="max-h-[280px] overflow-y-auto border rounded-xl bg-gray-50 dark:bg-slate-800/50 p-2 space-y-1">
+										{statuses.length === 0 ? (
+											<div className="py-4 text-center text-sm text-muted-foreground">
+												{t("messages.loading")}
+											</div>
+										) : (
+											statuses.map((status) => {
+												const code = status.code || String(status.id);
+												const isChecked = settings.retryStatuses.includes(code);
+												const label = status.system ? t(`statuses.${status.code}`) : status.name;
+
+												return (
+													<button
+														key={code}
+														type="button"
+														onClick={() => toggleRetryStatus(code)}
+														className={cn(
+															"w-full flex items-center gap-3 p-3 rounded-lg transition-colors text-start",
+															isChecked
+																? "bg-primary/10 hover:bg-primary/15"
+																: "hover:bg-gray-100 dark:hover:bg-slate-700"
+														)}
+													>
+														<span className={cn("flex-1 text-sm", isChecked && "font-medium")}>
+															{label}
+														</span>
+														<span
+															className="w-2 h-2 rounded-full flex-shrink-0"
+															style={{ backgroundColor: status.color || "#6366f1" }}
+														/>
+														<Checkbox checked={isChecked} />
+													</button>
+												);
+											})
+										)}
+									</div>
+									<p className="text-xs text-gray-500">{t("retrySettings.retryStatusesDesc")}</p>
+								</div>
+
+								{/* Allowed Confirmation Statuses */}
+								<div className="space-y-3">
+									<div className="flex items-center justify-between">
+										<Label>{t("retrySettings.confirmationStatuses")}</Label>
+										<span className="text-xs text-muted-foreground">
+											{settings.confirmationStatuses.length} {t("retrySettings.selected")}
+										</span>
+									</div>
+									<div className="max-h-[280px] overflow-y-auto border rounded-xl bg-gray-50 dark:bg-slate-800/50 p-2 space-y-1">
+										{statuses.length === 0 ? (
+											<div className="py-4 text-center text-sm text-muted-foreground">
+												{t("messages.loading")}
+											</div>
+										) : (
+											statuses.map((status) => {
+												const code = status.code || String(status.id);
+												const isChecked = settings.confirmationStatuses.includes(code);
+												const label = status.system ? t(`statuses.${status.code}`) : status.name;
+
+												return (
+													<button
+														key={code}
+														type="button"
+														onClick={() => toggleConfirmationStatus(code)}
+														className={cn(
+															"w-full flex items-center gap-3 p-3 rounded-lg transition-colors text-start",
+															isChecked
+																? "bg-emerald-500/10 hover:bg-emerald-500/15"
+																: "hover:bg-gray-100 dark:hover:bg-slate-700"
+														)}
+													>
+														<span className={cn("flex-1 text-sm", isChecked && "font-medium")}>
+															{label}
+														</span>
+														<span
+															className="w-2 h-2 rounded-full flex-shrink-0"
+															style={{ backgroundColor: status.color || "#6366f1" }}
+														/>
+														<Checkbox checked={isChecked} />
+													</button>
+												);
+											})
+										)}
+									</div>
+									<p className="text-xs text-gray-500">{t("retrySettings.confirmationStatusesDesc")}</p>
 								</div>
 							</TabsContent>
 
@@ -2302,7 +2725,7 @@ function GlobalRetrySettingsModal({ isOpen, onClose }) {
 							<Button variant="outline" onClick={onClose} className="rounded-xl">
 								{t("common.cancel")}
 							</Button>
-							<Button onClick={handleSave} className="rounded-xl bg-gradient-to-r from-primary to-purple-600">
+							<Button onClick={handleSave} className="rounded-xl bg-gradient-to-r from-primary to-purple-600" disabled={saving}>
 								{saving ? (
 									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 								) : (

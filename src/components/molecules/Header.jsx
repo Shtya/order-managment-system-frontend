@@ -1,7 +1,7 @@
 // components/molecules/Header.jsx
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/navigation';
@@ -13,6 +13,8 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import LanguageToggle from '../atoms/LanguageToggle';
 import { getUser } from '@/hook/getUser';
+import api from '@/utils/api';
+import { formatDistanceToNow } from 'date-fns';
 
 function useFullscreen() {
 	const [isFullscreen, setIsFullscreen] = React.useState(false);
@@ -37,7 +39,7 @@ function useFullscreen() {
 export default function Header({ toggleSidebar, isSidebarOpen }) {
 	const t = useTranslations('header');
 	const user = getUser();
-
+	const [total, setTotal] = useState(0);
 	const locale = useLocale();
 	const pathname = usePathname();
 	const router = useRouter();
@@ -47,16 +49,38 @@ export default function Header({ toggleSidebar, isSidebarOpen }) {
 
 	const { isFullscreen, toggle: toggleFullscreen } = useFullscreen();
 
-	const notifications = useMemo(
-		() => [
-			{ title: t('notif.newOrder.title'), desc: t('notif.newOrder.desc'), time: t('notif.newOrder.time') },
-			{ title: t('notif.stockAlert.title'), desc: t('notif.stockAlert.desc'), time: t('notif.stockAlert.time') },
-			{ title: t('notif.shippingUpdate.title'), desc: t('notif.shippingUpdate.desc'), time: t('notif.shippingUpdate.time') }
-		],
-		[t]
-	);
+	const [notifications, setNotifications] = useState([]);
+	const [unreadCount, setUnreadCount] = useState(2);
 
-	const unreadCount = 2;
+	// 2. Fetch Notifications
+	const fetchNotifications = async () => {
+		try {
+			const res = await api.get('/notifications', { params: { page: 1, limit: 10 } })
+			setTotal(res.data.total_records);
+			setNotifications(res.data.records);
+		} catch (err) {
+			console.error(err);
+		}
+	};
+	const hasMore = total > notifications.length;
+	useEffect(() => { fetchNotifications(); }, []);
+
+	// 3. Action Handlers
+	const handleMarkAsRead = async (id) => {
+		try {
+
+			await api.patch(`/notifications/${id}/read`);
+			setNotifications((prev) => prev.map((n) => ({ ...n, isRead: n.id === id })))
+		} catch (e) {
+
+		}
+	};
+
+	const handleMarkAllRead = async () => {
+		await api.post('/notifications/read-all');
+		fetchNotifications();
+	};
+
 
 	const switchLocale = (nextLocale) => {
 		router.replace(pathname, { locale: nextLocale });
@@ -175,18 +199,45 @@ export default function Header({ toggleSidebar, isSidebarOpen }) {
 							</div>
 
 							<div className="max-h-72 overflow-auto">
-								{notifications.map((n, idx) => (
-									<div key={idx} className="px-4 py-3 hover:bg-muted/50">
-										<div className="flex items-start justify-between gap-3">
-											<div className="space-y-1">
-												<div className="text-sm font-medium">{n.title}</div>
-												<div className="text-xs text-muted-foreground">{n.desc}</div>
+								{notifications.length === 0 ? (
+									<div className="p-8 text-center text-xs text-muted-foreground">{t('noNotifications')}</div>
+								) : (
+									notifications.map((n) => (
+										<div key={n.id} className={`px-4 py-3 hover:bg-muted/50 transition-colors ${!n.isRead ? 'bg-primary/5' : ''}`}>
+											<div className="flex items-start justify-between gap-3">
+												<div className="space-y-1">
+													<div className={`text-sm ${!n.isRead ? 'font-bold' : 'font-medium'}`}>{n.title}</div>
+													<div className="text-xs text-muted-foreground line-clamp-2">{n.message}</div>
+													{!n.isRead && (
+														<button
+															onClick={() => handleMarkAsRead(n.id)}
+															className="text-[10px] text-primary underline font-medium cursor-pointer"
+														>
+															{t('markAsRead')}
+														</button>
+													)}
+												</div>
+												<div className="text-[10px] text-muted-foreground whitespace-nowrap">
+													{formatDistanceToNow(new Date(n.createdAt))}
+												</div>
 											</div>
-											<div className="text-xs text-muted-foreground whitespace-nowrap">{n.time}</div>
 										</div>
-									</div>
-								))}
+									))
+								)}
 							</div>
+
+							{(hasMore || notifications.length > 0) && (
+								<div className="p-2 border-t bg-muted/20">
+									<Button
+										variant="ghost"
+										size="sm"
+										className="w-full text-xs font-semibold text-primary hover:text-primary/80 cursor-pointer"
+										onClick={() => router.push('/notifications')} // Navigate to full page
+									>
+										{hasMore ? t('readMore') : t('viewAll')}
+									</Button>
+								</div>
+							)}
 						</PopoverContent>
 					</Popover>
 

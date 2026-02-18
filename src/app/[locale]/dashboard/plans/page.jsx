@@ -138,6 +138,7 @@ export function useSubscriptionsApi() {
 				// You can adjust fallback keys if backend uses different names
 				usersLimit: Number(plan.usersLimit ?? plan.maxUsers ?? 1),
 				shippingCompaniesLimit: Number(plan.shippingCompaniesLimit ?? plan.maxShippingCompanies ?? 0),
+				bulkUploadPerMonth: Number(plan.bulkUploadPerMonth ?? plan.maxShippingCompanies ?? 0),
 
 				adminId: plan.adminId,
 				createdAt: plan.createdAt,
@@ -192,6 +193,7 @@ export function useSubscriptionsApi() {
 				// ✅ NEW (limits) - sent to backend
 				usersLimit: Number(planData.usersLimit ?? 1),
 				shippingCompaniesLimit: Number(planData.shippingCompaniesLimit ?? 0),
+				bulkUploadPerMonth: Number(planData.bulkUploadPerMonth ?? 0),
 			};
 
 			const { data } = await api.post("/plans", payload);
@@ -207,6 +209,9 @@ export function useSubscriptionsApi() {
 				usersLimit: Number(data.usersLimit ?? data.maxUsers ?? payload.usersLimit ?? 1),
 				shippingCompaniesLimit: Number(
 					data.shippingCompaniesLimit ?? data.maxShippingCompanies ?? payload.shippingCompaniesLimit ?? 0
+				),
+				bulkUploadPerMonth: Number(
+					data.bulkUploadPerMonth ?? data.maxShippingCompanies ?? payload.bulkUploadPerMonth ?? 0
 				),
 			};
 		} catch (error) {
@@ -236,6 +241,7 @@ export function useSubscriptionsApi() {
 				// ✅ NEW (limits) - sent to backend
 				usersLimit: Number(planData.usersLimit ?? 1),
 				shippingCompaniesLimit: Number(planData.shippingCompaniesLimit ?? 0),
+				bulkUploadPerMonth: Number(planData.bulkUploadPerMonth ?? 0),
 			};
 
 			const { data } = await api.patch(`/plans/${id}`, payload);
@@ -251,6 +257,10 @@ export function useSubscriptionsApi() {
 				usersLimit: Number(data.usersLimit ?? data.maxUsers ?? payload.usersLimit ?? 1),
 				shippingCompaniesLimit: Number(
 					data.shippingCompaniesLimit ?? data.maxShippingCompanies ?? payload.shippingCompaniesLimit ?? 0
+				),
+
+				bulkUploadPerMonth: Number(
+					data.bulkUploadPerMonth ?? data.maxShippingCompanies ?? payload.bulkUploadPerMonth ?? 0
 				),
 			};
 		} catch (error) {
@@ -318,6 +328,7 @@ function EditablePlanCard({
 		// ✅ NEW (limits)
 		usersLimit: plan.usersLimit ?? 1,
 		shippingCompaniesLimit: plan.shippingCompaniesLimit ?? 0,
+		bulkUploadPerMonth: plan.bulkUploadPerMonth ?? 0,
 	});
 
 	const [newFeature, setNewFeature] = useState("");
@@ -336,6 +347,7 @@ function EditablePlanCard({
 				// ✅ NEW (limits)
 				usersLimit: plan.usersLimit ?? 1,
 				shippingCompaniesLimit: plan.shippingCompaniesLimit ?? 0,
+				bulkUploadPerMonth: plan.bulkUploadPerMonth ?? 0,
 			});
 		}
 	}, [isEditing, plan]);
@@ -347,6 +359,7 @@ function EditablePlanCard({
 			price: Number(formData.price),
 			usersLimit: Number(formData.usersLimit ?? 1),
 			shippingCompaniesLimit: Number(formData.shippingCompaniesLimit ?? 0),
+			bulkUploadPerMonth: Number(formData.bulkUploadPerMonth ?? 0),
 		});
 	};
 
@@ -677,6 +690,16 @@ function EditablePlanCard({
 								</Select>
 							</div>
 						</div>
+						<div className="space-y-1">
+							<Label className="text-xs text-gray-500 dark:text-slate-400">عدد الطلبات المسموح رفعها في الشهر</Label>
+							<Input
+								value={String(formData.bulkUploadPerMonth ?? 0)}
+								onChange={(e) => handleUpdateFeature(index, e.target.value)}
+								onValueChange={(v) => setFormData({ ...formData, bulkUploadPerMonth: Number(e.target.value || 0) })}
+								className="flex-1 h-9 text-sm rounded-lg"
+								disabled={isSaving}
+							/>
+						</div>
 
 						{/* Existing features editor */}
 						<div className="space-y-2 max-h-64 overflow-y-auto">
@@ -734,6 +757,10 @@ function EditablePlanCard({
 							<div className="flex items-center justify-between text-sm">
 								<span className="text-gray-500 dark:text-slate-400">شركات الشحن</span>
 								<span className="font-semibold text-gray-800 dark:text-slate-200">{plan.shippingCompaniesLimit ?? 0}</span>
+							</div>
+							<div className="flex items-center justify-between text-sm">
+								<span className="text-gray-500 dark:text-slate-400">عدد الطلبات المسموح رفعها في الشهر</span>
+								<span className="font-semibold text-gray-800 dark:text-slate-200">{plan.bulkUploadPerMonth ?? 0}</span>
 							</div>
 						</div>
 
@@ -793,8 +820,8 @@ function NewPlanCard({ onClick, isCreating }) {
 	);
 }
 
- 
- 
+
+
 /** =========================
  * Transaction Details Dialog
  * ========================= */
@@ -859,7 +886,7 @@ function TransactionDetailsDialog({ open, onClose, transaction }) {
 export default function AdminSubscriptionsPage() {
 	const [activeTab, setActiveTab] = useState("plans");
 	const [search, setSearch] = useState("");
- 
+
 	const [currentPage, setCurrentPage] = useState(1);
 	const [perPage, setPerPage] = useState(10);
 
@@ -945,6 +972,7 @@ export default function AdminSubscriptionsPage() {
 			// ✅ NEW defaults (limits)
 			usersLimit: 1,
 			shippingCompaniesLimit: 0,
+			bulkUploadPerMonth: 0,
 		};
 
 		try {
@@ -994,7 +1022,7 @@ export default function AdminSubscriptionsPage() {
 			setDeletingPlanId(null);
 		}
 	};
- 
+
 
 	const isAnyPlanBusy = creatingPlan || savingPlanId !== null || deletingPlanId !== null;
 
@@ -1017,7 +1045,7 @@ export default function AdminSubscriptionsPage() {
 			</div>
 
 			{/* Content */}
-			<div className="bg-card !p-4 rounded-sm"> 
+			<div className="bg-card !p-4 rounded-sm">
 
 				<div className="mt-4">
 					{activeTab === "plans" ? (

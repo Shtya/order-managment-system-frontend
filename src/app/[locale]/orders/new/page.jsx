@@ -46,6 +46,7 @@ const createSchema = (t) =>
 		paymentMethod: yup.string().required(t("validation.paymentMethodRequired")),
 		paymentStatus: yup.string().optional(),
 		shippingCompanyId: yup.string().optional(),
+		storeId: yup.string().optional(),
 		shippingCost: yup.number().min(0).optional(),
 		discount: yup.number().min(0).optional(),
 		deposit: yup.number().min(0).optional(),
@@ -90,6 +91,7 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 				paymentMethod: existingOrder.paymentMethod || "cod",
 				paymentStatus: existingOrder.paymentStatus || "pending",
 				shippingCompanyId: existingOrder.shippingCompany?.id ? String(existingOrder.shippingCompany.id) : "",
+				storeId: existingOrder.storeId?.id ? String(existingOrder.storeId.id) : "",
 				shippingCost: existingOrder.shippingCost || 0,
 				discount: existingOrder.discount || 0,
 				deposit: existingOrder.deposit || 0,
@@ -118,6 +120,7 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 			paymentMethod: "cod",
 			paymentStatus: "pending",
 			shippingCompanyId: "",
+			storeId: "",
 			shippingCost: 0,
 			discount: 0,
 			deposit: 0,
@@ -249,6 +252,7 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 				paymentMethod: data.paymentMethod,
 				paymentStatus: data.paymentStatus || undefined,
 				shippingCompanyId: data.shippingCompanyId && data.shippingCompanyId !== 'none' ? data.shippingCompanyId : undefined,
+				storeId: data.storeId && data.storeId !== 'none' ? data.storeId : undefined,
 				shippingCost: Number(data.shippingCost || 0),
 				discount: Number(data.discount || 0),
 				deposit: Number(data.deposit || 0),
@@ -279,16 +283,19 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 	};
 
 	const [shippingCompanies, setShippingCompanies] = useState([])
+	const [stores, setStores] = useState([]);
 
 	useEffect(() => {
 		let mounted = true;
 		(async () => {
 			try {
-				const [shippingRes] = await Promise.all([
+				const [shippingRes, stores] = await Promise.all([
 					api.get('/shipping-companies', { params: { limit: 200, isActive: true } }),
+					api.get('/lookups/stores', { params: { limit: 200, isActive: true } }),
 				]);
 				if (!mounted) return;
 				setShippingCompanies(Array.isArray(shippingRes.data?.records) ? shippingRes.data?.records : []);
+				setStores(Array.isArray(storesRes.data) ? storesRes.data : []);
 			} catch (e) {
 				toast.error(normalizeAxiosError(e));
 			}
@@ -444,6 +451,28 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 									{errors.email && (
 										<p className="text-xs text-red-500">{errors.email.message}</p>
 									)}
+								</div>
+								<div className="space-y-2">
+									<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('fields.store')}</Label>
+									<Controller
+										control={control}
+										name="storeId"
+										render={({ field }) => (
+											<Select value={field.value || ''} onValueChange={field.onChange}>
+												<SelectTrigger className="w-full rounded-xl !h-[50px] bg-[#fafafa] dark:bg-slate-800/50">
+													<SelectValue placeholder={t('placeholders.store')} />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectItem value="none">{t('common.none')}</SelectItem>
+													{stores.map((s) => (
+														<SelectItem key={s.id} value={String(s.id)}>
+															{s.label ?? s.name ?? `#${s.id}`}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+										)}
+									/>
 								</div>
 
 								<div className="space-y-2">

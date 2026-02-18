@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import React from "react";
 export default function InfoCard({
 	title,
@@ -13,6 +14,8 @@ export default function InfoCard({
 	onClick,
 	customStyles,
 }) {
+
+	const t = useTranslations("orders");
 	const handleClick = () => {
 		if (onClick) {
 			onClick();
@@ -61,6 +64,7 @@ export default function InfoCard({
 					<div className="text-[16px] font-semibold text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors">
 						{title}
 					</div>
+
 				</div>
 			</button>
 		);
@@ -77,6 +81,11 @@ export default function InfoCard({
 			].join(" ")}
 			onClick={editable ? handleClick : undefined}
 		>
+			{editable && (
+				<span className="px-1 py-1 text-[10px] font-semibold rounded-full bg-primary/10 text-primary absolute  start-0.5 top-0.5">
+					{t('custom')}
+				</span>
+			)}
 			<div className="flex items-start gap-3">
 				<div
 					className={[

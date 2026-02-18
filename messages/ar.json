@@ -3,6 +3,13 @@
     "guest": "زائر",
     "noEmail": "لا يوجد بريد"
   },
+  "barcode": {
+    "barcodePopup": {
+      "title": "رمز الباركود",
+      "subtitle": "عرض الرمز الخاص بالطلب رقم:"
+    },
+    "viewBarcode": "توسيع الباركود"
+  },
   "sidebar": {
     "dashboard": "لوحة التحكم",
     "users": "المستخدمين",
@@ -30,6 +37,10 @@
     "createPurchaseReturn": "إنشاء طلب استبدال"
   },
   "header": {
+    "noNotifications": "لا يوجد اشعارات",
+    "readMore": "قراءة المزيد",
+    "viewAll": "عرض الكل",
+    "markAsRead": "تعيين كمقروء",
     "brand": "طلباتي تك",
     "fullscreen": "ملء الشاشة",
     "theme": "تبديل المظهر",
@@ -2410,6 +2421,7 @@
     "loadMore": "تحميل المزيد"
   },
   "orders": {
+    "custom": "مخصص",
     "deleteStatus": {
       "title": "حذف الحالة",
       "subtitle": "هذا الإجراء لا يمكن التراجع عنه",
@@ -2649,6 +2661,7 @@
       }
     },
     "table": {
+      "barcode": "باركود",
       "orderNumber": "رقم الطلب",
       "assignedEmployee": "الموظف المسؤول",
       "notAssigned": "غير محدد",
@@ -2708,13 +2721,15 @@
       "noEmployeefound": "لم يتم العثور علي موظفيين",
       "currentOrders": "طلبات حالية",
       "selectOrders": "اختر الطلبات",
+      "statusesSelected": "حالة محددة",
       "available": "متاح",
       "employeeCount": "عدد الموظفين",
+      "orderCount": "عدد الطلبات",
       "preview": "معاينة التوزيع",
       "newOrders": "طلبات جديدة",
       "distribute": "تنفيذ التوزيع",
       "selectEmployeeAndOrders": "يرجى اختيار موظف وطلبات",
-      "normalSuccess": "تم توزيع {count} طلب على {employee}",
+      "normalSuccess": "تم توزيع {count} طلب على {employees} موظفين",
       "smartSuccess": "تم توزيع {count} طلب على {employees} موظفين",
       "selectStatusToLoadOrders": "اختر حالة لتحميل الطلبات المتاحة",
       "noFreeOrders": "لا توجد طلبات متاحة في هذا النطاق",
@@ -2723,7 +2738,27 @@
       "noEmployeesFound": "لم يتم العثور على موظفين للتوزيع",
       "autoAssignSuccess": "تم توزيع {count} طلب على {employees} موظف",
       "autoAssignFailed": "فشل التوزيع التلقائي",
-      "totalActiveNow": "الإجمالي الحالي"
+      "totalActiveNow": "الإجمالي الحالي",
+      "selectStatusFirst": "اختر حالة أولاً لعرض الطلبات",
+      "freeOrdersPool": "إجمالي الطلبات المتاحة",
+      "employee": "الموظف",
+      "ordersSelected": "طلبات محددة",
+      "selectAll": "تحديد الكل",
+      "deselectAll": "إلغاء تحديد الكل",
+      "addEmployee": "إضافة موظف آخر",
+      "summary": "ملخص التوزيع",
+      "orders": "طلبات",
+      "totalOrders": "إجمالي الطلبات",
+      "alreadyAssigned": "محجوز",
+      "selectStatusPlaceholder": "أختار الحالات",
+      "clearAll": "إلغاء إختيار الكل",
+      "max": "الحد الأقصى",
+      "noOrdersAvailable": "لا توجد طلبات متاحة لهذه الحالة",
+      "showingActualDistribution": "يتم الآن عرض توزيع لـ {count} طلب",
+      "noOrdersMatched": "لم يتم تعيين طلبات",
+      "showingPreviewFor": "معاينة توزيع {count} طلب",
+      "selectStatusToSeePreview": "يرجى اختيار الحالات أولاً لعرض معاينة التوزيع",
+      "noOrdersAvailableForSelection": "لا توجد طلبات متاحة بناءً على الحالات أو التواريخ المختارة"
     },
     "retrySettings": {
       "globalTitle": "إعدادات إعادة المحاولة",
@@ -2751,7 +2786,12 @@
       "endTime": "إلى",
       "autoMoveStatus": "تغيير الحالة تلقائيًا",
       "autoMoveStatusDesc": "نقل الطلب لحالة أخرى بعد فشل المحاولات",
-      "retryStatuses": "الحالات القابلة لإعادة المحاولة"
+      "retryStatuses": "الحالات القابلة لإعادة المحاولة",
+      "selectStatus": "اختر حالة",
+      "retryStatusesDesc": "الحالات التي يتم فيها تطبيق منطق إعادة المحاولة",
+      "confirmationStatuses": "الحالات المسموح بها لفريق التأكيد",
+      "confirmationStatusesDesc": "الحالات التي يمكن لفريق التأكيد اختيارها عند معالجة الطلبات",
+      "selected": "محدد"
     },
     "fields": {
       "customerName": "اسم العميل",
@@ -2779,7 +2819,8 @@
       "locked": "مؤجل",
       "total": "الإجمالي",
       "retries": "المحاولات",
-      "orders": "طلب"
+      "orders": "طلب",
+      "assignedOrders": "الطلبات المستنده"
     },
     "retry": {
       "locked": "مقفل"
@@ -2877,6 +2918,7 @@
       "orderSummary": "ملخص الطلب"
     },
     "fields": {
+      "store": "المتجر",
       "customerName": "اسم العميل",
       "phoneNumber": "رقم الهاتف",
       "alternativePhone": "رقم هاتف بديل",
@@ -2895,6 +2937,7 @@
       "customerNotes": "ملاحظات العميل"
     },
     "placeholders": {
+      "store": "اختر المتجر",
       "customerName": "أدخل اسم العميل",
       "phoneNumber": "مثال: 01234567890",
       "alternativePhone": "رقم هاتف إضافي (اختياري)",

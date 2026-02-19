@@ -91,7 +91,7 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 				paymentMethod: existingOrder.paymentMethod || "cod",
 				paymentStatus: existingOrder.paymentStatus || "pending",
 				shippingCompanyId: existingOrder.shippingCompany?.id ? String(existingOrder.shippingCompany.id) : "",
-				storeId: existingOrder.storeId?.id ? String(existingOrder.storeId.id) : "",
+				storeId: existingOrder.storeId ? String(existingOrder.storeId) : "",
 				shippingCost: existingOrder.shippingCost || 0,
 				discount: existingOrder.discount || 0,
 				deposit: existingOrder.deposit || 0,
@@ -284,25 +284,30 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 
 	const [shippingCompanies, setShippingCompanies] = useState([])
 	const [stores, setStores] = useState([]);
-
+	// 1. Fetch Shipping Companies
 	useEffect(() => {
-		let mounted = true;
-		(async () => {
+		const fetchShipping = async () => {
 			try {
-				const [shippingRes, stores] = await Promise.all([
-					api.get('/shipping-companies', { params: { limit: 200, isActive: true } }),
-					api.get('/lookups/stores', { params: { limit: 200, isActive: true } }),
-				]);
-				if (!mounted) return;
-				setShippingCompanies(Array.isArray(shippingRes.data?.records) ? shippingRes.data?.records : []);
-				setStores(Array.isArray(storesRes.data) ? storesRes.data : []);
+				const res = await api.get('/shipping', { params: { limit: 200, isActive: true } });
+				setShippingCompanies(Array.isArray(res.data?.records) ? res.data.records : []);
 			} catch (e) {
-				toast.error(normalizeAxiosError(e));
+				console.error(`Shipping: ${normalizeAxiosError(e)}`);
 			}
-		})();
-		return () => {
-			mounted = false;
 		};
+		fetchShipping();
+	}, []);
+
+	// 2. Fetch Stores
+	useEffect(() => {
+		const fetchStores = async () => {
+			try {
+				const res = await api.get('/stores', { params: { limit: 200, isActive: true } });
+				setStores(Array.isArray(res.data.records) ? res.data.records : []);
+			} catch (e) {
+				console.error(`Stores: ${normalizeAxiosError(e)}`);
+			}
+		};
+		fetchStores();
 	}, []);
 
 	// Show loading state while initial data is being loaded

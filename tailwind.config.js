@@ -6,9 +6,32 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#6366f1',
-        secondary: '#22c55e',
-      },
+      primary: 'var(--primary)',
+      secondary: 'var(--secondary)',
+      third: 'var(--third)',
+
+      background: 'var(--background)',
+      foreground: 'var(--foreground)',
+
+      card: 'var(--card)',
+      'card-foreground': 'var(--card-foreground)',
+
+      popover: 'var(--popover)',
+      'popover-foreground': 'var(--popover-foreground)',
+
+      muted: 'var(--muted)',
+      'muted-foreground': 'var(--muted-foreground)',
+
+      accent: 'var(--accent)',
+      'accent-foreground': 'var(--accent-foreground)',
+
+      destructive: 'var(--destructive)',
+      'destructive-foreground': 'var(--destructive-foreground)',
+
+      border: 'var(--border)',
+      input: 'var(--input)',
+      ring: 'var(--ring)',
+    },
       keyframes: {
         'gradient-shift': {
           '0%, 100%': { backgroundPosition: '0% 50%' },

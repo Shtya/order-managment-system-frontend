@@ -134,8 +134,9 @@ const MiniSelect = memo(function MiniSelect({
 			data-mini-select-menu="1"
 			dir={dir}
 			className={cn(
-				"fixed z-[9999] rounded-md border bg-white shadow-lg",
-				"border-border overflow-hidden"
+				"fixed z-[9999] rounded-md border shadow-lg overflow-hidden",
+				// ✅ Dark mode aware background + border
+				"bg-card border-border"
 			)}
 			style={{
 				left: pos.left,
@@ -152,20 +153,19 @@ const MiniSelect = memo(function MiniSelect({
 						placeholder={searchPlaceholder}
 						className={cn(
 							"h-8 w-full rounded-md border px-2 text-[12px]",
-							"bg-white outline-none transition",
-							"focus:ring-4 focus:ring-primary/20 focus:border-primary",
-							"border-border"
+							// ✅ Dark mode aware input
+							"bg-background text-foreground placeholder:text-muted-foreground",
+							"outline-none transition border-border",
+							"focus:ring-4 focus:ring-primary/20 focus:border-primary"
 						)}
 						autoFocus
 					/>
 				</div>
 			)}
 
-			<div
-				className="overflow-auto"
-				style={{ maxHeight: pos.maxHeight }}
-			>
+			<div className="overflow-auto" style={{ maxHeight: pos.maxHeight }}>
 				{filtered.length === 0 ? (
+					// ✅ Dark mode aware empty state
 					<div className="p-3 text-xs text-muted-foreground">لا توجد نتائج</div>
 				) : (
 					filtered.map((opt) => {
@@ -177,14 +177,15 @@ const MiniSelect = memo(function MiniSelect({
 								onClick={() => handlePick(opt.value)}
 								className={cn(
 									"w-full text-left px-3 py-2 text-[12px] flex items-center justify-between",
-									"hover:bg-primary/5 transition",
-									isActive && "bg-primary/10 text-primary"
+									// ✅ Dark mode aware hover + active states
+									"text-foreground hover:bg-primary/10 transition",
+									isActive && "bg-primary/15 text-primary"
 								)}
 								role="option"
 								aria-selected={isActive}
 							>
 								<span className="truncate">{opt.label}</span>
-								{isActive && <span className="text-[10px]">✓</span>}
+								{isActive && <span className="text-[10px] text-primary">✓</span>}
 							</button>
 						);
 					})
@@ -200,7 +201,8 @@ const MiniSelect = memo(function MiniSelect({
 				className={cn(
 					"absolute left-2 px-1 text-[10px] transition-all pointer-events-none z-10",
 					hasValue
-						? "top-[-6px] text-primary bg-[linear-gradient(to_bottom,#fcfcfd_50%,#ffffff_50%)]"
+						// ✅ Dark mode aware floating label background
+						? "top-[-6px] text-primary bg-[linear-gradient(to_bottom,hsl(var(--card))_50%,hsl(var(--background))_50%)]"
 						: "top-1/2 -translate-y-1/2 text-muted-foreground opacity-0"
 				)}
 			>
@@ -218,7 +220,9 @@ const MiniSelect = memo(function MiniSelect({
 				}}
 				className={cn(
 					"h-[40px] w-full rounded-md border px-2 text-[12px]",
-					"bg-white outline-none transition flex items-center justify-between gap-2",
+					// ✅ Dark mode aware trigger
+					"bg-background text-foreground",
+					"outline-none transition flex items-center justify-between gap-2",
 					"focus:ring-4 focus:ring-primary/20 focus:border-primary",
 					hasValue
 						? "border-primary/40 hover:border-primary/60"
@@ -231,10 +235,9 @@ const MiniSelect = memo(function MiniSelect({
 				<span className={cn("truncate", !hasValue && "text-muted-foreground")}>
 					{hasValue ? selected.label : placeholder}
 				</span>
-				<ChevronDown className={cn("h-4 w-4 transition", open && "rotate-180")} />
+				<ChevronDown className={cn("h-4 w-4 text-muted-foreground transition shrink-0", open && "rotate-180")} />
 			</button>
 
-			{/* Portal Dropdown */}
 			{typeof document !== "undefined" ? createPortal(Menu, document.body) : null}
 		</div>
 	);

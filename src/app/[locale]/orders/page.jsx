@@ -112,6 +112,26 @@ export const getIconForStatus = (code) => {
 	};
 	return iconMap[code] || Package;
 };
+
+
+export const generateBgColors = (hex) => {
+	const hexToRgb = (h) => {
+		const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h);
+		return result ? {
+			r: parseInt(result[1], 16),
+			g: parseInt(result[2], 16),
+			b: parseInt(result[3], 16)
+		} : null;
+	};
+
+	const rgb = hexToRgb(hex);
+	if (!rgb) return { light: "#f5f5f5", dark: "#1a1a1a" };
+
+	return {
+		light: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`,
+		dark: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.15)`,
+	};
+};
 // ✅ Order Status Constants (Mirroring your Enum)
 export const OrderStatus = {
 	NEW: "new",
@@ -1087,8 +1107,8 @@ function DistributionModal({ isOpen, onClose, statuses = [], onSuccess }) {
 	const [assigning, setAssigning] = useState(false);
 
 	// ─── Smart tab state ──────────────────────────────────────────────────────
-	const [employeeCount, setEmployeeCount] = useState(1);
-	const [orderCount, setOrderCount] = useState(1);
+	const [employeeCount, setEmployeeCount] = useState(0);
+	const [orderCount, setOrderCount] = useState(0);
 	const [autoEmployeesLoading, setAutoEmployeesLoading] = useState(false);
 	const [autoAssignResult, setAutoAssignResult] = useState({ maxEmployees: 0, maxOrders: 0, assignments: [] });
 
@@ -1200,8 +1220,8 @@ function DistributionModal({ isOpen, onClose, statuses = [], onSuccess }) {
 			try {
 				const res = await api.post("/orders/assign-auto", {
 					statusIds: selectedStatuses,
-					employeeCount: Math.max(1, Number(employeeCount) || 1),
-					orderCount: Math.max(1, Number(orderCount) || 1),
+					employeeCount: Number(employeeCount) || 0,
+					orderCount: Number(orderCount) || 0,
 					startDate: debouncedFrom,
 					endDate: debouncedTo,
 				});
@@ -1209,8 +1229,8 @@ function DistributionModal({ isOpen, onClose, statuses = [], onSuccess }) {
 				const data = res.data;
 				if (!data?.success) { toast.error(data?.message || t("distribution.autoAssignFailed")); return; }
 				setAutoAssignResult(data.result || []);
-				const total = (data.result || []).reduce((s, r) => s + (r.assignedThisBatch || 0), 0);
-				toast.success(t("distribution.autoAssignSuccess", { count: total, employees: (data.result || []).length }));
+
+				toast.success(t("distribution.autoAssignSuccess", { count: data.totalAssigned, employees: data.employeesParticipating }));
 				onSuccess?.();
 				setTimeout(() => { handleClose(); setAutoAssignResult(null); }, 2000);
 			} catch (err) {
@@ -1231,8 +1251,8 @@ function DistributionModal({ isOpen, onClose, statuses = [], onSuccess }) {
 			try {
 				const response = await api.post("/orders/auto-assign-preview", {
 					statusIds: selectedStatuses.map(s => Number(s)),
-					requestedOrderCount: orderCount,
-					requestedEmployeeCount: employeeCount,
+					requestedOrderCount: orderCount || 0,
+					requestedEmployeeCount: employeeCount || 0,
 					startDate: debouncedFrom,
 					endDate: debouncedTo,
 				});
@@ -1241,9 +1261,14 @@ function DistributionModal({ isOpen, onClose, statuses = [], onSuccess }) {
 
 				if (orderCount > response.data.maxOrders) {
 					setOrderCount(response.data.maxOrders);
+				} else if (orderCount !== response.data.effectiveOrderCount) {
+					setOrderCount(response.data.effectiveOrderCount);
 				}
+
 				if (employeeCount > response.data.maxEmployees) {
 					setEmployeeCount(response.data.maxEmployees);
+				} else if (employeeCount !== response.data.effectiveEmployeeCount) {
+					setEmployeeCount(response.data.effectiveEmployeeCount);
 				}
 
 			} catch (error) {
@@ -1486,8 +1511,7 @@ function DistributionModal({ isOpen, onClose, statuses = [], onSuccess }) {
 										onChange={(e) => {
 											const val = parseInt(e.target.value) || 0;
 											const max = autoAssignResult?.maxEmployees || 0;
-											// setEmployeeCount(Math.min(max, Math.max(0, val)));
-											setEmployeeCount(val);
+											setEmployeeCount(Math.min(max, Math.max(0, val)));
 										}}
 										className="rounded-xl"
 									/>
@@ -1508,8 +1532,7 @@ function DistributionModal({ isOpen, onClose, statuses = [], onSuccess }) {
 										onChange={(e) => {
 											const val = parseInt(e.target.value) || 0;
 											const max = autoAssignResult?.maxOrders || 0;
-											// setOrderCount(Math.min(max, Math.max(0, val)));
-											setOrderCount(val);
+											setOrderCount(Math.min(max, Math.max(0, val)));
 										}}
 										className="rounded-xl"
 									/>
@@ -1733,25 +1756,7 @@ export default function OrdersPageEnhanced() {
 	const statsCards = useMemo(() => {
 		if (!stats.length) return [];
 
-		// Generate background colors from the color
-		const generateBgColors = (hex) => {
-			const hexToRgb = (h) => {
-				const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h);
-				return result ? {
-					r: parseInt(result[1], 16),
-					g: parseInt(result[2], 16),
-					b: parseInt(result[3], 16)
-				} : null;
-			};
 
-			const rgb = hexToRgb(hex);
-			if (!rgb) return { light: "#f5f5f5", dark: "#1a1a1a" };
-
-			return {
-				light: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`,
-				dark: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.15)`,
-			};
-		};
 
 		return stats
 			.sort((a, b) => a.sortOrder - b.sortOrder)
@@ -2139,7 +2144,7 @@ export default function OrdersPageEnhanced() {
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="start">
 							<DropdownMenuItem
-								onClick={() => router.push(`/orders/${row.id}`)}
+								onClick={() => router.push(`/orders/details/${row.id}`)}
 								className="flex items-center gap-2"
 							>
 								<Eye size={16} />

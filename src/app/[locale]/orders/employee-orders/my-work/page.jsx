@@ -23,6 +23,7 @@ import {
   ArrowRight,
   Lock,
   Timer,
+  Tag,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -34,8 +35,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import api from "@/utils/api";
 import { cn } from "@/utils/cn";
-import { OrderDetailsPage } from "../../[id]/page";
-import { getIconForStatus } from "../../page";
+import { OrderDetailsPage, OrderDetailsPageSkeleton } from "../../details/[id]/page";
+
 
 // Status Badge Component
 const StatusBadge = ({ status, t }) => {
@@ -93,7 +94,7 @@ const SectionCard = ({ title, icon: Icon, children, className }) => (
     animate={{ opacity: 1, y: 0 }}
     className={cn(
       "bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-6",
-      "shadow-sm",
+      "shadow-sm hover:shadow-md transition-all",
       className
     )}
   >
@@ -106,6 +107,256 @@ const SectionCard = ({ title, icon: Icon, children, className }) => (
     {children}
   </motion.div>
 );
+
+
+export function ResultBanner({
+  refetchingOrder,
+  showSuccessCard,
+  newStatus,
+  retriesExhausted,
+  isLocked,
+  lockedUntil,
+}) {
+  const t = useTranslations("orders");
+  const visible = showSuccessCard || refetchingOrder || isLocked || retriesExhausted;
+
+  // hex color → translucent rgba background
+  const hexToBg = (hex) => {
+    const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return r
+      ? `rgba(${parseInt(r[1], 16)},${parseInt(r[2], 16)},${parseInt(r[3], 16)},0.12)`
+      : "transparent";
+  };
+
+  const showSuccessRow = showSuccessCard || refetchingOrder;
+  const showRetriesRow = retriesExhausted && !refetchingOrder;
+  const showLockRow = isLocked && lockedUntil;
+
+  const Divider = () => <div className="h-px bg-border/40 mx-5" />;
+
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          key="result-banner"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.22 }}
+          className="mb-5 rounded-2xl border border-border/60 bg-card overflow-hidden"
+        >
+
+          {/* ══════════════════════════════════════
+              ROW 1 — Success / Loading
+          ══════════════════════════════════════ */}
+          <AnimatePresence>
+            {showSuccessRow && (
+              <motion.div
+                key="success-row"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <div className="flex items-center justify-between px-5 py-4 gap-4 flex-wrap">
+
+                  {/* Left: icon + labels */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-[color-mix(in_oklab,var(--primary)_12%,transparent)] flex items-center justify-center shrink-0">
+                      {refetchingOrder
+                        ? <Loader2 size={17} className="text-[var(--primary)] animate-spin" />
+                        : <CheckCircle size={17} className="text-[var(--primary)]" />
+                      }
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-foreground">
+                        {refetchingOrder
+                          ? t("workPage.updatingOrder")
+                          : t("workPage.statusChanged")}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {refetchingOrder
+                          ? t("workPage.pleaseWait")
+                          : t("workPage.orderUpdated")}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right: new status badge + "click next" pill */}
+                  {!refetchingOrder && (
+                    <div className="flex items-center gap-3">
+
+                      {/* New status */}
+                      {newStatus && (
+                        <div className="flex items-center gap-1.5">
+                          <Tag size={11} className="text-muted-foreground shrink-0" />
+                          <Badge
+                            className="rounded-lg px-2.5 py-1 text-xs font-bold border"
+                            style={{
+                              backgroundColor: hexToBg(newStatus.color),
+                              color: newStatus.color,
+                              borderColor: `${newStatus.color}44`,
+                            }}
+                          >
+                            {newStatus.system
+                              ? t(`statuses.${newStatus.code}`)
+                              : newStatus.name}
+                          </Badge>
+                        </div>
+                      )}
+
+                      {/* Click next pill */}
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl
+                        bg-[color-mix(in_oklab,var(--primary)_10%,transparent)]
+                        border border-[color-mix(in_oklab,var(--primary)_22%,transparent)]">
+                        <span className="text-xs font-semibold text-[var(--primary)]">
+                          {t("workPage.clickNext")}
+                        </span>
+                        <ArrowRight size={13} className="text-[var(--primary)]" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {(showRetriesRow || showLockRow) && <Divider />}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* ══════════════════════════════════════
+              ROW 2 — Retries Exhausted
+          ══════════════════════════════════════ */}
+          <AnimatePresence>
+            {showRetriesRow && (
+              <motion.div
+                key="retries-row"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <div className="flex items-center justify-between px-5 py-4 gap-4 flex-wrap">
+
+                  {/* Left: icon + labels */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl
+                      bg-[color-mix(in_oklab,var(--third,#f97316)_12%,transparent)]
+                      flex items-center justify-center shrink-0">
+                      <AlertTriangle size={17} className="text-[var(--third,#f97316)]" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-foreground">
+                        {t("workPage.retriesExhausted")}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {t("workPage.retriesExhaustedMessage")}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right: what the new status will be */}
+                  {newStatus && (
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl
+                      bg-[var(--secondary)] border border-border/60">
+                      <span className="text-xs text-muted-foreground">
+                        {t("workPage.newStatus")}
+                      </span>
+                      <Badge
+                        className="rounded-lg px-2.5 py-1 text-xs font-bold border"
+                        style={{
+                          backgroundColor: hexToBg(newStatus.color),
+                          color: newStatus.color,
+                          borderColor: `${newStatus.color}44`,
+                        }}
+                      >
+                        {newStatus.system
+                          ? t(`statuses.${newStatus.code}`)
+                          : newStatus.name}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+
+                {showLockRow && <Divider />}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* ══════════════════════════════════════
+              ROW 3 — Lock Countdown
+          ══════════════════════════════════════ */}
+          <AnimatePresence>
+            {showLockRow && (
+              <LockRow key="lock-row" lockedUntil={lockedUntil} t={t} />
+            )}
+          </AnimatePresence>
+
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Internal LockRow — replaces old LockTimer
+// ─────────────────────────────────────────────
+function LockRow({ lockedUntil }) {
+  const t = useTranslations("orders");
+  const [currentTime, setCurrentTime] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => setCurrentTime(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!lockedUntil) return null;
+
+  const lockDate = new Date(lockedUntil);
+  const stillLocked = lockDate > new Date(currentTime);
+  if (!stillLocked) return null;
+
+  const diff = lockDate.getTime() - currentTime;
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+  const timeDisplay = hours > 0
+    ? `${hours}h ${minutes}m ${seconds}s`
+    : minutes > 0
+      ? `${minutes}m ${seconds}s`
+      : `${seconds}s`;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="flex items-center justify-between px-5 py-4"
+    >
+      {/* Left: icon + text */}
+      <div className="flex items-center gap-3">
+        <div className="w-9 h-9 rounded-xl bg-[color-mix(in_oklab,var(--third,var(--primary))_12%,transparent)] flex items-center justify-center shrink-0">
+          <Lock size={16} className="text-[var(--third,var(--primary))]" />
+        </div>
+        <div>
+          <p className="text-sm font-bold text-foreground">
+            {t("workPage.orderLocked")}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {t("workPage.lockedMessage")}
+          </p>
+        </div>
+      </div>
+
+      {/* Right: countdown */}
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl
+        bg-[var(--secondary)] border border-border/60">
+        <Clock size={13} className="text-muted-foreground" />
+        <span className="text-sm font-mono font-bold text-foreground tabular-nums">
+          {timeDisplay}
+        </span>
+      </div>
+    </motion.div>
+  );
+}
 
 // Lock Timer Component
 const LockTimer = ({ lockedUntil }) => {
@@ -160,6 +411,9 @@ const LockTimer = ({ lockedUntil }) => {
   );
 };
 
+
+
+
 // Main Order Work Page
 export default function OrderConfirmationWorkPage() {
   const t = useTranslations("orders");
@@ -200,29 +454,10 @@ export default function OrderConfirmationWorkPage() {
   const fetchAllowedStatuses = async () => {
     try {
       // Fetch all statuses and filter allowed ones
-      const response = await api.get("/orders/stats");
+      const response = await api.get("/orders/allowed-confirmation");
       const statuses = response.data || [];
 
-      // Allowed status codes for confirmation team
-      const allowedCodes = [
-        "under_review",
-        "cancelled",
-        "confirmed",
-        "postponed",
-        "no_answer",
-        "wrong_number",
-        "out_of_area",
-        "duplicate",
-      ];
-
-      const filtered = statuses.filter((status) => {
-        if (status.system) {
-          return allowedCodes.includes(status.code);
-        }
-        return true; // Allow all custom statuses
-      });
-
-      setAllowedStatuses(filtered);
+      setAllowedStatuses(statuses);
     } catch (error) {
       console.error("Error fetching statuses:", error);
       toast.error(t("messages.errorFetchingStatuses"));
@@ -324,12 +559,7 @@ export default function OrderConfirmationWorkPage() {
 
   if (finalLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">{t("messages.loading")}</p>
-        </div>
-      </div>
+      <OrderDetailsPageSkeleton />
     );
   }
 
@@ -380,44 +610,17 @@ export default function OrderConfirmationWorkPage() {
       <div className="space-y-6">
         {/* Change Status Section */}
         <SectionCard title={t("workPage.changeStatus")} icon={CheckCircle}>
-          <AnimatePresence>
-            {(showSuccessCard || refetchingOrder) && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="mb-4 p-4 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 border border-green-400"
-              >
-                <div className="flex items-center justify-between text-white">
-                  <div className="flex items-center gap-3">
-                    {refetchingOrder ? (
-                      <>
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                        <div>
-                          <p className="font-bold text-sm">{t("workPage.updatingOrder")}</p>
-                          <p className="text-xs opacity-90">{t("workPage.pleaseWait")}</p>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle size={20} />
-                        <div>
-                          <p className="font-bold text-sm">{t("workPage.statusChanged")}</p>
-                          <p className="text-xs opacity-90">{t("workPage.orderUpdated")}</p>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                  {!refetchingOrder && (
-                    <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-lg">
-                      <span className="text-xs font-semibold">{t("workPage.clickNext")}</span>
-                      <ArrowRight size={16} />
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <ResultBanner
+            refetchingOrder={refetchingOrder}
+            showSuccessCard={showSuccessCard}
+            newStatus={order?.status}                          // ← NEW: show new status badge
+            retriesExhausted={                                 // ← NEW: retries warning row
+              (order?.assignment?.retriesUsed ?? 0) >= (order?.assignment?.maxRetriesAtAssignment ?? Infinity)
+            }
+            isLocked={isLocked}
+            lockedUntil={lockedUntil}
+            t={t}
+          />
 
 
           {/* Notes Input */}
@@ -434,106 +637,64 @@ export default function OrderConfirmationWorkPage() {
             />
           </div>
 
-          {/* Status Cards Grid */}
-          <div className="space-y-2">
-            <Label className="text-sm text-gray-600 dark:text-slate-300 mb-2">
+          {/* Status Buttons - Solid Background Style */}
+          <div className="space-y-3">
+            <Label className="text-base font-semibold text-gray-700 dark:text-slate-300">
               {t("workPage.selectStatus")}
             </Label>
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3">
               {allowedStatuses.map((status) => {
                 const isCurrentStatus = status.id === order.status?.id;
                 const isChanging = changingStatus && selectedStatusId === status.id;
                 const isDisabled = isLocked || changingStatus || isCurrentStatus || statusDecided;
 
-                // Generate icon based on status code
-                const StatusIcon = getIconForStatus(status.code);
-
-                // Generate gradient colors
-                const hexToRgb = (hex) => {
-                  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-                  return result
-                    ? {
-                      r: parseInt(result[1], 16),
-                      g: parseInt(result[2], 16),
-                      b: parseInt(result[3], 16),
-                    }
-                    : null;
-                };
-
-                const rgb = hexToRgb(status.color);
-                const bgLight = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.15)` : "#f5f5f5";
-
                 return (
-                  <div
+                  <button
                     key={status.id}
+                    type="button"
                     onClick={() => !isDisabled && handleStatusChange(status.id)}
-                    style={{
-                      background: `linear-gradient(135deg, ${bgLight} 0%, ${bgLight} 100%)`,
-                    }}
+                    disabled={isDisabled}
                     className={cn(
-                      "rounded-lg transition-all duration-200",
-                      isCurrentStatus && "ring-2 ring-primary/50",
-                      !isDisabled && "cursor-pointer hover:scale-[1.02] hover:shadow-lg",
-                      isDisabled && "opacity-60 cursor-not-allowed"
+                      "relative px-6 py-4 rounded-2xl font-bold text-base transition-all duration-200",
+                      "shadow-sm hover:shadow-md",
+                      !isDisabled && "hover:scale-[1.02] active:scale-[0.98]",
+                      isDisabled && "opacity-50 cursor-not-allowed",
+                      isCurrentStatus && "ring-2 ring-offset-2 ring-white dark:ring-offset-slate-900"
                     )}
+                    style={{
+                      backgroundColor: status.color,
+                      color: "#ffffff",
+                      borderWidth: "2px",
+                      borderStyle: "solid",
+                      borderColor: isCurrentStatus ? "#ffffff" : status.color,
+                    }}
                   >
-                    <div
-                      className={[
-                        "relative w-full rounded-lg p-4 border-2",
-                        isCurrentStatus
-                          ? "border-primary"
-                          : "border-gray-200 dark:border-gray-700",
-                        "transition-all duration-200",
-                      ].join(" ")}
-                    >
-                      {/* Current Status Badge */}
-                      {isCurrentStatus && (
-                        <div className="absolute top-2 right-2">
-                          <CheckCircle size={16} className="text-primary" />
-                        </div>
-                      )}
-
-                      {/* Loading Spinner */}
-                      {isChanging && (
-                        <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 rounded-lg flex items-center justify-center">
-                          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                        </div>
-                      )}
-
-                      <div className="flex flex-col items-center gap-2 text-center">
-                        <div
-                          className={[
-                            "w-[40px] h-[40px] rounded-full",
-                            "border-2 border-dashed",
-                            "flex items-center justify-center",
-                          ].join(" ")}
-                          style={{
-                            borderColor: status.color,
-                          }}
-                        >
-                          <StatusIcon
-                            size={20}
-                            style={{ color: status.color }}
-                          />
-                        </div>
-                        <div>
-                          <div
-                            className="text-sm font-bold"
-                            style={{ color: status.color }}
-                          >
-                            {status.system ? t(`statuses.${status.code}`) : status.name}
-                          </div>
-                        </div>
+                    {/* Current Status Check Icon */}
+                    {isCurrentStatus && (
+                      <div className="absolute top-2 right-2">
+                        <CheckCircle size={18} className="text-white drop-shadow" />
                       </div>
-                    </div>
-                  </div>
+                    )}
+
+                    {/* Loading Spinner */}
+                    {isChanging && (
+                      <div className="absolute inset-0 bg-black/20 rounded-2xl flex items-center justify-center">
+                        <Loader2 className="h-6 w-6 animate-spin text-white" />
+                      </div>
+                    )}
+
+                    {/* Status Label */}
+                    <span className="drop-shadow-sm">
+                      {status.system ? t(`statuses.${status.code}`) : status.name}
+                    </span>
+                  </button>
                 );
               })}
             </div>
           </div>
 
           {/* Lock Timer */}
-          {isLocked && <LockTimer lockedUntil={lockedUntil} t={t} />}
+          {/* {isLocked && <LockTimer lockedUntil={lockedUntil} t={t} />} */}
         </SectionCard>
 
 

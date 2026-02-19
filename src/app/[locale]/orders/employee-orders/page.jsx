@@ -19,7 +19,63 @@ import { Button } from "@/components/ui/button";
 import DataTable from "@/components/atoms/DataTable";
 import api from "@/utils/api";
 import { cn } from "@/utils/cn";
-import { getIconForStatus } from "../page";
+import { generateBgColors, getIconForStatus } from "../page";
+import InfoCard from "@/components/atoms/InfoCard";
+
+/**
+ * Calculates and formats the time remaining until a target date.
+ * @param {Date|string} targetDate - The future date to count down to.
+ * @returns {string} Formatted time "MM:SS" or "00:00" if expired.
+ */
+const getRemainingTime = (targetDate) => {
+	const total = Date.parse(targetDate) - Date.parse(new Date());
+
+	// Return zeros if the time has already passed
+	if (total <= 0) return "00:00";
+
+	const seconds = Math.floor((total / 1000) % 60);
+	const minutes = Math.floor((total / 1000 / 60) % 60);
+
+	// Pad with leading zeros (e.g., 5:9 becomes 05:09)
+	const formattedMinutes = String(minutes).padStart(2, '0');
+	const formattedSeconds = String(seconds).padStart(2, '0');
+
+	return `${formattedMinutes}:${formattedSeconds}`;
+};
+
+const MovingTimer = ({ lockedUntil, onExpire }) => {
+	const [displayTime, setDisplayTime] = useState("");
+
+	useEffect(() => {
+		const updateTimer = () => {
+			const now = new Date();
+			const target = new Date(lockedUntil);
+
+			if (target <= now) {
+				setDisplayTime(null);
+				if (onExpire) onExpire();
+				return;
+			}
+
+			// Re-use your existing getRemainingTime logic here
+			setDisplayTime(getRemainingTime(target));
+		};
+
+		updateTimer(); // Initial call
+		const interval = setInterval(updateTimer, 1000);
+		return () => clearInterval(interval);
+	}, [lockedUntil, onExpire]);
+
+	if (!displayTime) return null;
+
+	return (
+		<div className="flex items-center gap-1 text-orange-600 dark:text-orange-400 text-xs">
+			<Lock size={10} />
+			<Timer size={10} />
+			<span className="font-mono font-bold">{displayTime}</span>
+		</div>
+	);
+};
 
 export default function MyAssignedOrdersPage() {
 	const t = useTranslations("orders");
@@ -30,7 +86,12 @@ export default function MyAssignedOrdersPage() {
 	const [orders, setOrders] = useState([]);
 	const [stats, setStats] = useState([]);
 	const [currentTime, setCurrentTime] = useState(Date.now());
-
+	const [pager, setPager] = useState({
+		total_records: 0,
+		current_page: 1,
+		per_page: 12,
+		records: [],
+	});
 	// Update timer every second for lock countdowns
 	useEffect(() => {
 		const interval = setInterval(() => {
@@ -44,13 +105,19 @@ export default function MyAssignedOrdersPage() {
 		fetchStats();
 	}, []);
 
-	const fetchAssignedOrders = async () => {
+	const fetchAssignedOrders = async (page, limit) => {
 		try {
 			setLoading(true);
 			const response = await api.get("/orders/assigned", {
-				params: { limit: 100 },
+				params: { limit, page },
 			});
-			setOrders(response.data?.data || []);
+			const data = response.data;
+			setPager({
+				total_records: data.total_records || 0,
+				current_page: data.current_page || page,
+				per_page: data.per_page || per_page,
+				records: Array.isArray(data.records) ? data.records : [],
+			});
 		} catch (error) {
 			console.error("Error fetching assigned orders:", error);
 			toast.error(t("messages.errorFetchingOrders"));
@@ -71,6 +138,10 @@ export default function MyAssignedOrdersPage() {
 		}
 	};
 
+	const handlePageChange = ({ page, per_page }) => {
+		// Request server for the requested page
+		fetchAssignedOrders(page, per_page);
+	};
 	// Generate stats cards
 	const statsCards = useMemo(() => {
 		if (!stats.length) return [];
@@ -88,23 +159,30 @@ export default function MyAssignedOrdersPage() {
 
 		return stats.map((stat) => {
 			const Icon = getIconForStatus(stat.code);
-			const rgb = hexToRgb(stat.color);
-			const bgLight = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)` : "#f5f5f5";
+			const bgColors = generateBgColors(stat.color);
 
 			return {
 				id: stat.id,
 				title: stat.system ? t(`statuses.${stat.code}`) : stat.name,
 				value: String(stat.count || 0),
 				icon: Icon,
-				bgInlineLight: bgLight,
+				bg: `bg-[${bgColors.light}] dark:bg-[${bgColors.dark}]`,
+				bgInlineLight: bgColors.light,
+				bgInlineDark: bgColors.dark,
+				iconColor: `text-[${stat.color}]`,
 				iconColorInline: stat.color,
+				iconBorder: `border-[${stat.color}]`,
+				iconBorderInline: stat.color,
 				code: stat.code,
+				system: stat.system,
+				sortOrder: stat.sortOrder,
+				fullData: stat,
 			};
 		});
 	}, [stats, t]);
 
 	const handleStartWork = () => {
-		router.push("/orders/my-work");
+		router.push("/orders/employee-orders/my-work");
 	};
 
 	const handleRefresh = () => {
@@ -140,6 +218,7 @@ export default function MyAssignedOrdersPage() {
 		if (minutes > 0) return `${minutes}m ${seconds}s`;
 		return `${seconds}s`;
 	};
+
 
 	// Table columns
 	const columns = useMemo(() => {
@@ -240,12 +319,10 @@ export default function MyAssignedOrdersPage() {
 									{assignment.retriesUsed}/{assignment.maxRetriesAtAssignment}
 								</span>
 							</div>
-							{isLocked && remainingTime && (
-								<div className="flex items-center gap-1 text-orange-600 dark:text-orange-400 text-xs">
-									<Lock size={10} />
-									<Timer size={10} />
-									<span className="font-mono font-bold">{remainingTime}</span>
-								</div>
+							{assignment.lockedUntil && (
+								<MovingTimer
+									lockedUntil={assignment.lockedUntil}
+								/>
 							)}
 						</div>
 					);
@@ -310,53 +387,65 @@ export default function MyAssignedOrdersPage() {
 				</h2>
 				<div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4">
 					{statsLoading ? (
-						<div className="col-span-full flex items-center justify-center py-12">
-							<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-						</div>
+						<>
+							{Array.from({ length: 12 }).map((_, i) => (
+								<div
+									key={i}
+									className="w-full rounded-lg p-5 border border-[#EEEEEE] dark:border-[#1F2937] animate-pulse"
+								>
+									<div className="flex items-start gap-3">
+										{/* Icon circle skeleton */}
+										<div className="w-[40px] h-[40px] rounded-full bg-gray-200 dark:bg-gray-700" />
+
+										<div className="flex-1">
+											{/* Title skeleton */}
+											<div className="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded mb-3" />
+
+											{/* Value skeleton */}
+											<div className="h-4 w-1/2 bg-gray-200 dark:bg-gray-700 rounded" />
+										</div>
+									</div>
+								</div>
+							))}
+						</>
 					) : statsCards.length === 0 ? (
 						<div className="col-span-full text-center py-12">
 							<Package size={48} className="mx-auto mb-4 text-gray-400" />
 							<p className="text-gray-600 dark:text-gray-400">{t("myOrders.noAssignedOrders")}</p>
 						</div>
 					) : (
-						statsCards.map((stat, index) => {
-							const Icon = stat.icon;
-
-							return (
-								<motion.div
-									key={stat.id}
-									initial={{ opacity: 0, y: 20 }}
-									animate={{ opacity: 1, y: 0 }}
-									transition={{ delay: index * 0.05 }}
+						statsCards.map((stat, index) => (
+							<motion.div
+								style={{ order: stat.sortOrder }}
+								key={stat.id}
+								initial={{ opacity: 0, y: 18 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ delay: index * 0.06 }}
+							>
+								<div
+									style={{
+										background: `linear-gradient(135deg, ${stat.bgInlineLight} 0%, ${stat.bgInlineLight} 100%)`,
+									}}
+									className="rounded-lg"
 								>
-									<div className="p-4 rounded-xl bg-white dark:bg-slate-800 border-2 border-gray-200 dark:border-gray-700">
-										<div className="flex items-center justify-between mb-2">
-											<div
-												className="w-10 h-10 rounded-lg flex items-center justify-center"
-												style={{
-													background: `linear-gradient(135deg, ${stat.iconColorInline}15 0%, ${stat.iconColorInline}25 100%)`,
-												}}
-											>
-												<Icon size={20} style={{ color: stat.iconColorInline }} />
-											</div>
-											<Badge
-												className="text-xs font-semibold"
-												style={{
-													backgroundColor: stat.bgInlineLight,
-													color: stat.iconColorInline,
-													border: `1px solid ${stat.iconColorInline}`,
-												}}
-											>
-												{stat.value}
-											</Badge>
-										</div>
-										<h3 className="font-semibold text-sm text-gray-900 dark:text-gray-100">
-											{stat.title}
-										</h3>
-									</div>
-								</motion.div>
-							);
-						})
+									<InfoCard
+										title={stat.title}
+										value={stat.value}
+										icon={stat.icon}
+										bg=""
+										iconColor=""
+										iconBorder=""
+										editable={!stat.system}
+										onEdit={() => handleEditStatus(stat.fullData)}
+										onDelete={() => handleDeleteStatus(stat)}
+										customStyles={{
+											iconColor: stat.iconColorInline,
+											iconBorder: stat.iconColorInline,
+										}}
+									/>
+								</div>
+							</motion.div>
+						))
 					)}
 				</div>
 			</div>
@@ -372,9 +461,15 @@ export default function MyAssignedOrdersPage() {
 				<div className="mt-4">
 					<DataTable
 						columns={columns}
-						data={orders}
+						data={pager.records}
+						pagination={{
+							total_records: pager.total_records,
+							current_page: pager.current_page,
+							per_page: pager.per_page,
+						}}
+						onPageChange={handlePageChange}
 						emptyState={t("myOrders.noOrders")}
-						loading={loading}
+						isLoading={loading}
 					/>
 				</div>
 			</div>

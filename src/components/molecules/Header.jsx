@@ -15,6 +15,7 @@ import { getUser } from "@/hook/getUser";
 import { cn } from "@/utils/cn";
 import api from "@/utils/api";
 import { getNotificationLink } from "@/app/[locale]/notifications/page";
+import { useSocket } from "@/context/SocketContext";
 
 
 // ─── Fullscreen hook ──────────────────────────────────────────────────────────
@@ -123,8 +124,8 @@ export default function Header({ toggleSidebar, isSidebarOpen }) {
 
   const [notifications, setNotifications] = useState([]);
   const [total, setTotal] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(2);
 
+  const { unreadNotificationsCount, incrementUnread, decrementUnread, subscribe } = useSocket()
   // 2. Fetch Notifications
   const fetchNotifications = async () => {
     try {
@@ -138,21 +139,40 @@ export default function Header({ toggleSidebar, isSidebarOpen }) {
   const hasMore = total > notifications.length;
   useEffect(() => { fetchNotifications(); }, []);
 
+  useEffect(() => {
+    const unsubscribe = subscribe("NEW_NOTIFICATION_HEADER", (action) => {
+      if (action.type === "NEW_NOTIFICATION") {
+        const newNotification = action.payload;
+        console.log(newNotification)
+        setNotifications((prev) => {
+          // لو الإشعار موجود بالفعل (احتياط)
+          if (prev.some((n) => n.id === newNotification.id)) {
+            return prev;
+          }
+
+          return [newNotification, ...prev]; // 🔥 أهم سطر
+        });
+
+        setTotal((prev) => prev + 1);
+      }
+    });
+
+    return unsubscribe;
+  }, [subscribe]);
+
+
   // 3. Action Handlers
   const handleMarkAsRead = async (id) => {
     try {
-
+      incrementUnread()
       await api.patch(`/notifications/${id}/read`);
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: n.id === id ? true : n.isRead })))
     } catch (e) {
-
+      decrementUnread()
     }
   };
 
-  const handleMarkAllRead = async () => {
-    await api.post('/notifications/read-all');
-    fetchNotifications();
-  };
+
   const switchLocale = (next) => router.replace(pathname, { locale: next });
 
   return (
@@ -288,7 +308,7 @@ export default function Header({ toggleSidebar, isSidebarOpen }) {
                   aria-label={t("notifications")}
                 >
                   <Bell size={17} />
-                  {unreadCount > 0 && <PulseDot />}
+                  {unreadNotificationsCount > 0 && <PulseDot />}
                 </Button>
               </motion.div>
             </PopoverTrigger>

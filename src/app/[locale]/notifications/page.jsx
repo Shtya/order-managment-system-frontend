@@ -21,6 +21,7 @@ import { cn } from "@/utils/cn";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import api from "@/utils/api";
+import { useSocket } from "@/context/SocketContext";
 
 // ─────────────────────────────────────────────
 // Helpers
@@ -182,9 +183,7 @@ export default function NotificationsPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filter, setFilter] = useState("all"); // "all" | "unread" | "read"
-
-  // ── Mock unread count from socket (replace with real socket later) ──
-  const [unreadCount, setUnreadCount] = useState(0);
+  const { unreadNotificationsCount, incrementUnread, decrementUnread, resetUnread, subscribe } = useSocket()
 
   const LIMIT = 10;
   const hasMore = notifications.length < total;
@@ -196,6 +195,28 @@ export default function NotificationsPage() {
     searchTimer.current = setTimeout(() => setDebouncedSearch(search), 350);
     return () => clearTimeout(searchTimer.current);
   }, [search]);
+
+  useEffect(() => {
+    const unsubscribe = subscribe("NEW_NOTIFICATION_PAGE", (action) => {
+      if (action.type === "NEW_NOTIFICATION") {
+        const newNotification = action.payload;
+
+        setNotifications((prev) => {
+          // لو الإشعار موجود بالفعل (احتياط)
+          if (prev.some((n) => n.id === newNotification.id)) {
+            return prev;
+          }
+
+          return [newNotification, ...prev]; // 🔥 أهم سطر
+        });
+
+        setTotal((prev) => prev + 1);
+      }
+    });
+
+    return unsubscribe;
+  }, [subscribe]);
+
 
   // ── Fetch on filter / search change ──
   useEffect(() => {
@@ -224,12 +245,6 @@ export default function NotificationsPage() {
 
       setTotal(totalRecords);
       setNotifications((prev) => (reset ? records : [...prev, ...records]));
-
-      // Derive unread count from first page fetch
-      if (pageNum === 1 && filter === "all" && !debouncedSearch) {
-        const unread = records.filter((n) => !n.isRead).length;
-        setUnreadCount(unread);
-      }
     } catch (err) {
       console.error(err);
       toast.error(tN("errors.fetchFailed"));
@@ -242,12 +257,14 @@ export default function NotificationsPage() {
   // ── API: mark one as read ──
   const handleMarkAsRead = useCallback(async (id) => {
     try {
+      incrementUnread()
       await api.patch(`/notifications/${id}/read`);
       setNotifications((prev) =>
         prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
       );
-      setUnreadCount((c) => Math.max(0, c - 1));
+
     } catch (e) {
+      decrementUnread()
       console.error(e);
     }
   }, []);
@@ -256,12 +273,12 @@ export default function NotificationsPage() {
   const handleMarkAllRead = useCallback(async () => {
     try {
       setMarkingAll(true);
-      await api.post("/notifications/read-all");
+      resetUnread()
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      setUnreadCount(0);
+      await api.post("/notifications/read-all");
       toast.success(tN("allMarkedRead"));
     } catch (e) {
-      toast.error(tN("errors.markAllFailed"));
+
     } finally {
       setMarkingAll(false);
     }
@@ -314,17 +331,17 @@ export default function NotificationsPage() {
             <h1 className="text-lg font-bold text-foreground">{tN("title")}</h1>
             <p className="text-xs text-muted-foreground">
               {total > 0
-                ? tN("subtitle", { total, unread: unreadCount })
+                ? tN("subtitle", { total, unread: unreadNotificationsCount })
                 : tN("subtitleEmpty")}
             </p>
           </div>
           {/* Live unread count badge — fed by socket later */}
-          {unreadCount > 0 && (
+          {unreadNotificationsCount > 0 && (
             <Badge className="rounded-xl px-2.5 py-1 text-xs font-bold
               bg-[color-mix(in_oklab,var(--primary)_12%,transparent)]
               text-[var(--primary)]
               border border-[color-mix(in_oklab,var(--primary)_25%,transparent)]">
-              {unreadCount} {tN("unread")}
+              {unreadNotificationsCount} {tN("unread")}
             </Badge>
           )}
         </div>

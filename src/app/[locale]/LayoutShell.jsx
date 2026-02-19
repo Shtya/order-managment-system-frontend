@@ -9,13 +9,16 @@ import Header from '@/components/molecules/Header';
 import Sidebar from '@/components/molecules/Sidebar';
 import { usePathname } from 'next/navigation';
 import { Toaster } from 'react-hot-toast';
+import { SocketProvider } from '../../context/SocketContext';
 
 
 
 export default function LayoutShell({ children }) {
 	return (
 		<ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-			<DashboardLayout>{children}</DashboardLayout>
+			<SocketProvider>
+				<DashboardLayout>{children}</DashboardLayout>
+			</SocketProvider>
 		</ThemeProvider>
 	);
 }
@@ -27,7 +30,7 @@ function DashboardLayout({ children }) {
 	const locale = useLocale();
 	const isRTL = locale === 'ar';
 	const AllPathname = usePathname();
-	const pathname = AllPathname?.slice(3,1000)
+	const pathname = AllPathname?.slice(3, 1000)
 
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -57,12 +60,12 @@ function DashboardLayout({ children }) {
 
 			<div
 				className={`bg-[#f3f6fa]  dark:bg-[#19243950] relative transition-all duration-300 ${isSidebarOpen
-						? isRTL
-							? 'mr-[280px]'
-							: 'ml-[280px]'
-						: isRTL
-							? 'mr-[80px]'
-							: 'ml-[80px]'
+					? isRTL
+						? 'mr-[280px]'
+						: 'ml-[280px]'
+					: isRTL
+						? 'mr-[80px]'
+						: 'ml-[80px]'
 					} mt-16`}
 			>
 				{children}

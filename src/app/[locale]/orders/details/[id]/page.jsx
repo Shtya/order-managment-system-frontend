@@ -22,6 +22,10 @@ import {
   AlertCircle,
   XCircle,
   QrCode,
+  Hash,
+  ArrowLeftRight,
+  ExternalLink,
+  ImageIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -32,6 +36,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import api from "@/utils/api";
 import { cn } from "@/utils/cn";
 import { useParams } from "next/navigation";
+import { avatarSrc } from "@/components/atoms/UserSelect";
+import { getReasons } from "../../replacement/new/page";
 
 // ==================== STATUS BADGE COMPONENT ====================
 const StatusBadge = ({ status, t }) => {
@@ -200,7 +206,7 @@ export function OrderDetailsPage({ order, loading }) {
         {/* ══════════════════════════════════════
             MAIN CONTENT — left 9 cols
         ══════════════════════════════════════ */}
-        <div className="lg:col-span-9">
+        <div className="lg:col-span-9 space-y-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -380,7 +386,7 @@ export function OrderDetailsPage({ order, loading }) {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr>
+                    <tr className="bg-muted/30">
                       <th className="text-start py-3 px-2 text-xs font-semibold text-muted-foreground">
                         {t("details.product")}
                       </th>
@@ -404,7 +410,7 @@ export function OrderDetailsPage({ order, loading }) {
                         key={item.id}
                         className={cn(
                           "border-b border-border/40",
-                          idx % 2 === 0 && "bg-muted/30"
+                          idx % 2 !== 0 && "bg-muted/30"
                         )}
                       >
                         <td className="py-3 px-2">
@@ -472,7 +478,19 @@ export function OrderDetailsPage({ order, loading }) {
               </div>
             </div>
 
+
           </motion.div>
+          {order.replacementResult && (
+            <div className="lg:col-span-12">
+              <ReplacementInfoCard
+                replacement={order.replacementResult}
+                replacementOrder={order}
+                formatCurrency={formatCurrency}
+                formatDate={formatDate}
+                router={router}
+              />
+            </div>
+          )}
         </div>
 
         {/* ══════════════════════════════════════
@@ -559,6 +577,8 @@ export function OrderDetailsPage({ order, loading }) {
               </div>
             </motion.div>
           )}
+
+
 
           {/* ── Assigned Employee ── */}
           {order.assignments && order.assignments.length > 0 && (
@@ -798,6 +818,290 @@ function TableRowSkeleton({ muted = false }) {
   );
 }
 
+
+// ==================== REPLACEMENT INFO CARD ====================
+// Shown when order.replacementResult exists — i.e. this order IS a replacement
+// for another original order.
+function ReplacementInfoCard({ replacementOrder, replacement, formatCurrency, formatDate, router }) {
+  const tReplacement = useTranslations("CreateReplacement");
+  const t = useTranslations("orders");
+
+  const originalOrder = replacement?.originalOrder;
+  const bridgeItems = replacement?.items ?? [];
+  const returnImages = replacement?.returnImages ?? [];
+
+  // Calculate totals dynamically from the Order Entities
+  const oldTotal = originalOrder?.finalTotal ?? originalOrder?.total ?? 0;
+  const newTotal = replacementOrder?.finalTotal ?? replacementOrder?.total ?? 0;
+  const totalDiff = newTotal - oldTotal;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.08 }}
+      className="bg-card text-card-foreground rounded-3xl shadow-sm border border-[color-mix(in_oklab,var(--primary)_30%,transparent)] overflow-hidden"
+    >
+      {/* ── Header banner */}
+      <div className="flex items-center justify-between gap-3 px-5 py-4 bg-[color-mix(in_oklab,var(--primary)_8%,transparent)] border-b border-[color-mix(in_oklab,var(--primary)_20%,transparent)]">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-[color-mix(in_oklab,var(--primary)_15%,transparent)] border border-[color-mix(in_oklab,var(--primary)_25%,transparent)] flex items-center justify-center shrink-0">
+            <ArrowLeftRight size={16} className="text-[var(--primary)]" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-[var(--primary)]">{t("replacement.cardTitle")}</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{t("replacement.cardSubtitle")}</p>
+          </div>
+        </div>
+
+        {/* Badge: reason */}
+        {replacement.reason && (
+          <span className="text-[11px] font-semibold px-3 py-1.5 rounded-xl bg-[color-mix(in_oklab,var(--primary)_10%,transparent)] text-[var(--primary)] border border-[color-mix(in_oklab,var(--primary)_25%,transparent)] shrink-0">
+            {tReplacement(`reasons.${replacement.reason}`)}
+          </span>
+        )}
+      </div>
+
+      <div className="p-5 space-y-5">
+        {/* ── Original order info row */}
+        {originalOrder && (
+          <div className="rounded-2xl bg-[var(--secondary)] border border-border/60 p-4">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-3">
+              {t("replacement.originalOrder")}
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {/* Order # */}
+              <div className="flex items-start gap-2">
+                <Hash size={12} className="text-[var(--primary)] mt-0.5 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-[10px] text-muted-foreground">{t("replacement.orderNumber")}</p>
+                  <button
+                    type="button"
+                    onClick={() => router.push(`/orders/${originalOrder.id}`)}
+                    className="text-xs font-bold text-[var(--primary)] font-mono hover:underline flex items-center gap-1 mt-0.5"
+                  >
+                    {originalOrder.orderNumber}
+                    <ExternalLink size={10} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Customer */}
+              <div className="flex items-start gap-2">
+                <User size={12} className="text-[var(--primary)] mt-0.5 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-[10px] text-muted-foreground">{t("replacement.customer")}</p>
+                  <p className="text-xs font-semibold text-foreground truncate mt-0.5">
+                    {originalOrder.customerName || "—"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Original total */}
+              <div className="flex items-start gap-2">
+                <DollarSign size={12} className="text-[var(--primary)] mt-0.5 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-[10px] text-muted-foreground">{t("replacement.originalTotal")}</p>
+                  <p className="text-xs font-semibold text-foreground mt-0.5">
+                    {formatCurrency(oldTotal)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Created at */}
+              <div className="flex items-start gap-2">
+                <Calendar size={12} className="text-[var(--primary)] mt-0.5 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-[10px] text-muted-foreground">{t("replacement.originalDate")}</p>
+                  <p className="text-xs font-semibold text-foreground mt-0.5">
+                    {formatDate(originalOrder.created_at)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Price diff summary (Derived from the two Orders) */}
+            <div className="mt-3 pt-3 border-t border-border/40 flex flex-wrap gap-3">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card border border-border/50">
+                <span className="text-[10px] text-muted-foreground">{t("replacement.oldTotal")}</span>
+                <span className="text-xs font-bold text-foreground">{formatCurrency(oldTotal)}</span>
+              </div>
+              <div className="text-muted-foreground/50 flex items-center">→</div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card border border-border/50">
+                <span className="text-[10px] text-muted-foreground">{t("replacement.newTotal")}</span>
+                <span className="text-xs font-bold text-[var(--primary)]">{formatCurrency(newTotal)}</span>
+              </div>
+
+              {totalDiff !== 0 && (
+                <div className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-xl border",
+                  totalDiff > 0
+                    ? "bg-red-50/50 border-red-200 dark:bg-red-900/10 dark:border-red-900/40"
+                    : "bg-emerald-50/50 border-emerald-200 dark:bg-emerald-900/10 dark:border-emerald-900/40"
+                )}>
+                  <span className="text-[10px] text-muted-foreground">{t("replacement.priceDiff")}</span>
+                  <span className={cn(
+                    "text-xs font-bold",
+                    totalDiff > 0 ? "text-red-600" : "text-emerald-600"
+                  )}>
+                    {totalDiff > 0 ? "+" : ""}
+                    {formatCurrency(totalDiff)}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── Replacement items table */}
+        {bridgeItems.length > 0 && (
+          <div>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-3">
+              {t("replacement.replacedItems")} ({bridgeItems.length})
+            </p>
+            <div className="rounded-2xl border border-border/50 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-[var(--secondary)] border-b border-border/40">
+                      {[
+                        t("replacement.table.originalProduct"),
+                        t("replacement.table.newProduct"),
+                        t("replacement.table.qty"),
+                        t("replacement.table.oldPrice"),
+                        t("replacement.table.newPrice"),
+                        t("replacement.table.diff"),
+                      ].map((h) => (
+                        <th key={h} className="text-right px-3 py-2.5 text-[10px] font-bold text-muted-foreground whitespace-nowrap">
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bridgeItems.map((item, idx) => {
+                      const origItem = item.originalOrderItem;
+                      const origProduct = origItem?.variant?.product;
+
+                      // 🔥 Fetch new price from the replacement order's items list
+                      const matchedNewOrderItem = replacementOrder?.items?.find(
+                        (roi) => roi.variantId === item.newVariantId
+                      );
+                      console.log(item, matchedNewOrderItem, replacement)
+
+                      const oldPrice = origItem?.unitPrice ?? 0;
+                      const newPrice = matchedNewOrderItem?.unitPrice ?? 0;
+                      const lineDiff = newPrice - oldPrice;
+
+                      const newVariant = matchedNewOrderItem?.variant;
+                      const newProduct = newVariant?.product;
+                      return (
+                        <tr
+                          key={item.id ?? idx}
+                          className={cn(
+                            "border-b border-border/20 last:border-0 transition-colors",
+                            idx % 2 !== 0 && "bg-muted/20"
+                          )}>
+                          {/* Original product */}
+                          <td className="px-3 py-3">
+                            <div className="flex items-center gap-2">
+                              {origProduct?.mainImage
+                                ? <img src={avatarSrc(origProduct.mainImage)} alt="" className="w-8 h-8 rounded-lg object-cover border border-border/40 shrink-0" />
+                                : <div className="w-8 h-8 rounded-lg bg-[var(--secondary)] border border-border/40 flex items-center justify-center shrink-0"><Package size={12} className="text-muted-foreground" /></div>
+                              }
+                              <div className="min-w-0">
+                                <p className="text-xs font-semibold text-foreground line-clamp-1">{origProduct?.name || "—"}</p>
+                                {origItem?.variant?.sku && <p className="text-[10px] text-muted-foreground font-mono">{origItem.variant.sku}</p>}
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* New product */}
+                          <td className="px-3 py-3">
+                            <div className="flex items-center gap-2">
+                              {newProduct?.mainImage
+                                ? <img src={avatarSrc(newProduct.mainImage)} alt="" className="w-8 h-8 rounded-lg object-cover border border-[color-mix(in_oklab,var(--primary)_30%,transparent)] shrink-0" />
+                                : <div className="w-8 h-8 rounded-lg bg-[color-mix(in_oklab,var(--primary)_8%,transparent)] border border-[color-mix(in_oklab,var(--primary)_20%,transparent)] flex items-center justify-center shrink-0"><Package size={12} className="text-[var(--primary)]" /></div>
+                              }
+                              <div className="min-w-0">
+                                <p className="text-xs font-semibold text-foreground line-clamp-1">{newProduct?.name || "—"}</p>
+                                {newVariant?.sku && <p className="text-[10px] text-muted-foreground font-mono">{newVariant.sku}</p>}
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Qty */}
+                          <td className="px-3 py-3 text-right">
+                            <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-[color-mix(in_oklab,var(--primary)_10%,transparent)] text-[var(--primary)] text-xs font-bold">
+                              ×{item.quantityToReplace}
+                            </span>
+                          </td>
+
+                          {/* Old price (From original order item) */}
+                          <td className="px-3 py-3 text-right">
+                            <span className="text-xs text-muted-foreground font-mono">
+                              {formatCurrency(oldPrice)}
+                            </span>
+                          </td>
+
+                          {/* New price (From replacement order item) */}
+                          <td className="px-3 py-3 text-right">
+                            <span className="text-xs font-semibold text-foreground font-mono">
+                              {formatCurrency(newPrice)}
+                            </span>
+                          </td>
+
+                          {/* Diff */}
+                          <td className="px-3 py-3 text-right">
+                            <span className={cn(
+                              "text-xs font-bold font-mono",
+                              lineDiff > 0 ? "text-red-600" : lineDiff < 0 ? "text-emerald-600" : "text-muted-foreground"
+                            )}>
+                              {lineDiff > 0 ? "+" : ""}{formatCurrency(lineDiff)}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Return images */}
+        {returnImages.length > 0 && (
+          <div>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-1.5">
+              <ImageIcon size={11} />
+              {t("replacement.returnImages")} ({returnImages.length})
+            </p>
+            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+              {returnImages.map((url, i) => (
+                <a
+                  key={i}
+                  href={avatarSrc(url)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="aspect-square rounded-xl overflow-hidden border border-border/50 hover:border-[color-mix(in_oklab,var(--primary)_40%,transparent)] transition-colors group"
+                >
+                  <img
+                    src={avatarSrc(url)}
+                    alt={`return-${i + 1}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                  />
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+      </div>
+    </motion.div>
+  );
+}
+
 // ─────────────────────────────────────────────
 // MAIN EXPORT
 // ─────────────────────────────────────────────
@@ -900,3 +1204,5 @@ export function OrderDetailsPageSkeleton() {
     </div>
   );
 }
+
+

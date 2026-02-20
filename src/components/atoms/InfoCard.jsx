@@ -82,9 +82,11 @@ export default function InfoCard({
 			onClick={editable ? handleClick : undefined}
 		>
 			{editable && (
-				<span className="px-1 py-1 text-[10px] font-semibold rounded-full bg-primary/10 text-primary absolute  start-0.5 top-0.5">
-					{t('custom')}
-				</span>
+				<div className="absolute top-2 start-2 flex items-center gap-1 px-1.5 py-[2px] bg-primary/10 dark:bg-primary/20 rounded border border-primary/20 text-[9px] font-semibold text-primary">
+					{/* Tiny indicator dot instead of a full icon */}
+					<span className="w-1 h-1 rounded-full bg-primary opacity-80"></span>
+					{t("custom")}
+				</div>
 			)}
 			<div className="flex items-start gap-3">
 				<div

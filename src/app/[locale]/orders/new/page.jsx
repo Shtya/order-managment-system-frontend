@@ -37,7 +37,7 @@ const createSchema = (t) =>
 	yup.object({
 		customerName: yup.string().required(t("validation.customerNameRequired")),
 		phoneNumber: yup.string().required(t("validation.phoneNumberRequired")),
-		alternativePhone: yup.string().optional(),
+		// alternativePhone: yup.string().optional(),
 		email: yup.string().email(t("validation.invalidEmail")).optional(),
 		address: yup.string().required(t("validation.addressRequired")),
 		city: yup.string().required(t("validation.cityRequired")),
@@ -82,7 +82,7 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 			return {
 				customerName: existingOrder.customerName || "",
 				phoneNumber: existingOrder.phoneNumber || "",
-				alternativePhone: existingOrder.alternativePhone || "",
+				// alternativePhone: existingOrder.alternativePhone || "",
 				email: existingOrder.email || "",
 				address: existingOrder.address || "",
 				city: existingOrder.city || "",
@@ -111,7 +111,7 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 		return {
 			customerName: "",
 			phoneNumber: "",
-			alternativePhone: "",
+			// alternativePhone: "",
 			email: "",
 			address: "",
 			city: "",
@@ -243,7 +243,7 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 			const payload = {
 				customerName: data.customerName,
 				phoneNumber: data.phoneNumber,
-				alternativePhone: data.alternativePhone || undefined,
+				// alternativePhone: data.alternativePhone || undefined,
 				email: data.email || undefined,
 				address: data.address,
 				city: data.city,
@@ -420,7 +420,7 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 									)}
 								</div>
 
-								<div className="space-y-2">
+								{/* <div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
 										{t("fields.alternativePhone")}
 									</Label>
@@ -435,7 +435,7 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 											/>
 										)}
 									/>
-								</div>
+								</div> */}
 
 								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">

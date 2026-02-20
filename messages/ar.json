@@ -2837,6 +2837,72 @@
     "loadMore": "تحميل المزيد"
   },
   "orders": {
+    "tabs": {
+      "orders": "الطلبات",
+      "distribution": "توزيع الطلبات",
+      "returns": "طلبات الاسترجاع",
+      "replacement": "طلبات الاستبدال",
+      "distributionComingSoon": "توزيع الطلبات",
+      "returnsComingSoon": "طلبات الاسترجاع",
+      "replacementComingSoon": "طلبات الاستبدال",
+      "comingSoonDesc": "هذا القسم قيد التطوير، سيكون متاحاً قريباً."
+    },
+    "replacement": {
+      "cardTitle": "طلب استبدال",
+      "cardSubtitle": "هذا الطلب تم إنشاؤه كاستبدال لطلب آخر",
+      "originalOrder": "الطلب الأصلي",
+      "orderNumber": "رقم الطلب",
+      "customer": "العميل",
+      "originalTotal": "إجمالي الأصلي",
+      "originalDate": "تاريخ الأصلي",
+      "oldTotal": "إجمالي قديم",
+      "newTotal": "إجمالي جديد",
+      "priceDiff": "الفرق",
+      "anotherReason": "سبب إضافي",
+      "internalNotes": "ملاحظات داخلية",
+      "replacedItems": "المنتجات المستبدلة",
+      "returnImages": "صور المنتجات المرتجعة",
+      "toPay": "يدفع الزبون:",
+      "toRefund": "يسترد الزبون:",
+      "noDifference": "لا يوجد فارق",
+      "oldPrice": "السعر القديم",
+      "newPrice": "السعر الجديد",
+      "searchPlaceholder": "ابحث برقم الطلب الأصلي أو المستبدل أو اسم أو رقم هاتف العميل",
+      "empty": {
+        "title": "لا توجد طلبات استبدال",
+        "desc": "ستظهر هنا طلبات الاستبدال عند إنشائها"
+      },
+      "errors": {
+        "fetchFailed": "فشل تحميل طلبات الاستبدال"
+      },
+      "columns": {
+        "replacementOrderNumber": "رقم طلب الاستبدال",
+        "originalOrderNumber": "رقم الطلب الأصلي",
+        "barcode": "باركود طلب الاستبدال",
+        "customerName": "اسم العميل",
+        "phoneNumber": "رقم الهاتف",
+        "replacedProducts": "المنتجات المستبدلة",
+        "status": "حالة الطلب",
+        "reason": "سبب الاستبدال",
+        "costDiff": "فرق التكلفة"
+      },
+      "filters": {
+        "reasonLabel": "سبب الاستبدال",
+        "allReasons": "جميع الأسباب",
+        "wrongSize": "مقاس خاطئ",
+        "damaged": "منتج تالف",
+        "wrongItem": "منتج خاطئ",
+        "other": "سبب آخر"
+      },
+      "table": {
+        "originalProduct": "المنتج الأصلي",
+        "newProduct": "المنتج البديل",
+        "qty": "الكمية",
+        "oldPrice": "السعر الأصلي",
+        "newPrice": "السعر الجديد",
+        "diff": "الفرق"
+      }
+    },
     "custom": "مخصص",
     "deleteStatus": {
       "title": "حذف الحالة",
@@ -2864,6 +2930,8 @@
       "loading": "جاري التحميل..."
     },
     "actions": {
+      "createReturn": "إضافة طلب استرجاع",
+      "createReplacement": "إضافة طلب استبدال",
       "view": "عرض",
       "edit": "تعديل",
       "delete": "حذف",
@@ -3430,6 +3498,133 @@
     },
     "currency": "جنيه"
   },
+  "CreateReplacement": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "orders": "الطلبات"
+    },
+    "title": "إنشاء طلب استبدال",
+    "actions": {
+      "submit": "إنشاء طلب الاستبدال",
+      "update": "حفظ التعديلات",
+      "cancel": "إلغاء",
+      "saving": "جاري الحفظ..."
+    },
+    "notes": {
+      "replacementRestriction": "الطلبات التي تم استبدالها مسبقاً لن تظهر في نتائج البحث."
+    },
+    "reasons": {
+      "wrong_size": "مقاس خاطئ",
+      "damaged": "منتج تالف",
+      "wrong_item": "منتج خاطئ",
+      "color_issue": "لون مختلف",
+      "quality": "جودة سيئة",
+      "not_as_described": "غير مطابق للوصف",
+      "missing_parts": "قطع ناقصة",
+      "change_of_mind": "تغيير رأي",
+      "late_delivery": "تأخر في التوصيل",
+      "faulty": "عطل مصنعي",
+      "other": "سبب آخر"
+    },
+    "sections": {
+      "searchOrder": "رقم الطلب",
+      "replacementInfo": "بيانات الاستبدال",
+      "replacementItems": "المنتجات المستبدلة",
+      "images": "صور المنتجات المرتجعة",
+      "priceSummary": "ملخص السعر"
+    },
+    "fields": {
+      "orderNumber": "رقم الطلب الأصلي",
+      "reason": "سبب الاستبدال",
+      "anotherReason": "سبب آخر للاستبدال",
+      "shippingCompany": "شركة الشحن",
+      "paymentMethod": "طريقة الدفع",
+      "shippingCost": "تكلفة الشحن",
+      "discount": "الخصم",
+      "internalNotes": "ملاحظات داخلية",
+      "customerNotes": "ملاحظات العميل"
+    },
+    "placeholders": {
+      "orderNumber": "اكتب رقم الطلب للبحث...",
+      "reason": "اختر سبب الاستبدال",
+      "anotherReason": "أدخل سبباً إضافياً",
+      "shippingCompany": "اختر شركة الشحن",
+      "paymentMethod": "اختر طريقة الدفع",
+      "internalNotes": "ملاحظات داخلية للفريق...",
+      "customerNotes": "ملاحظات للعميل..."
+    },
+    "noShipping": "بدون شركة شحن",
+    "noOrdersFound": "لا توجد طلبات مطابقة",
+    "selectOrderFirst": "اختر طلباً أولاً لتحديد المنتجات المطلوب استبدالها",
+    "chooseItemsToReplace": "اختر المنتجات المراد استبدالها:",
+    "noItemsAdded": "لم تتم إضافة أي منتجات بعد — اضغط على المنتج أعلاه لإضافته",
+    "details": {
+      "customerName": "اسم العميل",
+      "phone": "رقم الهاتف",
+      "address": "العنوان",
+      "total": "إجمالي الطلب",
+      "createdAt": "تاريخ الطلب",
+      "status": "الحالة",
+      "items": "المنتجات",
+      "table": {
+        "image": "الصورة",
+        "product": "المنتج",
+        "qty": "الكمية",
+        "unitPrice": "سعر الوحدة",
+        "total": "الإجمالي"
+      }
+    },
+    "itemCard": {
+      "title": "استبدال",
+      "originalItem": "المنتج الأصلي",
+      "newItem": "المنتج البديل",
+      "quantity": "الكمية",
+      "oldPrice": "السعر الأصلي",
+      "newPrice": "سعر المنتج الجديد",
+      "priceDiff": "فرق السعر"
+    },
+    "images": {
+      "uploaded": "صورة مرفوعة",
+      "dragHere": "اسحب الصور هنا",
+      "or": "أو",
+      "browse": "اختر من جهازك",
+      "maxReached": "تم الوصول للحد الأقصى",
+      "existingImage": "صورة محفوظة",
+      "fromLibrary": "من المكتبة",
+      "dropHere": "اسحب الصور هنا أو اضغط للرفع"
+    },
+    "summary": {
+      "items": "عدد المنتجات",
+      "oldTotal": "إجمالي الأصلي",
+      "newTotal": "إجمالي الجديد",
+      "shipping": "الشحن",
+      "discount": "الخصم",
+      "priceDiff": "الفرق الكلي",
+      "finalTotal": "الإجمالي النهائي"
+    },
+    "validation": {
+      "orderRequired": "يرجى اختيار طلب أصلي",
+      "reasonRequired": "يرجى اختيار سبب الاستبدال",
+      "anotherReasonRequired": "يرجى إدخال سبب إضافي",
+      "paymentMethodRequired": "يرجى اختيار طريقة الدفع",
+      "itemsRequired": "يرجى إضافة منتج واحد على الأقل للاستبدال",
+      "newVariantRequired": "يرجى اختيار المنتج البديل لكل صف",
+      "fixErrors": "يرجى تصحيح الأخطاء قبل الإرسال"
+    },
+    "errors": {
+      "itemAlreadyAdded": "هذا المنتج مضاف بالفعل",
+      "uploadFailed": "فشل رفع الصورة",
+      "loadFailed": "فشل تحميل بيانات طلب الاستبدال"
+    },
+    "messages": {
+      "createSuccess": "تم إنشاء طلب الاستبدال بنجاح",
+      "createFailed": "فشل إنشاء طلب الاستبدال",
+      "updateSuccess": "تم تعديل طلب الاستبدال بنجاح",
+      "updateFailed": "فشل تعديل طلب الاستبدال",
+      "loading": "جارٍ تحميل البيانات..."
+    },
+    "titleEdit": "تعديل طلب الاستبدال"
+  },
   "employeeOrders": {
     "title": "طلباتي",
     "breadcrumb": {
@@ -3472,7 +3667,7 @@
       "nextDay": "اليوم التالي"
     }
   },
-   "notifications": {
+  "notifications": {
     "title": "الإشعارات",
     "subtitle": "{total} إشعار · {unread} غير مقروء",
     "subtitleEmpty": "لا توجد إشعارات",

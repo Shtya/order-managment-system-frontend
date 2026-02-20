@@ -37,7 +37,11 @@ import {
 	AlertTriangle,
 	ChevronDownIcon,
 	ChevronDown,
+	ShoppingCart,
+	RefreshCcw,
+	ArrowLeftRight,
 } from "lucide-react";
+
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import toast from "react-hot-toast";
@@ -59,13 +63,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
@@ -86,7 +83,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { normalizeAxiosError } from "@/utils/axios";
 import { useDebounce } from "@/hook/useDebounce";
-
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import ReplacementTab from "./ReplacementTab";
+import SwitcherTabs from "@/components/atoms/SwitcherTabs";
 
 export const getIconForStatus = (code) => {
 	const iconMap = {
@@ -485,6 +484,7 @@ function OrdersTableToolbar({
 	searchValue,
 	onSearchChange,
 	onExport,
+	exportLoading,
 	onToggleFilters,
 	onToggleDistribution,
 	onBulkUpload,
@@ -539,7 +539,7 @@ function OrdersTableToolbar({
 					className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-100 flex items-center gap-2 px-4 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50"
 					onClick={onExport}
 				>
-					<Download size={18} />
+					{exportLoading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
 					{t("toolbar.export")}
 				</Button>
 
@@ -1616,8 +1616,253 @@ function DistributionModal({ isOpen, onClose, statuses = [], onSuccess }) {
 		</Dialog>
 	);
 }
+
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tab definitions
+// ─────────────────────────────────────────────────────────────────────────────
+const TABS = [
+	{ key: "orders", icon: ShoppingCart, labelKey: "tabs.orders" },
+	// { key: "distribution", icon: Users, labelKey: "tabs.distribution" },
+	{ key: "replacement", icon: ArrowLeftRight, labelKey: "tabs.replacement" },
+	{ key: "returns", icon: RefreshCcw, labelKey: "tabs.returns" },
+];
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Shared: rounded icon-action buttons (new style)
+// ─────────────────────────────────────────────────────────────────────────────
+export function ActionButtons({ row, onDelete, onEdit, onView }) {
+	const t = useTranslations("orders");
+	return (
+		<TooltipProvider>
+			<div className="flex items-center gap-2">
+				{/* Delete */}
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<motion.button
+							whileHover={{ scale: 1.1 }}
+							whileTap={{ scale: 0.95 }}
+							onClick={() => onDelete?.(row)}
+							className="group w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm
+                border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:border-red-600 hover:text-white"
+						>
+							<Trash2 size={16} className="transition-transform group-hover:scale-110 group-hover:rotate-12" />
+						</motion.button>
+					</TooltipTrigger>
+					<TooltipContent>{t("actions.delete")}</TooltipContent>
+				</Tooltip>
+
+				{/* Edit */}
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<motion.button
+							whileHover={{ scale: 1.1 }}
+							whileTap={{ scale: 0.95 }}
+							onClick={() => onEdit?.(row)}
+							className="group w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm
+                border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:border-blue-600 hover:text-white"
+						>
+							<Edit2 size={16} className="transition-transform group-hover:scale-110 group-hover:-rotate-12" />
+						</motion.button>
+					</TooltipTrigger>
+					<TooltipContent>{t("actions.edit")}</TooltipContent>
+				</Tooltip>
+
+				{/* View */}
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<motion.button
+							whileHover={{ scale: 1.1 }}
+							whileTap={{ scale: 0.95 }}
+							onClick={() => onView?.(row)}
+							className="group w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm
+                border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:border-purple-600 hover:text-white"
+						>
+							<Eye size={16} className="transition-transform group-hover:scale-110" />
+						</motion.button>
+					</TooltipTrigger>
+					<TooltipContent>{t("actions.view")}</TooltipContent>
+				</Tooltip>
+			</div>
+		</TooltipProvider>
+	);
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tab bar
+// ─────────────────────────────────────────────────────────────────────────────
+
+export default function Orders() {
+	const [stats, setStats] = useState([]);
+	const [statsLoading, setStatsLoading] = useState(true);
+
+	useEffect(() => {
+		fetchStats();
+	}, [])
+
+
+
+	const fetchStats = async () => {
+		try {
+			setStatsLoading(true);
+			const response = await api.get("/orders/stats");
+			setStats(response.data || []);
+		} catch (error) {
+			console.error("Error fetching stats:", error);
+			toast.error(t("messages.errorFetchingStats"));
+		} finally {
+			setStatsLoading(false);
+		}
+	};
+
+
+
+	const [activeTab, setActiveTab] = useState("orders")
+	const t = useTranslations('orders')
+	const headerActions = {
+		orders: (
+			<>
+				<Button_
+					href="/orders/new" size="sm" label={t("actions.createOrder")}
+					tone="purple" variant="solid" icon={<Plus size={18} />}
+				/>
+				<Button_
+					size="sm" label={t("actions.settings")} tone="purple" variant="solid"
+					onClick={() => setRetrySettingsOpen(true)} icon={<Settings size={18} />}
+				/>
+			</>
+		),
+		distribution: null,
+		returns: (
+			<Button_
+				href="/orders/returns/new" size="sm" label={t("actions.createReturn")}
+				tone="purple" variant="solid" icon={<Plus size={18} />}
+			/>
+		),
+		replacement: (
+			<Button_
+				href="/orders/replacement/new" size="sm" label={t("actions.createReplacement")}
+				tone="purple" variant="solid" icon={<Plus size={18} />}
+			/>
+		),
+	};
+
+
+	const items = useMemo(
+		() => [
+			{ id: "orders", label: t("tabs.orders"), icon: ShoppingCart },
+			{ id: "replacement", label: t("tabs.replacement"), icon: ArrowLeftRight },
+			{ id: "returns", label: t("tabs.returns"), icon: RefreshCcw }
+		],
+		[t]
+	);
+
+
+	return (
+		<div className="min-h-screen p-4 md:p-6 bg-background">
+
+			{/* ── Shared header card ── */}
+			<div className="bg-card rounded-3xl border border-border/60 shadow-sm mb-5 overflow-hidden">
+				<div className="px-5 pt-5">
+					{/* Top row: breadcrumb + actions */}
+					<div className="flex items-center justify-between flex-wrap gap-4">
+						<div className="flex items-center gap-2 text-lg font-semibold">
+							{/* Home Link */}
+							<span
+								onClick={() => router.push("/")}
+								className="text-gray-400 hover:text-primary cursor-pointer transition-colors"
+							>
+								{t("breadcrumb.home")}
+							</span>
+
+							{/* Chevron */}
+							<ChevronLeft className="text-gray-400 rtl:rotate-180" size={18} />
+
+							{/* Active Tab */}
+							<span className="text-primary">
+								{t(`tabs.${activeTab}`)}
+							</span>
+
+							{/* The Decorative Dot to match the target style */}
+							<span className="mr-3 inline-flex w-3.5 h-3.5 rounded-xl bg-primary" />
+						</div>
+						<div className="flex items-center gap-2 flex-wrap">
+							<AnimatePresence mode="wait">
+								<motion.div
+									key={activeTab}
+									initial={{ opacity: 0, y: -6 }}
+									animate={{ opacity: 1, y: 0 }}
+									exit={{ opacity: 0, y: 6 }}
+									className="flex items-center gap-2"
+								>
+									{headerActions[activeTab]}
+								</motion.div>
+							</AnimatePresence>
+						</div>
+					</div>
+
+					{/* Tab bar */}
+					<SwitcherTabs items={items} activeId={activeTab} onChange={setActiveTab} className="w-full" />
+				</div>
+			</div>
+
+			{/* ── Tab content ── */}
+			<AnimatePresence mode="wait">
+				<motion.div
+					key={activeTab}
+					initial={{ opacity: 0, y: 10 }}
+					animate={{ opacity: 1, y: 0 }}
+					exit={{ opacity: 0, y: -10 }}
+					transition={{ duration: 0.18 }}
+				>
+					{activeTab === "orders" && <OrdersTab stats={stats} fetchStats={fetchStats} statsLoading={statsLoading} />}
+					{/* {activeTab === "distribution" && <DistributionTab />} */}
+					{activeTab === "returns" && <ReturnsTab />}
+					{activeTab === "replacement" && <ReplacementTab statuses={stats} />}
+				</motion.div>
+			</AnimatePresence>
+
+		</div>
+	)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Distribution tab — placeholder (реализация будет позже)
+// ─────────────────────────────────────────────────────────────────────────────
+function DistributionTab() {
+	const t = useTranslations("orders")
+	return (
+		<div className="flex flex-col items-center justify-center py-24 text-center gap-4">
+			<div className="w-16 h-16 rounded-3xl bg-[color-mix(in_oklab,var(--primary)_10%,transparent)] border border-[color-mix(in_oklab,var(--primary)_20%,transparent)] flex items-center justify-center">
+				<Users size={28} className="text-[var(--primary)]" />
+			</div>
+			<p className="text-base font-bold text-foreground">{t("tabs.distributionComingSoon")}</p>
+			<p className="text-sm text-muted-foreground">{t("tabs.comingSoonDesc")}</p>
+		</div>
+	);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Returns tab — placeholder
+// ─────────────────────────────────────────────────────────────────────────────
+function ReturnsTab() {
+	const t = useTranslations("orders")
+	return (
+		<div className="flex flex-col items-center justify-center py-24 text-center gap-4">
+			<div className="w-16 h-16 rounded-3xl bg-[color-mix(in_oklab,var(--primary)_10%,transparent)] border border-[color-mix(in_oklab,var(--primary)_20%,transparent)] flex items-center justify-center">
+				<RefreshCcw size={28} className="text-[var(--primary)]" />
+			</div>
+			<p className="text-base font-bold text-foreground">{t("tabs.returnsComingSoon")}</p>
+			<p className="text-sm text-muted-foreground">{t("tabs.comingSoonDesc")}</p>
+		</div>
+	);
+}
+
 // Main Orders Page Component
-export default function OrdersPageEnhanced() {
+function OrdersTab({ stats, fetchStats, statsLoading }) {
 	const t = useTranslations("orders");
 	const router = useRouter();
 	const [retrySettingsOpen, setRetrySettingsOpen] = useState(false);
@@ -1629,6 +1874,7 @@ export default function OrdersPageEnhanced() {
 	const [deletingOrder, setDeletingOrder] = useState(null);
 
 	const [search, setSearch] = useState("");
+	const [debouncedSearch, setDebouncedSearch] = useState("");
 	const [filtersOpen, setFiltersOpen] = useState(false);
 	const [distributionOpen, setDistributionOpen] = useState(false);
 	const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
@@ -1646,9 +1892,7 @@ export default function OrdersPageEnhanced() {
 
 
 	const [loading, setLoading] = useState(false);
-	const [statsLoading, setStatsLoading] = useState(true);
-	const [stats, setStats] = useState([]);
-	const [orders, setOrders] = useState([]);
+
 	const [pager, setPager] = useState({
 		total_records: 0,
 		current_page: 1,
@@ -1658,25 +1902,25 @@ export default function OrdersPageEnhanced() {
 	const [storesList, setStoresList] = useState([]);
 	const [shippingCompaniesList, setShippingCompaniesList] = useState([]);
 	const [ordersLoading, setOrdersLoading] = useState(false);
+	const searchTimer = useRef(null);
 	useEffect(() => {
-		fetchStats();
+
 		fetchLookups();
 		fetchOrders();
 	}, []);
 
+	// ── Debounce search ──
+	useEffect(() => {
+		clearTimeout(searchTimer.current);
+		searchTimer.current = setTimeout(() => setDebouncedSearch(search), 350);
+		return () => clearTimeout(searchTimer.current);
+	}, [search]);
 
-	const fetchStats = async () => {
-		try {
-			setStatsLoading(true);
-			const response = await api.get("/orders/stats");
-			setStats(response.data || []);
-		} catch (error) {
-			console.error("Error fetching stats:", error);
-			toast.error(t("messages.errorFetchingStats"));
-		} finally {
-			setStatsLoading(false);
-		}
-	};
+	// ── Fetch on search / filter change ──
+	useEffect(() => {
+		handlePageChange(1, pager.per_page);
+	}, [debouncedSearch]);
+
 
 	const fetchLookups = async () => {
 		try {
@@ -1723,7 +1967,6 @@ export default function OrdersPageEnhanced() {
 				per_page: data.per_page || per_page,
 				records: Array.isArray(data.records) ? data.records : [],
 			});
-			setOrders(Array.isArray(data.records) ? data.records : []);
 		} catch (e) {
 			console.error('Error fetching orders', e);
 			toast.error(t('messages.errorFetchingOrders'));
@@ -1809,10 +2052,13 @@ export default function OrdersPageEnhanced() {
 		toast.success(t("messages.filtersApplied"));
 		fetchOrders(1, pager.per_page);
 	};
+	const [exportLoading, setExportLoading] = useState()
 
 	const handleExport = async () => {
+		let toastId;
 		try {
-			toast.loading(t("messages.exportStarted"));
+			setExportLoading(true);
+			toastId = toast.loading(t("messages.exportStarted"));
 
 			// Build export params (same as list but without pagination)
 			const params = {};
@@ -1858,11 +2104,17 @@ export default function OrdersPageEnhanced() {
 			window.URL.revokeObjectURL(url);
 
 			toast.dismiss();
-			toast.success(t("messages.exportSuccess"));
+			toast.success(t("messages.exportSuccess"), {
+				id: toastId
+			});
 		} catch (error) {
 			console.error('Export failed:', error);
 			toast.dismiss();
-			toast.error(error.response?.data?.message || t("messages.exportFailed"));
+			toast.error(error.response?.data?.message || t("messages.exportFailed"), {
+				id: toastId
+			});
+		} finally {
+			setExportLoading(false);
 		}
 	};
 
@@ -2136,41 +2388,12 @@ export default function OrdersPageEnhanced() {
 				key: "actions",
 				header: t("table.actions"),
 				cell: (row) => (
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button variant="ghost" className="h-8 w-8 p-0">
-								<MoreVertical className="h-4 w-4" />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="start">
-							<DropdownMenuItem
-								onClick={() => router.push(`/orders/details/${row.id}`)}
-								className="flex items-center gap-2"
-							>
-								<Eye size={16} />
-								{t("actions.view")}
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								onClick={() => router.push(`/orders/edit/${row.id}`)}
-								className="flex items-center gap-2"
-							>
-								<Edit size={16} />
-								{t("actions.edit")}
-							</DropdownMenuItem>
-							<DropdownMenuSeparator />
-							<DropdownMenuItem
-								disabled={!['new', 'cancelled'].includes(row.status?.code)}
-								onClick={() => {
-									setDeletingOrder(row);
-									setDeleteOrderModalOpen(true);
-								}}
-								className="flex items-center gap-2 text-red-600"
-							>
-								<Trash2 size={16} />
-								{t("actions.delete")}
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+					<ActionButtons
+						row={row}
+						onDelete={(r) => { setDeletingOrder(r); setDeleteOrderModalOpen(true); }}
+						onEdit={(r) => router.push(`/orders/edit/${r.id}`)}
+						onView={(r) => router.push(`/orders/details/${r.id}`)}
+					/>
 				),
 			},
 		];
@@ -2178,34 +2401,8 @@ export default function OrdersPageEnhanced() {
 
 
 	return (
-		<div className="min-h-screen p-6">
+		<div className="p-6">
 			<div className="bg-card !pb-0 flex flex-col gap-2 mb-4">
-				<div className="flex items-center justify-between flex-wrap gap-4">
-					<div className="flex items-center gap-2 text-lg font-semibold">
-						<span className="text-gray-400">{t("breadcrumb.home")}</span>
-						<ChevronLeft className="text-gray-400" size={18} />
-						<span className="text-primary">{t("breadcrumb.orders")}</span>
-					</div>
-
-					<div className="flex items-center gap-3 flex-wrap">
-						<Button_
-							href="/orders/new"
-							size="sm"
-							label={t("actions.createOrder")}
-							tone="purple"
-							variant="solid"
-							icon={<Plus size={18} />}
-						/>
-						<Button_
-							size="sm"
-							label={t("actions.settings")}
-							tone="purple"
-							variant="solid"
-							onClick={() => setRetrySettingsOpen(true)}
-							icon={<Settings size={18} />}
-						/>
-					</div>
-				</div>
 
 				<div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-6">
 					{statsLoading ? (
@@ -2291,6 +2488,7 @@ export default function OrdersPageEnhanced() {
 					searchValue={search}
 					onSearchChange={setSearch}
 					onExport={handleExport}
+					exportLoading={exportLoading}
 					isFiltersOpen={filtersOpen}
 					onToggleFilters={() => setFiltersOpen((v) => !v)}
 					onToggleDistribution={() => setDistributionOpen(true)}

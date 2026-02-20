@@ -143,7 +143,7 @@ export default function Header({ toggleSidebar, isSidebarOpen }) {
     const unsubscribe = subscribe("NEW_NOTIFICATION_HEADER", (action) => {
       if (action.type === "NEW_NOTIFICATION") {
         const newNotification = action.payload;
-        console.log(newNotification)
+
         setNotifications((prev) => {
           // لو الإشعار موجود بالفعل (احتياط)
           if (prev.some((n) => n.id === newNotification.id)) {

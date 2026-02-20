@@ -1001,7 +1001,6 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 					{/* uploads */}
 					<div className="sticky top-[180px] h-fit space-y-6 w-full max-w-[550px] max-xl:max-w-[400px]">
 						<ImageUploadBox
-							t={t}
 							title={t('uploads.mainImage')}
 							files={mainFiles}
 							onFilesChange={(next) => {
@@ -1017,7 +1016,6 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 						/>
 
 						<ImageUploadBox
-							t={t}
 							title={t('uploads.otherImages')}
 							files={otherFiles}
 							onFilesChange={setOtherFiles}
@@ -1281,7 +1279,9 @@ function UpsellProductSelector({ t, value, onChange }) {
 }
 
 /** Upload Box */
-export function ImageUploadBox({ t, title, files, onFilesChange, onRemove, multiple = true, accept = 'image/*', className }) {
+export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple = true, accept = 'image/*', className }) {
+	const t = useTranslations('addProduct');
+
 	const inputRef = useRef(null);
 	const [isDragging, setIsDragging] = useState(false);
 

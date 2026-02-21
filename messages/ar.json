@@ -10,7 +10,8 @@
     "card": {
       "active": "مفعّل",
       "inactive": "غير مفعّل",
-      "configured": "بيانات الاعتماد مضبوطة",
+      "updating": "جاري التحديث...",
+      "configured": "تم الإعداد",
       "notConfigured": "لم يُضبط بعد",
       "settings": "الإعدادات",
       "settingsTitle": "ضبط بيانات اعتماد API",

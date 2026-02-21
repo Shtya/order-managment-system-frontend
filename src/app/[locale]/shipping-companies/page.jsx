@@ -27,12 +27,14 @@ import {
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import api from "@/utils/api";
+import toast from "react-hot-toast";
+import { normalizeAxiosError } from "@/utils/axios";
 
 const PROVIDER_META = {
 	bosta: {
 		configFields: [
 			{ key: "apiKey", type: "password", labelKey: "settings.fields.apiKey", required: true },
-			{ key: "accountId", type: "text", labelKey: "settings.fields.accountId", required: false },
+			// { key: "accountId", type: "text", labelKey: "settings.fields.accountId", required: false },
 		],
 		guide: {
 			docsUrl: "https://docs.bosta.co",
@@ -237,11 +239,10 @@ function GhostBtn({ children, onClick, className = "" }) {
 function CapBadge({ available, label }) {
 	return (
 		<span
-			className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
-				available
-					? "bg-emerald-500/10 text-emerald-600 border-emerald-500/25 dark:text-emerald-400"
-					: "bg-[var(--muted)] text-[var(--muted-foreground)] border-[var(--border)]"
-			}`}
+			className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${available
+				? "bg-emerald-500/10 text-emerald-600 border-emerald-500/25 dark:text-emerald-400"
+				: "bg-[var(--muted)] text-[var(--muted-foreground)] border-[var(--border)]"
+				}`}
 		>
 			{available ? <Check size={9} /> : <X size={9} />}
 			{label}
@@ -329,7 +330,7 @@ function ModalHeader({ icon: Icon, title, subtitle, onClose }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Settings Modal  — per-provider config fields
 // ─────────────────────────────────────────────────────────────────────────────
-function SettingsModal({ company, onClose, onSaved }) {
+function SettingsModal({ company, integrationStatus, onClose, onSaved }) {
 	const t = useTranslations("shipping");
 	const fields = PROVIDER_META[company.code]?.configFields || [{ key: "apiKey", type: "password", labelKey: "settings.fields.apiKey", required: true }];
 
@@ -339,17 +340,17 @@ function SettingsModal({ company, onClose, onSaved }) {
 	const [error, setError] = useState(null);
 	const [success, setSuccess] = useState(false);
 
-	useEffect(() => {
-		(async () => {
-			try {
-				const { data } = await api.get("/shipping/integrations/status");
-				const entry = data?.integrations?.find((i) => i.provider === company.code);
-				if (entry?.credentialsConfigured) setValues(Object.fromEntries(fields.map((f) => [f.key, "••••••••••••••••"])));
-			} catch (_) {
-				/* silent */
-			}
-		})();
-	}, [company.code]);
+	// useEffect(() => {
+
+	// 	const newValues = Object.fromEntries(
+	// 		fields.map((f) => {
+	// 			const existingValue = integrationStatus?.credentials?.[f.key];
+	// 			return [f.key, existingValue || ""];
+	// 		})
+	// 	);
+
+	// 	setValues(newValues);
+	// }, [integrationStatus, company.code]);
 
 	const setValue = (key, val) => {
 		setValues((v) => ({ ...v, [key]: val }));
@@ -375,6 +376,7 @@ function SettingsModal({ company, onClose, onSaved }) {
 			onSaved?.();
 			setTimeout(onClose, 1100);
 		} catch (e) {
+			console.log(e?.response?.data)
 			setError(e?.response?.data?.message || t("settings.error"));
 		} finally {
 			setSaving(false);
@@ -399,34 +401,39 @@ function SettingsModal({ company, onClose, onSaved }) {
 				</div>
 
 				<div className="space-y-4">
-					{fields.map((field) => (
-						<div key={field.key} className="space-y-1.5">
-							<label className="text-sm font-medium text-[var(--card-foreground)] flex items-center gap-1.5">
-								<KeyRound size={12} className="text-[var(--muted-foreground)]" />
-								{t(field.labelKey)}
-								{field.required && <span className="text-[var(--primary)] text-xs">*</span>}
-							</label>
-							<div className="relative">
-								<input
-									type={field.type === "password" ? (showFields[field.key] ? "text" : "password") : "text"}
-									value={values[field.key]}
-									onChange={(e) => setValue(field.key, e.target.value)}
-									placeholder={t(`settings.placeholders.${field.key}`, { fallback: `${t(field.labelKey)}…` })}
-									className="w-full rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30 focus:border-[var(--primary)] transition-all"
-									style={{ paddingRight: field.type === "password" ? "2.5rem" : undefined }}
-								/>
-								{field.type === "password" && (
-									<button
-										type="button"
-										onClick={() => toggleShow(field.key)}
-										className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
-									>
-										{showFields[field.key] ? <EyeOff size={15} /> : <Eye size={15} />}
-									</button>
-								)}
+					{fields.map((field) => {
+						const currentSavedValue = integrationStatus?.credentials?.[field.key];
+						return (
+							<div key={field.key} className="space-y-1.5">
+								<label className="text-sm font-medium text-[var(--card-foreground)] flex items-center gap-1.5">
+									<KeyRound size={12} className="text-[var(--muted-foreground)]" />
+									{t(field.labelKey)}
+									{field.required && <span className="text-[var(--primary)] text-xs">*</span>}
+								</label>
+								<div className="relative">
+									<input
+										type={field.type === "password" ? (showFields[field.key] ? "text" : "password") : "text"}
+										value={values[field.key]}
+										onChange={(e) => setValue(field.key, e.target.value)}
+										// 🔥 Dynamic placeholder: shows masked value if saved, else fallback text
+										placeholder={currentSavedValue || t(`settings.placeholders.${field.key}`, { fallback: `${t(field.labelKey)}…` })}
+										// Added "placeholder:text-gray-900" (or similar) to make the placeholder darker/black
+										className={`w-full rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)] ${currentSavedValue && "placeholder:text-gray-950"} dark:placeholder:text-gray-100 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30 focus:border-[var(--primary)] transition-all`}
+										style={{ paddingRight: field.type === "password" ? "2.5rem" : undefined }}
+									/>
+									{field.type === "password" && (
+										<button
+											type="button"
+											onClick={() => toggleShow(field.key)}
+											className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+										>
+											{showFields[field.key] ? <EyeOff size={15} /> : <Eye size={15} />}
+										</button>
+									)}
+								</div>
 							</div>
-						</div>
-					))}
+						)
+					})}
 				</div>
 
 				<p className="text-[11px] text-[var(--muted-foreground)]">{t("settings.securityNote")}</p>
@@ -476,11 +483,10 @@ function GuideModal({ company, onClose }) {
 						<button
 							key={i}
 							onClick={() => setActiveStep(i)}
-							className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-lg whitespace-nowrap border-b-2 transition-all ${
-								activeStep === i
-									? "border-[var(--primary)] text-[var(--primary)] bg-[var(--primary)]/5"
-									: "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]"
-							}`}
+							className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-lg whitespace-nowrap border-b-2 transition-all ${activeStep === i
+								? "border-[var(--primary)] text-[var(--primary)] bg-[var(--primary)]/5"
+								: "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]"
+								}`}
 						>
 							<span
 								className="w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center flex-shrink-0"
@@ -738,6 +744,7 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 			await api.post(`/shipping/providers/${company.code}/active`, { isActive: !isActive });
 			onRefreshStatus?.();
 		} catch (e) {
+			toast.error(normalizeAxiosError(e));
 			console.error(e);
 		} finally {
 			setToggling(false);
@@ -761,7 +768,7 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 						<div className="flex flex-col items-end gap-1.5">
 							<button
 								onClick={handleToggle}
-								disabled={toggling}
+								disabled={toggling || !isConfigured} // Disable if already toggling or not configured
 								title={!isConfigured ? t("card.configureFirst") : isActive ? t("card.disable") : t("card.enable")}
 								className="relative w-11 h-6 rounded-full border transition-all duration-300 focus:outline-none"
 								style={{
@@ -770,20 +777,31 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 											? `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))`
 											: "rgba(0,0,0,0.12)",
 									borderColor: isActive && isConfigured ? "transparent" : "rgba(0,0,0,0.1)",
-									opacity: toggling ? 0.5 : 1,
+									// Lower opacity slightly more when toggling for better visual feedback
+									opacity: toggling ? 0.7 : 1,
+									cursor: toggling ? "not-allowed" : "pointer"
 								}}
 							>
 								<span
-									className="absolute top-0.5 left-0.5 w-[18px] h-[18px] rounded-full bg-white shadow transition-transform duration-300"
-									style={{ transform: isActive && isConfigured ? "translateX(20px)" : "translateX(0px)" }}
-								/>
+									className="absolute top-0.5 left-0.5 w-[18px] h-[18px] rounded-full bg-white shadow transition-all duration-300 flex items-center justify-center"
+									style={{
+										transform: isActive && isConfigured ? "translateX(20px)" : "translateX(0px)"
+									}}
+								>
+									{/* Show a spinner inside the toggle handle when loading */}
+									{toggling && (
+										<svg className="animate-spin h-3 w-3 text-primary-from" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+											<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+											<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+										</svg>
+									)}
+								</span>
 							</button>
 							<span
-								className={`text-[10px] font-semibold uppercase tracking-wide ${
-									isActive && isConfigured ? "text-emerald-700 dark:text-emerald-400" : "text-gray-500 dark:text-gray-400"
-								}`}
+								className={`text-[10px] font-semibold uppercase tracking-wide transition-colors duration-300 ${isActive && isConfigured ? "text-emerald-700 dark:text-emerald-400" : "text-gray-500 dark:text-gray-400"
+									}`}
 							>
-								{isActive && isConfigured ? t("card.active") : t("card.inactive")}
+								{toggling ? t("card.updating") : (isActive && isConfigured ? t("card.active") : t("card.inactive"))}
 							</span>
 						</div>
 					</div>
@@ -839,11 +857,10 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 						onClick={() => isConfigured && setOpenModal("usage")}
 						disabled={!isConfigured}
 						title={isConfigured ? t("card.usageTitle") : t("card.configureFirst")}
-						className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all shadow-sm ${
-							isConfigured
-								? "bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border-white/50 dark:border-white/10 text-gray-700 dark:text-gray-200"
-								: "bg-white/30 dark:bg-white/5 border-white/30 dark:border-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-50"
-						}`}
+						className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all shadow-sm ${isConfigured
+							? "bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border-white/50 dark:border-white/10 text-gray-700 dark:text-gray-200"
+							: "bg-white/30 dark:bg-white/5 border-white/30 dark:border-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-50"
+							}`}
 					>
 						<BarChart3 size={12} />
 						{t("card.usage")}
@@ -856,6 +873,7 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 					<SettingsModal
 						key="settings"
 						company={company}
+						integrationStatus={integrationStatus}
 						onClose={() => setOpenModal(null)}
 						onSaved={() => {
 							setOpenModal(null);
@@ -917,6 +935,7 @@ export default function ShippingCompaniesPage() {
 			const { data } = await api.get("/shipping/integrations/status");
 			const map = {};
 			(data?.integrations || []).forEach((item) => (map[item.provider] = item));
+			console.log(map)
 			setStatuses(map);
 		} catch (_) {
 			/* silent */
@@ -953,10 +972,10 @@ export default function ShippingCompaniesPage() {
 						{statusLoading
 							? companies.map((c) => <SkeletonCard key={c.id} />)
 							: companies.map((company, index) => (
-									<motion.div key={company.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
-										<IntegratedCompanyCard company={company} integrationStatus={integrationStatuses[company.code]} onRefreshStatus={fetchStatuses} />
-									</motion.div>
-							  ))}
+								<motion.div key={company.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
+									<IntegratedCompanyCard company={company} integrationStatus={integrationStatuses[company.code]} onRefreshStatus={fetchStatuses} />
+								</motion.div>
+							))}
 					</div>
 				</motion.div>
 			</AnimatePresence>
@@ -964,4 +983,3 @@ export default function ShippingCompaniesPage() {
 	);
 }
 
- 

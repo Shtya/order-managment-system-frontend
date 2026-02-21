@@ -1,3 +1,4 @@
+// --- File: page.jsx ---
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -24,6 +25,9 @@ import {
 	Info,
 	KeyRound,
 	ImageIcon,
+	Webhook,
+	Copy,
+	RotateCcw,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import api from "@/utils/api";
@@ -40,51 +44,75 @@ const PROVIDER_META = {
 			docsUrl: "https://docs.bosta.co",
 			steps: [
 				{
-					image: "/guide/bosta/step1.png",
-					tab: { en: "Login", ar: "تسجيل الدخول" },
-					title: { en: "Log in to your Bosta dashboard", ar: "تسجيل الدخول إلى لوحة تحكم بوسطة" },
+					image: "/guide/bosta/step-img-0.png", // you can add it or leave placeholder
+					tab: { en: "Signup", ar: "إنشاء حساب" },
+					title: { en: "Create a Bosta business account", ar: "إنشاء حساب بوسطة للأعمال" },
 					desc: {
-						en: "Go to app.bosta.co and sign in with your merchant account. Make sure your account is active and has API access enabled.",
-						ar: "توجّه إلى app.bosta.co وسجّل دخولك بحساب التاجر. تأكد من أن الحساب مفعّل وأن صلاحيات API ممكّنة.",
+						en: "Go to https://business.bosta.co/signup then create your account and log in to the dashboard.",
+						ar: "اذهب إلى https://business.bosta.co/signup ثم أنشئ حسابك وسجّل الدخول للوحة التحكم.",
 					},
-					tip: {
-						en: "No account yet? You can register for free on the official website.",
-						ar: "لا يوجد حساب؟ يمكنك التسجيل مجانًا من الموقع الرسمي.",
-					},
+					tip: null,
 				},
 				{
-					image: "/guide/bosta/step2.png",
+					image: "/guide/bosta/step-img-settings.png", // optional
 					tab: { en: "Settings", ar: "الإعدادات" },
-					title: { en: "Open API & Integrations settings", ar: "فتح إعدادات API والتكاملات" },
+					title: { en: "Open Settings from the top bar", ar: "افتح الإعدادات من الأعلى" },
 					desc: {
-						en: "From the side menu, choose Settings → API & Integrations. You will find a dedicated section for managing access keys.",
-						ar: "من القائمة الجانبية اختر «الإعدادات» ثم «API والتكاملات». ستجد قسمًا مخصصًا لإدارة مفاتيح الوصول.",
+						en: "From the dashboard, click the settings icon at the top to open Settings.",
+						ar: "من لوحة التحكم اضغط على أيقونة الإعدادات بالأعلى لفتح صفحة الإعدادات.",
 					},
-					tip: {
-						en: "The menu location may differ slightly depending on your dashboard version.",
-						ar: "قد يختلف موضع هذا الخيار بحسب إصدار لوحة التحكم.",
-					},
+					tip: null,
 				},
 				{
-					image: "/guide/bosta/step3.png",
-					tab: { en: "Generate", ar: "إنشاء المفتاح" },
-					title: { en: "Generate a new API key", ar: "إنشاء مفتاح API جديد" },
+					image: "/guide/bosta/step-img-1.png", // your provided screenshot name
+					tab: { en: "Integrations", ar: "ربط التطبيقات" },
+					title: { en: "Open the Integrations tab", ar: "افتح تبويب ربط التطبيقات" },
 					desc: {
-						en: 'Click "Generate New API Key", then copy the key that appears. Save it somewhere safe — it will not be shown again.',
-						ar: "انقر على «إنشاء مفتاح API جديد» وانسخ المفتاح الظاهر. احفظه في مكان آمن — لن يُعرض مرة أخرى.",
+						en: "In Settings, open the Integrations tab (ربط التطبيقات).",
+						ar: "داخل الإعدادات افتح تبويب «ربط التطبيقات».",
+					},
+					tip: null,
+				},
+				{
+					image: "/guide/bosta/step-img-otp.png", // optional
+					tab: { en: "OTP", ar: "OTP" },
+					title: { en: "Request OTP", ar: "اطلب OTP" },
+					desc: {
+						en: "Click Request OTP then enter the code sent to your phone to enable API Integration options.",
+						ar: "اضغط «طلب OTP» ثم أدخل الرمز المرسل إلى هاتفك لتفعيل خيارات التكامل.",
+					},
+					tip: null,
+				},
+				{
+					image: "/guide/bosta/step-img-api-key.png", // optional
+					tab: { en: "API Key", ar: "مفتاح API" },
+					title: { en: "Create an API key", ar: "إنشاء مفتاح API" },
+					desc: {
+						en: "Click Create API key, set a name and permissions, then copy the key (it will not be shown again).",
+						ar: "اضغط «إنشاء مفتاح API»، اختر اسمًا وصلاحيات، ثم انسخ المفتاح (لن يظهر مرة أخرى).",
+					},
+					tip: null,
+				},
+				{
+					image: "/guide/bosta/step-img-webhook.png", // optional
+					tab: { en: "Webhook", ar: "Webhook" },
+					title: { en: "Add Webhook URL", ar: "إضافة رابط Webhook" },
+					desc: {
+						en: "Scroll to Webhook section, paste the Webhook URL from your system, and (optionally) set a custom header name + secret.",
+						ar: "انزل إلى قسم الـ Webhook، الصق رابط الـ Webhook من نظامك، ويمكنك إضافة اسم هيدر مخصص + Secret للأمان.",
 					},
 					tip: {
-						en: 'Give the key a meaningful name like "Store Manager" so you can identify it later.',
-						ar: "يُوصى بتسمية المفتاح باسم دالّ مثل «نظام الإدارة» لتسهيل التعرف عليه لاحقًا.",
+						en: "Webhook triggers on status changes, not on order creation.",
+						ar: "الـ Webhook يعمل عند تغيّر حالة الشحنة، وليس عند الإنشاء.",
 					},
 				},
 				{
 					image: null,
 					tab: { en: "Paste & Save", ar: "اللصق والحفظ" },
-					title: { en: "Paste the key and save", ar: "لصق المفتاح وحفظ الإعدادات" },
+					title: { en: "Paste API key here and Save", ar: "الصق المفتاح هنا واضغط حفظ" },
 					desc: {
-						en: "Return to the Settings panel here, paste the API key into the field, then click Save. The card status will change to Configured.",
-						ar: "عُد إلى نافذة الإعدادات هنا، والصق المفتاح في حقل «مفتاح API»، ثم اضغط «حفظ». ستتحول حالة البطاقة إلى «مضبوط».",
+						en: "Return to this page, paste API key into Settings, click Save. Then open Webhook modal to copy webhook URL/secret to Bosta.",
+						ar: "ارجع لهذه الصفحة، الصق مفتاح API واضغط حفظ. ثم افتح نافذة Webhook لنسخ الرابط/السر ووضعه في بوسطة.",
 					},
 					tip: null,
 				},
@@ -97,54 +125,7 @@ const PROVIDER_META = {
 			{ key: "apiKey", type: "password", labelKey: "settings.fields.apiKey", required: true },
 			{ key: "customerId", type: "text", labelKey: "settings.fields.customerId", required: true },
 		],
-		guide: {
-			docsUrl: "https://developer.jtexpress.com",
-			steps: [
-				{
-					image: "/guide/jt/step1.png",
-					tab: { en: "Login", ar: "تسجيل الدخول" },
-					title: { en: "Log in to the J&T merchant portal", ar: "تسجيل الدخول إلى بوابة J&T للتجار" },
-					desc: {
-						en: "Visit the official J&T Express merchant portal and sign in. Make sure API permissions are enabled on your account.",
-						ar: "توجّه إلى البوابة الرسمية لـ J&T Express وسجّل دخولك. تأكد من تفعيل صلاحيات API لحسابك.",
-					},
-					tip: null,
-				},
-				{
-					image: "/guide/jt/step2.png",
-					tab: { en: "Dev Settings", ar: "إعدادات المطور" },
-					title: { en: "Go to Developer API settings", ar: "الانتقال إلى إعدادات المطور" },
-					desc: {
-						en: "From Account Settings, choose Developer API, then create a new application to get your API Key and Customer ID.",
-						ar: "من إعدادات الحساب اختر «Developer API»، ثم أنشئ تطبيقًا جديدًا للحصول على مفتاح API ومعرّف العميل.",
-					},
-					tip: {
-						en: "Make sure to select the correct permissions when creating the application.",
-						ar: "تأكد من اختيار الصلاحيات المناسبة عند إنشاء التطبيق.",
-					},
-				},
-				{
-					image: null,
-					tab: { en: "Copy Keys", ar: "نسخ البيانات" },
-					title: { en: "Copy your API Key and Customer ID", ar: "نسخ مفتاح API ومعرّف العميل" },
-					desc: {
-						en: "After creating the app you will get an API Key and a Customer ID. Copy both and keep them in a safe place.",
-						ar: "بعد إنشاء التطبيق ستحصل على «API Key» و«Customer ID». انسخهما واحفظهما بأمان.",
-					},
-					tip: null,
-				},
-				{
-					image: null,
-					tab: { en: "Paste & Save", ar: "الحفظ" },
-					title: { en: "Enter credentials and save", ar: "إدخال البيانات وحفظها" },
-					desc: {
-						en: "Enter the API Key and Customer ID in the provided fields and click Save.",
-						ar: "أدخل مفتاح API ومعرّف العميل في الحقول المخصصة واضغط حفظ.",
-					},
-					tip: null,
-				},
-			],
-		},
+		guide: { docsUrl: "https://developer.jtexpress.com", steps: [] },
 	},
 
 	turbo: {
@@ -152,62 +133,15 @@ const PROVIDER_META = {
 			{ key: "apiKey", type: "password", labelKey: "settings.fields.apiKey", required: true },
 			{ key: "secretKey", type: "password", labelKey: "settings.fields.secretKey", required: true },
 		],
-		guide: {
-			docsUrl: "https://turbo.com",
-			steps: [
-				{
-					image: "/guide/turbo/step1.png",
-					tab: { en: "Login", ar: "تسجيل الدخول" },
-					title: { en: "Log in to the Turbo dashboard", ar: "تسجيل الدخول إلى Turbo" },
-					desc: { en: "Sign in to your Turbo shipping dashboard.", ar: "سجّل دخولك إلى لوحة تحكم Turbo للشحن." },
-					tip: null,
-				},
-				{
-					image: null,
-					tab: { en: "API Settings", ar: "إعدادات API" },
-					title: { en: "Open Profile → API Settings", ar: "فتح إعدادات API" },
-					desc: {
-						en: "From your profile, choose API Settings. Here you can generate an API Key and a Secret Key.",
-						ar: "من الملف الشخصي اختر «إعدادات API». هنا يمكنك إنشاء مفتاح API ومفتاح سري.",
-					},
-					tip: null,
-				},
-				{
-					image: null,
-					tab: { en: "Copy Keys", ar: "نسخ المفاتيح" },
-					title: { en: "Copy API Key and Secret Key", ar: "نسخ مفتاح API والمفتاح السري" },
-					desc: {
-						en: "Copy both keys and store them securely. Never share your Secret Key with anyone.",
-						ar: "انسخ كلا المفتاحين واحفظهما بأمان. لا تشارك مفتاحك السري مع أي شخص.",
-					},
-					tip: { en: "Treat the Secret Key like a password — never expose it publicly.", ar: "تعامل مع المفتاح السري كأنه كلمة مرور — لا تكشفه للعموم." },
-				},
-				{
-					image: null,
-					tab: { en: "Paste & Save", ar: "الحفظ" },
-					title: { en: "Enter both keys and save", ar: "إدخال المفتاحين وحفظهما" },
-					desc: {
-						en: "Enter the API Key and Secret Key in the respective fields and click Save.",
-						ar: "أدخل مفتاح API والمفتاح السري في الحقول المخصصة واضغط حفظ.",
-					},
-					tip: null,
-				},
-			],
-		},
+		guide: { docsUrl: "https://turbo.com", steps: [] },
 	},
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Utility: pick en or ar string from a bilingual object
-// ─────────────────────────────────────────────────────────────────────────────
 function pick(bilingualObj, locale) {
 	if (!bilingualObj) return "";
 	return locale?.startsWith("ar") ? bilingualObj.ar : bilingualObj.en;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Shared UI atoms
-// ─────────────────────────────────────────────────────────────────────────────
 function PrimaryBtn({ children, onClick, disabled, loading, className = "" }) {
 	return (
 		<button
@@ -259,9 +193,6 @@ function SectionLabel({ icon: Icon, label }) {
 	);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Modal shell (PORTAL)  ✅ overlay full width/height + centered modal
-// ─────────────────────────────────────────────────────────────────────────────
 function ModalShell({ children, onClose, maxWidth = "max-w-md" }) {
 	const [mounted, setMounted] = useState(false);
 
@@ -332,7 +263,8 @@ function ModalHeader({ icon: Icon, title, subtitle, onClose }) {
 // ─────────────────────────────────────────────────────────────────────────────
 function SettingsModal({ company, integrationStatus, onClose, onSaved }) {
 	const t = useTranslations("shipping");
-	const fields = PROVIDER_META[company.code]?.configFields || [{ key: "apiKey", type: "password", labelKey: "settings.fields.apiKey", required: true }];
+	const fields =
+		PROVIDER_META[company.code]?.configFields || [{ key: "apiKey", type: "password", labelKey: "settings.fields.apiKey", required: true }];
 
 	const [values, setValues] = useState(() => Object.fromEntries(fields.map((f) => [f.key, ""])));
 	const [showFields, setShow] = useState({});
@@ -357,10 +289,16 @@ function SettingsModal({ company, integrationStatus, onClose, onSaved }) {
 		setSuccess(false);
 		setError(null);
 	};
+
 	const toggleShow = (key) => setShow((v) => ({ ...v, [key]: !v[key] }));
+
 	const isAllMasked = () => fields.every((f) => values[f.key]?.startsWith("•"));
 	const isValid = () =>
-		!isAllMasked() && fields.filter((f) => f.required).every((f) => values[f.key]?.trim().length > 0 && !values[f.key].startsWith("•"));
+		// allow saving accountId empty (optional)
+		!isAllMasked() &&
+		fields
+			.filter((f) => f.required)
+			.every((f) => values[f.key]?.trim().length > 0 && !values[f.key].startsWith("•"));
 
 	async function handleSave() {
 		if (!isValid()) return;
@@ -374,7 +312,7 @@ function SettingsModal({ company, integrationStatus, onClose, onSaved }) {
 			await api.post(`/shipping/providers/${company.code}/credentials`, { credentials });
 			setSuccess(true);
 			onSaved?.();
-			setTimeout(onClose, 1100);
+			setTimeout(onClose, 900);
 		} catch (e) {
 			console.log(e?.response?.data)
 			setError(e?.response?.data?.message || t("settings.error"));
@@ -386,6 +324,7 @@ function SettingsModal({ company, integrationStatus, onClose, onSaved }) {
 	return (
 		<ModalShell onClose={onClose}>
 			<ModalHeader icon={Settings2} title={t("settings.title", { name: company.name })} subtitle={t("settings.subtitle")} onClose={onClose} />
+
 			<div className="p-6 space-y-5">
 				<div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--muted)] border border-[var(--border)]">
 					<div
@@ -460,9 +399,9 @@ function SettingsModal({ company, integrationStatus, onClose, onSaved }) {
 	);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------
 // Guide Modal
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------
 function GuideModal({ company, onClose }) {
 	const t = useTranslations("shipping");
 	const locale = useLocale();
@@ -588,9 +527,9 @@ function GuideModal({ company, onClose }) {
 	);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Usage / Capabilities Modal
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------
+// Usage Modal (unchanged)
+// -----------------------
 function UsageModal({ company, onClose }) {
 	const t = useTranslations("shipping");
 	const [data, setData] = useState(null);
@@ -637,16 +576,14 @@ function UsageModal({ company, onClose }) {
 								<SectionLabel icon={Zap} label={t("usage.services")} />
 								<div className="flex flex-wrap gap-2">
 									{data.services.map((s) => (
-										<span
-											key={s}
-											className="px-3 py-1 rounded-full text-xs font-medium bg-[var(--muted)] border border-[var(--border)] text-[var(--foreground)]"
-										>
+										<span key={s} className="px-3 py-1 rounded-full text-xs font-medium bg-[var(--muted)] border border-[var(--border)] text-[var(--foreground)]">
 											{s}
 										</span>
 									))}
 								</div>
 							</div>
 						)}
+
 						{caps && (
 							<div className="space-y-2.5">
 								<SectionLabel icon={Globe} label={t("usage.capabilities")} />
@@ -674,6 +611,7 @@ function UsageModal({ company, onClose }) {
 								</div>
 							</div>
 						)}
+
 						{caps?.services?.available && caps.services.data?.length > 0 && (
 							<div className="space-y-2.5">
 								<SectionLabel icon={Info} label={t("usage.operations")} />
@@ -694,9 +632,180 @@ function UsageModal({ company, onClose }) {
 	);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Skeleton loading card
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------
+// Webhook Setup Modal (NEW)
+// -----------------------
+function WebhookModal({ company, onClose }) {
+	const t = useTranslations("shipping");
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState(null);
+	const [data, setData] = useState(null);
+	const [rotating, setRotating] = useState(false);
+	const locale = useLocale();
+
+	const isAr = locale?.startsWith("ar");
+
+	const fetchSetup = async () => {
+		setLoading(true);
+		setError(null);
+		try {
+			const res = await api.get(`/shipping/providers/${company.code}/webhook-setup`);
+			setData(res.data);
+		} catch (e) {
+			setError(e?.response?.data?.message || "Failed to load webhook setup");
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	useEffect(() => {
+		fetchSetup();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [company.code]);
+
+	const copy = async (txt) => {
+		try {
+			await navigator.clipboard.writeText(String(txt || ""));
+		} catch (_) { }
+	};
+
+	const rotate = async () => {
+		setRotating(true);
+		setError(null);
+		try {
+			await api.post(`/shipping/providers/${company.code}/webhook-setup/rotate-secret`, {});
+			await fetchSetup();
+		} catch (e) {
+			setError(e?.response?.data?.message || "Failed to rotate secret");
+		} finally {
+			setRotating(false);
+		}
+	};
+
+	return (
+		<ModalShell onClose={onClose} maxWidth="max-w-lg">
+			<ModalHeader icon={Webhook} title={isAr ? "إعداد Webhook" : "Webhook Setup"} subtitle={isAr ? "انسخ القيم وضعها في بوسطة" : "Copy these values into Bosta"} onClose={onClose} />
+
+			<div className="p-6 space-y-5">
+				<div className="rounded-xl border border-[var(--border)] bg-[var(--muted)] p-3">
+					<p className="text-sm font-semibold text-[var(--card-foreground)] mb-1">
+						{isAr ? "متى يعمل؟" : "When does it trigger?"}
+					</p>
+					<p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+						{isAr
+							? "بوسطة سترسل POST إلى رابط الـ Webhook عند تغيّر حالة الشحنة (ليس عند الإنشاء)."
+							: "Bosta sends a POST request to your webhook URL when shipment status changes (not on creation)."}
+					</p>
+				</div>
+
+				{loading && (
+					<div className="flex items-center justify-center py-8 text-[var(--muted-foreground)]">
+						<Loader2 size={22} className="animate-spin" />
+					</div>
+				)}
+
+				{error && (
+					<div className="flex items-center gap-2 rounded-xl border border-red-500/25 bg-red-500/8 px-3.5 py-2.5 text-sm text-red-600 dark:text-red-400">
+						<AlertCircle size={14} />
+						{error}
+					</div>
+				)}
+
+				{data && (
+					<div className="space-y-4">
+						<div className="space-y-1.5">
+							<label className="text-sm font-medium text-[var(--card-foreground)]">{isAr ? "Webhook URL" : "Webhook URL"}</label>
+							<div className="flex gap-2">
+								<input
+									readOnly
+									value={data.webhookUrl || ""}
+									className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
+								/>
+								<button
+									onClick={() => copy(data.webhookUrl)}
+									className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
+									title="Copy"
+								>
+									<Copy size={14} />
+								</button>
+							</div>
+							<p className="text-[11px] text-[var(--muted-foreground)]">
+								{isAr ? "ضع هذا الرابط في بوسطة داخل Webhook URL." : "Paste this URL into Bosta’s Webhook URL field."}
+							</p>
+						</div>
+
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+							<div className="space-y-1.5">
+								<label className="text-sm font-medium text-[var(--card-foreground)]">{isAr ? "اسم الهيدر" : "Header Name"}</label>
+								<div className="flex gap-2">
+									<input
+										readOnly
+										value={data.headerName || ""}
+										className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
+									/>
+									<button
+										onClick={() => copy(data.headerName)}
+										className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
+										title="Copy"
+									>
+										<Copy size={14} />
+									</button>
+								</div>
+							</div>
+
+							<div className="space-y-1.5">
+								<label className="text-sm font-medium text-[var(--card-foreground)]">{isAr ? "قيمة الهيدر (Secret)" : "Header Value (Secret)"}</label>
+								<div className="flex gap-2">
+									<input
+										readOnly
+										value={data.headerValue || ""}
+										className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
+									/>
+									<button
+										onClick={() => copy(data.headerValue)}
+										className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
+										title="Copy"
+									>
+										<Copy size={14} />
+									</button>
+								</div>
+							</div>
+						</div>
+
+						<div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--muted)] p-3">
+							<p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+								{isAr
+									? "في بوسطة: ضع اسم الهيدر وقيمته في حقول Authorization Key (اختياري لكنه موصى به للأمان)."
+									: "In Bosta: set Authorization Key name/value (optional but recommended for security)."}
+							</p>
+							<button
+								onClick={rotate}
+								disabled={rotating}
+								className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all disabled:opacity-50"
+							>
+								{rotating ? <Loader2 size={14} className="animate-spin" /> : <RotateCcw size={14} />}
+								<span className="text-xs font-semibold">{isAr ? "تغيير السر" : "Rotate"}</span>
+							</button>
+						</div>
+					</div>
+				)}
+
+				<div className="flex justify-end gap-2 pt-2">
+					<GhostBtn onClick={onClose}>{isAr ? "إغلاق" : "Close"}</GhostBtn>
+					<a href="https://docs.bosta.co/docs/how-to/get-delivery-status-via-webhook/" target="_blank" rel="noopener noreferrer">
+						<PrimaryBtn>
+							<ExternalLink size={14} /> {isAr ? "دليل بوسطة" : "Bosta Docs"}
+						</PrimaryBtn>
+					</a>
+				</div>
+			</div>
+		</ModalShell>
+	);
+}
+
+// -----------------------
+// Skeleton card
+// -----------------------
 function SkeletonCard() {
 	return (
 		<div className="rounded-2xl border border-[var(--border)] overflow-hidden animate-pulse bg-[var(--muted)]">
@@ -723,9 +832,9 @@ function SkeletonCard() {
 	);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// IntegratedCompanyCard
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------
+// IntegratedCompanyCard (UPDATED with Webhook button)
+// -----------------------
 function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) {
 	const t = useTranslations("shipping");
 	const [openModal, setOpenModal] = useState(null);
@@ -761,9 +870,24 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 			>
 				<div className="p-5 flex flex-col gap-3 flex-1">
 					<div className="flex items-start justify-between">
-						<div className="w-14 h-14 rounded-2xl bg-white/80 dark:bg-white/10 backdrop-blur-sm border border-white/40 dark:border-white/10 flex items-center justify-center shadow-sm overflow-hidden">
-							<img src={company.logo} alt={company.name} className="w-9 h-9 object-contain" onError={(e) => (e.target.style.display = "none")} />
+						<div className="flex items-center gap-2" >
+							<div className="w-14 h-14 rounded-2xl bg-white/80 dark:bg-white/10 backdrop-blur-sm border border-white/40 dark:border-white/10 flex items-center justify-center shadow-sm overflow-hidden">
+								<img src={company.logo} alt={company.name} className="w-9 h-9 object-contain" onError={(e) => (e.target.style.display = "none")} />
+							</div>
+							<div>
+								<h3 className="text-base font-bold text-gray-800 dark:text-white">{company.name}</h3>
+								<a
+									href={`https://${company.website}`}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="text-xs text-gray-500 dark:text-gray-400 hover:text-[var(--primary)] transition-colors flex items-center gap-0.5 mt-0.5"
+								>
+									{company.website}
+									<ExternalLink size={9} className="ml-0.5" />
+								</a>
+							</div>
 						</div>
+
 
 						<div className="flex flex-col items-end gap-1.5">
 							<button
@@ -806,18 +930,7 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 						</div>
 					</div>
 
-					<div>
-						<h3 className="text-base font-bold text-gray-800 dark:text-white">{company.name}</h3>
-						<a
-							href={`https://${company.website}`}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="text-xs text-gray-500 dark:text-gray-400 hover:text-[var(--primary)] transition-colors flex items-center gap-0.5 mt-0.5"
-						>
-							{company.website}
-							<ExternalLink size={9} className="ml-0.5" />
-						</a>
-					</div>
+
 
 					<p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2">{company.description}</p>
 
@@ -834,7 +947,7 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 					)}
 				</div>
 
-				<div className="bg-white/50 dark:bg-black/20 backdrop-blur-sm border-t border-white/40 dark:border-white/10 px-4 py-3 flex items-center gap-2">
+				<div className="bg-white/50 dark:bg-black/20 backdrop-blur-sm border-t border-white/40 dark:border-white/10 px-4 py-3 flex items-center gap-2 flex-wrap">
 					<button
 						onClick={() => setOpenModal("settings")}
 						title={t("card.settingsTitle")}
@@ -851,6 +964,20 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 					>
 						<HelpCircle size={12} />
 						{t("card.guide")}
+					</button>
+
+					{/* NEW: Webhook setup */}
+					<button
+						onClick={() => isConfigured && setOpenModal("webhook")}
+						disabled={!isConfigured}
+						title={isConfigured ? "Webhook" : t("card.configureFirst")}
+						className={` font-en flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all shadow-sm ${isConfigured
+							? "bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border-white/50 dark:border-white/10 text-gray-700 dark:text-gray-200"
+							: "bg-white/30 dark:bg-white/5 border-white/30 dark:border-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-50"
+							}`}
+					>
+						<Webhook size={12} />
+						Webhook
 					</button>
 
 					<button
@@ -883,14 +1010,15 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 				)}
 				{openModal === "guide" && <GuideModal key="guide" company={company} onClose={() => setOpenModal(null)} />}
 				{openModal === "usage" && <UsageModal key="usage" company={company} onClose={() => setOpenModal(null)} />}
+				{openModal === "webhook" && <WebhookModal key="webhook" company={company} onClose={() => setOpenModal(null)} />}
 			</AnimatePresence>
 		</>
 	);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------
 // Main Page
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------
 export default function ShippingCompaniesPage() {
 	const t = useTranslations("shipping");
 
@@ -938,7 +1066,6 @@ export default function ShippingCompaniesPage() {
 			console.log(map)
 			setStatuses(map);
 		} catch (_) {
-			/* silent */
 		} finally {
 			setLoading(false);
 		}
@@ -950,7 +1077,7 @@ export default function ShippingCompaniesPage() {
 
 	return (
 		<div className="min-h-screen bg-[var(--background)] p-6">
-			<div className="bg-card !pb-0 flex flex-col gap-2 mb-4">
+			<div className="bg-card  flex flex-col gap-2 mb-4">
 				<div className="flex items-center gap-2 text-lg font-semibold">
 					<span className="text-gray-400">{t("breadcrumb.home")}</span>
 					<ChevronLeft className="text-gray-400" size={18} />
@@ -982,4 +1109,3 @@ export default function ShippingCompaniesPage() {
 		</div>
 	);
 }
-

@@ -7,6 +7,29 @@
     "integrated": {
       "description": "ربط متجرك بهذا المزود لإدارة الشحنات وتتبعها تلقائيًا وبكل سهولة."
     },
+    "providers": {
+      "bosta": "بوسطة (Bosta)",
+      "jt": "جي آند تي (J&T)",
+      "turbo": "تيربو (Turbo)",
+      "placeholder": "اختر شركة الشحن",
+      "noActive": "لا توجد شركات شحن مفعلة"
+    },
+    "webhook": {
+      "title": "إعداد Webhook",
+      "subtitle": "انسخ القيم وضعها في بوسطة",
+      "triggerTitle": "متى يعمل؟",
+      "triggerDescription": "بوسطة سترسل POST إلى رابط الـ Webhook عند تغيّر حالة الشحنة (ليس عند الإنشاء).",
+      "urlLabel": "Webhook URL",
+      "urlHint": "ضع هذا الرابط في بوسطة داخل Webhook URL.",
+      "headerName": "اسم الهيدر",
+      "headerValue": "قيمة الهيدر (Secret)",
+      "securityHint": "في بوسطة: ضع اسم الهيدر وقيمته في حقول Authorization Key (اختياري لكنه موصى به للأمان).",
+      "rotate": "تغيير السر",
+      "docs": "دليل بوسطة",
+      "close": "إغلاق",
+      "errorFetch": "فشل تحميل إعدادات الـ Webhook",
+      "errorRotate": "فشل تغيير القيمة السرية"
+    },
     "card": {
       "active": "مفعّل",
       "inactive": "غير مفعّل",
@@ -15,7 +38,7 @@
       "notConfigured": "لم يُضبط بعد",
       "settings": "الإعدادات",
       "settingsTitle": "ضبط بيانات اعتماد API",
-      "guide": "كيفية الربط" ,
+      "guide": "كيفية الربط",
       "guideTitle": "كيفية الحصول على مفتاح API",
       "usage": "الاستخدام",
       "usageTitle": "عرض القدرات والخدمات",
@@ -24,6 +47,7 @@
       "configureFirst": "يرجى ضبط بيانات الاعتماد أولًا"
     },
     "settings": {
+      "errorFetch": "فشل تحميل الإعدادات",
       "title": "إعدادات {name}",
       "subtitle": "ضبط بيانات اعتماد API الخاصة بك",
       "save": "حفظ البيانات",
@@ -31,6 +55,17 @@
       "success": "تم حفظ بيانات الاعتماد بنجاح!",
       "error": "فشل حفظ بيانات الاعتماد",
       "securityNote": "تُخزَّن بياناتك بأمان ولن تظهر في أي استجابات API.",
+      "bosta": {
+        "fields": {
+          "apiKey": "مفتاح API",
+          "webhookHeaderName": "اسم مفتاح الهيدر (مثل Authorization)",
+          "webhookSecret": "قيمة الهيدر (السرية)"
+        },
+        "placeholders": {
+          "webhookHeaderName": "أدخل اسم المفتاح من لوحة تحكم بوسطة...",
+          "webhookSecret": "أدخل القيمة السرية..."
+        }
+      },
       "fields": {
         "apiKey": "مفتاح API",
         "accountId": "معرّف الحساب",
@@ -3406,7 +3441,23 @@
       "addProducts": "إضافة المنتجات",
       "productsTable": "جدول المنتجات",
       "notes": "الملاحظات",
-      "orderSummary": "ملخص الطلب"
+      "orderSummary": "ملخص الطلب",
+      "address": "العنوان"
+    },
+    "bosta": {
+      "sectionTitle": "بيانات الشحن (بوسطة)",
+      "loading": "جارٍ التحميل...",
+      "city": "المدينة",
+      "selectCity": "اختر المدينة",
+      "district": "الحي",
+      "selectDistrict": "اختر الحي",
+      "zone": "المنطقة",
+      "selectZone": "اختر المنطقة",
+      "pickupLocation": "موقع الاستلام",
+      "selectPickupLocation": "اختر موقع الاستلام",
+      "optional": "اختياري",
+      "defaultLocation": "الموقع الافتراضي",
+      "pickupLocationNote": "إذا لم تختر موقعاً، سيُستخدم موقع الاستلام الافتراضي المُعيَّن في بوسطة تلقائياً."
     },
     "fields": {
       "store": "المتجر",
@@ -3434,6 +3485,7 @@
       "alternativePhone": "رقم هاتف إضافي (اختياري)",
       "email": "example@email.com",
       "address": "أدخل العنوان الكامل",
+      "bostaAddress": "أدخل العنوان",
       "city": "أدخل المدينة",
       "area": "أدخل المنطقة",
       "landmark": "مثال: بجوار مسجد النور",
@@ -3483,7 +3535,10 @@
       "addressRequired": "العنوان مطلوب",
       "cityRequired": "المدينة مطلوبة",
       "paymentMethodRequired": "طريقة الدفع مطلوبة",
-      "itemsRequired": "يجب إضافة منتج واحد على الأقل"
+      "itemsRequired": "يجب إضافة منتج واحد على الأقل",
+      "districtRequired": "يرجى اختيار المنطقة / الحي",
+      "zoneRequired": "يرجى اختيار الحي الفرعي / الزون",
+      "locationRequired": "يرجى اختيار موقع الاستلام (المستودع)"
     },
     "messages": {
       "createSuccess": "تم إنشاء الطلب بنجاح",

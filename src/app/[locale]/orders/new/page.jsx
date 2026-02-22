@@ -1,8 +1,8 @@
 // app/[locale]/orders/new/page.jsx
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, Trash2, Plus, Minus, Loader2 } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -26,19 +26,27 @@ import { useLocale, useTranslations } from "next-intl";
 import api from "@/utils/api";
 import { ProductSkuSearchPopover } from "@/components/molecules/ProductSkuSearchPopover";
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────────────────
 function normalizeAxiosError(err) {
-	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? 'Unexpected error';
-	return Array.isArray(msg) ? msg.join(', ') : String(msg);
+	const msg =
+		err?.response?.data?.message ??
+		err?.response?.data?.error ??
+		err?.message ??
+		"Unexpected error";
+	return Array.isArray(msg) ? msg.join(", ") : String(msg);
 }
 
-
-// ✅ Validation schema
+// ─────────────────────────────────────────────────────────────────────────────
+// Validation schema factory
+// ─────────────────────────────────────────────────────────────────────────────
 const createSchema = (t) =>
 	yup.object({
 		customerName: yup.string().required(t("validation.customerNameRequired")),
 		phoneNumber: yup.string().required(t("validation.phoneNumberRequired")),
-		// alternativePhone: yup.string().optional(),
 		email: yup.string().email(t("validation.invalidEmail")).optional(),
+		// city & area are always present in the payload (auto-filled for Bosta)
 		address: yup.string().required(t("validation.addressRequired")),
 		city: yup.string().required(t("validation.cityRequired")),
 		area: yup.string().optional(),
@@ -64,25 +72,387 @@ const createSchema = (t) =>
 			.min(1, t("validation.itemsRequired")),
 	});
 
-export default function CreateOrderPageComplete({ isEditMode = false, existingOrder = null, orderId = null }) {
+// ─────────────────────────────────────────────────────────────────────────────
+// Shared field styles
+// ─────────────────────────────────────────────────────────────────────────────
+const INPUT_CLS = "rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50";
+const SELECT_CLS = "w-full rounded-xl !h-[50px] bg-[#fafafa] dark:bg-slate-800/50";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section wrapper
+// ─────────────────────────────────────────────────────────────────────────────
+function SectionCard({ title, badge, children, delay = 0 }) {
+	return (
+		<motion.div
+			className="bg-card"
+			initial={{ opacity: 0, x: -20 }}
+			animate={{ opacity: 1, x: 0 }}
+			transition={{ delay }}
+		>
+			<div className="flex items-center gap-3 mb-4">
+				<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200">{title}</h3>
+				{badge}
+			</div>
+			{children}
+		</motion.div>
+	);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reusable Select with loading state
+// ─────────────────────────────────────────────────────────────────────────────
+function GeoSelect({ label, required, value, onValueChange, items, isLoading, placeholder, disabled, hint, nameKey = "nameEn" }) {
+	return (
+		<div className="space-y-2">
+			<div className="flex items-center gap-2">
+				<Label className="text-sm text-gray-600 dark:text-slate-300">
+					{label}{required && <span className="text-red-500 ml-0.5">*</span>}
+				</Label>
+			</div>
+			<Select
+				value={value || ""}
+				onValueChange={onValueChange}
+				disabled={disabled || isLoading}
+			>
+				<SelectTrigger className={SELECT_CLS}>
+					{isLoading ? (
+						<span className="flex items-center gap-2 text-muted-foreground text-sm">
+							<Loader2 size={14} className="animate-spin" />
+							جارٍ التحميل...
+						</span>
+					) : (
+						<SelectValue placeholder={placeholder} />
+					)}
+				</SelectTrigger>
+				<SelectContent>
+					{items.map((item) => (
+						<SelectItem key={item.id} value={String(item.id)}>
+							{item[nameKey] || item.nameEn || item.id}
+						</SelectItem>
+					))}
+				</SelectContent>
+			</Select>
+			{hint && <p className="text-[11px] text-muted-foreground leading-snug">{hint}</p>}
+		</div>
+	);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Address section — Bosta mode (selects) vs Normal mode (text inputs)
+// ─────────────────────────────────────────────────────────────────────────────
+function AddressSection({
+	t,
+	locale,
+	isBosta,
+	// react-hook-form
+	control,
+	errors,
+	setValue,
+	// Bosta geo
+	bostaMeta,
+	onBostaChange,
+	bostaCities,
+	bostaZones,
+	bostaDistricts,
+	bostaLoading,
+	// Bosta validation errors
+	bostaErrors,
+}) {
+	const nameKey = locale === "ar" ? "nameAr" : "nameEn";
+	// Derived: districts filtered by selected zone (parentId === zoneId)
+	const filteredDistricts = useMemo(
+		() => bostaDistricts.filter((d) => d.parentId === bostaMeta.zoneId),
+		[bostaDistricts, bostaMeta.zoneId]
+	);
+
+	// When user picks a city/zone/district — auto-fill the hidden RHF fields
+	const handleCityChange = useCallback(
+		(cityId) => {
+			onBostaChange("cityId", cityId);
+			onBostaChange("zoneId", "");
+			onBostaChange("districtId", "");
+			const city = bostaCities.find((c) => String(c.id) === cityId);
+			if (city) setValue("city", city[nameKey] || city.nameEn, { shouldValidate: true });
+			setValue("area", "", { shouldValidate: false });
+		},
+		[bostaCities, nameKey, onBostaChange, setValue]
+	);
+
+	const handleZoneChange = useCallback(
+		(zoneId) => {
+			onBostaChange("zoneId", zoneId);
+			onBostaChange("districtId", "");
+			// rebuild area: zone name (district will be appended later)
+			const zone = bostaZones.find((z) => String(z.id) === zoneId);
+			if (zone) setValue("area", zone[nameKey] || zone.nameEn, { shouldValidate: false });
+		},
+		[bostaZones, nameKey, onBostaChange, setValue]
+	);
+
+	const handleDistrictChange = useCallback(
+		(districtId) => {
+			onBostaChange("districtId", districtId);
+			const zone = bostaZones.find((z) => String(z.id) === bostaMeta.zoneId);
+			const district = filteredDistricts.find((d) => String(d.id) === districtId);
+
+			const zonePart = zone?.[nameKey] || zone?.nameEn
+			const distinctPart = district?.[nameKey] || district?.nameEn
+			if (distinctPart != zonePart) {
+
+				const parts = [zonePart, distinctPart]
+					.filter(Boolean)
+					.join(", ");
+				setValue("area", parts, { shouldValidate: false });
+			} else {
+				setValue("area", zonePart, { shouldValidate: false });
+			}
+		},
+		[bostaZones, filteredDistricts, bostaMeta.zoneId, nameKey, onBostaChange, setValue]
+	);
+
+	// ── Bosta mode ──────────────────────────────────────────────────────────
+	if (isBosta) {
+		return (
+			<AnimatePresence mode="wait">
+				<motion.div
+					key="bosta"
+					initial={{ opacity: 0, y: 8 }}
+					animate={{ opacity: 1, y: 0 }}
+					exit={{ opacity: 0, y: -8 }}
+					transition={{ duration: 0.2 }}
+					className="grid grid-cols-1 md:grid-cols-2 gap-4"
+				>
+					{/* City */}
+					<div className="space-y-2">
+						<GeoSelect
+							label={t("bosta.city")}
+							required
+							nameKey={nameKey}
+							value={bostaMeta.cityId}
+							onValueChange={handleCityChange}
+							items={bostaCities.filter((c) => c.dropOff)}
+							isLoading={bostaLoading.cities}
+							placeholder={t("bosta.selectCity")}
+						/>
+						{bostaErrors?.cityId && (
+							<p className="text-xs text-red-500">{bostaErrors.cityId}</p>
+						)}
+					</div>
+
+					{/* Zone */}
+					<div className="space-y-2">
+						<GeoSelect
+							label={t("bosta.zone")}
+							required
+							nameKey={nameKey}
+							value={bostaMeta.zoneId}
+							onValueChange={handleZoneChange}
+							items={bostaZones.filter((z) => z.dropOff)}
+							isLoading={bostaLoading.zones}
+							placeholder={t("bosta.selectZone")}
+							disabled={!bostaMeta.cityId}
+						/>
+						{bostaErrors?.zoneId && (
+							<p className="text-xs text-red-500">{bostaErrors.zoneId}</p>
+						)}
+					</div>
+
+					{/* District — filtered by chosen zone */}
+					<div className="space-y-2">
+						<GeoSelect
+							label={t("bosta.district")}
+							required
+							nameKey={nameKey}
+							value={bostaMeta.districtId}
+							onValueChange={handleDistrictChange}
+							items={filteredDistricts.filter((d) => d.dropOff)}
+							isLoading={bostaLoading.districts}
+							placeholder={t("bosta.selectDistrict")}
+							disabled={!bostaMeta.zoneId}
+						/>
+						{bostaErrors?.districtId && (
+							<p className="text-xs text-red-500">{bostaErrors.districtId}</p>
+						)}
+					</div>
+
+					{/* Landmark */}
+					<div className="space-y-2">
+						<Label className="text-sm text-gray-600 dark:text-slate-300">
+							{t("fields.landmark")}
+						</Label>
+						<Controller
+							name="landmark"
+							control={control}
+							render={({ field }) => (
+								<Input
+									{...field}
+									placeholder={t("placeholders.landmark")}
+									className={INPUT_CLS}
+								/>
+							)}
+						/>
+					</div>
+
+					{/* Address — full width */}
+					<div className="md:col-span-2 space-y-2">
+						<Label className="text-sm text-gray-600 dark:text-slate-300">
+							{t("fields.address")} *
+						</Label>
+						<Controller
+							name="address"
+							control={control}
+							render={({ field }) => (
+								<Textarea
+									{...field}
+									placeholder={t("placeholders.bostaAddress")}
+									className="rounded-xl min-h-[80px] bg-[#fafafa] dark:bg-slate-800/50"
+								/>
+							)}
+						/>
+						{errors.address && (
+							<p className="text-xs text-red-500">{errors.address.message}</p>
+						)}
+					</div>
+
+					{/* Hidden: city & area — auto-filled, not shown */}
+					<input type="hidden" {...control.register?.("city")} />
+					<input type="hidden" {...control.register?.("area")} />
+				</motion.div>
+			</AnimatePresence>
+		);
+	}
+
+	// ── Normal mode ─────────────────────────────────────────────────────────
+	return (
+		<AnimatePresence mode="wait">
+			<motion.div
+				key="normal"
+				initial={{ opacity: 0, y: 8 }}
+				animate={{ opacity: 1, y: 0 }}
+				exit={{ opacity: 0, y: -8 }}
+				transition={{ duration: 0.2 }}
+				className="grid grid-cols-1 md:grid-cols-2 gap-4"
+			>
+				{/* City */}
+				<div className="space-y-2">
+					<Label className="text-sm text-gray-600 dark:text-slate-300">
+						{t("fields.city")} *
+					</Label>
+					<Controller
+						name="city"
+						control={control}
+						render={({ field }) => (
+							<Input {...field} placeholder={t("placeholders.city")} className={INPUT_CLS} />
+						)}
+					/>
+					{errors.city && <p className="text-xs text-red-500">{errors.city.message}</p>}
+				</div>
+
+				{/* Area */}
+				<div className="space-y-2">
+					<Label className="text-sm text-gray-600 dark:text-slate-300">
+						{t("fields.area")}
+					</Label>
+					<Controller
+						name="area"
+						control={control}
+						render={({ field }) => (
+							<Input {...field} placeholder={t("placeholders.area")} className={INPUT_CLS} />
+						)}
+					/>
+				</div>
+
+				{/* Address — full width */}
+				<div className="md:col-span-2 space-y-2">
+					<Label className="text-sm text-gray-600 dark:text-slate-300">
+						{t("fields.address")} *
+					</Label>
+					<Controller
+						name="address"
+						control={control}
+						render={({ field }) => (
+							<Textarea
+								{...field}
+								placeholder={t("placeholders.address")}
+								className="rounded-xl min-h-[80px] bg-[#fafafa] dark:bg-slate-800/50"
+							/>
+						)}
+					/>
+					{errors.address && (
+						<p className="text-xs text-red-500">{errors.address.message}</p>
+					)}
+				</div>
+
+				{/* Landmark — full width */}
+				<div className="md:col-span-2 space-y-2">
+					<Label className="text-sm text-gray-600 dark:text-slate-300">
+						{t("fields.landmark")}
+					</Label>
+					<Controller
+						name="landmark"
+						control={control}
+						render={({ field }) => (
+							<Input {...field} placeholder={t("placeholders.landmark")} className={INPUT_CLS} />
+						)}
+					/>
+				</div>
+			</motion.div>
+		</AnimatePresence>
+	);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Main Page Component
+// ─────────────────────────────────────────────────────────────────────────────
+export default function CreateOrderPageComplete({
+	isEditMode = false,
+	existingOrder = null,
+	orderId = null,
+}) {
 	const navigate = useRouter();
 	const locale = useLocale();
 	const isRTL = locale === "ar";
+	const tShipping = useTranslations("shipping");
 	const t = useTranslations("createOrder");
 
 	const [loading, setLoading] = useState(false);
 	const [selectedSkus, setSelectedSkus] = useState([]);
-	const [initialLoading, setInitialLoading] = useState(isEditMode && !existingOrder);
+	const [initialLoading] = useState(isEditMode && !existingOrder);
 
+	// ── Shipping companies & stores ─────────────────────────────────────────
+	const [shippingCompanies, setShippingCompanies] = useState([]);
+	const [stores, setStores] = useState([]);
+
+	// ── Bosta geo state ─────────────────────────────────────────────────────
+	const [bostaMeta, setBostaMeta] = useState({
+		cityId: "",
+		zoneId: "",
+		districtId: "",
+		locationId: "",
+	});
+	const [bostaErrors, setBostaErrors] = useState({});
+
+	const [bostaCities, setBostaCities] = useState([]);
+	const [bostaZones, setBostaZones] = useState([]);
+	const [bostaDistricts, setBostaDistricts] = useState([]);
+	const [bostaLocations, setBostaLocations] = useState([]);
+
+	const [bostaLoading, setBostaLoading] = useState({
+		cities: false,
+		zones: false,
+		districts: false,
+		locations: false,
+	});
+
+	// ── Schema ──────────────────────────────────────────────────────────────
 	const schema = useMemo(() => createSchema(t), [t]);
 
-	// Prepare default values based on edit mode
-	const getDefaultValues = () => {
+	// ── Default values ──────────────────────────────────────────────────────
+	const getDefaultValues = useCallback(() => {
 		if (isEditMode && existingOrder) {
 			return {
 				customerName: existingOrder.customerName || "",
 				phoneNumber: existingOrder.phoneNumber || "",
-				// alternativePhone: existingOrder.alternativePhone || "",
 				email: existingOrder.email || "",
 				address: existingOrder.address || "",
 				city: existingOrder.city || "",
@@ -90,28 +460,30 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 				landmark: existingOrder.landmark || "",
 				paymentMethod: existingOrder.paymentMethod || "cod",
 				paymentStatus: existingOrder.paymentStatus || "pending",
-				shippingCompanyId: existingOrder.shippingCompany?.id ? String(existingOrder.shippingCompany.id) : "",
+				shippingCompanyId: existingOrder.shippingCompany?.id
+					? String(existingOrder.shippingCompany.id)
+					: "",
 				storeId: existingOrder.storeId ? String(existingOrder.storeId) : "",
 				shippingCost: existingOrder.shippingCost || 0,
 				discount: existingOrder.discount || 0,
 				deposit: existingOrder.deposit || 0,
 				notes: existingOrder.notes || "",
 				customerNotes: existingOrder.customerNotes || "",
-				items: existingOrder.items?.map((item) => ({
-					variantId: item.variant?.id || item.variantId,
-					productName: item.variant?.product?.name || item.productName || "",
-					sku: item.variant?.sku || item.sku || "",
-					attributes: item.variant?.attributes || item.attributes || {},
-					quantity: item.quantity || 1,
-					unitPrice: item.unitPrice || 0,
-					unitCost: item.unitCost || item.unitPrice || 0,
-				})) || [],
+				items:
+					existingOrder.items?.map((item) => ({
+						variantId: item.variant?.id || item.variantId,
+						productName: item.variant?.product?.name || item.productName || "",
+						sku: item.variant?.sku || item.sku || "",
+						attributes: item.variant?.attributes || item.attributes || {},
+						quantity: item.quantity || 1,
+						unitPrice: item.unitPrice || 0,
+						unitCost: item.unitCost || item.unitPrice || 0,
+					})) || [],
 			};
 		}
 		return {
 			customerName: "",
 			phoneNumber: "",
-			// alternativePhone: "",
 			email: "",
 			address: "",
 			city: "",
@@ -128,8 +500,10 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 			customerNotes: "",
 			items: [],
 		};
-	};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isEditMode, existingOrder]);
 
+	// ── RHF ─────────────────────────────────────────────────────────────────
 	const {
 		control,
 		handleSubmit,
@@ -142,89 +516,212 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 		defaultValues: getDefaultValues(),
 	});
 
-	// Update form when existingOrder changes
+	const watchedItems = watch("items");
+	const watchedShippingCost = watch("shippingCost");
+	const watchedDiscount = watch("discount");
+	const watchedDeposit = watch("deposit");
+	const watchedShippingCompanyId = watch("shippingCompanyId");
+
+	// ── Derive isBosta ───────────────────────────────────────────────────────
+	const selectedCompany = useMemo(
+		() => shippingCompanies.find((s) => String(s.providerId) === String(watchedShippingCompanyId)),
+		[shippingCompanies, watchedShippingCompanyId]
+	);
+	const isBosta = useMemo(
+		() => selectedCompany?.provider?.toLowerCase() === "bosta",
+		[selectedCompany]
+	);
+
+	// ── Edit mode pre-fill ───────────────────────────────────────────────────
 	useEffect(() => {
 		if (isEditMode && existingOrder) {
-			const defaultValues = getDefaultValues();
-			reset(defaultValues);
-			// Set selected SKUs for edit mode
+			reset(getDefaultValues());
 			if (existingOrder.items?.length > 0) {
-				const skus = existingOrder.items.map((item) => ({
-					id: item.variant?.id || item.variantId,
-					label: item.variant?.product?.name || item.productName,
-					productName: item.variant?.product?.name || item.productName,
-					sku: item.variant?.sku || item.sku,
-					attributes: item.variant?.attributes || item.attributes || {},
-					price: item.unitPrice || 0,
-					cost: item.unitCost || item.unitPrice || 0,
-				}));
-				setSelectedSkus(skus);
+				setSelectedSkus(
+					existingOrder.items.map((item) => ({
+						id: item.variant?.id || item.variantId,
+						label: item.variant?.product?.name || item.productName,
+						productName: item.variant?.product?.name || item.productName,
+						sku: item.variant?.sku || item.sku,
+						attributes: item.variant?.attributes || item.attributes || {},
+						price: item.unitPrice || 0,
+						cost: item.unitCost || item.unitPrice || 0,
+					}))
+				);
+			}
+			if (existingOrder.shippingMetadata) {
+				setBostaMeta({
+					cityId: existingOrder.shippingMetadata.cityId ?? "",
+					zoneId: existingOrder.shippingMetadata.zoneId ?? "",
+					districtId: existingOrder.shippingMetadata.districtId ?? "",
+					locationId: existingOrder.shippingMetadata.locationId ?? "",
+				});
 			}
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [isEditMode, existingOrder]);
 
-	const watchedItems = watch("items");
-	const watchedShippingCost = watch("shippingCost");
-	const watchedDiscount = watch("discount");
-	const watchedDeposit = watch("deposit");
+	// ── Fetch shipping companies ──────────────────────────────────────────────
+	useEffect(() => {
+		api
+			.get("/shipping/integrations/active", { params: { limit: 200, isActive: true } })
+			.then((res) =>
+				setShippingCompanies(Array.isArray(res.data.integrations) ? res.data.integrations : [])
+			)
+			.catch((e) => console.error(`Shipping: ${normalizeAxiosError(e)}`));
+	}, []);
 
-	// ✅ Handle product selection
-	const handleSelectSku = (sku) => {
-		if (selectedSkus.some((s) => s.id === sku.id)) return;
+	// ── Fetch stores ─────────────────────────────────────────────────────────
+	useEffect(() => {
+		api
+			.get("/stores", { params: { limit: 200, isActive: true } })
+			.then((res) =>
+				setStores(Array.isArray(res.data.records) ? res.data.records : [])
+			)
+			.catch((e) => console.error(`Stores: ${normalizeAxiosError(e)}`));
+	}, []);
 
-		setSelectedSkus((prev) => [...prev, sku]);
+	useEffect(() => {
+		const initBosta = async () => {
+			if (!isBosta) {
+				setBostaCities([]);
+				setBostaZones([]);
+				setBostaDistricts([]);
+				setBostaLocations([]);
+				// setBostaMeta({ cityId: "", zoneId: "", districtId: "", locationId: "" });
+				// setValue("city", "");
+				// setValue("area", "");
+				return;
+			}
 
-		const newItem = {
-			variantId: sku.id,
-			productName: sku.label || sku.productName,
-			sku: sku.sku || sku.key,
-			attributes: sku.attributes || {},
-			quantity: 1,
-			unitPrice: sku.price || 0,
-			unitCost: sku.cost || sku.price || 0,
+			setBostaLoading((p) => ({ ...p, cities: true, locations: true }));
+
+			try {
+				// Run both requests in parallel for better performance
+				const [citiesRes, locationsRes] = await Promise.all([
+					api.get("/shipping/cities/bosta"),
+					api.get("/shipping/pickup-locations/bosta")
+				]);
+
+				setBostaCities(citiesRes.data?.records ?? []);
+				setBostaLocations(locationsRes.data?.records ?? []);
+			} catch (e) {
+				console.error(`Bosta Init Error: ${normalizeAxiosError(e)}`);
+			} finally {
+				setBostaLoading((p) => ({ ...p, cities: false, locations: false }));
+			}
 		};
 
-		setValue("items", [...watchedItems, newItem]);
-	};
+		initBosta();
+	}, [isBosta, setValue]);
 
-	// ✅ Handle product deletion
-	const handleDeleteProduct = (index) => {
-		const deletedItem = watchedItems[index];
-		const newItems = watchedItems.filter((_, i) => i !== index);
-		setValue("items", newItems);
-		setSelectedSkus((prev) => prev.filter((s) => s.id !== deletedItem.variantId));
-	};
+	useEffect(() => {
+		const fetchGeography = async () => {
+			if (!isBosta || !bostaMeta.cityId) {
+				setBostaZones([]);
+				setBostaDistricts([]);
+				return;
+			}
 
-	// ✅ Handle field changes
-	const handleProductFieldChange = (index, field, value) => {
-		const newItems = [...watchedItems];
-		newItems[index] = { ...newItems[index], [field]: value };
-		setValue("items", newItems);
-	};
+			setBostaLoading((p) => ({ ...p, zones: true, districts: true }));
 
-	// ✅ Handle quantity increment/decrement
-	const handleQuantityChange = (index, delta) => {
-		const newItems = [...watchedItems];
-		const newQuantity = Math.max(1, (newItems[index].quantity || 1) + delta);
-		newItems[index] = { ...newItems[index], quantity: newQuantity };
-		setValue("items", newItems);
-	};
+			try {
+				const [zonesRes, districtsRes] = await Promise.all([
+					api.get(`/shipping/zones/bosta/${bostaMeta.cityId}`),
+					api.get(`/shipping/districts/bosta/${bostaMeta.cityId}`)
+				]);
 
-	// ✅ Calculate summary
+				setBostaZones(zonesRes.data?.records ?? []);
+				setBostaDistricts(districtsRes.data?.records ?? []);
+			} catch (e) {
+				console.error(`Bosta Geo Error: ${normalizeAxiosError(e)}`);
+			} finally {
+				setBostaLoading((p) => ({ ...p, zones: false, districts: false }));
+			}
+		};
+
+		fetchGeography();
+	}, [isBosta, bostaMeta.cityId]);
+
+	// ── Bosta meta setter ────────────────────────────────────────────────────
+	const handleBostaChange = useCallback((field, value) => {
+		setBostaMeta((prev) => ({ ...prev, [field]: value }));
+	}, []);
+
+	// ── Validate Bosta required fields ───────────────────────────────────────
+	const validateBosta = useCallback(() => {
+		if (!isBosta) return true;
+		const errs = {};
+		if (!bostaMeta.cityId) errs.cityId = t("bosta.validation.cityRequired");
+		if (!bostaMeta.zoneId) errs.zoneId = t("bosta.validation.zoneRequired");
+		if (!bostaMeta.districtId) errs.districtId = t("bosta.validation.districtRequired");
+		setBostaErrors(errs);
+		return Object.keys(errs).length === 0;
+	}, [isBosta, bostaMeta, t]);
+
+	// ── Product handlers ─────────────────────────────────────────────────────
+	const handleSelectSku = useCallback(
+		(sku) => {
+			if (selectedSkus.some((s) => s.id === sku.id)) return;
+			setSelectedSkus((prev) => [...prev, sku]);
+			setValue("items", [
+				...watchedItems,
+				{
+					variantId: sku.id,
+					productName: sku.label || sku.productName,
+					sku: sku.sku || sku.key,
+					attributes: sku.attributes || {},
+					quantity: 1,
+					unitPrice: sku.price || 0,
+					unitCost: sku.cost || sku.price || 0,
+				},
+			]);
+		},
+		[selectedSkus, watchedItems, setValue]
+	);
+
+	const handleDeleteProduct = useCallback(
+		(index) => {
+			const deleted = watchedItems[index];
+			setValue(
+				"items",
+				watchedItems.filter((_, i) => i !== index)
+			);
+			setSelectedSkus((prev) => prev.filter((s) => s.id !== deleted.variantId));
+		},
+		[watchedItems, setValue]
+	);
+
+	const handleProductFieldChange = useCallback(
+		(index, field, value) => {
+			const updated = [...watchedItems];
+			updated[index] = { ...updated[index], [field]: value };
+			setValue("items", updated);
+		},
+		[watchedItems, setValue]
+	);
+
+	const handleQuantityChange = useCallback(
+		(index, delta) => {
+			const updated = [...watchedItems];
+			updated[index] = {
+				...updated[index],
+				quantity: Math.max(1, (updated[index].quantity || 1) + delta),
+			};
+			setValue("items", updated);
+		},
+		[watchedItems, setValue]
+	);
+
+	// ── Order summary ────────────────────────────────────────────────────────
 	const summary = useMemo(() => {
 		const productsTotal = watchedItems.reduce((sum, item) => {
-			const price = parseFloat(item.unitPrice) || 0;
-			const qty = parseFloat(item.quantity) || 0;
-			return sum + price * qty;
+			return sum + (parseFloat(item.unitPrice) || 0) * (parseFloat(item.quantity) || 0);
 		}, 0);
-
 		const shippingCost = parseFloat(watchedShippingCost) || 0;
 		const discount = parseFloat(watchedDiscount) || 0;
 		const deposit = parseFloat(watchedDeposit) || 0;
 		const finalTotal = productsTotal + shippingCost - discount;
-		const remaining = finalTotal - deposit;
-
 		return {
 			productCount: watchedItems.length,
 			productsTotal,
@@ -232,18 +729,21 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 			discount,
 			deposit,
 			finalTotal,
-			remaining,
+			remaining: finalTotal - deposit,
 		};
 	}, [watchedItems, watchedShippingCost, watchedDiscount, watchedDeposit]);
 
-	// ✅ Submit handler
+	// ── Submit ───────────────────────────────────────────────────────────────
 	const onSubmit = async (data) => {
+		if (!validateBosta()) {
+			toast.error(t("validation.fixErrors"));
+			return;
+		}
 		setLoading(true);
 		try {
 			const payload = {
 				customerName: data.customerName,
 				phoneNumber: data.phoneNumber,
-				// alternativePhone: data.alternativePhone || undefined,
 				email: data.email || undefined,
 				address: data.address,
 				city: data.city,
@@ -251,13 +751,26 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 				landmark: data.landmark || undefined,
 				paymentMethod: data.paymentMethod,
 				paymentStatus: data.paymentStatus || undefined,
-				shippingCompanyId: data.shippingCompanyId && data.shippingCompanyId !== 'none' ? data.shippingCompanyId : undefined,
-				storeId: data.storeId && data.storeId !== 'none' ? data.storeId : undefined,
+				shippingCompanyId:
+					data.shippingCompanyId && data.shippingCompanyId !== "none"
+						? data.shippingCompanyId
+						: undefined,
+				storeId:
+					data.storeId && data.storeId !== "none" ? data.storeId : undefined,
 				shippingCost: Number(data.shippingCost || 0),
 				discount: Number(data.discount || 0),
 				deposit: Number(data.deposit || 0),
 				notes: data.notes || undefined,
 				customerNotes: data.customerNotes || undefined,
+				shippingMetadata:
+					isBosta && bostaMeta.cityId
+						? {
+							cityId: bostaMeta.cityId || undefined,
+							zoneId: bostaMeta.zoneId || undefined,
+							districtId: bostaMeta.districtId || undefined,
+							locationId: bostaMeta.locationId || undefined,
+						}
+						: undefined,
 				items: data.items.map((item) => ({
 					variantId: item.variantId,
 					quantity: Number(item.quantity),
@@ -275,42 +788,17 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 			}
 			navigate.push("/orders");
 		} catch (error) {
-			console.error(`Failed to ${isEditMode ? 'update' : 'create'} order:`, error);
-			toast.error(error.response?.data?.message || (isEditMode ? t("messages.updateFailed") : t("messages.createFailed")));
+			console.error(`Failed to ${isEditMode ? "update" : "create"} order:`, error);
+			toast.error(
+				error.response?.data?.message ||
+				(isEditMode ? t("messages.updateFailed") : t("messages.createFailed"))
+			);
 		} finally {
 			setLoading(false);
 		}
 	};
 
-	const [shippingCompanies, setShippingCompanies] = useState([])
-	const [stores, setStores] = useState([]);
-	// 1. Fetch Shipping Companies
-	useEffect(() => {
-		const fetchShipping = async () => {
-			try {
-				const res = await api.get('/shipping', { params: { limit: 200, isActive: true } });
-				setShippingCompanies(Array.isArray(res.data?.records) ? res.data.records : []);
-			} catch (e) {
-				console.error(`Shipping: ${normalizeAxiosError(e)}`);
-			}
-		};
-		fetchShipping();
-	}, []);
-
-	// 2. Fetch Stores
-	useEffect(() => {
-		const fetchStores = async () => {
-			try {
-				const res = await api.get('/stores', { params: { limit: 200, isActive: true } });
-				setStores(Array.isArray(res.data.records) ? res.data.records : []);
-			} catch (e) {
-				console.error(`Stores: ${normalizeAxiosError(e)}`);
-			}
-		};
-		fetchStores();
-	}, []);
-
-	// Show loading state while initial data is being loaded
+	// ── Loading state ────────────────────────────────────────────────────────
 	if (initialLoading) {
 		return (
 			<div className="min-h-screen flex items-center justify-center">
@@ -321,6 +809,10 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 			</div>
 		);
 	}
+
+	// ─────────────────────────────────────────────────────────────────────────
+	// Render
+	// ─────────────────────────────────────────────────────────────────────────
 	return (
 		<motion.div
 			dir={isRTL ? "rtl" : "ltr"}
@@ -329,7 +821,7 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 			transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.15 }}
 			className="min-h-screen p-6"
 		>
-			{/* Header */}
+			{/* ── Header ── */}
 			<div className="bg-card mb-6">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-2 text-lg font-semibold">
@@ -352,11 +844,16 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 						{!isEditMode && (
 							<Button_ size="sm" label={t("actions.howToUse")} tone="white" variant="solid" />
 						)}
-
 						<Button_
 							onClick={handleSubmit(onSubmit)}
 							size="sm"
-							label={loading ? t("actions.saving") : (isEditMode ? t("actions.update") : t("actions.save"))}
+							label={
+								loading
+									? t("actions.saving")
+									: isEditMode
+										? t("actions.update")
+										: t("actions.save")
+							}
 							tone="purple"
 							variant="solid"
 							disabled={loading || initialLoading}
@@ -368,18 +865,13 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<div className="flex flex-col lg:flex-row gap-6">
 					<div className="flex-1 space-y-6">
-						{/* Customer Info */}
-						<motion.div
-							className="bg-card"
-							initial={{ opacity: 0, x: -20 }}
-							animate={{ opacity: 1, x: 0 }}
-							transition={{ delay: 0.2 }}
-						>
-							<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
-								{t("sections.customerInfo")}
-							</h3>
 
+						{/* ═══════════════════════════════════════════════
+						    CARD 1 — Customer Info
+						═══════════════════════════════════════════════ */}
+						<SectionCard title={t("sections.customerInfo")} delay={0.2}>
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+								{/* Customer Name */}
 								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
 										{t("fields.customerName")} *
@@ -391,7 +883,7 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 											<Input
 												{...field}
 												placeholder={t("placeholders.customerName")}
-												className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
+												className={INPUT_CLS}
 											/>
 										)}
 									/>
@@ -400,6 +892,7 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 									)}
 								</div>
 
+								{/* Phone Number */}
 								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
 										{t("fields.phoneNumber")} *
@@ -411,7 +904,7 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 											<Input
 												{...field}
 												placeholder={t("placeholders.phoneNumber")}
-												className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
+												className={INPUT_CLS}
 											/>
 										)}
 									/>
@@ -420,23 +913,7 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 									)}
 								</div>
 
-								{/* <div className="space-y-2">
-									<Label className="text-sm text-gray-600 dark:text-slate-300">
-										{t("fields.alternativePhone")}
-									</Label>
-									<Controller
-										name="alternativePhone"
-										control={control}
-										render={({ field }) => (
-											<Input
-												{...field}
-												placeholder={t("placeholders.alternativePhone")}
-												className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
-											/>
-										)}
-									/>
-								</div> */}
-
+								{/* Email */}
 								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
 										{t("fields.email")}
@@ -449,7 +926,7 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 												{...field}
 												type="email"
 												placeholder={t("placeholders.email")}
-												className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
+												className={INPUT_CLS}
 											/>
 										)}
 									/>
@@ -457,18 +934,22 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 										<p className="text-xs text-red-500">{errors.email.message}</p>
 									)}
 								</div>
+
+								{/* Store */}
 								<div className="space-y-2">
-									<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('fields.store')}</Label>
+									<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">
+										{t("fields.store")}
+									</Label>
 									<Controller
 										control={control}
 										name="storeId"
 										render={({ field }) => (
-											<Select value={field.value || ''} onValueChange={field.onChange}>
-												<SelectTrigger className="w-full rounded-xl !h-[50px] bg-[#fafafa] dark:bg-slate-800/50">
-													<SelectValue placeholder={t('placeholders.store')} />
+											<Select value={field.value || ""} onValueChange={field.onChange}>
+												<SelectTrigger className={SELECT_CLS}>
+													<SelectValue placeholder={t("placeholders.store")} />
 												</SelectTrigger>
 												<SelectContent>
-													<SelectItem value="none">{t('common.none')}</SelectItem>
+													<SelectItem value="none">{t("common.none")}</SelectItem>
 													{stores.map((s) => (
 														<SelectItem key={s.id} value={String(s.id)}>
 															{s.label ?? s.name ?? `#${s.id}`}
@@ -479,95 +960,15 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 										)}
 									/>
 								</div>
-
-								<div className="space-y-2">
-									<Label className="text-sm text-gray-600 dark:text-slate-300">
-										{t("fields.city")} *
-									</Label>
-									<Controller
-										name="city"
-										control={control}
-										render={({ field }) => (
-											<Input
-												{...field}
-												placeholder={t("placeholders.city")}
-												className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
-											/>
-										)}
-									/>
-									{errors.city && (
-										<p className="text-xs text-red-500">{errors.city.message}</p>
-									)}
-								</div>
-
-								<div className="space-y-2">
-									<Label className="text-sm text-gray-600 dark:text-slate-300">
-										{t("fields.area")}
-									</Label>
-									<Controller
-										name="area"
-										control={control}
-										render={({ field }) => (
-											<Input
-												{...field}
-												placeholder={t("placeholders.area")}
-												className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
-											/>
-										)}
-									/>
-								</div>
-
-								<div className="md:col-span-2 space-y-2">
-									<Label className="text-sm text-gray-600 dark:text-slate-300">
-										{t("fields.address")} *
-									</Label>
-									<Controller
-										name="address"
-										control={control}
-										render={({ field }) => (
-											<Textarea
-												{...field}
-												placeholder={t("placeholders.address")}
-												className="rounded-xl min-h-[80px] bg-[#fafafa] dark:bg-slate-800/50"
-											/>
-										)}
-									/>
-									{errors.address && (
-										<p className="text-xs text-red-500">{errors.address.message}</p>
-									)}
-								</div>
-
-								<div className="md:col-span-2 space-y-2">
-									<Label className="text-sm text-gray-600 dark:text-slate-300">
-										{t("fields.landmark")}
-									</Label>
-									<Controller
-										name="landmark"
-										control={control}
-										render={({ field }) => (
-											<Input
-												{...field}
-												placeholder={t("placeholders.landmark")}
-												className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
-											/>
-										)}
-									/>
-								</div>
 							</div>
-						</motion.div>
+						</SectionCard>
 
-						{/* Payment & Shipping */}
-						<motion.div
-							className="bg-card"
-							initial={{ opacity: 0, x: -20 }}
-							animate={{ opacity: 1, x: 0 }}
-							transition={{ delay: 0.25 }}
-						>
-							<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
-								{t("sections.paymentShipping")}
-							</h3>
-
+						{/* ═══════════════════════════════════════════════
+						    CARD 2 — Payment & Shipping
+						═══════════════════════════════════════════════ */}
+						<SectionCard title={t("sections.paymentShipping")} delay={0.25}>
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+								{/* Payment Method */}
 								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
 										{t("fields.paymentMethod")} *
@@ -594,6 +995,7 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 									)}
 								</div>
 
+								{/* Payment Status */}
 								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
 										{t("fields.paymentStatus")}
@@ -616,22 +1018,26 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 									/>
 								</div>
 
-
+								{/* Shipping Company */}
 								<div className="space-y-2">
-									<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('fields.shippingCompany')}</Label>
+									<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">
+										{t("fields.shippingCompany")}
+									</Label>
 									<Controller
 										control={control}
 										name="shippingCompanyId"
 										render={({ field }) => (
-											<Select value={field.value || ''} onValueChange={field.onChange}>
-												<SelectTrigger className="w-full rounded-xl !h-[50px] bg-[#fafafa] dark:bg-slate-800/50">
-													<SelectValue placeholder={t('placeholders.shippingCompany')} />
+											<Select value={field.value || ""} onValueChange={field.onChange}>
+												<SelectTrigger className={SELECT_CLS}>
+													<SelectValue placeholder={t("placeholders.shippingCompany")} />
 												</SelectTrigger>
 												<SelectContent>
-													<SelectItem value="none">{t('common.none')}</SelectItem>
+													<SelectItem value="none">{t("common.none")}</SelectItem>
 													{shippingCompanies.map((s) => (
-														<SelectItem key={s.id} value={String(s.id)}>
-															{s?.label ?? s?.name ?? `#${s?.id}`}
+														<SelectItem key={s.providerId} value={String(s.providerId)}>
+															{tShipping(`providers.${s.provider.toLowerCase()}`, {
+																defaultValue: s.name,
+															})}
 														</SelectItem>
 													))}
 												</SelectContent>
@@ -640,6 +1046,7 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 									/>
 								</div>
 
+								{/* Shipping Cost */}
 								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
 										{t("fields.shippingCost")}
@@ -654,12 +1061,13 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 												min="0"
 												step="0.01"
 												placeholder="0.00"
-												className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
+												className={INPUT_CLS}
 											/>
 										)}
 									/>
 								</div>
 
+								{/* Discount */}
 								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
 										{t("fields.discount")}
@@ -674,12 +1082,13 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 												min="0"
 												step="0.01"
 												placeholder="0.00"
-												className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
+												className={INPUT_CLS}
 											/>
 										)}
 									/>
 								</div>
 
+								{/* Deposit */}
 								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
 										{t("fields.deposit")}
@@ -694,75 +1103,153 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 												min="0"
 												step="0.01"
 												placeholder="0.00"
-												className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
+												className={INPUT_CLS}
 											/>
 										)}
 									/>
 								</div>
-							</div>
-						</motion.div>
 
-						{/* Add Products */}
+								{/* Pickup Location — only for Bosta, optional */}
+								{isBosta && bostaLocations?.length > 1 && (
+									<div className="md:col-span-2 space-y-2">
+										<div className="flex items-center gap-2">
+											<Label className="text-sm text-gray-600 dark:text-slate-300">
+												{t("bosta.pickupLocation")}
+											</Label>
+											<span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400">
+												{t("bosta.optional")}
+											</span>
+										</div>
+
+										<><Select
+											value={bostaMeta.locationId || ""}
+											onValueChange={(v) =>
+												handleBostaChange("locationId", v === "none" ? "" : v)
+											}
+											disabled={bostaLoading.locations}
+										>
+											<SelectTrigger className={SELECT_CLS}>
+												{bostaLoading.locations ? (
+													<span className="flex items-center gap-2 text-muted-foreground text-sm">
+														<Loader2 size={14} className="animate-spin" />
+														جارٍ التحميل...
+													</span>
+												) : (
+													<SelectValue placeholder={t("bosta.selectPickupLocation")} />
+												)}
+											</SelectTrigger>
+											<SelectContent>
+												{/* <SelectItem value="none">{t("bosta.defaultLocation")}</SelectItem> */}
+												{bostaLocations.map((l) => (
+													<SelectItem key={l.id} value={String(l.id)}>
+														{locale === "ar" ? l.nameAr : l.nameEn}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+											<p className="text-[11px] text-muted-foreground leading-snug">
+												{t("bosta.pickupLocationNote")}
+											</p>
+										</>
+									</div>
+								)}
+							</div>
+						</SectionCard>
+
+						{/* ═══════════════════════════════════════════════
+						    CARD 3 — Address / Location
+						    - Bosta: city + zone + district selects
+						    - Normal: text inputs
+						═══════════════════════════════════════════════ */}
+						<SectionCard
+							title={t("sections.address")}
+							delay={0.3}
+							badge={
+								isBosta ? (
+									<span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800">
+										<span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+										Bosta
+									</span>
+								) : null
+							}
+						>
+							<AddressSection
+								t={t}
+								locale={locale}
+								isBosta={isBosta}
+								control={control}
+								errors={errors}
+								setValue={setValue}
+								bostaMeta={bostaMeta}
+								onBostaChange={handleBostaChange}
+								bostaCities={bostaCities}
+								bostaZones={bostaZones}
+								bostaDistricts={bostaDistricts}
+								bostaLoading={bostaLoading}
+								bostaErrors={bostaErrors}
+							/>
+						</SectionCard>
+
+						{/* ═══════════════════════════════════════════════
+						    CARD 4 — Add Products
+						═══════════════════════════════════════════════ */}
 						<motion.div
 							className="bg-card"
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.3 }}
+							transition={{ delay: 0.35 }}
 						>
 							<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
 								{t("sections.addProducts")}
 							</h3>
-
 							<ProductSkuSearchPopover
 								closeOnSelect={false}
 								handleSelectSku={handleSelectSku}
 								selectedSkus={selectedSkus}
 							/>
-							{errors.items && <p className="text-xs text-red-500 mt-2">{errors.items.message}</p>}
+							{errors.items && (
+								<p className="text-xs text-red-500 mt-2">{errors.items.message}</p>
+							)}
 						</motion.div>
 
-						{/* Products Table */}
+						{/* ═══════════════════════════════════════════════
+						    CARD 5 — Products Table
+						═══════════════════════════════════════════════ */}
 						{watchedItems.length > 0 && (
 							<motion.div
 								className="bg-card"
 								initial={{ opacity: 0, y: 20 }}
 								animate={{ opacity: 1, y: 0 }}
-								transition={{ delay: 0.35 }}
+								transition={{ delay: 0.4 }}
 							>
 								<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
 									{t("sections.productsTable")}
 								</h3>
-
 								<div className="overflow-x-auto">
 									<table className="w-full">
 										<thead>
 											<tr className="border-b border-gray-200 dark:border-slate-700">
-												<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
-													{t("table.sku")}
-												</th>
-												<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
-													{t("table.name")}
-												</th>
-												<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
-													{t("table.unitPrice")}
-												</th>
-												<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
-													{t("table.quantity")}
-												</th>
-												<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
-													{t("table.total")}
-												</th>
-												<th className="text-center p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
-													{t("table.actions")}
-												</th>
+												{[
+													t("table.sku"),
+													t("table.name"),
+													t("table.unitPrice"),
+													t("table.quantity"),
+													t("table.total"),
+													t("table.actions"),
+												].map((h, i) => (
+													<th
+														key={i}
+														className={`p-3 text-sm font-semibold text-gray-600 dark:text-slate-300 ${i === 5 ? "text-center" : "text-right"}`}
+													>
+														{h}
+													</th>
+												))}
 											</tr>
 										</thead>
 										<tbody>
 											{watchedItems.map((product, index) => {
 												const unitPrice = parseFloat(product.unitPrice) || 0;
 												const quantity = parseFloat(product.quantity) || 0;
-												const lineTotal = unitPrice * quantity;
-
 												return (
 													<tr
 														key={index}
@@ -775,10 +1262,8 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 															{product.productName}
 															{Object.keys(product.attributes || {}).length > 0 && (
 																<div className="text-xs text-gray-500 font-normal mt-1">
-																	{Object.entries(product.attributes).map(([key, value]) => (
-																		<span key={key} className="mr-2">
-																			{key}: {value}
-																		</span>
+																	{Object.entries(product.attributes).map(([k, v]) => (
+																		<span key={k} className="mr-2">{k}: {v}</span>
 																	))}
 																</div>
 															)}
@@ -827,7 +1312,7 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 															</div>
 														</td>
 														<td className="p-3 text-sm font-semibold text-green-600 dark:text-green-400">
-															{lineTotal.toFixed(2)} {t("currency")}
+															{(unitPrice * quantity).toFixed(2)} {t("currency")}
 														</td>
 														<td className="p-3 text-center">
 															<motion.button
@@ -849,17 +1334,18 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 							</motion.div>
 						)}
 
-						{/* Notes */}
+						{/* ═══════════════════════════════════════════════
+						    CARD 6 — Notes
+						═══════════════════════════════════════════════ */}
 						<motion.div
 							className="bg-card"
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.4 }}
+							transition={{ delay: 0.45 }}
 						>
 							<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
 								{t("sections.notes")}
 							</h3>
-
 							<div className="space-y-4">
 								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
@@ -877,7 +1363,6 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 										)}
 									/>
 								</div>
-
 								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
 										{t("fields.customerNotes")}
@@ -898,7 +1383,7 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 						</motion.div>
 					</div>
 
-					{/* Right Column - Summary */}
+					{/* ── Right column: Summary ── */}
 					<div className="w-full lg:w-[350px]">
 						<OrderSummary t={t} summary={summary} />
 					</div>
@@ -908,6 +1393,9 @@ export default function CreateOrderPageComplete({ isEditMode = false, existingOr
 	);
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Order Summary sidebar
+// ─────────────────────────────────────────────────────────────────────────────
 function OrderSummary({ t, summary }) {
 	return (
 		<motion.div
@@ -919,68 +1407,45 @@ function OrderSummary({ t, summary }) {
 			<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
 				{t("sections.orderSummary")}
 			</h3>
-
 			<div className="space-y-4">
 				<div className="flex items-center justify-between p-4 rounded-xl bg-blue-50 dark:bg-blue-950/20">
-					<span className="text-sm text-gray-600 dark:text-slate-300">
-						{t("summary.productCount")}
-					</span>
-					<span className="text-lg font-bold text-blue-600 dark:text-blue-400">
-						{summary.productCount}
-					</span>
+					<span className="text-sm text-gray-600 dark:text-slate-300">{t("summary.productCount")}</span>
+					<span className="text-lg font-bold text-blue-600 dark:text-blue-400">{summary.productCount}</span>
 				</div>
-
 				<div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-slate-800/50">
-					<span className="text-sm text-gray-600 dark:text-slate-300">
-						{t("summary.productsTotal")}
-					</span>
+					<span className="text-sm text-gray-600 dark:text-slate-300">{t("summary.productsTotal")}</span>
 					<span className="text-base font-semibold text-gray-700 dark:text-slate-200">
 						{summary.productsTotal.toFixed(2)} {t("currency")}
 					</span>
 				</div>
-
 				<div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-slate-800/50">
-					<span className="text-sm text-gray-600 dark:text-slate-300">
-						{t("summary.shippingCost")}
-					</span>
+					<span className="text-sm text-gray-600 dark:text-slate-300">{t("summary.shippingCost")}</span>
 					<span className="text-base font-semibold text-gray-700 dark:text-slate-200">
 						{summary.shippingCost.toFixed(2)} {t("currency")}
 					</span>
 				</div>
-
 				<div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-slate-800/50">
-					<span className="text-sm text-gray-600 dark:text-slate-300">
-						{t("summary.discount")}
-					</span>
+					<span className="text-sm text-gray-600 dark:text-slate-300">{t("summary.discount")}</span>
 					<span className="text-base font-semibold text-red-600 dark:text-red-400">
 						-{summary.discount.toFixed(2)} {t("currency")}
 					</span>
 				</div>
-
 				<div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-br from-primary/10 to-purple-500/10 border-2 border-primary/30">
-					<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
-						{t("summary.finalTotal")}
-					</span>
+					<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">{t("summary.finalTotal")}</span>
 					<span className="text-xl font-bold text-primary">
 						{summary.finalTotal.toFixed(2)} {t("currency")}
 					</span>
 				</div>
-
 				{summary.deposit > 0 && (
 					<>
 						<div className="flex items-center justify-between p-3 rounded-xl bg-blue-50 dark:bg-blue-950/20">
-							<span className="text-sm text-gray-600 dark:text-slate-300">
-								{t("summary.deposit")}
-							</span>
+							<span className="text-sm text-gray-600 dark:text-slate-300">{t("summary.deposit")}</span>
 							<span className="text-base font-semibold text-blue-600 dark:text-blue-400">
 								{summary.deposit.toFixed(2)} {t("currency")}
 							</span>
 						</div>
-
 						<div className="flex items-center justify-between p-4 rounded-xl bg-orange-50 dark:bg-orange-950/20 border-2 border-orange-200 dark:border-orange-900/50">
-							<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
-								{t("summary.remaining")}
-							</span>
+							<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">{t("summary.remaining")}</span>
 							<span className="text-xl font-bold text-orange-600 dark:text-orange-400">
 								{summary.remaining.toFixed(2)} {t("currency")}
 							</span>

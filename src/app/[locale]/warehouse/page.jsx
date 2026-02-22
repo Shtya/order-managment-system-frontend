@@ -55,7 +55,6 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import SwitcherTabs from "@/components/atoms/SwitcherTabs";
 import { Textarea } from "@/components/ui/textarea";
-import jsPDF from "jspdf";
 
 // Add Arabic font support for jsPDF
 if (typeof window !== "undefined") {

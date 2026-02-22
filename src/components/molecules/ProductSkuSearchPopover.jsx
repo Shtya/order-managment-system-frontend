@@ -104,7 +104,6 @@ export function ProductSkuSearchPopover({
 	closeOnOutsideClick = true,
 }) {
 
-	console.log(selectedSkus);
 	const t = useTranslations("productSearch");
 
 	const [open, setOpen] = useState(false);

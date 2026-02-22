@@ -558,6 +558,7 @@ function OrdersTableToolbar({
 
 // Filters Panel Component (keeping the same as before)
 function FiltersPanel({ value, onChange, onApply, stores = [], shippingCompanies = [], statuses = [] }) {
+	const tShipping = useTranslations("shipping");
 	const t = useTranslations("orders");
 
 	return (
@@ -714,8 +715,8 @@ function FiltersPanel({ value, onChange, onApply, stores = [], shippingCompanies
 							<SelectContent className="bg-card-select">
 								<SelectItem value="all">{t("filters.all")}</SelectItem>
 								{(shippingCompanies || []).map((c) => (
-									<SelectItem key={c.id ?? c.value} value={String(c.id ?? c.value)}>
-										{c.name ?? c.label}
+									<SelectItem key={c.providerId} value={String(c.providerId)}>
+										{tShipping(`providers.${c.provider.toLowerCase()}`, { defaultValue: c.name })}
 									</SelectItem>
 								))}
 							</SelectContent>
@@ -1926,11 +1927,12 @@ function OrdersTab({ stats, fetchStats, statsLoading }) {
 		try {
 			const [storesRes, shippingRes] = await Promise.all([
 				api.get('/lookups/stores', { params: { limit: 200, isActive: true } }),
-				api.get('/shipping-companies', { params: { limit: 200, isActive: true } }),
+				api.get('/shipping/integrations/active',),
 			]);
 
+			console.log(shippingRes.data)
 			setStoresList(Array.isArray(storesRes.data) ? storesRes.data : (storesRes.data?.records || []));
-			setShippingCompaniesList(Array.isArray(shippingRes.data?.records) ? shippingRes.data.records : (Array.isArray(shippingRes.data) ? shippingRes.data : []));
+			setShippingCompaniesList(Array.isArray(shippingRes.data.integrations) ? shippingRes.data.integrations : (Array.isArray(shippingRes.data) ? shippingRes.data : []));
 		} catch (e) {
 			console.error('Error fetching lookups', e);
 		}

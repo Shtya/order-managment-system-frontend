@@ -41,7 +41,7 @@ const PROVIDER_META = {
 			// { key: "accountId", type: "text", labelKey: "settings.fields.accountId", required: false },
 		],
 		guide: {
-			docsUrl: "https://docs.bosta.co",
+			docsUrl: "https://docs.bosta.co/docs/how-to/get-your-api-key",
 			steps: [
 				{
 					image: "/guide/bosta/step-img-0.png", // you can add it or leave placeholder
@@ -261,7 +261,7 @@ function ModalHeader({ icon: Icon, title, subtitle, onClose }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Settings Modal  — per-provider config fields
 // ─────────────────────────────────────────────────────────────────────────────
-function SettingsModal({ company, integrationStatus, onClose, onSaved }) {
+function SettingsModal({ company, onClose, onFirstSetup, onSaved }) {
 	const t = useTranslations("shipping");
 	const fields =
 		PROVIDER_META[company.code]?.configFields || [{ key: "apiKey", type: "password", labelKey: "settings.fields.apiKey", required: true }];
@@ -271,18 +271,26 @@ function SettingsModal({ company, integrationStatus, onClose, onSaved }) {
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState(null);
 	const [success, setSuccess] = useState(false);
+	const [integrationData, setIntegrationData] = useState(null);
+	const [loading, setLoading] = useState(true);
 
-	// useEffect(() => {
-
-	// 	const newValues = Object.fromEntries(
-	// 		fields.map((f) => {
-	// 			const existingValue = integrationStatus?.credentials?.[f.key];
-	// 			return [f.key, existingValue || ""];
-	// 		})
-	// 	);
-
-	// 	setValues(newValues);
-	// }, [integrationStatus, company.code]);
+	async function fetchSetup() {
+		setLoading(true);
+		setError(null);
+		try {
+			const { data } = await api.get("/shipping/integrations/status");
+			const entry = data?.integrations?.find((i) => i.provider === company.code);
+			setIntegrationData(entry)
+		} catch (e) {
+			// Uses the new localization keys we defined
+			setError(e?.response?.data?.message || t("settings.errorFetch"));
+		} finally {
+			setLoading(false);
+		}
+	}
+	useEffect(() => {
+		fetchSetup()
+	}, [company.code]);
 
 	const setValue = (key, val) => {
 		setValues((v) => ({ ...v, [key]: val }));
@@ -312,7 +320,13 @@ function SettingsModal({ company, integrationStatus, onClose, onSaved }) {
 			await api.post(`/shipping/providers/${company.code}/credentials`, { credentials });
 			setSuccess(true);
 			onSaved?.();
-			setTimeout(onClose, 900);
+
+
+			if (integrationData?.credentialsConfigured) {
+				setTimeout(onClose, 900);
+			} else {
+				setTimeout(onFirstSetup, 900);
+			}
 		} catch (e) {
 			console.log(e?.response?.data)
 			setError(e?.response?.data?.message || t("settings.error"));
@@ -339,9 +353,16 @@ function SettingsModal({ company, integrationStatus, onClose, onSaved }) {
 					</div>
 				</div>
 
-				<div className="space-y-4">
+				{loading && (
+					<div className="flex items-center justify-center py-8 text-[var(--muted-foreground)]">
+						<Loader2 size={22} className="animate-spin" />
+					</div>
+				)}
+
+
+				{integrationData && (<div className="space-y-4">
 					{fields.map((field) => {
-						const currentSavedValue = integrationStatus?.credentials?.[field.key];
+						const currentSavedValue = integrationData?.credentials?.[field.key];
 						return (
 							<div key={field.key} className="space-y-1.5">
 								<label className="text-sm font-medium text-[var(--card-foreground)] flex items-center gap-1.5">
@@ -373,16 +394,15 @@ function SettingsModal({ company, integrationStatus, onClose, onSaved }) {
 							</div>
 						)
 					})}
-				</div>
-
-				<p className="text-[11px] text-[var(--muted-foreground)]">{t("settings.securityNote")}</p>
+				</div>)}
 
 				{error && (
 					<div className="flex items-center gap-2 rounded-xl border border-red-500/25 bg-red-500/8 px-3.5 py-2.5 text-sm text-red-600 dark:text-red-400">
-						<AlertCircle size={14} className="flex-shrink-0" />
+						<AlertCircle size={14} />
 						{error}
 					</div>
 				)}
+				<p className="text-[11px] text-[var(--muted-foreground)]">{t("settings.securityNote")}</p>
 				{success && (
 					<div className="flex items-center gap-2 rounded-xl border border-emerald-500/25 bg-emerald-500/8 px-3.5 py-2.5 text-sm text-emerald-700 dark:text-emerald-400">
 						<Check size={14} className="flex-shrink-0" />
@@ -636,14 +656,11 @@ function UsageModal({ company, onClose }) {
 // Webhook Setup Modal (NEW)
 // -----------------------
 function WebhookModal({ company, onClose }) {
-	const t = useTranslations("shipping");
+	const t = useTranslations("shipping"); // or "webhook" based on your file structure
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [data, setData] = useState(null);
 	const [rotating, setRotating] = useState(false);
-	const locale = useLocale();
-
-	const isAr = locale?.startsWith("ar");
 
 	const fetchSetup = async () => {
 		setLoading(true);
@@ -652,7 +669,7 @@ function WebhookModal({ company, onClose }) {
 			const res = await api.get(`/shipping/providers/${company.code}/webhook-setup`);
 			setData(res.data);
 		} catch (e) {
-			setError(e?.response?.data?.message || "Failed to load webhook setup");
+			setError(e?.response?.data?.message || t("webhook.errorFetch"));
 		} finally {
 			setLoading(false);
 		}
@@ -660,7 +677,6 @@ function WebhookModal({ company, onClose }) {
 
 	useEffect(() => {
 		fetchSetup();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [company.code]);
 
 	const copy = async (txt) => {
@@ -676,7 +692,7 @@ function WebhookModal({ company, onClose }) {
 			await api.post(`/shipping/providers/${company.code}/webhook-setup/rotate-secret`, {});
 			await fetchSetup();
 		} catch (e) {
-			setError(e?.response?.data?.message || "Failed to rotate secret");
+			setError(e?.response?.data?.message || t("webhook.errorRotate"));
 		} finally {
 			setRotating(false);
 		}
@@ -684,17 +700,20 @@ function WebhookModal({ company, onClose }) {
 
 	return (
 		<ModalShell onClose={onClose} maxWidth="max-w-lg">
-			<ModalHeader icon={Webhook} title={isAr ? "إعداد Webhook" : "Webhook Setup"} subtitle={isAr ? "انسخ القيم وضعها في بوسطة" : "Copy these values into Bosta"} onClose={onClose} />
+			<ModalHeader
+				icon={Webhook}
+				title={t("webhook.title")}
+				subtitle={t("webhook.subtitle")}
+				onClose={onClose}
+			/>
 
 			<div className="p-6 space-y-5">
 				<div className="rounded-xl border border-[var(--border)] bg-[var(--muted)] p-3">
 					<p className="text-sm font-semibold text-[var(--card-foreground)] mb-1">
-						{isAr ? "متى يعمل؟" : "When does it trigger?"}
+						{t("webhook.triggerTitle")}
 					</p>
 					<p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-						{isAr
-							? "بوسطة سترسل POST إلى رابط الـ Webhook عند تغيّر حالة الشحنة (ليس عند الإنشاء)."
-							: "Bosta sends a POST request to your webhook URL when shipment status changes (not on creation)."}
+						{t("webhook.triggerDescription")}
 					</p>
 				</div>
 
@@ -704,17 +723,11 @@ function WebhookModal({ company, onClose }) {
 					</div>
 				)}
 
-				{error && (
-					<div className="flex items-center gap-2 rounded-xl border border-red-500/25 bg-red-500/8 px-3.5 py-2.5 text-sm text-red-600 dark:text-red-400">
-						<AlertCircle size={14} />
-						{error}
-					</div>
-				)}
 
 				{data && (
 					<div className="space-y-4">
 						<div className="space-y-1.5">
-							<label className="text-sm font-medium text-[var(--card-foreground)]">{isAr ? "Webhook URL" : "Webhook URL"}</label>
+							<label className="text-sm font-medium text-[var(--card-foreground)]">{t("webhook.urlLabel")}</label>
 							<div className="flex gap-2">
 								<input
 									readOnly
@@ -730,13 +743,13 @@ function WebhookModal({ company, onClose }) {
 								</button>
 							</div>
 							<p className="text-[11px] text-[var(--muted-foreground)]">
-								{isAr ? "ضع هذا الرابط في بوسطة داخل Webhook URL." : "Paste this URL into Bosta’s Webhook URL field."}
+								{t("webhook.urlHint")}
 							</p>
 						</div>
 
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 							<div className="space-y-1.5">
-								<label className="text-sm font-medium text-[var(--card-foreground)]">{isAr ? "اسم الهيدر" : "Header Name"}</label>
+								<label className="text-sm font-medium text-[var(--card-foreground)]">{t("webhook.headerName")}</label>
 								<div className="flex gap-2">
 									<input
 										readOnly
@@ -754,7 +767,7 @@ function WebhookModal({ company, onClose }) {
 							</div>
 
 							<div className="space-y-1.5">
-								<label className="text-sm font-medium text-[var(--card-foreground)]">{isAr ? "قيمة الهيدر (Secret)" : "Header Value (Secret)"}</label>
+								<label className="text-sm font-medium text-[var(--card-foreground)]">{t("webhook.headerValue")}</label>
 								<div className="flex gap-2">
 									<input
 										readOnly
@@ -774,27 +787,33 @@ function WebhookModal({ company, onClose }) {
 
 						<div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--muted)] p-3">
 							<p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-								{isAr
-									? "في بوسطة: ضع اسم الهيدر وقيمته في حقول Authorization Key (اختياري لكنه موصى به للأمان)."
-									: "In Bosta: set Authorization Key name/value (optional but recommended for security)."}
+								{t("webhook.securityHint")}
 							</p>
 							<button
 								onClick={rotate}
 								disabled={rotating}
-								className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all disabled:opacity-50"
+								className="flex items-center gap-2 text-nowrap px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all disabled:opacity-50"
 							>
 								{rotating ? <Loader2 size={14} className="animate-spin" /> : <RotateCcw size={14} />}
-								<span className="text-xs font-semibold">{isAr ? "تغيير السر" : "Rotate"}</span>
+								<span className="text-xs font-semibold">{t("webhook.rotate")}</span>
 							</button>
 						</div>
 					</div>
 				)}
 
+				{error && (
+					<div className="flex items-center gap-2 rounded-xl border border-red-500/25 bg-red-500/8 px-3.5 py-2.5 text-sm text-red-600 dark:text-red-400">
+						<AlertCircle size={14} />
+						{error}
+					</div>
+				)}
+
+
 				<div className="flex justify-end gap-2 pt-2">
-					<GhostBtn onClick={onClose}>{isAr ? "إغلاق" : "Close"}</GhostBtn>
+					<GhostBtn onClick={onClose}>{t("webhook.close")}</GhostBtn>
 					<a href="https://docs.bosta.co/docs/how-to/get-delivery-status-via-webhook/" target="_blank" rel="noopener noreferrer">
 						<PrimaryBtn>
-							<ExternalLink size={14} /> {isAr ? "دليل بوسطة" : "Bosta Docs"}
+							<ExternalLink size={14} /> {t("webhook.docs")}
 						</PrimaryBtn>
 					</a>
 				</div>
@@ -839,7 +858,7 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 	const t = useTranslations("shipping");
 	const [openModal, setOpenModal] = useState(null);
 	const [toggling, setToggling] = useState(false);
-
+	const meta = PROVIDER_META[company.code];
 	const isConfigured = integrationStatus?.credentialsConfigured ?? false;
 	const isActive = integrationStatus?.isActive ?? false;
 
@@ -891,8 +910,8 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 
 						<div className="flex flex-col items-end gap-1.5">
 							<button
-								onClick={handleToggle}
-								disabled={toggling || !isConfigured} // Disable if already toggling or not configured
+								onClick={isConfigured ? () => handleToggle() : () => setOpenModal("settings")}
+								disabled={toggling} // Disable if already toggling or not configured
 								title={!isConfigured ? t("card.configureFirst") : isActive ? t("card.disable") : t("card.enable")}
 								className="relative w-11 h-6 rounded-full border transition-all duration-300 focus:outline-none"
 								style={{
@@ -957,14 +976,13 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 						{t("card.settings")}
 					</button>
 
-					<button
-						onClick={() => setOpenModal("guide")}
+					<a href={meta?.guide?.docsUrl} target="_blank" rel="noopener noreferrer"
 						title={t("card.guideTitle")}
 						className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
 					>
 						<HelpCircle size={12} />
 						{t("card.guide")}
-					</button>
+					</a>
 
 					{/* NEW: Webhook setup */}
 					<button
@@ -1000,10 +1018,9 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 					<SettingsModal
 						key="settings"
 						company={company}
-						integrationStatus={integrationStatus}
 						onClose={() => setOpenModal(null)}
+						onFirstSetup={() => setOpenModal("webhook")}
 						onSaved={() => {
-							setOpenModal(null);
 							onRefreshStatus?.();
 						}}
 					/>
@@ -1063,7 +1080,7 @@ export default function ShippingCompaniesPage() {
 			const { data } = await api.get("/shipping/integrations/status");
 			const map = {};
 			(data?.integrations || []).forEach((item) => (map[item.provider] = item));
-			console.log(map)
+
 			setStatuses(map);
 		} catch (_) {
 		} finally {

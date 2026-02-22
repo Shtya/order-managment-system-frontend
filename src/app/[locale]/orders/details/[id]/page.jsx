@@ -26,6 +26,8 @@ import {
   ArrowLeftRight,
   ExternalLink,
   ImageIcon,
+  Building2,
+  Landmark,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -519,9 +521,10 @@ export function OrderDetailsPage({ order, loading }) {
               {order.email && (
                 <InfoRow icon={FileText} label={t("fields.email")} value={order.email} />
               )}
-              <InfoRow icon={MapPin} label={t("fields.city")} value={order.city} />
+              <InfoRow icon={Building2} label={t("fields.city")} value={order.city} />
+              {order.area && <InfoRow icon={MapPin} label={t("fields.area")} value={order.area} />}
               {order.landmark && (
-                <InfoRow icon={MapPin} label={t("fields.landmark")} value={order.landmark} />
+                <InfoRow icon={Landmark} label={t("fields.landmark")} value={order.landmark} />
               )}
             </div>
           </motion.div>

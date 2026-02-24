@@ -23,21 +23,7 @@ export function avatarSrc(url) {
 	return `${base.replace(/\/+$/, "")}/${url.replace(/^\/+/, "")}`;
 }
 
-/**
- * Reusable user/employee select with cursor pagination.
- * - Loads users via GET /users/list (cursor + limit).
- * - Shows each option as avatar + name.
- * - "Load more" at the end when there are more pages.
- *
- * @param {Object} props
- * @param {string} props.value - Selected user id (number or "all")
- * @param {function(user)} props.onSelect - Called with full user object when selected
- * @param {string} [props.placeholder] - Placeholder when none selected
- * @param {string} [props.className] - Trigger className
- * @param {string} [props.contentClassName] - Popover content className
- * @param {boolean} [props.allowAll] - If true, show "All" option that calls onSelect(null)
- * @param {string} [props.allLabel] - Label for "All" option when allowAll is true
- */
+
 export default function UserSelect({ value, onSelect, placeholder = "Select user", className, contentClassName, allowAll = false, allLabel = "All" }) {
 	const t = useTranslations("common");
 	const [users, setUsers] = useState([]);

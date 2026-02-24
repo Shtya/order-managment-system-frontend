@@ -345,7 +345,7 @@
     "products": "المنتجات",
     "newProduct": "منتج جديد",
     "newBundle": "حزمة جديدة",
-    "warehouse": "المستودع",
+    "warehouse": "المخزن",
     "newWarehouse": "مستودع جديد",
     "suppliers": "الموردون",
     "categories": "الفئات",
@@ -1566,236 +1566,180 @@
     }
   },
   "warehouse": {
-    "common": {
-      "cancel": "إلغاء",
-      "confirm": "تأكيد",
-      "close": "إغلاق",
-      "save": "حفظ",
-      "edit": "تعديل",
-      "delete": "حذف",
-      "search": "بحث",
-      "filter": "تصفية",
-      "export": "تصدير",
-      "import": "استيراد",
-      "loading": "جاري التحميل...",
-      "success": "نجاح",
-      "error": "خطأ",
-      "warning": "تحذير",
-      "info": "معلومات",
-      "yes": "نعم",
-      "no": "لا",
-      "all": "الكل",
-      "none": "لا شيء",
-      "select": "اختر",
-      "selected": "محدد",
-      "actions": "الإجراءات",
-      "status": "الحالة",
-      "date": "التاريخ",
-      "time": "الوقت",
-      "name": "الاسم",
-      "description": "الوصف",
-      "submit": "إرسال",
-      "reset": "إعادة تعيين",
-      "back": "رجوع",
-      "next": "التالي",
-      "previous": "السابق",
-      "first": "الأول",
-      "last": "الأخير"
-    },
     "flow": {
-      "title": "إدارة تدفق المستودع",
+      "title": "المستودع",
       "breadcrumb": {
         "home": "الرئيسية"
       },
-      "status": {
-        "pending": "قيد الانتظار",
-        "preparing": "قيد التحضير",
-        "prepared": "جاهز",
-        "distributed": "تم التوزيع",
-        "rejected": "مرفوض"
-      },
       "tabs": {
-        "all": "الكل",
-        "preparing": "قيد التحضير",
-        "prepared": "جاهز",
-        "distributed": "تم التوزيع",
-        "rejected": "مرفوض",
-        "logs": "السجلات"
+        "confirmed": "الطلبات المؤكدة",
+        "all": "جميع الطلبات",
+        "preparation": "التجهيز",
+        "shipping": "شركات الشحن",
+        "inventory": "المخزون",
+        "purchases": "المشتريات",
+        "treasury": "الخزينة",
+        "reports": "التقارير",
+        "analytics": "التحليلات",
+        "logs": "سجل العمليات"
       },
-      "stats": {
-        "total": "إجمالي الطلبات",
-        "preparing_": "قيد التحضير",
-        "prepared_": "جاهزة",
-        "rejected_": "مرفوضة",
-        "logs_": "السجلات",
-        "distributed_": "موزعة",
-        "preparing": {
-          "orders": "طلبات قيد التحضير",
-          "items": "منتجات متبقية",
-          "scanned": "تم مسحها",
-          "pending": "قيد الانتظار"
+      "confirmed": {
+        "title": "الطلبات المؤكدة",
+        "nestedTabs": {
+          "distributed": "موزع على شركات الشحن",
+          "undistributed": "بدون شركة شحن"
         },
-        "prepared": {
-          "orders": "طلبات جاهزة",
-          "items": "منتجات جاهزة",
-          "ready": "جاهز للتوزيع",
-          "total": "إجمالي المنتجات"
-        },
-        "rejected": {
-          "orders": "طلبات مرفوضة",
-          "items": "منتجات مرفوضة",
-          "today": "اليوم",
-          "total": "الإجمالي"
-        },
-        "logs": {
-          "success": "عمليات ناجحة",
-          "fail": "عمليات فاشلة",
-          "total": "إجمالي العمليات",
-          "rate": "معدل النجاح"
+        "distribution": {
+          "title": "توزيع الطلبات على شركة الشحن",
+          "subtitle": "اختر شركة الشحن والطلبات المراد توزيعها",
+          "selectCarrier": "شركة الشحن",
+          "carrierPlaceholder": "اختر شركة الشحن",
+          "selectOrders": "اختر الطلبات",
+          "selectAll": "اختر الكل",
+          "deselectAll": "إلغاء الكل",
+          "noOrders": "لا توجد طلبات متاحة للتوزيع",
+          "cancel": "إلغاء",
+          "distribute": "توزيع"
         },
         "distributed": {
-          "aramex": "أرامكس",
-          "smsa": "سمسا",
-          "dhl": "دي إتش إل",
-          "bosta": "بوستا"
+          "title": "الطلبات الموزعة",
+          "table": {
+            "code": "رقم الطلب",
+            "customer": "العميل",
+            "city": "المدينة",
+            "shippingCompany": "شركة الشحن",
+            "total": "الإجمالي",
+            "status": "الحالة",
+            "date": "التاريخ",
+            "actions": "الإجراءات"
+          },
+          "empty": {
+            "title": "لا توجد طلبات موزعة",
+            "description": "جميع الطلبات الموزعة على شركات الشحن ستظهر هنا"
+          },
+          "orderDetails": {
+            "title": "تفاصيل الطلب",
+            "customer": "العميل",
+            "phone": "الجوال",
+            "city": "المدينة",
+            "address": "العنوان",
+            "shippingCompany": "شركة الشحن",
+            "products": "المنتجات",
+            "total": "الإجمالي",
+            "paymentType": "طريقة الدفع",
+            "trackingCode": "رقم التتبع"
+          }
+        },
+        "undistributed": {
+          "title": "الطلبات بدون شركة شحن",
+          "table": {
+            "code": "رقم الطلب",
+            "customer": "العميل",
+            "city": "المدينة",
+            "products": "المنتجات",
+            "total": "الإجمالي",
+            "date": "التاريخ"
+          },
+          "empty": {
+            "title": "لا توجد طلبات بدون شركة شحن",
+            "description": "جميع الطلبات المؤكدة تم توزيعها على شركات الشحن"
+          },
+          "selectWarning": "يرجى اختيار طلب واحد أو أكثر للتوزيع على شركة الشحن"
         }
       },
-      "ensure": {
-        "toolbar": {
-          "searchPlaceholder": "ابحث عن طلب...",
-          "filter": "تصفية",
-          "distribute": "توزيع",
-          "export": "تصدير",
-          "exportDemo": "سيتم تصدير البيانات قريباً"
-        },
-        "filterDialog": {
-          "carrier": "شركة الشحن",
-          "date": "التاريخ",
-          "product": "المنتج",
-          "region": "المنطقة",
-          "sent": "حالة الإرسال",
-          "orderStatus": "حالة الطلب",
-          "all": "الكل",
-          "productPlaceholder": "ابحث عن منتج...",
-          "sentYes": "تم الإرسال",
-          "sentNo": "لم يتم الإرسال",
-          "clearAll": "مسح الكل"
-        },
-        "bulkBar": {
-          "selected": "{count} طلب محدد",
-          "clearSelection": "إلغاء التحديد"
-        },
-        "bulkActions": {
-          "distribute": "توزيع",
-          "reject": "رفض",
-          "rejectTitle": "تأكيد رفض الطلبات",
-          "rejectConfirm": "هل أنت متأكد من رفض {count} طلب؟",
-          "bulkRejected": "رفض جماعي"
-        },
+      "all": {
+        "title": "جميع الطلبات",
         "table": {
           "code": "رقم الطلب",
           "customer": "العميل",
-          "phone": "الهاتف",
-          "city": "المدينة",
-          "carrier": "شركة الشحن",
+          "location": "الموقع",
+          "products": "المنتجات",
+          "shipping": "الشحن",
+          "total": "الإجمالي",
           "status": "الحالة",
-          "actions": "الإجراءات",
-          "noCarrier": "غير محدد"
-        },
-        "actions": {
-          "startPrepare": "بدء التحضير",
-          "prepare": "تحضير",
-          "reject": "رفض",
-          "distribute": "توزيع",
-          "edit": "تعديل",
-          "view": "عرض",
-          "retry": "إعادة المحاولة",
-          "startedPreparing": "تم بدء تحضير الطلب",
-          "viewDetails": "عرض تفاصيل الطلب",
-          "retryOrder": "إعادة محاولة الطلب"
+          "date": "التاريخ",
+          "actions": "الإجراءات"
         },
         "empty": {
-          "title": "لا توجد طلبات",
-          "description": "لم يتم العثور على طلبات تطابق معايير البحث أو التصفية الخاصة بك"
-        },
+          "title": "لا توجد طلبات"
+        }
+      },
+      "preparation": {
+        "title": "تجهيز الطلبات",
         "prepareView": {
-          "title": "تحضير الطلب",
-          "subtitle": "قم بمسح جميع المنتجات لإكمال التحضير",
+          "title": "تجهيز الطلب",
+          "subtitle": "قم بمسح الباركود لتجهيز الطلب",
           "orderDetails": "تفاصيل الطلب",
           "customer": "العميل",
-          "phone": "الهاتف",
+          "phone": "الجوال",
           "city": "المدينة",
           "carrier": "شركة الشحن",
           "noCarrier": "غير محدد",
-          "step1Title": "الخطوة 1: مسح رمز الطلب",
-          "step1Subtitle": "ابدأ بمسح رمز الطلب للتحقق",
-          "scanOrderCode": "مسح رمز الطلب",
-          "scanOrderPlaceholder": "امسح رمز الطلب هنا...",
-          "scan": "مسح",
-          "expectedCode": "الرمز المتوقع",
-          "orderScanned": "تم مسح رمز الطلب بنجاح",
-          "wrongOrderCode": "رمز الطلب غير صحيح",
-          "codeMismatch": "الرمز الممسوح لا يطابق رمز الطلب",
-          "step2Title": "الخطوة 2: مسح المنتجات",
-          "step2Subtitle": "امسح كل منتج على حدة حتى اكتمال الطلب",
-          "scanItemSku": "مسح SKU المنتج",
-          "scanSkuPlaceholder": "امسح SKU المنتج هنا...",
+          "step1Title": "مسح رقم الطلب",
+          "step1Subtitle": "قم بمسح الباركود الخاص برقم الطلب للبدء",
+          "scanOrderPlaceholder": "امسح رقم الطلب",
+          "scanSkuPlaceholder": "امسح SKU المنتج",
+          "orderScanned": "تم مسح رقم الطلب بنجاح",
+          "wrongOrderCode": "رقم طلب غير صحيح",
+          "codeMismatch": "رقم الطلب لا يتطابق مع الطلب الحالي",
+          "skuNotFound": "المنتج غير موجود",
+          "skuNotInOrder": "هذا المنتج ليس ضمن الطلب",
+          "skuAlreadyComplete": "المنتج مكتمل بالفعل",
+          "qtyComplete": "الكمية المطلوبة تم مسحها بالكامل",
+          "scannedSuccess": "تم المسح بنجاح",
           "products": "المنتجات",
           "completed": "مكتمل",
           "progress": "التقدم",
           "complete": "مكتمل",
           "pending": "قيد الانتظار",
-          "scanLogs": "سجل عمليات المسح",
-          "noLogs": "لا توجد عمليات مسح بعد",
-          "skuNotFound": "SKU غير موجود",
-          "skuNotInOrder": "SKU غير موجود في هذا الطلب",
-          "skuAlreadyComplete": "SKU مكتمل بالفعل",
-          "qtyComplete": "الكمية المطلوبة مكتملة",
-          "scannedSuccess": "تم المسح بنجاح",
-          "markPrepared": "تحديد كجاهز",
-          "markedPrepared": "تم تحديد الطلب كجاهز",
-          "successTitle": "نجاح!",
-          "successMessage": "تم تحضير الطلب بنجاح وهو جاهز للتوزيع",
+          "scanLogs": "سجل المسح",
+          "noLogs": "لا توجد عمليات مسح",
+          "markPrepared": "تأكيد التجهيز",
+          "successTitle": "تم التجهيز بنجاح",
+          "successMessage": "تم تجهيز الطلب ونقله إلى قائمة الطلبات المجهزة",
           "close": "إغلاق"
-        },
-        "rejectDialog": {
-          "title": "رفض الطلب",
-          "scanOrderCode": "امسح رمز الطلب للتأكيد",
-          "reason": "سبب الرفض",
-          "reasonPlaceholder": "أدخل سبب رفض الطلب...",
-          "warning": "تحذير: سيتم نقل هذا الطلب إلى قائمة الطلبات المرفوضة",
-          "confirm": "تأكيد الرفض",
-          "rejected": "تم رفض الطلب"
-        },
-        "distributionDialog": {
-          "title": "توزيع الطلبات",
-          "subtitle": "حدد شركة الشحن والطلبات للتوزيع",
-          "selectedCount": "تم تحديد {count} طلب",
-          "selectCarrier": "اختر شركة الشحن",
-          "carrierPlaceholder": "اختر شركة الشحن...",
-          "selectOrders": "حدد الطلبات",
-          "selectAll": "تحديد الكل",
-          "deselectAll": "إلغاء تحديد الكل",
-          "noOrders": "لا توجد طلبات جاهزة للتوزيع",
-          "items": "منتجات",
-          "distribute": "توزيع",
-          "distributed": "تم توزيع الطلب"
         }
       },
+      "shipping": {
+        "title": "شركات الشحن",
+        "dialog": {
+          "addTitle": "إضافة شركة شحن",
+          "editTitle": "تعديل شركة شحن",
+          "name": "اسم الشركة",
+          "cities": "المدن"
+        }
+      },
+      "inventory": {
+        "title": "المخزون"
+      },
+      "purchases": {
+        "title": "المشتريات"
+      },
+      "treasury": {
+        "title": "الخزينة"
+      },
+      "reports": {
+        "title": "التقارير"
+      },
+      "analytics": {
+        "title": "التحليلات"
+      },
       "logs": {
+        "title": "سجل العمليات",
         "table": {
-          "id": "رقم العملية",
+          "id": "المعرف",
           "orderCode": "رقم الطلب",
+          "operationType": "نوع العملية",
           "carrier": "شركة الشحن",
           "employee": "الموظف",
           "result": "النتيجة",
+          "details": "التفاصيل",
           "date": "التاريخ",
           "actions": "الإجراءات"
         },
-        "printSuccess": " تقرير النجاح",
-        "printFail": " تقرير الفشل",
-        "empty": "لا توجد عمليات مسجلة",
-        "failReason": "فشل في العملية"
+        "printSuccess": "مستند نجاح",
+        "printFail": "مستند فشل",
+        "empty": "لا توجد عمليات"
       }
     }
   },
@@ -2904,6 +2848,21 @@
       "oldPrice": "السعر القديم",
       "newPrice": "السعر الجديد",
       "searchPlaceholder": "ابحث برقم الطلب الأصلي أو المستبدل أو اسم أو رقم هاتف العميل",
+      "stats": {
+        "pending": "بانتظار التأكيد",
+        "pending_confirmation": "بانتظار التأكيد",
+        "confirmed": "تم التأكيد",
+        "new": "طلبات جديدة",
+        "total": "إجمالي الطلبات",
+        "wrongNumber": "رقم خاطئ",
+        "duplicate": "مكرر",
+        "postponed": "مؤجل",
+        "delivered": "تم التسليم",
+        "inShipping": "قيد الشحن",
+        "waitingStock": "بانتظار المخزون",
+        "noAnswerShipping": "لا رد من الشحن",
+        "cancelled": "ملغي "
+      },
       "empty": {
         "title": "لا توجد طلبات استبدال",
         "desc": "ستظهر هنا طلبات الاستبدال عند إنشائها"
@@ -2928,7 +2887,8 @@
         "wrongSize": "مقاس خاطئ",
         "damaged": "منتج تالف",
         "wrongItem": "منتج خاطئ",
-        "other": "سبب آخر"
+        "other": "سبب آخر",
+        "reason": "سبب الاستبدال"
       },
       "table": {
         "originalProduct": "المنتج الأصلي",
@@ -3287,36 +3247,80 @@
     },
     "retrySettings": {
       "globalTitle": "إعدادات إعادة المحاولة",
-      "globalDescription": "إعدادات عامة لإعادة الاتصال والمتابعة التلقائية",
-      "notifyEmployee": "إشعار الموظف",
-      "notifyEmployeeDesc": "سيتم إرسال إشعار إلى الموظف عند إعادة المحاولة.",
-      "notifyAdmin": "إشعار المدير",
-      "notifyAdminDesc": "سيتم إرسال إشعار إلى المدير عند إعادة المحاولة.",
-      "notificationPreview": "معاينة الإشعار",
-      "notificationPreviewText": "سيتم إرسال إشعار فوري عند حدوث إعادة محاولة للطلب حسب الإعدادات المحددة أعلاه.",
+      "globalDescription": "تحكّم في آلية التواصل التلقائي مع العملاء وتوجيه الطلبات بعد انتهاء مهلة الرد",
       "tabs": {
         "general": "عام",
-        "automation": "أتمتة",
-        "notifications": "إشعارات"
+        "automation": "الأتمتة",
+        "shipping": "الشحن",
+        "notifications": "الإشعارات"
       },
-      "enableRetry": "تفعيل إعادة المحاولة",
-      "enableRetryDesc": "إعادة المحاولة تلقائيًا عند عدم الرد",
-      "maxRetries": "عدد المحاولات",
-      "maxRetriesDesc": "الحد الأقصى لعدد المحاولات",
-      "retryInterval": "الفاصل الزمني",
-      "retryIntervalDesc": "المدة بين كل محاولة",
+      "enableRetry": "تفعيل نظام إعادة المحاولة",
+      "enableRetryDesc": "عند عدم رد العميل، يقوم النظام تلقائياً بإعادة الاتصال به عدة مرات حتى يُستلم الطلب أو تُستنفد المحاولات",
+      "retryLimitsTitle": "حدود إعادة المحاولة",
+      "retryLimitsSubtitle": "كم مرة يحاول النظام، وكم يستريح بين كل محاولة وأخرى",
+      "maxRetries": "الحد الأقصى للمحاولات",
+      "maxRetriesDesc": "عدد المرات التي يحاول فيها النظام الاتصال بالعميل قبل أن يتوقف ويغيّر حالة الطلب (يُنصح بـ 3)",
+      "retryInterval": "الفاصل بين المحاولات",
+      "retryIntervalDesc": "عدد الدقائق التي ينتظرها النظام قبل إجراء المحاولة التالية",
       "minutes": "دقيقة",
-      "workingHours": "ساعات العمل",
-      "startTime": "من",
-      "endTime": "إلى",
-      "autoMoveStatus": "تغيير الحالة تلقائيًا",
-      "autoMoveStatusDesc": "نقل الطلب لحالة أخرى بعد فشل المحاولات",
-      "retryStatuses": "الحالات القابلة لإعادة المحاولة",
-      "selectStatus": "اختر حالة",
-      "retryStatusesDesc": "الحالات التي يتم فيها تطبيق منطق إعادة المحاولة",
-      "confirmationStatuses": "الحالات المسموح بها لفريق التأكيد",
-      "confirmationStatusesDesc": "الحالات التي يمكن لفريق التأكيد اختيارها عند معالجة الطلبات",
-      "selected": "محدد"
+      "workingHours": "العمل خلال ساعات محددة فقط",
+      "workingHoursDesc": "عند التفعيل، لن يُرسل النظام أي محاولات خارج نطاق الساعات المحددة — مفيد لتجنّب الإزعاج ليلاً",
+      "workingStart": "بداية دوام العمل",
+      "workingEnd": "نهاية دوام العمل",
+      "autoMoveTitle": "نقل الطلب تلقائياً بعد انتهاء المحاولات",
+      "autoMoveSubtitle": "إذا لم يستجب العميل بعد كل المحاولات، ينتقل الطلب تلقائياً إلى حالة أخرى تختارها",
+      "autoMoveStatus": "الحالة الجديدة للطلب",
+      "autoMoveHint": "مثال: اختر «لم يستجب» أو «قيد المراجعة» ليظهر الطلب في قائمة تحتاج إلى متابعة يدوية",
+      "selectStatus": "اختر حالة…",
+      "retryStatusesTitle": "حالات تُطلق إعادة المحاولة",
+      "retryStatusesSubtitle": "النظام يُعيد الاتصال تلقائياً فقط عندما يكون الطلب في إحدى هذه الحالات",
+      "retryStatuses": "اختر الحالات",
+      "retryStatusesHint": "مثال: اختر «قيد التأكيد» و«في الانتظار» — الطلبات في هذه الحالات هي التي يتصل بها الفريق",
+      "confirmationStatusesTitle": "حالات تعني «تم التأكيد بنجاح»",
+      "confirmationStatusesSubtitle": "إذا وصل الطلب لإحدى هذه الحالات، يتوقف النظام عن المحاولة ويعتبره مكتملاً",
+      "confirmationStatuses": "اختر الحالات",
+      "confirmationStatusesHint": "مثال: اختر «مؤكد» و«تم الدفع» — متى وصل الطلب لهذه الحالة لا داعي للاتصال مجدداً",
+      "selected": "محدد",
+      "statusesSelected": "{count} حالات محددة",
+      "selectStatusesPlaceholder": "اضغط لاختيار الحالات…",
+      "clearAll": "مسح الكل",
+      "shipping": {
+        "autoSend": "الإرسال التلقائي لشركة الشحن",
+        "autoSendDesc": "عند وصول الطلب إلى حالة التشغيل المحددة، يُنشئ النظام شحنة تلقائياً دون تدخل يدوي",
+        "routing": "إعداد التوجيه",
+        "routingDesc": "اختر شركة الشحن وحدد الحالة التي تُطلق عملية الشحن",
+        "company": "شركة الشحن",
+        "selectCompany": "اختر شركة…",
+        "noCompanies": "لا توجد شركات شحن مفعّلة — فعّل إحداها من إعدادات التكاملات",
+        "triggerStatus": "حالة تشغيل الشحن",
+        "selectTrigger": "عند وصول الطلب إلى…",
+        "triggerStatusDesc": "فور انتقال الطلب لهذه الحالة، يُرسله النظام تلقائياً لشركة الشحن",
+        "paymentOptions": "شروط الدفع قبل الشحن",
+        "paymentOptionsDesc": "حدد ما الشرط المطلوب في الدفع حتى يُوافق النظام على إرسال الشحنة",
+        "requireFullPayment": "اشتراط الدفع الكامل",
+        "requireFullPaymentDesc": "الطلب لن يُشحن إلا إذا تم دفع كامل مبلغه — أوقف هذا الخيار لقبول الدفع الجزئي",
+        "partialThreshold": "الحد الأدنى للعربون المقبول",
+        "partialThresholdDesc": "أدخل الحد الأدنى للمبلغ المدفوع مسبقاً حتى يُقبل الطلب للشحن — اتركه «0» لقبول أي مبلغ",
+        "anyDeposit": "أي عربون",
+        "requirePaymentConfirm": "تأكيد الدفع يدوياً قبل الشحن",
+        "requirePaymentConfirmDesc": "يجب على المشرف مراجعة الدفع والموافقة عليه يدوياً قبل أن ينطلق الشحن التلقائي",
+        "otherOptions": "إجراءات إضافية بعد الشحن",
+        "otherOptionsDesc": "ما الذي يفعله النظام تلقائياً بعد إنشاء الشحنة بنجاح",
+        "autoLabel": "إنشاء بوليصة الشحن تلقائياً",
+        "autoLabelDesc": "بعد إنشاء الشحنة، يقوم النظام بتوليد ملف PDF للبوليصة وإرفاقه بالطلب",
+        "notifyOnShipment": "إشعار فور إنشاء الشحنة",
+        "notifyOnShipmentDesc": "إرسال إشعار للموظف المسؤول فور إتمام عملية الشحن بنجاح",
+        "allowReturn": "السماح بإنشاء طلبات الإرجاع",
+        "allowReturnDesc": "يتيح هذا الخيار إنشاء شحنات عكسية (إرجاع) مباشرة عبر شركة الشحن المختارة",
+        "disabledTitle": "الشحن التلقائي غير مفعّل",
+        "disabledHint": "فعّل المفتاح أعلاه لكي يُرسل النظام الطلبات المؤكدة إلى شركة الشحن تلقائياً ما إن تصل لحالة معينة"
+      },
+      "notifyEmployee": "إشعار الموظف المسؤول",
+      "notifyEmployeeDesc": "يصل إشعار للموظف المعيّن على الطلب في كل مرة يحاول فيها النظام التواصل مع العميل",
+      "notifyAdmin": "إشعار المشرف",
+      "notifyAdminDesc": "يُرسل إشعار للمشرف عندما تنتهي جميع المحاولات دون استجابة — لمتابعة الطلبات المتعثرة",
+      "notificationPreview": "مثال على رسالة الإشعار",
+      "notificationPreviewText": "تذكير: الطلب رقم #١٢٣٤٥ لم يتم تأكيده حتى الآن — يرجى متابعة العميل"
     },
     "fields": {
       "status": "الحالة",
@@ -3350,6 +3354,10 @@
     },
     "retry": {
       "locked": "مقفل"
+    },
+    "pagination": {
+      "limit": "عدد النتائج",
+      "total": "إجمالي النتائج"
     }
   },
   "callCenter": {
@@ -3555,73 +3563,48 @@
     "currency": "جنيه"
   },
   "CreateReplacement": {
+    "title": "إنشاء استبدال",
+    "titleEdit": "تعديل الاستبدال",
+
     "breadcrumb": {
       "home": "الرئيسية",
       "orders": "الطلبات"
     },
-    "title": "إنشاء طلب استبدال",
+
     "actions": {
-      "submit": "إنشاء طلب الاستبدال",
-      "update": "حفظ التعديلات",
       "cancel": "إلغاء",
-      "saving": "جاري الحفظ..."
+      "submit": "إرسال",
+      "update": "تحديث",
+      "saving": "جارٍ الحفظ..."
     },
-    "notes": {
-      "replacementRestriction": "الطلبات التي تم استبدالها مسبقاً لن تظهر في نتائج البحث."
-    },
-    "reasons": {
-      "wrong_size": "مقاس خاطئ",
-      "damaged": "منتج تالف",
-      "wrong_item": "منتج خاطئ",
-      "color_issue": "لون مختلف",
-      "quality": "جودة سيئة",
-      "not_as_described": "غير مطابق للوصف",
-      "missing_parts": "قطع ناقصة",
-      "change_of_mind": "تغيير رأي",
-      "late_delivery": "تأخر في التوصيل",
-      "faulty": "عطل مصنعي",
-      "other": "سبب آخر"
-    },
+
     "sections": {
-      "searchOrder": "رقم الطلب",
+      "searchOrder": "البحث عن الطلب",
       "replacementInfo": "بيانات الاستبدال",
-      "replacementItems": "المنتجات المستبدلة",
-      "images": "صور المنتجات المرتجعة",
-      "priceSummary": "ملخص السعر"
+      "replacementItems": "عناصر الاستبدال",
+      "images": "الصور",
+      "priceSummary": "ملخص الأسعار"
     },
-    "fields": {
-      "orderNumber": "رقم الطلب الأصلي",
-      "reason": "سبب الاستبدال",
-      "anotherReason": "سبب آخر للاستبدال",
-      "shippingCompany": "شركة الشحن",
-      "paymentMethod": "طريقة الدفع",
-      "shippingCost": "تكلفة الشحن",
-      "discount": "الخصم",
-      "internalNotes": "ملاحظات داخلية",
-      "customerNotes": "ملاحظات العميل"
-    },
+
     "placeholders": {
-      "orderNumber": "اكتب رقم الطلب للبحث...",
-      "reason": "اختر سبب الاستبدال",
-      "anotherReason": "أدخل سبباً إضافياً",
-      "shippingCompany": "اختر شركة الشحن",
-      "paymentMethod": "اختر طريقة الدفع",
-      "internalNotes": "ملاحظات داخلية للفريق...",
-      "customerNotes": "ملاحظات للعميل..."
+      "orderNumber": "رقم الطلب",
+      "reasonOfReplacement": "اكتب سبب الاستبدال",
+      "anotherReason": "اكتب سببًا إضافيًا (اختياري)",
+      "shippingCompany": "اختر شركة الشحن"
     },
-    "noShipping": "بدون شركة شحن",
-    "noOrdersFound": "لا توجد طلبات مطابقة",
-    "selectOrderFirst": "اختر طلباً أولاً لتحديد المنتجات المطلوب استبدالها",
-    "chooseItemsToReplace": "اختر المنتجات المراد استبدالها:",
-    "noItemsAdded": "لم تتم إضافة أي منتجات بعد — اضغط على المنتج أعلاه لإضافته",
+
+    "labels": {
+      "ordersFound": "طلبات تم العثور عليها",
+      "selectedOrder": "الطلب المختار"
+    },
+
     "details": {
       "customerName": "اسم العميل",
       "phone": "رقم الهاتف",
       "address": "العنوان",
-      "total": "إجمالي الطلب",
-      "createdAt": "تاريخ الطلب",
+      "total": "الإجمالي",
+      "createdAt": "تاريخ الإنشاء",
       "status": "الحالة",
-      "items": "المنتجات",
       "table": {
         "image": "الصورة",
         "product": "المنتج",
@@ -3630,56 +3613,84 @@
         "total": "الإجمالي"
       }
     },
+
+    "fields": {
+      "reasonOfReplacement": "سبب الاستبدال",
+      "anotherReason": "سبب إضافي",
+      "shippingCompany": "شركة الشحن"
+    },
+
+    "noShipping": "بدون شركة شحن",
+
+    "noOrdersFound": "لا توجد طلبات مطابقة",
+    "noOrdersFoundHint": "جرّب رقم طلب مختلف",
+    "selectOrderFirst": "اختر طلبًا أولاً للمتابعة",
+
+    "chooseItemsToReplace": "اختر العناصر المطلوب استبدالها",
+    "selected": "محدد",
+    "replacementDetails": "تفاصيل الاستبدال",
+    "noItemsAdded": "لم يتم إضافة عناصر",
+    "selectFromDropdownAbove": "اختر العناصر من القائمة بالأعلى للبدء",
+
+    "selectItems": "اختر العناصر المراد استبدالها…",
+    "availableItems": "عناصر متاحة",
+    "clearAll": "مسح الكل",
+    "clickToSelect": "اضغط على العناصر لتحديدها",
+
     "itemCard": {
-      "title": "استبدال",
-      "originalItem": "المنتج الأصلي",
-      "newItem": "المنتج البديل",
+      "title": "عنصر الاستبدال",
+      "originalItem": "العنصر الأصلي",
+      "newItem": "العنصر الجديد",
       "quantity": "الكمية",
-      "oldPrice": "السعر الأصلي",
-      "newPrice": "سعر المنتج الجديد",
+      "oldPrice": "السعر القديم",
+      "newPrice": "السعر الجديد",
       "priceDiff": "فرق السعر"
     },
-    "images": {
-      "uploaded": "صورة مرفوعة",
-      "dragHere": "اسحب الصور هنا",
-      "or": "أو",
-      "browse": "اختر من جهازك",
-      "maxReached": "تم الوصول للحد الأقصى",
-      "existingImage": "صورة محفوظة",
-      "fromLibrary": "من المكتبة",
-      "dropHere": "اسحب الصور هنا أو اضغط للرفع"
-    },
+
     "summary": {
-      "items": "عدد المنتجات",
-      "oldTotal": "إجمالي الأصلي",
+      "items": "عدد العناصر",
+      "oldTotal": "إجمالي القديم",
       "newTotal": "إجمالي الجديد",
       "shipping": "الشحن",
       "discount": "الخصم",
-      "priceDiff": "الفرق الكلي",
+      "priceDiff": "فرق الإجمالي",
       "finalTotal": "الإجمالي النهائي"
     },
-    "validation": {
-      "orderRequired": "يرجى اختيار طلب أصلي",
-      "reasonRequired": "يرجى اختيار سبب الاستبدال",
-      "anotherReasonRequired": "يرجى إدخال سبب إضافي",
-      "paymentMethodRequired": "يرجى اختيار طريقة الدفع",
-      "itemsRequired": "يرجى إضافة منتج واحد على الأقل للاستبدال",
-      "newVariantRequired": "يرجى اختيار المنتج البديل لكل صف",
-      "fixErrors": "يرجى تصحيح الأخطاء قبل الإرسال"
+
+    "reasons": {
+      "wrong_size": "مقاس خاطئ",
+      "damaged": "منتج تالف",
+      "wrong_item": "منتج خاطئ",
+      "color_issue": "لون مختلف",
+      "quality": "جودة سيئة",
+      "not_as_described": "غير مطابق للوصف",
+      "missing_parts": "أجزاء مفقودة",
+      "change_of_mind": "تغيير رأي",
+      "late_delivery": "تأخر التسليم",
+      "faulty": "به عطل",
+      "other": "سبب آخر"
     },
+
     "errors": {
-      "itemAlreadyAdded": "هذا المنتج مضاف بالفعل",
-      "uploadFailed": "فشل رفع الصورة",
-      "loadFailed": "فشل تحميل بيانات طلب الاستبدال"
+      "itemAlreadyAdded": "تمت إضافة هذا العنصر بالفعل",
+      "loadFailed": "فشل تحميل البيانات"
     },
+
+    "validation": {
+      "orderRequired": "الطلب مطلوب",
+      "reasonRequired": "السبب مطلوب",
+      "paymentMethodRequired": "طريقة الدفع مطلوبة",
+      "itemsRequired": "يجب اختيار عنصر واحد على الأقل",
+      "fixErrors": "من فضلك أصلح الأخطاء أولاً"
+    },
+
     "messages": {
-      "createSuccess": "تم إنشاء طلب الاستبدال بنجاح",
-      "createFailed": "فشل إنشاء طلب الاستبدال",
-      "updateSuccess": "تم تعديل طلب الاستبدال بنجاح",
-      "updateFailed": "فشل تعديل طلب الاستبدال",
-      "loading": "جارٍ تحميل البيانات..."
-    },
-    "titleEdit": "تعديل طلب الاستبدال"
+      "loading": "جارٍ التحميل...",
+      "createSuccess": "تم إنشاء الاستبدال بنجاح",
+      "updateSuccess": "تم تحديث الاستبدال بنجاح",
+      "createFailed": "فشل إنشاء الاستبدال",
+      "updateFailed": "فشل تحديث الاستبدال"
+    }
   },
   "employeeOrders": {
     "title": "طلباتي",

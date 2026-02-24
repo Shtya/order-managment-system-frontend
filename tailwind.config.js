@@ -6,32 +6,35 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-      primary: 'var(--primary)',
-      secondary: 'var(--secondary)',
-      third: 'var(--third)',
+        primary: 'var(--primary)',
+        secondary: 'var(--secondary)',
+        third: 'var(--third)',
 
-      background: 'var(--background)',
-      foreground: 'var(--foreground)',
+        background: 'var(--background)',
+        foreground: 'var(--foreground)',
 
-      card: 'var(--card)',
-      'card-foreground': 'var(--card-foreground)',
+        card: 'var(--card)',
+        'card-foreground': 'var(--card-foreground)',
 
-      popover: 'var(--popover)',
-      'popover-foreground': 'var(--popover-foreground)',
+        popover: 'var(--popover)',
+        'popover-foreground': 'var(--popover-foreground)',
 
-      muted: 'var(--muted)',
-      'muted-foreground': 'var(--muted-foreground)',
+        muted: 'var(--muted)',
+        'muted-foreground': 'var(--muted-foreground)',
 
-      accent: 'var(--accent)',
-      'accent-foreground': 'var(--accent-foreground)',
+        accent: 'var(--accent)',
+        'accent-foreground': 'var(--accent-foreground)',
 
-      destructive: 'var(--destructive)',
-      'destructive-foreground': 'var(--destructive-foreground)',
+        destructive: 'var(--destructive)',
+        'destructive-foreground': 'var(--destructive-foreground)',
 
-      border: 'var(--border)',
-      input: 'var(--input)',
-      ring: 'var(--ring)',
-    },
+        border: 'var(--border)',
+        input: 'var(--input)',
+        ring: 'var(--ring)',
+
+        header: 'var(--header)',
+        sidebar: 'var(--sidebar)',
+      },
       keyframes: {
         'gradient-shift': {
           '0%, 100%': { backgroundPosition: '0% 50%' },

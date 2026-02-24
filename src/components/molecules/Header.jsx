@@ -182,13 +182,9 @@ export default function Header({ toggleSidebar, isSidebarOpen }) {
       transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
       className="fixed top-0 right-0 left-0 h-16 z-40 overflow-hidden"
     >
-      <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/85 backdrop-blur-xl" />
+      <div className="absolute inset-0 bg-[var(--sidebar)] border-b border-border  w-full h-full  " />
 
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/3 via-transparent to-secondary/3 pointer-events-none" />
-
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-slate-200/80 dark:bg-slate-700/60" />
-
-      <ShimmerBar />
+   
 
       <div className="relative h-full px-4 sm:px-6 flex items-center justify-between">
 

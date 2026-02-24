@@ -73,18 +73,24 @@ const menuItems = [
 		icon: ShoppingCart,
 		labelKey: 'orders',
 		href: '/orders',
-		badge: '12',
+		badge: null,
 		roles: ['ADMIN'],
+		children: [
+			{ icon: Package, labelKey: 'orders', href: '/orders?tab=orders' },
+			{ icon: Undo2, labelKey: 'order-replacement', href: '/orders?tab=replacement' },
+		],
+	},
+	{
+		icon: ShoppingCart,
+		labelKey: 'orders',
+		href: '/orders',
+		badge: '12',
+		roles: ['USER'],
 		children: [
 			{
 				icon: Package,
 				labelKey: 'employeeOrders',
 				href: '/orders',
-			},
-			{
-				icon: Undo2,
-				labelKey: 'order-replacement',
-				href: '/order-replacement',
 			},
 		],
 	},
@@ -236,7 +242,7 @@ const Sidebar = ({ isOpen, isRTL }) => {
 	const [hoveredItem, setHoveredItem] = useState(null);
 	const router = useRouter()
 
-	
+
 	// Get user role
 	const user = getUser();
 	const userRole = user?.role?.toUpperCase();
@@ -308,7 +314,7 @@ const Sidebar = ({ isOpen, isRTL }) => {
 		try {
 			localStorage.removeItem('accessToken');
 			localStorage.removeItem('refreshToken');
-			localStorage.removeItem('user'); 
+			localStorage.removeItem('user');
 			router.replace('/auth');
 		} catch (e) {
 			console.error('Logout failed', e);
@@ -329,8 +335,8 @@ const Sidebar = ({ isOpen, isRTL }) => {
 			}}
 			className={`
         fixed top-16 ${isRTL ? 'right-0' : 'left-0'} h-[calc(100vh-4rem)]
-        bg-gradient-to-b from-background via-background to-card/50
-        border-${isRTL ? 'l' : 'r'} border-border/50 backdrop-blur-xl z-30 overflow-hidden
+        bg-sidebar
+        border-${isRTL ? 'l' : 'r'} border-border  backdrop-blur-xl z-30 overflow-hidden
         shadow-2xl
       `}
 			style={{
@@ -398,7 +404,7 @@ const Sidebar = ({ isOpen, isRTL }) => {
 												}
                       `}
 										>
-										 
+
 
 											{/* Icon Container */}
 											<motion.div
@@ -475,7 +481,7 @@ const Sidebar = ({ isOpen, isRTL }) => {
 												}
                       `}
 										>
- 
+
 											<motion.div
 												animate={{
 													scale: isHovered && !active ? 1.1 : 1,

@@ -1,26 +1,24 @@
 "use client";
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { motion } from "framer-motion";
-import { ChevronLeft, Settings, RefreshCw, Loader2, AlertCircle, CheckCircle2, Clock, Zap } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronLeft, Settings, RefreshCw, Loader2, AlertCircle, CheckCircle2, Clock, Zap, Store, ExternalLink, Settings2, HelpCircle, Webhook, Copy, RotateCcw } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { cn } from "@/utils/cn";
-import { Button } from "@/components/ui/button";
-import Button_ from "@/components/atoms/Button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
-
 import api, { BASE_URL } from "@/utils/api";
 import toast from "react-hot-toast";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from 'yup';
 import { getUser } from "@/hook/getUser";
-import { useSearchParams } from "next/navigation";
-import { usePathname, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { ModalHeader, ModalShell } from "@/components/ui/modalShell";
+import { PrimaryBtn } from "@/components/atoms/Button";
+import { useSocket } from "@/context/SocketContext";
+
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
 function normalizeAxiosError(err) {
@@ -30,170 +28,342 @@ function normalizeAxiosError(err) {
 
 const PROVIDERS = ["easyorder", "shopify", "woocommerce"];
 
-const PROVIDER_META = {
+// ─── Provider Configuration ──────────────────────────────────────────────────
+
+function GhostBtn({ children, onClick, className = "" }) {
+	return (
+		<button type="button" onClick={onClick} className={`px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] text-sm font-medium text-[var(--foreground)] transition-all ${className}`}>
+			{children}
+		</button>
+	);
+}
+
+const PROVIDER_CONFIG = {
 	easyorder: {
 		label: "EasyOrder",
-		logo: "/integrate/easyorder.png",   // ← swap to your actual logo asset path
+		logo: "/integrate/easyorder.png",
 		website: "easy-orders.net",
 		description: "ربط متجرك مع منصة EasyOrder واستفد من إدارة الطلبات والمزامنة التلقائية بسهولة.",
-		bg: "background: #F3F0FF",
+		bg: "linear-gradient(300.09deg, #FAFAFA 74.95%, #F3F0FF 129.29%)",
+		docsLink: "https://public-api-docs.easy-orders.net/docs/intro",
+		guide: { showSteps: false, docsUrl: "https://public-api-docs.easy-orders.net/docs/authentication" },
+		webhookDocsUrl: "https://public-api-docs.easy-orders.net/docs/webhooks",
+		fields: {
+			apiKey: { required: true, userProvides: true },
+			webhookCreateOrderSecret: { required: true, userProvides: true },
+			webhookUpdateStatusSecret: { required: true, userProvides: true },
+		},
+		webhookEndpoints: {
+			create: (adminId) => `${BASE_URL}/stores/webhooks/${adminId}/easyorder/orders/create`,
+			update: (adminId) => `${BASE_URL}/stores/webhooks/easyorder/orders/status`,
+		},
+		instructions: {
+			apiKey: [
+				"انتقل إلى لوحة تحكم EasyOrder",
+				"ابحث عن قسم API Keys",
+				"أنشئ مفتاح API جديد",
+				"انسخ المفتاح والصقه أدناه",
+			],
+			webhooks: [
+				"في EasyOrder، انتقل إلى إعدادات Webhooks",
+				"أضف webhook لإنشاء الطلبات باستخدام الرابط أدناه",
+				"أدخل السر الخاص بك (أي نص عشوائي آمن)",
+				"أضف webhook لتحديث الحالة باستخدام الرابط الثاني",
+				"أدخل سر آخر لتحديث الحالة",
+				"احفظ كلا السرين أدناه",
+			],
+		},
 	},
 	shopify: {
 		label: "Shopify",
 		logo: "/integrate/shopify.png",
 		website: "shopify.com",
 		description: "صل متجرك بـ Shopify وأدر منتجاتك وطلباتك من مكان واحد.",
-		bg: "background: #F0FFF4",
+		bg: "linear-gradient(300.09deg, #F0FFF4 74.95%, #F3F0FF 129.29%)",
+		docsLink: "https://help.shopify.com/api",
+		guide: { showSteps: false, docsUrl: "https://help.shopify.com/api" },
+		webhookDocsUrl: "https://help.shopify.com/en/manual/apps/app-types/custom-apps/webhooks",
+		fields: {
+			apiKey: { required: true, userProvides: true },
+			clientSecret: { required: true, userProvides: true },
+			webhookSecret: { required: true, userProvides: true },
+		},
+		webhookEndpoints: {
+			create: (adminId) => `${BASE_URL}/stores/webhooks/${adminId}/shopify/orders/create`,
+			update: (adminId) => `${BASE_URL}/stores/webhooks/shopify/orders/status`,
+		},
+		instructions: {
+			apiKey: [
+				"انتقل إلى Shopify Admin > Apps > Develop apps",
+				"أنشئ تطبيق خاص جديد",
+				"اذهب إلى API credentials",
+				"انسخ API key و API secret key",
+			],
+			webhooks: [
+				"في إعدادات التطبيق، اذهب إلى Webhooks",
+				"أضف webhook subscription لـ orders/create",
+				"استخدم الرابط أدناه كـ Webhook URL",
+				"سيتم إنشاء Webhook secret تلقائيًا - انسخه",
+			],
+		},
 	},
 	woocommerce: {
 		label: "WooCommerce",
 		logo: "/integrate/woocommerce.png",
 		website: "woocommerce.com",
 		description: "اربط متجر WooCommerce الخاص بك وأدر كل شيء بطريقة سهلة والأمان أولًا.",
-		bg: "background: #FFF0F5",
+		bg: "linear-gradient(300.09deg, #FAFAFA 74.95%, #FFF0F5 129.29%)",
+		docsLink: "https://woocommerce.github.io/woocommerce-rest-api-docs/",
+		guide: { showSteps: false, docsUrl: "https://woocommerce.github.io/woocommerce-rest-api-docs/" },
+		webhookDocsUrl: "https://woocommerce.github.io/woocommerce-rest-api-docs/#webhooks",
+		fields: {
+			apiKey: { required: true, userProvides: true },
+			clientSecret: { required: true, userProvides: true },
+			// webhookSecret: { required: true, userProvides: true },
+			webhookCreateOrderSecret: { required: true, systemProvides: true }, // System generates
+			webhookUpdateStatusSecret: { required: true, systemProvides: true }, // System generates
+		},
+		webhookEndpoints: {
+			create: (adminId) => `${BASE_URL}/stores/webhooks/${adminId}/woocommerce/orders/create`,
+			update: (adminId) => `${BASE_URL}/stores/webhooks/woocommerce/orders/status`,
+		},
+		instructions: {
+			apiKey: [
+				"انتقل إلى WooCommerce > Settings > Advanced > REST API",
+				"أنشئ مفتاح API جديد",
+				"اختر Read/Write permissions",
+				"انسخ Consumer key و Consumer secret",
+			],
+			webhooks: [
+				"في WooCommerce > Settings > Advanced > Webhooks",
+				"أنشئ webhook جديد لـ Order created",
+				"استخدم الرابط أدناه",
+				"انسخ السر الذي تم إنشاؤه والصقه في متجرك",
+			],
+		},
 	},
 };
 
-// ─── SyncStatus badge ────────────────────────────────────────────────────────
-
-function SyncBadge({ status, t }) {
-	const map = {
-		pending: { color: "text-[#F59E0B] bg-[#FFF9F0] dark:bg-[#1A1208] dark:text-[#FBBF24]", Icon: Clock },
-		syncing: { color: "text-[#6366f1] bg-[#F3F0FF] dark:bg-[#1A1630] dark:text-[#A78BFA]", Icon: Loader2 },
-		synced: { color: "text-[#22C55E] bg-[#F0FFF4] dark:bg-[#0E1A0C] dark:text-[#4ADE80]", Icon: CheckCircle2 },
-		failed: { color: "text-[#EF4444] bg-[#FFF0F0] dark:bg-[#1A0C0C] dark:text-[#F87171]", Icon: AlertCircle },
-	};
-
-	const entry = map[status] || map.pending;
-	const { Icon } = entry;
-
-	return (
-		<span className={cn("inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full", entry.color)}>
-			<Icon size={13} className={status === "syncing" ? "animate-spin" : ""} />
-			{t(`syncStatus.${status}`)}
-		</span>
-	);
-}
-
 // ─── StoreCard ───────────────────────────────────────────────────────────────
 
-function StoreCard({ provider, store, t, onConfigure, onSync, fetchStores, index }) {
-	const meta = PROVIDER_META[provider];
+function StoreCard({
+	provider,
+	store,
+	t,
+	onConfigure,
+	onSync,
+	onOpenWebhook,
+	fetchStores,
+	index
+}) {
+	const config = PROVIDER_CONFIG[provider];
 	const hasStore = !!store;
 	const isSyncing = store?.syncStatus === "syncing";
-	const [togglingActive, setTogglingActive] = useState(false);
+	const isActive = store?.isActive ?? false;
 
-	const handleToggleActive = async () => {
-		if (togglingActive) return;
-		setTogglingActive(true);
+	const [toggling, setToggling] = useState(false);
+
+	async function handleToggle() {
+		if (!hasStore) {
+			onConfigure(provider, store)
+			return;
+		}
+
+		setToggling(true);
 		try {
-			await api.patch(`/stores/${store.id}`, { isActive: !store.isActive });
+			await api.patch(`/stores/${store.id}`, {
+				isActive: !isActive
+			});
 			await fetchStores();
+			toast.success(t("messages.statusUpdated"));
 		} catch (e) {
 			toast.error(normalizeAxiosError(e));
 		} finally {
-			setTogglingActive(false);
+			setToggling(false);
 		}
-	};
-
+	}
 
 	return (
 		<motion.div
-			initial={{ opacity: 0, y: 18 }}
-			animate={{ opacity: 1, y: 0 }}
-			transition={{ delay: index * 0.07 }}
-			className="relative rounded-2xl p-5 shadow-sm border border-border"
-			style={{ background: meta.bg?.replace("background:", "") }}
+			whileHover={{ y: -3, boxShadow: "0 16px 40px 0 rgba(0,0,0,0.13)" }}
+			transition={{ type: "spring", stiffness: 300, damping: 22 }}
+			className="relative rounded-2xl overflow-hidden border border-[var(--border)] shadow-sm flex flex-col"
+			style={{ background: config.bg }}
 		>
-			{/* ── Header: title + website left, logo right ── */}
-			<div className="flex items-start justify-between gap-3">
-				<div>
-					<h3 className="font-semibold text-base">{meta.label}</h3>
-					<a
-						href={`https://${meta.website}`}
-						target="_blank"
-						rel="noopener noreferrer"
-						className="text-sm text-primary underline"
-					>
-						{meta.website}
-					</a>
-				</div>
-				<img
-					src={meta.logo}
-					alt={meta.label}
-					className="w-full max-w-[150px] h-[60px] object-contain"
-				/>
-			</div>
-
-			{/* ── Description ── */}
-			<p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-				{meta.description}
-			</p>
-
-			{/* ── Sync badge + error row (only when store is connected) ── */}
-			{/* {hasStore && (
-				<div className="mt-3 flex flex-wrap items-center gap-2">
-			
-					{store.lastSyncError && (
-						<div className="flex items-center gap-1.5 text-xs text-[#EF4444] dark:text-[#F87171] bg-red-50 dark:bg-red-950/40 rounded-lg px-2 py-1">
-							<AlertCircle size={12} className="shrink-0" />
-							<span className="truncate max-w-[180px]">{store.lastSyncError}</span>
-						</div>
-					)}
-				</div>
-			)} */}
-
-			{/* ── Footer: settings btn left  |  switch + sync btn right ── */}
-			<div className="mt-5 flex justify-between items-center">
-				<button
-					onClick={() => onConfigure(provider, store)}
-					className="flex items-center gap-2 rounded-full border px-4 py-2 text-sm hover:bg-muted transition"
-				>
-					<Settings size={16} />
-					{hasStore ? t("card.editSettings") : t("card.configureSettings")}
-				</button>
-
-				<div className="flex items-center gap-2">
-					{/* Sync button — only visible when store exists AND is active */}
-					{hasStore && store.isActive && (
-						<button
-							onClick={() => onSync(store.id)}
-							disabled={isSyncing}
-							className={cn(
-								"inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors",
-								isSyncing
-									? "bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-slate-500 cursor-not-allowed"
-									: "border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800  hover:opacity-90 "
-							)}
-						>
-							<RefreshCw size={14} className={isSyncing ? "animate-spin" : ""} />
-							{t("card.sync")}
-						</button>
-					)}
-
-					{/* isActive toggle — only visible when store is connected */}
-					{hasStore && (
-						<div className="flex items-center gap-1.5">
-							{togglingActive && <Loader2 size={14} className="animate-spin text-[rgb(var(--primary))]" />}
-							<Switch
-								checked={store.isActive}
-								disabled={togglingActive}
-								onCheckedChange={handleToggleActive}
+			{/* Body */}
+			<div className="p-5 flex flex-col gap-3 flex-1">
+				{/* Header */}
+				<div className="flex items-start justify-between">
+					<div className="flex items-center gap-2">
+						<div className="w-14 h-14 rounded-2xl bg-white/80 dark:bg-white/10 backdrop-blur-sm border border-white/40 dark:border-white/10 flex items-center justify-center shadow-sm overflow-hidden">
+							<img
+								src={config.logo}
+								alt={config.label}
+								className="w-9 h-9 object-contain"
+								onError={(e) => (e.target.style.display = "none")}
 							/>
 						</div>
-					)}
+
+						<div>
+							<h3 className="text-base font-bold text-gray-800 dark:text-white">
+								{config.label}
+							</h3>
+
+							<a
+								href={`https://${config.website}`}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="text-xs text-gray-500 dark:text-gray-400 hover:text-[var(--primary)] transition-colors flex items-center gap-0.5 mt-0.5"
+							>
+								{config.website}
+								<ExternalLink size={9} />
+							</a>
+						</div>
+					</div>
+
+					{/* Toggle */}
+
+					<div className="flex flex-col items-end gap-1.5">
+						<button
+							onClick={handleToggle}
+							disabled={toggling || isSyncing}
+							className="relative w-11 h-6 rounded-full border transition-all duration-300"
+							style={{
+								background:
+									isActive
+										? `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))`
+										: "rgba(0,0,0,0.12)",
+								borderColor: isActive ? "transparent" : "rgba(0,0,0,0.1)",
+								opacity: toggling ? 0.7 : 1,
+								cursor: toggling ? "not-allowed" : "pointer"
+							}}
+						>
+							<span
+								className="absolute top-0.5 left-0.5 w-[18px] h-[18px] rounded-full bg-white shadow transition-all duration-300 flex items-center justify-center"
+								style={{
+									transform: isActive
+										? "translateX(20px)"
+										: "translateX(0px)"
+								}}
+							>
+								{toggling && (
+									<svg
+										className="animate-spin h-3 w-3 text-primary"
+										viewBox="0 0 24 24"
+									>
+										<circle
+											className="opacity-25"
+											cx="12"
+											cy="12"
+											r="10"
+											stroke="currentColor"
+											strokeWidth="4"
+										/>
+										<path
+											className="opacity-75"
+											fill="currentColor"
+											d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+										/>
+									</svg>
+								)}
+							</span>
+						</button>
+
+						<span
+							className={`text-[10px] font-semibold uppercase tracking-wide transition-colors duration-300 ${isActive ? "text-emerald-700 dark:text-emerald-400" : "text-gray-500 dark:text-gray-400"
+								}`}
+						>
+							{toggling ? t("card.updating") : (isActive ? t("card.connected") : t("card.notConnected"))}
+						</span>
+					</div>
 				</div>
+
+
+
+				{/* Description */}
+				<p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2">
+					{config.description}
+				</p>
+
+				{/* Status Badge */}
+				{hasStore ? (
+					<span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full w-fit">
+						<span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+						{t("card.configured")}
+					</span>
+				) : (
+					<span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full w-fit">
+						<span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+						{t("card.notConfigured")}
+					</span>
+				)}
 			</div>
-		</motion.div>
+
+			{/* Footer */}
+			<div className="bg-white/50 dark:bg-black/20 backdrop-blur-sm border-t border-white/40 dark:border-white/10 px-4 py-3 flex items-center gap-2 flex-wrap">
+				<button
+					onClick={() => onConfigure(provider, store)}
+					className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+				>
+					<Settings2 size={12} />
+					{hasStore ? t("card.settings") : t("card.configureSettings")}
+				</button>
+
+				{config?.guide?.showSteps ? (
+					<button
+						onClick={() => { }}
+						title={t("card.guideTitle")}
+						className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+					>
+						<HelpCircle size={12} />
+						{t("card.guide")}
+					</button>
+				) : config?.guide?.docsUrl ? (
+					<a
+						href={config.guide.docsUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						title={t("card.guideTitle")}
+						className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+					>
+						<HelpCircle size={12} />
+						{t("card.guide")}
+					</a>
+				) : null}
+
+				{hasStore && (
+					<button
+						onClick={() => onOpenWebhook(provider, store)}
+						title="Webhook"
+						className="font-en flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+					>
+						<Webhook size={12} />
+						Webhook
+					</button>
+				)}
+
+				<button
+					onClick={() => hasStore && onSync(store.id)}
+					disabled={isSyncing || !hasStore || !isActive}
+					className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+				>
+					<RefreshCw
+						size={12}
+						className={isSyncing ? "animate-spin" : ""}
+					/>
+					{t("card.sync")}
+				</button>
+			</div>
+		</motion.div >
 	);
 }
 
-// ─── Instruction block (reusable inside dialogs) ────────────────────────────
+// ─── Reusable Components ─────────────────────────────────────────────────────
 
 function InstructionStep({ step, children }) {
 	return (
 		<div className="flex gap-2.5">
-			<div className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 text-[rgb(var(--primary))] flex items-center justify-center text-xs font-bold mt-0.5">
+			<div className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold mt-0.5">
 				{step}
 			</div>
 			<p className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed">{children}</p>
@@ -205,11 +375,15 @@ function CopyableCode({ text }) {
 	const [copied, setCopied] = useState(false);
 	return (
 		<div className="flex items-center gap-2 mt-1 bg-gray-100 dark:bg-slate-800 rounded-lg px-3 py-1.5">
-			<code className="text-xs font-mono text-[rgb(var(--primary))] break-all flex-1">{text}</code>
+			<code className="text-xs font-mono text-primary break-all flex-1">{text}</code>
 			<button
 				type="button"
-				onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
-				className="text-xs text-gray-400 hover:text-[rgb(var(--primary))] transition-colors shrink-0"
+				onClick={() => {
+					navigator.clipboard.writeText(text);
+					setCopied(true);
+					setTimeout(() => setCopied(false), 1500);
+				}}
+				className="text-xs text-gray-400 hover:text-primary transition-colors shrink-0"
 			>
 				{copied ? "✓" : "📋"}
 			</button>
@@ -217,39 +391,27 @@ function CopyableCode({ text }) {
 	);
 }
 
-// ─── EasyOrder Dialog ────────────────────────────────────────────────────────
+// ─── Store Configuration Dialog ──────────────────────────────────────────────
 
-const makeSchema = (t) =>
-	yup.object({
-		name: yup.string().trim().required(t("validation.nameRequired")),
-		code: yup.string().trim().required(t("validation.codeRequired")),
-		storeUrl: yup.string().trim().required(t("validation.storeUrlRequired")),
-		isActive: yup.boolean().default(true),
-		autoSync: yup.boolean().default(true),
-
-		// Secret Validation Logic
-		// apiKey: isEdit
-		// 	? yup.string().trim().nullable() // Optional on edit
-		// 	: yup.string().trim().required(t("validation.apiKeyRequired")), // Required on create
-
-		// webhookCreateSecret: isEdit
-		// 	? yup.string().trim().nullable()
-		// 	: yup.string().trim().required(t("validation.webhookCreateSecretRequired")),
-
-		// webhookUpdateSecret: isEdit
-		// 	? yup.string().trim().nullable()
-		// 	: yup.string().trim().required(t("validation.webhookUpdateSecretRequired")),
-	}).required();
-
-
-function EasyOrderDialog({ open, onClose, existingStore, fetchStores, t }) {
+function StoreConfigDialog({ open, onClose, provider, existingStore, fetchStores, t, onCreated }) {
+	const config = PROVIDER_CONFIG[provider];
 	const isEdit = !!existingStore;
 	const [fetchingStore, setFetchingStore] = useState(false);
-	const user = getUser()
-	// ── yup schema memoised on t ──
-	const schema = useMemo(() => makeSchema(t), [t]);
+	const [regeneratingSecrets, setRegeneratingSecrets] = useState(false);
+	const [error, setError] = useState(null);
+	const user = getUser();
 
-	// ── react-hook-form ──
+	// Form schema
+	const schema = useMemo(
+		() =>
+			yup.object({
+				name: yup.string().trim().required(t("validation.nameRequired")),
+				storeUrl: yup.string().trim().url(t("validation.invalidUrl")).required(t("validation.storeUrlRequired")),
+				isActive: yup.boolean().default(true),
+			}),
+		[t]
+	);
+
 	const {
 		register,
 		control,
@@ -257,21 +419,21 @@ function EasyOrderDialog({ open, onClose, existingStore, fetchStores, t }) {
 		reset,
 		formState: { errors, isSubmitting },
 	} = useForm({
-		defaultValues: { name: "", code: "", storeUrl: "", isActive: true, autoSync: true },
+		defaultValues: { name: "", storeUrl: "", isActive: true },
 		resolver: yupResolver(schema),
 	});
 
-	// ── secrets live in plain state (touched-gate logic, NOT part of RHF validation) ──
-	const [apiKey, setApiKey] = useState("");
-	const [webhookCreateSecret, setWebhookCreateSecret] = useState("");
-	const [webhookUpdateSecret, setWebhookUpdateSecret] = useState("");
-	const [touched, setTouched] = useState({ apiKey: false, webhookCreateSecret: false, webhookUpdateSecret: false });
-	const [secretErrors, setSecretErrors] = useState({ apiKey: null, webhookCreateSecret: null, webhookUpdateSecret: null });
-	const [masks, setMasks] = useState({ apiKey: "", webhookCreateSecret: "", webhookUpdateSecret: "" });
+	// Field states
+	const [fields, setFields] = useState({});
+	const [touched, setTouched] = useState({});
+	const [fieldErrors, setFieldErrors] = useState({});
+	const [masks, setMasks] = useState({});
+	const [systemSecrets, setSystemSecrets] = useState({}); // For WooCommerce system-generated secrets
 
-	// ── load / reset when dialog opens ──
+	// Load store data
 	useEffect(() => {
 		if (!open) return;
+		setError(null);
 
 		if (isEdit) {
 			(async () => {
@@ -280,23 +442,27 @@ function EasyOrderDialog({ open, onClose, existingStore, fetchStores, t }) {
 					const res = await api.get(`/stores/${existingStore.id}`);
 					const d = res.data;
 
-					// populate RHF fields (base fields only)
 					reset({
 						name: d.name || "",
-						code: d.code || "",
 						storeUrl: d.storeUrl || "",
 						isActive: d.isActive ?? true,
-						autoSync: d.autoSync ?? true,
-
 					});
 
-					// store masked values as placeholders
-					const integ = d.integrations || {};
-					setMasks({
-						apiKey: integ.apiKey || "",
-						webhookCreateSecret: integ.webhookCreateOrderSecret || "",
-						webhookUpdateSecret: integ.webhookUpdateStatusSecret || "",
+					// Load masked secrets
+					const integ = d.credentials || {};
+					const newMasks = {};
+					const newSystemSecrets = {};
+
+					Object.keys(config.fields).forEach((fieldName) => {
+						if (config.fields[fieldName].systemProvides) {
+							newSystemSecrets[fieldName] = integ[fieldName] || "";
+						} else {
+							newMasks[fieldName] = integ[fieldName] || "";
+						}
 					});
+
+					setMasks(newMasks);
+					setSystemSecrets(newSystemSecrets);
 				} catch (e) {
 					toast.error(normalizeAxiosError(e));
 					onClose();
@@ -305,832 +471,896 @@ function EasyOrderDialog({ open, onClose, existingStore, fetchStores, t }) {
 				}
 			})();
 		} else {
-			reset({ name: "", code: "", storeUrl: "", isActive: true, autoSync: true });
-			setMasks({ apiKey: "", webhookCreateSecret: "", webhookUpdateSecret: "" });
+			reset({ name: "", storeUrl: "", isActive: true });
+			setMasks({});
+			setSystemSecrets({});
 		}
 
-		// always clear secret inputs + touched on open
-		setApiKey(""); setWebhookCreateSecret(""); setWebhookUpdateSecret("");
-		setTouched({ apiKey: false, webhookCreateSecret: false, webhookUpdateSecret: false });
-	}, [open, isEdit, existingStore?.id]);
+		// Clear all fields
+		setFields({});
+		setTouched({});
+		setFieldErrors({});
+	}, [open, isEdit, existingStore?.id, provider]);
 
 	const markTouched = (field) => setTouched((prev) => ({ ...prev, [field]: true }));
 
-	// ── submit handler — receives already-validated base fields from RHF ──
-	const onSubmit = async (data) => {
-		// create-mode guard: all three secrets required
-		if (!isEdit) {
-			let hasError = false;
-			if (!apiKey.trim()) {
-				setSecretErrors((prev) => ({ ...prev, apiKey: t(`validation.apiKeyRequired`) }))
-				hasError = true;
-			}
-			if (!webhookCreateSecret.trim()) {
-				setSecretErrors((prev) => ({ ...prev, webhookCreateSecret: t(`validation.webhookCreateSecretRequired`) }))
-				hasError = true;
-			}
-			if (!webhookUpdateSecret.trim()) {
-				setSecretErrors((prev) => ({ ...prev, webhookUpdateSecret: t(`validation.webhookUpdateSecretRequired`) }))
-				hasError = true;
-			}
-			if (hasError) return;
-			setSecretErrors({ apiKey: null, webhookCreateSecret: null, webhookUpdateSecret: null })
+	const isValid = () => {
+		const fieldEntries = Object.entries(config.fields || {});
+		const requiredUserFields = fieldEntries.filter(([, fc]) => fc.required && fc.userProvides);
+		// 1. All required (user-provided) fields satisfied: either existing (mask) or new value
+		const allRequiredSatisfied = requiredUserFields.every(([key]) => {
+			const hasNewValue = (fields[key]?.trim() || "").length > 0;
+			const hasExistingValue = !!(masks[key] || (config.fields[key].systemProvides && systemSecrets[key]));
+			return hasExistingValue || hasNewValue;
+		});
+		if (!allRequiredSatisfied) return false;
+		if (isEdit) {
+			// 2. On edit: at least one new value in credentials (like shipping) so we don't enable Update with no changes
+			const hasAtLeastOneNewValue = fieldEntries.some(([key]) => (fields[key]?.trim() || "").length > 0);
+			return hasAtLeastOneNewValue;
 		}
+		// Create: all required must have value in fields
+		return requiredUserFields.every(([key]) => (fields[key]?.trim() || "").length > 0);
+	};
 
+	// Regenerate WooCommerce secrets
+	const handleRegenerateSecrets = async () => {
+		if (!isEdit || provider !== "woocommerce") return;
+
+		setRegeneratingSecrets(true);
 		try {
-			if (isEdit) {
-				// only include secret keys the user actually touched
-				const integrations = {};
-				if (touched.apiKey && apiKey.trim()) integrations.apiKey = apiKey.trim();
-				if (touched.webhookCreateSecret && webhookCreateSecret.trim()) integrations.webhookCreateOrderSecret = webhookCreateSecret.trim();
-				if (touched.webhookUpdateSecret && webhookUpdateSecret.trim()) integrations.webhookUpdateStatusSecret = webhookUpdateSecret.trim();
+			const res = await api.post(`/stores/${existingStore.id}/regenerate-secrets`);
+			const { webhookCreateOrderSecret, webhookUpdateStatusSecret } = res.data;
 
-				const payload = {
-					name: data.name.trim(),
-					code: data.code.trim(),
-					storeUrl: data.storeUrl.trim(),
-					isActive: data.isActive,
-					autoSync: data.autoSync,
-				};
-				if (Object.keys(integrations).length > 0) payload.integrations = integrations;
+			setSystemSecrets({
+				webhookCreateOrderSecret,
+				webhookUpdateStatusSecret,
+			});
 
-				const res = await api.patch(`/stores/${existingStore.id}`, payload);
-
-				// ── reset secrets: clear inputs, drop touched, refresh masks from fresh response ──
-				setApiKey(""); setWebhookCreateSecret(""); setWebhookUpdateSecret("");
-				setTouched({ apiKey: false, webhookCreateSecret: false, webhookUpdateSecret: false });
-				const freshInteg = res.data?.integrations || {};
-				setMasks({
-					apiKey: freshInteg.apiKey || "",
-					webhookCreateSecret: freshInteg.webhookCreateOrderSecret || "",
-					webhookUpdateSecret: freshInteg.webhookUpdateStatusSecret || "",
-				});
-
-				toast.success(t("form.updateSuccess"));
-			} else {
-				await api.post("/stores", {
-					name: data.name.trim(),
-					code: data.code.trim(),
-					storeUrl: data.storeUrl.trim(),
-					provider: "easyorder",
-					isActive: data.isActive,
-					autoSync: data.autoSync,
-					integrations: {
-						apiKey: apiKey.trim(),
-						webhookCreateOrderSecret: webhookCreateSecret.trim(),
-						webhookUpdateStatusSecret: webhookUpdateSecret.trim(),
-					},
-				});
-				toast.success(t("form.createSuccess"));
-			}
-			onClose();
-			await fetchStores()
+			toast.success(t("messages.secretsRegenerated"));
 		} catch (e) {
 			toast.error(normalizeAxiosError(e));
+		} finally {
+			setRegeneratingSecrets(false);
 		}
 	};
 
-	console.log(errors)
-	// ── shared input style ──
-	const inputCls = "rounded-xl h-[46px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-[rgb(var(--primary))]/20";
+	// Submit handler
+	const onSubmit = async (data) => {
+		setError(null);
+		let createdStoreId = null;
+		// Validate required user-provided fields on create
+		if (!isEdit) {
+			let hasError = false;
+			Object.entries(config.fields).forEach(([fieldName, fieldConfig]) => {
+				if (fieldConfig.userProvides && fieldConfig.required && !fields[fieldName]?.trim()) {
+					setFieldErrors((prev) => ({
+						...prev,
+						[fieldName]: t(`validation.${fieldName}Required`),
+					}));
+					hasError = true;
+				}
+			});
+			if (hasError) return;
+			setFieldErrors({});
+		}
+
+		try {
+			const payload = {
+				name: data.name.trim(),
+				storeUrl: data.storeUrl.trim(),
+				isActive: data.isActive,
+			};
+
+			if (isEdit) {
+				// Only include touched user-provided fields
+				const credentials = {};
+				Object.keys(config.fields).forEach((fieldName) => {
+					if (config.fields[fieldName].userProvides && touched[fieldName] && fields[fieldName]?.trim()) {
+						credentials[fieldName] = fields[fieldName].trim();
+					}
+				});
+
+				if (Object.keys(credentials).length > 0) {
+					payload.credentials = credentials;
+				}
+
+				const res = await api.patch(`/stores/${existingStore.id}`, payload);
+
+				// Update masks
+				const freshInteg = res.data?.credentials || {};
+				const newMasks = {};
+				Object.keys(config.fields).forEach((fieldName) => {
+					if (config.fields[fieldName].userProvides) {
+						newMasks[fieldName] = freshInteg[fieldName] || "";
+					}
+				});
+				setMasks(newMasks);
+
+				toast.success(t("form.updateSuccess"));
+			} else {
+				// Create new store
+				const credentials = {};
+				Object.keys(config.fields).forEach((fieldName) => {
+					if (config.fields[fieldName].userProvides) {
+						credentials[fieldName] = fields[fieldName]?.trim() || "";
+					}
+				});
+
+				const res = await api.post("/stores", {
+					...payload,
+					provider,
+					credentials,
+				});
+				createdStoreId = res.data?.id;
+				toast.success(t("form.createSuccess"));
+			}
+
+			// Clear fields and reset touched
+			setFields({});
+			setTouched({});
+			await fetchStores();
+
+			if (!isEdit) {
+				onClose();
+				if (provider === "woocommerce" && createdStoreId) {
+					if (typeof onCreated === "function") {
+						onCreated(provider, createdStoreId);
+					}
+				}
+			} else {
+				onClose();
+			}
+		} catch (e) {
+			const msg = normalizeAxiosError(e);
+			setError(msg);
+			toast.error(msg);
+		}
+	};
+
+	const inputCls = "rounded-xl h-[46px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20";
+
+	if (!config) return null;
 
 	return (
-		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-			<DialogContent className="!max-w-2xl bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
-
+		<ModalShell open={open} onOpenChange={(v) => !v && onClose()} maxWidth="max-w-2xl">
+			<ModalHeader icon={Settings2} title={t("dialog.title", { provider: config.label })} subtitle={t("dialog.subtitle")} onClose={onClose} />
+			<div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto  p-3">
 				{fetchingStore ? (
 					<div className="flex items-center justify-center py-16">
-						<Loader2 size={28} className="animate-spin text-[rgb(var(--primary))]" />
+						<Loader2 size={28} className="animate-spin text-primary" />
 					</div>
 				) : (
 					<>
-						{/* header */}
-						<div className="flex items-center gap-3 mb-1">
-							<div className="w-10 h-10 rounded-xl bg-[#F3F0FF] dark:bg-[#1A1630] flex items-center justify-center text-lg">⚡</div>
-							<div>
-								<h3 className="text-base font-bold text-gray-900 dark:text-slate-100">
-									{isEdit ? t("dialog.editTitle", { provider: "EasyOrder" }) : t("dialog.createTitle", { provider: "EasyOrder" })}
-								</h3>
-								<p className="text-xs text-gray-500 dark:text-slate-400">{t("dialog.subtitle")}</p>
-							</div>
-						</div>
-
 						<form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-4">
-							{/* ── store info section ── */}
+							{/* Store Info Section */}
 							<div className="space-y-4">
 								<div className="flex items-center gap-2 mb-2">
 									<div className="w-0.5 h-5 bg-primary rounded-full" />
-									<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">{t("form.storeInfoSection")}</span>
-								</div>
-
-								<div className="grid grid-cols-2 gap-3">
-									<div className="space-y-1.5">
-										<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.storeName")}</Label>
-										<Input {...register("name")} placeholder={t("form.storeNamePlaceholder")} className={inputCls} />
-										{errors?.name?.message && <div className="text-xs text-red-600">{errors.name.message}</div>}
-									</div>
-									<div className="space-y-1.5">
-										<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.storeCode")}</Label>
-										<Input {...register("code")} placeholder={t("form.storeCodePlaceholder")} className={inputCls} />
-										{errors?.code?.message && <div className="text-xs text-red-600">{errors.code.message}</div>}
-									</div>
+									<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
+										{t("form.storeInfoSection")}
+									</span>
 								</div>
 
 								<div className="space-y-1.5">
-									<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.storeUrl")}</Label>
-									<Input {...register("storeUrl")} placeholder="https://your-store.com" className={inputCls} />
-									{errors?.storeUrl?.message && <div className="text-xs text-red-600">{errors.storeUrl.message}</div>}
+									<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
+										{t("form.storeName")}
+									</Label>
+									<Input {...register("name")} placeholder={t("form.storeNamePlaceholder")} className={inputCls} />
+									{errors?.name && <div className="text-xs text-red-600">{errors.name.message}</div>}
 								</div>
 
-								<div className="flex items-center gap-6 pt-1">
-									<div className="flex items-center gap-2.5">
-										{!isEdit && <> <Controller
+								<div className="space-y-1.5">
+									<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
+										{t("form.storeUrl")}
+									</Label>
+									<Input {...register("storeUrl")} placeholder="https://your-store.com" className={inputCls} />
+									{errors?.storeUrl && <div className="text-xs text-red-600">{errors.storeUrl.message}</div>}
+								</div>
+
+								{/* {!isEdit && (
+									<div className="flex items-center gap-2.5 pt-1">
+										<Controller
 											control={control}
 											name="isActive"
 											render={({ field }) => (
 												<Switch checked={field.value} onCheckedChange={field.onChange} id="isActive" />
 											)}
 										/>
-											<Label htmlFor="isActive" className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.activeStore")}</Label></>}
+										<Label htmlFor="isActive" className="text-xs font-semibold text-gray-600 dark:text-slate-300">
+											{t("form.activeStore")}
+										</Label>
 									</div>
-									<div className="flex items-center gap-2.5">
-										<Controller
-											control={control}
-											name="autoSync"
-											render={({ field }) => (
-												<Switch checked={field.value} onCheckedChange={field.onChange} id="autoSync" />
-											)}
-										/>
-										<Label htmlFor="autoSync" className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.autoSync")}</Label>
-									</div>
-								</div>
+								)} */}
 							</div>
 
-							{/* ── API Key section ── */}
-							<div className="space-y-3">
-								<div className="flex items-center gap-2">
-									<div className="w-0.5 h-5 bg-primary rounded-full" />
-									<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">{t("form.apiKeySection")}</span>
-								</div>
-
-								{/* instructions */}
-								<div className="bg-[#FAFBFF] dark:bg-[#1E1E2E] border border-[#E8E8F0] dark:border-[#3A3A4A] rounded-xl p-3.5 space-y-2">
-									<p className="text-xs font-semibold text-gray-700 dark:text-slate-200 flex items-center gap-1.5">
-										<Zap size={13} className="text-[rgb(var(--primary))]" />
-										{t("instructions.apiKeyTitle")}
-									</p>
-									<InstructionStep step={1}>{t("instructions.apiKey1")}</InstructionStep>
-									<InstructionStep step={2}>{t("instructions.apiKey2")}</InstructionStep>
-									<InstructionStep step={3}>{t("instructions.apiKey3")}</InstructionStep>
-									<InstructionStep step={4}>{t("instructions.apiKey4")}</InstructionStep>
-									<InstructionStep step={5}>{t("instructions.apiKey5")}</InstructionStep>
-								</div>
-
-								<div className="space-y-1.5">
-									<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.apiKey")}</Label>
-									<Input
-										value={apiKey}
-										placeholder={isEdit ? (masks.apiKey || t("form.maskedPlaceholder")) : t("form.apiKeyPlaceholder")}
-										onChange={(e) => { setApiKey(e.target.value); markTouched("apiKey"); }}
-										className={inputCls}
-									/>
-									{secretErrors.apiKey && <div className="text-xs text-red-600">{secretErrors.apiKey}</div>}
-
-								</div>
-							</div>
-
-							{/* ── Webhooks section ── */}
-							<div className="space-y-3">
-								<div className="flex items-center gap-2">
-									<div className="w-0.5 h-5 bg-primary rounded-full" />
-									<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">{t("form.webhooksSection")}</span>
-								</div>
-
-								<div className="bg-[#FAFBFF] dark:bg-[#1E1E2E] border border-[#E8E8F0] dark:border-[#3A3A4A] rounded-xl p-3.5 space-y-3">
-									<p className="text-xs font-semibold text-gray-700 dark:text-slate-200 flex items-center gap-1.5">
-										<Zap size={13} className="text-[rgb(var(--primary))]" />
-										{t("instructions.webhooksTitle")}
-									</p>
-									<InstructionStep step={1}>{t("instructions.webhook1")}</InstructionStep>
-									<InstructionStep step={2}>{t("instructions.webhook2")}</InstructionStep>
-									<InstructionStep step={3}>{t("instructions.webhook3")}</InstructionStep>
-
-									{/* create-order webhook URL */}
-									<div className="space-y-0.5">
-										<p className="text-xs text-gray-500 dark:text-slate-400 font-semibold">{t("instructions.webhookCreateOrderLabel")}</p>
-										<CopyableCode
-											text={`https://binaural-taryn-unprecipitatively.ngrok-free.dev/webhooks/${String(user?.id).trim()}/easy-order/orders/create`}
-										/>
+							{/* API Keys Section */}
+							{(config.fields.apiKey || config.fields.clientSecret) && (
+								<div className="space-y-3">
+									<div className="flex items-center gap-2">
+										<div className="w-0.5 h-5 bg-primary rounded-full" />
+										<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
+											{t("form.apiKeysSection")}
+										</span>
 									</div>
-									<InstructionStep step={4}>{t("instructions.webhook4")}</InstructionStep>
 
-									{/* update-status webhook URL */}
-									<div className="space-y-0.5">
-										<p className="text-xs text-gray-500 dark:text-slate-400 font-semibold">{t("instructions.webhookUpdateStatusLabel")}</p>
-										<CopyableCode
-											text={`https://binaural-taryn-unprecipitatively.ngrok-free.dev/webhooks/${String(user?.id).trim()}/easy-order/orders/status`}
-										/>
-									</div>
-									<InstructionStep step={5}>{t("instructions.webhook5")}</InstructionStep>
-								</div>
+									{/* Instructions */}
+									{/* <div className="bg-[#FAFBFF] dark:bg-[#1E1E2E] border border-[#E8E8F0] dark:border-[#3A3A4A] rounded-xl p-3.5 space-y-2">
+										<p className="text-xs font-semibold text-gray-700 dark:text-slate-200 flex items-center gap-1.5">
+											<Zap size={13} className="text-primary" />
+											{t("instructions.apiKeyTitle")}
+										</p>
+										{config.instructions.apiKey.map((instruction, idx) => (
+											<InstructionStep key={idx} step={idx + 1}>
+												{instruction}
+											</InstructionStep>
+										))}
+									</div> */}
 
-								{/* secret inputs */}
-								<div className="grid grid-cols-2 gap-3">
-									<div className="space-y-1.5">
-										<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.webhookCreateOrderSecret")}</Label>
-										<Input
-											value={webhookCreateSecret}
-											placeholder={isEdit ? (masks.webhookCreateSecret || t("form.maskedPlaceholder")) : t("form.secretPlaceholder")}
-											onChange={(e) => { setWebhookCreateSecret(e.target.value); markTouched("webhookCreateSecret"); }}
-											className={inputCls}
-										/>
-										{secretErrors.webhookCreateSecret && <div className="text-xs text-red-600">{secretErrors.webhookCreateSecret}</div>}
-									</div>
-									<div className="space-y-1.5">
-										<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.webhookUpdateStatusSecret")}</Label>
-										<Input
-											value={webhookUpdateSecret}
-											placeholder={isEdit ? (masks.webhookUpdateSecret || t("form.maskedPlaceholder")) : t("form.secretPlaceholder")}
-											onChange={(e) => { setWebhookUpdateSecret(e.target.value); markTouched("webhookUpdateSecret"); }}
-											className={inputCls}
-										/>
-										{secretErrors.webhookUpdateSecret && <div className="text-xs text-red-600">{secretErrors.webhookUpdateSecret}</div>}
+									{/* Field Inputs */}
+									<div className="grid grid-cols-1 gap-3">
+										{config.fields.apiKey && (
+											<div className="space-y-1.5">
+												<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
+													{t("form.apiKey")}
+												</Label>
+												<Input
+													value={fields.apiKey || ""}
+													placeholder={isEdit ? masks.apiKey || t("form.maskedPlaceholder") : t("form.apiKeyPlaceholder")}
+													onChange={(e) => {
+														setFields((prev) => ({ ...prev, apiKey: e.target.value }));
+														markTouched("apiKey");
+													}}
+													className={cn(inputCls, masks?.apiKey && "placeholder:text-gray-950 dark:placeholder:text-gray-100")}
+												/>
+												{fieldErrors.apiKey && <div className="text-xs text-red-600">{fieldErrors.apiKey}</div>}
+											</div>
+										)}
+
+										{config.fields.clientSecret && (
+											<div className="space-y-1.5">
+												<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
+													{t("form.clientSecret")}
+												</Label>
+												<Input
+													value={fields.clientSecret || ""}
+													placeholder={isEdit ? masks.clientSecret || t("form.maskedPlaceholder") : t("form.secretPlaceholder")}
+													onChange={(e) => {
+														setFields((prev) => ({ ...prev, clientSecret: e.target.value }));
+														markTouched("clientSecret");
+													}}
+													className={cn(inputCls, masks?.clientSecret && "placeholder:text-gray-950 dark:placeholder:text-gray-100")}
+												/>
+												{fieldErrors.clientSecret && <div className="text-xs text-red-600">{fieldErrors.clientSecret}</div>}
+											</div>
+										)}
 									</div>
 								</div>
-							</div>
+							)}
 
-							{/* ── footer buttons ── */}
-							<div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-200 dark:border-slate-700">
-								<button type="button" onClick={onClose} disabled={isSubmitting}
-									className="px-4 py-2 text-sm font-semibold rounded-xl border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
-									{t("form.cancel")}
-								</button>
-								<button type="submit" disabled={isSubmitting}
-									className="inline-flex items-center gap-1.5 px-5 py-2 text-sm font-semibold rounded-xl bg-primary text-white hover:opacity-90 transition-opacity shadow-sm disabled:opacity-60">
-									{isSubmitting ? <Loader2 size={15} className="animate-spin" /> : null}
-									{isEdit ? t("form.saveChanges") : t("form.createStore")}
-								</button>
+							{/* Webhooks Section - only on first-time create; when edit use Webhook modal */}
+							{!isEdit && (
+								<div className="space-y-3">
+									<div className="flex items-center gap-2">
+										<div className="w-0.5 h-5 bg-primary rounded-full" />
+										<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
+											{t("form.webhooksSection")}
+										</span>
+									</div>
+
+									<div className="bg-[#FAFBFF] dark:bg-[#1E1E2E] border border-[#E8E8F0] dark:border-[#3A3A4A] rounded-xl p-3.5 space-y-3">
+										<p className="text-xs font-semibold text-gray-700 dark:text-slate-200 flex items-center gap-1.5">
+											<Zap size={13} className="text-primary" />
+											{t("instructions.webhooksTitle")}
+										</p>
+
+										{/* Webhook URLs (same style as webhook modal) */}
+										<div className="space-y-3 pt-2">
+											<div className="space-y-0.5">
+												<p className="text-xs text-gray-500 dark:text-slate-400 font-semibold">
+													{t("instructions.webhookCreateOrderLabel")}
+												</p>
+												<div className="flex gap-2">
+													<input
+														readOnly
+														value={config.webhookEndpoints.create(user?.id)}
+														className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
+													/>
+													<button
+														type="button"
+														onClick={() => navigator.clipboard.writeText(String(config.webhookEndpoints.create(user?.id) || ""))}
+														className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
+														title="Copy"
+													>
+														<Copy size={14} />
+													</button>
+												</div>
+											</div>
+
+											<div className="space-y-0.5">
+												<p className="text-xs text-gray-500 dark:text-slate-400 font-semibold">
+													{t("instructions.webhookUpdateStatusLabel")}
+												</p>
+												<div className="flex gap-2">
+													<input
+														readOnly
+														value={config.webhookEndpoints.update(user?.id)}
+														className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
+													/>
+													<button
+														type="button"
+														onClick={() => navigator.clipboard.writeText(String(config.webhookEndpoints.update(user?.id) || ""))}
+														className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
+														title="Copy"
+													>
+														<Copy size={14} />
+													</button>
+												</div>
+											</div>
+
+											<p className="text-[11px] text-[var(--muted-foreground)]">
+												{t("webhook.urlHint")}
+											</p>
+										</div>
+									</div>
+
+									{/* User-provided webhook secrets */}
+									{config.fields.webhookSecret && config.fields.webhookSecret.userProvides && (
+										<div className="space-y-1.5">
+											<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
+												{t("form.webhookSecret")}
+											</Label>
+											<Input
+												value={fields.webhookSecret || ""}
+												placeholder={isEdit ? masks.webhookSecret || t("form.maskedPlaceholder") : t("form.secretPlaceholder")}
+												onChange={(e) => {
+													setFields((prev) => ({ ...prev, webhookSecret: e.target.value }));
+													markTouched("webhookSecret");
+												}}
+												className={cn(inputCls, masks?.webhookSecret && "placeholder:text-gray-950 dark:placeholder:text-gray-100")}
+											/>
+											{fieldErrors.webhookSecret && <div className="text-xs text-red-600">{fieldErrors.webhookSecret}</div>}
+										</div>
+									)}
+
+									{/* EasyOrder user-provided secrets */}
+									{provider === "easyorder" && (
+										<div className="grid grid-cols-2 gap-3">
+											<div className="space-y-1.5">
+												<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
+													{t("form.webhookCreateOrderSecret")}
+												</Label>
+												<Input
+													value={fields.webhookCreateOrderSecret || ""}
+													placeholder={isEdit ? masks.webhookCreateOrderSecret || t("form.maskedPlaceholder") : t("form.secretPlaceholder")}
+													onChange={(e) => {
+														setFields((prev) => ({ ...prev, webhookCreateOrderSecret: e.target.value }));
+														markTouched("webhookCreateOrderSecret");
+													}}
+													className={cn(inputCls, masks?.webhookCreateOrderSecret && "placeholder:text-gray-950 dark:placeholder:text-gray-100")}
+												/>
+												{fieldErrors.webhookCreateOrderSecret && (
+													<div className="text-xs text-red-600">{fieldErrors.webhookCreateOrderSecret}</div>
+												)}
+											</div>
+
+											<div className="space-y-1.5">
+												<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
+													{t("form.webhookUpdateStatusSecret")}
+												</Label>
+												<Input
+													value={fields.webhookUpdateStatusSecret || ""}
+													placeholder={isEdit ? masks.webhookUpdateStatusSecret || t("form.maskedPlaceholder") : t("form.secretPlaceholder")}
+													onChange={(e) => {
+														setFields((prev) => ({ ...prev, webhookUpdateStatusSecret: e.target.value }));
+														markTouched("webhookUpdateStatusSecret");
+													}}
+													className={cn(inputCls, masks?.webhookUpdateStatusSecret && "placeholder:text-gray-950 dark:placeholder:text-gray-100")}
+												/>
+												{fieldErrors.webhookUpdateStatusSecret && (
+													<div className="text-xs text-red-600">{fieldErrors.webhookUpdateStatusSecret}</div>
+												)}
+											</div>
+										</div>
+									)}
+
+									{/* WooCommerce system-generated secrets */}
+									{/* {provider === "woocommerce" && (
+									<>
+										{(systemSecrets.webhookCreateOrderSecret || systemSecrets.webhookUpdateStatusSecret) && (
+											<div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 space-y-3">
+												<p className="text-xs font-semibold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
+													<AlertCircle size={13} />
+													{t("instructions.systemSecretsTitle")}
+												</p>
+												<p className="text-xs text-amber-700 dark:text-amber-400">
+													{t("instructions.systemSecretsDescription")}
+												</p>
+
+												{systemSecrets.webhookCreateOrderSecret && (
+													<div className="space-y-0.5">
+														<p className="text-xs text-amber-600 dark:text-amber-400 font-semibold">
+															{t("form.webhookCreateOrderSecret")}
+														</p>
+														<CopyableCode text={systemSecrets.webhookCreateOrderSecret} />
+													</div>
+												)}
+
+												{systemSecrets.webhookUpdateStatusSecret && (
+													<div className="space-y-0.5">
+														<p className="text-xs text-amber-600 dark:text-amber-400 font-semibold">
+															{t("form.webhookUpdateStatusSecret")}
+														</p>
+														<CopyableCode text={systemSecrets.webhookUpdateStatusSecret} />
+													</div>
+												)}
+
+												{isEdit && (
+													<Button
+														type="button"
+														variant="outline"
+														size="sm"
+														onClick={handleRegenerateSecrets}
+														disabled={regeneratingSecrets}
+														className="mt-2"
+													>
+														{regeneratingSecrets && <Loader2 size={14} className="mr-2 animate-spin" />}
+														{t("form.regenerateSecrets")}
+													</Button>
+												)}
+											</div>
+										)}
+									</>
+								)} */}
+								</div>
+							)}
+
+							{/* Form-level error */}
+							{error && (
+								<div className="flex items-center gap-2 rounded-xl border border-red-500/25 bg-red-500/8 px-3.5 py-2.5 text-sm text-red-600 dark:text-red-400">
+									<AlertCircle size={14} />
+									{error}
+								</div>
+							)}
+
+							{/* Submit Button */}
+							<div className="flex justify-end gap-2 pt-4 border-t border-gray-200 dark:border-slate-800">
+								<PrimaryBtn type="submit" disabled={!isValid() || isSubmitting} loading={isSubmitting} className="w-full">
+									{isEdit ? t("form.update") : t("form.create")}
+								</PrimaryBtn>
 							</div>
 						</form>
 					</>
 				)}
-			</DialogContent>
-		</Dialog>
+			</div >
+		</ModalShell>
 	);
 }
 
+// ─── Store Webhook Modal (shape/style as shipping WebhookModal) ─────────────────
 
-const makeShopifySchema = (t) =>
-	yup.object({
-		name: yup.string().trim().required(t("validation.nameRequired")),
-		code: yup.string().trim().required(t("validation.codeRequired")),
-		storeUrl: yup.string().trim().required(t("validation.storeUrlRequired")),
-		isActive: yup.boolean().default(true),
-		autoSync: yup.boolean().default(true),
-	}).required();
-
-function ShopifyDialog({ open, onClose, existingStore, fetchStores, t }) {
-	const isEdit = !!existingStore;
-	const [fetchingStore, setFetchingStore] = useState(false);
+function StoreWebhookModal({ provider, store, onClose, fetchStores, t }) {
+	const config = PROVIDER_CONFIG[provider];
 	const user = getUser();
+	const [loading, setLoading] = useState(true);
+	const [saving, setSaving] = useState(false);
+	const [error, setError] = useState(null);
+	const [storeData, setStoreData] = useState(null);
+	const [webhookFields, setWebhookFields] = useState({});
+	const [rotating, setRotating] = useState(false);
 
-	const schema = useMemo(() => makeShopifySchema(t), [t]);
-
-	const {
-		register,
-		control,
-		handleSubmit,
-		reset,
-		formState: { errors, isSubmitting },
-	} = useForm({
-		defaultValues: { name: "", code: "", storeUrl: "", isActive: true, autoSync: true },
-		resolver: yupResolver(schema),
-	});
-
-	// ── secrets (clientKey, clientSecret) ──
-	const [clientKey, setClientKey] = useState("");
-	const [clientSecret, setClientSecret] = useState("");
-	const [touched, setTouched] = useState({ clientKey: false, clientSecret: false });
-	const [secretErrors, setSecretErrors] = useState({ clientKey: null, clientSecret: null });
-	const [masks, setMasks] = useState({ clientKey: "", clientSecret: "" });
+	const copyToClipboard = async (text) => {
+		try {
+			await navigator.clipboard.writeText(String(text || ""));
+			toast.success(t("form.copied") || "Copied");
+		} catch (_) { }
+	};
 
 	useEffect(() => {
-		if (!open) return;
-
-		if (isEdit) {
-			(async () => {
-				setFetchingStore(true);
-				try {
-					const res = await api.get(`/stores/${existingStore.id}`);
-					const d = res.data;
-
-					reset({
-						name: d.name || "",
-						code: d.code || "",
-						storeUrl: d.storeUrl || "",
-						isActive: d.isActive ?? true,
-						autoSync: d.autoSync ?? true,
+		if (!store?.id) return;
+		(async () => {
+			setLoading(true);
+			setError(null);
+			try {
+				const res = await api.get(`/stores/${store.id}`);
+				setStoreData(res.data);
+				const cred = res.data?.credentials || {};
+				if (provider === "easyorder") {
+					setWebhookFields({
+						webhookCreateOrderSecret: cred.webhookCreateOrderSecret || "",
+						webhookUpdateStatusSecret: cred.webhookUpdateStatusSecret || "",
 					});
-
-					const integ = d.integrations || {};
-					setMasks({
-						clientKey: integ.clientKey || "",
-						clientSecret: integ.clientSecret || "",
-					});
-				} catch (e) {
-					toast.error(normalizeAxiosError(e));
-					onClose();
-				} finally {
-					setFetchingStore(false);
+				} else if (provider === "shopify") {
+					setWebhookFields({ webhookSecret: cred.webhookSecret || "" });
 				}
-			})();
-		} else {
-			reset({ name: "", code: "", storeUrl: "", isActive: true, autoSync: true });
-			setMasks({ clientKey: "", clientSecret: "" });
-		}
-
-		setClientKey(""); setClientSecret("");
-		setTouched({ clientKey: false, clientSecret: false });
-	}, [open, isEdit, existingStore?.id]);
-
-	const markTouched = (field) => setTouched((prev) => ({ ...prev, [field]: true }));
-
-	const onSubmit = async (data) => {
-		// create-mode guard: both secrets required
-		if (!isEdit) {
-			let hasError = false;
-			if (!clientKey.trim()) {
-				setSecretErrors((prev) => ({ ...prev, clientKey: t("validation.clientKeyRequired") }));
-				hasError = true;
+			} catch (e) {
+				setError(normalizeAxiosError(e));
+			} finally {
+				setLoading(false);
 			}
-			if (!clientSecret.trim()) {
-				setSecretErrors((prev) => ({ ...prev, clientSecret: t("validation.clientSecretRequired") }));
-				hasError = true;
-			}
-			if (hasError) return;
-			setSecretErrors({ clientKey: null, clientSecret: null });
-		}
+		})();
+	}, [store?.id, provider]);
 
+	const saveSecrets = async () => {
+		const credentials = {};
+		if (provider === "easyorder") {
+			if (webhookFields.webhookCreateOrderSecret?.trim()) credentials.webhookCreateOrderSecret = webhookFields.webhookCreateOrderSecret.trim();
+			if (webhookFields.webhookUpdateStatusSecret?.trim()) credentials.webhookUpdateStatusSecret = webhookFields.webhookUpdateStatusSecret.trim();
+		} else if (provider === "shopify") {
+			if (webhookFields.webhookSecret?.trim()) credentials.webhookSecret = webhookFields.webhookSecret.trim();
+		}
+		if (Object.keys(credentials).length === 0) return;
+		setSaving(true);
+		setError(null);
 		try {
-			if (isEdit) {
-				const integrations = {};
-				if (touched.clientKey && clientKey.trim()) integrations.clientKey = clientKey.trim();
-				if (touched.clientSecret && clientSecret.trim()) integrations.clientSecret = clientSecret.trim();
-
-				const payload = {
-					name: data.name.trim(),
-					code: data.code.trim(),
-					storeUrl: data.storeUrl.trim(),
-					isActive: data.isActive,
-					autoSync: data.autoSync,
-				};
-				if (Object.keys(integrations).length > 0) payload.integrations = integrations;
-
-				const res = await api.patch(`/stores/${existingStore.id}`, payload);
-
-				setClientKey(""); setClientSecret("");
-				setTouched({ clientKey: false, clientSecret: false });
-				const freshInteg = res.data?.integrations || {};
-				setMasks({
-					clientKey: freshInteg.clientKey || "",
-					clientSecret: freshInteg.clientSecret || "",
+			await api.patch(`/stores/${store.id}`, { credentials });
+			toast.success(t("form.updateSuccess"));
+			const res = await api.get(`/stores/${store.id}`);
+			setStoreData(res.data);
+			const cred = res.data?.credentials || {};
+			if (provider === "easyorder") {
+				setWebhookFields({
+					webhookCreateOrderSecret: cred.webhookCreateOrderSecret || "",
+					webhookUpdateStatusSecret: cred.webhookUpdateStatusSecret || "",
 				});
-
-				toast.success(t("form.updateSuccess"));
+			} else if (provider === "shopify") {
+				setWebhookFields({ webhookSecret: cred.webhookSecret || "" });
 			} else {
-				await api.post("/stores", {
-					name: data.name.trim(),
-					code: data.code.trim(),
-					storeUrl: data.storeUrl.trim(),
-					provider: "shopify",
-					isActive: data.isActive,
-					autoSync: data.autoSync,
-					integrations: {
-						clientKey: clientKey.trim(),
-						clientSecret: clientSecret.trim(),
-					},
-				});
-				toast.success(t("form.createSuccess"));
+				setWebhookFields({});
 			}
-			onClose();
+		} catch (e) {
+			setError(normalizeAxiosError(e));
+		} finally {
+			setSaving(false);
+		}
+	};
+
+	const rotateWooCommerce = async () => {
+		setRotating(true);
+		setError(null);
+		try {
+			const res = await api.post(`/stores/${store.id}/regenerate-secrets`);
+			const res2 = await api.get(`/stores/${store.id}`);
+			setStoreData(res2.data);
+			toast.success(t("messages.secretsRegenerated"));
+		} catch (e) {
+			setError(normalizeAxiosError(e));
+		} finally {
+			setRotating(false);
+		}
+	};
+
+	const cred = storeData?.credentials || {};
+	const inputCls = "flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]";
+
+	return (
+		<ModalShell onClose={onClose} maxWidth="max-w-lg">
+			<ModalHeader icon={Webhook} title={t("webhook.title")} subtitle={t("webhook.subtitle")} onClose={onClose} />
+
+			<div className="p-6 space-y-5">
+				<div className="rounded-xl border border-[var(--border)] bg-[var(--muted)] p-3">
+					<p className="text-sm font-semibold text-[var(--card-foreground)] mb-1">{t("webhook.triggerTitle")}</p>
+					<p className="text-xs text-[var(--muted-foreground)] leading-relaxed">{t("webhook.triggerDescription")}</p>
+				</div>
+
+				{loading && (
+					<div className="flex justify-center py-8 text-[var(--muted-foreground)]">
+						<Loader2 size={22} className="animate-spin" />
+					</div>
+				)}
+
+				{!loading && config && (
+					<div className="space-y-4">
+						{/* Webhook URLs - create */}
+						<div className="space-y-1.5">
+							<label className="text-sm font-medium text-[var(--card-foreground)]">{t("instructions.webhookCreateOrderLabel")}</label>
+							<div className="flex gap-2">
+								<input readOnly value={config.webhookEndpoints.create(user?.id)} className={inputCls} />
+								<button type="button" onClick={() => copyToClipboard(config.webhookEndpoints.create(user?.id))} className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all" title="Copy">
+									<Copy size={14} />
+								</button>
+							</div>
+						</div>
+						<div className="space-y-1.5">
+							<label className="text-sm font-medium text-[var(--card-foreground)]">{t("instructions.webhookUpdateStatusLabel")}</label>
+							<div className="flex gap-2">
+								<input readOnly value={config.webhookEndpoints.update(user?.id)} className={inputCls} />
+								<button type="button" onClick={() => copyToClipboard(config.webhookEndpoints.update(user?.id))} className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all" title="Copy">
+									<Copy size={14} />
+								</button>
+							</div>
+						</div>
+						<p className="text-[11px] text-[var(--muted-foreground)]">{t("webhook.urlHint")}</p>
+
+						{/* EasyOrder / Shopify: user-provided secrets (input + save) */}
+						{(provider === "easyorder" || provider === "shopify") && (
+							<>
+								{provider === "easyorder" && (
+									<div className="grid grid-cols-1 gap-3">
+										<div className="space-y-1.5">
+											<label className="text-sm font-medium text-[var(--card-foreground)]">{t("form.webhookCreateOrderSecret")}</label>
+											<Input
+												value={webhookFields.webhookCreateOrderSecret ?? ""}
+												placeholder={cred.webhookCreateOrderSecret ? (t("form.maskedPlaceholder") || "••••••••") : t("form.secretPlaceholder")}
+												onChange={(e) => setWebhookFields((p) => ({ ...p, webhookCreateOrderSecret: e.target.value }))}
+												className={inputCls}
+											/>
+										</div>
+										<div className="space-y-1.5">
+											<label className="text-sm font-medium text-[var(--card-foreground)]">{t("form.webhookUpdateStatusSecret")}</label>
+											<Input
+												value={webhookFields.webhookUpdateStatusSecret ?? ""}
+												placeholder={cred.webhookUpdateStatusSecret ? (t("form.maskedPlaceholder") || "••••••••") : t("form.secretPlaceholder")}
+												onChange={(e) => setWebhookFields((p) => ({ ...p, webhookUpdateStatusSecret: e.target.value }))}
+												className={inputCls}
+											/>
+										</div>
+									</div>
+								)}
+								{provider === "shopify" && (
+									<div className="space-y-1.5">
+										<label className="text-sm font-medium text-[var(--card-foreground)]">{t("form.webhookSecret")}</label>
+										<Input
+											value={webhookFields.webhookSecret ?? ""}
+											placeholder={cred.webhookSecret ? (t("form.maskedPlaceholder") || "••••••••") : t("form.secretPlaceholder")}
+											onChange={(e) => setWebhookFields((p) => ({ ...p, webhookSecret: e.target.value }))}
+											className={inputCls}
+										/>
+									</div>
+								)}
+								<PrimaryBtn onClick={saveSecrets} disabled={saving} loading={saving} className="w-full">
+									{t("form.update")}
+								</PrimaryBtn>
+							</>
+						)}
+
+						{/* WooCommerce: system secrets (read-only + copy + regenerate) */}
+						{provider === "woocommerce" && (
+							<>
+								<div className="grid gap-3 md:grid-cols-2 grid-cols-1">
+									{cred.webhookCreateOrderSecret && (
+										<div className="space-y-1.5">
+											<label className="text-sm font-medium text-[var(--card-foreground)]">{t("form.webhookCreateOrderSecret")}</label>
+											<div className="flex gap-2">
+												<input readOnly value={cred.webhookCreateOrderSecret} className={inputCls} />
+												<button type="button" onClick={() => copyToClipboard(cred.webhookCreateOrderSecret)} className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all" title="Copy">
+													<Copy size={14} />
+												</button>
+											</div>
+										</div>
+									)}
+									{cred.webhookUpdateStatusSecret && (
+										<div className="space-y-1.5">
+											<label className="text-sm font-medium text-[var(--card-foreground)]">{t("form.webhookUpdateStatusSecret")}</label>
+											<div className="flex gap-2">
+												<input readOnly value={cred.webhookUpdateStatusSecret} className={inputCls} />
+												<button type="button" onClick={() => copyToClipboard(cred.webhookUpdateStatusSecret)} className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all" title="Copy">
+													<Copy size={14} />
+												</button>
+											</div>
+										</div>
+									)}
+								</div>
+								<div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--muted)] p-3">
+									<p className="text-xs text-[var(--muted-foreground)] leading-relaxed">{t("webhook.securityHint")}</p>
+									<button type="button" onClick={rotateWooCommerce} disabled={rotating} className="flex items-center gap-2 text-nowrap px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all disabled:opacity-50">
+										{rotating ? <Loader2 size={14} className="animate-spin" /> : <RotateCcw size={14} />}
+										<span className="text-xs font-semibold">{t("webhook.rotate")}</span>
+									</button>
+								</div>
+							</>
+						)}
+					</div>
+				)}
+
+				{error && (
+					<div className="flex items-center gap-2 rounded-xl border border-red-500/25 bg-red-500/8 px-3.5 py-2.5 text-sm text-red-600 dark:text-red-400">
+						<AlertCircle size={14} />
+						{error}
+					</div>
+				)}
+
+				<div className="flex justify-end gap-2 pt-2">
+					<GhostBtn onClick={onClose}>{t("webhook.close")}</GhostBtn>
+					{config?.webhookDocsUrl && (
+						<a href={config.webhookDocsUrl} target="_blank" rel="noopener noreferrer">
+							<PrimaryBtn type="button">
+								<ExternalLink size={14} /> {t("webhook.docs")}
+							</PrimaryBtn>
+						</a>
+					)}
+				</div>
+			</div>
+		</ModalShell>
+	);
+}
+
+function SkeletonCard() {
+	return (
+		<div className="rounded-2xl border border-[var(--border)] overflow-hidden animate-pulse bg-[var(--muted)]">
+			<div className="p-5 space-y-4">
+				<div className="flex items-start justify-between">
+					<div className="w-14 h-14 rounded-2xl bg-[var(--border)]" />
+					<div className="w-11 h-6 rounded-full bg-[var(--border)]" />
+				</div>
+				<div className="space-y-1.5">
+					<div className="h-4 w-28 rounded bg-[var(--border)]" />
+					<div className="h-2.5 w-20 rounded bg-[var(--border)]" />
+				</div>
+				<div className="space-y-1.5">
+					<div className="h-2 w-full rounded bg-[var(--border)]" />
+					<div className="h-2 w-4/5 rounded bg-[var(--border)]" />
+				</div>
+			</div>
+			<div className="border-t border-[var(--border)] px-4 py-3 flex gap-2">
+				<div className="h-7 w-20 rounded-lg bg-[var(--border)]" />
+				<div className="h-7 w-20 rounded-lg bg-[var(--border)]" />
+				<div className="h-7 w-16 rounded-lg bg-[var(--border)] ml-auto" />
+			</div>
+		</div>
+	);
+}
+
+// ─── Main Page Component ─────────────────────────────────────────────────────
+
+export default function StoresIntegrationPage() {
+	const t = useTranslations("storeIntegrations");
+	const router = useRouter();
+
+	const [stores, setStores] = useState([]);
+	const [loading, setLoading] = useState(true);
+	const [dialogOpen, setDialogOpen] = useState(false);
+	const [currentProvider, setCurrentProvider] = useState(null);
+	const [currentStore, setCurrentStore] = useState(null);
+	const [webhookModalStore, setWebhookModalStore] = useState(null);
+	const [webhookModalProvider, setWebhookModalProvider] = useState(null);
+
+	const { subscribe } = useSocket();
+	useEffect(() => {
+		const unsubscribe = subscribe("STORE_SYNC_PAGE", (action) => {
+			console.log("Received socket event:", action);
+			if (action.type === "STORE_SYNC_STATUS") {
+				const { storeId, status } = action.payload;
+
+				setStores((prev) =>
+					prev.map((store) =>
+						store.id === storeId
+							? { ...store, syncStatus: status }
+							: store
+					)
+				);
+			}
+		});
+
+		return unsubscribe;
+	}, [subscribe]);
+
+	useEffect(() => {
+		fetchStores();
+	}, []);
+
+	const fetchStores = async () => {
+		try {
+			setLoading(true);
+			const res = await api.get("/stores");
+			setStores(res.data?.records || []);
+		} catch (e) {
+			// toast.error(normalizeAxiosError(e));
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const handleConfigure = (provider, store) => {
+		setCurrentProvider(provider);
+		setCurrentStore(store);
+		setDialogOpen(true);
+	};
+
+	const handleCloseDialog = () => {
+		setDialogOpen(false);
+		setCurrentProvider(null);
+		setCurrentStore(null);
+	};
+
+	const handleOpenWebhook = (provider, store) => {
+		setWebhookModalProvider(provider);
+		setWebhookModalStore(store);
+	};
+
+	const handleCloseWebhookModal = () => {
+		setWebhookModalProvider(null);
+		setWebhookModalStore(null);
+	};
+
+	const handleSync = async (storeId) => {
+		try {
+			await api.post(`/stores/${storeId}/sync`);
+			toast.success(t("messages.syncStarted"));
 			await fetchStores();
 		} catch (e) {
 			toast.error(normalizeAxiosError(e));
 		}
 	};
 
-	const inputCls = "rounded-xl h-[46px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-[rgb(var(--primary))]/20";
 
 	return (
-		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-			<DialogContent className="!max-w-2xl bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
-				{fetchingStore ? (
-					<div className="flex items-center justify-center py-16">
-						<Loader2 size={28} className="animate-spin text-[rgb(var(--primary))]" />
-					</div>
-				) : (
-					<>
-						<div className="flex items-center gap-3 mb-1">
-							<div className="w-10 h-10 rounded-xl bg-[#F0FFF4] dark:bg-[#0E1A0C] flex items-center justify-center text-lg">🛍️</div>
-							<div>
-								<h3 className="text-base font-bold text-gray-900 dark:text-slate-100">
-									{isEdit ? t("dialog.editTitle", { provider: "Shopify" }) : t("dialog.createTitle", { provider: "Shopify" })}
-								</h3>
-								<p className="text-xs text-gray-500 dark:text-slate-400">{t("dialog.subtitle")}</p>
-							</div>
-						</div>
-
-						<form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-4">
-							{/* ── store info section ── */}
-							<div className="space-y-4">
-								<div className="flex items-center gap-2 mb-2">
-									<div className="w-0.5 h-5 bg-primary rounded-full" />
-									<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">{t("form.storeInfoSection")}</span>
-								</div>
-
-								<div className="grid grid-cols-2 gap-3">
-									<div className="space-y-1.5">
-										<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.storeName")}</Label>
-										<Input {...register("name")} placeholder={t("form.storeNamePlaceholder")} className={inputCls} />
-										{errors?.name?.message && <div className="text-xs text-red-600">{errors.name.message}</div>}
-									</div>
-									<div className="space-y-1.5">
-										<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.storeCode")}</Label>
-										<Input {...register("code")} placeholder={t("form.storeCodePlaceholder")} className={inputCls} />
-										{errors?.code?.message && <div className="text-xs text-red-600">{errors.code.message}</div>}
-									</div>
-								</div>
-
-								<div className="space-y-1.5">
-									<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.storeUrl")}</Label>
-									<Input {...register("storeUrl")} placeholder="https://your-store.myshopify.com" className={inputCls} />
-									{errors?.storeUrl?.message && <div className="text-xs text-red-600">{errors.storeUrl.message}</div>}
-								</div>
-
-								<div className="flex items-center gap-6 pt-1">
-									<div className="flex items-center gap-2.5">
-										{!isEdit && (
-											<>
-												<Controller control={control} name="isActive" render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} id="isActive-shopify" />} />
-												<Label htmlFor="isActive-shopify" className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.activeStore")}</Label>
-											</>
-										)}
-									</div>
-									<div className="flex items-center gap-2.5">
-										<Controller control={control} name="autoSync" render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} id="autoSync-shopify" />} />
-										<Label htmlFor="autoSync-shopify" className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.autoSync")}</Label>
-									</div>
-								</div>
-							</div>
-
-							{/* ── Credentials section ── */}
-							<div className="space-y-3">
-								<div className="flex items-center gap-2">
-									<div className="w-0.5 h-5 bg-primary rounded-full" />
-									<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">{t("form.shopifyCredentialsSection")}</span>
-								</div>
-
-								{/* instructions */}
-								<div className="bg-[#FAFBFF] dark:bg-[#1E1E2E] border border-[#E8E8F0] dark:border-[#3A3A4A] rounded-xl p-3.5 space-y-2">
-									<p className="text-xs font-semibold text-gray-700 dark:text-slate-200 flex items-center gap-1.5">
-										<Zap size={13} className="text-[rgb(var(--primary))]" />
-										{t("instructions.shopifyTitle")}
-									</p>
-									<InstructionStep step={1}>{t("instructions.shopify1")}</InstructionStep>
-									<InstructionStep step={2}>{t("instructions.shopify2")}</InstructionStep>
-									<InstructionStep step={3}>{t("instructions.shopify3")}</InstructionStep>
-								</div>
-
-								<div className="grid grid-cols-2 gap-3">
-									<div className="space-y-1.5">
-										<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.clientKey")}</Label>
-										<Input
-											value={clientKey}
-											placeholder={isEdit ? (masks.clientKey || t("form.maskedPlaceholder")) : t("form.clientKeyPlaceholder")}
-											onChange={(e) => { setClientKey(e.target.value); markTouched("clientKey"); }}
-											className={inputCls}
-										/>
-										{secretErrors.clientKey && <div className="text-xs text-red-600">{secretErrors.clientKey}</div>}
-									</div>
-									<div className="space-y-1.5">
-										<Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("form.clientSecret")}</Label>
-										<Input
-											value={clientSecret}
-											placeholder={isEdit ? (masks.clientSecret || t("form.maskedPlaceholder")) : t("form.clientSecretPlaceholder")}
-											onChange={(e) => { setClientSecret(e.target.value); markTouched("clientSecret"); }}
-											className={inputCls}
-										/>
-										{secretErrors.clientSecret && <div className="text-xs text-red-600">{secretErrors.clientSecret}</div>}
-									</div>
-								</div>
-							</div>
-
-							{/* ── Redirect URL section ── */}
-							<div className="space-y-3">
-								<div className="flex items-center gap-2">
-									<div className="w-0.5 h-5 bg-primary rounded-full" />
-									<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">{t("form.shopifyRedirectSection")}</span>
-								</div>
-
-								<div className="bg-[#FAFBFF] dark:bg-[#1E1E2E] border border-[#E8E8F0] dark:border-[#3A3A4A] rounded-xl p-3.5 space-y-3">
-									<p className="text-xs font-semibold text-gray-700 dark:text-slate-200 flex items-center gap-1.5">
-										<AlertCircle size={13} className="text-[rgb(var(--primary))]" />
-										{t("instructions.shopifyRedirectTitle")}
-									</p>
-									<p className="text-xs text-gray-600 dark:text-slate-300">{t("instructions.shopifyRedirect1")}</p>
-									<CopyableCode text={`https://binaural-taryn-unprecipitatively.ngrok-free.dev/webhooks/${String(user?.id).trim()}/shopify/redirect`} />
-								</div>
-							</div>
-
-							{/* ── footer buttons ── */}
-							<div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-200 dark:border-slate-700">
-								<button type="button" onClick={onClose} disabled={isSubmitting}
-									className="px-4 py-2 text-sm font-semibold rounded-xl border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
-									{t("form.cancel")}
-								</button>
-								<button type="submit" disabled={isSubmitting}
-									className="inline-flex items-center gap-1.5 px-5 py-2 text-sm font-semibold rounded-xl bg-primary text-white hover:opacity-90 transition-opacity shadow-sm disabled:opacity-60">
-									{isSubmitting ? <Loader2 size={15} className="animate-spin" /> : null}
-									{isEdit ? t("form.saveChanges") : t("form.createStore")}
-								</button>
-							</div>
-						</form>
-					</>
-				)}
-			</DialogContent>
-		</Dialog>
-	);
-}
-
-// ─── Shopify / WooCommerce mock dialogs ──────────────────────────────────────
-
-function MockProviderDialog({ open, onClose, provider, existingStore, fetchStores, t }) {
-	const meta = PROVIDER_META[provider];
-	const isEdit = !!existingStore;
-
-	return (
-		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-			<DialogContent className="!max-w-md bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800">
-				<div className="flex items-center gap-3 mb-4">
-					<div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-lg", meta.bg)}>{meta.icon}</div>
-					<div>
-						<h3 className="text-base font-bold text-gray-900 dark:text-slate-100">
-							{isEdit ? t("dialog.editTitle", { provider: meta.label }) : t("dialog.createTitle", { provider: meta.label })}
-						</h3>
-						<p className="text-xs text-gray-500 dark:text-slate-400">{t("dialog.subtitle")}</p>
-					</div>
-				</div>
-
-				<div className="bg-amber-50 dark:bg-[#2A2310] border border-amber-200 dark:border-amber-900/40 rounded-xl p-4 flex items-start gap-2.5">
-					<AlertCircle size={18} className="text-amber-500 shrink-0 mt-0.5" />
-					<div>
-						<p className="text-sm font-semibold text-amber-700 dark:text-amber-300">{t("mock.comingSoonTitle")}</p>
-						<p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">{t("mock.comingSoonDesc", { provider: meta.label })}</p>
-					</div>
-				</div>
-
-				<div className="mt-5 flex justify-end">
-					<button type="button" onClick={onClose}
-						className="px-4 py-2 text-sm font-semibold rounded-xl border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
-						{t("form.close")}
-					</button>
-				</div>
-			</DialogContent>
-		</Dialog>
-	);
-}
-
-// ─── Delete confirmation ─────────────────────────────────────────────────────
-
-function DeleteConfirmDialog({ open, onClose, store, onConfirm, loading, t }) {
-	return (
-		<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-			<DialogContent className="!max-w-md bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800">
-				<div className="space-y-2">
-					<h3 className="text-base font-semibold text-gray-900 dark:text-slate-100">{t("delete.title")}</h3>
-					<p className="text-sm text-gray-500 dark:text-slate-400">{t("delete.desc", { name: store?.name || "" })}</p>
-				</div>
-				<div className="mt-6 flex items-center justify-end gap-2">
-					<button type="button" onClick={onClose} disabled={loading}
-						className="px-4 py-2 text-sm font-semibold rounded-xl border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
-						{t("form.cancel")}
-					</button>
-					<button type="button" onClick={onConfirm} disabled={loading}
-						className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-xl bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-60">
-						{loading ? <Loader2 size={15} className="animate-spin" /> : null}
-						{t("delete.confirm")}
-					</button>
-				</div>
-			</DialogContent>
-		</Dialog>
-	);
-}
-
-// ─── Main Page ───────────────────────────────────────────────────────────────
-
-export default function StoresIntegrationPage() {
-	const t = useTranslations("storeIntegration");
-	const searchParams = useSearchParams();
-	const router = useRouter();
-	const pathname = usePathname();
-
-	useEffect(() => {
-		const errorType = searchParams.get('error');
-		const shop = searchParams.get('shop');
-
-		if (errorType) {
-			let messageKey;
-
-			// Determine which localization key to use
-			switch (errorType) {
-				case 'shopify_invalid_session':
-				case 'shopify_store_not_found':
-				case 'shopify_security_verification_failed':
-					messageKey = `errors.${errorType}`;
-					break;
-				default:
-					// Fallback for any unknown error codes
-					messageKey = 'errors.system_error';
-					break;
-			}
-
-			// 1. Get and show localized message
-			const message = t(messageKey, { shop: shop || '' });
-			toast.error(message);
-			// 2. Clear the URL parameters without reloading the page
-			// This removes '?error=...&shop=...' from the address bar
-			const params = new URLSearchParams(searchParams.toString());
-			params.delete('error');
-			params.delete('shop');
-
-			const queryString = params.toString();
-			const cleanUrl = queryString ? `${pathname}?${queryString}` : pathname;
-
-			router.replace(cleanUrl, { scroll: false });
-		}
-	}, [searchParams, pathname, router, t]);
-
-	// stores fetched from backend — keyed by provider
-	const [storesByProvider, setStoresByProvider] = useState({});
-	const [pageLoading, setPageLoading] = useState(true);
-
-	// dialog state
-	const [dialogProvider, setDialogProvider] = useState(null); // "easyorder" | "shopify" | "woocommerce" | null
-	const [dialogStore, setDialogStore] = useState(null); // existing StoreEntity or null (create mode)
-
-	// delete
-	const [deleteStore, setDeleteStore] = useState(null);
-	const [deleting, setDeleting] = useState(false);
-
-	// ── fetch all stores and bucket by provider ──
-	const fetchStores = useCallback(async () => {
-		setPageLoading(true);
-		try {
-			const res = await api.get("/stores", { params: { limit: 50 } });
-			const records = res.data?.records ?? res.data ?? [];
-			const map = {};
-			records.forEach((s) => { map[s.provider] = s; });
-			setStoresByProvider(map);
-		} catch (e) {
-			toast.error(normalizeAxiosError(e));
-		} finally {
-			setPageLoading(false);
-		}
-	}, []);
-
-	useEffect(() => { fetchStores(); }, [fetchStores]);
-
-	// ── open configure / edit dialog ──
-	const handleConfigure = (provider, store) => {
-		setDialogProvider(provider);
-		setDialogStore(store || null);
-	};
-
-	const handleDialogClose = () => {
-		setDialogProvider(null);
-		setDialogStore(null);
-	};
-
-	// ── manual sync ──
-	const handleSync = async (storeId) => {
-		try {
-			await api.post(`/stores/${storeId}/sync`);
-			toast.success(t("sync.queued"));
-			// small delay then refetch to reflect "syncing" status
-			setTimeout(fetchStores, 800);
-		} catch (e) {
-			toast.error(normalizeAxiosError(e));
-		}
-	};
-
-	// ── delete ──
-	const handleDeleteConfirm = async () => {
-		if (!deleteStore) return;
-		setDeleting(true);
-		try {
-			await api.delete(`/stores/${deleteStore.id}`);
-			toast.success(t("delete.success"));
-			setDeleteStore(null);
-			fetchStores();
-		} catch (e) {
-			toast.error(normalizeAxiosError(e));
-		} finally {
-			setDeleting(false);
-		}
-	};
-
-	// ── render ──
-	return (
-		<div className="min-h-screen p-6">
-			{/* breadcrumb header */}
-			<div className="bg-card flex flex-col gap-2 mb-4">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-2 text-lg font-semibold">
-						<span className="text-gray-400">{t("breadcrumb.home")}</span>
-						<ChevronLeft className="text-gray-400" size={18} />
-						<span className="text-[rgb(var(--primary))]">{t("breadcrumb.integrations")}</span>
-						<span className="ml-3 inline-flex w-3.5 h-3.5 rounded-full bg-primary" />
-					</div>
-
-					<div className="flex items-center gap-4">
-						<Button_
-							size="sm"
-							label={t("actions.howToUse")}
-							tone="white"
-							variant="solid"
-							icon={
-								<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<path
-										d="M18.3848 5.7832C18.2851 5.41218 18.0898 5.07384 17.8184 4.80202C17.5469 4.53021 17.2088 4.33446 16.8379 4.23438C15.4727 3.86719 10 3.86719 10 3.86719C10 3.86719 4.52734 3.86719 3.16211 4.23242C2.79106 4.33219 2.45278 4.52782 2.18126 4.79969C1.90974 5.07155 1.71453 5.41007 1.61523 5.78125C1.25 7.14844 1.25 10 1.25 10C1.25 10 1.25 12.8516 1.61523 14.2168C1.81641 14.9707 2.41016 15.5645 3.16211 15.7656C4.52734 16.1328 10 16.1328 10 16.1328C10 16.1328 15.4727 16.1328 16.8379 15.7656C17.5918 15.5645 18.1836 14.9707 18.3848 14.2168C18.75 12.8516 18.75 10 18.75 10C18.75 10 18.75 7.14844 18.3848 5.7832ZM8.26172 12.6172V7.38281L12.793 9.98047L8.26172 12.6172Z"
-										fill="#A7A7A7"
-									/>
-								</svg>
-							}
-						/>
-					</div>
+		<div className="min-h-screen p-6 bg-[#f3f6fa] dark:bg-[#19243950]">
+			{/* Header */}
+			<div className="bg-card  flex flex-col gap-2 mb-4">
+				<div className="flex items-center gap-2 text-lg font-semibold">
+					<span className="text-gray-400">{t("breadcrumb.home")}</span>
+					<ChevronLeft className="text-gray-400" size={18} />
+					<span className="text-[rgb(var(--primary))]">{t("breadcrumb.stores")}</span>
+					<span className="ml-3 inline-flex w-3.5 h-3.5 rounded-full bg-[rgb(var(--primary))]" />
 				</div>
 			</div>
 
-			{/* ── store cards grid ── */}
-			{pageLoading ? (
-				<div className="flex items-center justify-center py-24">
-					<Loader2 size={32} className="animate-spin text-[rgb(var(--primary))]" />
-				</div>
-			) : (
-				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-					{PROVIDERS.map((provider, idx) => (
-						<StoreCard
-							key={provider}
-							provider={provider}
-							store={storesByProvider[provider] || null}
-							t={t}
-							index={idx}
-							onConfigure={handleConfigure}
-							onSync={handleSync}
-							fetchStores={fetchStores}
-						/>
-					))}
-				</div>
+			{/* Store Cards Grid */}
+			<AnimatePresence mode="wait">
+				<motion.div
+					key="stores"
+					initial={{ opacity: 0, y: 20 }}
+					animate={{ opacity: 1, y: 0 }}
+					exit={{ opacity: 0, y: -20 }}
+					transition={{ duration: 0.3 }}
+					className="bg-card"
+				>
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+						{loading
+							? PROVIDERS.map((provider, i) => (
+								<SkeletonCard key={provider || i} />
+							))
+							: PROVIDERS.map((provider, index) => {
+								const store = stores.find(
+									(s) => s.provider === provider
+								);
+
+								return (
+									<motion.div
+										key={provider}
+										initial={{ opacity: 0, y: 20 }}
+										animate={{ opacity: 1, y: 0 }}
+										transition={{ delay: index * 0.1 }}
+									>
+										<StoreCard
+											provider={provider}
+											store={store}
+											t={t}
+											onConfigure={handleConfigure}
+											onSync={handleSync}
+											onOpenWebhook={handleOpenWebhook}
+											fetchStores={fetchStores}
+											index={index}
+										/>
+									</motion.div>
+								);
+							})}
+					</div>
+				</motion.div>
+			</AnimatePresence>
+			{/* Configuration Dialog */}
+			{dialogOpen && currentProvider && (
+				<StoreConfigDialog
+					open={dialogOpen}
+					onClose={handleCloseDialog}
+					provider={currentProvider}
+					existingStore={currentStore}
+					fetchStores={fetchStores}
+					t={t}
+					onCreated={(provider, id) => handleOpenWebhook(provider, { id, provider })}
+				/>
 			)}
-
-			{/* ── dialogs ── */}
-			{/* EasyOrder */}
-			<EasyOrderDialog
-				open={dialogProvider === "easyorder"}
-				onClose={handleDialogClose}
-				existingStore={dialogStore}
-				fetchStores={fetchStores}
-				t={t}
-			/>
-
-			{/* Shopify */}
-			<ShopifyDialog
-				open={dialogProvider === "shopify"}
-				onClose={handleDialogClose}
-				existingStore={dialogStore}
-				fetchStores={fetchStores}
-				t={t}
-			/>
-
-			{/* WooCommerce (mock) */}
-			<MockProviderDialog
-				open={dialogProvider === "woocommerce"}
-				onClose={handleDialogClose}
-				provider="woocommerce"
-				existingStore={dialogStore}
-				fetchStores={fetchStores}
-				t={t}
-			/>
-
-			{/* Delete confirmation */}
-			<DeleteConfirmDialog
-				open={!!deleteStore}
-				onClose={() => setDeleteStore(null)}
-				store={deleteStore}
-				loading={deleting}
-				onConfirm={handleDeleteConfirm}
-				t={t}
-			/>
+			{/* Webhook Modal */}
+			{webhookModalProvider && webhookModalStore && (
+				<StoreWebhookModal
+					provider={webhookModalProvider}
+					store={webhookModalStore}
+					onClose={handleCloseWebhookModal}
+					fetchStores={fetchStores}
+					t={t}
+				/>
+			)}
 		</div>
 	);
 }

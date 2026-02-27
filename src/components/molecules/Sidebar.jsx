@@ -29,6 +29,7 @@ import {
 	FolderTree,
 	Layers,
 	LogOut,
+	XCircle,
 } from 'lucide-react';
 import { FaUserTie } from 'react-icons/fa6';
 import { useRouter } from '@/i18n/navigation';
@@ -78,6 +79,7 @@ const menuItems = [
 		children: [
 			{ icon: Package, labelKey: 'orders', href: '/orders?tab=orders' },
 			{ icon: Undo2, labelKey: 'order-replacement', href: '/orders?tab=replacement' },
+			{ icon: XCircle, labelKey: 'failedOrders', href: '/orders?tab=failedOrders' },
 		],
 	},
 	{

@@ -91,6 +91,7 @@
       "prev": "السابق",
       "next": "التالي",
       "docs": "التوثيق الرسمي",
+      "site": "الموقع",
       "imagePlaceholder": "سيظهر لقطة الشاشة هنا"
     },
     "usage": {
@@ -359,6 +360,7 @@
     "storeIntegration": "تكامل المتجر",
     "settings": "الإعدادات",
     "order-replacement": "طلبات الاستبدال",
+    "failedOrders": "الطلبات الفاشلة",
     "logout": "تسجيل الخروج"
   },
   "header": {
@@ -633,112 +635,100 @@
     },
     "empty": "لا توجد بيانات"
   },
-  "storeIntegration": {
+  "storeIntegrations": {
     "breadcrumb": {
       "home": "الرئيسية",
-      "integrations": "التكاملات"
+      "stores": "المتاجر"
     },
-    "actions": {
-      "howToUse": "كيف أستخدمه؟"
+    "title": "تكاملات المتاجر",
+    "subtitle": "اربط متاجرك وزامن الطلبات تلقائيًا",
+    "refresh": "تحديث",
+    "card": {
+      "editSettings": "تعديل الإعدادات",
+      "configureSettings": "إعداد التكامل",
+      "settings": "الإعدادات",
+      "sync": "مزامنة",
+      "connected": "متصل",
+      "notConnected": "غير متصل",
+      "configured": "تم الإعداد",
+      "notConfigured": "لم يُضبط بعد",
+      "updating": "جاري التحديث...",
+      "guide": "كيفية الربط",
+      "guideTitle": "دليل التكامل والربط",
+      "configureFirst": "يرجى إعداد التكامل أولاً"
+    },
+    "webhook": {
+      "title": "إعداد Webhook",
+      "subtitle": "انسخ روابط الـ Webhook والأسرار وضعها في إعدادات المتجر.",
+      "triggerTitle": "متى يعمل؟",
+      "triggerDescription": "سيتم استدعاء هذه الروابط عند إنشاء الطلب أو تحديث حالته في المتجر.",
+      "urlHint": "ضع هذا الرابط في إعدادات Webhook في منصة المتجر.",
+      "securityHint": "انسخ الأسرار والصقها في إعدادات Webhook في متجرك.",
+      "rotate": "إعادة إنشاء الأسرار",
+      "docs": "التوثيق",
+      "close": "إغلاق"
+    },
+    "syncStatus": {
+      "pending": "قيد الانتظار",
+      "syncing": "جاري المزامنة",
+      "synced": "تمت المزامنة",
+      "failed": "فشل"
+    },
+    "dialog": {
+      "title": "إعداد تكامل {provider}",
+      "subtitle": "اربط متجرك لمزامنة الطلبات",
+      "viewDocs": "عرض التوثيق"
+    },
+    "form": {
+      "storeInfoSection": "معلومات المتجر",
+      "storeName": "اسم المتجر",
+      "storeNamePlaceholder": "متجري الإلكتروني",
+      "storeCode": "كود المتجر",
+      "storeCodePlaceholder": "كود-المتجر",
+      "storeUrl": "رابط المتجر",
+      "activeStore": "متجر نشط",
+      "autoSync": "مزامنة تلقائية",
+      "apiKeysSection": "مفاتيح API",
+      "apiKey": "مفتاح API",
+      "apiKeyPlaceholder": "أدخل مفتاح API",
+      "clientSecret": "السر",
+      "secretPlaceholder": "أدخل السر",
+      "maskedPlaceholder": "••••••••••",
+      "webhooksSection": "إعداد Webhooks",
+      "webhookSecret": "سر Webhook",
+      "webhookCreateOrderSecret": "سر إنشاء الطلب",
+      "webhookUpdateStatusSecret": "سر تحديث الحالة",
+      "regenerateSecrets": "إعادة إنشاء الأسرار",
+      "cancel": "إلغاء",
+      "create": "إنشاء",
+      "update": "تحديث",
+      "createSuccess": "تم إنشاء المتجر بنجاح",
+      "updateSuccess": "تم تحديث المتجر بنجاح",
+      "copied": "تم النسخ"
+    },
+    "instructions": {
+      "apiKeyTitle": "كيفية الحصول على مفتاح API",
+      "webhooksTitle": "تعليمات إعداد Webhooks",
+      "webhookCreateOrderLabel": "رابط webhook لإنشاء الطلب",
+      "webhookUpdateStatusLabel": "رابط webhook لتحديث الحالة",
+      "systemSecretsTitle": "الأسرار المُنشأة لك",
+      "systemSecretsDescription": "انسخ هذه الأسرار والصقها في إعدادات webhook في WooCommerce"
     },
     "validation": {
       "nameRequired": "اسم المتجر مطلوب",
       "codeRequired": "كود المتجر مطلوب",
       "storeUrlRequired": "رابط المتجر مطلوب",
+      "invalidUrl": "تنسيق رابط غير صحيح",
       "apiKeyRequired": "مفتاح API مطلوب",
-      "webhookCreateSecretRequired": "سر إنشاء الطلب مطلوب",
-      "webhookUpdateSecretRequired": "سر تحديث الحالة مطلوب",
-      "clientKeyRequired": "Client ID مطلوب",
-      "clientSecretRequired": "Client Secret مطلوب"
+      "clientSecretRequired": "السر مطلوب",
+      "webhookSecretRequired": "سر Webhook مطلوب",
+      "webhookCreateOrderSecretRequired": "سر إنشاء الطلب مطلوب",
+      "webhookUpdateStatusSecretRequired": "سر تحديث الحالة مطلوب"
     },
-    "errors": {
-      "shopify_invalid_session": "جلسة شوبيفاي غير صالحة. يرجى المحاولة مرة أخرى من داخل لوحة تحكم شوبيفاي.",
-      "shopify_store_not_found": "لم يتم العثور على المتجر {shop} يرجى إضافة المتجر أولاً.",
-      "shopify_security_verification_failed": "فشل التحقق من الأمان. الطلب لم يأتِ من مصدر موثوق.",
-      "system_error": "حدث خطأ في النظام. يرجى التواصل مع الدعم الفني."
-    },
-    "card": {
-      "editSettings": "إعدادات",
-      "configureSettings": "إعداد المتجر",
-      "sync": "مزامنة"
-    },
-    "syncStatus": {
-      "pending": "انتظار",
-      "syncing": "جاري المزامنة",
-      "synced": "متزامن",
-      "failed": "فشل"
-    },
-    "sync": {
-      "queued": "تم إضافة طلب المزامنة إلى قائمة الانتظار"
-    },
-    "dialog": {
-      "editTitle": "تعديل متجر {provider}",
-      "createTitle": "إعداد متجر {provider}",
-      "subtitle": "أدخل المعلومات المطلوبة للربط"
-    },
-    "form": {
-      "storeInfoSection": "معلومات المتجر",
-      "apiKeySection": "مفتاح API",
-      "webhooksSection": "الـ Webhooks",
-      "storeName": "اسم المتجر",
-      "storeNamePlaceholder": "مثال: متجري على EasyOrder",
-      "storeCode": "كود المتجر",
-      "storeCodePlaceholder": "مثال: my-store",
-      "storeUrl": "رابط المتجر",
-      "activeStore": "المتجر فعّال",
-      "autoSync": "المزامنة التلقائية",
-      "apiKey": "مفتاح API",
-      "apiKeyPlaceholder": "الصق مفتاح API هنا",
-      "webhookCreateOrderSecret": "سر Webhook إنشاء الطلب",
-      "webhookUpdateStatusSecret": "سر Webhook تحديث الحالة",
-      "secretPlaceholder": "الصق السر هنا",
-      "maskedPlaceholder": "****",
-      "clientKey": "Client ID",
-      "clientKeyPlaceholder": "الصق Client ID هنا",
-      "clientSecret": "Client Secret",
-      "clientSecretPlaceholder": "الصق Client Secret هنا",
-      "requiredFieldsError": "الحقول الأساسية مطلوبة (الاسم، الكود، الرابط)",
-      "secretsRequiredError": "جميع المفاتيح والأسرار مطلوبة عند إنشاء متجر جديد",
-      "createSuccess": "تم إنشاء المتجر بنجاح",
-      "updateSuccess": "تم تحديث المتجر بنجاح",
-      "cancel": "إلغاء",
-      "close": "إغلاق",
-      "saveChanges": "حفظ التعديلات",
-      "createStore": "إنشاء المتجر",
-      "shopifyCredentialsSection": "بيانات الاعتماد",
-      "shopifyRedirectSection": "رابط إعادة التوجيه"
-    },
-    "instructions": {
-      "apiKeyTitle": "كيف تحصل على مفتاح API؟",
-      "apiKey1": "انتقل إلى لوحة التحكم البائع في حساب EasyOrder.",
-      "apiKey2": "من الإعدادات، انتقل إلى قسم Public API",
-      "apiKey3": "اضغط على \"Create New API Key\".",
-      "apiKey4": "أعط مفتاحك اسمًا وحدّد كل الصلاحيات ثم اضغط حفظ.",
-      "apiKey5": "سيظهر مفتاح API على الشاشة. تأكد من نسخه.",
-      "webhooksTitle": "كيف تُنشئ الـ Webhooks؟",
-      "webhook1": "سجّل الدخول إلى لوحة التحكم البائع في EasyOrder.",
-      "webhook2": "اذهب إلى قسم Public API.",
-      "webhook3": "انتقل إلى قسم Webhooks واضغط على \"Create Webhook\".",
-      "webhook4": "أنشئ Webhook من نوع \"orders\" والصق الرابط الـسابق المعطى؛ سيظهر لك \"السر\" (Secret) تلقائياً، تأكد من نسخه ",
-      "webhook5": "أنشئ Webhook آخر من نوع \"order status update\" والصق الرابط السابق المعطى؛ سيظهر لك \"السر\" (Secret) تلقائياً، تأكد من نسخه.",
-      "webhookCreateOrderLabel": "Webhook — إنشاء الطلب (orders)",
-      "webhookUpdateStatusLabel": "Webhook — تحديث الحالة (order status update)",
-      "shopifyTitle": "احصل على بيانات الاعتماد من Shopify",
-      "shopify1": "انتقل إلى لوحة تحكم Shopify Partner الخاصة بك",
-      "shopify2": "أنشئ تطبيقًا جديدًا أو اختر تطبيقًا موجودًا",
-      "shopify3": "انسخ Client ID و Client Secret من إعدادات التطبيق",
-      "shopifyRedirectTitle": "أضف رابط إعادة التوجيه",
-      "shopifyRedirect1": "انسخ هذا الرابط وأضفه إلى Allowed redirection URL(s) في Partner Dashboard قبل الربط:"
-    },
-    "mock": {
-      "comingSoonTitle": "قريبًا",
-      "comingSoonDesc": "سيتوفر الربط مع {provider} قريبًا. تابعنا للإعلانات القادمة."
-    },
-    "delete": {
-      "title": "حذف المتجر",
-      "desc": "هل أنت متأكد أنك تريد حذف المتجر \"{name}\"؟ لا يمكن التراجع عن هذا الإجراء.",
-      "confirm": "حذف",
-      "success": "تم حذف المتجر بنجاح"
+    "messages": {
+      "statusUpdated": "تم تحديث الحالة بنجاح",
+      "syncStarted": "بدأت المزامنة",
+      "secretsRegenerated": "تم إعادة إنشاء الأسرار بنجاح"
     }
   },
   "integrated": {
@@ -2819,6 +2809,7 @@
   "orders": {
     "tabs": {
       "orders": "الطلبات",
+      "failedOrders": "الطلبات الفاشلة",
       "distribution": "توزيع الطلبات",
       "returns": "طلبات الاسترجاع",
       "replacement": "طلبات الاستبدال",
@@ -2897,6 +2888,52 @@
         "oldPrice": "السعر الأصلي",
         "newPrice": "السعر الجديد",
         "diff": "الفرق"
+      }
+    },
+    "image": {
+      "preview": "معاينة"
+    },
+    "failedOrders": {
+      "searchPlaceholder": "ابحث بالمتجر أو اسم العميل أو رقم الطلب...",
+      "stats": {
+        "total": "إجمالي الفاشلة",
+        "pending": "قيد الانتظار",
+        "retrying": "جارٍ إعادة المحاولة",
+        "success": "نجح",
+        "failed": "فشل"
+      },
+      "statuses": {
+        "pending": "قيد الانتظار",
+        "retrying": "جارٍ إعادة المحاولة",
+        "success": "ناجح",
+        "failed": "فاشل"
+      },
+      "columns": {
+        "store": "المتجر",
+        "customerName": "اسم العميل",
+        "externalOrderId": "رقم الطلب الخارجي",
+        "errorReason": "سبب الخطأ",
+        "status": "الحالة",
+        "retryCount": "عدد المحاولات",
+        "customerPhone": "رقم الهاتف"
+      },
+      "filters": {
+        "store": "المتجر",
+        "storePlaceholder": "اختر المتجر"
+      },
+      "actions": {
+        "retry": "إعادة المحاولة",
+        "retrying": "جارٍ إعادة المحاولة...",
+        "alreadySuccess": "تمّ بنجاح"
+      },
+      "messages": {
+        "fetchFailed": "فشل تحميل الطلبات الفاشلة، يرجى المحاولة مجدداً",
+        "retryStarted": "تمّ إرسال طلب إعادة المحاولة بنجاح",
+        "retryFailed": "فشلت إعادة المحاولة، يرجى المحاولة لاحقاً"
+      },
+      "empty": {
+        "title": "لا توجد طلبات فاشلة",
+        "subtitle": "جميع الطلبات الواردة من المتاجر الخارجية تمّت معالجتها بنجاح"
       }
     },
     "custom": "مخصص",
@@ -3096,7 +3133,10 @@
       "cash": "نقدًا",
       "card": "بطاقة",
       "bank_transfer": "تحويل بنكي",
-      "cod": "الدفع عند الاستلام"
+      "cod": "الدفع عند الاستلام",
+      "unknown": "طريقة غير معروفة",
+      "wallet": "محفظة إلكترونية",
+      "other": "طريقة أخرى"
     },
     "paymentStatuses": {
       "pending": "غير مدفوع",
@@ -3505,7 +3545,10 @@
       "cash": "نقدي",
       "card": "بطاقة ائتمان",
       "bankTransfer": "تحويل بنكي",
-      "cod": "الدفع عند الاستلام"
+      "cod": "الدفع عند الاستلام",
+      "unknown": "طريقة غير معروفة",
+      "wallet": "محفظة إلكترونية",
+      "other": "طريقة أخرى"
     },
     "paymentStatuses": {
       "pending": "معلق",
@@ -3546,7 +3589,8 @@
       "itemsRequired": "يجب إضافة منتج واحد على الأقل",
       "districtRequired": "يرجى اختيار المنطقة / الحي",
       "zoneRequired": "يرجى اختيار الحي الفرعي / الزون",
-      "locationRequired": "يرجى اختيار موقع الاستلام (المستودع)"
+      "locationRequired": "يرجى اختيار موقع الاستلام (المستودع)",
+      "fixErrors": "من فضلك أصلح الأخطاء أولاً"
     },
     "messages": {
       "createSuccess": "تم إنشاء الطلب بنجاح",
@@ -3565,19 +3609,16 @@
   "CreateReplacement": {
     "title": "إنشاء استبدال",
     "titleEdit": "تعديل الاستبدال",
-
     "breadcrumb": {
       "home": "الرئيسية",
       "orders": "الطلبات"
     },
-
     "actions": {
       "cancel": "إلغاء",
       "submit": "إرسال",
       "update": "تحديث",
       "saving": "جارٍ الحفظ..."
     },
-
     "sections": {
       "searchOrder": "البحث عن الطلب",
       "replacementInfo": "بيانات الاستبدال",
@@ -3585,19 +3626,16 @@
       "images": "الصور",
       "priceSummary": "ملخص الأسعار"
     },
-
     "placeholders": {
       "orderNumber": "رقم الطلب",
       "reasonOfReplacement": "اكتب سبب الاستبدال",
       "anotherReason": "اكتب سببًا إضافيًا (اختياري)",
       "shippingCompany": "اختر شركة الشحن"
     },
-
     "labels": {
       "ordersFound": "طلبات تم العثور عليها",
       "selectedOrder": "الطلب المختار"
     },
-
     "details": {
       "customerName": "اسم العميل",
       "phone": "رقم الهاتف",
@@ -3613,30 +3651,24 @@
         "total": "الإجمالي"
       }
     },
-
     "fields": {
       "reasonOfReplacement": "سبب الاستبدال",
       "anotherReason": "سبب إضافي",
       "shippingCompany": "شركة الشحن"
     },
-
     "noShipping": "بدون شركة شحن",
-
     "noOrdersFound": "لا توجد طلبات مطابقة",
     "noOrdersFoundHint": "جرّب رقم طلب مختلف",
     "selectOrderFirst": "اختر طلبًا أولاً للمتابعة",
-
     "chooseItemsToReplace": "اختر العناصر المطلوب استبدالها",
     "selected": "محدد",
     "replacementDetails": "تفاصيل الاستبدال",
     "noItemsAdded": "لم يتم إضافة عناصر",
     "selectFromDropdownAbove": "اختر العناصر من القائمة بالأعلى للبدء",
-
     "selectItems": "اختر العناصر المراد استبدالها…",
     "availableItems": "عناصر متاحة",
     "clearAll": "مسح الكل",
     "clickToSelect": "اضغط على العناصر لتحديدها",
-
     "itemCard": {
       "title": "عنصر الاستبدال",
       "originalItem": "العنصر الأصلي",
@@ -3646,7 +3678,6 @@
       "newPrice": "السعر الجديد",
       "priceDiff": "فرق السعر"
     },
-
     "summary": {
       "items": "عدد العناصر",
       "oldTotal": "إجمالي القديم",
@@ -3656,7 +3687,6 @@
       "priceDiff": "فرق الإجمالي",
       "finalTotal": "الإجمالي النهائي"
     },
-
     "reasons": {
       "wrong_size": "مقاس خاطئ",
       "damaged": "منتج تالف",
@@ -3670,12 +3700,10 @@
       "faulty": "به عطل",
       "other": "سبب آخر"
     },
-
     "errors": {
       "itemAlreadyAdded": "تمت إضافة هذا العنصر بالفعل",
       "loadFailed": "فشل تحميل البيانات"
     },
-
     "validation": {
       "orderRequired": "الطلب مطلوب",
       "reasonRequired": "السبب مطلوب",
@@ -3683,7 +3711,6 @@
       "itemsRequired": "يجب اختيار عنصر واحد على الأقل",
       "fixErrors": "من فضلك أصلح الأخطاء أولاً"
     },
-
     "messages": {
       "loading": "جارٍ التحميل...",
       "createSuccess": "تم إنشاء الاستبدال بنجاح",

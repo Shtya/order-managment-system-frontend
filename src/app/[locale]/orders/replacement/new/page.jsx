@@ -1364,7 +1364,7 @@ export default function CreateReplacementPage({ isEditMode = false, replacementI
 	const router = useRouter();
 
 	// ── State ──
-	const [selectedOrder, setSelectedOrder] = useState( );
+	const [selectedOrder, setSelectedOrder] = useState();
 	const [replacementItems, setReplacementItems] = useState([]);
 	// imageFiles: ImageFile[] — local File objects + existing URL entries
 	const [imageFiles, setImageFiles] = useState([]);
@@ -1388,9 +1388,23 @@ export default function CreateReplacementPage({ isEditMode = false, replacementI
 
 	// ── Lookups ──
 	useEffect(() => {
-		api.get("/shipping-companies", { params: { limit: 200, isActive: true } })
-			.then((r) => setShippingCompanies(Array.isArray(r.data?.records) ? r.data.records : Array.isArray(r.data) ? r.data : []))
-			.catch(() => { });
+		const fetchCompanies = async () => {
+			try {
+				const r = await api.get("/shipping-companies", {
+					params: { limit: 200, isActive: true }
+				});
+
+				// Check for records array or fallback to raw data
+				const data = r.data?.records ?? r.data;
+				setShippingCompanies(Array.isArray(data) ? data : []);
+
+			} catch (error) {
+				// Silently handle error as per original code
+				console.error("Failed to fetch shipping companies", error);
+			}
+		};
+
+		fetchCompanies();
 	}, []);
 
 	// ── Load existing data in edit mode ──
@@ -1476,12 +1490,14 @@ export default function CreateReplacementPage({ isEditMode = false, replacementI
 		//     if (invalid) e.items = t("validation.newVariantRequired");
 		// }
 		setErrors(e);
+		console.log(e)
 		return Object.keys(e).length === 0;
 	};
 
 	// ── Submit ──
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+
 		if (!validate()) { toast.error(t("validation.fixErrors")); return; }
 
 		setSubmitting(true);

@@ -6,8 +6,10 @@
 
 :root {
   --primary: #ff8b00;
-  --secondary: #ffb703; /* Golden Yellow */
-  --third: #ff5c2b; /* Warm Coral */
+  --secondary: #ffb703;
+  /* Golden Yellow */
+  --third: #ff5c2b;
+  /* Warm Coral */
   --primary-from: 255 180 64;
   --primary-to: 255 139 0;
   --primary-shadow: 255 139 0 / 0.4;
@@ -52,9 +54,12 @@
 }
 
 .dark {
-  --primary: #5b4bff; /* Indigo Blue */
-  --secondary: #8b7cff; /* Soft Violet */
-  --third: #3be7ff; /* Neon Cyan */
+  --primary: #5b4bff;
+  /* Indigo Blue */
+  --secondary: #8b7cff;
+  /* Soft Violet */
+  --third: #3be7ff;
+  /* Neon Cyan */
 
   --primary-from: 140 130 255;
   --primary-to: 100 90 255;
@@ -88,21 +93,11 @@
   --ring: oklch(0.556 0 0);
 }
 
+/* Fixed .bg-card: replaced invalid shadow-[...] with shadow-lg and shadow-xl */
 .bg-card {
-  @apply p-4 md:p-6 rounded-xl md:rounded-2xl border transition-all duration-300
- 
-         bg-card 
-         border-gray-200
-         shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_-4px_rgba(0,0,0,0.08)]
-         hover:shadow-[0_2px_6px_rgba(0,0,0,0.07),0_8px_24px_-6px_rgba(0,0,0,0.1)]
-         hover:border-gray-300
-
-         /* Dark mode: deep navy with glass-like border */
-         dark:bg-[#182337]/95
-         dark:border-white/10
-         dark:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.05)]
-         dark:hover:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.8),0_0_0_1px_rgba(255,255,255,0.08)]
-         dark:hover:border-white/15;
+  @apply p-4 md:p-6 rounded-xl md:rounded-2xl border transition-all duration-300 bg-card border-gray-200 shadow-lg hover:shadow-xl hover:border-gray-300;
+  /* Dark mode: deep navy with glass-like border */
+  @apply dark:bg-[#182337]/95 dark:border-white/10 dark:shadow-lg dark:hover:shadow-xl dark:hover:border-white/15;
 }
 
 .bg-primary1 {
@@ -161,13 +156,9 @@
   transform: translateY(0);
 }
 
+/* Fixed .bg-card-select: removed invalid @apply if any, kept valid Tailwind classes */
 .bg-card-select {
-  @apply border transition-all duration-300
-         bg-white/90  
-         border-slate-200/60
- 
-         dark:bg-[#182337]/95
-         dark:border-white/10;
+  @apply border transition-all duration-300 bg-white/90 border-slate-200/60 dark:bg-[#182337]/95 dark:border-white/10;
 }
 
 @theme inline {
@@ -201,9 +192,11 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   html {
     scroll-behavior: smooth;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -214,9 +207,11 @@
     -webkit-appearance: none;
     margin: 0;
   }
+
   input[type='number'] {
     -moz-appearance: textfield;
   }
+
 }
 
 [dir='ltr'] body {
@@ -226,9 +221,11 @@
 [dir='rtl'] body {
   font-family: var(--font-arabic) !important;
 }
+
 .font-ar {
   font-family: var(--font-arabic) !important;
 }
+
 .font-en {
   font-family: var(--font-open-sans) !important;
 }
@@ -247,15 +244,18 @@
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
 }
+
 .shimmer {
   background: linear-gradient(90deg, rgba(226, 232, 240, 0.9) 25%, rgba(255, 255, 255, 0.95) 50%, rgba(226, 232, 240, 0.9) 75%);
   background-size: 200% 100%;
   animation: shimmerMove 1.3s ease-in-out infinite;
 }
+
 html {
   scroll-behavior: smooth;
 }
@@ -307,8 +307,10 @@ html {
 
 /* Webkit (Chrome / Edge / Safari) */
 ::-webkit-scrollbar {
-  width: 8px; /* thin */
-  height: 8px; /* for horizontal scroll */
+  width: 8px;
+  /* thin */
+  height: 8px;
+  /* for horizontal scroll */
 }
 
 ::-webkit-scrollbar-track {
@@ -341,7 +343,8 @@ html {
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  border: 2px solid rgba(24, 35, 55, 0.75); /* blends with your dark bg */
+  border: 2px solid rgba(24, 35, 55, 0.75);
+  /* blends with your dark bg */
   box-shadow: 0 10px 28px -14px rgba(0, 0, 0, 0.75);
 }
 
@@ -358,6 +361,7 @@ html {
 
 /* Custom Scrollbar Styles */
 @layer utilities {
+
   /* Custom Scrollbar for Kanban Columns */
   .scrollbar-thin {
     scrollbar-width: thin;
@@ -427,9 +431,11 @@ html {
   0% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
+
   100% {
     background-position: 0% 50%;
   }
@@ -467,6 +473,7 @@ html {
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
@@ -484,10 +491,12 @@ html {
 
 /* Badge Pulse Animation */
 @keyframes pulse-badge {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.7;
   }
@@ -563,10 +572,12 @@ select:focus-visible {
 
 /* Floating Animation */
 @keyframes float {
+
   0%,
   100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-10px);
   }
@@ -581,6 +592,7 @@ select:focus-visible {
   0% {
     background-position: -1000px 0;
   }
+
   100% {
     background-position: 1000px 0;
   }
@@ -609,6 +621,7 @@ select:focus-visible {
 
 /* Mobile Optimizations */
 @media (max-width: 768px) {
+
   /* Increase touch targets */
   button {
     min-height: 44px;
@@ -617,6 +630,7 @@ select:focus-visible {
 
   /* Reduce motion for better performance */
   @media (prefers-reduced-motion: reduce) {
+
     *,
     *::before,
     *::after {
@@ -640,6 +654,7 @@ select:focus-visible {
 
 /* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {

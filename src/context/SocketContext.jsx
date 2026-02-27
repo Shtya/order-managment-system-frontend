@@ -127,13 +127,29 @@ export const SocketProvider = ({ children }) => {
             });
             incrementUnread();
         })
+
+        socket.on("store:sync-status", (payload) => {
+            publish({
+                type: "STORE_SYNC_STATUS",
+                payload,
+            });
+        });
+        socket.on("failed-order:update", (payload) => {
+            publish({
+                type: "FAILED_ORDER_UPDATE",
+                payload,
+            });
+        });
+
         // Cleanup listeners
         return () => {
             socket.off("connect");
             socket.off("disconnect");
             socket.off("reconnect");
             socket.off("reconnect_error");
-            socket.off("new_message");
+            socket.off("new_notification");
+            socket.off("store:sync-status");
+            socket.off("failed-order:update");
         };
     }, [user?.id, user?.accessToken]);
 

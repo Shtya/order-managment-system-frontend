@@ -33,15 +33,19 @@ import { useTranslations, useLocale } from "next-intl";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { normalizeAxiosError } from "@/utils/axios";
+import { ModalHeader, ModalShell } from "@/components/ui/modalShell";
+import { PrimaryBtn } from "@/components/atoms/Button";
 
 const PROVIDER_META = {
 	bosta: {
 		configFields: [
-			{ key: "apiKey", type: "password", labelKey: "settings.fields.apiKey", required: true },
+			{ key: "apiKey", type: "password", labelKey: "settings.fields.apiKey", required: true, hide: true },
 			// { key: "accountId", type: "text", labelKey: "settings.fields.accountId", required: false },
 		],
+		webhookHiddenFields: [],
 		guide: {
 			docsUrl: "https://docs.bosta.co/docs/how-to/get-your-api-key",
+			showSteps: false,
 			steps: [
 				{
 					image: "/guide/bosta/step-img-0.png", // you can add it or leave placeholder
@@ -122,18 +126,61 @@ const PROVIDER_META = {
 
 	jt: {
 		configFields: [
-			{ key: "apiKey", type: "password", labelKey: "settings.fields.apiKey", required: true },
-			{ key: "customerId", type: "text", labelKey: "settings.fields.customerId", required: true },
+			{ key: "apiKey", type: "password", labelKey: "settings.fields.apiKey", required: true, hide: true },
+			{ key: "customerId", type: "text", labelKey: "settings.fields.customerId", required: true, hide: false },
 		],
-		guide: { docsUrl: "https://developer.jtexpress.com", steps: [] },
+		webhookHiddenFields: [],
+		guide: { docsUrl: "https://developer.jtexpress.com", showSteps: false, steps: [] },
 	},
 
 	turbo: {
 		configFields: [
-			{ key: "apiKey", type: "password", labelKey: "settings.fields.apiKey", required: true },
-			{ key: "secretKey", type: "password", labelKey: "settings.fields.secretKey", required: true },
+			{ key: "apiKey", type: "password", labelKey: "settings.fields.apiKey", required: true, hide: true },
+			{ key: "accountId", type: "text", labelKey: "settings.fields.customerId", required: true, hide: false },
 		],
-		guide: { docsUrl: "https://turbo.com", steps: [] },
+		webhookHiddenFields: ["headerName"],
+		guide: {
+			mainUrl: "https://turbo-eg.com",
+			showSteps: true,
+			steps: [
+				{
+					image: "/guide/turbo/step1.png",
+					tab: { en: "Login", ar: "تسجيل الدخول" },
+					title: { en: "Login to your account", ar: "تسجيل الدخول إلى حسابك" },
+					desc: {
+						en: "Access your Turbo dashboard using your merchant credentials at https://business.turbo.info/login",
+						ar: "قم بالدخول إلى لوحة تحكم تيربو باستخدام بيانات التاجر الخاصة بك عبر الرابط: https://business.turbo.info/login",
+					},
+				},
+				{
+					image: "/guide/turbo/step2.png",
+					tab: { en: "Settings", ar: "الإعدادات" },
+					title: { en: "Navigate to Settings", ar: "الانتقال إلى تبويب الإعدادات" },
+					desc: {
+						en: "Go to the Settings tab to find your integration credentials.",
+						ar: "انتقل إلى تبويب الإعدادات (Settings) للعثور على بيانات الربط الخاصة بك.",
+					},
+				},
+				{
+					image: "/guide/turbo/step3.png",
+					tab: { en: "API Keys", ar: "بيانات الربط" },
+					title: { en: "Copy Credentials", ar: "نسخ كود العميل ومفتاح الربط" },
+					desc: {
+						en: "Locate 'كود العميل الخاص بك' and 'مفتاح الربط الخاص بك'. Copy and paste them into the Account ID and API Key fields here.",
+						ar: "ابحث عن «كود العميل الخاص بك» و «مفتاح الربط الخاص بك». قم بنسخهم ولصقهم في خانة كود العميل ومفتاح API هنا.",
+					},
+				},
+				{
+					image: "/guide/turbo/step4.png",
+					tab: { en: "Webhook", ar: "الويب هوك" },
+					title: { en: "Configure Webhook", ar: "إعداد الـ Webhook" },
+					desc: {
+						en: "Copy the Webhook URL and Secret from our system and paste them into the Webhook section in your Turbo settings.",
+						ar: "انسخ رابط الـ Webhook والـ Secret من نظامنا والقصقهم في قسم الويب هوك داخل إعدادات تيربو.",
+					},
+				},
+			]
+		},
 	},
 };
 
@@ -142,22 +189,7 @@ function pick(bilingualObj, locale) {
 	return locale?.startsWith("ar") ? bilingualObj.ar : bilingualObj.en;
 }
 
-function PrimaryBtn({ children, onClick, disabled, loading, className = "" }) {
-	return (
-		<button
-			onClick={onClick}
-			disabled={disabled || loading}
-			className={`flex items-center justify-center gap-2 rounded-xl py-2.5 px-5 text-sm font-semibold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed ${className}`}
-			style={{
-				background: `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))`,
-				boxShadow: disabled || loading ? "none" : `0 4px 16px rgb(var(--primary-shadow))`,
-			}}
-		>
-			{loading && <Loader2 size={14} className="animate-spin" />}
-			{children}
-		</button>
-	);
-}
+
 
 function GhostBtn({ children, onClick, className = "" }) {
 	return (
@@ -193,70 +225,7 @@ function SectionLabel({ icon: Icon, label }) {
 	);
 }
 
-function ModalShell({ children, onClose, maxWidth = "max-w-md" }) {
-	const [mounted, setMounted] = useState(false);
 
-	useEffect(() => {
-		setMounted(true);
-		return () => setMounted(false);
-	}, []);
-
-	if (!mounted) return null;
-
-	return createPortal(
-		<>
-			<motion.div
-				className="fixed inset-0 z-50 bg-black/40 dark:bg-black/65 backdrop-blur-sm"
-				initial={{ opacity: 0 }}
-				animate={{ opacity: 1 }}
-				exit={{ opacity: 0 }}
-				onClick={onClose}
-			/>
-			<div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-				<motion.div
-					initial={{ opacity: 0, scale: 0.94, y: 14 }}
-					animate={{ opacity: 1, scale: 1, y: 0 }}
-					exit={{ opacity: 0, scale: 0.94, y: 14 }}
-					transition={{ type: "spring", stiffness: 340, damping: 28 }}
-					className={`relative w-full ${maxWidth} pointer-events-auto rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-2xl overflow-hidden`}
-					onClick={(e) => e.stopPropagation()}
-				>
-					{children}
-				</motion.div>
-			</div>
-		</>,
-		document.body
-	);
-}
-
-function ModalHeader({ icon: Icon, title, subtitle, onClose }) {
-	return (
-		<div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] bg-[var(--muted)]">
-			<div className="flex items-center gap-3">
-				{Icon && (
-					<span
-						className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-						style={{
-							background: `linear-gradient(135deg, rgb(var(--primary-from)/0.15), rgb(var(--primary-to)/0.15))`,
-						}}
-					>
-						<Icon size={15} className="text-[var(--primary)]" />
-					</span>
-				)}
-				<div>
-					<p className="text-sm font-semibold text-[var(--card-foreground)] leading-tight">{title}</p>
-					{subtitle && <p className="text-xs text-[var(--muted-foreground)] mt-0.5">{subtitle}</p>}
-				</div>
-			</div>
-			<button
-				onClick={onClose}
-				className="w-7 h-7 flex items-center justify-center rounded-lg text-[var(--muted-foreground)] hover:text-[var(--card-foreground)] hover:bg-[var(--border)] transition-all"
-			>
-				<X size={15} />
-			</button>
-		</div>
-	);
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Settings Modal  — per-provider config fields
@@ -281,6 +250,17 @@ function SettingsModal({ company, onClose, onFirstSetup, onSaved }) {
 			const { data } = await api.get("/shipping/integrations/status");
 			const entry = data?.integrations?.find((i) => i.provider === company.code);
 			setIntegrationData(entry)
+
+			if (entry?.credentials) {
+				const newValues = { ...values };
+				fields.forEach((f) => {
+					// Only set the value if 'hide' is false/undefined
+					if (!f.hide && entry.credentials[f.key]) {
+						newValues[f.key] = entry.credentials[f.key];
+					}
+				});
+				setValues(newValues);
+			}
 		} catch (e) {
 			// Uses the new localization keys we defined
 			setError(e?.response?.data?.message || t("settings.errorFetch"));
@@ -301,13 +281,21 @@ function SettingsModal({ company, onClose, onFirstSetup, onSaved }) {
 	const toggleShow = (key) => setShow((v) => ({ ...v, [key]: !v[key] }));
 
 	const isAllMasked = () => fields.every((f) => values[f.key]?.startsWith("•"));
-	const isValid = () =>
-		// allow saving accountId empty (optional)
-		!isAllMasked() &&
-		fields
+	const isValid = () => {
+		// 1. Check if all required fields are satisfied
+		const allRequiredSatisfied = fields
 			.filter((f) => f.required)
-			.every((f) => values[f.key]?.trim().length > 0 && !values[f.key].startsWith("•"));
+			.every((f) => {
+				const hasNewValue = values[f.key]?.trim().length > 0;
+				const hasExistingValue = !!integrationData?.credentials?.[f.key];
+				return hasExistingValue || hasNewValue;
+			});
 
+		// 2. Check if the user has actually typed at least one new value
+		const hasAtLeastOneNewValue = fields.some((f) => values[f.key]?.trim().length > 0);
+
+		return allRequiredSatisfied && hasAtLeastOneNewValue;
+	};
 	async function handleSave() {
 		if (!isValid()) return;
 		setSaving(true);
@@ -315,7 +303,11 @@ function SettingsModal({ company, onClose, onFirstSetup, onSaved }) {
 		try {
 			const credentials = {};
 			fields.forEach((f) => {
-				if (!values[f.key].startsWith("•")) credentials[f.key] = values[f.key];
+				const val = values[f.key]?.trim();
+				// Only send the field if the user actually typed a new value
+				if (val && val.length > 0) {
+					credentials[f.key] = val;
+				}
 			});
 			await api.post(`/shipping/providers/${company.code}/credentials`, { credentials });
 			setSuccess(true);
@@ -362,7 +354,7 @@ function SettingsModal({ company, onClose, onFirstSetup, onSaved }) {
 
 				{integrationData && (<div className="space-y-4">
 					{fields.map((field) => {
-						const currentSavedValue = integrationData?.credentials?.[field.key];
+						const currentSavedValue = field?.hide ? integrationData?.credentials?.[field.key] : null;
 						return (
 							<div key={field.key} className="space-y-1.5">
 								<label className="text-sm font-medium text-[var(--card-foreground)] flex items-center gap-1.5">
@@ -488,7 +480,7 @@ function GuideModal({ company, onClose }) {
 								<img
 									src={current.image}
 									alt={p(current.title)}
-									className="w-full h-auto object-cover block"
+									className="w-full h-auto object-cover block max-h-[270px]"
 									onError={(e) => {
 										e.currentTarget.style.display = "none";
 										e.currentTarget.nextElementSibling?.style.setProperty("display", "flex");
@@ -512,7 +504,7 @@ function GuideModal({ company, onClose }) {
 
 				<div className="border-t border-[var(--border)] px-6 py-4 flex items-center justify-between gap-3">
 					<GhostBtn onClick={() => setActiveStep((v) => Math.max(0, v - 1))} className={activeStep === 0 ? "opacity-30 pointer-events-none" : ""}>
-						<ChevronLeft size={14} /> {t("guide.prev")}
+						<ChevronLeft size={14} className={"rtl:-rotate-180 rtl:transition-transform  ltr:transition-transform"} /> {t("guide.prev")}
 					</GhostBtn>
 
 					<div className="flex items-center gap-1.5">
@@ -532,15 +524,24 @@ function GuideModal({ company, onClose }) {
 
 					{activeStep < steps.length - 1 ? (
 						<PrimaryBtn onClick={() => setActiveStep((v) => Math.min(steps.length - 1, v + 1))}>
-							{t("guide.next")} <ChevronRight size={14} />
+							{t("guide.next")}<ChevronRight
+								size={14}
+								className={"rtl:rotate-180 rtl:transition-transform  ltr:transition-transform"}
+							/>
 						</PrimaryBtn>
-					) : (
+					) : meta?.guide?.docsUrl ? (
 						<a href={meta?.guide?.docsUrl} target="_blank" rel="noopener noreferrer">
 							<PrimaryBtn onClick={undefined}>
 								<ExternalLink size={13} /> {t("guide.docs")}
 							</PrimaryBtn>
 						</a>
-					)}
+					) : meta?.guide?.mainUrl ? (
+						<a href={meta?.guide?.mainUrl} target="_blank" rel="noopener noreferrer">
+							<PrimaryBtn onClick={undefined}>
+								<ExternalLink size={13} /> {t("guide.site")}
+							</PrimaryBtn>
+						</a>
+					) : null}
 				</div>
 			</div>
 		</ModalShell>
@@ -662,6 +663,9 @@ function WebhookModal({ company, onClose }) {
 	const [data, setData] = useState(null);
 	const [rotating, setRotating] = useState(false);
 
+	const hiddenFields = PROVIDER_META[company.code]?.webhookHiddenFields || [];
+	const isHidden = (key) => hiddenFields.includes(key);
+
 	const fetchSetup = async () => {
 		setLoading(true);
 		setError(null);
@@ -726,7 +730,7 @@ function WebhookModal({ company, onClose }) {
 
 				{data && (
 					<div className="space-y-4">
-						<div className="space-y-1.5">
+						{!isHidden("webhookUrl") && (<div className="space-y-1.5">
 							<label className="text-sm font-medium text-[var(--card-foreground)]">{t("webhook.urlLabel")}</label>
 							<div className="flex gap-2">
 								<input
@@ -745,10 +749,10 @@ function WebhookModal({ company, onClose }) {
 							<p className="text-[11px] text-[var(--muted-foreground)]">
 								{t("webhook.urlHint")}
 							</p>
-						</div>
+						</div>)}
 
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-							<div className="space-y-1.5">
+						<div className={`grid gap-3 ${isHidden("headerName") || isHidden("headerValue") ? "grid-cols-1" : "md:grid-cols-2 grid-cols-1"}`}>
+							{!isHidden("headerName") && (<div className="space-y-1.5">
 								<label className="text-sm font-medium text-[var(--card-foreground)]">{t("webhook.headerName")}</label>
 								<div className="flex gap-2">
 									<input
@@ -764,9 +768,9 @@ function WebhookModal({ company, onClose }) {
 										<Copy size={14} />
 									</button>
 								</div>
-							</div>
+							</div>)}
 
-							<div className="space-y-1.5">
+							{!isHidden("headerValue") && (<div className="space-y-1.5">
 								<label className="text-sm font-medium text-[var(--card-foreground)]">{t("webhook.headerValue")}</label>
 								<div className="flex gap-2">
 									<input
@@ -782,7 +786,7 @@ function WebhookModal({ company, onClose }) {
 										<Copy size={14} />
 									</button>
 								</div>
-							</div>
+							</div>)}
 						</div>
 
 						<div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--muted)] p-3">
@@ -976,13 +980,30 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 						{t("card.settings")}
 					</button>
 
-					<a href={meta?.guide?.docsUrl} target="_blank" rel="noopener noreferrer"
-						title={t("card.guideTitle")}
-						className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
-					>
-						<HelpCircle size={12} />
-						{t("card.guide")}
-					</a>
+					{meta?.guide?.showSteps ? (
+						/* Internal Guide Button */
+						<button
+							onClick={() => isConfigured && setOpenModal("guide")}
+							title={t("card.guideTitle")}
+							className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+						>
+							<HelpCircle size={12} />
+							{t("card.guide")}
+						</button>
+					) : (
+						/* External Docs Link */
+						<a
+							href={meta.guide.docsUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							title={t("card.guideTitle")}
+							className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+						>
+							<HelpCircle size={12} />
+							{t("card.guide")}
+						</a>
+					)
+					}
 
 					{/* NEW: Webhook setup */}
 					<button

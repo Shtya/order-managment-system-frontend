@@ -140,42 +140,70 @@ function GeoSelect({ label, required, value, onValueChange, items, isLoading, pl
 // ─────────────────────────────────────────────────────────────────────────────
 // Address section — Bosta mode (selects) vs Normal mode (text inputs)
 // ─────────────────────────────────────────────────────────────────────────────
+const GEO_CONFIG = {
+	bosta: {
+		needsGeo: true,
+		showDistrict: true,
+		showLocation: false,
+		fields: ["cityId", "zoneId", "districtId"],
+		tPrefix: "bosta", // Namespace for translations
+	},
+	turbo: {
+		needsGeo: true,
+		showDistrict: false,
+		showLocation: false,
+		fields: ["cityId", "zoneId"],
+		tPrefix: "turbo",
+	},
+	// Default/Normal mode uses text inputs instead of dropdowns
+	default: {
+		needsGeo: false,
+		showDistrict: false,
+		showLocation: false,
+		fields: [],
+		tPrefix: "fields",
+	}
+};
 function AddressSection({
 	t,
 	locale,
-	isBosta,
+	provider,
 	// react-hook-form
 	control,
 	errors,
 	setValue,
 	// Bosta geo
-	bostaMeta,
+	providerMeta,
 	onBostaChange,
-	bostaCities,
-	bostaZones,
-	bostaDistricts,
-	bostaLoading,
+	providerCities,
+	providerZones,
+	providerDistricts,
+	providerLoading,
 	// Bosta validation errors
-	bostaErrors,
+	providerErrors,
 }) {
+
+
+	const currentConfig = GEO_CONFIG[provider] || GEO_CONFIG.default;
+
+
 	const nameKey = locale === "ar" ? "nameAr" : "nameEn";
 	// Derived: districts filtered by selected zone (parentId === zoneId)
-	const filteredDistricts = useMemo(
-		() => bostaDistricts.filter((d) => d.parentId === bostaMeta.zoneId),
-		[bostaDistricts, bostaMeta.zoneId]
-	);
-
+	const filteredDistricts = useMemo(() => {
+		if (!currentConfig.showDistrict) return [];
+		return providerDistricts.filter((d) => d.parentId === providerMeta.zoneId);
+	}, [currentConfig.showDistrict, providerDistricts, providerMeta.zoneId]);
 	// When user picks a city/zone/district — auto-fill the hidden RHF fields
 	const handleCityChange = useCallback(
 		(cityId) => {
 			onBostaChange("cityId", cityId);
 			onBostaChange("zoneId", "");
 			onBostaChange("districtId", "");
-			const city = bostaCities.find((c) => String(c.id) === cityId);
+			const city = providerCities.find((c) => String(c.id) === cityId);
 			if (city) setValue("city", city[nameKey] || city.nameEn, { shouldValidate: true });
 			setValue("area", "", { shouldValidate: false });
 		},
-		[bostaCities, nameKey, onBostaChange, setValue]
+		[providerCities, nameKey, onBostaChange, setValue]
 	);
 
 	const handleZoneChange = useCallback(
@@ -183,16 +211,16 @@ function AddressSection({
 			onBostaChange("zoneId", zoneId);
 			onBostaChange("districtId", "");
 			// rebuild area: zone name (district will be appended later)
-			const zone = bostaZones.find((z) => String(z.id) === zoneId);
+			const zone = providerZones.find((z) => String(z.id) === zoneId);
 			if (zone) setValue("area", zone[nameKey] || zone.nameEn, { shouldValidate: false });
 		},
-		[bostaZones, nameKey, onBostaChange, setValue]
+		[providerZones, nameKey, onBostaChange, setValue]
 	);
 
 	const handleDistrictChange = useCallback(
 		(districtId) => {
 			onBostaChange("districtId", districtId);
-			const zone = bostaZones.find((z) => String(z.id) === bostaMeta.zoneId);
+			const zone = providerZones.find((z) => String(z.id) === providerMeta.zoneId);
 			const district = filteredDistricts.find((d) => String(d.id) === districtId);
 
 			const zonePart = zone?.[nameKey] || zone?.nameEn
@@ -207,11 +235,13 @@ function AddressSection({
 				setValue("area", zonePart, { shouldValidate: false });
 			}
 		},
-		[bostaZones, filteredDistricts, bostaMeta.zoneId, nameKey, onBostaChange, setValue]
+		[providerZones, filteredDistricts, providerMeta.zoneId, nameKey, onBostaChange, setValue]
 	);
 
 	// ── Bosta mode ──────────────────────────────────────────────────────────
-	if (isBosta) {
+	if (currentConfig.needsGeo) {
+		const config = GEO_CONFIG[provider];
+
 		return (
 			<AnimatePresence mode="wait">
 				<motion.div
@@ -226,16 +256,16 @@ function AddressSection({
 					<div className="space-y-2">
 						<GeoSelect
 							label={t("bosta.city")}
-							required
+							required={config.fields.includes("cityId")}
 							nameKey={nameKey}
-							value={bostaMeta.cityId}
+							value={providerMeta.cityId}
 							onValueChange={handleCityChange}
-							items={bostaCities.filter((c) => c.dropOff)}
-							isLoading={bostaLoading.cities}
+							items={providerCities.filter((c) => c.dropOff)}
+							isLoading={providerLoading.cities}
 							placeholder={t("bosta.selectCity")}
 						/>
-						{bostaErrors?.cityId && (
-							<p className="text-xs text-red-500">{bostaErrors.cityId}</p>
+						{providerErrors?.cityId && (
+							<p className="text-xs text-red-500">{providerErrors.cityId}</p>
 						)}
 					</div>
 
@@ -243,37 +273,37 @@ function AddressSection({
 					<div className="space-y-2">
 						<GeoSelect
 							label={t("bosta.zone")}
-							required
+							required={config.fields.includes("zoneId")}
 							nameKey={nameKey}
-							value={bostaMeta.zoneId}
+							value={providerMeta.zoneId}
 							onValueChange={handleZoneChange}
-							items={bostaZones.filter((z) => z.dropOff)}
-							isLoading={bostaLoading.zones}
+							items={providerZones.filter((z) => z.dropOff)}
+							isLoading={providerLoading.zones}
 							placeholder={t("bosta.selectZone")}
-							disabled={!bostaMeta.cityId}
+							disabled={!providerMeta.cityId}
 						/>
-						{bostaErrors?.zoneId && (
-							<p className="text-xs text-red-500">{bostaErrors.zoneId}</p>
+						{providerErrors?.zoneId && (
+							<p className="text-xs text-red-500">{providerErrors.zoneId}</p>
 						)}
 					</div>
 
 					{/* District — filtered by chosen zone */}
-					<div className="space-y-2">
-						<GeoSelect
-							label={t("bosta.district")}
-							required
-							nameKey={nameKey}
-							value={bostaMeta.districtId}
-							onValueChange={handleDistrictChange}
-							items={filteredDistricts.filter((d) => d.dropOff)}
-							isLoading={bostaLoading.districts}
-							placeholder={t("bosta.selectDistrict")}
-							disabled={!bostaMeta.zoneId}
-						/>
-						{bostaErrors?.districtId && (
-							<p className="text-xs text-red-500">{bostaErrors.districtId}</p>
-						)}
-					</div>
+					{currentConfig.showDistrict && (
+						<div className="space-y-2">
+							<GeoSelect
+								label={t("bosta.district")}
+								required={config.fields.includes("districtId")}
+								nameKey={nameKey}
+								value={providerMeta.districtId}
+								onValueChange={handleDistrictChange}
+								items={filteredDistricts.filter((d) => d.dropOff)}
+								isLoading={providerLoading.districts}
+								placeholder={t("bosta.selectDistrict")}
+								disabled={!providerMeta.zoneId}
+							/>
+							{providerErrors?.districtId && <p className="text-xs text-red-500">{providerErrors.districtId}</p>}
+						</div>
+					)}
 
 					{/* Landmark */}
 					<div className="space-y-2">
@@ -424,20 +454,20 @@ export default function CreateOrderPageComplete({
 	const [stores, setStores] = useState([]);
 
 	// ── Bosta geo state ─────────────────────────────────────────────────────
-	const [bostaMeta, setBostaMeta] = useState({
+	const [providerMeta, setProviderMeta] = useState({
 		cityId: "",
 		zoneId: "",
 		districtId: "",
 		locationId: "",
 	});
-	const [bostaErrors, setBostaErrors] = useState({});
+	const [providerErrors, setProviderErrors] = useState({});
 
-	const [bostaCities, setBostaCities] = useState([]);
-	const [bostaZones, setBostaZones] = useState([]);
-	const [bostaDistricts, setBostaDistricts] = useState([]);
-	const [bostaLocations, setBostaLocations] = useState([]);
+	const [providerCities, setproviderCities] = useState([]);
+	const [providerZones, setproviderZones] = useState([]);
+	const [providerDistricts, setproviderDistricts] = useState([]);
+	const [providerLocations, setproviderLocations] = useState([]);
 
-	const [bostaLoading, setBostaLoading] = useState({
+	const [providerLoading, setproviderLoading] = useState({
 		cities: false,
 		zones: false,
 		districts: false,
@@ -527,9 +557,16 @@ export default function CreateOrderPageComplete({
 		() => shippingCompanies.find((s) => String(s.providerId) === String(watchedShippingCompanyId)),
 		[shippingCompanies, watchedShippingCompanyId]
 	);
-	const isBosta = useMemo(
-		() => selectedCompany?.provider?.toLowerCase() === "bosta",
+
+	const shippingProvider = useMemo(
+		() => selectedCompany?.provider?.toLowerCase() || null,
 		[selectedCompany]
+	);
+
+	// Providers that use the City/Zone/District selection flow
+	const config = useMemo(
+		() => GEO_CONFIG[shippingProvider] || GEO_CONFIG.default,
+		[shippingProvider]
 	);
 
 	// ── Edit mode pre-fill ───────────────────────────────────────────────────
@@ -550,7 +587,7 @@ export default function CreateOrderPageComplete({
 				);
 			}
 			if (existingOrder.shippingMetadata) {
-				setBostaMeta({
+				setProviderMeta({
 					cityId: existingOrder.shippingMetadata.cityId ?? "",
 					zoneId: existingOrder.shippingMetadata.zoneId ?? "",
 					districtId: existingOrder.shippingMetadata.districtId ?? "",
@@ -583,81 +620,95 @@ export default function CreateOrderPageComplete({
 
 	useEffect(() => {
 		const initBosta = async () => {
-			if (!isBosta) {
-				setBostaCities([]);
-				setBostaZones([]);
-				setBostaDistricts([]);
-				setBostaLocations([]);
-				// setBostaMeta({ cityId: "", zoneId: "", districtId: "", locationId: "" });
+			if (!config.needsGeo) {
+				setproviderCities([]);
+				setproviderZones([]);
+				setproviderDistricts([]);
+				setproviderLocations([]);
+				// setProviderMeta({ cityId: "", zoneId: "", districtId: "", locationId: "" });
 				// setValue("city", "");
 				// setValue("area", "");
 				return;
 			}
 
-			setBostaLoading((p) => ({ ...p, cities: true, locations: true }));
+			setproviderLoading((p) => ({ ...p, cities: true, locations: true }));
 
 			try {
 				// Run both requests in parallel for better performance
-				const [citiesRes, locationsRes] = await Promise.all([
-					api.get("/shipping/cities/bosta"),
-					api.get("/shipping/pickup-locations/bosta")
-				]);
+				const requests = [api.get(`/shipping/cities/${shippingProvider}`)];
 
-				setBostaCities(citiesRes.data?.records ?? []);
-				setBostaLocations(locationsRes.data?.records ?? []);
+				// Only fetch pickup locations if the config requires it
+				if (config.showLocation) {
+					requests.push(api.get(`/shipping/pickup-locations/${shippingProvider}`));
+				}
+				const [citiesRes, locationsRes] = await Promise.all(requests);
+				setproviderCities(citiesRes.data?.records ?? []);
+				setproviderLocations(locationsRes.data?.records ?? []);
 			} catch (e) {
 				console.error(`Bosta Init Error: ${normalizeAxiosError(e)}`);
 			} finally {
-				setBostaLoading((p) => ({ ...p, cities: false, locations: false }));
+				setproviderLoading((p) => ({ ...p, cities: false, locations: false }));
 			}
 		};
 
 		initBosta();
-	}, [isBosta, setValue]);
+	}, [config.needsGeo, setValue]);
 
 	useEffect(() => {
 		const fetchGeography = async () => {
-			if (!isBosta || !bostaMeta.cityId) {
-				setBostaZones([]);
-				setBostaDistricts([]);
+			if (!config.needsGeo || !providerMeta.cityId) {
+				setproviderZones([]);
+				setproviderDistricts([]);
 				return;
 			}
 
-			setBostaLoading((p) => ({ ...p, zones: true, districts: true }));
+			setproviderLoading((p) => ({ ...p, zones: true, districts: true }));
 
 			try {
-				const [zonesRes, districtsRes] = await Promise.all([
-					api.get(`/shipping/zones/bosta/${bostaMeta.cityId}`),
-					api.get(`/shipping/districts/bosta/${bostaMeta.cityId}`)
-				]);
+				const requests = [
+					api.get(`/shipping/zones/${shippingProvider}/${providerMeta.cityId}`)
+				];
 
-				setBostaZones(zonesRes.data?.records ?? []);
-				setBostaDistricts(districtsRes.data?.records ?? []);
+				// Only fetch districts if the config says so (e.g., true for Bosta, false for Turbo)
+				if (config.showDistrict) {
+					requests.push(api.get(`/shipping/districts/${shippingProvider}/${providerMeta.cityId}`));
+				}
+				const [zonesRes, districtsRes] = await Promise.all(requests);
+				setproviderZones(zonesRes.data?.records ?? []);
+				setproviderDistricts(districtsRes.data?.records ?? []);
 			} catch (e) {
 				console.error(`Bosta Geo Error: ${normalizeAxiosError(e)}`);
 			} finally {
-				setBostaLoading((p) => ({ ...p, zones: false, districts: false }));
+				setproviderLoading((p) => ({ ...p, zones: false, districts: false }));
 			}
 		};
 
 		fetchGeography();
-	}, [isBosta, bostaMeta.cityId]);
+	}, [config.needsGeo, config.showDistric, providerMeta.cityId]);
 
 	// ── Bosta meta setter ────────────────────────────────────────────────────
 	const handleBostaChange = useCallback((field, value) => {
-		setBostaMeta((prev) => ({ ...prev, [field]: value }));
+		setProviderMeta((prev) => ({ ...prev, [field]: value }));
 	}, []);
 
 	// ── Validate Bosta required fields ───────────────────────────────────────
-	const validateBosta = useCallback(() => {
-		if (!isBosta) return true;
+	const validateGeo = useCallback(() => {
+		const config = GEO_CONFIG[shippingProvider] || GEO_CONFIG.default;
+		if (!config) return true; // No geo-validation needed for this provider
+
 		const errs = {};
-		if (!bostaMeta.cityId) errs.cityId = t("bosta.validation.cityRequired");
-		if (!bostaMeta.zoneId) errs.zoneId = t("bosta.validation.zoneRequired");
-		if (!bostaMeta.districtId) errs.districtId = t("bosta.validation.districtRequired");
-		setBostaErrors(errs);
+
+		config.fields.forEach((field) => {
+			if (!providerMeta[field]) {
+				// Mapping field keys to your localization keys
+				const errorKey = field.replace("Id", "Required"); // cityId -> cityRequired
+				errs[field] = t(`validation.${errorKey}`);
+			}
+		});
+
+		setProviderErrors(errs);
 		return Object.keys(errs).length === 0;
-	}, [isBosta, bostaMeta, t]);
+	}, [shippingProvider, providerMeta, t]);
 
 	// ── Product handlers ─────────────────────────────────────────────────────
 	const handleSelectSku = useCallback(
@@ -735,7 +786,7 @@ export default function CreateOrderPageComplete({
 
 	// ── Submit ───────────────────────────────────────────────────────────────
 	const onSubmit = async (data) => {
-		if (!validateBosta()) {
+		if (!validateGeo()) {
 			toast.error(t("validation.fixErrors"));
 			return;
 		}
@@ -763,12 +814,12 @@ export default function CreateOrderPageComplete({
 				notes: data.notes || undefined,
 				customerNotes: data.customerNotes || undefined,
 				shippingMetadata:
-					isBosta && bostaMeta.cityId
+					config.needsGeo && providerMeta.cityId
 						? {
-							cityId: bostaMeta.cityId || undefined,
-							zoneId: bostaMeta.zoneId || undefined,
-							districtId: bostaMeta.districtId || undefined,
-							locationId: bostaMeta.locationId || undefined,
+							cityId: providerMeta.cityId || undefined,
+							zoneId: providerMeta.zoneId || undefined,
+							districtId: providerMeta.districtId || undefined,
+							locationId: providerMeta.locationId || undefined,
 						}
 						: undefined,
 				items: data.items.map((item) => ({
@@ -986,6 +1037,9 @@ export default function CreateOrderPageComplete({
 													<SelectItem value="card">{t("paymentMethods.card")}</SelectItem>
 													<SelectItem value="bank_transfer">{t("paymentMethods.bankTransfer")}</SelectItem>
 													<SelectItem value="cod">{t("paymentMethods.cod")}</SelectItem>
+													<SelectItem value="other">{t("paymentMethods.other")}</SelectItem>
+													<SelectItem value="unknown">{t("paymentMethods.unknown")}</SelectItem>
+													<SelectItem value="unknown">{t("paymentMethods.wallet")}</SelectItem>
 												</SelectContent>
 											</Select>
 										)}
@@ -1110,7 +1164,7 @@ export default function CreateOrderPageComplete({
 								</div>
 
 								{/* Pickup Location — only for Bosta, optional */}
-								{isBosta && bostaLocations?.length > 1 && (
+								{config.showLocation && providerLocations?.length > 0 && (
 									<div className="md:col-span-2 space-y-2">
 										<div className="flex items-center gap-2">
 											<Label className="text-sm text-gray-600 dark:text-slate-300">
@@ -1122,14 +1176,14 @@ export default function CreateOrderPageComplete({
 										</div>
 
 										<><Select
-											value={bostaMeta.locationId || ""}
+											value={providerMeta.locationId || ""}
 											onValueChange={(v) =>
 												handleBostaChange("locationId", v === "none" ? "" : v)
 											}
-											disabled={bostaLoading.locations}
+											disabled={providerLoading.locations}
 										>
 											<SelectTrigger className={SELECT_CLS}>
-												{bostaLoading.locations ? (
+												{providerLoading.locations ? (
 													<span className="flex items-center gap-2 text-muted-foreground text-sm">
 														<Loader2 size={14} className="animate-spin" />
 														جارٍ التحميل...
@@ -1140,7 +1194,7 @@ export default function CreateOrderPageComplete({
 											</SelectTrigger>
 											<SelectContent>
 												{/* <SelectItem value="none">{t("bosta.defaultLocation")}</SelectItem> */}
-												{bostaLocations.map((l) => (
+												{providerLocations.map((l) => (
 													<SelectItem key={l.id} value={String(l.id)}>
 														{locale === "ar" ? l.nameAr : l.nameEn}
 													</SelectItem>
@@ -1164,29 +1218,29 @@ export default function CreateOrderPageComplete({
 						<SectionCard
 							title={t("sections.address")}
 							delay={0.3}
-							badge={
-								isBosta ? (
-									<span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800">
-										<span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-										Bosta
-									</span>
-								) : null
-							}
+						// badge={
+						// 	isBosta ? (
+						// 		<span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800">
+						// 			<span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+						// 			Bosta
+						// 		</span>
+						// 	) : null
+						// }
 						>
 							<AddressSection
 								t={t}
 								locale={locale}
-								isBosta={isBosta}
+								provider={shippingProvider}
 								control={control}
 								errors={errors}
 								setValue={setValue}
-								bostaMeta={bostaMeta}
+								providerMeta={providerMeta}
 								onBostaChange={handleBostaChange}
-								bostaCities={bostaCities}
-								bostaZones={bostaZones}
-								bostaDistricts={bostaDistricts}
-								bostaLoading={bostaLoading}
-								bostaErrors={bostaErrors}
+								providerCities={providerCities}
+								providerZones={providerZones}
+								providerDistricts={providerDistricts}
+								providerLoading={providerLoading}
+								providerErrors={providerErrors}
 							/>
 						</SectionCard>
 

@@ -712,7 +712,71 @@
   "storeIntegrations": {
     "breadcrumb": {
       "home": "Home",
-      "integrations": "Store Integration"
+      "integrations": "Store Integration",
+      "stores": "Stores"
+    },
+    "card": {
+      "editSettings": "Edit Settings",
+      "configureSettings": "Configure Integration",
+      "settings": "Settings",
+      "sync": "Sync",
+      "connected": "Connected",
+      "notConnected": "Not connected",
+      "configured": "Configured",
+      "notConfigured": "Not configured",
+      "updating": "Updating...",
+      "guide": "How to connect",
+      "guideTitle": "Integration guide",
+      "configureFirst": "Please configure integration first"
+    },
+    "webhook": {
+      "title": "Webhook setup",
+      "subtitle": "Copy webhook URLs and secrets to your store settings.",
+      "triggerTitle": "When does it run?",
+      "triggerDescription": "These URLs will be called when an order is created or its status is updated in the store.",
+      "urlHint": "Put this URL in the Webhook settings in your store platform.",
+      "securityHint": "Copy the secrets and paste them in your store webhook settings.",
+      "rotate": "Regenerate secrets",
+      "docs": "Documentation",
+      "close": "Close"
+    },
+    "form": {
+      "storeInfoSection": "Store info",
+      "storeName": "Store name",
+      "storeNamePlaceholder": "My store",
+      "storeUrl": "Store URL",
+      "apiKeysSection": "API keys",
+      "apiKey": "API key",
+      "apiKeyPlaceholder": "Enter API key",
+      "clientSecret": "Secret",
+      "secretPlaceholder": "Enter secret",
+      "maskedPlaceholder": "••••••••••",
+      "webhooksSection": "Webhooks",
+      "webhookSecret": "Webhook secret",
+      "webhookCreateOrderSecret": "Create order secret",
+      "webhookUpdateStatusSecret": "Update status secret",
+      "regenerateSecrets": "Regenerate secrets",
+      "update": "Update",
+      "create": "Create",
+      "updateSuccess": "Store updated successfully",
+      "createSuccess": "Store created successfully",
+      "copied": "Copied"
+    },
+    "instructions": {
+      "webhookCreateOrderLabel": "Webhook URL for order creation",
+      "webhookUpdateStatusLabel": "Webhook URL for status update",
+      "systemSecretsTitle": "Secrets generated for you",
+      "systemSecretsDescription": "Copy these secrets and paste them in WooCommerce webhook settings."
+    },
+    "validation": {
+      "nameRequired": "Store name is required",
+      "storeUrlRequired": "Store URL is required",
+      "invalidUrl": "Invalid URL format"
+    },
+    "messages": {
+      "statusUpdated": "Status updated",
+      "syncStarted": "Sync started",
+      "secretsRegenerated": "Secrets regenerated"
     },
     "integrated": {
       "platformLink": "Company Link",

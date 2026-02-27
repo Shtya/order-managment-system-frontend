@@ -1,27 +1,28 @@
 "use client";
 
+import { Loader2 } from "lucide-react";
 import React from "react";
 
 export default function Button_({ href, size = "md", label, tone = "primary", variant = "solid", icon, onClick }) {
-	const isLink = !!href;
+  const isLink = !!href;
 
-	const Tag = isLink ? "a" : "button";
-	const props = isLink ? { href } : { onClick };
+  const Tag = isLink ? "a" : "button";
+  const props = isLink ? { href } : { onClick };
 
-	return (
-		<Tag
-			{...props}
-			className={`btn-_ btn-_--${variant} btn-_--${size}`}
-			data-tone={tone}
-		>
-			<span className="btn-_-shine" aria-hidden="true" />
+  return (
+    <Tag
+      {...props}
+      className={`btn-_ btn-_--${variant} btn-_--${size}`}
+      data-tone={tone}
+    >
+      <span className="btn-_-shine" aria-hidden="true" />
 
-			{icon && <span className="btn-_-icon">{icon}</span>}
-			<span className="btn-_-label">{label}</span>
+      {icon && <span className="btn-_-icon">{icon}</span>}
+      <span className="btn-_-label">{label}</span>
 
 
 
-			<style>{`
+      <style>{`
         /* ── Bring in the user's CSS variables ── */
         :root {
           --primary: #ff8b00;
@@ -182,6 +183,24 @@ export default function Button_({ href, size = "md", label, tone = "primary", va
 
          
       `}</style>
-		</Tag>
-	);
+    </Tag>
+  );
+}
+
+export function PrimaryBtn({ children, onClick, disabled, loading, className = "", ...props }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled || loading}
+      {...props}
+      className={`flex items-center justify-center gap-2 rounded-xl py-2.5 px-5 text-sm font-semibold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed ${className}`}
+      style={{
+        background: `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))`,
+        boxShadow: disabled || loading ? "none" : `0 4px 16px rgb(var(--primary-shadow))`,
+      }}
+    >
+      {loading && <Loader2 size={14} className="animate-spin" />}
+      {children}
+    </button>
+  );
 }

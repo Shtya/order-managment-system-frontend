@@ -38,6 +38,7 @@ import Button_ from "@/components/atoms/Button";
 
 import OrdersTab from "./tabs/OrderTab";
 import ReplacementTab from "./tabs/ReplacementTab";
+import FailedOrdersTab from "./tabs/Failedorderstab";
 // import ReturnsTab from "./ReturnsTab";
 
 export default function Orders() {
@@ -53,6 +54,7 @@ export default function Orders() {
 		() => [
 			{ id: "orders", label: t("tabs.orders"), icon: ShoppingCart },
 			{ id: "replacement", label: t("tabs.replacement"), icon: ArrowLeftRight },
+			{ id: "failedOrders", label: t("tabs.failedOrders"), icon: XCircle },
 			{ id: "returns", label: t("tabs.returns"), icon: RefreshCcw },
 		],
 		[t]
@@ -86,7 +88,7 @@ export default function Orders() {
 
 	return (
 		<div className="min-h-screen p-4 md:p-6 bg-background">
-			 
+
 			<AnimatePresence mode="wait">
 				<motion.div
 					key={activeTab}
@@ -108,6 +110,7 @@ export default function Orders() {
 					{/* {activeTab === "returns" && <ReturnsTab />} */}
 
 					{activeTab === "replacement" && <ReplacementTab statuses={stats} />}
+					{activeTab === "failedOrders" && <FailedOrdersTab statuses={stats} />}
 				</motion.div>
 			</AnimatePresence>
 		</div>

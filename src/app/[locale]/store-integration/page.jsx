@@ -2,9 +2,8 @@
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, Settings, RefreshCw, Loader2, AlertCircle, CheckCircle2, Clock, Zap, Store, ExternalLink, Settings2, HelpCircle, Webhook, Copy, RotateCcw } from "lucide-react";
-import { useTranslations } from "next-intl";
-
+import { ChevronLeft, Settings, RefreshCw, Loader2, AlertCircle, CheckCircle2, Clock, Zap, Store, ExternalLink, Settings2, HelpCircle, Webhook, Copy, RotateCcw, ChevronRight, Info, ImageIcon } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,8 +15,9 @@ import * as yup from 'yup';
 import { getUser } from "@/hook/getUser";
 import { useRouter } from "@/i18n/navigation";
 import { ModalHeader, ModalShell } from "@/components/ui/modalShell";
-import { PrimaryBtn } from "@/components/atoms/Button";
+import { GhostBtn, PrimaryBtn } from "@/components/atoms/Button";
 import { useSocket } from "@/context/SocketContext";
+import { tenantId } from "@/utils/healpers";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -30,13 +30,6 @@ const PROVIDERS = ["easyorder", "shopify", "woocommerce"];
 
 // ─── Provider Configuration ──────────────────────────────────────────────────
 
-function GhostBtn({ children, onClick, className = "" }) {
-	return (
-		<button type="button" onClick={onClick} className={`px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] text-sm font-medium text-[var(--foreground)] transition-all ${className}`}>
-			{children}
-		</button>
-	);
-}
 
 const PROVIDER_CONFIG = {
 	easyorder: {
@@ -46,7 +39,141 @@ const PROVIDER_CONFIG = {
 		description: "ربط متجرك مع منصة EasyOrder واستفد من إدارة الطلبات والمزامنة التلقائية بسهولة.",
 		bg: "linear-gradient(300.09deg, #FAFAFA 74.95%, #F3F0FF 129.29%)",
 		docsLink: "https://public-api-docs.easy-orders.net/docs/intro",
-		guide: { showSteps: false, docsUrl: "https://public-api-docs.easy-orders.net/docs/authentication" },
+		guide: {
+			showSteps: true,
+			tabs: [
+				{
+					key: "api",
+					label: { en: "Get API Key", ar: "الحصول على مفتاح API" },
+					steps: [
+						{
+							title: {
+								en: "Login to EasyOrder",
+								ar: "تسجيل الدخول إلى EasyOrder"
+							},
+							desc: {
+								en: "Login to your EasyOrder dashboard using your account credentials.",
+								ar: "قم بتسجيل الدخول إلى لوحة تحكم EasyOrder باستخدام بيانات حسابك."
+							},
+							url: "https://app.easy-orders.net",
+							image: "/guide/easyorder/step1.png",
+						},
+						{
+							title: { en: "Open Settings → Public API", ar: "افتح الإعدادات ← Public API" },
+							desc: {
+								en: "Click the Settings button, then choose Public API from the menu.",
+								ar: "اضغط على زر الإعدادات ثم اختر Public API من القائمة."
+							},
+							image: "/guide/easyorder/step2.png",
+						},
+						{
+							title: { en: "Create New API Key", ar: "إنشاء مفتاح API جديد" },
+							desc: {
+								en: "Click the Create button to generate a new API key.",
+								ar: "اضغط على زر Create لإنشاء مفتاح API جديد."
+							},
+							image: "/guide/easyorder/step3.png",
+						},
+						{
+							title: { en: "Enable & Set Permissions", ar: "تفعيل وتحديد الصلاحيات" },
+							desc: {
+								en: "Enable the API key and check all required permissions, then click Save.",
+								ar: "قم بتفعيل المفتاح وحدد جميع الصلاحيات ثم اضغط حفظ."
+							},
+							image: "/guide/easyorder/step4.png",
+						},
+						{
+							title: { en: "Copy API Key", ar: "نسخ مفتاح API" },
+							desc: {
+								en: "Click the Copy button to copy the API key and paste it into our store configuration form.",
+								ar: "اضغط على زر النسخ ثم قم بلصق المفتاح داخل نموذج إعدادات المتجر لدينا."
+							},
+							image: "/guide/easyorder/step5.png",
+							tip: {
+								en: "Make sure you save the key securely. Do not share it publicly.",
+								ar: "تأكد من حفظ المفتاح بأمان ولا تقم بمشاركته علنًا."
+							}
+						}
+					]
+				},
+				{
+					key: "webhooks",
+					label: { en: "Setup Webhooks", ar: "إعداد Webhooks" },
+					steps: [
+						{
+							title: {
+								en: "Login to EasyOrder",
+								ar: "تسجيل الدخول إلى EasyOrder"
+							},
+							desc: {
+								en: "Login to your EasyOrder dashboard using your account credentials.",
+								ar: "قم بتسجيل الدخول إلى لوحة تحكم EasyOrder باستخدام بيانات حسابك."
+							},
+							url: "https://app.easy-orders.net",
+							image: "/guide/easyorder/step1.png",
+						},
+						{
+							title: {
+								en: "Open Webhooks Settings",
+								ar: "فتح إعدادات Webhooks"
+							},
+							desc: {
+								en: "From the dashboard, go to Settings then click on Webhooks.",
+								ar: "من لوحة التحكم، انتقل إلى الإعدادات ثم اضغط على Webhooks."
+							},
+							image: "/guide/easyorder/webhook-step2.png",
+						},
+						{
+							title: {
+								en: "Create Webhook for New Orders",
+								ar: "إنشاء Webhook للطلبات الجديدة"
+							},
+							desc: {
+								en: "Click 'Create'. Copy the webhook URL provided below and paste it into the URL field. Then select the type 'Orders' and click Save.",
+								ar: "اضغط على 'إنشاء'. قم بنسخ رابط الـ Webhook الموضح بالأسفل وألصقه في حقل الرابط (URL)، ثم اختر النوع 'Orders' واضغط حفظ."
+							},
+							url: (me) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/${tenantId(me)}/easyorder/orders/create`,
+							image: "/guide/easyorder/webhook-step3.png",
+						},
+						{
+							title: {
+								en: "Copy Orders Webhook Secret",
+								ar: "نسخ Secret الخاص بطلبات Orders"
+							},
+							desc: {
+								en: "After saving, copy the generated Secret and paste it into our system webhook secret input.",
+								ar: "بعد الحفظ، قم بنسخ الـ Secret الذي تم إنشاؤه وألصقه في حقل Webhook Secret في نظامنا."
+							},
+
+							image: "/guide/easyorder/webhook-step4.png",
+						},
+						{
+							title: {
+								en: "Create Webhook for Order Status Update",
+								ar: "إنشاء Webhook لتحديث حالة الطلب"
+							},
+							desc: {
+								en: "Create another webhook. Copy the webhook URL provided below and paste it into the URL field. Then select the type 'Order Status Update' and click Save.",
+								ar: "قم بإنشاء Webhook آخر. قم بنسخ رابط الـ Webhook الموضح بالأسفل وألصقه في حقل الرابط (URL)، ثم اختر النوع 'Order Status Update' واضغط حفظ."
+							},
+							url: `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/easyorder/orders/status`,
+							image: "/guide/easyorder/webhook-step5.png",
+						},
+						{
+							title: {
+								en: "Copy Status Update Secret",
+								ar: "نسخ Secret الخاص بتحديث الحالة"
+							},
+							desc: {
+								en: "After saving, copy the generated Secret and paste it into our system webhook secret input.",
+								ar: "بعد الحفظ، قم بنسخ الـ Secret الذي تم إنشاؤه وألصقه في حقل Webhook Secret في نظامنا."
+							},
+							image: "/guide/easyorder/webhook-step6.png",
+						},
+					]
+				}
+			], docsUrl: "https://public-api-docs.easy-orders.net/docs/authentication"
+		},
 		webhookDocsUrl: "https://public-api-docs.easy-orders.net/docs/webhooks",
 		fields: {
 			apiKey: { required: true, userProvides: true },
@@ -81,7 +208,108 @@ const PROVIDER_CONFIG = {
 		description: "صل متجرك بـ Shopify وأدر منتجاتك وطلباتك من مكان واحد.",
 		bg: "linear-gradient(300.09deg, #F0FFF4 74.95%, #F3F0FF 129.29%)",
 		docsLink: "https://help.shopify.com/api",
-		guide: { showSteps: false, docsUrl: "https://help.shopify.com/api" },
+		guide: {
+			showSteps: true,
+			docsUrl: "https://help.shopify.com/api",
+			tabs: [
+				{
+					key: "create-app",
+					label: { en: "Create Shopify App", ar: "إنشاء تطبيق Shopify" },
+					steps: [
+						{
+							title: { en: "Open Develop Apps", ar: "فتح Develop Apps" },
+							desc: {
+								en: "From your Shopify store dashboard, click Apps → Develop apps.",
+								ar: "من لوحة تحكم المتجر في Shopify، اضغط على Apps ثم Develop apps."
+							},
+							image: "/guide/shopify/step1.png",
+						},
+						{
+							title: { en: "Build App", ar: "إنشاء تطبيق" },
+							desc: {
+								en: "Click 'Build app' inside the Developer Dashboard.",
+								ar: "اضغط على 'Build apps' داخل لوحة التحكم."
+							},
+							image: "/guide/shopify/step2.png",
+						},
+						{
+							title: { en: "Create App Name", ar: "إنشاء اسم التطبيق" },
+							desc: {
+								en: "In the 'Create app' form, write the app name as 'store-integrate', then click Create.",
+								ar: "في نموذج إنشاء التطبيق، اكتب اسم التطبيق 'store-integrate' ثم اضغط Create."
+							},
+							image: "/guide/shopify/step3.png",
+						},
+						{
+							title: { en: "Configure App URL & Scopes", ar: "إعداد رابط التطبيق والصلاحيات" },
+							desc: {
+								en: "Add the URL shown below into the App URL field. Uncheck 'Embedded app'. Then add the required scopes and click Save.",
+								ar: "أضف الرابط المعروض أدناه في حقل App URL. قم بإلغاء تحديد 'Embedded app'. ثم أضف الصلاحيات المطلوبة واضغط حفظ."
+							},
+							url: (me) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/shopify/init`,
+							image: "/guide/shopify/step4.png",
+							tip: {
+								en: "Click 'Add scopes' and include the required permissions (read_all_orders,write_locations,read_locations,read_orders,write_orders,read_products,write_products).",
+								ar: "اضغط على 'Add scopes' وأضف الصلاحيات المطلوبة  read_all_orders,write_locations, read_locations,read_orders,write_orders,read_products,write_products."
+							}
+						},
+						{
+							title: { en: "Release App Version", ar: "إصدار نسخة التطبيق" },
+							desc: {
+								en: "Click 'Release'. A popup will appear asking for the version name. Enter a version number (for example: 1) and confirm to release the app.",
+								ar: "اضغط على 'Release'. ستظهر نافذة منبثقة تطلب إدخال رقم الإصدار. اكتب رقم الإصدار (مثلاً: 1) ثم قم بالتأكيد لإصدار التطبيق."
+							},
+							image: "/guide/shopify/step5.png",
+						},
+						{
+							title: { en: "Copy Client ID & Secret", ar: "نسخ Client ID و Secret" },
+							desc: {
+								en: "After releasing the app, copy the Client ID and Client Secret and paste them into our store configuration form.",
+								ar: "بعد إصدار التطبيق، انسخ Client ID و Client Secret والصقهما في نموذج إعداد المتجر لدينا."
+							},
+							image: "/guide/shopify/step6.png",
+							tip: {
+								en: "Keep the Client Secret secure and do not share it publicly.",
+								ar: "احفظ Client Secret بأمان ولا تشاركه علنًا."
+							}
+						}
+					]
+				},
+				{
+					key: "webhooks",
+					label: { en: "Setup Webhooks", ar: "إعداد Webhooks" },
+					steps: [
+						{
+							title: { en: "Go to Webhooks", ar: "اذهب إلى Webhooks" },
+							desc: {
+								en: "From your Shopify dashboard, go to Notifications → Webhooks. Copy the existing Webhook Secret into our system.",
+								ar: "من لوحة تحكم Shopify، انتقل إلى Notifications → Webhooks. انسخ الـ Webhook Secret الموجود والصقه في نظامنا."
+							},
+							image: "/guide/shopify/webhook-step1.png",
+						},
+						{
+							title: { en: "Create Webhook for Order Creation", ar: "إنشاء Webhook لإنشاء الطلبات" },
+							desc: {
+								en: "Click 'Create Webhook'. For Event select 'Order Creation', format JSON, then copy the URL shown below into the URL field in Shopify.",
+								ar: "اضغط على 'Create Webhook'. اختر Event 'Order Creation'، الصيغة JSON، ثم انسخ الرابط المعروض أدناه وألصقه في حقل URL في Shopify."
+							},
+							url: (me) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/${tenantId(me)}/shopify/orders/create`,
+							image: "/guide/shopify/webhook-step2.png",
+						},
+
+						{
+							title: { en: "Create Webhook for Order Status Update", ar: "إنشاء Webhook لتحديث حالة الطلب" },
+							desc: {
+								en: "Click 'Create Webhook'. For Event select 'Order Update', format JSON, then copy the URL shown below into the URL field in Shopify.",
+								ar: "اضغط على 'Create Webhook'. اختر Event 'Order Update'، الصيغة JSON، ثم انسخ الرابط المعروض أدناه وألصقه في حقل URL في Shopify."
+							},
+							url: (me) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/shopify/orders/status`,
+							image: "/guide/shopify/webhook-step3.png",
+						}
+					]
+				}
+			]
+		},
 		webhookDocsUrl: "https://help.shopify.com/en/manual/apps/app-types/custom-apps/webhooks",
 		fields: {
 			apiKey: { required: true, userProvides: true },
@@ -114,7 +342,115 @@ const PROVIDER_CONFIG = {
 		description: "اربط متجر WooCommerce الخاص بك وأدر كل شيء بطريقة سهلة والأمان أولًا.",
 		bg: "linear-gradient(300.09deg, #FAFAFA 74.95%, #FFF0F5 129.29%)",
 		docsLink: "https://woocommerce.github.io/woocommerce-rest-api-docs/",
-		guide: { showSteps: false, docsUrl: "https://woocommerce.github.io/woocommerce-rest-api-docs/" },
+		guide: {
+			showSteps: true,
+			docsUrl: "https://woocommerce.github.io/woocommerce-rest-api-docs/",
+			tabs: [
+				{
+					key: "api",
+					label: { en: "Get API Key", ar: "الحصول على مفتاح API" },
+					steps: [
+						{
+							title: {
+								en: "Open WooCommerce Settings",
+								ar: "فتح إعدادات WooCommerce"
+							},
+							desc: {
+								en: "Go to your WordPress dashboard, click WooCommerce, then Settings.",
+								ar: "اذهب إلى لوحة التحكم في WordPress، اضغط على WooCommerce ثم الإعدادات."
+							},
+							image: "/guide/woocommerce/step1.png",
+						},
+						{
+							title: {
+								en: "Go to Advanced Tab",
+								ar: "اذهب إلى تبويب Advanced"
+							},
+							desc: {
+								en: "Click the 'Advanced' tab to access REST API settings.",
+								ar: "اضغط على تبويب 'Advanced' للوصول إلى إعدادات REST API."
+							},
+							image: "/guide/woocommerce/step2.png",
+						},
+						{
+							title: {
+								en: "Add REST API Key",
+								ar: "إضافة مفتاح REST API"
+							},
+							desc: {
+								en: "In the REST API section, click 'Add Key', fill in the details, select Read/Write permission, then save.",
+								ar: "في قسم REST API، اضغط 'Add Key'، املأ البيانات، اختر صلاحيات Read/Write ثم اضغط حفظ."
+							},
+							image: "/guide/woocommerce/step3.png",
+						},
+						{
+							title: {
+								en: "Copy Key and Secret",
+								ar: "نسخ المفتاح والسر"
+							},
+							desc: {
+								en: "After saving, the Key and Secret will appear. Copy them and paste into our store configuration form.",
+								ar: "بعد الحفظ، سيظهر المفتاح والسر. انسخهم والصقهم داخل نموذج إعدادات المتجر لدينا."
+							},
+							image: "/guide/woocommerce/step4.png",
+							tip: {
+								en: "Store the Key and Secret securely. Do not share publicly.",
+								ar: "احفظ المفتاح والسر بأمان ولا تشاركهم علنًا."
+							}
+						}
+					]
+				},
+
+				{
+					key: "webhooks",
+					label: { en: "Setup Webhooks", ar: "إعداد Webhooks" },
+					steps: [
+						{
+							title: { en: "Open WooCommerce Settings", ar: "فتح إعدادات WooCommerce" },
+							desc: {
+								en: "Go to your WordPress dashboard, click WooCommerce, then Settings.",
+								ar: "اذهب إلى لوحة التحكم في WordPress، اضغط على WooCommerce ثم الإعدادات."
+							},
+							image: "/guide/woocommerce/step1.png",
+						},
+						{
+							title: { en: "Go to Webhooks Tab", ar: "اذهب إلى تبويب Webhooks" },
+							desc: {
+								en: "Click the 'Webhooks' tab to manage WooCommerce webhooks.",
+								ar: "اضغط على تبويب 'Webhooks' لإدارة الـ Webhooks في WooCommerce."
+							},
+							image: "/guide/woocommerce/webhook-step2.png",
+						},
+						{
+							title: { en: "Create Webhook for New Orders", ar: "إنشاء Webhook للطلبات الجديدة" },
+							desc: {
+								en: "Click 'Add Webhook', fill the details, select topic 'Order created', set status 'Active', then click Save. Copy the generated Secret into our system webhook secret input.",
+								ar: "اضغط 'Add Webhook'، املأ البيانات، اختر الموضوع 'Order created'، اجعل الحالة 'Active' ثم اضغط حفظ. انسخ الـ Secret وضعه في حقل Webhook Secret في نظامنا."
+							},
+							url: (me) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/${tenantId(me)}/woocommerce/orders/create`,
+							image: "/guide/woocommerce/webhook-step3.png",
+							tip: {
+								en: "After saving, check that the message 'Webhook updated successfully' appears.",
+								ar: "بعد الحفظ، تحقق من ظهور الرسالة 'Webhook updated successfully'."
+							}
+						},
+						{
+							title: { en: "Create Webhook for Order Status Update", ar: "إنشاء Webhook لتحديث حالة الطلب" },
+							desc: {
+								en: "Create another webhook, fill details, select topic 'Order updated', set status 'Active', then click Save. Copy the generated Secret into our system webhook secret input.",
+								ar: "قم بإنشاء Webhook آخر، املأ البيانات، اختر الموضوع 'Order updated'، اجعل الحالة 'Active' ثم اضغط حفظ. انسخ الـ Secret وضعه في حقل Webhook Secret في نظامنا."
+							},
+							url: (me) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/${tenantId(me)}/woocommerce/orders/status`,
+							image: "/guide/woocommerce/webhook-step4.png",
+							tip: {
+								en: "After saving, check that the message 'Webhook updated successfully' appears.",
+								ar: "بعد الحفظ، تحقق من ظهور الرسالة 'Webhook updated successfully'."
+							}
+						}
+					]
+				}
+			],
+		},
 		webhookDocsUrl: "https://woocommerce.github.io/woocommerce-rest-api-docs/#webhooks",
 		fields: {
 			apiKey: { required: true, userProvides: true },
@@ -136,7 +472,7 @@ const PROVIDER_CONFIG = {
 			],
 			webhooks: [
 				"في WooCommerce > Settings > Advanced > Webhooks",
-				"أنشئ webhook جديد لـ Order created",
+				"أنشئ  لـ Order created",
 				"استخدم الرابط أدناه",
 				"انسخ السر الذي تم إنشاؤه والصقه في متجرك",
 			],
@@ -150,6 +486,7 @@ function StoreCard({
 	provider,
 	store,
 	t,
+	onOpenGuide,
 	onConfigure,
 	onSync,
 	onOpenWebhook,
@@ -311,7 +648,7 @@ function StoreCard({
 
 				{config?.guide?.showSteps ? (
 					<button
-						onClick={() => { }}
+						onClick={() => onOpenGuide(provider, store)}
 						title={t("card.guideTitle")}
 						className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
 					>
@@ -1200,6 +1537,192 @@ function SkeletonCard() {
 		</div>
 	);
 }
+function pick(bilingualObj, locale) {
+	if (!bilingualObj) return "";
+	return locale?.startsWith("ar") ? bilingualObj.ar : bilingualObj.en;
+}
+
+
+export function StoreGuideModal({ provider, onClose }) {
+	const t = useTranslations("storeIntegrations");
+	const user = getUser();
+	const locale = useLocale();
+	const meta = PROVIDER_CONFIG[provider.code];
+
+	const tabs = meta?.guide?.tabs || [];
+	const [activeTab, setActiveTab] = useState(0);
+	const [activeStep, setActiveStep] = useState(0);
+
+	const currentSteps = tabs[activeTab]?.steps || [];
+	const currentStep = currentSteps[activeStep] || {};
+	const p = (obj) => pick(obj, locale);
+	const [imgLoaded, setImgLoaded] = useState(false);
+	return (
+		<ModalShell onClose={onClose} maxWidth="max-w-xl">
+			<ModalHeader
+				icon={HelpCircle}
+				title={t("guide.title", { name: meta?.label })}
+				subtitle={t("guide.subtitle", { name: meta?.label })}
+				onClose={onClose}
+			/>
+
+			{/* Tabs */}
+			<div className="flex border-b border-[var(--border)] px-6 gap-1 pt-3 overflow-x-auto scrollbar-none">
+				{tabs.map((tab, i) => (
+					<button
+						key={i}
+						onClick={() => { setActiveTab(i); setActiveStep(0); }}
+						className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-lg whitespace-nowrap border-b-2 transition-all ${activeTab === i
+							? "border-[var(--primary)] text-[var(--primary)] bg-[var(--primary)]/5"
+							: "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]"
+							}`}
+					>
+						{p(tab.label)}
+					</button>
+				))}
+			</div>
+
+			{/* Steps */}
+			<AnimatePresence mode="wait">
+				<motion.div
+					key={activeTab + "-" + activeStep}
+					initial={{ opacity: 0, x: locale?.startsWith("ar") ? -12 : 12 }}
+					animate={{ opacity: 1, x: 0 }}
+					exit={{ opacity: 0, x: locale?.startsWith("ar") ? 12 : -12 }}
+					transition={{ duration: 0.2 }}
+					className="p-6 space-y-4"
+				>
+					<div className="flex items-start gap-3">
+						<span
+							className="flex-shrink-0 w-7 h-7 rounded-full text-xs font-bold text-white flex items-center justify-center mt-0.5"
+							style={{ background: `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))` }}
+						>
+							{activeStep + 1}
+						</span>
+						<div>
+							<p className="text-sm font-semibold text-[var(--card-foreground)]">{p(currentStep?.title)}</p>
+							<p className="text-sm text-[var(--muted-foreground)] leading-relaxed mt-1">{p(currentStep?.desc)}</p>
+							{currentStep?.url && (
+								<div className="mt-3 flex items-center justify-between gap-2 rounded-lg border bg-muted/40 px-3 py-2">
+									{(() => {
+										// If URL is a function, call it with store/admin ID (replace with your param)
+										const url =
+											typeof currentStep.url === "function"
+												? currentStep.url(user) // or any param needed
+												: currentStep.url;
+
+										return (
+											<>
+												<a
+													href={url}
+													target="_blank"
+													rel="noopener noreferrer"
+													className="text-sm text-primary hover:underline break-all"
+												>
+													{url}
+												</a>
+
+												<button
+													onClick={() => navigator.clipboard.writeText(url)}
+													className="text-xs font-medium px-2 py-1 rounded-md bg-primary/10 hover:bg-primary/20 transition"
+												>
+													<Copy size={12} className="text-primary" />
+												</button>
+											</>
+										);
+									})()}
+								</div>
+							)}
+						</div>
+					</div>
+
+
+					{currentStep?.image && (
+						<div
+							className="rounded-xl  overflow-hidden border border-[var(--border)] bg-[var(--muted)] relative"
+							// reserve vertical space and cap maximum height to viewport
+							style={{ minHeight: 160, maxHeight: "60vh" }}
+						>
+							{/* Skeleton / placeholder shown while image loads */}
+							{!imgLoaded && (
+								<div className="absolute inset-0 flex items-center justify-center p-4">
+									<div className="w-full h-full rounded-md bg-[var(--muted)] animate-pulse" />
+								</div>
+							)}
+
+							<img
+								src={currentStep.image}
+								alt={p(currentStep.title)}
+								loading="lazy"
+								// reserve intrinsic size to avoid layout jump (adjust if you know the image size)
+								width={1200}
+								height={700}
+								onLoad={() => setImgLoaded(true)}
+								onError={(e) => {
+									e.currentTarget.style.display = "none";
+									setImgLoaded(false);
+									// show fallback (next sibling placeholder already present)
+								}}
+								className={`w-full h-full max-h-[350px] object-contain block transition-opacity duration-200 ease-out ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+								style={{ display: "block" }}
+							/>
+
+							{/* fallback UI (keeps same shape) */}
+							<div style={{ display: "none" }} className="h-44 flex-col items-center justify-center gap-2 text-[var(--muted-foreground)]">
+								<ImageIcon size={28} className="opacity-30" />
+								<p className="text-xs">{t("guide.imagePlaceholder")}</p>
+							</div>
+						</div>
+					)}
+
+					{currentStep?.tip && (
+						<div className="flex gap-2.5 p-3 rounded-xl bg-[var(--primary)]/5 border border-[var(--primary)]/15">
+							<Info size={14} className="text-[var(--primary)] flex-shrink-0 mt-0.5" />
+							<p className="text-xs text-[var(--foreground)] leading-relaxed">{p(currentStep.tip)}</p>
+						</div>
+					)}
+				</motion.div>
+			</AnimatePresence>
+
+			{/* Step Navigation */}
+			<div className="border-t border-[var(--border)] px-6 py-4 flex items-center justify-between gap-3">
+				<GhostBtn onClick={() => setActiveStep((v) => Math.max(0, v - 1))} className={activeStep === 0 ? "opacity-30 pointer-events-none" : ""}>
+					<ChevronLeft size={14} className={"rtl:-rotate-180 rtl:transition-transform  ltr:transition-transform"} /> {t("guide.prev")}
+				</GhostBtn>
+
+				<div className="flex items-center gap-1.5">
+					{currentSteps.map((_, i) => (
+						<button
+							key={i}
+							onClick={() => setActiveStep(i)}
+							className="rounded-full transition-all duration-200"
+							style={{
+								width: i === activeStep ? "16px" : "6px",
+								height: "6px",
+								background: i === activeStep ? `rgb(var(--primary-from))` : "var(--border)",
+							}}
+						/>
+					))}
+				</div>
+
+				{activeStep < currentSteps.length - 1 ? (
+					<PrimaryBtn onClick={() => setActiveStep((v) => Math.min(currentSteps.length - 1, v + 1))}>
+						{t("guide.next")}<ChevronRight
+							size={14}
+							className={"rtl:rotate-180 rtl:transition-transform  ltr:transition-transform"}
+						/>
+					</PrimaryBtn>
+				) : meta?.guide?.docsUrl ? (
+					<a href={meta.guide.docsUrl} target="_blank" rel="noopener noreferrer">
+						<PrimaryBtn>
+							<ExternalLink size={13} /> {t("guide.docs")}
+						</PrimaryBtn>
+					</a>
+				) : null}
+			</div>
+		</ModalShell>
+	);
+}
 
 // ─── Main Page Component ─────────────────────────────────────────────────────
 
@@ -1212,8 +1735,9 @@ export default function StoresIntegrationPage() {
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [currentProvider, setCurrentProvider] = useState(null);
 	const [currentStore, setCurrentStore] = useState(null);
-	const [webhookModalStore, setWebhookModalStore] = useState(null);
+	const [modalStore, setModalStore] = useState(null);
 	const [webhookModalProvider, setWebhookModalProvider] = useState(null);
+	const [guideProvider, setGuideProvider] = useState(null);
 
 	const { subscribe } = useSocket();
 	useEffect(() => {
@@ -1265,12 +1789,23 @@ export default function StoresIntegrationPage() {
 
 	const handleOpenWebhook = (provider, store) => {
 		setWebhookModalProvider(provider);
-		setWebhookModalStore(store);
+		setModalStore(store);
 	};
 
 	const handleCloseWebhookModal = () => {
 		setWebhookModalProvider(null);
-		setWebhookModalStore(null);
+		setModalStore(null);
+	};
+
+	const handleOpenGuide = (provider, store) => {
+		setGuideProvider(provider);
+		setModalStore(store);
+	};
+
+	const handleCloseGuide = () => {
+		setGuideProvider(null);
+		setModalStore(null);
+
 	};
 
 	const handleSync = async (storeId) => {
@@ -1330,6 +1865,7 @@ export default function StoresIntegrationPage() {
 											onConfigure={handleConfigure}
 											onSync={handleSync}
 											onOpenWebhook={handleOpenWebhook}
+											onOpenGuide={handleOpenGuide}
 											fetchStores={fetchStores}
 											index={index}
 										/>
@@ -1351,11 +1887,21 @@ export default function StoresIntegrationPage() {
 					onCreated={(provider, id) => handleOpenWebhook(provider, { id, provider })}
 				/>
 			)}
+
+			{/* Guide Modal */}
+			{guideProvider && (
+				<StoreGuideModal
+					provider={{ code: guideProvider }}
+					onClose={handleCloseGuide}
+				/>
+			)}
+
+
 			{/* Webhook Modal */}
-			{webhookModalProvider && webhookModalStore && (
+			{webhookModalProvider && modalStore && (
 				<StoreWebhookModal
 					provider={webhookModalProvider}
-					store={webhookModalStore}
+					store={modalStore}
 					onClose={handleCloseWebhookModal}
 					fetchStores={fetchStores}
 					t={t}
@@ -1364,3 +1910,4 @@ export default function StoresIntegrationPage() {
 		</div>
 	);
 }
+

@@ -212,6 +212,11 @@
     -moz-appearance: textfield;
   }
 
+  a,
+  button {
+    @apply cursor-pointer;
+  }
+
 }
 
 [dir='ltr'] body {
@@ -844,4 +849,12 @@ select:focus-visible {
   --primary-from: 229 231 235;
   --primary-to: 107 114 128;
   --primary-shadow: 107 114 128 / 0.35;
+}
+
+button:disabled {
+  @apply opacity-50 cursor-not-allowed pointer-events-none;
+}
+
+input:disabled {
+  @apply opacity-50 pointer-events-none;
 }

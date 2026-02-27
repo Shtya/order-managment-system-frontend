@@ -34,7 +34,7 @@ import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { normalizeAxiosError } from "@/utils/axios";
 import { ModalHeader, ModalShell } from "@/components/ui/modalShell";
-import { PrimaryBtn } from "@/components/atoms/Button";
+import { GhostBtn, PrimaryBtn } from "@/components/atoms/Button";
 
 const PROVIDER_META = {
 	bosta: {
@@ -191,16 +191,6 @@ function pick(bilingualObj, locale) {
 
 
 
-function GhostBtn({ children, onClick, className = "" }) {
-	return (
-		<button
-			onClick={onClick}
-			className={`flex items-center justify-center gap-2 rounded-xl py-2 px-4 text-sm font-medium border border-[var(--border)] text-[var(--foreground)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all ${className}`}
-		>
-			{children}
-		</button>
-	);
-}
 
 function CapBadge({ available, label }) {
 	return (

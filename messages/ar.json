@@ -352,6 +352,8 @@
     "categories": "الفئات",
     "purchases": "المشتريات",
     "purchasesReturn": "مرتجع المشتريات",
+    "order-analysis": "تحليل الطلبات",
+    "employee-performance-analysis": "تحليل أداء الموظفين",
     "sales": "المبيعات",
     "shippingCompanies": "شركات الشحن",
     "employees": "الموظفون",
@@ -2902,6 +2904,35 @@
     "image": {
       "preview": "معاينة"
     },
+    "employeeStats": {
+      "title": "إحصائيات الموظفين",
+      "usageGuide": "شرح الاستخدام",
+      "stats": {
+        "totalOrders": "إجمالي الطلبات",
+        "confirmedOrders": "الطلبات المؤكدة",
+        "deliveredOrders": "طلبات تم توصيلها",
+        "upsellOrders": "طلبات Upsell"
+      },
+      "columns": {
+        "employeeName": "اسم الموظف",
+        "receivedOrders": "عدد الطلبات المستلمة",
+        "confirmedOrders": "الطلبات المؤكدة",
+        "confirmationRate": "نسبة التأكيد",
+        "deliveredOrders": "طلبات تم توصيلها",
+        "deliveryRate": "نسبة التوصيل",
+        "upsellOrders": "طلبات Upsell",
+        "upsellRate": "نسبة Upsell"
+      },
+      "searchPlaceholder": "ابحث باسم الموظف...",
+      "empty": {
+        "title": "لا توجد إحصائيات",
+        "subtitle": "لا توجد بيانات إحصائية للموظفين في الفترة المحددة"
+      },
+      "errors": {
+        "fetchFailed": "فشل في تحميل إحصائيات الموظفين",
+        "fetchStatsFailed": "فشل في تحميل ملخص الإحصائيات"
+      }
+    },
     "failedOrders": {
       "searchPlaceholder": "ابحث بالمتجر أو اسم العميل أو رقم الطلب...",
       "stats": {
@@ -3812,6 +3843,42 @@
       "system": "نظام",
       "payment": "دفع",
       "alert": "تنبيه"
+    }
+  },
+  "orderAnalysis": {
+    "title": "تحليل الطلبات",
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "orderAnalysis": "تحليل الطلبات"
+    },
+    "filters": {
+      "dateRange": "نطاق التاريخ",
+      "status": "الحالة",
+      "paymentStatus": "حالة الدفع",
+      "employee": "الموظف",
+      "product": "المنتج"
+    },
+    "statistics": {
+      "totalOrders": "إجمالي الطلبات",
+      "totalRevenue": "إجمالي الإيرادات",
+      "averageOrderValue": "متوسط قيمة الطلب",
+      "ordersByStatus": "الطلبات حسب الحالة",
+      "ordersByPaymentStatus": "الطلبات حسب حالة الدفع",
+      "topProducts": "أفضل المنتجات"
+    },
+    "actions": {
+      "export": "تصدير البيانات",
+      "refresh": "تحديث",
+      "howToUse": "كيفية الاستخدام"
+    },
+    "charts": {
+      "ordersOverTime": "الطلبات على مر الزمن",
+      "revenueOverTime": "الإيرادات على مر الزمن",
+      "ordersByStatus": "الطلبات حسب الحالة",
+      "ordersByPaymentStatus": "الطلبات حسب حالة الدفع"
+    },
+    "errors": {
+      "fetchFailed": "فشل تحميل بيانات التحليل"
     }
   }
 }

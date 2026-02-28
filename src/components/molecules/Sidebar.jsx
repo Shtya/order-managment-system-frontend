@@ -30,6 +30,8 @@ import {
 	Layers,
 	LogOut,
 	XCircle,
+	PieChart,
+	Activity,
 } from 'lucide-react';
 import { FaUserTie } from 'react-icons/fa6';
 import { useRouter } from '@/i18n/navigation';
@@ -201,11 +203,23 @@ const menuItems = [
 		roles: ['ADMIN'],
 	},
 	{
-		icon: BarChart3,
+		icon: BarChart3, // reports icon
 		labelKey: 'reports',
 		href: '/reports',
 		badge: null,
 		roles: ['ADMIN'],
+		children: [
+			{
+				icon: PieChart, // analytics icon
+				labelKey: 'order-analysis',
+				href: '/reports/order-analysis',
+			},
+			{
+				icon: Activity, // choose an icon that represents performance
+				labelKey: 'employee-performance-analysis',
+				href: '/reports/employee-performance-analysis',
+			},
+		],
 	},
 	{
 		icon: Plug,

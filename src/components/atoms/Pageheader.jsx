@@ -40,7 +40,7 @@ export function PageHeaderStatsSkeleton({ count = 6 }) {
 }
 
 /* ── Stats grid ────────────────────────────────────────────────────────── */
-function StatsGrid({ stats }) {
+export function StatsGrid({ stats }) {
 	if (!stats) return null;
 
 	/* ReactNode passthrough */

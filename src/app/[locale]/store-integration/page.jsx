@@ -89,10 +89,6 @@ const PROVIDER_CONFIG = {
 								ar: "اضغط على زر النسخ ثم قم بلصق المفتاح داخل نموذج إعدادات المتجر لدينا."
 							},
 							image: "/guide/easyorder/step5.png",
-							tip: {
-								en: "Make sure you save the key securely. Do not share it publicly.",
-								ar: "تأكد من حفظ المفتاح بأمان ولا تقم بمشاركته علنًا."
-							}
 						}
 					]
 				},
@@ -272,7 +268,15 @@ const PROVIDER_CONFIG = {
 								en: "Keep the Client Secret secure and do not share it publicly.",
 								ar: "احفظ Client Secret بأمان ولا تشاركه علنًا."
 							}
-						}
+						},
+						{
+							title: { en: "Install the App", ar: "تثبيت التطبيق" },
+							desc: {
+								en: "After releasing the app version, click on 'Install app'",
+								ar: "بعد إصدار نسخة التطبيق، اضغط على 'Install app'."
+							},
+							image: "/guide/shopify/install.png",
+						},
 					]
 				},
 				{
@@ -951,7 +955,7 @@ function StoreConfigDialog({ open, onClose, provider, existingStore, fetchStores
 		} catch (e) {
 			const msg = normalizeAxiosError(e);
 			setError(msg);
-			toast.error(msg);
+			// toast.error(msg);
 		}
 	};
 
@@ -1076,7 +1080,7 @@ function StoreConfigDialog({ open, onClose, provider, existingStore, fetchStores
 							)}
 
 							{/* Webhooks Section - only on first-time create; when edit use Webhook modal */}
-							{!isEdit && (
+							{!isEdit && provider !== "woocommerce" && (
 								<div className="space-y-3">
 									<div className="flex items-center gap-2">
 										<div className="w-0.5 h-5 bg-primary rounded-full" />

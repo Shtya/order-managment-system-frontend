@@ -112,7 +112,7 @@ export default function OrderCollectionPage() {
     const searchParams = useSearchParams();
     const router = useRouter();
 
-    const activeTab = searchParams.get("tab") || "not_collected";
+    const [activeTab, setActiveTab] = useState(() => searchParams.get("tab") || "not_collected");
     const [loading, setLoading] = useState(false);
     const [exportLoading, setExportLoading] = useState(false);
     const [search, setSearch] = useState("");
@@ -141,12 +141,12 @@ export default function OrderCollectionPage() {
 
     const searchTimer = useRef(null);
 
-    const handleTabChange = (tabId) => {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set("tab", tabId);
+    // const handleTabChange = (tabId) => {
+    //     const params = new URLSearchParams(searchParams.toString());
+    //     params.set("tab", tabId);
 
-        router.push(`?${params.toString()}`, { scroll: false });
-    };
+    //     router.push(`?${params.toString()}`, { scroll: false });
+    // };
 
     // ── Tabs Configuration ────────────────────────────────────────────────────
     const tabItems = useMemo(
@@ -156,6 +156,21 @@ export default function OrderCollectionPage() {
         ],
         [t]
     );
+
+    const allowedTabIds = useMemo(() => new Set(tabItems.map(item => item.id)), [tabItems]);
+
+    useEffect(() => {
+        const tabFromUrl = (searchParams.get("tab") || "").trim();
+
+        console.log(tabFromUrl)
+        const defaultTab = "not_collected";
+        const safeTab = allowedTabIds.has(tabFromUrl) ? tabFromUrl : defaultTab;
+
+        setActiveTab(safeTab);
+    }, [searchParams, allowedTabIds]);
+
+
+
 
     // ── Debounce Search ───────────────────────────────────────────────────────
     useEffect(() => {
@@ -431,7 +446,6 @@ export default function OrderCollectionPage() {
                 key: "actions",
                 header: t("table.actions"),
                 cell: (row) => {
-                    console.log("Row data for actions:", row); // Debug log to inspect row data
                     return (<TooltipProvider>
                         <div className="flex items-center gap-2">
 
@@ -571,7 +585,7 @@ export default function OrderCollectionPage() {
             <PageHeader
                 breadcrumbs={[
                     { name: t("breadcrumb.home"), href: "/" },
-                    { name: t("breadcrumb.title") },
+                    { name: activeTab === "not_collected" ? t('breadcrumb.notCollected') : t("breadcrumb.fullyCollected") },
                 ]}
                 buttons={
                     <div className="flex gap-2">
@@ -583,7 +597,7 @@ export default function OrderCollectionPage() {
             >
 
                 <div className="mb-6">
-                    <SwitcherTabs items={tabItems} activeId={activeTab} onChange={handleTabChange} className="w-full" />
+                    {/* <SwitcherTabs items={tabItems} activeId={activeTab} onChange={handleTabChange} className="w-full" /> */}
                 </div>
             </PageHeader>
 

@@ -97,12 +97,12 @@ const menuItems = [
 			{
 				icon: CheckCircle2, // Represents completed/fully collected
 				labelKey: 'collectedOrders', // Matches your fully_collected logic
-				href: '/orders/collections?status=fully_collected',
+				href: '/orders/collections?tab=collected',
 			},
 			{
 				icon: AlertCircle, // Represents pending or partial payments
 				labelKey: 'uncollectedOrders', // Covers not_collected & partial
-				href: '/orders/collections?status=pending',
+				href: '/orders/collections?tab=not_collected',
 			},
 		],
 	},

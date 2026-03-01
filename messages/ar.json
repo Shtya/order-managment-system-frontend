@@ -3988,7 +3988,9 @@
   "orderCollection": {
     "breadcrumb": {
       "title": "تحصيل الطلبات",
-      "home": "الرئيسية"
+      "home": "الرئيسية",
+      "notCollected": "طلبات غير محصلة",
+      "fullyCollected": "طلبات محصلة بالكامل"
     },
     "tabs": {
       "notCollected": "طلبات غير محصلة",

@@ -70,12 +70,12 @@ function formatRelativeDate(dateStr, t) {
 function NotificationSkeleton() {
   return (
     <div className="flex items-start gap-4 px-5 py-4 border-b border-border/40 animate-pulse">
-      <div className="w-10 h-10 rounded-2xl bg-muted/60 shrink-0" />
+      <div className="w-10 h-10 rounded-xl bg-muted/60 shrink-0" />
       <div className="flex-1 space-y-2">
-        <div className="h-3.5 w-40 rounded-lg bg-muted/60" />
-        <div className="h-3 w-64 rounded-lg bg-muted/40" />
+        <div className="h-3.5 w-40 rounded-xl bg-muted/60" />
+        <div className="h-3 w-64 rounded-xl bg-muted/40" />
       </div>
-      <div className="h-3 w-14 rounded-lg bg-muted/40 shrink-0" />
+      <div className="h-3 w-14 rounded-xl bg-muted/40 shrink-0" />
     </div>
   );
 }
@@ -112,7 +112,7 @@ function NotificationRow({ n, idx, onRead, t }) {
 
       {/* Icon bubble */}
       <div className={cn(
-        "w-10 h-10 rounded-2xl flex items-center justify-center text-lg shrink-0",
+        "w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0",
         "border border-border/60",
         n.isRead
           ? "bg-[var(--secondary)]"
@@ -324,7 +324,7 @@ export default function NotificationsPage() {
         className="flex items-center justify-between flex-wrap gap-4 mb-6"
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-[color-mix(in_oklab,var(--primary)_12%,transparent)] border border-[color-mix(in_oklab,var(--primary)_20%,transparent)] flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-[color-mix(in_oklab,var(--primary)_12%,transparent)] border border-[color-mix(in_oklab,var(--primary)_20%,transparent)] flex items-center justify-center">
             <Bell size={18} className="text-[var(--primary)]" />
           </div>
           <div>
@@ -384,7 +384,7 @@ export default function NotificationsPage() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
-        className="bg-card rounded-3xl border border-border/60 shadow-sm overflow-hidden"
+        className="bg-card rounded-xl border border-border/60 shadow-sm overflow-hidden"
       >
 
         {/* ── Toolbar: search + filters ── */}
@@ -446,7 +446,7 @@ export default function NotificationsPage() {
                 exit={{ opacity: 0 }}
                 className="flex flex-col items-center justify-center py-20 gap-4 text-center"
               >
-                <div className="w-16 h-16 rounded-3xl bg-[var(--secondary)] border border-border/60 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-xl bg-[var(--secondary)] border border-border/60 flex items-center justify-center">
                   {filter === "unread"
                     ? <BellOff size={28} className="text-muted-foreground" />
                     : <Inbox size={28} className="text-muted-foreground" />

@@ -340,7 +340,7 @@ export default function AddEmployeePage() {
 											}
 										}}
 										className={cn(
-											"relative rounded-2xl border-2 transition-all duration-300 text-left",
+											"relative rounded-xl border-2 transition-all duration-300 text-left",
 											"flex flex-col items-center gap-3 group p-4",
 											isSelected
 												? "border-primary bg-primary/5 shadow-lg shadow-primary/20"
@@ -643,7 +643,7 @@ function ProfileImageUpload({ image, onImageChange, onRemove, t, isRTL }) {
 			initial={{ opacity: 0, x: -20 }}
 			animate={{ opacity: 1, x: 0 }}
 			transition={{ delay: 0.2 }}
-			className="bg-card rounded-2xl p-6"
+			className="bg-card rounded-xl p-6"
  		>
 			<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4 text-right">
 				{t("sections.employeeImage")}
@@ -667,7 +667,7 @@ function ProfileImageUpload({ image, onImageChange, onRemove, t, isRTL }) {
 				}}
 				onDrop={handleDrop}
 				className={cn(
-					"rounded-2xl border-2 border-dashed transition-all duration-300",
+					"rounded-xl border-2 border-dashed transition-all duration-300",
 					isDragging ? "border-primary bg-primary/5" : "border-primary/60 bg-white/40 dark:bg-slate-900/20"
 				)}
 			>
@@ -703,7 +703,7 @@ function ProfileImageUpload({ image, onImageChange, onRemove, t, isRTL }) {
 					</div>
 				) : (
 					<div className="relative p-4">
-						<div className="relative rounded-2xl overflow-hidden">
+						<div className="relative rounded-xl overflow-hidden">
 							<img src={image} alt={t("upload.imageAlt")} className="w-full h-64 object-cover" />
 							<div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 						</div>
@@ -802,7 +802,7 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-xl rounded-2xl">
+			<DialogContent className="sm:max-w-xl rounded-xl">
 				<DialogHeader className="text-right">
 					<DialogTitle>{t("whatsapp.title") || "Send via WhatsApp"}</DialogTitle>
 				</DialogHeader>
@@ -843,7 +843,7 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 						</div>
 
 						{error && (
-							<div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg p-2 text-right">
+							<div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl p-2 text-right">
 								{error}
 							</div>
 						)}

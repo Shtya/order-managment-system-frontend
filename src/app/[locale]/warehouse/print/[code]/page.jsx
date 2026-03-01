@@ -74,7 +74,7 @@ export default async function Page({ params }) {
         {/* HERO HEADER */}
         <div
           className={[
-            "relative overflow-hidden rounded-3xl mb-6 px-9 py-8",
+            "relative overflow-hidden rounded-xl mb-6 px-9 py-8",
             "bg-[linear-gradient(135deg,rgba(255,139,0,0.12)_0%,rgba(255,92,43,0.08)_25%,rgba(16,185,129,0.08)_50%,rgba(255,139,0,0.12)_75%,rgba(255,92,43,0.08)_100%)]",
             "animated-gradient",
             "bg-[radial-gradient(circle_at_2px_2px,rgba(255,139,0,0.04)_1px,transparent_1px)] bg-[length:24px_24px]",

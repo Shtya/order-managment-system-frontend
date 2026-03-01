@@ -263,7 +263,7 @@ export function BundleViewModal({ open, onOpenChange, bundle }) {
           <div className="text-slate-500">{t("bundleModal.noData")}</div>
         ) : (
           <div className="space-y-5">
-            <div className="rounded-2xl border bg-white dark:bg-slate-900 p-4 shadow-sm">
+            <div className="rounded-xl border bg-white dark:bg-slate-900 p-4 shadow-sm">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <div className="text-xl font-semibold text-slate-900 dark:text-slate-50">{bundle.name ?? na}</div>
@@ -302,7 +302,7 @@ export function BundleViewModal({ open, onOpenChange, bundle }) {
               {items.length === 0 ? (
                 <div className="text-slate-500">{t("bundleModal.noItems")}</div>
               ) : (
-                <div className="overflow-hidden rounded-2xl border">
+                <div className="overflow-hidden rounded-xl border">
                   <div className="grid grid-cols-12 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-200 px-4 py-3">
                     <div className="col-span-5">{t("common.variant")}</div>
                     <div className="col-span-2 text-center">{t("common.qty")}</div>

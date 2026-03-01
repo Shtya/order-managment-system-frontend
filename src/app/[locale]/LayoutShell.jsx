@@ -40,8 +40,8 @@ function DashboardLayout({ children }) {
 		pathname?.includes('reset-password') ||
 		pathname?.includes('forgot-password');
 
-	// لو Auth route: لا Header ولا Sidebar
-	if (isAuthRoute) {
+
+	if (isAuthRoute || pathname == "") {
 		return (
 			<div  >
 				{children}
@@ -50,26 +50,25 @@ function DashboardLayout({ children }) {
 	}
 
 	return (
-		<div    >
-			<Header
-				toggleSidebar={() => setIsSidebarOpen((v) => !v)}
-				isSidebarOpen={isSidebarOpen}
-			/>
-			<Sidebar isRTL={isRTL} isOpen={isSidebarOpen} />
+		<div>
+			<Header toggleSidebar={() => setIsSidebarOpen((v) => !v)} isSidebarOpen={isSidebarOpen} />
+			<Sidebar isRTL={isRTL} onOpenSidebar={() => setIsSidebarOpen((v) => !v)} isOpen={isSidebarOpen} />
 			<Toaster position="top-center" />
 
 			<div
-				className={`bg-[#f3f6fa]  dark:bg-[#19243950] relative transition-all duration-300 ${isSidebarOpen
+				className={` relative  duration-300 ${isSidebarOpen
 					? isRTL
 						? 'mr-[280px]'
 						: 'ml-[280px]'
 					: isRTL
 						? 'mr-[80px]'
 						: 'ml-[80px]'
-					} mt-16`}
+					} mt-16 mb-8 `}
 			>
 				{children}
 			</div>
 		</div>
 	);
 }
+
+

@@ -72,7 +72,7 @@ function SelectTrigger({ className, size = "default", children, ...props }) {
         "data-[placeholder]:text-muted-foreground",
         // inner elements
         "*:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2",
-        "[&_svg]:pointer-events-none [&_svg]:shrink-0" 
+        "[&_svg]:pointer-events-none [&_svg]:shrink-0 " 
       )}
       {...props}
     >
@@ -94,7 +94,7 @@ function SelectTrigger({ className, size = "default", children, ...props }) {
           transition-opacity duration-200"
       />
 
-      <span className="relative z-10 flex min-w-0 flex-1 items-center truncate">
+      <span className="relative  z-10 flex ">
         {children}
       </span>
 
@@ -149,7 +149,7 @@ function SelectContent({
           // base
           "relative z-50 overflow-hidden",
           // shape
-          "rounded-2xl",
+          "rounded-xl",
           // border — matches trigger open state
           "border border-[var(--primary)]/20 dark:border-[#5b4bff]/25",
           // background with subtle translucency
@@ -243,34 +243,12 @@ function SelectItem({ className, children, ...props }) {
         // disabled
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
         // transition
-        "transition-colors duration-150",
+        "transition-colors duration-150 rtl:text-right  ",
         className,
       )}
       {...props}
     >
-      {/* Selected indicator — left accent dot */}
-      <span
-        aria-hidden
-        className="relative flex h-4 w-4 shrink-0 items-center justify-center"
-      >
-        {/* ring always present when selected */}
-        <span
-          className={cn(
-            "absolute inset-0 rounded-full border-2 transition-all duration-200",
-            "border-[var(--primary)]/0 group-data-[state=checked]:border-[var(--primary)]/60",
-            "dark:group-data-[state=checked]:border-[#5b4bff]/60",
-          )}
-        />
-        {/* filled dot when selected */}
-        <SelectPrimitive.ItemIndicator asChild>
-          <span
-            className="block h-2 w-2 rounded-full
-              bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]
-              dark:from-[#5b4bff] dark:to-[#3be7ff]
-              shadow-[0_0_6px_rgba(255,139,0,0.5)] dark:shadow-[0_0_6px_rgba(91,75,255,0.6)]"
-          />
-        </SelectPrimitive.ItemIndicator>
-      </span>
+       
 
       <SelectPrimitive.ItemText className="flex-1 truncate">
         {children}

@@ -67,7 +67,7 @@ function StockBadge({ available, stockOnHand, reserved, t }) {
 				animate={{ scale: 1 }}
 				transition={{ type: "spring", stiffness: 400 }}
 				className={cn(
-					"inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold shadow-sm",
+					"inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold shadow-sm",
 					isOut
 						? "bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950/30 dark:to-rose-950/30 border-red-300 dark:border-red-800 text-red-700 dark:text-red-300"
 						: isLow
@@ -302,7 +302,7 @@ export function ProductSkuSearchPopover({
 								<motion.div
 									animate={{ rotate: 360 }}
 									transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-									className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mb-4 shadow-lg"
+									className="w-20 h-20 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mb-4 shadow-lg"
 								>
 									<Loader2 className="h-10 w-10 text-primary" />
 								</motion.div>
@@ -319,7 +319,7 @@ export function ProductSkuSearchPopover({
 								<motion.div
 									animate={{ rotate: [0, 10, -10, 0] }}
 									transition={{ duration: 2, repeat: Infinity }}
-									className="w-20 h-20 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center mb-4 shadow-lg"
+									className="w-20 h-20 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center mb-4 shadow-lg"
 								>
 									<Search className="h-10 w-10 text-gray-400" />
 								</motion.div>
@@ -390,7 +390,7 @@ export function ProductSkuSearchPopover({
 															{isSelected && (
 																<Badge
 																	variant="outline"
-																	className="rounded-lg bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-800"
+																	className="rounded-xl bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-800"
 																>
 																	✓ {t("selected")}
 																</Badge>

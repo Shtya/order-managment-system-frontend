@@ -831,10 +831,10 @@ function WebhookModal({ company, onClose }) {
 // -----------------------
 function SkeletonCard() {
 	return (
-		<div className="rounded-2xl border border-[var(--border)] overflow-hidden animate-pulse bg-[var(--muted)]">
+		<div className="rounded-xl border border-[var(--border)] overflow-hidden animate-pulse bg-[var(--muted)]">
 			<div className="p-5 space-y-4">
 				<div className="flex items-start justify-between">
-					<div className="w-14 h-14 rounded-2xl bg-[var(--border)]" />
+					<div className="w-14 h-14 rounded-xl bg-[var(--border)]" />
 					<div className="w-11 h-6 rounded-full bg-[var(--border)]" />
 				</div>
 				<div className="space-y-1.5">
@@ -847,9 +847,9 @@ function SkeletonCard() {
 				</div>
 			</div>
 			<div className="border-t border-[var(--border)] px-4 py-3 flex gap-2">
-				<div className="h-7 w-20 rounded-lg bg-[var(--border)]" />
-				<div className="h-7 w-20 rounded-lg bg-[var(--border)]" />
-				<div className="h-7 w-16 rounded-lg bg-[var(--border)] ml-auto" />
+				<div className="h-7 w-20 rounded-xl bg-[var(--border)]" />
+				<div className="h-7 w-20 rounded-xl bg-[var(--border)]" />
+				<div className="h-7 w-16 rounded-xl bg-[var(--border)] ml-auto" />
 			</div>
 		</div>
 	);
@@ -888,13 +888,13 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 			<motion.div
 				whileHover={{ y: -3, boxShadow: "0 16px 40px 0 rgba(0,0,0,0.13)" }}
 				transition={{ type: "spring", stiffness: 300, damping: 22 }}
-				className="relative rounded-2xl overflow-hidden border border-[var(--border)] shadow-sm flex flex-col"
+				className="relative rounded-xl overflow-hidden border border-[var(--border)] shadow-sm flex flex-col"
 				style={{ background: company.bg }}
 			>
 				<div className="p-5 flex flex-col gap-3 flex-1">
 					<div className="flex items-start justify-between">
 						<div className="flex items-center gap-2" >
-							<div className="w-14 h-14 rounded-2xl bg-white/80 dark:bg-white/10 backdrop-blur-sm border border-white/40 dark:border-white/10 flex items-center justify-center shadow-sm overflow-hidden">
+							<div className="w-14 h-14 rounded-xl bg-white/80 dark:bg-white/10 backdrop-blur-sm border border-white/40 dark:border-white/10 flex items-center justify-center shadow-sm overflow-hidden">
 								<img src={company.logo} alt={company.name} className="w-9 h-9 object-contain" onError={(e) => (e.target.style.display = "none")} />
 							</div>
 							<div>
@@ -974,7 +974,7 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 					<button
 						onClick={() => setOpenModal("settings")}
 						title={t("card.settingsTitle")}
-						className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+						className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
 					>
 						<Settings2 size={12} />
 						{t("card.settings")}
@@ -985,7 +985,7 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 						<button
 							onClick={() => isConfigured && setOpenModal("guide")}
 							title={t("card.guideTitle")}
-							className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+							className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
 						>
 							<HelpCircle size={12} />
 							{t("card.guide")}
@@ -997,7 +997,7 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 							target="_blank"
 							rel="noopener noreferrer"
 							title={t("card.guideTitle")}
-							className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+							className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
 						>
 							<HelpCircle size={12} />
 							{t("card.guide")}
@@ -1010,7 +1010,7 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 						onClick={() => isConfigured && setOpenModal("webhook")}
 						disabled={!isConfigured}
 						title={isConfigured ? "Webhook" : t("card.configureFirst")}
-						className={` font-en flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all shadow-sm ${isConfigured
+						className={` font-en flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all shadow-sm ${isConfigured
 							? "bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border-white/50 dark:border-white/10 text-gray-700 dark:text-gray-200"
 							: "bg-white/30 dark:bg-white/5 border-white/30 dark:border-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-50"
 							}`}
@@ -1023,7 +1023,7 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 						onClick={() => isConfigured && setOpenModal("usage")}
 						disabled={!isConfigured}
 						title={isConfigured ? t("card.usageTitle") : t("card.configureFirst")}
-						className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all shadow-sm ${isConfigured
+						className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all shadow-sm ${isConfigured
 							? "bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border-white/50 dark:border-white/10 text-gray-700 dark:text-gray-200"
 							: "bg-white/30 dark:bg-white/5 border-white/30 dark:border-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-50"
 							}`}

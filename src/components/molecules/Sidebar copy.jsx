@@ -403,7 +403,7 @@ export default function Sidebar({ isOpen, isRTL }) {
 					{/* Icon Container */}
 					<div
 						className={`
-              relative w-9 h-9 shrink-0 rounded-lg flex items-center justify-center
+              relative w-9 h-9 shrink-0 rounded-xl flex items-center justify-center
               transition-all duration-300 transform
               ${active
 								? 'bg-primary/20 text-primary scale-110 shadow-lg shadow-primary/20'
@@ -415,7 +415,7 @@ export default function Sidebar({ isOpen, isRTL }) {
 
 						{/* Glow effect on hover */}
 						{!active && (
-							<div className="absolute inset-0 rounded-lg bg-primary/0 group-hover:bg-primary/5 transition-all duration-300" />
+							<div className="absolute inset-0 rounded-xl bg-primary/0 group-hover:bg-primary/5 transition-all duration-300" />
 						)}
 					</div>
 
@@ -526,7 +526,7 @@ export default function Sidebar({ isOpen, isRTL }) {
 										{item.badge && (
 											<motion.span
 												className={`
-                          px-2.5 py-1 rounded-lg text-xs font-bold
+                          px-2.5 py-1 rounded-xl text-xs font-bold
                           ${active
 														? 'bg-white/25 text-white backdrop-blur-sm shadow-lg'
 														: 'bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-lg shadow-red-500/30'
@@ -561,7 +561,7 @@ export default function Sidebar({ isOpen, isRTL }) {
 
 					{isOpen && <div style={{ transition: ".5s" }} className={`  overflow-hidden   max-h-0 ${isOpenGroup ? 'max-h-[500px] ' : ' '}  `} >
 						<div className={`  ${isRTL ? 'mr-3 ml-0' : 'ml-3'}`}>
-							<div className={` relative rounded-2xl  `} >
+							<div className={` relative rounded-xl  `} >
 
 								<div className="space-y-1.5 py-3 ">
 									{item.children && item.children.map((sub, i) => (

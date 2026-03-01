@@ -35,7 +35,7 @@ import { getUser } from "@/hook/getUser";
  * ========================= */
 function PlanCardSkeleton() {
 	return (
-		<div className="relative rounded-3xl p-8 border-2 border-gray-200 dark:border-slate-700 bg-gradient-to-br from-white via-gray-50 to-white dark:from-slate-900 dark:via-slate-800/50 dark:to-slate-900 animate-pulse overflow-hidden">
+		<div className="relative rounded-xl p-8 border-2 border-gray-200 dark:border-slate-700 bg-gradient-to-br from-white via-gray-50 to-white dark:from-slate-900 dark:via-slate-800/50 dark:to-slate-900 animate-pulse overflow-hidden">
 			<div className="absolute inset-0">
 				<div className="absolute -top-32 -left-32 w-80 h-80 rounded-full bg-primary/10 blur-3xl" />
 				<div className="absolute -bottom-32 -right-32 w-80 h-80 rounded-full bg-primary/10 blur-3xl" />
@@ -43,13 +43,13 @@ function PlanCardSkeleton() {
 
 			<div className="relative">
 				<div className="flex justify-center mb-6">
-					<div className="w-20 h-20 rounded-2xl bg-gray-200 dark:bg-slate-700" />
+					<div className="w-20 h-20 rounded-xl bg-gray-200 dark:bg-slate-700" />
 				</div>
 
 				<div className="text-center mb-8 space-y-3">
 					<div className="h-10 w-40 mx-auto rounded-xl bg-gray-200 dark:bg-slate-700" />
-					<div className="h-6 w-52 mx-auto rounded-lg bg-gray-200 dark:bg-slate-700" />
-					<div className="h-4 w-28 mx-auto rounded-lg bg-gray-200 dark:bg-slate-700" />
+					<div className="h-6 w-52 mx-auto rounded-xl bg-gray-200 dark:bg-slate-700" />
+					<div className="h-4 w-28 mx-auto rounded-xl bg-gray-200 dark:bg-slate-700" />
 				</div>
 
 				<div className="space-y-4 mb-8">
@@ -88,7 +88,7 @@ function PlanCard({ plan, isPopular, onSubscribe, currentPlan }) {
 			onHoverStart={() => setIsHovered(true)}
 			onHoverEnd={() => setIsHovered(false)}
 			className={cn(
-				"relative rounded-3xl p-8 border-2 transition-all duration-500 ",
+				"relative rounded-xl p-8 border-2 transition-all duration-500 ",
 				"bg-gradient-to-br backdrop-blur-sm",
 				!isCurrentPlan &&
 					(isPopular
@@ -141,7 +141,7 @@ function PlanCard({ plan, isPopular, onSubscribe, currentPlan }) {
 				>
 					<div
 						className={cn(
-							"w-20 h-20 rounded-2xl flex items-center justify-center relative z-10",
+							"w-20 h-20 rounded-xl flex items-center justify-center relative z-10",
 							"bg-gradient-to-br shadow-xl transition-shadow duration-300",
 							plan.color,
 							isHovered && "shadow-2xl"
@@ -152,7 +152,7 @@ function PlanCard({ plan, isPopular, onSubscribe, currentPlan }) {
 
 					<motion.div
 						aria-hidden
-						className={cn("absolute inset-0 rounded-2xl blur-xl opacity-50", "bg-gradient-to-br", plan.color)}
+						className={cn("absolute inset-0 rounded-xl blur-xl opacity-50", "bg-gradient-to-br", plan.color)}
 						animate={{ scale: isHovered ? 1.35 : 1, opacity: isHovered ? 0.75 : 0.5 }}
 					/>
 				</motion.div>
@@ -514,7 +514,7 @@ export default function SubscriptionsPage() {
 				header: "إثبات الدفع",
 				cell: (row) => (
 					<div className="flex items-center gap-2">
-						<div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-800 flex items-center justify-center border border-gray-200 dark:border-slate-700">
+						<div className="w-8 h-8 rounded-xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center border border-gray-200 dark:border-slate-700">
 							<CreditCard size={16} className="text-gray-500 dark:text-slate-400" />
 						</div>
 						<span className="text-sm text-gray-600 dark:text-slate-400">{row.paymentMethod}</span>

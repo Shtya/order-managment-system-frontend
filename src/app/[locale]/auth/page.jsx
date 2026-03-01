@@ -36,6 +36,7 @@ import {
 	FaWhatsapp,
 } from 'react-icons/fa6';
 import { FcGoogle } from 'react-icons/fc';
+import { cn } from "@/utils/cn";
 
 /** =========================
  * Axios instance (inline)
@@ -142,10 +143,10 @@ export default function AuthPage() {
 
 
 	const redirectAfterLogin = async (data) => {
-		
+
 		console.log(data);
 
-		const role = data?.user?.role 
+		const role = data?.user?.role
 		const r = String(role || "").toUpperCase();
 
 		if (r === "SUPER_ADMIN") {
@@ -458,7 +459,7 @@ export default function AuthPage() {
 						animate={{ opacity: 1, scale: 1 }}
 						transition={{ duration: 0.6 }}
 					>
-						<div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-800/50 p-10 relative overflow-hidden">
+						<div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-200/50 dark:border-gray-800/50 p-10 relative overflow-hidden">
 							<div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-3xl" />
 							<div className="absolute -bottom-10 -left-10 w-40 h-40 bg-gradient-to-tr from-blue-500/10 to-transparent rounded-full blur-3xl" />
 
@@ -645,13 +646,15 @@ function LoginStep({
 						{t('login.email')}
 					</Label>
 					<div className="relative">
-						<Mail className="absolute rtl:right-4 ltr:left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
 						<Input
 							type="email"
-							placeholder={t('login.emailPlaceholder')}
-							{...register('email')}
-							className={` ltr:text-left text-right rtl:pr-11 ltr:pl-11 font-en h-11 bg-gray-50 dark:bg-gray-800/50 rounded-xl ${errors.email ? 'border-red-500' : ''
-								}`}
+							startIcon={<Mail size={18} />}
+							placeholder={t("login.emailPlaceholder")}
+							{...register("email")}
+							className={cn(
+								"text-start font-en bg-gray-50 dark:bg-gray-800/50 rounded-xl",
+								errors.email && "border-red-500"
+							)}
 						/>
 					</div>
 					<AnimatePresence>
@@ -674,9 +677,9 @@ function LoginStep({
 						{t('login.password')}
 					</Label>
 					<div className="relative">
-						<Lock className="absolute rtl:right-4 ltr:left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
 						<Input
 							type={showPassword ? 'text' : 'password'}
+							startIcon={<Lock size={18} />}
 							placeholder={t('login.passwordPlaceholder')}
 							{...register('password')}
 							className={` ltr:text-left text-right font-en pl-11 pr-11 h-12 bg-gray-50 dark:bg-gray-800/50 rounded-xl ${errors.password ? 'border-red-500' : ''
@@ -771,7 +774,7 @@ function ForgotPasswordStep({ register, errors, handleSubmit, onSubmit, isLoadin
 			className="space-y-6"
 		>
 			<div className="flex   items-center gap-2 mb-6">
-				<div className="w-16 h-16 rounded-2xl bg-primary1 flex items-center justify-center shadow-lg">
+				<div className="w-16 h-16 rounded-xl bg-primary1 flex items-center justify-center shadow-lg">
 					<Mail className="w-8 h-8 text-white" />
 				</div>
 				<div className="ltr:text-left">
@@ -911,7 +914,7 @@ function OtpStep({ email, onVerified, onBack, t }) {
 			className="space-y-6"
 		>
 			<div className="flex items-center gap-2 mb-6">
-				<div className="w-16 h-16 rounded-2xl bg-primary1 flex items-center justify-center shadow-lg">
+				<div className="w-16 h-16 rounded-xl bg-primary1 flex items-center justify-center shadow-lg">
 					<Shield className="w-8 h-8 text-white" />
 				</div>
 				<div>
@@ -1056,7 +1059,7 @@ function ResetPasswordStep({
 			className="space-y-6"
 		>
 			<div className="flex items-center gap-2 mb-6">
-				<div className="w-16 h-16 rounded-2xl bg-primary1 flex items-center justify-center shadow-lg">
+				<div className="w-16 h-16 rounded-xl bg-primary1 flex items-center justify-center shadow-lg">
 					<KeyRound className="w-8 h-8 text-white" />
 				</div>
 				<div>

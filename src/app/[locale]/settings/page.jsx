@@ -246,7 +246,7 @@ export default function SettingsPage() {
 			{/* Header */}
 			<div className="mb-8">
 				<motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-4 mb-2">
-					<div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg shadow-primary/20">
+					<div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg shadow-primary/20">
 						<Settings className="w-6 h-6 text-white" />
 					</div>
 					<div>
@@ -277,7 +277,7 @@ export default function SettingsPage() {
 								>
 									<div
 										className={cn(
-											'w-10 h-10 rounded-lg flex items-center justify-center transition-all',
+											'w-10 h-10 rounded-xl flex items-center justify-center transition-all',
 											activeTab === tab.id
 												? 'bg-white/20'
 												: 'bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-200 dark:group-hover:bg-slate-700'
@@ -1093,7 +1093,7 @@ function AccountTab() {
 						</div>
 
 						{phoneError && (
-							<div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg p-2 text-right">
+							<div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl p-2 text-right">
 								{phoneError}
 							</div>
 						)}
@@ -1247,7 +1247,7 @@ function SecurityTab() {
 								<div
 									key={s?.id ?? makeId()}
 									className={cn(
-										'p-4 rounded-2xl border bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700',
+										'p-4 rounded-xl border bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700',
 										s?.isCurrent && 'border-primary/40 bg-primary/5 dark:bg-primary/10'
 									)}
 								>
@@ -1375,7 +1375,7 @@ function AppearanceTab() {
 							key={opt.id}
 							onClick={() => setMode(opt.id)}
 							className={cn(
-								'p-4 rounded-2xl border-2 transition-all text-left',
+								'p-4 rounded-xl border-2 transition-all text-left',
 								mode === opt.id ? 'border-primary bg-primary/5' : 'border-slate-200 dark:border-slate-700'
 							)}
 						>
@@ -1401,7 +1401,7 @@ function AppearanceTab() {
 							key={p.id}
 							onClick={() => setPaletteId(p.id)}
 							className={cn(
-								'p-4 rounded-2xl border-2 transition-all text-left',
+								'p-4 rounded-xl border-2 transition-all text-left',
 								paletteId === p.id ? 'border-primary bg-primary/5' : 'border-slate-200 dark:border-slate-700'
 							)}
 						>
@@ -1451,7 +1451,7 @@ function AppearanceTab() {
 				<h3 className="font-semibold text-lg mb-4 text-slate-900 dark:text-white">{t('layout.title')}</h3>
 
 				<div className="space-y-3">
-					<div className="flex items-center justify-between p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40">
+					<div className="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40">
 						<div>
 							<div className="font-semibold text-slate-900 dark:text-white">{t('layout.sidebar')}</div>
 							<div className="text-sm text-slate-500 dark:text-slate-400">{t('layout.sidebarDesc')}</div>
@@ -1459,7 +1459,7 @@ function AppearanceTab() {
 						<Switch checked={sidebarExpanded} onCheckedChange={setSidebarExpanded} />
 					</div>
 
-					<div className="flex items-center justify-between p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40">
+					<div className="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40">
 						<div>
 							<div className="font-semibold text-slate-900 dark:text-white">{t('layout.compact')}</div>
 							<div className="text-sm text-slate-500 dark:text-slate-400">{t('layout.compactDesc')}</div>

@@ -3,7 +3,7 @@
 
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Box, ChevronLeft, FileDown, Filter, Layers, Package, RefreshCw, Loader2 } from "lucide-react";
+import { Box, ChevronLeft, FileDown, Filter, Layers, Package, RefreshCw, Loader2, Info } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 
@@ -418,7 +418,7 @@ export default function ProductsPage() {
               variant="solid"
               icon={<span className="text-white font-bold">+</span>}
             />
-            <Button_ size="sm" label={t("actions.howToUse")} tone="white" variant="solid" icon={<span className="text-[#A7A7A7]">?</span>} />
+            <Button_ size="sm" label={t("actions.howToUse")} tone="outline" variant="outline" icon={<Info size={18} />} />
           </div>
         </div>
 
@@ -523,7 +523,7 @@ export default function ProductsPage() {
 function ConfirmDialog({ open, onOpenChange, title, description, confirmText, cancelText, onConfirm, loading = false }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="!max-w-md bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800">
+      <DialogContent className="!max-w-md bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800">
         <div className="space-y-2">
           <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100">{title}</h3>
           {description ? <p className="text-sm text-gray-500 dark:text-slate-400">{description}</p> : null}

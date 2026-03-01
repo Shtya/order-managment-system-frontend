@@ -70,7 +70,7 @@ function IconBtn({ children, onClick, label, className = "" }) {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
-            className="absolute inset-0 rounded-lg bg-primary/10 blur-sm pointer-events-none"
+            className="absolute inset-0 rounded-xl bg-primary/10 blur-sm pointer-events-none"
           />
         )}
       </AnimatePresence>
@@ -79,7 +79,7 @@ function IconBtn({ children, onClick, label, className = "" }) {
         aria-label={label}
         title={label}
         className={cn(
-          "relative h-10 w-10 p-0 rounded-lg border transition-all duration-300 overflow-hidden",
+          "relative h-10 w-10 p-0 rounded-xl border transition-all duration-300 overflow-hidden",
           "bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm",
           "border-slate-200 dark:border-slate-700",
           "hover:border-primary/40 dark:hover:border-primary/40",
@@ -186,7 +186,7 @@ export default function Header({ toggleSidebar, isSidebarOpen }) {
 
    
 
-      <div className="relative h-full px-4 sm:px-6 flex items-center justify-between">
+      <div className="relative h-full px-5   flex items-center justify-between">
 
         {/* ── LEFT: Toggle + Brand ── */}
         <div className="flex items-center gap-3">
@@ -195,7 +195,7 @@ export default function Header({ toggleSidebar, isSidebarOpen }) {
           <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}>
             <Button
               onClick={toggleSidebar}
-              className="relative h-10 w-10 p-0 rounded-lg border overflow-hidden
+              className="relative h-10 w-10 p-0 rounded-xl border overflow-hidden
                 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm
                 border-slate-200 dark:border-slate-700
                 hover:border-primary/40 text-slate-700 dark:text-slate-200
@@ -224,7 +224,7 @@ export default function Header({ toggleSidebar, isSidebarOpen }) {
             className="flex items-center gap-2.5"
           >
             {/* Logo icon with shimmer */}
-            <div className="relative w-10 h-10 rounded-lg overflow-hidden shadow-lg shadow-primary/20">
+            <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-primary/20">
               <div className="absolute inset-0 bg-primary" />
               {/* Sweep shimmer */}
               <motion.div
@@ -296,7 +296,7 @@ export default function Header({ toggleSidebar, isSidebarOpen }) {
             <PopoverTrigger asChild>
               <motion.div whileHover={{ scale: 1.07 }} whileTap={{ scale: 0.93 }} className="relative">
                 <Button
-                  className="relative h-10 w-10 p-0 rounded-lg border overflow-hidden
+                  className="relative h-10 w-10 p-0 rounded-xl border overflow-hidden
                     bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm
                     border-slate-200 dark:border-slate-700
                     hover:border-primary/40 text-slate-700 dark:text-slate-200
@@ -309,7 +309,7 @@ export default function Header({ toggleSidebar, isSidebarOpen }) {
               </motion.div>
             </PopoverTrigger>
 
-            <PopoverContent align="end" className="w-80 p-0 overflow-hidden rounded-lg shadow-2xl border border-border/50">
+            <PopoverContent align="end" className="w-80 p-0 overflow-hidden rounded-xl shadow-2xl border border-border/50">
               {/* Popover header with shimmer */}
               <div className="relative px-4 py-3 border-b border-border/50 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-secondary/5 to-transparent" />
@@ -385,7 +385,7 @@ function ProfileChip({ user, t }) {
       whileHover={{ scale: 1.02 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="relative flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg cursor-pointer
+      className="relative flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl cursor-pointer
         border border-slate-200 dark:border-slate-700
         hover:border-primary/30 dark:hover:border-primary/30
         bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm
@@ -449,7 +449,7 @@ function LanguageToggle({ currentLang, onToggle, languages = { ar: "AR", en: "EN
       whileTap={{ scale: 0.93 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="relative flex items-center gap-2 h-10 px-3 rounded-lg overflow-hidden
+      className="relative flex items-center gap-2 h-10 px-3 rounded-xl overflow-hidden
         border border-slate-200 dark:border-slate-700
         hover:border-primary/40 dark:hover:border-primary/40
         bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm

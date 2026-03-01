@@ -152,13 +152,13 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
-			<DialogContent className="max-w-lg p-0 gap-0 rounded-2xl border border-border overflow-hidden flex flex-col max-h-[92vh]">
+			<DialogContent className="max-w-lg p-0 gap-0 rounded-xl border border-border overflow-hidden flex flex-col max-h-[92vh]">
 
 				{/* ── Header ─────────────────────────────────────────────── */}
 				<div className="relative overflow-hidden flex-shrink-0">
 					<div className="absolute inset-0  " />
 					<div className="relative flex items-center gap-4 px-6 py-5 border-b border-border">
-						<div className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0
+						<div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0
 							bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]
 							dark:from-[#5b4bff] dark:to-[#3be7ff]
 							shadow-[0_4px_16px_var(--primary-shadow,rgba(255,139,0,0.4))]">
@@ -182,7 +182,7 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 					{steps.slice(0, 2).map((step, i) => (
 						<div
 							key={i}
-							className="flex items-start gap-3.5 p-4 rounded-2xl border border-border bg-muted/30 transition-all duration-200"
+							className="flex items-start gap-3.5 p-4 rounded-xl border border-border bg-muted/30 transition-all duration-200"
 						>
 							<StepBadge number={i + 1} done={step.done} active={false} />
 							<div className="flex-1 min-w-0">
@@ -194,7 +194,7 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 					))}
 
 					{/* Step 3: Upload — expanded with dropzone */}
-					<div className="rounded-2xl border border-border bg-muted/30 overflow-hidden">
+					<div className="rounded-xl border border-border bg-muted/30 overflow-hidden">
 						<div className="flex items-start gap-3.5 p-4">
 							<StepBadge number={3} done={!!file} active={!file} />
 							<div className="flex-1 min-w-0">
@@ -219,7 +219,7 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 								onDrop={handleDrop}
 								className={cn(
 									"group relative flex flex-col items-center justify-center gap-3",
-									"min-h-[160px] rounded-2xl border-2 border-dashed cursor-pointer",
+									"min-h-[160px] rounded-xl border-2 border-dashed cursor-pointer",
 									"transition-all duration-300",
 									dragOver || file
 										? "border-[var(--primary)] dark:border-[#5b4bff] bg-[var(--primary)]/6 dark:bg-[#5b4bff]/10"
@@ -233,7 +233,7 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 											initial={{ opacity: 0 }}
 											animate={{ opacity: 1 }}
 											exit={{ opacity: 0 }}
-											className="absolute inset-0 rounded-2xl pointer-events-none"
+											className="absolute inset-0 rounded-xl pointer-events-none"
 											style={{
 												background: "radial-gradient(ellipse at 50% 50%, rgba(255,139,0,0.12) 0%, transparent 70%)",
 											}}
@@ -248,7 +248,7 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 										animate={{ opacity: 1, scale: 1 }}
 										className="flex flex-col items-center gap-2 relative"
 									>
-										<div className="w-12 h-12 rounded-2xl flex items-center justify-center
+										<div className="w-12 h-12 rounded-xl flex items-center justify-center
 											bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]
 											dark:from-[#5b4bff] dark:to-[#3be7ff]
 											shadow-[0_4px_16px_var(--primary-shadow,rgba(255,139,0,.3))]">
@@ -265,7 +265,7 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 								) : (
 									/* Empty state */
 									<div className="flex flex-col items-center gap-2 relative">
-										<div className="w-12 h-12 rounded-2xl flex items-center justify-center
+										<div className="w-12 h-12 rounded-xl flex items-center justify-center
 											bg-muted border border-border
 											group-hover:border-[var(--primary)]/30
 											group-hover:bg-[var(--primary)]/8 dark:group-hover:bg-[#5b4bff]/12

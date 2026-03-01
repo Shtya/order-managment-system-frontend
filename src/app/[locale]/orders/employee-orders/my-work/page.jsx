@@ -60,7 +60,7 @@ const StatusBadge = ({ status, t }) => {
 
   return (
     <Badge
-      className="rounded-lg px-3 py-1.5 font-semibold"
+      className="rounded-xl px-3 py-1.5 font-semibold"
       style={{
         backgroundColor: getBgColor(status.color),
         color: status.color,
@@ -75,7 +75,7 @@ const StatusBadge = ({ status, t }) => {
 // Info Row Component
 const InfoRow = ({ icon: Icon, label, value, valueClassName }) => (
   <div className="flex items-start gap-3 py-2">
-    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-100 dark:bg-slate-800 flex items-center justify-center">
+    <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center">
       <Icon size={20} className="text-gray-600 dark:text-gray-400" />
     </div>
     <div className="flex-1 min-w-0">
@@ -99,7 +99,7 @@ const SectionCard = ({ title, icon: Icon, children, className }) => (
     )}
   >
     <div className="flex items-center gap-3 mb-6">
-      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
         <Icon size={20} className="text-primary" />
       </div>
       <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">{title}</h3>
@@ -143,7 +143,7 @@ export function ResultBanner({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.22 }}
-          className="mb-5 rounded-2xl border border-border/60 bg-card overflow-hidden"
+          className="mb-5 rounded-xl border border-border/60 bg-card overflow-hidden"
         >
 
           {/* ══════════════════════════════════════
@@ -190,7 +190,7 @@ export function ResultBanner({
                         <div className="flex items-center gap-1.5">
                           <Tag size={11} className="text-muted-foreground shrink-0" />
                           <Badge
-                            className="rounded-lg px-2.5 py-1 text-xs font-bold border"
+                            className="rounded-xl px-2.5 py-1 text-xs font-bold border"
                             style={{
                               backgroundColor: hexToBg(newStatus.color),
                               color: newStatus.color,
@@ -260,7 +260,7 @@ export function ResultBanner({
                         {t("workPage.newStatus")}
                       </span>
                       <Badge
-                        className="rounded-lg px-2.5 py-1 text-xs font-bold border"
+                        className="rounded-xl px-2.5 py-1 text-xs font-bold border"
                         style={{
                           backgroundColor: hexToBg(newStatus.color),
                           color: newStatus.color,
@@ -402,7 +402,7 @@ const LockTimer = ({ lockedUntil }) => {
             <p className="text-xs opacity-90">{t("workPage.lockedMessage")}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 bg-white/20 px-3 py-2 rounded-lg">
+        <div className="flex items-center gap-2 bg-white/20 px-3 py-2 rounded-xl">
           <Timer size={18} />
           <span className="text-lg font-mono font-bold">{timeDisplay}</span>
         </div>
@@ -633,7 +633,7 @@ export default function OrderConfirmationWorkPage() {
               onChange={(e) => setNotes(e.target.value)}
               placeholder={t("workPage.notesPlaceholder")}
               disabled={isLocked || changingStatus}
-              className="rounded-lg min-h-[80px] bg-[#fafafa] dark:bg-slate-800/50"
+              className="rounded-xl min-h-[80px] bg-[#fafafa] dark:bg-slate-800/50"
             />
           </div>
 
@@ -655,7 +655,7 @@ export default function OrderConfirmationWorkPage() {
                     onClick={() => !isDisabled && handleStatusChange(status.id)}
                     disabled={isDisabled}
                     className={cn(
-                      "relative px-6 py-4 rounded-2xl font-bold text-base transition-all duration-200",
+                      "relative px-6 py-4 rounded-xl font-bold text-base transition-all duration-200",
                       "shadow-sm hover:shadow-md",
                       !isDisabled && "hover:scale-[1.02] active:scale-[0.98]",
                       isDisabled && "opacity-50 cursor-not-allowed",
@@ -678,7 +678,7 @@ export default function OrderConfirmationWorkPage() {
 
                     {/* Loading Spinner */}
                     {isChanging && (
-                      <div className="absolute inset-0 bg-black/20 rounded-2xl flex items-center justify-center">
+                      <div className="absolute inset-0 bg-black/20 rounded-xl flex items-center justify-center">
                         <Loader2 className="h-6 w-6 animate-spin text-white" />
                       </div>
                     )}

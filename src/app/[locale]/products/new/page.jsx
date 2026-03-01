@@ -641,7 +641,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			className="min-h-screen p-6"
 		>
 
-			<div className="duration-300 !p-4 !sticky top-[80px] z-[10] bg-card mb-6 rounded-2xl shadow-sm">
+			<div className="duration-300 !p-4 !sticky top-[80px] z-[10] bg-card mb-6 rounded-xl shadow-sm">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-2 text-lg font-semibold">
 						<span className="text-gray-400">{t('breadcrumb.home')}</span>
@@ -674,7 +674,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				<div className="flex gap-6">
 					<div className="space-y-6 w-full">
 						{/* Product Info */}
-						<motion.div className="bg-card rounded-2xl shadow-sm p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+						<motion.div className="bg-card rounded-xl shadow-sm p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
 							<h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-6 flex items-center gap-2">
 								<div className="w-1 h-6 bg-primary rounded-full" />
 								{t('sections.productInfo')}
@@ -810,7 +810,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 						</motion.div>
 
 						{/* Attributes */}
-						<motion.div className="bg-card rounded-2xl shadow-sm p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
+						<motion.div className="bg-card rounded-xl shadow-sm p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
 							<div className="flex items-center justify-between mb-6">
 								<h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 flex items-center gap-2">
 									<div className="w-1 h-6 bg-primary rounded-full" />
@@ -839,7 +839,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 												onClick={() => addQuickTemplate(template)}
 												className="flex items-center gap-2 p-3 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 hover:border-primary hover:shadow-md transition-all group"
 											>
-												<div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+												<div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
 													<Icon className="h-5 w-5 text-primary" />
 												</div>
 												<div className="text-right flex-1">
@@ -874,7 +874,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 						{/* Combinations */}
 						{comboFields.length > 0 && (
-							<motion.div className="bg-card rounded-2xl shadow-sm p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
+							<motion.div className="bg-card rounded-xl shadow-sm p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
 								<div className="flex items-center justify-between mb-6">
 									<h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 flex items-center gap-2">
 										<div className="w-1 h-6 bg-primary rounded-full" />
@@ -891,7 +891,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 										<p className="text-sm text-slate-500">{t('combinations.empty')}</p>
 									</div>
 								) : (
-									<div className="overflow-x-auto max-h-[580px] h-full overflow-auto ltr:rounded-[10px_0_0_10px] rtl:rounded-[0_10px_10px_0] border border-slate-200 dark:border-slate-700">
+									<div className="overflow-x-auto max-h-[580px] h-full overflow-auto ltr:rounded-[8px_0_0_8px] rtl:rounded-[0_8px_8px_0] border border-slate-200 dark:border-slate-700">
 										<table className="w-full">
 											<thead className="bg-gradient-to-r from-primary/10 to-primary/5">
 												<tr>
@@ -917,7 +917,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 																<div className="flex items-center gap-1 flex-wrap">
 																	{Object.entries(attrs).map(([key, value]) => (
 																		<div key={key} className="flex items-center gap-2">
-																			<LANG className="px-1 py-[2px] rounded-lg bg-primary/15 text-primary border border-primary/30 text-xs">{value}</LANG>
+																			<LANG className="px-1 py-[2px] rounded-xl bg-primary/15 text-primary border border-primary/30 text-xs">{value}</LANG>
 																		</div>
 																	))}
 																</div>
@@ -928,7 +928,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 																	{...register(`combinations.${idx}.sku`)}
 																	placeholder={t('combinations.placeholders.sku')}
 																	disabled
-																	className="rounded-lg font-[Inter] h-[42px] bg-gray-100 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-sm cursor-not-allowed"
+																	className="rounded-xl font-[Inter] h-[42px] bg-gray-100 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-sm cursor-not-allowed"
 																/>
 																{cErr?.sku?.message && <div className="text-xs text-red-600 mt-1">{cErr.sku.message}</div>}
 															</td>
@@ -939,7 +939,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 																	step="0.01"
 																	{...register(`combinations.${idx}.price`)}
 																	placeholder={t('combinations.placeholders.price')}
-																	className="rounded-lg h-[42px] font-[Inter] bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+																	className="rounded-xl h-[42px] font-[Inter] bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
 																/>
 																{cErr?.price?.message && <div className="text-xs text-red-600 mt-1">{cErr.price.message}</div>}
 															</td>
@@ -954,7 +954,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 						)}
 
 						{/* Upselling */}
-						<motion.div className="bg-card rounded-2xl shadow-sm p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35 }}>
+						<motion.div className="bg-card rounded-xl shadow-sm p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35 }}>
 							<h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-6 flex items-center gap-2">
 								<div className="w-1 h-6 bg-primary rounded-full" />
 								{t('sections.upselling')}
@@ -1042,11 +1042,11 @@ function AttributeEditor({ t, control, register, errors, aIndex, onRemove, setVa
 			initial={{ opacity: 0, y: 10, scale: 0.98 }}
 			animate={{ opacity: 1, y: 0, scale: 1 }}
 			transition={{ duration: 0.25 }}
-			className="rounded-2xl shadow-md border-2 border-gray-200 dark:border-slate-700 bg-gradient-to-br from-white to-gray-50 dark:from-slate-900/50 dark:to-slate-800/50 p-5"
+			className="rounded-xl shadow-md border-2 border-gray-200 dark:border-slate-700 bg-gradient-to-br from-white to-gray-50 dark:from-slate-900/50 dark:to-slate-800/50 p-5"
 		>
 			<div className="flex items-center justify-between mb-4">
 				<div className="text-base font-bold text-gray-800 dark:text-slate-100 flex items-center gap-2">
-					<div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">{aIndex + 1}</div>
+					<div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">{aIndex + 1}</div>
 					{t('attributes.attribute')}
 				</div>
 
@@ -1154,7 +1154,7 @@ function UpsellProductSelector({ t, value, onChange }) {
 					</div>
 
 					{search && (
-						<div className="absolute z-10 bottom-[calc(100%+10px)] w-full mt-2 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-2xl">
+						<div className="absolute z-10 bottom-[calc(100%+10px)] w-full mt-2 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-2xl">
 							<div className="flex items-center justify-between px-4 py-2 border-b border-slate-100 dark:border-slate-700">
 								<div className="text-xs text-slate-500">
 									{t('upsell.searchResultsCount')}: <span className="font-semibold">{filteredProducts.length}</span>
@@ -1219,7 +1219,7 @@ function UpsellProductSelector({ t, value, onChange }) {
 
 					<div className="space-y-3">
 						{selectedProducts.map((x) => (
-							<div key={x.productId} className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/30 backdrop-blur p-4">
+							<div key={x.productId} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/30 backdrop-blur p-4">
 								<div className="flex items-start justify-between gap-3">
 									<div className="flex items-start gap-3 min-w-0">
 										<div className="shrink-0 w-11 h-11 rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
@@ -1344,7 +1344,7 @@ export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple
 	};
 
 	return (
-		<motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className={cn('bg-card rounded-2xl shadow-sm p-6', className)} dir="rtl">
+		<motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className={cn('bg-card rounded-xl shadow-sm p-6', className)} dir="rtl">
 			<h3 className="text-lg font-bold text-gray-700 dark:text-slate-200 mb-4 text-right flex items-center gap-2">
 				<div className="w-1 h-5 bg-primary rounded-full" />
 				{title}
@@ -1367,12 +1367,12 @@ export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple
 					setIsDragging(false);
 				}}
 				onDrop={handleDrop}
-				className={cn('rounded-2xl border-2 border-dashed p-8 text-center transition-all', isDragging ? 'border-primary bg-primary/5 scale-[1.02]' : 'border-primary/60 bg-gradient-to-br from-white to-gray-50 dark:from-slate-900/20 dark:to-slate-800/20')}
+				className={cn('rounded-xl border-2 border-dashed p-8 text-center transition-all', isDragging ? 'border-primary bg-primary/5 scale-[1.02]' : 'border-primary/60 bg-gradient-to-br from-white to-gray-50 dark:from-slate-900/20 dark:to-slate-800/20')}
 			>
 				<input ref={inputRef} type="file" accept={accept} multiple={multiple} className="hidden" onChange={onPick} />
 
 				<div className="flex flex-col items-center gap-4">
-					<div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center shadow-lg">
+					<div className="w-20 h-20 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center shadow-lg">
 						<UploadIllustration />
 					</div>
 
@@ -1395,7 +1395,7 @@ export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple
 
 			<div className="mt-5 space-y-3">
 				{(files ?? []).map((f) => (
-					<div key={f.id} className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/40 p-4 hover:border-primary/50 transition-all">
+					<div key={f.id} className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/40 p-4 hover:border-primary/50 transition-all">
 						<button
 							type="button"
 							onClick={() => removeFile(f.id)}
@@ -1411,7 +1411,7 @@ export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple
 						</div>
 
 						<div className="flex items-center gap-3">
-							<Badge className="rounded-lg bg-primary/15 text-primary border border-primary/20 font-semibold">{prettyExt(f?.file?.name || 'IMG')}</Badge>
+							<Badge className="rounded-xl bg-primary/15 text-primary border border-primary/20 font-semibold">{prettyExt(f?.file?.name || 'IMG')}</Badge>
 
 							<div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700">
 								{isImage(f) && getImageUrl(f) ? (

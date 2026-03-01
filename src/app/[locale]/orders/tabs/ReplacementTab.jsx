@@ -58,7 +58,7 @@ function StatusBadge({ status, t }) {
 	if (!status) return <span className="text-muted-foreground text-xs">—</span>;
 	return (
 		<Badge
-			className="rounded-lg px-2.5 py-1 text-xs font-semibold border"
+			className="rounded-xl px-2.5 py-1 text-xs font-semibold border"
 			style={{
 				backgroundColor: hexToBg(status.color),
 				color: status.color,

@@ -10,7 +10,7 @@ export default function IntegratedCompanyCard({
 	const t = useTranslations("")
 	return (
 		<div
-			className="relative rounded-2xl p-5 shadow-sm border border-border"
+			className="relative rounded-xl p-5 shadow-sm border border-border"
 			style={{
 				background: company.bg?.replace("background:", ""),
 			}}

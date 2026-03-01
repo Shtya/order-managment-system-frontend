@@ -139,7 +139,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 
 	return (
 		<motion.div initial={{ opacity: 0, y: 20, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.15 }} className="min-h-screen p-6">
-			<div className="duration-300 !p-4 !sticky top-[80px] z-[10] bg-card mb-6 rounded-2xl shadow-sm">
+			<div className="duration-300 !p-4 !sticky top-[80px] z-[10] bg-card mb-6 rounded-xl shadow-sm">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-2 text-lg font-semibold">
 						<span className="text-gray-400">{t('breadcrumb.home')}</span>
@@ -170,7 +170,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 
 			<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 				{/* Bundle Info */}
-				<motion.div className="bg-card rounded-2xl shadow-sm p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+				<motion.div className="bg-card rounded-xl shadow-sm p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
 					<h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-6 flex items-center gap-2">
 						<div className="w-1 h-6 bg-primary rounded-full" />
 						{t('sections.bundleInfo')}
@@ -213,7 +213,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 				</motion.div>
 
 				{/* Bundle Items */}
-				<motion.div className="bg-card rounded-2xl shadow-sm p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
+				<motion.div className="bg-card rounded-xl shadow-sm p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
 					<div className="flex items-center justify-between mb-6">
 						<h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 flex items-center gap-2">
 							<div className="w-1 h-6 bg-primary rounded-full" />

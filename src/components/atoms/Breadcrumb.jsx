@@ -15,7 +15,7 @@ const ChevronIcon = () => (
 
 export function BreadcrumbBar({ breadcrumbs = [], buttons, activeTab  }) {
 	return (
-		<div className={` relative overflow-hidden bg-card border border-border/60 rounded-2xl shadow-sm mb-5 px-5 py-3.5`}>
+		<div className={` relative overflow-hidden bg-card border border-border/60 rounded-xl shadow-sm mb-5 px-5 py-3.5`}>
 			{/* Gradient top-border using your CSS vars */}
 			<div
 				className="absolute inset-x-0 bottom-0 h-[2px]"

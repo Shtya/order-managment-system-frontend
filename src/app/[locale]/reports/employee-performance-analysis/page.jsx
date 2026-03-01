@@ -11,6 +11,7 @@ import {
     Truck,
     ShoppingBag,
     HelpCircle,
+    Package,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -38,10 +39,10 @@ function formatPercent(value) {
 
 // ── Stats Configuration ──────────────────────────────────────────────────────
 
-const EMPLOYEE_STATS = [
+export const EMPLOYEE_STATS = [
     {
         id: 1,
-        code: "total",
+        code: "totalOrders", // Matches statsData.totalOrders
         nameKey: "employeeStats.stats.totalOrders",
         color: "#ff8b00",
         darkColor: "#5b4bff",
@@ -50,7 +51,7 @@ const EMPLOYEE_STATS = [
     },
     {
         id: 2,
-        code: "confirmed",
+        code: "confirmedOrders", // Matches statsData.confirmedOrders
         nameKey: "employeeStats.stats.confirmedOrders",
         color: "#3b82f6",
         darkColor: "#3b82f6",
@@ -59,20 +60,20 @@ const EMPLOYEE_STATS = [
     },
     {
         id: 3,
-        code: "delivered",
-        nameKey: "employeeStats.stats.deliveredOrders",
-        color: "#10b981",
-        darkColor: "#10b981",
-        icon: Truck,
+        code: "shippedOrders", // Matches statsData.shippedOrders
+        nameKey: "employeeStats.stats.shippedOrders",
+        color: "#8b5cf6", // Kept the purple color from the old 'upsell'
+        darkColor: "#8b5cf6",
+        icon: Package, // Changed from TrendingUp to Package
         sortOrder: 3,
     },
     {
         id: 4,
-        code: "upsell",
-        nameKey: "employeeStats.stats.upsellOrders",
-        color: "#8b5cf6",
-        darkColor: "#8b5cf6",
-        icon: TrendingUp,
+        code: "deliveredOrders", // Matches statsData.deliveredOrders
+        nameKey: "employeeStats.stats.deliveredOrders",
+        color: "#10b981",
+        darkColor: "#10b981",
+        icon: Truck,
         sortOrder: 4,
     },
 ];
@@ -85,12 +86,15 @@ export function EmployeeStatisticsPage() {
     const [exportLoading, setExportLoading] = useState(false);
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
+
+    // تم تحديث الهيكل الافتراضي ليتماشى مع ملخص الإحصائيات
     const [statsData, setStatsData] = useState({
         totalOrders: 0,
         confirmedOrders: 0,
         deliveredOrders: 0,
-        upsellOrders: 0,
+        shippedOrders: 0, // بدلاً من upsell
     });
+
     const [pager, setPager] = useState({
         total_records: 0,
         current_page: 1,
@@ -113,9 +117,10 @@ export function EmployeeStatisticsPage() {
 
     useEffect(() => {
         fetchEmployeeStats(1, pager.per_page);
-        fetchStatsSummary();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [debouncedSearch]);
+    useEffect(() => {
+        fetchStatsSummary();
+    }, []);
 
     /* build API params */
     const buildParams = useCallback(
@@ -132,30 +137,34 @@ export function EmployeeStatisticsPage() {
     /* fetch stats summary */
     const fetchStatsSummary = useCallback(async () => {
         try {
-            const params = {};
-            if (filters.startDate) params.startDate = filters.startDate;
-            if (filters.endDate) params.endDate = filters.endDate;
+            const res = await api.get("/dashboard/employees/stats/summary");
+            const data = Array.isArray(res.data) ? res.data : [];
 
-            const res = await api.get("/employees/stats/summary", { params });
-            const data = res.data ?? {};
+            // استخراج القيم من المصفوفة بناءً على الكود (code)
+            const getCountByCode = (code) => {
+                const item = data.find(stat => stat.code === code);
+                return item ? Number(item.count) : 0;
+            };
+
             setStatsData({
-                totalOrders: data.totalOrders ?? 0,
-                confirmedOrders: data.confirmedOrders ?? 0,
-                deliveredOrders: data.deliveredOrders ?? 0,
-                upsellOrders: data.upsellOrders ?? 0,
+                totalOrders: getCountByCode('total'),
+                confirmedOrders: getCountByCode('confirmed'),
+                shippedOrders: getCountByCode('shipped'),
+                deliveredOrders: getCountByCode('delivered'),
             });
+
         } catch (e) {
-            console.error(e);
+            console.error("Error fetching stats summary:", e);
             toast.error(t("employeeStats.errors.fetchStatsFailed"));
         }
-    }, [filters, t]);
+    }, [t]);
 
     /* fetch employee statistics */
     const fetchEmployeeStats = useCallback(
         async (page = pager.current_page, per_page = pager.per_page) => {
             try {
                 setLoading(true);
-                const res = await api.get("/employees/stats", { params: buildParams(page, per_page) });
+                const res = await api.get("/dashboard/employees/stats", { params: buildParams(page, per_page) });
                 const data = res.data ?? {};
                 setPager({
                     total_records: data.total_records ?? 0,
@@ -183,7 +192,7 @@ export function EmployeeStatisticsPage() {
             delete params.page;
             delete params.limit;
 
-            const response = await api.get("/employees/stats/export", {
+            const response = await api.get("/dashboard/employees/stats/export", {
                 params,
                 responseType: "blob",
             });
@@ -217,8 +226,8 @@ export function EmployeeStatisticsPage() {
 
     const applyFilters = useCallback(() => {
         fetchEmployeeStats(1, pager.per_page);
-        fetchStatsSummary();
-    }, [fetchEmployeeStats, fetchStatsSummary, pager.per_page]);
+    }, [fetchEmployeeStats, pager.per_page]);
+
 
     const hasActiveFilters = Object.values(filters).some((v) => v && v !== "all" && v !== null);
 
@@ -230,11 +239,15 @@ export function EmployeeStatisticsPage() {
                 header: t("employeeStats.columns.employeeName"),
                 cell: (row) => (
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                            <Users size={14} className="text-primary" />
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+                            {row.avatarUrl ? (
+                                <img src={row.avatarUrl} alt={row.name} className="w-full h-full object-cover" />
+                            ) : (
+                                <Users size={14} className="text-primary" />
+                            )}
                         </div>
                         <span className="font-semibold text-foreground text-sm">
-                            {row.employeeName ?? "—"}
+                            {row.name ?? "—"} {/* تحديث: name */}
                         </span>
                     </div>
                 ),
@@ -244,7 +257,7 @@ export function EmployeeStatisticsPage() {
                 header: t("employeeStats.columns.receivedOrders"),
                 cell: (row) => (
                     <span className="font-bold text-sm tabular-nums">
-                        {formatCurrency(row.receivedOrders)}
+                        {row.totalAssigned} {/* تحديث: totalAssigned */}
                     </span>
                 ),
             },
@@ -253,7 +266,7 @@ export function EmployeeStatisticsPage() {
                 header: t("employeeStats.columns.confirmedOrders"),
                 cell: (row) => (
                     <span className="font-bold text-blue-600 dark:text-blue-400 text-sm tabular-nums">
-                        {formatCurrency(row.confirmedOrders)}
+                        {row.confirmed?.count ?? 0} {/* تحديث: confirmed.count */}
                     </span>
                 ),
             },
@@ -261,19 +274,41 @@ export function EmployeeStatisticsPage() {
                 key: "confirmationRate",
                 header: t("employeeStats.columns.confirmationRate"),
                 cell: (row) => {
-                    const rate = row.confirmationRate;
-                    const isHigh = rate >= 70;
-                    const isMedium = rate >= 50 && rate < 70;
+                    const rate = row.confirmed?.percent;
                     return (
                         <span
                             className={cn(
                                 "font-bold text-sm px-2.5 py-1 rounded-lg tabular-nums",
-                                isHigh && "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400",
-                                isMedium && "bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400",
-                                !isHigh && !isMedium && "bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400"
+                                "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400"
                             )}
                         >
-                            {formatPercent(rate)}
+                            {rate ?? 0}%
+                        </span>
+                    );
+                },
+            },
+            {
+                key: "shippedOrders",
+                header: t("employeeStats.columns.shippedOrders"),
+                cell: (row) => (
+                    <span className="font-bold text-purple-600 dark:text-purple-400 text-sm tabular-nums">
+                        {row.shipped?.count ?? 0} {/* تحديث: shipped.count بدلاً من upsell */}
+                    </span>
+                ),
+            },
+            {
+                key: "shippedRate",
+                header: t("employeeStats.columns.shippedRate"),
+                cell: (row) => {
+                    const rate = row.shipped?.percent ?? 0; // تحديث: shipped.percent
+                    return (
+                        <span
+                            className={cn(
+                                "font-bold text-sm px-2.5 py-1 rounded-lg tabular-nums",
+                                "bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400"
+                            )}
+                        >
+                            {rate ?? 0}%
                         </span>
                     );
                 },
@@ -283,7 +318,7 @@ export function EmployeeStatisticsPage() {
                 header: t("employeeStats.columns.deliveredOrders"),
                 cell: (row) => (
                     <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm tabular-nums">
-                        {formatCurrency(row.deliveredOrders)}
+                        {row.delivered?.count ?? 0} {/* تحديث: delivered.count */}
                     </span>
                 ),
             },
@@ -291,49 +326,15 @@ export function EmployeeStatisticsPage() {
                 key: "deliveryRate",
                 header: t("employeeStats.columns.deliveryRate"),
                 cell: (row) => {
-                    const rate = row.deliveryRate;
-                    const isHigh = rate >= 80;
-                    const isMedium = rate >= 60 && rate < 80;
+                    const rate = row.delivered?.percent ?? 0; // تحديث: delivered.percent
                     return (
                         <span
                             className={cn(
                                 "font-bold text-sm px-2.5 py-1 rounded-lg tabular-nums",
-                                isHigh && "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400",
-                                isMedium && "bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400",
-                                !isHigh && !isMedium && "bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400"
+                                "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400"
                             )}
                         >
-                            {formatPercent(rate)}
-                        </span>
-                    );
-                },
-            },
-            {
-                key: "upsellOrders",
-                header: t("employeeStats.columns.upsellOrders"),
-                cell: (row) => (
-                    <span className="font-bold text-purple-600 dark:text-purple-400 text-sm tabular-nums">
-                        {formatCurrency(row.upsellOrders)}
-                    </span>
-                ),
-            },
-            {
-                key: "upsellRate",
-                header: t("employeeStats.columns.upsellRate"),
-                cell: (row) => {
-                    const rate = row.upsellRate;
-                    const isHigh = rate >= 30;
-                    const isMedium = rate >= 15 && rate < 30;
-                    return (
-                        <span
-                            className={cn(
-                                "font-bold text-sm px-2.5 py-1 rounded-lg tabular-nums",
-                                isHigh && "bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400",
-                                isMedium && "bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400",
-                                !isHigh && !isMedium && "bg-gray-50 dark:bg-gray-950/30 text-gray-600 dark:text-gray-400"
-                            )}
-                        >
-                            {formatPercent(rate)}
+                            {rate ?? 0}%
                         </span>
                     );
                 },
@@ -371,12 +372,12 @@ export function EmployeeStatisticsPage() {
             />
 
             <Table
-                // ── Search ────────────────────────────────────────────────────────
+                // ── Search ──
                 searchValue={search}
                 onSearchChange={setSearch}
                 onSearch={applyFilters}
 
-                // ── i18n ──────────────────────────────────────────────────────────
+                // ── i18n ──
                 labels={{
                     searchPlaceholder: t("employeeStats.searchPlaceholder"),
                     filter: t("toolbar.filter"),
@@ -387,7 +388,7 @@ export function EmployeeStatisticsPage() {
                     emptySubtitle: t("employeeStats.empty.subtitle"),
                 }}
 
-                // ── Toolbar actions ───────────────────────────────────────────────
+                // ── Toolbar actions ──
                 actions={[
                     {
                         key: "export",
@@ -403,12 +404,11 @@ export function EmployeeStatisticsPage() {
                     },
                 ]}
 
-                // ── Filters ───────────────────────────────────────────────────────
+                // ── Filters ──
                 hasActiveFilters={hasActiveFilters}
                 onApplyFilters={applyFilters}
                 filters={
                     <>
-                        {/* Date range */}
                         <FilterField label={t("filters.date")}>
                             <Flatpickr
                                 value={[
@@ -423,22 +423,19 @@ export function EmployeeStatisticsPage() {
                                     }))
                                 }
                                 options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
-                                className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm
-                  text-foreground focus:outline-none
-                  focus:border-[var(--primary)] dark:focus:border-[#5b4bff]
-                  transition-all duration-200"
+                                className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:border-[var(--primary)] dark:focus:border-[#5b4bff] transition-all duration-200"
                                 placeholder={t("filters.datePlaceholder")}
                             />
                         </FilterField>
                     </>
                 }
 
-                // ── Table ─────────────────────────────────────────────────────────
+                // ── Table ──
                 columns={columns}
                 data={pager.records}
                 isLoading={loading}
 
-                // ── Pagination ────────────────────────────────────────────────────
+                // ── Pagination ──
                 pagination={{
                     total_records: pager.total_records,
                     current_page: pager.current_page,

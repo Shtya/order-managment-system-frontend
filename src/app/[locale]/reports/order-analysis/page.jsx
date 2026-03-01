@@ -28,6 +28,9 @@ import PageHeader, { StatsGrid } from "@/components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
+import { avatarSrc } from "@/components/atoms/UserSelect";
+import { generateBgColors, getIconForStatus } from "../../orders/page";
+import { useDebounce } from "@/hook/useDebounce";
 
 ChartJS.register(
     CategoryScale, LinearScale, PointElement, LineElement,
@@ -37,25 +40,19 @@ ChartJS.register(
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
-const QUICK_RANGES = [
-    { key: "today", label: "هذا اليوم" },
-    { key: "yesterday", label: "اليوم الماضي" },
-    { key: "this_week", label: "هذا الاسبوع" },
-    { key: "last_week", label: "الاسبوع الماضي" },
-    { key: "this_month", label: "الشهر الحالي" },
-    { key: "last_month", label: "الشهر الماضي" },
-    { key: "this_year", label: "السنة الحالية" },
-];
 
-const PRIMARY = "#6366f1";
-const PRIMARY_2 = "#8b5cf6";
+
+export const PRIMARY = "#ff8b00"; // --primary
+export const SECONDARY = "#ffb703"; // --secondary (Golden Yellow)
+export const THIRD = "#ff5c2b"; // --third (Warm Coral)
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
-const fmt = (n) => (n == null ? "—" : Number(n).toLocaleString("ar-EG"));
-const pct = (n) => (n == null ? "—" : `${Number(n).toFixed(1)}%`);
-const hex = (h, a = 0.12) => {
+
+export const fmt = (n) => (n == null ? "—" : Number(n));
+export const pct = (n) => (n == null ? "—" : `${Number(n).toFixed(1)}%`);
+export const hex = (h, a = 0.12) => {
     const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h);
     return r
         ? `rgba(${parseInt(r[1], 16)},${parseInt(r[2], 16)},${parseInt(r[3], 16)},${a})`
@@ -97,6 +94,7 @@ export function Card({ title, icon: Icon, color = PRIMARY, action, children, cla
 // Export button (styled like the blue export in OrderTab toolbar)
 // ─────────────────────────────────────────────────────────────────────────────
 export function ExportBtn({ onClick, loading }) {
+    const t = useTranslations("dashboard");
     return (
         <motion.button
             whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
@@ -109,7 +107,7 @@ export function ExportBtn({ onClick, loading }) {
 				disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
             {loading ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
-            تصدير
+            {t('common.export')}
         </motion.button>
     );
 }
@@ -119,6 +117,16 @@ export function ExportBtn({ onClick, loading }) {
 // ─────────────────────────────────────────────────────────────────────────────
 export function RangeTabs({ value, onChange, searchValue, onSearchChange }) {
     const t = useTranslations("orderAnalysis");
+
+    const QUICK_RANGES = [
+        { key: "today", label: t("ranges.today") },
+        { key: "yesterday", label: t("ranges.yesterday") },
+        { key: "this_week", label: t("ranges.this_week") },
+        { key: "last_week", label: t("ranges.last_week") },
+        { key: "this_month", label: t("ranges.this_month") },
+        { key: "last_month", label: t("ranges.last_month") },
+        { key: "this_year", label: t("ranges.this_year") },
+    ];
 
     return (
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 bg-card p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
@@ -133,8 +141,8 @@ export function RangeTabs({ value, onChange, searchValue, onSearchChange }) {
                 <Input
                     value={searchValue}
                     onChange={(e) => onSearchChange?.(e.target.value)}
-                    placeholder={"ابحث عن ما تريد....."}
-                    className="rtl:pr-10 h-[42px] rounded-full bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-[rgb(var(--primary))] transition-all"
+                    placeholder={t("search.orderPlaceholder")}
+                    className="rtl:pr-10! h-[42px] rounded-full bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-[rgb(var(--primary))] transition-all"
                 />
             </div>
 
@@ -183,68 +191,124 @@ export function RangeTabs({ value, onChange, searchValue, onSearchChange }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Doughnut — حالات الطلبات
 // ─────────────────────────────────────────────────────────────────────────────
-export function StatusDonut({ data, loading }) {
+export function StatusDonut({
+    data,
+    loading,
+    config = { key: "count", imageKey: "image", label: "label" },
+    allowImage = false
+}) {
+    const t = useTranslations("dashboard");
     const hasData = data && data.length > 0;
-    const total = hasData ? data.reduce((s, d) => s + (d.count ?? 0), 0) : 0;
+    const BRAND_COLORS = ["#ff8b00", "#ffb703", "#ff5c2b", "#feb144", "#ff7b54"];
+    const total = hasData ? data.reduce((s, d) => s + (Number(d[config.key]) ?? 0), 0) : 0;
 
-    // حالة التحميل
     if (loading) return (
-        <div className="flex items-center justify-center h-52">
-            <Loader2 size={26} className="animate-spin text-muted-foreground" />
+        <div className="flex flex-col items-center animate-pulse w-full">
+            {/* حلقة الدونات الوهمية */}
+            <div className="h-48 w-48 rounded-full border-[16px] border-slate-200 dark:border-slate-800 flex items-center justify-center mb-8">
+                <div className="h-6 w-16 bg-slate-200 dark:bg-slate-800 rounded shadow-inner" />
+            </div>
+
+            {/* قائمة العناصر الوهمية */}
+            <div className="w-full space-y-4">
+                {[...Array(3)].map((_, i) => (
+                    <div key={i} className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800" />
+                            <div className="space-y-2">
+                                <div className="h-3 w-28 bg-slate-200 dark:bg-slate-800 rounded" />
+                                <div className="h-2 w-16 bg-slate-100 dark:bg-slate-900 rounded" />
+                            </div>
+                        </div>
+                        <div className="h-4 w-10 bg-slate-200 dark:bg-slate-800 rounded" />
+                    </div>
+                ))}
+            </div>
         </div>
     );
 
-    // حالة عدم وجود بيانات
     if (!hasData || total === 0) return (
-        <div className="flex flex-col items-center justify-center h-52 border-2 border-dashed border-border/50 rounded-2xl bg-muted/5">
+        <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-border/50 rounded-2xl bg-muted/5">
             <PieChart size={32} className="text-muted-foreground/40 mb-2" />
-            <p className="text-xs text-muted-foreground font-medium">لا توجد بيانات لهذه الفترة</p>
+            <p className="text-xs text-muted-foreground font-medium">
+                {t("common.noData")}
+            </p>
         </div>
     );
 
     const chartData = {
-        labels: data.map(d => d.label),
+        labels: data.map(d => d[config.label]),
         datasets: [{
-            data: data.map(d => d.count),
-            backgroundColor: data.map(d => hex(d.color ?? "#6366f1", 0.82)),
-            borderColor: data.map(d => d.color ?? "#6366f1"),
+            data: data.map(d => d[config.key]),
+            backgroundColor: data.map((d, i) => hex(d.color || BRAND_COLORS[i % BRAND_COLORS.length], 0.85)),
+            borderColor: data.map((d, i) => d.color || BRAND_COLORS[i % BRAND_COLORS.length]),
             borderWidth: 2,
-            hoverBorderWidth: 3,
+            hoverOffset: 12,
         }],
     };
 
     const options = {
-        responsive: true, maintainAspectRatio: false, cutout: "68%",
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "75%",
         plugins: {
-            legend: { display: false },
-            tooltip: { rtl: true, callbacks: { label: ctx => ` ${ctx.label}: ${fmt(ctx.raw)}` } },
+            legend: { display: false }, // إخفاء الأسطورة الافتراضية لبناء واحدة مخصصة
+            tooltip: {
+                rtl: true,
+                callbacks: {
+                    label: (ctx) => ` ${ctx.label}: ${ctx.raw} (${((ctx.raw / total) * 100).toFixed(1)}%)`
+                }
+            },
         },
     };
 
     return (
-        <div className="flex flex-col sm:flex-col items-center gap-5">
-            <div className="relative flex-shrink-0" style={{ width: 180, height: 180 }}>
+        <div className="flex flex-col items-center">
+            {/* منطقة الرسم البياني */}
+            <div className="relative h-48 w-full">
                 <Doughnut data={chartData} options={options} />
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <p className="text-xl font-extrabold text-foreground">{fmt(total)}</p>
-                    <p className="text-[10px] text-muted-foreground">إجمالي</p>
+                    <span className="text-xl font-bold text-foreground">{total}</span>
+                    <span className="text-[9px] text-muted-foreground font-medium uppercase">الإجمالي</span>
                 </div>
             </div>
-            <div className="flex flex-col gap-2 flex-1 min-w-0 w-full">
-                {data.map((d, i) => (
-                    <div key={i} className="flex items-center justify-between gap-2 min-w-0">
-                        <div className="flex items-center gap-2 min-w-0">
-                            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: d.color }} />
-                            <span className="text-xs text-foreground truncate font-medium">{d.label}</span>
+
+            {/* الأسطورة المخصصة مع الصور */}
+            <div className="w-full mt-6 grid grid-cols-1 gap-2">
+                {data.map((item, i) => {
+                    const color = item.color || BRAND_COLORS[i % BRAND_COLORS.length];
+                    const percentage = ((item[config.key] / total) * 100).toFixed(0);
+
+                    return (
+                        <div key={i} className="flex items-center justify-between group px-2 py-1 hover:bg-muted/5 rounded-lg transition-colors">
+                            <div className="flex items-center gap-3">
+                                {/* النقطة الملونة أو الصورة */}
+                                {allowImage && item[config.imageKey] ? (
+                                    <img
+                                        src={avatarSrc(item[config.imageKey])}
+                                        className="w-8 h-8 rounded-full object-cover border shadow-sm"
+                                        alt={item[config.label]}
+                                    />
+                                ) : (
+                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
+                                )}
+
+                                <div className="flex flex-col">
+                                    <span className="text-xs font-semibold text-foreground truncate max-w-[120px]">
+                                        {item[config.label]}
+                                    </span>
+                                    <span className="text-[10px] text-muted-foreground">
+                                        {item[config.key]} طلب
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="text-xs font-bold text-muted-foreground/80">
+                                {percentage}%
+                            </div>
                         </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                            <span className="text-xs font-bold text-foreground">{fmt(d.count)}</span>
-                            <span className="text-[10px] text-muted-foreground w-9 text-right">
-                                {total ? pct((d.count / total) * 100) : "—"}
-                            </span>
-                        </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );
@@ -253,48 +317,60 @@ export function StatusDonut({ data, loading }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Line chart — تأثير عام (daily trend)
 // ─────────────────────────────────────────────────────────────────────────────
-export function TrendChart({ data, loading }) {
+export function TrendChart({ data, loading, configs = [] }) {
+    const t = useTranslations("dashboard");
     const hasData = data && data.length > 0;
-
     if (loading) return (
-        <div className="flex items-center justify-center h-64">
-            <Loader2 size={26} className="animate-spin text-muted-foreground" />
+        <div className="w-full h-[264px] flex flex-col justify-between animate-pulse px-2 py-4">
+            {/* أسطر أفقية تمثل شبكة الرسم البياني */}
+            <div className="flex-1 flex flex-col justify-between mb-6">
+                {[...Array(5)].map((_, i) => (
+                    <div
+                        key={i}
+                        className="w-full h-[2px] bg-slate-100 dark:bg-slate-800/50 rounded-full"
+                    />
+                ))}
+            </div>
+
+            {/* خط القاعدة الأساسي (أغمق قليلاً) */}
+            <div className="h-[3px] w-full bg-slate-200 dark:bg-slate-800 rounded-full mb-4" />
+
+            {/* تمثيل التواريخ في الأسفل */}
+            <div className="flex justify-between px-4">
+                {[...Array(6)].map((_, i) => (
+                    <div key={i} className="h-2 w-10 bg-slate-200 dark:bg-slate-800 rounded-full" />
+                ))}
+            </div>
         </div>
     );
-
     // حالة عدم وجود بيانات
     if (!hasData) return (
         <div className="flex flex-col items-center justify-center h-[264px] border-2 border-dashed border-border/50 rounded-2xl bg-muted/5">
             <TrendingUp size={32} className="text-muted-foreground/40 mb-2" />
-            <p className="text-sm text-muted-foreground font-medium">لم يتم تسجيل أي عمليات في هذا النطاق الزمني</p>
+            <p className="text-sm text-muted-foreground font-medium">
+                {t("common.noOperations")}
+            </p>
         </div>
     );
 
-    const labels = data.map(d => d.label);
-    const chartData = {
-        labels,
-        datasets: [
-            {
-                label: "معدل الطلبات اليومي",
-                data: data.map(d => d.total ?? 0),
-                borderColor: PRIMARY,
-                backgroundColor: hex(PRIMARY, 0.07),
-                fill: true, tension: 0.44,
-                pointRadius: 3.5, pointBackgroundColor: PRIMARY,
-                pointBorderColor: "#fff", pointBorderWidth: 2, pointHoverRadius: 6,
-            },
-            {
-                label: "معدل التوصيل اليومي",
-                data: data.map(d => d.delivered ?? 0),
-                borderColor: "#f59e0b",
-                backgroundColor: hex("#f59e0b", 0.05),
-                fill: true, tension: 0.44,
-                pointRadius: 3, pointBackgroundColor: "#f59e0b",
-                pointBorderColor: "#fff", pointBorderWidth: 2, pointHoverRadius: 5,
-            },
-        ],
-    };
+    const datasets = configs.map(cfg => ({
+        label: cfg.label,
+        data: data.map(d => d[cfg.key] ?? 0), // الوصول للحقل عن طريق المفتاح الديناميكي
+        borderColor: cfg.color,
+        backgroundColor: hex(cfg.color, cfg.fillOpacity || 0.07),
+        fill: cfg.fill ?? true,
+        tension: 0.44,
+        pointRadius: 3,
+        pointBackgroundColor: cfg.color,
+        pointBorderColor: "#fff",
+        pointBorderWidth: 2,
+        yAxisID: cfg.yAxisID || 'y', // دعم محاور متعددة إذا لزم الأمر
+    }));
 
+    const chartData = {
+        labels: data.map(d => d.label), // التسميات تأتي دائماً في حقل label من السيرفر
+        datasets
+    };
     const options = {
         responsive: true, maintainAspectRatio: false,
         interaction: { mode: "index", intersect: false },
@@ -308,6 +384,9 @@ export function TrendChart({ data, loading }) {
         scales: {
             x: { grid: { color: "rgba(0,0,0,0.04)" }, ticks: { font: { size: 10 }, maxRotation: 0 } },
             y: { grid: { color: "rgba(0,0,0,0.04)" }, ticks: { font: { size: 10 } }, beginAtZero: true },
+            ...(configs.some(c => c.yAxisID === 'y1') && {
+                y1: { position: 'right', grid: { display: false }, ticks: { font: { size: 10 } } }
+            })
         },
     };
 
@@ -337,6 +416,8 @@ export function PctBar({ value, color = PRIMARY }) {
 // Mini stats table (shared for both areas + products)
 // ─────────────────────────────────────────────────────────────────────────────
 export function MiniTable({ columns, data, loading }) {
+    const t = useTranslations("dashboard");
+
     return (
         <div className="overflow-x-auto rounded-xl border border-border">
             <table className="w-full text-sm">
@@ -362,7 +443,7 @@ export function MiniTable({ columns, data, loading }) {
                             ? (
                                 <tr>
                                     <td colSpan={columns.length} className="px-4 py-10 text-center text-sm text-muted-foreground">
-                                        لا توجد بيانات
+                                        {t("common.noData")}
                                     </td>
                                 </tr>
                             )
@@ -449,10 +530,12 @@ export const TableFilters = memo(function TableFilters({
     );
 });
 
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Main Page
 // ─────────────────────────────────────────────────────────────────────────────
 export default function OrdersStatisticsPage() {
+    const tOrders = useTranslations("orders");
     const t = useTranslations("orderAnalysis");
     const [quickRange, setQuickRange] = useState("this_month");
     const [filters, setFilters] = useState({ startDate: null, endDate: null, storeId: "all" });
@@ -461,13 +544,18 @@ export default function OrdersStatisticsPage() {
     const [loading, setLoading] = useState(true);
 
     const [exAreas, setExAreas] = useState(false);
-    const [exProds, setExProds] = useState(false);
+    // const [exProds, setExProds] = useState(false);
 
     const [summary, setSummary] = useState(null);
     const [trendData, setTrendData] = useState([]);
     const [statusData, setStatusData] = useState([]);
     const [areasData, setAreasData] = useState([]);
-    const [prodsData, setProdsData] = useState([]);
+
+    const [searchValue, setSearchValue] = useState("");
+    const { debouncedValue: debouncedSearch } = useDebounce({
+        value: searchValue, delay: 300
+    });
+    // const [prodsData, setProdsData] = useState([]);
 
     // ── Build query params ──────────────────────────────────────────────────
     const buildParams = useCallback(() => {
@@ -482,26 +570,24 @@ export default function OrdersStatisticsPage() {
     const fetchAll = useCallback(async () => {
         const p = buildParams();
 
-        // تشغيل جميع حالات التحميل معاً
         setLoading(true)
 
         try {
-            const [sum, trd, sts, ars, prd] = await Promise.all([
-                api.get("/orders/statistics/summary", { params: p }).catch(() => ({ data: null })),
-                api.get("/orders/statistics/trend", { params: p }).catch(() => ({ data: [] })),
-                api.get("/orders/statistics/by-status", { params: p }).catch(() => ({ data: [] })),
-                api.get("/orders/statistics/top-areas", { params: p }).catch(() => ({ data: [] })),
-                api.get("/orders/statistics/top-products", { params: p }).catch(() => ({ data: [] }))
+            const [sum, trd, sts, ars] = await Promise.all([
+                api.get("/dashboard/top-products", { params: p }).catch(() => ({ data: null })),
+                api.get("/dashboard/orders/trend", { params: p }).catch(() => ({ data: [] })),
+                api.get("/dashboard/orders/stats", { params: p }).catch(() => ({ data: [] })),
+                api.get("/dashboard/orders/top-areas", { params: p }).catch(() => ({ data: [] })),
+                // api.get("/orders/statistics/top-products", { params: p }).catch(() => ({ data: [] }))
             ]);
 
-            // دالة مساعدة داخلية لضمان استخراج المصفوفة بشكل سليم (Trim logic)
             const getData = (r) => Array.isArray(r.data) ? r.data : r.data?.records ?? [];
 
             setSummary(sum.data);
             setTrendData(getData(trd));
             setStatusData(getData(sts));
             setAreasData(getData(ars));
-            setProdsData(getData(prd));
+            // setProdsData(getData(prd));
         } catch (err) {
             console.error("Dashboard fetch error:", err);
         } finally {
@@ -526,104 +612,81 @@ export default function OrdersStatisticsPage() {
     }, []);
 
     // Re-fetch on range change
-    useEffect(() => { fetchAll(); }, [fetchAll]);
+    useEffect(() => { fetchAll(); }, [quickRange, debouncedSearch]);
 
     // ── Export helper ──────────────────────────────────────────────────────
-    const doExport = async (endpoint, setL, name) => {
-        setL(true);
-        const id = toast.loading("جارٍ التصدير...");
-        try {
-            const res = await api.get(endpoint, { params: buildParams(), responseType: "blob" });
-            const url = URL.createObjectURL(new Blob([res.data]));
-            const a = Object.assign(document.createElement("a"), { href: url, download: `${name}_${Date.now()}.xlsx` });
-            document.body.appendChild(a); a.click(); a.remove();
-            URL.revokeObjectURL(url);
-            toast.success("تمّ التصدير بنجاح", { id });
-        } catch { toast.error("فشل التصدير", { id }); }
-        finally { setL(false); }
-    };
+
 
     // ── KPI cards ─────────────────────────────────────────────────────────
     const KPI = [
-        { key: "totalOrders ", title: "إجمالي الطلبات", icon: ShoppingCart, color: "#6366f1" },
-        { key: "confirmedOrders", title: "الطلبات المؤكدة", icon: CheckCircle, color: "#3b82f6" },
-        { key: "deliveredOrders", title: "الطلبات المُسلّمة", icon: Truck, color: "#10b981" },
-        { key: "cancelledOrders", title: "الطلبات الملغاة", icon: XCircle, color: "#ef4444" },
-        { key: "deliveryRate", title: "التوصيل من الإجمالي", icon: TrendingUp, color: "#8b5cf6", pct: true },
-        { key: "deliveryFromConf", title: "التوصيل من المؤكد", icon: BarChart3, color: "#f59e0b", pct: true },
-        { key: "inDelivery", title: "جارٍ التسليم", icon: Truck, color: "#06b6d4" },
-        { key: "totalSales", title: "إجمالي المبيعات (بدون توصيل)", icon: TrendingUp, color: "#10b981" },
-        { key: "totalWithShipping", title: "إجمالي مع توصيل", icon: TrendingUp, color: "#6366f1" },
-        { key: "totalSalesBosta", title: "إجمالي مبيعات بوسطة", icon: Store, color: "#f97316" },
+        { key: "totalOrders ", title: t("kpi.totalOrders"), icon: ShoppingCart, color: "#6366f1" },
+        { key: "confirmedOrders", title: t("kpi.confirmedOrders"), icon: CheckCircle, color: "#3b82f6" },
+        { key: "deliveredOrders", title: t("kpi.deliveredOrders"), icon: Truck, color: "#10b981" },
+        { key: "cancelledOrders", title: t("kpi.cancelledOrders"), icon: XCircle, color: "#ef4444" },
+        { key: "deliveryRate", title: t("kpi.deliveryRate"), icon: TrendingUp, color: "#8b5cf6", pct: true },
+        { key: "deliveryFromConf", title: t("kpi.deliveryFromConf"), icon: BarChart3, color: "#f59e0b", pct: true },
+        { key: "inDelivery", title: t("kpi.inDelivery"), icon: Truck, color: "#06b6d4" },
+        { key: "totalSales", title: t("kpi.totalSales"), icon: TrendingUp, color: "#10b981" },
+        { key: "totalWithShipping", title: t("kpi.totalWithShipping"), icon: TrendingUp, color: "#6366f1" },
+        { key: "totalSalesBosta", title: t("kpi.totalSalesBosta"), icon: Store, color: "#f97316" },
     ];
 
     // ── Table columns: Areas ──────────────────────────────────────────────
     const areasCols = [
         {
-            key: "name", header: "اسم الإمارة",
+            key: "label",
+            header: t("areas.columns.cityArea"),
             cell: r => (
                 <div className="flex items-center gap-1.5">
                     <MapPin size={12} className="text-muted-foreground flex-shrink-0" />
-                    <span className="font-semibold text-sm text-foreground">{r.name ?? "—"}</span>
+                    <span className="font-semibold text-sm text-foreground">{r.city ?? "—"}</span>
                 </div>
             ),
         },
         {
-            key: "totalOrders", header: "عدد الطلبات",
+            key: "totalOrders",
+            header: t("areas.columns.totalOrders"),
             cell: r => <span className="font-bold text-[var(--primary)] font-mono">{fmt(r.totalOrders)}</span>,
         },
         {
-            key: "confirmedOrders", header: "الطلبات المؤكدة",
+            key: "confirmedOrders",
+            header: t("areas.columns.confirmed"),
             cell: r => <span className="font-semibold text-blue-600 dark:text-blue-400">{fmt(r.confirmedOrders)}</span>,
         },
         {
-            key: "inDelivery", header: "جارٍ التسليم",
-            cell: r => <span className="font-semibold text-cyan-600 dark:text-cyan-400">{fmt(r.inDelivery)}</span>,
+            key: "shippedOrders",
+            header: t("areas.columns.inDelivery"),
+            cell: r => <span className="font-semibold text-cyan-600 dark:text-cyan-400">{fmt(r.shippedOrders)}</span>,
         },
         {
-            key: "deliveryFromTotal", header: "التسليم من الإجمالي",
-            cell: r => <PctBar value={r.deliveryFromTotal} color={PRIMARY} />,
+            key: "deliveredOrders",
+            header: t("areas.columns.delivered"),
+            cell: r => <span className="font-semibold text-emerald-600 dark:text-emerald-400">{fmt(r.deliveredOrders)}</span>,
         },
         {
-            key: "deliveryFromConfirmed", header: "التسليم من المؤكد",
-            cell: r => <PctBar value={r.deliveryFromConfirmed} color="#10b981" />,
+            key: "sales",
+            header: t("areas.columns.netSales"),
+            cell: r => <span className="font-bold text-foreground font-mono">{fmt(r.sales)}</span>,
+        },
+        {
+            key: "deliveryRate",
+            header: t("areas.columns.successRate"),
+            cell: r => (
+                <div className="flex items-center gap-2">
+                    <div className="w-10 bg-muted rounded-full h-1.5 overflow-hidden hidden md:block">
+                        <div
+                            className={`h-full ${r.deliveryRate >= 80 ? 'bg-emerald-500' : 'bg-orange-500'}`}
+                            style={{ width: `${r.deliveryRate}%` }}
+                        />
+                    </div>
+                    <span className={`text-xs font-bold ${r.deliveryRate >= 80 ? 'text-emerald-600' : 'text-orange-600'}`}>
+                        {r.deliveryRate}%
+                    </span>
+                </div>
+            ),
         },
     ];
 
-    // ── Table columns: Products ───────────────────────────────────────────
-    const prodsCols = [
-        {
-            key: "name", header: "اسم المنتج",
-            cell: r => (
-                <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-muted border border-border flex items-center justify-center flex-shrink-0">
-                        <Package size={12} className="text-muted-foreground" />
-                    </div>
-                    <span className="font-semibold text-sm text-foreground line-clamp-1">{r.name ?? "—"}</span>
-                </div>
-            ),
-        },
-        {
-            key: "totalOrders", header: "عدد الطلبات",
-            cell: r => <span className="font-bold text-[var(--primary)] font-mono">{fmt(r.totalOrders)}</span>,
-        },
-        {
-            key: "confirmedOrders", header: "الطلبات المؤكدة",
-            cell: r => <span className="font-semibold text-blue-600 dark:text-blue-400">{fmt(r.confirmedOrders)}</span>,
-        },
-        {
-            key: "inDelivery", header: "جارٍ التسليم",
-            cell: r => <span className="font-semibold text-cyan-600 dark:text-cyan-400">{fmt(r.inDelivery)}</span>,
-        },
-        {
-            key: "deliveryFromTotal", header: "التسليم من الإجمالي",
-            cell: r => <PctBar value={r.deliveryFromTotal} color={PRIMARY} />,
-        },
-        {
-            key: "deliveryFromConfirmed", header: "التسليم من المؤكد",
-            cell: r => <PctBar value={r.deliveryFromConfirmed} color="#10b981" />,
-        },
-    ];
 
     const statsData = useMemo(() => {
         return KPI.map((card, i) => {
@@ -636,14 +699,81 @@ export default function OrdersStatisticsPage() {
                 value: val,
                 icon: card.icon,
                 color: card.color,
-                sortOrder: i, // الحفاظ على الترتيب الأصلي
+                sortOrder: i,
                 onClick: () => console.log(`Clicked ${card.title}`),
             };
         });
     }, [summary, KPI]);
+
+    const statsCards = useMemo(() => {
+        if (!statusData.length) return [];
+        return statusData
+            .sort((a, b) => a.sortOrder - b.sortOrder)
+            .map((stat) => {
+                const Icon = getIconForStatus(stat.code);
+                const bgColors = generateBgColors(stat.color);
+
+                return {
+                    id: stat.id,
+                    name: stat.system ? tOrders(`statuses.${stat.code}`) : stat.name,
+                    value: String(stat.count || 0),
+                    icon: Icon,
+                    bg: `bg-[${bgColors.light}] dark:bg-[${bgColors.dark}]`,
+                    bgInlineLight: bgColors.light,
+                    bgInlineDark: bgColors.dark,
+                    iconColor: `text-[${stat.color}]`,
+                    color: stat.color,
+                    iconBorder: `border-[${stat.color}]`,
+                    iconBorderInline: stat.color,
+                    code: stat.code,
+                    editable: false,
+                    sortOrder: stat.sortOrder,
+                    fullData: stat,
+                };
+            });
+    }, [statusData]);
+
     // ─────────────────────────────────────────────────────────────────────
     // Render
     // ─────────────────────────────────────────────────────────────────────
+
+    const doExport = async (endpoint, setL, name) => {
+        setL(true);
+        const id = toast.loading(t("export.exporting"));
+        try {
+            const res = await api.get(endpoint, { params: buildParams(), responseType: "blob" });
+            const url = URL.createObjectURL(new Blob([res.data]));
+            const a = Object.assign(document.createElement("a"), { href: url, download: `${name}_${Date.now()}.xlsx` });
+            document.body.appendChild(a); a.click(); a.remove();
+            URL.revokeObjectURL(url);
+            toast.success(t("export.success"), { id });
+        } catch (err) {
+            console.error("Export error:", err);
+            toast.error(t("export.failed"), { id });
+        }
+        finally { setL(false); }
+    };
+
+    const orderConfigs = [
+        {
+            key: "newOrders",
+            label: t("chart.newOrders"),
+            color: SECONDARY,
+            fillOpacity: 0.1,
+            borderWidth: 2,
+            tension: 0.4
+        },
+        {
+            key: "deliveredOrders",
+            label: t("chart.deliveredOrders"),
+            color: "#10b981",
+            fillOpacity: 0.05,
+            borderWidth: 2,
+            tension: 0.4
+        }
+    ];
+
+
     return (
         <div className="min-h-screen p-4 md:p-6 bg-background">
 
@@ -683,19 +813,19 @@ export default function OrdersStatisticsPage() {
 
                 {/* ── Quick range tabs ─────────────────────────────────────── */}
 
-                <RangeTabs value={quickRange} onChange={v => setQuickRange(v)} />
+                <RangeTabs searchValue={searchValue} onSearchChange={setSearchValue} value={quickRange} onChange={v => setQuickRange(v)} />
 
 
                 {/* ── Advanced filter card ──────────────────────────────────── */}
                 <TableFilters
                     onApply={fetchAll}
                     onRefresh={fetchAll}
-                    applyLabel={"تطبيق"}
+                    applyLabel={t("filters.apply")}
                 >
-                    {/* Date range - تم تحديد العرض هنا ليكون 1/4 تقريباً أو 250px */}
+                    {/* Date range */}
                     <div className="flex flex-col gap-1.5 w-full md:w-[250px]">
                         <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-                            <Calendar size={11} /> المدة الزمنية
+                            <Calendar size={11} /> {t("filters.dateRange")}
                         </label>
                         <Flatpickr
                             value={[
@@ -710,24 +840,24 @@ export default function OrdersStatisticsPage() {
                             options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
                             className="h-10 px-3 rounded-xl border border-border bg-background text-sm text-foreground 
                 focus:outline-none focus:border-[rgb(var(--primary-to))] transition-all w-full"
-                            placeholder="اختر نطاق التاريخ"
+                            placeholder={t("filters.dateRangePlaceholder")}
                         />
                     </div>
 
-                    {/* Store Select - عرض محدد */}
+                    {/* Store Select */}
                     <div className="flex flex-col gap-1.5 w-full md:w-[180px]">
                         <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-                            <Store size={11} /> المتجر
+                            <Store size={11} /> {t("filters.store")}
                         </label>
                         <Select
                             value={filters.storeId}
                             onValueChange={v => setFilters(f => ({ ...f, storeId: v }))}
                         >
                             <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm focus:ring-1 focus:ring-[rgb(var(--primary-to))]">
-                                <SelectValue placeholder="كل المتاجر" />
+                                <SelectValue placeholder={t("filters.allStores")} />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">كل المتاجر</SelectItem>
+                                <SelectItem value="all">{t("filters.allStores")}</SelectItem>
                                 {stores.map(s => (
                                     <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
                                 ))}
@@ -741,29 +871,35 @@ export default function OrdersStatisticsPage() {
                 >
 
                     {/* ── KPI Cards ─────────────────────────────────────────────── */}
-                    <StatsGrid stats={statsData} loading={loading} />
+                    <StatsGrid stats={statsCards} loading={loading} />
                 </motion.div>
 
                 {/* ── Charts ───────────────────────────────────────────────── */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                     {/* Trend takes 2 columns */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.18 }}
-                        className="lg:col-span-2"
-                    >
-                        <Card title="تقارير عامة" icon={TrendingUp} color={PRIMARY}>
-                            <TrendChart data={trendData} loading={loading} />
+                    <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} className="lg:col-span-2">
+                        <Card title={t("charts.generalReports")} icon={TrendingUp} color={PRIMARY}>
+                            <TrendChart data={trendData} loading={loading} configs={orderConfigs} />
                         </Card>
                     </motion.div>
 
                     {/* Doughnut 1 column */}
                     <motion.div
-                        initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}
+                        initial={{ opacity: 0, y: 18 }}
+                        animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.22 }}
                     >
-                        <Card title="منتجاتك الاكثر طلبا" icon={PieIcon} color="#8b5cf6">
-                            <StatusDonut data={statusData} loading={loading} />
+                        <Card title={t("charts.topProducts")} icon={PieIcon} color={PRIMARY}>
+                            <StatusDonut
+                                data={summary}
+                                loading={loading}
+                                config={{
+                                    key: "count",
+                                    imageKey: "image",
+                                    label: "name"
+                                }}
+                                allowImage={true}
+                            />
                         </Card>
                     </motion.div>
                 </div>
@@ -771,19 +907,19 @@ export default function OrdersStatisticsPage() {
                 {/* ── Tables ───────────────────────────────────────────────── */}
                 <div className="grid grid-cols-1 gap-5">
 
-                    {/* المناطق الأكثر مبيعاً */}
+                    {/* Top Selling Areas */}
                     <motion.div
                         initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.27 }}
                     >
                         <Card
-                            title="المناطق الأكثر مبيعاً"
+                            title={t("areas.title")}
                             icon={MapPin}
                             color="#10b981"
                             action={
                                 <ExportBtn
                                     loading={exAreas}
-                                    onClick={() => doExport("/orders/statistics/top-areas/export", setExAreas, "top_areas")}
+                                    onClick={() => doExport("/dashboard/orders/top-areas/export", setExAreas, "top_areas")}
                                 />
                             }
                         >
@@ -791,13 +927,13 @@ export default function OrdersStatisticsPage() {
                         </Card>
                     </motion.div>
 
-                    {/* المنتجات الأكثر مبيعاً */}
-                    <motion.div
+                    {/* Top Selling Products */}
+                    {/* <motion.div
                         initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.32 }}
                     >
                         <Card
-                            title="المنتجات الأكثر مبيعاً"
+                            title={t("products.title")}
                             icon={Package}
                             color="#f59e0b"
                             action={
@@ -809,11 +945,10 @@ export default function OrdersStatisticsPage() {
                         >
                             <MiniTable columns={prodsCols} data={prodsData} loading={loading} />
                         </Card>
-                    </motion.div>
+                    </motion.div> */}
 
                 </div>
             </div>
         </div>
     );
 }
-

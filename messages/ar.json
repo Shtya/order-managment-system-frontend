@@ -2910,7 +2910,8 @@
       "stats": {
         "totalOrders": "إجمالي الطلبات",
         "confirmedOrders": "الطلبات المؤكدة",
-        "deliveredOrders": "طلبات تم توصيلها",
+        "shippedOrders": "الطلبات المشحونة",
+        "deliveredOrders": "الطلبات المستلمة",
         "upsellOrders": "طلبات Upsell"
       },
       "columns": {
@@ -2920,6 +2921,8 @@
         "confirmationRate": "نسبة التأكيد",
         "deliveredOrders": "طلبات تم توصيلها",
         "deliveryRate": "نسبة التوصيل",
+        "shippedOrders": "الطلبات المشحونة",
+        "shippedRate": "نسبة الشحن",
         "upsellOrders": "طلبات Upsell",
         "upsellRate": "نسبة Upsell"
       },
@@ -3846,39 +3849,137 @@
     }
   },
   "orderAnalysis": {
-    "title": "تحليل الطلبات",
     "breadcrumb": {
       "home": "الرئيسية",
       "orderAnalysis": "تحليل الطلبات"
     },
-    "filters": {
-      "dateRange": "نطاق التاريخ",
-      "status": "الحالة",
-      "paymentStatus": "حالة الدفع",
-      "employee": "الموظف",
-      "product": "المنتج"
-    },
-    "statistics": {
-      "totalOrders": "إجمالي الطلبات",
-      "totalRevenue": "إجمالي الإيرادات",
-      "averageOrderValue": "متوسط قيمة الطلب",
-      "ordersByStatus": "الطلبات حسب الحالة",
-      "ordersByPaymentStatus": "الطلبات حسب حالة الدفع",
-      "topProducts": "أفضل المنتجات"
+    "search": {
+      "orderPlaceholder": "ابحث برقم الطلب أو اسم العميل..."
     },
     "actions": {
-      "export": "تصدير البيانات",
-      "refresh": "تحديث",
-      "howToUse": "كيفية الاستخدام"
+      "howToUse": "شرح الاستخدام"
+    },
+    "chart": {
+      "newOrders": "الطلبات الجديدة",
+      "deliveredOrders": "الطلبات المستلمة"
+    },
+    "ranges": {
+      "today": "اليوم",
+      "yesterday": "أمس",
+      "this_week": "هذا الأسبوع",
+      "last_week": "الأسبوع الماضي",
+      "this_month": "الشهر الحالي",
+      "last_month": "الشهر الماضي",
+      "this_year": "السنة الحالية"
+    },
+    "filters": {
+      "apply": "تطبيق",
+      "dateRange": "المدة الزمنية",
+      "dateRangePlaceholder": "اختر نطاق التاريخ",
+      "store": "المتجر",
+      "allStores": "كل المتاجر"
+    },
+    "kpi": {
+      "totalOrders": "إجمالي الطلبات",
+      "confirmedOrders": "الطلبات المؤكدة",
+      "deliveredOrders": "الطلبات المُسلّمة",
+      "cancelledOrders": "الطلبات الملغاة",
+      "deliveryRate": "التوصيل من الإجمالي",
+      "deliveryFromConf": "التوصيل من المؤكد",
+      "inDelivery": "جارٍ التسليم",
+      "totalSales": "إجمالي المبيعات (بدون توصيل)",
+      "totalWithShipping": "إجمالي مع توصيل",
+      "totalSalesBosta": "إجمالي مبيعات بوسطة"
     },
     "charts": {
-      "ordersOverTime": "الطلبات على مر الزمن",
-      "revenueOverTime": "الإيرادات على مر الزمن",
-      "ordersByStatus": "الطلبات حسب الحالة",
-      "ordersByPaymentStatus": "الطلبات حسب حالة الدفع"
+      "generalReports": "تقارير عامة",
+      "topProducts": "منتجاتك الأكثر طلباً",
+      "newOrders": "الطلبات الجديدة",
+      "deliveredOrders": "الطلبات المستلمة"
     },
-    "errors": {
-      "fetchFailed": "فشل تحميل بيانات التحليل"
+    "areas": {
+      "title": "المناطق الأكثر مبيعاً",
+      "columns": {
+        "cityArea": "الإمارة/المنطقة",
+        "totalOrders": "إجمالي الطلبات",
+        "confirmed": "المؤكدة",
+        "inDelivery": "جارٍ التسليم",
+        "delivered": "تم التوصيل",
+        "netSales": "صافي المبيعات",
+        "successRate": "نسبة النجاح"
+      }
+    },
+    "products": {
+      "title": "المنتجات الأكثر مبيعاً",
+      "columns": {
+        "name": "اسم المنتج",
+        "ordersCount": "عدد الطلبات",
+        "confirmedOrders": "الطلبات المؤكدة",
+        "inDelivery": "جارٍ التسليم",
+        "deliveryFromTotal": "التسليم من الإجمالي",
+        "deliveryFromConfirmed": "التسليم من المؤكد"
+      }
+    },
+    "export": {
+      "exporting": "جارٍ التصدير...",
+      "success": "تمّ التصدير بنجاح",
+      "failed": "فشل التصدير"
+    }
+  },
+  "dashboard": {
+    "common": {
+      "noData": "لا توجد بيانات متاحة",
+      "noOperations": "لم يتم تسجيل أي عمليات في هذا النطاق الزمني",
+      "refresh": "تحديث",
+      "export": "تصدير"
+    },
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "dashboard": "لوحة التحكم"
+    },
+    "filters": {
+      "apply": "تطبيق",
+      "dateRange": "المدة الزمنية",
+      "dateRangePlaceholder": "اختر نطاق التاريخ",
+      "store": "المتجر",
+      "allStores": "كل المتاجر"
+    },
+    "kpi": {
+      "totalSales": "إجمالي المبيعات",
+      "costOfGoods": "تكلفة البضاعة المباعة",
+      "totalProfit": "إجمالي الربح",
+      "profitMargin": "نسبة الربح %",
+      "confirmRate": "نسبة التأكيد",
+      "deliveryRate": "نسبة التوصيل",
+      "cancelled": "نسبة ملغي",
+      "returned": "نسبة مرتجع",
+      "inDelivery": "جاري التوصيل",
+      "newOrders": "جديد",
+      "totalOrders": "إجمالي الطلبات",
+      "totalCollected": "إجمالي التحصيلات"
+    },
+    "chart": {
+      "ordersCount": "عدد الطلبات",
+      "sales": "المبيعات"
+    },
+    "charts": {
+      "generalReports": "تقارير عامة",
+      "topProducts": "منتجاتك الأكثر طلباً"
+    },
+    "profitTable": {
+      "title": "جدول الربح التفصيلي",
+      "columns": {
+        "period": "الفترة الزمنية",
+        "totalSales": "إجمالي المبيعات",
+        "costs": "تكلفة البضاعة",
+        "totalProfit": "إجمالي الربح",
+        "profitMargin": "نسبة الربح"
+      }
+    },
+    "export": {
+      "exporting": "جارٍ التصدير...",
+      "success": "تمّ التصدير بنجاح",
+      "failed": "فشل التصدير"
     }
   }
 }

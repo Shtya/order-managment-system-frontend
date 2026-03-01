@@ -577,7 +577,7 @@ export default function Table({
 		: "shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.2)] dark:shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.5)]";
 
 	return (
-		<div className={cn("w-full", className)}>
+		<div className={cn("w-full ", className)}>
 			<motion.div
 				initial={{ opacity: 0, y: 16 }}
 				animate={{ opacity: 1, y: 0 }}

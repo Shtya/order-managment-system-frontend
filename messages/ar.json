@@ -363,7 +363,10 @@
     "settings": "الإعدادات",
     "order-replacement": "طلبات الاستبدال",
     "failedOrders": "الطلبات الفاشلة",
-    "logout": "تسجيل الخروج"
+    "logout": "تسجيل الخروج",
+    "collections": "التحصيلات",
+    "collectedOrders": "الطلبات المحصلة",
+    "uncollectedOrders": "الطلبات غير المحصلة"
   },
   "header": {
     "noNotifications": "لا يوجد اشعارات",
@@ -3980,6 +3983,172 @@
       "exporting": "جارٍ التصدير...",
       "success": "تمّ التصدير بنجاح",
       "failed": "فشل التصدير"
+    }
+  },
+  "orderCollection": {
+    "breadcrumb": {
+      "title": "تحصيل الطلبات",
+      "home": "الرئيسية"
+    },
+    "tabs": {
+      "notCollected": "طلبات غير محصلة",
+      "collected": "الطلبات المحصلة"
+    },
+    "table": {
+      "actions": "الإجراءات"
+    },
+    "actions": {
+      "collectOrder": "تحصيل طلب",
+      "collect": "تحصيل",
+      "export": "تصدير",
+      "howToUse": "شرح الاستخدام"
+    },
+    "stats": {
+      "notCollected": "غير محصلة",
+      "partialCollected": "محصلة جزئياً",
+      "fullyCollected": "محصلة بالكامل"
+    },
+    "columns": {
+      "orderNumber": "رقم الطلب",
+      "shippingCompany": "شركة الشحن",
+      "collectedAmount": "المبلغ المُحصَّل",
+      "remainingBalance": "المبلغ المتبقي",
+      "shippingCost": "تكلفة الشحن",
+      "collectionMethod": "طريقة التحصيل",
+      "deliveredAt": "تاريخ التوصيل",
+      "collectionStatus": "حالة التحصيل",
+      "delayDays": "عدد أيام التأخير",
+      "lastCollectionDate": "آخر تاريخ تحصيل",
+      "totalAmount": "المبلغ الكلي"
+    },
+    "collectionStatus": {
+      "pending": "بانتظار التحصيل",
+      "partial": "محصل جزئياً",
+      "fullyCollected": "محصل بالكامل"
+    },
+    "collectionMethods": {
+      "visa": "فيزا",
+      "bank": "بنك",
+      "cash": "نقداً",
+      "other": "أخرى",
+      "vodafone_cash": "فودافون كاش",
+      "orange_cash": "أورانج كاش",
+      "etisalat_cash": "اتصالات كاش",
+      "we_pay": "وي باي",
+      "insta": "إنستا",
+      "fawry": "فوري",
+      "aman": "أمان",
+      "meeza": "ميزة",
+      "valu": "فاليو",
+      "sympl": "سيمبل",
+      "tabby": "تابي",
+      "tamara": "تمارا",
+      "shipping_company": "شركة الشحن",
+      "office_pickup": "استلام من المكتب"
+    },
+    "filters": {
+      "shippingCompany": "شركة الشحن",
+      "shippingCompanyPlaceholder": "اختر شركة الشحن",
+      "date": "التاريخ",
+      "datePlaceholder": "اختر نطاق التاريخ",
+      "apply": "تطبيق",
+      "all": "الكل"
+    },
+    "toolbar": {
+      "filter": "تصفية",
+      "export": "تصدير"
+    },
+    "pagination": {
+      "total": "إجمالي",
+      "limit": "حد"
+    },
+    "messages": {
+      "exportStarted": "بدأ التصدير",
+      "exportSuccess": "تم التصدير بنجاح",
+      "exportFailed": "فشل التصدير"
+    },
+    "searchPlaceholder": "ابحث برقم الطلب أو شركة الشحن...",
+    "days": "يوم",
+    "empty": {
+      "title": "لا توجد طلبات",
+      "subtitle": "لا توجد طلبات متطابقة مع المعايير المحددة"
+    },
+    "errors": {
+      "fetchFailed": "فشل في تحميل الطلبات",
+      "fetchStatsFailed": "فشل في تحميل الإحصائيات"
+    }
+  },
+  "collectOrder": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "title": "تحصيل طلب"
+    },
+    "actions": {
+      "save": "حفظ",
+      "saving": "جاري الحفظ..."
+    },
+    "currency": "جنيه",
+    "sections": {
+      "orderInfo": "معلومات الطلب",
+      "financialSummary": "الملخص المالي",
+      "shippingInfo": "معلومات الشحن",
+      "collectionForm": "بيانات التحصيل"
+    },
+    "fields": {
+      "shippingCompany": "شركة الشحن",
+      "collectionDate": "تاريخ التحصيل",
+      "source": "طريقة التحصيل",
+      "currency": "عملة التحصيل",
+      "amount": "المبلغ المُحصَّل",
+      "notes": "ملاحظات",
+      "orderTotal": "إجمالي الطلب",
+      "shippingCost": "تكلفة الشحن",
+      "deposit": "العربون",
+      "amountDue": "المبلغ المستحق",
+      "deliveredAt": "تاريخ التوصيل",
+      "currentShippingCompany": "شركة الشحن الحالية",
+      "orderNumber": "رقم الطلب",
+      "customerName": "اسم العميل",
+      "phoneNumber": "رقم الهاتف",
+      "city": "المدينة",
+      "address": "العنوان",
+      "collectedAmount": "المبلغ المُحصَّل"
+    },
+    "placeholders": {
+      "shippingCompany": "اختر شركة الشحن",
+      "collectionDate": "اختر تاريخ التحصيل",
+      "source": "اختر طريقة التحصيل",
+      "currency": "اختر العملة",
+      "amount": "أدخل المبلغ المحصل",
+      "notes": "ملاحظات إضافية (اختياري)"
+    },
+    "sources": {
+      "shippingCompany": "شركة الشحن",
+      "customer": "العميل مباشرة",
+      "bankTransfer": "تحويل بنكي",
+      "cash": "نقداً",
+      "other": "أخرى"
+    },
+    "hints": {
+      "maxAmount": "الحد الأقصى"
+    },
+    "messages": {
+      "success": "تم تسجيل التحصيل بنجاح",
+      "loading": "جاري التحميل..."
+    },
+    "errors": {
+      "invalidOrderId": "رقم الطلب غير صحيح",
+      "fetchFailed": "فشل في تحميل بيانات الطلب",
+      "createFailed": "فشل في تسجيل التحصيل",
+      "orderNotFound": "الطلب غير موجود"
+    },
+    "validation": {
+      "shippingCompanyRequired": "شركة الشحن مطلوبة",
+      "collectionDateRequired": "تاريخ التحصيل مطلوب",
+      "sourceRequired": "طريقة التحصيل مطلوبة",
+      "currencyRequired": "العملة مطلوبة",
+      "amountRequired": "المبلغ مطلوب",
+      "amountMin": "المبلغ يجب أن يكون أكبر من 0"
     }
   }
 }

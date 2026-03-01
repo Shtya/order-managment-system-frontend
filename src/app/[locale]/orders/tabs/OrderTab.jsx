@@ -799,10 +799,6 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
 				]}
 			/>
 
-
-
-
-
 			<Table
 				// ── Search (always visible) ───────────────────────────────────────────
 				searchValue={search}
@@ -979,7 +975,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
 					per_page: pager.per_page,
 				}}
 				onPageChange={handlePageChange}
-			/> 
+			/>
 
 
 			<DistributionModal
@@ -1048,7 +1044,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
 }
 
 
- 
+
 
 
 function isValidHex(color) {

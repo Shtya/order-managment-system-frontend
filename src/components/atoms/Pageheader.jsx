@@ -100,6 +100,7 @@ export function PageHeader({
 	statsLoading = false,
 	statsCount = 6,
 	className = "",
+	children
 }) {
 	return (
 		<div
@@ -198,6 +199,7 @@ export function PageHeader({
 					? <PageHeaderStatsSkeleton count={statsCount} />
 					: <StatsGrid stats={stats} />
 				}
+				{children}
 			</div>
 		</div>
 	);

@@ -32,6 +32,9 @@ import {
 	XCircle,
 	PieChart,
 	Activity,
+	Banknote,
+	CheckCircle2,
+	AlertCircle,
 } from 'lucide-react';
 import { FaUserTie } from 'react-icons/fa6';
 import { useRouter } from '@/i18n/navigation';
@@ -82,6 +85,25 @@ const menuItems = [
 			{ icon: Package, labelKey: 'orders', href: '/orders?tab=orders' },
 			{ icon: Undo2, labelKey: 'order-replacement', href: '/orders?tab=replacement' },
 			{ icon: XCircle, labelKey: 'failedOrders', href: '/orders?tab=failedOrders' },
+		],
+	},
+	{
+		icon: Banknote, // Main icon for the Collections category
+		labelKey: 'collections',
+		href: '/collections',
+		badge: null,
+		roles: ['ADMIN'],
+		children: [
+			{
+				icon: CheckCircle2, // Represents completed/fully collected
+				labelKey: 'collectedOrders', // Matches your fully_collected logic
+				href: '/orders/collections?status=fully_collected',
+			},
+			{
+				icon: AlertCircle, // Represents pending or partial payments
+				labelKey: 'uncollectedOrders', // Covers not_collected & partial
+				href: '/orders/collections?status=pending',
+			},
 		],
 	},
 	{

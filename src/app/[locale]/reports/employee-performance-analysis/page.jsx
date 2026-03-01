@@ -345,7 +345,7 @@ export function EmployeeStatisticsPage() {
 
     /* ── Render ── */
     return (
-        <>
+        <div className="min-h-screen p-4 md:p-6 bg-background">
             <PageHeader
                 breadcrumbs={[
                     { name: t("breadcrumb.home"), href: "/" },
@@ -443,7 +443,7 @@ export function EmployeeStatisticsPage() {
                 }}
                 onPageChange={({ page, per_page }) => fetchEmployeeStats(page, per_page)}
             />
-        </>
+        </div>
     );
 }
 

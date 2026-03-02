@@ -63,6 +63,9 @@ import { Switch } from "@/components/ui/switch";
 
 import api from "@/utils/api";
 import toast from "react-hot-toast";
+import { useTranslations } from "next-intl";
+import TransactionTab from "./tabs/transactionTab";
+import SubscriptionsTab from "./tabs/subscriptionsTab";
 
 /** =========================
  * Tiny Spinner
@@ -110,11 +113,11 @@ function PlanCardSkeleton() {
  * Custom Hook for API
  * ========================= */
 export function useSubscriptionsApi() {
+	const t = useTranslations("plans")
 	const [loading, setLoading] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 
 	const [plans, setPlans] = useState([]);
-	const [transactions, setTransactions] = useState([]);
 
 	// ✅ Fetch Plans
 	const fetchPlans = useCallback(async () => {
@@ -149,24 +152,6 @@ export function useSubscriptionsApi() {
 			return transformedPlans;
 		} catch (error) {
 			const message = error?.response?.data?.message || "فشل في تحميل الباقات";
-			toast.error(message);
-			throw error;
-		} finally {
-			setLoading(false);
-			setTimeout(() => setIsLoading(false), 100);
-		}
-	}, []);
-
-	// ✅ Fetch Transactions
-	const fetchTransactions = useCallback(async () => {
-		setIsLoading(true);
-		try {
-			setLoading(true);
-			const { data } = await api.get("/transactions");
-			setTransactions(data || []);
-			return data;
-		} catch (error) {
-			const message = error?.response?.data?.message || "فشل في تحميل المعاملات";
 			toast.error(message);
 			throw error;
 		} finally {
@@ -291,13 +276,13 @@ export function useSubscriptionsApi() {
 		}
 	}, []);
 
+
+
 	return {
 		isLoading,
 		loading,
 		plans,
-		transactions,
 		fetchPlans,
-		fetchTransactions,
 		createPlan,
 		updatePlan,
 		deletePlan,
@@ -884,6 +869,7 @@ function TransactionDetailsDialog({ open, onClose, transaction }) {
  * Main Page Component
  * ========================= */
 export default function AdminSubscriptionsPage() {
+	const t = useTranslations("plans")
 	const [activeTab, setActiveTab] = useState("plans");
 	const [search, setSearch] = useState("");
 
@@ -905,10 +891,8 @@ export default function AdminSubscriptionsPage() {
 	const {
 		isLoading,
 		plans,
-		transactions,
 		loading,
 		fetchPlans,
-		fetchTransactions,
 		createPlan,
 		updatePlan,
 		deletePlan,
@@ -916,15 +900,15 @@ export default function AdminSubscriptionsPage() {
 
 	useEffect(() => {
 		if (activeTab === "plans") fetchPlans();
-		else fetchTransactions();
-	}, [activeTab, fetchPlans, fetchTransactions]);
+	}, [activeTab, fetchPlans]);
 
 	const tabs = useMemo(
 		() => [
-			{ id: "plans", label: "إدارة الباقات" },
-			{ id: "transactions", label: "جميع المعاملات" },
+			{ id: "plans", label: t("tabs.plans").trim() },
+			{ id: "transactions", label: t("tabs.transactions").trim() },
+			{ id: "subscriptions", label: t("tabs.subscriptions").trim() },
 		],
-		[]
+		[t]
 	);
 
 	const filteredPlans = useMemo(() => {
@@ -939,22 +923,6 @@ export default function AdminSubscriptionsPage() {
 		});
 	}, [plans, search]);
 
-	const filteredTransactions = useMemo(() => {
-		const s = search.trim().toLowerCase();
-		return transactions.filter((t) => {
-			if (!s) return true;
-			const id = String(t.id || "");
-			const plan = (t.planName || "").toLowerCase();
-			const user = (t.userName || "").toLowerCase();
-			return id.includes(s) || plan.includes(s) || user.includes(s);
-		});
-	}, [transactions, search]);
-
-	const paginatedTransactions = useMemo(() => {
-		const start = (currentPage - 1) * perPage;
-		const end = start + perPage;
-		return filteredTransactions.slice(start, end);
-	}, [filteredTransactions, currentPage, perPage]);
 
 	const handleCreatePlan = async () => {
 		if (creatingPlan) return;
@@ -1023,32 +991,67 @@ export default function AdminSubscriptionsPage() {
 		}
 	};
 
-
 	const isAnyPlanBusy = creatingPlan || savingPlanId !== null || deletingPlanId !== null;
 
 	return (
 		<div className="min-h-screen p-6">
 			{/* Header */}
-			<div className="bg-card !pb-0 flex flex-col gap-2 mb-4">
+			<div className="bg-card flex flex-col gap-2 mb-4">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-2 text-lg font-semibold">
-						<span className="text-gray-400">الرئيسية</span>
+						<span className="text-gray-400">{t("breadcrumb.home")}</span>
 						<ChevronLeft className="text-gray-400" size={18} />
-						<span className="text-primary">إدارة الاشتراكات</span>
-						<span className="ml-3 inline-flex w-3.5 h-3.5 rounded-full bg-primary" />
+						<span className="text-[rgb(var(--primary))]">{t("breadcrumb.subscriptions")}</span>
+						<span className="ml-3 inline-flex w-3.5 h-3.5 rounded-full bg-[rgb(var(--primary))]" />
+					</div>
+
+					<div className="flex items-center gap-4">
+						{/* <Button_
+							href="/plans/new-subscription"
+							size="sm"
+							label={t("actions.addSubscription")}
+							tone="purple"
+							variant="solid"
+							icon={<span className="text-white font-bold">+</span>}
+						/> */}
+						<Button_
+							size="sm"
+							label={t("actions.howToUse")}
+							tone="white"
+							variant="solid"
+							icon={<span className="text-[#A7A7A7]">?</span>}
+						/>
 					</div>
 				</div>
 
-				<div className="mt-4">
-					<SwitcherTabs items={tabs} activeId={activeTab} onChange={setActiveTab} />
-				</div>
+				<SwitcherTabs items={tabs} activeId={activeTab} onChange={setActiveTab} className="w-full" />
+
+				{/* <div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-6">
+					{[].map((stat, index) => (
+						<motion.div
+							key={stat.title}
+							initial={{ opacity: 0, y: 18 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: index * 0.06 }}
+						>
+							<InfoCard
+								title={stat.title}
+								value={stat.value}
+								icon={stat.icon}
+								bg={stat.bg}
+								iconColor={stat.iconColor}
+								iconBorder={stat.iconBorder}
+							/>
+						</motion.div>
+					))}
+				</div> */}
 			</div>
-
 			{/* Content */}
-			<div className="bg-card !p-4 rounded-sm">
-
+			<div className={`${activeTab === "plans" ? "bg-card" : ""} !p-4 rounded-sm`}>
 				<div className="mt-4">
-					{activeTab === "plans" ? (
+
+					{/* ── Plans Tab ── */}
+					{activeTab === "plans" && (
 						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
 							{/* ✅ Skeleton until plans loaded */}
 							{isLoading && plans.length === 0 ? (
@@ -1075,25 +1078,18 @@ export default function AdminSubscriptionsPage() {
 								</AnimatePresence>
 							)}
 						</div>
-					) : (
-						<DataTable
-							columns={[]}
-							data={paginatedTransactions}
-							isLoading={isLoading}
-							hoverable
-							striped
-							pagination={{
-								total_records: filteredTransactions.length,
-								current_page: currentPage,
-								per_page: perPage,
-							}}
-							onPageChange={({ page, per_page }) => {
-								setCurrentPage(page);
-								setPerPage(per_page);
-							}}
-							emptyState="لا توجد معاملات"
-						/>
 					)}
+
+					{/* ── Transactions Tab ── */}
+					{activeTab === "transactions" && (
+						<TransactionTab />
+					)}
+
+					{/* ── Subscriptions Tab ── */}
+					{activeTab === "subscriptions" && (
+						<SubscriptionsTab />
+					)}
+
 				</div>
 			</div>
 

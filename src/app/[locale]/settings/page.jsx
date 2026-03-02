@@ -1028,7 +1028,7 @@ function AccountTab() {
 
 						<div className="flex items-center gap-2 mt-2 flex-wrap">
 							{me?.role?.name && <Badge variant="secondary">{t('profile.role')}: {me.role.name}</Badge>}
-							{me?.plan?.name && <Badge variant="secondary">{t('profile.plan')}: {me.plan.name}</Badge>}
+							{me?.plan?.name && <Badge variant="secondary">{t('profile.plan')}: {me?.plan.name}</Badge>}
 							{/* ✅ removed active badge */}
 						</div>
 					</div>

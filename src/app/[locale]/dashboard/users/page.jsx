@@ -1,4 +1,4 @@
- 
+
 
 "use client";
 
@@ -21,6 +21,7 @@ import {
 	ShieldAlert,
 	CheckCircle2,
 	Loader2,
+	CreditCard,
 } from "lucide-react";
 
 import InfoCard from "@/components/atoms/InfoCard";
@@ -70,6 +71,9 @@ import {
 
 import api from "@/utils/api";
 import { Switch } from "@/components/ui/switch";
+import { useRouter } from "@/i18n/navigation";
+import ManageSubscription from "./manageSubscription";
+
 
 /** =========================
  * WhatsApp Countries (same pattern)
@@ -370,7 +374,7 @@ function FiltersPanel({ t, value, onChange, onApply }) {
  * ========================= */
 export default function SuperAdminUsersPage() {
 	const t = useTranslations("users");
-
+	const router = useRouter()
 	const [activeTab, setActiveTab] = useState("all"); // all|active|inactive
 	const [search, setSearch] = useState("");
 	const [filtersOpen, setFiltersOpen] = useState(false);
@@ -404,6 +408,7 @@ export default function SuperAdminUsersPage() {
 	const [editOpen, setEditOpen] = useState(false);
 	const [deactivateOpen, setDeactivateOpen] = useState(false);
 	const [credOpen, setCredOpen] = useState(false);
+	const [subOpen, setSubOpen] = useState(false);
 	const [waOpen, setWaOpen] = useState(false);
 
 	const [selectedUser, setSelectedUser] = useState(null);
@@ -438,6 +443,7 @@ export default function SuperAdminUsersPage() {
 		try {
 			const res = await api.get("/users/super-admin/list", { params });
 			const data = res?.data || {};
+
 
 			setUsers(Array.isArray(data.records) ? data.records : []);
 			setPagination({
@@ -610,7 +616,7 @@ export default function SuperAdminUsersPage() {
 				header: t.has("table.plan") ? t("table.plan") : "Plan",
 				cell: (row) => (
 					<Badge className="rounded-md bg-[#FFF7ED] text-[#F97316] hover:bg-[#FFF7ED] dark:bg-orange-950/30 dark:text-orange-400">
-						{row.plan?.name || "-"}
+						{row?.subscription?.plan?.name || "-"}
 					</Badge>
 				),
 			},
@@ -724,6 +730,29 @@ export default function SuperAdminUsersPage() {
 				header: t.has("table.options") ? t("table.options") : "Options",
 				cell: (row) => (
 					<div className="flex items-center gap-2">
+						<TooltipProvider>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<motion.button
+										whileHover={{ scale: 1.06 }}
+										whileTap={{ scale: 0.95 }}
+										onClick={() => {
+											setSelectedUser(row);
+											setSubOpen(true);
+										}}
+										className="w-9 h-9 rounded-full border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center dark:bg-blue-950/30 dark:hover:bg-blue-600"
+									>
+										<CreditCard size={16} />
+									</motion.button>
+								</TooltipTrigger>
+								<TooltipContent>
+									{t.has("actions.manageSubscription")
+										? t("actions.manageSubscription").trim()
+										: "إدارة الاشتراك"}
+								</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>
+
 						<TooltipProvider>
 							<Tooltip>
 								<TooltipTrigger asChild>
@@ -916,6 +945,27 @@ export default function SuperAdminUsersPage() {
 					}
 				}}
 			/>
+
+
+			<Dialog open={subOpen} onOpenChange={setSubOpen}>
+				<DialogContent className="sm:max-w-2xl rounded-2xl">
+					<DialogHeader className="text-right">
+						<DialogTitle>
+							{t("subscription.title")}
+						</DialogTitle>
+						<DialogDescription>
+							{selectedUser && selectedUser.subscription
+								? `#${selectedUser.id} — ${selectedUser.email} — ${selectedUser.subscription.plan?.name || ""}`
+								: ""}
+						</DialogDescription>
+					</DialogHeader>
+					<ManageSubscription userId={selectedUser?.id} subscriptionId={selectedUser?.subscription?.id} onSaved={async () => {
+						setSubOpen(false)
+						await fetchUsers({ page: 1, per_page: pagination.per_page });
+
+					}} />
+				</DialogContent>
+			</Dialog>
 
 			<EditUserDialog
 				t={t}
@@ -1184,7 +1234,7 @@ function EditUserDialog({
 				name: user.name || "",
 				email: user.email || "",
 				roleId: user.role?.id ? String(user.role.id) : "",
-				planId: user.plan?.id ? String(user.plan.id) : "",
+				planId: user.subscription.plan?.id ? String(user.subscription.plan.id) : "",
 				isActive: typeof user.isActive === "boolean" ? user.isActive : true,
 			});
 		}

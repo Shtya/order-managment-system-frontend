@@ -872,7 +872,9 @@
       "status": "الحالة",
       "credentials": "بيانات الدخول",
       "options": "الإجراءات",
-      "plan": "الخطة"
+      "plan": "الخطة",
+      "createdAt": "تاريخ الإنشاء",
+      "ownerAdmin": "الادمن المسؤول"
     },
     "actions": {
       "createUser": "إنشاء مستخدم",
@@ -887,7 +889,8 @@
       "close": "إغلاق",
       "resetAndShow": "إعادة تعيين وعرض كلمة المرور",
       "sendWhatsapp": "إرسال عبر واتساب",
-      "openWhatsapp": "فتح واتساب"
+      "openWhatsapp": "فتح واتساب",
+      "manageSubscription": "إدارة الاشتراك"
     },
     "loading": "جاري التحميل...",
     "empty": "لا يوجد مستخدمون",
@@ -931,6 +934,10 @@
       "subtitle": "هذه أحدث بيانات تم إنشاؤها عند الإنشاء أو إعادة تعيين كلمة المرور",
       "password": "كلمة المرور",
       "note": "ملاحظة: كلمة المرور تظهر فقط عند الإنشاء أو إعادة التعيين ولا يمكن عرض القديمة."
+    },
+    "subscription": {
+      "title": "إدارة الاشتراك",
+      "description": "تحرير بيانات الاشتراك للمستخدم المحدد"
     },
     "whatsapp": {
       "title": "إرسال عبر واتساب",
@@ -4152,5 +4159,197 @@
       "amountRequired": "المبلغ مطلوب",
       "amountMin": "المبلغ يجب أن يكون أكبر من 0"
     }
+  },
+  "plans": {
+    "manageSubscription": {
+      "breadcrumb": {
+        "users": "المستخدمين",
+        "create": "إضافة اشتراك",
+        "edit": "تعديل الاشتراك"
+      },
+      "sections": {
+        "userInfo": "معلومات المستخدم",
+        "selectedPlan": "الخطة المختارة",
+        "subscriptionForm": "بيانات الاشتراك"
+      },
+      "fields": {
+        "userName": "اسم المستخدم",
+        "userEmail": "البريد الإلكتروني",
+        "userPhone": "رقم الهاتف",
+        "joinedDate": "تاريخ التسجيل",
+        "plan": "الخطة",
+        "status": "الحالة",
+        "price": "السعر",
+        "payed": "تم الدفع",
+        "paymentMethod": "طريقة الدفع",
+        "usersLimit": "حد المستخدمين",
+        "shippingLimit": "حد شركات الشحن",
+        "bulkUploadLimit": "حد الرفع الشهري"
+      },
+      "placeholders": {
+        "plan": "اختر الخطة",
+        "price": "أدخل السعر (اختياري)",
+        "paymentMethod": "اختر طريقة الدفع"
+      },
+      "hints": {
+        "priceOverride": "اتركه فارغاً لاستخدام سعر الخطة الافتراضي",
+        "payed": "فعّل إذا تم الدفع بالفعل"
+      },
+      "messages": {
+        "createSuccess": "تم إنشاء الاشتراك بنجاح",
+        "updateSuccess": "تم تحديث الاشتراك بنجاح"
+      },
+      "errors": {
+        "invalidUserId": "معرف المستخدم غير صحيح",
+        "fetchUserFailed": "فشل في تحميل بيانات المستخدم",
+        "fetchSubscriptionFailed": "فشل في تحميل بيانات الاشتراك",
+        "saveFailed": "فشل في حفظ الاشتراك",
+        "userNotFound": "المستخدم غير موجود"
+      }
+    },
+    "tabs": {
+      "plans": "إدارة الباقات",
+      "transactions": "جميع المعاملات",
+      "subscriptions": "الاشتراكات"
+    },
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "subscriptions": "إدارة الاشتراكات"
+    },
+    "columns": {
+      "transactionId": "معرف المعاملة",
+      "user": "المستخدم",
+      "subscription": "الاشتراك",
+      "amount": "المبلغ",
+      "status": "الحالة",
+      "paymentMethod": "طريقة الدفع",
+      "paymentProof": "إثبات الدفع",
+      "createdAt": "تاريخ الإنشاء",
+      "lastUpdate": "آخر تحديث"
+    },
+    "actions": {
+      "addSubscription": "إضافة اشتراك",
+      "howToUse": "كيفية الاستخدام",
+      "view": "عرض",
+      "save": "حفظ",
+      "saving": "جاري الحفظ..."
+    },
+    "validation": {
+      "planRequired": "الخطة مطلوبة",
+      "statusRequired": "الحالة مطلوبة",
+      "priceMin": "السعر يجب أن يكون 0 أو أكبر",
+      "paymentMethodRequired": "طريقة الدفع مطلوبة"
+    },
+    "transactions": {
+      "emptyTitle": "لا توجد معاملات",
+      "emptySubtitle": "لا توجد معاملات لعرضها"
+    },
+    "currency": "ج.م",
+    "subscriptions": {
+      "statuses": {
+        "active": "نشط",
+        "cancelled": "ملغى",
+        "expired": "منتهي"
+      }
+    },
+    "filters": {
+      "status": "الحالة",
+      "statusPlaceholder": "اختر الحالة",
+      "date": "التاريخ",
+      "datePlaceholder": "اختر فترة",
+      "all": "الكل",
+      "apply": "تطبيق"
+    },
+    "statuses": {
+      "active": "نشطة",
+      "processing": "قيد المعالجة",
+      "completed": "مكتملة",
+      "cancelled": "ملغاة"
+    },
+    "toolbar": {
+      "export": "تصدير",
+      "searchPlaceholder": "بحث...",
+      "filter": "تصفية"
+    },
+    "image": {
+      "preview": "معاينة"
+    },
+    "pagination": {
+      "total": "الإجمالي",
+      "limit": "العدد لكل صفحة"
+    },
+    "messages": {
+      "errorFetchingTransactions": "فشل في تحميل المعاملات",
+      "filtersApplied": "تم تطبيق الفلاتر بنجاح",
+      "exportStarted": "بدأ تصدير المعاملات",
+      "exportSuccess": "تم تصدير المعاملات بنجاح",
+      "exportFailed": "فشل في تصدير المعاملات",
+      "loading": "جاري التحميل...",
+      "errorFetchingPlans": "حدث خطأ أثناء تحميل الباقات"
+    },
+    "table": {
+      "actions": "الإجراءات"
+    },
+    "paymentMethods": {
+      "cash": "نقداً",
+      "visa": "فيزا / ماستر كارد",
+      "bank": "تحويل بنكي",
+      "other": "أخرى",
+      "vodafone_cash": "فودافون كاش",
+      "orange_cash": "أورانج كاش",
+      "etisalat_cash": "اتصالات كاش",
+      "we_pay": "وي باي",
+      "insta": "انستا باي",
+      "fawry": "فوري",
+      "aman": "أمان",
+      "meeza": "ميزة",
+      "valu": "فالو (ValU)",
+      "sympl": "سيمبل (Sympl)",
+      "tabby": "تابي (Tabby)",
+      "tamara": "تمارا (Tamara)"
+    }
+  },
+  "subscriptions": {
+    "toolbar": {
+      "searchPlaceholder": "ابحث باسم المستخدم أو الباقة...",
+      "filter": "تصفية",
+      "export": "تصدير"
+    },
+    "filters": {
+      "status": "حالة الاشتراك",
+      "statusPlaceholder": "اختر الحالة",
+      "all": "كل الحالات",
+      "date": "فترة الإنشاء",
+      "datePlaceholder": "اختر النطاق الزمني...",
+      "apply": "تطبيق الفلاتر"
+    },
+    "columns": {
+      "id": "رقم الاشتراك",
+      "user": "المشترك",
+      "plan": "الباقة",
+      "price": "السعر",
+      "status": "الحالة",
+      "startDate": "تاريخ البدء",
+      "endDate": "تاريخ الانتهاء",
+      "createdAt": "تاريخ الإنشاء"
+    },
+    "statuses": {
+      "active": "نشط",
+      "cancelled": "ملغى",
+      "expired": "منتهي"
+    },
+    "messages": {
+      "errorFetching": "حدث خطأ أثناء جلب الاشتراكات",
+      "filtersApplied": "تم تطبيق الفلاتر بنجاح",
+      "exportStarted": "جاري تجهيز ملف التصدير...",
+      "exportSuccess": "تم التصدير بنجاح",
+      "exportFailed": "فشل تصدير البيانات"
+    },
+    "pagination": {
+      "total": "إجمالي السجلات:",
+      "limit": "في الصفحة:"
+    },
+    "emptyTitle": "لا توجد اشتراكات",
+    "emptySubtitle": "حاول تعديل البحث أو الفلاتر للعثور على النتائج."
   }
 }

@@ -162,7 +162,6 @@ export default function OrderCollectionPage() {
     useEffect(() => {
         const tabFromUrl = (searchParams.get("tab") || "").trim();
 
-        console.log(tabFromUrl)
         const defaultTab = "not_collected";
         const safeTab = allowedTabIds.has(tabFromUrl) ? tabFromUrl : defaultTab;
 

@@ -29,6 +29,7 @@ import Button_ from "@/components/atoms/Button";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { getUser } from "@/hook/getUser";
+import TransactionTab from "../dashboard/plans/tabs/transactionTab";
 
 /** =========================
  * Skeletons
@@ -91,11 +92,11 @@ function PlanCard({ plan, isPopular, onSubscribe, currentPlan }) {
 				"relative rounded-3xl p-8 border-2 transition-all duration-500 ",
 				"bg-gradient-to-br backdrop-blur-sm",
 				!isCurrentPlan &&
-					(isPopular
-						? "border-primary/30 from-white via-primary/5 to-white dark:from-slate-900 dark:via-primary/10 dark:to-slate-900"
-						: "border-gray-200 dark:border-slate-700 from-white via-gray-50/50 to-white dark:from-slate-900 dark:via-slate-800/50 dark:to-slate-900"),
+				(isPopular
+					? "border-primary/30 from-white via-primary/5 to-white dark:from-slate-900 dark:via-primary/10 dark:to-slate-900"
+					: "border-gray-200 dark:border-slate-700 from-white via-gray-50/50 to-white dark:from-slate-900 dark:via-slate-800/50 dark:to-slate-900"),
 				isCurrentPlan &&
-					"border-transparent shadow-2xl shadow-primary/25 bg-gradient-to-r from-primary to-primary/80 text-white ring-2 ring-primary/60"
+				"border-transparent shadow-2xl shadow-primary/25 bg-gradient-to-r from-primary to-primary/80 text-white ring-2 ring-primary/60"
 			)}
 		>
 			{/* Soft gradient blobs */}
@@ -314,9 +315,6 @@ export default function SubscriptionsPage() {
 	const [transactions, setTransactions] = useState([]);
 	const [currentPlan, setCurrentPlan] = useState(null);
 
-	// Pagination
-	const [currentPage, setCurrentPage] = useState(1);
-	const [perPage, setPerPage] = useState(6);
 
 	// ✅ Fetch Available Plans
 	const fetchAvailablePlans = async () => {
@@ -332,8 +330,8 @@ export default function SubscriptionsPage() {
 					plan.duration === "monthly"
 						? "شهرياً"
 						: plan.duration === "yearly"
-						? "سنوياً"
-						: "مدى الحياة",
+							? "سنوياً"
+							: "مدى الحياة",
 				description: plan.description || "",
 				features: Array.isArray(plan.features) ? plan.features : [],
 				color: plan.color || "from-blue-500 to-blue-600",
@@ -353,20 +351,6 @@ export default function SubscriptionsPage() {
 		}
 	};
 
-	// ✅ Fetch User Transactions
-	const fetchTransactions = async () => {
-		setIsLoading(true);
-		try {
-			const { data } = await api.get("/transactions");
-			const myTransactions = (data || []).filter((t) => t.userId === user?.id);
-			setTransactions(myTransactions);
-		} catch (error) {
-			toast.error("فشل في تحميل المعاملات");
-		} finally {
-			setIsLoading(false);
-		}
-	};
-
 	// Helper function to get icon based on plan color
 	const getIconForPlan = (plan) => {
 		const color = plan.color || "";
@@ -379,9 +363,8 @@ export default function SubscriptionsPage() {
 	useEffect(() => {
 		if (activeTab === "plans") {
 			fetchAvailablePlans();
+			console.log(user)
 			setCurrentPlan(user?.plan?.id);
-		} else {
-			fetchTransactions();
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [activeTab]);
@@ -396,133 +379,60 @@ export default function SubscriptionsPage() {
 	);
 
 	// Stats
-	const stats = useMemo(() => {
-		const totalSpent = transactions.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
-		const activeSubscription = transactions.filter((t) => t.status === "نشط").length;
+	// const stats = useMemo(() => {
+	// 	const totalSpent = transactions.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+	// 	const activeSubscription = transactions.filter((t) => t.status === "نشط").length;
 
-		return [
-			{
-				title: "إجمالي المعاملات",
-				value: transactions.length.toString(),
-				icon: CreditCard,
-				bg: "bg-primary/5 dark:bg-primary/10",
-				iconColor: "text-primary",
-				iconBorder: "border-primary/30",
-			},
-			{
-				title: "إجمالي المدفوعات",
-				value: `${totalSpent.toFixed(2)} ج.م`,
-				icon: Package,
-				bg: "bg-primary/5 dark:bg-primary/10",
-				iconColor: "text-primary",
-				iconBorder: "border-primary/30",
-			},
-			{
-				title: "الاشتراك النشط",
-				value: activeSubscription.toString(),
-				icon: Calendar,
-				bg: "bg-primary/5 dark:bg-primary/10",
-				iconColor: "text-primary",
-				iconBorder: "border-primary/30",
-			},
-		];
-	}, [transactions]);
+	// 	return [
+	// 		{
+	// 			title: "إجمالي المعاملات",
+	// 			value: transactions.length.toString(),
+	// 			icon: CreditCard,
+	// 			bg: "bg-primary/5 dark:bg-primary/10",
+	// 			iconColor: "text-primary",
+	// 			iconBorder: "border-primary/30",
+	// 		},
+	// 		{
+	// 			title: "إجمالي المدفوعات",
+	// 			value: `${totalSpent.toFixed(2)} ج.م`,
+	// 			icon: Package,
+	// 			bg: "bg-primary/5 dark:bg-primary/10",
+	// 			iconColor: "text-primary",
+	// 			iconBorder: "border-primary/30",
+	// 		},
+	// 		{
+	// 			title: "الاشتراك النشط",
+	// 			value: activeSubscription.toString(),
+	// 			icon: Calendar,
+	// 			bg: "bg-primary/5 dark:bg-primary/10",
+	// 			iconColor: "text-primary",
+	// 			iconBorder: "border-primary/30",
+	// 		},
+	// 	];
+	// }, [transactions]);
 
 	// ✅ Handle subscription (create transaction)
 	const handleSubscribe = async (plan) => {
-		try {
-			const loadingToast = toast.loading(`جاري الاشتراك في باقة ${plan.name}...`);
+		// try {
+		// 	const loadingToast = toast.loading(`جاري الاشتراك في باقة ${plan.name}...`);
 
-			const { data } = await api.post("/transactions", {
-				planId: plan.id,
-				paymentMethod: "pending",
-			});
+		// 	const { data } = await api.post("/transactions", {
+		// 		planId: plan.id,
+		// 		paymentMethod: "pending",
+		// 	});
 
-			toast.dismiss(loadingToast);
-			toast.success("تم إنشاء الاشتراك بنجاح! في انتظار تأكيد الدفع.");
+		// 	toast.dismiss(loadingToast);
+		// 	toast.success("تم إنشاء الاشتراك بنجاح! في انتظار تأكيد الدفع.");
 
-			setCurrentPlan(plan.id);
+		// 	setCurrentPlan(plan.id);
 
-			if (activeTab === "transactions") {
-				await fetchTransactions();
-			}
-		} catch (error) {
-			const message = error?.response?.data?.message || "فشل في إنشاء الاشتراك";
-			toast.error(message);
-		}
+		// } catch (error) {
+		// 	const message = error?.response?.data?.message || "فشل في إنشاء الاشتراك";
+		// 	toast.error(message);
+		// }
 	};
 
-	// Pagination for transactions
-	const paginatedTransactions = useMemo(() => {
-		const start = (currentPage - 1) * perPage;
-		const end = start + perPage;
-		return transactions.slice(start, end);
-	}, [transactions, currentPage, perPage]);
 
-	const handlePageChange = ({ page, per_page }) => {
-		setCurrentPage(page);
-		setPerPage(per_page);
-	};
-
-	// Table columns
-	const columns = useMemo(() => {
-		return [
-			{
-				key: "id",
-				header: "رقم المعاملة",
-				className: "text-gray-700 dark:text-slate-200 font-semibold",
-			},
-			{
-				key: "planName",
-				header: "اسم الباقة",
-				className: "text-gray-700 dark:text-slate-200 font-semibold",
-			},
-			{
-				key: "date",
-				header: "تاريخ الاشتراك",
-				className: "text-gray-600 dark:text-slate-300",
-			},
-			{
-				key: "amount",
-				header: "المبلغ",
-				cell: (row) => (
-					<span className="font-bold text-primary">
-						{row.amount} ج.م
-					</span>
-				),
-			},
-			{
-				key: "status",
-				header: "الحالة",
-				cell: (row) => (
-					<Badge
-						className={cn(
-							"rounded-md",
-							row.status === "نشط"
-								? "bg-primary/10 text-primary hover:bg-primary/10 dark:bg-primary/15"
-								: row.status === "تحويل جاري"
-								? "bg-orange-50 text-orange-600 hover:bg-orange-50 dark:bg-orange-950/30 dark:text-orange-400"
-								: "bg-slate-100 text-slate-700 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-200"
-						)}
-					>
-						{row.status}
-					</Badge>
-				),
-			},
-			{
-				key: "paymentMethod",
-				header: "إثبات الدفع",
-				cell: (row) => (
-					<div className="flex items-center gap-2">
-						<div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-800 flex items-center justify-center border border-gray-200 dark:border-slate-700">
-							<CreditCard size={16} className="text-gray-500 dark:text-slate-400" />
-						</div>
-						<span className="text-sm text-gray-600 dark:text-slate-400">{row.paymentMethod}</span>
-					</div>
-				),
-			},
-		];
-	}, []);
 
 	return (
 		<div className="min-h-screen p-6">
@@ -543,13 +453,13 @@ export default function SubscriptionsPage() {
 							tone="white"
 							variant="solid"
 							icon={<RefreshCw size={18} className="text-[#A7A7A7]" />}
-							onClick={() => (activeTab === "plans" ? fetchAvailablePlans() : fetchTransactions())}
+							onClick={() => (activeTab === "plans" ? fetchAvailablePlans() : null)}
 						/>
 					</div>
 				</div>
 
 				{/* Stats - Only show in transactions tab */}
-				{activeTab === "transactions" && (
+				{/* {activeTab === "transactions" && (
 					<div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4 mb-6">
 						{stats.map((stat, index) => (
 							<motion.div
@@ -569,7 +479,7 @@ export default function SubscriptionsPage() {
 							</motion.div>
 						))}
 					</div>
-				)}
+				)} */}
 
 				{/* Tabs */}
 				<div className="mt-4">
@@ -614,29 +524,7 @@ export default function SubscriptionsPage() {
 						)}
 					</motion.div>
 				) : (
-					<motion.div
-						key="transactions"
-						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
-						exit={{ opacity: 0, y: -20 }}
-						transition={{ duration: 0.3 }}
-						className="bg-card rounded-sm mt-4"
-					>
-						<DataTable
-							columns={columns}
-							data={paginatedTransactions}
-							isLoading={isLoading}
-							hoverable
-							striped
-							pagination={{
-								total_records: transactions.length,
-								current_page: currentPage,
-								per_page: perPage,
-							}}
-							onPageChange={handlePageChange}
-							emptyState="لا توجد معاملات"
-						/>
-					</motion.div>
+					<TransactionTab />
 				)}
 			</AnimatePresence>
 		</div>

@@ -701,7 +701,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
 						? (user.avatarUrl.startsWith("http") ? user.avatarUrl : `${(BASE_URL || "").replace(/\/+$/, "")}/${(user.avatarUrl || "").replace(/^\/+/, "")}`)
 						: "";
 					return (
-						<div className="flex items-center gap-2 rounded-lg border border-border/70 bg-muted/30 p-2 min-w-[180px] max-w-[220px]">
+						<div className="flex items-center gap-2 rounded-xl border border-border/70 bg-muted/30 p-2 min-w-[180px] max-w-[220px]">
 							<Avatar className="h-9 w-9 shrink-0">
 								<AvatarImage src={avatarUrl} alt={user.name} />
 								<AvatarFallback className="text-xs">{(user.name || "?").slice(0, 2).toUpperCase()}</AvatarFallback>
@@ -1106,7 +1106,7 @@ const ColorPicker = ({ value, onChange, disabled }) => {
 					type="button"
 					disabled={disabled}
 					onClick={() => !disabled && setShowPicker(!showPicker)}
-					className="w-12 h-12 rounded-lg border-2 border-gray-300 dark:border-slate-600"
+					className="w-12 h-12 rounded-xl border-2 border-gray-300 dark:border-slate-600"
 					style={{ backgroundColor: value }}
 				/>
 
@@ -1116,7 +1116,7 @@ const ColorPicker = ({ value, onChange, disabled }) => {
 					onChange={(e) => setInputValue(e.target.value)}
 					disabled={disabled}
 					placeholder="#000000"
-					className="flex-1 h-12 font-mono rounded-lg"
+					className="flex-1 h-12 font-mono rounded-xl"
 					maxLength={7}
 				/>
 			</div>
@@ -1269,7 +1269,7 @@ function StatusFormModal({ isOpen, onClose, status, onSuccess }) {
 							value={formData.name}
 							onChange={(e) => setFormData({ ...formData, name: e.target.value })}
 							placeholder={t("statusForm.namePlaceholder")}
-							className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
+							className="rounded-xl h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
 							maxLength={50}
 						/>
 						{errors.name && (
@@ -1288,7 +1288,7 @@ function StatusFormModal({ isOpen, onClose, status, onSuccess }) {
 							value={formData.description}
 							onChange={(e) => setFormData({ ...formData, description: e.target.value })}
 							placeholder={t("statusForm.descriptionPlaceholder")}
-							className="rounded-lg bg-[#fafafa] dark:bg-slate-800/50 min-h-[100px]"
+							className="rounded-xl bg-[#fafafa] dark:bg-slate-800/50 min-h-[100px]"
 						/>
 					</div>
 
@@ -1316,7 +1316,7 @@ function StatusFormModal({ isOpen, onClose, status, onSuccess }) {
 							type="number"
 							value={formData.sortOrder}
 							onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
-							className="rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
+							className="rounded-xl h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
 							min={0}
 						/>
 						{errors.sortOrder && (
@@ -1426,7 +1426,7 @@ function DeleteStatusModal({ isOpen, onClose, status, onSuccess }) {
 
 				<form onSubmit={handleDelete} className="space-y-4 pt-4">
 					{/* Warning message */}
-					<div className="p-4 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800">
+					<div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800">
 						<p className="text-sm text-red-800 dark:text-red-200">
 							{t("deleteStatus.warning")}
 						</p>
@@ -1436,7 +1436,7 @@ function DeleteStatusModal({ isOpen, onClose, status, onSuccess }) {
 					</div>
 
 					{/* Status details */}
-					<div className="p-4 rounded-lg bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700">
+					<div className="p-4 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700">
 						<div className="flex items-center gap-3">
 							<div
 								className="w-10 h-10 rounded-full border-2 border-dashed flex items-center justify-center"
@@ -1473,7 +1473,7 @@ function DeleteStatusModal({ isOpen, onClose, status, onSuccess }) {
 								setError("");
 							}}
 							placeholder={status?.name}
-							className="rounded-lg h-[45px] bg-white dark:bg-slate-800 border-2"
+							className="rounded-xl h-[45px] bg-white dark:bg-slate-800 border-2"
 							autoComplete="off"
 						/>
 						{error && (
@@ -1579,7 +1579,7 @@ function DeleteOrderModal({ isOpen, onClose, order, onSuccess }) {
 
 				<form onSubmit={handleDelete} className="space-y-4 pt-4">
 					{/* Warning message */}
-					<div className="p-4 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800">
+					<div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800">
 						<p className="text-sm text-red-800 dark:text-red-200">
 							{t("deleteOrder.warning")}
 						</p>
@@ -1589,7 +1589,7 @@ function DeleteOrderModal({ isOpen, onClose, order, onSuccess }) {
 					</div>
 
 					{/* Order details */}
-					<div className="p-4 rounded-lg bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700">
+					<div className="p-4 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700">
 						<div className="space-y-2">
 							<div className="flex items-center justify-between">
 								<p className="text-xs text-gray-500 dark:text-gray-400">{t("table.orderNumber")}</p>
@@ -1627,7 +1627,7 @@ function DeleteOrderModal({ isOpen, onClose, order, onSuccess }) {
 								setError("");
 							}}
 							placeholder={order?.orderNumber}
-							className="rounded-lg h-[45px] bg-white dark:bg-slate-800 border-2"
+							className="rounded-xl h-[45px] bg-white dark:bg-slate-800 border-2"
 							autoComplete="off"
 						/>
 						{error && (

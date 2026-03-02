@@ -303,10 +303,10 @@ export function ProductViewModal({ open, onOpenChange, product }) {
             <div className="py-10 text-center text-slate-500">{t("productModal.noData")}</div>
           ) : (
             <>
-              <div className="rounded-2xl border bg-white dark:bg-slate-900 p-4 shadow-sm">
+              <div className="rounded-xl border bg-white dark:bg-slate-900 p-4 shadow-sm">
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div className="flex gap-4">
-                    <div className="w-20 h-20 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border">
+                    <div className="w-20 h-20 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border">
                       {mainImage ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={baseImg + mainImage} alt={product.name || "product"} className="w-full h-full object-cover" />
@@ -380,7 +380,7 @@ export function ProductViewModal({ open, onOpenChange, product }) {
               </div>
 
               {(product.description || product.callCenterProductDescription) ? (
-                <div className="rounded-2xl border p-4 bg-white dark:bg-slate-900">
+                <div className="rounded-xl border p-4 bg-white dark:bg-slate-900">
                   <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-2">{t("common.description")}</div>
 
                   {product.description ? (
@@ -414,7 +414,7 @@ export function ProductViewModal({ open, onOpenChange, product }) {
                     {images.slice(0, 8).map((im, idx) => {
                       const src = toAbsUrl(im?.url);
                       return (
-                        <div key={idx} className="rounded-2xl overflow-hidden border bg-slate-50 dark:bg-slate-800">
+                        <div key={idx} className="rounded-xl overflow-hidden border bg-slate-50 dark:bg-slate-800">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={baseImg + (src || "")} alt={`img-${idx}`} className="w-full h-28 object-cover" />
                         </div>
@@ -426,7 +426,7 @@ export function ProductViewModal({ open, onOpenChange, product }) {
 
               <Separator />
 
-              <div className="rounded-2xl border p-4 bg-white dark:bg-slate-900">
+              <div className="rounded-xl border p-4 bg-white dark:bg-slate-900">
                 <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
                   <Boxes size={16} />
                   {t("common.stockSummary")}
@@ -453,7 +453,7 @@ export function ProductViewModal({ open, onOpenChange, product }) {
                 {skus.length === 0 ? (
                   <div className="text-slate-500">{t("productModal.skusEmpty")}</div>
                 ) : (
-                  <div className="overflow-hidden rounded-2xl border">
+                  <div className="overflow-hidden rounded-xl border">
                     <div className="grid grid-cols-12 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-200 px-4 py-3">
                       <div className="col-span-5">{t("common.sku")}</div>
                       <div className="col-span-3 text-center">{t("common.attributes")}</div>
@@ -515,7 +515,7 @@ export function ProductViewModal({ open, onOpenChange, product }) {
                 {upsells.length === 0 ? (
                   <div className="text-slate-500">{t("productModal.upsellingEmpty")}</div>
                 ) : (
-                  <div className="overflow-hidden rounded-2xl border">
+                  <div className="overflow-hidden rounded-xl border">
                     <div className="grid grid-cols-12 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-200 px-4 py-3">
                       <div className="col-span-2">{t("common.productId")}</div>
                       <div className="col-span-3">{t("common.label")}</div>

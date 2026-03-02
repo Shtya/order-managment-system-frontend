@@ -621,7 +621,7 @@ function ReceiptImageUpload({ image, onImageChange, onRemove, t, isRTL }) {
 				}}
 				onDrop={handleDrop}
 				className={cn(
-					"rounded-2xl border-2 border-dashed transition-all duration-300",
+					"rounded-xl border-2 border-dashed transition-all duration-300",
 					isDragging
 						? "border-primary bg-primary/5"
 						: "border-primary/60 bg-white/40 dark:bg-slate-900/20"
@@ -635,7 +635,7 @@ function ReceiptImageUpload({ image, onImageChange, onRemove, t, isRTL }) {
 						className="p-8 rounded-md text-center hover:bg-primary/20 duration-300 cursor-pointer"
 					>
 						<div className="flex flex-col items-center gap-4">
-							<div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center">
+							<div className="w-20 h-20 rounded-xl bg-primary/10 flex items-center justify-center">
 								<Upload size={32} className="text-primary" />
 							</div>
 
@@ -646,8 +646,8 @@ function ReceiptImageUpload({ image, onImageChange, onRemove, t, isRTL }) {
 					</div>
 				) : (
 					<div className="p-4">
-						<div className="relative rounded-2xl overflow-hidden bg-gray-100 dark:bg-slate-800">
-							<div className="relative rounded-2xl overflow-hidden bg-gray-100 dark:bg-slate-800 h-48 flex items-center justify-center">
+						<div className="relative rounded-xl overflow-hidden bg-gray-100 dark:bg-slate-800">
+							<div className="relative rounded-xl overflow-hidden bg-gray-100 dark:bg-slate-800 h-48 flex items-center justify-center">
 								{image.isPdf ? (
 									<div className="flex flex-col items-center gap-2">
 										<FileText size={40} className="text-primary" />
@@ -663,7 +663,7 @@ function ReceiptImageUpload({ image, onImageChange, onRemove, t, isRTL }) {
 
 						<div className="mt-4 flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-slate-800/50">
 							<div className="flex items-center gap-3">
-								<div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-950/30 flex items-center justify-center">
+								<div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/30 flex items-center justify-center">
 									<FileText size={20} className="text-blue-600 dark:text-blue-400" />
 								</div>
 								<div>

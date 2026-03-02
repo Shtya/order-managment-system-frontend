@@ -47,7 +47,7 @@ const StatusBadge = ({ status, t }) => {
 
   return (
     <Badge
-      className="rounded-lg px-4 py-2 text-sm font-bold
+      className="rounded-xl px-4 py-2 text-sm font-bold
         bg-[color-mix(in_oklab,var(--primary)_12%,transparent)]
         text-[var(--primary)]
         border border-[color-mix(in_oklab,var(--primary)_25%,transparent)]"
@@ -76,7 +76,7 @@ const SectionCard = ({ title, icon: Icon, children, className }) => (
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     className={cn(
-      "bg-card !p-5 text-card-foreground rounded-3xl shadow-sm border border-border/60",
+      "bg-card !p-5 text-card-foreground rounded-xl shadow-sm border border-border/60",
       className
     )}
   >
@@ -212,12 +212,12 @@ export function OrderDetailsPage({ order, loading }) {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-card !p-5 text-card-foreground rounded-3xl shadow-sm border border-border/60"
+            className="bg-card !p-5 text-card-foreground rounded-xl shadow-sm border border-border/60"
           >
 
             {/* ── Order Meta Banner ── */}
             <div className="p-2">
-              <div className="rounded-2xl p-4 py-5 grid grid-cols-2 md:grid-cols-5 gap-4 bg-[var(--secondary)] border border-border/60 backdrop-blur-sm">
+              <div className="rounded-xl p-4 py-5 grid grid-cols-2 md:grid-cols-5 gap-4 bg-[var(--secondary)] border border-border/60 backdrop-blur-sm">
                 {/* Order Number */}
                 <div className="flex flex-col gap-1">
                   <p className="text-xs text-muted-foreground mb-1.5">#ID</p>
@@ -240,7 +240,7 @@ export function OrderDetailsPage({ order, loading }) {
                     {t("fields.paymentMethod")}
                   </p>
                   <Badge
-                    className="rounded-lg font-semibold
+                    className="rounded-xl font-semibold
                       bg-[color-mix(in_oklab,var(--primary)_12%,transparent)]
                       text-[var(--primary)]
                       border border-[color-mix(in_oklab,var(--primary)_25%,transparent)]"
@@ -276,7 +276,7 @@ export function OrderDetailsPage({ order, loading }) {
 
             {/* ── Shipping / Financials Banner ── */}
             <div className="p-2">
-              <div className="rounded-2xl p-4 py-5 grid grid-cols-2 md:grid-cols-5 gap-4 bg-[var(--secondary)] border border-border/60 backdrop-blur-sm">
+              <div className="rounded-xl p-4 py-5 grid grid-cols-2 md:grid-cols-5 gap-4 bg-[var(--secondary)] border border-border/60 backdrop-blur-sm">
                 {/* City */}
                 <div className="flex flex-col gap-1">
                   <p className="text-xs text-muted-foreground mb-1.5">
@@ -327,14 +327,14 @@ export function OrderDetailsPage({ order, loading }) {
 
             {/* ── Payment Status / Tracking / Notes Banner ── */}
             <div className="p-2">
-              <div className="rounded-2xl p-4 py-5 grid grid-cols-2 md:grid-cols-5 gap-4 bg-[var(--secondary)] border border-border/60 backdrop-blur-sm">
+              <div className="rounded-xl p-4 py-5 grid grid-cols-2 md:grid-cols-5 gap-4 bg-[var(--secondary)] border border-border/60 backdrop-blur-sm">
                 {/* Payment Status */}
                 <div className="flex flex-col gap-1">
                   <p className="text-xs text-muted-foreground mb-2">
                     {t("fields.paymentStatus")}
                   </p>
                   <Badge
-                    className="rounded-lg px-4 py-2 text-sm font-bold
+                    className="rounded-xl px-4 py-2 text-sm font-bold
                       bg-[color-mix(in_oklab,var(--primary)_12%,transparent)]
                       text-[var(--primary)]
                       border border-[color-mix(in_oklab,var(--primary)_25%,transparent)]"
@@ -417,7 +417,7 @@ export function OrderDetailsPage({ order, loading }) {
                       >
                         <td className="py-3 px-2">
                           <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-lg bg-muted/60 border border-border/50 flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-xl bg-muted/60 border border-border/50 flex items-center justify-center">
                               <QrCode size={14} className="text-muted-foreground" />
                             </div>
                             <span className="text-sm font-mono font-semibold text-foreground">
@@ -504,13 +504,13 @@ export function OrderDetailsPage({ order, loading }) {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="bg-card !p-5 text-card-foreground rounded-3xl shadow-sm border border-border/60"
+            className="bg-card !p-5 text-card-foreground rounded-xl shadow-sm border border-border/60"
           >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-base font-bold text-foreground">
                 {t("details.customerInfo")}
               </h3>
-              <Badge className="bg-[var(--primary)]/10 text-[var(--primary)] border-[var(--primary)]/20 rounded-lg">
+              <Badge className="bg-[var(--primary)]/10 text-[var(--primary)] border-[var(--primary)]/20 rounded-xl">
                 {order.items?.length || 0} {t("details.orderItems")}
               </Badge>
             </div>
@@ -535,7 +535,7 @@ export function OrderDetailsPage({ order, loading }) {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.05 }}
-              className="bg-card !p-5 text-card-foreground rounded-3xl shadow-sm border border-border/60"
+              className="bg-card !p-5 text-card-foreground rounded-xl shadow-sm border border-border/60"
             >
               <div className="flex items-center gap-2 mb-6">
                 <div className="w-2 h-2 rounded-full bg-[var(--primary)]" />
@@ -564,7 +564,7 @@ export function OrderDetailsPage({ order, loading }) {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.08 }}
-              className="bg-card !p-5 text-card-foreground rounded-3xl shadow-sm border border-border/60"
+              className="bg-card !p-5 text-card-foreground rounded-xl shadow-sm border border-border/60"
             >
               <div className="flex items-center gap-2 mb-6">
                 <div className="w-2 h-2 rounded-full bg-[var(--primary)]" />
@@ -589,7 +589,7 @@ export function OrderDetailsPage({ order, loading }) {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-card !p-5 text-card-foreground rounded-3xl shadow-sm border border-border/60"
+              className="bg-card !p-5 text-card-foreground rounded-xl shadow-sm border border-border/60"
             >
               <div className="flex items-center gap-2 mb-6">
                 <div className="w-2 h-2 rounded-full bg-[var(--primary)]" />
@@ -603,7 +603,7 @@ export function OrderDetailsPage({ order, loading }) {
                 .map((assignment) => (
                   <div key={assignment.id} className="space-y-3">
                     {/* Employee row */}
-                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-[var(--secondary)] border border-border/60">
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--secondary)] border border-border/60">
                       <Avatar className="w-10 h-10">
                         <AvatarImage src={assignment.employee?.avatar} />
                         <AvatarFallback className="bg-[color-mix(in_oklab,var(--primary)_12%,transparent)] text-[var(--primary)] font-bold">
@@ -622,7 +622,7 @@ export function OrderDetailsPage({ order, loading }) {
 
                     {/* Retries */}
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="rounded-2xl p-3 bg-[var(--secondary)] border border-border/60 text-center">
+                      <div className="rounded-xl p-3 bg-[var(--secondary)] border border-border/60 text-center">
                         <p className="text-xl font-bold text-[var(--primary)]">
                           {assignment.retriesUsed}
                         </p>
@@ -630,7 +630,7 @@ export function OrderDetailsPage({ order, loading }) {
                           {t("details.retriesUsed")}
                         </p>
                       </div>
-                      <div className="rounded-2xl p-3 bg-[var(--secondary)] border border-border/60 text-center">
+                      <div className="rounded-xl p-3 bg-[var(--secondary)] border border-border/60 text-center">
                         <p className="text-xl font-bold text-[var(--primary)]">
                           {assignment.maxRetriesAtAssignment}
                         </p>
@@ -650,7 +650,7 @@ export function OrderDetailsPage({ order, loading }) {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-card !p-5 text-card-foreground rounded-3xl shadow-sm border border-border/60"
+              className="bg-card !p-5 text-card-foreground rounded-xl shadow-sm border border-border/60"
             >
               <div className="flex items-center gap-2 mb-6">
                 <div className="w-2 h-2 rounded-full bg-[var(--primary)]" />
@@ -724,7 +724,7 @@ function Bone({ className }) {
   return (
     <div
       className={cn(
-        "rounded-lg bg-muted/60 animate-pulse",
+        "rounded-xl bg-muted/60 animate-pulse",
         className
       )}
     />
@@ -738,7 +738,7 @@ function Bone({ className }) {
 function BannerSkeleton({ cols = 5 }) {
   return (
     <div className="p-2">
-      <div className="rounded-2xl p-4 py-5 grid grid-cols-2 md:grid-cols-5 gap-4 bg-[var(--secondary)] border border-border/60">
+      <div className="rounded-xl p-4 py-5 grid grid-cols-2 md:grid-cols-5 gap-4 bg-[var(--secondary)] border border-border/60">
         {Array.from({ length: cols }).map((_, i) => (
           <div key={i} className="flex flex-col gap-2">
             <Bone className="h-3 w-16" />
@@ -756,7 +756,7 @@ function BannerSkeleton({ cols = 5 }) {
 function SideCardSkeleton({ children, className }) {
   return (
     <div className={cn(
-      "bg-card !p-5 text-card-foreground rounded-3xl shadow-sm border border-border/60",
+      "bg-card !p-5 text-card-foreground rounded-xl shadow-sm border border-border/60",
       className
     )}>
       {children}
@@ -809,7 +809,7 @@ function TableRowSkeleton({ muted = false }) {
     <tr className={cn("border-b border-border/40", muted && "bg-muted/30")}>
       <td className="py-3 px-2">
         <div className="flex items-center gap-2">
-          <Bone className="w-8 h-8 rounded-lg shrink-0" />
+          <Bone className="w-8 h-8 rounded-xl shrink-0" />
           <Bone className="h-4 w-14" />
         </div>
       </td>
@@ -843,7 +843,7 @@ function ReplacementInfoCard({ replacementOrder, replacement, formatCurrency, fo
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.08 }}
-      className="bg-card text-card-foreground rounded-3xl shadow-sm border border-[color-mix(in_oklab,var(--primary)_30%,transparent)] overflow-hidden"
+      className="bg-card text-card-foreground rounded-xl shadow-sm border border-[color-mix(in_oklab,var(--primary)_30%,transparent)] overflow-hidden"
     >
       {/* ── Header banner */}
       <div className="flex items-center justify-between gap-3 px-5 py-4 bg-[color-mix(in_oklab,var(--primary)_8%,transparent)] border-b border-[color-mix(in_oklab,var(--primary)_20%,transparent)]">
@@ -868,7 +868,7 @@ function ReplacementInfoCard({ replacementOrder, replacement, formatCurrency, fo
       <div className="p-5 space-y-5">
         {/* ── Original order info row */}
         {originalOrder && (
-          <div className="rounded-2xl bg-[var(--secondary)] border border-border/60 p-4">
+          <div className="rounded-xl bg-[var(--secondary)] border border-border/60 p-4">
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-3">
               {t("replacement.originalOrder")}
             </p>
@@ -962,7 +962,7 @@ function ReplacementInfoCard({ replacementOrder, replacement, formatCurrency, fo
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-3">
               {t("replacement.replacedItems")} ({bridgeItems.length})
             </p>
-            <div className="rounded-2xl border border-border/50 overflow-hidden">
+            <div className="rounded-xl border border-border/50 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
@@ -1009,8 +1009,8 @@ function ReplacementInfoCard({ replacementOrder, replacement, formatCurrency, fo
                           <td className="px-3 py-3">
                             <div className="flex items-center gap-2">
                               {origProduct?.mainImage
-                                ? <img src={avatarSrc(origProduct.mainImage)} alt="" className="w-8 h-8 rounded-lg object-cover border border-border/40 shrink-0" />
-                                : <div className="w-8 h-8 rounded-lg bg-[var(--secondary)] border border-border/40 flex items-center justify-center shrink-0"><Package size={12} className="text-muted-foreground" /></div>
+                                ? <img src={avatarSrc(origProduct.mainImage)} alt="" className="w-8 h-8 rounded-xl object-cover border border-border/40 shrink-0" />
+                                : <div className="w-8 h-8 rounded-xl bg-[var(--secondary)] border border-border/40 flex items-center justify-center shrink-0"><Package size={12} className="text-muted-foreground" /></div>
                               }
                               <div className="min-w-0">
                                 <p className="text-xs font-semibold text-foreground line-clamp-1">{origProduct?.name || "—"}</p>
@@ -1023,8 +1023,8 @@ function ReplacementInfoCard({ replacementOrder, replacement, formatCurrency, fo
                           <td className="px-3 py-3">
                             <div className="flex items-center gap-2">
                               {newProduct?.mainImage
-                                ? <img src={avatarSrc(newProduct.mainImage)} alt="" className="w-8 h-8 rounded-lg object-cover border border-[color-mix(in_oklab,var(--primary)_30%,transparent)] shrink-0" />
-                                : <div className="w-8 h-8 rounded-lg bg-[color-mix(in_oklab,var(--primary)_8%,transparent)] border border-[color-mix(in_oklab,var(--primary)_20%,transparent)] flex items-center justify-center shrink-0"><Package size={12} className="text-[var(--primary)]" /></div>
+                                ? <img src={avatarSrc(newProduct.mainImage)} alt="" className="w-8 h-8 rounded-xl object-cover border border-[color-mix(in_oklab,var(--primary)_30%,transparent)] shrink-0" />
+                                : <div className="w-8 h-8 rounded-xl bg-[color-mix(in_oklab,var(--primary)_8%,transparent)] border border-[color-mix(in_oklab,var(--primary)_20%,transparent)] flex items-center justify-center shrink-0"><Package size={12} className="text-[var(--primary)]" /></div>
                               }
                               <div className="min-w-0">
                                 <p className="text-xs font-semibold text-foreground line-clamp-1">{newProduct?.name || "—"}</p>
@@ -1035,7 +1035,7 @@ function ReplacementInfoCard({ replacementOrder, replacement, formatCurrency, fo
 
                           {/* Qty */}
                           <td className="px-3 py-3 text-right">
-                            <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-[color-mix(in_oklab,var(--primary)_10%,transparent)] text-[var(--primary)] text-xs font-bold">
+                            <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-[color-mix(in_oklab,var(--primary)_10%,transparent)] text-[var(--primary)] text-xs font-bold">
                               ×{item.quantityToReplace}
                             </span>
                           </td>
@@ -1126,7 +1126,7 @@ export function OrderDetailsPageSkeleton() {
 
         {/* ════════ MAIN — 9 cols ════════ */}
         <div className="lg:col-span-9">
-          <div className="bg-card !p-5 text-card-foreground rounded-3xl shadow-sm border border-border/60">
+          <div className="bg-card !p-5 text-card-foreground rounded-xl shadow-sm border border-border/60">
 
             {/* Banner 1: order meta */}
             <BannerSkeleton cols={5} />
@@ -1175,7 +1175,7 @@ export function OrderDetailsPageSkeleton() {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <Bone className="h-4 w-28" />
-              <Bone className="h-6 w-16 rounded-lg" />
+              <Bone className="h-6 w-16 rounded-xl" />
             </div>
             {/* Info rows */}
             <div className="space-y-3">

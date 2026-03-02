@@ -297,7 +297,7 @@ function FiltersPanel({ t, value, onChange, onApply, suppliers }) {
 // 											<summary className="cursor-pointer text-xs text-primary font-semibold hover:underline">
 // 												{t("logs.showChanges")}
 // 											</summary>
-// 											<pre className="mt-2 text-[11px] leading-5 p-3 rounded-lg bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 overflow-auto">
+// 											<pre className="mt-2 text-[11px] leading-5 p-3 rounded-xl bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 overflow-auto">
 // 												{JSON.stringify(log.changes, null, 2)}
 // 											</pre>
 // 										</details>
@@ -330,7 +330,7 @@ function TinyBadge({ children }) {
 
 function JsonBlock({ value }) {
 	return (
-		<pre className="mt-2 text-[11px] leading-5 p-3 rounded-lg bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 overflow-auto">
+		<pre className="mt-2 text-[11px] leading-5 p-3 rounded-xl bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 overflow-auto">
 			{JSON.stringify(value, null, 2)}
 		</pre>
 	);
@@ -590,7 +590,7 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 								<motion.div
 									initial={{ opacity: 0, y: 20 }}
 									animate={{ opacity: 1, y: 0 }}
-									className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-4 border-2 border-primary/20"
+									className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-4 border-2 border-primary/20"
 								>
 									<div className="flex items-center gap-3">
 										<div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
@@ -607,7 +607,7 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 									initial={{ opacity: 0, y: 20 }}
 									animate={{ opacity: 1, y: 0 }}
 									transition={{ delay: 0.1 }}
-									className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-2xl p-4 border-2 border-green-200 dark:border-green-800"
+									className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-xl p-4 border-2 border-green-200 dark:border-green-800"
 								>
 									<div className="flex items-center gap-3">
 										<div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/50 flex items-center justify-center flex-shrink-0">
@@ -626,7 +626,7 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 									initial={{ opacity: 0, y: 20 }}
 									animate={{ opacity: 1, y: 0 }}
 									transition={{ delay: 0.2 }}
-									className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 rounded-2xl p-4 border-2 border-orange-200 dark:border-orange-800"
+									className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 rounded-xl p-4 border-2 border-orange-200 dark:border-orange-800"
 								>
 									<div className="flex items-center gap-3">
 										<div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-900/50 flex items-center justify-center flex-shrink-0">
@@ -647,12 +647,12 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 								<motion.div
 									initial={{ opacity: 0, y: -10 }}
 									animate={{ opacity: 1, y: 0 }}
-									className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/8 to-blue-50/50 dark:from-primary/15 dark:to-blue-950/30 border-2 border-primary/30 shadow-lg"
+									className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/8 to-blue-50/50 dark:from-primary/15 dark:to-blue-950/30 border-2 border-primary/30 shadow-lg"
 								>
 									<div className="relative p-6">
 										<div className="flex items-start gap-4">
 											<div className="relative">
-												<div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center flex-shrink-0 shadow-xl">
+												<div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center flex-shrink-0 shadow-xl">
 													<svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
 													</svg>
@@ -675,11 +675,11 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 													<div className="relative bg-white dark:bg-slate-900 rounded-xl overflow-hidden border-2 border-primary/30 shadow-sm">
 														<div className="text-sm text-gray-800 dark:text-slate-200 bg-gray-50 dark:bg-slate-800/50 px-5 py-4">
 															<div className="flex flex-wrap items-center gap-2 justify-center text-center">
-																<span className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg font-bold">
+																<span className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-xl font-bold">
 																	({t("acceptPreview.oldPrice")} × {t("acceptPreview.oldStock")})
 																</span>
 																<span className="text-primary font-bold text-lg">+</span>
-																<span className="px-3 py-1.5 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg font-bold">
+																<span className="px-3 py-1.5 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-xl font-bold">
 																	({t("acceptPreview.incomingAvg")} × {t("acceptPreview.incomingQty")})
 																</span>
 															</div>
@@ -687,7 +687,7 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 																<div className="inline-block w-full max-w-md h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent"></div>
 															</div>
 															<div className="flex items-center justify-center gap-2">
-																<span className="px-3 py-1.5 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-lg font-bold">
+																<span className="px-3 py-1.5 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-xl font-bold">
 																	{t("acceptPreview.newStock")}
 																</span>
 															</div>
@@ -704,7 +704,7 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 							<motion.div
 								initial={{ opacity: 0, y: 10 }}
 								animate={{ opacity: 1, y: 0 }}
-								className="border-2 border-gray-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-md"
+								className="border-2 border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-md"
 							>
 								<div className="overflow-x-auto">
 									<table className="w-full">
@@ -812,7 +812,7 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 								<motion.div
 									initial={{ opacity: 0, scale: 0.95 }}
 									animate={{ opacity: 1, scale: 1 }}
-									className="bg-red-50 dark:bg-red-950/30 border-2 border-red-300 dark:border-red-800 rounded-2xl p-5 flex items-start gap-4"
+									className="bg-red-50 dark:bg-red-950/30 border-2 border-red-300 dark:border-red-800 rounded-xl p-5 flex items-start gap-4"
 								>
 									<div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/50 flex items-center justify-center flex-shrink-0">
 										<XCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
@@ -965,7 +965,7 @@ function DetailsModal({ isOpen, onClose, invoice, t }) {
 							</div>
 
 							{/* Summary */}
-							<div className="bg-gradient-to-br from-primary/5 to-blue-50/50 dark:from-primary/10 dark:to-blue-950/30 p-6 rounded-2xl border-2 border-primary/30">
+							<div className="bg-gradient-to-br from-primary/5 to-blue-50/50 dark:from-primary/10 dark:to-blue-950/30 p-6 rounded-xl border-2 border-primary/30">
 								<div className="space-y-3">
 									<div className="flex justify-between text-sm">
 										<span className="font-semibold text-gray-700 dark:text-slate-300">{t("summary.subtotal")}</span>
@@ -991,7 +991,7 @@ function DetailsModal({ isOpen, onClose, invoice, t }) {
 									</Label>
 
 									{isImagePath(receipt) ? (
-										<img src={baseImg + receipt} alt="Receipt" className="w-full max-h-96 object-contain rounded-2xl border-2 border-gray-200 dark:border-slate-700 shadow-lg" />
+										<img src={baseImg + receipt} alt="Receipt" className="w-full max-h-96 object-contain rounded-xl border-2 border-gray-200 dark:border-slate-700 shadow-lg" />
 									) : isPdfPath(receipt) ? (
 										<a href={baseImg + receipt} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-all">
 											<FileText size={20} />
@@ -1386,7 +1386,7 @@ export default function PurchasesPage() {
 				cell: (row) => (
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
-							<Button variant="ghost" className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg">
+							<Button variant="ghost" className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl">
 								<MoreVertical className="h-4 w-4 text-gray-600 dark:text-slate-300" />
 							</Button>
 						</DropdownMenuTrigger>

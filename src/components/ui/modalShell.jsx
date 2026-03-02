@@ -28,7 +28,7 @@ export function ModalShell({ children, onClose, maxWidth = "max-w-md" }) {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.94, y: 14 }}
                     transition={{ type: "spring", stiffness: 340, damping: 28 }}
-                    className={`relative w-full ${maxWidth} pointer-events-auto rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-2xl overflow-hidden`}
+                    className={`relative w-full ${maxWidth} pointer-events-auto rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-2xl overflow-hidden`}
                     onClick={(e) => e.stopPropagation()}
                 >
                     {children}
@@ -45,7 +45,7 @@ export function ModalHeader({ icon: Icon, title, subtitle, onClose }) {
             <div className="flex items-center gap-3">
                 {Icon && (
                     <span
-                        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                        className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
                         style={{
                             background: `linear-gradient(135deg, rgb(var(--primary-from)/0.15), rgb(var(--primary-to)/0.15))`,
                         }}
@@ -60,7 +60,7 @@ export function ModalHeader({ icon: Icon, title, subtitle, onClose }) {
             </div>
             <button
                 onClick={onClose}
-                className="w-7 h-7 flex items-center justify-center rounded-lg text-[var(--muted-foreground)] hover:text-[var(--card-foreground)] hover:bg-[var(--border)] transition-all"
+                className="w-7 h-7 flex items-center justify-center rounded-xl text-[var(--muted-foreground)] hover:text-[var(--card-foreground)] hover:bg-[var(--border)] transition-all"
             >
                 <X size={15} />
             </button>

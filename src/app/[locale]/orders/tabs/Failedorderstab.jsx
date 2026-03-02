@@ -162,7 +162,7 @@ function FailStatusBadge({ status, t }) {
     return (
         <Badge
             className={cn(
-                "rounded-lg px-2.5 py-1 text-xs font-semibold border flex items-center gap-1.5 w-fit",
+                "rounded-xl px-2.5 py-1 text-xs font-semibold border flex items-center gap-1.5 w-fit",
                 cfg.bgClass,
                 cfg.textClass,
                 cfg.borderClass,
@@ -499,7 +499,7 @@ export function FailedOrdersTab() {
                     const provider = row.store?.provider ?? row.provider ?? null;
                     return (
                         <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-lg bg-muted border border-border flex items-center justify-center shrink-0">
+                            <div className="w-7 h-7 rounded-xl bg-muted border border-border flex items-center justify-center shrink-0">
                                 <ShoppingBag size={13} className="text-muted-foreground" />
                             </div>
                             <div>

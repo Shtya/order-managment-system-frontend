@@ -525,7 +525,7 @@ export default function CreateReturnInvoicePage() {
 									<Textarea
 										{...field}
 										placeholder={t("placeholders.notes")}
-										className="min-h-[100px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 rounded-2xl"
+										className="min-h-[100px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 rounded-xl"
 									/>
 								)}
 							/>

@@ -494,7 +494,7 @@ function ViewSupplierDialog({ open, onOpenChange, supplier, t }) {
 function ConfirmDialog({ open, onOpenChange, title, description, confirmText, cancelText, onConfirm, loading = false }) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="!max-w-md bg-white dark:bg-slate-900 rounded-2xl">
+			<DialogContent className="!max-w-md bg-white dark:bg-slate-900 rounded-xl">
 				<div className="space-y-4 p-6">
 					<h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">{title}</h3>
 					{description && <p className="text-sm text-gray-500 dark:text-slate-400">{description}</p>}

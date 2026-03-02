@@ -166,7 +166,7 @@ export const StatusSelect = ({
 							transition={{ duration: 0.15 }}
 							className={cn(
 								"absolute z-50 mt-1.5 w-full",
-								"bg-popover border border-border rounded-2xl",
+								"bg-popover border border-border rounded-xl",
 								"shadow-[0_8px_32px_rgba(0,0,0,0.12)]",
 								"max-h-[232px] overflow-hidden"
 							)}
@@ -288,7 +288,7 @@ export const StatusSelect = ({
 									<button
 										type="button"
 										onClick={() => toggleStatus(id)}
-										className="ms-0.5 w-4 h-4 rounded-lg flex items-center justify-center transition-all hover:opacity-100 opacity-60"
+										className="ms-0.5 w-4 h-4 rounded-xl flex items-center justify-center transition-all hover:opacity-100 opacity-60"
 										style={{ color: c }}
 									>
 										<svg width="8" height="8" viewBox="0 0 8 8" fill="none">
@@ -421,7 +421,7 @@ export const BlockEmployeePopover = ({
 			<PopoverContent
 				align="start"
 				sideOffset={6}
-				className="w-[var(--radix-popover-trigger-width)] min-w-[280px] p-0 rounded-2xl border-border shadow-[0_8px_32px_rgba(0,0,0,0.12)] overflow-hidden"
+				className="w-[var(--radix-popover-trigger-width)] min-w-[280px] p-0 rounded-xl border-border shadow-[0_8px_32px_rgba(0,0,0,0.12)] overflow-hidden"
 			>
 				{/* gradient top strip */}
 				<div className="h-[2px] bg-gradient-to-r from-primary via-[var(--secondary)] to-[var(--third)]   opacity-70" />
@@ -733,7 +733,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 
 	return (
 		<Dialog open={isOpen} onOpenChange={handleClose}>
-			<DialogContent className="max-w-3xl max-h-[92vh] overflow-hidden flex flex-col p-0 gap-0 rounded-2xl border border-border">
+			<DialogContent className="max-w-3xl max-h-[92vh] overflow-hidden flex flex-col p-0 gap-0 rounded-xl border border-border">
 
 				{/* ══ HEADER ══════════════════════════════════════════════════ */}
 				<div className="relative overflow-hidden flex-shrink-0">
@@ -743,7 +743,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 
 
 						{/* icon */}
-						<div className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0
+						<div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0
 							bg-gradient-to-br from-primary to-[var(--third)]
 							 
 							shadow-[0_4px_16px_rgb(var(--primary-shadow,255_139_0/0.4))]">
@@ -824,7 +824,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 											whileTap={{ scale: 0.98 }}
 											onClick={() => setDistributionType(opt.key)}
 											className={cn(
-												"group  relative text-start p-6 rounded-2xl border-2 border-border transition-all duration-200 overflow-hidden",
+												"group  relative text-start p-6 rounded-xl border-2 border-border transition-all duration-200 overflow-hidden",
 												opt.bg, opt.border,
 											)}
 										>
@@ -835,7 +835,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 											)} />
 
 											<div className={cn(
-												"w-12 h-12 rounded-2xl mb-4 flex items-center justify-center",
+												"w-12 h-12 rounded-xl mb-4 flex items-center justify-center",
 												`bg-gradient-to-br ${opt.color}`,
 												opt.glow,
 											)}>
@@ -943,13 +943,13 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 														initial={{ opacity: 0, y: 10 }}
 														animate={{ opacity: 1, y: 0 }}
 														exit={{ opacity: 0, scale: 0.96 }}
-														className="rounded-2xl border border-border !p-0 bg-card overflow-hidden shadow-sm"
+														className="rounded-xl border border-border !p-0 bg-card overflow-hidden shadow-sm"
 													>
 														{/* Block header strip */}
 														<div className="flex items-center justify-between px-4 py-3
 															border-b border-border bg-muted/40">
 															<div className="flex items-center gap-2.5">
-																<div className="w-6 h-6 rounded-lg flex items-center justify-center
+																<div className="w-6 h-6 rounded-xl flex items-center justify-center
 																	bg-gradient-to-br from-primary to-[var(--third)]
 																	 ">
 																	<span className="text-[10px] font-black text-white">{idx + 1}</span>
@@ -965,7 +965,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 															</div>
 															{assignmentBlocks.length > 1 && (
 																<button onClick={() => removeBlock(block.id)}
-																	className="w-7 h-7 rounded-lg flex items-center justify-center
+																	className="w-7 h-7 rounded-xl flex items-center justify-center
 																		text-muted-foreground hover:text-destructive
 																		hover:bg-destructive/10 transition-colors">
 																	<XCircle size={15} />
@@ -1013,7 +1013,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 																	) : freeOrdersLoading ? (
 																		<div className="p-2 space-y-1.5">
 																			{[...Array(4)].map((_, i) => (
-																				<div key={i} className="flex items-center gap-2 p-2 rounded-lg animate-pulse">
+																				<div key={i} className="flex items-center gap-2 p-2 rounded-xl animate-pulse">
 																					<div className="w-4 h-4 rounded bg-muted" />
 																					<div className="w-2 h-2 rounded-full bg-muted" />
 																					<div className="h-3 bg-muted rounded w-20" />
@@ -1035,7 +1035,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 																						key={order.id}
 																						onClick={() => toggleBlockOrder(block.id, order.id)}
 																						className={cn(
-																							"flex items-center gap-2.5 px-2.5 py-2 rounded-lg cursor-pointer transition-colors text-sm",
+																							"flex items-center gap-2.5 px-2.5 py-2 rounded-xl cursor-pointer transition-colors text-sm",
 																							checked
 																								? "bg-primary/10 /15"
 																								: "hover:bg-muted"
@@ -1066,7 +1066,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 										{/* Add block */}
 										<button
 											onClick={addBlock}
-											className="group w-full py-3 rounded-2xl border-2 border-dashed border-border
+											className="group w-full py-3 rounded-xl border-2 border-dashed border-border
 												hover:border-primary  
 												hover:bg-primary/5  
 												transition-all duration-200 flex items-center justify-center gap-2
@@ -1086,7 +1086,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 													exit={{ opacity: 0, height: 0 }}
 													className="overflow-hidden"
 												>
-													<div className="p-4 rounded-2xl border border-primary/25  
+													<div className="p-4 rounded-xl border border-primary/25  
 														bg-gradient-to-br from-primary/8 to-[var(--third)]/5
 														/12 /5">
 														<div className="flex items-center gap-2 mb-3">
@@ -1166,7 +1166,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 												<SectionLabel>{t("distribution.preview")}</SectionLabel>
 											</div>
 
-											<div className="rounded-2xl border border-border bg-muted/30 overflow-hidden">
+											<div className="rounded-xl border border-border bg-muted/30 overflow-hidden">
 												{autoEmployeesLoading ? (
 													<div className="p-3 space-y-2">
 														{[...Array(3)].map((_, i) => (
@@ -1205,7 +1205,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 																	transition-colors"
 															>
 																<div className="flex items-center gap-2.5">
-																	<div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black text-white
+																	<div className="w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black text-white
 																		bg-gradient-to-br from-primary to-[var(--third)]
 																		 ">
 																		{idx + 1}

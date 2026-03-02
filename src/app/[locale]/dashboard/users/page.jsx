@@ -1075,7 +1075,7 @@ function CreateUserDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-2xl rounded-2xl">
+			<DialogContent className="sm:max-w-2xl rounded-xl">
 				<DialogHeader className="text-right">
 					<DialogTitle>{t.has("create.title") ? t("create.title") : "Create new user"}</DialogTitle>
 				</DialogHeader>
@@ -1246,7 +1246,7 @@ function EditUserDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-2xl rounded-2xl">
+			<DialogContent className="sm:max-w-2xl rounded-xl">
 				<DialogHeader className="text-right">
 					<DialogTitle>{t.has("edit.title") ? t("edit.title") : "Edit user"}</DialogTitle>
 					<DialogDescription>{user ? `#${user.id} — ${user.email}` : ""}</DialogDescription>
@@ -1326,7 +1326,7 @@ function EditUserDialog({
 						</div>
 					</div>
 
-					<div className="flex items-center justify-between rounded-2xl border border-gray-200 dark:border-slate-800 bg-[#fafafa] dark:bg-slate-800/40 p-4 mt-1">
+					<div className="flex items-center justify-between rounded-xl border border-gray-200 dark:border-slate-800 bg-[#fafafa] dark:bg-slate-800/40 p-4 mt-1">
 						<div className="text-right">
 							<Label className="text-sm text-gray-700 dark:text-slate-200">
 								{t.has("fields.isActive") ? t("fields.isActive") : "Active"}
@@ -1373,7 +1373,7 @@ function EditUserDialog({
 function DeactivateAlertDialog({ t, open, onOpenChange, user, onConfirm }) {
 	return (
 		<AlertDialog open={open} onOpenChange={onOpenChange}>
-			<AlertDialogContent className="rounded-2xl">
+			<AlertDialogContent className="rounded-xl">
 				<AlertDialogHeader className="text-right">
 					<AlertDialogTitle>{t.has("deactivate.title") ? t("deactivate.title") : "Deactivate user"}</AlertDialogTitle>
 					<AlertDialogDescription>
@@ -1413,7 +1413,7 @@ function CredentialsDialog({ t, open, onOpenChange, user, credentials, onSendWha
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-xl rounded-2xl">
+			<DialogContent className="sm:max-w-xl rounded-xl">
 				<DialogHeader className="text-right">
 					<DialogTitle>{t.has("credentials.title") ? t("credentials.title") : "User credentials"}</DialogTitle>
 					<DialogDescription>
@@ -1548,7 +1548,7 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-xl rounded-2xl">
+			<DialogContent className="sm:max-w-xl rounded-xl">
 				<DialogHeader className="text-right">
 					<DialogTitle>{t("whatsapp.title") || "Send via WhatsApp"}</DialogTitle>
 					<DialogDescription>{t("whatsapp.subtitle") || "اختر الدولة وأدخل رقم الواتساب"}</DialogDescription>
@@ -1588,7 +1588,7 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 						</div>
 
 						{error && (
-							<div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg p-2 text-right">
+							<div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl p-2 text-right">
 								{error}
 							</div>
 						)}

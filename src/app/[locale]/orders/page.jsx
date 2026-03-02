@@ -87,7 +87,7 @@ export default function Orders() {
 	};
 
 	return (
-		<div className="min-h-screen p-4 md:p-6 bg-background">
+		<div className="min-h-screen p-4 md:p-6 ">
 
 			<AnimatePresence mode="wait">
 				<motion.div

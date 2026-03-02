@@ -79,7 +79,7 @@ function Spinner({ className = "w-4 h-4" }) {
  * ========================= */
 function PlanCardSkeleton() {
 	return (
-		<div className="rounded-3xl p-6 border-2 border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 animate-pulse min-h-[500px]">
+		<div className="rounded-xl p-6 border-2 border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 animate-pulse min-h-[500px]">
 			<div className="flex justify-between">
 				<div className="flex gap-2">
 					<div className="w-9 h-9 rounded-full bg-gray-200 dark:bg-slate-700" />
@@ -89,13 +89,13 @@ function PlanCardSkeleton() {
 			</div>
 
 			<div className="flex justify-center mt-8 mb-6">
-				<div className="w-16 h-16 rounded-2xl bg-gray-200 dark:bg-slate-700" />
+				<div className="w-16 h-16 rounded-xl bg-gray-200 dark:bg-slate-700" />
 			</div>
 
 			<div className="space-y-3 text-center mb-8">
 				<div className="h-10 w-32 mx-auto rounded-xl bg-gray-200 dark:bg-slate-700" />
-				<div className="h-5 w-40 mx-auto rounded-lg bg-gray-200 dark:bg-slate-700" />
-				<div className="h-4 w-24 mx-auto rounded-lg bg-gray-200 dark:bg-slate-700" />
+				<div className="h-5 w-40 mx-auto rounded-xl bg-gray-200 dark:bg-slate-700" />
+				<div className="h-4 w-24 mx-auto rounded-xl bg-gray-200 dark:bg-slate-700" />
 			</div>
 
 			<div className="space-y-3">
@@ -397,7 +397,7 @@ function EditablePlanCard({
 			animate={{ opacity: 1, scale: 1 }}
 			exit={{ opacity: 0, scale: 0.95 }}
 			className={cn(
-				"relative rounded-3xl p-6 border-2 transition-all duration-300",
+				"relative rounded-xl p-6 border-2 transition-all duration-300",
 				"bg-gradient-to-br from-white via-gray-50/50 to-white",
 				"dark:from-slate-900 dark:via-slate-800/50 dark:to-slate-900",
 				isEditing
@@ -531,7 +531,7 @@ function EditablePlanCard({
 					<div className="space-y-2">
 						<div
 							className={cn(
-								"w-16 h-16 rounded-2xl flex items-center justify-center bg-gradient-to-br shadow-lg mx-auto",
+								"w-16 h-16 rounded-xl flex items-center justify-center bg-gradient-to-br shadow-lg mx-auto",
 								formData.color
 							)}
 						>
@@ -556,7 +556,7 @@ function EditablePlanCard({
 				) : (
 					<div
 						className={cn(
-							"w-16 h-16 rounded-2xl flex items-center justify-center bg-gradient-to-br shadow-lg",
+							"w-16 h-16 rounded-xl flex items-center justify-center bg-gradient-to-br shadow-lg",
 							plan.color || "from-blue-500 to-blue-600"
 						)}
 					>
@@ -681,7 +681,7 @@ function EditablePlanCard({
 								value={String(formData.bulkUploadPerMonth ?? 0)}
 								onChange={(e) => handleUpdateFeature(index, e.target.value)}
 								onValueChange={(v) => setFormData({ ...formData, bulkUploadPerMonth: Number(e.target.value || 0) })}
-								className="flex-1 h-9 text-sm rounded-lg"
+								className="flex-1 h-9 text-sm rounded-xl"
 								disabled={isSaving}
 							/>
 						</div>
@@ -693,14 +693,14 @@ function EditablePlanCard({
 									<Input
 										value={feature}
 										onChange={(e) => handleUpdateFeature(index, e.target.value)}
-										className="flex-1 h-9 text-sm rounded-lg"
+										className="flex-1 h-9 text-sm rounded-xl"
 										disabled={isSaving}
 									/>
 									<button
 										onClick={() => handleRemoveFeature(index)}
 										disabled={isSaving}
 										className={cn(
-											"w-8 h-8 rounded-lg bg-red-50 dark:bg-red-950/30 text-red-600 hover:bg-red-600 hover:text-white transition-all flex items-center justify-center ",
+											"w-8 h-8 rounded-xl bg-red-50 dark:bg-red-950/30 text-red-600 hover:bg-red-600 hover:text-white transition-all flex items-center justify-center ",
 											isSaving && "opacity-50 cursor-not-allowed"
 										)}
 									>
@@ -715,14 +715,14 @@ function EditablePlanCard({
 									onChange={(e) => setNewFeature(e.target.value)}
 									onKeyDown={(e) => e.key === "Enter" && handleAddFeature()}
 									placeholder="إضافة ميزة جديدة..."
-									className="flex-1 h-9 text-sm rounded-lg"
+									className="flex-1 h-9 text-sm rounded-xl"
 									disabled={isSaving}
 								/>
 								<button
 									onClick={handleAddFeature}
 									disabled={isSaving}
 									className={cn(
-										"w-8 h-8 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all flex items-center justify-center",
+										"w-8 h-8 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all flex items-center justify-center",
 										isSaving && "opacity-60 cursor-not-allowed"
 									)}
 								>
@@ -781,14 +781,14 @@ function NewPlanCard({ onClick, isCreating }) {
 			onClick={onClick}
 			disabled={isCreating}
 			className={cn(
-				"relative rounded-3xl p-6 border-2 border-dashed transition-all duration-300 h-full min-h-[500px]",
+				"relative rounded-xl p-6 border-2 border-dashed transition-all duration-300 h-full min-h-[500px]",
 				"border-primary/40 bg-primary/5 hover:bg-primary/10 hover:border-primary",
 				"dark:border-primary/30 dark:bg-primary/5 dark:hover:bg-primary/10",
 				"flex flex-col items-center justify-center gap-4",
 				isCreating && "opacity-80 cursor-not-allowed"
 			)}
 		>
-			<div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
+			<div className="w-20 h-20 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
 				{isCreating ? <Spinner className="w-10 h-10 text-white" /> : <Plus size={40} className="text-white" />}
 			</div>
 			<div className="text-center">
@@ -800,7 +800,7 @@ function NewPlanCard({ onClick, isCreating }) {
 				</p>
 			</div>
 
-			{isCreating && <div className="absolute inset-0 rounded-3xl bg-white/40 dark:bg-black/20 backdrop-blur-[1px]" />}
+			{isCreating && <div className="absolute inset-0 rounded-xl bg-white/40 dark:bg-black/20 backdrop-blur-[1px]" />}
 		</motion.button>
 	);
 }

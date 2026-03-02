@@ -133,7 +133,7 @@ export default function PermissionsSelector({
 	return (
 		<div className={cn("space-y-4", className)} onClick={(e) => e.stopPropagation()}>
 			{/* ✅ Enhanced Header with Stats */}
-			<div className="relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 backdrop-blur-sm">
+			<div className="relative overflow-hidden rounded-xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 backdrop-blur-sm">
 				{/* Animated background effect */}
 				<div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-shimmer" />
 
@@ -266,7 +266,7 @@ export default function PermissionsSelector({
 								animate={{ opacity: 1, y: 0 }}
 								transition={{ delay: moduleIndex * 0.05 }}
 								className={cn(
-									"border-2 rounded-2xl overflow-hidden transition-all duration-300",
+									"border-2 rounded-xl overflow-hidden transition-all duration-300",
 									"bg-white dark:bg-slate-800/40 backdrop-blur-sm",
 									"border-gray-200 dark:border-slate-700",
 									"hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5",

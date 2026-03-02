@@ -408,8 +408,8 @@ export function MediaLibrary({
             {/* Drag overlay */}
             {isDragging && (
               <div className="absolute inset-0 z-10 bg-primary/10 backdrop-blur-sm flex items-center justify-center">
-                <div className="rounded-2xl border border-dashed border-primary/40 bg-white/80 dark:bg-slate-950/70 px-6 py-5 text-center shadow-xl">
-                  <div className="mx-auto w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <div className="rounded-xl border border-dashed border-primary/40 bg-white/80 dark:bg-slate-950/70 px-6 py-5 text-center shadow-xl">
+                  <div className="mx-auto w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center">
                     <Upload className="w-7 h-7 text-primary" />
                   </div>
                   <p className="mt-3 font-semibold">{t('dropOverlay.title')}</p>
@@ -431,7 +431,7 @@ export function MediaLibrary({
                   <div className="mb-5">
                     <div
                       className={cn(
-                        'relative rounded-2xl border border-dashed p-5',
+                        'relative rounded-xl border border-dashed p-5',
                         'bg-gradient-to-br from-slate-50 to-white dark:from-slate-950 dark:to-slate-900',
                         'hover:border-primary/50 transition-colors'
                       )}
@@ -447,7 +447,7 @@ export function MediaLibrary({
 
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pointer-events-none">
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                             {uploading ? (
                               <Loader2 className="w-6 h-6 text-primary animate-spin" />
                             ) : (
@@ -556,7 +556,7 @@ export function MediaLibrary({
         }}
 				className=""
       >
-        <AlertDialogContent className="rounded-2xl !z-[100] ">
+        <AlertDialogContent className="rounded-xl !z-[100] ">
           <AlertDialogHeader>
             <AlertDialogTitle>{t('delete.title')}</AlertDialogTitle>
             <AlertDialogDescription>

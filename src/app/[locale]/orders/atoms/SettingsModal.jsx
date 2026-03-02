@@ -133,7 +133,7 @@ function StatusMultiSelect({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -6, scale: 0.98 }}
               transition={{ duration: 0.15 }}
-              className="absolute z-50 mt-1.5 w-full bg-popover border border-border rounded-2xl
+              className="absolute z-50 mt-1.5 w-full bg-popover border border-border rounded-xl
                 shadow-[0_8px_32px_rgba(0,0,0,0.12)] max-h-[232px] overflow-hidden"
             >
               {/* gradient strip */}
@@ -231,7 +231,7 @@ function StatusMultiSelect({
                   <button
                     type="button"
                     onClick={() => onToggle(code)}
-                    className="ms-0.5 w-4 h-4 rounded-lg flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity"
+                    className="ms-0.5 w-4 h-4 rounded-xl flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity"
                     style={{ color: c }}
                   >
                     <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
@@ -332,10 +332,10 @@ function NumberField({ label, description, value, onChange, min, max, suffix }) 
 ══════════════════════════════════════════════════════════════ */
 function SectionCard({ icon: Icon, iconColor, title, subtitle, badge, children }) {
   return (
-    <div className="rounded-2xl border border-border bg-card !p-0 ">
+    <div className="rounded-xl border border-border bg-card !p-0 ">
       <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-muted/30">
         <div
-          className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+          className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0"
           style={{ backgroundColor: rgba(iconColor, 0.12), border: `1px solid ${rgba(iconColor, 0.25)}` }}
         >
           <Icon size={13} style={{ color: iconColor }} />
@@ -457,7 +457,7 @@ export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         showCloseButton={false}
-        className="!max-w-2xl p-0 overflow-hidden rounded-2xl border border-border bg-background shadow-2xl gap-0 flex flex-col max-h-[90vh]"
+        className="!max-w-2xl p-0 overflow-hidden rounded-xl border border-border bg-background shadow-2xl gap-0 flex flex-col max-h-[90vh]"
       >
 
         {/* ────────────────── HEADER ────────────────── */}
@@ -472,7 +472,7 @@ export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [
             dark:from-[#5b4bff] dark:via-[#8b7cff] dark:to-[#3be7ff] opacity-60" />
 
           <div className="relative flex items-center gap-4 px-6 py-5">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0
               bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]
               dark:from-[#5b4bff] dark:to-[#3be7ff]
               shadow-[0_6px_20px_rgba(var(--primary-shadow))]">
@@ -533,7 +533,7 @@ export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--primary)]/10 to-[var(--primary)]/5
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[var(--primary)]/10 to-[var(--primary)]/5
                 flex items-center justify-center">
                 <Loader2 size={24} className="animate-spin text-[var(--primary)] dark:text-[#5b4bff]" />
               </div>
@@ -719,7 +719,7 @@ export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [
 
                     {/* Master toggle */}
                     <div className={cn(
-                      "relative overflow-hidden rounded-2xl border-2 transition-all duration-300",
+                      "relative overflow-hidden rounded-xl border-2 transition-all duration-300",
                       settings.shipping.autoSendToShipping
                         ? "border-[var(--primary)]/40 dark:border-[#5b4bff]/40"
                         : "border-border",
@@ -863,7 +863,7 @@ export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [
                                           </span>
                                         </div>
                                       </div>
-                                      <div className="mb-0.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/30
+                                      <div className="mb-0.5 px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/30
                                         border border-emerald-200 dark:border-emerald-800">
                                         <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-400">
                                           {settings.shipping.partialPaymentThreshold === 0
@@ -920,7 +920,7 @@ export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [
                     {!settings.shipping.autoSendToShipping && (
                       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                         className="flex items-start gap-3 p-4 rounded-xl bg-muted/30 border border-border/50">
-                        <div className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center shrink-0">
+                        <div className="w-8 h-8 rounded-xl bg-muted border border-border flex items-center justify-center shrink-0">
                           <AlertCircle size={14} className="text-muted-foreground/60" />
                         </div>
                         <div>
@@ -953,7 +953,7 @@ export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [
                     />
 
                     {/* Preview card */}
-                    <div className="relative overflow-hidden rounded-2xl border border-[var(--primary)]/20 dark:border-[#5b4bff]/25 p-5">
+                    <div className="relative overflow-hidden rounded-xl border border-[var(--primary)]/20 dark:border-[#5b4bff]/25 p-5">
                       <div className="absolute inset-0 pointer-events-none
                         bg-gradient-to-br from-[var(--primary)]/5 to-transparent dark:from-[#5b4bff]/8" />
                       <div className="absolute inset-x-0 top-0 h-[2px] opacity-60

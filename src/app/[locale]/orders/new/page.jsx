@@ -75,7 +75,7 @@ const createSchema = (t) =>
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared field styles
 // ─────────────────────────────────────────────────────────────────────────────
-const INPUT_CLS = "rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50";
+const INPUT_CLS = "rounded-xl h-[45px] bg-[#fafafa] dark:bg-slate-800/50";
 const SELECT_CLS = "w-full rounded-xl !h-[50px] bg-[#fafafa] dark:bg-slate-800/50";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1029,7 +1029,7 @@ export default function CreateOrderPageComplete({
 										control={control}
 										render={({ field }) => (
 											<Select value={field.value} onValueChange={field.onChange}>
-												<SelectTrigger className="w-full rounded-lg !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
+												<SelectTrigger className="w-full rounded-xl !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
 													<SelectValue />
 												</SelectTrigger>
 												<SelectContent className="bg-card-select">
@@ -1059,7 +1059,7 @@ export default function CreateOrderPageComplete({
 										control={control}
 										render={({ field }) => (
 											<Select value={field.value} onValueChange={field.onChange}>
-												<SelectTrigger className="w-full rounded-lg !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
+												<SelectTrigger className="w-full rounded-xl !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
 													<SelectValue />
 												</SelectTrigger>
 												<SelectContent className="bg-card-select">
@@ -1341,7 +1341,7 @@ export default function CreateOrderPageComplete({
 																	whileHover={{ scale: 1.1 }}
 																	whileTap={{ scale: 0.9 }}
 																	onClick={() => handleQuantityChange(index, -1)}
-																	className="w-7 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600 flex items-center justify-center"
+																	className="w-7 h-7 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600 flex items-center justify-center"
 																>
 																	<Minus size={14} />
 																</motion.button>
@@ -1359,7 +1359,7 @@ export default function CreateOrderPageComplete({
 																	whileHover={{ scale: 1.1 }}
 																	whileTap={{ scale: 0.9 }}
 																	onClick={() => handleQuantityChange(index, 1)}
-																	className="w-7 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600 flex items-center justify-center"
+																	className="w-7 h-7 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600 flex items-center justify-center"
 																>
 																	<Plus size={14} />
 																</motion.button>
@@ -1412,7 +1412,7 @@ export default function CreateOrderPageComplete({
 											<Textarea
 												{...field}
 												placeholder={t("placeholders.notes")}
-												className="min-h-[80px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 rounded-2xl"
+												className="min-h-[80px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 rounded-xl"
 											/>
 										)}
 									/>
@@ -1428,7 +1428,7 @@ export default function CreateOrderPageComplete({
 											<Textarea
 												{...field}
 												placeholder={t("placeholders.customerNotes")}
-												className="min-h-[80px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 rounded-2xl"
+												className="min-h-[80px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 rounded-xl"
 											/>
 										)}
 									/>

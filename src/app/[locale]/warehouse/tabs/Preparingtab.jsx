@@ -187,7 +187,7 @@ export default function PreparingTab({ orders, updateOrder, pushOp, onPrepareOrd
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.07 }}
-            className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-white/10 p-4"
+            className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/60 dark:border-white/10 p-4"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -234,7 +234,7 @@ export default function PreparingTab({ orders, updateOrder, pushOp, onPrepareOrd
       </div>
 
       {/* Table */}
-      <div className="rounded-2xl border border-slate-200/60 dark:border-white/10 bg-white/50 dark:bg-white/5 backdrop-blur-sm overflow-hidden">
+      <div className="rounded-xl border border-slate-200/60 dark:border-white/10 bg-white/50 dark:bg-white/5 backdrop-blur-sm overflow-hidden">
         {filtered.length === 0 ? (
           <div className="p-12 flex flex-col items-center gap-3">
             <div className="p-4 rounded-full bg-slate-100 dark:bg-slate-800">

@@ -22,31 +22,18 @@ import {
 
 import { baseImg } from "@/utils/axios";
 
-/* ─────────────────────────────────────────────────────────────────────────
-	 CONSTANTS
-───────────────────────────────────────────────────────────────────────── */
-
 const ACTION_KEYS = new Set(["actions", "options"]);
 const DEFAULT_PER_PAGE_OPTIONS = [6, 12, 24, 48];
 
-/**
- * Color palette for action buttons.
- * "primary" renders a gradient CTA (like bulkUpload).
- * All others render a tinted pill that fills on hover.
- */
 const ACTION_COLORS = {
-	primary: "btn btn-solid btn-primary btn-sm",
-	emerald: "btn btn-solid btn-emerald btn-sm",
-	blue: "btn btn-solid btn-blue btn-sm",
-	purple: "btn btn-solid btn-purple btn-sm",
-	rose: "btn btn-solid btn-rose btn-sm",
-	amber: "btn btn-solid btn-amber btn-sm",
-	default: "btn btn-outline btn-default btn-sm",
+	primary: "btn btn-solid btn-sm",
+	emerald: "btn btn-solid btn-sm btn-emerald",
+	blue: "btn btn-solid btn-sm btn-blue",
+	purple: "btn btn-solid btn-sm btn-purple",
+	rose: "btn btn-solid btn-sm btn-rose",
+	amber: "btn btn-solid btn-sm btn-amber",
+	default: "btn btn-ghost  btn-sm btn-default !border !border-slate-100 !border-[1px] ",
 };
-
-/* ─────────────────────────────────────────────────────────────────────────
-	 HELPERS
-───────────────────────────────────────────────────────────────────────── */
 
 function toFullSrc(src) {
 	if (!src) return "";
@@ -80,15 +67,6 @@ function useIsRTL() {
 	return isRTL;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-	 EXPORTED: FilterField
-	 Wraps a single filter input with a styled uppercase label.
-
-	 Usage:
-		 <FilterField label="Status">
-			 <Select ... />
-		 </FilterField>
-───────────────────────────────────────────────────────────────────────── */
 export function FilterField({ label, children, className }) {
 	return (
 		<div className={cn("space-y-1.5", className)}>
@@ -102,18 +80,15 @@ export function FilterField({ label, children, className }) {
 	);
 }
 
-
 export const TableToolbar = memo(function TableToolbar({
 	searchValue = "",
 	onSearchChange,
 	onSearch,
 	searchPlaceholder = "Search…",
-
 	isFiltersOpen = false,
 	onToggleFilters,
 	hasActiveFilters = false,
 	filterLabel = "Filters",
-
 	actions = [],
 }) {
 	const handleKeyDown = (e) => {
@@ -122,11 +97,7 @@ export const TableToolbar = memo(function TableToolbar({
 
 	return (
 		<div className="flex items-center justify-between gap-3 flex-wrap">
-
-			{/* ── Search ── */}
-			<div className=" relative flex-1 w-full max-w-[350px] focus-within:max-w-[500px] transition-[max-width] duration-300 ease-in-out "
-				style={{ transition: ".3s" }}
-			>
+			<div className="relative flex-1 w-full max-w-[350px] focus-within:max-w-[400px]" style={{ transition: ".3s" }}>
 				<Input
 					value={searchValue}
 					onChange={(e) => onSearchChange?.(e.target.value)}
@@ -136,10 +107,7 @@ export const TableToolbar = memo(function TableToolbar({
 				/>
 			</div>
 
-			{/* ── Right side buttons ── */}
 			<div className="flex items-center gap-2 flex-wrap">
-
-				{/* Filter toggle */}
 				{onToggleFilters && (
 					<motion.button
 						whileHover={{ scale: 1.02 }}
@@ -147,28 +115,25 @@ export const TableToolbar = memo(function TableToolbar({
 						onClick={onToggleFilters}
 						type="button"
 						className={cn(
-							"relative h-10 px-4 rounded-xl border flex items-center gap-2 text-sm font-bold transition-all duration-200",
-							isFiltersOpen
-								? "btn btn-sm btn-solid"
-								: "btn btn-sm btn-outline",
+							"relative btn btn-sm",
+							isFiltersOpen ? "btn-solid" : "btn-outline",
 						)}
 					>
 						<SlidersHorizontal size={15} />
 						{filterLabel}
 						{hasActiveFilters && !isFiltersOpen && (
 							<span className="absolute -top-1.5 -end-1.5 w-4 h-4 rounded-full
-                bg-[var(--primary)]  text-white text-[9px] font-black
-                flex items-center justify-center shadow-sm">
+								bg-[var(--primary)] text-white text-[9px] font-black
+								flex items-center justify-center shadow-sm z-10">
 								✦
 							</span>
 						)}
-						<motion.span animate={{ rotate: isFiltersOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+						<motion.span animate={{ rotate: isFiltersOpen ? 180 : 0 }} transition={{ duration: 0.2 }} style={{ display: "flex" }}>
 							<ChevronDown size={13} />
 						</motion.span>
 					</motion.button>
 				)}
 
-				{/* Dynamic action buttons */}
 				{actions.map((action) => (
 					<motion.button
 						key={action.key}
@@ -178,9 +143,8 @@ export const TableToolbar = memo(function TableToolbar({
 						type="button"
 						disabled={action.disabled}
 						className={cn(
-							"h-10 px-4 rounded-xl border flex items-center gap-2 text-sm font-bold transition-all duration-200",
-							"disabled:opacity-50 disabled:cursor-not-allowed",
 							ACTION_COLORS[action.color ?? "default"] ?? ACTION_COLORS.default,
+							"disabled:opacity-50 disabled:cursor-not-allowed",
 						)}
 					>
 						{action.icon}
@@ -192,12 +156,7 @@ export const TableToolbar = memo(function TableToolbar({
 	);
 });
 
-
-export const TableFilters = memo(function TableFilters({
-	children,
-	onApply,
-	applyLabel = "Apply",
-}) {
+export const TableFilters = memo(function TableFilters({ children, onApply, applyLabel = "Apply" }) {
 	return (
 		<motion.div
 			initial={{ height: 0, opacity: 0 }}
@@ -206,50 +165,35 @@ export const TableFilters = memo(function TableFilters({
 			transition={{ duration: 0.25, ease: "easeInOut" }}
 			className="overflow-hidden"
 		>
-			<div className="mt-3 rounded-2xl border border-border/80
-        bg-gradient-to-br from-muted/40 to-muted/10
-        shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
-
-				<div className="p-4">
-					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-end">
+			<div className="mt-3 rounded-xl border border-border/80 bg-gradient-to-br from-muted/40 to-muted/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+				<div className="p-4 flex items-end gap-6">
+					<div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
 						{children}
-
-						{/* Apply button */}
-						{onApply && (
-							<div className="flex items-end">
-								<motion.button
-									whileHover={{ scale: 1.02 }}
-									whileTap={{ scale: 0.97 }}
-									onClick={onApply}
-									type="button"
-									className="h-10 w-fit rtl:mr-auto ltr:ml-auto px-5 flex items-center justify-center gap-2
-                    text-sm font-bold text-white btn btn-solid 
-                    hover:shadow-[0_6px_20px_rgba(var(--primary-shadow))]
-                    hover:brightness-110 transition-all duration-200"
-								>
-									<Filter size={14} />
-									{applyLabel}
-								</motion.button>
-							</div>
-						)}
 					</div>
+					{onApply && (
+						<div className="w-fit flex">
+							<motion.button
+								whileHover={{ scale: 1.02 }}
+								whileTap={{ scale: 0.97 }}
+								onClick={onApply}
+								type="button"
+								className="btn !h-[42px] btn-solid btn-sm rtl:mr-auto ltr:ml-auto"
+							>
+								<Filter size={14} />
+								{applyLabel}
+							</motion.button>
+						</div>
+					)}
 				</div>
 			</div>
 		</motion.div>
 	);
 });
 
-/* ─────────────────────────────────────────────────────────────────────────
-	 EXPORTED: TablePagination
-───────────────────────────────────────────────────────────────────────── */
 export const TablePagination = memo(function TablePagination({
-	pagination,
-	onPageChange,
-	isLoading = false,
-	pageParamName = "page",
-	limitParamName = "limit",
-	perPageOptions = DEFAULT_PER_PAGE_OPTIONS,
-	labels = {},
+	pagination, onPageChange, isLoading = false,
+	pageParamName = "page", limitParamName = "limit",
+	perPageOptions = DEFAULT_PER_PAGE_OPTIONS, labels = {},
 }) {
 	const totalPages = useMemo(() => {
 		const total = Number(pagination?.total_records ?? 0);
@@ -287,37 +231,25 @@ export const TablePagination = memo(function TablePagination({
 
 	const navCls = cn(
 		"w-9 h-9 rounded-xl flex items-center justify-center border border-border",
-		"bg-background text-muted-foreground",
-		"hover:border-[var(--primary)] ",
-		"hover:text-[var(--primary)] ",
-		"hover:bg-[var(--primary)]/5 ",
+		"bg-background text-muted-foreground transition-all duration-150",
+		"hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-[var(--primary)]/5",
 		"disabled:opacity-40 disabled:cursor-not-allowed",
-		"transition-all duration-150",
 	);
 
 	return (
 		<div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-5 py-4">
-
-			{/* Total */}
 			<div className="flex items-center gap-2">
-				<span className="text-xs font-semibold text-muted-foreground">
-					{labels.total ?? "Total"}
-				</span>
-				<span className="inline-flex items-center px-2.5 py-1 rounded-lg
-          bg-[var(--primary)]/10  
-          text-[var(--primary)]   text-xs font-black">
+				<span className="text-xs font-semibold text-muted-foreground">{labels.total ?? "Total"}</span>
+				<span className="inline-flex items-center px-2.5 py-1 rounded-xl bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-black">
 					{pagination?.total_records ?? 0}
 				</span>
 			</div>
 
-			{/* Page numbers */}
 			<div className="flex items-center gap-1.5">
-				<motion.button whileTap={{ scale: 0.93 }} onClick={() => goTo(1)}
-					disabled={isLoading || currentPage <= 1} className={navCls}>
+				<motion.button whileTap={{ scale: 0.93 }} onClick={() => goTo(1)} disabled={isLoading || currentPage <= 1} className={navCls}>
 					<ChevronsRight size={14} />
 				</motion.button>
-				<motion.button whileTap={{ scale: 0.93 }} onClick={() => goTo(currentPage - 1)}
-					disabled={isLoading || currentPage <= 1} className={navCls}>
+				<motion.button whileTap={{ scale: 0.93 }} onClick={() => goTo(currentPage - 1)} disabled={isLoading || currentPage <= 1} className={navCls}>
 					<ChevronRight size={14} />
 				</motion.button>
 
@@ -332,9 +264,9 @@ export const TablePagination = memo(function TablePagination({
 							onClick={() => goTo(p)}
 							disabled={isLoading}
 							className={cn(
-								"w-9 h-9 rounded-xl text-sm font-bold transition-all duration-150 border",
+								"w-9 h-9 rounded-xl text-sm font-bold border transition-all duration-150",
 								p === currentPage
-									? "bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)]  text-white border-transparent shadow-[0_2px_10px_rgba(var(--primary-shadow))] scale-105"
+									? "btn btn-solid btn-sm"
 									: "bg-background border-border text-muted-foreground hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-[var(--primary)]/5",
 							)}
 						>
@@ -343,21 +275,16 @@ export const TablePagination = memo(function TablePagination({
 					)
 				)}
 
-				<motion.button whileTap={{ scale: 0.93 }} onClick={() => goTo(currentPage + 1)}
-					disabled={isLoading || currentPage >= totalPages} className={navCls}>
+				<motion.button whileTap={{ scale: 0.93 }} onClick={() => goTo(currentPage + 1)} disabled={isLoading || currentPage >= totalPages} className={navCls}>
 					<ChevronLeft size={14} />
 				</motion.button>
-				<motion.button whileTap={{ scale: 0.93 }} onClick={() => goTo(totalPages)}
-					disabled={isLoading || currentPage >= totalPages} className={navCls}>
+				<motion.button whileTap={{ scale: 0.93 }} onClick={() => goTo(totalPages)} disabled={isLoading || currentPage >= totalPages} className={navCls}>
 					<ChevronsLeft size={14} />
 				</motion.button>
 			</div>
 
-			{/* Per-page pills */}
 			<div className="flex items-center gap-2">
-				<span className="text-xs font-semibold text-muted-foreground hidden sm:block">
-					{labels.limit ?? "Per page"}
-				</span>
+				<span className="text-xs font-semibold text-muted-foreground hidden sm:block">{labels.limit ?? "Per page"}</span>
 				<div className="flex items-center gap-1">
 					{perPageOptions.map((lim) => (
 						<button
@@ -367,7 +294,7 @@ export const TablePagination = memo(function TablePagination({
 							className={cn(
 								"w-9 h-9 rounded-xl text-xs font-bold border transition-all duration-150",
 								perPage === lim
-									? "bg-[var(--primary)]/12   border-[var(--primary)]/40   text-[var(--primary)] "
+									? "bg-[var(--primary)]/12 border-[var(--primary)]/40 text-[var(--primary)]"
 									: "bg-background border-border text-muted-foreground hover:border-[var(--primary)]/40 hover:text-[var(--primary)] hover:bg-[var(--primary)]/5",
 							)}
 						>
@@ -380,9 +307,6 @@ export const TablePagination = memo(function TablePagination({
 	);
 });
 
-/* ─────────────────────────────────────────────────────────────────────────
-	 PRIVATE: TableSkeleton
-───────────────────────────────────────────────────────────────────────── */
 const TableSkeleton = memo(function TableSkeleton({ columns, rows = 6, compact }) {
 	return (
 		<>
@@ -391,7 +315,7 @@ const TableSkeleton = memo(function TableSkeleton({ columns, rows = 6, compact }
 					{columns.map((col, ci) => (
 						<TableCell key={ci} className={cn("!px-5", compact ? "py-2.5" : "py-4")}>
 							<div
-								className="h-4 rounded-lg bg-gradient-to-r from-muted via-muted/60 to-muted animate-pulse"
+								className="h-4 rounded-xl bg-gradient-to-r from-muted via-muted/60 to-muted animate-pulse"
 								style={{ width: col.type === "img" ? "44px" : `${50 + ((ri * 13 + ci * 7) % 40)}%` }}
 							/>
 						</TableCell>
@@ -402,21 +326,14 @@ const TableSkeleton = memo(function TableSkeleton({ columns, rows = 6, compact }
 	);
 });
 
-/* ─────────────────────────────────────────────────────────────────────────
-	 PRIVATE: ImgCell
-───────────────────────────────────────────────────────────────────────── */
 const ImgCell = memo(function ImgCell({ src, alt, onOpen }) {
 	const fullSrc = toFullSrc(src);
 	if (!fullSrc) return <span className="text-muted-foreground text-sm">—</span>;
 	return (
 		<motion.button
-			whileHover={{ scale: 1.05 }}
-			whileTap={{ scale: 0.95 }}
-			type="button"
-			onClick={() => onOpen(fullSrc, alt)}
-			className="group/img relative w-11 h-11 rounded-xl overflow-hidden
-        border-2 border-border hover:border-[var(--primary)]  
-        shadow-sm hover:shadow-md transition-all duration-200 block"
+			whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+			type="button" onClick={() => onOpen(fullSrc, alt)}
+			className="group/img relative w-11 h-11 rounded-xl overflow-hidden border-2 border-border hover:border-[var(--primary)] shadow-sm hover:shadow-md transition-all duration-200 block"
 		>
 			<img src={fullSrc} alt={alt} className="w-full h-full object-cover" loading="lazy" />
 			<div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/25 transition-colors flex items-center justify-center">
@@ -426,9 +343,6 @@ const ImgCell = memo(function ImgCell({ src, alt, onOpen }) {
 	);
 });
 
-/* ─────────────────────────────────────────────────────────────────────────
-	 PRIVATE: ImgsCell (stacked thumbnails)
-───────────────────────────────────────────────────────────────────────── */
 const ImgsCell = memo(function ImgsCell({ images, onOpen }) {
 	if (!images.length) return <span className="text-muted-foreground text-sm">—</span>;
 	return (
@@ -437,12 +351,10 @@ const ImgsCell = memo(function ImgsCell({ images, onOpen }) {
 				const fullSrc = toFullSrc(img.src);
 				return (
 					<motion.button
-						key={`${img.src}-${idx}`}
-						type="button"
+						key={`${img.src}-${idx}`} type="button"
 						onClick={() => onOpen(fullSrc, img.alt)}
 						style={{ zIndex: images.length - idx, marginInlineStart: idx === 0 ? 0 : "-14px" }}
-						whileHover={{ scale: 1.12, zIndex: 50 }}
-						whileTap={{ scale: 0.95 }}
+						whileHover={{ scale: 1.12, zIndex: 50 }} whileTap={{ scale: 0.95 }}
 						transition={{ type: "spring", stiffness: 400, damping: 30 }}
 						className="relative w-11 h-11 rounded-xl overflow-hidden border-2 border-background shadow-md cursor-pointer"
 					>
@@ -454,32 +366,22 @@ const ImgsCell = memo(function ImgsCell({ images, onOpen }) {
 	);
 });
 
-/* ─────────────────────────────────────────────────────────────────────────
-	 PRIVATE: ImageModal
-───────────────────────────────────────────────────────────────────────── */
 const ImageModal = memo(function ImageModal({ src, alt, open, onClose, labels = {} }) {
 	const [zoomed, setZoomed] = useState(false);
 	useEffect(() => { if (!open) setZoomed(false); }, [open]);
 
 	const download = useCallback(() => {
-		const a = Object.assign(document.createElement("a"), {
-			href: src, target: "_blank", download: alt || "image",
-		});
+		const a = Object.assign(document.createElement("a"), { href: src, target: "_blank", download: alt || "image" });
 		document.body.appendChild(a); a.click(); document.body.removeChild(a);
 	}, [src, alt]);
 
 	return (
 		<Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-			<DialogContent
-				showCloseButton={false}
-				className="max-w-4xl p-0 overflow-hidden rounded-2xl border border-border bg-background shadow-2xl"
-			>
+			<DialogContent showCloseButton={false} className="max-w-4xl p-0 overflow-hidden rounded-xl border border-border bg-background shadow-2xl">
 				<div className="relative flex items-center justify-between gap-4 px-5 py-4 border-b border-border overflow-hidden">
-					<div className="absolute inset-0 pointer-events-none opacity-[0.07]
-            bg-gradient-to-r from-[var(--primary)] to-[var(--third)] " />
+					<div className="absolute inset-0 pointer-events-none opacity-[0.07] bg-gradient-to-r from-[var(--primary)] to-[var(--third)]" />
 					<div className="relative flex items-center gap-3">
-						<div className="w-9 h-9 rounded-xl flex items-center justify-center
-              bg-gradient-to-br from-[var(--primary)] to-[var(--third)] ">
+						<div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-[var(--primary)] to-[var(--third)]">
 							<ImageIcon size={16} className="text-white" />
 						</div>
 						<div>
@@ -488,40 +390,27 @@ const ImageModal = memo(function ImageModal({ src, alt, open, onClose, labels = 
 						</div>
 					</div>
 					<div className="relative flex items-center gap-1.5">
-						<motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-							onClick={() => setZoomed(z => !z)}
-							className="w-8 h-8 rounded-lg flex items-center justify-center
-                bg-muted border border-border hover:border-[var(--primary)]
-                text-muted-foreground hover:text-[var(--primary)] transition-all">
+						<motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => setZoomed(z => !z)}
+							className="w-8 h-8 rounded-xl flex items-center justify-center bg-muted border border-border hover:border-[var(--primary)] text-muted-foreground hover:text-[var(--primary)] transition-all">
 							<Maximize2 size={14} />
 						</motion.button>
-						<motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-							onClick={download}
-							className="w-8 h-8 rounded-lg flex items-center justify-center text-white
-                bg-gradient-to-br from-[var(--primary)] to-[var(--third)] 
-                shadow-[0_2px_8px_rgba(var(--primary-shadow))]">
+						<motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={download}
+							className="btn btn-solid btn-sm !w-8 !h-8 !px-0">
 							<Download size={14} />
 						</motion.button>
-						<motion.button
-							whileHover={{ scale: 1.1, rotate: 90 }}
-							whileTap={{ scale: 0.9 }}
-							onClick={onClose}
-							className="w-8 h-8 rounded-lg flex items-center justify-center
-                bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800
-                text-red-500 hover:bg-red-100 transition-all">
+						<motion.button whileHover={{ scale: 1.1, rotate: 90 }} whileTap={{ scale: 0.9 }} onClick={onClose}
+							className="btn btn-ghost btn-sm btn-rose !w-8 !h-8 !px-0">
 							<X size={14} />
 						</motion.button>
 					</div>
 				</div>
-
 				<div className="p-8 bg-muted flex items-center justify-center min-h-[380px]">
 					<motion.img
 						src={src} alt={alt}
 						animate={{ scale: zoomed ? 1.65 : 1 }}
 						transition={{ type: "spring", stiffness: 280, damping: 28 }}
 						onClick={() => setZoomed(z => !z)}
-						className="max-w-full max-h-[65vh] object-contain rounded-xl
-              shadow-2xl cursor-zoom-in border-4 border-background"
+						className="max-w-full max-h-[65vh] object-contain rounded-xl shadow-2xl cursor-zoom-in border-4 border-background"
 					/>
 				</div>
 			</DialogContent>
@@ -529,37 +418,15 @@ const ImageModal = memo(function ImageModal({ src, alt, open, onClose, labels = 
 	);
 });
 
-/* ─────────────────────────────────────────────────────────────────────────
-	 DEFAULT EXPORT: Table
-───────────────────────────────────────────────────────────────────────── */
 export default function Table({
-	// ── Toolbar search (always visible) ──────────────────────────────────
-	searchValue = "",
-	onSearchChange,
-	onSearch,
-	actions = [],
-	filters,
-	hasActiveFilters = false,
-	onApplyFilters,
-	labels = {},
-	columns = [],
-	data = [],
-	isLoading = false,
+	searchValue = "", onSearchChange, onSearch,
+	actions = [], filters, hasActiveFilters = false, onApplyFilters,
+	labels = {}, columns = [], data = [], isLoading = false,
 	rowKey = (row, i) => row?.id ?? i,
-	emptyState,
-	striped = false,
-	compact = false,
-	hoverable = true,
-
-	// ── Pagination ────────────────────────────────────────────────────────
-	pagination = null,
-	onPageChange,
-	pageParamName = "page",
-	limitParamName = "limit",
-	perPageOptions = DEFAULT_PER_PAGE_OPTIONS,
-
-	// ── Layout ────────────────────────────────────────────────────────────
-	className = "",
+	emptyState, striped = false, compact = false, hoverable = true,
+	pagination = null, onPageChange,
+	pageParamName = "page", limitParamName = "limit",
+	perPageOptions = DEFAULT_PER_PAGE_OPTIONS, className = "",
 }) {
 	const isRTL = useIsRTL();
 	const [filtersOpen, setFiltersOpen] = useState(false);
@@ -570,7 +437,6 @@ export default function Table({
 	const helpers = useMemo(() => ({ openImage }), [openImage]);
 
 	const hasFilters = Boolean(filters);
-
 	const stickyEnd = isRTL ? "left-0" : "right-0";
 	const stickyShadow = isRTL
 		? "shadow-[8px_0_12px_-10px_rgba(0,0,0,0.2)] dark:shadow-[8px_0_12px_-10px_rgba(0,0,0,0.5)]"
@@ -588,18 +454,12 @@ export default function Table({
 				{/* ── Toolbar ──────────────────────────────────────── */}
 				<div className="px-5 py-4 bg-muted/20 border-b border-border">
 					<TableToolbar
-						searchValue={searchValue}
-						onSearchChange={onSearchChange}
-						onSearch={onSearch}
+						searchValue={searchValue} onSearchChange={onSearchChange} onSearch={onSearch}
 						searchPlaceholder={labels.searchPlaceholder}
 						isFiltersOpen={filtersOpen}
 						onToggleFilters={hasFilters ? () => setFiltersOpen(v => !v) : undefined}
-						hasActiveFilters={hasActiveFilters}
-						filterLabel={labels.filter}
-						actions={actions}
+						hasActiveFilters={hasActiveFilters} filterLabel={labels.filter} actions={actions}
 					/>
-
-					{/* ── Filters panel ─────────────────────────────── */}
 					<AnimatePresence>
 						{filtersOpen && hasFilters && (
 							<TableFilters onApply={onApplyFilters} applyLabel={labels.apply}>
@@ -609,28 +469,17 @@ export default function Table({
 					</AnimatePresence>
 				</div>
 
-				{/* ── Table ────────────────────────────────────────── */}
 				<div className="relative overflow-x-auto">
 					<ShadTable>
 						<TableHeader className="bg-muted/60 border-b border-border">
 							<TableRow className="hover:bg-transparent">
 								{columns.map((col, idx) => (
-									<TableHead
-										key={col.key}
-										className={cn(
-											"!px-5 text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground whitespace-nowrap",
-											compact ? "py-3" : "py-4",
-											"ltr:text-left rtl:text-right",
-											col.headClassName,
-											ACTION_KEYS.has(col.key) && cn("sticky z-30", stickyEnd, "bg-muted/60", stickyShadow),
-										)}
-									>
-										<motion.span
-											initial={{ opacity: 0, y: -6 }}
-											animate={{ opacity: 1, y: 0 }}
-											transition={{ delay: idx * 0.04 }}
-											className="flex items-center gap-2"
-										>
+									<TableHead key={col.key} className={cn(
+										"!px-5 text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground whitespace-nowrap",
+										compact ? "py-3" : "py-4", "ltr:text-left rtl:text-right", col.headClassName,
+										ACTION_KEYS.has(col.key) && cn("sticky z-30", stickyEnd, "bg-muted/60", stickyShadow),
+									)}>
+										<motion.span initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.04 }} className="flex items-center gap-2">
 											{col.header}
 										</motion.span>
 									</TableHead>
@@ -641,35 +490,20 @@ export default function Table({
 						<TableBody>
 							<AnimatePresence mode="wait">
 								{isLoading ? (
-									<TableSkeleton
-										key="skel"
-										columns={columns}
-										rows={Number(pagination?.per_page ?? 6)}
-										compact={compact}
-									/>
+									<TableSkeleton key="skel" columns={columns} rows={Number(pagination?.per_page ?? 6)} compact={compact} />
 								) : data.length === 0 ? (
 									<TableRow key="empty">
 										<TableCell colSpan={columns.length} className="py-20">
-											<motion.div
-												initial={{ opacity: 0, scale: 0.92 }}
-												animate={{ opacity: 1, scale: 1 }}
-												className="flex flex-col items-center gap-4"
-											>
+											<motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center gap-4">
 												<div className="relative">
 													<div className="absolute inset-0 bg-[var(--primary)]/15 blur-2xl rounded-full" />
-													<div className="relative w-16 h-16 rounded-2xl
-                            bg-gradient-to-br from-muted to-muted/60
-                            border border-border flex items-center justify-center shadow-sm">
+													<div className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-muted to-muted/60 border border-border flex items-center justify-center shadow-sm">
 														<ImageIcon className="w-8 h-8 text-muted-foreground/40" />
 													</div>
 												</div>
 												<div className="text-center space-y-1">
-													<p className="text-sm font-bold text-foreground">
-														{emptyState ?? labels.emptyTitle ?? "No results found"}
-													</p>
-													<p className="text-xs text-muted-foreground">
-														{labels.emptySubtitle ?? "Try adjusting your search or filters"}
-													</p>
+													<p className="text-sm font-bold text-foreground">{emptyState ?? labels.emptyTitle ?? "No results found"}</p>
+													<p className="text-xs text-muted-foreground">{labels.emptySubtitle ?? "Try adjusting your search or filters"}</p>
 												</div>
 											</motion.div>
 										</TableCell>
@@ -678,13 +512,11 @@ export default function Table({
 									data.map((row, i) => (
 										<motion.tr
 											key={rowKey(row, i)}
-											initial={{ opacity: 0, x: -10 }}
-											animate={{ opacity: 1, x: 0 }}
-											exit={{ opacity: 0 }}
+											initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
 											transition={{ delay: Math.min(i * 0.025, 0.3) }}
 											className={cn(
 												"border-b border-border/50 group transition-colors duration-150",
-												hoverable && "hover:bg-[var(--primary)]/[0.035]  ",
+												hoverable && "hover:bg-[var(--primary)]/[0.035]",
 												striped && i % 2 === 1 && "bg-muted/20",
 											)}
 										>
@@ -694,7 +526,6 @@ export default function Table({
 														<ImgCell src={row[col.key]} alt={col.header ?? ""} onOpen={openImage} />
 													</TableCell>
 												);
-
 												if (col.type === "imgs") {
 													const imgs = normalizeImages(row[col.key], col.header ?? "");
 													return (
@@ -703,24 +534,15 @@ export default function Table({
 														</TableCell>
 													);
 												}
-
 												return (
-													<TableCell
-														key={col.key}
-														className={cn(
-															"!px-5 text-sm text-foreground/80 whitespace-nowrap ltr:text-left rtl:text-right",
-															compact ? "py-2.5" : "py-4",
-															"group-hover:text-foreground transition-colors duration-150",
-															col.className,
-															ACTION_KEYS.has(col.key) && cn(
-																"sticky z-20", stickyEnd, "bg-background", stickyShadow,
-																" ",
-															),
-														)}
-													>
-														{typeof col.cell === "function"
-															? col.cell(row, i, helpers)
-															: row[col.key]}
+													<TableCell key={col.key} className={cn(
+														"!px-5 text-sm text-foreground/80 whitespace-nowrap ltr:text-left rtl:text-right",
+														compact ? "py-2.5" : "py-4",
+														"group-hover:text-foreground transition-colors duration-150",
+														col.className,
+														ACTION_KEYS.has(col.key) && cn("sticky z-20", stickyEnd, "bg-background", stickyShadow),
+													)}>
+														{typeof col.cell === "function" ? col.cell(row, i, helpers) : row[col.key]}
 													</TableCell>
 												);
 											})}
@@ -732,31 +554,19 @@ export default function Table({
 					</ShadTable>
 				</div>
 
-				{/* ── Pagination ───────────────────────────────────── */}
 				{pagination && (
 					<>
 						<div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 						<TablePagination
-							pagination={pagination}
-							onPageChange={onPageChange}
-							isLoading={isLoading}
-							pageParamName={pageParamName}
-							limitParamName={limitParamName}
-							perPageOptions={perPageOptions}
-							labels={labels}
+							pagination={pagination} onPageChange={onPageChange} isLoading={isLoading}
+							pageParamName={pageParamName} limitParamName={limitParamName}
+							perPageOptions={perPageOptions} labels={labels}
 						/>
 					</>
 				)}
 			</motion.div>
 
-			{/* ── Image Modal ──────────────────────────────────────── */}
-			<ImageModal
-				open={imgModal.open}
-				src={imgModal.src}
-				alt={imgModal.alt}
-				onClose={closeImage}
-				labels={labels}
-			/>
+			<ImageModal open={imgModal.open} src={imgModal.src} alt={imgModal.alt} onClose={closeImage} labels={labels} />
 		</div>
 	);
 }

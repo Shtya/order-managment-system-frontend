@@ -366,7 +366,21 @@
     "logout": "تسجيل الخروج",
     "collections": "التحصيلات",
     "collectedOrders": "الطلبات المحصلة",
-    "uncollectedOrders": "الطلبات غير المحصلة"
+    "uncollectedOrders": "الطلبات غير المحصلة",
+    "warehouseDistribution": "توزيع الطلبات",
+    "warehousePrint": "طباعة البوالص",
+    "warehousePreparation": "التحضير",
+    "warehouseOutgoing": "خروج الطلبات",
+    "warehouseReturns": "المرتجعات",
+    "warehouseRejected": "المرفوضة",
+    "warehouseLogs": "سجل العمليات",
+    "orderReplacement": "استبدال الطلبات",
+    "sections": "الأقسام",
+    "subscriptions": "الاشتراكات",
+    "profile": "الملف الشخصي",
+    "callCenter": "كول سنتر",
+    "moderator": "مودريتور",
+    "productSuggestions": "اقتراح المنتجات"
   },
   "header": {
     "noNotifications": "لا يوجد اشعارات",
@@ -1577,6 +1591,567 @@
     }
   },
   "warehouse": {
+    "prepareView": {
+      "back": "رجوع",
+      "title": "تحضير الطلب",
+      "subtitle": "امسح باركود المنتجات لتأكيد التحضير",
+      "multiTitle": "تحضير متعدد",
+      "multiSubtitle": "تنقل بين الطلبات لتحضيرها",
+      "confirmPrepare": "تأكيد التحضير",
+      "confirming": "جاري التأكيد...",
+      "resetProgress": "إعادة تعيين التقدم",
+      "resetConfirm": "هل أنت متأكد من إعادة تعيين تقدم المسح؟",
+      "fields": {
+        "customer": "العميل",
+        "phone": "الهاتف",
+        "city": "المدينة",
+        "carrier": "شركة الشحن",
+        "notSpecified": "غير محدد"
+      },
+      "scanSection": {
+        "title": "امسح باركود الطلب أو المنتج",
+        "placeholder": "أدخل أو امسح الكود هنا...",
+        "scanBtn": "مسح",
+        "orderScanned": "✓ تم مسح الطلب",
+        "itemScanned": "✓ تم مسح المنتج: {name}",
+        "skuNotFound": "SKU غير موجود: {sku}",
+        "skuComplete": "SKU مكتمل: {sku}",
+        "wrongOrder": "كود الطلب غير صحيح"
+      },
+      "products": {
+        "title": "المنتجات",
+        "complete": "مكتمل",
+        "progress": "{scanned}/{total}",
+        "completed": "مكتمل",
+        "pending": "معلق"
+      },
+      "scanLog": {
+        "title": "سجل المسح",
+        "empty": "لا توجد عمليات مسح بعد"
+      },
+      "success": {
+        "title": "تم التحضير بنجاح",
+        "message": "تم تحضير الطلب بنجاح وهو جاهز للتسليم لشركة الشحن.",
+        "close": "إغلاق"
+      },
+      "orderTabs": {
+        "completedBadge": "مكتمل",
+        "inProgressBadge": "قيد التحضير"
+      }
+    },
+    "distribution": {
+      "breadcrumbs": {
+        "home": "الرئيسية",
+        "orders": "إدارة الطلبات",
+        "distribution": "توزيع الطلبات على شركات الشحن"
+      },
+      "header": {
+        "howItWorks": "كيف يعمل؟"
+      },
+      "tabs": {
+        "unassigned": "غير موزعة",
+        "assigned": "موزعة على شركة الشحن"
+      },
+      "stats": {
+        "totalConfirmed": "إجمالي المؤكدة",
+        "withoutCarrier": "بدون شركة شحن",
+        "withCarrier": "مع شركة شحن",
+        "readyToPrint": "جاهزة للطباعة"
+      },
+      "field": {
+        "orderCode": "كود الطلب",
+        "customer": "العميل",
+        "phone": "الهاتف",
+        "city": "المدينة",
+        "area": "المنطقة",
+        "store": "المتجر",
+        "total": "الإجمالي",
+        "payment": "الدفع",
+        "orderDate": "تاريخ الطلب",
+        "carrier": "شركة الشحن",
+        "trackingCode": "كود التتبع",
+        "distributedAt": "تاريخ التوزيع",
+        "actions": "الإجراءات",
+        "customerName": "اسم العميل",
+        "phoneNumber": "رقم الهاتف",
+        "paymentType": "طريقة الدفع",
+        "shippingCost": "تكلفة الشحن",
+        "allowOpenPackage": "السماح بالفتح",
+        "allowReturn": "السماح بالإرجاع",
+        "date": "التاريخ"
+      },
+      "section": {
+        "products": "المنتجات",
+        "notes": "الملاحظات",
+        "productName": "اسم المنتج",
+        "productNamePlaceholder": "ابحث باسم المنتج..."
+      },
+      "common": {
+        "notSpecified": "غير محدد",
+        "none": "—",
+        "close": "إغلاق",
+        "cancel": "إلغاء",
+        "export": "تصدير",
+        "filter": "فلتر",
+        "apply": "تطبيق",
+        "total": "الإجمالي",
+        "limit": "عدد النتائج",
+        "allStores": "جميع المتاجر",
+        "allCarriers": "جميع شركات الشحن",
+        "all": "الكل",
+        "selectedCount": "تم تحديد {count}"
+      },
+      "payment": {
+        "cod": "دفع عند الاستلام",
+        "paid": "مدفوع"
+      },
+      "value": {
+        "allowed": "مسموح",
+        "notAllowed": "غير مسموح"
+      },
+      "table": {
+        "searchUnassigned": "بحث في الطلبات غير الموزعة...",
+        "searchAssigned": "بحث في الطلبات الموزعة...",
+        "emptyUnassignedTitle": "لا توجد طلبات غير موزعة",
+        "emptyAssignedTitle": "لا توجد طلبات موزعة"
+      },
+      "action": {
+        "assignSelected": "توزيع المحدد ({count})"
+      },
+      "modal": {
+        "orderDetailsTitle": "تفاصيل الطلب — {code}",
+        "assignCarrierTitle": "توزيع على شركة الشحن",
+        "rejectOrdersTitle": "رفض الطلب"
+      },
+      "assign": {
+        "requiredCarrier": "شركة الشحن المطلوبة",
+        "selectedOrders": "الطلبات المحددة",
+        "noOrders": "لا توجد طلبات",
+        "assigning": "جاري التوزيع...",
+        "assign": "توزيع"
+      },
+      "reject": {
+        "enterOrScan": "أدخل رقم الطلب أو امسحه",
+        "scanTitle": "مسح باركود",
+        "recognized": "تم التعرف على الطلب: {code}",
+        "reason": "سبب الرفض",
+        "reasonPlaceholder": "اكتب سبب الرفض...",
+        "rejecting": "جاري الرفض...",
+        "confirm": "تأكيد الرفض"
+      },
+      "tooltip": {
+        "details": "التفاصيل",
+        "assign": "توزيع على شركة الشحن",
+        "changeAssign": "تغيير شركة الشحن",
+        "reject": "رفض الطلب"
+      }
+    },
+    "print": {
+      "breadcrumbs": {
+        "home": "الرئيسية",
+        "warehouse": "إدارة المخزن",
+        "printLabels": "طباعة البوالص"
+      },
+      "header": {
+        "howItWorks": "كيف يعمل؟"
+      },
+      "tabs": {
+        "notPrinted": "غير مطبوع",
+        "printed": "مطبوع"
+      },
+      "stats": {
+        "totalDistributed": "إجمالي الموزعة",
+        "notPrinted": "غير مطبوعة",
+        "printed": "مطبوعة",
+        "inPreparation": "قيد التحضير"
+      },
+      "field": {
+        "orderCode": "كود الطلب",
+        "customer": "العميل",
+        "phone": "الهاتف",
+        "city": "المدينة",
+        "area": "المنطقة",
+        "carrier": "شركة الشحن",
+        "trackingCode": "كود التتبع",
+        "total": "الإجمالي",
+        "orderDate": "تاريخ الطلب",
+        "printedAt": "تاريخ الطباعة",
+        "status": "الحالة",
+        "actions": "الإجراءات"
+      },
+      "filter": {
+        "carrier": "شركة الشحن",
+        "allCarriers": "جميع الشركات",
+        "store": "المتجر",
+        "allStores": "جميع المتاجر",
+        "date": "تاريخ الطلب",
+        "printDate": "تاريخ الطباعة",
+        "productName": "اسم المنتج",
+        "productNamePlaceholder": "ابحث باسم المنتج...",
+        "status": "الحالة",
+        "allStatuses": "جميع الحالات"
+      },
+      "common": {
+        "details": "التفاصيل",
+        "printLabel": "طباعة البوليصة",
+        "reprint": "إعادة طباعة",
+        "openPreparation": "فتح التحضير",
+        "close": "إغلاق",
+        "export": "تصدير",
+        "filter": "فلتر",
+        "apply": "تطبيق",
+        "total": "الإجمالي",
+        "limit": "عدد النتائج",
+        "none": "—"
+      },
+      "notPrinted": {
+        "search": "بحث في الطلبات غير المطبوعة...",
+        "empty": "لا توجد طلبات غير مطبوعة",
+        "printSelected": "طباعة المحدد ({count})",
+        "printSelectedDefault": "طباعة المحدد",
+        "prepareSelected": "تحضير المحدد ({count})",
+        "prepareSelectedDefault": "تحضير المحدد"
+      },
+      "printed": {
+        "search": "بحث في الطلبات المطبوعة...",
+        "empty": "لا توجد طلبات مطبوعة",
+        "printSelected": "إعادة طباعة ({count})",
+        "printSelectedDefault": "إعادة طباعة المحدد",
+        "prepareSelected": "تحضير المحدد ({count})",
+        "prepareSelectedDefault": "تحضير المحدد",
+        "statusPrinting": "طباعة البوليصة",
+        "statusPreparing": "قيد التحضير",
+        "statusReady": "جاهز للشحن"
+      },
+      "printPreview": {
+        "title": "معاينة الطباعة — {count} بوليصة",
+        "printNow": "طباعة الآن ({count})"
+      },
+      "modal": {
+        "orderDetails": "تفاصيل الطلب — {code}"
+      },
+      "labelFields": {
+        "customer": "العميل",
+        "phone": "الهاتف",
+        "city": "المدينة",
+        "area": "المنطقة",
+        "address": "العنوان",
+        "store": "المتجر",
+        "trackingCode": "كود التتبع",
+        "shippingCost": "تكلفة الشحن",
+        "paymentType": "طريقة الدفع",
+        "cod": "دفع عند الاستلام",
+        "paid": "مدفوع"
+      },
+      "howItWorks": "كيف يعمل؟"
+    },
+    "preparation": {
+      "breadcrumbs": {
+        "home": "الرئيسية",
+        "warehouse": "إدارة المخزن",
+        "preparation": "تحضير الطلبات"
+      },
+      "tabs": {
+        "inProgress": "قيد التحضير",
+        "prepared": "تم التحضير"
+      },
+      "subtabs": {
+        "inProgress": "قيد التحضير",
+        "prepared": "تم التحضير"
+      },
+      "stats": {
+        "inProgress": "قيد التحضير",
+        "totalItems": "إجمالي القطع",
+        "scanned": "تم مسحها",
+        "prepared": "تم التحضير"
+      },
+      "table": {
+        "orderNumber": "رقم الطلب",
+        "customer": "العميل",
+        "phone": "الهاتف",
+        "city": "المدينة",
+        "carrier": "شركة الشحن",
+        "products": "المنتجات",
+        "scanProgress": "تقدم المسح",
+        "employee": "الموظف",
+        "actions": "الإجراءات",
+        "preparedAt": "تاريخ التحضير"
+      },
+      "filters": {
+        "carrier": "شركة الشحن",
+        "allCarriers": "جميع الشركات"
+      },
+      "actions": {
+        "continuePreparing": "متابعة التحضير",
+        "distribute": "توزيع على شركة الشحن",
+        "reject": "رفض"
+      },
+      "inProgress": {
+        "emptyTitle": "لا توجد طلبات قيد التحضير"
+      },
+      "prepared": {
+        "emptyTitle": "لا توجد طلبات جاهزة"
+      },
+      "common": {
+        "filter": "فلتر",
+        "apply": "تطبيق",
+        "total": "الإجمالي",
+        "limit": "عدد النتائج"
+      },
+      "unspecified": "غير محدد",
+      "product": "منتج",
+      "searchPlaceholder": "بحث في الطلبات...",
+      "filter": "فلتر",
+      "apply": "تطبيق",
+      "total": "الإجمالي",
+      "limit": "عدد النتائج",
+      "export": "تصدير",
+      "rejectReason": "رفض من صفحة التحضير",
+      "rejectDetails": "تم الرفض من صفحة التحضير",
+      "prepareSelected": "تحضير المحدد",
+      "prepareSelectedCount": "تحضير المحدد ({count})",
+      "howItWorks": "كيف يعمل؟"
+    },
+    "outgoing": {
+      "breadcrumbs": {
+        "home": "الرئيسية",
+        "warehouse": "إدارة المخزن",
+        "outgoing": "خروج الطلبات مع شركة الشحن"
+      },
+      "header": {
+        "howItWorks": "كيف يعمل؟"
+      },
+      "subtabs": {
+        "scan": "اسكان الخروج",
+        "files": "ملفات PDF"
+      },
+      "stats": {
+        "readyToShip": "جاهزة للشحن",
+        "shippedToday": "خرجت اليوم",
+        "totalShipped": "إجمالي الشحنات",
+        "deliveryFiles": "ملفات التسليم"
+      },
+      "scan": {
+        "selectCarrierFirst": "اختر شركة الشحن أولاً",
+        "selectCarrierPlaceholder": "اختر شركة الشحن",
+        "availableOrders": "الطلبات الجاهزة مع {carrier}: {count} طلب",
+        "singleCarrierWarning": "تنبيه: لا يمكن خلط شركات شحن مختلفة في نفس عملية الخروج. تأكد من تحديد شركة الشحن الصحيحة.",
+        "scanOrders": "مسح الطلبات",
+        "inputPlaceholder": "امسح كود الطلب أو اكتبه...",
+        "scanButton": "مسح",
+        "alreadyScanned": "الطلب {code} تم مسحه بالفعل",
+        "notFound": "الطلب {code} غير موجود أو غير متاح",
+        "addedSuccess": "✓ تم إضافة الطلب {code}",
+        "scannedOrders": "الطلبات الممسوحة ({count})",
+        "confirmOutgoing": "تأكيد الخروج وإنشاء PDF",
+        "savedSuccess": "تم حفظ الخروج بنجاح!",
+        "saveNote": "عند الحفظ: سيتم تغيير حالة الطلبات إلى «تم الشحن»، خصم المخزون، وإنشاء ملف PDF للتسليم.",
+        "shipOpDetails": "تم تسليم الطلب لشركة الشحن",
+        "th": {
+          "orderNumber": "رقم الطلب",
+          "customer": "العميل",
+          "city": "المدينة",
+          "trackingCode": "كود التتبع",
+          "total": "الإجمالي",
+          "remove": "حذف"
+        }
+      },
+      "files": {
+        "searchPlaceholder": "بحث في ملفات التسليم...",
+        "emptyTitle": "لا توجد ملفات تسليم",
+        "download": "تحميل PDF",
+        "th": {
+          "fileNumber": "رقم الملف",
+          "carrier": "شركة الشحن",
+          "orders": "الطلبات",
+          "createdAt": "تاريخ الإنشاء",
+          "createdBy": "بواسطة",
+          "actions": "الإجراءات"
+        }
+      },
+      "common": {
+        "filter": "فلتر",
+        "apply": "تطبيق",
+        "total": "الإجمالي",
+        "limit": "عدد النتائج",
+        "carrier": "شركة الشحن",
+        "allCarriers": "جميع الشركات"
+      },
+      "currency": "ر.س"
+    },
+    "returns": {
+      "breadcrumbs": {
+        "home": "الرئيسية",
+        "warehouse": "إدارة المخزن",
+        "returns": "استلام المرتجعات"
+      },
+      "header": {
+        "howItWorks": "كيف يعمل؟"
+      },
+      "subtabs": {
+        "scanReturn": "اسكان المرتجع",
+        "files": "ملفات المرتجعات"
+      },
+      "stats": {
+        "withCarrier": "مع شركة الشحن",
+        "returnFiles": "ملفات المرتجعات",
+        "returnedToday": "مرتجعات اليوم",
+        "totalReturns": "إجمالي المرتجعات"
+      },
+      "scan": {
+        "selectCarrierFirst": "اختر شركة الشحن والمخزن المستلم",
+        "carrier": "شركة الشحن",
+        "selectCarrierPlaceholder": "اختر شركة الشحن",
+        "receivingWarehouse": "المخزن المستلم",
+        "selectWarehousePlaceholder": "اختر المخزن",
+        "availableReturns": "الطلبات المرتقب إرجاعها من {carrier}: {count} طلب",
+        "scanReturns": "مسح المرتجعات",
+        "inputPlaceholder": "امسح كود الطلب المرتجع...",
+        "scanButton": "مسح",
+        "alreadyScanned": "الطلب {code} تم مسحه بالفعل",
+        "notFound": "الطلب {code} غير موجود أو غير متاح للإرجاع",
+        "addedSuccess": "✓ تم إضافة المرتجع {code}",
+        "scannedReturns": "المرتجعات الممسوحة ({count})",
+        "saveReturns": "حفظ المرتجعات وإنشاء PDF",
+        "savedSuccess": "تم حفظ المرتجعات بنجاح!",
+        "saveWarning": "عند الحفظ: سيتم إعادة الطلبات لحالة «مؤكد»، إضافة الكميات للمخزون، وإنشاء ملف PDF بالمرتجعات.",
+        "returnOpDetails": "تم استلام المرتجع من",
+        "th": {
+          "orderNumber": "رقم الطلب",
+          "customer": "العميل",
+          "city": "المدينة",
+          "carrier": "شركة الشحن",
+          "total": "الإجمالي",
+          "condition": "حالة المنتج",
+          "remove": "حذف"
+        }
+      },
+      "files": {
+        "searchPlaceholder": "بحث في ملفات المرتجعات...",
+        "emptyTitle": "لا توجد ملفات مرتجعات",
+        "download": "تحميل PDF",
+        "warehouseFilter": "المخزن",
+        "allWarehouses": "جميع المخازن",
+        "th": {
+          "fileNumber": "رقم الملف",
+          "carrier": "شركة الشحن",
+          "warehouse": "المخزن",
+          "returnedOrders": "الطلبات المرتجعة",
+          "createdAt": "تاريخ الاستلام",
+          "createdBy": "بواسطة",
+          "actions": "الإجراءات"
+        }
+      },
+      "common": {
+        "filter": "فلتر",
+        "apply": "تطبيق",
+        "total": "الإجمالي",
+        "limit": "عدد النتائج",
+        "carrier": "شركة الشحن",
+        "allCarriers": "جميع الشركات"
+      },
+      "filters": {
+        "carrier": "شركة الشحن",
+        "allCarriers": "جميع الشركات"
+      },
+      "filter": "فلتر",
+      "apply": "تطبيق",
+      "total": "الإجمالي",
+      "limit": "عدد النتائج",
+      "currency": "ر.س"
+    },
+    "rejected": {
+      "breadcrumbs": {
+        "home": "الرئيسية",
+        "warehouse": "إدارة المخزن",
+        "rejected": "الطلبات المرفوضة"
+      },
+      "stats": {
+        "totalRejected": "إجمالي المرفوضة",
+        "today": "مرفوضة اليوم",
+        "thisWeek": "هذا الأسبوع",
+        "totalItems": "إجمالي القطع"
+      },
+      "table": {
+        "orderNumber": "رقم الطلب",
+        "customer": "العميل",
+        "phone": "الهاتف",
+        "city": "المدينة",
+        "rejectReason": "سبب الرفض",
+        "rejectedAt": "تاريخ الرفض",
+        "employee": "الموظف المسؤول",
+        "actions": "الإجراءات"
+      },
+      "reasonModal": {
+        "title": "سبب الرفض",
+        "reasonLabel": "السبب",
+        "unspecified": "غير محدد",
+        "customer": "العميل",
+        "rejectedAt": "تاريخ الرفض",
+        "city": "المدينة",
+        "employee": "الموظف المسؤول"
+      },
+      "actions": {
+        "viewReason": "عرض السبب",
+        "retryToConfirmed": "إعادة للمؤكدة"
+      },
+      "close": "إغلاق",
+      "searchPlaceholder": "بحث في الطلبات المرفوضة...",
+      "filter": "فلتر",
+      "apply": "تطبيق",
+      "total": "الإجمالي",
+      "limit": "عدد النتائج",
+      "export": "تصدير",
+      "emptyTitle": "لا توجد طلبات مرفوضة",
+      "retryOpDetails": "تمت إعادة الطلب للمؤكدة"
+    },
+    "logs": {
+      "breadcrumbs": {
+        "home": "الرئيسية",
+        "warehouse": "إدارة المخزن",
+        "logs": "سجل العمليات"
+      },
+      "stats": {
+        "totalOps": "إجمالي العمليات",
+        "success": "ناجحة",
+        "failed": "فاشلة",
+        "successRate": "نسبة النجاح"
+      },
+      "table": {
+        "opNumber": "رقم العملية",
+        "opType": "نوع العملية",
+        "orderNumber": "رقم الطلب",
+        "carrier": "شركة الشحن",
+        "employee": "الموظف",
+        "result": "النتيجة",
+        "details": "التفاصيل",
+        "datetime": "التاريخ والوقت",
+        "orderFile": "ملف الطلب"
+      },
+      "opTypes": {
+        "orderPrepared": "تحضير طلب",
+        "rejectOrder": "رفض طلب",
+        "assignCarrier": "تعيين شركة الشحن",
+        "printLabel": "طباعة بوليصة",
+        "shipOrder": "شحن طلب",
+        "returnOrder": "استلام مرتجع",
+        "retryOrder": "إعادة تفعيل طلب",
+        "bulkReject": "رفض مجمّع",
+        "reprintLabel": "إعادة طباعة بوليصة",
+        "unknown": "عملية غير معروفة"
+      },
+      "result": {
+        "success": "ناجح",
+        "failed": "فاشل"
+      },
+      "searchPlaceholder": "بحث في سجل العمليات...",
+      "filter": "فلتر",
+      "apply": "تطبيق",
+      "total": "الإجمالي",
+      "limit": "عدد النتائج",
+      "export": "تصدير",
+      "emptyTitle": "لا توجد عمليات مسجلة"
+    },
     "flow": {
       "title": "المستودع",
       "breadcrumb": {

@@ -73,7 +73,7 @@ export default function InputPhone({
 		<Select value={field.value} onValueChange={field.onChange}>
 			<SelectTrigger
 				className={cn(
-					"!w-full !h-[45px] rounded-lg bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 font-bold text-[rgb(var(--primary))]",
+					"!w-full !h-[45px] rounded-xl bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 font-bold text-[rgb(var(--primary))]",
 					triggerClassName
 				)}
 			>
@@ -101,7 +101,7 @@ export default function InputPhone({
 					placeholder={placeholder}
 					inputMode="numeric"
 					className={cn(
-						"rounded-lg !font-[Inter] h-[45px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 font-en",
+						"rounded-xl !font-[Inter] h-[45px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 font-en",
 						hasErr ? "border-red-300 focus-visible:ring-red-300" : "",
 						inputClassName
 					)}
@@ -146,7 +146,7 @@ export default function InputPhone({
 						<Select value={controlledCountry} onValueChange={onCountryChange}>
 							<SelectTrigger
 								className={cn(
-									"!w-full !h-[45px] rounded-lg bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 font-bold text-[rgb(var(--primary))]",
+									"!w-full !h-[45px] rounded-xl bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 font-bold text-[rgb(var(--primary))]",
 									triggerClassName
 								)}
 							>
@@ -168,7 +168,7 @@ export default function InputPhone({
 						value={controlledNumber}
 						onChange={(e) => onNumberChange?.(digitsOnly(e.target.value))}
 						className={cn(
-							"flex-1 !font-[Inter] rounded-lg h-[45px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 font-en",
+							"flex-1 !font-[Inter] rounded-xl h-[45px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 font-en",
 							error ? "border-red-300 focus-visible:ring-red-300" : "",
 							inputClassName
 						)}

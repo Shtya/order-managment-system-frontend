@@ -178,7 +178,7 @@ export default function MapLocationPicker({
 			{/* ✅ Search UI (compact for 600x300) */}
 			{enableSearch && !readOnly && (
 				<div className="absolute top-3 left-3 right-3 z-[1000]">
-					<div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900/90 backdrop-blur shadow-xl">
+					<div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900/90 backdrop-blur shadow-xl">
 						<div className="p-2">
 							<div className="flex items-center gap-2">
 								<div className="relative flex-1">
@@ -197,7 +197,7 @@ export default function MapLocationPicker({
 												setErr("");
 												setLastResultName("");
 											}}
-											className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
+											className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700"
 											aria-label={t("clear")}
 											title={t("clear")}
 										>

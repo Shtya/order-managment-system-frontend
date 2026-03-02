@@ -57,7 +57,7 @@ function TableSkeleton({ columns, rows = 6, compact = false }) {
 									delay: rowIndex * 0.1 + colIndex * 0.05,
 								}}
 								className={cn(
-									"h-4 rounded-lg bg-gradient-to-r",
+									"h-4 rounded-xl bg-gradient-to-r",
 									"from-gray-200 via-gray-300 to-gray-200",
 									"dark:from-slate-800 dark:via-slate-700 dark:to-slate-800"
 								)}
@@ -269,7 +269,7 @@ export default function DataTable({
 				initial={{ opacity: 0, y: 20 }}
 				animate={{ opacity: 1, y: 0 }}
 				className={cn(
-					"!p-0 overflow-hidden rounded-2xl",
+					"!p-0 overflow-hidden rounded-xl",
 					"bg-white dark:bg-slate-900",
 					"border border-gray-200 dark:border-slate-800",
 					"shadow-xl shadow-gray-200/50 dark:shadow-slate-950/50"
@@ -344,7 +344,7 @@ export default function DataTable({
 											>
 												<div className="relative">
 													<div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
-													<div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center border border-gray-200 dark:border-slate-700 shadow-lg">
+													<div className="relative w-20 h-20 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center border border-gray-200 dark:border-slate-700 shadow-lg">
 														<ImageIcon className="w-10 h-10 text-gray-400 dark:text-slate-500" />
 													</div>
 												</div>
@@ -675,7 +675,7 @@ export default function DataTable({
 			<AnimatePresence>
 				{imgModal.open && (
 					<Dialog open={imgModal.open} onOpenChange={(open) => (!open ? closeImage() : null)}>
-						<DialogContent showCloseButton={false} className="max-w-6xl p-0 overflow-hidden bg-white dark:bg-slate-900 border-2 border-gray-300 dark:border-slate-700 shadow-2xl rounded-3xl">
+						<DialogContent showCloseButton={false} className="max-w-6xl p-0 overflow-hidden bg-white dark:bg-slate-900 border-2 border-gray-300 dark:border-slate-700 shadow-2xl rounded-xl">
 							{/* Header */}
 							<motion.div
 								initial={{ opacity: 0, y: -20 }}
@@ -777,7 +777,7 @@ export default function DataTable({
 									animate={{ scale: imageZoom ? 1.5 : 1 }}
 									transition={{ type: "spring", stiffness: 300, damping: 30 }}
 									className={cn(
-										"max-w-full max-h-[75vh] object-contain rounded-2xl",
+										"max-w-full max-h-[75vh] object-contain rounded-xl",
 										"shadow-2xl cursor-zoom-in",
 										"border-4 border-white dark:border-slate-800"
 									)}

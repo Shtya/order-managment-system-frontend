@@ -250,7 +250,7 @@ export default function MyAssignedOrdersPage() {
 
 					return (
 						<Badge
-							className="rounded-lg px-3 py-1.5 font-semibold"
+							className="rounded-xl px-3 py-1.5 font-semibold"
 							style={{
 								backgroundColor: bgColor,
 								color: row.status.color,
@@ -391,7 +391,7 @@ export default function MyAssignedOrdersPage() {
 							{Array.from({ length: 12 }).map((_, i) => (
 								<div
 									key={i}
-									className="w-full rounded-lg p-5 border border-[#EEEEEE] dark:border-[#1F2937] animate-pulse"
+									className="w-full rounded-xl p-5 border border-[#EEEEEE] dark:border-[#1F2937] animate-pulse"
 								>
 									<div className="flex items-start gap-3">
 										{/* Icon circle skeleton */}
@@ -426,7 +426,7 @@ export default function MyAssignedOrdersPage() {
 									style={{
 										background: `linear-gradient(135deg, ${stat.bgInlineLight} 0%, ${stat.bgInlineLight} 100%)`,
 									}}
-									className="rounded-lg"
+									className="rounded-xl"
 								>
 									<InfoCard
 										title={stat.title}

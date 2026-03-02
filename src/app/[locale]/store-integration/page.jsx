@@ -528,7 +528,7 @@ function StoreCard({
 		<motion.div
 			whileHover={{ y: -3, boxShadow: "0 16px 40px 0 rgba(0,0,0,0.13)" }}
 			transition={{ type: "spring", stiffness: 300, damping: 22 }}
-			className="relative rounded-2xl overflow-hidden border border-[var(--border)] shadow-sm flex flex-col"
+			className="relative rounded-xl overflow-hidden border border-[var(--border)] shadow-sm flex flex-col"
 			style={{ background: config.bg }}
 		>
 			{/* Body */}
@@ -536,7 +536,7 @@ function StoreCard({
 				{/* Header */}
 				<div className="flex items-start justify-between">
 					<div className="flex items-center gap-2">
-						<div className="w-14 h-14 rounded-2xl bg-white/80 dark:bg-white/10 backdrop-blur-sm border border-white/40 dark:border-white/10 flex items-center justify-center shadow-sm overflow-hidden">
+						<div className="w-14 h-14 rounded-xl bg-white/80 dark:bg-white/10 backdrop-blur-sm border border-white/40 dark:border-white/10 flex items-center justify-center shadow-sm overflow-hidden">
 							<img
 								src={config.logo}
 								alt={config.label}
@@ -644,7 +644,7 @@ function StoreCard({
 			<div className="bg-white/50 dark:bg-black/20 backdrop-blur-sm border-t border-white/40 dark:border-white/10 px-4 py-3 flex items-center gap-2 flex-wrap">
 				<button
 					onClick={() => onConfigure(provider, store)}
-					className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+					className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
 				>
 					<Settings2 size={12} />
 					{hasStore ? t("card.settings") : t("card.configureSettings")}
@@ -654,7 +654,7 @@ function StoreCard({
 					<button
 						onClick={() => onOpenGuide(provider, store)}
 						title={t("card.guideTitle")}
-						className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+						className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
 					>
 						<HelpCircle size={12} />
 						{t("card.guide")}
@@ -665,7 +665,7 @@ function StoreCard({
 						target="_blank"
 						rel="noopener noreferrer"
 						title={t("card.guideTitle")}
-						className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+						className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
 					>
 						<HelpCircle size={12} />
 						{t("card.guide")}
@@ -676,7 +676,7 @@ function StoreCard({
 					<button
 						onClick={() => onOpenWebhook(provider, store)}
 						title="Webhook"
-						className="font-en flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+						className="font-en flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
 					>
 						<Webhook size={12} />
 						Webhook
@@ -686,7 +686,7 @@ function StoreCard({
 				<button
 					onClick={() => hasStore && onSync(store.id)}
 					disabled={isSyncing || !hasStore || !isActive}
-					className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+					className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
 				>
 					<RefreshCw
 						size={12}
@@ -715,7 +715,7 @@ function InstructionStep({ step, children }) {
 function CopyableCode({ text }) {
 	const [copied, setCopied] = useState(false);
 	return (
-		<div className="flex items-center gap-2 mt-1 bg-gray-100 dark:bg-slate-800 rounded-lg px-3 py-1.5">
+		<div className="flex items-center gap-2 mt-1 bg-gray-100 dark:bg-slate-800 rounded-xl px-3 py-1.5">
 			<code className="text-xs font-mono text-primary break-all flex-1">{text}</code>
 			<button
 				type="button"
@@ -966,7 +966,7 @@ function StoreConfigDialog({ open, onClose, provider, existingStore, fetchStores
 	return (
 		<ModalShell open={open} onOpenChange={(v) => !v && onClose()} maxWidth="max-w-2xl">
 			<ModalHeader icon={Settings2} title={t("dialog.title", { provider: config.label })} subtitle={t("dialog.subtitle")} onClose={onClose} />
-			<div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto  p-3">
+			<div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto  p-3">
 				{fetchingStore ? (
 					<div className="flex items-center justify-center py-16">
 						<Loader2 size={28} className="animate-spin text-primary" />
@@ -1518,10 +1518,10 @@ function StoreWebhookModal({ provider, store, onClose, fetchStores, t }) {
 
 function SkeletonCard() {
 	return (
-		<div className="rounded-2xl border border-[var(--border)] overflow-hidden animate-pulse bg-[var(--muted)]">
+		<div className="rounded-xl border border-[var(--border)] overflow-hidden animate-pulse bg-[var(--muted)]">
 			<div className="p-5 space-y-4">
 				<div className="flex items-start justify-between">
-					<div className="w-14 h-14 rounded-2xl bg-[var(--border)]" />
+					<div className="w-14 h-14 rounded-xl bg-[var(--border)]" />
 					<div className="w-11 h-6 rounded-full bg-[var(--border)]" />
 				</div>
 				<div className="space-y-1.5">
@@ -1534,9 +1534,9 @@ function SkeletonCard() {
 				</div>
 			</div>
 			<div className="border-t border-[var(--border)] px-4 py-3 flex gap-2">
-				<div className="h-7 w-20 rounded-lg bg-[var(--border)]" />
-				<div className="h-7 w-20 rounded-lg bg-[var(--border)]" />
-				<div className="h-7 w-16 rounded-lg bg-[var(--border)] ml-auto" />
+				<div className="h-7 w-20 rounded-xl bg-[var(--border)]" />
+				<div className="h-7 w-20 rounded-xl bg-[var(--border)]" />
+				<div className="h-7 w-16 rounded-xl bg-[var(--border)] ml-auto" />
 			</div>
 		</div>
 	);

@@ -297,7 +297,7 @@ function RolePreviewDialog({ t, open, onClose, role }) {
 
 				<div className="space-y-4">
 					{/* ✅ Hero Header (same style as PermissionsSelector) */}
-					<div className="relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 backdrop-blur-sm">
+					<div className="relative overflow-hidden rounded-xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 backdrop-blur-sm">
 						{/* shimmer */}
 						<div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-shimmer" />
 
@@ -366,7 +366,7 @@ function RolePreviewDialog({ t, open, onClose, role }) {
 					</div>
 
 					{/* ✅ Permissions List Card (same pattern blocks style) */}
-					<div className="relative overflow-hidden rounded-2xl border-2 border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900/30">
+					<div className="relative overflow-hidden rounded-xl border-2 border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900/30">
 						<div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
 
 						<div className="relative p-5">

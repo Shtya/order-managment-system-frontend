@@ -102,7 +102,7 @@ function Section({ title, icon: Icon, children, className, delay = 0 }) {
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ delay }}
 			className={cn(
-				"bg-card rounded-2xl border border-border/60 shadow-sm",
+				"bg-card rounded-xl border border-border/60 shadow-sm",
 				className
 			)}
 		>
@@ -508,9 +508,9 @@ function SelectedOrderDetails({ order }) {
 				{pills.map(({ icon: Icon, label, value }) => (
 					<div
 						key={label}
-						className="group flex items-start gap-2.5 rounded-2xl bg-card !py-3 !px-4 border border-border/50 hover:border-primary/30 hover:bg-[color-mix(in_oklab,var(--primary)_4%,var(--secondary))] transition-all duration-200"
+						className="group flex items-start gap-2.5 rounded-xl bg-card !py-3 !px-4 border border-border/50 hover:border-primary/30 hover:bg-[color-mix(in_oklab,var(--primary)_4%,var(--secondary))] transition-all duration-200"
 					>
-						<div className="w-10 h-10 rounded-lg bg-[color-mix(in_oklab,var(--primary)_12%,transparent)] flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-[color-mix(in_oklab,var(--primary)_20%,transparent)] transition-colors duration-200">
+						<div className="w-10 h-10 rounded-xl bg-[color-mix(in_oklab,var(--primary)_12%,transparent)] flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-[color-mix(in_oklab,var(--primary)_20%,transparent)] transition-colors duration-200">
 							<Icon size={25} className="text-primary" />
 						</div>
 						<div className="min-w-0">
@@ -522,10 +522,10 @@ function SelectedOrderDetails({ order }) {
 
 				{/* Status pill */}
 				{status && (
-					<div className="group flex items-start gap-2.5 rounded-2xl bg-card !py-3 !px-4 border border-border/50 hover:border-primary/30 hover:bg-[color-mix(in_oklab,var(--primary)_4%,var(--secondary))] transition-all duration-200"
+					<div className="group flex items-start gap-2.5 rounded-xl bg-card !py-3 !px-4 border border-border/50 hover:border-primary/30 hover:bg-[color-mix(in_oklab,var(--primary)_4%,var(--secondary))] transition-all duration-200"
 					>
 						<div
-							className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 mt-0.5 transition-all duration-200"
+							className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 transition-all duration-200"
 							style={{ background: `${status.color}18` }}
 						>
 							<CheckCircle2 size={25} style={{ color: status.color }} />
@@ -533,7 +533,7 @@ function SelectedOrderDetails({ order }) {
 						<div className="min-w-0">
 							<p className="text-[12px] font-medium text-muted-foreground mb-1">{t("details.status")}</p>
 							<Badge
-								className="rounded-lg px-3 py-0.5 text-sm font-bold border"
+								className="rounded-xl px-3 py-0.5 text-sm font-bold border"
 								style={{
 									backgroundColor: `${status.color}18`,
 									color: status.color,
@@ -548,7 +548,7 @@ function SelectedOrderDetails({ order }) {
 			</div>
 
 			{/* ── Items table ─────────────────────────────────────────── */}
-			<div className="rounded-2xl border border-border/50 overflow-hidden">
+			<div className="rounded-xl border border-border/50 overflow-hidden">
 
 
 				<div className=" !p-0 overflow-x-auto">
@@ -562,7 +562,7 @@ function SelectedOrderDetails({ order }) {
 									t("details.table.unitPrice"),
 									t("details.table.total"),
 								].map((h) => (
-									<th key={h} className=" ltr:text-left rtl:text-right px-4 !py-4 text-[14px] font-bold text-muted-foreground tracking-wide uppercase">
+									<th key={h} className=" ltr:text-left rtl:text-right px-4 !py-4 text-[8px] font-bold text-muted-foreground tracking-wide uppercase">
 										{h}
 									</th>
 								))}
@@ -613,7 +613,7 @@ function SelectedOrderDetails({ order }) {
 
 										{/* Qty */}
 										<td className="px-4 py-3 text-right">
-											<span className="inline-flex items-center justify-center w-8 h-6 rounded-lg bg-[color-mix(in_oklab,var(--primary)_10%,transparent)] text-primary text-[11px] font-bold border border-[color-mix(in_oklab,var(--primary)_20%,transparent)]">
+											<span className="inline-flex items-center justify-center w-8 h-6 rounded-xl bg-[color-mix(in_oklab,var(--primary)_10%,transparent)] text-primary text-[11px] font-bold border border-[color-mix(in_oklab,var(--primary)_20%,transparent)]">
 												×{item.quantity}
 											</span>
 										</td>
@@ -692,7 +692,7 @@ function ReplacementInfoSection({ form, setForm, shippingCompanies, errors }) {
 						onChange={(e) => setForm((p) => ({ ...p, reasonOfReplacement: e.target.value }))}
 						placeholder={t("placeholders.reasonOfReplacement")}
 						className={cn(
-							"rounded-[14px] border-[1.5px] bg-card transition-all duration-200",
+							"rounded-[8px] border-[1.5px] bg-card transition-all duration-200",
 							"focus:border-primary focus:shadow-[0_0_0_4px_color-mix(in_oklab,var(--primary)_10%,transparent)]",
 							errors.reasonOfReplacement ? "border-destructive" : "border-border"
 						)}
@@ -706,7 +706,7 @@ function ReplacementInfoSection({ form, setForm, shippingCompanies, errors }) {
 						onChange={(e) => setForm((p) => ({ ...p, anotherReason: e.target.value }))}
 						placeholder={t("placeholders.anotherReason")}
 						className={cn(
-							"rounded-[14px] border-[1.5px] bg-card transition-all duration-200",
+							"rounded-[8px] border-[1.5px] bg-card transition-all duration-200",
 							"focus:border-primary focus:shadow-[0_0_0_4px_color-mix(in_oklab,var(--primary)_10%,transparent)]",
 							errors.anotherReason ? "border-destructive" : "border-border"
 						)}
@@ -719,7 +719,7 @@ function ReplacementInfoSection({ form, setForm, shippingCompanies, errors }) {
 						value={form.shippingCompanyId}
 						onValueChange={(v) => setForm((p) => ({ ...p, shippingCompanyId: v }))}
 						placeholder={t("placeholders.shippingCompany")}
-						className="rounded-[14px] border-[1.5px] border-border bg-card transition-all duration-200 focus-within:border-primary focus-within:shadow-[0_0_0_4px_color-mix(in_oklab,var(--primary)_10%,transparent)]"
+						className="rounded-[8px] border-[1.5px] border-border bg-card transition-all duration-200 focus-within:border-primary focus-within:shadow-[0_0_0_4px_color-mix(in_oklab,var(--primary)_10%,transparent)]"
 					>
 						<SelectItem value="none">{t("noShipping")}</SelectItem>
 						{shippingCompanies.map((s) => (
@@ -783,7 +783,7 @@ function ItemMultiSelect({ orderItems, replacementItems, onAdd, onRemove, t }) {
 							return (
 								<span
 									key={ri._originalItemId}
-									className="inline-flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-lg text-[11px] font-semibold leading-none
+									className="inline-flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-xl text-[11px] font-semibold leading-none
 										bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300
 										border border-gray-200 dark:border-gray-700"
 								>
@@ -892,10 +892,10 @@ function ItemMultiSelect({ orderItems, replacementItems, onAdd, onRemove, t }) {
 											<img
 												src={avatarSrc(img)}
 												alt={name}
-												className="w-9 h-9 rounded-lg object-cover border border-gray-200 dark:border-gray-700 shrink-0"
+												className="w-9 h-9 rounded-xl object-cover border border-gray-200 dark:border-gray-700 shrink-0"
 											/>
 										) : (
-											<div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center shrink-0">
+											<div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center shrink-0">
 												<Package size={11} className="text-gray-400 dark:text-gray-500" />
 											</div>
 										)}
@@ -919,7 +919,7 @@ function ItemMultiSelect({ orderItems, replacementItems, onAdd, onRemove, t }) {
 
 										{/* Qty badge */}
 										<span className={cn(
-											"text-[11px] font-semibold px-2 py-0.5 rounded-lg border shrink-0 tabular-nums",
+											"text-[11px] font-semibold px-2 py-0.5 rounded-xl border shrink-0 tabular-nums",
 											isSelected
 												? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600"
 												: "bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700"
@@ -975,7 +975,7 @@ function ReplacementItemCard({ originalItem, cardIndex, onUpdate, onRemove, t })
 			animate={{ opacity: 1, y: 0 }}
 			exit={{ opacity: 0, y: -6, scale: 0.98 }}
 			transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-			className="rounded-2xl overflow-hidden
+			className="rounded-xl overflow-hidden
 				border border-gray-200 dark:border-gray-700
 				bg-white dark:bg-gray-900
 				shadow-sm shadow-gray-100 dark:shadow-none"
@@ -985,7 +985,7 @@ function ReplacementItemCard({ originalItem, cardIndex, onUpdate, onRemove, t })
 				bg-gray-50 dark:bg-gray-800/60
 				border-b border-gray-100 dark:border-gray-800">
 				<div className="flex items-center gap-2.5">
-					<div className="w-7 h-7 rounded-lg
+					<div className="w-7 h-7 rounded-xl
 						bg-gray-100 dark:bg-gray-800
 						border border-gray-200 dark:border-gray-700
 						flex items-center justify-center shrink-0">
@@ -1003,7 +1003,7 @@ function ReplacementItemCard({ originalItem, cardIndex, onUpdate, onRemove, t })
 				<button
 					type="button"
 					onClick={() => onRemove(cardIndex)}
-					className="w-7 h-7 rounded-lg
+					className="w-7 h-7 rounded-xl
 						border border-gray-200 dark:border-gray-700
 						bg-white dark:bg-gray-900
 						text-gray-400 dark:text-gray-500
@@ -1028,9 +1028,9 @@ function ReplacementItemCard({ originalItem, cardIndex, onUpdate, onRemove, t })
 						bg-gray-50 dark:bg-gray-800/50">
 						{img ? (
 							<img src={avatarSrc(img)} alt={product?.name}
-								className="w-11 h-11 rounded-lg object-cover border border-gray-200 dark:border-gray-700 shrink-0" />
+								className="w-11 h-11 rounded-xl object-cover border border-gray-200 dark:border-gray-700 shrink-0" />
 						) : (
-							<div className="w-11 h-11 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center shrink-0">
+							<div className="w-11 h-11 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center shrink-0">
 								<Package size={14} className="text-gray-400 dark:text-gray-500" />
 							</div>
 						)}
@@ -1056,7 +1056,7 @@ function ReplacementItemCard({ originalItem, cardIndex, onUpdate, onRemove, t })
 						<div className="flex items-start gap-3 px-3 py-3 rounded-xl
 							border border-gray-200 dark:border-gray-700
 							bg-gray-50 dark:bg-gray-800/50">
-							<div className="w-11 h-11 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center shrink-0">
+							<div className="w-11 h-11 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center shrink-0">
 								<Package size={14} className="text-gray-500 dark:text-gray-400" />
 							</div>
 							<div className="min-w-0 flex-1 space-y-0.5">
@@ -1066,7 +1066,7 @@ function ReplacementItemCard({ originalItem, cardIndex, onUpdate, onRemove, t })
 							<button
 								type="button"
 								onClick={() => { setNewSku(null); setNewPrice(0); }}
-								className="w-6 h-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-400 dark:text-gray-500
+								className="w-6 h-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-400 dark:text-gray-500
 									hover:border-red-300 dark:hover:border-red-700 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30
 									flex items-center justify-center transition-all shrink-0"
 							>
@@ -1098,7 +1098,7 @@ function ReplacementItemCard({ originalItem, cardIndex, onUpdate, onRemove, t })
 						<button
 							type="button"
 							onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-							className="absolute start-1 z-10 w-7 h-7 rounded-lg
+							className="absolute start-1 z-10 w-7 h-7 rounded-xl
 			flex items-center justify-center transition-all duration-150
 			text-gray-400 dark:text-gray-500
 			hover:text-gray-700 dark:hover:text-gray-200
@@ -1118,7 +1118,7 @@ function ReplacementItemCard({ originalItem, cardIndex, onUpdate, onRemove, t })
 						<button
 							type="button"
 							onClick={() => setQuantity((q) => q + 1)}
-							className="absolute end-1 z-10 w-7 h-7 rounded-lg
+							className="absolute end-1 z-10 w-7 h-7 rounded-xl
 			flex items-center justify-center transition-all duration-150
 			text-gray-400 dark:text-gray-500
 			hover:text-gray-700 dark:hover:text-gray-200
@@ -1266,7 +1266,7 @@ function ReplacementItemsSection({ errors, selectedOrder, replacementItems, setR
 						<motion.div
 							initial={{ opacity: 0 }}
 							animate={{ opacity: 1 }}
-							className="flex flex-col items-center justify-center gap-3 py-10 rounded-2xl
+							className="flex flex-col items-center justify-center gap-3 py-10 rounded-xl
 								bg-gray-50 dark:bg-gray-800/30
 								border border-dashed border-gray-200 dark:border-gray-700"
 						>
@@ -1332,7 +1332,7 @@ function PriceSummaryCard({ replacementItems, form, selectedOrder }) {
 	];
 
 	return (
-		<div className="bg-card rounded-2xl border border-border/60 shadow-sm overflow-hidden h-fit">
+		<div className="bg-card rounded-xl border border-border/60 shadow-sm overflow-hidden h-fit">
 			<div className="flex items-center gap-3 px-4 py-3 border-b border-border/40">
 				<div className="w-13 h-13 rounded-xl bg-[color-mix(in_oklab,var(--primary)_10%,transparent)] border border-[color-mix(in_oklab,var(--primary)_20%,transparent)] flex items-center justify-center">
 					<BarChart3 size={25} className="text-[var(--primary)]" />
@@ -1578,7 +1578,7 @@ export default function CreateReplacementPage({ isEditMode = false, replacementI
 		return (
 			<div className="min-h-screen flex items-center justify-center bg-background">
 				<div className="text-center space-y-3">
-					<div className="w-12 h-12 rounded-2xl bg-[color-mix(in_oklab,var(--primary)_10%,transparent)] flex items-center justify-center mx-auto">
+					<div className="w-12 h-12 rounded-xl bg-[color-mix(in_oklab,var(--primary)_10%,transparent)] flex items-center justify-center mx-auto">
 						<Loader2 size={22} className="text-[var(--primary)] animate-spin" />
 					</div>
 					<p className="text-sm text-muted-foreground">{t("messages.loading")}</p>

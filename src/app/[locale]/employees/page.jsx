@@ -136,7 +136,7 @@ function EmployeesTableToolbar({
 function ViewEmployeeDialog({ t, open, onOpenChange, data, loading }) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-2xl rounded-2xl">
+			<DialogContent className="sm:max-w-2xl rounded-xl">
 				<DialogHeader className="text-right">
 					<DialogTitle>{t("view.title") || t("actions.view")}</DialogTitle>
 					<DialogDescription>
@@ -153,35 +153,35 @@ function ViewEmployeeDialog({ t, open, onOpenChange, data, loading }) {
 					<div className="py-10 text-center text-gray-500">{t("empty")}</div>
 				) : (
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-						<div className="rounded-2xl border border-gray-200 dark:border-slate-800 p-4 bg-gray-50 dark:bg-slate-800/40">
+						<div className="rounded-xl border border-gray-200 dark:border-slate-800 p-4 bg-gray-50 dark:bg-slate-800/40">
 							<div className="text-xs text-gray-500">{t("table.name")}</div>
 							<div className="mt-1 font-semibold text-gray-900 dark:text-white">
 								{data.name || "-"}
 							</div>
 						</div>
 
-						<div className="rounded-2xl border border-gray-200 dark:border-slate-800 p-4 bg-gray-50 dark:bg-slate-800/40">
+						<div className="rounded-xl border border-gray-200 dark:border-slate-800 p-4 bg-gray-50 dark:bg-slate-800/40">
 							<div className="text-xs text-gray-500">{t("table.email")}</div>
 							<div className="mt-1 font-en text-gray-900 dark:text-white" dir="ltr">
 								{data.email || "-"}
 							</div>
 						</div>
 
-						<div className="rounded-2xl border border-gray-200 dark:border-slate-800 p-4 bg-gray-50 dark:bg-slate-800/40">
+						<div className="rounded-xl border border-gray-200 dark:border-slate-800 p-4 bg-gray-50 dark:bg-slate-800/40">
 							<div className="text-xs text-gray-500">{t("table.phone")}</div>
 							<div className="mt-1 font-en text-gray-900 dark:text-white" dir="ltr">
 								{data.phone || "-"}
 							</div>
 						</div>
 
-						<div className="rounded-2xl border border-gray-200 dark:border-slate-800 p-4 bg-gray-50 dark:bg-slate-800/40">
+						<div className="rounded-xl border border-gray-200 dark:border-slate-800 p-4 bg-gray-50 dark:bg-slate-800/40">
 							<div className="text-xs text-gray-500">{t("table.role")}</div>
 							<div className="mt-1 text-gray-900 dark:text-white">
 								{data.employeeType || data.type || "-"}
 							</div>
 						</div>
 
-						<div className="rounded-2xl border border-gray-200 dark:border-slate-800 p-4 bg-gray-50 dark:bg-slate-800/40 md:col-span-2">
+						<div className="rounded-xl border border-gray-200 dark:border-slate-800 p-4 bg-gray-50 dark:bg-slate-800/40 md:col-span-2">
 							<div className="text-xs text-gray-500">{t("table.status") || "Status"}</div>
 							<div className="mt-1">
 								{data.isActive ? (
@@ -218,7 +218,7 @@ function EditEmployeeDialog({ t, open, onOpenChange, initial, onSave, saving }) 
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-2xl rounded-2xl">
+			<DialogContent className="sm:max-w-2xl rounded-xl">
 				<DialogHeader className="text-right">
 					<DialogTitle>{t("edit.title") || t("actions.edit")}</DialogTitle>
 					<DialogDescription>{initial ? `#${initial.id}` : ""}</DialogDescription>
@@ -278,7 +278,7 @@ function EditEmployeeDialog({ t, open, onOpenChange, initial, onSave, saving }) 
 function ConfirmDeleteDialog({ t, open, onOpenChange, employee, onConfirm, loading }) {
 	return (
 		<AlertDialog open={open} onOpenChange={onOpenChange}>
-			<AlertDialogContent className="rounded-2xl">
+			<AlertDialogContent className="rounded-xl">
 				<AlertDialogHeader className="text-right">
 					<AlertDialogTitle>{t("delete.title") || t("actions.delete")}</AlertDialogTitle>
 					<AlertDialogDescription>

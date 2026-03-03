@@ -11,6 +11,7 @@ import {
 	Receipt,
 	DollarSign,
 	Clock,
+	Info,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
@@ -28,6 +29,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import api from "@/utils/api";
+import PageHeader from "@/components/atoms/Pageheader";
+import Table from "@/components/atoms/Table";
 
 function SalesTableToolbar({
 	t,
@@ -156,6 +159,15 @@ function FiltersPanel({ t, value, onChange, onApply }) {
 	);
 }
 
+function FilterField({ label, children }) {
+	return (
+		<div className="space-y-2">
+			<Label>{label}</Label>
+			{children}
+		</div>
+	);
+}
+
 export default function SalesInvoicesPage() {
 	const t = useTranslations("salesInvoices");
 
@@ -185,36 +197,32 @@ export default function SalesInvoicesPage() {
 	const statsCards = useMemo(
 		() => [
 			{
-				title: t("stats.totalInvoices"),
-				value: String(stats.invoicesCount),
+				name: t("stats.totalInvoices"),
+				value: String(stats.invoicesCount ?? 0),
 				icon: Receipt,
-				bg: "bg-[#F3F6FF] dark:bg-[#0B1220]",
-				iconColor: "text-[#6B7CFF] dark:text-[#8A96FF]",
-				iconBorder: "border-[#6B7CFF] dark:border-[#8A96FF]",
+				color: "#6B7CFF",
+				sortOrder: 0,
 			},
 			{
-				title: t("stats.totalSales"),
-				value: `${stats.totalSales} ${t("currency")}`,
+				name: t("stats.totalSales"),
+				value: `${stats.totalSales ?? 0} ${t("currency")}`,
 				icon: DollarSign,
-				bg: "bg-[#F0FDF4] dark:bg-[#052E16]",
-				iconColor: "text-[#22C55E] dark:text-[#4ADE80]",
-				iconBorder: "border-[#22C55E] dark:border-[#4ADE80]",
+				color: "#22C55E",
+				sortOrder: 1,
 			},
 			{
-				title: t("stats.totalPaid"),
-				value: `${stats.totalPaid} ${t("currency")}`,
+				name: t("stats.totalPaid"),
+				value: `${stats.totalPaid ?? 0} ${t("currency")}`,
 				icon: DollarSign,
-				bg: "bg-[#FFF9F0] dark:bg-[#1A1208]",
-				iconColor: "text-[#F59E0B] dark:text-[#FBBF24]",
-				iconBorder: "border-[#F59E0B] dark:border-[#FBBF24]",
+				color: "#F59E0B",
+				sortOrder: 2,
 			},
 			{
-				title: t("stats.totalRemaining"),
-				value: `${stats.totalRemaining} ${t("currency")}`,
+				name: t("stats.totalRemaining"),
+				value: `${stats.totalRemaining ?? 0} ${t("currency")}`,
 				icon: Clock,
-				bg: "bg-[#FEF2F2] dark:bg-[#1F0A0A]",
-				iconColor: "text-[#EF4444] dark:text-[#F87171]",
-				iconBorder: "border-[#EF4444] dark:border-[#F87171]",
+				color: "#EF4444",
+				sortOrder: 3,
 			},
 		],
 		[t, stats]
@@ -296,6 +304,14 @@ export default function SalesInvoicesPage() {
 		};
 		return styles[status] || styles.unpaid;
 	};
+
+	const hasActiveFilters = useMemo(() => {
+		return (
+			(filters.paymentStatus && filters.paymentStatus !== "all") ||
+			(filters.paymentMethod && filters.paymentMethod !== "all") ||
+			Boolean(filters.customerName?.trim())
+		);
+	}, [filters]);
 
 	const columns = useMemo(() => {
 		return [
@@ -400,82 +416,111 @@ export default function SalesInvoicesPage() {
 	}, [t]);
 
 	return (
-		<div className="min-h-screen p-6">
-			<div className="bg-card !pb-0 flex flex-col gap-2 mb-4">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-2 text-lg font-semibold">
-						<span className="text-gray-400">{t("breadcrumb.home")}</span>
-						<ChevronLeft className="text-gray-400" size={18} />
-						<span className="text-[rgb(var(--primary))]">{t("breadcrumb.salesInvoices")}</span>
-						<span className="ml-3 inline-flex w-3.5 h-3.5 rounded-full bg-[rgb(var(--primary))]" />
-					</div>
+		<div className="min-h-screen p-5">
 
-					<div className="flex items-center gap-4">
+			<PageHeader
+				breadcrumbs={[
+					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.salesInvoices") }
+				]}
+				buttons={
+					<>
 						<Button_
 							href="/sales/new"
 							size="sm"
 							label={t("actions.createInvoice")}
-							tone="purple"
+							tone="primary"
 							variant="solid"
 						/>
 
-						<Button_ size="sm" label={t("actions.howToUse")} tone="white" variant="solid" />
-					</div>
-				</div>
+						<Button_ size="sm" label={t("actions.howToUse")} tone="white" variant="ghost" icon={<Info size={18} />} />
+					</>
+				}
 
-				<div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-6">
-					{statsCards.map((stat, index) => (
-						<motion.div
-							key={stat.title}
-							initial={{ opacity: 0, y: 18 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: index * 0.06 }}
-						>
-							<InfoCard
-								title={stat.title}
-								value={stat.value}
-								icon={stat.icon}
-								bg={stat.bg}
-								iconColor={stat.iconColor}
-								iconBorder={stat.iconBorder}
+				stats={statsCards}
+			/>
+
+			<Table
+				searchValue={search}
+				onSearchChange={setSearch}
+				onSearch={() => { }}
+				labels={{
+					searchPlaceholder: t("toolbar.searchPlaceholder"),
+					filter: t("toolbar.filter"),
+					apply: t("filters.apply"),
+					total: t("common.total"),
+					limit: t("common.limit"),
+					emptyTitle: t("empty"),
+					emptySubtitle: "",
+				}}
+				actions={[
+
+					{
+						key: "export",
+						label: t("toolbar.export"),
+						icon: <FileDown size={14} />,
+						color: "blue",
+						onClick: () => console.log("export"),
+					},
+				]}
+				hasActiveFilters={hasActiveFilters}
+				onApplyFilters={applyFilters}
+				filters={
+					<>
+						<FilterField label={t("filters.paymentStatus")}>
+							<Select
+								value={filters.paymentStatus}
+								onValueChange={(v) => setFilters((f) => ({ ...f, paymentStatus: v }))}
+							>
+								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+									<SelectValue placeholder={t("filters.paymentStatusPlaceholder")} />
+								</SelectTrigger>
+								<SelectContent className="bg-card-select">
+									<SelectItem value="all">{t("filters.all")}</SelectItem>
+									<SelectItem value="paid">{t("filters.paid")}</SelectItem>
+									<SelectItem value="unpaid">{t("filters.unpaid")}</SelectItem>
+									<SelectItem value="partially_paid">{t("filters.partiallyPaid")}</SelectItem>
+								</SelectContent>
+							</Select>
+						</FilterField>
+
+						<FilterField label={t("filters.paymentMethod")}>
+							<Select
+								value={filters.paymentMethod}
+								onValueChange={(v) => setFilters((f) => ({ ...f, paymentMethod: v }))}
+							>
+								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+									<SelectValue placeholder={t("filters.paymentMethodPlaceholder")} />
+								</SelectTrigger>
+								<SelectContent className="bg-card-select">
+									<SelectItem value="all">{t("filters.all")}</SelectItem>
+									<SelectItem value="cash">{t("filters.cash")}</SelectItem>
+									<SelectItem value="card">{t("filters.card")}</SelectItem>
+									<SelectItem value="transfer">{t("filters.transfer")}</SelectItem>
+								</SelectContent>
+							</Select>
+						</FilterField>
+
+						<FilterField label={t("filters.customerName")}>
+							<Input
+								value={filters.customerName}
+								onChange={(e) => setFilters((f) => ({ ...f, customerName: e.target.value }))}
+								placeholder={t("filters.customerNamePlaceholder")}
+								className="h-10 rounded-xl text-sm"
 							/>
-						</motion.div>
-					))}
-				</div>
-			</div>
-
-			<div className="bg-card rounded-sm">
-				<SalesTableToolbar
-					t={t}
-					searchValue={search}
-					onSearchChange={setSearch}
-					onExport={() => console.log("export")}
-					onRefresh={handleRefresh}
-					isFiltersOpen={filtersOpen}
-					onToggleFilters={() => setFiltersOpen((v) => !v)}
-				/>
-
-				<AnimatePresence>
-					{filtersOpen && (
-						<FiltersPanel t={t} value={filters} onChange={setFilters} onApply={applyFilters} />
-					)}
-				</AnimatePresence>
-
-				<div className="mt-4">
-					<DataTable
-						columns={columns}
-						data={pager.records}
-						pagination={{
-							total_records: pager.total_records,
-							current_page: pager.current_page,
-							per_page: pager.per_page,
-						}}
-						onPageChange={handlePageChange}
-						emptyState={t("empty")}
-						loading={loading}
-					/>
-				</div>
-			</div>
+						</FilterField>
+					</>
+				}
+				columns={columns}
+				data={pager.records}
+				isLoading={loading}
+				pagination={{
+					total_records: pager.total_records,
+					current_page: pager.current_page,
+					per_page: pager.per_page,
+				}}
+				onPageChange={({ page, per_page }) => fetchInvoices(page, per_page)}
+			/>
 		</div>
 	);
 }

@@ -62,6 +62,7 @@ import { avatarSrc } from "@/components/atoms/UserSelect";
 import { BreadcrumbBar } from "@/components/atoms/Breadcrumb";
 import { FcCancel } from "react-icons/fc";
 import Img from "@/components/atoms/Img";
+import PageHeader from "@/components/atoms/Pageheader";
 
 
 const baseImg = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "") ?? "";
@@ -82,12 +83,12 @@ function hexToBg(hex, alpha = 0.1) {
 }
 
 function formatCurrency(n) {
-	return `${(Number(n) || 0).toLocaleString("ar-EG")} ج.م`;
+	return `${(Number(n) || 0).toLocaleString("en-US")} ج.م`;
 }
 
 function formatDate(d) {
 	if (!d) return "—";
-	return new Date(d).toLocaleDateString("ar-EG", {
+	return new Date(d).toLocaleDateString("en-US", {
 		year: "numeric", month: "short", day: "numeric",
 	});
 }
@@ -1591,7 +1592,7 @@ export default function CreateReplacementPage({ isEditMode = false, replacementI
 		<div className="min-h-screen p-4 md:p-6 bg-background">
 			<form onSubmit={handleSubmit}>
 
-				<BreadcrumbBar
+				<PageHeader
 					breadcrumbs={[
 						{ name: t("breadcrumb.home"), href: "/" },
 						{ name: t(`breadcrumb.orders`), href: "/orders?tab=replacement" },
@@ -1614,33 +1615,28 @@ export default function CreateReplacementPage({ isEditMode = false, replacementI
 							/>
 						</>
 					}
-				/>
+				></PageHeader>
 
 
-				{/* ── SECTION 1: Order Search ── */}
-				<div className="mb-4">
-					<OrderSearchSection
-						selectedOrder={selectedOrder}
-						onSelect={(order) => { setSelectedOrder(order); if (!isEditMode) setReplacementItems([]); }}
-						isEditMode={isEditMode}
-						errors={errors}
-					/>
 
-				</div>
 
-				{/* ── SECTION 2: Replacement info ── */}
-				<div className="mb-4">
-					<ReplacementInfoSection
-						form={form}
-						setForm={setForm}
-						shippingCompanies={shippingCompanies}
-						errors={errors}
-					/>
-				</div>
 
 				{/* ── SECTION 3: Items + sidebar ── */}
 				<div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-4">
-					<div>
+					<div className="flex gap-6 w-full flex-col" >
+						<OrderSearchSection
+							selectedOrder={selectedOrder}
+							onSelect={(order) => { setSelectedOrder(order); if (!isEditMode) setReplacementItems([]); }}
+							isEditMode={isEditMode}
+							errors={errors}
+						/>
+
+						<ReplacementInfoSection
+							form={form}
+							setForm={setForm}
+							shippingCompanies={shippingCompanies}
+							errors={errors}
+						/>
 						<ReplacementItemsSection
 							selectedOrder={selectedOrder}
 							replacementItems={replacementItems}

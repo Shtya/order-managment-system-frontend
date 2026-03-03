@@ -10,6 +10,8 @@ import {
 	RotateCcw,
 	TrendingDown,
 	FileDown,
+	Info,
+	Save,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
@@ -27,6 +29,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import api from "@/utils/api";
+import PageHeader from "@/components/atoms/Pageheader";
+import Table from "@/components/atoms/Table";
 
 function ReturnsTableToolbar({
 	t,
@@ -155,7 +159,14 @@ function FiltersPanel({ t, value, onChange, onApply, suppliers }) {
 		</motion.div>
 	);
 }
-
+function FilterField({ label, children }) {
+	return (
+		<div className="space-y-2">
+			<Label>{label}</Label>
+			{children}
+		</div>
+	);
+}
 export default function PurchaseReturnsPage() {
 	const t = useTranslations("returns");
 
@@ -180,20 +191,18 @@ export default function PurchaseReturnsPage() {
 	const statsCards = useMemo(
 		() => [
 			{
-				title: t("stats.returnInvoicesCount"),
-				value: String(stats.returnInvoicesCount),
+				name: t("stats.returnInvoicesCount"),
+				value: String(stats.returnInvoicesCount ?? 0),
 				icon: RotateCcw,
-				bg: "bg-[#F3F6FF] dark:bg-[#0B1220]",
-				iconColor: "text-[#6B7CFF] dark:text-[#8A96FF]",
-				iconBorder: "border-[#6B7CFF] dark:border-[#8A96FF]",
+				color: "#6B7CFF", // blue
+				sortOrder: 0,
 			},
 			{
-				title: t("stats.totalReturnValue"),
-				value: `${stats.totalReturnValue} ${t("currency")}`,
+				name: t("stats.totalReturnValue"),
+				value: `${stats.totalReturnValue ?? 0} ${t("currency")}`,
 				icon: TrendingDown,
-				bg: "bg-[#FFF9F0] dark:bg-[#1A1208]",
-				iconColor: "text-[#F59E0B] dark:text-[#FBBF24]",
-				iconBorder: "border-[#F59E0B] dark:border-[#FBBF24]",
+				color: "#F59E0B", // amber
+				sortOrder: 1,
 			},
 		],
 		[t, stats]
@@ -297,7 +306,13 @@ export default function PurchaseReturnsPage() {
 		};
 		return types[type] || type;
 	};
-
+	const hasActiveFilters = useMemo(() => {
+		return (
+			(filters.status && filters.status !== "all") ||
+			(filters.returnType && filters.returnType !== "all") ||
+			(filters.supplierId && filters.supplierId !== "none")
+		);
+	}, [filters]);
 	const columns = useMemo(() => {
 		return [
 			{
@@ -405,88 +420,117 @@ export default function PurchaseReturnsPage() {
 	}, [t]);
 
 	return (
-		<div className="min-h-screen p-6">
-			<div className="bg-card !pb-0 flex flex-col gap-2 mb-4">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-2 text-lg font-semibold">
-						<span className="text-gray-400">{t("breadcrumb.home")}</span>
-						<ChevronLeft className="text-gray-400" size={18} />
-						<span className="text-[rgb(var(--primary))]">{t("breadcrumb.returns")}</span>
-						<span className="ml-3 inline-flex w-3.5 h-3.5 rounded-full bg-[rgb(var(--primary))]" />
-					</div>
+		<div className="min-h-screen p-5">
 
-					<div className="flex items-center gap-4">
+			<PageHeader
+				breadcrumbs={[
+					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.returns") }
+				]}
+				buttons={
+					<>
 						<Button_
 							href="/purchases/return/new"
 							size="sm"
 							label={t("actions.createReturn")}
-							tone="purple"
 							variant="solid"
-						/>
+							icon={<Save size={18} />}
+						/>						<Button_ size="sm" label={t("actions.howToUse")} tone="ghost" icon={<Info size={18} />} />
+					</>
+				}
+				stats={statsCards}
+			/>
 
-						<Button_ size="sm" label={t("actions.howToUse")} tone="white" variant="solid" />
-					</div>
-				</div>
+			<Table
+				searchValue={search}
+				onSearchChange={setSearch}
+				onSearch={() => { }}
+				labels={{
+					searchPlaceholder: t("toolbar.searchPlaceholder"),
+					filter: t("toolbar.filter"),
+					apply: t("filters.apply"),
+					total: t("common.total"),
+					limit: t("common.limit"),
+					emptyTitle: t("empty"),
+					emptySubtitle: "",
+				}}
+				actions={[
+					{
+						key: "export",
+						label: t("toolbar.export"),
+						icon: <FileDown size={14} />,
+						color: "blue",
+						onClick: () => console.log("export"),
+					},
+				]}
+				hasActiveFilters={hasActiveFilters}
+				onApplyFilters={applyFilters}
+				filters={
+					<>
+						<FilterField label={t("filters.status")}>
+							<Select
+								value={filters.status}
+								onValueChange={(v) => setFilters((f) => ({ ...f, status: v }))}
+							>
+								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+									<SelectValue placeholder={t("filters.statusPlaceholder")} />
+								</SelectTrigger>
+								<SelectContent className="bg-card-select">
+									<SelectItem value="all">{t("filters.statusAll")}</SelectItem>
+									<SelectItem value="pending">{t("filters.statusPending")}</SelectItem>
+									<SelectItem value="approved">{t("filters.statusApproved")}</SelectItem>
+									<SelectItem value="rejected">{t("filters.statusRejected")}</SelectItem>
+								</SelectContent>
+							</Select>
+						</FilterField>
 
-				<div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-6">
-					{statsCards.map((stat, index) => (
-						<motion.div
-							key={stat.title}
-							initial={{ opacity: 0, y: 18 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: index * 0.06 }}
-						>
-							<InfoCard
-								title={stat.title}
-								value={stat.value}
-								icon={stat.icon}
-								bg={stat.bg}
-								iconColor={stat.iconColor}
-								iconBorder={stat.iconBorder}
-							/>
-						</motion.div>
-					))}
-				</div>
-			</div>
+						<FilterField label={t("filters.returnType")}>
+							<Select
+								value={filters.returnType}
+								onValueChange={(v) => setFilters((f) => ({ ...f, returnType: v }))}
+							>
+								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+									<SelectValue placeholder={t("filters.returnTypePlaceholder")} />
+								</SelectTrigger>
+								<SelectContent className="bg-card-select">
+									<SelectItem value="all">{t("filters.returnTypeAll")}</SelectItem>
+									<SelectItem value="cash_refund">{t("filters.returnTypeCash")}</SelectItem>
+									<SelectItem value="bank_transfer">{t("filters.returnTypeBank")}</SelectItem>
+									<SelectItem value="supplier_deduction">{t("filters.returnTypeDeduct")}</SelectItem>
+								</SelectContent>
+							</Select>
+						</FilterField>
 
-			<div className="bg-card rounded-sm">
-				<ReturnsTableToolbar
-					t={t}
-					searchValue={search}
-					onSearchChange={setSearch}
-					onExport={() => console.log("export")}
-					onRefresh={handleRefresh}
-					isFiltersOpen={filtersOpen}
-					onToggleFilters={() => setFiltersOpen((v) => !v)}
-				/>
-
-				<AnimatePresence>
-					{filtersOpen && (
-						<FiltersPanel
-							t={t}
-							value={filters}
-							onChange={setFilters}
-							onApply={applyFilters}
-							suppliers={suppliers}
-						/>
-					)}
-				</AnimatePresence>
-
-				<div className="mt-4">
-					<DataTable
-						columns={columns}
-						data={pager.records}
-						pagination={{
-							total_records: pager.total_records,
-							current_page: pager.current_page,
-							per_page: pager.per_page,
-						}}
-						onPageChange={({ page, per_page }) => handlePageChange({ page, per_page })}
-						emptyState={t("empty")}
-						loading={loading}
-					/>
-				</div>
-			</div>
+						<FilterField label={t("filters.supplier")}>
+							<Select
+								value={filters.supplierId}
+								onValueChange={(v) => setFilters((f) => ({ ...f, supplierId: v }))}
+							>
+								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+									<SelectValue placeholder={t("filters.supplierPlaceholder")} />
+								</SelectTrigger>
+								<SelectContent className="bg-card-select">
+									<SelectItem value="none">{t("filters.all")}</SelectItem>
+									{suppliers.map((s) => (
+										<SelectItem key={s.id} value={String(s.id)}>
+											{s.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</FilterField>
+					</>
+				}
+				columns={columns}
+				data={pager.records}
+				isLoading={loading}
+				pagination={{
+					total_records: pager.total_records,
+					current_page: pager.current_page,
+					per_page: pager.per_page,
+				}}
+				onPageChange={({ page, per_page }) => fetchReturns(page, per_page)}
+			/>
 		</div>
 	);
 }

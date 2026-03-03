@@ -3,7 +3,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Trash2, Plus, Minus, Loader2 } from "lucide-react";
+import { ChevronLeft, Trash2, Plus, Minus, Loader2, Info, Save } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -25,6 +25,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import api from "@/utils/api";
 import { ProductSkuSearchPopover } from "@/components/molecules/ProductSkuSearchPopover";
+import PageHeader from "@/components/atoms/Pageheader";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -870,34 +871,24 @@ export default function CreateOrderPageComplete({
 			initial={{ opacity: 0, y: 20, scale: 0.98 }}
 			animate={{ opacity: 1, y: 0, scale: 1 }}
 			transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.15 }}
-			className="min-h-screen p-6"
+			className="min-h-screen p-5"
 		>
 			{/* ── Header ── */}
-			<div className="bg-card mb-6">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-2 text-lg font-semibold">
-						<span className="text-gray-400">{t("breadcrumb.home")}</span>
-						<ChevronLeft className="text-gray-400" size={18} />
-						<button
-							onClick={() => navigate.push("/orders")}
-							className="text-gray-400 hover:text-primary transition-colors"
-						>
-							{t("breadcrumb.orders")}
-						</button>
-						<ChevronLeft className="text-gray-400" size={18} />
-						<span className="text-primary">
-							{isEditMode ? t("breadcrumb.editOrder") : t("breadcrumb.createOrder")}
-						</span>
-						<span className="mr-3 inline-flex w-3.5 h-3.5 rounded-xl bg-primary" />
-					</div>
-
+			<PageHeader
+				breadcrumbs={[
+					{ name: t("breadcrumb.home"), href: "/" },
+					{ name:  t("breadcrumb.orders") , href : "/orders" },
+					{ name: isEditMode ? t("breadcrumb.editOrder") : t("breadcrumb.createOrder")  },
+				]}
+				buttons={
 					<div className="flex items-center gap-4">
 						{!isEditMode && (
-							<Button_ size="sm" label={t("actions.howToUse")} tone="white" variant="solid" />
+							<Button_ size="sm" label={t("actions.howToUse")} tone="ghost" icon={<Info size={18} />} />
 						)}
 						<Button_
 							onClick={handleSubmit(onSubmit)}
 							size="sm"
+							icon={<Save size={18} />}
 							label={
 								loading
 									? t("actions.saving")
@@ -905,21 +896,18 @@ export default function CreateOrderPageComplete({
 										? t("actions.update")
 										: t("actions.save")
 							}
-							tone="purple"
-							variant="solid"
+
 							disabled={loading || initialLoading}
 						/>
 					</div>
-				</div>
-			</div>
+				}
+				
+			></PageHeader> 
 
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<div className="flex flex-col lg:flex-row gap-6">
 					<div className="flex-1 space-y-6">
 
-						{/* ═══════════════════════════════════════════════
-						    CARD 1 — Customer Info
-						═══════════════════════════════════════════════ */}
 						<SectionCard title={t("sections.customerInfo")} delay={0.2}>
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								{/* Customer Name */}
@@ -1014,9 +1002,6 @@ export default function CreateOrderPageComplete({
 							</div>
 						</SectionCard>
 
-						{/* ═══════════════════════════════════════════════
-						    CARD 2 — Payment & Shipping
-						═══════════════════════════════════════════════ */}
 						<SectionCard title={t("sections.paymentShipping")} delay={0.25}>
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								{/* Payment Method */}
@@ -1210,22 +1195,9 @@ export default function CreateOrderPageComplete({
 							</div>
 						</SectionCard>
 
-						{/* ═══════════════════════════════════════════════
-						    CARD 3 — Address / Location
-						    - Bosta: city + zone + district selects
-						    - Normal: text inputs
-						═══════════════════════════════════════════════ */}
 						<SectionCard
 							title={t("sections.address")}
 							delay={0.3}
-						// badge={
-						// 	isBosta ? (
-						// 		<span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800">
-						// 			<span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-						// 			Bosta
-						// 		</span>
-						// 	) : null
-						// }
 						>
 							<AddressSection
 								t={t}
@@ -1451,62 +1423,94 @@ export default function CreateOrderPageComplete({
 // Order Summary sidebar
 // ─────────────────────────────────────────────────────────────────────────────
 function OrderSummary({ t, summary }) {
-	return (
-		<motion.div
-			initial={{ opacity: 0, x: 20 }}
-			animate={{ opacity: 1, x: 0 }}
-			transition={{ delay: 0.2 }}
-			className="bg-card sticky top-6"
-		>
-			<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
-				{t("sections.orderSummary")}
-			</h3>
-			<div className="space-y-4">
-				<div className="flex items-center justify-between p-4 rounded-xl bg-blue-50 dark:bg-blue-950/20">
-					<span className="text-sm text-gray-600 dark:text-slate-300">{t("summary.productCount")}</span>
-					<span className="text-lg font-bold text-blue-600 dark:text-blue-400">{summary.productCount}</span>
-				</div>
-				<div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-slate-800/50">
-					<span className="text-sm text-gray-600 dark:text-slate-300">{t("summary.productsTotal")}</span>
-					<span className="text-base font-semibold text-gray-700 dark:text-slate-200">
-						{summary.productsTotal.toFixed(2)} {t("currency")}
-					</span>
-				</div>
-				<div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-slate-800/50">
-					<span className="text-sm text-gray-600 dark:text-slate-300">{t("summary.shippingCost")}</span>
-					<span className="text-base font-semibold text-gray-700 dark:text-slate-200">
-						{summary.shippingCost.toFixed(2)} {t("currency")}
-					</span>
-				</div>
-				<div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-slate-800/50">
-					<span className="text-sm text-gray-600 dark:text-slate-300">{t("summary.discount")}</span>
-					<span className="text-base font-semibold text-red-600 dark:text-red-400">
-						-{summary.discount.toFixed(2)} {t("currency")}
-					</span>
-				</div>
-				<div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-br from-primary/10 to-purple-500/10 border-2 border-primary/30">
-					<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">{t("summary.finalTotal")}</span>
-					<span className="text-xl font-bold text-primary">
-						{summary.finalTotal.toFixed(2)} {t("currency")}
-					</span>
-				</div>
-				{summary.deposit > 0 && (
-					<>
-						<div className="flex items-center justify-between p-3 rounded-xl bg-blue-50 dark:bg-blue-950/20">
-							<span className="text-sm text-gray-600 dark:text-slate-300">{t("summary.deposit")}</span>
-							<span className="text-base font-semibold text-blue-600 dark:text-blue-400">
-								{summary.deposit.toFixed(2)} {t("currency")}
-							</span>
-						</div>
-						<div className="flex items-center justify-between p-4 rounded-xl bg-orange-50 dark:bg-orange-950/20 border-2 border-orange-200 dark:border-orange-900/50">
-							<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">{t("summary.remaining")}</span>
-							<span className="text-xl font-bold text-orange-600 dark:text-orange-400">
-								{summary.remaining.toFixed(2)} {t("currency")}
-							</span>
-						</div>
-					</>
-				)}
-			</div>
-		</motion.div>
-	);
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.2 }}
+      className="bg-card sticky top-6"
+    >
+      <h3 className="text-lg font-semibold text-foreground mb-4">
+        {t("sections.orderSummary")}
+      </h3>
+
+      <div className="space-y-2">
+
+        {/* Product count — primary accent */}
+        <div className="flex items-center justify-between px-4 py-3 rounded-xl
+          bg-[var(--primary)]/8 border border-[var(--primary)]/20">
+          <span className="text-sm text-muted-foreground">{t("summary.productCount")}</span>
+          <span className="text-lg font-bold text-[var(--primary)]">{summary.productCount}</span>
+        </div>
+
+        {/* Products total */}
+        <div className="flex items-center justify-between px-4 py-3 rounded-xl
+          bg-muted/50 border border-border">
+          <span className="text-sm text-muted-foreground">{t("summary.productsTotal")}</span>
+          <span className="text-sm font-semibold text-foreground">
+            {summary.productsTotal.toFixed(2)} {t("currency")}
+          </span>
+        </div>
+
+        {/* Shipping */}
+        <div className="flex items-center justify-between px-4 py-3 rounded-xl
+          bg-muted/50 border border-border">
+          <span className="text-sm text-muted-foreground">{t("summary.shippingCost")}</span>
+          <span className="text-sm font-semibold text-foreground">
+            {summary.shippingCost.toFixed(2)} {t("currency")}
+          </span>
+        </div>
+
+        {/* Discount */}
+        <div className="flex items-center justify-between px-4 py-3 rounded-xl
+          bg-destructive/[0.06] border border-destructive/20">
+          <span className="text-sm text-muted-foreground">{t("summary.discount")}</span>
+          <span className="text-sm font-semibold text-destructive">
+            -{summary.discount.toFixed(2)} {t("currency")}
+          </span>
+        </div>
+
+        {/* Final total — gradient hero row */}
+        <div className="relative flex items-center justify-between px-4 py-3.5 rounded-xl overflow-hidden
+          border-2 border-[var(--primary)]/35">
+          {/* gradient bg */}
+          <span aria-hidden className="pointer-events-none absolute inset-0
+            bg-gradient-to-br from-[var(--primary)]/10 via-[var(--secondary)]/8 to-[var(--third)]/8" />
+          {/* top sheen */}
+          <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-1/2
+            bg-gradient-to-b from-white/10 to-transparent dark:from-white/[0.05]" />
+          <span className="relative text-sm font-semibold text-foreground">{t("summary.finalTotal")}</span>
+          <span className="relative text-xl font-bold text-[var(--primary)]">
+            {summary.finalTotal.toFixed(2)} {t("currency")}
+          </span>
+        </div>
+
+        {/* Deposit + Remaining */}
+        {summary.deposit > 0 && (
+          <>
+            {/* Deposit — secondary accent */}
+            <div className="flex items-center justify-between px-4 py-3 rounded-xl
+              bg-[var(--secondary)]/[0.08] border border-[var(--secondary)]/25">
+              <span className="text-sm text-muted-foreground">{t("summary.deposit")}</span>
+              <span className="text-sm font-semibold text-[var(--secondary)]">
+                {summary.deposit.toFixed(2)} {t("currency")}
+              </span>
+            </div>
+
+            {/* Remaining — third accent */}
+            <div className="relative flex items-center justify-between px-4 py-3.5 rounded-xl overflow-hidden
+              border-2 border-[var(--third)]/35">
+              <span aria-hidden className="pointer-events-none absolute inset-0
+                bg-gradient-to-br from-[var(--third)]/10 to-[var(--primary)]/5" />
+              <span className="relative text-sm font-semibold text-foreground">{t("summary.remaining")}</span>
+              <span className="relative text-xl font-bold text-[var(--third)]">
+                {summary.remaining.toFixed(2)} {t("currency")}
+              </span>
+            </div>
+          </>
+        )}
+
+      </div>
+    </motion.div>
+  )
 }

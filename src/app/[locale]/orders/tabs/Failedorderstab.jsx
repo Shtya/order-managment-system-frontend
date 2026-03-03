@@ -49,7 +49,7 @@ import { useSocket } from "@/context/SocketContext";
 // ─────────────────────────────────────────────────────────────────────────────
 function formatDate(dateStr) {
     if (!dateStr) return "—";
-    return new Date(dateStr).toLocaleDateString("ar-EG", {
+    return new Date(dateStr).toLocaleDateString("en-US", {
         year: "numeric",
         month: "short",
         day: "numeric",

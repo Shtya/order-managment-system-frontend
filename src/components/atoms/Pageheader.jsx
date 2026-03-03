@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 
 /* ══════════════════════════════════════════════════════════════
-   INFO CARD
+	 INFO CARD
 ══════════════════════════════════════════════════════════════ */
 function InfoCard({
 	title, value, icon, iconColor, editable,
@@ -144,13 +144,7 @@ function InfoCard({
 		</div>
 	);
 }
-
-/* ══════════════════════════════════════════════════════════════
-   SWITCHER TABS
-   Design: underline tabs flush to the card bottom border.
-   Active tab shows an animated gradient underline bar.
-   Count badge tints amber when active, neutral otherwise.
-══════════════════════════════════════════════════════════════ */
+ 
 function SwitcherTabs({ items, activeId, onChange, className = "", itemClassName = "", activeClassName = "", inactiveClassName = "" }) {
 	return (
 		<div className={["flex items-stretch w-full border-t border-slate-100 dark:border-white/[0.05]", className].join(" ")}>
@@ -224,7 +218,7 @@ function SwitcherTabs({ items, activeId, onChange, className = "", itemClassName
 }
 
 /* ══════════════════════════════════════════════════════════════
-   INLINE ICONS
+	 INLINE ICONS
 ══════════════════════════════════════════════════════════════ */
 const HomeIcon = () => (
 	<svg width="13" height="13" viewBox="0 0 24 24" fill="none"
@@ -242,7 +236,7 @@ const ChevronIcon = () => (
 );
 
 /* ══════════════════════════════════════════════════════════════
-   SKELETON
+	 SKELETON
 ══════════════════════════════════════════════════════════════ */
 export function PageHeaderStatsSkeleton({ count = 6 }) {
 	return (
@@ -263,7 +257,7 @@ export function PageHeaderStatsSkeleton({ count = 6 }) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   STATS GRID
+	 STATS GRID
 ══════════════════════════════════════════════════════════════ */
 export function StatsGrid({ stats }) {
 	if (!stats) return null;
@@ -296,8 +290,8 @@ export function StatsGrid({ stats }) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   PAGE HEADER
-   Layout order (top → bottom):
+	 PAGE HEADER
+	 Layout order (top → bottom):
 	 1. breadcrumb  ←→  action buttons
 	 2. stats grid
 	 3. switcher tabs  (flush underline, stretches full width)
@@ -318,15 +312,14 @@ export function PageHeader({
 
 	return (
 		<div className={[
-			"relative overflow-hidden bg-card mb-8",
-			/* negative bottom padding so the tab underline kisses the card border */
+			"relative overflow-hidden bg-card mb-6",
 			hasTabs ? "pb-0" : "",
 			className,
 		].join(" ")}>
-			<div className="relative flex flex-col">
+			<div className="relative flex flex-col gap-6">
 
 				{/* ─── 1. breadcrumb ←→ buttons ─────────────────────────── */}
-				<div className="flex items-center justify-between gap-4 flex-wrap px-0 pb-6">
+				<div className="flex items-center justify-between gap-4 flex-wrap px-0 ">
 					<nav aria-label="breadcrumb">
 						<ol className="flex items-center gap-1.5 flex-wrap list-none m-0 p-0">
 							{breadcrumbs.map((crumb, i) => {
@@ -378,7 +371,7 @@ export function PageHeader({
 
 				{/* ─── 2. stats grid ────────────────────────────────────── */}
 				{hasStats && (
-					<div className="pb-6">
+					<div  >
 						{statsLoading
 							? <PageHeaderStatsSkeleton count={statsCount} />
 							: <StatsGrid stats={stats} />

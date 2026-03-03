@@ -35,6 +35,7 @@ import toast from "react-hot-toast";
 import { normalizeAxiosError } from "@/utils/axios";
 import { ModalHeader, ModalShell } from "@/components/ui/modalShell";
 import { GhostBtn, PrimaryBtn } from "@/components/atoms/Button";
+import PageHeader from "@/components/atoms/Pageheader";
 
 const PROVIDER_META = {
 	bosta: {
@@ -1105,14 +1106,14 @@ export default function ShippingCompaniesPage() {
 
 	return (
 		<div className="min-h-screen bg-[var(--background)] p-6">
-			<div className="bg-card  flex flex-col gap-2 mb-4">
-				<div className="flex items-center gap-2 text-lg font-semibold">
-					<span className="text-gray-400">{t("breadcrumb.home")}</span>
-					<ChevronLeft className="text-gray-400" size={18} />
-					<span className="text-[rgb(var(--primary))]">{t("breadcrumb.shipping")}</span>
-					<span className="ml-3 inline-flex w-3.5 h-3.5 rounded-full bg-[rgb(var(--primary))]" />
-				</div>
-			</div>
+
+			<PageHeader
+				breadcrumbs={[
+					{ name: t("breadcrumb.home"), href: "/" }, 
+					{ name: t("breadcrumb.shipping")   } ,
+				]}  
+			/> 
+ 
 
 			<AnimatePresence mode="wait">
 				<motion.div
@@ -1121,7 +1122,7 @@ export default function ShippingCompaniesPage() {
 					animate={{ opacity: 1, y: 0 }}
 					exit={{ opacity: 0, y: -20 }}
 					transition={{ duration: 0.3 }}
-					className="bg-card"
+					className="bg-card min-h-[600px] "
 				>
 					<div className="grid grid-cols-1 md:grid-colls-2 lg:grid-cols-3 gap-6">
 						{statusLoading

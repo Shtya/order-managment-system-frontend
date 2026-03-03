@@ -50,6 +50,8 @@ import api from "@/utils/api";
 import toast from "react-hot-toast";
 import PermissionsSelector from "@/components/atoms/PermissionsSelector";
 import { getUser } from "@/hook/getUser";
+import PageHeader from "@/components/atoms/Pageheader";
+import Table from "@/components/atoms/Table";
 
 export function useRolesApi() {
 	const [loading, setLoading] = useState(false);
@@ -151,46 +153,6 @@ export function useRolesApi() {
 	};
 }
 
-/** ✅ Toolbar Component */
-function RolesTableToolbar({ t, searchValue, onSearchChange, onAddRole }) {
-	return (
-		<div className="flex items-center justify-between gap-4 flex-wrap">
-			<div className="relative w-[300px] focus-within:w-[350px] transition-all duration-300">
-				<svg
-					className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-					width="18"
-					height="18"
-					viewBox="0 0 18 18"
-					fill="none"
-					xmlns="http://www.w3.org/2000/svg"
-				>
-					<path d="M15 4.3125H10.5C10.1925 4.3125 9.9375 4.0575 9.9375 3.75C9.9375 3.4425 10.1925 3.1875 10.5 3.1875H15C15.3075 3.1875 15.5625 3.4425 15.5625 3.75C15.5625 4.0575 15.3075 4.3125 15 4.3125Z" fill="#A6ACBD" />
-					<path d="M12.75 6.5625H10.5C10.1925 6.5625 9.9375 6.3075 9.9375 6C9.9375 5.6925 10.1925 5.4375 10.5 5.4375H12.75C13.0575 5.4375 13.3125 5.6925 13.3125 6C13.3125 6.3075 13.0575 6.5625 12.75 6.5625Z" fill="#A6ACBD" />
-					<path d="M8.625 16.3125C4.3875 16.3125 0.9375 12.8625 0.9375 8.625C0.9375 4.3875 4.3875 0.9375 8.625 0.9375C8.9325 0.9375 9.1875 1.1925 9.1875 1.5C9.1875 1.8075 8.9325 2.0625 8.625 2.0625C5.0025 2.0625 2.0625 5.01 2.0625 8.625C2.0625 12.24 5.0025 15.1875 8.625 15.1875C12.2475 15.1875 15.1875 12.24 15.1875 8.625C15.1875 8.3175 15.4425 8.0625 15.75 8.0625C16.0575 8.0625 16.3125 8.3175 16.3125 8.625C16.3125 12.8625 12.8625 16.3125 8.625 16.3125Z" fill="#A6ACBD" />
-					<path d="M16.5001 17.0626C16.3576 17.0626 16.2151 17.0101 16.1026 16.8976L14.6026 15.3976C14.3851 15.1801 14.3851 14.8201 14.6026 14.6026C14.8201 14.3851 15.1801 14.3851 15.3976 14.6026L16.8976 16.1026C17.1151 16.3201 17.1151 16.6801 16.8976 16.8976C16.7851 17.0101 16.6426 17.0626 16.5001 17.0626Z" fill="#A6ACBD" />
-				</svg>
-
-				<Input
-					value={searchValue}
-					onChange={(e) => onSearchChange?.(e.target.value)}
-					placeholder={t("toolbar.searchPlaceholder")}
-					className="rtl:pr-10 h-[40px] ltr:pl-10 rounded-full bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 placeholder:text-gray-400 dark:placeholder:text-slate-400 text-gray-700 dark:text-slate-100"
-				/>
-			</div>
-
-			<div className="flex items-center gap-2">
-				<Button_
-					onClick={onAddRole}
-					size="sm"
-					label={t("toolbar.addRole")}
-					tone="purple"
-					variant="solid"
-					icon={<Plus size={18} />}
-				/>
-			</div>
-		</div>
-	);
-}
 
 function RoleFormDialog({ t, open, onClose, role, permissions, onSubmit, loading }) {
 	const [formData, setFormData] = useState({
@@ -463,28 +425,25 @@ export default function RolesPermissionsPage() {
 	const stats = useMemo(
 		() => [
 			{
-				title: t("stats.totalRoles"),
+				name: t("stats.totalRoles"),
 				value: roles.length.toString(),
 				icon: Shield,
-				bg: "bg-[#F3F6FF] dark:bg-[#0B1220]",
-				iconColor: "text-[#6B7CFF] dark:text-[#8A96FF]",
-				iconBorder: "border-[#6B7CFF] dark:border-[#8A96FF]",
+				color: "#6B7CFF", // blue
+				sortOrder: 0,
 			},
 			{
-				title: t("stats.globalRoles"),
+				name: t("stats.globalRoles"),
 				value: roles.filter((r) => r.isGlobal).length.toString(),
 				icon: Lock,
-				bg: "bg-[#FFF9F0] dark:bg-[#1A1208]",
-				iconColor: "text-[#F59E0B] dark:text-[#FBBF24]",
-				iconBorder: "border-[#F59E0B] dark:border-[#FBBF24]",
+				color: "#F59E0B", // amber
+				sortOrder: 1,
 			},
 			{
-				title: t("stats.customRoles"),
+				name: t("stats.customRoles"),
 				value: roles.filter((r) => !r.isGlobal).length.toString(),
 				icon: Users,
-				bg: "bg-[#F0F9FF] dark:bg-[#082030]",
-				iconColor: "text-[#0EA5E9] dark:text-[#38BDF8]",
-				iconBorder: "border-[#0EA5E9] dark:border-[#38BDF8]",
+				color: "#0EA5E9", // sky
+				sortOrder: 2,
 			},
 		],
 		[t, roles]
@@ -686,63 +645,43 @@ export default function RolesPermissionsPage() {
 	}, [t]);
 
 	return (
-		<div className="min-h-screen p-6">
-			<div className="bg-card !pb-0 flex flex-col gap-2 mb-4">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-2 text-lg font-semibold">
-						<span className="text-gray-400">{t("breadcrumb.home")}</span>
-						<ChevronLeft className="text-gray-400" size={18} />
-						<span className="text-primary">{t("breadcrumb.roles")}</span>
-						<span className="ml-3 inline-flex w-3.5 h-3.5 rounded-full bg-primary" />
-					</div>
-				</div>
+		<div className="min-h-screen p-5">
 
-				<div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4 mb-6">
-					{stats.map((stat, index) => (
-						<motion.div
-							key={stat.title}
-							initial={{ opacity: 0, y: 18 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: index * 0.06 }}
-						>
-							<InfoCard
-								title={stat.title}
-								value={stat.value}
-								icon={stat.icon}
-								bg={stat.bg}
-								iconColor={stat.iconColor}
-								iconBorder={stat.iconBorder}
-							/>
-						</motion.div>
-					))}
-				</div>
-			</div>
-
-			<div className="bg-card rounded-sm">
-				<RolesTableToolbar
-					t={t}
-					searchValue={search}
-					onSearchChange={setSearch}
-					onAddRole={handleAddRole}
-				/>
-
-				<div className="mt-4">
-					<DataTable
-						columns={columns}
-						data={paginatedRoles} // ✅ Use paginated data
-						isLoading={isLoading}
-						hoverable
-						striped
-						pagination={{
-							total_records: filteredRoles.length,
-							current_page: currentPage,
-							per_page: perPage, // ✅ This will now show correctly
-						}}
-						onPageChange={handlePageChange} // ✅ Add handler
-						emptyState={t("empty")}
+			<PageHeader
+				breadcrumbs={[
+					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.roles") }
+				]}
+				buttons={
+					<Button_
+						onClick={handleAddRole}
+						size="sm"
+						label={t("toolbar.addRole")}
+						variant="solid"
+						icon={<Plus size={18} />}
 					/>
-				</div>
-			</div>
+				}
+				stats={stats}
+			/>
+
+
+			<Table
+				t={t}
+				searchValue={search}
+				onSearchChange={setSearch}
+				columns={columns}
+				data={paginatedRoles}
+				isLoading={isLoading}
+				hoverable
+				striped
+				pagination={{
+					total_records: filteredRoles.length,
+					current_page: currentPage,
+					per_page: perPage,
+				}}
+				onPageChange={handlePageChange}
+				emptyState={t("empty")}
+			/>
 
 			<RoleFormDialog
 				t={t}

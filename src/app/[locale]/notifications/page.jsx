@@ -61,7 +61,7 @@ function formatRelativeDate(dateStr, t) {
   if (mins < 60) return `${t("minutesAgo", { count: mins })}`;
   if (hours < 24) return `${t("hoursAgo", { count: hours })}`;
   if (days < 7) return `${t("daysAgo", { count: days })}`;
-  return date.toLocaleDateString("ar-EG");
+  return date.toLocaleDateString("en-US");
 }
 
 // ─────────────────────────────────────────────

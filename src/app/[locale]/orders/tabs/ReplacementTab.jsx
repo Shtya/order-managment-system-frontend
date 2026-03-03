@@ -43,14 +43,14 @@ function hexToBg(hex) {
 
 function formatDate(dateStr) {
 	if (!dateStr) return "—";
-	return new Date(dateStr).toLocaleDateString("ar-EG", {
+	return new Date(dateStr).toLocaleDateString("en-US", {
 		year: "numeric", month: "short", day: "numeric",
 	});
 }
 
 function formatCurrency(amount) {
 	if (amount === undefined || amount === null) return "—";
-	return Number(amount).toLocaleString("ar-EG");
+	return Number(amount).toLocaleString("en-US");
 }
 
 

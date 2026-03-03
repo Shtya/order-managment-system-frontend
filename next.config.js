@@ -4,6 +4,7 @@ const withNextIntl = createNextIntlPlugin();
 const nextConfig = {
   reactStrictMode: false,
   devIndicators: false,
+	output : "standalone",
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'cdn.jsdelivr.net', pathname: '/gh/faker-js/**' },

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, X, Upload, Trash2, FileText, Tag } from "lucide-react";
+import { ChevronLeft, X, Upload, Trash2, FileText, Tag, Info, Save } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -18,6 +18,7 @@ import api from "@/utils/api";
 import toast from "react-hot-toast";
 
 import { ProductSkuSearchPopover } from "../../../../components/molecules/ProductSkuSearchPopover";
+import PageHeader from "@/components/atoms/Pageheader";
 
 
 export default function CreatePurchaseInvoicePage() {
@@ -267,44 +268,30 @@ export default function CreatePurchaseInvoicePage() {
 			initial={{ opacity: 0, y: 20, scale: 0.98 }}
 			animate={{ opacity: 1, y: 0, scale: 1 }}
 			transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.15 }}
-			className="min-h-screen p-6"
+			className="min-h-screen p-5"
 		>
-			{/* Header */}
-			<div className="bg-card mb-6">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-2 text-lg font-semibold">
-						<span className="text-gray-400">{t("breadcrumb.home")}</span>
-						<ChevronLeft className="text-gray-400" size={18} />
-						<button
-							onClick={() => navigate.push("/purchases")}
-							className="text-gray-400 hover:text-primary transition-colors"
-						>
-							{t("breadcrumb.purchases")}
-						</button>
-						<ChevronLeft className="text-gray-400" size={18} />
-						<span className="text-primary">{t("breadcrumb.createPurchaseInvoice")}</span>
-						<span className="mr-3 inline-flex w-3.5 h-3.5 rounded-xl bg-primary" />
-					</div>
 
-					<div className="flex items-center gap-4">
-						<Button_
-							size="sm"
-							label={t("actions.howToUse")}
-							tone="white"
-							variant="solid"
-						/>
-
-						<Button_
+			<PageHeader
+				breadcrumbs={[
+					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.purchases") , href: "/purchases" } ,
+					{ name: t("breadcrumb.createPurchaseInvoice")   } ,
+				]}
+				buttons={
+					<>
+					<Button_
 							onClick={handleSubmit(onSubmit)}
 							size="sm"
 							label={t("actions.save")}
-							tone="purple"
-							variant="solid"
+ 							variant="solid"
+							icon={<Save size={18} />}
 							disabled={loading}
 						/>
-					</div>
-				</div>
-			</div>
+
+ 						<Button_ size="sm" label={t("actions.howToUse")} tone="ghost" icon={<Info size={18} />} />
+					</>
+				} 
+			/> 
 
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<div className="flex gap-6">
@@ -747,11 +734,11 @@ function InvoiceSummary({ errors, summary, t, total, paidAmount, remainingAmount
 					</span>
 				</div>
 
-				<div className="flex items-center justify-between p-4 rounded-xl bg-purple-50 dark:bg-purple-950/20 border-2 border-purple-200 dark:border-purple-900/50">
+				<div className="flex items-center justify-between p-4 rounded-xl bg-primary/10   border-2 border-primary/20 ">
 					<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
 						{t("summary.remainingAmount")}
 					</span>
-					<span className="text-xl font-bold text-purple-600 dark:text-purple-400">
+					<span className="text-xl font-bold text-primary">
 						{remainingAmount.toFixed(2)} {t("currency")}
 					</span>
 				</div>

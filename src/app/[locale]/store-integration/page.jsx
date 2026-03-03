@@ -18,6 +18,7 @@ import { ModalHeader, ModalShell } from "@/components/ui/modalShell";
 import { GhostBtn, PrimaryBtn } from "@/components/atoms/Button";
 import { useSocket } from "@/context/SocketContext";
 import { tenantId } from "@/utils/healpers";
+import PageHeader from "@/components/atoms/Pageheader";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -696,39 +697,6 @@ function StoreCard({
 				</button>
 			</div>
 		</motion.div >
-	);
-}
-
-// ─── Reusable Components ─────────────────────────────────────────────────────
-
-function InstructionStep({ step, children }) {
-	return (
-		<div className="flex gap-2.5">
-			<div className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold mt-0.5">
-				{step}
-			</div>
-			<p className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed">{children}</p>
-		</div>
-	);
-}
-
-function CopyableCode({ text }) {
-	const [copied, setCopied] = useState(false);
-	return (
-		<div className="flex items-center gap-2 mt-1 bg-gray-100 dark:bg-slate-800 rounded-xl px-3 py-1.5">
-			<code className="text-xs font-mono text-primary break-all flex-1">{text}</code>
-			<button
-				type="button"
-				onClick={() => {
-					navigator.clipboard.writeText(text);
-					setCopied(true);
-					setTimeout(() => setCopied(false), 1500);
-				}}
-				className="text-xs text-gray-400 hover:text-primary transition-colors shrink-0"
-			>
-				{copied ? "✓" : "📋"}
-			</button>
-		</div>
 	);
 }
 
@@ -1824,16 +1792,16 @@ export default function StoresIntegrationPage() {
 
 
 	return (
-		<div className="min-h-screen p-6 bg-[#f3f6fa] dark:bg-[#19243950]">
+		<div className="min-h-screen p-5 ">
 			{/* Header */}
-			<div className="bg-card  flex flex-col gap-2 mb-4">
-				<div className="flex items-center gap-2 text-lg font-semibold">
-					<span className="text-gray-400">{t("breadcrumb.home")}</span>
-					<ChevronLeft className="text-gray-400" size={18} />
-					<span className="text-[rgb(var(--primary))]">{t("breadcrumb.stores")}</span>
-					<span className="ml-3 inline-flex w-3.5 h-3.5 rounded-full bg-[rgb(var(--primary))]" />
-				</div>
-			</div>
+
+			<PageHeader
+				breadcrumbs={[
+					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.stores") },
+				]}
+			/>
+
 
 			{/* Store Cards Grid */}
 			<AnimatePresence mode="wait">
@@ -1843,7 +1811,7 @@ export default function StoresIntegrationPage() {
 					animate={{ opacity: 1, y: 0 }}
 					exit={{ opacity: 0, y: -20 }}
 					transition={{ duration: 0.3 }}
-					className="bg-card"
+					className="bg-card min-h-[500px] "
 				>
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						{loading

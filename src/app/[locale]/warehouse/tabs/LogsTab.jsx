@@ -81,7 +81,7 @@ const PDF_STYLE = `
 `;
 
 function buildCorrectPDF(prepOps) {
-  const now = new Date().toLocaleString("ar-EG");
+  const now = new Date().toLocaleString("en-US");
   const ordersHTML = prepOps.map((op) => {
     const order = op.orderSnapshot || {};
     const products = op.productsSnapshot || [];
@@ -96,7 +96,7 @@ function buildCorrectPDF(prepOps) {
 }
 
 function buildErrorsPDF(prepOps) {
-  const now = new Date().toLocaleString("ar-EG");
+  const now = new Date().toLocaleString("en-US");
   const hasErrors = prepOps.some((op) => (op.scanLogs || []).some((l) => !l.success));
   if (!hasErrors) return null;
   const ordersHTML = prepOps.map((op) => {
@@ -110,7 +110,7 @@ function buildErrorsPDF(prepOps) {
 
 /** Generic operation info PDF for non-prep ops */
 function buildGenericOpPDF(op, order) {
-  const now = new Date().toLocaleString("ar-EG");
+  const now = new Date().toLocaleString("en-US");
   const opTypeLabel = {
     REJECT_ORDER: "رفض طلب", ASSIGN_CARRIER: "تعيين شركة شحن",
     PRINT_LABEL: "طباعة ملصق", SHIP_ORDER: "شحن طلب",

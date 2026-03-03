@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 
 import { baseImg } from "@/utils/axios";
+import { useTranslations } from "next-intl";
 
 const ACTION_KEYS = new Set(["actions", "options"]);
 const DEFAULT_PER_PAGE_OPTIONS = [6, 12, 24, 48];
@@ -123,7 +124,7 @@ export const TableToolbar = memo(function TableToolbar({
 						{filterLabel}
 						{hasActiveFilters && !isFiltersOpen && (
 							<span className="absolute -top-1.5 -end-1.5 w-4 h-4 rounded-full
-								bg-[var(--primary)] text-white text-[9px] font-black
+								bg-primary text-white text-[9px] font-black
 								flex items-center justify-center shadow-sm z-10">
 								✦
 							</span>
@@ -191,120 +192,182 @@ export const TableFilters = memo(function TableFilters({ children, onApply, appl
 });
 
 export const TablePagination = memo(function TablePagination({
-	pagination, onPageChange, isLoading = false,
-	pageParamName = "page", limitParamName = "limit",
-	perPageOptions = DEFAULT_PER_PAGE_OPTIONS, labels = {},
+  pagination, onPageChange, isLoading = false,
+  pageParamName = "page", limitParamName = "limit",
+  perPageOptions = DEFAULT_PER_PAGE_OPTIONS,
 }) {
-	const totalPages = useMemo(() => {
-		const total = Number(pagination?.total_records ?? 0);
-		const per = Number(pagination?.per_page ?? 6);
-		return Math.max(1, Math.ceil(total / per));
-	}, [pagination]);
+  const t = useTranslations("pagination");
 
-	const currentPage = Number(pagination?.current_page ?? 1);
-	const perPage = Number(pagination?.per_page ?? 6);
+  const totalPages = useMemo(() => {
+    const total = Number(pagination?.total_records ?? 0);
+    const per   = Number(pagination?.per_page ?? 6);
+    return Math.max(1, Math.ceil(total / per));
+  }, [pagination]);
 
-	const pageItems = useMemo(() => {
-		const tot = totalPages;
-		const cur = Math.min(Math.max(1, currentPage), tot);
-		if (tot <= 7) return Array.from({ length: tot }, (_, i) => i + 1);
-		const items = [1];
-		const start = Math.max(2, cur - 2);
-		const end = Math.min(tot - 1, cur + 2);
-		if (start > 2) items.push("…");
-		for (let p = start; p <= end; p++) items.push(p);
-		if (end < tot - 1) items.push("…");
-		items.push(tot);
-		return items;
-	}, [totalPages, currentPage]);
+  const currentPage = Number(pagination?.current_page ?? 1);
+  const perPage     = Number(pagination?.per_page ?? 6);
 
-	const goTo = (page) => {
-		if (!onPageChange) return;
-		const p = Math.min(Math.max(1, page), totalPages);
-		onPageChange({ page: p, per_page: perPage, [pageParamName]: p, [limitParamName]: perPage });
-	};
+  const pageItems = useMemo(() => {
+    const tot = totalPages;
+    const cur = Math.min(Math.max(1, currentPage), tot);
+    if (tot <= 7) return Array.from({ length: tot }, (_, i) => i + 1);
+    const items = [1];
+    const start = Math.max(2, cur - 2);
+    const end   = Math.min(tot - 1, cur + 2);
+    if (start > 2) items.push("…");
+    for (let p = start; p <= end; p++) items.push(p);
+    if (end < tot - 1) items.push("…");
+    items.push(tot);
+    return items;
+  }, [totalPages, currentPage]);
 
-	const changeLimit = (lim) => {
-		if (!onPageChange) return;
-		onPageChange({ page: 1, per_page: lim, [pageParamName]: 1, [limitParamName]: lim });
-	};
+  const goTo = (page) => {
+    if (!onPageChange) return;
+    const p = Math.min(Math.max(1, page), totalPages);
+    onPageChange({ page: p, per_page: perPage, [pageParamName]: p, [limitParamName]: perPage });
+  };
 
-	const navCls = cn(
-		"w-9 h-9 rounded-xl flex items-center justify-center border border-border",
-		"bg-background text-muted-foreground transition-all duration-150",
-		"hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-[var(--primary)]/5",
-		"disabled:opacity-40 disabled:cursor-not-allowed",
-	);
+  const changeLimit = (lim) => {
+    if (!onPageChange) return;
+    onPageChange({ page: 1, per_page: lim, [pageParamName]: 1, [limitParamName]: lim });
+  };
 
-	return (
-		<div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-5 py-4">
-			<div className="flex items-center gap-2">
-				<span className="text-xs font-semibold text-muted-foreground">{labels.total ?? "Total"}</span>
-				<span className="inline-flex items-center px-2.5 py-1 rounded-xl bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-black">
-					{pagination?.total_records ?? 0}
-				</span>
-			</div>
+  const from  = pagination?.total_records ? (currentPage - 1) * perPage + 1 : 0;
+  const to    = Math.min(currentPage * perPage, pagination?.total_records ?? 0);
+  const total = pagination?.total_records ?? 0;
 
-			<div className="flex items-center gap-1.5">
-				<motion.button whileTap={{ scale: 0.93 }} onClick={() => goTo(1)} disabled={isLoading || currentPage <= 1} className={navCls}>
-					<ChevronsRight size={14} />
-				</motion.button>
-				<motion.button whileTap={{ scale: 0.93 }} onClick={() => goTo(currentPage - 1)} disabled={isLoading || currentPage <= 1} className={navCls}>
-					<ChevronRight size={14} />
-				</motion.button>
+  /* shared nav button */
+  const NavBtn = ({ onClick, disabled, children, title }) => (
+    <motion.button
+      type="button"
+      whileHover={!disabled ? { scale: 1.06 } : {}}
+      whileTap={!disabled ? { scale: 0.92 } : {}}
+      onClick={onClick}
+      disabled={isLoading || disabled}
+      title={title}
+      className={cn(
+        "relative w-9 h-9 rounded-xl flex items-center justify-center",
+        "border border-border bg-background/60 text-muted-foreground",
+        "transition-all duration-150 overflow-hidden",
+        "hover:border-[var(--primary)]/50 hover:text-[var(--primary)] hover:bg-[var(--primary)]/[0.04]",
+        "disabled:opacity-35 disabled:cursor-not-allowed disabled:hover:border-border disabled:hover:text-muted-foreground disabled:hover:bg-background/60",
+      )}
+    >
+      {children}
+    </motion.button>
+  );
 
-				{pageItems.map((p, idx) =>
-					p === "…" ? (
-						<span key={`d-${idx}`} className="w-9 text-center text-muted-foreground text-xs select-none">…</span>
-					) : (
-						<motion.button
-							key={p}
-							whileHover={{ scale: 1.08 }}
-							whileTap={{ scale: 0.93 }}
-							onClick={() => goTo(p)}
-							disabled={isLoading}
-							className={cn(
-								"w-9 h-9 rounded-xl text-sm font-bold border transition-all duration-150",
-								p === currentPage
-									? "btn btn-solid btn-sm"
-									: "bg-background border-border text-muted-foreground hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-[var(--primary)]/5",
-							)}
-						>
-							{p}
-						</motion.button>
-					)
-				)}
+  return (
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-5 py-4">
 
-				<motion.button whileTap={{ scale: 0.93 }} onClick={() => goTo(currentPage + 1)} disabled={isLoading || currentPage >= totalPages} className={navCls}>
-					<ChevronLeft size={14} />
-				</motion.button>
-				<motion.button whileTap={{ scale: 0.93 }} onClick={() => goTo(totalPages)} disabled={isLoading || currentPage >= totalPages} className={navCls}>
-					<ChevronsLeft size={14} />
-				</motion.button>
-			</div>
+      {/* ── Left: record range info ── */}
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <span className="text-xs text-muted-foreground/70">
+          {t("showing")}{" "}
+          <span className="font-bold text-foreground tabular-nums">{from}–{to}</span>
+          {" "}{t("of")}{" "}
+          <span
+            className="inline-flex items-center px-2 py-0.5 rounded-lg
+              bg-[var(--primary)]/10 border border-[var(--primary)]/20
+              text-[var(--primary)] text-xs font-black tabular-nums"
+          >
+            {total}
+          </span>
+          {" "}{t("records")}
+        </span>
+      </div>
 
-			<div className="flex items-center gap-2">
-				<span className="text-xs font-semibold text-muted-foreground hidden sm:block">{labels.limit ?? "Per page"}</span>
-				<div className="flex items-center gap-1">
-					{perPageOptions.map((lim) => (
-						<button
-							key={lim}
-							onClick={() => changeLimit(lim)}
-							disabled={isLoading}
-							className={cn(
-								"w-9 h-9 rounded-xl text-xs font-bold border transition-all duration-150",
-								perPage === lim
-									? "bg-[var(--primary)]/12 border-[var(--primary)]/40 text-[var(--primary)]"
-									: "bg-background border-border text-muted-foreground hover:border-[var(--primary)]/40 hover:text-[var(--primary)] hover:bg-[var(--primary)]/5",
-							)}
-						>
-							{lim}
-						</button>
-					))}
-				</div>
-			</div>
-		</div>
-	);
+      {/* ── Center: page buttons ── */}
+      <div className="flex items-center gap-1">
+        <NavBtn onClick={() => goTo(1)} disabled={currentPage <= 1} title={t("firstPage")}>
+          <ChevronsRight size={13} />
+        </NavBtn>
+        <NavBtn onClick={() => goTo(currentPage - 1)} disabled={currentPage <= 1} title={t("prevPage")}>
+          <ChevronRight size={13} />
+        </NavBtn>
+
+        <div className="flex items-center gap-1 mx-0.5">
+          {pageItems.map((p, idx) =>
+            p === "…" ? (
+              <span key={`d-${idx}`}
+                className="w-7 text-center text-muted-foreground/40 text-xs select-none">
+                ···
+              </span>
+            ) : (
+              <motion.button
+                key={p}
+                type="button"
+                whileHover={p !== currentPage ? { scale: 1.08 } : {}}
+                whileTap={{ scale: 0.92 }}
+                onClick={() => goTo(p)}
+                disabled={isLoading}
+                className={cn(
+                  "relative w-9 h-9 rounded-xl text-xs font-bold border transition-all duration-150 overflow-hidden",
+                  p === currentPage
+                    ? [
+                        "border-[var(--primary)]/40 text-[var(--primary)] font-black",
+                        "bg-[var(--primary)]/10",
+                        "shadow-[0_0_0_3px_rgb(var(--primary-shadow))]",
+                      ]
+                    : [
+                        "bg-background/60 border-border text-muted-foreground",
+                        "hover:border-[var(--primary)]/40 hover:text-[var(--primary)] hover:bg-[var(--primary)]/[0.04]",
+                      ],
+                )}
+              >
+                {/* active page top sheen */}
+                {p === currentPage && (
+                  <span aria-hidden
+                    className="pointer-events-none absolute inset-x-0 top-0 h-1/2
+                      bg-gradient-to-b from-white/20 to-transparent rounded-t-xl" />
+                )}
+                <span className="relative">{p}</span>
+              </motion.button>
+            )
+          )}
+        </div>
+
+        <NavBtn onClick={() => goTo(currentPage + 1)} disabled={currentPage >= totalPages} title={t("nextPage")}>
+          <ChevronLeft size={13} />
+        </NavBtn>
+        <NavBtn onClick={() => goTo(totalPages)} disabled={currentPage >= totalPages} title={t("lastPage")}>
+          <ChevronsLeft size={13} />
+        </NavBtn>
+      </div>
+
+      {/* ── Right: per-page selector ── */}
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <span className="text-xs text-muted-foreground/70 hidden sm:block">{t("perPage")}</span>
+        <div className="flex items-center gap-1 p-1 rounded-xl border border-border bg-background/60">
+          {perPageOptions.map((lim) => (
+            <button
+              key={lim}
+              type="button"
+              onClick={() => changeLimit(lim)}
+              disabled={isLoading}
+              className={cn(
+                "relative w-9 h-7 rounded-lg text-[11px] font-bold transition-all duration-150 overflow-hidden",
+                perPage === lim
+                  ? [
+                      "bg-[var(--primary)]/10 border border-[var(--primary)]/30 text-[var(--primary)]",
+                      "shadow-[0_1px_4px_rgb(var(--primary-shadow))]",
+                    ]
+                  : "text-muted-foreground hover:text-[var(--primary)] hover:bg-[var(--primary)]/[0.05]",
+              )}
+            >
+              {perPage === lim && (
+                <span aria-hidden
+                  className="pointer-events-none absolute inset-x-0 top-0 h-1/2
+                    bg-gradient-to-b from-white/20 to-transparent rounded-t-lg" />
+              )}
+              <span className="relative">{lim}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+    </div>
+  );
 });
 
 const TableSkeleton = memo(function TableSkeleton({ columns, rows = 6, compact }) {
@@ -333,7 +396,7 @@ const ImgCell = memo(function ImgCell({ src, alt, onOpen }) {
 		<motion.button
 			whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
 			type="button" onClick={() => onOpen(fullSrc, alt)}
-			className="group/img relative w-11 h-11 rounded-xl overflow-hidden border-2 border-border hover:border-[var(--primary)] shadow-sm hover:shadow-md transition-all duration-200 block"
+			className="group/img relative w-11 h-11 rounded-xl overflow-hidden border-2 border-border hover:border-primary shadow-sm hover:shadow-md transition-all duration-200 block"
 		>
 			<img src={fullSrc} alt={alt} className="w-full h-full object-cover" loading="lazy" />
 			<div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/25 transition-colors flex items-center justify-center">
@@ -379,9 +442,9 @@ const ImageModal = memo(function ImageModal({ src, alt, open, onClose, labels = 
 		<Dialog open={open} onOpenChange={(o) => !o && onClose()}>
 			<DialogContent showCloseButton={false} className="max-w-4xl p-0 overflow-hidden rounded-xl border border-border bg-background shadow-2xl">
 				<div className="relative flex items-center justify-between gap-4 px-5 py-4 border-b border-border overflow-hidden">
-					<div className="absolute inset-0 pointer-events-none opacity-[0.07] bg-gradient-to-r from-[var(--primary)] to-[var(--third)]" />
+
 					<div className="relative flex items-center gap-3">
-						<div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-[var(--primary)] to-[var(--third)]">
+						<div className="w-9 h-9 rounded-xl flex items-center justify-center  btn-solid ">
 							<ImageIcon size={16} className="text-white" />
 						</div>
 						<div>
@@ -391,15 +454,15 @@ const ImageModal = memo(function ImageModal({ src, alt, open, onClose, labels = 
 					</div>
 					<div className="relative flex items-center gap-1.5">
 						<motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => setZoomed(z => !z)}
-							className="w-8 h-8 rounded-xl flex items-center justify-center bg-muted border border-border hover:border-[var(--primary)] text-muted-foreground hover:text-[var(--primary)] transition-all">
+							className="w-8 h-8 rounded-xl flex items-center justify-center bg-muted border border-border hover:border-primary text-muted-foreground hover:text-primary transition-all">
 							<Maximize2 size={14} />
 						</motion.button>
 						<motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={download}
-							className="btn btn-solid btn-sm !w-8 !h-8 !px-0">
+							className=" flex items-center justify-center btn btn-solid btn-sm !w-8 !h-8 !px-0">
 							<Download size={14} />
 						</motion.button>
 						<motion.button whileHover={{ scale: 1.1, rotate: 90 }} whileTap={{ scale: 0.9 }} onClick={onClose}
-							className="btn btn-ghost btn-sm btn-rose !w-8 !h-8 !px-0">
+							className="flex items-center justify-center btn btn-ghost btn-sm btn-rose !w-8 !h-8 !px-0">
 							<X size={14} />
 						</motion.button>
 					</div>
@@ -448,8 +511,7 @@ export default function Table({
 				initial={{ opacity: 0, y: 16 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ duration: 0.35 }}
-				className="rounded-2xl border border-border bg-background overflow-hidden
-          shadow-[0_4px_32px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_32px_rgba(0,0,0,0.25)]"
+				className=" bg-card !p-0  "
 			>
 				{/* ── Toolbar ──────────────────────────────────────── */}
 				<div className="px-5 py-4 bg-muted/20 border-b border-border">
@@ -496,7 +558,7 @@ export default function Table({
 										<TableCell colSpan={columns.length} className="py-20">
 											<motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center gap-4">
 												<div className="relative">
-													<div className="absolute inset-0 bg-[var(--primary)]/15 blur-2xl rounded-full" />
+													<div className="absolute inset-0 bg-primary/15 blur-2xl rounded-full" />
 													<div className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-muted to-muted/60 border border-border flex items-center justify-center shadow-sm">
 														<ImageIcon className="w-8 h-8 text-muted-foreground/40" />
 													</div>
@@ -516,7 +578,7 @@ export default function Table({
 											transition={{ delay: Math.min(i * 0.025, 0.3) }}
 											className={cn(
 												"border-b border-border/50 group transition-colors duration-150",
-												hoverable && "hover:bg-[var(--primary)]/[0.035]",
+												hoverable && "hover:bg-primary/[0.035]",
 												striped && i % 2 === 1 && "bg-muted/20",
 											)}
 										>

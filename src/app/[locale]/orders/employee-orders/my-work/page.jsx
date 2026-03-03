@@ -547,7 +547,7 @@ export default function OrderConfirmationWorkPage() {
 
   const formatDate = (date) => {
     if (!date) return "-";
-    return new Date(date).toLocaleString("ar-EG", {
+    return new Date(date).toLocaleString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",

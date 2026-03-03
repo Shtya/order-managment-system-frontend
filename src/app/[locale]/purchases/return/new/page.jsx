@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, Trash2 } from "lucide-react";
+import { ChevronLeft, Info, Save, Trash2 } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -18,6 +18,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import api from "@/utils/api";
 import { ProductSkuSearchPopover } from "@/components/molecules/ProductSkuSearchPopover";
+import PageHeader from "@/components/atoms/Pageheader";
 
 // Validation schema
 const schema = yup.object({
@@ -188,39 +189,31 @@ export default function CreateReturnInvoicePage() {
 			initial={{ opacity: 0, y: 20, scale: 0.98 }}
 			animate={{ opacity: 1, y: 0, scale: 1 }}
 			transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.15 }}
-			className="min-h-screen p-6"
+			className="min-h-screen p-5"
 		>
-			{/* Header */}
-			<div className="bg-card mb-6">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-2 text-lg font-semibold">
-						<span className="text-gray-400">{t("breadcrumb.home")}</span>
-						<ChevronLeft className="text-gray-400" size={18} />
-						<button
-							onClick={() => navigate.push("/purchases-return")}
-							className="text-gray-400 hover:text-primary transition-colors"
-						>
-							{t("breadcrumb.returns")}
-						</button>
-						<ChevronLeft className="text-gray-400" size={18} />
-						<span className="text-primary">{t("breadcrumb.createReturnInvoice")}</span>
-						<span className="mr-3 inline-flex w-3.5 h-3.5 rounded-full bg-primary" />
-					</div>
 
-					<div className="flex items-center gap-4">
-						<Button_ size="sm" label={t("actions.howToUse")} tone="white" variant="solid" />
-
+			<PageHeader
+				breadcrumbs={[
+					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.returns"), href: "/purchases/return" },
+					{ name: t("breadcrumb.createReturnInvoice") },
+				]}
+				buttons={
+					<>
 						<Button_
 							onClick={handleSubmit(onSubmit)}
 							size="sm"
 							label={t("actions.save")}
-							tone="purple"
 							variant="solid"
+							icon={<Save size={18} />}
 							disabled={loading}
 						/>
-					</div>
-				</div>
-			</div>
+
+						<Button_ size="sm" label={t("actions.howToUse")} tone="ghost" icon={<Info size={18} />} />
+					</>
+				}
+			/>
+
 
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<div className="flex gap-6">
@@ -576,11 +569,11 @@ function ReturnSummary({ summary, t, totalReturn, control }) {
 					</span>
 				</div>
 
-				<div className="flex items-center justify-between p-4 rounded-xl bg-purple-50 dark:bg-purple-950/20 border-2 border-purple-200 dark:border-purple-900/50">
+				<div className="flex items-center justify-between p-4 rounded-xl bg-primary/10   border-2 border-primary/20 ">
 					<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
 						{t("summary.totalReturn")}
 					</span>
-					<span className="text-xl font-bold text-purple-600 dark:text-purple-400">
+					<span className="text-xl font-bold text-primary">
 						{totalReturn.toFixed(2)} {t("currency")}
 					</span>
 				</div>

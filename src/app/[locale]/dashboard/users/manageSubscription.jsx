@@ -71,7 +71,7 @@ export const TransactionPaymentMethod = Object.freeze({
 
 function formatCurrency(amount) {
     if (amount === undefined || amount === null) return "—";
-    return Number(amount).toLocaleString("ar-EG");
+    return Number(amount).toLocaleString("en-US");
 }
 
 // ── Section Card Component ────────────────────────────────────────────────────
@@ -428,7 +428,7 @@ export default function ManageSubscription({ userId, subscriptionId, onSaved }) 
                                 <InfoRow
                                     icon={Calendar}
                                     label={t("manageSubscription.fields.joinedDate")}
-                                    value={new Date(user.createdAt).toLocaleDateString("ar-EG", {
+                                    value={new Date(user.createdAt).toLocaleDateString("en-US", {
                                         year: "numeric",
                                         month: "long",
                                         day: "numeric",

@@ -182,7 +182,7 @@ export default function ProductsTab({ t, searchDebounced, filters, filtersOpen, 
         cell: (row) => (
           <div className="inline-flex items-center gap-2 text-gray-500 dark:text-slate-300 text-sm">
             <CalendarDays size={14} className="text-gray-400 dark:text-slate-500" />
-            {row.created_at ? new Date(row.created_at).toLocaleDateString("ar-EG") : na}
+            {row.created_at ? new Date(row.created_at).toLocaleDateString("en-US") : na}
           </div>
         )
       },
@@ -256,7 +256,7 @@ export default function ProductsTab({ t, searchDebounced, filters, filtersOpen, 
 function formatDate(d, na) {
   if (!d) return na;
   try {
-    return new Date(d).toLocaleString("ar-EG");
+    return new Date(d).toLocaleString("en-US");
   } catch {
     return String(d);
   }
@@ -265,7 +265,7 @@ function formatDate(d, na) {
 function money(v, na) {
   if (v === null || v === undefined || v === "") return na;
   const n = Number(v);
-  if (Number.isFinite(n)) return n.toLocaleString("ar-EG");
+  if (Number.isFinite(n)) return n.toLocaleString("en-US");
   return String(v);
 }
 

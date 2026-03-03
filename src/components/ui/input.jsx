@@ -3,6 +3,30 @@
 import * as React from "react"
 import { cn } from "@/utils/cn"
 
+export const fieldBase = [
+  // shape + base colors
+  "w-full min-w-0 rounded-xl",
+  "border border-border",
+  "bg-background/60 text-foreground text-sm",
+  "placeholder:text-muted-foreground/50",
+  // transition
+  "transition-all duration-200",
+  // hover
+  "hover:border-[var(--primary)]/50 hover:bg-background",
+  // focus
+  "!outline-none",
+  "focus:border-[var(--primary)] focus:bg-background",
+  "focus:shadow-[0_0_0_3px_rgb(var(--primary-shadow))]",
+  // disabled
+  "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
+]
+
+export const fieldError = [
+  "border-destructive",
+  "focus:border-destructive",
+  "focus:shadow-[0_0_0_3px_oklch(var(--destructive)/0.15)]",
+]
+
 function Input({
 	className,
 	type,
@@ -28,7 +52,7 @@ function Input({
 						{startIcon}
 					</span>
 				)}
-
+ 
 				<InputBase
 					type={type}
 					size={size}

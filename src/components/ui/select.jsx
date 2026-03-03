@@ -4,6 +4,7 @@ import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
 import { cn } from "@/utils/cn"
+import { fieldBase } from "./input"
 
 /* ─────────────────────────────────────────────────────────────────────────
    Body-scroll unlock while dropdown is open (Radix portal workaround)
@@ -25,23 +26,15 @@ function useUnlockBodyScrollWhileMounted(enabled) {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   Root
+   Root / Group / Value  (pass-through wrappers)
 ───────────────────────────────────────────────────────────────────────── */
-function Select(props) {
-  return <SelectPrimitive.Root data-slot="select" {...props} />
-}
-
-function SelectGroup(props) {
-  return <SelectPrimitive.Group data-slot="select-group" {...props} />
-}
-
-function SelectValue(props) {
-  return <SelectPrimitive.Value data-slot="select-value" {...props} />
-}
+function Select(props)      { return <SelectPrimitive.Root  data-slot="select"       {...props} /> }
+function SelectGroup(props) { return <SelectPrimitive.Group data-slot="select-group" {...props} /> }
+function SelectValue(props) { return <SelectPrimitive.Value data-slot="select-value" {...props} /> }
 
 /* ─────────────────────────────────────────────────────────────────────────
    Trigger
-   Sizes: sm (h-9) | default (h-10) | lg (h-12)
+   Sizes: sm (h-9) | default (h-11) | lg (h-12)  — matches Input exactly
 ───────────────────────────────────────────────────────────────────────── */
 function SelectTrigger({ className, size = "default", children, ...props }) {
   return (
@@ -49,39 +42,32 @@ function SelectTrigger({ className, size = "default", children, ...props }) {
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        // layout
-        "group relative rtl:flex-row-reverse inline-flex w-full items-center justify-between gap-2",
-        "data-[size=sm]:h-9 data-[size=default]:h-10 data-[size=lg]:h-12",
-        // shape + colors
-        "rounded-xl border border-border bg-background/60 px-3.5 text-sm text-foreground",
-        // ring + border glow on focus
-        "outline-none",
-        "focus-visible:border-[var(--primary)] dark:focus-visible:border-[#5b4bff]",
-        "focus-visible:shadow-[0_0_0_3px_rgba(255,139,0,0.12)] dark:focus-visible:shadow-[0_0_0_3px_rgba(91,75,255,0.18)]",
+        // ── reuse the same base tokens as Input / Textarea ──
+        ...fieldBase,
+        // layout overrides for trigger
+        "group relative rtl:flex-row-reverse inline-flex items-center justify-between gap-2",
+        // sizes — identical to InputBase
+        "data-[size=sm]:h-9  data-[size=sm]:text-xs  data-[size=sm]:px-3",
+        "data-[size=default]:h-11 data-[size=default]:text-sm data-[size=default]:px-3.5",
+        "data-[size=lg]:h-12 data-[size=lg]:text-sm data-[size=lg]:px-4",
         // open state — same glow so the panel looks connected
-        "data-[state=open]:border-[var(--primary)] dark:data-[state=open]:border-[#5b4bff]",
-        "data-[state=open]:shadow-[0_0_0_3px_rgba(255,139,0,0.12)] dark:data-[state=open]:shadow-[0_0_0_3px_rgba(91,75,255,0.18)]",
-        // hover
-        "hover:border-[var(--primary)]/60 dark:hover:border-[#5b4bff]/60",
-        "hover:bg-background",
-        // transitions
-        "transition-all duration-200",
-        // disabled
-        "disabled:cursor-not-allowed disabled:opacity-50",
-        // value placeholder
-        "data-[placeholder]:text-muted-foreground",
-        // inner elements
+        "data-[state=open]:border-[var(--primary)]",
+        "data-[state=open]:shadow-[0_0_0_3px_rgb(var(--primary-shadow))]",
+        "data-[state=open]:bg-background",
+        // placeholder
+        "data-[placeholder]:text-muted-foreground/50",
+        // inner helpers
         "*:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2",
-        "[&_svg]:pointer-events-none [&_svg]:shrink-0 " 
+        "[&_svg]:pointer-events-none [&_svg]:shrink-0",
+        className
       )}
       {...props}
     >
-      {/* Subtle top sheen */}
+      {/* Subtle top sheen — same as before */}
       <span
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-xl
-          bg-gradient-to-b from-white/20 to-transparent
-          dark:from-white/[0.06] opacity-100"
+          bg-gradient-to-b from-white/20 to-transparent dark:from-white/[0.06]"
       />
 
       {/* Left accent line (visible only when open) */}
@@ -89,21 +75,17 @@ function SelectTrigger({ className, size = "default", children, ...props }) {
         aria-hidden
         className="pointer-events-none absolute start-0 top-2 bottom-2 w-[2px] rounded-full
           bg-gradient-to-b from-[var(--primary)] to-[var(--third,#ff5c2b)]
-          dark:from-[#5b4bff] dark:to-[#3be7ff]
-          opacity-0 group-data-[state=open]:opacity-100
-          transition-opacity duration-200"
+          opacity-0 group-data-[state=open]:opacity-100 transition-opacity duration-200"
       />
 
-      <span className="relative  z-10 flex ">
-        {children}
-      </span>
+      <span className="relative z-10 flex">{children}</span>
 
       <SelectPrimitive.Icon asChild>
         <ChevronDownIcon
           className={cn(
             "relative z-10 size-4 shrink-0 transition-all duration-300",
-            "text-muted-foreground group-data-[state=open]:text-[var(--primary)] dark:group-data-[state=open]:text-[#5b4bff]",
-            "group-data-[state=open]:rotate-180",
+            "text-muted-foreground/60",
+            "group-data-[state=open]:text-[var(--primary)] group-data-[state=open]:rotate-180",
           )}
         />
       </SelectPrimitive.Icon>
@@ -114,13 +96,7 @@ function SelectTrigger({ className, size = "default", children, ...props }) {
 /* ─────────────────────────────────────────────────────────────────────────
    Content (dropdown panel)
 ───────────────────────────────────────────────────────────────────────── */
-function SelectContent({
-  className,
-  children,
-  position = "popper",
-  align = "start",
-  ...props
-}) {
+function SelectContent({ className, children, position = "popper", align = "start", ...props }) {
   useUnlockBodyScrollWhileMounted(true)
 
   const isRTL =
@@ -146,18 +122,14 @@ function SelectContent({
           minWidth: "var(--radix-select-trigger-width)",
         }}
         className={cn(
-          // base
-          "relative z-50 overflow-hidden",
-          // shape
-          "rounded-xl",
-          // border — matches trigger open state
-          "border border-[var(--primary)]/20 dark:border-[#5b4bff]/25",
-          // background with subtle translucency
+          "relative z-50 overflow-hidden rounded-xl",
+          // border — a gentle tint of primary
+          "border border-[var(--primary)]/20",
+          // background
           "bg-popover/95 backdrop-blur-sm text-popover-foreground",
-          // shadow — layered for depth
+          // shadow
           "shadow-[0_8px_32px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.08)]",
           "dark:shadow-[0_8px_32px_rgba(0,0,0,0.5),0_2px_8px_rgba(0,0,0,0.3)]",
-          // max height
           "max-h-[var(--radix-select-content-available-height)]",
           // animations
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
@@ -174,7 +146,6 @@ function SelectContent({
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-[2px]
             bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)]
-            dark:from-[#5b4bff] dark:via-[#8b7cff] dark:to-[#3be7ff]
             opacity-70"
         />
 
@@ -228,38 +199,30 @@ function SelectItem({ className, children, ...props }) {
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        // layout
         "group relative rtl:flex-row-reverse",
         "flex w-full cursor-default select-none items-center gap-2.5",
         "rounded-xl px-3 py-2.5 text-sm outline-none",
-        // default colors
+        // default
         "text-foreground/80",
-        // hover / focus
-        "focus:bg-[var(--primary)]/8 dark:focus:bg-[#5b4bff]/12",
-        "focus:text-foreground",
-        // selected (data-[state=checked])
-        "data-[state=checked]:text-[var(--primary)] dark:data-[state=checked]:text-[#8b7cff]",
-        "data-[state=checked]:font-semibold",
+        // hover / focus — uses primary token
+        "focus:bg-[var(--primary)]/8 focus:text-foreground",
+        // selected
+        "data-[state=checked]:text-[var(--primary)] data-[state=checked]:font-semibold",
         // disabled
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
-        // transition
-        "transition-colors duration-150 rtl:text-right  ",
+        "transition-colors duration-150 rtl:text-right",
         className,
       )}
       {...props}
     >
-       
-
       <SelectPrimitive.ItemText className="flex-1 truncate">
         {children}
       </SelectPrimitive.ItemText>
 
-      {/* Hover shimmer layer */}
       <span
         aria-hidden
         className="pointer-events-none absolute inset-0 rounded-xl
           bg-gradient-to-r from-[var(--primary)]/0 via-[var(--primary)]/6 to-[var(--primary)]/0
-          dark:via-[#5b4bff]/8
           opacity-0 group-focus:opacity-100 transition-opacity duration-150"
       />
     </SelectPrimitive.Item>
@@ -273,11 +236,7 @@ function SelectSeparator({ className, ...props }) {
   return (
     <SelectPrimitive.Separator
       data-slot="select-separator"
-      className={cn(
-        "my-1.5 mx-3 h-px",
-        "bg-gradient-to-r from-transparent via-border to-transparent",
-        className,
-      )}
+      className={cn("my-1.5 mx-3 h-px bg-gradient-to-r from-transparent via-border to-transparent", className)}
       {...props}
     />
   )
@@ -292,7 +251,7 @@ function SelectScrollUpButton({ className, ...props }) {
       data-slot="select-scroll-up-button"
       className={cn(
         "flex cursor-default items-center justify-center py-1.5",
-        "text-muted-foreground hover:text-[var(--primary)] dark:hover:text-[#8b7cff]",
+        "text-muted-foreground hover:text-[var(--primary)]",
         "bg-gradient-to-b from-popover to-transparent",
         "transition-colors duration-150",
         className,
@@ -310,7 +269,7 @@ function SelectScrollDownButton({ className, ...props }) {
       data-slot="select-scroll-down-button"
       className={cn(
         "flex cursor-default items-center justify-center py-1.5",
-        "text-muted-foreground hover:text-[var(--primary)] dark:hover:text-[#8b7cff]",
+        "text-muted-foreground hover:text-[var(--primary)]",
         "bg-gradient-to-t from-popover to-transparent",
         "transition-colors duration-150",
         className,

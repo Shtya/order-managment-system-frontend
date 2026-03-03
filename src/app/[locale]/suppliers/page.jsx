@@ -47,6 +47,8 @@ import InputPhone, { validatePhone } from "@/components/atoms/InputPhone";
 
 import api from "@/utils/api";
 import toast from "react-hot-toast";
+import PageHeader from "@/components/atoms/Pageheader";
+import Table from "@/components/atoms/Table";
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -207,7 +209,7 @@ function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess, t, countr
 					</DialogTitle>
 				</DialogHeader>
 
-				<form onSubmit={handleSubmit(onSubmit)} className="space-y-6 p-6">
+				<form onSubmit={handleSubmit(onSubmit)} className="space-y-6 ">
 					<div className="space-y-2">
 						<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300 flex items-center gap-1">
 							<User size={16} />
@@ -393,7 +395,7 @@ function ViewSupplierDialog({ open, onOpenChange, supplier, t }) {
 					</DialogTitle>
 				</DialogHeader>
 
-				<div className="p-6 space-y-6">
+				<div className=" space-y-6">
 					<div>
 						<h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{supplier.name}</h3>
 						{supplier.categories && supplier.categories.length > 0 && (
@@ -468,7 +470,7 @@ function ViewSupplierDialog({ open, onOpenChange, supplier, t }) {
 								<span className="text-xs font-semibold text-slate-500 uppercase">{t("view.createdAt")}</span>
 							</div>
 							<div className="font-semibold text-slate-900 dark:text-white">
-								{supplier.created_at ? new Date(supplier.created_at).toLocaleDateString("ar-EG") : "—"}
+								{supplier.created_at ? new Date(supplier.created_at).toLocaleDateString("en-US") : "—"}
 							</div>
 						</div>
 					</div>
@@ -495,7 +497,7 @@ function ConfirmDialog({ open, onOpenChange, title, description, confirmText, ca
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="!max-w-md bg-white dark:bg-slate-900 rounded-xl">
-				<div className="space-y-4 p-6">
+				<div className="space-y-4 ">
 					<h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">{title}</h3>
 					{description && <p className="text-sm text-gray-500 dark:text-slate-400">{description}</p>}
 
@@ -594,7 +596,14 @@ function FiltersPanel({ t, value, onChange, onApply, categories }) {
 		</motion.div>
 	);
 }
-
+function FilterField({ label, children }) {
+	return (
+		<div className="space-y-2">
+			<Label>{label}</Label>
+			{children}
+		</div>
+	);
+}
 export default function SuppliersPage() {
 	const t = useTranslations("suppliers");
 	const router = useRouter();
@@ -671,20 +680,18 @@ export default function SuppliersPage() {
 	const statsCards = useMemo(
 		() => [
 			{
-				title: t("stats.totalPurchases"),
-				value: `${stats.totalPurchases} د.أ`,
+				name: t("stats.totalPurchases"),
+				value: `${stats.totalPurchases ?? 0} د.أ`,
 				icon: TrendingUp,
-				bg: "bg-[#F3F6FF] dark:bg-[#0B1220]",
-				iconColor: "text-[#6B7CFF] dark:text-[#8A96FF]",
-				iconBorder: "border-[#6B7CFF] dark:border-[#8A96FF]",
+				color: "#6B7CFF", // blue
+				sortOrder: 0,
 			},
 			{
-				title: t("stats.totalDue"),
-				value: `${stats.totalDue} د.أ`,
+				name: t("stats.totalDue"),
+				value: `${stats.totalDue ?? 0} د.أ`,
 				icon: DollarSign,
-				bg: "bg-[#FFF9F0] dark:bg-[#1A1208]",
-				iconColor: "text-[#F59E0B] dark:text-[#FBBF24]",
-				iconBorder: "border-[#F59E0B] dark:border-[#FBBF24]",
+				color: "#F59E0B", // amber
+				sortOrder: 1,
 			},
 		],
 		[t, stats]
@@ -921,77 +928,120 @@ export default function SuppliersPage() {
 		],
 		[t]
 	);
-
+	const hasActiveFilters = useMemo(() => {
+		return (
+			Boolean(filters.name?.trim()) ||
+			Boolean(filters.phone?.trim()) ||
+			(filters.categoryId && filters.categoryId !== "none")
+		);
+	}, [filters]);
 	return (
-		<div className="min-h-screen p-6">
-			<div className="bg-card !pb-0 flex flex-col gap-2 mb-4">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-2 text-lg font-semibold">
-						<span className="text-gray-400">{t("breadcrumb.home")}</span>
-						<ChevronLeft className="text-gray-400" size={18} />
-						<span className="text-[rgb(var(--primary))]">{t("breadcrumb.suppliers")}</span>
-						<span className="ml-3 inline-flex w-3.5 h-3.5 rounded-full bg-[rgb(var(--primary))]" />
-					</div>
+		<div className="min-h-screen p-5">
 
-					<div className="flex items-center gap-4">
-						<Button_ size="sm" onClick={openCreate} label={t("actions.addSupplier")} tone="purple" variant="solid" icon={<Plus size={18} />} />
+			<PageHeader
+				breadcrumbs={[
+					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.suppliers") }
+				]}
+				buttons={
+					<>
 						<Button_
 							size="sm"
-							href="/supplier-categories"
+							href="/suppliers/categories"
 							label={t("actions.manageCategories")}
 							tone="white"
+							variant="outline"
+							icon={<Tag size={18} />}
+						/>
+
+						<Button_
+							onClick={openCreate}
+							size="sm"
+							label={t("actions.addSupplier")}
 							variant="solid"
-							icon={<Tag size={18} className="text-[#A7A7A7]" />}
+							icon={<Plus size={18} />}
 						/>
-					</div>
-				</div>
+					</>
+				}
 
-				<div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-6">
-					{statsCards.map((stat, index) => (
-						<motion.div key={stat.title} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.06 }}>
-							<InfoCard title={stat.title} value={stat.value} icon={stat.icon} bg={stat.bg} iconColor={stat.iconColor} iconBorder={stat.iconBorder} />
-						</motion.div>
-					))}
-				</div>
-			</div>
+				stats={statsCards}
+			/>
 
-			<div className="bg-card rounded-sm p-4">
-				<SuppliersTableToolbar
-					t={t}
-					searchValue={search}
-					onSearchChange={setSearch}
-					onExport={onExport}
-					isFiltersOpen={filtersOpen}
-					onToggleFilters={() => setFiltersOpen((v) => !v)}
-				/>
 
-				<AnimatePresence>
-					{filtersOpen && (
-						<FiltersPanel
-							t={t}
-							value={filters}
-							onChange={setFilters}
-							onApply={() => fetchSuppliers({ page: 1, per_page: pager.per_page })}
-							categories={categories}
-						/>
-					)}
-				</AnimatePresence>
+			<Table
+				searchValue={search}
+				onSearchChange={setSearch}
+				onSearch={() => { }}
+				labels={{
+					searchPlaceholder: t("toolbar.searchPlaceholder"),
+					filter: t("toolbar.filter"),
+					apply: t("filters.apply"),
+					total: t("common.total"),
+					limit: t("common.limit"),
+					emptyTitle: t("empty"),
+					emptySubtitle: "",
+				}}
+				actions={[
+					{
+						key: "export",
+						label: t("toolbar.export"),
+						icon: <FileDown size={14} />,
+						color: "blue",
+						onClick: onExport,
+					},
+				]}
+				hasActiveFilters={hasActiveFilters}
+				onApplyFilters={() => fetchSuppliers({ page: 1, per_page: pager.per_page })}
+				filters={
+					<>
+						<FilterField label={t("filters.supplierName")}>
+							<Input
+								value={filters.name}
+								onChange={(e) => setFilters((f) => ({ ...f, name: e.target.value }))}
+								placeholder={t("filters.supplierNamePlaceholder")}
+								className="h-10 rounded-xl text-sm"
+							/>
+						</FilterField>
 
-				<div className="mt-4">
-					<DataTable
-						columns={columns}
-						data={pager.records}
-						isLoading={loading}
-						pagination={{
-							total_records: pager.total_records,
-							current_page: pager.current_page,
-							per_page: pager.per_page,
-						}}
-						onPageChange={handlePageChange}
-						emptyState={t("empty")}
-					/>
-				</div>
-			</div>
+						<FilterField label={t("filters.phone")}>
+							<Input
+								value={filters.phone}
+								onChange={(e) => setFilters((f) => ({ ...f, phone: e.target.value }))}
+								placeholder={t("filters.phonePlaceholder")}
+								className="h-10 rounded-xl text-sm"
+							/>
+						</FilterField>
+
+						<FilterField label={t("filters.category")}>
+							<Select
+								value={filters.categoryId || "none"}
+								onValueChange={(v) => setFilters((f) => ({ ...f, categoryId: v }))}
+							>
+								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+									<SelectValue placeholder={t("filters.categoryPlaceholder")} />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="none">{t("filters.any")}</SelectItem>
+									{(categories || []).map((c) => (
+										<SelectItem key={c.id} value={String(c.id)}>
+											{c.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</FilterField>
+					</>
+				}
+				columns={columns}
+				data={pager.records}
+				isLoading={loading}
+				pagination={{
+					total_records: pager.total_records,
+					current_page: pager.current_page,
+					per_page: pager.per_page,
+				}}
+				onPageChange={({ page, per_page }) => fetchSuppliers({ page, per_page })}
+			/>
 
 			<SupplierFormDialog open={formOpen} onOpenChange={setFormOpen} supplier={editingSupplier} onSuccess={handleFormSuccess} t={t} countries={countries} />
 

@@ -1,10 +1,3 @@
-/* 
-	- Custom employee type box with input INSIDE box
-	- Role Select using shadcn Select
-	- Validation using react-hook-form + yup
-	- Notifications using react-hot-toast
-	- After create: open WhatsApp dialog to send credentials (same logic as users page)
-*/
 
 "use client";
 
@@ -34,6 +27,7 @@ import toast, { Toaster } from "react-hot-toast";
 // api (axios instance)
 import api from "@/utils/api";
 import { COUNTRIES } from "../../dashboard/users/page";
+import PageHeader from "@/components/atoms/Pageheader";
 
 
 
@@ -274,33 +268,29 @@ export default function AddEmployeePage() {
 
 	return (
 		<motion.div
- 			initial={{ opacity: 0, y: 20, scale: 0.98 }}
+			initial={{ opacity: 0, y: 20, scale: 0.98 }}
 			animate={{ opacity: 1, y: 0, scale: 1 }}
 			transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.15 }}
-			className="min-h-screen p-6"
+			className="min-h-screen p-5"
 		>
-			<Toaster position="top-center" />
+			<PageHeader
+				breadcrumbs={[
+					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.employees"), href: "/employees" },
+					{ name: t("breadcrumb.addEmployee") }
+				]}
+				buttons={
+					<Button_
+						onClick={handleSubmit(onSubmit)}
+						disabled={isSubmitting}
+						size="sm"
+						label={isSubmitting ? t("actions.saving") || t("actions.save") : t("actions.save")}
+ 						variant="solid"
+						icon={<Save size={18} />}
+					/>
+				}
+			/>
 
-			{/* Header */}
-			<div className="bg-card mb-6">
-				<div className="flex items-center justify-between">
-					{/* Breadcrumb */}
-					<div className="flex items-center gap-2 text-lg font-semibold">
-						<span className="text-gray-400">{t("breadcrumb.home")}</span>
-						<ChevronLeft className="text-gray-400" size={18} />
-						<button
-							onClick={() => navigate.push("/employees")}
-							className="text-gray-400 hover:text-primary transition-colors"
-						>
-							{t("breadcrumb.employees")}
-						</button>
-						<ChevronLeft className="text-gray-400" size={18} />
-						<span className="text-primary">{t("breadcrumb.addEmployee")}</span>
-						<span className="mr-3 inline-flex w-3.5 h-3.5 rounded-full bg-primary" />
-					</div>
-
-				</div>
-			</div>
 
 			{/* Form Content - Two Columns */}
 			<div className="flex gap-6">
@@ -473,14 +463,14 @@ export default function AddEmployeePage() {
 							</div>
 
 							{/* Phone */}
- 							<div className="space-y-2">
+							<div className="space-y-2">
 								<Label className="text-sm text-gray-600 dark:text-slate-300 flex items-center gap-2">
 									<Phone size={16} className="text-gray-400" />
 									{t("fields.phone")}
 								</Label>
 
 								<div className="flex gap-2">
-									<div className="w-[120px]">
+									<div className="w-[160px]">
 										<Controller
 											name="phoneCountry"
 											control={control}
@@ -505,7 +495,7 @@ export default function AddEmployeePage() {
 										placeholder={
 											(COUNTRIES.find((c) => c.key === watch("phoneCountry")) || COUNTRIES[0])?.placeholder
 										}
- 										inputMode="numeric"
+										inputMode="numeric"
 										className={cn(
 											"flex-1 rounded-full font-en h-[45px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 font-en",
 											errors.phoneNumber ? "border-red-300 focus-visible:ring-red-300" : ""
@@ -580,18 +570,6 @@ export default function AddEmployeePage() {
 							</div>
 						</div>
 
-						<div className="w-fit mr-auto" >
-							<Button_
-								onClick={handleSubmit(onSubmit)}
-								disabled={isSubmitting}
-								size="md"
-								label={isSubmitting ? t("actions.saving") || t("actions.save") : t("actions.save")}
-								tone="purple"
-								className="!px-6"
-								variant="solid"
-								icon={<Save />}
-							/>
-						</div>
 					</motion.div>
 				</div>
 
@@ -644,7 +622,7 @@ function ProfileImageUpload({ image, onImageChange, onRemove, t, isRTL }) {
 			animate={{ opacity: 1, x: 0 }}
 			transition={{ delay: 0.2 }}
 			className="bg-card rounded-xl p-6"
- 		>
+		>
 			<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4 text-right">
 				{t("sections.employeeImage")}
 			</h3>
@@ -832,7 +810,7 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 
 							<Input
 								placeholder={selectedCountry.placeholder}
- 								value={phoneNumber}
+								value={phoneNumber}
 								onChange={handlePhoneChange}
 								className={cn(
 									"flex-1 !font-[Inter] rounded-full h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 font-en",

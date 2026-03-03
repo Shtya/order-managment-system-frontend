@@ -29,7 +29,7 @@ import Button_ from "@/components/atoms/Button";
 
 function formatCurrency(amount) {
     if (amount === undefined || amount === null) return "—";
-    return Number(amount).toLocaleString("ar-EG");
+    return Number(amount).toLocaleString("en-US");
 }
 
 function formatPercent(value) {

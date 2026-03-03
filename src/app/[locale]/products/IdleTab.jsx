@@ -131,7 +131,7 @@ export default function IdleTab({ t, searchDebounced, filters, idleFromDate, onA
         cell: (row) => (
           <div className="inline-flex items-center gap-2 text-gray-500 dark:text-slate-300 text-sm">
             <CalendarDays size={14} className="text-gray-400 dark:text-slate-500" />
-            {row.created_at ? new Date(row.created_at).toLocaleDateString("ar-EG") : na}
+            {row.created_at ? new Date(row.created_at).toLocaleDateString("en-US") : na}
           </div>
         )
       },

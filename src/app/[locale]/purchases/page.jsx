@@ -20,6 +20,8 @@ import {
 	Package,
 	TrendingUp,
 	DollarSign,
+	Plus,
+	Info,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -65,6 +67,8 @@ import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/material_blue.css";
 import { baseImg } from "@/utils/axios";
 import { Badge } from "@/components/ui/badge";
+import PageHeader from "@/components/atoms/Pageheader";
+import Table from "@/components/atoms/Table";
 
 const isImagePath = (p) => !!p && /\.(png|jpg|jpeg|webp|gif)$/i.test(p);
 const isPdfPath = (p) => !!p && /\.pdf$/i.test(p);
@@ -212,113 +216,6 @@ function FiltersPanel({ t, value, onChange, onApply, suppliers }) {
 		</motion.div>
 	);
 }
-
-// function LogsModal({ isOpen, onClose, invoiceId, t }) {
-// 	const [loading, setLoading] = useState(false);
-// 	const [logs, setLogs] = useState([]);
-
-// 	useEffect(() => {
-// 		if (!isOpen || !invoiceId) return;
-// 		(async () => {
-// 			setLoading(true);
-// 			try {
-// 				const res = await api.get(`/purchases/${invoiceId}/audit-logs`);
-// 				setLogs(res.data || []);
-// 			} catch (e) {
-// 				console.error(e);
-// 				toast.error(e?.response?.data?.message || t("messages.logsFailed"));
-// 			} finally {
-// 				setLoading(false);
-// 			}
-// 		})();
-// 	}, [isOpen, invoiceId, t]);
-
-// 	return (
-// 		<Dialog open={isOpen} onOpenChange={onClose}>
-// 			<DialogContent className="!max-w-4xl max-h-[85vh] flex flex-col">
-// 				<DialogHeader className="border-b border-gray-200 dark:border-slate-700 pb-4">
-// 					<DialogTitle className="flex items-center gap-3 text-xl">
-// 						<div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-// 							<ScrollText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-// 						</div>
-// 						{t("logs.title")}
-// 					</DialogTitle>
-// 					<DialogDescription className="text-sm mt-2">
-// 						{t("logs.description")} <span className="font-semibold text-primary">#{invoiceId}</span>
-// 					</DialogDescription>
-// 				</DialogHeader>
-
-// 				<div className="flex-1 overflow-y-auto py-4">
-// 					{loading ? (
-// 						<LoadingSpinner text={t("logs.loading")} />
-// 					) : logs.length === 0 ? (
-// 						<div className="flex flex-col items-center justify-center py-16">
-// 							<div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-4">
-// 								<ScrollText className="w-8 h-8 text-gray-400 dark:text-slate-600" />
-// 							</div>
-// 							<p className="text-sm text-gray-500 dark:text-slate-400 font-medium">{t("logs.empty")}</p>
-// 						</div>
-// 					) : (
-// 						<div className="space-y-3 px-1" dir="ltr" >
-// 							{logs.map((log, idx) => (
-// 								<motion.div
-// 									key={log.id}
-// 									initial={{ opacity: 0, x: -20 }}
-// 									animate={{ opacity: 1, x: 0 }}
-// 									transition={{ delay: idx * 0.05 }}
-// 									className="p-4 rounded-xl border-2 border-gray-200 dark:border-slate-700 bg-gradient-to-br from-white to-gray-50 dark:from-slate-900 dark:to-slate-800 hover:shadow-md transition-all"
-// 								>
-// 									<div className="flex items-start justify-between gap-4">
-// 										<div className="flex-1 space-y-2">
-// 											<div className="flex items-center justify-between flex-wrap" >
-// 												<div className="flex items-center gap-2">
-// 													<span className=" font-[Inter] px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase">
-// 														{log.action}
-// 													</span>
-// 													<span className="font-[Inter]  text-[10px] px-2 py-1 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300">
-// 														#{log.id}
-// 													</span>
-// 												</div>
-
-// 												<div className=" font-[Inter]  flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
-// 													<Clock className="w-3 h-3" />
-// 													{log.created_at ? new Date(log.created_at).toLocaleString() : "-"}
-// 												</div>
-// 											</div>
-// 											{log.description && (
-// 												<p className="font-[Inter]  text-sm text-gray-700 dark:text-slate-300">{log.description}</p>
-// 											)}
-
-// 										</div>
-// 									</div>
-
-// 									{log.changes && (
-// 										<details className="mt-3">
-// 											<summary className="cursor-pointer text-xs text-primary font-semibold hover:underline">
-// 												{t("logs.showChanges")}
-// 											</summary>
-// 											<pre className="mt-2 text-[11px] leading-5 p-3 rounded-xl bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 overflow-auto">
-// 												{JSON.stringify(log.changes, null, 2)}
-// 											</pre>
-// 										</details>
-// 									)}
-// 								</motion.div>
-// 							))}
-// 						</div>
-// 					)}
-// 				</div>
-
-// 				<DialogFooter className="border-t border-gray-200 dark:border-slate-700 pt-4">
-// 					<Button onClick={onClose} className="px-6 rounded-xl">
-// 						{t("actions.close")}
-// 					</Button>
-// 				</DialogFooter>
-// 			</DialogContent>
-// 		</Dialog>
-// 	);
-// }
-
-
 
 function TinyBadge({ children }) {
 	return (
@@ -1108,7 +1005,14 @@ function EditPaidAmountModal({ isOpen, onClose, invoice, t, onSave }) {
 		</Dialog>
 	);
 }
-
+function FilterField({ label, children }) {
+	return (
+		<div className="space-y-2">
+			<Label>{label}</Label>
+			{children}
+		</div>
+	);
+}
 export default function PurchasesPage() {
 	const t = useTranslations("purchases");
 	const router = useRouter();
@@ -1141,28 +1045,25 @@ export default function PurchasesPage() {
 	const statsCards = useMemo(
 		() => [
 			{
-				title: t("stats.acceptedInvoices"),
-				value: String(stats.accepted),
+				name: t("stats.acceptedInvoices"),
+				value: String(stats.accepted ?? 0),
 				icon: CheckCircle,
-				bg: "bg-[#F0FDF4] dark:bg-[#0E1A0C]",
-				iconColor: "text-[#22C55E] dark:text-[#4ADE80]",
-				iconBorder: "border-[#22C55E] dark:border-[#4ADE80]",
+				color: "#22C55E", // green
+				sortOrder: 0,
 			},
 			{
-				title: t("stats.pendingInvoices"),
-				value: String(stats.pending),
+				name: t("stats.pendingInvoices"),
+				value: String(stats.pending ?? 0),
 				icon: Clock,
-				bg: "bg-[#FFF9F0] dark:bg-[#1A1208]",
-				iconColor: "text-[#F59E0B] dark:text-[#FBBF24]",
-				iconBorder: "border-[#F59E0B] dark:border-[#FBBF24]",
+				color: "#F59E0B", // amber
+				sortOrder: 1,
 			},
 			{
-				title: t("stats.rejectedInvoices"),
-				value: String(stats.rejected),
+				name: t("stats.rejectedInvoices"),
+				value: String(stats.rejected ?? 0),
 				icon: XCircle,
-				bg: "bg-[#FEF2F2] dark:bg-[#1F0A0A]",
-				iconColor: "text-[#EF4444] dark:text-[#F87171]",
-				iconBorder: "border-[#EF4444] dark:border-[#F87171]",
+				color: "#EF4444", // red
+				sortOrder: 2,
 			},
 		],
 		[t, stats]
@@ -1226,7 +1127,15 @@ export default function PurchasesPage() {
 	}, [search]);
 
 	const handlePageChange = ({ page, per_page }) => fetchPurchases(page, per_page);
-
+	const hasActiveFilters = useMemo(() => {
+		return (
+			(filters.supplierId && filters.supplierId !== "none") ||
+			(filters.status && filters.status !== "all") ||
+			Boolean(filters.startDate) ||
+			Boolean(filters.endDate) ||
+			(filters.hasReceipt && filters.hasReceipt !== "all")
+		);
+	}, [filters]);
 	const handleStatusChange = async (id, newStatus) => {
 		try {
 			await api.patch(`/purchases/${id}/status`, { status: newStatus });
@@ -1447,67 +1356,122 @@ export default function PurchasesPage() {
 	}, [t]);
 
 	return (
-		<div className="min-h-screen p-6">
-			<div className="bg-card !pb-4 flex flex-col gap-2 mb-4">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-2 text-lg font-semibold">
-						<span className="text-gray-400">{t("breadcrumb.home")}</span>
-						<ChevronLeft className="text-gray-400" size={18} />
-						<span className="text-primary">{t("breadcrumb.purchases")}</span>
-						<span className="ml-3 inline-flex w-3.5 h-3.5 rounded-full bg-primary" />
-					</div>
+		<div className="min-h-screen p-5">
 
-					<div className="flex items-center gap-4">
-						<Button_ href="/purchases/new" size="sm" label={t("actions.createInvoice")} tone="purple" variant="solid" />
-						<Button_ size="sm" label={t("actions.howToUse")} tone="white" variant="solid" />
-					</div>
-				</div>
+			<PageHeader
+				breadcrumbs={[
+					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.purchases") }
+				]}
+				buttons={
+					<>
+						<Button_ href="/purchases/new" size="sm" label={t("actions.createInvoice")} icon={<Plus size={18} />} variant="solid" />
+						<Button_ size="sm" label={t("actions.howToUse")} tone="ghost" icon={<Info size={18} />} />
+					</>
+				}
+				stats={statsCards}
+			/>
 
-				<div className="mt-6 grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4">
-					{statsCards.map((stat, index) => (
-						<motion.div key={stat.title} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.06 }}>
-							<InfoCard title={stat.title} value={stat.value} icon={stat.icon} bg={stat.bg} iconColor={stat.iconColor} iconBorder={stat.iconBorder} />
-						</motion.div>
-					))}
-				</div>
-			</div>
+			<Table
+				searchValue={search}
+				onSearchChange={setSearch}
+				onSearch={() => { }}
+				labels={{
+					searchPlaceholder: t("toolbar.searchPlaceholder"),
+					filter: t("toolbar.filter"),
+					apply: t("filters.apply"),
+					total: t("common.total"),
+					limit: t("common.limit"),
+					emptyTitle: t("empty"),
+					emptySubtitle: "",
+				}}
+				actions={[]}
+				hasActiveFilters={hasActiveFilters}
+				onApplyFilters={applyFilters}
+				filters={
+					<>
+						<FilterField label={t("filters.supplier")}>
+							<Select
+								value={filters.supplierId}
+								onValueChange={(v) => setFilters((f) => ({ ...f, supplierId: v }))}
+							>
+								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+									<SelectValue placeholder={t("filters.supplierPlaceholder")} />
+								</SelectTrigger>
+								<SelectContent className="bg-card-select">
+									<SelectItem value="none">{t("filters.all")}</SelectItem>
+									{suppliers.map((s) => (
+										<SelectItem key={s.id} value={String(s.id)}>
+											{s.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</FilterField>
 
-			<div className="bg-card rounded-sm">
-				<PurchasesTableToolbar
-					t={t}
-					searchValue={search}
-					onSearchChange={setSearch}
-					isFiltersOpen={filtersOpen}
-					onToggleFilters={() => setFiltersOpen((v) => !v)}
-				/>
+						<FilterField label={t("filters.status")}>
+							<Select
+								value={filters.status}
+								onValueChange={(v) => setFilters((f) => ({ ...f, status: v }))}
+							>
+								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+									<SelectValue placeholder={t("filters.statusPlaceholder")} />
+								</SelectTrigger>
+								<SelectContent className="bg-card-select">
+									<SelectItem value="all">{t("filters.all")}</SelectItem>
+									<SelectItem value="accepted">{t("status.accepted")}</SelectItem>
+									<SelectItem value="pending">{t("status.pending")}</SelectItem>
+									<SelectItem value="rejected">{t("status.rejected")}</SelectItem>
+								</SelectContent>
+							</Select>
+						</FilterField>
 
-				<AnimatePresence>
-					{filtersOpen && (
-						<FiltersPanel
-							t={t}
-							value={filters}
-							onChange={setFilters}
-							onApply={applyFilters}
-							suppliers={suppliers}
-						/>
-					)}
-				</AnimatePresence>
+						<FilterField label={t("filters.dateRange")}>
+							<Flatpickr
+								value={[
+									filters.startDate ? new Date(filters.startDate) : null,
+									filters.endDate ? new Date(filters.endDate) : null,
+								]}
+								onChange={([start, end]) => {
+									setFilters((f) => ({
+										...f,
+										startDate: start ? start.toISOString().split("T")[0] : null,
+										endDate: end ? end.toISOString().split("T")[0] : null,
+									}));
+								}}
+								options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
+								className="w-full rounded-xl h-10 px-3 bg-background border border-border text-sm"
+								placeholder={t("filters.selectDateRange")}
+							/>
+						</FilterField>
 
-				<div className="mt-4">
-					<DataTable
-						columns={columns}
-						data={pager.records}
-						pagination={{
-							total_records: pager.total_records,
-							current_page: pager.current_page,
-							per_page: pager.per_page,
-						}}
-						onPageChange={({ page, per_page }) => fetchPurchases(page, per_page)}
-						emptyState={t("empty")}
-						loading={loading}
-					/>
-				</div>
-			</div>
+						<FilterField label={t("filters.hasReceipt")}>
+							<Select
+								value={filters.hasReceipt}
+								onValueChange={(v) => setFilters((f) => ({ ...f, hasReceipt: v }))}
+							>
+								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+									<SelectValue placeholder={t("filters.hasReceiptPlaceholder")} />
+								</SelectTrigger>
+								<SelectContent className="bg-card-select">
+									<SelectItem value="all">{t("filters.all")}</SelectItem>
+									<SelectItem value="yes">{t("filters.yes")}</SelectItem>
+									<SelectItem value="no">{t("filters.no")}</SelectItem>
+								</SelectContent>
+							</Select>
+						</FilterField>
+					</>
+				}
+				columns={columns}
+				data={pager.records}
+				isLoading={loading}
+				pagination={{
+					total_records: pager.total_records,
+					current_page: pager.current_page,
+					per_page: pager.per_page,
+				}}
+				onPageChange={({ page, per_page }) => fetchPurchases(page, per_page)}
+			/>
 
 			<DetailsModal
 				isOpen={detailsModal.isOpen}

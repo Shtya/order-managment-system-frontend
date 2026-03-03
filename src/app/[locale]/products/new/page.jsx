@@ -18,6 +18,7 @@ import {
 	Palette,
 	Ruler,
 	Package,
+	Save,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -44,6 +45,7 @@ import LANG from '@/components/atoms/LANG';
 import { baseImg } from '@/utils/axios';
 import { useAutoTranslate } from '@/utils/autoTranslate';
 import SlugInput from '@/components/atoms/SlugInput';
+import PageHeader from '@/components/atoms/Pageheader';
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? 'Unexpected error';
@@ -638,37 +640,31 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			initial={{ opacity: 0, y: 20, scale: 0.98 }}
 			animate={{ opacity: 1, y: 0, scale: 1 }}
 			transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.15 }}
-			className="min-h-screen p-6"
+			className="min-h-screen p-5"
 		>
 
-			<div className="duration-300 !p-4 !sticky top-[80px] z-[10] bg-card mb-6 rounded-xl shadow-sm">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-2 text-lg font-semibold">
-						<span className="text-gray-400">{t('breadcrumb.home')}</span>
-						<ChevronLeft className="text-gray-400" size={18} />
-						<button type="button" onClick={() => navigate.push('/products')} className="text-gray-400 hover:text-primary transition-colors">
-							{t('breadcrumb.products')}
-						</button>
-						<ChevronLeft className="text-gray-400" size={18} />
-						<span className="text-primary">{isEditMode ? t('breadcrumb.editProduct') : t('breadcrumb.addProduct')}</span>
-						<span className="mr-3 inline-flex w-3.5 h-3.5 rounded-md bg-primary" />
-					</div>
+			<PageHeader
+				breadcrumbs={[
+					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.products"), href: "/products" },
+					{ name: isEditMode ? t('breadcrumb.editProduct') : t('breadcrumb.addProduct') }
+				]}
+				buttons={
+					<>
+						<Button_ onClick={() => navigate.push('/products')} size="sm" label={t('actions.back')} tone="cancel" variant="ghost" />
 
-					<div className="flex items-center gap-4">
-						<Button_ onClick={() => navigate.push('/products')} size="sm" label={t('actions.back')} tone="white" variant="solid" />
 						<Button_
 							size="sm"
 							label={isSubmitting ? t('actions.saving') : t('actions.save')}
-							tone="purple"
+							tone="primary"
 							variant="solid"
 							onClick={handleSubmit(onSubmit)}
-							icon={isSubmitting ? <Loader2 className="h-5 w-5 animate-spin text-white" /> : null}
+							icon={isSubmitting ? <Loader2 className="h-5 w-5 animate-spin text-white" /> : <Save size={18} />}
 						/>
-					</div>
-				</div>
+					</>
+				}
+			/>
 
-				{errors?.name?.message && <div className="mt-3 text-sm text-red-600">{errors.name.message}</div>}
-			</div>
 
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<div className="flex gap-6">

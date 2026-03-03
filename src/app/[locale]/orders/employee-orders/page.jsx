@@ -192,7 +192,7 @@ export default function MyAssignedOrdersPage() {
 
 	const formatDate = (date) => {
 		if (!date) return "-";
-		return new Date(date).toLocaleDateString("ar-EG", {
+		return new Date(date).toLocaleDateString("en-US", {
 			year: "numeric",
 			month: "short",
 			day: "numeric",
@@ -341,7 +341,7 @@ export default function MyAssignedOrdersPage() {
 	}, [t, currentTime]);
 
 	return (
-		<div className="min-h-screen p-6 bg-[#f3f6fa] dark:bg-[#19243950] transition-all duration-300">
+		<div className="min-h-screen p-5 bg-[#f3f6fa] dark:bg-[#19243950] transition-all duration-300">
 			{/* Header */}
 			<div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-6 mb-6 shadow-sm">
 				<div className="flex items-center justify-between flex-wrap gap-4">

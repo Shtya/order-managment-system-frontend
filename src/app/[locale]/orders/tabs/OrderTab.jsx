@@ -719,7 +719,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
 				header: t("table.lastUpdate"),
 				cell: (row) => (
 					<span className="text-xs text-gray-500">
-						{new Date(row.updated_at).toLocaleDateString("ar-EG")}
+						{new Date(row.updated_at).toLocaleDateString("en-US")}
 					</span>
 				),
 			},
@@ -728,7 +728,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
 				header: t("table.createdat"),
 				cell: (row) => (
 					<span className="text-xs text-gray-500">
-						{new Date(row.created_at).toLocaleDateString("ar-EG")}
+						{new Date(row.created_at).toLocaleDateString("en-US")}
 					</span>
 				),
 			},

@@ -994,7 +994,7 @@ export default function AdminSubscriptionsPage() {
 	const isAnyPlanBusy = creatingPlan || savingPlanId !== null || deletingPlanId !== null;
 
 	return (
-		<div className="min-h-screen p-6">
+		<div className="min-h-screen p-5">
 			{/* Header */}
 			<div className="bg-card flex flex-col gap-2 mb-4">
 				<div className="flex items-center justify-between">

@@ -46,35 +46,29 @@
 }
 
 .dark {
-  /* ── Brand (shifts from warm orange → electric indigo) ── */
-  --primary: #5b4bff;
-  --secondary: #8b7cff;
-  --third: #3be7ff;
+  --primary: #ff8b00;
+  --secondary: #ffb703;
+  --third: #ff5c2b;
 
-  --primary-from: 140 130 255;
-  --primary-to: 91 75 255;
-  --primary-shadow: 91 75 255 / 0.55;
+  --primary-from: 255 180 64;
+  --primary-to: 255 139 0;
+  --primary-shadow: 255 139 0 / 0.4;
 
-  /* ── Backgrounds ── */
   --background: #0f1117;
   --sidebar: #13161f;
   --card: oklch(0.14 0.012 260);
 
-  /* ── Borders ── */
   --border: oklch(1 0 0 / 9%);
   --input: oklch(1 0 0 / 12%);
   --ring: oklch(0.45 0 0);
 
-  /* ── Text ── */
   --foreground: oklch(0.94 0.005 240);
   --card-foreground: oklch(0.94 0.005 240);
   --popover: oklch(0.16 0.01 260);
   --popover-foreground: oklch(0.94 0.005 240);
 
-  /* ── Primary ── */
   --primary-foreground: oklch(0.98 0 0);
 
-  /* ── Secondary / Muted / Accent ── */
   --secondary: oklch(0.22 0.01 260);
   --secondary-foreground: oklch(0.88 0.005 240);
 
@@ -84,10 +78,76 @@
   --accent: oklch(0.22 0.015 270);
   --accent-foreground: oklch(0.9 0.005 240);
 
-  /* ── Destructive ── */
   --destructive: oklch(0.65 0.22 25);
   --destructive-foreground: oklch(0.98 0 0);
 }
+
+
+
+.btn-emerald {
+  --primary: #059669;
+  --primary-from: 110 231 183;
+  --primary-to: 5 150 105;
+  --primary-shadow: 5 150 105 / 0.45;
+}
+
+.btn-blue {
+  --primary: #2563eb;
+  --primary-from: 147 197 253;
+  --primary-to: 37 99 235;
+  --primary-shadow: 37 99 235 / 0.45;
+}
+
+.btn-purple {
+  --primary: #7c3aed;
+  --primary-from: 196 181 253;
+  --primary-to: 124 58 237;
+  --primary-shadow: 124 58 237 / 0.45;
+}
+
+.btn-rose {
+  --primary: #e11d48;
+  --primary-from: 254 205 211;
+  --primary-to: 225 29 72;
+  --primary-shadow: 225 29 72 / 0.45;
+}
+
+.btn-amber {
+  --primary: #f59e0b;
+  --primary-from: 253 230 138;
+  --primary-to: 245 158 11;
+  --primary-shadow: 245 158 11 / 0.45;
+}
+
+.btn-default {
+  --primary: #6b7280;
+  --primary-from: 229 231 235;
+  --primary-to: 107 114 128;
+  --primary-shadow: 107 114 128 / 0.35;
+}
+
+.btn-danger {
+  --primary: #dc2626;                /* red-600 */
+  --primary-from: 252 165 165;       /* red-300 */
+  --primary-to: 220 38 38;           /* red-600 */
+  --primary-shadow: 220 38 38 / 0.45;
+}
+
+.btn-warning {
+  --primary: #ea580c;                /* orange-600 */
+  --primary-from: 253 186 116;       /* orange-300 */
+  --primary-to: 234 88 12;           /* orange-600 */
+  --primary-shadow: 234 88 12 / 0.45;
+}
+
+
+.btn-cancel {
+  --primary: #4b5563;                /* gray-600 */
+  --primary-from: 209 213 219;       /* gray-300 */
+  --primary-to: 75 85 99;            /* gray-600 */
+  --primary-shadow: 75 85 99 / 0.35;
+}
+
 
 .bg-card {
   @apply p-4 md:p-6 rounded-xl md:rounded-xl border transition-all duration-300 bg-card border-gray-300/70;
@@ -219,7 +279,6 @@
   button {
     @apply cursor-pointer;
   }
-
 }
 
 [dir='ltr'] body {
@@ -296,13 +355,20 @@ html {
   scrollbar-gutter: stable;
 }
 
+/* Light mode */
 * {
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in oklab, var(--primary) 70%, white 10%) color-mix(in oklab, white 8%, white);
+  scrollbar-color:
+    color-mix(in oklab, var(--primary) 80%, white 8%)
+    color-mix(in oklab, white 6%, white);
 }
 
-
-
+/* Dark mode override */
+.dark * {
+  scrollbar-color:
+    color-mix(in oklab, var(--primary) 85%, black 10%)
+    rgba(255, 255, 255, 0.06);
+}
 
 ::-webkit-scrollbar {
   width: 8px;
@@ -467,7 +533,6 @@ html {
 }
 
 @keyframes pulse-badge {
-
   0%,
   100% {
     opacity: 1;
@@ -544,7 +609,6 @@ select:focus-visible {
 }
 
 @keyframes float {
-
   0%,
   100% {
     transform: translateY(0px);
@@ -592,7 +656,6 @@ select:focus-visible {
   }
 
   @media (prefers-reduced-motion: reduce) {
-
     *,
     *::before,
     *::after {
@@ -603,49 +666,6 @@ select:focus-visible {
   }
 }
 
-.btn-emerald {
-  --primary: #059669;
-  --primary-from: 110 231 183;
-  --primary-to: 5 150 105;
-  --primary-shadow: 5 150 105 / 0.45;
-}
-
-.btn-blue {
-  --primary: #2563eb;
-  --primary-from: 147 197 253;
-  --primary-to: 37 99 235;
-  --primary-shadow: 37 99 235 / 0.45;
-}
-
-.btn-purple {
-  --primary: #7c3aed;
-  --primary-from: 196 181 253;
-  --primary-to: 124 58 237;
-  --primary-shadow: 124 58 237 / 0.45;
-}
-
-.btn-rose {
-  --primary: #e11d48;
-  --primary-from: 254 205 211;
-  --primary-to: 225 29 72;
-  --primary-shadow: 225 29 72 / 0.45;
-}
-
-.btn-amber {
-  --primary: #f59e0b;
-  --primary-from: 253 230 138;
-  --primary-to: 245 158 11;
-  --primary-shadow: 245 158 11 / 0.45;
-}
-
-.btn-default {
-  --primary: #6b7280;
-  --primary-from: 229 231 235;
-  --primary-to: 107 114 128;
-  --primary-shadow: 107 114 128 / 0.35;
-}
-
-/* ── Keyframes ──────────────────────────────────────────── */
 @keyframes btn-shine-sweep {
   0% {
     transform: translateX(-130%) skewX(-12deg);
@@ -657,7 +677,6 @@ select:focus-visible {
 }
 
 @keyframes btn-glow-pulse {
-
   0%,
   100% {
     opacity: 0;
@@ -670,7 +689,6 @@ select:focus-visible {
   }
 }
 
-/* ── Base ───────────────────────────────────────────────── */
 .btn {
   position: relative;
   display: inline-flex;
@@ -713,7 +731,6 @@ select:focus-visible {
   border-radius: inherit;
 }
 
-/* ── Sizes ──────────────────────────────────────────────── */
 .btn-sm {
   padding: 0 16px;
   height: 36px;
@@ -733,7 +750,6 @@ select:focus-visible {
   font-size: 15px;
 }
 
-/* ── High contrast ──────────────────────────────────────── */
 @media (prefers-contrast: high) {
   .btn {
     border: 2px solid currentColor;

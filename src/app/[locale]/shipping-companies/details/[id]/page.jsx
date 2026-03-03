@@ -137,7 +137,7 @@ export default function ShippingCompanyDetailsPage() {
 	}, [t]);
 
 	return (
-		<div className="min-h-screen p-6">
+		<div className="min-h-screen p-5">
 			<div className="bg-card  flex flex-col gap-2 mb-4">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-2 text-lg font-semibold">

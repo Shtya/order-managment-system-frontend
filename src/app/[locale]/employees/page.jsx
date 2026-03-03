@@ -56,6 +56,8 @@ import {
 } from "@/components/ui/tooltip";
 
 import api from "@/utils/api";
+import PageHeader from "@/components/atoms/Pageheader";
+import Table from "@/components/atoms/Table";
 
 /** =========================
  * Helpers
@@ -316,7 +318,7 @@ export default function EmployeesPage() {
 	const t = useTranslations("employees");
 
 	// server state
-	const [records, setRecords] = useState ([]);
+	const [records, setRecords] = useState([]);
 	const [pagination, setPagination] = useState({
 		total_records: 0,
 		current_page: 1,
@@ -324,7 +326,7 @@ export default function EmployeesPage() {
 	});
 
 	// tabs/types counts (from /users/stats/types)
-	const [types, setTypes] = useState ([
+	const [types, setTypes] = useState([
 		{ id: "all", label: t("tabs.all") || "All", count: 0 },
 	]);
 
@@ -335,7 +337,7 @@ export default function EmployeesPage() {
 	const [exportLoading, setExportLoading] = useState(false);
 
 	// per-row loading
-	const [rowLoading, setRowLoading] = useState ({}); // { [id]: {toggle, del, view, edit} }
+	const [rowLoading, setRowLoading] = useState({}); // { [id]: {toggle, del, view, edit} }
 
 	// messages
 	const [error, setError] = useState("");
@@ -344,16 +346,16 @@ export default function EmployeesPage() {
 	// dialogs
 	const [viewOpen, setViewOpen] = useState(false);
 	const [viewLoading, setViewLoading] = useState(false);
-	const [viewData, setViewData] = useState (null);
+	const [viewData, setViewData] = useState(null);
 
 	const [editOpen, setEditOpen] = useState(false);
 	const [editSaving, setEditSaving] = useState(false);
 
 	const [deleteOpen, setDeleteOpen] = useState(false);
-	const [selected, setSelected] = useState (null);
+	const [selected, setSelected] = useState(null);
 
 	/** icons map for switcher */
-	const typeIcon = (id ) => {
+	const typeIcon = (id) => {
 		const map = {
 			all: Users,
 			call_center: Headphones,
@@ -365,7 +367,7 @@ export default function EmployeesPage() {
 		return map[id] || Users;
 	};
 
-	function setRowActionLoading(id , key , val ) {
+	function setRowActionLoading(id, key, val) {
 		setRowLoading((p) => ({
 			...p,
 			[id]: { ...(p[id] || {}), [key]: val },
@@ -388,7 +390,7 @@ export default function EmployeesPage() {
 				label:
 					x.id === "all"
 						? t("tabs.all") || "All"
-						: t.has(`tabs.${x.id}`) ? t(`tabs.${x.id}`) : x.id ,
+						: t.has(`tabs.${x.id}`) ? t(`tabs.${x.id}`) : x.id,
 				count: Number(x.count ?? 0),
 			}));
 
@@ -640,17 +642,15 @@ export default function EmployeesPage() {
 		}));
 	}, [types]);
 
-	/** =========================
-	 * Stats cards from types counts
-	 * (total + top 3 types)
-	 * ========================= */
 	const statCards = useMemo(() => {
 		const total =
 			Number(types?.find((x) => x.id === "all")?.count ?? 0) ||
 			Number(pagination.total_records ?? 0);
 
 		const rest = (types || []).filter((x) => x.id !== "all");
-		const top3 = rest.sort((a, b) => Number(b.count) - Number(a.count)).slice(0, 3);
+		const top3 = [...rest]
+			.sort((a, b) => Number(b.count) - Number(a.count))
+			.slice(0, 3);
 
 		const iconByKey = {
 			data_entry: FileText,
@@ -662,44 +662,29 @@ export default function EmployeesPage() {
 
 		const cards = [
 			{
-				title: t("stats.totalEmployees"),
+				name: t("stats.totalEmployees"),
 				value: String(total),
 				icon: Users,
-				bg: "bg-[#F3F6FF] dark:bg-[#0B1220]",
-				iconColor: "text-[#6B7CFF] dark:text-[#8A96FF]",
-				iconBorder: "border-[#6B7CFF] dark:border-[#8A96FF]",
+				color: "#6B7CFF", // blue
+				sortOrder: 0,
 			},
 		];
 
+		const colors = ["#F59E0B", "#22C55E", "#38BDF8"];
+		// amber, green, sky
+
 		top3.forEach((e, idx) => {
 			cards.push({
-				title: t.has(`tabs.${e.id}`) ? t(`tabs.${e.id}`) : e.id ,
+				name: t.has(`tabs.${e.id}`) ? t(`tabs.${e.id}`) : e.id,
 				value: String(Number(e.count ?? 0)),
 				icon: iconByKey[e.id] || Users,
-				bg:
-					idx === 0
-						? "bg-[#FFF9F0] dark:bg-[#1A1208]"
-						: idx === 1
-							? "bg-[#F6FFF1] dark:bg-[#0E1A0C]"
-							: "bg-[#F1FAFF] dark:bg-[#0A1820]",
-				iconColor:
-					idx === 0
-						? "text-[#F59E0B] dark:text-[#FBBF24]"
-						: idx === 1
-							? "text-[#22C55E] dark:text-[#4ADE80]"
-							: "text-[#38BDF8] dark:text-[#7DD3FC]",
-				iconBorder:
-					idx === 0
-						? "border-[#F59E0B] dark:border-[#FBBF24]"
-						: idx === 1
-							? "border-[#22C55E] dark:border-[#4ADE80]"
-							: "border-[#38BDF8] dark:border-[#7DD3FC]",
+				color: colors[idx] || "#64748B",
+				sortOrder: idx + 1,
 			});
 		});
 
 		return cards;
 	}, [types, pagination.total_records, t]);
-
 	/** =========================
 	 * Badge style
 	 * ========================= */
@@ -889,62 +874,38 @@ export default function EmployeesPage() {
 	}, [t, rowLoading]);
 
 	return (
-		<div className="min-h-screen p-6">
-			{/* Header */}
-			<div className="bg-card !pb-0 flex flex-col gap-2 mb-4">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-2 text-lg font-semibold">
-						<span className="text-gray-400">{t("breadcrumb.home")}</span>
-						<ChevronLeft className="text-gray-400" size={18} />
-						<span className="text-[rgb(var(--primary))]">{t("breadcrumb.employees")}</span>
-						<span className="ml-3 inline-flex w-3.5 h-3.5 rounded-full bg-[rgb(var(--primary))]" />
-					</div>
+		<div className="min-h-screen p-5">
 
-					<div className="flex items-center gap-4">
-						<Button_
-							href="/employees/new"
-							size="sm"
-							label={t("actions.addEmployee")}
-							tone="purple"
-							variant="solid"
-							icon={
-								<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<path
-										fillRule="evenodd"
-										clipRule="evenodd"
-										d="M6.12078 3.34752C8.69901 3.06206 11.3009 3.06206 13.8791 3.34752C15.3066 3.50752 16.4583 4.63169 16.6258 6.06419C16.9313 8.67918 16.9313 11.3209 16.6258 13.9359C16.4583 15.3684 15.3066 16.4925 13.8791 16.6525C11.3009 16.938 8.69901 16.938 6.12078 16.6525C4.69328 16.4925 3.54161 15.3684 3.37411 13.9359C3.06866 11.3211 3.06866 8.67974 3.37411 6.06502C3.45883 5.36908 3.77609 4.72214 4.27447 4.22906C4.77285 3.73597 5.42314 3.42564 6.11994 3.34835M9.99994 5.83919C10.1657 5.83919 10.3247 5.90503 10.4419 6.02224C10.5591 6.13945 10.6249 6.29842 10.6249 6.46419V9.37502H13.5358C13.7015 9.37502 13.8605 9.44087 13.9777 9.55808C14.0949 9.67529 14.1608 9.83426 14.1608 10C14.1608 10.1658 14.0949 10.3247 13.9777 10.442C13.8605 10.5592 13.7015 10.625 13.5358 10.625H10.6249V13.5359C10.6249 13.7016 10.5591 13.8606 10.4419 13.9778C10.3247 14.095 10.1657 14.1609 9.99994 14.1609C9.83418 14.1609 9.67521 14.095 9.558 13.9778C9.44079 13.8606 9.37494 13.7016 9.37494 13.5359V10.625H6.46411C6.29835 10.625 6.13938 10.5592 6.02217 10.442C5.90496 10.3247 5.83911 10.1658 5.83911 10C5.83911 9.83426 5.90496 9.67529 6.02217 9.55808C6.13938 9.44087 6.29835 9.37502 6.46411 9.37502H9.37494V6.46419C9.37494 6.29842 9.44079 6.13945 9.558 6.02224C9.67521 5.90503 9.83418 5.83919 9.99994 5.83919Z"
-										fill="white"
-									/>
-								</svg>
-							}
-						/>
-					</div>
-				</div>
+			<PageHeader
+				breadcrumbs={[
+					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.employees") }
+				]}
+				buttons={
+					<Button_
+						href="/employees/new"
+						size="sm"
+						label={t("actions.addEmployee")}
+						variant="solid"
+						icon={
+							<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+								<path
+									fillRule="evenodd"
+									clipRule="evenodd"
+									d="M6.12078 3.34752C8.69901 3.06206 11.3009 3.06206 13.8791 3.34752C15.3066 3.50752 16.4583 4.63169 16.6258 6.06419C16.9313 8.67918 16.9313 11.3209 16.6258 13.9359C16.4583 15.3684 15.3066 16.4925 13.8791 16.6525C11.3009 16.938 8.69901 16.938 6.12078 16.6525C4.69328 16.4925 3.54161 15.3684 3.37411 13.9359C3.06866 11.3211 3.06866 8.67974 3.37411 6.06502C3.45883 5.36908 3.77609 4.72214 4.27447 4.22906C4.77285 3.73597 5.42314 3.42564 6.11994 3.34835M9.99994 5.83919C10.1657 5.83919 10.3247 5.90503 10.4419 6.02224C10.5591 6.13945 10.6249 6.29842 10.6249 6.46419V9.37502H13.5358C13.7015 9.37502 13.8605 9.44087 13.9777 9.55808C14.0949 9.67529 14.1608 9.83426 14.1608 10C14.1608 10.1658 14.0949 10.3247 13.9777 10.442C13.8605 10.5592 13.7015 10.625 13.5358 10.625H10.6249V13.5359C10.6249 13.7016 10.5591 13.8606 10.4419 13.9778C10.3247 14.095 10.1657 14.1609 9.99994 14.1609C9.83418 14.1609 9.67521 14.095 9.558 13.9778C9.44079 13.8606 9.37494 13.7016 9.37494 13.5359V10.625H6.46411C6.29835 10.625 6.13938 10.5592 6.02217 10.442C5.90496 10.3247 5.83911 10.1658 5.83911 10C5.83911 9.83426 5.90496 9.67529 6.02217 9.55808C6.13938 9.44087 6.29835 9.37502 6.46411 9.37502H9.37494V6.46419C9.37494 6.29842 9.44079 6.13945 9.558 6.02224C9.67521 5.90503 9.83418 5.83919 9.99994 5.83919Z"
+									fill="white"
+								/>
+							</svg>
+						}
+					/>
+				}
+				stats={statCards}
+				items={switchItems}
+				active={activeType}
+				setActive={setActiveType}
+			/>
 
-				{/* Switcher (dynamic from endpoint) */}
-				<SwitcherTabs items={switchItems} activeId={activeType} onChange={setActiveType} className="w-full" />
 
-				{/* Stats (from types counts) */}
-				<div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-6">
-					{statCards.map((stat, index) => (
-						<motion.div
-							key={stat.title}
-							initial={{ opacity: 0, y: 18 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: index * 0.06 }}
-						>
-							<InfoCard
-								title={stat.title}
-								value={stat.value}
-								icon={stat.icon}
-								bg={stat.bg}
-								iconColor={stat.iconColor}
-								iconBorder={stat.iconBorder}
-							/>
-						</motion.div>
-					))}
-				</div>
-			</div>
 
 			{/* Messages */}
 			{error && (
@@ -958,31 +919,25 @@ export default function EmployeesPage() {
 				</div>
 			)}
 
-			{/* Toolbar + Table */}
-			<div className="bg-card rounded-sm">
-				<EmployeesTableToolbar
-					t={t}
-					searchValue={search}
-					onSearchChange={setSearch}
-					onExport={handleExport}
-					exportLoading={exportLoading}
-				/>
 
-				<div className="mt-4">
-					<DataTable
-						columns={columns}
-						data={records}
-						isLoading={isLoading}
-						pagination={{
-							total_records: pagination.total_records,
-							current_page: pagination.current_page,
-							per_page: pagination.per_page,
-						}}
-						onPageChange={({ page, per_page }) => handlePageChange({ page, per_page })}
-						emptyState={t("empty")}
-					/>
-				</div>
-			</div>
+			<Table
+				t={t}
+				searchValue={search}
+				onSearchChange={setSearch}
+				onExport={handleExport}
+				exportLoading={exportLoading}
+				columns={columns}
+				data={records}
+				isLoading={isLoading}
+				pagination={{
+					total_records: pagination.total_records,
+					current_page: pagination.current_page,
+					per_page: pagination.per_page,
+				}}
+				onPageChange={({ page, per_page }) => handlePageChange({ page, per_page })}
+				emptyState={t("empty")}
+			/>
+
 
 			{/* Dialogs */}
 			<ViewEmployeeDialog

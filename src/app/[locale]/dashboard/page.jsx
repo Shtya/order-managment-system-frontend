@@ -7,20 +7,23 @@ import {
     BarChart3, Calendar, Store, ShoppingCart, PieChart as PieIcon,
     DollarSign, Briefcase, Activity, Percent,
     RotateCcw,
-    CreditCard
+    CreditCard,
+    Info
 } from "lucide-react";
 import api from "@/utils/api";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/material_blue.css";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { StatsGrid } from "@/components/atoms/Pageheader";
+import PageHeader, { StatsGrid } from "@/components/atoms/Pageheader";
 import { useTranslations } from "next-intl";
 import { Card, ExportBtn, fmt, MiniTable, pct, PctBar, RangeTabs, StatusDonut, TableFilters, TrendChart, PRIMARY, SECONDARY, THIRD } from "../reports/order-analysis/page";
 import { useDebounce } from "@/hook/useDebounce";
 import toast from "react-hot-toast";
+import Button_ from "@/components/atoms/Button";
 
 
 export default function DashboardPage() {
+    const tDates = useTranslations("orderAnalysis");
     const t = useTranslations("dashboard");
     const [quickRange, setQuickRange] = useState("this_month");
     const [filters, setFilters] = useState({ startDate: null, endDate: null, storeId: "all", search: "" });
@@ -172,11 +175,21 @@ export default function DashboardPage() {
         }
         finally { setL(false); }
     };
+    const QUICK_RANGES = [
+        { id: "today", label: tDates("ranges.today") },
+        { id: "yesterday", label: tDates("ranges.yesterday") },
+        { id: "this_week", label: tDates("ranges.this_week") },
+        { id: "last_week", label: tDates("ranges.last_week") },
+        { id: "this_month", label: tDates("ranges.this_month") },
+        { id: "last_month", label: tDates("ranges.last_month") },
+        { id: "this_year", label: tDates("ranges.this_year") },
+    ];
+
 
     return (
         <div className="min-h-screen p-4 md:p-6 bg-background">
             {/* Header / Breadcrumbs */}
-            <div className="bg-card flex flex-col gap-2 mb-4">
+            {/* <div className="bg-card flex flex-col gap-2 mb-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-lg font-semibold">
                         <span className="text-gray-400 font-medium">{t("breadcrumb.home")}</span>
@@ -185,17 +198,37 @@ export default function DashboardPage() {
                         <span className="ml-3 inline-flex w-3.5 h-3.5 rounded-full bg-[rgb(var(--primary))]" />
                     </div>
                 </div>
-            </div>
+            </div> */}
+
+
+            <PageHeader
+                breadcrumbs={[
+                    { name: t("breadcrumb.home"), href: "/" },
+                    { name: t("breadcrumb.dashboard") }
+                ]}
+                buttons={
+                    <Button_
+                        size="sm"
+                        label={t("actions.howToUse")}
+                        variant="ghost"
+                        icon={<Info size={18} />}
+                    />
+                }
+                stats={statsData}
+                items={QUICK_RANGES}
+                active={quickRange}
+                setActive={setQuickRange}
+            />
 
             <div className="space-y-5">
-                <RangeTabs searchValue={searchValue} onSearchChange={setSearchValue} value={quickRange} onChange={v => {
+                {/* <RangeTabs searchValue={searchValue} onSearchChange={setSearchValue} value={quickRange} onChange={v => {
                     setQuickRange(v);
                     setFilters(f => ({
                         ...f,
                         startDate: null,
                         endDate: null,
                     }))
-                }} />
+                }} /> */}
 
                 <TableFilters onApply={fetchAll} onRefresh={fetchAll} applyLabel={t("filters.apply")}>
                     <div className="flex flex-col gap-1.5 w-full md:w-[250px]">
@@ -235,9 +268,9 @@ export default function DashboardPage() {
                     </div>
                 </TableFilters>
 
-                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+                {/* <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-border bg-card p-4 shadow-sm">
                     <StatsGrid stats={statsData} loading={loading} />
-                </motion.div>
+                </motion.div> */}
 
                 {/* Charts Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">

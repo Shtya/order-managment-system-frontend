@@ -3,528 +3,393 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-	ChevronLeft,
-	Check,
-	CreditCard,
-	Calendar,
-	Package,
-	ArrowRight,
-	RefreshCw,
-	Sparkles,
-	Crown,
-	Zap,
-	Users,
-	Truck,
+	ChevronLeft, Check, CreditCard, Calendar, Package,
+	RefreshCw, Sparkles, Crown, Zap, Users, Truck, X,
+	Info,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
-import InfoCard from "@/components/atoms/InfoCard";
-import DataTable from "@/components/atoms/DataTable";
 import SwitcherTabs from "@/components/atoms/SwitcherTabs";
-import { cn } from "@/utils/cn";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import Button_ from "@/components/atoms/Button";
-
+import { cn } from "@/utils/cn";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { getUser } from "@/hook/getUser";
 import TransactionTab from "../dashboard/plans/tabs/transactionTab";
+import PageHeader from "@/components/atoms/Pageheader";
 
-/** =========================
- * Skeletons
- * ========================= */
+/* ═══════════════════════════════════════════════════════════
+	 Skeleton
+═══════════════════════════════════════════════════════════ */
 function PlanCardSkeleton() {
 	return (
-		<div className="relative rounded-xl p-8 border-2 border-gray-200 dark:border-slate-700 bg-gradient-to-br from-white via-gray-50 to-white dark:from-slate-900 dark:via-slate-800/50 dark:to-slate-900 animate-pulse overflow-hidden">
-			<div className="absolute inset-0">
-				<div className="absolute -top-32 -left-32 w-80 h-80 rounded-full bg-primary/10 blur-3xl" />
-				<div className="absolute -bottom-32 -right-32 w-80 h-80 rounded-full bg-primary/10 blur-3xl" />
-			</div>
-
-			<div className="relative">
-				<div className="flex justify-center mb-6">
-					<div className="w-20 h-20 rounded-xl bg-gray-200 dark:bg-slate-700" />
+		<div className="relative rounded-2xl border-2 border-border/60 bg-card overflow-hidden animate-pulse">
+			{/* top bar */}
+			<div className="h-[3px] bg-muted/60" />
+			<div className="p-6 space-y-5">
+				<div className="flex items-end gap-2 justify-end">
+					<div className="h-8 w-20 rounded-xl bg-muted/60" />
+					<div className="h-5 w-8 rounded bg-muted/40" />
 				</div>
-
-				<div className="text-center mb-8 space-y-3">
-					<div className="h-10 w-40 mx-auto rounded-xl bg-gray-200 dark:bg-slate-700" />
-					<div className="h-6 w-52 mx-auto rounded-xl bg-gray-200 dark:bg-slate-700" />
-					<div className="h-4 w-28 mx-auto rounded-xl bg-gray-200 dark:bg-slate-700" />
-				</div>
-
-				<div className="space-y-4 mb-8">
-					{Array.from({ length: 5 }).map((_, i) => (
-						<div key={i} className="flex items-start gap-4">
-							<div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-slate-700" />
-							<div className="h-4 flex-1 rounded bg-gray-200 dark:bg-slate-700" />
+				<div className="h-5 w-32 rounded-lg bg-muted/50 ms-auto" />
+				<div className="h-px bg-border/40" />
+				<div className="space-y-3">
+					{Array.from({ length: 4 }).map((_, i) => (
+						<div key={i} className="flex items-center gap-2.5 justify-end">
+							<div className="h-3 w-40 rounded bg-muted/50" />
+							<div className="w-5 h-5 rounded-full bg-muted/60 flex-shrink-0" />
 						</div>
 					))}
 				</div>
-
-				<div className="h-14 w-full rounded-xl bg-gray-200 dark:bg-slate-700" />
+				<div className="h-11 w-full rounded-xl bg-muted/60" />
 			</div>
 		</div>
 	);
 }
 
-/** =========================
- * Plan Card
- * ========================= */
-function PlanCard({ plan, isPopular, onSubscribe, currentPlan }) {
-	const [isHovered, setIsHovered] = useState(false);
-	const isCurrentPlan = currentPlan === plan.id;
+/* ═══════════════════════════════════════════════════════════
+	 Plan Card — layout mirrors the screenshot
+	 (price top-right, name below, features list, CTA)
+═══════════════════════════════════════════════════════════ */
+function PlanCard({ plan, onSubscribe, isCurrentPlan }) {
+  const t   = useTranslations("subscriptions");
+  const dir = useLocale(); // "rtl" | "ltr"
+  const isRTL = dir === "rtl";
 
-	// display labels
-	const usersLimitLabel = Number.isFinite(Number(plan.usersLimit)) ? Number(plan.usersLimit) : 1;
-	const shippingLimitLabel = Number.isFinite(Number(plan.shippingCompaniesLimit))
-		? Number(plan.shippingCompaniesLimit)
-		: 0;
+  const usersLimit    = Number(plan.usersLimit ?? 1);
+  const shippingLimit = Number(plan.shippingCompaniesLimit ?? 0);
 
-	return (
-		<motion.div
-			initial={{ opacity: 0, y: 20 }}
-			animate={{ opacity: 1, y: 0 }}
-			whileHover={{ y: -10 }}
-			onHoverStart={() => setIsHovered(true)}
-			onHoverEnd={() => setIsHovered(false)}
-			className={cn(
-				"relative rounded-xl p-8 border-2 transition-all duration-500 ",
-				"bg-gradient-to-br backdrop-blur-sm",
-				!isCurrentPlan &&
-				(isPopular
-					? "border-primary/30 from-white via-primary/5 to-white dark:from-slate-900 dark:via-primary/10 dark:to-slate-900"
-					: "border-gray-200 dark:border-slate-700 from-white via-gray-50/50 to-white dark:from-slate-900 dark:via-slate-800/50 dark:to-slate-900"),
-				isCurrentPlan &&
-				"border-transparent shadow-2xl shadow-primary/25 bg-gradient-to-r from-primary to-primary/80 text-white ring-2 ring-primary/60"
-			)}
-		>
-			{/* Soft gradient blobs */}
-			{!isCurrentPlan && (
-				<>
-					<motion.div
-						aria-hidden
-						className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-primary/15 blur-3xl"
-						animate={{ scale: isHovered ? 1.15 : 1, opacity: isHovered ? 0.35 : 0.22 }}
-						transition={{ duration: 0.5 }}
-					/>
-					<motion.div
-						aria-hidden
-						className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-primary/15 blur-3xl"
-						animate={{ scale: isHovered ? 1.15 : 1, opacity: isHovered ? 0.35 : 0.22 }}
-						transition={{ duration: 0.5 }}
-					/>
-				</>
-			)}
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -6 }}
+      transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className={cn(
+        "relative rounded-2xl border overflow-hidden flex flex-col group",
+        "transition-all duration-300",
+        isCurrentPlan
+          ? "border-[var(--primary)]/40 bg-card shadow-[0_12px_40px_-6px_rgb(var(--primary-shadow))]"
+          : "border-border/60 bg-card hover:border-[var(--primary)]/35 hover:shadow-[0_6px_28px_-6px_rgb(var(--primary-shadow))]",
+      )}
+    >
+      {/* ── CURRENT PLAN: full gradient background with texture ── */}
+      {isCurrentPlan && (
+        <>
+          <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)] via-[var(--primary)]/92 to-[var(--third,#ff5c2b)]" />
+          {/* diagonal shine */}
+          <div className="absolute inset-0 opacity-[0.08]"
+            style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.8) 0%, transparent 50%, rgba(255,255,255,0.3) 100%)" }} />
+          {/* bottom fade */}
+          <div className="absolute inset-x-0 bottom-0 h-32 opacity-20"
+            style={{ background: "linear-gradient(to top, var(--third, #ff5c2b), transparent)" }} />
+        </>
+      )}
 
-			{/* Popular Badge */}
-			{!isCurrentPlan && isPopular && (
-				<motion.div
-					className="absolute -top-5 left-1/2 -translate-x-1/2 z-10"
-					initial={{ y: -10, opacity: 0 }}
-					animate={{ y: 0, opacity: 1 }}
-					transition={{ delay: 0.15 }}
-				>
-					<Badge className="bg-gradient-to-r from-primary via-primary/90 to-primary text-white px-6 py-2 rounded-full shadow-xl backdrop-blur-sm border border-white/20">
-						<Crown size={16} className="ml-1" />
-						الأكثر شعبية
-						<Sparkles size={16} className="mr-1" />
-					</Badge>
-				</motion.div>
-			)}
+      {/* ── NON-CURRENT: subtle hover tint ── */}
+      {!isCurrentPlan && (
+        <div className="absolute inset-0 pointer-events-none
+          bg-gradient-to-br from-[var(--primary)]/0 to-[var(--primary)]/0
+          group-hover:from-[var(--primary)]/[0.025] group-hover:to-[var(--secondary,#ffb703)]/[0.015]
+          transition-all duration-500" />
+      )}
 
-			{/* Icon */}
-			<div className="flex justify-center mb-6 relative z-10">
-				<motion.div
-					animate={{ scale: isHovered ? 1.1 : 1, rotate: isHovered ? 6 : 0 }}
-					transition={{ duration: 0.3 }}
-					className="relative"
-				>
-					<div
-						className={cn(
-							"w-20 h-20 rounded-xl flex items-center justify-center relative z-10",
-							"bg-gradient-to-br shadow-xl transition-shadow duration-300",
-							plan.color,
-							isHovered && "shadow-2xl"
-						)}
-					>
-						{plan.icon}
-					</div>
+      {/* ── Top accent bar ── */}
+      <div className={cn(
+        "absolute inset-x-0 top-0 h-[3px] transition-opacity duration-300",
+        isCurrentPlan
+          ? "bg-white/30"
+          : "bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)] opacity-70 group-hover:opacity-100",
+      )} />
 
-					<motion.div
-						aria-hidden
-						className={cn("absolute inset-0 rounded-xl blur-xl opacity-50", "bg-gradient-to-br", plan.color)}
-						animate={{ scale: isHovered ? 1.35 : 1, opacity: isHovered ? 0.75 : 0.5 }}
-					/>
-				</motion.div>
-			</div>
+      {/* ── Popular badge ── */}
+      {plan.isPopular && !isCurrentPlan && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
+          className={cn("absolute top-4 z-10", isRTL ? "left-4" : "right-4")}
+        >
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black
+            bg-[var(--primary)] text-primary-foreground tracking-wide
+            shadow-[0_2px_8px_-2px_rgb(var(--primary-shadow))]">
+            <Crown size={9} />
+            {t("card.popular")}
+          </span>
+        </motion.div>
+      )}
 
-			{/* Price + Name */}
-			<div className="text-center mb-6 relative z-10">
-				<motion.div
-					className="flex items-baseline justify-center gap-2 mb-2"
-					animate={{ scale: isHovered ? 1.05 : 1 }}
-				>
-					<span
-						className={cn(
-							"text-6xl font-black bg-clip-text text-transparent",
-							isCurrentPlan
-								? "bg-gradient-to-br from-white via-white to-white"
-								: "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 dark:from-white dark:via-gray-200 dark:to-white"
-						)}
-					>
-						{plan.price}
-					</span>
-					<span className={cn("text-3xl font-bold", isCurrentPlan ? "text-white/90" : "text-black/80 dark:text-slate-400")}>
-						ج.م
-					</span>
-				</motion.div>
+      <div className="relative z-10 p-3 pb-0 flex flex-col gap-4 flex-1">
 
-				<motion.p
-					className={cn("text-xl font-bold mt-3", isCurrentPlan ? "text-white" : "text-gray-800 dark:text-slate-200")}
-					animate={{ opacity: isHovered ? 1 : 0.92 }}
-				>
-					{plan.name}
-				</motion.p>
+        {/* ══════════════════════════════════════════════════
+            PRICE BLOCK — large gradient number + currency
+        ══════════════════════════════════════════════════ */}
+        <div className={cn("flex", isRTL ? "flex-row-reverse items-start" : "flex-row items-start", "gap-1 pt-1")}>
 
-				<div className="flex items-center justify-center gap-2 mt-2">
-					<div className={cn("h-px w-10", isCurrentPlan ? "bg-white/30" : "bg-gradient-to-r from-transparent to-gray-300 dark:to-slate-600")} />
-					<p className={cn("text-sm font-medium", isCurrentPlan ? "text-white/85" : "text-black/80 dark:text-slate-400")}>
-						{plan.duration}
-					</p>
-					<div className={cn("h-px w-10", isCurrentPlan ? "bg-white/30" : "bg-gradient-to-l from-transparent to-gray-300 dark:to-slate-600")} />
-				</div>
+          {/* Big number */}
+          <div className="relative leading-none">
+            <span
+              className={cn(
+                "text-[68px] rtl:pr-1 ltr:pl-1 font-black tabular-nums tracking-tighter leading-none block",
+                isCurrentPlan
+                  ? "text-white"
+                  : "text-transparent bg-clip-text bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]",
+              )}
+            >
+              {plan.price}
+            </span>
+            {/* glow under number */}
+            {!isCurrentPlan && (
+              <div
+                aria-hidden
+                className="absolute -bottom-1 inset-x-0 h-4 blur-2xl opacity-25 rounded-full pointer-events-none"
+                style={{ background: "linear-gradient(to right, var(--primary), var(--third, #ff5c2b))" }}
+              />
+            )}
+          </div>
 
-				{/* NEW: Limits chips */}
-				<div className="mt-5 flex items-center justify-center gap-2 flex-wrap">
-					<div
-						className={cn(
-							"inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-semibold",
-							isCurrentPlan
-								? "border-white/25 bg-white/10 text-white"
-								: "border-primary/20 bg-primary/5 text-gray-800 dark:text-slate-200 dark:border-primary/25 dark:bg-primary/10"
-						)}
-					>
-						<Users size={16} className={cn(isCurrentPlan ? "text-white" : "text-primary")} />
-						{usersLimitLabel} مستخدم
-					</div>
+          {/* Currency + period — stacked top-right of number */}
+          <div className={cn(
+            "flex flex-col mt-2",
+            isRTL ? "items-start" : "items-end"
+          )}>
+            <span className={cn(
+              "text-xl font-black leading-none",
+              isCurrentPlan ? "text-white/70" : "text-[var(--primary)]/60"
+            )}>
+              {t("card.currency")}
+            </span>
+            <span className={cn(
+              "text-[11px] font-bold mt-1.5 px-2 py-0.5 rounded-full whitespace-nowrap",
+              isCurrentPlan
+                ? "bg-white/15 text-white/70"
+                : "bg-[var(--primary)]/8 text-[var(--primary)] border border-[var(--primary)]/15"
+            )}>
+              / {plan.duration}
+            </span>
+          </div>
+        </div>
 
-					<div
-						className={cn(
-							"inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-semibold",
-							isCurrentPlan
-								? "border-white/25 bg-white/10 text-white"
-								: "border-primary/20 bg-primary/5 text-gray-800 dark:text-slate-200 dark:border-primary/25 dark:bg-primary/10"
-						)}
-					>
-						<Truck size={16} className={cn(isCurrentPlan ? "text-white" : "text-primary")} />
-						{shippingLimitLabel} شركة شحن
-					</div>
-				</div>
-			</div>
+        {/* Plan name */}
+        <p className={cn(
+          "text-[22px] font-black leading-tight text-nowrap ", 
+          isCurrentPlan ? "text-white" : "text-foreground",
+        )}>
+          {plan.name}
+        </p>
 
-			{/* Features */}
-			<div className="space-y-4 mb-8 relative z-10">
-				{(plan.features || []).map((feature, index) => (
-					<motion.div
-						key={index}
-						initial={{ opacity: 0, x: -26, scale: 0.96 }}
-						animate={{ opacity: 1, x: 0, scale: 1 }}
-						transition={{
-							delay: index * 0.1 + 0.2,
-							type: "spring",
-							stiffness: 120,
-							damping: 18,
-						}}
-						whileHover={{ x: 8 }}
-						className="flex items-start gap-4 group relative"
-					>
-						<motion.div
-							aria-hidden
-							className={cn(
-								"absolute -left-2 top-1 w-10 h-10 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500",
-								isCurrentPlan ? "bg-white/20" : "bg-primary/25"
-							)}
-						/>
+        {/* Divider */}
+        <div className={cn(
+          "h-px",
+          isCurrentPlan
+            ? "bg-white/15"
+            : "bg-gradient-to-r from-[var(--primary)]/20 via-border/50 to-transparent",
+        )} />
 
-						<motion.div
-							whileHover={{ rotate: 8, scale: 1.12 }}
-							transition={{ type: "spring", stiffness: 300 }}
-							className={cn(
-								"relative flex-shrink-0 w-7 h-7 mt-0.5 rounded-full flex items-center justify-center shadow-lg",
-								isCurrentPlan ? "bg-white/15" : "bg-primary"
-							)}
-						>
-							<span className={cn("absolute inset-0 rounded-full animate-ping", isCurrentPlan ? "bg-white/15" : "bg-white/20")} />
-							<Check size={14} strokeWidth={3} className="relative text-white drop-shadow" />
-						</motion.div>
+        {/* ── Features list ── */}
+        <ul className="space-y-2.5 flex-1">
+          {(plan.features || []).map((feature, idx) => (
+            <motion.li
+              key={idx}
+              initial={{ opacity: 0, x: isRTL ? 8 : -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: idx * 0.06 + 0.1 }}
+              className={cn(
+                "flex items-center gap-2.5  flex-row-reverse" 
+              )}
+            >
+              <div className={cn(
+                "flex-shrink-0 w-[25px] h-[25px] rounded-[5px] flex items-center justify-center",
+                isCurrentPlan
+                  ? "bg-white/20"
+                  : "bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]",
+              )}>
+                <Check size={14} strokeWidth={3.5} className="text-white" />
+              </div>
+              <span className={cn(
+                "text-sm font-medium leading-snug flex-1  rtl:text-right", 
+                isCurrentPlan ? "text-white/90" : "text-foreground/80",
+              )}>
+                {feature}
+              </span>
+            </motion.li>
+          ))}
 
-						<span
-							className={cn(
-								"text-sm leading-relaxed font-medium transition-colors duration-300",
-								isCurrentPlan ? "text-white/90 group-hover:text-white" : "text-black/80 dark:text-slate-300 group-hover:text-gray-900 dark:group-hover:text-white"
-							)}
-						>
-							{feature}
-						</span>
-					</motion.div>
-				))}
-			</div>
+          {/* Limits as rows */}
+          {[
+            { Icon: Users, label: `${usersLimit} ${t("card.users")}` },
+            { Icon: Truck, label: `${shippingLimit} ${t("card.shippingCompanies")}` },
+          ].map(({ Icon, label }, idx) => (
+            <li
+              key={`limit-${idx}`}
+              className={cn("flex items-center gap-2.5 flex-row-reverse justify-between " )}
+            >
+              <div className={cn(
+                "flex-shrink-0 w-[25px] h-[25px] rounded-[5px] flex items-center justify-center",
+                isCurrentPlan ? "bg-white/15" : "bg-[var(--primary)]/12",
+              )}>
+                <Icon size={13} className={isCurrentPlan ? "text-white/80" : "text-[var(--primary)]"} />
+              </div>
+              <span className={cn(
+                "text-sm  rtl:text-right font-medium flex-1",
+                isRTL ? "text-right" : "text-left",
+                isCurrentPlan ? "text-white/75" : "text-muted-foreground",
+              )}>
+                {label}
+              </span>
+            </li>
+          ))}
+        </ul>
 
-			{/* Subscribe Button */}
-			<Button
-				onClick={() => onSubscribe(plan)}
-				disabled={isCurrentPlan}
-				className={cn(
-					"w-full h-14 rounded-xl font-bold text-base transition-all duration-300 relative z-10",
-					isCurrentPlan
-						? "bg-white/15 text-white/80 cursor-not-allowed border border-white/20"
-						: "bg-primary text-white hover:shadow-2xl hover:shadow-primary/35 hover:scale-[1.03]"
-				)}
-			>
-				{isCurrentPlan ? (
-					<span className="inline-flex items-center gap-2">
-						<Check size={20} />
-						الباقة الحالية
-					</span>
-				) : (
-					<span className="inline-flex items-center gap-2">
-						<Zap size={20} />
-						اشترك الآن
-						<motion.span animate={{ x: isHovered ? 6 : 0 }} transition={{ duration: 0.3 }}>
-							<ArrowRight size={20} />
-						</motion.span>
-					</span>
-				)}
-			</Button>
-		</motion.div>
-	);
+        {/* ── CTA button ── */}
+        <motion.button
+          onClick={() => onSubscribe(plan)}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.96 }}
+          className={cn(
+            "relative w-full h-11 rounded-xl text-sm font-bold mt-1 overflow-hidden",
+            "transition-all duration-200",
+            isCurrentPlan
+              ? "bg-white/80 text-primary border-2 border-white/25  "
+              : [
+                  "text-primary-foreground",
+                  "bg-gradient-to-r from-[var(--primary)] to-[var(--third,#ff5c2b)]",
+                  "shadow-[0_3px_14px_-4px_rgb(var(--primary-shadow))]",
+                  "hover:shadow-[0_6px_22px_-4px_rgb(var(--primary-shadow))]",
+                ],
+          )}
+        >
+          <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-1/2
+            bg-gradient-to-b from-white/20 to-transparent" />
+          <span className="relative flex items-center justify-center gap-2">
+            {isCurrentPlan
+              ? <><X size={14} /> {t("card.cancelPlan")}</>
+              : <><Zap size={14} /> {t("card.subscribe")}</>
+            }
+          </span>
+        </motion.button>
+
+      </div>
+    </motion.div>
+  );
 }
 
-/** =========================
- * Main Page Component
- * ========================= */
+/* ═══════════════════════════════════════════════════════════
+	 Main Page
+═══════════════════════════════════════════════════════════ */
 export default function SubscriptionsPage() {
 	const t = useTranslations("subscriptions");
 	const user = getUser();
 
-	// State
-	const [activeTab, setActiveTab] = useState("plans"); // plans | transactions
+	const [activeTab, setActiveTab] = useState("plans");
 	const [isLoading, setIsLoading] = useState(false);
 	const [plans, setPlans] = useState([]);
-	const [transactions, setTransactions] = useState([]);
 	const [currentPlan, setCurrentPlan] = useState(null);
 
+	const tabs = useMemo(() => [
+		{ id: "plans", label: t("tabs.plans") },
+		{ id: "transactions", label: t("tabs.transactions") },
+	], [t]);
 
-	// ✅ Fetch Available Plans
+	const durationLabel = (duration) => {
+		if (duration === "monthly") return t("duration.monthly");
+		if (duration === "yearly") return t("duration.yearly");
+		return t("duration.lifetime");
+	};
+
 	const fetchAvailablePlans = async () => {
 		setIsLoading(true);
 		try {
 			const { data } = await api.get("/plans/available");
-
-			const transformedPlans = (data || []).map((plan) => ({
-				id: plan.id,
-				name: plan.name,
-				price: Number(plan.price),
-				duration:
-					plan.duration === "monthly"
-						? "شهرياً"
-						: plan.duration === "yearly"
-							? "سنوياً"
-							: "مدى الحياة",
-				description: plan.description || "",
-				features: Array.isArray(plan.features) ? plan.features : [],
-				color: plan.color || "from-blue-500 to-blue-600",
-				icon: getIconForPlan(plan),
-				isPopular: plan?.isPopular,
-
-				// ✅ NEW: limits from backend
-				usersLimit: Number(plan.usersLimit ?? plan.maxUsers ?? 1),
-				shippingCompaniesLimit: Number(plan.shippingCompaniesLimit ?? plan.maxShippingCompanies ?? 0),
-			}));
-
-			setPlans(transformedPlans);
-		} catch (error) {
-			toast.error("فشل في تحميل الباقات");
+			setPlans(
+				(data || []).map((plan) => ({
+					id: plan.id,
+					name: plan.name,
+					price: Number(plan.price),
+					duration: durationLabel(plan.duration),
+					description: plan.description || "",
+					features: Array.isArray(plan.features) ? plan.features : [],
+					color: plan.color || "from-blue-500 to-blue-600",
+					isPopular: plan.isPopular,
+					usersLimit: Number(plan.usersLimit ?? plan.maxUsers ?? 1),
+					shippingCompaniesLimit: Number(plan.shippingCompaniesLimit ?? plan.maxShippingCompanies ?? 0),
+				}))
+			);
+		} catch {
+			toast.error(t("errors.fetchPlans"));
 		} finally {
 			setIsLoading(false);
 		}
 	};
 
-	// Helper function to get icon based on plan color
-	const getIconForPlan = (plan) => {
-		const color = plan.color || "";
-		if (color.includes("purple")) return <Crown size={32} className="text-white" />;
-		if (color.includes("orange")) return <Zap size={32} className="text-white" />;
-		if (color.includes("green") || color.includes("cyan")) return <Sparkles size={32} className="text-white" />;
-		return <Package size={32} className="text-white" />;
-	};
-
 	useEffect(() => {
 		if (activeTab === "plans") {
 			fetchAvailablePlans();
-			console.log(user)
 			setCurrentPlan(user?.plan?.id);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [activeTab]);
 
-	// Tabs configuration
-	const tabs = useMemo(
-		() => [
-			{ id: "plans", label: "الباقات" },
-			{ id: "transactions", label: "المعاملات السابقة" },
-		],
-		[]
-	);
-
-	// Stats
-	// const stats = useMemo(() => {
-	// 	const totalSpent = transactions.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
-	// 	const activeSubscription = transactions.filter((t) => t.status === "نشط").length;
-
-	// 	return [
-	// 		{
-	// 			title: "إجمالي المعاملات",
-	// 			value: transactions.length.toString(),
-	// 			icon: CreditCard,
-	// 			bg: "bg-primary/5 dark:bg-primary/10",
-	// 			iconColor: "text-primary",
-	// 			iconBorder: "border-primary/30",
-	// 		},
-	// 		{
-	// 			title: "إجمالي المدفوعات",
-	// 			value: `${totalSpent.toFixed(2)} ج.م`,
-	// 			icon: Package,
-	// 			bg: "bg-primary/5 dark:bg-primary/10",
-	// 			iconColor: "text-primary",
-	// 			iconBorder: "border-primary/30",
-	// 		},
-	// 		{
-	// 			title: "الاشتراك النشط",
-	// 			value: activeSubscription.toString(),
-	// 			icon: Calendar,
-	// 			bg: "bg-primary/5 dark:bg-primary/10",
-	// 			iconColor: "text-primary",
-	// 			iconBorder: "border-primary/30",
-	// 		},
-	// 	];
-	// }, [transactions]);
-
-	// ✅ Handle subscription (create transaction)
 	const handleSubscribe = async (plan) => {
-		// try {
-		// 	const loadingToast = toast.loading(`جاري الاشتراك في باقة ${plan.name}...`);
-
-		// 	const { data } = await api.post("/transactions", {
-		// 		planId: plan.id,
-		// 		paymentMethod: "pending",
-		// 	});
-
-		// 	toast.dismiss(loadingToast);
-		// 	toast.success("تم إنشاء الاشتراك بنجاح! في انتظار تأكيد الدفع.");
-
-		// 	setCurrentPlan(plan.id);
-
-		// } catch (error) {
-		// 	const message = error?.response?.data?.message || "فشل في إنشاء الاشتراك";
-		// 	toast.error(message);
-		// }
+		// TODO: implement subscription flow
 	};
 
-
-
 	return (
-		<div className="min-h-screen p-5">
-			{/* Header */}
-			<div className="bg-card !pb-0 flex flex-col gap-2 mb-4">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-2 text-lg font-semibold">
-						<span className="text-gray-400">الرئيسية</span>
-						<ChevronLeft className="text-gray-400" size={18} />
-						<span className="text-primary">الاشتراكات</span>
-						<span className="ml-3 inline-flex w-3.5 h-3.5 rounded-full bg-primary" />
-					</div>
+		<div className="min-h-screen p-5 ">
+ 
+			<PageHeader
+				breadcrumbs={[
+					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.subscriptions") },
+				]}
+				 
+				items={tabs}
+				active={activeTab}
+				setActive={setActiveTab}
+			/>
 
-					<div className="flex items-center gap-4">
-						<Button_
-							size="sm"
-							label="تحديث"
-							tone="white"
-							variant="solid"
-							icon={<RefreshCw size={18} className="text-[#A7A7A7]" />}
-							onClick={() => (activeTab === "plans" ? fetchAvailablePlans() : null)}
-						/>
-					</div>
-				</div>
 
-				{/* Stats - Only show in transactions tab */}
-				{/* {activeTab === "transactions" && (
-					<div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4 mb-6">
-						{stats.map((stat, index) => (
-							<motion.div
-								key={stat.title}
-								initial={{ opacity: 0, y: 18 }}
-								animate={{ opacity: 1, y: 0 }}
-								transition={{ delay: index * 0.06 }}
-							>
-								<InfoCard
-									title={stat.title}
-									value={stat.value}
-									icon={stat.icon}
-									bg={stat.bg}
-									iconColor={stat.iconColor}
-									iconBorder={stat.iconBorder}
-								/>
-							</motion.div>
-						))}
-					</div>
-				)} */}
-
-				{/* Tabs */}
-				<div className="mt-4">
-					<SwitcherTabs items={tabs} activeId={activeTab} onChange={setActiveTab} />
-				</div>
-			</div>
-
-			{/* Content */}
 			<AnimatePresence mode="wait">
 				{activeTab === "plans" ? (
 					<motion.div
 						key="plans"
-						initial={{ opacity: 0, y: 20 }}
+						initial={{ opacity: 0, y: 16 }}
 						animate={{ opacity: 1, y: 0 }}
-						exit={{ opacity: 0, y: -20 }}
-						transition={{ duration: 0.3 }}
-						className="max-w-[1500px] w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-20"
+						exit={{ opacity: 0, y: -16 }}
+						transition={{ duration: 0.28 }}
 					>
-						{/* ✅ Skeleton */}
-						{isLoading && plans.length === 0 ? (
-							<>
-								{Array.from({ length: 3 }).map((_, i) => (
-									<PlanCardSkeleton key={i} />
-								))}
-							</>
-						) : (
-							plans.map((plan, index) => (
-								<motion.div
-									key={plan.id}
-									initial={{ opacity: 0, y: 20 }}
-									animate={{ opacity: 1, y: 0 }}
-									transition={{ delay: index * 0.08 }}
-								>
-									<PlanCard
-										plan={plan}
-										isPopular={plan.isPopular}
-										onSubscribe={handleSubscribe}
-										currentPlan={currentPlan}
-									/>
-								</motion.div>
-							))
-						)}
+					 
+
+						<div className="  mt-[40px] mx-auto grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-6">
+							{isLoading && plans.length === 0
+								? Array.from({ length: 3 }).map((_, i) => <PlanCardSkeleton key={i} />)
+								: plans.map((plan, idx) => (
+									<motion.div
+										key={plan.id}
+										initial={{ opacity: 0, y: 20 }}
+										animate={{ opacity: 1, y: 0 }}
+										transition={{ delay: idx * 0.08 }}
+									>
+										<PlanCard
+											plan={plan}
+											isCurrentPlan={currentPlan === plan.id}
+											onSubscribe={handleSubscribe}
+										/>
+									</motion.div>
+								))
+							}
+						</div>
 					</motion.div>
 				) : (
-					<TransactionTab />
+					<motion.div
+						key="transactions"
+						initial={{ opacity: 0, y: 16 }}
+						animate={{ opacity: 1, y: 0 }}
+						exit={{ opacity: 0, y: -16 }}
+						transition={{ duration: 0.28 }}
+					>
+						<TransactionTab />
+					</motion.div>
 				)}
 			</AnimatePresence>
 		</div>

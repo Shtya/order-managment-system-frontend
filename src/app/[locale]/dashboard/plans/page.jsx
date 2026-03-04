@@ -66,6 +66,7 @@ import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
 import TransactionTab from "./tabs/transactionTab";
 import SubscriptionsTab from "./tabs/subscriptionsTab";
+import PageHeader from "@/components/atoms/Pageheader";
 
 /** =========================
  * Tiny Spinner
@@ -996,59 +997,21 @@ export default function AdminSubscriptionsPage() {
 	return (
 		<div className="min-h-screen p-5">
 			{/* Header */}
-			<div className="bg-card flex flex-col gap-2 mb-4">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-2 text-lg font-semibold">
-						<span className="text-gray-400">{t("breadcrumb.home")}</span>
-						<ChevronLeft className="text-gray-400" size={18} />
-						<span className="text-[rgb(var(--primary))]">{t("breadcrumb.subscriptions")}</span>
-						<span className="ml-3 inline-flex w-3.5 h-3.5 rounded-full bg-[rgb(var(--primary))]" />
-					</div>
+			<PageHeader
+				breadcrumbs={[
+					{ name: t("breadcrumb.home"), href: "/dashboard" },
+					{ name: t("breadcrumb.subscriptions") },
+				]} 
 
-					<div className="flex items-center gap-4">
-						{/* <Button_
-							href="/plans/new-subscription"
-							size="sm"
-							label={t("actions.addSubscription")}
-							tone="purple"
-							variant="solid"
-							icon={<span className="text-white font-bold">+</span>}
-						/> */}
-						<Button_
-							size="sm"
-							label={t("actions.howToUse")}
-							tone="white"
-							variant="solid"
-							icon={<span className="text-[#A7A7A7]">?</span>}
-						/>
-					</div>
-				</div>
+				items={tabs}
+				active={activeTab}
+				setActive={setActiveTab}
+			/>
 
-				<SwitcherTabs items={tabs} activeId={activeTab} onChange={setActiveTab} className="w-full" />
-
-				{/* <div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-6">
-					{[].map((stat, index) => (
-						<motion.div
-							key={stat.title}
-							initial={{ opacity: 0, y: 18 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: index * 0.06 }}
-						>
-							<InfoCard
-								title={stat.title}
-								value={stat.value}
-								icon={stat.icon}
-								bg={stat.bg}
-								iconColor={stat.iconColor}
-								iconBorder={stat.iconBorder}
-							/>
-						</motion.div>
-					))}
-				</div> */}
-			</div>
+ 
 			{/* Content */}
-			<div className={`${activeTab === "plans" ? "bg-card" : ""} !p-4 rounded-sm`}>
-				<div className="mt-4">
+			<div className={`${activeTab === "plans" ? "bg-card" : ""}  `}>
+				<div className=" ">
 
 					{/* ── Plans Tab ── */}
 					{activeTab === "plans" && (

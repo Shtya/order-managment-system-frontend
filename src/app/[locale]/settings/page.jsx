@@ -241,7 +241,7 @@ export default function SettingsPage() {
 		<motion.div
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
-			className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6"
+			className="min-h-screen  p-5"
 		>
 			{/* Header */}
 			<div className="mb-8">

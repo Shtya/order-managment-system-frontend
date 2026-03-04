@@ -298,7 +298,7 @@ export default function PermissionsSelector({
 											{/* Module Info */}
 											<div>
 												<h4 className="font-bold text-lg text-gray-900 dark:text-slate-100 capitalize mb-1 flex items-center gap-2">
-													{t(`modules.${module}`)}
+													{t.has(`modules.${module}`) ? t(`modules.${module}`) : module}
 													{status === "all" && (
 														<span className="px-2 py-0.5 text-xs font-bold rounded-full bg-primary/10 text-primary">
 															✓ محدد بالكامل
@@ -373,7 +373,7 @@ export default function PermissionsSelector({
 														htmlFor={`perm-${perm.id}`}
 														className="text-sm font-bold cursor-pointer text-gray-800 dark:text-slate-100 block mb-1"
 													>
-														{t(`actions.${action}`)}
+														{t.has(`actions.${action}`) ? t(`actions.${action}`) : action}
 													</label>
 													{perm.description && (
 														<p className="text-xs text-gray-500 dark:text-slate-400 line-clamp-2">

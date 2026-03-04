@@ -73,6 +73,8 @@ import api from "@/utils/api";
 import { Switch } from "@/components/ui/switch";
 import { useRouter } from "@/i18n/navigation";
 import ManageSubscription from "./manageSubscription";
+import PageHeader from "@/components/atoms/Pageheader";
+import Table, { FilterField } from "@/components/atoms/Table";
 
 
 /** =========================
@@ -539,28 +541,25 @@ export default function SuperAdminUsersPage() {
 
 		return [
 			{
-				title: t.has("stats.total") ? t("stats.total") : "Total users",
+				name: t.has("stats.total") ? t("stats.total") : "Total users",
 				value: String(total),
 				icon: ShieldAlert,
-				bg: "bg-[#F3F6FF] dark:bg-[#0B1220]",
-				iconColor: "text-[#6B7CFF] dark:text-[#8A96FF]",
-				iconBorder: "border-[#6B7CFF] dark:border-[#8A96FF]",
+				color: "#6B7CFF", // blue
+				sortOrder: 0,
 			},
 			{
-				title: t.has("stats.active") ? t("stats.active") : "Active",
+				name: t.has("stats.active") ? t("stats.active") : "Active",
 				value: String(active),
 				icon: CheckCircle2,
-				bg: "bg-[#F0FDF4] dark:bg-[#052E16]",
-				iconColor: "text-[#22C55E] dark:text-[#4ADE80]",
-				iconBorder: "border-[#22C55E] dark:border-[#4ADE80]",
+				color: "#22C55E", // green
+				sortOrder: 1,
 			},
 			{
-				title: t.has("stats.inactive") ? t("stats.inactive") : "Inactive",
+				name: t.has("stats.inactive") ? t("stats.inactive") : "Inactive",
 				value: String(inactive),
 				icon: Trash2,
-				bg: "bg-[#FEF2F2] dark:bg-[#2A0808]",
-				iconColor: "text-[#EF4444] dark:text-[#F87171]",
-				iconBorder: "border-[#EF4444] dark:border-[#F87171]",
+				color: "#EF4444", // red
+				sortOrder: 2,
 			},
 		];
 	}, [serverStats, t]);
@@ -801,64 +800,37 @@ export default function SuperAdminUsersPage() {
 	return (
 		<div className="min-h-screen p-5">
 			{/* Header */}
-			<div className="bg-card !pb-0 flex flex-col gap-2 mb-4">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-2 text-lg font-semibold">
-						<span className="text-gray-400">{t.has("breadcrumb.home") ? t("breadcrumb.home") : "Home"}</span>
-						<ChevronLeft className="text-gray-400" size={18} />
-						<span className="text-[rgb(var(--primary))]">
-							{t.has("breadcrumb.users") ? t("breadcrumb.users") : "Users"}
-						</span>
-						<span className="ml-3 inline-flex w-3.5 h-3.5 rounded-full bg-[rgb(var(--primary))]" />
-					</div>
-
-					<div className="flex items-center gap-4">
+			<PageHeader
+				breadcrumbs={[
+					{ name: t("breadcrumb.home"), href: "/dashboard" },
+					{ name: t("breadcrumb.users") },
+				]}
+				buttons={
+					<>
 						<Button_
 							size="sm"
-							label={t.has("actions.refresh") ? t("actions.refresh") : "Refresh"}
-							tone="white"
-							variant="solid"
-							icon={<RefreshCw size={18} className="text-[#A7A7A7]" />}
+							label={t("actions.refresh")}
+							tone="ghost"
+							variant="cancel"
+							icon={<RefreshCw size={15} />}
 							onClick={() => fetchUsers({ page: 1, per_page: pagination.per_page })}
 						/>
 
 						<Button_
 							size="sm"
-							label={t.has("actions.createUser") ? t("actions.createUser") : "Create user"}
-							tone="purple"
+							label={t("actions.createUser")}
 							variant="solid"
-							icon={<UserPlus size={18} className="text-white" />}
+							icon={<UserPlus size={15} className="text-white" />}
 							onClick={() => setCreateOpen(true)}
 						/>
-					</div>
-				</div>
+					</>
+				}
+				stats={stats}
+				items={tabs}
+				active={activeTab}
+				setActive={setActiveTab}
+			/>
 
-				{/* Stats */}
-				<div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4 mb-6">
-					{stats.map((stat, index) => (
-						<motion.div
-							key={stat.title}
-							initial={{ opacity: 0, y: 18 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: index * 0.06 }}
-						>
-							<InfoCard
-								title={stat.title}
-								value={stat.value}
-								icon={stat.icon}
-								bg={stat.bg}
-								iconColor={stat.iconColor}
-								iconBorder={stat.iconBorder}
-							/>
-						</motion.div>
-					))}
-				</div>
-
-				{/* Tabs */}
-				<div className="mt-4">
-					<SwitcherTabs items={tabs} activeId={activeTab} onChange={setActiveTab} />
-				</div>
-			</div>
 
 			{/* Messages */}
 			{error && (
@@ -872,46 +844,84 @@ export default function SuperAdminUsersPage() {
 				</div>
 			)}
 
-			{/* Table Card */}
-			<div className="bg-card rounded-sm">
-				<UsersTableToolbar
-					t={t}
-					searchValue={search}
-					onSearchChange={setSearch}
-					onExport={handleExport}
-					onRefresh={() => fetchUsers({ page: 1, per_page: pagination.per_page })}
-					isFiltersOpen={filtersOpen}
-					onToggleFilters={() => setFiltersOpen((v) => !v)}
-					onCreate={() => setCreateOpen(true)}
-					loading={loading}
-				/>
+			<Table
+				// search
+				searchValue={search}
+				onSearchChange={setSearch}
+				onSearch={() => fetchUsers({ page: 1, per_page: pagination.per_page })} // optional (Enter triggers it)
 
-				<AnimatePresence>
-					{filtersOpen && (
-						<FiltersPanel
-							t={t}
-							value={filters}
-							onChange={setFilters}
-							onApply={() => applyFilters()}
-						/>
-					)}
-				</AnimatePresence>
+				// header labels (optional)
+				labels={{
+					searchPlaceholder: t.has("toolbar.searchPlaceholder")
+						? t("toolbar.searchPlaceholder")
+						: "Search by name / email",
+					filter: t.has("toolbar.filter") ? t("toolbar.filter") : "Filter",
+					apply: t.has("filters.apply") ? t("filters.apply") : "Apply",
+					emptyTitle: t.has("empty") ? t("empty") : "No users",
+				}}
 
-				<div className="mt-4">
-					<DataTable
-						columns={columns}
-						data={users}
-						isLoading={loading}
-						pagination={{
-							total_records: pagination.total_records,
-							current_page: pagination.current_page,
-							per_page: pagination.per_page,
-						}}
-						onPageChange={({ page, per_page }) => handlePageChange({ page, per_page })}
-						emptyState={loading ? (t.has("loading") ? t("loading") : "Loading...") : (t.has("empty") ? t("empty") : "No users")}
-					/>
-				</div>
-			</div>
+				// actions buttons on the right of the toolbar
+				actions={[
+
+					{
+						key: "export",
+						label: t.has("toolbar.export") ? t("toolbar.export") : "Export",
+						color: "blue",
+						onClick: handleExport,
+					},
+				]}
+
+				// filters UI (this replaces your FiltersPanel)
+				filters={
+					<>
+						<FilterField label={t.has("filters.role") ? t("filters.role") : "Role contains"}>
+							<Input
+								value={filters.role || ""}
+								onChange={(e) => setFilters((p) => ({ ...p, role: e.target.value }))}
+								className="!h-[42px]"
+								placeholder={t.has("filters.rolePlaceholder") ? t("filters.rolePlaceholder") : "ADMIN / USER / SUPER_ADMIN"}
+							/>
+						</FilterField>
+
+						<FilterField label={t.has("filters.status") ? t("filters.status") : "Active"}>
+							<Input
+								value={filters.active || ""}
+								onChange={(e) => setFilters((p) => ({ ...p, active: e.target.value }))}
+								className="!h-[42px]"
+								placeholder={t.has("filters.activePlaceholder") ? t("filters.activePlaceholder") : "all / true / false"}
+							/>
+						</FilterField>
+
+						<FilterField label={t.has("filters.adminId") ? t("filters.adminId") : "Admin ID"}>
+							<Input
+								value={filters.adminId || ""}
+								onChange={(e) => setFilters((p) => ({ ...p, adminId: e.target.value }))}
+								className="!h-[42px]"
+								placeholder={t.has("filters.adminIdPlaceholder") ? t("filters.adminIdPlaceholder") : "adminId (optional)"}
+							/>
+						</FilterField>
+					</>
+				}
+				hasActiveFilters={
+					!!filters.role || (filters.active && filters.active !== "all") || !!filters.adminId
+				}
+				onApplyFilters={() => fetchUsers({ page: 1, per_page: pagination.per_page })}
+
+				// table
+				columns={columns}
+				data={users}
+				isLoading={loading}
+
+				// pagination
+				pagination={{
+					total_records: pagination.total_records,
+					current_page: pagination.current_page,
+					per_page: pagination.per_page,
+				}}
+				onPageChange={({ page, per_page }) => fetchUsers({ page, per_page })}
+
+				emptyState={loading ? (t.has("loading") ? t("loading") : "Loading...") : (t.has("empty") ? t("empty") : "No users")}
+			/>
 
 			{/* ✅ Dialogs (unchanged logic) */}
 			<CreateUserDialog

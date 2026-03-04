@@ -169,29 +169,33 @@ function buildCombinationsFromAttributes(attributes, productName = '', defaultPr
 const makeSchema = (t) =>
 	yup
 		.object({
-			name: yup.string().trim().required(t('validation.nameRequired')),
+			name: yup.string().trim().required(t('validation.nameRequired')).max(200, t('validation.nameTooLong', { max: 200 })),
 			slug: yup
 				.string()
 				.trim()
 				.required(t('validation.slugRequired'))
 				.matches(/^[a-z0-9-]+$/, t('validation.slugInvalid')),
 			wholesalePrice: yup
-				.string()
+				.number()
+				.transform((value, originalValue) => originalValue === "" ? null : value)
 				.nullable()
-				.test('is-num', t('validation.invalidNumber'), (v) => !v || Number.isFinite(Number(v))),
+				.typeError(t('validation.invalidNumber'))
+				.min(0, t('validation.noNegative')),
 
 			lowestPrice: yup
-				.string()
+				.number()
+				.transform((value, originalValue) => originalValue === "" ? null : value)
 				.nullable()
-				.test('is-num', t('validation.invalidNumber'), (v) => !v || Number.isFinite(Number(v))),
+				.typeError(t('validation.invalidNumber'))
+				.min(0, t('validation.noNegative')),
 
 			storageRack: yup.string().nullable(),
 			categoryId: yup.string().nullable(),
 			storeId: yup.string().nullable(),
 			warehouseId: yup.string().nullable(),
-			description: yup.string().nullable(),
+			description: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
 
-			callCenterProductDescription: yup.string().nullable(),
+			callCenterProductDescription: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
 
 			upsellingEnabled: yup.boolean().default(false),
 			upsellingProducts: yup
@@ -200,7 +204,7 @@ const makeSchema = (t) =>
 					yup.object({
 						productId: yup.string().trim().required(t('validation.upsellProductRequired')),
 						label: yup.string().nullable(),
-						callCenterDescription: yup.string().nullable(),
+						callCenterDescription: yup.string().nullable().max(1000, t('validation.descriptionTooLong', { max: 1000 })),
 					})
 				)
 				.default([]),
@@ -232,9 +236,10 @@ const makeSchema = (t) =>
 							.min(0, t('validation.stockNonNegative'))
 							.default(0),
 						price: yup
-							.string()
+							.number()
+							.typeError(t('validation.invalidNumber'))
 							.required(t('validation.priceRequired'))
-							.test('is-num', t('validation.invalidNumber'), (v) => v && Number.isFinite(Number(v))),
+							.min(0, t('validation.noNegative')),
 					})
 				)
 				.default([]),
@@ -292,9 +297,19 @@ function extractAttributesFromSkus(skus) {
 	}));
 }
 
+
 export default function AddProductPage({ isEditMode = false, existingProduct = null, productId = null }) {
 	const t = useTranslations('addProduct');
-
+	const [imageErrors, setImageErrors] = useState({
+		main: {
+			general: '',   // For "Max 20 items" or "Required"
+			specific: {}   // Map of { fileId: "Error Message" }
+		},
+		other: {
+			general: '',   // For "Max 20 items" or "Required"
+			specific: {}   // Map of { fileId: "Error Message" }
+		}
+	});
 	const navigate = useRouter();
 
 	const [categories, setCategories] = useState([]);
@@ -323,7 +338,12 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 	const upsellingEnabled = watch('upsellingEnabled');
 	const productName = watch('name');
-
+	useEffect(() => {
+		if (!upsellingEnabled) {
+			// Clear the data when the section is hidden
+			setValue('upsellingProducts', [], { shouldDirty: true });
+		}
+	}, [upsellingEnabled, setValue]);
 
 	const wholesalePrice = watch('wholesalePrice');
 	const attributesWatch = useWatch({ control, name: 'attributes' });
@@ -417,6 +437,48 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		toast.success(`تمت إضافة ${template.name}`);
 	};
 
+	const validateImages = (files, type) => {
+		let generalError = '';
+		let specificErrors = {}; // To store errors per file ID
+
+		// 1. Check for presence (Main Image)
+		if (type === 'main' && (!files || files.length === 0)) {
+			generalError = t('errors.mainImageRequired');
+		}
+
+		// 2. Check for Max Items
+		if (type === 'other' && files.length > 20) {
+			generalError = t('errors.maxItemsExceeded', { max: 20 });
+		}
+
+		// 3. Per-file Validation
+		if (files && files.length > 0) {
+			files.forEach((f) => {
+				if (f.isExisting) return;
+				const fileObj = f.file;
+				if (!fileObj) return;
+
+				// Type Check
+				if (!fileObj.type.startsWith('image/')) {
+					specificErrors[f.id] = t('errors.invalidFileType');
+				}
+				// Size Check (10MB)
+				else if (fileObj.size > 10 * 1024 * 1024) {
+					specificErrors[f.id] = t('errors.fileTooLarge', { size: 10 });
+				}
+			});
+		}
+
+
+		// Update state: 'main' stays a string, 'other' becomes an object/string hybrid or handled separately
+		setImageErrors((prev) => ({
+			...prev,
+			[type]: { general: generalError, specific: specificErrors }
+		}));
+
+		return !generalError && Object.keys(specificErrors).length === 0;
+	};
+
 	// ✅ Handle wholesale price blur - update all empty variant prices
 	const handleWholesalePriceBlur = () => {
 		const currentPrice = wholesalePrice || '';
@@ -432,11 +494,15 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 	const onSubmit = async (data) => {
 		try {
-			if (!mainFiles.length) {
-				toast.error(t('errors.mainImageRequired'));
+			const isOthersValid = validateImages(otherFiles, 'other');
+			const isMainValid = validateImages(mainFiles, 'main');
+
+			// If either has an error, stop submission
+			if (!isMainValid || !isOthersValid) {
 				return;
 			}
 
+			if (slugStatus == 'takenStore' || slugStatus === 'taken') return;
 			// ✅ Validate all combinations have prices
 			if (data.combinations && data.combinations.length > 0) {
 				const missingPrices = data.combinations.filter((c) => !c.price || c.price === '');
@@ -529,8 +595,8 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			// ✅ Update SKUs if in edit mode
 			if (isEditMode && data.combinations && data.combinations.length > 0) {
 				const combinationsPayload = data.combinations.map((c) => ({
-					key: c.key,
-					sku: (c.sku ?? '').toString().trim() || null,
+					// key: c.key,
+					// sku: (c.sku ?? '').toString().trim() || null,
 					attributes: c.attributes ?? {},
 					price: safeNumberString(c.price) || null,
 				}));
@@ -544,7 +610,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 			navigate.push('/products');
 		} catch (error) {
-			toast.error(normalizeAxiosError(error));
+
 		}
 	};
 
@@ -621,7 +687,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			try {
 				const params = new URLSearchParams({ slug: watchSlug.trim() }); // [2025-12-24] Remember to trim.
 
-				if (storeId) params.append('storeId', storeId);
+				if (storeId && storeId !== 'none') params.append('storeId', storeId);
 				if (productId) params.append('productId', productId);
 
 				const res = await api.get(`/products/check-slug?${params.toString()}`);
@@ -794,7 +860,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 									/>
 								</div>
 
-								<div className="space-y-2">
+								<div className="space-y-2 col-span-full">
 									<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('fields.description')}</Label>
 									<Textarea
 										{...register('description')}
@@ -1002,26 +1068,35 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 							onFilesChange={(next) => {
 								mainFiles.forEach((f) => f?.previewUrl && !f.isFromLibrary && !f.isExisting && URL.revokeObjectURL(f.previewUrl));
 								setMainFiles(next.slice(0, 1));
+								setImageErrors(prev => ({ ...prev, main: {} }));
 							}}
 							onRemove={(fileToRemove) => {
 								if (fileToRemove.isExisting && fileToRemove.url) {
 									setRemovedImages((prev) => [...prev, fileToRemove.url]);
 								}
+
 							}}
+							error={imageErrors.main}
 							multiple={false}
 						/>
 
 						<ImageUploadBox
 							title={t('uploads.otherImages')}
 							files={otherFiles}
-							onFilesChange={setOtherFiles}
+							onFilesChange={(next) => {
+								setOtherFiles(next);
+								setImageErrors(prev => ({ ...prev, other: {} }));
+
+							}}
 							onRemove={(fileToRemove) => {
 								if (fileToRemove.isExisting && fileToRemove.url) {
 									setRemovedImages((prev) => [...prev, fileToRemove.url]);
 								}
 							}}
+							error={imageErrors.other}
 							multiple={true}
 						/>
+
 					</div>
 				</div>
 			</form>
@@ -1275,11 +1350,12 @@ function UpsellProductSelector({ t, value, onChange }) {
 }
 
 /** Upload Box */
-export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple = true, accept = 'image/*', className }) {
+export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple = true, accept = 'image/*', className, error }) {
 	const t = useTranslations('addProduct');
-
 	const inputRef = useRef(null);
 	const [isDragging, setIsDragging] = useState(false);
+	const generalErrorMessage = typeof error === 'string' ? error : error?.general;
+	const specificErrors = error?.specific || {};
 
 	const addFiles = React.useCallback(
 		(picked) => {
@@ -1338,14 +1414,19 @@ export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple
 		}
 		return f.previewUrl;
 	};
+	const hasAnyError = useMemo(() => {
+		const generalErrorMessage = typeof error === 'string' ? error : error?.general;
+		const specificErrors = error?.specific || {};
+
+		return !!generalErrorMessage || Object.keys(specificErrors).length > 0;
+	}, [error]); // Only re-calculates when the error prop changes
 
 	return (
 		<motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className={cn('bg-card rounded-xl shadow-sm p-6', className)} dir="rtl">
 			<h3 className="text-lg font-bold text-gray-700 dark:text-slate-200 mb-4 text-right flex items-center gap-2">
-				<div className="w-1 h-5 bg-primary rounded-full" />
+				<div className={cn("w-1 h-5 rounded-full", hasAnyError ? "bg-red-500" : "bg-primary")} />
 				{title}
 			</h3>
-
 			<div
 				onDragEnter={(e) => {
 					e.preventDefault();
@@ -1388,38 +1469,56 @@ export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple
 					</div>
 				</div>
 			</div>
-
+			{generalErrorMessage && (
+				<div className="mt-2 text-xs font-medium text-red-600 text-right animate-in fade-in">
+					{generalErrorMessage}
+				</div>
+			)}
 			<div className="mt-5 space-y-3">
-				{(files ?? []).map((f) => (
-					<div key={f.id} className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/40 p-4 hover:border-primary/50 transition-all">
-						<button
-							type="button"
-							onClick={() => removeFile(f.id)}
-							className="w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
-							aria-label={t('uploads.remove')}
-						>
-							<X className="h-5 w-5" />
-						</button>
+				{(files ?? []).map((f) => {
+					const fileError = specificErrors[f.id]; // 🎯 Check if THIS file has an error
 
-						<div className="flex-1 text-right">
-							<div className="font-semibold text-slate-900 dark:text-slate-100 truncate">{f.isExisting ? t('uploads.existingImage') : f.isFromLibrary ? t('uploads.fromLibrary') : (f?.file?.name || '').slice(0, 20)}</div>
-							<div className="text-xs text-slate-400">{f.isFromLibrary || f.isExisting ? t('uploads.fromLibrary') : `${((f?.file?.size || 0) / 1024).toFixed(1)} KB`}</div>
-						</div>
+					return (
+						<div className={cn(
+							"flex items-center justify-between gap-4 rounded-xl border p-4 transition-all",
+							fileError
+								? "border-red-500 bg-red-50/50 shadow-sm" // 🔴 Red border for bad file
+								: "border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/40 hover:border-primary/50"
+						)}>
+							<button
+								type="button"
+								onClick={() => removeFile(f.id)}
+								className="w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+								aria-label={t('uploads.remove')}
+							>
+								<X className="h-5 w-5" />
+							</button>
 
-						<div className="flex items-center gap-3">
-							<Badge className="rounded-xl bg-primary/15 text-primary border border-primary/20 font-semibold">{prettyExt(f?.file?.name || 'IMG')}</Badge>
-
-							<div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700">
-								{isImage(f) && getImageUrl(f) ? (
-									// eslint-disable-next-line @next/next/no-img-element
-									<img src={getImageUrl(f)} alt={f?.file?.name || 'image'} className="w-full h-full object-cover" />
-								) : (
-									<div className="text-slate-500">{f?.file?.type?.includes?.('image') ? <ImageIcon className="h-6 w-6" /> : <FileText className="h-6 w-6" />}</div>
+							<div className="flex-1 text-right">
+								<div className="font-semibold text-slate-900 dark:text-slate-100 truncate">{f.isExisting ? t('uploads.existingImage') : f.isFromLibrary ? t('uploads.fromLibrary') : (f?.file?.name || '').slice(0, 20)}</div>
+								<div className="text-xs text-slate-400">{f.isFromLibrary || f.isExisting ? t('uploads.fromLibrary') : `${((f?.file?.size || 0) / 1024).toFixed(1)} KB`}</div>
+								{fileError && (
+									<div className="text-xs text-red-500 font-bold mt-1">
+										{fileError}
+									</div>
 								)}
 							</div>
+
+							<div className="flex items-center gap-3">
+								<Badge className="rounded-xl bg-primary/15 text-primary border border-primary/20 font-semibold">{prettyExt(f?.file?.name || 'IMG')}</Badge>
+
+								<div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700">
+									{isImage(f) && getImageUrl(f) ? (
+										// eslint-disable-next-line @next/next/no-img-element
+										<img src={getImageUrl(f)} alt={f?.file?.name || 'image'} className="w-full h-full object-cover" />
+									) : (
+										<div className="text-slate-500">{f?.file?.type?.includes?.('image') ? <ImageIcon className="h-6 w-6" /> : <FileText className="h-6 w-6" />}</div>
+									)}
+								</div>
+							</div>
 						</div>
-					</div>
-				))}
+					)
+				})}
 			</div>
 		</motion.div>
 	);

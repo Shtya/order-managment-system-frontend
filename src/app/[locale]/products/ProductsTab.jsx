@@ -14,13 +14,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Separator } from "@/components/ui/separator";
 import { baseImg } from "@/utils/axios";
 import { useTranslations } from "next-intl";
+import { BannerSkeleton, Bone } from "@/components/atoms/BannerSkeleton";
+import { avatarSrc } from "@/components/atoms/UserSelect";
 
 function normalizeAxiosError(err) {
   const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
   return Array.isArray(msg) ? msg.join(", ") : String(msg);
 }
 
-export default function ProductsTab({ t, searchDebounced, filters, filtersOpen, onAskDelete, onOpenView, onExportRequest }) {
+export default function useProductsTab({ t, searchDebounced, filters, filtersOpen, onAskDelete, onOpenView, onExportRequest, activetab }) {
   const router = useRouter();
   const requestIdRef = useRef(0);
 
@@ -86,14 +88,12 @@ export default function ProductsTab({ t, searchDebounced, filters, filtersOpen, 
   }, [searchDebounced, filters]);
 
   useEffect(() => {
+    if (activetab !== "products") return;
     fetchData({ page: 1, per_page: pager.per_page });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchDebounced]);
+  }, [searchDebounced, activetab]);
 
-  useEffect(() => {
-    fetchData({ page: 1, per_page: 6 });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+
 
   const columns = useMemo(() => {
     const na = t("common.na");
@@ -275,7 +275,7 @@ function toAbsUrl(url) {
   return url;
 }
 
-export function ProductViewModal({ open, onOpenChange, product }) {
+export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
   const t = useTranslations("products");
   const na = t("common.na");
 
@@ -299,7 +299,9 @@ export function ProductViewModal({ open, onOpenChange, product }) {
         </DialogHeader>
 
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-110px)] space-y-6 bg-white dark:bg-slate-900">
-          {!product ? (
+          {viewLoading ? (
+            <ProductModalSkeleton />
+          ) : !product ? (
             <div className="py-10 text-center text-slate-500">{t("productModal.noData")}</div>
           ) : (
             <>
@@ -309,7 +311,7 @@ export function ProductViewModal({ open, onOpenChange, product }) {
                     <div className="w-20 h-20 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border">
                       {mainImage ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={baseImg + mainImage} alt={product.name || "product"} className="w-full h-full object-cover" />
+                        <img src={avatarSrc(mainImage)} alt={product.name || "product"} className="w-full h-full object-cover" />
                       ) : (
                         <ImageIcon className="text-slate-400" />
                       )}
@@ -538,5 +540,81 @@ export function ProductViewModal({ open, onOpenChange, product }) {
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+      SKELETON COMPONENTS (Inspired by OrderDetails)
+═══════════════════════════════════════════════════════════ */
+
+
+function ProductModalSkeleton() {
+  return (
+    <div className="space-y-6">
+      {/* Top Banner Style Header */}
+      <div className="relative bg-card rounded-2xl border border-border/50 overflow-hidden p-5">
+        <div className="h-[3px] rounded-full bg-muted/40 animate-pulse -mx-5 -mt-5 mb-5" />
+        <div className="flex gap-4 items-start">
+          <Bone className="w-20 h-20 rounded-xl shrink-0" />
+          <div className="flex-1 space-y-3">
+            <Bone className="h-5 w-48" />
+            <div className="flex gap-2">
+              <Bone className="h-4 w-20 rounded-full" />
+              <Bone className="h-4 w-20 rounded-full" />
+              <Bone className="h-4 w-20 rounded-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Left Side: Images and SKUs */}
+        <div className="lg:col-span-8 space-y-5">
+          <div className="bg-card rounded-2xl border border-border/50 p-5 space-y-4">
+            <Bone className="h-4 w-24 mb-2" />
+            <div className="grid grid-cols-4 gap-3">
+              {[0, 1, 2, 3].map(i => <Bone key={i} className="h-24 rounded-xl" />)}
+            </div>
+          </div>
+
+          {/* Table Skeleton (Exact copy of your Order table style) */}
+          <div className="rounded-xl border border-border/30 overflow-hidden">
+            <div className="bg-[var(--secondary)]/60 px-3 py-2.5 flex gap-6">
+              {["w-16", "w-24", "w-20"].map((w, i) => <Bone key={i} className={`h-2.5 ${w}`} />)}
+            </div>
+            {[0, 1, 2].map(i => (
+              <div key={i} className={cn("flex items-center gap-3 px-3 py-4 border-t border-border/20", i % 2 !== 0 && "bg-muted/15")}>
+                <Bone className="w-10 h-10 rounded-lg shrink-0" />
+                <div className="space-y-2">
+                  <Bone className="h-3 w-32" />
+                  <Bone className="h-2 w-20" />
+                </div>
+                <div className="flex-1" />
+                <Bone className="h-3 w-12" />
+                <Bone className="h-3 w-12" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right Side: Summary Cards */}
+        <div className="lg:col-span-4 space-y-4">
+          <div className="bg-card rounded-2xl border border-border/50 p-5 space-y-4">
+            <Bone className="h-4 w-32" />
+            <div className="space-y-3">
+              {[0, 1, 2].map(i => (
+                <div key={i} className="flex justify-between items-center py-1">
+                  <Bone className="h-3 w-20" />
+                  <Bone className="h-3 w-12" />
+                </div>
+              ))}
+            </div>
+          </div>
+          <BannerSkeleton />
+        </div>
+      </div>
+    </div>
   );
 }

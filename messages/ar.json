@@ -2783,6 +2783,9 @@
       "checking": "جاري التحقق من التوفر..."
     },
     "validation": {
+      "priceMin": "يجب أن يكون السعر {min} على الأقل",
+      "nameTooLong": "الاسم طويل جداً (الحد الأقصى {max} حرف)",
+      "descriptionTooLong": "الوصف طويل جداً (الحد الأقصى {max} حرف)",
       "nameRequired": "اسم المنتج مطلوب",
       "slugRequired": "الرابط مطلوب",
       "categoryRequired": "يجب اختيار فئة",
@@ -2802,7 +2805,8 @@
       "priceRequired": "السعر مطلوب لجميع المتغيرات",
       "productRequired": "المنتج مطلوب",
       "quantityMinOne": "الكمية يجب أن تكون 1 على الأقل",
-      "quantityRequired": "الكمية مطلوبة"
+      "quantityRequired": "الكمية مطلوبة",
+      "noNegative": "القيمة يجب أن تكون 0 أو أكثر"
     },
     "attributes": {
       "title": "الخصائص والمتغيرات",
@@ -2875,10 +2879,18 @@
     "errors": {
       "mainImageRequired": "الصورة الرئيسية مطلوبة",
       "missingPrices": "يجب إدخال السعر لجميع المتغيرات",
-      "bundleItemsRequired": "يجب إضافة منتج واحد على الأقل للباقة"
+      "bundleItemsRequired": "يجب إضافة منتج واحد على الأقل للباقة",
+      "maxItemsExceeded": "لا يمكنك إضافة أكثر من {max} صور إضافية",
+      "invalidFileType": "عذراً، يجب أن يكون الملف المرفق صورة فقط (JPG, PNG, etc)",
+      "fileTooLarge": "حجم الصورة كبير جداً، الحد الأقصى المسموح به هو {size} ميجابايت"
     }
   },
   "products": {
+    "messages": {
+      "exportStarted": "جاري تصدير البيانات...",
+      "exportSuccess": "تم تصدير الملف بنجاح",
+      "exportFailed": "فشل في تصدير الملف"
+    },
     "common": {
       "na": "—",
       "id": "ID",
@@ -2905,7 +2917,9 @@
       "productId": "ProductId",
       "label": "Label",
       "callCenterDesc": "وصف خدمة العملاء",
-      "exportBuilderNotReady": "مُنشئ التصدير غير جاهز"
+      "exportBuilderNotReady": "مُنشئ التصدير غير جاهز",
+      "total": "الإجمالي",
+      "limit": "عدد النتائج"
     },
     "bundleModal": {
       "title": "تفاصيل الباندل",
@@ -2943,14 +2957,17 @@
       "products": "المنتجات",
       "bundles": "الباقات",
       "mine": "منتجاتي",
-      "idle": "المنتجات الراكدة"
+      "idle": "المنتجات الراكدة",
+      "idleDate": "بداية التراكم"
     },
     "stats": {
       "withShippingCompanies": "مع شركات الشحن",
       "returnedPieces": "قطع مرتجعة",
       "soldPieces": "قطع مباعة",
       "remainingPieces": "قطع متبقية",
-      "totalProducts": "إجمالي المنتجات"
+      "totalProducts": "إجمالي المنتجات",
+      "availableItems": "عناصر متاحة",
+      "reservedItems": "عناصر محجوزة"
     },
     "toolbar": {
       "searchPlaceholder": "البحث عن المنتجات...",
@@ -4904,7 +4921,6 @@
       "exportFailed": "فشل في تصدير المعاملات",
       "loading": "جاري التحميل...",
       "errorFetchingPlans": "حدث خطأ أثناء تحميل الباقات",
-
       "fetchPlansFailed": "فشل في تحميل الباقات",
       "createPlanSuccess": "تم إنشاء الباقة بنجاح",
       "createPlanFailed": "فشل في إنشاء الباقة",
@@ -5058,7 +5074,6 @@
     "prevPage": "الصفحة السابقة",
     "nextPage": "الصفحة التالية"
   },
-
   "landing": {
     "brand": {
       "name": "طلباتي",
@@ -5209,7 +5224,11 @@
         "highlight": "أمامك دائماً"
       },
       "subtitle": "تابع أداء متجرك لحظة بلحظة وتحكم في كل شيء من مكان واحد.",
-      "chips": ["شوف كل المنتجات والكميات لحظة بلحظة", "احصل على تقارير دقيقة لاتخاذ قرارات أسرع", "تابع الطلبات من أول التأكيد لحد التسليم"]
+      "chips": [
+        "شوف كل المنتجات والكميات لحظة بلحظة",
+        "احصل على تقارير دقيقة لاتخاذ قرارات أسرع",
+        "تابع الطلبات من أول التأكيد لحد التسليم"
+      ]
     }
   },
   "marquee": {
@@ -5278,7 +5297,6 @@
       }
     ]
   },
-
   "shippingNetwork": {
     "heading": {
       "prefix": "كل شركات الشحن متصلة في",
@@ -5358,7 +5376,6 @@
       }
     }
   },
-
   "pricing": {
     "heading": {
       "prefix": "باقات مصممة لتلبية",
@@ -5438,7 +5455,6 @@
       }
     }
   },
-
   "heroBanner": {
     "heading": {
       "prefix": "تحكم كامل في تجارتك من.....",

@@ -41,12 +41,13 @@ function slugifyKey(s) {
 
 const makeSchema = (t) =>
 	yup.object({
-		name: yup.string().trim().required(t('validation.nameRequired')),
+		name: yup.string().trim().required(t('validation.nameRequired')).max(200, t('validation.nameTooLong', { max: 200 })),
 		wholesalePrice: yup
-			.string()
+			.number()
+			.typeError(t('validation.invalidNumber')) // Handles cases where input isn't a number
 			.required(t('bundles.totalPriceRequired'))
-			.test('is-num', t('validation.invalidNumber'), (v) => v && Number.isFinite(Number(v))),
-		description: yup.string().nullable(),
+			.min(1, t('validation.priceMin', { min: 1 })), // Native min check
+		description: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
 		bundleItems: yup
 			.array()
 			.of(
@@ -98,7 +99,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 		if (!isEditMode || !existingBundle) return;
 		reset({
 			name: existingBundle.name || '',
-			wholesalePrice: existingBundle.price?.toString() || '',
+			wholesalePrice: existingBundle.price || 0,
 			description: existingBundle.description || '',
 			bundleItems:
 				existingBundle.items?.map((item) => ({
@@ -114,6 +115,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 			const bundlePayload = {
 				name: data.name.trim(),
 				price: data.wholesalePrice,
+				description: data.description,
 				sku: `BUNDLE-${slugifyKey(data.name).substring(0, 10).toUpperCase()}-${Date.now()}`,
 				items: data.bundleItems.map((item) => ({
 					variantId: Number(item.variantId),
@@ -121,16 +123,19 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 				})),
 			};
 
-			const apiCall = isEditMode
-				? await api.patch(`/bundles/${bundleId}`, bundlePayload).then(res => { }).catch(err => { if (err?.response?.data?.error == "Not Null Violation") navigate.push('/products'); })
-				: await api.post('/bundles', bundlePayload).then(res => { navigate.push('/products'); }).catch(err => { });
+			const apiPromise = isEditMode
+				? api.patch(`/bundles/${bundleId}`, bundlePayload)
+				: api.post('/bundles', bundlePayload);
 
-
-			await toast.promise(apiCall, {
+			// 2. Use toast.promise to handle the loading/success/error UI
+			await toast.promise(apiPromise, {
 				loading: t('messages.saving'),
 				success: isEditMode ? t('messages.updated') : t('messages.created'),
 				error: (err) => normalizeAxiosError(err),
 			});
+
+			// 3. Navigate only after the promise successfully resolves
+			navigate.push('/products');
 
 			navigate.push('/products');
 		} catch (error) {
@@ -150,7 +155,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 				]}
 				buttons={
 					<>
-						<Button_ onClick={() => navigate.push('/products')} size="sm" label={t('actions.back')} tone="cancel"  variant="ghost"   />
+						<Button_ onClick={() => navigate.push('/products')} size="sm" label={t('actions.back')} tone="cancel" variant="ghost" />
 
 						<Button_
 							size="sm"
@@ -163,7 +168,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 					</>
 				}
 			/>
- 
+
 
 			<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 				{/* Bundle Info */}

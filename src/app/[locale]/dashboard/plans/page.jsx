@@ -86,7 +86,7 @@ function PlanCardSkeleton() {
 					<div className="w-9 h-9 rounded-full bg-gray-200 dark:bg-slate-700" />
 					<div className="w-9 h-9 rounded-full bg-gray-200 dark:bg-slate-700" />
 				</div>
-				<div className="w-16 h-6 rounded-md bg-gray-200 dark:bg-slate-700" />
+				<div className="w-16 h-6 rounded-xl bg-gray-200 dark:bg-slate-700" />
 			</div>
 
 			<div className="flex justify-center mt-8 mb-6">
@@ -513,12 +513,12 @@ function EditablePlanCard({
 					</div>
 				) : (
 					<div className="flex flex-col items-end gap-2">
-						<Badge className="bg-[#F0FDF4] text-[#22C55E] hover:bg-[#F0FDF4] dark:bg-green-950/30 dark:text-green-300 rounded-md">
+						<Badge className="bg-[#F0FDF4] text-[#22C55E] hover:bg-[#F0FDF4] dark:bg-green-950/30 dark:text-green-300 rounded-xl">
 							نشطة
 						</Badge>
 
 						{plan.isPopular && (
-							<Badge className="bg-gradient-to-r from-primary via-primary/90 to-primary text-white rounded-md">
+							<Badge className="bg-gradient-to-r from-primary via-primary/90 to-primary text-white rounded-xl">
 								شائعة
 							</Badge>
 						)}
@@ -851,7 +851,7 @@ function TransactionDetailsDialog({ open, onClose, transaction }) {
 
 						<div className="space-y-2">
 							<Label className="text-xs text-gray-500 dark:text-slate-400">الحالة</Label>
-							<Badge className="rounded-md">{transaction.status}</Badge>
+							<Badge className="rounded-xl">{transaction.status}</Badge>
 						</div>
 					</div>
 

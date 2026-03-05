@@ -1121,7 +1121,7 @@ function AttributeEditor({ t, control, register, errors, aIndex, onRemove, setVa
 					{t('attributes.attribute')}
 				</div>
 
-				<Button type="button" variant="ghost" title={t('attributes.deleteAttribute')} onClick={onRemove} className="rounded-md border-1 border-red-500 cursor-pointer text-red-600 hover:text-white hover:bg-red-500 transition-all">
+				<Button type="button" variant="ghost" title={t('attributes.deleteAttribute')} onClick={onRemove} className="rounded-xl border-1 border-red-500 cursor-pointer text-red-600 hover:text-white hover:bg-red-500 transition-all">
 					<Trash2 className="h-4 w-4" />
 				</Button>
 			</div>
@@ -1258,7 +1258,7 @@ function UpsellProductSelector({ t, value, onChange }) {
 												className={['w-full text-left', 'px-4 py-3', 'hover:bg-slate-50 dark:hover:bg-slate-700/60', 'transition-colors', 'border-b border-slate-100 dark:border-slate-700 last:border-0', 'focus:outline-none focus:bg-slate-50 dark:focus:bg-slate-700/60'].join(' ')}
 											>
 												<div className="flex items-start gap-3">
-													<div className="shrink-0 w-11 h-11 rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-700">
+													<div className="shrink-0 w-11 h-11 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-700">
 														{img ? <img src={baseImg + img} alt={product.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xs text-slate-400">N/A</div>}
 													</div>
 
@@ -1293,7 +1293,7 @@ function UpsellProductSelector({ t, value, onChange }) {
 							<div key={x.productId} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/30 backdrop-blur p-4">
 								<div className="flex items-start justify-between gap-3">
 									<div className="flex items-start gap-3 min-w-0">
-										<div className="shrink-0 w-11 h-11 rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
+										<div className="shrink-0 w-11 h-11 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
 											{x.mainImage ? (
 												<img src={baseImg + getImg(x)} alt={x.name} className="w-full h-full object-cover" />
 											) : (

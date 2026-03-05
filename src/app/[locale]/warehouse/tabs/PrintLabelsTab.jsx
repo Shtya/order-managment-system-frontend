@@ -76,7 +76,7 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="!max-w-3xl bg-white dark:bg-slate-900 rounded-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
+      <DialogContent className="!max-w-3xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto" dir="rtl">
         <DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
           <DialogTitle className="text-lg font-bold flex items-center gap-2">
             <Printer className="text-[#ff8b00] dark:text-[#5b4bff]" size={22} />
@@ -135,7 +135,7 @@ function OrderDetailModal({ open, onClose, order }) {
   if (!order) return null;
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="!max-w-2xl bg-white dark:bg-slate-900 rounded-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
+      <DialogContent className="!max-w-2xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto" dir="rtl">
         <DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
           <DialogTitle className="text-lg font-bold flex items-center gap-2">
             <Package className="text-[#ff8b00] dark:text-[#5b4bff]" size={22} />

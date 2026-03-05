@@ -288,7 +288,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 										</div>
 									</div>
 
-									<Button type="button" variant="ghost" onClick={() => removeBundleItem(index)} className="rounded-md border-1 border-red-500 cursor-pointer text-red-600 hover:text-white hover:bg-red-500 transition-all mt-7">
+									<Button type="button" variant="ghost" onClick={() => removeBundleItem(index)} className="rounded-xl border-1 border-red-500 cursor-pointer text-red-600 hover:text-white hover:bg-red-500 transition-all mt-7">
 										<Trash2 className="h-4 w-4" />
 									</Button>
 								</div>

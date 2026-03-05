@@ -187,7 +187,7 @@ export default function DashboardPage() {
 
 
     return (
-        <div className="min-h-screen p-4 md:p-6 bg-background">
+        <div className="min-h-screen p-4 md:p-6  ">
             {/* Header / Breadcrumbs */}
             {/* <div className="bg-card flex flex-col gap-2 mb-4">
                 <div className="flex items-center justify-between">

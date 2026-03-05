@@ -59,7 +59,7 @@ function StatBoxes({ scannedCount, wrongScans }) {
 			{/* Scanned returns */}
 			<motion.div
 				initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
-				className="relative overflow-hidden rounded-2xl border border-amber-200/70 bg-gradient-to-br from-amber-50 to-orange-50 p-4"
+				className="relative overflow-hidden rounded-xl border border-amber-200/70 bg-gradient-to-br from-amber-50 to-orange-50 p-4"
 			>
 				<div className="absolute -right-2 top-2 w-20 h-20 rounded-full bg-amber-400/10" />
 				<div className="relative flex gap-4 items-center justify-between">
@@ -93,7 +93,7 @@ function StatBoxes({ scannedCount, wrongScans }) {
 			<motion.div
 				initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
 				className={cn(
-					"relative overflow-hidden rounded-2xl border p-4 transition-colors duration-300",
+					"relative overflow-hidden rounded-xl border p-4 transition-colors duration-300",
 					wrongScans > 0
 						? "border-red-200/70 bg-gradient-to-br from-red-50 to-rose-50"
 						: "border-slate-200/70 bg-gradient-to-br from-slate-50 to-slate-50/50"
@@ -162,7 +162,7 @@ function ReturnsTable({ orders, scannedReturns, conditionMap, onConditionChange,
 	if (orders.length === 0) {
 		return (
 			<div className="flex flex-col items-center justify-center py-16">
-				<div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-3">
+				<div className="w-14 h-14 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-3">
 					<RefreshCw size={22} className="text-slate-300" />
 				</div>
 				<p className="text-sm font-semibold text-slate-400">لا توجد طلبات شُحنت بعد</p>
@@ -269,7 +269,7 @@ function ReturnsTable({ orders, scannedReturns, conditionMap, onConditionChange,
 									{isScanned ? (
 										<Select value={condition} onValueChange={(v) => onConditionChange(order.code, v)}>
 											<SelectTrigger className={cn(
-												"h-7 rounded-lg text-[11px] font-bold border px-2 w-28",
+												"h-7 rounded-xl text-[11px] font-bold border px-2 w-28",
 												condition === "تالف" ? "bg-red-50 border-red-200 text-red-700" :
 													condition === "مفقود جزء" ? "bg-amber-50 border-amber-200 text-amber-700" :
 														"bg-emerald-50 border-emerald-200 text-emerald-700"
@@ -323,7 +323,7 @@ function ReturnsTable({ orders, scannedReturns, conditionMap, onConditionChange,
 														style={{ gridTemplateColumns: "2fr 90px 70px 80px" }}
 													>
 														<div className="flex items-center gap-2.5 min-w-0">
-															<div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#f59e0b15" }}>
+															<div className="w-6 h-6 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#f59e0b15" }}>
 																<Package size={11} style={{ color: "#f59e0b" }} />
 															</div>
 															<span className="text-[12px] font-semibold text-slate-700 truncate">{p.name}</span>
@@ -505,7 +505,7 @@ function ScanReturnSubtab({ orders, updateOrder, pushOp, inventory, updateInvent
 						{/* Table header bar */}
 						<div className="flex items-center justify-between pb-4 border-b border-slate-100">
 							<div className="flex items-center gap-2.5">
-								<div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: meta?.color + "12" }}>
+								<div className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: meta?.color + "12" }}>
 									<RefreshCw size={13} style={{ color: meta?.color || "#f59e0b" }} />
 								</div>
 								<span className="text-sm font-bold text-slate-700">مرتجعات {selectedCarrier}</span>

@@ -76,10 +76,10 @@ const Skel = ({ cls }) => (
 // ─────────────────────────────────────────────────────────────────────────────
 export function Card({ title, icon: Icon, color = PRIMARY, action, children, className }) {
 	return (
-		<div className={cn("rounded-2xl border border-border bg-card shadow-sm overflow-hidden", className)}>
+		<div className={cn("rounded-xl border border-border bg-card shadow-sm overflow-hidden", className)}>
 			<div className="flex items-center justify-between px-5 py-3.5 ">
 				<div className="flex items-center gap-2.5">
-					<span className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: hex(color, 0.12), border: `1.5px solid ${hex(color, 0.2)}` }}>
+					<span className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: hex(color, 0.12), border: `1.5px solid ${hex(color, 0.2)}` }}>
 						<Icon size={14} style={{ color }} />
 					</span>
 					<h3 className="text-sm font-bold text-foreground">{title}</h3>
@@ -128,7 +128,7 @@ export function RangeTabs({ value, onChange, searchValue, onSearchChange }) {
 	];
 
 	return (
-		<div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 bg-card p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
+		<div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 bg-card p-4 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm">
 
 			{/* Left Section: Quick Range Tabs */}
 
@@ -217,7 +217,7 @@ export function StatusDonut({
 	);
 
 	if (!hasData || total === 0) return (
-		<div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-border/50 rounded-2xl bg-muted/5">
+		<div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-border/50 rounded-xl bg-muted/5">
 			<PieChart size={32} className="text-muted-foreground/40 mb-2" />
 			<p className="text-xs text-muted-foreground font-medium">
 				{t("common.noData")}
@@ -269,7 +269,7 @@ export function StatusDonut({
 					const percentage = ((item[config.key] / total) * 100).toFixed(0);
 
 					return (
-						<div key={i} className="flex items-center justify-between group px-2 py-1 hover:bg-muted/5 rounded-lg transition-colors">
+						<div key={i} className="flex items-center justify-between group px-2 py-1 hover:bg-muted/5 rounded-xl transition-colors">
 							<div className="flex items-center gap-3">
 								{/* النقطة الملونة أو الصورة */}
 								{allowImage && item[config.imageKey] ? (
@@ -334,7 +334,7 @@ export function TrendChart({ data, loading, configs = [] }) {
 	);
 	// حالة عدم وجود بيانات
 	if (!hasData) return (
-		<div className="flex flex-col items-center justify-center h-[264px] border-2 border-dashed border-border/50 rounded-2xl bg-muted/5">
+		<div className="flex flex-col items-center justify-center h-[264px] border-2 border-dashed border-border/50 rounded-xl bg-muted/5">
 			<TrendingUp size={32} className="text-muted-foreground/40 mb-2" />
 			<p className="text-sm text-muted-foreground font-medium">
 				{t("common.noOperations")}
@@ -466,9 +466,9 @@ export const TableFilters = memo(function TableFilters({
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-			className="rounded-2xl border border-border bg-card p-4 shadow-sm"
+			className="rounded-xl border border-border bg-card p-4 shadow-sm"
 		>
-			<div className="mt-3 rounded-2xl border border-border/80 
+			<div className="mt-3 rounded-xl border border-border/80 
                 bg-gradient-to-br from-muted/40 to-muted/10 
                 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
 

@@ -596,7 +596,7 @@ export default function Sidebar({ isOpen, isRTL }) {
 							<div className="flex items-center gap-2.5">
 								<span className="font-semibold text-sm">{t(item.labelKey)}</span>
 								{item.badge && (
-									<span className="px-2 py-0.5 rounded-md bg-red-500 text-white text-xs font-bold shadow-lg">
+									<span className="px-2 py-0.5 rounded-xl bg-red-500 text-white text-xs font-bold shadow-lg">
 										{item.badge}
 									</span>
 								)}

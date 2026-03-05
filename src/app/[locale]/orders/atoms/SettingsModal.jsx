@@ -165,7 +165,7 @@ function StatusMultiSelect({
                     >
                       {/* custom checkbox */}
                       <span
-                        className="shrink-0 w-[18px] h-[18px] rounded-md flex items-center justify-center transition-all duration-150"
+                        className="shrink-0 w-[18px] h-[18px] rounded-xl flex items-center justify-center transition-all duration-150"
                         style={{
                           border: `2px solid ${isChecked ? c : "var(--border)"}`,
                           backgroundColor: isChecked ? c : "transparent",

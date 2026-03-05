@@ -36,7 +36,7 @@ const MiniInput = memo(function MiniInput({
 				onChange={onChange}
 				onBlur={onBlur}
 				className={cn(
-					"h-8 w-full rounded-md border px-2 text-[12px]",
+					"h-8 w-full rounded-xl border px-2 text-[12px]",
 					"bg-white outline-none transition",
 					"focus:ring-4 focus:ring-primary/20 focus:border-primary",
 					hasValue

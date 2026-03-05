@@ -278,7 +278,7 @@ export function EmployeeStatisticsPage() {
                     return (
                         <span
                             className={cn(
-                                "font-bold text-sm px-2.5 py-1 rounded-lg tabular-nums",
+                                "font-bold text-sm px-2.5 py-1 rounded-xl tabular-nums",
                                 "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400"
                             )}
                         >
@@ -304,7 +304,7 @@ export function EmployeeStatisticsPage() {
                     return (
                         <span
                             className={cn(
-                                "font-bold text-sm px-2.5 py-1 rounded-lg tabular-nums",
+                                "font-bold text-sm px-2.5 py-1 rounded-xl tabular-nums",
                                 "bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400"
                             )}
                         >
@@ -330,7 +330,7 @@ export function EmployeeStatisticsPage() {
                     return (
                         <span
                             className={cn(
-                                "font-bold text-sm px-2.5 py-1 rounded-lg tabular-nums",
+                                "font-bold text-sm px-2.5 py-1 rounded-xl tabular-nums",
                                 "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400"
                             )}
                         >
@@ -345,7 +345,7 @@ export function EmployeeStatisticsPage() {
 
     /* ── Render ── */
     return (
-        <div className="min-h-screen p-4 md:p-6 bg-background">
+        <div className="min-h-screen p-5">
             <PageHeader
                 breadcrumbs={[
                     { name: t("breadcrumb.home"), href: "/" },

@@ -531,7 +531,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
 				backgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`,
 				color: status.color,
 			} : {},
-			className: "rounded-md",
+			className: "rounded-xl",
 		};
 	};
 
@@ -587,7 +587,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
 				key: "status",
 				header: t("table.status"),
 				cell: (row) => (
-					<Badge className={cn("rounded-md", getStatusBadge(row.status))}>
+					<Badge className={cn("rounded-xl", getStatusBadge(row.status))}>
 						{row.status.system ? t(`statuses.${row.status.code}`) : (row.status.name || row.status.code)}
 					</Badge>
 				),
@@ -1151,7 +1151,7 @@ const ColorPicker = ({ value, onChange, disabled }) => {
 									type="button"
 									onClick={() => onChange(color)}
 									className={[
-										"w-8 h-8 rounded-md border-2 transition-all",
+										"w-8 h-8 rounded-xl border-2 transition-all",
 										value === color
 											? "border-black dark:border-white scale-110"
 											: "border-gray-300 dark:border-slate-600 hover:scale-110"

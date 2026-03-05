@@ -372,7 +372,7 @@ function CopyButton({ text }) {
 			<TooltipTrigger asChild>
 				<button
 					onClick={handleCopy}
-					className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+					className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
 				>
 					{copied ? <Check size={14} className="text-green-600" /> : <Copy size={14} className="text-slate-400" />}
 				</button>

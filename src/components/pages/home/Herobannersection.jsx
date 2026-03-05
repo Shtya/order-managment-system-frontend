@@ -98,14 +98,14 @@ export default function HeroBannerSection() {
       `}</style>
 
 			<section
-				dir="rtl"
-				style={{
+			className=''
+ 				style={{
 					background: 'linear-gradient(145deg, #0c041e 0%, #17093c 45%, #090218 100%)',
 					minHeight: '440px',
 					padding: 'clamp(40px,6vw,72px) clamp(20px,5vw,60px)',
 					display: 'flex',
 					alignItems: 'center',
-					justifyContent: 'space-between',
+					justifyContent: 'center',
 					gap: 50,
 					overflow: 'hidden',
 					position: 'relative', 
@@ -128,7 +128,7 @@ export default function HeroBannerSection() {
 				</div>
 
 				{/* ── LEFT: Copy ── */}
-				<div className='w-full' style={{ 
+				<div className=' max-w-[600px] w-full' style={{ 
 					animation: mounted ? 'heroTextIn 0.75s cubic-bezier(.34,1.2,.64,1) forwards' : 'none',
 				}}>
 					<h1 className='text-3xl' style={{
@@ -161,7 +161,7 @@ export default function HeroBannerSection() {
 					{/* Buttons */}
 					<div style={{
 						display: 'flex', gap: 12, flexWrap: 'wrap',
-						justifyContent: 'flex-end',
+						justifyContent: 'flex-start',
 						opacity: mounted ? 1 : 0,
 						animation: mounted ? 'heroBtnIn 0.65s ease 0.22s both' : 'none',
 					}}>

@@ -497,7 +497,7 @@ export default function ProductsPage() {
 
 	return (
 		<div className="min-h-screen p-5">
-
+ 
 			<PageHeader
 				breadcrumbs={[
 					{ name: t("breadcrumb.home"), href: "/" },

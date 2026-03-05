@@ -67,7 +67,7 @@ function getCollectionStatusBadge(status, t) {
 	const config = statusConfig[status] || statusConfig.pending;
 
 	return (
-		<Badge className={cn("rounded-lg px-2.5 py-1 text-xs font-semibold border", config.className)}>
+		<Badge className={cn("rounded-xl px-2.5 py-1 text-xs font-semibold border", config.className)}>
 			{config.label}
 		</Badge>
 	);
@@ -560,7 +560,7 @@ export default function OrderCollectionPage() {
 
 	// ── Render ────────────────────────────────────────────────────────────────
 	return (
-		<div className="min-h-screen p-5  bg-background">
+		<div className="min-h-screen p-5 ">
 			<PageHeader
 				breadcrumbs={[
 					{ name: t("breadcrumb.home"), href: "/" },

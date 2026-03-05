@@ -134,7 +134,7 @@ const MiniSelect = memo(function MiniSelect({
 			data-mini-select-menu="1"
 			dir={dir}
 			className={cn(
-				"fixed z-[9999] rounded-md border shadow-lg overflow-hidden",
+				"fixed z-[9999] rounded-xl border shadow-lg overflow-hidden",
 				// ✅ Dark mode aware background + border
 				"bg-card border-border"
 			)}
@@ -152,7 +152,7 @@ const MiniSelect = memo(function MiniSelect({
 						onChange={(e) => setQuery(e.target.value)}
 						placeholder={searchPlaceholder}
 						className={cn(
-							"h-8 w-full rounded-md border px-2 text-[12px]",
+							"h-8 w-full rounded-xl border px-2 text-[12px]",
 							// ✅ Dark mode aware input
 							"bg-background text-foreground placeholder:text-muted-foreground",
 							"outline-none transition border-border",
@@ -219,7 +219,7 @@ const MiniSelect = memo(function MiniSelect({
 					setOpen((v) => !v);
 				}}
 				className={cn(
-					"h-[40px] w-full rounded-md border px-2 text-[12px]",
+					"h-[40px] w-full rounded-xl border px-2 text-[12px]",
 					// ✅ Dark mode aware trigger
 					"bg-background text-foreground",
 					"outline-none transition flex items-center justify-between gap-2",

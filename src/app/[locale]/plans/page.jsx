@@ -23,7 +23,7 @@ import PageHeader from "@/components/atoms/Pageheader";
 ═══════════════════════════════════════════════════════════ */
 function PlanCardSkeleton() {
 	return (
-		<div className="relative rounded-2xl border-2 border-border/60 bg-card overflow-hidden animate-pulse">
+		<div className="relative rounded-xl border-2 border-border/60 bg-card overflow-hidden animate-pulse">
 			{/* top bar */}
 			<div className="h-[3px] bg-muted/60" />
 			<div className="p-6 space-y-5">
@@ -31,7 +31,7 @@ function PlanCardSkeleton() {
 					<div className="h-8 w-20 rounded-xl bg-muted/60" />
 					<div className="h-5 w-8 rounded bg-muted/40" />
 				</div>
-				<div className="h-5 w-32 rounded-lg bg-muted/50 ms-auto" />
+				<div className="h-5 w-32 rounded-xl bg-muted/50 ms-auto" />
 				<div className="h-px bg-border/40" />
 				<div className="space-y-3">
 					{Array.from({ length: 4 }).map((_, i) => (
@@ -66,7 +66,7 @@ function PlanCard({ plan, onSubscribe, isCurrentPlan }) {
       whileHover={{ y: -6 }}
       transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
       className={cn(
-        "relative rounded-2xl border overflow-hidden flex flex-col group",
+        "relative rounded-xl border overflow-hidden flex flex-col group",
         "transition-all duration-300",
         isCurrentPlan
           ? "border-[var(--primary)]/40 bg-card shadow-[0_12px_40px_-6px_rgb(var(--primary-shadow))]"

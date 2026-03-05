@@ -86,7 +86,7 @@ export default async function Page({ params }) {
           <div className="relative z-10 flex items-start justify-between gap-6">
             {/* left */}
             <div className="flex-1">
-              <div className="inline-flex items-center gap-2.5 rounded-2xl border-2 border-emerald-500 bg-[linear-gradient(135deg,#ecfdf5,#d1fae5)]
+              <div className="inline-flex items-center gap-2.5 rounded-xl border-2 border-emerald-500 bg-[linear-gradient(135deg,#ecfdf5,#d1fae5)]
                               px-5 py-2 mb-4 shadow-[0_4px_20px_rgba(16,185,129,0.2)]">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12"></polyline>
@@ -163,10 +163,10 @@ export default async function Page({ params }) {
             </div>
           </div>
 
-          <div className="relative rounded-2xl overflow-hidden bg-white">
+          <div className="relative rounded-xl overflow-hidden bg-white">
             {/* gradient border via pseudo alternative: wrapper */}
-            <div className="absolute inset-0 rounded-2xl p-[2px] bg-[linear-gradient(135deg,#ff8b00,#ff5c2b,#10b981)]" />
-            <div className="relative rounded-2xl overflow-hidden bg-white">
+            <div className="absolute inset-0 rounded-xl p-[2px] bg-[linear-gradient(135deg,#ff8b00,#ff5c2b,#10b981)]" />
+            <div className="relative rounded-xl overflow-hidden bg-white">
               {/* header */}
               <div className="grid grid-cols-[2fr_1.2fr_0.8fr_0.8fr_1fr] gap-4 px-5 py-4 text-[12px] font-extrabold tracking-[0.05em]
                               uppercase text-amber-900 bg-white">
@@ -190,7 +190,7 @@ export default async function Page({ params }) {
                     <div className="font-bold text-slate-800">{p.name}</div>
 
                     <div className="text-center">
-                      <span className="inline-block rounded-md bg-slate-50 px-2 py-1 font-mono text-[12px] text-slate-500">
+                      <span className="inline-block rounded-xl bg-slate-50 px-2 py-1 font-mono text-[12px] text-slate-500">
                         {p.sku}
                       </span>
                     </div>
@@ -235,7 +235,7 @@ export default async function Page({ params }) {
           <SectionTitle icon="✍️" text="إقرار التسليم" />
 
           {/* glass card */}
-          <div className="relative overflow-hidden rounded-2xl p-6 mb-6 border border-white/30
+          <div className="relative overflow-hidden rounded-xl p-6 mb-6 border border-white/30
                           bg-white/70 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.8)]">
             <div className="absolute top-0 left-0 right-0 h-[3px] bg-[linear-gradient(90deg,#ff8b00,#ff5c2b)]" />
 
@@ -314,7 +314,7 @@ function SectionTitle({ icon, text, noMargin }) {
 
 function StatCard({ label, value, gradientClass, isText }) {
   return (
-    <div className="min-w-[90px] text-center rounded-2xl p-4
+    <div className="min-w-[90px] text-center rounded-xl p-4
                     bg-white/80 backdrop-blur-xl border border-white/50
                     shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
       <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-slate-400 mb-2">{label}</div>

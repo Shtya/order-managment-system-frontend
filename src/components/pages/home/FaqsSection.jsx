@@ -125,7 +125,7 @@ export default function FaqSection() {
 					>
 						{t("heading.prefix")}{" "}
 						<motion.span
-							className="inline-block px-5 py-1 rounded-md"
+							className="inline-block px-5 py-1 rounded-xl"
 							style={{ background: `#6763AF16`, color: "#6763AF" }}
 						>
 							{t("heading.highlight")}

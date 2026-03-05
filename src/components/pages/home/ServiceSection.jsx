@@ -97,7 +97,7 @@ function ServiceCard({ item, index, inView, isRtl, img }) {
 			animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
 			transition={{ duration: 0.7, delay: 0.15 + index * 0.18, ease }}
 			whileHover={{ y: -6, boxShadow: `0 32px 70px ${accent}18, 0 8px 24px ${accent}0e` }}
-			className="relative rounded-3xl p-5 overflow-hidden flex flex-row items-stretch transition-shadow duration-500 max-w-[1200px] mx-auto w-full"
+			className="relative rounded-xl p-5 overflow-hidden flex flex-row items-stretch transition-shadow duration-500 max-w-[1200px] mx-auto w-full"
 			style={{
 				minHeight: 270,
 				background: box.background,
@@ -280,7 +280,7 @@ function FloatingBadge({ badge, inView }) {
 					repeatType: "mirror",
 					ease: "easeInOut",
 				}}
-				className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl"
+				className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl"
 				style={{
 					backdropFilter: "blur(16px)",
 					border: `1px solid rgba(255,255,255,0.9)`,
@@ -392,7 +392,7 @@ export default function ServicesSection() {
 							initial={{ opacity: 0, scale: 0.85 }}
 							animate={inView ? { opacity: 1, scale: 1 } : {}}
 							transition={{ delay: 0.3, type: "spring", stiffness: 260 }}
-							className="inline-block px-5 py-1 rounded-md"
+							className="inline-block px-5 py-1 rounded-xl"
 							style={{ background: `${BRAND}16`, color: BRAND }}
 						>
 							{t("header.highlight")}

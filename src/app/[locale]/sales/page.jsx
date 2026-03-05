@@ -372,7 +372,7 @@ export default function SalesInvoicesPage() {
 				key: "paymentStatus",
 				header: t("table.paymentStatus"),
 				cell: (row) => (
-					<Badge className={cn("rounded-md", getPaymentStatusBadge(row.paymentStatus))}>
+					<Badge className={cn("rounded-xl", getPaymentStatusBadge(row.paymentStatus))}>
 						{t(`statuses.${row.paymentStatus}`)}
 					</Badge>
 				),

@@ -77,7 +77,7 @@ function SignupCard({ inView, ref }) {
 		<div
 			ref={ref}
 			dir="rtl"
-			className="relative w-fit mx-auto p-4 rounded-3xl !h-fit"
+			className="relative w-fit mx-auto p-4 rounded-xl !h-fit"
 			style={{ border: "1px solid #E8EBF0", background: "linear-gradient(1.84deg, #FFFFFF 1.1%, #E8E8FF 100%)" }}
 		>
 			<div style={{ width: "100%", maxWidth: 340 }}>
@@ -208,7 +208,7 @@ function AnalyticsCard({ ref, inView }) {
 	return (
 		<div
 			ref={ref}
-			className="relative w-fit mx-auto p-4 rounded-3xl !h-fit"
+			className="relative w-fit mx-auto p-4 rounded-xl !h-fit"
 			style={{ border: "1px solid #E8EBF0", background: "linear-gradient(1.84deg, #FFFFFF 1.1%, #E8E8FF 100%)" }}
 		>
 			<div style={{ width: "100%", maxWidth: 340 }}>
@@ -362,7 +362,7 @@ function ShippingCard({ ref, inView }) {
 		<div
 			ref={ref}
 			dir="rtl"
-			className="relative w-fit mx-auto p-4 rounded-3xl !h-fit"
+			className="relative w-fit mx-auto p-4 rounded-xl !h-fit"
 			style={{ border: "1px solid #E8EBF0", background: "linear-gradient(1.84deg, #FFFFFF 1.1%, #E8E8FF 100%)" }}
 
 		>
@@ -581,7 +581,7 @@ export default function HowItWorksSection() {
 							initial={{ opacity: 0, scale: 0.85 }}
 							animate={inView ? { opacity: 1, scale: 1 } : {}}
 							transition={{ delay: 0.3, type: "spring", stiffness: 260 }}
-							className="inline-block px-4 py-0.5 rounded-lg"
+							className="inline-block px-4 py-0.5 rounded-xl"
 							style={{ background: `${BRAND}15`, color: BRAND }}
 						>
 							{t("header.highlight")}

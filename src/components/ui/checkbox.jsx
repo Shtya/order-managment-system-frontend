@@ -76,7 +76,7 @@ function Checkbox({
 			{/* Ripple effect on check */}
 			<CheckboxPrimitive.Indicator asChild>
 				<motion.div
-					className="absolute inset-0 rounded-md bg-primary/20"
+					className="absolute inset-0 rounded-xl bg-primary/20"
 					initial={{ scale: 1, opacity: 0.5 }}
 					animate={{ scale: 1.5, opacity: 0 }}
 					transition={{ duration: 0.4 }}

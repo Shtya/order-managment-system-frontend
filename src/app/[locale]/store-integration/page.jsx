@@ -1575,7 +1575,7 @@ export function StoreGuideModal({ provider, onClose }) {
 							<p className="text-sm font-semibold text-[var(--card-foreground)]">{p(currentStep?.title)}</p>
 							<p className="text-sm text-[var(--muted-foreground)] leading-relaxed mt-1">{p(currentStep?.desc)}</p>
 							{currentStep?.url && (
-								<div className="mt-3 flex items-center justify-between gap-2 rounded-lg border bg-muted/40 px-3 py-2">
+								<div className="mt-3 flex items-center justify-between gap-2 rounded-xl border bg-muted/40 px-3 py-2">
 									{(() => {
 										// If URL is a function, call it with store/admin ID (replace with your param)
 										const url =
@@ -1596,7 +1596,7 @@ export function StoreGuideModal({ provider, onClose }) {
 
 												<button
 													onClick={() => navigator.clipboard.writeText(url)}
-													className="text-xs font-medium px-2 py-1 rounded-md bg-primary/10 hover:bg-primary/20 transition"
+													className="text-xs font-medium px-2 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 transition"
 												>
 													<Copy size={12} className="text-primary" />
 												</button>
@@ -1618,7 +1618,7 @@ export function StoreGuideModal({ provider, onClose }) {
 							{/* Skeleton / placeholder shown while image loads */}
 							{!imgLoaded && (
 								<div className="absolute inset-0 flex items-center justify-center p-4">
-									<div className="w-full h-full rounded-md bg-[var(--muted)] animate-pulse" />
+									<div className="w-full h-full rounded-xl bg-[var(--muted)] animate-pulse" />
 								</div>
 							)}
 

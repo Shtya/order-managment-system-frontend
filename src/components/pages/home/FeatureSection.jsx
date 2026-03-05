@@ -38,11 +38,11 @@ function Pill({ label, index, color, inView }) {
 			transition={{ type: "spring", stiffness: 48, damping: 13, delay: 0.1 + index * 0.18, }}
 			whileHover={{ scale: 1.08, y: -4, transition: { type: "spring", stiffness: 440 } }}
 			style={{ alignSelf: off.alignSelf, marginRight: off.mr, marginLeft: off.ml, position: "relative" }}
-			className="flex items-center gap-2 px-3 py-1.5 rounded-2xl cursor-default select-none w-fit"
+			className="flex items-center gap-2 px-3 py-1.5 rounded-xl cursor-default select-none w-fit"
 		>
 			{/* glass body */}
 			<div
-				className="absolute inset-0 rounded-2xl"
+				className="absolute inset-0 rounded-xl"
 				style={{
 					background: "rgba(255,255,255,0.07)",
 					border: "1px solid rgba(255,255,255,0.15)",
@@ -53,11 +53,11 @@ function Pill({ label, index, color, inView }) {
 			<div className="relative flex items-center gap-2">
 				{/* glow icon */}
 				<div
-					className="relative w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
+					className="relative w-6 h-6 rounded-xl flex items-center justify-center flex-shrink-0"
 					style={{ background: `${color}20` }}
 				>
 					<motion.div
-						className="absolute inset-0 rounded-lg"
+						className="absolute inset-0 rounded-xl"
 						animate={{ opacity: [0.3, 0.65, 0.3] }}
 						transition={{ duration: 2.4, repeat: Infinity, delay: index * 0.3 }}
 						style={{ background: color, filter: "blur(5px)" }}
@@ -161,7 +161,7 @@ export default function FeatureSection() {
 						initial={{ opacity: 0, x: isRtl ? 50 : -50 }}
 						animate={inView ? { opacity: 1, x: 0 } : {}}
 						transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-						className="relative rounded-3xl overflow-hidden flex items-center justify-end p-7"
+						className="relative rounded-xl overflow-hidden flex items-center justify-end p-7"
 						style={{
 							flex: "0 0 350px",
 							minWidth: 300,
@@ -316,7 +316,7 @@ export default function FeatureSection() {
 						initial={{ opacity: 0, y: 30 }}
 						animate={inView ? { opacity: 1, y: 0 } : {}}
 						transition={{ duration: 0.7, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-						className="relative rounded-3xl overflow-hidden p-5 flex flex-col justify-center"
+						className="relative rounded-xl overflow-hidden p-5 flex flex-col justify-center"
 						style={{
 							flex: "0 0 350px",
 							minWidth: 300,
@@ -360,7 +360,7 @@ export default function FeatureSection() {
 						initial={{ opacity: 0, x: isRtl ? -40 : 40 }}
 						animate={inView ? { opacity: 1, x: 0 } : {}}
 						transition={{ duration: 0.7, delay: 0.14, ease: [0.22, 1, 0.36, 1] }}
-						className="flex flex-row backdrop-blur-2xl items-center rounded-3xl overflow-hidden flex-1"
+						className="flex flex-row backdrop-blur-2xl items-center rounded-xl overflow-hidden flex-1"
 						style={{
 							background: "#ffffff95",
 							border: "1px solid rgba(103,99,175,0.10)",

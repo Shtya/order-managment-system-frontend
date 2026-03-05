@@ -30,7 +30,7 @@ export default function SwitcherTabs({
                 className={[
                   "relative pb-3 pt-3 select-none",
                   "text-sm font-semibold transition-colors duration-300",
-                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 rounded-md",
+                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 rounded-xl",
                   itemClassName,
                   isActive
                     ? ["text-[#ff8b00] dark:text-[#5b4bff]", activeClassName].join(" ")

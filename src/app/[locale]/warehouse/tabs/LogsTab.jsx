@@ -137,7 +137,7 @@ function GenericOpModal({ open, onClose, op, orders }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="!max-w-lg bg-white dark:bg-slate-900 rounded-2xl" dir="rtl">
+      <DialogContent className="!max-w-lg bg-white dark:bg-slate-900 rounded-xl" dir="rtl">
         <DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
           <DialogTitle className="text-lg font-bold flex items-center gap-2">
             <ClipboardList className="text-[#ff8b00]" size={20} />
@@ -231,7 +231,7 @@ function OrderLogModal({ open, onClose, op, opsLogs, t }) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="!max-w-2xl bg-white dark:bg-slate-900 rounded-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
+      <DialogContent className="!max-w-2xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto" dir="rtl">
         <DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
           <DialogTitle className="text-lg font-bold flex items-center gap-2">
             <FileText className="text-[#ff8b00]" size={22} />
@@ -339,7 +339,7 @@ function OrderLogModal({ open, onClose, op, opsLogs, t }) {
               </h4>
               <div className="space-y-1.5 max-h-40 overflow-y-auto">
                 {correctLogs.map((log, i) => (
-                  <div key={i} className="flex items-start gap-2 px-3 py-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 text-xs">
+                  <div key={i} className="flex items-start gap-2 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 text-xs">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 mt-0.5 shrink-0" />
                     <p className="font-medium text-emerald-800 dark:text-emerald-200">{log.message}</p>
                   </div>
@@ -394,7 +394,7 @@ function PrepSessionModal({ open, onClose, sessionOps }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="!max-w-xl bg-white dark:bg-slate-900 rounded-2xl" dir="rtl">
+      <DialogContent className="!max-w-xl bg-white dark:bg-slate-900 rounded-xl" dir="rtl">
         <DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
           <DialogTitle className="text-lg font-bold flex items-center gap-2">
             <ClipboardList className="text-[#ff8b00]" size={20} />

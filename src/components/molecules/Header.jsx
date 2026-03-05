@@ -6,8 +6,9 @@ import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { useTheme } from "next-themes";
 import {
-  Menu, X, Bell, Moon, Sun, Package,
-  Maximize2, Minimize2, Globe, ChevronDown,
+	Menu, X, Bell, Moon, Sun, Package,
+	Maximize2, Minimize2, Globe,
+	LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -17,482 +18,453 @@ import api from "@/utils/api";
 import { getNotificationLink } from "@/app/[locale]/notifications/page";
 import { useSocket } from "@/context/SocketContext";
 
-
 // ─── Fullscreen hook ──────────────────────────────────────────────────────────
 function useFullscreen() {
-  const [isFullscreen, setIsFullscreen] = React.useState(false);
-  useEffect(() => {
-    const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
-    document.addEventListener("fullscreenchange", onChange);
-    return () => document.removeEventListener("fullscreenchange", onChange);
-  }, []);
-  const toggle = async () => {
-    if (!document.fullscreenElement) {
-      await document.documentElement.requestFullscreen?.();
-    } else {
-      await document.exitFullscreen?.();
-    }
-  };
-  return { isFullscreen, toggle };
+	const [isFullscreen, setIsFullscreen] = React.useState(false);
+	useEffect(() => {
+		const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+		document.addEventListener("fullscreenchange", onChange);
+		return () => document.removeEventListener("fullscreenchange", onChange);
+	}, []);
+	const toggle = async () => {
+		if (!document.fullscreenElement) await document.documentElement.requestFullscreen?.();
+		else await document.exitFullscreen?.();
+	};
+	return { isFullscreen, toggle };
 }
 
-// ─── Shimmer bar (decorative bottom edge of header) ──────────────────────────
-function ShimmerBar() {
-  return (
-    <div className="absolute bottom-0 left-0 right-0 h-[2px] overflow-hidden">
-      {/* Static gradient base */}
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-      {/* Travelling shimmer */}
-      <motion.div
-        className="absolute top-0 h-full w-1/3 bg-gradient-to-r from-transparent via-primary to-transparent"
-        animate={{ x: ["-100%", "400%"] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", repeatDelay: 1 }}
-      />
-    </div>
-  );
-}
-
-// ─── Icon button wrapper with shimmer glow on hover ───────────────────────────
+// ─── Icon button — tighter, 36×36 ────────────────────────────────────────────
 function IconBtn({ children, onClick, label, className = "" }) {
-  const [hovered, setHovered] = React.useState(false);
-  return (
-    <motion.div
-      whileHover={{ scale: 1.07 }}
-      whileTap={{ scale: 0.93 }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className="relative"
-    >
-      {/* Glow ring on hover */}
-      <AnimatePresence>
-        {hovered && (
-          <motion.span
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            className="absolute inset-0 rounded-xl bg-primary/10 blur-sm pointer-events-none"
-          />
-        )}
-      </AnimatePresence>
-      <Button
-        onClick={onClick}
-        aria-label={label}
-        title={label}
-        className={cn(
-          "relative h-10 w-10 p-0 rounded-xl border transition-all duration-300 overflow-hidden",
-          "bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm",
-          "border-slate-200 dark:border-slate-700",
-          "hover:border-primary/40 dark:hover:border-primary/40",
-          "text-slate-700 dark:text-slate-200",
-          className
-        )}
-      >
-        {/* Inner shimmer sweep on hover */}
-        {hovered && (
-          <motion.span
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/15 to-transparent pointer-events-none"
-            animate={{ x: ["-100%", "200%"] }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-          />
-        )}
-        <span className="relative z-10">{children}</span>
-      </Button>
-    </motion.div>
-  );
+	const [hov, setHov] = React.useState(false);
+	return (
+		<motion.div whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.92 }} className="relative">
+			<AnimatePresence>
+				{hov && (
+					<motion.span
+						initial={{ opacity: 0, scale: 0.75 }}
+						animate={{ opacity: 1, scale: 1 }}
+						exit={{ opacity: 0, scale: 0.75 }}
+						className="absolute inset-0 rounded-xl bg-primary/10 blur-sm pointer-events-none"
+					/>
+				)}
+			</AnimatePresence>
+			<Button
+				onClick={onClick}
+				aria-label={label}
+				title={label}
+				onMouseEnter={() => setHov(true)}
+				onMouseLeave={() => setHov(false)}
+				className={cn(
+					"relative h-8 w-8 p-0 rounded-xl border transition-all duration-200 overflow-hidden",
+					"bg-card/80 backdrop-blur-sm",
+					"border-border hover:border-primary/35",
+					"text-muted-foreground hover:text-foreground",
+					className
+				)}
+			>
+				{hov && (
+					<motion.span
+						className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/12 to-transparent pointer-events-none"
+						animate={{ x: ["-100%", "200%"] }}
+						transition={{ duration: 0.55, ease: "easeOut" }}
+					/>
+				)}
+				<span className="relative z-10 flex items-center justify-center">{children}</span>
+			</Button>
+		</motion.div>
+	);
 }
 
 // ─── Notification dot ─────────────────────────────────────────────────────────
 function PulseDot() {
-  return (
-    <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
-      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
-    </span>
-  );
+	return (
+		<span className="absolute top-1 right-1 flex h-[7px] w-[7px]">
+			<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+			<span className="relative inline-flex rounded-full h-[7px] w-[7px] bg-red-500" />
+		</span>
+	);
 }
 
-// ─── Main Header ──────────────────────────────────────────────────────────────
+// ─── Header ───────────────────────────────────────────────────────────────────
 export default function Header({ toggleSidebar, isSidebarOpen }) {
-  const t = useTranslations("header");
-  const user = getUser();
-  const locale = useLocale();
-  const pathname = usePathname();
-  const router = useRouter();
-  const { theme, setTheme } = useTheme();
-  const isDark = theme === "dark";
-  const { isFullscreen, toggle: toggleFullscreen } = useFullscreen();
+	const t = useTranslations("header");
+	const user = getUser();
+	const locale = useLocale();
+	const pathname = usePathname();
+	const router = useRouter();
+	const { theme, setTheme } = useTheme();
+	const isDark = theme === "dark";
+	const { isFullscreen, toggle: toggleFullscreen } = useFullscreen();
 
-  const [notifications, setNotifications] = useState([]);
-  const [total, setTotal] = useState([]);
+	const [notifications, setNotifications] = useState([]);
+	const [total, setTotal] = useState(0);
+	const { unreadNotificationsCount, incrementUnread, decrementUnread, subscribe } = useSocket();
 
-  const { unreadNotificationsCount, incrementUnread, decrementUnread, subscribe } = useSocket()
-  // 2. Fetch Notifications
-  const fetchNotifications = async () => {
-    try {
-      const res = await api.get('/notifications', { params: { page: 1, limit: 10 } })
-      setTotal(res.data.total_records);
-      setNotifications(res.data.records);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-  const hasMore = total > notifications.length;
-  useEffect(() => { fetchNotifications(); }, []);
+	const fetchNotifications = async () => {
+		try {
+			const res = await api.get('/notifications', { params: { page: 1, limit: 10 } });
+			setTotal(res.data.total_records);
+			setNotifications(res.data.records);
+		} catch (err) { console.error(err); }
+	};
 
-  useEffect(() => {
-    const unsubscribe = subscribe("NEW_NOTIFICATION_HEADER", (action) => {
-      if (action.type === "NEW_NOTIFICATION") {
-        const newNotification = action.payload;
+	const hasMore = total > notifications.length;
 
-        setNotifications((prev) => {
-          // لو الإشعار موجود بالفعل (احتياط)
-          if (prev.some((n) => n.id === newNotification.id)) {
-            return prev;
-          }
+	useEffect(() => { fetchNotifications(); }, []);
 
-          return [newNotification, ...prev]; // 🔥 أهم سطر
-        });
+	useEffect(() => {
+		const unsubscribe = subscribe("NEW_NOTIFICATION_HEADER", (action) => {
+			if (action.type === "NEW_NOTIFICATION") {
+				const n = action.payload;
+				setNotifications(prev => prev.some(x => x.id === n.id) ? prev : [n, ...prev]);
+				setTotal(prev => prev + 1);
+			}
+		});
+		return unsubscribe;
+	}, [subscribe]);
 
-        setTotal((prev) => prev + 1);
-      }
-    });
+	const handleMarkAsRead = async (id) => {
+		try {
+			incrementUnread();
+			await api.patch(`/notifications/${id}/read`);
+			setNotifications(prev => prev.map(n => ({ ...n, isRead: n.id === id ? true : n.isRead })));
+		} catch { decrementUnread(); }
+	};
 
-    return unsubscribe;
-  }, [subscribe]);
+	const switchLocale = (next) => router.replace(pathname, { locale: next });
 
-
-  // 3. Action Handlers
-  const handleMarkAsRead = async (id) => {
-    try {
-      incrementUnread()
-      await api.patch(`/notifications/${id}/read`);
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: n.id === id ? true : n.isRead })))
-    } catch (e) {
-      decrementUnread()
-    }
-  };
+	return (
+		<motion.header
+			initial={{ y: -60, opacity: 0 }}
+			animate={{ y: 0, opacity: 1 }}
+			transition={{ duration: 0.42, ease: [0.25, 0.46, 0.45, 0.94] }}
+			className="h-14 flex-shrink-0 bg-white z-[100000]  overflow-hidden relative"
+		>
+			{/* Glass background */}
+			<div className="absolute inset-0 bg-[var(--sidebar)]  backdrop-blur-md border-b border-border/60" />
 
 
-  const switchLocale = (next) => router.replace(pathname, { locale: next });
 
-  return (
-    <motion.header
-      initial={{ y: -80, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="fixed top-0 right-0 left-0 h-16 z-40 overflow-hidden"
-    >
-      <div className="absolute inset-0 bg-[var(--sidebar)] border-b border-border  w-full h-full  " />
+			<div className="relative h-full px-4 flex items-center justify-between gap-3">
 
-   
+				{/* ── LEFT: Toggle + Brand ── */}
+				<div className={`flex items-center gap-2.5 ${isSidebarOpen && "opacity-0"} duration-300`}>
 
-      <div className="relative h-full px-5   flex items-center justify-between">
+					<motion.div
+						initial={{ opacity: 0, x: -12 }}
+						animate={{ opacity: 1, x: 0 }}
+						transition={{ delay: 0.12, duration: 0.35 }}
+						className="flex items-center gap-2"
+					>
+						<div className="relative w-9 h-9 rounded-full overflow-hidden shadow-md shadow-primary/20 flex-shrink-0">
+							<div className="absolute inset-0 bg-primary" />
+							<motion.div
+								className="absolute inset-0 bg-gradient-to-r from-transparent via-white/28 to-transparent skew-x-12"
+								animate={{ x: ["-150%", "250%"] }}
+								transition={{ duration: 3.5, repeat: Infinity, repeatDelay: 2.5, ease: "easeInOut" }}
+							/>
+							<div className="relative flex items-center justify-center h-full">
+								<Package className="text-white" size={14} />
+							</div>
+						</div>
 
-        {/* ── LEFT: Toggle + Brand ── */}
-        <div className="flex items-center gap-3">
+						<span className="text-[15px] font-bold tracking-tight
+              bg-gradient-to-r from-foreground to-muted-foreground
+              bg-clip-text text-transparent hidden sm:block">
+							{t("brand")}
+						</span>
+					</motion.div>
+				</div>
 
-          {/* Sidebar toggle */}
-          <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}>
-            <Button
-              onClick={toggleSidebar}
-              className="relative h-10 w-10 p-0 rounded-xl border overflow-hidden
-                bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm
-                border-slate-200 dark:border-slate-700
-                hover:border-primary/40 text-slate-700 dark:text-slate-200
-                transition-all duration-300"
-            >
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={isSidebarOpen ? "close" : "open"}
-                  initial={{ rotate: -90, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  exit={{ rotate: 90, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="flex items-center justify-center"
-                >
-                  {isSidebarOpen ? <X size={18} /> : <Menu size={18} />}
-                </motion.span>
-              </AnimatePresence>
-            </Button>
-          </motion.div>
+				{/* ── RIGHT: Actions ── */}
+				<div className="flex items-center gap-1">
+					{/* Language */}
+					<LanguageToggle
+						currentLang={locale}
+						languages={{ ar: t("lang.ar"), en: t("lang.en") }}
+						onToggle={() => switchLocale(locale === "ar" ? "en" : "ar")}
+					/>
+					{/* Fullscreen */}
+					<IconBtn onClick={toggleFullscreen} label={t("fullscreen")}>
+						<AnimatePresence mode="wait">
+							<motion.span
+								key={isFullscreen ? "min" : "max"}
+								initial={{ scale: 0.5, opacity: 0 }}
+								animate={{ scale: 1, opacity: 1 }}
+								exit={{ scale: 0.5, opacity: 0 }}
+								transition={{ duration: 0.15 }}
+							>
+								{isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+							</motion.span>
+						</AnimatePresence>
+					</IconBtn>
 
-          {/* Brand */}
-          <motion.div
-            initial={{ opacity: 0, x: -16 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.15, duration: 0.4 }}
-            className="flex items-center gap-2.5"
-          >
-            {/* Logo icon with shimmer */}
-            <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-primary/20">
-              <div className="absolute inset-0 bg-primary" />
-              {/* Sweep shimmer */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12"
-                animate={{ x: ["-150%", "250%"] }}
-                transition={{ duration: 3.5, repeat: Infinity, repeatDelay: 2, ease: "easeInOut" }}
-              />
-              <div className="relative flex items-center justify-center h-full">
-                <Package className="text-white" size={18} />
-              </div>
-            </div>
+					{/* Theme */}
+					<IconBtn onClick={() => setTheme(isDark ? "light" : "dark")} label={t("theme")}>
+						<AnimatePresence mode="wait">
+							<motion.span
+								key={isDark ? "sun" : "moon"}
+								initial={{ rotate: -160, scale: 0, opacity: 0 }}
+								animate={{ rotate: 0, scale: 1, opacity: 1 }}
+								exit={{ rotate: 160, scale: 0, opacity: 0 }}
+								transition={{ duration: 0.25 }}
+							>
+								{isDark ? <Sun size={14} /> : <Moon size={14} />}
+							</motion.span>
+						</AnimatePresence>
+					</IconBtn>
 
-            <span className="text-[17px] font-bold tracking-tight
-              bg-gradient-to-r from-slate-800 to-slate-600
-              dark:from-white dark:to-slate-300
-              bg-clip-text text-transparent">
-              {t("brand")}
-            </span>
-          </motion.div>
-        </div >
 
-        {/* ── RIGHT: Actions ── */}
-        < div className="flex items-center gap-1.5" >
 
-          {/* Fullscreen */}
-          < IconBtn onClick={toggleFullscreen} label={t("fullscreen")} >
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={isFullscreen ? "min" : "max"}
-                initial={{ scale: 0.6, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.6, opacity: 0 }}
-                transition={{ duration: 0.18 }}
-              >
-                {isFullscreen ? <Minimize2 size={17} /> : <Maximize2 size={17} />}
-              </motion.span>
-            </AnimatePresence>
-          </IconBtn >
+					{/* Notifications */}
+					<Popover>
+						<PopoverTrigger asChild>
+							<motion.div whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.92 }} className="relative">
+								<Button
+									className="relative h-8 w-8 p-0 rounded-xl border overflow-hidden
+                    bg-card/80 backdrop-blur-sm border-border
+                    hover:border-primary/35 text-muted-foreground hover:text-foreground
+                    transition-all duration-200"
+									aria-label={t("notifications")}
+								>
+									<Bell size={14} />
+									{unreadNotificationsCount > 0 && <PulseDot />}
+								</Button>
+							</motion.div>
+						</PopoverTrigger>
 
-          {/* Theme toggle */}
-          < IconBtn
-            onClick={() => setTheme(isDark ? "light" : "dark")
-            }
-            label={t("theme")}
-            className={" "}
-          >
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={isDark ? "sun" : "moon"}
-                initial={{ rotate: -180, scale: 0, opacity: 0 }}
-                animate={{ rotate: 0, scale: 1, opacity: 1 }}
-                exit={{ rotate: 180, scale: 0, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                {isDark ? <Sun size={17} /> : <Moon size={17} />}
-              </motion.span>
-            </AnimatePresence>
-          </IconBtn >
+						<PopoverContent align="end" className="w-72 p-0 overflow-hidden rounded-xl shadow-2xl border border-border/50">
+							<div className="relative px-4 py-3 border-b border-border/50 overflow-hidden">
+								<div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent" />
+								<motion.div
+									className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/8 to-transparent"
+									animate={{ x: ["-100%", "200%"] }}
+									transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 3, ease: "easeInOut" }}
+								/>
+								<div className="relative flex items-center justify-between">
+									<p className="text-[13px] font-semibold">{t("notificationsTitle")}</p>
+									{unreadNotificationsCount > 0 && (
+										<span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white"
+											style={{ background: "var(--primary)" }}>
+											{unreadNotificationsCount}
+										</span>
+									)}
+								</div>
+								<p className="text-[11px] text-muted-foreground mt-0.5 relative">{t("notificationsSubtitle")}</p>
+							</div>
 
-          {/* Language toggle */}
-          < LanguageToggle
-            currentLang={locale}
-            languages={{ ar: t("lang.ar"), en: t("lang.en") }}
-            onToggle={() => switchLocale(locale === "ar" ? "en" : "ar")}
-          />
+							<div className="max-h-64 overflow-auto divide-y divide-border/30">
+								{notifications.length === 0 ? (
+									<div className="py-8 text-center">
+										<Bell size={22} className="mx-auto mb-2 text-muted-foreground/40" />
+										<p className="text-xs text-muted-foreground">لا توجد إشعارات</p>
+									</div>
+								) : notifications.map((n, idx) => (
+									<motion.div
+										key={idx}
+										initial={{ opacity: 0, x: -8 }}
+										animate={{ opacity: 1, x: 0 }}
+										transition={{ delay: idx * 0.05 }}
+										onClick={() => {
+											handleMarkAsRead(n.id);
+											router.push(getNotificationLink(n.relatedEntityType, n.relatedEntityId));
+										}}
+										className={cn(
+											"px-4 py-2.5 hover:bg-accent/40 transition-colors duration-150 cursor-pointer relative",
+											!n.isRead && "bg-primary/[0.03]"
+										)}
+									>
+										{!n.isRead && (
+											<span className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full"
+												style={{ background: "linear-gradient(180deg, var(--primary), var(--third))" }} />
+										)}
+										<div className="flex items-start justify-between gap-2 pl-1">
+											<div className="space-y-0.5 min-w-0">
+												<p className="text-[12.5px] font-medium leading-snug truncate">{n.title}</p>
+												<p className="text-[11px] text-muted-foreground truncate">{n.message}</p>
+											</div>
+											<span className="text-[10px] text-muted-foreground whitespace-nowrap mt-0.5 flex-shrink-0">
+												{new Date(n.createdAt).toLocaleDateString()}
+											</span>
+										</div>
+									</motion.div>
+								))}
+							</div>
 
-          {/* Notifications */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <motion.div whileHover={{ scale: 1.07 }} whileTap={{ scale: 0.93 }} className="relative">
-                <Button
-                  className="relative h-10 w-10 p-0 rounded-xl border overflow-hidden
-                    bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm
-                    border-slate-200 dark:border-slate-700
-                    hover:border-primary/40 text-slate-700 dark:text-slate-200
-                    transition-all duration-300"
-                  aria-label={t("notifications")}
-                >
-                  <Bell size={17} />
-                  {unreadNotificationsCount > 0 && <PulseDot />}
-                </Button>
-              </motion.div>
-            </PopoverTrigger>
+							<div className="p-1.5 sticky bottom-0 bg-background/95 backdrop-blur-sm border-t border-border/50">
+								<Button
+									variant="ghost"
+									className="w-full text-[11.5px] font-semibold text-primary hover:bg-primary/6 h-8 rounded-lg"
+									onClick={() => router.push('/notifications')}
+								>
+									{hasMore ? t('readMore') : t('viewAll')}
+								</Button>
+							</div>
+						</PopoverContent>
+					</Popover>
 
-            <PopoverContent align="end" className="w-80 p-0 overflow-hidden rounded-xl shadow-2xl border border-border/50">
-              {/* Popover header with shimmer */}
-              <div className="relative px-4 py-3 border-b border-border/50 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-secondary/5 to-transparent" />
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent"
-                  animate={{ x: ["-100%", "200%"] }}
-                  transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 3, ease: "easeInOut" }}
-                />
-                <div className="relative">
-                  <p className="text-sm font-semibold">{t("notificationsTitle")}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{t("notificationsSubtitle")}</p>
-                </div>
-              </div>
-
-              <div className="max-h-72 overflow-auto divide-y divide-border/30">
-                {notifications.map((n, idx) => (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.06 }}
-                    onClick={() => {
-                      handleMarkAsRead(n.id);
-                      router.push(getNotificationLink(n.relatedEntityType, n.relatedEntityId));
-                    }}
-                    className={cn(
-                      "px-4 py-3 hover:bg-accent/50 transition-colors duration-200 cursor-pointer relative",
-                      !n.isRead && "bg-primary/3"
-                    )}
-                  >
-                    {!n.isRead && (
-                      <span className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1 h-6 rounded-full bg-gradient-to-b from-primary to-secondary" />
-                    )}
-                    <div className="flex items-start justify-between gap-3 pl-1">
-                      <div className="space-y-0.5">
-                        <p className="text-sm font-medium leading-snug">{n.title}</p>
-                        <p className="text-xs text-muted-foreground">{n.message}</p>
-                      </div>
-                      <span className="text-[10px] text-muted-foreground whitespace-nowrap mt-0.5">{new Date(n.createdAt).toLocaleDateString()}</span>
-                    </div>
-                  </motion.div>
-                ))}
-
-                <div className="p-2 sticky bottom-0 bg-background border-t">
-                  <Button
-                    variant="ghost"
-                    className="w-full text-xs font-bold text-primary hover:bg-primary/5"
-                    onClick={() => router.push('/notifications')}
-                  >
-                    {hasMore ? t('readMore') : t('viewAll')}
-                  </Button>
-                </div>
-              </div>
-            </PopoverContent >
-          </Popover >
-
-          {/* Profile */}
-          < ProfileChip user={user} t={t} />
-
-        </div>
-      </div>
-    </motion.header>
-  );
+					{/* Divider */}
+					<div className="w-px h-5 bg-border/70 mx-0.5" /> 
+					<LogoutButton /> 
+				</div>
+			</div>
+		</motion.header>
+	);
 }
 
 // ─── Profile Chip ─────────────────────────────────────────────────────────────
 function ProfileChip({ user, t }) {
-  const [hovered, setHovered] = React.useState(false);
-  const initial = (user?.name?.[0] || user?.email?.[0] || "U").toUpperCase();
+	const [hov, setHov] = React.useState(false);
+	const initial = (user?.name?.[0] || user?.email?.[0] || "U").toUpperCase();
+
+	return (
+		<motion.div
+			whileHover={{ scale: 1.02 }}
+			onMouseEnter={() => setHov(true)}
+			onMouseLeave={() => setHov(false)}
+			className="relative  flex items-center  gap-2 w-fit px-3 py-1 rounded-md cursor-pointer
+        border border-border hover:border-primary/30
+        bg-card/80 backdrop-blur-sm
+        transition-all duration-200 overflow-hidden"
+		>
+			<AnimatePresence>
+				{hov && (
+					<motion.span
+						initial={{ x: "-100%" }}
+						animate={{ x: "200%" }}
+						exit={{ opacity: 0 }}
+						transition={{ duration: 0.6, ease: "easeOut" }}
+						className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/8 to-transparent skew-x-12 pointer-events-none"
+					/>
+				)}
+			</AnimatePresence>
+
+			{/* Avatar */}
+			<div className="relative w-6 h-6 rounded-lg overflow-hidden flex-shrink-0">
+				<div className="absolute inset-0 bg-primary" />
+				<motion.div
+					className="absolute inset-0 bg-gradient-to-r from-transparent via-white/22 to-transparent skew-x-12"
+					animate={{ x: ["-150%", "250%"] }}
+					transition={{ duration: 3, repeat: Infinity, repeatDelay: 4, ease: "easeInOut" }}
+				/>
+				<div className="relative flex items-center justify-center h-full text-white font-bold text-[10px]">
+					{initial}
+				</div>
+			</div>
+
+			{/* Info */}
+			<div className="flex flex-col min-w-0 max-w-[110px] hidden sm:flex">
+				<span className="text-[10.5px] font-semibold text-foreground truncate leading-tight">
+					{user?.name || user?.email || t("profile.noEmail")}
+				</span>
+				<span className="text-[8.5px] font-bold px-1 py-px rounded-full w-fit mt-px
+          bg-primary/10 text-primary border border-primary/15">
+					{t(`roles.${user?.role || "user"}`)}
+				</span>
+			</div>
+		</motion.div>
+	);
+}
+
+// ─── Add this component anywhere in the file ─────────────────
+function LogoutButton() {
+  const router = useRouter();
+  const [hov, setHov] = React.useState(false);
+
+  const handleLogout = () => {
+    try { ['accessToken', 'refreshToken', 'user'].forEach(k => localStorage.removeItem(k)); } catch {}
+    router.replace('/auth');
+  };
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.02 }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className="relative flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl cursor-pointer
-        border border-slate-200 dark:border-slate-700
-        hover:border-primary/30 dark:hover:border-primary/30
-        bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm
-        transition-all duration-300 overflow-hidden"
+    <motion.button
+      whileHover={{ scale: 1.06 }}
+      whileTap={{ scale: 0.92 }}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      onClick={handleLogout}
+      className="relative h-8 w-8 p-0 rounded-xl border overflow-hidden flex items-center justify-center
+        bg-card/80 backdrop-blur-sm transition-all duration-200"
+      style={{
+        borderColor: hov
+          ? "color-mix(in oklab, var(--destructive) 45%, var(--border))"
+          : "color-mix(in oklab, var(--destructive) 20%, var(--border))",
+        background: hov
+          ? "color-mix(in oklab, var(--destructive) 8%, var(--card))"
+          : undefined,
+      }}
     >
-      {/* Shimmer sweep on hover */}
-      <AnimatePresence>
-        {hovered && (
-          <motion.span
-            initial={{ x: "-100%" }}
-            animate={{ x: "200%" }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent skew-x-12 pointer-events-none"
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Avatar */}
-      <div className="relative w-7 h-7 rounded-md overflow-hidden flex-shrink-0">
-        <div className="absolute inset-0 bg-primary" />
-        {/* Avatar shimmer */}
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent skew-x-12"
-          animate={{ x: ["-150%", "250%"] }}
-          transition={{ duration: 3, repeat: Infinity, repeatDelay: 4, ease: "easeInOut" }}
+      {hov && (
+        <motion.span
+          className="absolute inset-0 pointer-events-none"
+          initial={{ x: "-100%" }}
+          animate={{ x: "200%" }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          style={{
+            background: "linear-gradient(90deg, transparent, color-mix(in oklab, var(--destructive) 15%, transparent), transparent)",
+            transform: "skewX(-12deg)",
+          }}
         />
-        <div className="relative flex items-center justify-center h-full text-white font-bold text-xs">
-          {initial}
-        </div>
-      </div>
-
-      {/* Info */}
-      <div className="flex flex-col min-w-0 max-w-[130px]">
-        <span className="text-[10px] font-semibold text-slate-700 dark:text-slate-200 truncate leading-tight">
-          {user?.email || t("profile.noEmail")}
-        </span>
-        <span className="text-[7px] font-bold px-1.5 py-px rounded-full w-fit mt-px
-          bg-primary/10 text-primary border border-primary/20">
-          {t(`roles.${user?.role || "user"}`)}
-        </span>
-      </div>
-    </motion.div>
+      )}
+      <motion.span animate={{ rotate: hov ? -20 : 0 }} transition={{ duration: 0.2 }} className="relative z-10">
+        <LogOut size={13} style={{ color: "var(--destructive)" }} strokeWidth={2.1} />
+      </motion.span>
+    </motion.button>
   );
 }
 
 // ─── Language Toggle ──────────────────────────────────────────────────────────
 function LanguageToggle({ currentLang, onToggle, languages = { ar: "AR", en: "EN" } }) {
-  const [hovered, setHovered] = React.useState(false);
+	const [hov, setHov] = React.useState(false);
+	const otherLang = useMemo(() => {
+		const keys = Object.keys(languages);
+		return keys.find(l => l !== currentLang) || keys[0];
+	}, [languages, currentLang]);
 
-  const otherLang = useMemo(() => {
-    const keys = Object.keys(languages);
-    return keys.find((l) => l !== currentLang) || keys[0];
-  }, [languages, currentLang]);
+	return (
+		<motion.button
+			type="button"
+			onClick={onToggle}
+			aria-label="Toggle language"
+			whileTap={{ scale: 0.92 }}
+			onMouseEnter={() => setHov(true)}
+			onMouseLeave={() => setHov(false)}
+			className="relative flex items-center gap-1.5 h-8 px-2.5 rounded-xl overflow-hidden
+        border border-border hover:border-primary/35
+        bg-card/80 backdrop-blur-sm
+        text-muted-foreground hover:text-foreground
+        transition-all duration-200"
+		>
+			<AnimatePresence>
+				{hov && (
+					<motion.span
+						initial={{ x: "-100%" }}
+						animate={{ x: "250%" }}
+						exit={{ opacity: 0 }}
+						transition={{ duration: 0.5, ease: "easeOut" }}
+						className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/12 to-transparent skew-x-12 pointer-events-none"
+					/>
+				)}
+			</AnimatePresence>
 
-  return (
-    <motion.button
-      type="button"
-      onClick={onToggle}
-      aria-label="Toggle language"
-      whileTap={{ scale: 0.93 }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className="relative flex items-center gap-2 h-10 px-3 rounded-xl overflow-hidden
-        border border-slate-200 dark:border-slate-700
-        hover:border-primary/40 dark:hover:border-primary/40
-        bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm
-        text-slate-700 dark:text-slate-200
-        transition-all duration-300"
-    >
-      {/* Shimmer sweep */}
-      <AnimatePresence>
-        {hovered && (
-          <motion.span
-            initial={{ x: "-100%" }}
-            animate={{ x: "250%" }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.55, ease: "easeOut" }}
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/15 to-transparent skew-x-12 pointer-events-none"
-          />
-        )}
-      </AnimatePresence>
+			<motion.div animate={{ rotate: hov ? 180 : 0 }} transition={{ duration: 0.4 }}>
+				<Globe size={13} className="text-muted-foreground" />
+			</motion.div>
 
-      {/* Globe */}
-      <motion.div
-        animate={{ rotate: hovered ? 180 : 0 }}
-        transition={{ duration: 0.45, ease: "easeInOut" }}
-      >
-        <Globe size={15} className="text-slate-500 dark:text-slate-400" />
-      </motion.div>
+			<span className="w-px h-3.5 bg-border/80" />
 
-      {/* Divider */}
-      <span className="w-px h-4 bg-slate-200 dark:bg-slate-600" />
-
-      {/* Label flips between current → other */}
-      <AnimatePresence mode="wait">
-        <motion.span
-          key={otherLang}
-          initial={{ y: 8, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -8, opacity: 0 }}
-          transition={{ duration: 0.18 }}
-          className="text-xs font-bold uppercase tracking-wide text-slate-700 dark:text-slate-200"
-        >
-          {otherLang}
-        </motion.span>
-      </AnimatePresence>
-    </motion.button>
-  );
+			<AnimatePresence mode="wait">
+				<motion.span
+					key={otherLang}
+					initial={{ y: 6, opacity: 0 }}
+					animate={{ y: 0, opacity: 1 }}
+					exit={{ y: -6, opacity: 0 }}
+					transition={{ duration: 0.15 }}
+					className="text-[11px] font-bold uppercase tracking-wide"
+				>
+					{otherLang}
+				</motion.span>
+			</AnimatePresence>
+		</motion.button>
+	);
 }

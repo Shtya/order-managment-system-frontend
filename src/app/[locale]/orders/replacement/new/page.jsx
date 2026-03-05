@@ -605,7 +605,7 @@ function SelectedOrderDetails({ order }) {
 												{product?.name || "—"}
 											</p>
 											{variant?.sku && (
-												<span className="inline-flex items-center gap-1 mt-1 text-[10px] text-muted-foreground font-mono bg-muted border border-border/50 rounded-md px-1.5 py-0.5">
+												<span className="inline-flex items-center gap-1 mt-1 text-[10px] text-muted-foreground font-mono bg-muted border border-border/50 rounded-xl px-1.5 py-0.5">
 													<Hash size={9} />
 													{variant.sku}
 												</span>
@@ -1589,7 +1589,7 @@ export default function CreateReplacementPage({ isEditMode = false, replacementI
 	}
 
 	return (
-		<div className="min-h-screen p-4 md:p-6 bg-background">
+		<div className="min-h-screen p-5">
 			<form onSubmit={handleSubmit}>
 
 				<PageHeader

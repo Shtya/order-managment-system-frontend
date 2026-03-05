@@ -619,7 +619,7 @@ function ReceiptImageUpload({ image, onImageChange, onRemove, t, isRTL }) {
 				{!image ? (
 					<div
 						onClick={() => inputRef.current?.click()}
-						className="p-8 rounded-md text-center hover:bg-primary/20 duration-300 cursor-pointer"
+						className="p-8 rounded-xl text-center hover:bg-primary/20 duration-300 cursor-pointer"
 					>
 						<div className="flex flex-col items-center gap-4">
 							<div className="w-20 h-20 rounded-xl bg-primary/10 flex items-center justify-center">

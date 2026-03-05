@@ -187,11 +187,11 @@ function ViewEmployeeDialog({ t, open, onOpenChange, data, loading }) {
 							<div className="text-xs text-gray-500">{t("table.status") || "Status"}</div>
 							<div className="mt-1">
 								{data.isActive ? (
-									<Badge className="rounded-md bg-[#F0FDF4] text-[#22C55E] hover:bg-[#F0FDF4] dark:bg-green-950/30 dark:text-green-400">
+									<Badge className="rounded-xl bg-[#F0FDF4] text-[#22C55E] hover:bg-[#F0FDF4] dark:bg-green-950/30 dark:text-green-400">
 										Active
 									</Badge>
 								) : (
-									<Badge className="rounded-md bg-[#FEF2F2] text-[#EF4444] hover:bg-[#FEF2F2] dark:bg-red-950/30 dark:text-red-400">
+									<Badge className="rounded-xl bg-[#FEF2F2] text-[#EF4444] hover:bg-[#FEF2F2] dark:bg-red-950/30 dark:text-red-400">
 										Inactive
 									</Badge>
 								)}
@@ -691,15 +691,15 @@ export default function EmployeesPage() {
 	const getTypeBadge = (typeLabel) => {
 		const val = (typeLabel || "").toLowerCase();
 		if (val.includes("data")) {
-			return "rounded-md bg-[#FFF9F0] text-[#F59E0B] hover:bg-[#FFF9F0] dark:bg-orange-950/30 dark:text-orange-400";
+			return "rounded-xl bg-[#FFF9F0] text-[#F59E0B] hover:bg-[#FFF9F0] dark:bg-orange-950/30 dark:text-orange-400";
 		}
 		if (val.includes("customer") || val.includes("service")) {
-			return "rounded-md bg-[#F0FDF4] text-[#16A34A] hover:bg-[#F0FDF4] dark:bg-green-950/30 dark:text-green-400";
+			return "rounded-xl bg-[#F0FDF4] text-[#16A34A] hover:bg-[#F0FDF4] dark:bg-green-950/30 dark:text-green-400";
 		}
 		if (val.includes("warehouse")) {
-			return "rounded-md bg-[#F1FAFF] text-[#38BDF8] hover:bg-[#F1FAFF] dark:bg-blue-950/30 dark:text-blue-400";
+			return "rounded-xl bg-[#F1FAFF] text-[#38BDF8] hover:bg-[#F1FAFF] dark:bg-blue-950/30 dark:text-blue-400";
 		}
-		return "rounded-md bg-[#F0F9FF] text-[#0EA5E9] hover:bg-[#F0F9FF] dark:bg-cyan-950/30 dark:text-cyan-400";
+		return "rounded-xl bg-[#F0F9FF] text-[#0EA5E9] hover:bg-[#F0F9FF] dark:bg-cyan-950/30 dark:text-cyan-400";
 	};
 
 	/** =========================
@@ -746,11 +746,11 @@ export default function EmployeesPage() {
 				header: t("table.status") || "Status",
 				cell: (row) =>
 					row.isActive ? (
-						<Badge className="rounded-md bg-[#F0FDF4] text-[#22C55E] hover:bg-[#F0FDF4] dark:bg-green-950/30 dark:text-green-400">
+						<Badge className="rounded-xl bg-[#F0FDF4] text-[#22C55E] hover:bg-[#F0FDF4] dark:bg-green-950/30 dark:text-green-400">
 							Active
 						</Badge>
 					) : (
-						<Badge className="rounded-md bg-[#FEF2F2] text-[#EF4444] hover:bg-[#FEF2F2] dark:bg-red-950/30 dark:text-red-400">
+						<Badge className="rounded-xl bg-[#FEF2F2] text-[#EF4444] hover:bg-[#FEF2F2] dark:bg-red-950/30 dark:text-red-400">
 							Inactive
 						</Badge>
 					),

@@ -40,7 +40,7 @@ export default function LanguageToggle({
 			className={cn(
 				"group",
 				isFixed ? "fixed" : "relative",
-				"flex items-center gap-3 rounded-md px-4 py-2",
+				"flex items-center gap-3 rounded-xl px-4 py-2",
 				"border border-gray-200 dark:border-slate-700 transition-all duration-300",
  				"bg-white hover:bg-gray-100  text-gray-800",
 				// Dark
@@ -68,7 +68,7 @@ export default function LanguageToggle({
 			</div>
 
 			{/* Target language */}
-			<motion.div className="relative py-1 rounded-md transition-colors">
+			<motion.div className="relative py-1 rounded-xl transition-colors">
 				<AnimatePresence mode="wait">
 					<motion.span
 						key={`target-${otherLang}`}

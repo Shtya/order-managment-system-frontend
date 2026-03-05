@@ -8,7 +8,7 @@ export default function Button_({
 	href,
 	size = "md",
 	label,
-	tone = "primary",
+	tone = "",
 	variant = "solid",
 	icon,
 	onClick,
@@ -19,7 +19,7 @@ export default function Button_({
 	const isLink = !!href;
 	const Tag = isLink ? "a" : "button";
 	const extra = isLink ? { href } : { onClick, disabled, type };
-
+ 
 	const classes = [
 		"btn",
 		`btn-${variant}`,

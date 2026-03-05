@@ -296,7 +296,7 @@ function RolePreviewDialog({ t, open, onClose, role }) {
 										<div className="flex items-center justify-end gap-2 mb-2">
 											<Badge
 												className={cn(
-													"rounded-md",
+													"rounded-xl",
 													role.isGlobal
 														? "bg-[#FFF9F0] text-[#F59E0B] hover:bg-[#FFF9F0] dark:bg-orange-950/30 dark:text-orange-400"
 														: "bg-[#F0F9FF] text-[#0EA5E9] hover:bg-[#F0F9FF] dark:bg-cyan-950/30 dark:text-cyan-400"
@@ -340,7 +340,7 @@ function RolePreviewDialog({ t, open, onClose, role }) {
 								</div>
 
 								{!all && (
-									<Badge variant="outline" className="rounded-md border-primary/20">
+									<Badge variant="outline" className="rounded-xl border-primary/20">
 										{perms.length} {t("table.permissionsCount")}
 									</Badge>
 								)}
@@ -529,7 +529,7 @@ export default function RolesPermissionsPage() {
 				header: t("table.type"),
 				cell: (row) => (
 					<Badge className={cn(
-						"rounded-md",
+						"rounded-xl",
 						row.isGlobal
 							? "bg-[#FFF9F0] text-[#F59E0B] hover:bg-[#FFF9F0] dark:bg-orange-950/30 dark:text-orange-400"
 							: "bg-[#F0F9FF] text-[#0EA5E9] hover:bg-[#F0F9FF] dark:bg-cyan-950/30 dark:text-cyan-400"
@@ -543,7 +543,7 @@ export default function RolesPermissionsPage() {
 				header: t("table.permissions"),
 				cell: (row) => (
 					<div className="flex items-center gap-2">
-						<Badge variant="outline" className="rounded-md">
+						<Badge variant="outline" className="rounded-xl">
 							{row.permissionNames.includes('*') ? t("table.allPermissions") : `${row.permissionNames.length} ${t("table.permissionsCount")}`}
 						</Badge>
 					</div>

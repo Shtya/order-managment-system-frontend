@@ -204,7 +204,7 @@ export const StatusSelect = ({
 												>
 													{/* Custom checkbox */}
 													<span
-														className="flex-shrink-0 w-[18px] h-[18px] rounded-md flex items-center justify-center transition-all duration-150"
+														className="flex-shrink-0 w-[18px] h-[18px] rounded-xl flex items-center justify-center transition-all duration-150"
 														style={{
 															border: `2px solid ${isChecked ? c : "currentColor"}`,
 															borderColor: isChecked ? c : "var(--border-color, #d1d5db)",

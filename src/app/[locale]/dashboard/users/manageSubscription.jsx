@@ -82,7 +82,7 @@ function SectionCard({ title, icon: Icon, children, delay = 0 }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay }}
-            className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-6 shadow-sm"
+            className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-6 shadow-sm"
         >
             <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
@@ -100,7 +100,7 @@ function SectionCard({ title, icon: Icon, children, delay = 0 }) {
 function InfoRow({ icon: Icon, label, value, valueClassName }) {
     return (
         <div className="flex items-start gap-3 py-2">
-            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-100 dark:bg-slate-800 flex items-center justify-center">
+            <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center">
                 <Icon size={18} className="text-gray-600 dark:text-gray-400" />
             </div>
             <div className="flex-1 min-w-0">

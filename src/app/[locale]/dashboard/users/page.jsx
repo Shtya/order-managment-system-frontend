@@ -184,11 +184,11 @@ function downloadBlob(blob, filename) {
 
 function statusBadge(isActive) {
 	return isActive ? (
-		<Badge className="rounded-md bg-[#F0FDF4] text-[#22C55E] hover:bg-[#F0FDF4] dark:bg-green-950/30 dark:text-green-400">
+		<Badge className="rounded-xl bg-[#F0FDF4] text-[#22C55E] hover:bg-[#F0FDF4] dark:bg-green-950/30 dark:text-green-400">
 			Active
 		</Badge>
 	) : (
-		<Badge className="rounded-md bg-[#FEF2F2] text-[#EF4444] hover:bg-[#FEF2F2] dark:bg-red-950/30 dark:text-red-400">
+		<Badge className="rounded-xl bg-[#FEF2F2] text-[#EF4444] hover:bg-[#FEF2F2] dark:bg-red-950/30 dark:text-red-400">
 			Inactive
 		</Badge>
 	);
@@ -605,7 +605,7 @@ export default function SuperAdminUsersPage() {
 				key: "role",
 				header: t.has("table.role") ? t("table.role") : "Role",
 				cell: (row) => (
-					<Badge className="rounded-md bg-[#F0F9FF] text-[#0EA5E9] hover:bg-[#F0F9FF] dark:bg-cyan-950/30 dark:text-cyan-400">
+					<Badge className="rounded-xl bg-[#F0F9FF] text-[#0EA5E9] hover:bg-[#F0F9FF] dark:bg-cyan-950/30 dark:text-cyan-400">
 						{row.role?.name || "-"}
 					</Badge>
 				),
@@ -614,7 +614,7 @@ export default function SuperAdminUsersPage() {
 				key: "plan",
 				header: t.has("table.plan") ? t("table.plan") : "Plan",
 				cell: (row) => (
-					<Badge className="rounded-md bg-[#FFF7ED] text-[#F97316] hover:bg-[#FFF7ED] dark:bg-orange-950/30 dark:text-orange-400">
+					<Badge className="rounded-xl bg-[#FFF7ED] text-[#F97316] hover:bg-[#FFF7ED] dark:bg-orange-950/30 dark:text-orange-400">
 						{row?.subscription?.plan?.name || "-"}
 					</Badge>
 				),
@@ -958,7 +958,7 @@ export default function SuperAdminUsersPage() {
 
 
 			<Dialog open={subOpen} onOpenChange={setSubOpen}>
-				<DialogContent className="sm:max-w-2xl rounded-2xl">
+				<DialogContent className="sm:max-w-2xl rounded-xl">
 					<DialogHeader className="text-right">
 						<DialogTitle>
 							{t("subscription.title")}

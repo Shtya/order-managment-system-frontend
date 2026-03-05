@@ -88,7 +88,7 @@ function StockBadge({ available, stockOnHand, reserved, t }) {
 			</motion.div>
 
 			<div className="flex items-center gap-2 text-xs text-muted-foreground">
-				<div className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800">
+				<div className="inline-flex items-center gap-1 px-2 py-1 rounded-xl bg-slate-100 dark:bg-slate-800">
 					<Package className="w-3 h-3" />
 					<span className="text-nowrap">{t("stock")}: {stockOnHand}</span>
 				</div>
@@ -207,7 +207,7 @@ export function ProductSkuSearchPopover({
 							searchQuery ? "text-foreground" : "text-gray-400"
 						)}
 					>
-						<div className="flex items-center justify-center w-5 h-5 rounded-md bg-primary/10 text-primary">
+						<div className="flex items-center justify-center w-5 h-5 rounded-xl bg-primary/10 text-primary">
 							<Search className="h-3.5 w-3.5" />
 						</div>
 						{searchQuery || t("triggerPlaceholder")}

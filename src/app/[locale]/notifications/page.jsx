@@ -301,7 +301,7 @@ export default function NotificationsPage() {
   const unreadInList = notifications.filter((n) => !n.isRead).length;
 
   return (
-    <div className="min-h-screen p-4 md:p-6 bg-background">
+    <div className="min-h-screen p-5">
 
       {/* ── Breadcrumb ── */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">

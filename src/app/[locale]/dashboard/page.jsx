@@ -174,7 +174,7 @@ export default function DashboardPage() {
     };
 
     return (
-        <div className="min-h-screen p-4 md:p-6 bg-background">
+        <div className="min-h-screen p-4 md:p-6  ">
             {/* Header / Breadcrumbs */}
             <div className="bg-card flex flex-col gap-2 mb-4">
                 <div className="flex items-center justify-between">
@@ -235,7 +235,7 @@ export default function DashboardPage() {
                     </div>
                 </TableFilters>
 
-                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-border bg-card p-4 shadow-sm">
                     <StatsGrid stats={statsData} loading={loading} />
                 </motion.div>
 

@@ -28,7 +28,7 @@ import Button_ from "@/components/atoms/Button";
 const StatusBadge = ({ status, t }) => {
 	if (!status) return null;
 	return (
-		<span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold
+		<span className="inline-flex items-center px-3 py-1 rounded-xl text-xs font-bold
       bg-[var(--primary)]/10 text-[var(--primary)]
       border border-[var(--primary)]/20 tracking-wide">
 			{status?.system ? t(`statuses.${status.code}`) : status.name}
@@ -141,7 +141,7 @@ export function OrderDetailsPage({ order, loading }) {
 	if (!order) return (
 		<div className="flex items-center justify-center min-h-[60vh] bg-background">
 			<div className="text-center space-y-3">
-				<div className="w-14 h-14 rounded-2xl bg-[var(--primary)]/10 flex items-center justify-center mx-auto">
+				<div className="w-14 h-14 rounded-xl bg-[var(--primary)]/10 flex items-center justify-center mx-auto">
 					<AlertCircle size={24} className="text-[var(--primary)]" />
 				</div>
 				<p className="text-sm text-muted-foreground">{t("messages.orderNotFound")}</p>
@@ -200,7 +200,7 @@ export function OrderDetailsPage({ order, loading }) {
 									<StatusBadge status={order.status} t={t} />
 								</MetaPill>
 								<MetaPill label={t("fields.paymentMethod")}>
-									<span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold
+									<span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold
                     bg-[var(--primary)]/8 text-[var(--primary)] border border-[var(--primary)]/15">
 										<CreditCard size={11} />
 										{t(`paymentMethods.${order.paymentMethod}`)}
@@ -250,7 +250,7 @@ export function OrderDetailsPage({ order, loading }) {
 							<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-x-6 gap-y-4
                 p-4 rounded-xl bg-[var(--secondary)]/60 border border-border/40">
 								<MetaPill label={t("fields.paymentStatus")}>
-									<span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold
+									<span className="inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-bold
                     bg-[var(--primary)]/8 text-[var(--primary)] border border-[var(--primary)]/15">
 										{t(`paymentStatuses.${order.paymentStatus}`)}
 									</span>
@@ -313,7 +313,7 @@ export function OrderDetailsPage({ order, loading }) {
 															<span className="text-xs text-muted-foreground">{item.variant?.name || "—"}</span>
 														</td>
 														<td className="py-3 px-3">
-															<span className="inline-flex items-center justify-center w-7 h-7 rounded-lg
+															<span className="inline-flex items-center justify-center w-7 h-7 rounded-xl
                                 bg-[var(--primary)]/8 text-[var(--primary)] text-xs font-bold">
 																{item.quantity}
 															</span>
@@ -372,7 +372,7 @@ export function OrderDetailsPage({ order, loading }) {
 					<SectionCard title={t("details.customerInfo")} icon={User} delay={0.05}>
 						<div className="flex items-center justify-between mb-3">
 							<div /> {/* spacer */}
-							<span className="text-[10px] font-bold px-2 py-1 rounded-lg
+							<span className="text-[10px] font-bold px-2 py-1 rounded-xl
                 bg-[var(--primary)]/8 text-[var(--primary)] border border-[var(--primary)]/15">
 								{order.items?.length || 0} {t("details.orderItems")}
 							</span>
@@ -517,7 +517,7 @@ function ReplacementInfoCard({ replacementOrder, replacement, formatCurrency, fo
 			initial={{ opacity: 0, y: 16 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ delay: 0.15, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-			className="relative bg-card rounded-2xl border border-[var(--primary)]/25 overflow-hidden
+			className="relative bg-card rounded-xl border border-[var(--primary)]/25 overflow-hidden
         shadow-[0_1px_4px_rgba(0,0,0,0.06)] dark:shadow-[0_1px_8px_rgba(0,0,0,0.3)]"
 		>
 			{/* top bar */}
@@ -538,7 +538,7 @@ function ReplacementInfoCard({ replacementOrder, replacement, formatCurrency, fo
 					</div>
 				</div>
 				{replacement.reason && (
-					<span className="text-[10px] font-bold px-3 py-1.5 rounded-lg shrink-0
+					<span className="text-[10px] font-bold px-3 py-1.5 rounded-xl shrink-0
             bg-[var(--primary)]/8 text-[var(--primary)] border border-[var(--primary)]/20 tracking-wide">
 						{tR(`reasons.${replacement.reason}`)}
 					</span>
@@ -583,19 +583,19 @@ function ReplacementInfoCard({ replacementOrder, replacement, formatCurrency, fo
 							{[
 								{ label: t("replacement.oldTotal"), value: formatCurrency(oldTotal), className: "" },
 							].map(({ label, value }) => (
-								<div key={label} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-border/50">
+								<div key={label} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card border border-border/50">
 									<span className="text-[10px] text-muted-foreground">{label}</span>
 									<span className="text-xs font-bold text-foreground">{value}</span>
 								</div>
 							))}
 							<span className="text-muted-foreground/40 text-xs">→</span>
-							<div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-border/50">
+							<div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card border border-border/50">
 								<span className="text-[10px] text-muted-foreground">{t("replacement.newTotal")}</span>
 								<span className="text-xs font-bold text-[var(--primary)]">{formatCurrency(newTotal)}</span>
 							</div>
 							{totalDiff !== 0 && (
 								<div className={cn(
-									"flex items-center gap-1.5 px-3 py-1.5 rounded-lg border",
+									"flex items-center gap-1.5 px-3 py-1.5 rounded-xl border",
 									totalDiff > 0
 										? "bg-destructive/5 border-destructive/20"
 										: "bg-[var(--primary)]/5 border-[var(--primary)]/20"
@@ -653,8 +653,8 @@ function ReplacementInfoCard({ replacementOrder, replacement, formatCurrency, fo
 													<td className="px-3 py-3">
 														<div className="flex items-center gap-2">
 															{origProduct?.mainImage
-																? <img src={avatarSrc(origProduct.mainImage)} alt="" className="w-7 h-7 rounded-lg object-cover border border-border/40 shrink-0" />
-																: <div className="w-7 h-7 rounded-lg bg-muted/60 border border-border/40 flex items-center justify-center shrink-0"><Package size={11} className="text-muted-foreground" /></div>
+																? <img src={avatarSrc(origProduct.mainImage)} alt="" className="w-7 h-7 rounded-xl object-cover border border-border/40 shrink-0" />
+																: <div className="w-7 h-7 rounded-xl bg-muted/60 border border-border/40 flex items-center justify-center shrink-0"><Package size={11} className="text-muted-foreground" /></div>
 															}
 															<div className="min-w-0">
 																<p className="text-[11px] font-semibold text-foreground line-clamp-1">{origProduct?.name || "—"}</p>
@@ -665,8 +665,8 @@ function ReplacementInfoCard({ replacementOrder, replacement, formatCurrency, fo
 													<td className="px-3 py-3">
 														<div className="flex items-center gap-2">
 															{newProduct?.mainImage
-																? <img src={avatarSrc(newProduct.mainImage)} alt="" className="w-7 h-7 rounded-lg object-cover border border-[var(--primary)]/25 shrink-0" />
-																: <div className="w-7 h-7 rounded-lg bg-[var(--primary)]/8 border border-[var(--primary)]/20 flex items-center justify-center shrink-0"><Package size={11} className="text-[var(--primary)]" /></div>
+																? <img src={avatarSrc(newProduct.mainImage)} alt="" className="w-7 h-7 rounded-xl object-cover border border-[var(--primary)]/25 shrink-0" />
+																: <div className="w-7 h-7 rounded-xl bg-[var(--primary)]/8 border border-[var(--primary)]/20 flex items-center justify-center shrink-0"><Package size={11} className="text-[var(--primary)]" /></div>
 															}
 															<div className="min-w-0">
 																<p className="text-[11px] font-semibold text-foreground line-clamp-1">{newProduct?.name || "—"}</p>
@@ -675,7 +675,7 @@ function ReplacementInfoCard({ replacementOrder, replacement, formatCurrency, fo
 														</div>
 													</td>
 													<td className="px-3 py-3 text-end">
-														<span className="inline-flex items-center justify-center w-6 h-6 rounded-lg
+														<span className="inline-flex items-center justify-center w-6 h-6 rounded-xl
                               bg-[var(--primary)]/8 text-[var(--primary)] text-[10px] font-bold">
 															×{item.quantityToReplace}
 														</span>
@@ -732,7 +732,7 @@ function ReplacementInfoCard({ replacementOrder, replacement, formatCurrency, fo
 	 SKELETON
 ═══════════════════════════════════════════════════════════ */
 function Bone({ className }) {
-	return <div className={cn("rounded-lg bg-muted/50 animate-pulse", className)} />;
+	return <div className={cn("rounded-xl bg-muted/50 animate-pulse", className)} />;
 }
 
 function BannerSkeleton() {
@@ -763,7 +763,7 @@ function InfoRowSkeleton() {
 
 function SideCardSkeleton({ children }) {
 	return (
-		<div className="relative bg-card rounded-2xl border border-border/50 overflow-hidden
+		<div className="relative bg-card rounded-xl border border-border/50 overflow-hidden
       shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
 			<span className="absolute inset-y-0 start-0 w-[3px] bg-muted/40" />
 			<div className="px-5 pt-4 pb-5 ms-[3px]">{children}</div>
@@ -781,7 +781,7 @@ export function OrderDetailsPageSkeleton() {
 			<div className="grid mt-3 grid-cols-1 lg:grid-cols-12 gap-5">
 				{/* main */}
 				<div className="lg:col-span-9">
-					<div className="relative bg-card rounded-2xl border border-border/50 overflow-hidden p-5 space-y-4">
+					<div className="relative bg-card rounded-xl border border-border/50 overflow-hidden p-5 space-y-4">
 						<div className="h-[3px] rounded-full bg-muted/40 animate-pulse -mx-5 -mt-5 mb-5" />
 						<BannerSkeleton />
 						<BannerSkeleton />
@@ -810,7 +810,7 @@ export function OrderDetailsPageSkeleton() {
 					<SideCardSkeleton>
 						<div className="flex justify-between mb-4">
 							<Bone className="h-4 w-24" />
-							<Bone className="h-5 w-14 rounded-lg" />
+							<Bone className="h-5 w-14 rounded-xl" />
 						</div>
 						{[0, 1, 2, 3].map(i => <InfoRowSkeleton key={i} />)}
 					</SideCardSkeleton>

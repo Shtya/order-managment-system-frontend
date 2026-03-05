@@ -79,7 +79,7 @@ function OrderDetailModal({ t, open, onClose, order }) {
 	return (
 		<Dialog open={open} onOpenChange={onClose}>
 			<DialogContent
-				className="!max-w-2xl bg-white dark:bg-slate-900 rounded-2xl max-h-[90vh] overflow-y-auto"
+				className="!max-w-2xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto"
 				dir="rtl"
 			>
 				<DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
@@ -211,7 +211,7 @@ function AssignCarrierDialog({ t, open, onClose, orders, selectedOrderCodes, upd
 	return (
 		<Dialog open={open} onOpenChange={onClose}>
 			<DialogContent
-				className="!max-w-2xl bg-white dark:bg-slate-900 rounded-2xl max-h-[90vh] overflow-y-auto"
+				className="!max-w-2xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto"
 				dir="rtl"
 			>
 				<DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
@@ -360,7 +360,7 @@ function CancelOrderModal({ t, open, onClose, prefilledCode, updateOrder, pushOp
 
 	return (
 		<Dialog open={open} onOpenChange={onClose}>
-			<DialogContent className="!max-w-md bg-white dark:bg-slate-900 rounded-2xl" dir="rtl">
+			<DialogContent className="!max-w-md bg-white dark:bg-slate-900 rounded-xl" dir="rtl">
 				<DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
 					<DialogTitle className="text-lg font-bold flex items-center gap-2">
 						<Ban className="text-red-500" size={22} />

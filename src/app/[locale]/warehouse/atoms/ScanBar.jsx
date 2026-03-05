@@ -194,7 +194,7 @@ function CarrierSelect({ CARRIERS, preparedOrders, value, onChange }) {
 
 										{/* icon bubble */}
 										<div
-											className="relative w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-150"
+											className="relative w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-150"
 											style={{
 												background: isSelected ? m.color + "20" : "var(--muted)",
 												border: `1.5px solid ${m.color}${isSelected ? "40" : "20"}`,

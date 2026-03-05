@@ -279,7 +279,7 @@ export default function TestimonialsSection() {
 					>
 						{t("heading.prefix")}{" "}
 						<motion.span
-							className="inline-block px-5 py-1 rounded-md"
+							className="inline-block px-5 py-1 rounded-xl"
 							style={{ background: `${BRAND}16`, color: BRAND }}
 						>
 							{t("heading.highlight")}

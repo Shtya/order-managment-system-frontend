@@ -7,6 +7,8 @@ module.exports = {
     extend: {
       colors: {
         primary: 'var(--primary)',
+        primary2: 'var(--primary2)',
+        secondary2: 'var(--secondary2)',
         secondary: 'var(--secondary)',
         third: 'var(--third)',
 

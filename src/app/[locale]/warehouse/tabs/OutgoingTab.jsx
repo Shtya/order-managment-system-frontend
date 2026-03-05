@@ -65,7 +65,7 @@ function StatBoxes({ scannedCount, wrongScans }) {
 			{/* Scanned orders */}
 			<motion.div
 				initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
-				className="relative overflow-hidden rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50 to-teal-50 p-4"
+				className="relative overflow-hidden rounded-xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50 to-teal-50 p-4"
 			>
 				<div className="absolute -right-2 top-2 w-20 h-20 rounded-full bg-emerald-400/10" />
 				<div className="relative flex gap-4 items-center justify-between">
@@ -99,7 +99,7 @@ function StatBoxes({ scannedCount, wrongScans }) {
 			<motion.div
 				initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
 				className={cn(
-					"relative overflow-hidden rounded-2xl border p-4 transition-colors duration-300",
+					"relative overflow-hidden rounded-xl border p-4 transition-colors duration-300",
 					wrongScans > 0
 						? "border-red-200/70 bg-gradient-to-br from-red-50 to-rose-50"
 						: "border-slate-200/70 bg-gradient-to-br from-slate-50 to-slate-50/50"
@@ -152,7 +152,7 @@ function OrdersList({ orders, scannedOrders, lastHighlight }) {
 	if (orders.length === 0) {
 		return (
 			<div className="flex flex-col items-center justify-center py-16">
-				<div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-3">
+				<div className="w-14 h-14 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-3">
 					<Package size={22} className="text-slate-300" />
 				</div>
 				<p className="text-sm font-semibold text-slate-400">لا توجد طلبات جاهزة</p>
@@ -290,7 +290,7 @@ function OrdersList({ orders, scannedOrders, lastHighlight }) {
 														style={{ gridTemplateColumns: "2fr 90px 70px 80px 80px" }}
 													>
 														<div className="flex items-center gap-2.5 min-w-0">
-															<div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#ff8b0012" }}>
+															<div className="w-6 h-6 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#ff8b0012" }}>
 																<Package size={11} style={{ color: "#ff8b00" }} />
 															</div>
 															<div className="min-w-0">
@@ -464,7 +464,7 @@ export function ScanOutgoingSubtab({ orders, updateOrder, pushOp, inventory, upd
 					<div className="bg-card overflow-hidden">
 						<div className="flex items-center justify-between pb-4 border-b border-slate-100">
 							<div className="flex items-center gap-2.5">
-								<div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+								<div className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0"
 									style={{ background: meta?.color + "12" }}>
 									<Truck size={13} style={{ color: meta?.color || "#ff8b00" }} />
 								</div>

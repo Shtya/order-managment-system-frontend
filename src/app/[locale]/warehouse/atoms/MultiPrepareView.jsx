@@ -114,7 +114,7 @@ function ProductRow({ p, index }) {
 						style={{ borderColor: p.scannedQty > 0 ? "var(--primary)" : "var(--border)" }} />
 				}
 			</div>
-			<code className="font-mono text-[10px] px-1.5 py-0.5 rounded-md bg-foreground/[0.06] text-muted-foreground flex-shrink-0">
+			<code className="font-mono text-[10px] px-1.5 py-0.5 rounded-xl bg-foreground/[0.06] text-muted-foreground flex-shrink-0">
 				{p.sku}
 			</code>
 			<span className="flex-1 truncate font-medium text-[12px]">{p.name}</span>
@@ -627,7 +627,7 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
 							animate={{ scale: 1, opacity: 1, y: 0 }}
 							exit={{ scale: 0.9, opacity: 0 }}
 							transition={{ type: "spring", stiffness: 300, damping: 25 }}
-							className="relative bg-card rounded-3xl p-10 flex flex-col items-center gap-4
+							className="relative bg-card rounded-xl p-10 flex flex-col items-center gap-4
                 border border-[oklch(0.6_0.2_145/0.25)] max-w-sm mx-4 overflow-hidden
                 shadow-[0_32px_80px_-16px_rgba(0,0,0,0.25)]"
 						>

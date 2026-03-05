@@ -30,7 +30,8 @@ function normalizeAxiosError(err) {
 const PROVIDERS = ["easyorder", "shopify", "woocommerce"];
 
 // ─── Provider Configuration ──────────────────────────────────────────────────
-
+// ★ Added three fields per provider: accent, accentBg, strip
+//   All other fields are identical to the original.
 
 const PROVIDER_CONFIG = {
 	easyorder: {
@@ -39,6 +40,9 @@ const PROVIDER_CONFIG = {
 		website: "easy-orders.net",
 		description: "ربط متجرك مع منصة EasyOrder واستفد من إدارة الطلبات والمزامنة التلقائية بسهولة.",
 		bg: "linear-gradient(300.09deg, #FAFAFA 74.95%, #F3F0FF 129.29%)",
+		accent: "#c8832a",
+		accentBg: "#f5e6cc",
+		strip: "linear-gradient(90deg,#c8832a,#e8a84a)",
 		docsLink: "https://public-api-docs.easy-orders.net/docs/intro",
 		guide: {
 			showSteps: true,
@@ -204,6 +208,9 @@ const PROVIDER_CONFIG = {
 		website: "shopify.com",
 		description: "صل متجرك بـ Shopify وأدر منتجاتك وطلباتك من مكان واحد.",
 		bg: "linear-gradient(300.09deg, #F0FFF4 74.95%, #F3F0FF 129.29%)",
+		accent: "#3a6b4a",
+		accentBg: "#d4e8da",
+		strip: "linear-gradient(90deg,#3a6b4a,#5a9b6e)",
 		docsLink: "https://help.shopify.com/api",
 		guide: {
 			showSteps: true,
@@ -346,6 +353,9 @@ const PROVIDER_CONFIG = {
 		website: "woocommerce.com",
 		description: "اربط متجر WooCommerce الخاص بك وأدر كل شيء بطريقة سهلة والأمان أولًا.",
 		bg: "linear-gradient(300.09deg, #FAFAFA 74.95%, #FFF0F5 129.29%)",
+		accent: "#5c3d8f",
+		accentBg: "#e0d4f5",
+		strip: "linear-gradient(90deg,#5c3d8f,#8b6abf)",
 		docsLink: "https://woocommerce.github.io/woocommerce-rest-api-docs/",
 		guide: {
 			showSteps: true,
@@ -486,6 +496,8 @@ const PROVIDER_CONFIG = {
 };
 
 // ─── StoreCard ───────────────────────────────────────────────────────────────
+// ★ ONLY the JSX returned here was changed.
+//   handleToggle, props, and all logic are identical to the original.
 
 function StoreCard({
 	provider,
@@ -525,127 +537,140 @@ function StoreCard({
 		}
 	}
 
+	// accent shortcuts from the three new PROVIDER_CONFIG tokens
+	const accent   = config.accent;
+	const accentBg = config.accentBg;
+
+	// shared footer ghost-button base classes; hover tints border+text to accent
+	const fbCls   = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 bg-white/80 dark:bg-white/10 border border-white/60 dark:border-white/10 text-gray-600 dark:text-gray-300 shadow-sm";
+	const onEnter = (e) => { e.currentTarget.style.borderColor = accent; e.currentTarget.style.color = accent; };
+	const onLeave = (e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.color = ""; };
+
 	return (
 		<motion.div
-			whileHover={{ y: -3, boxShadow: "0 16px 40px 0 rgba(0,0,0,0.13)" }}
+			whileHover={{ y: -3, boxShadow: "0 20px 48px 0 rgba(0,0,0,0.11)" }}
 			transition={{ type: "spring", stiffness: 300, damping: 22 }}
-			className="relative rounded-xl overflow-hidden border border-[var(--border)] shadow-sm flex flex-col"
+			className="relative rounded-2xl overflow-hidden border border-[var(--border)] shadow-sm flex flex-col"
 			style={{ background: config.bg }}
 		>
+			{/* per-provider accent strip at top */}
+			<span
+				className="absolute top-0 left-0 right-0 z-10 pointer-events-none"
+				style={{ height: 3, background: config.strip, borderRadius: "16px 16px 0 0" }}
+			/>
+
 			{/* Body */}
-			<div className="p-5 flex flex-col gap-3 flex-1">
+			<div className="pt-6 px-5 pb-4 flex flex-col gap-3 flex-1">
+
 				{/* Header */}
-				<div className="flex items-start justify-between">
-					<div className="flex items-center gap-2">
-						<div className="w-14 h-14 rounded-xl bg-white/80 dark:bg-white/10 backdrop-blur-sm border border-white/40 dark:border-white/10 flex items-center justify-center shadow-sm overflow-hidden">
+				<div className="flex items-start justify-between gap-2">
+
+					{/* Logo + identity */}
+					<div className="flex items-center gap-3">
+						<div
+							className="w-11 h-11 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden"
+							style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}
+						>
 							<img
 								src={config.logo}
 								alt={config.label}
-								className="w-9 h-9 object-contain"
+								className="w-7 h-7 object-contain"
 								onError={(e) => (e.target.style.display = "none")}
 							/>
 						</div>
 
 						<div>
-							<h3 className="text-base font-bold text-gray-800 dark:text-white">
+							<h3 className="text-sm font-bold text-gray-800 dark:text-white leading-tight">
 								{config.label}
 							</h3>
-
 							<a
 								href={`https://${config.website}`}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="text-xs text-gray-500 dark:text-gray-400 hover:text-[var(--primary)] transition-colors flex items-center gap-0.5 mt-0.5"
+								className="flex items-center gap-0.5 mt-0.5 transition-opacity hover:opacity-60"
+								style={{ fontSize: 11, color: "rgba(0,0,0,0.35)", textDecoration: "none" }}
 							>
 								{config.website}
-								<ExternalLink size={9} />
+								<ExternalLink size={8} />
 							</a>
 						</div>
 					</div>
 
 					{/* Toggle */}
-
-					<div className="flex flex-col items-end gap-1.5">
+					<div className="flex flex-col items-end gap-1 flex-shrink-0">
 						<button
 							onClick={handleToggle}
 							disabled={toggling || isSyncing}
-							className="relative w-11 h-6 rounded-full border transition-all duration-300"
+							className="relative rounded-full transition-all duration-300"
 							style={{
-								background:
-									isActive
-										? `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))`
-										: "rgba(0,0,0,0.12)",
-								borderColor: isActive ? "transparent" : "rgba(0,0,0,0.1)",
+								width: 40, height: 22,
+								background: isActive ? accent : "rgba(0,0,0,0.13)",
+								border: "none",
 								opacity: toggling ? 0.7 : 1,
-								cursor: toggling ? "not-allowed" : "pointer"
+								cursor: toggling ? "not-allowed" : "pointer",
 							}}
 						>
 							<span
-								className="absolute top-0.5 left-0.5 w-[18px] h-[18px] rounded-full bg-white shadow transition-all duration-300 flex items-center justify-center"
+								className="absolute rounded-full bg-white transition-all duration-300 flex items-center justify-center"
 								style={{
-									transform: isActive
-										? "translateX(20px)"
-										: "translateX(0px)"
+									top: 3, width: 16, height: 16,
+									left: isActive ? "calc(100% - 19px)" : 3,
+									boxShadow: "0 1px 4px rgba(0,0,0,0.18)",
 								}}
 							>
 								{toggling && (
-									<svg
-										className="animate-spin h-3 w-3 text-primary"
-										viewBox="0 0 24 24"
-									>
-										<circle
-											className="opacity-25"
-											cx="12"
-											cy="12"
-											r="10"
-											stroke="currentColor"
-											strokeWidth="4"
-										/>
-										<path
-											className="opacity-75"
-											fill="currentColor"
-											d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-										/>
+									<svg className="animate-spin h-2.5 w-2.5" viewBox="0 0 24 24" style={{ color: accent }}>
+										<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+										<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
 									</svg>
 								)}
 							</span>
 						</button>
-
 						<span
-							className={`text-[10px] font-semibold uppercase tracking-wide transition-colors duration-300 ${isActive ? "text-emerald-700 dark:text-emerald-400" : "text-gray-500 dark:text-gray-400"
-								}`}
+							className="font-semibold uppercase tracking-wide transition-colors duration-300"
+							style={{ fontSize: 9, color: isActive ? accent : "rgba(0,0,0,0.3)" }}
 						>
 							{toggling ? t("card.updating") : (isActive ? t("card.connected") : t("card.notConnected"))}
 						</span>
 					</div>
 				</div>
 
-
-
 				{/* Description */}
 				<p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2">
 					{config.description}
 				</p>
 
-				{/* Status Badge */}
+				{/* Status Badge — configured keeps original emerald; not-configured uses provider accent */}
 				{hasStore ? (
 					<span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full w-fit">
 						<span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
 						{t("card.configured")}
 					</span>
 				) : (
-					<span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full w-fit">
-						<span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+					<span
+						className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full w-fit"
+						style={{ color: accent, background: accentBg, border: `1px solid ${accent}30` }}
+					>
+						<span className="w-1.5 h-1.5 rounded-full" style={{ background: accent }} />
 						{t("card.notConfigured")}
 					</span>
 				)}
 			</div>
 
 			{/* Footer */}
-			<div className="bg-white/50 dark:bg-black/20 backdrop-blur-sm border-t border-white/40 dark:border-white/10 px-4 py-3 flex items-center gap-2 flex-wrap">
+			<div
+				className="px-4 py-3 flex items-center gap-1.5 flex-wrap"
+				style={{
+					background: "rgba(255,255,255,0.55)",
+					backdropFilter: "blur(6px)",
+					borderTop: "1px solid rgba(255,255,255,0.5)",
+				}}
+			>
 				<button
 					onClick={() => onConfigure(provider, store)}
-					className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+					className={fbCls}
+					onMouseEnter={onEnter}
+					onMouseLeave={onLeave}
 				>
 					<Settings2 size={12} />
 					{hasStore ? t("card.settings") : t("card.configureSettings")}
@@ -655,7 +680,9 @@ function StoreCard({
 					<button
 						onClick={() => onOpenGuide(provider, store)}
 						title={t("card.guideTitle")}
-						className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+						className={fbCls}
+						onMouseEnter={onEnter}
+						onMouseLeave={onLeave}
 					>
 						<HelpCircle size={12} />
 						{t("card.guide")}
@@ -666,7 +693,10 @@ function StoreCard({
 						target="_blank"
 						rel="noopener noreferrer"
 						title={t("card.guideTitle")}
-						className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+						className={fbCls}
+						style={{ textDecoration: "none" }}
+						onMouseEnter={onEnter}
+						onMouseLeave={onLeave}
 					>
 						<HelpCircle size={12} />
 						{t("card.guide")}
@@ -677,17 +707,28 @@ function StoreCard({
 					<button
 						onClick={() => onOpenWebhook(provider, store)}
 						title="Webhook"
-						className="font-en flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+						className={`font-en ${fbCls}`}
+						onMouseEnter={onEnter}
+						onMouseLeave={onLeave}
 					>
 						<Webhook size={12} />
 						Webhook
 					</button>
 				)}
 
+				{/* Sync pushed to end; disabled state preserved from original */}
 				<button
 					onClick={() => hasStore && onSync(store.id)}
 					disabled={isSyncing || !hasStore || !isActive}
-					className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+					className={`${fbCls} ml-auto`}
+					style={{
+						background: isSyncing ? accentBg : undefined,
+						color: isSyncing ? accent : undefined,
+						opacity: (!hasStore || !isActive) && !isSyncing ? 0.35 : 1,
+						cursor: (!hasStore || !isActive) ? "not-allowed" : "pointer",
+					}}
+					onMouseEnter={(e) => { if (hasStore && isActive && !isSyncing) onEnter(e); }}
+					onMouseLeave={(e) => { if (!isSyncing) onLeave(e); }}
 				>
 					<RefreshCw
 						size={12}
@@ -696,7 +737,7 @@ function StoreCard({
 					{t("card.sync")}
 				</button>
 			</div>
-		</motion.div >
+		</motion.div>
 	);
 }
 
@@ -1882,4 +1923,3 @@ export default function StoresIntegrationPage() {
 		</div>
 	);
 }
-

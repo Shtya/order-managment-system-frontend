@@ -37,14 +37,17 @@ const menuItems = [
 		],
 	},
 	{
-		icon: Banknote, labelKey: 'collections', href: '/collections', roles: ['ADMIN'],
+		icon: ShoppingCart, labelKey: 'orders-assign-to-you', href: '/orders/employee-orders', roles: ["NEW ROLE"]
+	},
+	{
+		icon: Wallet, labelKey: 'accounts', href: '/collections', roles: ['ADMIN'],
 		children: [
 			{ icon: CheckCircle2, labelKey: 'collectedOrders', href: '/orders/collections?tab=collected' },
 			{ icon: AlertCircle, labelKey: 'uncollectedOrders', href: '/orders/collections?tab=not_collected' },
 		],
 	},
 	{
-		icon: Warehouse, labelKey: 'warehouse', href: '/warehouse', roles: ['ADMIN'],
+		icon: Warehouse, labelKey: 'manageWarehouse', href: '/warehouse', roles: ['ADMIN'],
 		children: [
 			{ icon: Truck, labelKey: 'warehouseDistribution', href: '/warehouse?tab=distribution' },
 			{ icon: Printer, labelKey: 'warehousePrint', href: '/warehouse?tab=print' },
@@ -63,7 +66,7 @@ const menuItems = [
 			{ icon: Layers, labelKey: 'newBundle', href: '/bundles/new' },
 		],
 	},
-	{ icon: TrendingUp, labelKey: 'sales', href: '/sales', roles: ['ADMIN'] },
+	// { icon: TrendingUp, labelKey: 'sales', href: '/sales', roles: ['ADMIN'] },
 	{
 		icon: FileText, labelKey: 'purchases', href: '/purchases', roles: ['ADMIN'],
 		children: [
@@ -78,9 +81,8 @@ const menuItems = [
 			{ icon: FolderTree, labelKey: 'categories', href: '/suppliers/categories' },
 		],
 	},
-	{ icon: Truck, labelKey: 'shippingCompanies', href: '/shipping-companies', roles: ['ADMIN'] },
 	{ icon: FaUserTie, labelKey: 'employees', href: '/employees', roles: ['ADMIN'] },
-	{ icon: Wallet, labelKey: 'accounts', href: '/accounts', roles: ['ADMIN'] },
+
 	{
 		icon: BarChart3, labelKey: 'reports', href: '/reports', roles: ['ADMIN'],
 		children: [
@@ -88,7 +90,9 @@ const menuItems = [
 			{ icon: Activity, labelKey: 'employee-performance-analysis', href: '/reports/employee-performance-analysis' },
 		],
 	},
+	{ icon: Truck, labelKey: 'shippingCompanies', href: '/shipping-companies', roles: ['ADMIN'] },
 	{ icon: Plug, labelKey: 'storeIntegration', href: '/store-integration', roles: ['ADMIN'] },
+	{ icon: Wallet, labelKey: 'wallet', href: '/wallet', roles: ['ADMIN'] },
 	{ icon: CreditCard, labelKey: 'plans', href: '/plans', roles: ['ADMIN'] },
 	{ icon: Shield, labelKey: 'roles', href: '/roles', roles: ['ADMIN'] },
 	{ icon: Settings, labelKey: 'settings', href: '/settings', roles: ['ADMIN'] },
@@ -438,6 +442,8 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar }) => {
 	const router = useRouter();
 	const user = getUser();
 	const userRole = user?.role?.toUpperCase();
+
+	console.log(userRole);
 
 	const isActive = useCallback((href) => {
 		const [hrefPath, hrefQuery] = href.split('?');

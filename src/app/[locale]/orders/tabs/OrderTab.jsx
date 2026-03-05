@@ -731,7 +731,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
 						{new Date(row.created_at).toLocaleDateString("en-US")}
 					</span>
 				),
-			},
+			}, 
 			{
 				key: "actions",
 				header: t("table.actions"),

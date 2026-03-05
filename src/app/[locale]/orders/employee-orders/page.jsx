@@ -10,6 +10,7 @@ import {
 	RefreshCw,
 	Lock,
 	Timer,
+	Download,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -21,12 +22,11 @@ import api from "@/utils/api";
 import { cn } from "@/utils/cn";
 import { generateBgColors, getIconForStatus } from "../page";
 import InfoCard from "@/components/atoms/InfoCard";
+import PageHeader from "@/components/atoms/Pageheader";
+import Button_ from "@/components/atoms/Button";
+import Table from "@/components/atoms/Table";
 
-/**
- * Calculates and formats the time remaining until a target date.
- * @param {Date|string} targetDate - The future date to count down to.
- * @returns {string} Formatted time "MM:SS" or "00:00" if expired.
- */
+
 const getRemainingTime = (targetDate) => {
 	const total = Date.parse(targetDate) - Date.parse(new Date());
 
@@ -139,44 +139,22 @@ export default function MyAssignedOrdersPage() {
 	};
 
 	const handlePageChange = ({ page, per_page }) => {
-		// Request server for the requested page
 		fetchAssignedOrders(page, per_page);
 	};
-	// Generate stats cards
+
 	const statsCards = useMemo(() => {
 		if (!stats.length) return [];
 
-		const hexToRgb = (hex) => {
-			const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-			return result
-				? {
-					r: parseInt(result[1], 16),
-					g: parseInt(result[2], 16),
-					b: parseInt(result[3], 16),
-				}
-				: null;
-		};
-
-		return stats.map((stat) => {
+		return stats.map((stat, i) => {
 			const Icon = getIconForStatus(stat.code);
-			const bgColors = generateBgColors(stat.color);
 
 			return {
 				id: stat.id,
-				title: stat.system ? t(`statuses.${stat.code}`) : stat.name,
-				value: String(stat.count || 0),
+				name: stat.system ? t(`statuses.${stat.code}`) : stat.name,
+				value: String(stat.count ?? 0),
 				icon: Icon,
-				bg: `bg-[${bgColors.light}] dark:bg-[${bgColors.dark}]`,
-				bgInlineLight: bgColors.light,
-				bgInlineDark: bgColors.dark,
-				iconColor: `text-[${stat.color}]`,
-				iconColorInline: stat.color,
-				iconBorder: `border-[${stat.color}]`,
-				iconBorderInline: stat.color,
-				code: stat.code,
-				system: stat.system,
-				sortOrder: stat.sortOrder,
-				fullData: stat,
+				color: stat.color || "#64748B",
+				sortOrder: i,
 			};
 		});
 	}, [stats, t]);
@@ -221,6 +199,20 @@ export default function MyAssignedOrdersPage() {
 
 
 	// Table columns
+	const [searchTerm, setSearchTerm] = useState("");
+	const [hasActiveFilters, setHasActiveFilters] = useState(false);
+
+	const handleSearch = () => {
+		// Implement search logic
+		fetchAssignedOrders(1, pager.per_page, searchTerm);
+	};
+
+	const handleExport = () => {
+		// Implement export logic
+		console.log("Exporting data...");
+	};
+
+
 	const columns = useMemo(() => {
 		return [
 			{
@@ -343,136 +335,73 @@ export default function MyAssignedOrdersPage() {
 	return (
 		<div className="min-h-screen p-5 bg-[#f3f6fa] dark:bg-[#19243950] transition-all duration-300">
 			{/* Header */}
-			<div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-6 mb-6 shadow-sm">
-				<div className="flex items-center justify-between flex-wrap gap-4">
-					<div className="flex items-center gap-3">
-						<div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-							<Package size={24} className="text-primary" />
-						</div>
-						<div>
-							<h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-								{t("myOrders.title")}
-							</h1>
-							<p className="text-sm text-gray-500 dark:text-gray-400">
-								{t("myOrders.subtitle")}
-							</p>
-						</div>
-					</div>
-
-					<div className="flex items-center gap-3">
-						<Button
+			<PageHeader
+				breadcrumbs={[
+					{ name: t('myOrders.title') }
+				]}
+				stats={statsCards}
+				statsLoading={statsLoading}
+				buttons={
+					<>
+						<Button_
 							variant="outline"
+							tone="primary"
 							onClick={handleRefresh}
 							disabled={loading}
-							className="rounded-xl"
-						>
-							<RefreshCw size={16} className={cn("mr-2", loading && "animate-spin")} />
-							{t("actions.refresh")}
-						</Button>
-						<Button
+							icon={<RefreshCw size={16} className={cn(loading && "animate-spin")} />}
+							label={t("actions.refresh")}
+						> </Button_>
+
+						<Button_
+							tone="primary"
 							onClick={handleStartWork}
-							className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
-						>
-							<PlayCircle size={18} className="mr-2" />
-							{t("myOrders.startWork")}
-						</Button>
-					</div>
-				</div>
-			</div>
+							icon={<PlayCircle size={16} className={cn(loading && "animate-spin")} />}
+							label={t("myOrders.startWork")}
+						> </Button_>
 
-			{/* Stats Cards */}
-			<div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-6 mb-6 shadow-sm">
-				<h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
-					{t("myOrders.statistics")}
-				</h2>
-				<div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4">
-					{statsLoading ? (
-						<>
-							{Array.from({ length: 12 }).map((_, i) => (
-								<div
-									key={i}
-									className="w-full rounded-xl p-5 border border-[#EEEEEE] dark:border-[#1F2937] animate-pulse"
-								>
-									<div className="flex items-start gap-3">
-										{/* Icon circle skeleton */}
-										<div className="w-[40px] h-[40px] rounded-full bg-gray-200 dark:bg-gray-700" />
+					</>
+				}
+			/>
 
-										<div className="flex-1">
-											{/* Title skeleton */}
-											<div className="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded mb-3" />
 
-											{/* Value skeleton */}
-											<div className="h-4 w-1/2 bg-gray-200 dark:bg-gray-700 rounded" />
-										</div>
-									</div>
-								</div>
-							))}
-						</>
-					) : statsCards.length === 0 ? (
-						<div className="col-span-full text-center py-12">
-							<Package size={48} className="mx-auto mb-4 text-gray-400" />
-							<p className="text-gray-600 dark:text-gray-400">{t("myOrders.noAssignedOrders")}</p>
-						</div>
-					) : (
-						statsCards.map((stat, index) => (
-							<motion.div
-								style={{ order: stat.sortOrder }}
-								key={stat.id}
-								initial={{ opacity: 0, y: 18 }}
-								animate={{ opacity: 1, y: 0 }}
-								transition={{ delay: index * 0.06 }}
-							>
-								<div
-									style={{
-										background: `linear-gradient(135deg, ${stat.bgInlineLight} 0%, ${stat.bgInlineLight} 100%)`,
-									}}
-									className="rounded-xl"
-								>
-									<InfoCard
-										title={stat.title}
-										value={stat.value}
-										icon={stat.icon}
-										bg=""
-										iconColor=""
-										iconBorder=""
-										editable={!stat.system}
-										onEdit={() => handleEditStatus(stat.fullData)}
-										onDelete={() => handleDeleteStatus(stat)}
-										customStyles={{
-											iconColor: stat.iconColorInline,
-											iconBorder: stat.iconColorInline,
-										}}
-									/>
-								</div>
-							</motion.div>
-						))
-					)}
-				</div>
-			</div>
+			<Table
+				columns={columns}
+				data={pager.records}
+				isLoading={loading}
+				pagination={{
+					total_records: pager.total_records,
+					current_page: pager.current_page,
+					per_page: pager.per_page,
+				}}
+				onPageChange={handlePageChange}
+				emptyState={t("myOrders.noOrders")}
+				labels={{
+					searchPlaceholder: t("search.placeholder"),
+					filter: t("actions.filter"),
+					apply: t("actions.apply"),
+					emptyTitle: t("myOrders.noOrders"),
+					emptySubtitle: t("myOrders.tryAdjusting"),
+					preview: t("actions.preview"),
+				}}
 
-			{/* Orders Table */}
-			<div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
-				<div className="p-6 border-b border-gray-200 dark:border-slate-800">
-					<h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-						{t("myOrders.assignedOrders")}
-					</h2>
-				</div>
+				searchValue={searchTerm}
+				onSearchChange={setSearchTerm}
+				onSearch={handleSearch} 
+				actions={[
+					{
+						key: 'export',
+						label: t('actions.export'),
+						icon: <Download size={14} />,
+						onClick: handleExport,
+						color: 'emerald'
+					}
+				]}
+				compact={false}
+				hoverable={true}
+				striped={false}
+			/>
 
-				<div className="mt-4">
-					<DataTable
-						columns={columns}
-						data={pager.records}
-						pagination={{
-							total_records: pager.total_records,
-							current_page: pager.current_page,
-							per_page: pager.per_page,
-						}}
-						onPageChange={handlePageChange}
-						emptyState={t("myOrders.noOrders")}
-						isLoading={loading}
-					/>
-				</div>
-			</div>
+ 
 		</div>
 	);
 }

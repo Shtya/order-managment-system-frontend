@@ -176,7 +176,7 @@ function FiltersPanel({ t, value, onChange, onApply, onReset, categories, stores
 							onClick={onApply}
 							size="sm"
 							label={t("filters.apply")}
-							tone="purple"
+							tone="primary"
 							variant="solid"
 							icon={<Filter size={18} className="text-white" />}
 						/>

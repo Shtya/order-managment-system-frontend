@@ -3,234 +3,480 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-	ChevronLeft,
-	Filter,
-	RefreshCw,
-	Edit,
-	Trash2,
-	Shield,
-	Users,
-	Lock,
-	Plus,
-	X,
-	Sparkles,
-	Eye,
+	Edit, Trash2, Shield, Users, Lock, Plus, X,
+	Eye, Search, Check, ChevronRight,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import InfoCard from "@/components/atoms/InfoCard";
-import DataTable from "@/components/atoms/DataTable";
 import { cn } from "@/utils/cn";
-import { Button } from "@/components/ui/button";
+
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import Button_ from "@/components/atoms/Button";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import Button_ from "@/components/atoms/Button";
 import {
-	Dialog,
-	DialogContent,
+	Dialog, DialogContent,
+	DialogDescription,
 	DialogHeader,
 	DialogTitle,
-	DialogDescription,
 } from "@/components/ui/dialog";
 import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
+	AlertDialog, AlertDialogAction, AlertDialogCancel,
+	AlertDialogContent, AlertDialogDescription,
+	AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+	Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import api from "@/utils/api";
 import toast from "react-hot-toast";
-import PermissionsSelector from "@/components/atoms/PermissionsSelector";
 import { getUser } from "@/hook/getUser";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
 
+/* ═══════════════════════════════════════════════════════════════
+	 DATA HOOK — unchanged logic, same API
+═══════════════════════════════════════════════════════════════ */
 export function useRolesApi() {
 	const [loading, setLoading] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
-
 	const [roles, setRoles] = useState([]);
 	const [permissions, setPermissions] = useState([]);
 
-	// ✅ Fetch all roles - FIXED: Set isLoading properly
 	const fetchRoles = useCallback(async () => {
-		setIsLoading(true); // Start loading
+		setIsLoading(true);
 		try {
 			setLoading(true);
-			const { data } = await api.get('/roles');
+			const { data } = await api.get("/roles");
 			setRoles(data);
 			return data;
-		} catch (error) {
-			toast.error(error.response?.data?.message || 'Failed to fetch roles');
-			throw error;
+		} catch (err) {
+			toast.error(err.response?.data?.message || "Failed to fetch roles");
+			throw err;
 		} finally {
 			setLoading(false);
-			// ⚠️ IMPORTANT FIX: Add a small delay to ensure skeleton shows properly
-			setTimeout(() => {
-				setIsLoading(false);
-			}, 100);
+			setTimeout(() => setIsLoading(false), 100);
 		}
 	}, []);
 
-	// ✅ Fetch all permissions
 	const fetchPermissions = useCallback(async () => {
 		try {
-			const { data } = await api.get('/roles/permissions');
-			setPermissions(data);
+			const { data } = await api.get("/roles/permissions");
+			setPermissions(data.map(p => p.name));
 			return data;
-		} catch (error) {
-			toast.error(error.response?.data?.message || 'Failed to fetch permissions');
-			throw error;
+		} catch (err) {
+			toast.error(err.response?.data?.message || "Failed to fetch permissions");
+			throw err;
 		}
 	}, []);
-
 
 	const createRole = useCallback(async (roleData, adminId) => {
 		try {
 			setLoading(true);
-			const { data } = await api.post('/roles', {
-				...roleData,
-				adminId,
-				global: false,
-			});
-			toast.success('Role created successfully');
+			const { data } = await api.post("/roles", { ...roleData, adminId, global: false });
+			toast.success("Role created successfully");
 			return data;
-		} catch (error) {
-			toast.error(error.response?.data?.message || 'Failed to create role');
-			throw error;
-		} finally {
-			setLoading(false);
-		}
+		} catch (err) {
+			toast.error(err.response?.data?.message || "Failed to create role");
+			throw err;
+		} finally { setLoading(false); }
 	}, []);
 
-	// ✅ Update role
 	const updateRole = useCallback(async (id, roleData) => {
 		try {
 			setLoading(true);
 			const { data } = await api.patch(`/roles/${id}`, roleData);
-			toast.success('Role updated successfully');
+			toast.success("Role updated successfully");
 			return data;
-		} catch (error) {
-			toast.error(error.response?.data?.message || 'Failed to update role');
-			throw error;
-		} finally {
-			setLoading(false);
-		}
+		} catch (err) {
+			toast.error(err.response?.data?.message || "Failed to update role");
+			throw err;
+		} finally { setLoading(false); }
 	}, []);
 
-	// ✅ Delete role
 	const deleteRole = useCallback(async (id) => {
 		try {
 			setLoading(true);
 			await api.delete(`/roles/${id}`);
-			toast.success('Role deleted successfully');
-		} catch (error) {
-			toast.error(error.response?.data?.message || 'Failed to delete role');
-			throw error;
-		} finally {
-			setLoading(false);
-		}
+			toast.success("Role deleted successfully");
+		} catch (err) {
+			toast.error(err.response?.data?.message || "Failed to delete role");
+			throw err;
+		} finally { setLoading(false); }
 	}, []);
 
-	return {
-		isLoading,
-		loading,
-		roles,
-		permissions,
-		fetchRoles,
-		fetchPermissions,
-		createRole,
-		updateRole,
-		deleteRole,
-	};
+	return { isLoading, loading, roles, permissions, fetchRoles, fetchPermissions, createRole, updateRole, deleteRole };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+	 INTERNAL DESIGN ATOMS
+═══════════════════════════════════════════════════════════════ */
+
+/** Thin gradient top-bar — shared dialog signature */
+function DialogAccentBar() {
+	return (
+		<div
+			className="h-[3px] w-full rounded-t-2xl shrink-0"
+			style={{ background: "linear-gradient(90deg, var(--primary), var(--secondary, #ffb703))" }}
+		/>
+	);
+}
+
+/** Muted uppercase section label */
+function SectionLabel({ children }) {
+	return (
+		<p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground mb-1.5">
+			{children}
+		</p>
+	);
 }
 
 
+
+/** Type badge — Global (amber) / Custom (sky) */
+function TypeBadge({ isGlobal, t }) {
+	return (
+		<span
+			className="inline-flex items-center px-2.5 py-1 rounded-lg text-[10.5px] font-black uppercase tracking-[0.1em] border"
+			style={isGlobal
+				? { background: "color-mix(in oklab,#f59e0b 10%,var(--card))", borderColor: "color-mix(in oklab,#f59e0b 25%,transparent)", color: "#b45309" }
+				: { background: "color-mix(in oklab,#0ea5e9 10%,var(--card))", borderColor: "color-mix(in oklab,#0ea5e9 25%,transparent)", color: "#0369a1" }
+			}
+		>
+			{isGlobal ? t("table.global") : t("table.custom")}
+		</span>
+	);
+}
+
+/** Permission count badge */
+function PermCountBadge({ permissionNames, t }) {
+	const isAll = permissionNames.includes("*");
+	return (
+		<span
+			className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold border"
+			style={{
+				background: "color-mix(in oklab, var(--primary) 7%, var(--card))",
+				borderColor: "color-mix(in oklab, var(--primary) 20%, transparent)",
+				color: "var(--primary)",
+			}}
+		>
+			{isAll ? t("table.allPermissions") : `${permissionNames.length} ${t("table.permissionsCount")}`}
+		</span>
+	);
+}
+
+/** Row action button — icon only, consistent sizing */
+function ActionBtn({ onClick, disabled, locked, icon: Icon, color, tooltip }) {
+	const COLORS = {
+		primary: {
+			base: "color-mix(in oklab, var(--primary) 9%, var(--card))",
+			bdr: "color-mix(in oklab, var(--primary) 22%, transparent)",
+			text: "var(--primary)",
+			hover: "var(--primary)",
+		},
+		destructive: {
+			base: "color-mix(in oklab, var(--destructive) 9%, var(--card))",
+			bdr: "color-mix(in oklab, var(--destructive) 22%, transparent)",
+			text: "var(--destructive)",
+			hover: "var(--destructive)",
+		},
+		muted: {
+			base: "var(--muted)",
+			bdr: "var(--border)",
+			text: "var(--muted-foreground)",
+			hover: null,
+		},
+	};
+	const c = COLORS[color] ?? COLORS.primary;
+
+	const btn = locked ? (
+		<div
+			className="w-8 h-8 rounded-lg flex items-center justify-center border cursor-not-allowed"
+			style={{ background: c.base, borderColor: c.bdr, color: c.text, opacity: 0.5 }}
+		>
+			<Icon size={14} />
+		</div>
+	) : (
+		<motion.button
+			type="button"
+			onClick={onClick}
+			disabled={disabled}
+			whileHover={{ scale: 1.07, y: -1 }}
+			whileTap={{ scale: 0.94 }}
+			className="w-8 h-8 rounded-lg flex items-center justify-center border transition-all duration-150"
+			style={{ background: c.base, borderColor: c.bdr, color: c.text }}
+			onMouseEnter={e => {
+				if (!c.hover) return;
+				e.currentTarget.style.background = c.hover;
+				e.currentTarget.style.color = "#fff";
+				e.currentTarget.style.borderColor = c.hover;
+			}}
+			onMouseLeave={e => {
+				e.currentTarget.style.background = c.base;
+				e.currentTarget.style.color = c.text;
+				e.currentTarget.style.borderColor = c.bdr;
+			}}
+		>
+			<Icon size={14} />
+		</motion.button>
+	);
+
+	return (
+		<TooltipProvider>
+			<Tooltip>
+				<TooltipTrigger asChild>{btn}</TooltipTrigger>
+				<TooltipContent className="text-[11px]">{tooltip}</TooltipContent>
+			</Tooltip>
+		</TooltipProvider>
+	);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+	 PERMISSIONS SELECTOR
+	 Groups by prefix, collapsible, search, select-all per group
+═══════════════════════════════════════════════════════════════ */
+function PermissionsSelector({ permissions = [], selected = [], onChange, disabled }) {
+	const [search, setSearch] = useState("");
+	const [collapsed, setCollapsed] = useState({});
+
+	const t = useTranslations("roles-client")
+
+	const groups = useMemo(() => {
+		const map = {};
+		permissions.forEach((p) => {
+			console.log(p);
+			const key = p?.split(/[._]/)[0] || "general";
+			if (!map[key]) map[key] = [];
+			map[key].push(p);
+		});
+		return map;
+	}, [permissions]);
+
+	const filtered = useMemo(() => {
+		if (!search.trim()) return groups;
+		const q = search.toLowerCase();
+		const out = {};
+		Object.entries(groups).forEach(([grp, ps]) => {
+			const hits = ps.filter(p => p.toLowerCase().includes(q));
+			if (hits.length) out[grp] = hits;
+		});
+		return out;
+	}, [groups, search]);
+
+	const togglePerm = (p) => { if (disabled) return; onChange(selected.includes(p) ? selected.filter(x => x !== p) : [...selected, p]); };
+	const toggleGroup = (grp, ps) => { if (disabled) return; const allOn = ps.every(p => selected.includes(p)); onChange(allOn ? selected.filter(p => !ps.includes(p)) : [...new Set([...selected, ...ps])]); };
+	const toggleCol = (grp) => setCollapsed(c => ({ ...c, [grp]: !c[grp] }));
+
+	const total = permissions.length;
+	const checked = selected.length;
+
+	return (
+		<div className="space-y-3">
+			{/* Header */}
+			<div className="flex items-center justify-between gap-3 flex-wrap">
+				<div>
+					<SectionLabel>{t("permissions.title")}</SectionLabel>
+					<div className="flex items-center gap-1.5">
+						<span className="text-[11px] font-bold tabular-nums" style={{ color: "var(--primary)" }}>{checked}</span>
+						<span className="text-[11px] text-muted-foreground">{t("permissions.selectedOutOf", { checked, total })}</span>
+						<div className="w-20 h-1 rounded-full bg-border overflow-hidden ms-1">
+							<motion.div
+								className="h-full rounded-full"
+								style={{ background: "var(--primary)" }}
+								animate={{ width: total ? `${(checked / total) * 100}%` : "0%" }}
+								transition={{ duration: 0.4, ease: "easeOut" }}
+							/>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			{/* Groups */}
+			<div className="space-y-2 max-h-[300px] overflow-y-auto pe-1">
+				{Object.entries(filtered).map(([grp, ps]) => {
+					const allOn = ps.every(p => selected.includes(p));
+					const someOn = !allOn && ps.some(p => selected.includes(p));
+					const open = !collapsed[grp];
+
+					return (
+						<div key={grp} className="rounded-lg border border-border overflow-hidden" style={{ background: "var(--card)" }}>
+							{/* Group header */}
+							<button
+								type="button"
+								onClick={() => toggleCol(grp)}
+								className="w-full flex items-center gap-3 px-4 py-2.5 text-start
+                  hover:bg-[color-mix(in_oklab,var(--muted)_60%,transparent)] transition-colors duration-150"
+							>
+								{/* select-all micro checkbox */}
+								<button
+									type="button"
+									onClick={e => { e.stopPropagation(); toggleGroup(grp, ps); }}
+									disabled={disabled}
+									className="w-4 h-4 rounded flex items-center justify-center shrink-0 border transition-all duration-150"
+									style={{
+										borderColor: allOn ? "var(--primary)" : someOn ? "color-mix(in oklab,var(--primary) 60%,transparent)" : "var(--border)",
+										background: allOn ? "var(--primary)" : someOn ? "color-mix(in oklab,var(--primary) 28%,transparent)" : "transparent",
+									}}
+								>
+									{allOn && <Check size={9} strokeWidth={3.5} className="text-white" />}
+									{someOn && <div className="w-1.5 h-0.5 rounded-full" style={{ background: "var(--primary)" }} />}
+								</button>
+
+								<span className="flex-1 text-[12px] font-bold capitalize text-foreground/80">{grp}</span>
+								<span className="text-[10px] text-muted-foreground tabular-nums me-1">
+									{ps.filter(p => selected.includes(p)).length}/{ps.length}
+								</span>
+								<motion.span animate={{ rotate: open ? 90 : 0 }} transition={{ duration: 0.18 }} className="text-muted-foreground">
+									<ChevronRight size={13} />
+								</motion.span>
+							</button>
+
+							{/* Chips */}
+							<AnimatePresence initial={false}>
+								{open && (
+									<motion.div
+										initial={{ height: 0, opacity: 0 }}
+										animate={{ height: "auto", opacity: 1 }}
+										exit={{ height: 0, opacity: 0 }}
+										transition={{ duration: 0.2, ease: "easeInOut" }}
+										className="overflow-hidden"
+									>
+										<div
+											className="px-4 py-3 flex flex-wrap gap-1.5 border-t border-border"
+											style={{ background: "color-mix(in oklab,var(--muted) 45%,var(--card))" }}
+										>
+											{ps.map(perm => {
+												const active = selected.includes(perm);
+												return (
+													<motion.button
+														key={perm}
+														type="button"
+														onClick={() => togglePerm(perm)}
+														disabled={disabled}
+														whileHover={!disabled ? { scale: 1.03 } : {}}
+														whileTap={!disabled ? { scale: 0.96 } : {}}
+														className={cn(
+															"inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg",
+															"border text-[11px] font-mono font-semibold select-none",
+															"transition-all duration-150",
+															disabled && "opacity-40 cursor-not-allowed pointer-events-none",
+														)}
+														style={{
+															background: active ? "color-mix(in oklab,var(--primary) 8%,var(--card))" : "var(--card)",
+															borderColor: active ? "color-mix(in oklab,var(--primary) 35%,transparent)" : "var(--border)",
+															color: active ? "var(--primary)" : "var(--muted-foreground)",
+														}}
+													>
+														{active && <Check size={9} strokeWidth={3} style={{ color: "var(--primary)" }} />}
+														{perm}
+													</motion.button>
+												);
+											})}
+										</div>
+									</motion.div>
+								)}
+							</AnimatePresence>
+						</div>
+					);
+				})}
+				{!Object.keys(filtered).length && (
+					<p className="py-8 text-center text-[13px] text-muted-foreground">{t("permissions.noMatch")}</p>
+				)}
+			</div>
+		</div>
+	);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+	 ROLE FORM DIALOG
+═══════════════════════════════════════════════════════════════ */
 function RoleFormDialog({ t, open, onClose, role, permissions, onSubmit, loading }) {
-	const [formData, setFormData] = useState({
-		name: "",
-		description: "",
-		permissionNames: [],
-	});
+	const [formData, setFormData] = useState({ name: "", description: "", permissionNames: [] });
 
 	useEffect(() => {
-		if (role) {
-			setFormData({
-				name: role.name || "",
-				description: role.description || "",
-				permissionNames: role.permissionNames || [],
-			});
-		} else {
-			setFormData({
-				name: "",
-				description: "",
-				permissionNames: [],
-			});
-		}
+		setFormData(role
+			? { name: role.name || "", description: role.description || "", permissionNames: role.permissionNames || [] }
+			: { name: "", description: "", permissionNames: [] }
+		);
 	}, [role, open]);
 
-	const handleSubmit = (e) => {
-		e.preventDefault();
-		onSubmit(formData);
-	};
+	const isGlobal = role?.isGlobal;
 
 	return (
 		<Dialog open={open} onOpenChange={onClose}>
-			<DialogContent className="!max-w-4xl max-h-[90vh] overflow-y-auto">
+			<DialogContent className="!max-w-3xl max-h-[92vh] overflow-y-auto ">
 				<DialogHeader>
-					<DialogTitle>{role ? t("dialog.editRole") : t("dialog.addRole")}</DialogTitle>
-					<DialogDescription>{t("dialog.roleDescription")}</DialogDescription>
+					<DialogTitle> {role ? t("dialog.editRole") : t("dialog.addRole")} </DialogTitle>
+					<DialogDescription> {t("dialog.roleDescription")}</DialogDescription>
 				</DialogHeader>
 
-				<form onSubmit={handleSubmit} className="space-y-6">
-					<div className="grid grid-cols-2 gap-4 " >
-						<div className="space-y-2" >
-							<Label>{t("dialog.roleName")}</Label>
+				{/* Form */}
+				<form onSubmit={e => { e.preventDefault(); onSubmit(formData); }} className=" pt-4 space-y-5">
+
+					{/* Global notice */}
+					{isGlobal && (
+						<div
+							className="flex items-center gap-2.5 px-4 py-2.5 rounded-lg border text-[12px] font-medium"
+							style={{
+								background: "color-mix(in oklab,#f59e0b 8%,var(--card))",
+								borderColor: "color-mix(in oklab,#f59e0b 25%,transparent)",
+								color: "#b45309",
+							}}
+						>
+							<Lock size={13} className="shrink-0" style={{ color: "#f59e0b" }} />
+							{t("dialog.globalRoleNotice")}
+						</div>
+					)}
+
+					{/* Name + Description */}
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+						<div className="space-y-1.5">
+							<SectionLabel>{t("dialog.roleName")}</SectionLabel>
 							<Input
 								value={formData.name}
-								onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+								onChange={e => setFormData({ ...formData, name: e.target.value })}
 								placeholder={t("dialog.roleNamePlaceholder")}
 								required
-								disabled={role?.isGlobal}
+								disabled={isGlobal}
+								className="h-10 rounded-lg border-border bg-background text-sm
+                  focus:border-[var(--primary)]/50 focus:ring-1 focus:ring-[var(--primary)]/12"
 							/>
 						</div>
-
-						<div className="space-y-2">
-							<Label>{t("dialog.roleDescription")}</Label>
+						<div className="space-y-1.5">
+							<SectionLabel>{t("dialog.roleDescriptionLabel") || t("dialog.roleDescription")}</SectionLabel>
 							<Textarea
 								value={formData.description}
-								onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+								onChange={e => setFormData({ ...formData, description: e.target.value })}
 								placeholder={t("dialog.roleDescriptionPlaceholder")}
 								rows={2}
+								disabled={isGlobal}
+								className="rounded-lg border-border bg-background text-sm resize-none
+                  focus:border-[var(--primary)]/50 focus:ring-1 focus:ring-[var(--primary)]/12"
 							/>
 						</div>
 					</div>
 
-					{/* ✅ NEW: Enhanced Permissions Selector */}
-					<div>
-						<PermissionsSelector
-							permissions={permissions}
-							selected={formData.permissionNames}
-							onChange={(newPermissions) =>
-								setFormData({ ...formData, permissionNames: newPermissions })
-							}
-							disabled={loading || role?.isGlobal}
-						/>
-					</div>
 
-					<div className="flex justify-end gap-2 pt-4">
+					{/* Permissions */}
+					<PermissionsSelector
+						permissions={permissions}
+						selected={formData.permissionNames}
+						onChange={v => setFormData({ ...formData, permissionNames: v })}
+						disabled={loading || isGlobal}
+					/>
+
+					{/* Footer */}
+					<div className="flex items-center justify-between gap-3 pt-1 pb-1">
+						<button
+							type="button"
+							onClick={onClose}
+							className="btn btn-sm btn-default btn-ghost"
+						>
+							{t("common.cancel") || "Cancel"}
+						</button>
 						<Button_
 							type="submit"
 							loading={loading}
-							tone="purple"
+							tone="primary"
 							variant="solid"
 							label={t("dialog.save")}
 						/>
@@ -241,416 +487,313 @@ function RoleFormDialog({ t, open, onClose, role, permissions, onSubmit, loading
 	);
 }
 
-
+/* ═══════════════════════════════════════════════════════════════
+	 ROLE PREVIEW DIALOG
+═══════════════════════════════════════════════════════════════ */
 function RolePreviewDialog({ t, open, onClose, role }) {
 	if (!role) return null;
-
 	const perms = role.permissionNames || [];
-	const all = perms.includes("*");
+	const isAll = perms.includes("*");
 
-	const percentage = all ? 100 : perms.length ? 100 : 0; // preview: either all or just show full
+	const groups = useMemo(() => {
+		if (isAll) return { "*": ["*"] };
+		const map = {};
+		perms.forEach(p => {
+			const key = p?.split(/[._]/)[0] || "general";
+			if (!map[key]) map[key] = [];
+			map[key].push(p);
+		});
+		return map;
+	}, [perms, isAll]);
 
 	return (
 		<Dialog open={open} onOpenChange={onClose}>
-			<DialogContent className="!max-w-4xl max-h-[90vh] overflow-y-auto">
+			<DialogContent className="!max-w-3xl max-h-[92vh] overflow-x-hidden overflow-y-auto p-0 gap-0 rounded-lg border border-border bg-card shadow-[0_24px_64px_rgba(0,0,0,0.14)]">
+
+
 				<DialogHeader>
-					<DialogTitle className="flex items-center gap-2">
-						{t("preview.title")}
-					</DialogTitle>
-					<DialogDescription>{t("preview.description")}</DialogDescription>
+					<DialogTitle> {role.name}</DialogTitle>
+					<DialogDescription> {role.description || t("preview.noDescription")}</DialogDescription>
 				</DialogHeader>
 
-				<div className="space-y-4">
-					{/* ✅ Hero Header (same style as PermissionsSelector) */}
-					<div className="relative overflow-hidden rounded-xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 backdrop-blur-sm">
-						{/* shimmer */}
-						<div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-shimmer" />
 
-						<div className="relative p-5">
-							<div className="flex items-center justify-between gap-4 flex-wrap">
-								<div className="flex items-center gap-3">
-									<div className="relative">
-										<div className="absolute inset-0 bg-primary blur-xl opacity-30 animate-pulse" />
-										<div className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/20">
-											<Shield className="text-white" size={24} />
-										</div>
+				{/* Header */}
+				<div className="flex items-start justify-between gap-4 px-7 pt-6 pb-5">
+
+
+					<div className="flex items-center gap-3 shrink-0">
+						<TypeBadge isGlobal={role.isGlobal} t={t} /> 
+						<div className="text-end">
+							<div
+								className="leading-none tabular-nums"
+								style={{ fontFamily: "'Instrument Serif',serif", fontWeight: 400, fontSize: 28, color: "var(--primary)" }}
+							>
+								{isAll ? "∞" : perms.length}
+							</div>
+							<div className="text-[9px] font-black uppercase tracking-[0.14em] text-muted-foreground mt-0.5">
+								{t("table.permissionsCount")}
+							</div>
+						</div>
+
+					</div>
+				</div>
+
+				{/* Permissions body */}
+				<div className=" pt-4 space-y-3">
+					<SectionLabel>{t("preview.permissions")}</SectionLabel>
+
+					{!perms.length ? (
+						<div
+							className="py-8 text-center rounded-lg border border-border text-[13px] text-muted-foreground"
+							style={{ background: "var(--muted)" }}
+						>
+							{t("preview.noPermissions")}
+						</div>
+					) : (
+						<div className="space-y-2">
+							{Object.entries(groups).map(([grp, ps]) => (
+								<div key={grp} className="rounded-lg border border-border overflow-hidden">
+									<div
+										className="px-4 py-2 flex items-center justify-between"
+										style={{ background: "color-mix(in oklab,var(--muted) 55%,var(--card))" }}
+									>
+										<span className="text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground capitalize">{grp}</span>
+										<span className="text-[10px] text-muted-foreground tabular-nums">{ps.length}</span>
 									</div>
-
-									<div>
-										<h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-											{role.name}
-											<Sparkles className="text-primary" size={18} />
-										</h3>
-
-										{role.description ? (
-											<p className="text-sm text-gray-600 dark:text-slate-400 mt-0.5">
-												{role.description}
-											</p>
-										) : (
-											<p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">
-												{t("preview.noDescription")}
-											</p>
-										)}
-									</div>
-								</div>
-
-								<div className="flex items-center gap-4">
-
-
-									{/* ✅ Badges */}
-									<div className="text-right">
-										<div className="flex items-center justify-end gap-2 mb-2">
-											<Badge
-												className={cn(
-													"rounded-xl",
-													role.isGlobal
-														? "bg-[#FFF9F0] text-[#F59E0B] hover:bg-[#FFF9F0] dark:bg-orange-950/30 dark:text-orange-400"
-														: "bg-[#F0F9FF] text-[#0EA5E9] hover:bg-[#F0F9FF] dark:bg-cyan-950/30 dark:text-cyan-400"
-												)}
+									<div className="px-4 py-3 flex flex-wrap gap-1.5">
+										{ps.map(p => (
+											<span
+												key={p}
+												className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-mono font-medium border border-border bg-card text-foreground/70"
 											>
-												{role.isGlobal ? t("table.global") : t("table.custom")}
-											</Badge>
-
-										</div>
-
-										<div className="flex items-baseline justify-end gap-1.5">
-											<span className="text-3xl font-black bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-												{all ? "∞" : perms.length}
+												{p}
 											</span>
-											<span className="text-lg text-gray-400 dark:text-slate-500 font-medium">
-												{all ? "" : ` ${t("table.permissionsCount")}`}
-											</span>
-										</div>
-
+										))}
 									</div>
-
 								</div>
-							</div>
-
+							))}
 						</div>
-					</div>
+					)}
+				</div>
 
-					{/* ✅ Permissions List Card (same pattern blocks style) */}
-					<div className="relative overflow-hidden rounded-xl border-2 border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900/30">
-						<div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
-
-						<div className="relative p-5">
-							<div className="flex items-center justify-between mb-3">
-								<div className="font-bold text-gray-900 dark:text-slate-100 flex items-center gap-2">
-									{t("preview.permissions")}
-									{all && (
-										<Badge className="bg-primary/10 text-primary border border-primary/20">
-											{t("table.allPermissions")}
-										</Badge>
-									)}
-								</div>
-
-								{!all && (
-									<Badge variant="outline" className="rounded-xl border-primary/20">
-										{perms.length} {t("table.permissionsCount")}
-									</Badge>
-								)}
-							</div>
-
-							{!perms.length ? (
-								<div className="text-sm text-gray-500 dark:text-slate-400">
-									{t("preview.noPermissions")}
-								</div>
-							) : (
-								<div className="flex flex-wrap gap-2">
-									{(all ? ["*"] : perms).map((p) => (
-										<span
-											key={p}
-											className={cn(
-												"px-3 py-1 rounded-full text-xs font-bold border transition-all",
-												"bg-gray-50 dark:bg-slate-800",
-												"border-gray-200 dark:border-slate-700",
-												"text-gray-700 dark:text-slate-200",
-												"hover:border-primary/40 hover:bg-primary/5"
-											)}
-										>
-											{p}
-										</span>
-									))}
-								</div>
-							)}
-
-							<div className="flex justify-end pt-5">
-								<Button
-									onClick={onClose}
-									className="bg-primary1 text-white hover:opacity-95 rounded-xl px-6"
-								>
-									{t("preview.close")}
-								</Button>
-							</div>
-						</div>
-					</div>
+				{/* Footer */}
+				<div className="px-7 pb-6 pt-2 flex justify-end">
+					<button
+						onClick={onClose}
+						className="btn btn-sm btn-default btn-outline"
+					>
+						{t("preview.close")}
+					</button>
 				</div>
 			</DialogContent>
 		</Dialog>
 	);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+	 DELETE CONFIRM DIALOG  — refined AlertDialog
+═══════════════════════════════════════════════════════════════ */
+function DeleteDialog({ t, open, onOpenChange, roleName, onConfirm, loading }) {
+	return (
+		<AlertDialog open={open} onOpenChange={onOpenChange}>
+			<AlertDialogContent className="rounded-lg border border-border bg-card !p-0 gap-0 max-w-md overflow-hidden shadow-[0_20px_56px_rgba(0,0,0,0.14)]">
 
 
-/** ✅ Main Page Component */
+				<div className="p-6 space-y-4">
+					{/* Icon + title */}
+					<div className="flex items-start gap-3">
+						<div
+							className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+							style={{
+								background: "color-mix(in oklab,var(--destructive) 10%,var(--card))",
+								border: "1px solid color-mix(in oklab,var(--destructive) 20%,transparent)",
+							}}
+						>
+							<Trash2 size={17} style={{ color: "var(--destructive)" }} />
+						</div>
+						<div>
+							<h3
+								className="leading-tight"
+								style={{ fontFamily: "'Instrument Serif',serif", fontWeight: 400, fontSize: 19, color: "var(--card-foreground)" }}
+							>
+								{t("deleteDialog.title")}
+							</h3>
+							<p className="text-[12.5px] text-muted-foreground mt-1 leading-relaxed">
+								{t("deleteDialog.description")}
+								{roleName && (
+									<strong className="font-bold text-foreground"> "{roleName}"</strong>
+								)}
+							</p>
+						</div>
+					</div>
+
+					{/* Actions */}
+					<div className="flex items-center justify-end gap-2.5 pt-1">
+						<AlertDialogCancel
+							className="btn btn-sm btn-default btn-ghost h-9 px-4 text-[12.5px]"
+							style={{ border: "1px solid var(--border)" }}
+						>
+							{t("deleteDialog.cancel")}
+						</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={onConfirm}
+							disabled={loading}
+							className="btn btn-sm btn-solid btn-rose h-9 px-5 text-[12.5px] text-white"
+							style={{
+								background: "linear-gradient(135deg,var(--destructive),color-mix(in oklab,var(--destructive) 80%,#b91c1c))",
+								border: "none",
+								boxShadow: "0 3px 12px -3px color-mix(in oklab,var(--destructive) 50%,transparent)",
+							}}
+						>
+							{t("deleteDialog.confirm")}
+						</AlertDialogAction>
+					</div>
+				</div>
+			</AlertDialogContent>
+		</AlertDialog>
+	);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+	 MAIN PAGE
+═══════════════════════════════════════════════════════════════ */
 export default function RolesPermissionsPage() {
 	const t = useTranslations("roles-client");
+	const user = getUser();
+
 	const [search, setSearch] = useState("");
-	const [filters, setFilters] = useState({ name: "", type: "" });
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [selectedRole, setSelectedRole] = useState(null);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [roleToDelete, setRoleToDelete] = useState(null);
 	const [previewOpen, setPreviewOpen] = useState(false);
 	const [previewRole, setPreviewRole] = useState(null);
-
-	// ✅ FIX #2: Add pagination state for proper per_page tracking
 	const [currentPage, setCurrentPage] = useState(1);
 	const [perPage, setPerPage] = useState(6);
 
-	const handlePreviewRole = (role) => {
-		setPreviewRole(role);
-		setPreviewOpen(true);
-	};
-
-	const { isLoading, roles, permissions, loading, fetchRoles, fetchPermissions, createRole, updateRole, deleteRole } = useRolesApi();
-	const user = getUser()
+	const {
+		isLoading, loading, roles, permissions,
+		fetchRoles, fetchPermissions,
+		createRole, updateRole, deleteRole,
+	} = useRolesApi();
 
 	useEffect(() => {
 		fetchRoles();
 		fetchPermissions();
 	}, [fetchRoles, fetchPermissions]);
 
-	const stats = useMemo(
-		() => [
-			{
-				name: t("stats.totalRoles"),
-				value: roles.length.toString(),
-				icon: Shield,
-				color: "#6B7CFF", // blue
-				sortOrder: 0,
-			},
-			{
-				name: t("stats.globalRoles"),
-				value: roles.filter((r) => r.isGlobal).length.toString(),
-				icon: Lock,
-				color: "#F59E0B", // amber
-				sortOrder: 1,
-			},
-			{
-				name: t("stats.customRoles"),
-				value: roles.filter((r) => !r.isGlobal).length.toString(),
-				icon: Users,
-				color: "#0EA5E9", // sky
-				sortOrder: 2,
-			},
-		],
-		[t, roles]
+	/* ── Stats ── */
+	const stats = useMemo(() => [
+		{ name: t("stats.totalRoles"), value: roles.length.toString(), icon: Shield, color: "#6B7CFF", sortOrder: 0 },
+		{ name: t("stats.globalRoles"), value: roles.filter(r => r.isGlobal).length.toString(), icon: Lock, color: "#F59E0B", sortOrder: 1 },
+		{ name: t("stats.customRoles"), value: roles.filter(r => !r.isGlobal).length.toString(), icon: Users, color: "#0EA5E9", sortOrder: 2 },
+	], [t, roles]);
+
+	/* ── Filter + paginate ── */
+	const filteredRoles = useMemo(() =>
+		roles.filter(r =>
+			r.name.toLowerCase().includes(search.toLowerCase()) ||
+			r.description?.toLowerCase().includes(search.toLowerCase())
+		),
+		[roles, search]
 	);
 
-	const filteredRoles = useMemo(() => {
-		return roles.filter((role) => {
-			const matchSearch = role.name.toLowerCase().includes(search.toLowerCase()) ||
-				role.description?.toLowerCase().includes(search.toLowerCase());
-			const matchName = !filters.name || role.name.toLowerCase().includes(filters.name.toLowerCase());
-			const matchType = !filters.type ||
-				(filters.type === "global" && role.isGlobal) ||
-				(filters.type === "custom" && !role.isGlobal);
-			return matchSearch && matchName && matchType;
-		});
-	}, [roles, search, filters]);
-
-	// ✅ FIX #3: Add pagination logic for filtered data
 	const paginatedRoles = useMemo(() => {
 		const start = (currentPage - 1) * perPage;
-		const end = start + perPage;
-		return filteredRoles.slice(start, end);
+		return filteredRoles.slice(start, start + perPage);
 	}, [filteredRoles, currentPage, perPage]);
 
-	const handleAddRole = () => {
-		setSelectedRole(null);
-		setDialogOpen(true);
-	};
-
-	const handleEditRole = (role) => {
-		setSelectedRole(role);
-		setDialogOpen(true);
-	};
-
-	const handleDeleteClick = (role) => {
-		setRoleToDelete(role);
-		setDeleteDialogOpen(true);
-	};
+	/* ── Handlers ── */
+	const handleAddRole = () => { setSelectedRole(null); setDialogOpen(true); };
+	const handleEditRole = (role) => { setSelectedRole(role); setDialogOpen(true); };
+	const handleDeleteClick = (role) => { setRoleToDelete(role); setDeleteDialogOpen(true); };
+	const handlePreview = (role) => { setPreviewRole(role); setPreviewOpen(true); };
 
 	const handleSubmitRole = async (data) => {
 		try {
-			if (selectedRole) {
-				await updateRole(selectedRole.id, data);
-			} else {
-				await createRole(data, user?.id);
-			}
+			selectedRole ? await updateRole(selectedRole.id, data) : await createRole(data, user?.id);
 			setDialogOpen(false);
 			fetchRoles();
-		} catch (error) {
-			console.error(error);
-		}
+		} catch { }
 	};
 
 	const handleConfirmDelete = async () => {
 		if (!roleToDelete) return;
-		try {
-			await deleteRole(roleToDelete.id);
-			setDeleteDialogOpen(false);
-			fetchRoles();
-		} catch (error) {
-			console.error(error);
-		}
+		try { await deleteRole(roleToDelete.id); setDeleteDialogOpen(false); fetchRoles(); } catch { }
 	};
 
-	// ✅ FIX #4: Add page change handler
-	const handlePageChange = ({ page, per_page }) => {
-		setCurrentPage(page);
-		setPerPage(per_page);
-	};
+	const handlePageChange = ({ page, per_page }) => { setCurrentPage(page); setPerPage(per_page); };
 
-	const columns = useMemo(() => {
-		return [
-			{
-				key: "name",
-				header: t("table.roleName"),
-				className: "text-gray-700 dark:text-slate-200 font-semibold",
-			},
-			{
-				key: "description",
-				header: t("table.description"),
-				className: "text-gray-600 dark:text-slate-200",
-				cell: (row) => (
-					<div >
-						{row.description ? row.description : "---"}
-					</div>
-				),
-			},
-			{
-				key: "type",
-				header: t("table.type"),
-				cell: (row) => (
-					<Badge className={cn(
-						"rounded-xl",
-						row.isGlobal
-							? "bg-[#FFF9F0] text-[#F59E0B] hover:bg-[#FFF9F0] dark:bg-orange-950/30 dark:text-orange-400"
-							: "bg-[#F0F9FF] text-[#0EA5E9] hover:bg-[#F0F9FF] dark:bg-cyan-950/30 dark:text-cyan-400"
-					)}>
-						{row.isGlobal ? t("table.global") : t("table.custom")}
-					</Badge>
-				),
-			},
-			{
-				key: "permissions",
-				header: t("table.permissions"),
-				cell: (row) => (
-					<div className="flex items-center gap-2">
-						<Badge variant="outline" className="rounded-xl">
-							{row.permissionNames.includes('*') ? t("table.allPermissions") : `${row.permissionNames.length} ${t("table.permissionsCount")}`}
-						</Badge>
-					</div>
-				),
-			},
-			{
-				key: "options",
-				header: t("table.options"),
-				cell: (row) => (
-					<div className="flex items-center gap-2">
-						{/* ✅ Show Edit button only if NOT global */}
-						{!row.isGlobal ? (
-							<TooltipProvider>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<motion.button
-											whileHover={{ scale: 1.1 }}
-											whileTap={{ scale: 0.95 }}
-											onClick={() => handleEditRole(row)}
-											className="w-9 h-9 rounded-full border border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all flex items-center justify-center dark:bg-purple-950/30 dark:hover:bg-purple-600"
-										>
-											<Edit size={16} />
-										</motion.button>
-									</TooltipTrigger>
-									<TooltipContent>{t("actions.edit")}</TooltipContent>
-								</Tooltip>
-							</TooltipProvider>
-						) : (
-							<TooltipProvider>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<div className="w-9 h-9 rounded-full border border-gray-200 bg-gray-50 text-gray-400 flex items-center justify-center dark:bg-slate-800 dark:border-slate-700 cursor-not-allowed">
-											<Lock size={16} />
-										</div>
-									</TooltipTrigger>
-									<TooltipContent>{t("actions.locked")}</TooltipContent>
-								</Tooltip>
-							</TooltipProvider>
-						)}
+	/* ── Columns ── */
+	const columns = useMemo(() => [
+		{
+			key: "name",
+			header: t("table.roleName"),
+			cell: (row) => (
+				<span className="text-[13.5px] font-semibold text-foreground">{row.name}</span>
+			),
+		},
+		{
+			key: "description",
+			header: t("table.description"),
+			cell: (row) => (
+				<span className="text-[13px] text-muted-foreground">
+					{row.description || <span className="opacity-30 font-mono text-[12px]">—</span>}
+				</span>
+			),
+		},
+		{
+			key: "type",
+			header: t("table.type"),
+			cell: (row) => <TypeBadge isGlobal={row.isGlobal} t={t} />,
+		},
+		{
+			key: "permissions",
+			header: t("table.permissions"),
+			cell: (row) => <PermCountBadge permissionNames={row.permissionNames} t={t} />,
+		},
+		{
+			key: "options",
+			header: t("table.options"),
+			cell: (row) => (
+				<div className="flex items-center gap-1.5">
+					{/* Edit */}
+					<ActionBtn
+						onClick={() => handleEditRole(row)}
+						locked={row.isGlobal}
+						icon={row.isGlobal ? Lock : Edit}
+						color={row.isGlobal ? "muted" : "primary"}
+						tooltip={row.isGlobal ? t("actions.locked") : t("actions.edit")}
+					/>
+					{/* Delete */}
+					<ActionBtn
+						onClick={() => handleDeleteClick(row)}
+						locked={row.isGlobal}
+						icon={row.isGlobal ? Shield : Trash2}
+						color={row.isGlobal ? "muted" : "destructive"}
+						tooltip={row.isGlobal ? t("actions.protected") : t("actions.delete")}
+					/>
+					{/* Preview */}
+					<ActionBtn
+						onClick={() => handlePreview(row)}
+						icon={Eye}
+						color="primary"
+						tooltip={t("actions.preview")}
+					/>
+				</div>
+			),
+		},
+	], [t]);
 
-						{/* ✅ Show Delete button only if NOT global */}
-						{!row.isGlobal ? (
-							<TooltipProvider>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<motion.button
-											whileHover={{ scale: 1.1 }}
-											whileTap={{ scale: 0.95 }}
-											onClick={() => handleDeleteClick(row)}
-											className="w-9 h-9 rounded-full border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all flex items-center justify-center dark:bg-red-950/30 dark:hover:bg-red-600"
-										>
-											<Trash2 size={16} />
-										</motion.button>
-									</TooltipTrigger>
-									<TooltipContent>{t("actions.delete")}</TooltipContent>
-								</Tooltip>
-							</TooltipProvider>
-						) : (
-							<TooltipProvider>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<div className="w-9 h-9 rounded-full border border-gray-200 bg-gray-50 text-gray-400 flex items-center justify-center dark:bg-slate-800 dark:border-slate-700 cursor-not-allowed">
-											<Shield size={16} />
-										</div>
-									</TooltipTrigger>
-									<TooltipContent>{t("actions.protected")}</TooltipContent>
-								</Tooltip>
-							</TooltipProvider>
-						)}
-
-
-						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.1 }}
-										whileTap={{ scale: 0.95 }}
-										onClick={() => handlePreviewRole(row)}
-										className="w-9 h-9 rounded-full border border-primary/20 bg-primary/10 text-primary  hover:bg-primary hover:text-white transition-all flex items-center justify-center dark:bg-primary/15"
-									>
-										<Eye size={16} />
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>{t("actions.preview")}</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
-
-					</div>
-				),
-			},
-		];
-	}, [t]);
-
+	/* ── Render ── */
 	return (
 		<div className="min-h-screen p-5">
 
+			{/* Page header */}
 			<PageHeader
 				breadcrumbs={[
 					{ name: t("breadcrumb.home"), href: "/" },
-					{ name: t("breadcrumb.roles") }
+					{ name: t("breadcrumb.roles") },
 				]}
 				buttons={
 					<Button_
@@ -658,15 +801,14 @@ export default function RolesPermissionsPage() {
 						size="sm"
 						label={t("toolbar.addRole")}
 						variant="solid"
-						icon={<Plus size={18} />}
+						icon={<Plus size={15} />}
 					/>
 				}
 				stats={stats}
 			/>
 
-
+			{/* Table */}
 			<Table
-				t={t}
 				searchValue={search}
 				onSearchChange={setSearch}
 				columns={columns}
@@ -674,6 +816,11 @@ export default function RolesPermissionsPage() {
 				isLoading={isLoading}
 				hoverable
 				striped
+				labels={{
+					searchPlaceholder: t("toolbar.searchPlaceholder"),
+					emptyTitle: t("empty"),
+					emptySubtitle: t("emptySubtitle") || "",
+				}}
 				pagination={{
 					total_records: filteredRoles.length,
 					current_page: currentPage,
@@ -683,6 +830,7 @@ export default function RolesPermissionsPage() {
 				emptyState={t("empty")}
 			/>
 
+			{/* Form dialog */}
 			<RoleFormDialog
 				t={t}
 				open={dialogOpen}
@@ -693,6 +841,7 @@ export default function RolesPermissionsPage() {
 				loading={loading}
 			/>
 
+			{/* Preview dialog */}
 			<RolePreviewDialog
 				t={t}
 				open={previewOpen}
@@ -700,21 +849,16 @@ export default function RolesPermissionsPage() {
 				role={previewRole}
 			/>
 
+			{/* Delete confirm */}
+			<DeleteDialog
+				t={t}
+				open={deleteDialogOpen}
+				onOpenChange={setDeleteDialogOpen}
+				roleName={roleToDelete?.name}
+				onConfirm={handleConfirmDelete}
+				loading={loading}
+			/>
 
-			<AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>{t("deleteDialog.title")}</AlertDialogTitle>
-						<AlertDialogDescription>{t("deleteDialog.description")}</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>{t("deleteDialog.cancel")}</AlertDialogCancel>
-						<AlertDialogAction onClick={handleConfirmDelete} className="bg-red-600 hover:bg-red-700">
-							{t("deleteDialog.confirm")}
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
 		</div>
 	);
 }

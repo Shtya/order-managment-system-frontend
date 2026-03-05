@@ -347,6 +347,8 @@
     "newProduct": "منتج جديد",
     "newBundle": "حزمة جديدة",
     "warehouse": "المخزن",
+    "wallet": "المحفظة",
+    "manageWarehouse": "إدارة الطلبات",
     "newWarehouse": "مستودع جديد",
     "suppliers": "الموردون",
     "categories": "الفئات",
@@ -355,11 +357,11 @@
     "order-analysis": "تحليل الطلبات",
     "employee-performance-analysis": "تحليل أداء الموظفين",
     "sales": "المبيعات",
-    "shippingCompanies": "شركات الشحن",
     "employees": "الموظفون",
     "accounts": "الحسابات",
     "reports": "التقارير",
-    "storeIntegration": "تكامل المتجر",
+    "shippingCompanies": "تكامل شركات الشحن",
+    "storeIntegration": "تكامل المتجر الألكترونية",
     "settings": "الإعدادات",
     "order-replacement": "طلبات الاستبدال",
     "failedOrders": "الطلبات الفاشلة",
@@ -380,6 +382,7 @@
     "profile": "الملف الشخصي",
     "callCenter": "كول سنتر",
     "moderator": "مودريتور",
+    "orders-assign-to-you": "الطلبات المسندة إليك",
     "productSuggestions": "اقتراح المنتجات"
   },
   "header": {
@@ -762,7 +765,7 @@
   "integrated": {
     "edit_settings": "تعديل الاعدادت",
     "link": "تعديل الاعدادت"
-  }, 
+  },
   "users": {
     "breadcrumb": {
       "home": "الرئيسية",
@@ -1347,24 +1350,16 @@
   "roles-client": {
     "breadcrumb": {
       "home": "الرئيسية",
-      "roles": "الأدوار"
+      "roles": "الأدوار والصلاحيات"
+    },
+    "toolbar": {
+      "addRole": "إضافة دور",
+      "searchPlaceholder": "ابحث عن دور..."
     },
     "stats": {
       "totalRoles": "إجمالي الأدوار",
       "globalRoles": "الأدوار العامة",
       "customRoles": "الأدوار المخصصة"
-    },
-    "toolbar": {
-      "addRole": "إضافة دور",
-      "searchPlaceholder": "ابحث...",
-      "filter": "تصفية"
-    },
-    "filters": {
-      "name": "الاسم",
-      "namePlaceholder": "اسم الدور",
-      "type": "النوع",
-      "typePlaceholder": "عام / مخصص",
-      "apply": "تطبيق"
     },
     "table": {
       "roleName": "اسم الدور",
@@ -1378,33 +1373,46 @@
       "permissionsCount": "صلاحية"
     },
     "actions": {
+      "locked": "لا يمكن تعديل هذا الدور",
       "edit": "تعديل",
+      "protected": "لا يمكن حذف هذا الدور",
       "delete": "حذف",
       "preview": "معاينة"
     },
     "dialog": {
-      "editRole": "تعديل الدور",
       "addRole": "إضافة دور",
-      "roleDescription": "وصف الدور",
+      "editRole": "تعديل دور",
+      "roleDescription": "أنشئ دورًا وحدد الصلاحيات المسموح بها.",
       "roleName": "اسم الدور",
-      "roleNamePlaceholder": "أدخل اسم الدور",
-      "roleDescriptionPlaceholder": "أدخل وصف الدور",
+      "roleNamePlaceholder": "مثال: مدير، موظف...",
+      "roleDescriptionLabel": "وصف الدور",
+      "roleDescriptionPlaceholder": "اكتب وصفًا مختصرًا لهذا الدور...",
+      "globalRoleNotice": "هذا دور عام ومحمي ولا يمكن تعديله.",
       "save": "حفظ"
     },
     "preview": {
-      "title": "معاينة الدور",
-      "description": "تفاصيل الدور والصلاحيات المرتبطة به",
-      "noDescription": "لا يوجد وصف",
       "permissions": "الصلاحيات",
-      "noPermissions": "لا توجد صلاحيات"
+      "noDescription": "لا يوجد وصف",
+      "noPermissions": "لا توجد صلاحيات لهذا الدور",
+      "close": "إغلاق"
     },
     "deleteDialog": {
       "title": "حذف الدور",
-      "description": "هل أنت متأكد أنك تريد حذف هذا الدور؟ لا يمكن التراجع عن هذا الإجراء.",
+      "description": "هل أنت متأكد أنك تريد حذف الدور",
       "cancel": "إلغاء",
       "confirm": "حذف"
     },
-    "empty": "لا توجد بيانات"
+    "permissions": {
+      "title": "الصلاحيات",
+      "filterPlaceholder": "فلترة الصلاحيات...",
+      "noMatch": "لا توجد صلاحيات تطابق بحثك.",
+      "selectedOutOf": "{checked} / {total} محددة"
+    },
+    "common": {
+      "cancel": "إلغاء"
+    },
+    "empty": "لا توجد أدوار",
+    "emptySubtitle": "لم يتم العثور على أدوار مطابقة. جرّب تغيير البحث أو أضف دورًا جديدًا."
   },
   "permissions": {
     "selectAll": "تحديد الكل",
@@ -2923,7 +2931,7 @@
     "table": {
       "id": "الرقم",
       "mainImage": "الصورة الرئيسية",
-      "imagesCount": "عدد الصور",
+      "imagesCount": "الصور الاخري",
       "name": "الاسم",
       "sku": "رمز SKU",
       "category": "الفئة",
@@ -3923,6 +3931,10 @@
     "pagination": {
       "limit": "عدد النتائج",
       "total": "إجمالي النتائج"
+    },
+
+    "search": {
+      "placeholder": "ابحث عن طلب..."
     }
   },
   "callCenter": {
@@ -4928,82 +4940,45 @@
       "subscriptions": "الاشتراكات"
     },
     "tabs": {
-      "plans": "الباقات",
-      "transactions": "المعاملات السابقة"
-    },
-    "actions": {
-      "refresh": "تحديث"
-    },
-    "plans": {
-      "heading": "اختر الباقة المناسبة لك",
-      "subheading": "جميع الباقات تشمل دعماً فنياً متواصلاً وتحديثات مستمرة"
+      "plans": "الخطط",
+      "transactions": "المعاملات"
     },
     "duration": {
-      "monthly": "شهرياً",
-      "yearly": "سنوياً",
+      "monthly": "شهريًا",
+      "yearly": "سنويًا",
       "lifetime": "مدى الحياة"
     },
     "card": {
       "currency": "ج.م",
-      "popular": "الأكثر شعبية",
       "users": "مستخدم",
       "shippingCompanies": "شركة شحن",
+      "popular": "الأكثر طلبًا",
+      "active": "نشط",
       "subscribe": "اشترك الآن",
-      "currentPlan": "الباقة الحالية",
-      "cancelPlan": "إلغاء الاشتراك"
+      "cancelPlan": "إلغاء الخطة"
+    },
+    "banner": {
+      "currentPlan": "خطتك الحالية",
+      "active": "نشطة"
+    },
+    "empty": {
+      "title": "لا توجد خطط متاحة",
+      "subtitle": "سيتم إضافة الخطط قريبًا، تحقق مرة أخرى لاحقًا."
     },
     "errors": {
-      "fetchPlans": "فشل في تحميل الباقات"
-    },
-    "columns": {
-      "user": "المستخدم",
-      "plan": "الخطة",
-      "price": "السعر",
-      "status": "الحالة",
-      "startDate": "تاريخ البداية",
-      "endDate": "تاريخ النهاية"
-    },
-    "statuses": {
-      "active": "نشط",
-      "expired": "منتهي",
-      "cancelled": "ملغى"
-    },
-    "filters": {
-      "status": "الحالة",
-      "statusPlaceholder": "اختر الحالة",
-      "date": "التاريخ",
-      "datePlaceholder": "اختر فترة",
-      "all": "الكل",
-      "apply": "تطبيق"
-    },
-    "toolbar": {
-      "searchPlaceholder": "بحث...",
-      "filter": "تصفية",
-      "export": "تصدير"
-    },
-    "pagination": {
-      "total": "الإجمالي",
-      "limit": "عدد النتائج"
-    },
-    "messages": {
-      "errorFetching": "فشل في تحميل الاشتراكات",
-      "filtersApplied": "تم تطبيق الفلاتر بنجاح",
-      "exportStarted": "بدأ تصدير الاشتراكات",
-      "exportSuccess": "تم تصدير الاشتراكات بنجاح",
-      "exportFailed": "فشل في تصدير الاشتراكات"
-    },
-    "emptyTitle": "لا توجد اشتراكات",
-    "emptySubtitle": "لا توجد اشتراكات لعرضها"
+      "fetchPlans": "تعذّر تحميل الخطط، حاول مجددًا."
+    }
   },
+
   "pagination": {
     "showing": "عرض",
-    "of": "من أصل",
+    "of": "من",
     "records": "سجل",
     "perPage": "لكل صفحة",
     "firstPage": "الصفحة الأولى",
-    "lastPage": "الصفحة الأخيرة",
-    "prevPage": "الصفحة السابقة",
-    "nextPage": "الصفحة التالية"
+    "prevPage": "السابق",
+    "nextPage": "التالي",
+    "lastPage": "الصفحة الأخيرة"
   },
   "landing": {
     "brand": {
@@ -5155,11 +5130,7 @@
         "highlight": "أمامك دائماً"
       },
       "subtitle": "تابع أداء متجرك لحظة بلحظة وتحكم في كل شيء من مكان واحد.",
-      "chips": [
-        "شوف كل المنتجات والكميات لحظة بلحظة",
-        "احصل على تقارير دقيقة لاتخاذ قرارات أسرع",
-        "تابع الطلبات من أول التأكيد لحد التسليم"
-      ]
+      "chips": ["شوف كل المنتجات والكميات لحظة بلحظة", "احصل على تقارير دقيقة لاتخاذ قرارات أسرع", "تابع الطلبات من أول التأكيد لحد التسليم"]
     }
   },
   "marquee": {
@@ -5407,9 +5378,8 @@
     "copyright": "جميع الحقوق محفوظة لدي منصة @2026"
   },
 
-
-	"auth": {
-     "brand": {
+  "auth": {
+    "brand": {
       "name": "طلباتي تك",
       "tagline": "منصة الإدارة المتكاملة",
       "live": "مباشر",
@@ -5473,8 +5443,8 @@
       "name": "الاسم الكامل",
       "name_placeholder": "أحمد مصطفى",
       "company": "اسم الشركة / المتجر",
-			"email" :"البريد الإلكتروني", 
-			"email_placeholder" : "you@example.com",
+      "email": "البريد الإلكتروني",
+      "email_placeholder": "you@example.com",
       "company_placeholder": "متجر أحمد الإلكتروني",
       "phone": "رقم الهاتف",
       "phone_placeholder": "100 000 0000",
@@ -5572,12 +5542,7 @@
     "welcome_sub": "سنأخذ منك دقائق قليلة لإعداد نظامك",
     "welcome_desc": "سنساعدك في اختيار الخطة المناسبة، وإضافة بيانات شركتك، وربط متجرك وشركة الشحن لتبدأ الاستقبال فوراً.",
     "welcome_btn": "لنبدأ الإعداد",
-    "steps": [
-      "اختر خطتك",
-      "بيانات الشركة",
-      "ربط المتجر",
-      "شركة الشحن"
-    ],
+    "steps": ["اختر خطتك", "بيانات الشركة", "ربط المتجر", "شركة الشحن"],
     "plan": {
       "title": "اختر الخطة المناسبة لك",
       "sub": "يمكنك تغيير الخطة في أي وقت",
@@ -5652,6 +5617,194 @@
       "title": "اكتمل الإعداد! 🚀",
       "sub": "نظامك جاهز، لنبدأ!",
       "go": "الذهاب للوحة التحكم"
+    }
+  },
+
+  "wallet": {
+    "pageTitle": "المحفظة",
+    "breadcrumb": {
+      "dashboard": "الرئيسية",
+      "wallet": "المحفظة"
+    },
+    "stats": {
+      "walletBalance": "رصيد المحفظة",
+      "available": "الرصيد المتاح",
+      "pendingCOD": "الدفع عند الاستلام المعلق",
+      "totalWithdrawn": "إجمالي المسحوبات"
+    },
+    "tabs": {
+      "all": "الكل",
+      "deposits": "الإيداعات",
+      "withdrawals": "المسحوبات",
+      "cod": "الدفع عند الاستلام"
+    },
+    "actions": {
+      "deposit": "إيداع",
+      "withdraw": "سحب",
+      "export": "تصدير"
+    },
+    "methods": {
+      "vodafoneCash": "فودافون كاش",
+      "instapay": "انستاباي",
+      "bankTransfer": "تحويل بنكي",
+      "walletMethod": "محفظة"
+    },
+    "deposit": {
+      "title": "إيداع رصيد",
+      "subtitle": "أضف أموالاً فوراً إلى محفظتك",
+      "amountLabel": "المبلغ (جنيه مصري)",
+      "cta": "إيداع الآن"
+    },
+    "withdraw": {
+      "title": "سحب الرصيد",
+      "available": "الرصيد المتاح",
+      "method": "طريقة السحب",
+      "phone": "رقم الهاتف",
+      "name": "اسم صاحب الحساب",
+      "namePlaceholder": "الاسم الكامل",
+      "email": "البريد الإلكتروني",
+      "amount": "المبلغ (جنيه مصري)",
+      "cta": "سحب الرصيد"
+    },
+    "table": {
+      "date": "التاريخ",
+      "type": "النوع",
+      "description": "الوصف",
+      "amount": "المبلغ",
+      "status": "الحالة",
+      "searchPlaceholder": "ابحث في المعاملات…",
+      "filter": "فلترة",
+      "apply": "تطبيق",
+      "emptyTitle": "لا توجد معاملات",
+      "emptySubtitle": "جرّب تغيير معايير البحث أو الفلترة"
+    },
+    "txLabels": {
+      "walletTopup": "شحن رصيد المحفظة",
+      "vodafoneCashWithdraw": "سحب عبر فودافون كاش",
+      "instapayWithdraw": "سحب عبر انستاباي",
+      "bankTransferWithdraw": "تحويل بنكي",
+      "walletMethodWithdraw": "سحب من المحفظة",
+      "codOrder": "تحصيل دفع عند الاستلام – طلب {orderId}"
+    },
+    "txTypes": {
+      "deposit": "إيداع",
+      "withdraw": "سحب",
+      "cod": "دفع عند الاستلام"
+    },
+    "status": {
+      "completed": "مكتمل",
+      "pending": "قيد الانتظار"
+    },
+    "validation": {
+      "required": "هذا الحقل مطلوب",
+      "validAmount": "أدخل مبلغاً صحيحاً",
+      "validEmail": "أدخل بريداً إلكترونياً صحيحاً",
+      "maxAmount": "الحد الأقصى"
+    },
+    "toasts": {
+      "depositSuccess": "تم إيداع {amount} جنيه بنجاح!",
+      "withdrawSuccess": "تم تقديم طلب سحب {amount} جنيه!",
+      "exported": "تم تصدير المعاملات بنجاح"
+    },
+    "common": {
+      "cancel": "إلغاء"
+    }
+  },
+  "orders-work": {
+    "orderNumber": "رقم الطلب",
+    "customer": "العميل",
+    "phone": "الهاتف",
+    "finalTotal": "الإجمالي النهائي",
+    "profit": "الربح",
+    "addressDetails": "تفاصيل العنوان",
+    "paymentShipping": "الدفع والشحن",
+    "items": "المنتجات",
+    "pieces": "قطعة",
+    "stock": "مخزون",
+    "productsTotal": "إجمالي المنتجات",
+    "shippingCost": "تكلفة الشحن",
+    "discount": "خصم",
+    "deposit": "مقدم",
+    "collected": "محصّل",
+    "notes": "ملاحظات",
+    "customerNotes": "ملاحظة العميل",
+    "internalNotes": "ملاحظات داخلية",
+    "statusHistory": "سجل الحالات",
+    "upselling": "اقترح على العميل",
+    "replacement": "إستبدال",
+    "currentStatus": "الحالة الحالية",
+    "clickToSet": "اضغط للتعيين",
+    "retry": "إعادة المحاولة",
+    "product": "المنتج",
+    "attrs": "المواصفات",
+    "qty": "الكمية",
+    "unitPrice": "سعر الوحدة",
+    "total": "الإجمالي",
+    "addProduct": "إضافة منتج",
+    "paymentStatus": {
+      "paid": "مدفوع",
+      "unpaid": "غير مدفوع",
+      "partial": "مدفوع جزئياً",
+      "refunded": "مسترجع",
+      "pending": "قيد الانتظار"
+    },
+    "statuses": {
+      "pending": "قيد الانتظار",
+      "processing": "قيد المعالجة",
+      "failed": "فشل",
+      "on_hold": "معلق",
+      "out_for_delivery": "خرج للتسليم",
+      "new": "جديد",
+      "confirmed": "مؤكد",
+      "pendingConfirmation": "بانتظار التأكيد",
+      "pending_confirmation": "بانتظار التأكيد",
+      "wrong_number": "رقم خاطئ",
+      "duplicate": "مكرر",
+      "postponed": "مؤجل",
+      "delivered": "تم التسليم",
+      "in_shipping": "قيد الشحن",
+      "waiting_stock": "بانتظار المخزون",
+      "no_answer_shipping": "لا رد من الشحن",
+      "cancelled_shipping": "ملغي من الشحن",
+      "cancelledShipping": "ملغي من الشحن",
+      "cancelled": "ملغي",
+      "noAnswerShipping": "لا رد من الشحن",
+      "inShipping": "في الشحن",
+      "waitingStock": "بانتظار المخزون",
+      "wrongNumber": "رقم خاطئ",
+      "under_review": "قيد المراجعة",
+      "preparing": "قيد التحضير",
+      "ready": "جاهز",
+      "shipped": "تم الشحن",
+      "returned": "مرتجع",
+      "no_answer": "لا يوجد رد",
+      "out_of_area": "خارج نطاق التوصيل"
+    },
+    "workPage": {
+      "changeStatus": "تحديث حالة الطلب",
+      "selectStatus": "اختر الحالة المناسبة للطلب",
+      "nextOrder": "الطلب التالي",
+      "notes": "ملاحظة على الطلب",
+      "notesPlaceholder": "أضف ملاحظة على هذا الطلب...",
+      "lockedMessage": "الطلب مقفل مؤقتاً، انتظر انتهاء مؤقت القفل",
+      "orderLocked": "الطلب مقفل",
+      "statusChanged": "تم تحديث الحالة بنجاح",
+      "orderUpdated": "تم تحديث بيانات الطلب",
+      "updatingOrder": "جاري تحديث الطلب...",
+      "pleaseWait": "يرجى الانتظار...",
+      "clickNext": "التالي",
+      "retriesExhausted": "تم استنفاد المحاولات",
+      "retriesExhaustedMessage": "وصلت إلى الحد الأقصى من محاولات إعادة الاتصال بهذا الطلب",
+      "noOrders": "لا توجد طلبات",
+      "noOrdersDescription": "لا توجد طلبات معلقة في قائمتك حالياً. يمكنك المحاولة مرة أخرى أو العودة إلى قائمة طلباتي.",
+      "backToMyOrders": "العودة إلى طلباتي",
+      "selectFromBottom": "اختر الحالة من الشريط أسفل الشاشة"
+    },
+    "messages": {
+      "statusUpdated": "تم تحديث حالة الطلب بنجاح",
+      "errorFetchingOrder": "حدث خطأ أثناء جلب الطلب",
+      "errorFetchingStatuses": "حدث خطأ أثناء جلب الحالات",
+      "errorUpdatingStatus": "حدث خطأ أثناء تحديث الحالة"
     }
   }
 }

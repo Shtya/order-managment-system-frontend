@@ -153,7 +153,7 @@ function DistributionDialog({ open, onClose, orders, selectedOrderCodes, updateO
 						<Button_ label="إلغاء" tone="gray" variant="outline" onClick={onClose} disabled={loading} />
 						<Button_
 							label={loading ? "جاري التوزيع..." : "تأكيد التوزيع"}
-							tone="purple" variant="solid"
+							tone="primary" variant="solid"
 							onClick={handleDistribute}
 							disabled={loading || !carrier || selectedOrders.length === 0} />
 					</div>

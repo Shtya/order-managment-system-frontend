@@ -390,7 +390,7 @@ export default function ManageSubscription({ userId, subscriptionId, onSaved }) 
                             onClick={handleSubmit(onSubmit)}
                             size="sm"
                             label={loading ? t("actions.saving") : t("actions.save")}
-                            tone="purple"
+                            tone="primary"
                             variant="solid"
                             disabled={loading}
                             icon={loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
@@ -646,7 +646,7 @@ export default function ManageSubscription({ userId, subscriptionId, onSaved }) 
                                 onClick={handleSubmit(onSubmit)}
                                 size="sm"
                                 label={loading ? t("actions.saving") : t("actions.save")}
-                                tone="purple"
+                                tone="primary"
                                 variant="solid"
                                 disabled={loading}
                                 icon={loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}

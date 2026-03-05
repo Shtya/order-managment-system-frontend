@@ -3,14 +3,10 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-	ChevronLeft, Check, CreditCard, Calendar, Package,
-	RefreshCw, Sparkles, Crown, Zap, Users, Truck, X,
-	Info,
+  Check, Zap, Crown, Users, Truck, X,
+  ArrowRight, Sparkles,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-
-import SwitcherTabs from "@/components/atoms/SwitcherTabs";
-import Button_ from "@/components/atoms/Button";
 import { cn } from "@/utils/cn";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
@@ -18,380 +14,468 @@ import { getUser } from "@/hook/getUser";
 import TransactionTab from "../dashboard/plans/tabs/transactionTab";
 import PageHeader from "@/components/atoms/Pageheader";
 
-/* ═══════════════════════════════════════════════════════════
-	 Skeleton
-═══════════════════════════════════════════════════════════ */
-function PlanCardSkeleton() {
-	return (
-		<div className="relative rounded-xl border-2 border-border/60 bg-card overflow-hidden animate-pulse">
-			{/* top bar */}
-			<div className="h-[3px] bg-muted/60" />
-			<div className="p-6 space-y-5">
-				<div className="flex items-end gap-2 justify-end">
-					<div className="h-8 w-20 rounded-xl bg-muted/60" />
-					<div className="h-5 w-8 rounded bg-muted/40" />
-				</div>
-				<div className="h-5 w-32 rounded-xl bg-muted/50 ms-auto" />
-				<div className="h-px bg-border/40" />
-				<div className="space-y-3">
-					{Array.from({ length: 4 }).map((_, i) => (
-						<div key={i} className="flex items-center gap-2.5 justify-end">
-							<div className="h-3 w-40 rounded bg-muted/50" />
-							<div className="w-5 h-5 rounded-full bg-muted/60 flex-shrink-0" />
-						</div>
-					))}
-				</div>
-				<div className="h-11 w-full rounded-xl bg-muted/60" />
-			</div>
-		</div>
-	);
-}
+/* ─────────────────────────────────────────────────────────
+   DESIGN TOKENS
+   All colours reference CSS vars so they work in both
+   light and dark mode automatically.
+───────────────────────────────────────────────────────── */
+const T = {
+  inkCard:    "#0f0e0d",
+  onInk:      "rgba(255,255,255,1)",
+  onInkSoft:  "rgba(255,255,255,0.72)",
+  onInkMuted: "rgba(255,255,255,0.38)",
+  onInkRule:  "rgba(255,255,255,0.08)",
+  accent:     "var(--primary)",
+  accentGrad: "linear-gradient(90deg, var(--primary), var(--third, #ff5c2b))",
+};
 
-/* ═══════════════════════════════════════════════════════════
-	 Plan Card — layout mirrors the screenshot
-	 (price top-right, name below, features list, CTA)
-═══════════════════════════════════════════════════════════ */
-function PlanCard({ plan, onSubscribe, isCurrentPlan }) {
-  const t   = useTranslations("subscriptions");
-  const dir = useLocale(); // "rtl" | "ltr"
-  const isRTL = dir === "rtl";
-
-  const usersLimit    = Number(plan.usersLimit ?? 1);
-  const shippingLimit = Number(plan.shippingCompaniesLimit ?? 0);
-
+/* ─────────────────────────────────────────────────────────
+   SKELETON
+───────────────────────────────────────────────────────── */
+function PlanCardSkeleton({ idx = 0 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -6 }}
-      transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className={cn(
-        "relative rounded-xl border overflow-hidden flex flex-col group",
-        "transition-all duration-300",
-        isCurrentPlan
-          ? "border-[var(--primary)]/40 bg-card shadow-[0_12px_40px_-6px_rgb(var(--primary-shadow))]"
-          : "border-border/60 bg-card hover:border-[var(--primary)]/35 hover:shadow-[0_6px_28px_-6px_rgb(var(--primary-shadow))]",
-      )}
+      transition={{ delay: idx * 0.07 }}
+      className="rounded-2xl border border-border bg-card overflow-hidden animate-pulse"
     >
-      {/* ── CURRENT PLAN: full gradient background with texture ── */}
-      {isCurrentPlan && (
-        <>
-          <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)] via-[var(--primary)]/92 to-[var(--third,#ff5c2b)]" />
-          {/* diagonal shine */}
-          <div className="absolute inset-0 opacity-[0.08]"
-            style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.8) 0%, transparent 50%, rgba(255,255,255,0.3) 100%)" }} />
-          {/* bottom fade */}
-          <div className="absolute inset-x-0 bottom-0 h-32 opacity-20"
-            style={{ background: "linear-gradient(to top, var(--third, #ff5c2b), transparent)" }} />
-        </>
-      )}
-
-      {/* ── NON-CURRENT: subtle hover tint ── */}
-      {!isCurrentPlan && (
-        <div className="absolute inset-0 pointer-events-none
-          bg-gradient-to-br from-[var(--primary)]/0 to-[var(--primary)]/0
-          group-hover:from-[var(--primary)]/[0.025] group-hover:to-[var(--secondary,#ffb703)]/[0.015]
-          transition-all duration-500" />
-      )}
-
-      {/* ── Top accent bar ── */}
-      <div className={cn(
-        "absolute inset-x-0 top-0 h-[3px] transition-opacity duration-300",
-        isCurrentPlan
-          ? "bg-white/30"
-          : "bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)] opacity-70 group-hover:opacity-100",
-      )} />
-
-      {/* ── Popular badge ── */}
-      {plan.isPopular && !isCurrentPlan && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
-          className={cn("absolute top-4 z-10", isRTL ? "left-4" : "right-4")}
-        >
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black
-            bg-[var(--primary)] text-primary-foreground tracking-wide
-            shadow-[0_2px_8px_-2px_rgb(var(--primary-shadow))]">
-            <Crown size={9} />
-            {t("card.popular")}
-          </span>
-        </motion.div>
-      )}
-
-      <div className="relative z-10 p-3 pb-0 flex flex-col gap-4 flex-1">
-
-        {/* ══════════════════════════════════════════════════
-            PRICE BLOCK — large gradient number + currency
-        ══════════════════════════════════════════════════ */}
-        <div className={cn("flex", isRTL ? "flex-row-reverse items-start" : "flex-row items-start", "gap-1 pt-1")}>
-
-          {/* Big number */}
-          <div className="relative leading-none">
-            <span
-              className={cn(
-                "text-[68px] rtl:pr-1 ltr:pl-1 font-black tabular-nums tracking-tighter leading-none block",
-                isCurrentPlan
-                  ? "text-white"
-                  : "text-transparent bg-clip-text bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]",
-              )}
-            >
-              {plan.price}
-            </span>
-            {/* glow under number */}
-            {!isCurrentPlan && (
-              <div
-                aria-hidden
-                className="absolute -bottom-1 inset-x-0 h-4 blur-2xl opacity-25 rounded-full pointer-events-none"
-                style={{ background: "linear-gradient(to right, var(--primary), var(--third, #ff5c2b))" }}
-              />
-            )}
-          </div>
-
-          {/* Currency + period — stacked top-right of number */}
-          <div className={cn(
-            "flex flex-col mt-2",
-            isRTL ? "items-start" : "items-end"
-          )}>
-            <span className={cn(
-              "text-xl font-black leading-none",
-              isCurrentPlan ? "text-white/70" : "text-[var(--primary)]/60"
-            )}>
-              {t("card.currency")}
-            </span>
-            <span className={cn(
-              "text-[11px] font-bold mt-1.5 px-2 py-0.5 rounded-full whitespace-nowrap",
-              isCurrentPlan
-                ? "bg-white/15 text-white/70"
-                : "bg-[var(--primary)]/8 text-[var(--primary)] border border-[var(--primary)]/15"
-            )}>
-              / {plan.duration}
-            </span>
-          </div>
+      <div className="p-7 space-y-6">
+        <div className="space-y-2">
+          <div className="h-2.5 w-14 rounded-full bg-muted/70" />
+          <div className="h-16 w-32 rounded-xl bg-muted/60" />
+          <div className="h-2.5 w-20 rounded-full bg-muted/50" />
         </div>
-
-        {/* Plan name */}
-        <p className={cn(
-          "text-[22px] font-black leading-tight text-nowrap ", 
-          isCurrentPlan ? "text-white" : "text-foreground",
-        )}>
-          {plan.name}
-        </p>
-
-        {/* Divider */}
-        <div className={cn(
-          "h-px",
-          isCurrentPlan
-            ? "bg-white/15"
-            : "bg-gradient-to-r from-[var(--primary)]/20 via-border/50 to-transparent",
-        )} />
-
-        {/* ── Features list ── */}
-        <ul className="space-y-2.5 flex-1">
-          {(plan.features || []).map((feature, idx) => (
-            <motion.li
-              key={idx}
-              initial={{ opacity: 0, x: isRTL ? 8 : -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: idx * 0.06 + 0.1 }}
-              className={cn(
-                "flex items-center gap-2.5  flex-row-reverse" 
-              )}
-            >
-              <div className={cn(
-                "flex-shrink-0 w-[25px] h-[25px] rounded-[5px] flex items-center justify-center",
-                isCurrentPlan
-                  ? "bg-white/20"
-                  : "bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]",
-              )}>
-                <Check size={14} strokeWidth={3.5} className="text-white" />
-              </div>
-              <span className={cn(
-                "text-sm font-medium leading-snug flex-1  rtl:text-right", 
-                isCurrentPlan ? "text-white/90" : "text-foreground/80",
-              )}>
-                {feature}
-              </span>
-            </motion.li>
+        <div className="h-px bg-border/60" />
+        <div className="space-y-3.5">
+          {[70, 85, 60, 75].map((w, i) => (
+            <div key={i} className="flex items-center gap-3">
+              <div className="w-5 h-5 rounded-full bg-muted/60 shrink-0" />
+              <div className="h-2.5 rounded-full bg-muted/50" style={{ width: `${w}%` }} />
+            </div>
           ))}
-
-          {/* Limits as rows */}
-          {[
-            { Icon: Users, label: `${usersLimit} ${t("card.users")}` },
-            { Icon: Truck, label: `${shippingLimit} ${t("card.shippingCompanies")}` },
-          ].map(({ Icon, label }, idx) => (
-            <li
-              key={`limit-${idx}`}
-              className={cn("flex items-center gap-2.5 flex-row-reverse justify-between " )}
-            >
-              <div className={cn(
-                "flex-shrink-0 w-[25px] h-[25px] rounded-[5px] flex items-center justify-center",
-                isCurrentPlan ? "bg-white/15" : "bg-[var(--primary)]/12",
-              )}>
-                <Icon size={13} className={isCurrentPlan ? "text-white/80" : "text-[var(--primary)]"} />
-              </div>
-              <span className={cn(
-                "text-sm  rtl:text-right font-medium flex-1",
-                isRTL ? "text-right" : "text-left",
-                isCurrentPlan ? "text-white/75" : "text-muted-foreground",
-              )}>
-                {label}
-              </span>
-            </li>
-          ))}
-        </ul>
-
-        {/* ── CTA button ── */}
-        <motion.button
-          onClick={() => onSubscribe(plan)}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.96 }}
-          className={cn(
-            "relative w-full h-11 rounded-xl text-sm font-bold mt-1 overflow-hidden",
-            "transition-all duration-200",
-            isCurrentPlan
-              ? "bg-white/80 text-primary border-2 border-white/25  "
-              : [
-                  "text-primary-foreground",
-                  "bg-gradient-to-r from-[var(--primary)] to-[var(--third,#ff5c2b)]",
-                  "shadow-[0_3px_14px_-4px_rgb(var(--primary-shadow))]",
-                  "hover:shadow-[0_6px_22px_-4px_rgb(var(--primary-shadow))]",
-                ],
-          )}
-        >
-          <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-1/2
-            bg-gradient-to-b from-white/20 to-transparent" />
-          <span className="relative flex items-center justify-center gap-2">
-            {isCurrentPlan
-              ? <><X size={14} /> {t("card.cancelPlan")}</>
-              : <><Zap size={14} /> {t("card.subscribe")}</>
-            }
-          </span>
-        </motion.button>
-
+        </div>
+        <div className="h-11 w-full rounded-xl bg-muted/60" />
       </div>
     </motion.div>
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-	 Main Page
-═══════════════════════════════════════════════════════════ */
-export default function SubscriptionsPage() {
-	const t = useTranslations("subscriptions");
-	const user = getUser();
+/* ─────────────────────────────────────────────────────────
+   PLAN CARD
+───────────────────────────────────────────────────────── */
+function PlanCard({ plan, onSubscribe, isCurrentPlan, idx = 0 }) {
+  const t      = useTranslations("subscriptions");
+  const locale = useLocale();
+  const isRTL  = locale === "ar";
 
-	const [activeTab, setActiveTab] = useState("plans");
-	const [isLoading, setIsLoading] = useState(false);
-	const [plans, setPlans] = useState([]);
-	const [currentPlan, setCurrentPlan] = useState(null);
+  const usersLimit    = Number(plan.usersLimit    ?? 1);
+  const shippingLimit = Number(plan.shippingCompaniesLimit ?? 0);
 
-	const tabs = useMemo(() => [
-		{ id: "plans", label: t("tabs.plans") },
-		{ id: "transactions", label: t("tabs.transactions") },
-	], [t]);
+  const allFeatures = [
+    ...(plan.features || []).map(f => ({ label: f, type: "feature" })),
+    { label: `${usersLimit} ${t("card.users")}`,                type: "limit", Icon: Users },
+    { label: `${shippingLimit} ${t("card.shippingCompanies")}`, type: "limit", Icon: Truck },
+  ];
 
-	const durationLabel = (duration) => {
-		if (duration === "monthly") return t("duration.monthly");
-		if (duration === "yearly") return t("duration.yearly");
-		return t("duration.lifetime");
-	};
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: idx * 0.09, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ y: -5, transition: { duration: 0.22 } }}
+      className={cn(
+        "relative rounded-2xl overflow-hidden flex flex-col transition-shadow duration-300",
+        isCurrentPlan
+          ? "border-2 border-transparent shadow-[0_20px_60px_-12px_rgba(0,0,0,0.45)]"
+          : "border border-border shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_40px_-8px_rgba(255,106,30,0.16)] hover:border-[var(--primary)]/25",
+      )}
+      style={{ background: isCurrentPlan ? T.inkCard : "var(--card)" }}
+    >
 
-	const fetchAvailablePlans = async () => {
-		setIsLoading(true);
-		try {
-			const { data } = await api.get("/plans/available");
-			setPlans(
-				(data || []).map((plan) => ({
-					id: plan.id,
-					name: plan.name,
-					price: Number(plan.price),
-					duration: durationLabel(plan.duration),
-					description: plan.description || "",
-					features: Array.isArray(plan.features) ? plan.features : [],
-					color: plan.color || "from-blue-500 to-blue-600",
-					isPopular: plan.isPopular,
-					usersLimit: Number(plan.usersLimit ?? plan.maxUsers ?? 1),
-					shippingCompaniesLimit: Number(plan.shippingCompaniesLimit ?? plan.maxShippingCompanies ?? 0),
-				}))
-			);
-		} catch {
-			toast.error(t("errors.fetchPlans"));
-		} finally {
-			setIsLoading(false);
-		}
-	};
+      {/* Top gradient bar (current plan only) */}
+      {isCurrentPlan && (
+        <div
+          className="absolute inset-x-0 top-0 h-[3px]"
+          style={{ background: T.accentGrad }}
+        />
+      )}
 
-	useEffect(() => {
-		if (activeTab === "plans") {
-			fetchAvailablePlans();
-			setCurrentPlan(user?.plan?.id);
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [activeTab]);
+      {/* Left/right accent bar (non-current) */}
+      {!isCurrentPlan && (
+        <div
+          className={cn(
+            "absolute top-10 bottom-10 w-[3px] rounded-full",
+            isRTL ? "right-0" : "left-0",
+          )}
+          style={{ background: T.accentGrad, opacity: 0.45 }}
+        />
+      )}
 
-	const handleSubscribe = async (plan) => {
-		// TODO: implement subscription flow
-	};
+      {/* Popular badge */}
+      {plan.isPopular && !isCurrentPlan && (
+        <motion.div
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: idx * 0.09 + 0.22 }}
+          className={cn("absolute top-5 z-10", isRTL ? "left-5" : "right-5")}
+        >
+          <span
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full
+              text-[10px] font-black uppercase tracking-[0.14em] text-white"
+            style={{
+              background: T.accent,
+              boxShadow: "0 2px 10px -2px rgba(255,106,30,0.5)",
+            }}
+          >
+            <Crown size={8} strokeWidth={2.5} />
+            {t("card.popular")}
+          </span>
+        </motion.div>
+      )}
 
-	return (
-		<div className="min-h-screen p-5 ">
+      {/* Active badge (current plan) */}
+      {isCurrentPlan && (
+        <div className={cn("absolute top-5 z-10", isRTL ? "left-5" : "right-5")}>
+          <span
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full
+              text-[10px] font-black uppercase tracking-[0.14em]"
+            style={{
+              background: "rgba(255,255,255,0.09)",
+              color: T.onInkSoft,
+              border: "1px solid rgba(255,255,255,0.12)",
+            }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            {t("card.active")}
+          </span>
+        </div>
+      )}
+
+      {/* ─── Card body ─── */}
+      <div className="relative z-10 flex flex-col flex-1 gap-5 p-7">
+
+        {/* Plan name */}
+        <p
+          className="text-[10.5px] font-black uppercase tracking-[0.2em]"
+          style={{ color: isCurrentPlan ? T.onInkMuted : "var(--muted-foreground)" }}
+        >
+          {plan.name}
+        </p>
+
+        {/* Price */}
+        <div className="flex items-end gap-2 -mt-2">
+          <span
+            style={{
+              fontFamily: "'Instrument Serif', 'DM Serif Display', Georgia, serif",
+              fontSize: 68,
+              lineHeight: 1,
+              letterSpacing: "-0.04em",
+              fontWeight: 400,
+              color: isCurrentPlan ? T.onInk : "var(--foreground)",
+            }}
+          >
+            {plan.price}
+          </span>
+          <div className="flex flex-col mb-2 gap-1">
+            <span
+              className="text-[13px] font-bold leading-none"
+              style={{ color: isCurrentPlan ? T.onInkMuted : "var(--muted-foreground)" }}
+            >
+              {t("card.currency")}
+            </span>
+            <span
+              className="text-[10.5px] font-semibold leading-none"
+              style={{ color: isCurrentPlan ? "rgba(255,255,255,0.28)" : "var(--muted-foreground)" }}
+            >
+              / {plan.duration}
+            </span>
+          </div>
+        </div>
+
+        {/* Description */}
+        {plan.description ? (
+          <p
+            className="text-[12.5px] leading-relaxed -mt-2"
+            style={{ color: isCurrentPlan ? T.onInkMuted : "var(--muted-foreground)" }}
+          >
+            {plan.description}
+          </p>
+        ) : null}
+
+        {/* Divider */}
+        <div
+          className="h-px"
+          style={{
+            background: isCurrentPlan
+              ? T.onInkRule
+              : "linear-gradient(to left, transparent, var(--border) 40%, transparent)",
+          }}
+        />
+
+        {/* Features */}
+        <ul className="space-y-3 flex-1">
+          {allFeatures.map(({ label, type, Icon }, i) => (
+            <motion.li
+              key={i}
+              initial={{ opacity: 0, x: isRTL ? 6 : -6 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: idx * 0.09 + i * 0.04 + 0.14 }}
+              className={cn(
+                "flex items-center gap-3",
+                isRTL ? "flex-row-reverse" : "flex-row",
+              )}
+            >
+              <div
+                className="shrink-0 w-[22px] h-[22px] rounded-full flex items-center justify-center"
+                style={{
+                  background: type === "feature"
+                    ? isCurrentPlan
+                      ? "rgba(255,255,255,0.12)"
+                      : "color-mix(in oklab, var(--primary) 12%, transparent)"
+                    : isCurrentPlan
+                      ? "rgba(255,255,255,0.06)"
+                      : "var(--muted)",
+                }}
+              >
+                {type === "feature"
+                  ? <Check size={11} strokeWidth={3} style={{ color: isCurrentPlan ? T.onInk : T.accent }} />
+                  : Icon
+                    ? <Icon size={11} style={{ color: isCurrentPlan ? T.onInkMuted : "var(--muted-foreground)" }} />
+                    : null
+                }
+              </div>
+              <span
+                className="text-[13px] leading-snug"
+                style={{
+                  fontWeight: type === "feature" ? 500 : 400,
+                  color: type === "feature"
+                    ? isCurrentPlan ? T.onInkSoft : "var(--foreground)"
+                    : isCurrentPlan ? T.onInkMuted : "var(--muted-foreground)",
+                }}
+              >
+                {label}
+              </span>
+            </motion.li>
+          ))}
+        </ul>
+
+        {/* CTA */}
+        <div className="pt-1">
+          {isCurrentPlan ? (
+            <motion.button
+              onClick={() => onSubscribe(plan)}
+              whileHover={{ scale: 1.015 }}
+              whileTap={{ scale: 0.975 }}
+              className="w-full h-11 rounded-xl text-[13px] font-bold
+                transition-all duration-200 flex items-center justify-center gap-2"
+              style={{
+                background: "rgba(255,255,255,0.07)",
+                color: T.onInkSoft,
+                border: "1px solid rgba(255,255,255,0.10)",
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = "rgba(255,255,255,0.12)";
+                e.currentTarget.style.color = "#fff";
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = "rgba(255,255,255,0.07)";
+                e.currentTarget.style.color = T.onInkSoft;
+              }}
+            >
+              <X size={13} strokeWidth={2.5} />
+              {t("card.cancelPlan")}
+            </motion.button>
+          ) : (
+            <motion.button
+              onClick={() => onSubscribe(plan)}
+              whileHover={{ scale: 1.015 }}
+              whileTap={{ scale: 0.975 }}
+              className="relative w-full h-11 rounded-xl text-[13px] font-bold
+                text-white overflow-hidden transition-all duration-200
+                flex items-center justify-center gap-2"
+              style={{
+                background: T.accentGrad,
+                boxShadow: "0 3px 14px -4px rgba(255,92,43,0.38)",
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.boxShadow = "0 6px 22px -4px rgba(255,92,43,0.52)";
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.boxShadow = "0 3px 14px -4px rgba(255,92,43,0.38)";
+              }}
+            >
+              <span
+                aria-hidden
+                className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-xl"
+                style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.16), transparent)" }}
+              />
+              <Zap size={13} strokeWidth={2.5} />
+              <span className="relative">{t("card.subscribe")}</span>
+              <ArrowRight
+                size={12} strokeWidth={2.5}
+                className={cn("relative opacity-70", isRTL && "rotate-180")}
+              />
+            </motion.button>
+          )}
+        </div>
+
+      </div>
+    </motion.article>
+  );
+}
+
  
-			<PageHeader
-				breadcrumbs={[
-					{ name: t("breadcrumb.home"), href: "/" },
-					{ name: t("breadcrumb.subscriptions") },
-				]}
-				 
-				items={tabs}
-				active={activeTab}
-				setActive={setActiveTab}
-			/>
 
+/* ─────────────────────────────────────────────────────────
+   EMPTY STATE
+───────────────────────────────────────────────────────── */
+function EmptyPlans({ t }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.97 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="flex flex-col items-center justify-center py-24 gap-4 text-center"
+    >
+      <div
+        className="w-14 h-14 rounded-2xl flex items-center justify-center border border-border"
+        style={{ background: "color-mix(in oklab, var(--primary) 8%, transparent)" }}
+      >
+        <Crown size={24} style={{ color: "var(--primary)" }} />
+      </div>
+      <div>
+        <p className="text-[15px] font-bold text-foreground">{t("empty.title")}</p>
+        <p className="text-[13px] text-muted-foreground mt-1">{t("empty.subtitle")}</p>
+      </div>
+    </motion.div>
+  );
+}
+ 
 
-			<AnimatePresence mode="wait">
-				{activeTab === "plans" ? (
-					<motion.div
-						key="plans"
-						initial={{ opacity: 0, y: 16 }}
-						animate={{ opacity: 1, y: 0 }}
-						exit={{ opacity: 0, y: -16 }}
-						transition={{ duration: 0.28 }}
-					>
-					 
+/* ─────────────────────────────────────────────────────────
+   MAIN PAGE
+───────────────────────────────────────────────────────── */
+export default function SubscriptionsPage() {
+  const t    = useTranslations("subscriptions");
+  const user = getUser();
 
-						<div className="  mt-[40px] mx-auto grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-6">
-							{isLoading && plans.length === 0
-								? Array.from({ length: 3 }).map((_, i) => <PlanCardSkeleton key={i} />)
-								: plans.map((plan, idx) => (
-									<motion.div
-										key={plan.id}
-										initial={{ opacity: 0, y: 20 }}
-										animate={{ opacity: 1, y: 0 }}
-										transition={{ delay: idx * 0.08 }}
-									>
-										<PlanCard
-											plan={plan}
-											isCurrentPlan={currentPlan === plan.id}
-											onSubscribe={handleSubscribe}
-										/>
-									</motion.div>
-								))
-							}
-						</div>
-					</motion.div>
-				) : (
-					<motion.div
-						key="transactions"
-						initial={{ opacity: 0, y: 16 }}
-						animate={{ opacity: 1, y: 0 }}
-						exit={{ opacity: 0, y: -16 }}
-						transition={{ duration: 0.28 }}
-					>
-						<TransactionTab />
-					</motion.div>
-				)}
-			</AnimatePresence>
-		</div>
-	);
+  const [activeTab,   setActiveTab]   = useState("plans");
+  const [isLoading,   setIsLoading]   = useState(false);
+  const [plans,       setPlans]       = useState([]);
+  const [currentPlan, setCurrentPlan] = useState(null);
+
+  const tabs = useMemo(() => [
+    { id: "plans",        label: t("tabs.plans")        },
+    { id: "transactions", label: t("tabs.transactions") },
+  ], [t]);
+
+  const durationLabel = (d) => {
+    if (d === "monthly")  return t("duration.monthly");
+    if (d === "yearly")   return t("duration.yearly");
+    return t("duration.lifetime");
+  };
+
+  const fetchPlans = async () => {
+    setIsLoading(true);
+    try {
+      const { data } = await api.get("/plans/available");
+      setPlans((data || []).map(plan => ({
+        id:                     plan.id,
+        name:                   plan.name,
+        price:                  Number(plan.price),
+        duration:               durationLabel(plan.duration),
+        description:            plan.description || "",
+        features:               Array.isArray(plan.features) ? plan.features : [],
+        isPopular:              plan.isPopular,
+        usersLimit:             Number(plan.usersLimit    ?? plan.maxUsers               ?? 1),
+        shippingCompaniesLimit: Number(plan.shippingCompaniesLimit ?? plan.maxShippingCompanies ?? 0),
+      })));
+    } catch {
+      toast.error(t("errors.fetchPlans"));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "plans") {
+      fetchPlans();
+      setCurrentPlan(user?.plan?.id ?? null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+
+  const handleSubscribe = async (_plan) => {
+    // TODO: implement subscription flow
+  };
+
+  const activePlan = plans.find(p => p.id === currentPlan) ?? null;
+
+  return (
+    <div className="min-h-screen p-5">
+
+      {/* Compact header — breadcrumb + inline pill tabs (no stats/buttons) */}
+      <PageHeader
+        breadcrumbs={[
+          { name: t("breadcrumb.home"), href: "/" },
+          { name: t("breadcrumb.subscriptions") },
+        ]}
+        items={tabs}
+        active={activeTab}
+        setActive={setActiveTab}
+      />
+
+      <AnimatePresence mode="wait">
+
+        {/* ════ PLANS ════ */}
+        {activeTab === "plans" && (
+          <motion.div
+            key="plans"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.26 }}
+          >
+            
+ 
+            {isLoading && plans.length === 0 ? (
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-5">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <PlanCardSkeleton key={i} idx={i} />
+                ))}
+              </div>
+            ) : plans.length === 0 ? (
+              <EmptyPlans t={t} />
+            ) : (
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-5">
+                {plans.map((plan, idx) => (
+                  <PlanCard
+                    key={plan.id}
+                    plan={plan}
+                    idx={idx}
+                    isCurrentPlan={currentPlan === plan.id}
+                    onSubscribe={handleSubscribe}
+                  />
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* ════ TRANSACTIONS ════ */}
+        {activeTab === "transactions" && (
+          <motion.div
+            key="transactions"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.26 }}
+          >
+            <TransactionTab />
+          </motion.div>
+        )}
+
+      </AnimatePresence>
+    </div>
+  );
 }

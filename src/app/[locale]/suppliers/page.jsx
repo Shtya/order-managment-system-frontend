@@ -589,7 +589,7 @@ function FiltersPanel({ t, value, onChange, onApply, categories }) {
 					</div>
 
 					<div className="flex md:justify-end">
-						<Button_ onClick={onApply} size="sm" label={t("filters.apply")} tone="purple" variant="solid" icon={<Filter size={18} />} />
+						<Button_ onClick={onApply} size="sm" label={t("filters.apply")} tone="primary" variant="solid" icon={<Filter size={18} />} />
 					</div>
 				</div>
 			</div>

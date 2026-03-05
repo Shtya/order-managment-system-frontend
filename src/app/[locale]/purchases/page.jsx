@@ -866,15 +866,8 @@ function DetailsModal({ isOpen, onClose, invoice, isLoading }) {
 									</p>
 								</div>
 								<div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-750 border border-gray-200 dark:border-slate-700">
-									<Label className="text-xs text-gray-500 dark:text-slate-400 mb-1">
-										{t("summary.subtotal")}
-									</Label>
-									<p className="text-sm font-bold text-gray-900 dark:text-white">
-										{invoice.subtotal ? Number(invoice.subtotal).toLocaleString() : "0.00"}
-										<span className="text-[10px] font-medium mr-1 text-gray-500">
-											{t("currency")}
-										</span>
-									</p>
+									<Label className="text-xs text-gray-500 dark:text-slate-400 mb-1">{t("details.safe")}</Label>
+									<p className="text-sm font-bold text-gray-900 dark:text-white">{invoice.safeId ? String(invoice.safeId) : "-"}</p>
 								</div>
 								<div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-750 border border-gray-200 dark:border-slate-700">
 									<Label className="text-xs text-gray-500 dark:text-slate-400 mb-1">{t("details.date")}</Label>

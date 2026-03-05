@@ -40,7 +40,7 @@ export default function CreatePurchaseInvoicePage() {
 			yup.object({
 				supplierId: yup.string().required(tValidation("supplierRequired")),
 				receiptNumber: yup.string().required(tValidation("receiptNumberRequired")),
-				// safeId: yup.string().required(tValidation("safeRequired")),
+				safeId: yup.string().required(tValidation("safeRequired")),
 				notes: yup.string().optional(),
 
 				paidAmount: yup
@@ -91,7 +91,7 @@ export default function CreatePurchaseInvoicePage() {
 		defaultValues: {
 			supplierId: "",
 			receiptNumber: "",
-			// safeId: "",
+			safeId: "",
 			notes: "",
 			paidAmount: 0,
 			items: [],
@@ -205,7 +205,7 @@ export default function CreatePurchaseInvoicePage() {
 
 			fd.append("receiptNumber", data.receiptNumber);
 			fd.append("supplierId", String(Number(data.supplierId)));
-			// fd.append("safeId", String(data.safeId));
+			fd.append("safeId", String(data.safeId));
 
 			if (data.notes) fd.append("notes", data.notes);
 			fd.append("paidAmount", String(Number(data.paidAmount || 0)));
@@ -357,7 +357,7 @@ export default function CreatePurchaseInvoicePage() {
 									)}
 								</div>
 
-								{/* <div className="space-y-2">
+								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
 										{t("fields.safe")} *
 									</Label>
@@ -371,8 +371,9 @@ export default function CreatePurchaseInvoicePage() {
 												</SelectTrigger>
 												<SelectContent className="bg-card-select">
 													<SelectItem value="نقدي">{t("options.safe.cash")}</SelectItem>
-													<SelectItem value="خزنة 1">{t("options.safe.safe1")}</SelectItem>
-													<SelectItem value="خزنة 2">{t("options.safe.safe2")}</SelectItem>
+													<SelectItem value="الخزينة الرئيسية">{t("options.safe.main")}</SelectItem>
+													<SelectItem value="الخزينة الفرعية">{t("options.safe.sub")}</SelectItem>
+													<SelectItem value="الخزينة الإضافية">{t("options.safe.extra")}</SelectItem>
 												</SelectContent>
 											</Select>
 										)}
@@ -381,7 +382,7 @@ export default function CreatePurchaseInvoicePage() {
 									{errors.safeId && (
 										<p className="text-xs text-red-500">{errors.safeId.message}</p>
 									)}
-								</div> */}
+								</div>
 
 								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">

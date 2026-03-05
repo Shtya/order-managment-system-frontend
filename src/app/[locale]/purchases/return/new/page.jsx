@@ -165,7 +165,7 @@ export default function CreateReturnInvoicePage() {
 				supplierCodeSnapshot: data.supplierCodeSnapshot || undefined,
 				invoiceNumber: data.invoiceNumber || undefined,
 				returnReason: data.returnReason || undefined,
-				// safeId: data.safeId ? Number(data.safeId) : undefined,
+				safeId: data.safeId ? Number(data.safeId) : undefined,
 				returnType: data.returnType,
 				notes: data.notes || undefined,
 				items: data.items.map((item) => ({
@@ -365,7 +365,7 @@ export default function CreateReturnInvoicePage() {
 									)}
 								</div>
 
-								{/* <div className="space-y-2">
+								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
 										{t("fields.safe")}
 									</Label>
@@ -378,14 +378,15 @@ export default function CreateReturnInvoicePage() {
 													<SelectValue placeholder={t("placeholders.safe")} />
 												</SelectTrigger>
 												<SelectContent className="bg-card-select">
-													<SelectItem value="1">{t("options.safe.cash")}</SelectItem>
-													<SelectItem value="2">{t("options.safe.safe1")}</SelectItem>
-													<SelectItem value="3">{t("options.safe.safe2")}</SelectItem>
+													<SelectItem value="نقدي">{t("options.safe.cash")}</SelectItem>
+													<SelectItem value="الخزينة الرئيسية">{t("options.safe.main")}</SelectItem>
+													<SelectItem value="الخزينة الفرعية">{t("options.safe.sub")}</SelectItem>
+													<SelectItem value="الخزينة الإضافية">{t("options.safe.extra")}</SelectItem>
 												</SelectContent>
 											</Select>
 										)}
 									/>
-								</div> */}
+								</div>
 							</div>
 						</motion.div>
 					</div>

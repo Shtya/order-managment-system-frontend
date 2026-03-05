@@ -313,6 +313,8 @@ export default function PurchaseReturnsPage() {
 			(filters.supplierId && filters.supplierId !== "none")
 		);
 	}, [filters]);
+
+
 	const columns = useMemo(() => {
 		return [
 			{

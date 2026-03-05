@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import {
 	Trash2,
@@ -15,7 +15,7 @@ import {
 	Search as SearchIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -35,6 +35,7 @@ import api from "@/utils/api";
 import toast from "react-hot-toast";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
+import { useSearchParams } from "next/navigation";
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -238,16 +239,26 @@ function ConfirmDialog({ open, onOpenChange, title, description, confirmText, ca
 export default function SupplierCategoriesPage() {
 	const t = useTranslations("supplierCategories");
 	const router = useRouter();
-
+	const searchParams = useSearchParams();
+	const pathname = usePathname();
 	const [search, setSearch] = useState("");
+	const [debouncedSearch, setDebouncedSearch] = useState("");
+	const searchTimer = useRef(null);
+	useEffect(() => {
+		clearTimeout(searchTimer.current);
+		searchTimer.current = setTimeout(() => setDebouncedSearch(search), 350);
+		return () => clearTimeout(searchTimer.current);
+	}, [search]);
+
 	const [loading, setLoading] = useState(false);
 
 	const [pager, setPager] = useState({
 		total_records: 0,
 		current_page: 1,
-		per_page: 10,
+		per_page: 6,
 		records: [],
 	});
+
 
 	const [formOpen, setFormOpen] = useState(false);
 	const [editingCategory, setEditingCategory] = useState(null);
@@ -271,6 +282,26 @@ export default function SupplierCategoriesPage() {
 		],
 		[pager, t]
 	);
+
+	useEffect(() => {
+		const action = searchParams.get("action");
+
+		if (action === "new") {
+			// 1. Trigger the UI state
+			setFormOpen(true);
+			setEditingCategory(null); // Ensure we aren't in edit mode
+
+			// 2. Clean up the URL
+			const params = new URLSearchParams(searchParams.toString());
+			params.delete("action");
+
+			const newQuery = params.toString();
+			const cleanPath = newQuery ? `${pathname}?${newQuery}` : pathname;
+
+			// Use replace to avoid "back-button loops"
+			router.replace(cleanPath, { scroll: false });
+		}
+	}, [searchParams, pathname, router]);
 
 	const fetchCategories = useCallback(
 		async ({ page = 1, per_page = 10 } = {}) => {
@@ -296,8 +327,9 @@ export default function SupplierCategoriesPage() {
 				setLoading(false);
 			}
 		},
-		[search]
+		[debouncedSearch]
 	);
+
 
 	useEffect(() => {
 		fetchCategories({ page: 1, per_page: 10 });
@@ -461,11 +493,9 @@ export default function SupplierCategoriesPage() {
 
 			{/* Toolbar & Table */}
 			<Table
-				// searchValue={search}
-				// onSearchChange={setSearch}
-				// onSearch={() => { }}
-
-
+				searchValue={search}
+				onSearchChange={setSearch}
+				onSearch={fetchCategories}
 				columns={columns}
 				data={pager.records}
 				isLoading={loading}

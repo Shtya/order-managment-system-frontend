@@ -25,8 +25,8 @@ export default function CreatePurchaseInvoicePage() {
 	const navigate = useRouter();
 	const locale = useLocale();
 	const isRTL = locale === "ar";
-	const t = useTranslations("purchaseInvoice");
 	const tValidation = useTranslations("validation");
+	const t = useTranslations("purchaseInvoice");
 
 	const [receiptImage, setReceiptImage] = useState(null);
 	const [suppliers, setSuppliers] = useState([]);
@@ -40,7 +40,7 @@ export default function CreatePurchaseInvoicePage() {
 			yup.object({
 				supplierId: yup.string().required(tValidation("supplierRequired")),
 				receiptNumber: yup.string().required(tValidation("receiptNumberRequired")),
-				safeId: yup.string().required(tValidation("safeRequired")),
+				// safeId: yup.string().required(tValidation("safeRequired")),
 				notes: yup.string().optional(),
 
 				paidAmount: yup
@@ -91,14 +91,13 @@ export default function CreatePurchaseInvoicePage() {
 		defaultValues: {
 			supplierId: "",
 			receiptNumber: "",
-			safeId: "",
+			// safeId: "",
 			notes: "",
 			paidAmount: 0,
 			items: [],
 			receiptAsset: null,
 		}
 	});
-
 
 	const watchedItems = watch("items");
 	const watchedPaidAmount = watch("paidAmount");
@@ -206,7 +205,7 @@ export default function CreatePurchaseInvoicePage() {
 
 			fd.append("receiptNumber", data.receiptNumber);
 			fd.append("supplierId", String(Number(data.supplierId)));
-			fd.append("safeId", String(data.safeId));
+			// fd.append("safeId", String(data.safeId));
 
 			if (data.notes) fd.append("notes", data.notes);
 			fd.append("paidAmount", String(Number(data.paidAmount || 0)));
@@ -225,15 +224,22 @@ export default function CreatePurchaseInvoicePage() {
 				fd.append("receiptAsset", receiptImage.file);
 			}
 
-			await api.post("/purchases", fd, {
+			const apiPromise = api.post("/purchases", fd, {
 				headers: { "Content-Type": "multipart/form-data" },
 			});
 
-			toast.success(t("messages.createSuccess"));
+			// 3. Wrap in toast.promise
+			await toast.promise(apiPromise, {
+				loading: t("messages.creatingPurchase"), // AR: "جاري إنشاء عملية الشراء..."
+				success: t("messages.createSuccess"),    // AR: "تمت العملية بنجاح"
+				error: (err) => err.response?.data?.message || t("messages.createFailed"),
+			});
+
+			// toast.success(t("messages.createSuccess"));
 			navigate.push("/purchases");
 		} catch (error) {
 			console.error("Failed to create purchase:", error);
-			toast.error(error.response?.data?.message || t("messages.createFailed"));
+			// toast.error(error.response?.data?.message || t("messages.createFailed"));
 		} finally {
 			setLoading(false);
 		}
@@ -274,24 +280,24 @@ export default function CreatePurchaseInvoicePage() {
 			<PageHeader
 				breadcrumbs={[
 					{ name: t("breadcrumb.home"), href: "/" },
-					{ name: t("breadcrumb.purchases") , href: "/purchases" } ,
-					{ name: t("breadcrumb.createPurchaseInvoice")   } ,
+					{ name: t("breadcrumb.purchases"), href: "/purchases" },
+					{ name: t("breadcrumb.createPurchaseInvoice") },
 				]}
 				buttons={
 					<>
-					<Button_
+						<Button_
 							onClick={handleSubmit(onSubmit)}
 							size="sm"
 							label={t("actions.save")}
- 							variant="solid"
+							variant="solid"
 							icon={<Save size={18} />}
 							disabled={loading}
 						/>
 
- 						<Button_ size="sm" label={t("actions.howToUse")} tone="ghost" icon={<Info size={18} />} />
+						<Button_ size="sm" label={t("actions.howToUse")} tone="ghost" icon={<Info size={18} />} />
 					</>
-				} 
-			/> 
+				}
+			/>
 
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<div className="flex gap-6">
@@ -351,7 +357,7 @@ export default function CreatePurchaseInvoicePage() {
 									)}
 								</div>
 
-								<div className="space-y-2">
+								{/* <div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
 										{t("fields.safe")} *
 									</Label>
@@ -375,7 +381,7 @@ export default function CreatePurchaseInvoicePage() {
 									{errors.safeId && (
 										<p className="text-xs text-red-500">{errors.safeId.message}</p>
 									)}
-								</div>
+								</div> */}
 
 								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
@@ -456,75 +462,85 @@ export default function CreatePurchaseInvoicePage() {
 												const invoiceTotal = unitCost * quantity;
 
 												return (
-													<tr
-														key={index}
-														className="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors"
-													>
-														<td className="p-3 text-sm text-gray-600 dark:text-slate-300">
-															{product.sku}
-														</td>
-														<td className="p-3 text-sm font-semibold text-gray-700 dark:text-slate-200">
-															{product.productName}
-															{Object.keys(product.attributes || {}).length > 0 && (
-																<div className="text-xs text-gray-500 font-normal mt-1">
-																	{Object.entries(product.attributes).map(([key, value]) => (
-																		<span key={key} className="mr-2">
-																			{key}: {value}
-																		</span>
-																	))}
+													<>
+
+
+														<tr
+															key={index}
+															className="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors"
+														>
+															<td className="p-3 text-sm text-gray-600 dark:text-slate-300">
+																{product.sku}
+															</td>
+															<td className="p-3 text-sm font-semibold text-gray-700 dark:text-slate-200">
+																{product.productName}
+																{Object.keys(product.attributes || {}).length > 0 && (
+																	<div className="text-xs text-gray-500 font-normal mt-1">
+																		{Object.entries(product.attributes).map(([key, value]) => (
+																			<span key={key} className="mr-2">
+																				{key}: {value}
+																			</span>
+																		))}
+																	</div>
+																)}
+															</td>
+															<td className="p-3">
+																<div className="flex items-center gap-3">
+																	{/* Purchase Cost Input */}
+																	<Input
+																		type="number"
+																		value={product.purchaseCost}
+																		onChange={(e) =>
+																			handleProductFieldChange(index, "purchaseCost", e.target.value)
+																		}
+																		className="h-8 w-24"
+																		min="0"
+																		step="0.01"
+																	/>
+
+																	{/* Current Price Display */}
+																	<div className="flex items-center gap-1 text-sm text-gray-600">
+																		<Tag size={14} className="text-green-600" />
+																		<span className="font-medium">{product.price}</span>
+																		<span className="text-xs text-gray-400">({t("current_price")})</span>
+																	</div>
+
 																</div>
-															)}
-														</td>
-														<td className="p-3">
-															<div className="flex items-center gap-3">
-																{/* Purchase Cost Input */}
+															</td>
+
+															<td className="p-3">
 																<Input
 																	type="number"
-																	value={product.purchaseCost}
+																	value={product.quantity}
 																	onChange={(e) =>
-																		handleProductFieldChange(index, "purchaseCost", e.target.value)
+																		handleProductFieldChange(index, "quantity", e.target.value)
 																	}
-																	className="h-8 w-24"
-																	min="0"
-																	step="0.01"
+																	className="h-8 w-20"
+																	min="1"
 																/>
+															</td>
+															<td className="p-3 text-sm font-semibold text-green-600 dark:text-green-400">
+																{invoiceTotal.toFixed(2)} {t("currency")}
+															</td>
+															<td className="p-3 text-center">
+																<motion.button
+																	type="button"
+																	whileHover={{ scale: 1.1 }}
+																	whileTap={{ scale: 0.9 }}
+																	onClick={() => handleDeleteProduct(index)}
+																	className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
+																>
+																	<Trash2 size={16} />
+																</motion.button>
+															</td>
+														</tr>
+														{errors.items?.[index]?.purchaseCost && (
+															<span className="text-xs text-red-500 font-medium mt-1">
+																{errors.items[index].purchaseCost.message}
+															</span>
+														)}
+													</>
 
-																{/* Current Price Display */}
-																<div className="flex items-center gap-1 text-sm text-gray-600">
-																	<Tag size={14} className="text-green-600" />
-																	<span className="font-medium">{product.price}</span>
-																	<span className="text-xs text-gray-400">({t("current_price")})</span>
-																</div>
-
-															</div>
-														</td>
-
-														<td className="p-3">
-															<Input
-																type="number"
-																value={product.quantity}
-																onChange={(e) =>
-																	handleProductFieldChange(index, "quantity", e.target.value)
-																}
-																className="h-8 w-20"
-																min="1"
-															/>
-														</td>
-														<td className="p-3 text-sm font-semibold text-green-600 dark:text-green-400">
-															{invoiceTotal.toFixed(2)} {t("currency")}
-														</td>
-														<td className="p-3 text-center">
-															<motion.button
-																type="button"
-																whileHover={{ scale: 1.1 }}
-																whileTap={{ scale: 0.9 }}
-																onClick={() => handleDeleteProduct(index)}
-																className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
-															>
-																<Trash2 size={16} />
-															</motion.button>
-														</td>
-													</tr>
 												);
 											})}
 										</tbody>

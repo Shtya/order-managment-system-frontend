@@ -108,10 +108,35 @@ export default function CreateReturnInvoicePage() {
 		setValue("items", newItems);
 	};
 
-	const handleSelectSku = (product, sku) => {
+	// const handleSelectSku = (product, sku) => {
+	// 	const newItem = {
+	// 		variantId: sku.id,
+	// 		productName: product.name,
+	// 		sku: sku.sku || sku.key,
+	// 		attributes: sku.attributes || {},
+	// 		returnedQuantity: 1,
+	// 		unitCost: 0,
+	// 		taxInclusive: false,
+	// 		taxRate: 5,
+	// 	};
+	// 	console.log(newItem)
+
+	// 	setValue("items", [...watchedItems, newItem]);
+	// };
+
+	const handleSelectSku = (sku) => {
+		const currentItems = watchedItems ?? [];
+
+		// Prevent duplicate selection
+		const alreadyExists = currentItems.some(
+			(item) => item.variantId === sku.id
+		);
+
+		if (alreadyExists) return;
+
 		const newItem = {
 			variantId: sku.id,
-			productName: product.name,
+			productName: sku.productName,
 			sku: sku.sku || sku.key,
 			attributes: sku.attributes || {},
 			returnedQuantity: 1,
@@ -120,8 +145,9 @@ export default function CreateReturnInvoicePage() {
 			taxRate: 5,
 		};
 
-		setValue("items", [...watchedItems, newItem]);
+		setValue("items", [...currentItems, newItem]);
 	};
+
 
 	const handleProductFieldChange = (index, field, value) => {
 		const newItems = [...watchedItems];
@@ -139,7 +165,7 @@ export default function CreateReturnInvoicePage() {
 				supplierCodeSnapshot: data.supplierCodeSnapshot || undefined,
 				invoiceNumber: data.invoiceNumber || undefined,
 				returnReason: data.returnReason || undefined,
-				safeId: data.safeId ? Number(data.safeId) : undefined,
+				// safeId: data.safeId ? Number(data.safeId) : undefined,
 				returnType: data.returnType,
 				notes: data.notes || undefined,
 				items: data.items.map((item) => ({
@@ -151,9 +177,9 @@ export default function CreateReturnInvoicePage() {
 				})),
 			};
 
-			await api.post("/purchases-return", payload);
+			await api.post("/purchases/return", payload);
 			toast.success("Return invoice created successfully");
-			navigate.push("/purchases-return");
+			navigate.push("/purchases/return");
 		} catch (error) {
 			console.error("Failed to create return:", error);
 			toast.error(error.response?.data?.message || "Failed to create return invoice");
@@ -339,7 +365,7 @@ export default function CreateReturnInvoicePage() {
 									)}
 								</div>
 
-								<div className="space-y-2">
+								{/* <div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
 										{t("fields.safe")}
 									</Label>
@@ -359,7 +385,7 @@ export default function CreateReturnInvoicePage() {
 											</Select>
 										)}
 									/>
-								</div>
+								</div> */}
 							</div>
 						</motion.div>
 					</div>
@@ -376,7 +402,7 @@ export default function CreateReturnInvoicePage() {
 								{t("sections.addProducts")}
 							</h3>
 
-							<ProductSkuSearchPopover handleSelectSku={handleSelectSku} />
+							<ProductSkuSearchPopover handleSelectSku={handleSelectSku} selectedSkus={watchedItems} />
 							{errors.items && <p className="text-xs text-red-500 mt-2">{errors.items.message}</p>}
 						</motion.div>
 

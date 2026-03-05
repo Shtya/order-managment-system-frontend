@@ -69,6 +69,8 @@ import { baseImg } from "@/utils/axios";
 import { Badge } from "@/components/ui/badge";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
+import { Bone } from "@/components/atoms/BannerSkeleton";
+import { avatarSrc } from "@/components/atoms/UserSelect";
 
 const isImagePath = (p) => !!p && /\.(png|jpg|jpeg|webp|gif)$/i.test(p);
 const isPdfPath = (p) => !!p && /\.pdf$/i.test(p);
@@ -273,7 +275,7 @@ function LogsModal({ isOpen, onClose, invoiceId, t }) {
 
 				<div className="flex-1 overflow-y-auto py-4">
 					{loading ? (
-						<LoadingSpinner text={t("logs.loading")} />
+						<LogsModalSkeleton />
 					) : logs.length === 0 ? (
 						<div className="flex flex-col items-center justify-center py-16">
 							<div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-4">
@@ -322,7 +324,7 @@ function LogsModal({ isOpen, onClose, invoiceId, t }) {
 												<div className="flex items-center gap-3 pt-1">
 													{avatar ? (
 														<img
-															src={baseImg + avatar}
+															src={avatarSrc(avatar)}
 															alt={userName}
 															className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-slate-700"
 														/>
@@ -410,6 +412,70 @@ function LogsModal({ isOpen, onClose, invoiceId, t }) {
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
+	);
+}
+
+
+function LogsModalSkeleton() {
+	return (
+		<div className="space-y-6 animate-pulse">
+
+			{/* Header */}
+			<div className="border-b border-border pb-4 space-y-3">
+				<div className="flex items-center gap-3">
+					<Bone className="w-10 h-10 rounded-xl" />
+					<div className="space-y-2">
+						<Bone className="h-5 w-40" />
+						<Bone className="h-4 w-72" />
+					</div>
+				</div>
+			</div>
+
+			{/* Logs List */}
+			<div className="space-y-4">
+				{Array.from({ length: 4 }).map((_, i) => (
+					<div
+						key={i}
+						className="p-4 rounded-xl border-2 border-border/40 bg-muted/20 space-y-4"
+					>
+						{/* Top Row */}
+						<div className="flex items-center justify-between">
+							<div className="flex gap-2">
+								<Bone className="h-5 w-20 rounded-full" />
+								<Bone className="h-5 w-14 rounded-full" />
+							</div>
+							<Bone className="h-4 w-32" />
+						</div>
+
+						{/* User Row */}
+						<div className="flex items-center gap-3">
+							<Bone className="w-8 h-8 rounded-full" />
+							<div className="space-y-2">
+								<Bone className="h-4 w-36" />
+								<Bone className="h-3 w-24" />
+							</div>
+						</div>
+
+						{/* Description */}
+						<div className="space-y-2">
+							<Bone className="h-4 w-full" />
+							<Bone className="h-4 w-5/6" />
+						</div>
+
+						{/* Expandable Details Preview */}
+						<div className="pt-2 border-t border-border/20 space-y-2">
+							<Bone className="h-3 w-28" />
+							<Bone className="h-20 w-full rounded-lg" />
+						</div>
+					</div>
+				))}
+			</div>
+
+			{/* Footer */}
+			<div className="border-t border-border pt-4 flex justify-end">
+				<Bone className="h-10 w-24 rounded-xl" />
+			</div>
+		</div>
 	);
 }
 
@@ -765,17 +831,8 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 	);
 }
 
-function DetailsModal({ isOpen, onClose, invoice, t }) {
-	const [loading, setLoading] = useState(!invoice);
-
-	useEffect(() => {
-		if (invoice) {
-			setLoading(false);
-		}
-	}, [invoice]);
-
-	if (!invoice && !loading) return null;
-
+function DetailsModal({ isOpen, onClose, invoice, isLoading }) {
+	const t = useTranslations("purchases");
 	const receipt = invoice?.receiptAsset || null;
 
 	return (
@@ -794,8 +851,10 @@ function DetailsModal({ isOpen, onClose, invoice, t }) {
 				</DialogHeader>
 
 				<div className="flex-1 overflow-y-auto py-4">
-					{loading ? (
-						<LoadingSpinner text={t("details.loading")} />
+					{isLoading ? (
+						<DetailsModalSkeleton />
+					) : !invoice ? (
+						null // Or a <NoData /> component
 					) : (
 						<div className="space-y-6 px-2">
 							{/* Info Grid */}
@@ -807,8 +866,15 @@ function DetailsModal({ isOpen, onClose, invoice, t }) {
 									</p>
 								</div>
 								<div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-750 border border-gray-200 dark:border-slate-700">
-									<Label className="text-xs text-gray-500 dark:text-slate-400 mb-1">{t("details.safe")}</Label>
-									<p className="text-sm font-bold text-gray-900 dark:text-white">{invoice.safeId ? String(invoice.safeId) : "-"}</p>
+									<Label className="text-xs text-gray-500 dark:text-slate-400 mb-1">
+										{t("summary.subtotal")}
+									</Label>
+									<p className="text-sm font-bold text-gray-900 dark:text-white">
+										{invoice.subtotal ? Number(invoice.subtotal).toLocaleString() : "0.00"}
+										<span className="text-[10px] font-medium mr-1 text-gray-500">
+											{t("currency")}
+										</span>
+									</p>
 								</div>
 								<div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-750 border border-gray-200 dark:border-slate-700">
 									<Label className="text-xs text-gray-500 dark:text-slate-400 mb-1">{t("details.date")}</Label>
@@ -923,6 +989,101 @@ function DetailsModal({ isOpen, onClose, invoice, t }) {
 	);
 }
 
+function DetailsModalSkeleton() {
+	return (
+		<div className="space-y-6 animate-pulse">
+
+			{/* Header */}
+			<div className="border-b-2 border-border pb-4 space-y-3">
+				<div className="flex items-center gap-3">
+					<Bone className="w-12 h-12 rounded-xl" />
+					<div className="space-y-2">
+						<Bone className="h-6 w-48" />
+						<Bone className="h-4 w-64" />
+					</div>
+				</div>
+			</div>
+
+			{/* Info Grid */}
+			<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+				{Array.from({ length: 4 }).map((_, i) => (
+					<div
+						key={i}
+						className="p-4 rounded-xl border border-border/40 bg-muted/20 space-y-2"
+					>
+						<Bone className="h-3 w-16" />
+						<Bone className="h-4 w-24" />
+					</div>
+				))}
+			</div>
+
+			{/* Items Section */}
+			<div className="space-y-3">
+				<Bone className="h-5 w-40" />
+
+				<div className="rounded-xl border border-border/30 overflow-hidden">
+					{/* Table Header */}
+					<div className="bg-muted/30 px-4 py-3 flex justify-between">
+						<Bone className="h-3 w-20" />
+						<Bone className="h-3 w-24" />
+						<Bone className="h-3 w-16" />
+						<Bone className="h-3 w-16" />
+						<Bone className="h-3 w-20" />
+					</div>
+
+					{/* Table Rows */}
+					{Array.from({ length: 3 }).map((_, i) => (
+						<div
+							key={i}
+							className="grid grid-cols-5 gap-4 px-4 py-4 border-t border-border/20"
+						>
+							<Bone className="h-4 w-16" />
+							<Bone className="h-4 w-28" />
+							<Bone className="h-4 w-16" />
+							<Bone className="h-4 w-12 mx-auto" />
+							<Bone className="h-4 w-20" />
+						</div>
+					))}
+				</div>
+			</div>
+
+			{/* Summary */}
+			<div className="p-6 rounded-xl border border-primary/20 bg-primary/5 space-y-4">
+				<div className="flex justify-between">
+					<Bone className="h-4 w-28" />
+					<Bone className="h-4 w-20" />
+				</div>
+				<div className="flex justify-between">
+					<Bone className="h-4 w-32" />
+					<Bone className="h-4 w-20" />
+				</div>
+				<div className="flex justify-between pt-3 border-t border-primary/20">
+					<Bone className="h-5 w-36" />
+					<Bone className="h-6 w-24" />
+				</div>
+			</div>
+
+			{/* Receipt */}
+			<div className="space-y-3">
+				<Bone className="h-5 w-40" />
+				<Bone className="h-40 w-full rounded-xl" />
+			</div>
+
+			{/* Notes */}
+			<div className="p-4 rounded-xl border border-border/40 space-y-2">
+				<Bone className="h-3 w-20" />
+				<Bone className="h-4 w-full" />
+				<Bone className="h-4 w-5/6" />
+			</div>
+
+			{/* Footer */}
+			<div className="border-t-2 border-border pt-4 flex justify-end">
+				<Bone className="h-10 w-28 rounded-xl" />
+			</div>
+		</div>
+	);
+}
+
 function EditPaidAmountModal({ isOpen, onClose, invoice, t, onSave }) {
 	const [paidAmount, setPaidAmount] = useState(0);
 	const [loading, setLoading] = useState(false);
@@ -1029,7 +1190,11 @@ export default function PurchasesPage() {
 
 	const [loading, setLoading] = useState(false);
 	const [suppliers, setSuppliers] = useState([]);
-	const [detailsModal, setDetailsModal] = useState({ isOpen: false, invoice: null });
+	const [detailsModal, setDetailsModal] = useState({
+		isOpen: false,
+		invoice: null,
+		isLoading: false
+	});
 	const [editModal, setEditModal] = useState({ isOpen: false, invoice: null });
 	const [logsModal, setLogsModal] = useState({ isOpen: false, invoiceId: null });
 	const [acceptModal, setAcceptModal] = useState({ isOpen: false, invoiceId: null });
@@ -1137,17 +1302,26 @@ export default function PurchasesPage() {
 		);
 	}, [filters]);
 	const handleStatusChange = async (id, newStatus) => {
+		// 1. Define the promise
+		const statusPromise = api.patch(`/purchases/${id}/status`, { status: newStatus });
+
+		// 2. Wrap in toast.promise
 		try {
-			await api.patch(`/purchases/${id}/status`, { status: newStatus });
-			toast.success(t("messages.statusUpdated"));
+			await toast.promise(statusPromise, {
+				loading: t("messages.updatingStatus"), // Or a generic "Processing..."
+				success: t("messages.statusUpdated"),
+				error: (err) => t("messages.statusFailed") // Or normalizeAxiosError(err)
+			});
+
+			// 3. Refresh data only after the promise succeeds
 			fetchPurchases(pager.current_page, pager.per_page);
 			fetchStats();
 		} catch (error) {
+			// toast.promise already showed the error, 
+			// but we catch it here to prevent unhandled promise rejection
 			console.error(error);
-			toast.error(t("messages.statusFailed"));
 		}
 	};
-
 	const handleUpdatePaidAmount = async (id, paidAmount) => {
 		try {
 			await api.patch(`/purchases/${id}/paid-amount`, { paidAmount });
@@ -1162,12 +1336,18 @@ export default function PurchasesPage() {
 	const applyFilters = () => fetchPurchases(1, pager.per_page);
 
 	const handleViewDetails = async (row) => {
+		// Open modal immediately and set loading to true
+		setDetailsModal({ isOpen: true, invoice: null, isLoading: true });
+
 		try {
 			const res = await api.get(`/purchases/${row.id}`);
-			setDetailsModal({ isOpen: true, invoice: res.data });
+			// Update with data and stop loading
+			setDetailsModal(prev => ({ ...prev, invoice: res.data, isLoading: false }));
 		} catch (error) {
 			console.error(error);
 			toast.error(t("messages.fetchDetailsFailed"));
+			// Close modal or just stop loading on error
+			setDetailsModal(prev => ({ ...prev, isLoading: false }));
 		}
 	};
 
@@ -1477,7 +1657,8 @@ export default function PurchasesPage() {
 				isOpen={detailsModal.isOpen}
 				onClose={() => setDetailsModal({ isOpen: false, invoice: null })}
 				invoice={detailsModal.invoice}
-				t={t}
+				isLoading={detailsModal.isLoading}
+			// t={t}
 			/>
 
 			<LogsModal

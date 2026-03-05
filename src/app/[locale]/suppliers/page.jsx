@@ -301,7 +301,7 @@ function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess, t, countr
 									variant="outline"
 									size="sm"
 									className="mt-3"
-									onClick={() => window.open("/supplier-categories", "_blank")}
+									onClick={() => window.open("/suppliers/categories?action=new", "_blank")}
 								>
 									{t("form.addCategoryLink")}
 								</Button>
@@ -618,7 +618,7 @@ export default function SuppliersPage() {
 	const [pager, setPager] = useState({
 		total_records: 0,
 		current_page: 1,
-		per_page: 10,
+		per_page: 6,
 		records: [],
 	});
 
@@ -706,6 +706,8 @@ export default function SuppliersPage() {
 				params.set("limit", String(per_page));
 				if (search?.trim()) params.set("search", search.trim());
 				if (filters.categoryId && filters.categoryId !== "none") params.set("categoryId", filters.categoryId);
+				if (filters.name) params.set("name", filters.name);
+				if (filters.phone) params.set("phone", filters.phone);
 				params.set("sortBy", "created_at");
 				params.set("sortOrder", "DESC");
 

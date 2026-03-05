@@ -13,13 +13,14 @@ import { useRouter } from "@/i18n/navigation";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { useTranslations } from "next-intl";
+import { Bone } from "@/components/atoms/BannerSkeleton";
 
 function normalizeAxiosError(err) {
   const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
   return Array.isArray(msg) ? msg.join(", ") : String(msg);
 }
 
-export default function BundlesTab({ t, searchDebounced, filters, onAskDelete, onOpenView, onExportRequest }) {
+export default function useBundlesTab({ t, searchDebounced, filters, onAskDelete, onOpenView, onExportRequest, activetab }) {
   const router = useRouter();
   const requestIdRef = useRef(0);
 
@@ -79,14 +80,10 @@ export default function BundlesTab({ t, searchDebounced, filters, onAskDelete, o
   }, [searchDebounced, filters]);
 
   useEffect(() => {
+    if (activetab !== "bundles") return;
     fetchData({ page: 1, per_page: pager.per_page });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchDebounced]);
-
-  useEffect(() => {
-    fetchData({ page: 1, per_page: 6 });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchDebounced, activetab]);
 
   const columns = useMemo(() => {
     const na = t("common.na");
@@ -243,7 +240,7 @@ function money(v, na) {
   return String(v);
 }
 
-export function BundleViewModal({ open, onOpenChange, bundle }) {
+export function BundleViewModal({ open, onOpenChange, bundle, viewLoading }) {
   const t = useTranslations("products");
   const na = t("common.na");
 
@@ -259,7 +256,9 @@ export function BundleViewModal({ open, onOpenChange, bundle }) {
           </DialogTitle>
         </DialogHeader>
 
-        {!bundle ? (
+        {viewLoading ? (
+          <BundleModalSkeleton />
+        ) : !bundle ? (
           <div className="text-slate-500">{t("bundleModal.noData")}</div>
         ) : (
           <div className="space-y-5">
@@ -282,6 +281,17 @@ export function BundleViewModal({ open, onOpenChange, bundle }) {
                     <Badge className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200">
                       {t("common.price")}: {money(bundle.price, na)}
                     </Badge>
+                    {bundle.description && (
+                      <div className="mt-4 p-3 rounded-lg bg-muted/30 border border-border/40">
+                        <div className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center gap-1">
+                          <AlignLeft size={12} />
+                          {t("common.description")}
+                        </div>
+                        <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                          {bundle.description}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -371,5 +381,71 @@ export function BundleViewModal({ open, onOpenChange, bundle }) {
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+      SKELETON FOR BUNDLES
+═══════════════════════════════════════════════════════════ */
+function BundleModalSkeleton() {
+  return (
+    <div className="space-y-5 animate-pulse">
+      {/* Bundle Header Card */}
+      <div className="relative bg-card rounded-2xl border border-border/50 overflow-hidden p-5">
+        <div className="h-[3px] rounded-full bg-muted/40 -mx-5 -mt-5 mb-5" />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-3 flex-1">
+            <Bone className="h-6 w-1/2" /> {/* Name */}
+            <div className="flex gap-2">
+              <Bone className="h-5 w-24 rounded-full" /> {/* ID */}
+              <Bone className="h-5 w-20 rounded-full" /> {/* SKU */}
+              <Bone className="h-5 w-28 rounded-full" /> {/* Price */}
+            </div>
+          </div>
+          <Bone className="h-4 w-32" /> {/* Date */}
+        </div>
+      </div>
+
+      <div className="h-px bg-border/50" />
+
+      {/* Contents Table Skeleton */}
+      <div className="space-y-3">
+        <Bone className="h-4 w-32" /> {/* Title */}
+        <div className="rounded-xl border border-border/30 overflow-hidden">
+          {/* Table Header */}
+          <div className="bg-[var(--secondary)]/60 px-4 py-3 flex justify-between">
+            <Bone className="h-2.5 w-24" />
+            <Bone className="h-2.5 w-12" />
+            <Bone className="h-2.5 w-20" />
+            <Bone className="h-2.5 w-16" />
+          </div>
+          {/* Table Rows */}
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className={cn(
+                "grid grid-cols-12 items-center gap-4 px-4 py-4 border-t border-border/20",
+                i % 2 !== 0 && "bg-muted/15"
+              )}
+            >
+              <div className="col-span-5 space-y-2">
+                <Bone className="h-4 w-32" />
+                <Bone className="h-2.5 w-24" />
+              </div>
+              <div className="col-span-2 flex justify-center">
+                <Bone className="h-6 w-10 rounded-full" />
+              </div>
+              <div className="col-span-3 flex justify-center gap-2">
+                <Bone className="h-5 w-16 rounded-full" />
+                <Bone className="h-5 w-16 rounded-full" />
+              </div>
+              <div className="col-span-2 flex justify-end">
+                <Bone className="h-5 w-14 rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }

@@ -8,7 +8,7 @@ export default function Button_({
 	href,
 	size = "md",
 	label,
-	tone = "",
+	tone = "primary",
 	variant = "solid",
 	icon,
 	onClick,

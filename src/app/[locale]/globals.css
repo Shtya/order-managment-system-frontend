@@ -82,8 +82,6 @@
   --destructive-foreground: oklch(0.98 0 0);
 }
 
-
-
 .btn-emerald {
   --primary: #059669;
   --primary-from: 110 231 183;
@@ -127,27 +125,25 @@
 }
 
 .btn-danger {
-  --primary: #dc2626;                /* red-600 */
-  --primary-from: 252 165 165;       /* red-300 */
-  --primary-to: 220 38 38;           /* red-600 */
+  --primary: #dc2626; /* red-600 */
+  --primary-from: 252 165 165; /* red-300 */
+  --primary-to: 220 38 38; /* red-600 */
   --primary-shadow: 220 38 38 / 0.45;
 }
 
 .btn-warning {
-  --primary: #ea580c;                /* orange-600 */
-  --primary-from: 253 186 116;       /* orange-300 */
-  --primary-to: 234 88 12;           /* orange-600 */
+  --primary: #ea580c; /* orange-600 */
+  --primary-from: 253 186 116; /* orange-300 */
+  --primary-to: 234 88 12; /* orange-600 */
   --primary-shadow: 234 88 12 / 0.45;
 }
 
-
 .btn-cancel {
-  --primary: #4b5563;                /* gray-600 */
-  --primary-from: 209 213 219;       /* gray-300 */
-  --primary-to: 75 85 99;            /* gray-600 */
+  --primary: #4b5563; /* gray-600 */
+  --primary-from: 209 213 219; /* gray-300 */
+  --primary-to: 75 85 99; /* gray-600 */
   --primary-shadow: 75 85 99 / 0.35;
 }
-
 
 .bg-card {
   @apply p-4 md:p-6 rounded-xl md:rounded-xl border transition-all duration-300 bg-card border-gray-300/70;
@@ -358,16 +354,12 @@ html {
 /* Light mode */
 * {
   scrollbar-width: thin;
-  scrollbar-color:
-    color-mix(in oklab, var(--primary) 80%, white 8%)
-    color-mix(in oklab, white 6%, white);
+  scrollbar-color: color-mix(in oklab, var(--primary) 80%, white 8%) color-mix(in oklab, white 6%, white);
 }
 
 /* Dark mode override */
 .dark * {
-  scrollbar-color:
-    color-mix(in oklab, var(--primary) 85%, black 10%)
-    rgba(255, 255, 255, 0.06);
+  scrollbar-color: color-mix(in oklab, var(--primary) 85%, black 10%) rgba(255, 255, 255, 0.06);
 }
 
 ::-webkit-scrollbar {
@@ -919,4 +911,37 @@ button:disabled {
 
 input:disabled {
   @apply opacity-50 pointer-events-none;
+}
+
+.home {
+  height: 100vh;
+  overflow-y: auto; 
+  scrollbar-width: thin;
+  scrollbar-color: #6763af #f1f1f1;
+ 
+}
+
+.dark .home {
+  scrollbar-color: #6763af #1a1a1a;
+}
+ 
+.home::-webkit-scrollbar {
+  width: 8px;
+}
+
+.home::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.dark .home::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+.home::-webkit-scrollbar-thumb {
+  background-color: #6763af;
+  border-radius: 10px;
+}
+
+.home::-webkit-scrollbar-thumb:hover {
+  background-color: #5750a0;
 }

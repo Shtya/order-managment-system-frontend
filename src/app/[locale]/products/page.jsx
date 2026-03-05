@@ -1,9 +1,9 @@
 // --- File: page.jsx ---
 "use client";
 
-import React, { useEffect, useMemo, useState, useRef } from "react";
+import React, { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Box, ChevronLeft, FileDown, Filter, Layers, Package, RefreshCw, Loader2, Info, Plus } from "lucide-react";
+import { Box, ChevronLeft, FileDown, Filter, Layers, Package, RefreshCw, Loader2, Info, Plus, Truck, CheckCircle, Boxes, PackageSearch, Download } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 
@@ -23,9 +23,9 @@ import toast from "react-hot-toast";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 
-import ProductsTab, { ProductViewModal } from "./ProductsTab";
-import BundlesTab, { BundleViewModal } from "./BundlesTab";
-import IdleTab from "./IdleTab";
+import useProductsTab, { ProductViewModal } from "./ProductsTab";
+import useBundlesTab, { BundleViewModal } from "./BundlesTab";
+import useIdleTab from "./IdleTab";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
 
@@ -235,6 +235,7 @@ export default function ProductsPage() {
 	const [viewLoading, setViewLoading] = useState(false);
 	const [viewProduct, setViewProduct] = useState(null);
 	const [viewScope, setViewScope] = useState(null);
+	const [exportLoading, setExportLoading] = useState(null);
 
 	const exportBuilderRef = useRef(null);
 
@@ -262,42 +263,61 @@ export default function ProductsPage() {
 		[t]
 	);
 
-	const stats = useMemo(
-		() => [
+	const [summary, setSummary] = useState(null);
+	const [loadingSummary, setLoadingSummary] = useState(true);
+
+	// 2. Fetch the data on component mount
+	useEffect(() => {
+		const fetchStats = async () => {
+			try {
+				const response = await api.get('/products/summary'); // Use your axios/fetch instance
+				setSummary(response.data);
+			} catch (error) {
+				console.error("Failed to fetch statistics", error);
+			} finally {
+				setLoadingSummary(false);
+			}
+		};
+		fetchStats();
+	}, []);
+
+	const stats = useMemo(() => {
+		if (!summary) return [];
+
+		return [
+			{
+				name: t("stats.totalProducts"),
+				value: summary.productCount.toString(),
+				icon: Package,
+				color: "#10B981", // Green
+			},
+			{
+				name: t("stats.availableItems"),
+				value: summary.inventory.available.toString(),
+				icon: PackageSearch,
+				color: "#3B82F6", // Blue
+			},
+			{
+				// ✅ Updated to show Reserved Items
+				name: t("stats.reservedItems"),
+				value: summary.inventory.reserved.toString(),
+				icon: Boxes, // ✅ Correct Lucide icon
+				color: "#3B82F6",
+			},
 			{
 				name: t("stats.withShippingCompanies"),
-				value: "76",
-				icon: Package,
+				value: summary.orders.inTransitQuantity.toString(), // From 'shipped' status
+				icon: Truck,
 				color: "#6B7CFF",
 			},
 			{
-				name: t("stats.returnedPieces"),
-				value: "34",
-				icon: Package,
+				name: t("stats.soldPieces"),
+				value: summary.orders.soldQuantity.toString(), // From 'delivered' status
+				icon: CheckCircle,
 				color: "#F59E0B",
 			},
-			{
-				name: t("stats.soldPieces"),
-				value: "100",
-				icon: Package,
-				color: "#22C55E",
-			},
-			{
-				name: t("stats.remainingPieces"),
-				value: "500",
-				icon: Package,
-				color: "#38BDF8",
-			},
-			{
-				name: t("stats.totalProducts"),
-				value: "500",
-				icon: Package,
-				color: "#8B5CF6",
-			},
-		],
-		[t]
-	);
-
+		];
+	}, [summary, t]);
 	useEffect(() => {
 		const tId = setTimeout(() => setSearchDebounced(search), 400);
 		return () => clearTimeout(tId);
@@ -381,62 +401,99 @@ export default function ProductsPage() {
 		}
 	}
 
-	async function onExport() {
+	const onExport = useCallback(async () => {
+		let toastId;
+
 		try {
 			const build = exportBuilderRef.current;
-			if (!build) return toast.error(t("common.exportBuilderNotReady"));
-			const params = build();
-			const res = await api.get(`/products/export?${params.toString()}`, { responseType: "blob" });
+			if (!build) {
+				return toast.error(t("common.exportBuilderNotReady"));
+			}
 
-			const blob = new Blob([res.data], {
-				type: res.headers["content-type"] || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+			setExportLoading(true);
+			toastId = toast.loading(t("messages.exportStarted"));
+
+			const params = build();
+
+			// remove pagination for export
+			params.delete("page");
+			params.delete("limit");
+
+			const baseRoute = active === "bundles" ? "/bundles" : "/products";
+
+			// 2. Call the export endpoint
+			const response = await api.get(`${baseRoute}/export`, {
+				params,
+				responseType: "blob", // Critical for receiving Excel files
 			});
 
-			const fileName = res.headers["content-disposition"]?.match(/filename="(.+?)"/)?.[1] || "products.xlsx";
+			const contentDisposition = response.headers["content-disposition"];
+			let filename = `${active}_export_${Date.now()}.xlsx`;
+
+			if (contentDisposition) {
+				const match = contentDisposition.match(/filename="?([^";]+)"?/);
+				if (match?.[1]) filename = match[1];
+			}
+
+			const url = window.URL.createObjectURL(
+				new Blob([response.data], {
+					type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+				})
+			);
 
 			const link = document.createElement("a");
-			link.href = window.URL.createObjectURL(blob);
-			link.download = fileName;
+			link.href = url;
+			link.setAttribute("download", filename);
 			document.body.appendChild(link);
 			link.click();
-			document.body.removeChild(link);
-			window.URL.revokeObjectURL(link.href);
-		} catch (e) {
-			toast.error(normalizeAxiosError(e));
-		}
-	}
+			link.remove();
+			window.URL.revokeObjectURL(url);
 
-	const productsLogic = ProductsTab({
+			toast.success(t("messages.exportSuccess"), { id: toastId });
+		} catch (e) {
+			toast.error(
+				e?.response?.data?.message || t("messages.exportFailed"),
+				{ id: toastId }
+			);
+		} finally {
+			setExportLoading(false);
+		}
+	}, [t, active]);
+
+	const productsLogic = useProductsTab({
 		t,
 		searchDebounced,
 		filters,
 		filtersOpen,
 		onAskDelete,
 		onOpenView: openView,
-		onExportRequest: (fn) => (exportBuilderRef.current = fn)
+		onExportRequest: (fn) => (exportBuilderRef.current = fn),
+		activetab: active
 	});
 
-	const bundlesLogic = BundlesTab({
+	const bundlesLogic = useBundlesTab({
 		t,
 		searchDebounced,
 		filters,
 		onAskDelete,
 		onOpenView: openView,
-		onExportRequest: (fn) => (exportBuilderRef.current = fn)
+		onExportRequest: (fn) => (exportBuilderRef.current = fn),
+		activetab: active
 	});
 
-	const idleLogic = IdleTab({
+	const idleLogic = useIdleTab({
 		t,
 		searchDebounced,
 		filters,
 		idleFromDate,
 		onAskDelete,
 		onOpenView: openView,
-		onExportRequest: (fn) => (exportBuilderRef.current = fn)
+		onExportRequest: (fn) => (exportBuilderRef.current = fn),
+		activetab: active
 	});
 
 	const current = active === "bundles" ? bundlesLogic : active === "idle" ? idleLogic : productsLogic;
- 
+
 
 	return (
 		<div className="min-h-screen p-5">
@@ -460,6 +517,7 @@ export default function ProductsPage() {
 					</>
 				}
 				stats={stats}
+				statsLoading={loadingSummary}
 				items={items}
 				active={active}
 				setActive={setActive}
@@ -482,10 +540,13 @@ export default function ProductsPage() {
 					{
 						key: "export",
 						label: t("toolbar.export"),
-						icon: <FileDown size={14} />,
+						icon: exportLoading
+							? <Loader2 size={14} className="animate-spin" />
+							: <Download size={14} />,
 						color: "blue",
+						disabled: exportLoading,
 						onClick: onExport,
-					} 
+					}
 				]}
 				hasActiveFilters={hasActiveFilters}
 				onApplyFilters={onApplyFilters}
@@ -593,7 +654,7 @@ export default function ProductsPage() {
 
 						{/* Idle tab extra filter example (optional) */}
 						{active === "idle" && (
-							<FilterField label={t("tabs.idle")}>
+							<FilterField label={t("tabs.idleDate")}>
 								<Input
 									type="date"
 									value={idleFromDate}
@@ -629,9 +690,9 @@ export default function ProductsPage() {
 			/>
 
 			{viewScope === "bundles" ? (
-				<BundleViewModal open={viewOpen} onOpenChange={(o) => (!o ? closeView() : null)} bundle={viewProduct} />
+				<BundleViewModal open={viewOpen} onOpenChange={(o) => (!o ? closeView() : null)} bundle={viewProduct} viewLoading={viewLoading} />
 			) : (
-				<ProductViewModal open={viewOpen} onOpenChange={(o) => (!o ? closeView() : null)} product={viewProduct} />
+				<ProductViewModal open={viewOpen} onOpenChange={(o) => (!o ? closeView() : null)} product={viewProduct} viewLoading={viewLoading} />
 			)}
 		</div>
 	);

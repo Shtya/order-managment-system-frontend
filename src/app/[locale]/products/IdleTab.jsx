@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { CalendarDays, Edit2, Eye, QrCode, Trash2 } from "lucide-react";
+import { CalendarDays, DollarSign, Edit2, Eye, QrCode, Tag, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -16,7 +16,7 @@ function normalizeAxiosError(err) {
   return Array.isArray(msg) ? msg.join(", ") : String(msg);
 }
 
-export default function IdleTab({ t, searchDebounced, filters, idleFromDate, onAskDelete, onOpenView, onExportRequest }) {
+export default function useIdleTab({ t, searchDebounced, filters, idleFromDate, onAskDelete, onOpenView, onExportRequest, activetab }) {
   const router = useRouter();
   const requestIdRef = useRef(0);
 
@@ -32,7 +32,7 @@ export default function IdleTab({ t, searchDebounced, filters, idleFromDate, onA
     const params = new URLSearchParams();
     params.set("page", String(page));
     params.set("limit", String(per_page));
-    params.set("type", "PRODUCT");
+    params.set("type", "PRODUCT_IDLE");
 
     if (searchDebounced?.trim()) params.set("search", searchDebounced.trim());
 
@@ -84,14 +84,11 @@ export default function IdleTab({ t, searchDebounced, filters, idleFromDate, onA
   }, [searchDebounced, filters, idleFromDate]);
 
   useEffect(() => {
+    if (activetab !== "idle") return;
     fetchData({ page: 1, per_page: pager.per_page });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchDebounced, idleFromDate]);
+  }, [searchDebounced, activetab]);
 
-  useEffect(() => {
-    fetchData({ page: 1, per_page: 6 });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const columns = useMemo(() => {
     const na = t("common.na");
@@ -103,6 +100,41 @@ export default function IdleTab({ t, searchDebounced, filters, idleFromDate, onA
         key: "name",
         header: t("table.name"),
         className: "text-gray-700 dark:text-slate-200 font-semibold min-w-[200px]"
+      },
+      {
+        key: "category",
+        header: t("table.category"),
+        className: "min-w-[120px]",
+        cell: (row) => (
+          <Badge variant="secondary" className="rounded-full">
+            {row?.category?.name ?? na}
+          </Badge>
+        )
+      },
+      { key: "store", header: t("table.store"), className: "min-w-[120px]", cell: (row) => row?.store?.name ?? na },
+      { key: "warehouse", header: t("table.warehouse"), className: "min-w-[120px]", cell: (row) => row?.warehouse?.name ?? na },
+      { key: "storageRack", header: t("table.storageRack"), className: "min-w-[100px]", cell: (row) => row.storageRack ?? na },
+      {
+        key: "wholesalePrice",
+        header: t("table.wholesalePrice"),
+        className: "min-w-[100px]",
+        cell: (row) => (
+          <div className="flex items-center gap-1 text-green-600 dark:text-green-400 font-semibold">
+            <DollarSign size={14} />
+            {row.wholesalePrice ?? na}
+          </div>
+        )
+      },
+      {
+        key: "lowestPrice",
+        header: t("table.lowestPrice"),
+        className: "min-w-[100px]",
+        cell: (row) => (
+          <div className="flex items-center gap-1 text-orange-600 dark:text-orange-400 font-semibold">
+            <Tag size={14} />
+            {row.lowestPrice ?? na}
+          </div>
+        )
       },
       {
         key: "sku",

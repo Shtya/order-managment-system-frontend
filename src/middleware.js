@@ -11,12 +11,12 @@ const intlMiddleware = createMiddleware({
 export default function middleware(req) {
   const { pathname } = req.nextUrl;
 
-  const hasLocale = pathname.startsWith('/en/') || pathname.startsWith('/ar/') || pathname === '/en' || pathname === '/ar';
+  // const hasLocale = pathname.startsWith('/en/') || pathname.startsWith('/ar/') || pathname === '/en' || pathname === '/ar';
 
-  if (!hasLocale) {
-    const newUrl = new URL(`/ar${pathname}`, req.url);
-    return NextResponse.redirect(newUrl);
-  }
+  // if (!hasLocale) {
+  //   const newUrl = new URL(`/ar${pathname}`, req.url);
+  //   return NextResponse.redirect(newUrl);
+  // }
 
   // استخدام middleware العادي
   return intlMiddleware(req);

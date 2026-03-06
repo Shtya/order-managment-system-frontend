@@ -9,6 +9,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { getUser } from '@/hook/getUser';
 import { RefreshCw, Webhook } from 'lucide-react';
+import { useRouter } from '@/i18n/navigation';
 /* ─── CSS ─────────────────────────────────────────────────── */
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
@@ -1108,7 +1109,7 @@ const PROVIDER_CONFIG = {
 		fields: {
 			apiKey: { label: "مفتاح API", required: true, userProvides: true },
 			webhookCreateOrderSecret: { label: "سر إنشاء الطلب", required: true, userProvides: true },
-			webhookUpdateStatusSecret: { label:"سر تحديث الحالة", required: true, userProvides: true },
+			webhookUpdateStatusSecret: { label: "سر تحديث الحالة", required: true, userProvides: true },
 		},
 		webhookEndpoints: (adminId) => ({
 			create: `${window.location.origin}/stores/webhooks/${adminId}/easyorder/orders/create`,
@@ -2599,24 +2600,22 @@ const stepMap = {
 };
 
 const OnboardingSkeleton = () => (
-	<div style={{
-		display: 'flex', width: '100%', maxWidth: 1000, minHeight: 580,
-		borderRadius: 'var(--radius-xl)', background: 'var(--surface)',
-		overflow: 'hidden', boxShadow: '0 28px 80px rgba(103,99,175,.1)'
-	}}>
+	<div className="flex w-full max-w-[1000px] min-h-[580px] rounded-xl bg-surface overflow-hidden shadow-[0_28px_80px_rgba(103,99,175,0.1)]">
 		{/* Mock Sidebar */}
-		<div style={{ width: 300, background: '#1b1945', padding: 40, display: 'flex', flexDirection: 'column', gap: 20 }}>
-			{[1, 2, 3, 4].map(i => (
-				<div key={i} className="skeleton-pulse" style={{ height: 40, width: '100%', borderRadius: 8, background: 'rgba(255,255,255,0.05)' }} />
+		<div className="w-[300px] bg-[#1b1945] p-10 flex flex-col gap-5">
+			{[1, 2, 3, 4].map((i) => (
+				<div key={i} className="h-10 w-full rounded-lg bg-white/5 animate-pulse" />
 			))}
 		</div>
+
 		{/* Mock Content Area */}
-		<div style={{ flex: 1, padding: 44, display: 'flex', flexDirection: 'column', gap: 20 }}>
-			<div className="skeleton-pulse" style={{ height: 32, width: '40%', borderRadius: 8, background: '#eee' }} />
-			<div className="skeleton-pulse" style={{ height: 100, width: '100%', borderRadius: 12, background: '#f5f5f5' }} />
-			<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginTop: 20 }}>
-				<div className="skeleton-pulse" style={{ height: 180, borderRadius: 12, background: '#f5f5f5' }} />
-				<div className="skeleton-pulse" style={{ height: 180, borderRadius: 12, background: '#f5f5f5' }} />
+		<div className="flex-1 p-11 flex flex-col gap-5">
+			<div className="h-8 w-2/5 rounded-lg bg-gray-300 animate-pulse" />
+			<div className="h-24 w-full rounded-xl bg-gray-200 animate-pulse" />
+
+			<div className="grid grid-cols-2 gap-5 mt-5">
+				<div className="h-44 w-full rounded-xl bg-gray-200 animate-pulse" />
+				<div className="h-44 w-full rounded-xl bg-gray-200 animate-pulse" />
 			</div>
 		</div>
 	</div>
@@ -2628,20 +2627,26 @@ export default function OnboardingPage() {
 	const [dbStep, setDbStep] = useState(null); // Furthest step reached
 	const [user, setUser] = useState(null); // Furthest step reached
 	const [loading, setLoading] = useState(true);
-
+	const router = useRouter()
 	const stepMap = { welcome: 0, plan: 1, company: 2, store: 3, shipping: 4, finished: 5 };
 	const revStepMap = ['welcome', 'plan', 'company', 'store', 'shipping', 'finished'];
 
 	// PROBLEM 2 FIX: Resume from last time
 	useEffect(() => {
 		async function init() {
-			const { data } = await api.get('/users/me'); // Create this simple GET endpoint
-			const user = data?.user || data;
-			setUser(user)
-			const current = stepMap[user.currentOnboardingStep] || 0;
-			setStep(current);
-			setDbStep(current);
-			setLoading(false);
+			try {
+
+				const { data } = await api.get('/users/me'); // Create this simple GET endpoint
+				const user = data?.user || data;
+				setUser(user)
+				const current = stepMap[user.currentOnboardingStep] || 0;
+				setStep(current);
+				setDbStep(current);
+			} catch {
+				router.push("/auth?mode=signin")
+			} finally {
+				setLoading(false);
+			}
 		}
 		init();
 	}, []);

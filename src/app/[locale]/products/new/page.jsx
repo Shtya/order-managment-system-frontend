@@ -4,7 +4,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-	ChevronLeft,
 	X,
 	Plus,
 	Image as ImageIcon,
@@ -19,6 +18,7 @@ import {
 	Ruler,
 	Package,
 	Save,
+	ChevronRight,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -79,52 +79,19 @@ function canonicalKey(attrs) {
 	return keys.map((k) => `${k}=${String(attrs[k])}`).join('|');
 }
 
-// ✅ Quick attribute templates
 const ATTRIBUTE_TEMPLATES = [
-	{
-		id: 'size',
-		icon: Ruler,
-		name: 'الحجم',
-		nameEn: 'Size',
-		values: ['صغير', 'متوسط'],
-		valuesEn: ['Small', 'Medium'],
-	},
-	{
-		id: 'color',
-		icon: Palette,
-		name: 'اللون',
-		nameEn: 'Color',
-		values: ['أحمر', 'أزرق', 'أخضر'],
-		valuesEn: ['Red', 'Blue', 'Green'],
-	},
-	{
-		id: 'material',
-		icon: Shirt,
-		name: 'المادة',
-		nameEn: 'Material',
-		values: ['قطن', 'بوليستر', 'صوف'],
-		valuesEn: ['Cotton', 'Polyester', 'Wool'],
-	},
-	{
-		id: 'weight',
-		icon: Package,
-		name: 'الوزن',
-		nameEn: 'Weight',
-		values: ['خفيف', 'متوسط', 'ثقيل'],
-		valuesEn: ['Light', 'Medium', 'Heavy'],
-	},
+	{ id: 'size', icon: Ruler, name: 'الحجم', nameEn: 'Size', values: ['صغير', 'متوسط'], valuesEn: ['Small', 'Medium'] },
+	{ id: 'color', icon: Palette, name: 'اللون', nameEn: 'Color', values: ['أحمر', 'أزرق', 'أخضر'], valuesEn: ['Red', 'Blue', 'Green'] },
+	{ id: 'material', icon: Shirt, name: 'المادة', nameEn: 'Material', values: ['قطن', 'بوليستر', 'صوف'], valuesEn: ['Cotton', 'Polyester', 'Wool'] },
+	{ id: 'weight', icon: Package, name: 'الوزن', nameEn: 'Weight', values: ['خفيف', 'متوسط', 'ثقيل'], valuesEn: ['Light', 'Medium', 'Heavy'] },
 ];
 
-// ✅ Build combinations with auto-generated SKU
 function buildCombinationsFromAttributes(attributes, productName = '', defaultPrice = '') {
 	const usable = (attributes || [])
 		.map((attr) => {
 			const key = slugifyKey(attr?.name);
 			const values = (attr?.values || [])
-				.map((v) => ({
-					value: slugifyKey(v),
-					label: (v || '').trim(),
-				}))
+				.map((v) => ({ value: slugifyKey(v), label: (v || '').trim() }))
 				.filter((v) => v.value);
 			return { key, name: (attr?.name || '').trim(), values };
 		})
@@ -133,14 +100,11 @@ function buildCombinationsFromAttributes(attributes, productName = '', defaultPr
 	if (!usable.length) return [];
 
 	let acc = [{ attrs: {} }];
-
 	for (const attr of usable) {
 		const next = [];
 		for (const base of acc) {
 			for (const val of attr.values) {
-				next.push({
-					attrs: { ...base.attrs, [attr.key]: val.value },
-				});
+				next.push({ attrs: { ...base.attrs, [attr.key]: val.value } });
 			}
 		}
 		acc = next;
@@ -148,218 +112,137 @@ function buildCombinationsFromAttributes(attributes, productName = '', defaultPr
 
 	return acc.map((x) => {
 		const key = canonicalKey(x.attrs);
-
-		// ✅ Auto-generate SKU: PRODUCTNAME-ATTR1-ATTR2
 		const productSlug = slugifyKey(productName).substring(0, 10).toUpperCase() || 'PRODUCT';
-		const attrValues = Object.values(x.attrs)
-			.map((v) => slugifyKey(v).substring(0, 3).toUpperCase())
-			.join('-');
+		const attrValues = Object.values(x.attrs).map((v) => slugifyKey(v).substring(0, 3).toUpperCase()).join('-');
 		const autoSKU = attrValues ? `${productSlug}-${attrValues}` : '';
-
-		return {
-			key,
-			attributes: x.attrs,
-			sku: autoSKU,
-			stockOnHand: 0,
-			price: defaultPrice || '',
-		};
+		return { key, attributes: x.attrs, sku: autoSKU, stockOnHand: 0, price: defaultPrice || '' };
 	});
 }
 
 const makeSchema = (t) =>
-	yup
-		.object({
-			name: yup.string().trim().required(t('validation.nameRequired')).max(200, t('validation.nameTooLong', { max: 200 })),
-			slug: yup
-				.string()
-				.trim()
-				.required(t('validation.slugRequired'))
-				.matches(/^[a-z0-9-]+$/, t('validation.slugInvalid')),
-			wholesalePrice: yup
-				.number()
-				.transform((value, originalValue) => originalValue === "" ? null : value)
-				.nullable()
-				.typeError(t('validation.invalidNumber'))
-				.min(0, t('validation.noNegative')),
-
-			lowestPrice: yup
-				.number()
-				.transform((value, originalValue) => originalValue === "" ? null : value)
-				.nullable()
-				.typeError(t('validation.invalidNumber'))
-				.min(0, t('validation.noNegative')),
-
-			storageRack: yup.string().nullable(),
-			categoryId: yup.string().nullable(),
-			storeId: yup.string().nullable(),
-			warehouseId: yup.string().nullable(),
-			description: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
-
-			callCenterProductDescription: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
-
-			upsellingEnabled: yup.boolean().default(false),
-			upsellingProducts: yup
-				.array()
-				.of(
-					yup.object({
-						productId: yup.string().trim().required(t('validation.upsellProductRequired')),
-						label: yup.string().nullable(),
-						callCenterDescription: yup.string().nullable().max(1000, t('validation.descriptionTooLong', { max: 1000 })),
-					})
-				)
-				.default([]),
-
-			attributes: yup
-				.array()
-				.of(
-					yup.object({
-						id: yup.string().required(),
-						name: yup.string().trim().required(t('validation.attributeNameRequired')),
-						values: yup
-							.array()
-							.of(yup.string().trim().required(t('validation.attributeValueRequired')))
-							.min(1, t('validation.atLeastOneValue')),
-					})
-				)
-				.default([]),
-
-			combinations: yup
-				.array()
-				.of(
-					yup.object({
-						key: yup.string().trim().required(t('validation.combinationKeyRequired')),
-						sku: yup.string().trim().max(120, t('validation.combinationSkuMax')).nullable(),
-						attributes: yup.object().required(t('validation.combinationAttrsRequired')),
-						stockOnHand: yup
-							.number()
-							.typeError(t('validation.invalidNumber'))
-							.min(0, t('validation.stockNonNegative'))
-							.default(0),
-						price: yup
-							.number()
-							.typeError(t('validation.invalidNumber'))
-							.required(t('validation.priceRequired'))
-							.min(0, t('validation.noNegative')),
-					})
-				)
-				.default([]),
-		})
-		.required();
+	yup.object({
+		name: yup.string().trim().required(t('validation.nameRequired')).max(200, t('validation.nameTooLong', { max: 200 })),
+		slug: yup.string().trim().required(t('validation.slugRequired')).matches(/^[a-z0-9-]+$/, t('validation.slugInvalid')),
+		wholesalePrice: yup.number().transform((value, originalValue) => originalValue === "" ? null : value).nullable().typeError(t('validation.invalidNumber')).min(0, t('validation.noNegative')),
+		lowestPrice: yup.number().transform((value, originalValue) => originalValue === "" ? null : value).nullable().typeError(t('validation.invalidNumber')).min(0, t('validation.noNegative')),
+		storageRack: yup.string().nullable(),
+		categoryId: yup.string().nullable(),
+		storeId: yup.string().nullable(),
+		warehouseId: yup.string().nullable(),
+		description: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
+		callCenterProductDescription: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
+		upsellingEnabled: yup.boolean().default(false),
+		upsellingProducts: yup.array().of(yup.object({ productId: yup.string().trim().required(t('validation.upsellProductRequired')), label: yup.string().nullable(), callCenterDescription: yup.string().nullable().max(1000, t('validation.descriptionTooLong', { max: 1000 })) })).default([]),
+		attributes: yup.array().of(yup.object({ id: yup.string().required(), name: yup.string().trim().required(t('validation.attributeNameRequired')), values: yup.array().of(yup.string().trim().required(t('validation.attributeValueRequired'))).min(1, t('validation.atLeastOneValue')) })).default([]),
+		combinations: yup.array().of(yup.object({ key: yup.string().trim().required(t('validation.combinationKeyRequired')), sku: yup.string().trim().max(120, t('validation.combinationSkuMax')).nullable(), attributes: yup.object().required(t('validation.combinationAttrsRequired')), stockOnHand: yup.number().typeError(t('validation.invalidNumber')).min(0, t('validation.stockNonNegative')).default(0), price: yup.number().typeError(t('validation.invalidNumber')).required(t('validation.priceRequired')).min(0, t('validation.noNegative')) })).default([]),
+	}).required();
 
 function defaultAttribute() {
-	return {
-		id: makeId(),
-		name: '',
-		values: [],
-	};
+	return { id: makeId(), name: '', values: [] };
 }
 
 function defaultValues() {
 	return {
-		name: '',
-		slug: '',
-		wholesalePrice: '',
-		lowestPrice: '',
-		storageRack: '',
-		categoryId: '',
-		storeId: '',
-		warehouseId: '',
-		description: '',
-		callCenterProductDescription: '',
-
-		upsellingEnabled: false,
-		upsellingProducts: [],
-
-		attributes: [],
-		combinations: [],
+		name: '', slug: '', wholesalePrice: '', lowestPrice: '', storageRack: '',
+		categoryId: '', storeId: '', warehouseId: '', description: '',
+		callCenterProductDescription: '', upsellingEnabled: false,
+		upsellingProducts: [], attributes: [], combinations: [],
 	};
 }
 
 function extractAttributesFromSkus(skus) {
 	if (!skus || !skus.length) return [];
-
 	const attributeMap = new Map();
-
 	skus.forEach((sku) => {
 		const attrs = sku.attributes || {};
 		Object.entries(attrs).forEach(([key, value]) => {
-			if (!attributeMap.has(key)) {
-				attributeMap.set(key, new Set());
-			}
+			if (!attributeMap.has(key)) attributeMap.set(key, new Set());
 			attributeMap.get(key).add(value);
 		});
 	});
-
-	return Array.from(attributeMap.entries()).map(([name, valuesSet]) => ({
-		id: makeId(),
-		name,
-		values: Array.from(valuesSet),
-	}));
+	return Array.from(attributeMap.entries()).map(([name, valuesSet]) => ({ id: makeId(), name, values: Array.from(valuesSet) }));
 }
 
+// ─── Section Header ──────────────────────────────────────────────────────────
+function SectionHeader({ title, action }) {
+	return (
+		<div className="flex items-center justify-between mb-6">
+			<h3 className="text-[15px] font-semibold text-gray-800 dark:text-slate-100 flex items-center gap-3">
+				<span className="w-[3px] h-5 bg-primary rounded-full block shrink-0" />
+				{title}
+			</h3>
+			{action && <div>{action}</div>}
+		</div>
+	);
+}
+
+// ─── Field wrapper ────────────────────────────────────────────────────────────
+function Field({ label, error, children, className }) {
+	return (
+		<div className={cn("space-y-1.5", className)}>
+			{label && (
+				<Label className="text-[13px] font-medium text-gray-500 dark:text-slate-400 tracking-wide">
+					{label}
+				</Label>
+			)}
+			{children}
+			{error && (
+				<p className="text-[11px] text-red-500 font-medium mt-1">{error}</p>
+			)}
+		</div>
+	);
+}
+
+// ─── Card ─────────────────────────────────────────────────────────────────────
+function Card({ children, className, ...props }) {
+	return (
+		<div
+			className={cn(
+				"bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 shadow-[0_1px_4px_rgba(0,0,0,0.06)]",
+				className
+			)}
+			{...props}
+		>
+			{children}
+		</div>
+	);
+}
+
+// ─── Styled Input ─────────────────────────────────────────────────────────────
+const inputClass = "h-[46px] rounded-xl bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-[14px] placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/50 transition-colors";
 
 export default function AddProductPage({ isEditMode = false, existingProduct = null, productId = null }) {
 	const t = useTranslations('addProduct');
 	const [imageErrors, setImageErrors] = useState({
-		main: {
-			general: '',   // For "Max 20 items" or "Required"
-			specific: {}   // Map of { fileId: "Error Message" }
-		},
-		other: {
-			general: '',   // For "Max 20 items" or "Required"
-			specific: {}   // Map of { fileId: "Error Message" }
-		}
+		main: { general: '', specific: {} },
+		other: { general: '', specific: {} }
 	});
 	const navigate = useRouter();
-
 	const [categories, setCategories] = useState([]);
 	const [stores, setStores] = useState([]);
 	const [warehouses, setWarehouses] = useState([]);
-
 	const [mainFiles, setMainFiles] = useState([]);
 	const [otherFiles, setOtherFiles] = useState([]);
 	const [removedImages, setRemovedImages] = useState([]);
 
 	const schema = useMemo(() => makeSchema(t), [t]);
-
-	const {
-		control,
-		register,
-		handleSubmit,
-		setValue,
-		reset,
-		watch,
-		formState: { errors, isSubmitting },
-	} = useForm({
-		defaultValues: defaultValues(),
-		resolver: yupResolver(schema),
-		mode: 'onTouched',
+	const { control, register, handleSubmit, setValue, reset, watch, formState: { errors, isSubmitting } } = useForm({
+		defaultValues: defaultValues(), resolver: yupResolver(schema), mode: 'onTouched',
 	});
 
 	const upsellingEnabled = watch('upsellingEnabled');
 	const productName = watch('name');
+
 	useEffect(() => {
-		if (!upsellingEnabled) {
-			// Clear the data when the section is hidden
-			setValue('upsellingProducts', [], { shouldDirty: true });
-		}
+		if (!upsellingEnabled) setValue('upsellingProducts', [], { shouldDirty: true });
 	}, [upsellingEnabled, setValue]);
 
 	const wholesalePrice = watch('wholesalePrice');
 	const attributesWatch = useWatch({ control, name: 'attributes' });
 	const combinationsWatch = useWatch({ control, name: 'combinations' });
 
-	const { fields: attributeFields, append: appendAttribute, remove: removeAttribute } = useFieldArray({
-		control,
-		name: 'attributes',
-		keyName: 'fieldId',
-	});
-
-	const { fields: comboFields } = useFieldArray({
-		control,
-		name: 'combinations',
-		keyName: 'fieldId',
-	});
+	const { fields: attributeFields, append: appendAttribute, remove: removeAttribute } = useFieldArray({ control, name: 'attributes', keyName: 'fieldId' });
+	const { fields: comboFields } = useFieldArray({ control, name: 'combinations', keyName: 'fieldId' });
 
 	useEffect(() => {
 		let mounted = true;
@@ -374,51 +257,27 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				setCategories(Array.isArray(catsRes.data) ? catsRes.data : []);
 				setStores(Array.isArray(storesRes.data) ? storesRes.data : []);
 				setWarehouses(Array.isArray(whRes.data) ? whRes.data : []);
-			} catch (e) {
-				toast.error(normalizeAxiosError(e));
-			}
+			} catch (e) { toast.error(normalizeAxiosError(e)); }
 		})();
-		return () => {
-			mounted = false;
-		};
+		return () => { mounted = false; };
 	}, []);
 
-	// ✅ CRITICAL FIX: Regenerate SKUs when name changes, update price default on blur
 	const lastCombSigRef = useRef('');
 	useEffect(() => {
 		const attributes = attributesWatch || [];
 		const currentName = productName || '';
 		const currentPrice = wholesalePrice || '';
-
-		const sig = JSON.stringify({
-			attributes: (attributes || []).map((a) => ({
-				name: a?.name,
-				values: a?.values || [],
-			})),
-			productName: currentName,
-			wholesalePrice: currentPrice,
-		});
-
+		const sig = JSON.stringify({ attributes: (attributes || []).map((a) => ({ name: a?.name, values: a?.values || [] })), productName: currentName, wholesalePrice: currentPrice });
 		if (lastCombSigRef.current === sig) return;
 		lastCombSigRef.current = sig;
-
 		const currentCombos = watch('combinations') || [];
 		const generated = buildCombinationsFromAttributes(attributes, currentName, currentPrice);
-
 		const byKey = new Map(currentCombos.map((c) => [c.key, c]));
-
 		const next = generated.map((g) => {
 			const old = byKey.get(g.key);
-			return {
-				...g,
-				sku: g.sku, // ✅ Always regenerate SKU from current name
-				stockOnHand: old?.stockOnHand ?? g.stockOnHand ?? 0,
-				price: old?.price && old.price !== '' ? old.price : g.price, // ✅ Keep edited or use default
-			};
+			return { ...g, sku: g.sku, stockOnHand: old?.stockOnHand ?? g.stockOnHand ?? 0, price: old?.price && old.price !== '' ? old.price : g.price };
 		});
-
 		setValue('combinations', next, { shouldDirty: true, shouldValidate: false });
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [attributesWatch, productName, wholesalePrice]);
 
 	useEffect(() => {
@@ -428,67 +287,32 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	}, [mainFiles, otherFiles]);
 
 	const addQuickTemplate = (template) => {
-		const newAttr = {
-			id: makeId(),
-			name: template.nameEn,
-			values: template.valuesEn,
-		};
-		appendAttribute(newAttr);
+		appendAttribute({ id: makeId(), name: template.nameEn, values: template.valuesEn });
 		toast.success(`تمت إضافة ${template.name}`);
 	};
 
 	const validateImages = (files, type) => {
 		let generalError = '';
-		let specificErrors = {}; // To store errors per file ID
-
-		// 1. Check for presence (Main Image)
-		if (type === 'main' && (!files || files.length === 0)) {
-			generalError = t('errors.mainImageRequired');
-		}
-
-		// 2. Check for Max Items
-		if (type === 'other' && files.length > 20) {
-			generalError = t('errors.maxItemsExceeded', { max: 20 });
-		}
-
-		// 3. Per-file Validation
+		let specificErrors = {};
+		if (type === 'main' && (!files || files.length === 0)) generalError = t('errors.mainImageRequired');
+		if (type === 'other' && files.length > 20) generalError = t('errors.maxItemsExceeded', { max: 20 });
 		if (files && files.length > 0) {
 			files.forEach((f) => {
 				if (f.isExisting) return;
 				const fileObj = f.file;
 				if (!fileObj) return;
-
-				// Type Check
-				if (!fileObj.type.startsWith('image/')) {
-					specificErrors[f.id] = t('errors.invalidFileType');
-				}
-				// Size Check (10MB)
-				else if (fileObj.size > 10 * 1024 * 1024) {
-					specificErrors[f.id] = t('errors.fileTooLarge', { size: 10 });
-				}
+				if (!fileObj.type.startsWith('image/')) specificErrors[f.id] = t('errors.invalidFileType');
+				else if (fileObj.size > 10 * 1024 * 1024) specificErrors[f.id] = t('errors.fileTooLarge', { size: 10 });
 			});
 		}
-
-
-		// Update state: 'main' stays a string, 'other' becomes an object/string hybrid or handled separately
-		setImageErrors((prev) => ({
-			...prev,
-			[type]: { general: generalError, specific: specificErrors }
-		}));
-
+		setImageErrors((prev) => ({ ...prev, [type]: { general: generalError, specific: specificErrors } }));
 		return !generalError && Object.keys(specificErrors).length === 0;
 	};
 
-	// ✅ Handle wholesale price blur - update all empty variant prices
 	const handleWholesalePriceBlur = () => {
 		const currentPrice = wholesalePrice || '';
 		const currentCombos = watch('combinations') || [];
-
-		const updated = currentCombos.map((combo) => ({
-			...combo,
-			price: combo.price && combo.price !== '' ? combo.price : currentPrice,
-		}));
-
+		const updated = currentCombos.map((combo) => ({ ...combo, price: combo.price && combo.price !== '' ? combo.price : currentPrice }));
 		setValue('combinations', updated, { shouldDirty: true, shouldValidate: false });
 	};
 
@@ -496,219 +320,101 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		try {
 			const isOthersValid = validateImages(otherFiles, 'other');
 			const isMainValid = validateImages(mainFiles, 'main');
-
-			// If either has an error, stop submission
-			if (!isMainValid || !isOthersValid) {
-				return;
-			}
-
+			if (!isMainValid || !isOthersValid) return;
 			if (slugStatus == 'takenStore' || slugStatus === 'taken') return;
-			// ✅ Validate all combinations have prices
 			if (data.combinations && data.combinations.length > 0) {
 				const missingPrices = data.combinations.filter((c) => !c.price || c.price === '');
-				if (missingPrices.length > 0) {
-					toast.error(t('errors.missingPrices'));
-					return;
-				}
+				if (missingPrices.length > 0) { toast.error(t('errors.missingPrices')); return; }
 			}
 
 			const fd = new FormData();
 			fd.append('name', data.name.trim());
 			fd.append('type', 'PRODUCT');
-
 			const wp = safeNumberString(data.wholesalePrice);
 			if (wp !== '') fd.append('wholesalePrice', wp);
-
 			const lp = safeNumberString(data.lowestPrice);
 			if (lp !== '') fd.append('lowestPrice', lp);
-
 			if ((data.storageRack ?? '').trim()) fd.append('storageRack', data.storageRack.trim());
 			if ((data.slug ?? '').trim()) fd.append('slug', data.slug.trim());
-
 			if (data.categoryId && data.categoryId !== 'none') fd.append('categoryId', data.categoryId);
 			if (data.storeId && data.storeId !== 'none') fd.append('storeId', data.storeId);
 			if (data.warehouseId && data.warehouseId !== 'none') fd.append('warehouseId', data.warehouseId);
-
 			if ((data.description ?? '').trim()) fd.append('description', data.description.trim());
-			if ((data.callCenterProductDescription ?? '').trim())
-				fd.append('callCenterProductDescription', data.callCenterProductDescription.trim());
-
+			if ((data.callCenterProductDescription ?? '').trim()) fd.append('callCenterProductDescription', data.callCenterProductDescription.trim());
 			fd.append('upsellingEnabled', data.upsellingEnabled ? 'true' : 'false');
-
-			const upsellingProducts = (data.upsellingProducts ?? [])
-				.filter((x) => x?.productId)
-				.map((x) => ({
-					productId: String(x.productId),
-					label: (x.label ?? '').toString().trim() || undefined,
-					callCenterDescription: (x.callCenterDescription ?? '').toString().trim() || undefined,
-				}));
+			const upsellingProducts = (data.upsellingProducts ?? []).filter((x) => x?.productId).map((x) => ({ productId: String(x.productId), label: (x.label ?? '').toString().trim() || undefined, callCenterDescription: (x.callCenterDescription ?? '').toString().trim() || undefined }));
 			fd.append('upsellingProducts', JSON.stringify(upsellingProducts));
 
-			// ✅ Handle main image
 			const main = mainFiles[0];
-			if (main?.file) {
-				fd.append('mainImage', main.file);
-			} else if (main?.url && !main.url.startsWith('/uploads') && !main.isExisting) {
-				fd.append('mainImage', String(main.url));
-			}
+			if (main?.file) fd.append('mainImage', main.file);
+			else if (main?.url && !main.url.startsWith('/uploads') && !main.isExisting) fd.append('mainImage', String(main.url));
 
-			// ✅ Handle other images
-			const existingImages = (otherFiles || [])
-				.filter((f) => f?.isExisting && f?.url && !removedImages.includes(f.url))
-				.map((f) => ({ url: String(f.url) }));
-
-			const imagesMeta = (otherFiles || [])
-				.filter((f) => f?.isFromLibrary && !f?.isExisting && f?.url)
-				.map((f) => ({ url: String(f.url) }));
-
-			if (isEditMode) {
-				fd.append('imagesMeta', JSON.stringify([...existingImages, ...imagesMeta]));
-			} else {
-				if (imagesMeta.length) {
-					fd.append('imagesMeta', JSON.stringify(imagesMeta));
-				}
-			}
-
-			if (isEditMode && removedImages.length > 0) {
-				fd.append('removedImages', JSON.stringify(removedImages));
-			}
-
-			(otherFiles ?? []).forEach((f) => {
-				if (!f) return;
-				if (f.isFromLibrary || f.isExisting) return;
-				if (f.file) fd.append('images', f.file);
-			});
-			if (!isEditMode) {
-				fd.append('combinations', JSON.stringify([...data.combinations]));
-			}
+			const existingImages = (otherFiles || []).filter((f) => f?.isExisting && f?.url && !removedImages.includes(f.url)).map((f) => ({ url: String(f.url) }));
+			const imagesMeta = (otherFiles || []).filter((f) => f?.isFromLibrary && !f?.isExisting && f?.url).map((f) => ({ url: String(f.url) }));
+			if (isEditMode) fd.append('imagesMeta', JSON.stringify([...existingImages, ...imagesMeta]));
+			else if (imagesMeta.length) fd.append('imagesMeta', JSON.stringify(imagesMeta));
+			if (isEditMode && removedImages.length > 0) fd.append('removedImages', JSON.stringify(removedImages));
+			(otherFiles ?? []).forEach((f) => { if (!f) return; if (f.isFromLibrary || f.isExisting) return; if (f.file) fd.append('images', f.file); });
+			if (!isEditMode) fd.append('combinations', JSON.stringify([...data.combinations]));
 
 			const apiCall = isEditMode
 				? api.patch(`/products/${productId}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
 				: api.post('/products', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
 
-			await toast.promise(apiCall, {
-				loading: t('messages.saving'),
-				success: isEditMode ? t('messages.updated') : t('messages.created'),
-				error: (err) => normalizeAxiosError(err),
-			});
+			await toast.promise(apiCall, { loading: t('messages.saving'), success: isEditMode ? t('messages.updated') : t('messages.created'), error: (err) => normalizeAxiosError(err) });
 
-			// ✅ Update SKUs if in edit mode
 			if (isEditMode && data.combinations && data.combinations.length > 0) {
-				const combinationsPayload = data.combinations.map((c) => ({
-					// key: c.key,
-					// sku: (c.sku ?? '').toString().trim() || null,
-					attributes: c.attributes ?? {},
-					price: safeNumberString(c.price) || null,
-				}));
-
-				await api.put(`/products/${productId}/skus`, {
-					items: combinationsPayload,
-				});
+				const combinationsPayload = data.combinations.map((c) => ({ attributes: c.attributes ?? {}, price: safeNumberString(c.price) || null }));
+				await api.put(`/products/${productId}/skus`, { items: combinationsPayload });
 			}
 
-
-
 			navigate.push('/products');
-		} catch (error) {
-
-		}
+		} catch (error) { }
 	};
 
 	useEffect(() => {
 		if (!isEditMode || !existingProduct) return;
-
 		const extractedAttributes = extractAttributesFromSkus(existingProduct.skus || []);
-
-		const combinations = (existingProduct.skus || []).map((sku) => ({
-			key: sku.key,
-			sku: sku.sku || '',
-			attributes: sku.attributes || {},
-			stockOnHand: sku.stockOnHand || 0,
-			price: sku.price?.toString() || existingProduct.wholesalePrice?.toString() || '',
-		}));
-
-		reset({
-			name: existingProduct.name || '',
-			slug: existingProduct.slug || '',
-			wholesalePrice: existingProduct.wholesalePrice?.toString() || '',
-			lowestPrice: existingProduct.lowestPrice?.toString() || '',
-			storageRack: existingProduct.storageRack || '',
-			categoryId: existingProduct.categoryId ? String(existingProduct.categoryId) : 'none',
-			storeId: existingProduct.storeId ? String(existingProduct.storeId) : 'none',
-			warehouseId: existingProduct.warehouseId ? String(existingProduct.warehouseId) : 'none',
-			description: existingProduct.description || '',
-			callCenterProductDescription: existingProduct.callCenterProductDescription || '',
-			upsellingEnabled: existingProduct.upsellingEnabled || false,
-			upsellingProducts: existingProduct.upsellingProducts || [],
-			attributes: extractedAttributes,
-			combinations: combinations,
-		});
-
-		if (existingProduct.mainImage) {
-			setMainFiles([
-				{
-					id: makeId(),
-					file: null,
-					previewUrl: existingProduct.mainImage,
-					isFromLibrary: false,
-					isExisting: true,
-					url: existingProduct.mainImage,
-				},
-			]);
-		}
-
-		if (existingProduct.images && existingProduct.images.length) {
-			setOtherFiles(
-				existingProduct.images.map((img) => ({
-					id: makeId(),
-					file: null,
-					previewUrl: img.url,
-					isFromLibrary: false,
-					isExisting: true,
-					url: img.url,
-				}))
-			);
-		}
+		const combinations = (existingProduct.skus || []).map((sku) => ({ key: sku.key, sku: sku.sku || '', attributes: sku.attributes || {}, stockOnHand: sku.stockOnHand || 0, price: sku.price?.toString() || existingProduct.wholesalePrice?.toString() || '' }));
+		reset({ name: existingProduct.name || '', slug: existingProduct.slug || '', wholesalePrice: existingProduct.wholesalePrice?.toString() || '', lowestPrice: existingProduct.lowestPrice?.toString() || '', storageRack: existingProduct.storageRack || '', categoryId: existingProduct.categoryId ? String(existingProduct.categoryId) : 'none', storeId: existingProduct.storeId ? String(existingProduct.storeId) : 'none', warehouseId: existingProduct.warehouseId ? String(existingProduct.warehouseId) : 'none', description: existingProduct.description || '', callCenterProductDescription: existingProduct.callCenterProductDescription || '', upsellingEnabled: existingProduct.upsellingEnabled || false, upsellingProducts: existingProduct.upsellingProducts || [], attributes: extractedAttributes, combinations: combinations });
+		if (existingProduct.mainImage) { setMainFiles([{ id: makeId(), file: null, previewUrl: existingProduct.mainImage, isFromLibrary: false, isExisting: true, url: existingProduct.mainImage }]); }
+		if (existingProduct.images && existingProduct.images.length) { setOtherFiles(existingProduct.images.map((img) => ({ id: makeId(), file: null, previewUrl: img.url, isFromLibrary: false, isExisting: true, url: img.url }))); }
 	}, [isEditMode, existingProduct, reset]);
 
-
-	const [slugStatus, setSlugStatus] = useState(null); // 'checking', 'unique', 'taken'
-
+	const [slugStatus, setSlugStatus] = useState(null);
 	const watchSlug = watch('slug');
 	const storeId = watch('storeId');
 	useEffect(() => {
-		if (!watchSlug || errors.slug) {
-			setSlugStatus(null);
-			return;
-		}
-
+		if (!watchSlug || errors.slug) { setSlugStatus(null); return; }
 		const checkUnique = setTimeout(async () => {
 			setSlugStatus('checking');
 			try {
-				const params = new URLSearchParams({ slug: watchSlug.trim() }); // [2025-12-24] Remember to trim.
-
+				const params = new URLSearchParams({ slug: watchSlug.trim() });
 				if (storeId && storeId !== 'none') params.append('storeId', storeId);
 				if (productId) params.append('productId', productId);
-
 				const res = await api.get(`/products/check-slug?${params.toString()}`);
-
 				setSlugStatus(res.data.isUnique ? 'unique' : 'takenStore');
-			} catch (e) {
-				setSlugStatus(null);
-			}
-		}, 280); // Debounce للتحقق من التوفر
-
+			} catch (e) { setSlugStatus(null); }
+		}, 280);
 		return () => clearTimeout(checkUnique);
 	}, [watchSlug, errors.slug, productId]);
 
+	const staggerContainer = {
+		animate: { transition: { staggerChildren: 0.07 } }
+	};
+	const fadeUp = {
+		initial: { opacity: 0, y: 14 },
+		animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } }
+	};
+
 	return (
 		<motion.div
-			initial={{ opacity: 0, y: 20, scale: 0.98 }}
-			animate={{ opacity: 1, y: 0, scale: 1 }}
-			transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.15 }}
-			className="min-h-screen p-5"
+			initial={{ opacity: 0 }}
+			animate={{ opacity: 1 }}
+			transition={{ duration: 0.3 }}
+			className="min-h-screen bg-slate-50 dark:bg-slate-950 p-5 pb-16"
 		>
-
+			{/* ── Page Header ── */}
 			<PageHeader
 				breadcrumbs={[
 					{ name: t("breadcrumb.home"), href: "/" },
@@ -716,352 +422,341 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 					{ name: isEditMode ? t('breadcrumb.editProduct') : t('breadcrumb.addProduct') }
 				]}
 				buttons={
-					<>
-						<Button_ onClick={() => navigate.push('/products')} size="sm" label={t('actions.back')} tone="cancel" variant="ghost" />
-
+					<div className="flex items-center gap-2">
+						<Button_
+							onClick={() => navigate.push('/products')}
+							size="sm"
+							label={t('actions.back')}
+							tone="cancel"
+							variant="ghost"
+						/>
 						<Button_
 							size="sm"
 							label={isSubmitting ? t('actions.saving') : t('actions.save')}
 							tone="primary"
 							variant="solid"
 							onClick={handleSubmit(onSubmit)}
-							icon={isSubmitting ? <Loader2 className="h-5 w-5 animate-spin text-white" /> : <Save size={18} />}
+							icon={isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save size={16} />}
 						/>
-					</>
+					</div>
 				}
 			/>
 
-
 			<form onSubmit={handleSubmit(onSubmit)}>
-				<div className="flex gap-6">
-					<div className="space-y-6 w-full">
-						{/* Product Info */}
-						<motion.div className="bg-card rounded-xl shadow-sm p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
-							<h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-6 flex items-center gap-2">
-								<div className="w-1 h-6 bg-primary rounded-full" />
-								{t('sections.productInfo')}
-							</h3>
+				<motion.div
+					variants={staggerContainer}
+					initial="initial"
+					animate="animate"
+					className="flex gap-5 mt-5 items-start"
+				>
+					{/* ── Left Column ── */}
+					<div className="space-y-5 flex-1 min-w-0">
 
-							<div className="space-y-5 grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4">
-								<div className="space-y-2">
-									<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('fields.productName')}</Label>
-									<Input
-										{...register('name')}
-										placeholder={t('placeholders.productName')}
-										className="rounded-xl h-[50px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20"
-									/>
-									{errors?.name?.message && <div className="text-xs text-red-600">{errors.name.message}</div>}
+						{/* Product Info Card */}
+						<motion.div variants={fadeUp}>
+							<Card>
+								<SectionHeader title={t('sections.productInfo')} />
+								<div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-x-3">
+									<Field label={t('fields.productName')} error={errors?.name?.message} className=" ">
+										<Input {...register('name')} placeholder={t('placeholders.productName')} className={inputClass} />
+									</Field>
+
+										<SlugInput
+											errors={errors}
+											register={register}
+											name={productName}
+											slugStatus={slugStatus}
+											slug={watchSlug}
+											setValue={setValue}
+											labelClassName="text-[13px] font-medium text-gray-500 dark:text-slate-400 tracking-wide"
+											className={inputClass}
+										/> 
+
+									<Field label={t('fields.wholesalePrice')} error={errors?.wholesalePrice?.message}>
+										<Input
+											type="number"
+											step="0.01"
+											{...register('wholesalePrice')}
+											onBlur={handleWholesalePriceBlur}
+											placeholder={t('placeholders.wholesalePrice')}
+											className={inputClass}
+										/>
+									</Field>
+
+									<Field label={t('fields.lowestPrice')} error={errors?.lowestPrice?.message}>
+										<Input type="number" step="0.01" {...register('lowestPrice')} placeholder={t('placeholders.lowestPrice')} className={inputClass} />
+									</Field>
+
+									<Field label={t('fields.storageRack')}>
+										<Input {...register('storageRack')} placeholder={t('placeholders.storageRack')} className={inputClass} />
+									</Field>
+
+									<Field label={t('fields.category')}>
+										<Controller
+											control={control}
+											name="categoryId"
+											render={({ field }) => (
+												<Select value={field.value || ''} onValueChange={field.onChange}>
+													<SelectTrigger className={cn(inputClass, "w-full")}>
+														<SelectValue placeholder={t('placeholders.category')} />
+													</SelectTrigger>
+													<SelectContent>
+														<SelectItem value="none">{t('common.none')}</SelectItem>
+														{categories.map((c) => (
+															<SelectItem key={c.id} value={String(c.id)}>{c.label ?? c.name ?? `#${c.id}`}</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+											)}
+										/>
+									</Field>
+
+									<Field label={t('fields.store')}>
+										<Controller
+											control={control}
+											name="storeId"
+											render={({ field }) => (
+												<Select value={field.value || ''} onValueChange={field.onChange}>
+													<SelectTrigger className={cn(inputClass, "w-full")}>
+														<SelectValue placeholder={t('placeholders.store')} />
+													</SelectTrigger>
+													<SelectContent>
+														<SelectItem value="none">{t('common.none')}</SelectItem>
+														{stores.map((s) => (
+															<SelectItem key={s.id} value={String(s.id)}>{s.label ?? s.name ?? `#${s.id}`}</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+											)}
+										/>
+									</Field>
+
+									<Field label={t('fields.warehouse')}>
+										<Controller
+											control={control}
+											name="warehouseId"
+											render={({ field }) => (
+												<Select value={field.value || ''} onValueChange={field.onChange}>
+													<SelectTrigger className={cn(inputClass, "w-full")}>
+														<SelectValue placeholder={t('placeholders.warehouse')} />
+													</SelectTrigger>
+													<SelectContent>
+														<SelectItem value="none">{t('common.none')}</SelectItem>
+														{warehouses.map((w) => (
+															<SelectItem key={w.id} value={String(w.id)}>{w.label ?? w.name ?? `#${w.id}`}</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+											)}
+										/>
+									</Field>
+
+									<Field label={t('fields.description')} className="col-span-full">
+										<Textarea
+											{...register('description')}
+											placeholder={t('placeholders.description')}
+											className="rounded-xl min-h-[96px] bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-[14px] placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/50 resize-none transition-colors"
+										/>
+									</Field>
 								</div>
-
-								<SlugInput errors={errors} register={register} name={productName} slugStatus={slugStatus} slug={watchSlug} setValue={setValue}
-									labelClassName="text-sm font-semibold text-gray-600 dark:text-slate-300"
-									className="rounded-xl h-[50px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20" />
-
-								<div className="space-y-2">
-									<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('fields.wholesalePrice')}</Label>
-									<Input
-										type="number"
-										step="0.01"
-										{...register('wholesalePrice')}
-										onBlur={handleWholesalePriceBlur}
-										placeholder={t('placeholders.wholesalePrice')}
-										className="rounded-xl h-[50px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20"
-									/>
-									{errors?.wholesalePrice?.message && <div className="text-xs text-red-600">{errors.wholesalePrice.message}</div>}
-								</div>
-
-								<div className="space-y-2">
-									<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('fields.lowestPrice')}</Label>
-									<Input
-										type="number"
-										step="0.01"
-										{...register('lowestPrice')}
-										placeholder={t('placeholders.lowestPrice')}
-										className="rounded-xl h-[50px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20"
-									/>
-									{errors?.lowestPrice?.message && <div className="text-xs text-red-600">{errors.lowestPrice.message}</div>}
-								</div>
-
-								<div className="space-y-2">
-									<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('fields.storageRack')}</Label>
-									<Input
-										{...register('storageRack')}
-										placeholder={t('placeholders.storageRack')}
-										className="rounded-xl h-[50px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20"
-									/>
-								</div>
-
-								<div className="space-y-2">
-									<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('fields.category')}</Label>
-									<Controller
-										control={control}
-										name="categoryId"
-										render={({ field }) => (
-											<Select value={field.value || ''} onValueChange={field.onChange}>
-												<SelectTrigger className="w-full rounded-xl !h-[50px] bg-[#fafafa] dark:bg-slate-800/50">
-													<SelectValue placeholder={t('placeholders.category')} />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectItem value="none">{t('common.none')}</SelectItem>
-													{categories.map((c) => (
-														<SelectItem key={c.id} value={String(c.id)}>
-															{c.label ?? c.name ?? `#${c.id}`}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
-										)}
-									/>
-								</div>
-
-								<div className="space-y-2">
-									<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('fields.store')}</Label>
-									<Controller
-										control={control}
-										name="storeId"
-										render={({ field }) => (
-											<Select value={field.value || ''} onValueChange={field.onChange}>
-												<SelectTrigger className="w-full rounded-xl !h-[50px] bg-[#fafafa] dark:bg-slate-800/50">
-													<SelectValue placeholder={t('placeholders.store')} />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectItem value="none">{t('common.none')}</SelectItem>
-													{stores.map((s) => (
-														<SelectItem key={s.id} value={String(s.id)}>
-															{s.label ?? s.name ?? `#${s.id}`}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
-										)}
-									/>
-								</div>
-
-								<div className="space-y-2">
-									<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('fields.warehouse')}</Label>
-									<Controller
-										control={control}
-										name="warehouseId"
-										render={({ field }) => (
-											<Select value={field.value || ''} onValueChange={field.onChange}>
-												<SelectTrigger className="w-full rounded-xl !h-[50px] bg-[#fafafa] dark:bg-slate-800/50">
-													<SelectValue placeholder={t('placeholders.warehouse')} />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectItem value="none">{t('common.none')}</SelectItem>
-													{warehouses.map((w) => (
-														<SelectItem key={w.id} value={String(w.id)}>
-															{w.label ?? w.name ?? `#${w.id}`}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
-										)}
-									/>
-								</div>
-
-								<div className="space-y-2 col-span-full">
-									<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('fields.description')}</Label>
-									<Textarea
-										{...register('description')}
-										placeholder={t('placeholders.description')}
-										className="rounded-xl min-h-[100px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20"
-									/>
-								</div>
-							</div>
+							</Card>
 						</motion.div>
 
-						{/* Attributes */}
-						<motion.div className="bg-card rounded-xl shadow-sm p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
-							<div className="flex items-center justify-between mb-6">
-								<h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 flex items-center gap-2">
-									<div className="w-1 h-6 bg-primary rounded-full" />
-									{t('attributes.title')}
-								</h3>
-								<Button type="button" onClick={() => appendAttribute(defaultAttribute())} className="rounded-xl text-white bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20">
-									<Plus className="h-4 w-4 " />
-									{t('attributes.addCustom')}
-								</Button>
-							</div>
+						{/* Attributes Card */}
+						<motion.div variants={fadeUp}>
+							<Card>
+								<SectionHeader
+									title={t('attributes.title')}
+									action={
+										<button
+											type="button"
+											onClick={() => appendAttribute(defaultAttribute())}
+											className="inline-flex items-center gap-1.5 h-[34px] px-3 rounded-lg bg-primary text-white text-[13px] font-medium hover:bg-primary/90 transition-colors shadow-sm shadow-primary/20"
+										>
+											<Plus className="h-3.5 w-3.5" />
+											{t('attributes.addCustom')}
+										</button>
+									}
+								/>
 
-							{/* Quick Templates */}
-							<div className="mb-6 p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/20">
-								<div className="flex items-center gap-2 mb-3">
-									<Zap className="h-5 w-5 text-primary" />
-									<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">{t('attributes.quickAdd')}</span>
-								</div>
-
-								<div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-									{ATTRIBUTE_TEMPLATES.map((template) => {
-										const Icon = template.icon;
-										return (
-											<button
-												key={template.id}
-												type="button"
-												onClick={() => addQuickTemplate(template)}
-												className="flex items-center gap-2 p-3 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 hover:border-primary hover:shadow-md transition-all group"
-											>
-												<div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-													<Icon className="h-5 w-5 text-primary" />
-												</div>
-												<div className="text-right flex-1">
-													<div className="text-sm font-semibold text-gray-700 dark:text-slate-200">{template.name}</div>
-													<div className="text-xs text-gray-500">
-														{template.values.length} {t('attributes.values')}
+								{/* Quick Templates */}
+								<div className="mb-5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30 p-4">
+									<div className="flex items-center gap-2 mb-3">
+										<div className="w-5 h-5 rounded-md bg-primary/10 flex items-center justify-center">
+											<Zap className="h-3 w-3 text-primary" />
+										</div>
+										<span className="text-[12px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('attributes.quickAdd')}</span>
+									</div>
+									<div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+										{ATTRIBUTE_TEMPLATES.map((template) => {
+											const Icon = template.icon;
+											return (
+												<button
+													key={template.id}
+													type="button"
+													onClick={() => addQuickTemplate(template)}
+													className="group flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-primary/40 hover:bg-primary/[0.03] transition-all text-left"
+												>
+													<div className="w-7 h-7 rounded-lg bg-primary/8 group-hover:bg-primary/15 flex items-center justify-center transition-colors shrink-0">
+														<Icon className="h-3.5 w-3.5 text-primary" />
 													</div>
-												</div>
-											</button>
-										);
-									})}
-								</div>
-							</div>
-
-							{errors?.attributes?.message && <div className="text-sm text-red-600 mb-4">{errors.attributes.message}</div>}
-
-							<div className="space-y-4">
-								{attributeFields.length === 0 ? (
-									<div className="text-center py-12 text-gray-400">
-										<Package className="h-16 w-16 mx-auto mb-4 opacity-20" />
-										<p className="text-sm">{t('attributes.empty')}</p>
+													<div>
+														<div className="text-[13px] font-semibold text-slate-700 dark:text-slate-200 leading-tight">{template.name}</div>
+														<div className="text-[11px] text-slate-400 mt-0.5">{template.values.length} {t('attributes.values')}</div>
+													</div>
+												</button>
+											);
+										})}
 									</div>
-								) : (
-									attributeFields.map((af, aIndex) => {
-										const aErr = errors?.attributes?.[aIndex];
+								</div>
 
-										return <AttributeEditor key={af.fieldId} t={t} control={control} register={register} errors={aErr} aIndex={aIndex} onRemove={() => removeAttribute(aIndex)} setValue={setValue} />;
-									})
+								{errors?.attributes?.message && (
+									<p className="text-[12px] text-red-500 font-medium mb-4">{errors.attributes.message}</p>
 								)}
-							</div>
+
+								<div className="space-y-3">
+									{attributeFields.length === 0 ? (
+										<div className="flex flex-col items-center justify-center py-10 rounded-xl border-2 border-dashed border-slate-100 dark:border-slate-800 text-center">
+											<div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
+												<Package className="h-5 w-5 text-slate-400" />
+											</div>
+											<p className="text-[13px] text-slate-400">{t('attributes.empty')}</p>
+										</div>
+									) : (
+										attributeFields.map((af, aIndex) => (
+											<AttributeEditor
+												key={af.fieldId}
+												t={t}
+												control={control}
+												register={register}
+												errors={errors?.attributes?.[aIndex]}
+												aIndex={aIndex}
+												onRemove={() => removeAttribute(aIndex)}
+												setValue={setValue}
+											/>
+										))
+									)}
+								</div>
+							</Card>
 						</motion.div>
 
-						{/* Combinations */}
+						{/* Combinations Card */}
 						{comboFields.length > 0 && (
-							<motion.div className="bg-card rounded-xl shadow-sm p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
-								<div className="flex items-center justify-between mb-6">
-									<h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 flex items-center gap-2">
-										<div className="w-1 h-6 bg-primary rounded-full" />
-										{t('combinations.title')}
-									</h3>
-									<Badge variant="secondary" className="rounded-xl px-4 py-2 text-sm font-semibold">
-										{t('combinations.count')}: <span className="font-[Inter]">{comboFields.length}</span>
-									</Badge>
-								</div>
-
-								{comboFields.length === 0 ? (
-									<div className="text-center py-12 bg-gray-50 dark:bg-slate-800/30 rounded-xl">
-										<Package className="h-16 w-16 mx-auto mb-4 text-gray-300 dark:text-slate-600" />
-										<p className="text-sm text-slate-500">{t('combinations.empty')}</p>
+							<motion.div variants={fadeUp}>
+								<Card>
+									<div className="flex items-center justify-between mb-5">
+										<SectionHeader title={t('combinations.title')} />
+										<span className="text-[12px] font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">
+											{comboFields.length} {t('combinations.count')}
+										</span>
 									</div>
-								) : (
-									<div className="overflow-x-auto max-h-[580px] h-full overflow-auto ltr:rounded-[8px_0_0_8px] rtl:rounded-[0_8px_8px_0] border border-slate-200 dark:border-slate-700">
-										<table className="w-full">
-											<thead className="bg-gradient-to-r from-primary/10 to-primary/5">
-												<tr>
-													<th className="text-right p-4 text-sm font-bold text-gray-700 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700">{t('combinations.combinationName')}</th>
-													<th className="text-right font-[Inter] p-4 text-sm font-bold text-gray-700 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700">SKU</th>
-													<th className="text-right w-[120px] p-4 text-sm font-bold text-gray-700 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700">
-														{t('combinations.price')} *
-													</th>
-												</tr>
-											</thead>
-											<tbody>
-												{comboFields.map((c, idx) => {
-													const cErr = errors?.combinations?.[idx];
-													const current = combinationsWatch?.[idx];
-													const attrs = current?.attributes || {};
 
-													return (
-														<tr key={c.fieldId} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0">
-															<td className="p-4">
-																<input type="hidden" {...register(`combinations.${idx}.key`)} />
-																<input type="hidden" {...register(`combinations.${idx}.attributes`)} />
-
-																<div className="flex items-center gap-1 flex-wrap">
-																	{Object.entries(attrs).map(([key, value]) => (
-																		<div key={key} className="flex items-center gap-2">
-																			<LANG className="px-1 py-[2px] rounded-xl bg-primary/15 text-primary border border-primary/30 text-xs">{value}</LANG>
-																		</div>
-																	))}
-																</div>
-															</td>
-
-															<td className="p-4">
-																<Input
-																	{...register(`combinations.${idx}.sku`)}
-																	placeholder={t('combinations.placeholders.sku')}
-																	disabled
-																	className="rounded-xl font-[Inter] h-[42px] bg-gray-100 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-sm cursor-not-allowed"
-																/>
-																{cErr?.sku?.message && <div className="text-xs text-red-600 mt-1">{cErr.sku.message}</div>}
-															</td>
-
-															<td className="p-4">
-																<Input
-																	type="number"
-																	step="0.01"
-																	{...register(`combinations.${idx}.price`)}
-																	placeholder={t('combinations.placeholders.price')}
-																	className="rounded-xl h-[42px] font-[Inter] bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-																/>
-																{cErr?.price?.message && <div className="text-xs text-red-600 mt-1">{cErr.price.message}</div>}
-															</td>
-														</tr>
-													);
-												})}
-											</tbody>
-										</table>
+									<div className="overflow-hidden rounded-xl border border-slate-100 dark:border-slate-800">
+										<div className="overflow-x-auto max-h-[520px] overflow-y-auto">
+											<table className="w-full text-[13px]">
+												<thead>
+													<tr className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
+														<th className="text-right px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">{t('combinations.combinationName')}</th>
+														<th className="text-right px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 font-[Inter]">SKU</th>
+														<th className="text-right px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 w-[130px]">
+															{t('combinations.price')} <span className="text-red-400">*</span>
+														</th>
+													</tr>
+												</thead>
+												<tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+													{comboFields.map((c, idx) => {
+														const cErr = errors?.combinations?.[idx];
+														const current = combinationsWatch?.[idx];
+														const attrs = current?.attributes || {};
+														return (
+															<tr key={c.fieldId} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition-colors">
+																<td className="px-4 py-3">
+																	<input type="hidden" {...register(`combinations.${idx}.key`)} />
+																	<input type="hidden" {...register(`combinations.${idx}.attributes`)} />
+																	<div className="flex items-center gap-1.5 flex-wrap">
+																		{Object.entries(attrs).map(([key, value]) => (
+																			<LANG key={key} className="px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-[12px] font-medium border border-primary/15">
+																				{value}
+																			</LANG>
+																		))}
+																	</div>
+																</td>
+																<td className="px-4 py-3">
+																	<Input
+																		{...register(`combinations.${idx}.sku`)}
+																		placeholder={t('combinations.placeholders.sku')}
+																		disabled
+																		className="h-[38px] rounded-lg font-[Inter] text-[12px] bg-slate-100 dark:bg-slate-900 border-transparent text-slate-400 cursor-not-allowed"
+																	/>
+																</td>
+																<td className="px-4 py-3">
+																	<Input
+																		type="number"
+																		step="0.01"
+																		{...register(`combinations.${idx}.price`)}
+																		placeholder="0.00"
+																		className={cn("h-[38px] rounded-lg font-[Inter] text-[13px]", cErr?.price ? "border-red-300" : "border-slate-200 dark:border-slate-700")}
+																	/>
+																	{cErr?.price?.message && <p className="text-[11px] text-red-500 mt-0.5">{cErr.price.message}</p>}
+																</td>
+															</tr>
+														);
+													})}
+												</tbody>
+											</table>
+										</div>
 									</div>
-								)}
+								</Card>
 							</motion.div>
 						)}
 
-						{/* Upselling */}
-						<motion.div className="bg-card rounded-xl shadow-sm p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35 }}>
-							<h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-6 flex items-center gap-2">
-								<div className="w-1 h-6 bg-primary rounded-full" />
-								{t('sections.upselling')}
-							</h3>
+						{/* Upselling Card */}
+						<motion.div variants={fadeUp}>
+							<Card>
+								<SectionHeader title={t('sections.upselling')} />
+								<div className="space-y-4">
+									<Field label={t('upsell.callCenterDesc')}>
+										<Input
+											{...register('callCenterProductDescription')}
+											placeholder={t('placeholders.callCenterDesc')}
+											className={inputClass}
+										/>
+									</Field>
 
-							<div className="space-y-5">
-								<div className="space-y-2">
-									<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('upsell.callCenterDesc')}</Label>
-									<Input
-										{...register('callCenterProductDescription')}
-										placeholder={t('placeholders.callCenterDesc')}
-										className="rounded-xl h-[50px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20"
-									/>
-								</div>
-
-								<div className="space-y-2">
 									<Controller
 										control={control}
 										name="upsellingEnabled"
 										render={({ field }) => (
-											<div className="flex items-center space-x-2">
-												<Checkbox checked={field.value} onCheckedChange={field.onChange} id="upselling-enabled" />
-												<label htmlFor="upselling-enabled" className="text-sm font-medium leading-none cursor-pointer">
+											<label className="flex items-center gap-2.5 cursor-pointer group w-fit">
+												<Checkbox
+													checked={field.value}
+													onCheckedChange={field.onChange}
+													id="upselling-enabled"
+													className="rounded-md"
+												/>
+												<span className="text-[13px] font-medium text-slate-600 dark:text-slate-300 select-none group-hover:text-slate-800 dark:group-hover:text-slate-100 transition-colors">
 													{t('upsell.enableUpselling')}
-												</label>
-											</div>
+												</span>
+											</label>
 										)}
 									/>
-								</div>
 
-								{upsellingEnabled && (
-									<UpsellProductSelector
-										t={t}
-										value={watch('upsellingProducts') || []}
-										onChange={(next) => setValue('upsellingProducts', next, { shouldValidate: true, shouldDirty: true })}
-									/>
-								)}
-							</div>
+									{upsellingEnabled && (
+										<UpsellProductSelector
+											t={t}
+											value={watch('upsellingProducts') || []}
+											onChange={(next) => setValue('upsellingProducts', next, { shouldValidate: true, shouldDirty: true })}
+										/>
+									)}
+								</div>
+							</Card>
 						</motion.div>
 
 						<button type="submit" className="hidden" />
 					</div>
 
-					{/* uploads */}
-					<div className="sticky top-[180px] h-fit space-y-6 w-full max-w-[550px] max-xl:max-w-[400px]">
+					{/* ── Right Column (Media) ── */}
+					<div className="sticky top-[20px] h-fit space-y-4 w-full max-w-[360px] max-xl:max-w-[300px] shrink-0">
 						<ImageUploadBox
 							title={t('uploads.mainImage')}
 							files={mainFiles}
@@ -1071,10 +766,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 								setImageErrors(prev => ({ ...prev, main: {} }));
 							}}
 							onRemove={(fileToRemove) => {
-								if (fileToRemove.isExisting && fileToRemove.url) {
-									setRemovedImages((prev) => [...prev, fileToRemove.url]);
-								}
-
+								if (fileToRemove.isExisting && fileToRemove.url) setRemovedImages((prev) => [...prev, fileToRemove.url]);
 							}}
 							error={imageErrors.main}
 							multiple={false}
@@ -1086,77 +778,84 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 							onFilesChange={(next) => {
 								setOtherFiles(next);
 								setImageErrors(prev => ({ ...prev, other: {} }));
-
 							}}
 							onRemove={(fileToRemove) => {
-								if (fileToRemove.isExisting && fileToRemove.url) {
-									setRemovedImages((prev) => [...prev, fileToRemove.url]);
-								}
+								if (fileToRemove.isExisting && fileToRemove.url) setRemovedImages((prev) => [...prev, fileToRemove.url]);
 							}}
 							error={imageErrors.other}
 							multiple={true}
 						/>
-
 					</div>
-				</div>
+				</motion.div>
 			</form>
 		</motion.div>
 	);
 }
 
-/** Attribute Editor */
+/** ── Attribute Editor ─────────────────────────────────────────────────────── */
 function AttributeEditor({ t, control, register, errors, aIndex, onRemove, setValue }) {
 	const valuesWatch = useWatch({ control, name: `attributes.${aIndex}.values` }) || [];
 
 	return (
 		<motion.div
-			initial={{ opacity: 0, y: 10, scale: 0.98 }}
-			animate={{ opacity: 1, y: 0, scale: 1 }}
-			transition={{ duration: 0.25 }}
-			className="rounded-xl shadow-md border-2 border-gray-200 dark:border-slate-700 bg-gradient-to-br from-white to-gray-50 dark:from-slate-900/50 dark:to-slate-800/50 p-5"
+			initial={{ opacity: 0, y: 8 }}
+			animate={{ opacity: 1, y: 0 }}
+			transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+			className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4"
 		>
 			<div className="flex items-center justify-between mb-4">
-				<div className="text-base font-bold text-gray-800 dark:text-slate-100 flex items-center gap-2">
-					<div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">{aIndex + 1}</div>
-					{t('attributes.attribute')}
+				<div className="flex items-center gap-2.5">
+					<span className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center text-[11px] font-bold text-primary">
+						{aIndex + 1}
+					</span>
+					<span className="text-[13px] font-semibold text-slate-700 dark:text-slate-200">
+						{t('attributes.attribute')}
+					</span>
 				</div>
 
-				<Button type="button" variant="ghost" title={t('attributes.deleteAttribute')} onClick={onRemove} className="rounded-xl border-1 border-red-500 cursor-pointer text-red-600 hover:text-white hover:bg-red-500 transition-all">
-					<Trash2 className="h-4 w-4" />
-				</Button>
+				<button
+					type="button"
+					onClick={onRemove}
+					className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 border border-transparent hover:border-red-100 dark:hover:border-red-900/50 transition-all"
+					title={t('attributes.deleteAttribute')}
+				>
+					<Trash2 className="h-3.5 w-3.5" />
+				</button>
 			</div>
 
 			<input type="hidden" {...register(`attributes.${aIndex}.id`)} />
 
-			<div className="space-y-4 grid grid-cols-2 gap-3">
-				<div className="space-y-2">
-					<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('attributes.name')}</Label>
+			<div className="grid grid-cols-2 gap-3">
+				<Field label={t('attributes.name')} error={errors?.name?.message}>
 					<Input
 						{...register(`attributes.${aIndex}.name`)}
 						placeholder={t('attributes.placeholders.name')}
-						className="rounded-xl h-[50px] bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20 font-semibold"
+						className={inputClass}
 					/>
-					{errors?.name?.message && <div className="text-xs text-red-600">{errors.name.message}</div>}
+				</Field>
+
+				<div className="space-y-1.5">
+					<TagInput
+						label={t('attributes.values')}
+						tags={valuesWatch}
+						onTagsChange={(newTags) => setValue(`attributes.${aIndex}.values`, newTags, { shouldValidate: true, shouldDirty: true })}
+						placeholder={t('attributes.placeholders.value')}
+					/>
+					{errors?.values?.message && <p className="text-[11px] text-red-500">{errors.values.message}</p>}
 				</div>
-
-				<TagInput label={t('attributes.values')} tags={valuesWatch} onTagsChange={(newTags) => setValue(`attributes.${aIndex}.values`, newTags, { shouldValidate: true, shouldDirty: true })} placeholder={t('attributes.placeholders.value')} />
-
-				{errors?.values?.message && <div className="text-xs text-red-600">{errors.values.message}</div>}
 			</div>
 		</motion.div>
 	);
 }
 
+/** ── Upsell Product Selector ─────────────────────────────────────────────── */
 function UpsellProductSelector({ t, value, onChange }) {
 	const [products, setProducts] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const [search, setSearch] = useState('');
-
 	const selectedIds = (value || []).map((x) => String(x.productId));
 
-	useEffect(() => {
-		loadProducts();
-	}, []);
+	useEffect(() => { loadProducts(); }, []);
 
 	const loadProducts = async () => {
 		setLoading(true);
@@ -1164,85 +863,41 @@ function UpsellProductSelector({ t, value, onChange }) {
 			const response = await api.get('/products', { params: { limit: 100 } });
 			const list = Array.isArray(response.data?.records) ? response.data.records : Array.isArray(response.data) ? response.data : [];
 			setProducts(list);
-		} catch (error) {
-			toast.error(t('upsell.failedToLoad'));
-		} finally {
-			setLoading(false);
-		}
+		} catch (error) { toast.error(t('upsell.failedToLoad')); }
+		finally { setLoading(false); }
 	};
 
 	const filteredProducts = products.filter((p) => !selectedIds.includes(String(p.id)) && (search ? p.name?.toLowerCase().includes(search.toLowerCase()) : true));
-
-	const addProduct = (product) => {
-		const next = [
-			...(value || []),
-			{
-				...product,
-				productId: String(product.id),
-				label: product.name || `#${product.id}`,
-				callCenterDescription: '',
-			},
-		];
-		onChange(next);
-	};
-
-	const removeProduct = (productId) => {
-		onChange((value || []).filter((x) => String(x.productId) !== String(productId)));
-	};
-
-	const updateDesc = (productId, desc) => {
-		onChange((value || []).map((x) => (String(x.productId) === String(productId) ? { ...x, callCenterDescription: desc } : x)));
-	};
-
-	const selectedProducts = (value || []).map((x) => {
-		const p = products.find((pp) => String(pp.id) === String(x.productId));
-		return {
-			...x,
-			name: p?.name || x.label || `#${x.productId}`,
-		};
-	});
-
+	const addProduct = (product) => { onChange([...(value || []), { ...product, productId: String(product.id), label: product.name || `#${product.id}`, callCenterDescription: '' }]); };
+	const removeProduct = (productId) => { onChange((value || []).filter((x) => String(x.productId) !== String(productId))); };
+	const updateDesc = (productId, desc) => { onChange((value || []).map((x) => (String(x.productId) === String(productId) ? { ...x, callCenterDescription: desc } : x))); };
+	const selectedProducts = (value || []).map((x) => { const p = products.find((pp) => String(pp.id) === String(x.productId)); return { ...x, name: p?.name || x.label || `#${x.productId}` }; });
 	const getImg = (p) => p?.mainImage || p?.images?.[0]?.url || '';
-
 	const safeText = (v) => (v == null || v === '' ? '—' : String(v));
 
 	return (
-		<div className="space-y-4">
-			<div className="space-y-2">
-				<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('upsell.selectProducts')}</Label>
-
+		<div className="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+			<Field label={t('upsell.selectProducts')}>
 				<div className="relative">
-					<div className="flex items-center gap-2">
-						<div className="relative flex-1">
-							<Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-							<Input
-								value={search}
-								onChange={(e) => setSearch(e.target.value)}
-								placeholder={t('upsell.searchProducts')}
-								className="pl-10 rounded-xl h-[50px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20"
-							/>
-						</div>
-					</div>
+					<Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+					<Input
+						value={search}
+						onChange={(e) => setSearch(e.target.value)}
+						placeholder={t('upsell.searchProducts')}
+						className={cn(inputClass, "pl-9")}
+					/>
 
 					{search && (
-						<div className="absolute z-10 bottom-[calc(100%+10px)] w-full mt-2 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-2xl">
-							<div className="flex items-center justify-between px-4 py-2 border-b border-slate-100 dark:border-slate-700">
-								<div className="text-xs text-slate-500">
-									{t('upsell.searchResultsCount')}: <span className="font-semibold">{filteredProducts.length}</span>
-								</div>
-								<div className="text-xs text-slate-400">{t('upsell.clickToSelect')}</div>
+						<div className="absolute z-10 bottom-[calc(100%+6px)] w-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl shadow-black/10">
+							<div className="flex items-center justify-between px-3 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+								<span className="text-[11px] text-slate-500">{t('upsell.searchResultsCount')}: <b>{filteredProducts.length}</b></span>
+								<span className="text-[11px] text-slate-400">{t('upsell.clickToSelect')}</span>
 							</div>
-
-							<div className="max-h-72 overflow-y-auto">
-								{false ? (
-									<div className="p-6 text-center text-slate-500">
-										<Loader2 className="w-5 h-5 animate-spin mx-auto" />
-										<div className="mt-2 text-xs">{t('upsell.loading')}</div>
-									</div>
-								) : filteredProducts.length === 0 ? (
-									<div className="p-6 text-center text-slate-500">
-										<div className="text-sm font-medium">{t('upsell.noResults')}</div>
-										<div className="text-xs mt-1">{t('upsell.tryDifferent')}</div>
+							<div className="max-h-64 overflow-y-auto">
+								{filteredProducts.length === 0 ? (
+									<div className="py-8 text-center">
+										<p className="text-[13px] font-medium text-slate-500">{t('upsell.noResults')}</p>
+										<p className="text-[12px] text-slate-400 mt-1">{t('upsell.tryDifferent')}</p>
 									</div>
 								) : (
 									filteredProducts.map((product) => {
@@ -1251,27 +906,19 @@ function UpsellProductSelector({ t, value, onChange }) {
 											<button
 												key={product.id}
 												type="button"
-												onClick={() => {
-													addProduct(product);
-													setSearch('');
-												}}
-												className={['w-full text-left', 'px-4 py-3', 'hover:bg-slate-50 dark:hover:bg-slate-700/60', 'transition-colors', 'border-b border-slate-100 dark:border-slate-700 last:border-0', 'focus:outline-none focus:bg-slate-50 dark:focus:bg-slate-700/60'].join(' ')}
+												onClick={() => { addProduct(product); setSearch(''); }}
+												className="w-full text-left px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors border-b border-slate-50 dark:border-slate-800 last:border-0"
 											>
-												<div className="flex items-start gap-3">
-													<div className="shrink-0 w-11 h-11 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-700">
-														{img ? <img src={baseImg + img} alt={product.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xs text-slate-400">N/A</div>}
+												<div className="flex items-center gap-3">
+													<div className="w-9 h-9 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 shrink-0">
+														{img ? <img src={baseImg + img} alt={product.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-400">—</div>}
 													</div>
-
 													<div className="min-w-0 flex-1">
 														<div className="flex items-center gap-2">
-															<div className="font-semibold text-slate-900 dark:text-white truncate">{safeText(product.name)}</div>
-
-															<span className="font-[Inter] shrink-0 text-[11px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200">ID: {product.id}</span>
+															<span className="font-semibold text-[13px] text-slate-800 dark:text-white truncate">{safeText(product.name)}</span>
+															<span className="text-[10px] font-[Inter] px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-500 shrink-0">#{product.id}</span>
 														</div>
-
-														<div className="rtl:text-right ltr:text-left mt-1 text-xs text-slate-500 dark:text-slate-300 truncate">
-															{safeText(product.category?.name)} • {safeText(product.store?.name)} • {safeText(product.warehouse?.location)}
-														</div>
+														<p className="text-[11px] text-slate-400 truncate mt-0.5">{safeText(product.category?.name)} · {safeText(product.store?.name)}</p>
 													</div>
 												</div>
 											</button>
@@ -1282,74 +929,46 @@ function UpsellProductSelector({ t, value, onChange }) {
 						</div>
 					)}
 				</div>
-			</div>
+			</Field>
 
 			{selectedProducts.length > 0 && (
-				<div className="space-y-3">
-					<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('upsell.selectedProducts')}</Label>
-
-					<div className="space-y-3">
-						{selectedProducts.map((x) => (
-							<div key={x.productId} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/30 backdrop-blur p-4">
-								<div className="flex items-start justify-between gap-3">
-									<div className="flex items-start gap-3 min-w-0">
-										<div className="shrink-0 w-11 h-11 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
-											{x.mainImage ? (
-												<img src={baseImg + getImg(x)} alt={x.name} className="w-full h-full object-cover" />
-											) : (
-												<div className="w-full h-full flex items-center justify-center text-[10px] text-slate-400">N/A</div>
-											)}
-										</div>
-
-										<div className="min-w-0">
-											<div className="flex items-center gap-2 flex-wrap">
-												<div className="font-semibold text-slate-900 dark:text-white truncate">{x.name}</div>
-
-												<span className="font-[Inter] text-[11px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-200">ID: {x.productId}</span>
-											</div>
-										</div>
+				<div className="space-y-2">
+					<label className="text-[12px] font-semibold text-slate-500 uppercase tracking-wider">{t('upsell.selectedProducts')}</label>
+					{selectedProducts.map((x) => (
+						<div key={x.productId} className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 p-3">
+							<div className="flex items-center justify-between gap-2 mb-3">
+								<div className="flex items-center gap-2.5 min-w-0">
+									<div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 shrink-0">
+										{x.mainImage ? <img src={baseImg + getImg(x)} alt={x.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-400">—</div>}
 									</div>
-
-									<button
-										type="button"
-										onClick={() => removeProduct(x.productId)}
-										className="shrink-0 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-200 dark:hover:border-red-800 transition-colors"
-										aria-label="Remove product"
-										title="Remove"
-									>
-										<X className="w-4 h-4 text-slate-500 hover:text-red-600" />
-									</button>
-								</div>
-
-								<div className="mt-4 space-y-2">
-									<div className="flex items-center justify-between">
-										<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('upsell.callCenterItemDesc')}</Label>
-									</div>
-
-									<div className="relative">
-										<Input
-											value={x.callCenterDescription || ''}
-											onChange={(e) => updateDesc(x.productId, e.target.value)}
-											placeholder={t('upsell.callCenterItemDescPlaceholder')}
-											onKeyDown={(e) => {
-												if (e.key === 'Enter') {
-													e.currentTarget.blur();
-												}
-											}}
-											className={['rounded-xl h-[48px]', 'bg-[#fafafa] dark:bg-slate-800/50', 'border-gray-200 dark:border-slate-700', 'pr-16 rtl:pl-16 rtl:pr-4'].join(' ')}
-										/>
+									<div>
+										<span className="text-[13px] font-semibold text-slate-800 dark:text-white">{x.name}</span>
+										<span className="text-[11px] font-[Inter] ml-2 text-slate-400">#{x.productId}</span>
 									</div>
 								</div>
+								<button
+									type="button"
+									onClick={() => removeProduct(x.productId)}
+									className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all shrink-0"
+								>
+									<X className="w-3.5 h-3.5" />
+								</button>
 							</div>
-						))}
-					</div>
+							<Input
+								value={x.callCenterDescription || ''}
+								onChange={(e) => updateDesc(x.productId, e.target.value)}
+								placeholder={t('upsell.callCenterItemDescPlaceholder')}
+								className={cn(inputClass, "h-[38px] text-[13px]")}
+							/>
+						</div>
+					))}
 				</div>
 			)}
 		</div>
 	);
 }
 
-/** Upload Box */
+/** ── Image Upload Box ─────────────────────────────────────────────────────── */
 export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple = true, accept = 'image/*', className, error }) {
 	const t = useTranslations('addProduct');
 	const inputRef = useRef(null);
@@ -1357,19 +976,10 @@ export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple
 	const generalErrorMessage = typeof error === 'string' ? error : error?.general;
 	const specificErrors = error?.specific || {};
 
-	const addFiles = React.useCallback(
-		(picked) => {
-			const next = picked.map((file) => ({
-				id: makeId(),
-				file,
-				previewUrl: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
-				isFromLibrary: false,
-				isExisting: false,
-			}));
-			onFilesChange([...(files ?? []), ...next]);
-		},
-		[files, onFilesChange]
-	);
+	const addFiles = React.useCallback((picked) => {
+		const next = picked.map((file) => ({ id: makeId(), file, previewUrl: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined, isFromLibrary: false, isExisting: false }));
+		onFilesChange([...(files ?? []), ...next]);
+	}, [files, onFilesChange]);
 
 	const onPick = (e) => {
 		const picked = Array.from(e.target.files ?? []);
@@ -1380,14 +990,8 @@ export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple
 
 	const removeFile = (id) => {
 		const target = (files ?? []).find((f) => f.id === id);
-
-		if (onRemove) {
-			onRemove(target);
-		}
-
-		if (target?.previewUrl && !target.isFromLibrary && !target.isExisting) {
-			URL.revokeObjectURL(target.previewUrl);
-		}
+		if (onRemove) onRemove(target);
+		if (target?.previewUrl && !target.isFromLibrary && !target.isExisting) URL.revokeObjectURL(target.previewUrl);
 		onFilesChange((files ?? []).filter((f) => f.id !== id));
 	};
 
@@ -1395,7 +999,6 @@ export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple
 		e.preventDefault();
 		e.stopPropagation();
 		setIsDragging(false);
-
 		const picked = Array.from(e.dataTransfer.files ?? []);
 		if (!picked.length) return;
 		addFiles(picked);
@@ -1403,145 +1006,128 @@ export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple
 
 	const prettyExt = (name) => {
 		const ext = name?.split('.').pop()?.toUpperCase();
-		return ext && ext !== name?.toUpperCase() ? ext : 'FILE';
+		return ext && ext !== name?.toUpperCase() ? ext : 'IMG';
 	};
 
 	const isImage = (f) => (f?.file?.type?.startsWith?.('image/') ? true : !!f?.isFromLibrary || !!f?.isExisting);
 
 	const getImageUrl = (f) => {
-		if (f.isExisting || f.isFromLibrary) {
-			return f.url.startsWith('http') ? f.url : baseImg + f.url;
-		}
+		if (f.isExisting || f.isFromLibrary) return f.url.startsWith('http') ? f.url : baseImg + f.url;
 		return f.previewUrl;
 	};
-	const hasAnyError = useMemo(() => {
-		const generalErrorMessage = typeof error === 'string' ? error : error?.general;
-		const specificErrors = error?.specific || {};
 
-		return !!generalErrorMessage || Object.keys(specificErrors).length > 0;
-	}, [error]); // Only re-calculates when the error prop changes
+	const hasError = !!generalErrorMessage || Object.keys(specificErrors).length > 0;
 
 	return (
-		<motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className={cn('bg-card rounded-xl shadow-sm p-6', className)} dir="rtl">
-			<h3 className="text-lg font-bold text-gray-700 dark:text-slate-200 mb-4 text-right flex items-center gap-2">
-				<div className={cn("w-1 h-5 rounded-full", hasAnyError ? "bg-red-500" : "bg-primary")} />
-				{title}
-			</h3>
+		<motion.div
+			initial={{ opacity: 0, x: 10 }}
+			animate={{ opacity: 1, x: 0 }}
+			transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+			className={cn(
+				"bg-white dark:bg-slate-900 rounded-2xl border shadow-[0_1px_4px_rgba(0,0,0,0.06)] p-5",
+				hasError ? "border-red-200 dark:border-red-900/50" : "border-slate-100 dark:border-slate-800",
+				className
+			)}
+			dir="rtl"
+		>
+			{/* Header */}
+			<div className="flex items-center gap-2 mb-4">
+				<span className={cn("w-[3px] h-4 rounded-full block shrink-0", hasError ? "bg-red-400" : "bg-primary")} />
+				<h3 className="text-[14px] font-semibold text-slate-700 dark:text-slate-200">{title}</h3>
+			</div>
+
+			{/* Drop Zone */}
 			<div
-				onDragEnter={(e) => {
-					e.preventDefault();
-					e.stopPropagation();
-					setIsDragging(true);
-				}}
-				onDragOver={(e) => {
-					e.preventDefault();
-					e.stopPropagation();
-					setIsDragging(true);
-				}}
-				onDragLeave={(e) => {
-					e.preventDefault();
-					e.stopPropagation();
-					setIsDragging(false);
-				}}
+				onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+				onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+				onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
 				onDrop={handleDrop}
-				className={cn('rounded-xl border-2 border-dashed p-8 text-center transition-all', isDragging ? 'border-primary bg-primary/5 scale-[1.02]' : 'border-primary/60 bg-gradient-to-br from-white to-gray-50 dark:from-slate-900/20 dark:to-slate-800/20')}
+				onClick={() => inputRef.current?.click()}
+				className={cn(
+					"rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200 flex flex-col items-center justify-center gap-3 py-7 px-4 text-center",
+					isDragging
+						? "border-primary bg-primary/5 scale-[1.01]"
+						: "border-slate-200 dark:border-slate-700 hover:border-primary/50 hover:bg-slate-50 dark:hover:bg-slate-800/40"
+				)}
 			>
 				<input ref={inputRef} type="file" accept={accept} multiple={multiple} className="hidden" onChange={onPick} />
 
-				<div className="flex flex-col items-center gap-4">
-					<div className="w-20 h-20 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center shadow-lg">
-						<UploadIllustration />
-					</div>
+				<div className={cn(
+					"w-11 h-11 rounded-xl flex items-center justify-center transition-colors",
+					isDragging ? "bg-primary/15" : "bg-slate-100 dark:bg-slate-800"
+				)}>
+					<UploadCloud className={cn("h-5 w-5", isDragging ? "text-primary" : "text-slate-400")} />
+				</div>
 
-					<div className="space-y-2">
-						<p className="text-xl font-bold text-slate-900 dark:text-slate-100">{t('uploads.dragHere')}</p>
-						<div className="flex items-center justify-center gap-3 text-sm text-slate-400">
-							<span className="h-px w-24 bg-slate-200 dark:bg-slate-700" />
-							<span>{t('uploads.or')}</span>
-							<span className="h-px w-24 bg-slate-200 dark:bg-slate-700" />
-						</div>
-					</div>
-
-					<div className="flex gap-2">
-						<Button type="button" variant="outline" className="rounded-xl px-8 border-primary/60 text-primary hover:bg-primary/10" onClick={() => inputRef.current?.click()}>
-							{t('uploads.attach')}
-						</Button>
-					</div>
+				<div>
+					<p className="text-[13px] font-semibold text-slate-600 dark:text-slate-300">{t('uploads.dragHere')}</p>
+					<p className="text-[12px] text-slate-400 mt-0.5">{t('uploads.or')} <span className="text-primary font-medium">{t('uploads.attach')}</span></p>
 				</div>
 			</div>
+
 			{generalErrorMessage && (
-				<div className="mt-2 text-xs font-medium text-red-600 text-right animate-in fade-in">
-					{generalErrorMessage}
-				</div>
+				<p className="mt-2 text-[11px] font-medium text-red-500 text-right">{generalErrorMessage}</p>
 			)}
-			<div className="mt-5 space-y-3">
-				{(files ?? []).map((f) => {
-					const fileError = specificErrors[f.id]; // 🎯 Check if THIS file has an error
 
-					return (
-						<div className={cn(
-							"flex items-center justify-between gap-4 rounded-xl border p-4 transition-all",
-							fileError
-								? "border-red-500 bg-red-50/50 shadow-sm" // 🔴 Red border for bad file
-								: "border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/40 hover:border-primary/50"
-						)}>
-							<button
-								type="button"
-								onClick={() => removeFile(f.id)}
-								className="w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
-								aria-label={t('uploads.remove')}
-							>
-								<X className="h-5 w-5" />
-							</button>
-
-							<div className="flex-1 text-right">
-								<div className="font-semibold text-slate-900 dark:text-slate-100 truncate">{f.isExisting ? t('uploads.existingImage') : f.isFromLibrary ? t('uploads.fromLibrary') : (f?.file?.name || '').slice(0, 20)}</div>
-								<div className="text-xs text-slate-400">{f.isFromLibrary || f.isExisting ? t('uploads.fromLibrary') : `${((f?.file?.size || 0) / 1024).toFixed(1)} KB`}</div>
-								{fileError && (
-									<div className="text-xs text-red-500 font-bold mt-1">
-										{fileError}
-									</div>
+			{/* File List */}
+			{(files ?? []).length > 0 && (
+				<div className="mt-3 space-y-2">
+					{(files ?? []).map((f) => {
+						const fileError = specificErrors[f.id];
+						return (
+							<div
+								key={f.id}
+								className={cn(
+									"flex items-center gap-3 rounded-xl border p-2.5 transition-all",
+									fileError
+										? "border-red-200 bg-red-50/50 dark:border-red-900/50 dark:bg-red-950/10"
+										: "border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 hover:border-slate-200 dark:hover:border-slate-700"
 								)}
-							</div>
-
-							<div className="flex items-center gap-3">
-								<Badge className="rounded-xl bg-primary/15 text-primary border border-primary/20 font-semibold">{prettyExt(f?.file?.name || 'IMG')}</Badge>
-
-								<div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700">
+							>
+								{/* Thumbnail */}
+								<div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shrink-0">
 									{isImage(f) && getImageUrl(f) ? (
-										// eslint-disable-next-line @next/next/no-img-element
 										<img src={getImageUrl(f)} alt={f?.file?.name || 'image'} className="w-full h-full object-cover" />
 									) : (
-										<div className="text-slate-500">{f?.file?.type?.includes?.('image') ? <ImageIcon className="h-6 w-6" /> : <FileText className="h-6 w-6" />}</div>
+										<div className="w-full h-full flex items-center justify-center">
+											{f?.file?.type?.includes?.('image') ? <ImageIcon className="h-4 w-4 text-slate-400" /> : <FileText className="h-4 w-4 text-slate-400" />}
+										</div>
 									)}
 								</div>
-							</div>
-						</div>
-					)
-				})}
-			</div>
-		</motion.div>
-	);
-}
 
-function UploadIllustration() {
-	return (
-		<svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-			<g clipPath="url(#clip0_180_3507)">
-				<path d="M33.4417 3.12061H14.1743V11.1106H37.5567V7.23402C37.5567 4.96567 35.7107 3.12061 33.4417 3.12061Z" fill="#CED9F9" />
-				<path className="fill-primary" d="M22.5352 12.3403H0V4.92636C0 2.20972 2.21068 0 4.92828 0H12.1336C12.8497 0 13.5396 0.150925 14.1664 0.434509C15.0418 0.828964 15.7939 1.47913 16.3213 2.3286L22.5352 12.3403Z" />
-				<path className="fill-primary/70" d="M42 14.0001V37.8815C42 40.1527 40.1511 42 37.8789 42H4.12111C1.84891 42 0 40.1527 0 37.8815V9.88062H37.8789C40.1511 9.88062 42 11.7286 42 14.0001Z" />
-				<path className="fill-primary/60" d="M42 14.0001V37.8815C42 40.1527 40.1511 42 37.8789 42H21V9.88062H37.8789C40.1511 9.88062 42 11.7286 42 14.0001Z" />
-				<path d="M32.048 25.9398C32.048 32.0322 27.0919 36.9887 21.0001 36.9887C14.9083 36.9887 9.95215 32.0322 9.95215 25.9398C9.95215 19.8483 14.9083 14.8918 21.0001 14.8918C27.0919 14.8918 32.048 19.8483 32.048 25.9398Z" fill="#E7ECFC" />
-				<path d="M32.0479 25.9398C32.0479 32.0322 27.0918 36.9887 21 36.9887V14.8918C27.0918 14.8918 32.0479 19.8483 32.0479 25.9398Z" fill="#CED9F9" />
-				<path className="fill-primary/50" d="M24.561 26.0753C24.3306 26.2704 24.0483 26.3656 23.7685 26.3656C23.4183 26.3656 23.0703 26.2173 22.8268 25.9282L22.2304 25.2213V29.8494C22.2304 30.5287 21.6793 31.0799 21 31.0799C20.3207 31.0799 19.7695 30.5287 19.7695 29.8494V25.2213L19.1732 25.9282C18.7342 26.4476 17.9584 26.514 17.439 26.0753C16.9199 25.6373 16.8532 24.8612 17.2913 24.3418L19.7269 21.4543C20.0444 21.0788 20.5078 20.8628 21 20.8628C21.4922 20.8628 21.9555 21.0788 22.2731 21.4543L24.7087 24.3418C25.1467 24.8612 25.0801 25.6373 24.561 26.0753Z" />
-				<path className="fill-primary/70" d="M24.561 26.0753C24.3306 26.2704 24.0483 26.3656 23.7686 26.3656C23.4183 26.3656 23.0703 26.2173 22.8268 25.9282L22.2305 25.2213V29.8494C22.2305 30.5287 21.6793 31.0799 21 31.0799V20.8628C21.4922 20.8628 21.9555 21.0788 22.2731 21.4543L24.7087 24.3418C25.1467 24.8612 25.0801 25.6373 24.561 26.0753Z" />
-			</g>
-			<defs>
-				<clipPath id="clip0_180_3507">
-					<rect width="42" height="42" fill="white" />
-				</clipPath>
-			</defs>
-		</svg>
+								{/* Info */}
+								<div className="flex-1 min-w-0 text-right">
+									<p className="text-[12px] font-semibold text-slate-700 dark:text-slate-200 truncate">
+										{f.isExisting ? t('uploads.existingImage') : f.isFromLibrary ? t('uploads.fromLibrary') : (f?.file?.name || '').slice(0, 24)}
+									</p>
+									{fileError ? (
+										<p className="text-[11px] text-red-500 font-medium">{fileError}</p>
+									) : (
+										<p className="text-[11px] text-slate-400">
+											{f.isFromLibrary || f.isExisting ? t('uploads.fromLibrary') : `${((f?.file?.size || 0) / 1024).toFixed(1)} KB`}
+										</p>
+									)}
+								</div>
+
+								{/* Type badge */}
+								<span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-primary/8 text-primary border border-primary/15 shrink-0 font-[Inter]">
+									{prettyExt(f?.file?.name || 'IMG')}
+								</span>
+
+								{/* Remove */}
+								<button
+									type="button"
+									onClick={() => removeFile(f.id)}
+									className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 border border-transparent hover:border-red-100 dark:hover:border-red-900/50 transition-all shrink-0"
+									aria-label={t('uploads.remove')}
+								>
+									<X className="h-3.5 w-3.5" />
+								</button>
+							</div>
+						);
+					})}
+				</div>
+			)}
+		</motion.div>
 	);
 }

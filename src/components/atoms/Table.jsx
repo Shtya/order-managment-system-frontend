@@ -520,7 +520,7 @@ const ImageModal = memo(function ImageModal({ src, alt, open, onClose, labels = 
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent
         showCloseButton={false}
-        className="max-w-4xl p-0 overflow-hidden rounded-xl border border-border bg-card shadow-2xl"
+        className="max-w-4xl !p-0 overflow-hidden rounded-xl border border-border bg-card shadow-2xl"
       >
         {/* Header */}
         <div className="relative flex items-center justify-between gap-4 px-5 py-4 border-b border-border overflow-hidden">
@@ -554,17 +554,7 @@ const ImageModal = memo(function ImageModal({ src, alt, open, onClose, labels = 
           </div>
 
           <div className="relative flex items-center gap-1.5">
-            <motion.button
-              whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}
-              onClick={() => setZoomed((z) => !z)}
-              className={cn(
-                "w-8 h-8 rounded-xl flex items-center justify-center border transition-all",
-                "bg-muted border-border text-muted-foreground",
-                "hover:border-[var(--primary)]/40 hover:text-[var(--primary)]",
-              )}
-            >
-              <Maximize2 size={14} />
-            </motion.button>
+             
             <motion.button
               whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}
               onClick={download}
@@ -632,7 +622,7 @@ export default function Table({
     : "shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)] dark:shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.5)]";
 
   return (
-    <div className={cn("w-full", className)}>
+    <div className={cn("w-full" )}>
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -642,8 +632,7 @@ export default function Table({
          
         {/* ── Toolbar ──────────────────────────────────── */}
         <div
-          className="px-5 py-4 border-b border-border"
-          style={{ background: "color-mix(in oklab, var(--muted) 30%, var(--card))" }}
+          className="px-5 py-4 border-b border-border" 
         >
           <TableToolbar
             searchValue={searchValue}
@@ -787,15 +776,11 @@ export default function Table({
                             className={cn(
                               "!px-5 text-sm whitespace-nowrap ltr:text-left rtl:text-right",
                               compact ? "py-2.5" : "py-4",
-                              "transition-colors duration-150",
+                              "transition-colors duration-150 bg-white/50 backdrop-blur-[3px] dark:bg-slate-900",
                               col.className,
                               ACTION_KEYS.has(col.key) && cn("sticky z-20", stickyEnd, stickyShadow),
                             )}
-                            style={{
-                              color: "var(--foreground)",
-                              opacity: .82,
-                              ...(ACTION_KEYS.has(col.key) ? { background: "var(--card)" } : {}),
-                            }}
+                             
                           >
                             {typeof col.cell === "function" ? col.cell(row, i, helpers) : row[col.key]}
                           </TableCell>

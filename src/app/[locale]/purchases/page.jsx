@@ -208,7 +208,7 @@ function FiltersPanel({ t, value, onChange, onApply, suppliers }) {
 							onClick={onApply}
 							size="sm"
 							label={t("filters.apply")}
-							tone="purple"
+							tone="primary"
 							variant="solid"
 							icon={<Filter size={18} />}
 						/>

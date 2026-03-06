@@ -189,7 +189,7 @@ export default function useProductsTab({ t, searchDebounced, filters, filtersOpe
       {
         key: "actions",
         header: t("table.options"),
-        className: "bg-white dark:bg-slate-900",
+        className: "",
         cell: (row) => (
           <TooltipProvider>
             <div className="flex items-center gap-2">

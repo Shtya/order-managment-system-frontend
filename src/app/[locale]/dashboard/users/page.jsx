@@ -254,7 +254,7 @@ function UsersTableToolbar({
 					onClick={onCreate}
 					size="sm"
 					label={t.has("actions.createUser") ? t("actions.createUser") : "Create user"}
-					tone="purple"
+					tone="primary"
 					variant="solid"
 					icon={<UserPlus size={18} className="text-white" />}
 				/>
@@ -361,7 +361,7 @@ function FiltersPanel({ t, value, onChange, onApply }) {
 						onClick={onApply}
 						size="sm"
 						label={t.has("filters.apply") ? t("filters.apply") : "Apply"}
-						tone="purple"
+						tone="primary"
 						variant="solid"
 						icon={<Filter size={18} className="text-white" />}
 					/>

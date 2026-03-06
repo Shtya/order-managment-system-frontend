@@ -139,7 +139,7 @@ export default function Header({ toggleSidebar, isSidebarOpen }) {
 			initial={{ y: -60, opacity: 0 }}
 			animate={{ y: 0, opacity: 1 }}
 			transition={{ duration: 0.42, ease: [0.25, 0.46, 0.45, 0.94] }}
-			className="h-14 flex-shrink-0 bg-white z-[100000]  overflow-hidden relative"
+			className="h-14  flex-shrink-0 bg-white z-[10]  overflow-hidden relative"
 		>
 			{/* Glass background */}
 			<div className="absolute inset-0 bg-[var(--sidebar)]  backdrop-blur-md border-b border-border/60" />

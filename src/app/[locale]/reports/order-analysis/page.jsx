@@ -3,14 +3,11 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-	ChevronLeft, Download, TrendingUp, MapPin, Package,
-	CheckCircle, XCircle, Truck, RefreshCw, BarChart3,
-	Calendar, Store, Loader2, ArrowUpRight, ArrowDownRight,
-	ShoppingCart, PieChart as PieIcon,
-	Search,
-	Filter,
-	PieChart,
-	Info,
+  ChevronLeft, Download, TrendingUp, MapPin, Package,
+  CheckCircle, XCircle, Truck, RefreshCw, BarChart3,
+  Calendar, Store, Loader2, ArrowUpRight, ArrowDownRight,
+  ShoppingCart, PieChart as PieIcon,
+  Search, Filter, PieChart, Info,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
@@ -18,11 +15,11 @@ import api from "@/utils/api";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/material_blue.css";
 import {
-	Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-	Chart as ChartJS, CategoryScale, LinearScale, PointElement,
-	LineElement, ArcElement, Tooltip as ChTooltip, Legend, Filler,
+  Chart as ChartJS, CategoryScale, LinearScale, PointElement,
+  LineElement, ArcElement, Tooltip as ChTooltip, Legend, Filler,
 } from "chart.js";
 import { Line, Doughnut } from "react-chartjs-2";
 import PageHeader, { StatsGrid } from "@/components/atoms/Pageheader";
@@ -34,18 +31,17 @@ import { generateBgColors, getIconForStatus } from "../../orders/page";
 import { useDebounce } from "@/hook/useDebounce";
 
 ChartJS.register(
-	CategoryScale, LinearScale, PointElement, LineElement,
-	ArcElement, ChTooltip, Legend, Filler,
+  CategoryScale, LinearScale, PointElement, LineElement,
+  ArcElement, ChTooltip, Legend, Filler,
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-
-export const PRIMARY = "#ff8b00"; // --primary
-export const SECONDARY = "#ffb703"; // --secondary (Golden Yellow)
-export const THIRD = "#ff5c2b"; // --third (Warm Coral)
+export const PRIMARY   = "#ff8b00";
+export const SECONDARY = "#ffb703";
+export const THIRD     = "#ff5c2b";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -54,901 +50,928 @@ export const THIRD = "#ff5c2b"; // --third (Warm Coral)
 export const fmt = (n) => (n == null ? "—" : Number(n));
 export const pct = (n) => (n == null ? "—" : `${Number(n).toFixed(1)}%`);
 export const hex = (h, a = 0.12) => {
-	const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h);
-	return r
-		? `rgba(${parseInt(r[1], 16)},${parseInt(r[2], 16)},${parseInt(r[3], 16)},${a})`
-		: "transparent";
+  const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h);
+  return r
+    ? `rgba(${parseInt(r[1], 16)},${parseInt(r[2], 16)},${parseInt(r[3], 16)},${a})`
+    : "transparent";
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Skeleton
 // ─────────────────────────────────────────────────────────────────────────────
+
 const Skel = ({ cls }) => (
-	<div className={cn("animate-pulse rounded-xl bg-muted/70", cls)} />
+  <div className={cn("animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800/60", cls)} />
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Stat Card — same vibe as InfoCard used in PageHeader
+// Card — elevated container with accent left-bar + icon
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Section wrapper
-// ─────────────────────────────────────────────────────────────────────────────
 export function Card({ title, icon: Icon, color = PRIMARY, action, children, className }) {
-	return (
-		<div className={cn("rounded-xl border border-border bg-card shadow-sm overflow-hidden", className)}>
-			<div className="flex items-center justify-between px-5 py-3.5 ">
-				<div className="flex items-center gap-2.5">
-					<span className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: hex(color, 0.12), border: `1.5px solid ${hex(color, 0.2)}` }}>
-						<Icon size={14} style={{ color }} />
-					</span>
-					<h3 className="text-sm font-bold text-foreground">{title}</h3>
-				</div>
-				{action}
-			</div>
-			<div className="p-5">{children}</div>
-		</div>
-	);
+  return (
+    <div className={cn(
+      "rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900",
+      "shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden",
+      className
+    )}>
+      {/* Top accent stripe */}
+      <div className="h-[3px] w-full" style={{ background: `linear-gradient(90deg, ${color}cc, ${color}33)` }} />
+
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-4">
+        <div className="flex items-center gap-3">
+          <div
+            className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: hex(color, 0.1), border: `1.5px solid ${hex(color, 0.25)}` }}
+          >
+            <Icon size={15} style={{ color }} />
+          </div>
+          <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 tracking-tight">{title}</h3>
+        </div>
+        {action && <div className="shrink-0">{action}</div>}
+      </div>
+
+      {/* Divider */}
+      <div className="h-px mx-5 bg-gradient-to-r from-transparent via-slate-100 dark:via-slate-800 to-transparent" />
+
+      {/* Body */}
+      <div className="p-5">{children}</div>
+    </div>
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Export button (styled like the blue export in OrderTab toolbar)
+// Export Button
 // ─────────────────────────────────────────────────────────────────────────────
+
 export function ExportBtn({ onClick, loading }) {
-	const t = useTranslations("dashboard");
-	return (
-		<motion.button
-			whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-			onClick={onClick} disabled={loading}
-			className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold
-				border border-blue-200 bg-blue-50 text-blue-700
-				hover:bg-blue-600 hover:text-white hover:border-blue-600
-				dark:border-blue-800 dark:bg-blue-950/30 dark:text-blue-400
-				dark:hover:bg-blue-600 dark:hover:text-white
-				disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-		>
-			{loading ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
-			{t('common.export')}
-		</motion.button>
-	);
-}
-
- 
-export function RangeTabs({ value, onChange, searchValue, onSearchChange }) {
-	const t = useTranslations("orderAnalysis");
-
-	const QUICK_RANGES = [
-		{ key: "today", label: t("ranges.today") },
-		{ key: "yesterday", label: t("ranges.yesterday") },
-		{ key: "this_week", label: t("ranges.this_week") },
-		{ key: "last_week", label: t("ranges.last_week") },
-		{ key: "this_month", label: t("ranges.this_month") },
-		{ key: "last_month", label: t("ranges.last_month") },
-		{ key: "this_year", label: t("ranges.this_year") },
-	];
-
-	return (
-		<div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 bg-card p-4 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm">
-
-			{/* Left Section: Quick Range Tabs */}
-
-			{/* Right Section: Animated Search Bar */}
-
-
-			<div className="flex items-center gap-1.5 flex-wrap">
-				{QUICK_RANGES.map((r) => {
-					const isActive = value === r.key;
-
-					return (
-						<motion.button
-							key={r.key}
-							whileTap={{ scale: 0.96 }}
-							onClick={() => onChange(r.key)}
-							className={cn(
-								"relative px-5 py-3 rounded-full text-xs border border-gray-200 dark:border-slate-700 font-bold transition-all duration-300 whitespace-nowrap",
-								isActive
-									? "text-white shadow-lg"
-									: "text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200"
-							)}
-							style={
-								isActive
-									? {
-										background: `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))`,
-										boxShadow: `0 4px 12px rgb(var(--primary-shadow))`,
-									}
-									: {}
-							}
-						>
-							{/* Optional: subtle shine effect to match your Button_ component */}
-							{isActive && (
-								<motion.span
-									initial={{ x: "-100%" }}
-									animate={{ x: "100%" }}
-									transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
-									className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 pointer-events-none"
-								/>
-							)}
-							<span className="relative z-10">{r.label}</span>
-						</motion.button>
-					);
-				})}
-			</div>
-		</div>
-	);
+  const t = useTranslations("dashboard");
+  return (
+    <motion.button
+      whileHover={{ scale: 1.04 }}
+      whileTap={{ scale: 0.96 }}
+      onClick={onClick}
+      disabled={loading}
+      className={cn(
+        "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold",
+        "border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30",
+        "text-blue-600 dark:text-blue-400",
+        "hover:bg-blue-600 hover:text-white hover:border-blue-600",
+        "dark:hover:bg-blue-600 dark:hover:text-white",
+        "disabled:opacity-50 disabled:cursor-not-allowed",
+        "transition-all duration-200 shadow-sm"
+      )}
+    >
+      {loading
+        ? <Loader2 size={12} className="animate-spin" />
+        : <Download size={12} />
+      }
+      {t("common.export")}
+    </motion.button>
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Doughnut — حالات الطلبات
+// RangeTabs — pill tabs with gradient active state
 // ─────────────────────────────────────────────────────────────────────────────
+
+export function RangeTabs({ value, onChange }) {
+  const t = useTranslations("orderAnalysis");
+
+  const QUICK_RANGES = [
+    { key: "today",      label: t("ranges.today") },
+    { key: "yesterday",  label: t("ranges.yesterday") },
+    { key: "this_week",  label: t("ranges.this_week") },
+    { key: "last_week",  label: t("ranges.last_week") },
+    { key: "this_month", label: t("ranges.this_month") },
+    { key: "last_month", label: t("ranges.last_month") },
+    { key: "this_year",  label: t("ranges.this_year") },
+  ];
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm mb-5">
+      {QUICK_RANGES.map((r) => {
+        const isActive = value === r.key;
+        return (
+          <motion.button
+            key={r.key}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => onChange(r.key)}
+            className={cn(
+              "relative px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-250 whitespace-nowrap overflow-hidden",
+              isActive
+                ? "text-white shadow-md"
+                : "text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:border-slate-300 hover:text-slate-700 dark:hover:text-slate-200"
+            )}
+            style={isActive ? {
+              background: `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))`,
+              boxShadow: `0 4px 14px rgb(var(--primary-shadow))`,
+            } : {}}
+          >
+            {isActive && (
+              <motion.span
+                initial={{ x: "-100%" }}
+                animate={{ x: "100%" }}
+                transition={{ repeat: Infinity, duration: 1.8, ease: "linear" }}
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 pointer-events-none"
+              />
+            )}
+            <span className="relative z-10">{r.label}</span>
+          </motion.button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// StatusDonut — doughnut chart with custom image legend
+// ─────────────────────────────────────────────────────────────────────────────
+
 export function StatusDonut({
-	data,
-	loading,
-	config = { key: "count", imageKey: "image", label: "label" },
-	allowImage = false
+  data,
+  loading,
+  config = { key: "count", imageKey: "image", label: "label" },
+  allowImage = false,
 }) {
-	const t = useTranslations("dashboard");
-	const hasData = data && data.length > 0;
-	const BRAND_COLORS = ["#ff8b00", "#ffb703", "#ff5c2b", "#feb144", "#ff7b54"];
-	const total = hasData ? data.reduce((s, d) => s + (Number(d[config.key]) ?? 0), 0) : 0;
+  const t = useTranslations("dashboard");
+  const BRAND_COLORS = [PRIMARY, SECONDARY, THIRD, "#feb144", "#ff7b54"];
+  const hasData = data && data.length > 0;
+  const total = hasData ? data.reduce((s, d) => s + (Number(d[config.key]) ?? 0), 0) : 0;
 
-	if (loading) return (
-		<div className="flex flex-col items-center animate-pulse w-full">
-			{/* حلقة الدونات الوهمية */}
-			<div className="h-48 w-48 rounded-full border-[16px] border-slate-200 dark:border-slate-800 flex items-center justify-center mb-8">
-				<div className="h-6 w-16 bg-slate-200 dark:bg-slate-800 rounded shadow-inner" />
-			</div>
+  if (loading) return (
+    <div className="flex flex-col items-center gap-6 animate-pulse w-full">
+      <div className="w-44 h-44 rounded-full border-[18px] border-slate-100 dark:border-slate-800" />
+      <div className="w-full space-y-3">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 shrink-0" />
+            <div className="flex-1 space-y-1.5">
+              <div className="h-3 w-3/4 bg-slate-100 dark:bg-slate-800 rounded-lg" />
+              <div className="h-2 w-1/3 bg-slate-50 dark:bg-slate-900 rounded-lg" />
+            </div>
+            <div className="h-4 w-10 bg-slate-100 dark:bg-slate-800 rounded-lg" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
-			{/* قائمة العناصر الوهمية */}
-			<div className="w-full space-y-4">
-				{[...Array(3)].map((_, i) => (
-					<div key={i} className="flex items-center justify-between w-full">
-						<div className="flex items-center gap-3">
-							<div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800" />
-							<div className="space-y-2">
-								<div className="h-3 w-28 bg-slate-200 dark:bg-slate-800 rounded" />
-								<div className="h-2 w-16 bg-slate-100 dark:bg-slate-900 rounded" />
-							</div>
-						</div>
-						<div className="h-4 w-10 bg-slate-200 dark:bg-slate-800 rounded" />
-					</div>
-				))}
-			</div>
-		</div>
-	);
+  if (!hasData || total === 0) return (
+    <div className="flex flex-col items-center justify-center h-60 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/20">
+      <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
+        <PieChart size={22} className="text-slate-400" />
+      </div>
+      <p className="text-xs font-semibold text-slate-400">{t("common.noData")}</p>
+    </div>
+  );
 
-	if (!hasData || total === 0) return (
-		<div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-border/50 rounded-xl bg-muted/5">
-			<PieChart size={32} className="text-muted-foreground/40 mb-2" />
-			<p className="text-xs text-muted-foreground font-medium">
-				{t("common.noData")}
-			</p>
-		</div>
-	);
+  const chartData = {
+    labels: data.map(d => d[config.label]),
+    datasets: [{
+      data: data.map(d => d[config.key]),
+      backgroundColor: data.map((d, i) => hex(d.color || BRAND_COLORS[i % BRAND_COLORS.length], 0.88)),
+      borderColor:     data.map((d, i) => d.color || BRAND_COLORS[i % BRAND_COLORS.length]),
+      borderWidth: 2.5,
+      hoverOffset: 14,
+    }],
+  };
 
-	const chartData = {
-		labels: data.map(d => d[config.label]),
-		datasets: [{
-			data: data.map(d => d[config.key]),
-			backgroundColor: data.map((d, i) => hex(d.color || BRAND_COLORS[i % BRAND_COLORS.length], 0.85)),
-			borderColor: data.map((d, i) => d.color || BRAND_COLORS[i % BRAND_COLORS.length]),
-			borderWidth: 2,
-			hoverOffset: 12,
-		}],
-	};
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: "76%",
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        rtl: true,
+        backgroundColor: "#fff",
+        titleColor: "#64748b",
+        bodyColor: "#1e293b",
+        borderColor: "#e2e8f0",
+        borderWidth: 1,
+        padding: 12,
+        cornerRadius: 12,
+        callbacks: {
+          label: (ctx) => ` ${ctx.label}: ${ctx.raw} (${((ctx.raw / total) * 100).toFixed(1)}%)`,
+        },
+      },
+    },
+  };
 
-	const options = {
-		responsive: true,
-		maintainAspectRatio: false,
-		cutout: "75%",
-		plugins: {
-			legend: { display: false }, // إخفاء الأسطورة الافتراضية لبناء واحدة مخصصة
-			tooltip: {
-				rtl: true,
-				callbacks: {
-					label: (ctx) => ` ${ctx.label}: ${ctx.raw} (${((ctx.raw / total) * 100).toFixed(1)}%)`
-				}
-			},
-		},
-	};
+  return (
+    <div className="flex flex-col items-center gap-5">
+      {/* Chart */}
+      <div className="relative h-48 w-full">
+        <Doughnut data={chartData} options={options} />
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          <span className="text-2xl font-black text-slate-800 dark:text-white leading-none">{total}</span>
+          <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest mt-1">الإجمالي</span>
+        </div>
+      </div>
 
-	return (
-		<div className="flex flex-col items-center">
-			{/* منطقة الرسم البياني */}
-			<div className="relative h-48 w-full">
-				<Doughnut data={chartData} options={options} />
-				<div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-					<span className="text-xl font-bold text-foreground">{total}</span>
-					<span className="text-[9px] text-muted-foreground font-medium uppercase">الإجمالي</span>
-				</div>
-			</div>
+      {/* Legend */}
+      <div className="w-full space-y-1.5">
+        {data.map((item, i) => {
+          const color      = item.color || BRAND_COLORS[i % BRAND_COLORS.length];
+          const percentage = ((item[config.key] / total) * 100).toFixed(0);
 
-			{/* الأسطورة المخصصة مع الصور */}
-			<div className="w-full mt-6 grid grid-cols-1 gap-2">
-				{data.map((item, i) => {
-					const color = item.color || BRAND_COLORS[i % BRAND_COLORS.length];
-					const percentage = ((item[config.key] / total) * 100).toFixed(0);
+          return (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.06 }}
+              className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-default group"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                {allowImage && item[config.imageKey] ? (
+                  <img
+                    src={avatarSrc(item[config.imageKey])}
+                    className="w-8 h-8 rounded-full object-cover border-2 shadow-sm shrink-0"
+                    style={{ borderColor: hex(color, 0.4) }}
+                    alt={item[config.label]}
+                  />
+                ) : (
+                  <div
+                    className="w-3 h-3 rounded-full shrink-0"
+                    style={{ background: color, boxShadow: `0 0 0 3px ${hex(color, 0.2)}` }}
+                  />
+                )}
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate max-w-[130px]">
+                    {item[config.label]}
+                  </p>
+                  <p className="text-[10px] text-slate-400">{item[config.key]} طلب</p>
+                </div>
+              </div>
 
-					return (
-						<div key={i} className="flex items-center justify-between group px-2 py-1 hover:bg-muted/5 rounded-xl transition-colors">
-							<div className="flex items-center gap-3">
-								{/* النقطة الملونة أو الصورة */}
-								{allowImage && item[config.imageKey] ? (
-									<img
-										src={avatarSrc(item[config.imageKey])}
-										className="w-8 h-8 rounded-full object-cover border shadow-sm"
-										alt={item[config.label]}
-									/>
-								) : (
-									<div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
-								)}
-
-								<div className="flex flex-col">
-									<span className="text-xs font-semibold text-foreground truncate max-w-[120px]">
-										{item[config.label]}
-									</span>
-									<span className="text-[10px] text-muted-foreground">
-										{item[config.key]} طلب
-									</span>
-								</div>
-							</div>
-
-							<div className="text-xs font-bold text-muted-foreground/80">
-								{percentage}%
-							</div>
-						</div>
-					);
-				})}
-			</div>
-		</div>
-	);
+              <div className="flex items-center gap-2 shrink-0">
+                {/* Mini bar */}
+                <div className="w-16 h-1 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden hidden sm:block">
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{ width: `${percentage}%`, background: color }}
+                  />
+                </div>
+                <span className="text-xs font-bold w-8 text-right" style={{ color }}>
+                  {percentage}%
+                </span>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Line chart — تأثير عام (daily trend)
+// TrendChart — line chart with improved styling
 // ─────────────────────────────────────────────────────────────────────────────
+
 export function TrendChart({ data, loading, configs = [] }) {
-	const t = useTranslations("dashboard");
-	const hasData = data && data.length > 0;
-	if (loading) return (
-		<div className="w-full h-[264px] flex flex-col justify-between animate-pulse px-2 py-4">
-			{/* أسطر أفقية تمثل شبكة الرسم البياني */}
-			<div className="flex-1 flex flex-col justify-between mb-6">
-				{[...Array(5)].map((_, i) => (
-					<div
-						key={i}
-						className="w-full h-[2px] bg-slate-100 dark:bg-slate-800/50 rounded-full"
-					/>
-				))}
-			</div>
+  const t = useTranslations("dashboard");
+  const hasData = data && data.length > 0;
 
-			{/* خط القاعدة الأساسي (أغمق قليلاً) */}
-			<div className="h-[3px] w-full bg-slate-200 dark:bg-slate-800 rounded-full mb-4" />
+  if (loading) return (
+    <div className="w-full h-64 flex flex-col justify-between animate-pulse px-2 py-4">
+      <div className="flex-1 flex flex-col justify-between mb-6 gap-3">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="w-full h-px bg-slate-100 dark:bg-slate-800 rounded-full" />
+        ))}
+      </div>
+      <div className="h-px w-full bg-slate-200 dark:bg-slate-700 rounded-full mb-4" />
+      <div className="flex justify-between px-2">
+        {[...Array(7)].map((_, i) => (
+          <div key={i} className="h-2 w-8 bg-slate-100 dark:bg-slate-800 rounded-full" />
+        ))}
+      </div>
+    </div>
+  );
 
-			{/* تمثيل التواريخ في الأسفل */}
-			<div className="flex justify-between px-4">
-				{[...Array(6)].map((_, i) => (
-					<div key={i} className="h-2 w-10 bg-slate-200 dark:bg-slate-800 rounded-full" />
-				))}
-			</div>
-		</div>
-	);
-	// حالة عدم وجود بيانات
-	if (!hasData) return (
-		<div className="flex flex-col items-center justify-center h-[264px] border-2 border-dashed border-border/50 rounded-xl bg-muted/5">
-			<TrendingUp size={32} className="text-muted-foreground/40 mb-2" />
-			<p className="text-sm text-muted-foreground font-medium">
-				{t("common.noOperations")}
-			</p>
-		</div>
-	);
+  if (!hasData) return (
+    <div className="flex flex-col items-center justify-center h-64 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/20">
+      <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
+        <TrendingUp size={22} className="text-slate-400" />
+      </div>
+      <p className="text-xs font-semibold text-slate-400">{t("common.noOperations")}</p>
+    </div>
+  );
 
-	const datasets = configs.map(cfg => ({
-		label: cfg.label,
-		data: data.map(d => d[cfg.key] ?? 0), // الوصول للحقل عن طريق المفتاح الديناميكي
-		borderColor: cfg.color,
-		backgroundColor: hex(cfg.color, cfg.fillOpacity || 0.07),
-		fill: cfg.fill ?? true,
-		tension: 0.44,
-		pointRadius: 3,
-		pointBackgroundColor: cfg.color,
-		pointBorderColor: "#fff",
-		pointBorderWidth: 2,
-		yAxisID: cfg.yAxisID || 'y', // دعم محاور متعددة إذا لزم الأمر
-	}));
+  const datasets = configs.map(cfg => ({
+    label: cfg.label,
+    data: data.map(d => d[cfg.key] ?? 0),
+    borderColor: cfg.color,
+    backgroundColor: hex(cfg.color, cfg.fillOpacity || 0.07),
+    fill: cfg.fill ?? true,
+    tension: 0.44,
+    pointRadius: 3,
+    pointBackgroundColor: cfg.color,
+    pointBorderColor: "#fff",
+    pointBorderWidth: 2,
+    yAxisID: cfg.yAxisID || "y",
+  }));
 
-	const chartData = {
-		labels: data.map(d => d.label), // التسميات تأتي دائماً في حقل label من السيرفر
-		datasets
-	};
-	const options = {
-		responsive: true, maintainAspectRatio: false,
-		interaction: { mode: "index", intersect: false },
-		plugins: {
-			legend: {
-				position: "bottom", rtl: true,
-				labels: { usePointStyle: true, pointStyle: "circle", padding: 18, font: { size: 11 } },
-			},
-			tooltip: { rtl: true },
-		},
-		scales: {
-			x: { grid: { color: "rgba(0,0,0,0.04)" }, ticks: { font: { size: 10 }, maxRotation: 0 } },
-			y: { grid: { color: "rgba(0,0,0,0.04)" }, ticks: { font: { size: 10 } }, beginAtZero: true },
-			...(configs.some(c => c.yAxisID === 'y1') && {
-				y1: { position: 'right', grid: { display: false }, ticks: { font: { size: 10 } } }
-			})
-		},
-	};
+  const chartData = {
+    labels: data.map(d => d.label),
+    datasets,
+  };
 
-	return <div style={{ height: 264 }}><Line data={chartData} options={options} /></div>;
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: "index", intersect: false },
+    plugins: {
+      legend: {
+        position: "bottom",
+        rtl: true,
+        labels: {
+          usePointStyle: true,
+          pointStyle: "circle",
+          padding: 20,
+          font: { size: 11, weight: "600" },
+          color: "#64748b",
+        },
+      },
+      tooltip: {
+        rtl: true,
+        backgroundColor: "#fff",
+        titleColor: "#64748b",
+        bodyColor: "#1e293b",
+        borderColor: "#e2e8f0",
+        borderWidth: 1,
+        padding: 12,
+        cornerRadius: 14,
+        boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+      },
+    },
+    scales: {
+      x: {
+        grid: { color: "rgba(0,0,0,0.03)", drawBorder: false },
+        ticks: { font: { size: 11 }, color: "#94a3b8", maxRotation: 0 },
+        border: { display: false },
+      },
+      y: {
+        grid: { color: "rgba(0,0,0,0.03)", drawBorder: false },
+        ticks: { font: { size: 11 }, color: "#94a3b8" },
+        border: { display: false },
+        beginAtZero: true,
+      },
+      ...(configs.some(c => c.yAxisID === "y1") && {
+        y1: {
+          position: "right",
+          grid: { display: false },
+          ticks: { font: { size: 11 }, color: "#94a3b8" },
+          border: { display: false },
+        },
+      }),
+    },
+  };
+
+  return <div style={{ height: 264 }}><Line data={chartData} options={options} /></div>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Animated percentage bar
+// PctBar — animated percentage bar
 // ─────────────────────────────────────────────────────────────────────────────
+
 export function PctBar({ value, color = PRIMARY }) {
-	const v = Math.min(100, Math.max(0, Number(value) || 0));
-	return (
-		<div className="flex items-center gap-2 min-w-[90px]">
-			<div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-				<motion.div
-					initial={{ width: 0 }} animate={{ width: `${v}%` }}
-					transition={{ duration: 0.65, ease: "easeOut" }}
-					className="h-full rounded-full" style={{ background: color }}
-				/>
-			</div>
-			<span className="text-xs font-bold text-foreground w-10 text-left">{pct(v)}</span>
-		</div>
-	);
+  const v = Math.min(100, Math.max(0, Number(value) || 0));
+  return (
+    <div className="flex items-center gap-2.5 min-w-[100px]">
+      <div className="flex-1 h-1.5 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${v}%` }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="h-full rounded-full"
+          style={{ background: `linear-gradient(90deg, ${color}88, ${color})` }}
+        />
+      </div>
+      <span className="text-xs font-bold text-slate-600 dark:text-slate-300 w-10 text-left tabular-nums">
+        {pct(v)}
+      </span>
+    </div>
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Mini stats table (shared for both areas + products)
+// MiniTable — refined table with hover states
 // ─────────────────────────────────────────────────────────────────────────────
+
 export function MiniTable({ columns, data, loading }) {
-	const t = useTranslations("dashboard");
+  const t = useTranslations("dashboard");
 
-	return (
-		<div className="overflow-x-auto rounded-xl border border-border">
-			<table className="w-full text-sm">
-				<thead>
-					<tr className="border-b border-border bg-muted/50">
-						{columns.map(c => (
-							<th key={c.key} className="px-4 py-3 text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">
-								{c.header}
-							</th>
-						))}
-					</tr>
-				</thead>
-				<tbody>
-					{loading
-						? Array.from({ length: 5 }).map((_, i) => (
-							<tr key={i} className="border-b border-border/40 last:border-0">
-								{columns.map(c => (
-									<td key={c.key} className="px-4 py-3"><Skel cls="h-4 w-full" /></td>
-								))}
-							</tr>
-						))
-						: !data?.length
-							? (
-								<tr>
-									<td colSpan={columns.length} className="px-4 py-10 text-center text-sm text-muted-foreground">
-										{t("common.noData")}
-									</td>
-								</tr>
-							)
-							: data.map((row, i) => (
-								<motion.tr
-									key={i}
-									initial={{ opacity: 0, x: 8 }}
-									animate={{ opacity: 1, x: 0 }}
-									transition={{ delay: i * 0.04 }}
-									className="border-b border-border/40 last:border-0 hover:bg-muted/30 transition-colors"
-								>
-									{columns.map(c => (
-										<td key={c.key} className="px-4 py-3 whitespace-nowrap">
-											{c.cell ? c.cell(row) : (row[c.key] ?? "—")}
-										</td>
-									))}
-								</motion.tr>
-							))
-					}
-				</tbody>
-			</table>
-		</div>
-	);
+  return (
+    <div className="overflow-x-auto rounded-2xl border border-slate-100 dark:border-slate-800">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
+            {columns.map(c => (
+              <th
+                key={c.key}
+                className="px-4 py-3 text-right text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider whitespace-nowrap"
+              >
+                {c.header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {loading
+            ? Array.from({ length: 5 }).map((_, i) => (
+              <tr key={i} className="border-b border-slate-100/60 dark:border-slate-800/60 last:border-0">
+                {columns.map(c => (
+                  <td key={c.key} className="px-4 py-3.5">
+                    <Skel cls="h-4 w-full" />
+                  </td>
+                ))}
+              </tr>
+            ))
+            : !data?.length
+              ? (
+                <tr>
+                  <td colSpan={columns.length} className="px-4 py-14 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                        <Package size={18} className="text-slate-400" />
+                      </div>
+                      <p className="text-xs font-semibold text-slate-400">{t("common.noData")}</p>
+                    </div>
+                  </td>
+                </tr>
+              )
+              : data.map((row, i) => (
+                <motion.tr
+                  key={i}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.035 }}
+                  className={cn(
+                    "border-b border-slate-100/60 dark:border-slate-800/60 last:border-0",
+                    "hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors"
+                  )}
+                >
+                  {columns.map(c => (
+                    <td key={c.key} className="px-4 py-3.5 whitespace-nowrap">
+                      {c.cell ? c.cell(row) : (row[c.key] ?? "—")}
+                    </td>
+                  ))}
+                </motion.tr>
+              ))
+          }
+        </tbody>
+      </table>
+    </div>
+  );
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TableFilters — filter panel with polished inputs
+// ─────────────────────────────────────────────────────────────────────────────
+
 export const TableFilters = memo(function TableFilters({
-	children,
-	onApply,
-	onRefresh, // أضفت هذا لزر التحديث
-	applyLabel = "تطبيق",
+  children,
+  onApply,
+  onRefresh,
+  applyLabel = "تطبيق",
 }) {
-	return (
-		<motion.div
-			initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-			className="rounded-xl border border-border bg-card p-4 shadow-sm"
-		>
-			<div className="mt-3 rounded-xl border border-border/80 
-                bg-gradient-to-br from-muted/40 to-muted/10 
-                shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-card !p-0 overflow-hidden"
+    >
+      {/* Header bar */}
+      <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+        <div className="w-6 h-6 rounded-lg bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900/30 flex items-center justify-center">
+          <Filter size={12} className="text-orange-500" />
+        </div>
+        <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">الفلاتر</span>
+      </div>
 
-				<div className="p-4 flex items-end justify-between gap-4">
+      {/* Fields */}
+      <div className="p-4">
+        <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-4 items-end">
+          {children}
 
-					<div className="w-full gap-3 grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] ">
-						{children}
-					</div>
+          {/* Actions */}
+          <div className="flex items-center gap-2.5 justify-end md:justify-start">
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={onRefresh}
+              className={cn(
+                "h-10 px-4 rounded-xl text-xs font-semibold",
+                "border border-slate-200 dark:border-slate-700",
+                "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300",
+                "hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800",
+                "transition-all flex items-center gap-1.5 shadow-sm"
+              )}
+            >
+              <RefreshCw size={12} />
+              تحديث
+            </motion.button>
 
-					<div className="flex w-fit flex-none items-center gap-2">
-						<motion.button
-							whileHover={{ scale: 1.05 }}
-							whileTap={{ scale: 0.94 }}
-							onClick={onRefresh}
-							className="h-10 px-4 rounded-xl text-sm font-semibold border border-border bg-background 
-                                text-muted-foreground hover:text-foreground hover:bg-muted transition-all 
-                                flex items-center gap-1.5"
-						>
-							<RefreshCw size={13} />
-							تحديث
-						</motion.button>
-
-						{/* زر التطبيق (TableFilters Button) */}
-						{onApply && (
-							<motion.button
-								whileHover={{ scale: 1.02 }}
-								whileTap={{ scale: 0.97 }}
-								onClick={onApply}
-								type="button"
-								className="h-10 px-6 flex items-center justify-center gap-2 text-sm font-bold text-white transition-all duration-200 rounded-xl"
-								style={{
-									background: `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))`,
-									boxShadow: `0 4px 14px rgb(var(--primary-shadow))`,
-								}}
-							>
-								<Filter size={14} />
-								{applyLabel}
-							</motion.button>
-						)}
-					</div>
-				</div>
-			</div>
-		</motion.div>
-	);
+            {onApply && (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={onApply}
+                type="button"
+                className="h-10 px-5 flex items-center gap-2 text-xs font-bold text-white rounded-xl transition-all duration-200 shadow-md"
+                style={{
+                  background: `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))`,
+                  boxShadow: `0 4px 14px rgb(var(--primary-shadow))`,
+                }}
+              >
+                <Filter size={12} />
+                {applyLabel}
+              </motion.button>
+            )}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// FilterField wrapper — label + input group
+// ─────────────────────────────────────────────────────────────────────────────
+
+function FilterField({ label, icon: FieldIcon, children }) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+        {FieldIcon && <FieldIcon size={10} className="text-orange-400" />}
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Main Page
 // ─────────────────────────────────────────────────────────────────────────────
+
 export default function OrdersStatisticsPage() {
-	const tOrders = useTranslations("orders");
-	const t = useTranslations("orderAnalysis");
-	const [quickRange, setQuickRange] = useState("this_month");
-	const [filters, setFilters] = useState({ startDate: null, endDate: null, storeId: "all" });
-	const [stores, setStores] = useState([]);
+  const tOrders = useTranslations("orders");
+  const t = useTranslations("orderAnalysis");
 
-	const [loading, setLoading] = useState(true);
+  const [quickRange, setQuickRange] = useState("this_month");
+  const [filters, setFilters] = useState({ startDate: null, endDate: null, storeId: "all" });
+  const [stores, setStores] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [exAreas, setExAreas] = useState(false);
+  const [summary, setSummary] = useState(null);
+  const [trendData, setTrendData] = useState([]);
+  const [statusData, setStatusData] = useState([]);
+  const [areasData, setAreasData] = useState([]);
+  const [searchValue, setSearchValue] = useState("");
 
-	const [exAreas, setExAreas] = useState(false);
-	// const [exProds, setExProds] = useState(false);
+  const { debouncedValue: debouncedSearch } = useDebounce({ value: searchValue, delay: 300 });
 
-	const [summary, setSummary] = useState(null);
-	const [trendData, setTrendData] = useState([]);
-	const [statusData, setStatusData] = useState([]);
-	const [areasData, setAreasData] = useState([]);
+  const buildParams = useCallback(() => {
+    const p = { range: quickRange };
+    if (filters.startDate) p.startDate = filters.startDate;
+    if (filters.endDate)   p.endDate   = filters.endDate;
+    if (filters.storeId && filters.storeId !== "all") p.storeId = filters.storeId;
+    return p;
+  }, [quickRange, filters]);
 
-	const [searchValue, setSearchValue] = useState("");
-	const { debouncedValue: debouncedSearch } = useDebounce({
-		value: searchValue, delay: 300
-	});
-	// const [prodsData, setProdsData] = useState([]);
+  const fetchAll = useCallback(async () => {
+    const p = buildParams();
+    setLoading(true);
+    try {
+      const [sum, trd, sts, ars] = await Promise.all([
+        api.get("/dashboard/top-products",  { params: p }).catch(() => ({ data: null })),
+        api.get("/dashboard/orders/trend",  { params: p }).catch(() => ({ data: [] })),
+        api.get("/dashboard/orders/stats",  { params: p }).catch(() => ({ data: [] })),
+        api.get("/dashboard/orders/top-areas", { params: p }).catch(() => ({ data: [] })),
+      ]);
+      const getData = (r) => Array.isArray(r.data) ? r.data : r.data?.records ?? [];
+      setSummary(sum.data);
+      setTrendData(getData(trd));
+      setStatusData(getData(sts));
+      setAreasData(getData(ars));
+    } catch (err) {
+      console.error("Dashboard fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [buildParams]);
 
-	// ── Build query params ──────────────────────────────────────────────────
-	const buildParams = useCallback(() => {
-		const p = { range: quickRange };
-		if (filters.startDate) p.startDate = filters.startDate;
-		if (filters.endDate) p.endDate = filters.endDate;
-		if (filters.storeId && filters.storeId !== "all") p.storeId = filters.storeId;
-		return p;
-	}, [quickRange, filters]);
+  useEffect(() => {
+    api.get("/lookups/stores", { params: { limit: 200, isActive: true } })
+      .then(({ data }) => setStores(Array.isArray(data) ? data : data?.records ?? []))
+      .catch(err => console.error("Failed to fetch stores:", err));
+  }, []);
 
-	// ── Fetch everything ────────────────────────────────────────────────────
-	const fetchAll = useCallback(async () => {
-		const p = buildParams();
+  useEffect(() => { fetchAll(); }, [quickRange, debouncedSearch]);
 
-		setLoading(true)
+  // ── KPI config ────────────────────────────────────────────────────────────
 
-		try {
-			const [sum, trd, sts, ars] = await Promise.all([
-				api.get("/dashboard/top-products", { params: p }).catch(() => ({ data: null })),
-				api.get("/dashboard/orders/trend", { params: p }).catch(() => ({ data: [] })),
-				api.get("/dashboard/orders/stats", { params: p }).catch(() => ({ data: [] })),
-				api.get("/dashboard/orders/top-areas", { params: p }).catch(() => ({ data: [] })),
-				// api.get("/orders/statistics/top-products", { params: p }).catch(() => ({ data: [] }))
-			]);
+  const KPI = [
+    { key: "totalOrders",        title: t("kpi.totalOrders"),        icon: ShoppingCart, color: "#6366f1" },
+    { key: "confirmedOrders",    title: t("kpi.confirmedOrders"),    icon: CheckCircle,  color: "#3b82f6" },
+    { key: "deliveredOrders",    title: t("kpi.deliveredOrders"),    icon: Truck,        color: "#10b981" },
+    { key: "cancelledOrders",    title: t("kpi.cancelledOrders"),    icon: XCircle,      color: "#ef4444" },
+    { key: "deliveryRate",       title: t("kpi.deliveryRate"),       icon: TrendingUp,   color: "#8b5cf6", pct: true },
+    { key: "deliveryFromConf",   title: t("kpi.deliveryFromConf"),   icon: BarChart3,    color: "#f59e0b", pct: true },
+    { key: "inDelivery",         title: t("kpi.inDelivery"),         icon: Truck,        color: "#06b6d4" },
+    { key: "totalSales",         title: t("kpi.totalSales"),         icon: TrendingUp,   color: "#10b981" },
+    { key: "totalWithShipping",  title: t("kpi.totalWithShipping"),  icon: TrendingUp,   color: "#6366f1" },
+    { key: "totalSalesBosta",    title: t("kpi.totalSalesBosta"),    icon: Store,        color: "#f97316" },
+  ];
 
-			const getData = (r) => Array.isArray(r.data) ? r.data : r.data?.records ?? [];
+  // ── Areas table columns ───────────────────────────────────────────────────
 
-			setSummary(sum.data);
-			setTrendData(getData(trd));
-			setStatusData(getData(sts));
-			setAreasData(getData(ars));
-			// setProdsData(getData(prd));
-		} catch (err) {
-			console.error("Dashboard fetch error:", err);
-		} finally {
-			setLoading(false);
-		}
-	}, [buildParams]);
+  const areasCols = [
+    {
+      key: "label",
+      header: t("areas.columns.cityArea"),
+      cell: r => (
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center shrink-0">
+            <MapPin size={11} className="text-emerald-500" />
+          </div>
+          <span className="font-semibold text-sm text-slate-700 dark:text-slate-200">{r.city ?? "—"}</span>
+        </div>
+      ),
+    },
+    {
+      key: "totalOrders",
+      header: t("areas.columns.totalOrders"),
+      cell: r => (
+        <span className="font-bold tabular-nums text-sm" style={{ color: PRIMARY }}>{fmt(r.totalOrders)}</span>
+      ),
+    },
+    {
+      key: "confirmedOrders",
+      header: t("areas.columns.confirmed"),
+      cell: r => (
+        <span className="font-semibold text-blue-500 dark:text-blue-400 tabular-nums text-sm">{fmt(r.confirmedOrders)}</span>
+      ),
+    },
+    {
+      key: "shippedOrders",
+      header: t("areas.columns.inDelivery"),
+      cell: r => (
+        <span className="font-semibold text-cyan-500 dark:text-cyan-400 tabular-nums text-sm">{fmt(r.shippedOrders)}</span>
+      ),
+    },
+    {
+      key: "deliveredOrders",
+      header: t("areas.columns.delivered"),
+      cell: r => (
+        <span className="font-semibold text-emerald-500 dark:text-emerald-400 tabular-nums text-sm">{fmt(r.deliveredOrders)}</span>
+      ),
+    },
+    {
+      key: "sales",
+      header: t("areas.columns.netSales"),
+      cell: r => (
+        <span className="font-bold text-slate-700 dark:text-slate-200 tabular-nums text-sm">{fmt(r.sales)}</span>
+      ),
+    },
+    {
+      key: "deliveryRate",
+      header: t("areas.columns.successRate"),
+      cell: r => {
+        const good = r.deliveryRate >= 80;
+        return (
+          <div className="flex items-center gap-2">
+            <div className="w-14 h-1.5 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden hidden md:block">
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `${Math.min(r.deliveryRate, 100)}%`,
+                  background: good ? "#10b981" : "#f97316",
+                }}
+              />
+            </div>
+            <span
+              className={cn(
+                "text-xs font-bold px-2 py-0.5 rounded-full",
+                good
+                  ? "text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/30"
+                  : "text-orange-700 bg-orange-50 dark:text-orange-400 dark:bg-orange-950/30"
+              )}
+            >
+              {r.deliveryRate}%
+            </span>
+          </div>
+        );
+      },
+    },
+  ];
 
-	// Fetch stores lookup once
-	useEffect(() => {
-		const fetchStores = async () => {
-			try {
-				const { data } = await api.get("/lookups/stores", {
-					params: { limit: 200, isActive: true }
-				});
-				setStores(Array.isArray(data) ? data : data?.records ?? []);
-			} catch (err) {
-				console.error("Failed to fetch stores:", err);
-			}
-		};
+  // ── Derived stats ─────────────────────────────────────────────────────────
 
-		fetchStores();
-	}, []);
+  const statsData = useMemo(() => KPI.map((card, i) => {
+    const raw = summary?.[card.key];
+    const val = raw == null ? "0" : card.pct ? pct(raw) : fmt(raw);
+    return {
+      id: card.key, name: card.title, value: val,
+      icon: card.icon, color: card.color, sortOrder: i,
+      onClick: () => {},
+    };
+  }), [summary, KPI]);
 
-	// Re-fetch on range change
-	useEffect(() => { fetchAll(); }, [quickRange, debouncedSearch]);
+  const statsCards = useMemo(() => {
+    if (!statusData.length) return [];
+    return statusData
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map(stat => {
+        const Icon = getIconForStatus(stat.code);
+        const bgColors = generateBgColors(stat.color);
+        return {
+          id: stat.id, name: stat.system ? tOrders(`statuses.${stat.code}`) : stat.name,
+          value: String(stat.count || 0), icon: Icon,
+          bg: `bg-[${bgColors.light}] dark:bg-[${bgColors.dark}]`,
+          bgInlineLight: bgColors.light, bgInlineDark: bgColors.dark,
+          iconColor: `text-[${stat.color}]`, color: stat.color,
+          iconBorder: `border-[${stat.color}]`, iconBorderInline: stat.color,
+          code: stat.code, editable: false, sortOrder: stat.sortOrder, fullData: stat,
+        };
+      });
+  }, [statusData]);
 
-	// ── Export helper ──────────────────────────────────────────────────────
+  // ── Export helper ─────────────────────────────────────────────────────────
 
+  const doExport = async (endpoint, setL, name) => {
+    setL(true);
+    const id = toast.loading(t("export.exporting"));
+    try {
+      const res = await api.get(endpoint, { params: buildParams(), responseType: "blob" });
+      const url = URL.createObjectURL(new Blob([res.data]));
+      const a = Object.assign(document.createElement("a"), {
+        href: url, download: `${name}_${Date.now()}.xlsx`,
+      });
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      toast.success(t("export.success"), { id });
+    } catch (err) {
+      toast.error(t("export.failed"), { id });
+    } finally {
+      setL(false);
+    }
+  };
 
-	// ── KPI cards ─────────────────────────────────────────────────────────
-	const KPI = [
-		{ key: "totalOrders ", title: t("kpi.totalOrders"), icon: ShoppingCart, color: "#6366f1" },
-		{ key: "confirmedOrders", title: t("kpi.confirmedOrders"), icon: CheckCircle, color: "#3b82f6" },
-		{ key: "deliveredOrders", title: t("kpi.deliveredOrders"), icon: Truck, color: "#10b981" },
-		{ key: "cancelledOrders", title: t("kpi.cancelledOrders"), icon: XCircle, color: "#ef4444" },
-		{ key: "deliveryRate", title: t("kpi.deliveryRate"), icon: TrendingUp, color: "#8b5cf6", pct: true },
-		{ key: "deliveryFromConf", title: t("kpi.deliveryFromConf"), icon: BarChart3, color: "#f59e0b", pct: true },
-		{ key: "inDelivery", title: t("kpi.inDelivery"), icon: Truck, color: "#06b6d4" },
-		{ key: "totalSales", title: t("kpi.totalSales"), icon: TrendingUp, color: "#10b981" },
-		{ key: "totalWithShipping", title: t("kpi.totalWithShipping"), icon: TrendingUp, color: "#6366f1" },
-		{ key: "totalSalesBosta", title: t("kpi.totalSalesBosta"), icon: Store, color: "#f97316" },
-	];
+  const orderConfigs = [
+    { key: "newOrders",       label: t("chart.newOrders"),       color: SECONDARY,  fillOpacity: 0.1, tension: 0.44 },
+    { key: "deliveredOrders", label: t("chart.deliveredOrders"), color: "#10b981",  fillOpacity: 0.06, tension: 0.44 },
+  ];
 
-	// ── Table columns: Areas ──────────────────────────────────────────────
-	const areasCols = [
-		{
-			key: "label",
-			header: t("areas.columns.cityArea"),
-			cell: r => (
-				<div className="flex items-center gap-1.5">
-					<MapPin size={12} className="text-muted-foreground flex-shrink-0" />
-					<span className="font-semibold text-sm text-foreground">{r.city ?? "—"}</span>
-				</div>
-			),
-		},
-		{
-			key: "totalOrders",
-			header: t("areas.columns.totalOrders"),
-			cell: r => <span className="font-bold text-[var(--primary)] font-mono">{fmt(r.totalOrders)}</span>,
-		},
-		{
-			key: "confirmedOrders",
-			header: t("areas.columns.confirmed"),
-			cell: r => <span className="font-semibold text-blue-600 dark:text-blue-400">{fmt(r.confirmedOrders)}</span>,
-		},
-		{
-			key: "shippedOrders",
-			header: t("areas.columns.inDelivery"),
-			cell: r => <span className="font-semibold text-cyan-600 dark:text-cyan-400">{fmt(r.shippedOrders)}</span>,
-		},
-		{
-			key: "deliveredOrders",
-			header: t("areas.columns.delivered"),
-			cell: r => <span className="font-semibold text-emerald-600 dark:text-emerald-400">{fmt(r.deliveredOrders)}</span>,
-		},
-		{
-			key: "sales",
-			header: t("areas.columns.netSales"),
-			cell: r => <span className="font-bold text-foreground font-mono">{fmt(r.sales)}</span>,
-		},
-		{
-			key: "deliveryRate",
-			header: t("areas.columns.successRate"),
-			cell: r => (
-				<div className="flex items-center gap-2">
-					<div className="w-10 bg-muted rounded-full h-1.5 overflow-hidden hidden md:block">
-						<div
-							className={`h-full ${r.deliveryRate >= 80 ? 'bg-emerald-500' : 'bg-orange-500'}`}
-							style={{ width: `${r.deliveryRate}%` }}
-						/>
-					</div>
-					<span className={`text-xs font-bold ${r.deliveryRate >= 80 ? 'text-emerald-600' : 'text-orange-600'}`}>
-						{r.deliveryRate}%
-					</span>
-				</div>
-			),
-		},
-	];
+  const QUICK_RANGES = [
+    { id: "today",      label: t("ranges.today") },
+    { id: "yesterday",  label: t("ranges.yesterday") },
+    { id: "this_week",  label: t("ranges.this_week") },
+    { id: "last_week",  label: t("ranges.last_week") },
+    { id: "this_month", label: t("ranges.this_month") },
+    { id: "last_month", label: t("ranges.last_month") },
+    { id: "this_year",  label: t("ranges.this_year") },
+  ];
 
+  // ── Render ────────────────────────────────────────────────────────────────
 
-	const statsData = useMemo(() => {
-		return KPI.map((card, i) => {
-			const raw = summary?.[card.key];
-			const val = raw == null ? "0" : card.pct ? pct(raw) : fmt(raw);
+  return (
+    <div className="min-h-screen p-5 space-y-5">
 
-			return {
-				id: card.key,
-				name: card.title,
-				value: val,
-				icon: card.icon,
-				color: card.color,
-				sortOrder: i,
-				onClick: () => console.log(`Clicked ${card.title}`),
-			};
-		});
-	}, [summary, KPI]);
+      {/* Page header */}
+      <PageHeader
+        breadcrumbs={[
+          { name: t("breadcrumb.home"), href: "/" },
+          { name: t("breadcrumb.orderAnalysis") },
+        ]}
+        buttons={
+          <Button_
+            size="sm"
+            label={t("actions.howToUse")}
+            variant="ghost"
+            icon={<Info size={18} />}
+          />
+        }
+        stats={statsCards}
+        items={QUICK_RANGES}
+        active={quickRange}
+        setActive={setQuickRange}
+      />
 
-	const statsCards = useMemo(() => {
-		if (!statusData.length) return [];
-		return statusData
-			.sort((a, b) => a.sortOrder - b.sortOrder)
-			.map((stat) => {
-				const Icon = getIconForStatus(stat.code);
-				const bgColors = generateBgColors(stat.color);
+      {/* Filters */}
+      <TableFilters
+        onApply={fetchAll}
+        onRefresh={fetchAll}
+        applyLabel={t("filters.apply")}
+      >
+        <FilterField label={t("filters.search")} icon={Search}>
+          <Input
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            placeholder={t("search.orderPlaceholder")}
+            startIcon={<Search size={15} />}
+            className="w-full h-10 rounded-xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm"
+          />
+        </FilterField>
 
-				return {
-					id: stat.id,
-					name: stat.system ? tOrders(`statuses.${stat.code}`) : stat.name,
-					value: String(stat.count || 0),
-					icon: Icon,
-					bg: `bg-[${bgColors.light}] dark:bg-[${bgColors.dark}]`,
-					bgInlineLight: bgColors.light,
-					bgInlineDark: bgColors.dark,
-					iconColor: `text-[${stat.color}]`,
-					color: stat.color,
-					iconBorder: `border-[${stat.color}]`,
-					iconBorderInline: stat.color,
-					code: stat.code,
-					editable: false,
-					sortOrder: stat.sortOrder,
-					fullData: stat,
-				};
-			});
-	}, [statusData]);
+        <FilterField label={t("filters.dateRange")} icon={Calendar}>
+          <Flatpickr
+            value={[
+              filters.startDate ? new Date(filters.startDate) : null,
+              filters.endDate   ? new Date(filters.endDate)   : null,
+            ]}
+            onChange={([s, e]) => setFilters(f => ({
+              ...f,
+              startDate: s ? s.toISOString().split("T")[0] : null,
+              endDate:   e ? e.toISOString().split("T")[0] : null,
+            }))}
+            options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
+            placeholder={t("filters.dateRangePlaceholder")}
+            className={cn(
+              "w-full h-10 rounded-xl text-sm",
+              "border border-slate-200 dark:border-slate-700",
+              "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200",
+              "px-3.5 placeholder:text-slate-400",
+              "hover:border-orange-300 dark:hover:border-orange-700",
+              "focus:border-orange-400 focus:outline-none",
+              "focus:shadow-[0_0_0_3px_rgb(var(--primary-shadow))]",
+              "transition-all duration-200"
+            )}
+          />
+        </FilterField>
 
-	// ─────────────────────────────────────────────────────────────────────
-	// Render
-	// ─────────────────────────────────────────────────────────────────────
+        <FilterField label={t("filters.store")} icon={Store}>
+          <Select
+            value={filters.storeId}
+            onValueChange={v => setFilters(f => ({ ...f, storeId: v }))}
+          >
+            <SelectTrigger className="h-10 rounded-xl border-slate-200 dark:border-slate-700 text-sm">
+              <SelectValue placeholder={t("filters.allStores")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("filters.allStores")}</SelectItem>
+              {stores.map(s => (
+                <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FilterField>
+      </TableFilters>
 
-	const doExport = async (endpoint, setL, name) => {
-		setL(true);
-		const id = toast.loading(t("export.exporting"));
-		try {
-			const res = await api.get(endpoint, { params: buildParams(), responseType: "blob" });
-			const url = URL.createObjectURL(new Blob([res.data]));
-			const a = Object.assign(document.createElement("a"), { href: url, download: `${name}_${Date.now()}.xlsx` });
-			document.body.appendChild(a); a.click(); a.remove();
-			URL.revokeObjectURL(url);
-			toast.success(t("export.success"), { id });
-		} catch (err) {
-			console.error("Export error:", err);
-			toast.error(t("export.failed"), { id });
-		}
-		finally { setL(false); }
-	};
+      {/* Charts row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="lg:col-span-2"
+        >
+          <Card title={t("charts.generalReports")} icon={TrendingUp} color={PRIMARY}>
+            <TrendChart data={trendData} loading={loading} configs={orderConfigs} />
+          </Card>
+        </motion.div>
 
-	const orderConfigs = [
-		{
-			key: "newOrders",
-			label: t("chart.newOrders"),
-			color: SECONDARY,
-			fillOpacity: 0.1,
-			borderWidth: 2,
-			tension: 0.4
-		},
-		{
-			key: "deliveredOrders",
-			label: t("chart.deliveredOrders"),
-			color: "#10b981",
-			fillOpacity: 0.05,
-			borderWidth: 2,
-			tension: 0.4
-		}
-	];
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Card title={t("charts.topProducts")} icon={PieIcon} color={PRIMARY}>
+            <StatusDonut
+              data={summary}
+              loading={loading}
+              config={{ key: "count", imageKey: "image", label: "name" }}
+              allowImage={true}
+            />
+          </Card>
+        </motion.div>
+      </div>
 
+      {/* Areas table */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+      >
+        <Card
+          title={t("areas.title")}
+          icon={MapPin}
+          color="#10b981"
+          action={
+            <ExportBtn
+              loading={exAreas}
+              onClick={() => doExport("/dashboard/orders/top-areas/export", setExAreas, "top_areas")}
+            />
+          }
+        >
+          <MiniTable columns={areasCols} data={areasData} loading={loading} />
+        </Card>
+      </motion.div>
 
-	// const t = useTranslations("orderAnalysis");
-
-	const QUICK_RANGES = [
-		{ id: "today", label: t("ranges.today") },
-		{ id: "yesterday", label: t("ranges.yesterday") },
-		{ id: "this_week", label: t("ranges.this_week") },
-		{ id: "last_week", label: t("ranges.last_week") },
-		{ id: "this_month", label: t("ranges.this_month") },
-		{ id: "last_month", label: t("ranges.last_month") },
-		{ id: "this_year", label: t("ranges.this_year") },
-	];
-
-	return (
-		<div className="min-h-screen p-5">
-
-			<PageHeader
-				breadcrumbs={[
-					{ name: t("breadcrumb.home"), href: "/" },
-					{ name: t("breadcrumb.orderAnalysis") }
-				]}
-				buttons={
-					<Button_
-						size="sm"
-						label={t("actions.howToUse")}
-						variant="ghost"
-						icon={<Info size={18} />}
-					/>
-				}
-				stats={statsCards}
-				items={QUICK_RANGES}
-				active={quickRange}
-				setActive={setQuickRange}
-			/>
-
-			<div className=" space-y-5">
- 
-
-				{/* ── Advanced filter card ──────────────────────────────────── */}
-				<TableFilters
-					onApply={fetchAll}
-					onRefresh={fetchAll}
-					applyLabel={t("filters.apply")}
-
-				>
-					<div className="flex flex-col gap-1.5 w-full ">
-						<label className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-							<Search size={11} className="text-[var(--primary)]/60" />
-							{t("filters.search")}
-						</label>
-						<Input
-							value={searchValue}
-							onChange={(e) => onSearchChange?.(e.target.value)}
-							placeholder={t("search.orderPlaceholder")}
-							startIcon={<Search size={15} />}
-							className="w-full "
-						/>
-					</div>
-
-					<div className="flex flex-col gap-1.5 w-full ">
-						<label className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-							<Calendar size={11} className="text-[var(--primary)]/60" />
-							{t("filters.dateRange")}
-						</label>
-						<Flatpickr
-							value={[
-								filters.startDate ? new Date(filters.startDate) : null,
-								filters.endDate ? new Date(filters.endDate) : null,
-							]}
-							onChange={([s, e]) => setFilters(f => ({
-								...f,
-								startDate: s ? s.toISOString().split("T")[0] : null,
-								endDate: e ? e.toISOString().split("T")[0] : null,
-							}))}
-							options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
-							placeholder={t("filters.dateRangePlaceholder")}
-							className={cn(
-								// matches InputBase exactly
-								"w-full min-w-0 rounded-xl",
-								"border border-border",
-								"bg-background/60 text-foreground text-sm",
-								"h-11 px-3.5",
-								"placeholder:text-muted-foreground/50",
-								"transition-all duration-200",
-								"hover:border-[var(--primary)]/50 hover:bg-background",
-								"focus:border-[var(--primary)] focus:bg-background",
-								"focus:shadow-[0_0_0_3px_rgb(var(--primary-shadow))]",
-								"!outline-none",
-							)}
-						/>
-					</div>
-
-					{/* ── Store select ── */}
-					<div className="flex flex-col gap-1.5 w-full ">
-						<label className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-							<Store size={11} className="text-[var(--primary)]/60" />
-							{t("filters.store")}
-						</label>
-						<Select
-							value={filters.storeId}
-							onValueChange={v => setFilters(f => ({ ...f, storeId: v }))}
-						>
-							<SelectTrigger>
-								<SelectValue placeholder={t("filters.allStores")} />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="all">{t("filters.allStores")}</SelectItem>
-								{stores.map(s => (
-									<SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-
-				</TableFilters>
-
-				{/* ── Charts ───────────────────────────────────────────────── */}
-				<div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-					{/* Trend takes 2 columns */}
-					<motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} className="lg:col-span-2">
-						<Card title={t("charts.generalReports")} icon={TrendingUp} color={PRIMARY}>
-							<TrendChart data={trendData} loading={loading} configs={orderConfigs} />
-						</Card>
-					</motion.div>
-
-					{/* Doughnut 1 column */}
-					<motion.div
-						initial={{ opacity: 0, y: 18 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ delay: 0.22 }}
-					>
-						<Card title={t("charts.topProducts")} icon={PieIcon} color={PRIMARY}>
-							<StatusDonut
-								data={summary}
-								loading={loading}
-								config={{
-									key: "count",
-									imageKey: "image",
-									label: "name"
-								}}
-								allowImage={true}
-							/>
-						</Card>
-					</motion.div>
-				</div>
-
-				{/* ── Tables ───────────────────────────────────────────────── */}
-				<div className="grid grid-cols-1 gap-5">
-
-					{/* Top Selling Areas */}
-					<motion.div
-						initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}
-						transition={{ delay: 0.27 }}
-					>
-						<Card
-							title={t("areas.title")}
-							icon={MapPin}
-							color="#10b981"
-							action={
-								<ExportBtn
-									loading={exAreas}
-									onClick={() => doExport("/dashboard/orders/top-areas/export", setExAreas, "top_areas")}
-								/>
-							}
-						>
-							<MiniTable columns={areasCols} data={areasData} loading={loading} />
-						</Card>
-					</motion.div>
-
-					{/* Top Selling Products */}
-					{/* <motion.div
-                        initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.32 }}
-                    >
-                        <Card
-                            title={t("products.title")}
-                            icon={Package}
-                            color="#f59e0b"
-                            action={
-                                <ExportBtn
-                                    loading={exProds}
-                                    onClick={() => doExport("/orders/statistics/top-products/export", setExProds, "top_products")}
-                                />
-                            }
-                        >
-                            <MiniTable columns={prodsCols} data={prodsData} loading={loading} />
-                        </Card>
-                    </motion.div> */}
-
-				</div>
-			</div>
-		</div>
-	);
+    </div>
+  );
 }

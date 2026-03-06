@@ -49,7 +49,7 @@ const PROVIDER_META = {
 			showSteps: false,
 			steps: [
 				{
-					image: "/guide/bosta/step-img-0.png", // you can add it or leave placeholder
+					image: "/guide/bosta/step-img-0.png",
 					tab: { en: "Signup", ar: "إنشاء حساب" },
 					title: { en: "Create a Bosta business account", ar: "إنشاء حساب بوسطة للأعمال" },
 					desc: {
@@ -59,7 +59,7 @@ const PROVIDER_META = {
 					tip: null,
 				},
 				{
-					image: "/guide/bosta/step-img-settings.png", // optional
+					image: "/guide/bosta/step-img-settings.png",
 					tab: { en: "Settings", ar: "الإعدادات" },
 					title: { en: "Open Settings from the top bar", ar: "افتح الإعدادات من الأعلى" },
 					desc: {
@@ -69,7 +69,7 @@ const PROVIDER_META = {
 					tip: null,
 				},
 				{
-					image: "/guide/bosta/step-img-1.png", // your provided screenshot name
+					image: "/guide/bosta/step-img-1.png",
 					tab: { en: "Integrations", ar: "ربط التطبيقات" },
 					title: { en: "Open the Integrations tab", ar: "افتح تبويب ربط التطبيقات" },
 					desc: {
@@ -79,7 +79,7 @@ const PROVIDER_META = {
 					tip: null,
 				},
 				{
-					image: "/guide/bosta/step-img-otp.png", // optional
+					image: "/guide/bosta/step-img-otp.png",
 					tab: { en: "OTP", ar: "OTP" },
 					title: { en: "Request OTP", ar: "اطلب OTP" },
 					desc: {
@@ -89,7 +89,7 @@ const PROVIDER_META = {
 					tip: null,
 				},
 				{
-					image: "/guide/bosta/step-img-api-key.png", // optional
+					image: "/guide/bosta/step-img-api-key.png",
 					tab: { en: "API Key", ar: "مفتاح API" },
 					title: { en: "Create an API key", ar: "إنشاء مفتاح API" },
 					desc: {
@@ -99,7 +99,7 @@ const PROVIDER_META = {
 					tip: null,
 				},
 				{
-					image: "/guide/bosta/step-img-webhook.png", // optional
+					image: "/guide/bosta/step-img-webhook.png",
 					tab: { en: "Webhook", ar: "Webhook" },
 					title: { en: "Add Webhook URL", ar: "إضافة رابط Webhook" },
 					desc: {
@@ -190,9 +190,6 @@ function pick(bilingualObj, locale) {
 	return locale?.startsWith("ar") ? bilingualObj.ar : bilingualObj.en;
 }
 
-
-
-
 function CapBadge({ available, label }) {
 	return (
 		<span
@@ -215,8 +212,6 @@ function SectionLabel({ icon: Icon, label }) {
 		</p>
 	);
 }
-
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Settings Modal  — per-provider config fields
@@ -245,7 +240,6 @@ function SettingsModal({ company, onClose, onFirstSetup, onSaved }) {
 			if (entry?.credentials) {
 				const newValues = { ...values };
 				fields.forEach((f) => {
-					// Only set the value if 'hide' is false/undefined
 					if (!f.hide && entry.credentials[f.key]) {
 						newValues[f.key] = entry.credentials[f.key];
 					}
@@ -253,7 +247,6 @@ function SettingsModal({ company, onClose, onFirstSetup, onSaved }) {
 				setValues(newValues);
 			}
 		} catch (e) {
-			// Uses the new localization keys we defined
 			setError(e?.response?.data?.message || t("settings.errorFetch"));
 		} finally {
 			setLoading(false);
@@ -273,7 +266,6 @@ function SettingsModal({ company, onClose, onFirstSetup, onSaved }) {
 
 	const isAllMasked = () => fields.every((f) => values[f.key]?.startsWith("•"));
 	const isValid = () => {
-		// 1. Check if all required fields are satisfied
 		const allRequiredSatisfied = fields
 			.filter((f) => f.required)
 			.every((f) => {
@@ -282,7 +274,6 @@ function SettingsModal({ company, onClose, onFirstSetup, onSaved }) {
 				return hasExistingValue || hasNewValue;
 			});
 
-		// 2. Check if the user has actually typed at least one new value
 		const hasAtLeastOneNewValue = fields.some((f) => values[f.key]?.trim().length > 0);
 
 		return allRequiredSatisfied && hasAtLeastOneNewValue;
@@ -295,7 +286,6 @@ function SettingsModal({ company, onClose, onFirstSetup, onSaved }) {
 			const credentials = {};
 			fields.forEach((f) => {
 				const val = values[f.key]?.trim();
-				// Only send the field if the user actually typed a new value
 				if (val && val.length > 0) {
 					credentials[f.key] = val;
 				}
@@ -303,7 +293,6 @@ function SettingsModal({ company, onClose, onFirstSetup, onSaved }) {
 			await api.post(`/shipping/providers/${company.code}/credentials`, { credentials });
 			setSuccess(true);
 			onSaved?.();
-
 
 			if (integrationData?.credentialsConfigured) {
 				setTimeout(onClose, 900);
@@ -342,7 +331,6 @@ function SettingsModal({ company, onClose, onFirstSetup, onSaved }) {
 					</div>
 				)}
 
-
 				{integrationData && (<div className="space-y-4">
 					{fields.map((field) => {
 						const currentSavedValue = field?.hide ? integrationData?.credentials?.[field.key] : null;
@@ -358,9 +346,7 @@ function SettingsModal({ company, onClose, onFirstSetup, onSaved }) {
 										type={field.type === "password" ? (showFields[field.key] ? "text" : "password") : "text"}
 										value={values[field.key]}
 										onChange={(e) => setValue(field.key, e.target.value)}
-										// 🔥 Dynamic placeholder: shows masked value if saved, else fallback text
 										placeholder={currentSavedValue || t(`settings.placeholders.${field.key}`, { fallback: `${t(field.labelKey)}…` })}
-										// Added "placeholder:text-gray-900" (or similar) to make the placeholder darker/black
 										className={`w-full rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)] ${currentSavedValue && "placeholder:text-gray-950"} dark:placeholder:text-gray-100 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30 focus:border-[var(--primary)] transition-all`}
 										style={{ paddingRight: field.type === "password" ? "2.5rem" : undefined }}
 									/>
@@ -645,10 +631,10 @@ function UsageModal({ company, onClose }) {
 }
 
 // -----------------------
-// Webhook Setup Modal (NEW)
+// Webhook Setup Modal
 // -----------------------
 function WebhookModal({ company, onClose }) {
-	const t = useTranslations("shipping"); // or "webhook" based on your file structure
+	const t = useTranslations("shipping");
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [data, setData] = useState(null);
@@ -717,7 +703,6 @@ function WebhookModal({ company, onClose }) {
 						<Loader2 size={22} className="animate-spin" />
 					</div>
 				)}
-
 
 				{data && (
 					<div className="space-y-4">
@@ -803,7 +788,6 @@ function WebhookModal({ company, onClose }) {
 					</div>
 				)}
 
-
 				<div className="flex justify-end gap-2 pt-2">
 					<GhostBtn onClick={onClose}>{t("webhook.close")}</GhostBtn>
 					<a href="https://docs.bosta.co/docs/how-to/get-delivery-status-via-webhook/" target="_blank" rel="noopener noreferrer">
@@ -846,9 +830,11 @@ function SkeletonCard() {
 	);
 }
 
-// -----------------------
-// IntegratedCompanyCard (UPDATED with Webhook button)
-// -----------------------
+// ─────────────────────────────────────────────────────────────────────────────
+// IntegratedCompanyCard
+// ★ ONLY the JSX returned here was changed.
+//   handleToggle and all other logic are 100% identical to the original.
+// ─────────────────────────────────────────────────────────────────────────────
 function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) {
 	const t = useTranslations("shipping");
 	const [openModal, setOpenModal] = useState(null);
@@ -874,150 +860,200 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 		}
 	}
 
+	// accent shortcuts from the three new company tokens
+	const accent   = company.accent;
+	const accentBg = company.accentBg;
+
+	// shared footer ghost-button; hover tints border+text to accent
+	const fbCls   = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 bg-white/80 dark:bg-white/10 border border-white/60 dark:border-white/10 text-gray-600 dark:text-gray-300 shadow-sm";
+	const onEnter = (e) => { e.currentTarget.style.borderColor = accent; e.currentTarget.style.color = accent; };
+	const onLeave = (e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.color = ""; };
+
 	return (
 		<>
 			<motion.div
-				whileHover={{ y: -3, boxShadow: "0 16px 40px 0 rgba(0,0,0,0.13)" }}
+				whileHover={{ y: -3, boxShadow: "0 20px 48px 0 rgba(0,0,0,0.11)" }}
 				transition={{ type: "spring", stiffness: 300, damping: 22 }}
-				className="relative rounded-xl overflow-hidden border border-[var(--border)] shadow-sm flex flex-col"
+				className="relative rounded-2xl overflow-hidden border border-[var(--border)] shadow-sm flex flex-col"
 				style={{ background: company.bg }}
 			>
-				<div className="p-5 flex flex-col gap-3 flex-1">
-					<div className="flex items-start justify-between">
-						<div className="flex items-center gap-2" >
-							<div className="w-14 h-14 rounded-xl bg-white/80 dark:bg-white/10 backdrop-blur-sm border border-white/40 dark:border-white/10 flex items-center justify-center shadow-sm overflow-hidden">
-								<img src={company.logo} alt={company.name} className="w-9 h-9 object-contain" onError={(e) => (e.target.style.display = "none")} />
+				{/* per-provider accent strip at top */}
+				<span
+					className="absolute top-0 left-0 right-0 z-10 pointer-events-none"
+					style={{ height: 3, background: company.strip, borderRadius: "16px 16px 0 0" }}
+				/>
+
+				{/* Body */}
+				<div className="pt-6 px-5 pb-4 flex flex-col gap-3 flex-1">
+
+					{/* Header */}
+					<div className="flex items-start justify-between gap-2">
+
+						{/* Logo + identity */}
+						<div className="flex items-center gap-3">
+							<div
+								className="w-11 h-11 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden"
+								style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}
+							>
+								<img
+									src={company.logo}
+									alt={company.name}
+									className="w-7 h-7 object-contain"
+									onError={(e) => (e.target.style.display = "none")}
+								/>
 							</div>
+
 							<div>
-								<h3 className="text-base font-bold text-gray-800 dark:text-white">{company.name}</h3>
+								<h3 className="text-sm font-bold text-gray-800 dark:text-white leading-tight">
+									{company.name}
+								</h3>
 								<a
 									href={`https://${company.website}`}
 									target="_blank"
 									rel="noopener noreferrer"
-									className="text-xs text-gray-500 dark:text-gray-400 hover:text-[var(--primary)] transition-colors flex items-center gap-0.5 mt-0.5"
+									className="flex items-center gap-0.5 mt-0.5 transition-opacity hover:opacity-60"
+									style={{ fontSize: 11, color: "rgba(0,0,0,0.35)", textDecoration: "none" }}
 								>
 									{company.website}
-									<ExternalLink size={9} className="ml-0.5" />
+									<ExternalLink size={8} />
 								</a>
 							</div>
 						</div>
 
-
-						<div className="flex flex-col items-end gap-1.5">
+						{/* Toggle */}
+						<div className="flex flex-col items-end gap-1 flex-shrink-0">
 							<button
 								onClick={isConfigured ? () => handleToggle() : () => setOpenModal("settings")}
-								disabled={toggling} // Disable if already toggling or not configured
+								disabled={toggling}
 								title={!isConfigured ? t("card.configureFirst") : isActive ? t("card.disable") : t("card.enable")}
-								className="relative w-11 h-6 rounded-full border transition-all duration-300 focus:outline-none"
+								className="relative rounded-full transition-all duration-300 focus:outline-none"
 								style={{
-									background:
-										isActive && isConfigured
-											? `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))`
-											: "rgba(0,0,0,0.12)",
-									borderColor: isActive && isConfigured ? "transparent" : "rgba(0,0,0,0.1)",
-									// Lower opacity slightly more when toggling for better visual feedback
+									width: 40, height: 22,
+									background: isActive && isConfigured ? accent : "rgba(0,0,0,0.13)",
+									border: "none",
 									opacity: toggling ? 0.7 : 1,
-									cursor: toggling ? "not-allowed" : "pointer"
+									cursor: toggling ? "not-allowed" : "pointer",
 								}}
 							>
 								<span
-									className="absolute top-0.5 left-0.5 w-[18px] h-[18px] rounded-full bg-white shadow transition-all duration-300 flex items-center justify-center"
+									className="absolute rounded-full bg-white transition-all duration-300 flex items-center justify-center"
 									style={{
-										transform: isActive && isConfigured ? "translateX(20px)" : "translateX(0px)"
+										top: 3, width: 16, height: 16,
+										left: isActive && isConfigured ? "calc(100% - 19px)" : 3,
+										boxShadow: "0 1px 4px rgba(0,0,0,0.18)",
 									}}
 								>
-									{/* Show a spinner inside the toggle handle when loading */}
 									{toggling && (
-										<svg className="animate-spin h-3 w-3 text-primary-from" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-											<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-											<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+										<svg className="animate-spin h-2.5 w-2.5" viewBox="0 0 24 24" style={{ color: accent }}>
+											<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+											<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
 										</svg>
 									)}
 								</span>
 							</button>
 							<span
-								className={`text-[10px] font-semibold uppercase tracking-wide transition-colors duration-300 ${isActive && isConfigured ? "text-emerald-700 dark:text-emerald-400" : "text-gray-500 dark:text-gray-400"
-									}`}
+								className="font-semibold uppercase tracking-wide transition-colors duration-300"
+								style={{ fontSize: 9, color: isActive && isConfigured ? accent : "rgba(0,0,0,0.3)" }}
 							>
 								{toggling ? t("card.updating") : (isActive && isConfigured ? t("card.active") : t("card.inactive"))}
 							</span>
 						</div>
 					</div>
 
+					{/* Description */}
+					<p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2">
+						{company.description}
+					</p>
 
-
-					<p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2">{company.description}</p>
-
+					{/* Status badge — configured keeps emerald; not-configured uses provider accent */}
 					{isConfigured ? (
 						<span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full w-fit">
 							<span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
 							{t("card.configured")}
 						</span>
 					) : (
-						<span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full w-fit">
-							<span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+						<span
+							className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full w-fit"
+							style={{ color: accent, background: accentBg, border: `1px solid ${accent}30` }}
+						>
+							<span className="w-1.5 h-1.5 rounded-full" style={{ background: accent }} />
 							{t("card.notConfigured")}
 						</span>
 					)}
 				</div>
 
-				<div className="bg-white/50 dark:bg-black/20 backdrop-blur-sm border-t border-white/40 dark:border-white/10 px-4 py-3 flex items-center gap-2 flex-wrap">
+				{/* Footer */}
+				<div
+					className="px-4 py-3 flex items-center gap-1.5 flex-wrap"
+					style={{
+						background: "rgba(255,255,255,0.55)",
+						backdropFilter: "blur(6px)",
+						borderTop: "1px solid rgba(255,255,255,0.5)",
+					}}
+				>
+					{/* Settings */}
 					<button
 						onClick={() => setOpenModal("settings")}
 						title={t("card.settingsTitle")}
-						className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+						className={fbCls}
+						onMouseEnter={onEnter}
+						onMouseLeave={onLeave}
 					>
 						<Settings2 size={12} />
 						{t("card.settings")}
 					</button>
 
+					{/* Guide — internal steps or external docs */}
 					{meta?.guide?.showSteps ? (
-						/* Internal Guide Button */
 						<button
 							onClick={() => isConfigured && setOpenModal("guide")}
 							title={t("card.guideTitle")}
-							className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+							className={`cursor-pointer ${fbCls}`}
+							onMouseEnter={onEnter}
+							onMouseLeave={onLeave}
 						>
 							<HelpCircle size={12} />
 							{t("card.guide")}
 						</button>
 					) : (
-						/* External Docs Link */
 						<a
 							href={meta.guide.docsUrl}
 							target="_blank"
 							rel="noopener noreferrer"
 							title={t("card.guideTitle")}
-							className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border border-white/50 dark:border-white/10 text-xs font-medium text-gray-700 dark:text-gray-200 transition-all shadow-sm"
+							className={fbCls}
+							style={{ textDecoration: "none" }}
+							onMouseEnter={onEnter}
+							onMouseLeave={onLeave}
 						>
 							<HelpCircle size={12} />
 							{t("card.guide")}
 						</a>
-					)
-					}
+					)}
 
-					{/* NEW: Webhook setup */}
+					{/* Webhook */}
 					<button
 						onClick={() => isConfigured && setOpenModal("webhook")}
 						disabled={!isConfigured}
 						title={isConfigured ? "Webhook" : t("card.configureFirst")}
-						className={` font-en flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all shadow-sm ${isConfigured
-							? "bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border-white/50 dark:border-white/10 text-gray-700 dark:text-gray-200"
-							: "bg-white/30 dark:bg-white/5 border-white/30 dark:border-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-50"
-							}`}
+						className={`font-en ${fbCls}`}
+						style={{ opacity: !isConfigured ? 0.35 : 1, cursor: !isConfigured ? "not-allowed" : "pointer" }}
+						onMouseEnter={(e) => { if (isConfigured) onEnter(e); }}
+						onMouseLeave={(e) => { if (isConfigured) onLeave(e); }}
 					>
 						<Webhook size={12} />
 						Webhook
 					</button>
 
+					{/* Usage — pushed to end */}
 					<button
 						onClick={() => isConfigured && setOpenModal("usage")}
 						disabled={!isConfigured}
 						title={isConfigured ? t("card.usageTitle") : t("card.configureFirst")}
-						className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all shadow-sm ${isConfigured
-							? "bg-white/70 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 border-white/50 dark:border-white/10 text-gray-700 dark:text-gray-200"
-							: "bg-white/30 dark:bg-white/5 border-white/30 dark:border-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-50"
-							}`}
+						className={`${fbCls} ml-auto`}
+						style={{ opacity: !isConfigured ? 0.35 : 1, cursor: !isConfigured ? "not-allowed" : "pointer" }}
+						onMouseEnter={(e) => { if (isConfigured) onEnter(e); }}
+						onMouseLeave={(e) => { if (isConfigured) onLeave(e); }}
 					>
 						<BarChart3 size={12} />
 						{t("card.usage")}
@@ -1047,6 +1083,8 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 
 // -----------------------
 // Main Page
+// ★ Three new fields added per company: accent, accentBg, strip
+//   Everything else is identical to the original.
 // -----------------------
 export default function ShippingCompaniesPage() {
 	const t = useTranslations("shipping");
@@ -1060,6 +1098,9 @@ export default function ShippingCompaniesPage() {
 				logo: "/integrate/bosta.png",
 				website: "bosta.co",
 				bg: "linear-gradient(300.09deg, #FAFAFA 74.95%, #B5CBE9 129.29%)",
+				accent: "#2563a8",
+				accentBg: "#dbeafe",
+				strip: "linear-gradient(90deg,#2563a8,#60a5fa)",
 				description: t("integrated.description"),
 			},
 			{
@@ -1069,6 +1110,9 @@ export default function ShippingCompaniesPage() {
 				logo: "/integrate/5.png",
 				website: "jtexpress.com",
 				bg: "linear-gradient(300.09deg, #FAFAFA 74.95%, #B5CBE9 129.29%)",
+				accent: "#c8290a",
+				accentBg: "#fee2dc",
+				strip: "linear-gradient(90deg,#c8290a,#f87060)",
 				description: t("integrated.description"),
 			},
 			{
@@ -1078,6 +1122,9 @@ export default function ShippingCompaniesPage() {
 				logo: "/integrate/4.png",
 				website: "turbo.com",
 				bg: "linear-gradient(300.09deg, #FAFAFA 74.95%, #CCB5E9 129.29%)",
+				accent: "#5c3d8f",
+				accentBg: "#e0d4f5",
+				strip: "linear-gradient(90deg,#5c3d8f,#8b6abf)",
 				description: t("integrated.description"),
 			},
 		],
@@ -1109,11 +1156,10 @@ export default function ShippingCompaniesPage() {
 
 			<PageHeader
 				breadcrumbs={[
-					{ name: t("breadcrumb.home"), href: "/" }, 
-					{ name: t("breadcrumb.shipping")   } ,
-				]}  
-			/> 
- 
+					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.shipping") },
+				]}
+			/>
 
 			<AnimatePresence mode="wait">
 				<motion.div

@@ -5,10 +5,25 @@ import {getMessages} from 'next-intl/server';
 import {notFound} from 'next/navigation';
 import {routing} from '../../i18n/routing';
 
-import {Cairo, Inter, Open_Sans, Roboto_Mono} from 'next/font/google';
+import {Cairo, Inter, Open_Sans, Roboto_Mono , Sora, IBM_Plex_Sans_Arabic, Playpen_Sans_Arabic} from 'next/font/google';
 import './globals.css';
 
 import LayoutShell from './LayoutShell';
+
+
+const sora = Sora({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-num",
+});
+
+const ibmPlexArabic = Playpen_Sans_Arabic({
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-ar",
+});
+
+
 
 export const robotoMono = Roboto_Mono({
   variable: '--font-roboto-mono',
@@ -59,7 +74,7 @@ export default async function RootLayout({children, params}) {
   return (
     <html lang={locale} dir={dir} translate="no" suppressHydrationWarning>
       <body
-        className={`${arabicFont.variable} ${openSans.variable} ${robotoMono.variable} ${inter.variable}`}
+        className={`${sora.variable} ${ibmPlexArabic.variable} ${arabicFont.variable} ${openSans.variable} ${robotoMono.variable} ${inter.variable}`}
       >
         <NextIntlClientProvider locale={locale} messages={messages}>
           <LayoutShell>{children}</LayoutShell>

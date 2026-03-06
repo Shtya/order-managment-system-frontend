@@ -17,6 +17,7 @@ import { cn } from "@/utils/cn";
 import api from "@/utils/api";
 import { getNotificationLink } from "@/app/[locale]/notifications/page";
 import { useSocket } from "@/context/SocketContext";
+import toast from "react-hot-toast";
 
 // ─── Fullscreen hook ──────────────────────────────────────────────────────────
 function useFullscreen() {
@@ -304,8 +305,8 @@ export default function Header({ toggleSidebar, isSidebarOpen }) {
 					</Popover>
 
 					{/* Divider */}
-					<div className="w-px h-5 bg-border/70 mx-0.5" /> 
-					<LogoutButton /> 
+					<div className="w-px h-5 bg-border/70 mx-0.5" />
+					<LogoutButton />
 				</div>
 			</div>
 		</motion.header>
@@ -368,49 +369,71 @@ function ProfileChip({ user, t }) {
 
 // ─── Add this component anywhere in the file ─────────────────
 function LogoutButton() {
-  const router = useRouter();
-  const [hov, setHov] = React.useState(false);
+	const t = useTranslations("auth")
+	const router = useRouter();
+	const [hov, setHov] = React.useState(false);
+	const [isLoading, setIsLoading] = useState(false);
+	async function handleLogout() {
+		try {
+			['accessToken', 'refreshToken', 'user'].forEach(k => localStorage.removeItem(k));
+			await fetch('/api/auth/logout', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+			});
+		} catch {
 
-  const handleLogout = () => {
-    try { ['accessToken', 'refreshToken', 'user'].forEach(k => localStorage.removeItem(k)); } catch {}
-    router.replace('/auth');
-  };
+		}
+		router.replace('/auth');
+	};
 
-  return (
-    <motion.button
-      whileHover={{ scale: 1.06 }}
-      whileTap={{ scale: 0.92 }}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      onClick={handleLogout}
-      className="relative h-8 w-8 p-0 rounded-xl border overflow-hidden flex items-center justify-center
+	const onLogoutClick = async () => {
+		const tid = toast.loading(t('logout.loading'));
+		setIsLoading(true);
+		try {
+			await handleLogout();
+			toast.success(t('logout.success'), { id: tid });
+		} finally {
+			// We don't necessarily need to set false if the page redirects
+			setIsLoading(false);
+		}
+	};
+
+	return (
+		<motion.button
+			whileHover={{ scale: 1.06 }}
+			whileTap={{ scale: 0.92 }}
+			onMouseEnter={() => setHov(true)}
+			onMouseLeave={() => setHov(false)}
+			disabled={isLoading}
+			onClick={onLogoutClick}
+			className="relative h-8 w-8 p-0 rounded-xl border overflow-hidden flex items-center justify-center
         bg-card/80 backdrop-blur-sm transition-all duration-200"
-      style={{
-        borderColor: hov
-          ? "color-mix(in oklab, var(--destructive) 45%, var(--border))"
-          : "color-mix(in oklab, var(--destructive) 20%, var(--border))",
-        background: hov
-          ? "color-mix(in oklab, var(--destructive) 8%, var(--card))"
-          : undefined,
-      }}
-    >
-      {hov && (
-        <motion.span
-          className="absolute inset-0 pointer-events-none"
-          initial={{ x: "-100%" }}
-          animate={{ x: "200%" }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          style={{
-            background: "linear-gradient(90deg, transparent, color-mix(in oklab, var(--destructive) 15%, transparent), transparent)",
-            transform: "skewX(-12deg)",
-          }}
-        />
-      )}
-      <motion.span animate={{ rotate: hov ? -20 : 0 }} transition={{ duration: 0.2 }} className="relative z-10">
-        <LogOut size={13} style={{ color: "var(--destructive)" }} strokeWidth={2.1} />
-      </motion.span>
-    </motion.button>
-  );
+			style={{
+				borderColor: hov
+					? "color-mix(in oklab, var(--destructive) 45%, var(--border))"
+					: "color-mix(in oklab, var(--destructive) 20%, var(--border))",
+				background: hov
+					? "color-mix(in oklab, var(--destructive) 8%, var(--card))"
+					: undefined,
+			}}
+		>
+			{hov && (
+				<motion.span
+					className="absolute inset-0 pointer-events-none"
+					initial={{ x: "-100%" }}
+					animate={{ x: "200%" }}
+					transition={{ duration: 0.5, ease: "easeOut" }}
+					style={{
+						background: "linear-gradient(90deg, transparent, color-mix(in oklab, var(--destructive) 15%, transparent), transparent)",
+						transform: "skewX(-12deg)",
+					}}
+				/>
+			)}
+			<motion.span animate={{ rotate: hov ? -20 : 0 }} transition={{ duration: 0.2 }} className="relative z-10" >
+				<LogOut size={13} style={{ color: "var(--destructive)" }} strokeWidth={2.1} />
+			</motion.span>
+		</motion.button>
+	);
 }
 
 // ─── Language Toggle ──────────────────────────────────────────────────────────

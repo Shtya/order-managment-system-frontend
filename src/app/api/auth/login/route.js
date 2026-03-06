@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req) {
   try {
-    const { user } = await req.json();
+    const { accessToken, user } = await req.json();
 
     if (!user) {
       return NextResponse.json({ message: 'Missing user' }, { status: 400 });
@@ -19,9 +19,20 @@ export async function POST(req) {
       maxAge: oneWeek,
     });
 
+    res.cookies.set('accessToken', accessToken, {
+      httpOnly: false,
+      secure: false,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: oneWeek,
+    });
+
+
+
     return res;
   } catch (err) {
     console.error('Error setting cookie:', err);
     return NextResponse.json({ message: 'Unexpected error' }, { status: 500 });
   }
 }
+

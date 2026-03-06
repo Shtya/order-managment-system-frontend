@@ -4,11 +4,10 @@ export async function POST() {
   try {
     const res = NextResponse.json({ ok: true });
 
-    // Delete the user cookie
-    res.cookies.set('user', '', {
-      path: '/',
-      maxAge: 0, 
-    });
+
+    res.cookies.delete('user');
+
+    res.cookies.delete('accessToken');
 
     return res;
   } catch (err) {

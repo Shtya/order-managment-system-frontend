@@ -99,8 +99,15 @@ function AvatarPopover({ user, t }) {
 		return () => document.removeEventListener("mousedown", h);
 	}, []);
 
-	const handleLogout = () => {
-		localStorage.removeItem("user");
+	async function handleLogout() {
+		localStorage.removeItem('accessToken');
+		localStorage.removeItem('refreshToken');
+		localStorage.removeItem('user');
+		await fetch('/api/auth/logout', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+		});
+
 		router.push("/auth?mode=signin")
 	};
 

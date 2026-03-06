@@ -113,7 +113,9 @@ function DashboardLayout({ children }) {
 				</main>
 			</div>
 
-			<Toaster position="top-center" toastOptions={toastOptions(isRTL)} />
+			<Toaster position="top-center" toastOptions={toastOptions(isRTL)} containerStyle={{
+				zIndex: 100001, // Header is 100000, so we go +1
+			}} />
 		</div>
 	);
 }

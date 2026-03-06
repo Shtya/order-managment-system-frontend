@@ -1,9 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
-
+import api from '@/utils/api';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { getUser } from '@/hook/getUser';
+import { RefreshCw, Webhook } from 'lucide-react';
 /* ─── CSS ─────────────────────────────────────────────────── */
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
@@ -368,7 +373,7 @@ function Sidebar({ step }) {
 }
 
 /* ─── Step 0: Welcome ─────────────────────────────────────── */
-function WelcomeStep({ onNext }) {
+function WelcomeStep({ onNext, open, nextLoading }) {
 	const tiles = [
 		{ emoji: '📦', title: 'إدارة الطلبات', desc: 'استقبل وتابع طلباتك لحظةً بلحظة' },
 		{ emoji: '🚚', title: 'تتبع الشحنات', desc: 'ربط مباشر مع شركات التوصيل' },
@@ -376,6 +381,7 @@ function WelcomeStep({ onNext }) {
 		{ emoji: '🔗', title: 'تكامل المنصات', desc: 'Shopify وWooCommerce وأكثر' },
 	];
 
+	if (!open) return null;
 	return (
 		<motion.div key="w" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: .35 }}>
 			{/* Hero area */}
@@ -436,7 +442,7 @@ function WelcomeStep({ onNext }) {
 				</p>
 			</div>
 
-			<BtnPrimary onClick={onNext} style={{ width: '100%' }}>
+			<BtnPrimary onClick={onNext} loading={nextLoading} disabled={nextLoading} style={{ width: '100%' }}>
 				لنبدأ الإعداد <IcArrow dir="right" />
 			</BtnPrimary>
 		</motion.div>
@@ -492,18 +498,170 @@ function PlanFeature({ label, featured }) {
 	);
 }
 
-function PlanStep({ onNext, onBack }) {
-	const [selected, setSelected] = useState(null);
+
+function PlanSkeleton() {
+	return (
+		<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 24, alignItems: 'center' }}>
+			{[0, 1, 2].map(i => {
+				const isCenter = i === 1;
+				return (
+					<div key={i} style={{
+						position: 'relative',
+						borderRadius: 20,
+						padding: isCenter ? '28px 20px' : '24px 18px',
+						height: isCenter ? 350 : 300,
+						background: isCenter ? '#1b1945' : 'var(--surface)',
+						border: isCenter ? '2px solid transparent' : '2px solid rgba(103,99,175,.08)',
+						transform: isCenter ? 'scale(1.03)' : 'scale(1)',
+						opacity: 1,
+						overflow: 'hidden',
+					}}>
+						{/* top badge skeleton */}
+						<div style={{
+							position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)',
+							width: isCenter ? 120 : 90, height: 14, borderRadius: 10, background: 'rgba(255,255,255,0.08)'
+						}} />
+
+						<div style={{ marginTop: 36 }}>
+							{/* checkmark placeholder */}
+							<div style={{
+								position: 'absolute', top: 22, left: 12,
+								width: 22, height: 22, borderRadius: '50%',
+								background: isCenter ? 'rgba(186,235,51,0.18)' : 'rgba(103,99,175,0.06)'
+							}} />
+
+							{/* tier / name skeleton */}
+							<div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, direction: 'rtl' }}>
+								<div style={{ width: 7, height: 7, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }} />
+								<div style={{ width: 80, height: 12, borderRadius: 6, background: 'rgba(255,255,255,0.06)' }} />
+								<div style={{ flex: 1, width: 120, height: 16, borderRadius: 6, background: isCenter ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.04)' }} />
+							</div>
+
+							{/* price skeleton */}
+							<div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10, direction: 'rtl' }}>
+								<div style={{ width: isCenter ? 120 : 90, height: isCenter ? 34 : 28, borderRadius: 6, background: isCenter ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.04)' }} />
+								<div style={{ width: 60, height: 12, borderRadius: 6, background: 'rgba(255,255,255,0.05)' }} />
+							</div>
+
+							{/* CTA skeleton */}
+							<div style={{ width: '100%', height: 40, borderRadius: 99, background: isCenter ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)', marginBottom: 12 }} />
+
+							{/* divider */}
+							<div style={{ height: 1, background: isCenter ? 'rgba(255,255,255,0.06)' : 'var(--border)', marginBottom: 14 }} />
+
+							{/* features skeleton (a few short lines) */}
+							<div style={{ background: isCenter ? 'rgba(255,255,255,0.03)' : '#F8F9FFC7', borderRadius: 12, padding: '10px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+								{[0, 1, 2, 3].map(r => (
+									<div key={r} style={{ width: `${60 + r * 8}%`, height: 10, borderRadius: 6, background: 'rgba(0,0,0,0.06)' }} />
+								))}
+							</div>
+						</div>
+					</div>
+				);
+			})}
+		</div>
+	);
+}
+
+function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
+	const [plans, setPlans] = useState([]);
+	const [isLoading, setIsLoading] = useState(true);
+	const [selected, setSelected] = useState(selectedId || null);
 	const [isYearly, setIsYearly] = useState(false);
 
-	const go = () => {
-		if (!selected) { toast.error('يرجى اختيار خطة'); return; }
-		onNext();
+	useEffect(() => {
+		setSelected(selectedId)
+	}, [selectedId])
+	useEffect(() => {
+		let mounted = true;
+		const fetchAvailablePlans = async () => {
+			setIsLoading(true);
+			try {
+				const { data } = await api.get("/plans/available");
+				const formatted = (data || []).map((plan, index) => {
+					const price = Number(plan.price || 0);
+					return {
+						id: plan.id,
+						name: plan.name,
+						priceMonthly: price,
+						priceYearly: Math.round(price * 0.8),
+						badge: plan.isPopular ? 'الأكثر شيوعاً' : null,
+						dotColor: plan.color || (index === 0 ? '#8B88C1' : index === 1 ? '#BAEB33' : '#FF5C2B'),
+						tier: plan.duration || 'باقة',
+						isPopular: !!plan.isPopular,
+						features: [
+							...(Array.isArray(plan.features) ? plan.features : []),
+							`${Number(plan.usersLimit ?? plan.maxUsers ?? 1)} مستخدمين`,
+							`${Number(plan.shippingCompaniesLimit ?? plan.maxShippingCompanies ?? 0)} شركات شحن`
+						]
+					};
+				});
+
+				if (!mounted) return;
+
+				// Place the most popular plan at center (index 1). If none, keep original order but ensure middle style.
+				const arranged = [...formatted];
+				const popularIndex = arranged.findIndex(p => p.isPopular);
+				if (popularIndex > -1 && arranged.length >= 3) {
+					const [popularPlan] = arranged.splice(popularIndex, 1);
+					// insert in middle (index 1)
+					arranged.splice(1, 0, popularPlan);
+				} else if (arranged.length >= 3) {
+					// If no popular, keep as is but ensure the middle plan is visually featured (handled in render)
+				}
+
+				setPlans(arranged);
+
+				if (arranged.length > 0) {
+					// default selection: the featured plan (the center one) or first available
+					const defaultIndex = arranged.findIndex(p => p.isPopular) !== -1
+						? arranged.findIndex(p => p.isPopular)
+						: Math.min(1, arranged.length - 1); // prefer middle if exists
+					setSelected(selectedId || arranged[defaultIndex]?.id || arranged[0].id);
+				}
+			} catch (err) {
+				toast.error("حدث خطأ أثناء جلب الخطط");
+			} finally {
+				if (mounted) setIsLoading(false);
+			}
+		};
+
+		fetchAvailablePlans();
+		return () => { mounted = false; };
+	}, []);
+
+	// Add this to your state declarations at the top of PlanStep
+	const [isSubmitting, setIsSubmitting] = useState(false);
+
+	const go = async () => {
+		if (!selected) {
+			toast.error('يرجى اختيار خطة');
+			return;
+		}
+
+		setIsSubmitting(true);
+		try {
+			// Calling your new endpoint with the selected planId and the current billing cycle
+			const response = await api.post("/subscriptions/mock", {
+				planId: selected,
+			});
+
+			toast.success('تم الاشتراك بنجاح');
+
+			// Pass the response data to the next step (e.g., success screen)
+			onNext(response?.data);
+		} catch (err) {
+			console.log(err)
+			const errorMsg = err.response?.data?.message || "حدث خطأ أثناء تفعيل الاشتراك";
+			toast.error(errorMsg);
+		} finally {
+			setIsSubmitting(false);
+		}
 	};
 
+	if (!open) return null;
 	return (
 		<motion.div key="plan" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: .3 }}>
-
 			{/* Header */}
 			<div style={{ marginBottom: 24 }}>
 				<h2 style={{ fontSize: 22, fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.4px', marginBottom: 6 }}>اختر خطتك</h2>
@@ -543,145 +701,154 @@ function PlanStep({ onNext, onBack }) {
 			</div>
 
 			{/* Cards */}
-			<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 24, alignItems: 'center' }}>
-				{PLANS.map((p, index) => {
-					const price = isYearly ? p.priceYearly : p.priceMonthly;
-					const isSelected = selected === p.id;
-					return (
-						<motion.div
-							key={p.id}
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: index * 0.08, duration: .35, ease: [.34, 1.56, .64, 1] }}
-							onClick={() => setSelected(p.id)}
-							style={{
-								position: 'relative',
-								borderRadius: 20,
-								padding: p.featured ? '28px 20px' : '24px 18px',
-								direction: 'rtl',
-								cursor: 'pointer',
-								background: p.featured ? '#1b1945' : 'var(--surface)',
-								border: p.featured
-									? `2px solid ${isSelected ? '#BAEB33' : 'transparent'}`
-									: `2px solid ${isSelected ? 'var(--p)' : '#6763AF14'}`,
-								boxShadow: p.featured
-									? `0 24px 48px rgba(27,25,69,.28)${isSelected ? ', 0 0 0 3px rgba(186,235,51,.2)' : ''}`
-									: `0 8px 28px rgba(103,99,175,.08)${isSelected ? ', 0 0 0 3px var(--p-glow)' : ''}`,
-								transform: p.featured ? 'scale(1.03)' : 'scale(1)',
-								zIndex: p.featured ? 2 : 1,
-								transition: 'border-color .2s, box-shadow .2s',
-							}}
-						>
-							{/* Top badge strip */}
-							{p.badge && (
-								<div style={{
-									position: 'absolute', top: 0, left: 0, right: 0,
-									background: p.featured ? '#BAEB33' : 'var(--p)',
-									color: '#fff',
-									fontSize: 9.5, fontWeight: 700, textAlign: 'center',
-									padding: '4px 0', letterSpacing: '.6px',
-									borderRadius: '18px 18px 0 0',
-								}}>{p.badge}</div>
-							)}
+			{isLoading ? (
+				<PlanSkeleton />
+			) : (
+				<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 24, alignItems: 'center' }}>
+					{plans.map((p, index) => {
+						const price = isYearly ? p.priceYearly : p.priceMonthly;
+						const isSelected = selected === p.id;
 
-							<div style={{ marginTop: p.badge ? 18 : 0 }}>
+						// Featured card is always the center (index 1) after arrangement
+						const isFeatured = index === 1;
 
-								{/* Selected checkmark */}
-								<AnimatePresence>
-									{isSelected && (
-										<motion.div
-											initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
-											style={{
-												position: 'absolute', top: p.badge ? 30 : 12, left: 12,
-												width: 22, height: 22, borderRadius: '50%',
-												background: p.featured ? '#BAEB33' : 'var(--p)',
-												display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff',
-											}}
-										>
-											<IcCheck size={11} />
-										</motion.div>
-									)}
-								</AnimatePresence>
-
-								{/* Tier dot + label */}
-								<div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, direction: 'rtl' }}>
-									<span style={{
-										width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
-										background: p.dotColor,
-										boxShadow: `0 0 6px ${p.dotColor}`,
-									}} />
-									<span style={{ fontSize: 11, color: p.featured ? 'rgba(255,255,255,.5)' : 'var(--text-3)', fontWeight: 500 }}>{p.tier}</span>
-									<span style={{ fontSize: 14, fontWeight: 800, color: p.featured ? '#fff' : 'var(--text)' }}>{p.name}</span>
-								</div>
-
-								{/* Price */}
-								<div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 4, direction: 'rtl' }}>
-									<span style={{
-										fontSize: p.featured ? 32 : 26,
-										fontWeight: 900,
-										color: p.featured ? '#fff' : 'var(--text)',
-										fontFamily: 'var(--mono)', lineHeight: 1,
-										letterSpacing: '-1px',
-									}}>
-										{price.toLocaleString()}
-									</span>
-									<span style={{ fontSize: 11, color: p.featured ? 'rgba(255,255,255,.55)' : 'var(--text-3)', fontWeight: 500 }}>
-										ج.م / شهر
-									</span>
-								</div>
-
-								{isYearly && (
-									<div style={{ fontSize: 10.5, color: p.featured ? 'rgba(255,255,255,.4)' : 'var(--text-3)', marginBottom: 8 }}>
-										يُدفع {(price * 12).toLocaleString()} ج.م سنوياً
-									</div>
+						return (
+							<motion.div
+								key={p.id}
+								initial={{ opacity: 0, y: 20 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ delay: index * 0.08, duration: .35, ease: [.34, 1.56, .64, 1] }}
+								onClick={() => setSelected(p.id)}
+								style={{
+									position: 'relative',
+									borderRadius: 20,
+									padding: isFeatured ? '28px 20px' : '24px 18px',
+									direction: 'rtl',
+									cursor: 'pointer',
+									background: isFeatured ? '#1b1945' : 'var(--surface)',
+									border: isFeatured
+										? `2px solid ${isSelected ? '#BAEB33' : 'transparent'}`
+										: `2px solid ${isSelected ? 'var(--p)' : '#6763AF14'}`,
+									boxShadow: isFeatured
+										? `0 24px 48px rgba(27,25,69,.28)${isSelected ? ', 0 0 0 3px rgba(186,235,51,.2)' : ''}`
+										: `0 8px 28px rgba(103,99,175,.08)${isSelected ? ', 0 0 0 3px var(--p-glow)' : ''}`,
+									transform: isFeatured ? 'scale(1.03)' : 'scale(1)',
+									zIndex: isFeatured ? 2 : 1,
+									transition: 'border-color .2s, box-shadow .2s, transform .2s',
+								}}
+							>
+								{/* Top badge strip */}
+								{p.badge && (
+									<div style={{
+										position: 'absolute', top: 0, left: 0, right: 0,
+										background: isFeatured ? '#BAEB33' : 'var(--p)',
+										color: '#fff',
+										fontSize: 9.5, fontWeight: 700, textAlign: 'center',
+										padding: '4px 0', letterSpacing: '.6px',
+										borderRadius: '18px 18px 0 0',
+									}}>{p.badge}</div>
 								)}
 
-								{/* CTA */}
-								<button
-									style={{
-										width: '100%', padding: '10px 0',
-										borderRadius: 99, border: 'none',
-										fontFamily: 'var(--font)', fontSize: 13, fontWeight: 700,
-										cursor: 'pointer', marginBottom: 18, marginTop: 6,
-										background: p.featured ? '#BAEB33' : '#1b1945',
-										color: '#fff',
-										boxShadow: p.featured ? '0 4px 16px rgba(186,235,51,.35)' : '0 4px 16px rgba(27,25,69,.25)',
-										transition: 'opacity .18s, transform .18s',
-									}}
-									onMouseEnter={e => { e.currentTarget.style.opacity = '.88'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-									onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'none'; }}
-									onClick={e => { e.stopPropagation(); setSelected(p.id); go(); }}
-								>
-									ابدأ الآن
-								</button>
+								<div style={{ marginTop: p.badge ? 18 : 0 }}>
+									{/* Selected checkmark */}
+									<AnimatePresence>
+										{isSelected && (
+											<motion.div
+												initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
+												style={{
+													position: 'absolute', top: p.badge ? 30 : 12, left: 12,
+													width: 22, height: 22, borderRadius: '50%',
+													background: isFeatured ? '#BAEB33' : 'var(--p)',
+													display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff',
+												}}
+											>
+												<IcCheck size={11} />
+											</motion.div>
+										)}
+									</AnimatePresence>
 
-								{/* Divider */}
-								<div style={{ height: 1, background: p.featured ? 'rgba(255,255,255,.1)' : 'var(--border)', marginBottom: 14 }} />
+									{/* Tier dot + label */}
+									<div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, direction: 'rtl' }}>
+										<span style={{
+											width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
+											background: p.dotColor,
+											boxShadow: `0 0 6px ${p.dotColor}`,
+										}} />
+										<span style={{ fontSize: 11, color: isFeatured ? 'rgba(255,255,255,.5)' : 'var(--text-3)', fontWeight: 500 }}>{p.tier}</span>
+										<span style={{ fontSize: 14, fontWeight: 800, color: isFeatured ? '#fff' : 'var(--text)' }}>{p.name}</span>
+									</div>
 
-								{/* Features list */}
-								<div style={{
-									background: p.featured ? 'rgba(255,255,255,.05)' : '#F8F9FFC7',
-									border: `1px solid ${p.featured ? 'rgba(255,255,255,.08)' : '#6763AF14'}`,
-									borderRadius: 12, padding: '10px 10px 6px',
-									display: 'flex', flexDirection: 'column',
-								}}>
-									{p.features.map((f, i) => (
-										<PlanFeature key={i} label={f} featured={p.featured} />
-									))}
+									{/* Price */}
+									<div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 4, direction: 'rtl' }}>
+										<span style={{
+											fontSize: isFeatured ? 32 : 26,
+											fontWeight: 900,
+											color: isFeatured ? '#fff' : 'var(--text)',
+											fontFamily: 'var(--mono)', lineHeight: 1,
+											letterSpacing: '-1px',
+										}}>
+											{price.toLocaleString()}
+										</span>
+										<span style={{ fontSize: 11, color: isFeatured ? 'rgba(255,255,255,.55)' : 'var(--text-3)', fontWeight: 500 }}>
+											ج.م / شهر
+										</span>
+									</div>
+
+									{isYearly && (
+										<div style={{ fontSize: 10.5, color: isFeatured ? 'rgba(255,255,255,.4)' : 'var(--text-3)', marginBottom: 8 }}>
+											يُدفع {(price * 12).toLocaleString()} ج.م سنوياً
+										</div>
+									)}
+
+									{/* CTA */}
+									<button
+										style={{
+											width: '100%', padding: '10px 0',
+											borderRadius: 99, border: 'none',
+											fontFamily: 'var(--font)', fontSize: 13, fontWeight: 700,
+											cursor: 'pointer', marginBottom: 18, marginTop: 6,
+											background: isFeatured ? '#BAEB33' : '#1b1945',
+											color: '#fff',
+											boxShadow: isFeatured ? '0 4px 16px rgba(186,235,51,.35)' : '0 4px 16px rgba(27,25,69,.25)',
+											transition: 'opacity .18s, transform .18s',
+										}}
+										disabled={isSubmitting}
+										onMouseEnter={e => { e.currentTarget.style.opacity = '.88'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+										onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'none'; }}
+										onClick={e => { e.stopPropagation(); setSelected(p.id); }}
+									>
+										ابدأ الآن
+									</button>
+
+									{/* Divider */}
+									<div style={{ height: 1, background: isFeatured ? 'rgba(255,255,255,.1)' : 'var(--border)', marginBottom: 14 }} />
+
+									{/* Features list */}
+									<div style={{
+										background: isFeatured ? 'rgba(255,255,255,.05)' : '#F8F9FFC7',
+										border: `1px solid ${isFeatured ? 'rgba(255,255,255,.08)' : '#6763AF14'}`,
+										borderRadius: 12, padding: '10px 10px 6px',
+										display: 'flex', flexDirection: 'column',
+									}}>
+										{p.features.map((f, i) => (
+											<PlanFeature key={i} label={f} featured={isFeatured} />
+										))}
+									</div>
 								</div>
-							</div>
-						</motion.div>
-					);
-				})}
-			</div>
+							</motion.div>
+						);
+					})}
+				</div>
+			)}
 
 			<div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
 				<BtnGhost onClick={onBack}>رجوع</BtnGhost>
-				<BtnPrimary onClick={go} disabled={!selected}>متابعة <IcArrow dir="right" /></BtnPrimary>
+				<BtnPrimary onClick={go} disabled={!selected || isLoading || nextLoading} loading={nextLoading}>متابعة <IcArrow dir="right" /></BtnPrimary>
 			</div>
 		</motion.div>
 	);
 }
+
 
 /* ─── Step 2: Company ─────────────────────────────────────── */
 const COUNTRIES = ['مصر', 'السعودية', 'الإمارات', 'الكويت', 'قطر', 'البحرين', 'عمان', 'الأردن', 'لبنان'];
@@ -692,36 +859,114 @@ const CURRENCIES = [
 	{ code: 'USD', label: 'دولار أمريكي (USD)' },
 ];
 
-function CompanyStep({ onNext, onBack }) {
-	const [form, setForm] = useState({ country: '', currency: '', name: '', tax: '', commercial: '', phone: '', website: '', address: '' });
-	const [touched, setTouched] = useState({});
-	const [saving, setSaving] = useState(false);
 
-	const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
-	const touch = k => setTouched(p => ({ ...p, [k]: true }));
+const schema = yup.object({
+	country: yup.string().required('الدولة مطلوبة'),
+	currency: yup.string().required('العملة مطلوبة'),
+	name: yup.string().trim().required('العملة مطلوبة'),
+	tax: yup.string().trim(),
+	commercial: yup.string().trim(),
+	phone: yup.string().trim(),
+	website: yup
+		.string()
+		.trim()
+		.notRequired()
+		.nullable()
+		.test('is-url-or-empty', 'رابط غير صالح', v => !v || /^(https?:\/\/)/.test(v)),
+	address: yup.string().trim(),
+});
 
-	const errs = {
-		country: !form.country ? 'الدولة مطلوبة' : '',
-		currency: !form.currency ? 'العملة مطلوبة' : '',
+function CompanyStep({ onNext, onBack, open, nextLoading }) {
+	const {
+		control,
+		register,
+		handleSubmit,
+		formState: { errors, touchedFields, isSubmitting },
+		reset,
+	} = useForm({
+		resolver: yupResolver(schema),
+		defaultValues: {
+			country: '',
+			currency: '',
+			name: '',
+			tax: '',
+			commercial: '',
+			phone: '',
+			website: '',
+			address: '',
+		},
+		mode: 'onTouched', // validate on touch so errors show after interaction
+	});
+
+	useEffect(() => {
+		if (!open) return;
+
+		const loadCompany = async () => {
+			try {
+				const res = await api.get('/users/company');
+				if (res.data) {
+					reset({
+						country: res.data.country || '',
+						currency: res.data.currency || '',
+						name: res.data.name || '',
+						tax: res.data.tax || '',
+						commercial: res.data.commercial || '',
+						phone: res.data.phone || '',
+						website: res.data.website || '',
+						address: res.data.address || '',
+					});
+				}
+			} catch (err) {
+				console.error(err);
+			}
+		};
+
+		loadCompany();
+	}, [open, reset]);
+
+	const onSubmit = async (data) => {
+		try {
+			await api.post('/users/company', data);
+			toast.success('تم حفظ بيانات الشركة بنجاح ✓');
+			onNext();
+		} catch (err) {
+			const msg = err.response?.data?.message || 'حدث خطأ أثناء حفظ البيانات';
+			toast.error(Array.isArray(msg) ? msg[0] : msg);
+		}
 	};
 
-	const save = async () => {
-		setTouched({ country: true, currency: true });
-		if (errs.country || errs.currency) return;
-		setSaving(true);
-		await new Promise(r => setTimeout(r, 800));
-		setSaving(false);
-		toast.success('تم حفظ بيانات الشركة ✓');
-		onNext();
+	const onInvalid = (errs) => {
+		// mark all required fields as touched is handled by RHF; show toast like original
+		// toast.error('يرجى ملء البيانات المطلوبة');
 	};
+
+	if (!open) return null;
 
 	return (
-		<motion.div key="co" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: .3 }}>
+		<motion.div
+			key="co"
+			initial={{ opacity: 0, y: 20 }}
+			animate={{ opacity: 1, y: 0 }}
+			exit={{ opacity: 0, y: -16 }}
+			transition={{ duration: 0.3 }}
+		>
 			<div style={{ marginBottom: 24 }}>
-				<h2 style={{ fontSize: 22, fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.4px', marginBottom: 6 }}>بيانات شركتك</h2>
+				<h2 style={{ fontSize: 22, fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.4px', marginBottom: 6 }}>
+					بيانات شركتك
+				</h2>
 				<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
 					<p style={{ fontSize: 13.5, color: 'var(--text-3)' }}>تظهر في الفواتير والتقارير الرسمية</p>
-					<span style={{ fontSize: 11.5, background: 'var(--p-xlight)', color: 'var(--p)', padding: '2px 10px', borderRadius: 99, fontWeight: 600, flexShrink: 0 }}>
+					<span
+						style={{
+							fontSize: 11.5,
+							background: 'var(--p-xlight)',
+							color: 'var(--p)',
+							padding: '2px 10px',
+							borderRadius: 99,
+							fontWeight: 600,
+							flexShrink: 0,
+						}}
+					>
 						* الدولة والعملة إلزاميتان
 					</span>
 				</div>
@@ -729,24 +974,57 @@ function CompanyStep({ onNext, onBack }) {
 
 			{/* Row 1: country + currency */}
 			<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-				<Field label="الدولة" required error={touched.country && errs.country}>
-					<ObSelect value={form.country} onChange={e => set('country', e.target.value)} onBlur={() => touch('country')} error={touched.country && errs.country} icon="🌍">
-						<option value="">اختر الدولة</option>
-						{COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
-					</ObSelect>
+				<Field label="الدولة" required error={(errors.country) ? errors.country?.message : null}>
+					<Controller
+						control={control}
+						name="country"
+						render={({ field }) => (
+							<ObSelect
+								{...field}
+								onBlur={() => field.onBlur()}
+								icon="🌍"
+							>
+								<option value="">اختر الدولة</option>
+								{COUNTRIES.map((c) => (
+									<option key={c} value={c}>
+										{c}
+									</option>
+								))}
+							</ObSelect>
+						)}
+					/>
 				</Field>
-				<Field label="العملة" required error={touched.currency && errs.currency}>
-					<ObSelect value={form.currency} onChange={e => set('currency', e.target.value)} onBlur={() => touch('currency')} error={touched.currency && errs.currency} icon="💵">
-						<option value="">اختر العملة</option>
-						{CURRENCIES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
-					</ObSelect>
+
+				<Field label="العملة" required error={(errors.currency) ? errors.currency?.message : null}>
+					<Controller
+						control={control}
+						name="currency"
+						render={({ field }) => (
+							<ObSelect
+								{...field}
+								onBlur={() => field.onBlur()}
+								icon="💵"
+							>
+								<option value="">اختر العملة</option>
+								{CURRENCIES.map((c) => (
+									<option key={c.code} value={c.code}>
+										{c.label}
+									</option>
+								))}
+							</ObSelect>
+						)}
+					/>
 				</Field>
 			</div>
 
 			{/* Company name - full width */}
-			<Field label="اسم الشركة / المتجر">
+			<Field label="اسم الشركة / المتجر *" error={(errors.name) ? errors.name?.message : null}>
 				<InputWrap icon={<IcBuild />}>
-					<input className="ob-input" placeholder="مثال: شركة طلباتي تك" value={form.name} onChange={e => set('name', e.target.value)} />
+					<input
+						className="ob-input"
+						placeholder="مثال: شركة طلباتي تك"
+						{...register('name')}
+					/>
 				</InputWrap>
 			</Field>
 
@@ -754,22 +1032,45 @@ function CompanyStep({ onNext, onBack }) {
 			<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
 				<Field label="الرقم الضريبي">
 					<InputWrap icon={<span style={{ fontSize: 13, fontWeight: 700 }}>%</span>}>
-						<input className="ob-input" placeholder="اختياري" value={form.tax} onChange={e => set('tax', e.target.value)} style={{ direction: 'ltr', textAlign: 'right' }} />
+						<input
+							className="ob-input"
+							placeholder="اختياري"
+							{...register('tax')}
+							style={{ direction: 'ltr', textAlign: 'right' }}
+						/>
 					</InputWrap>
 				</Field>
+
 				<Field label="السجل التجاري">
 					<InputWrap icon="📋">
-						<input className="ob-input" placeholder="اختياري" value={form.commercial} onChange={e => set('commercial', e.target.value)} style={{ direction: 'ltr', textAlign: 'right' }} />
+						<input
+							className="ob-input"
+							placeholder="اختياري"
+							{...register('commercial')}
+							style={{ direction: 'ltr', textAlign: 'right' }}
+						/>
 					</InputWrap>
 				</Field>
+
 				<Field label="الهاتف">
 					<InputWrap icon={<IcPhone />}>
-						<input className="ob-input" placeholder="+20 xxx xxxx" value={form.phone} onChange={e => set('phone', e.target.value)} style={{ direction: 'ltr', textAlign: 'right' }} />
+						<input
+							className="ob-input"
+							placeholder="+20 xxx xxxx"
+							{...register('phone')}
+							style={{ direction: 'ltr', textAlign: 'right' }}
+						/>
 					</InputWrap>
 				</Field>
+
 				<Field label="الموقع الإلكتروني">
 					<InputWrap icon={<IcGlobe />}>
-						<input className="ob-input" placeholder="https://mystore.com" value={form.website} onChange={e => set('website', e.target.value)} style={{ direction: 'ltr', textAlign: 'left' }} />
+						<input
+							className="ob-input"
+							placeholder="https://mystore.com"
+							{...register('website')}
+							style={{ direction: 'ltr', textAlign: 'left' }}
+						/>
 					</InputWrap>
 				</Field>
 			</div>
@@ -777,311 +1078,1625 @@ function CompanyStep({ onNext, onBack }) {
 			{/* Address */}
 			<Field label="العنوان">
 				<div style={{ position: 'relative' }}>
-					<span style={{ position: 'absolute', right: 14, top: 13, color: 'var(--text-3)', display: 'flex', pointerEvents: 'none' }}>📍</span>
-					<textarea className="ob-textarea" rows={2} placeholder="العنوان بالتفصيل (اختياري)" value={form.address} onChange={e => set('address', e.target.value)} />
+					<span style={{ position: 'absolute', right: 14, top: 13, color: 'var(--text-3)', display: 'flex', pointerEvents: 'none' }}>
+						📍
+					</span>
+					<textarea
+						className="ob-textarea"
+						rows={2}
+						placeholder="العنوان بالتفصيل (اختياري)"
+						{...register('address')}
+					/>
 				</div>
 			</Field>
 
 			<div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 4 }}>
 				<BtnGhost onClick={onBack}>رجوع</BtnGhost>
-				<BtnPrimary onClick={save} loading={saving}>حفظ ومتابعة <IcArrow dir="right" /></BtnPrimary>
+				<BtnPrimary onClick={handleSubmit(onSubmit, onInvalid)} loading={isSubmitting || nextLoading} disabled={nextLoading}>
+					حفظ ومتابعة <IcArrow dir="right" />
+				</BtnPrimary>
 			</div>
 		</motion.div>
 	);
 }
 
 /* ─── Step 3: Store ───────────────────────────────────────── */
+
+// Provider metadata matching StoresIntegrationPage
+const PROVIDER_CONFIG = {
+	easyorder: {
+		fields: {
+			apiKey: { label: "مفتاح API", required: true, userProvides: true },
+			webhookCreateOrderSecret: { label: "سر إنشاء الطلب", required: true, userProvides: true },
+			webhookUpdateStatusSecret: { label:"سر تحديث الحالة", required: true, userProvides: true },
+		},
+		webhookEndpoints: (adminId) => ({
+			create: `${window.location.origin}/stores/webhooks/${adminId}/easyorder/orders/create`,
+			update: `${window.location.origin}/stores/webhooks/easyorder/orders/status`,
+		}),
+	},
+	shopify: {
+		fields: {
+			apiKey: { label: "مفتاح API", required: true, userProvides: true },
+			clientSecret: { label: "السر", required: true, userProvides: true },
+			webhookSecret: { label: "سر Webhook", required: true, userProvides: true },
+		},
+		webhookEndpoints: (adminId) => ({
+			create: `${window.location.origin}/stores/webhooks/${adminId}/shopify/orders/create`,
+			update: `${window.location.origin}/stores/webhooks/shopify/orders/status`,
+		}),
+	},
+	woocommerce: {
+		fields: {
+			apiKey: { label: "مفتاح API", required: true, userProvides: true },
+			clientSecret: { rlabel: "السر", equired: true, userProvides: true },
+			webhookSecret: { label: "سر Webhook", required: true, userProvides: true },
+			webhookCreateOrderSecret: { label: "سر إنشاء الطلب", required: true, systemProvides: true },
+			webhookUpdateStatusSecret: { label: "سر تحديث الحالة", required: true, systemProvides: true },
+		},
+		webhookEndpoints: (adminId) => ({
+			create: `${window.location.origin}/stores/webhooks/${adminId}/woocommerce/orders/create`,
+			update: `${window.location.origin}/stores/webhooks/woocommerce/orders/status`,
+		}),
+	},
+};
+
 const STORE_PROVIDERS = [
 	{
-		key: 'easyorder', label: 'إيزي أوردر', img: "/integrate/easyorder.png", emoji: '🛒', desc: 'ربط مباشر مع منصة إيزي أوردر',
-		fields: [{ k: 'apiKey', label: 'مفتاح API', t: 'password' }, { k: 'whCreate', label: 'Webhook Create Secret', t: 'password' }, { k: 'whUpdate', label: 'Webhook Update Secret', t: 'password' }]
+		key: 'easyorder',
+		code: 'easyorder',
+		label: 'إيزي أوردر',
+		img: "/integrate/easyorder.png",
+		emoji: '🛒',
+		desc: 'ربط مباشر مع منصة إيزي أوردر',
 	},
 	{
-		key: 'shopify', label: 'Shopify', img: "/integrate/shopify.png", emoji: '🟢', desc: 'ربط متجر Shopify الخاص بك',
-		fields: [{ k: 'apiKey', label: 'مفتاح API', t: 'password' }, { k: 'clientSecret', label: 'Client Secret', t: 'password' }, { k: 'webhookSecret', label: 'Webhook Secret', t: 'password' }]
+		key: 'shopify',
+		code: 'shopify',
+		label: 'Shopify',
+		img: "/integrate/shopify.png",
+		emoji: '🟢',
+		desc: 'ربط متجر Shopify الخاص بك',
 	},
 	{
-		key: 'woo', label: 'WooCommerce', img: "/integrate/WooCommerce.png", emoji: '🛍️', desc: 'ربط متجر WooCommerce',
-		fields: [{ k: 'apiKey', label: 'مفتاح API', t: 'password' }, { k: 'clientSecret', label: 'Client Secret', t: 'password' }]
+		key: 'woocommerce',
+		code: 'woocommerce',
+		label: 'WooCommerce',
+		img: "/integrate/WooCommerce.png",
+		emoji: '🛍️',
+		desc: 'ربط متجر WooCommerce',
 	},
 ];
 
-function StoreStep({ onNext, onBack }) {
+
+const CopyableCode = ({ text }) => {
+	const [copied, setCopied] = useState(false);
+	return (
+		<div style={{
+			display: 'flex',
+			alignItems: 'center',
+			gap: 8,
+			background: 'var(--surface2)',
+			border: '1.5px solid var(--border)',
+			borderRadius: 8,
+			padding: '8px 12px',
+			marginTop: 4,
+		}}>
+			<code style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--p)', flex: 1, wordBreak: 'break-all' }}>
+				{text}
+			</code>
+			<button
+				onClick={() => {
+					navigator.clipboard.writeText(text);
+					setCopied(true);
+					setTimeout(() => setCopied(false), 1500);
+				}}
+				style={{
+					background: 'transparent',
+					border: 'none',
+					cursor: 'pointer',
+					fontSize: 11,
+					color: 'var(--text-3)',
+					padding: '2px 6px',
+				}}
+			>
+				{copied ? '✓' : '📋'}
+			</button>
+		</div>
+	);
+};
+
+function StoreStep({ onNext, onBack, open, nextLoading }) {
 	const [active, setActive] = useState(null);
 	const [fd, setFd] = useState({});
-	const [url, setUrl] = useState('');
+	const [storeUrl, setStoreUrl] = useState('');
+	const [storeName, setStoreName] = useState('');
 	const [connected, setConnected] = useState({});
 	const [saving, setSaving] = useState(false);
+	const [loading, setLoading] = useState(true);
+	const [stores, setStores] = useState([]);
+	const [systemSecrets, setSystemSecrets] = useState({});
+	const [showWebhooks, setShowWebhooks] = useState(false);
 
+	const user = getUser();
 	const provider = STORE_PROVIDERS.find(p => p.key === active);
+	const providerConfig = provider ? PROVIDER_CONFIG[provider.code] : null;
 
-	const save = async () => {
-		if (!url.trim()) { toast.error('يرجى إدخال رابط المتجر'); return; }
-		setSaving(true);
-		await new Promise(r => setTimeout(r, 900));
-		setSaving(false);
-		toast.success(`تم ربط ${provider.label} بنجاح ✓`);
-		setConnected(p => ({ ...p, [active]: true }));
-		setActive(null); setFd({}); setUrl('');
+	// Fetch existing stores
+	const fetchStores = async () => {
+		setLoading(true);
+		try {
+			const { data } = await api.get("/stores");
+			const storesArray = Array.isArray(data) ? data : data?.records || [];
+			const storesMap = {};
+
+			storesArray.forEach((store) => {
+				storesMap[store.provider] = store;
+			});
+
+			setStores(storesMap);
+
+			// Mark as connected if store exists
+			const connectedMap = {};
+			storesArray.forEach((store) => {
+				connectedMap[store.provider] = true;
+			});
+			setConnected(connectedMap);
+		} catch (e) {
+			console.error("Error fetching stores:", e);
+		} finally {
+			setLoading(false);
+		}
 	};
 
+	useEffect(() => {
+		if (open) {
+			fetchStores();
+		}
+	}, [open]);
+
+	// When opening a provider form, load existing data
+	useEffect(() => {
+		if (active && stores[active]) {
+			const store = stores[active];
+			setStoreName(store.name || '');
+			setStoreUrl(store.storeUrl || '');
+
+			// Load integrations (non-system-provided fields)
+			const newFd = {};
+			if (providerConfig) {
+				Object.keys(providerConfig.fields).forEach((fieldKey) => {
+					const field = providerConfig.fields[fieldKey];
+					if (field.userProvides && store.integrations?.[fieldKey]) {
+						newFd[fieldKey] = store.integrations[fieldKey];
+					}
+				});
+			}
+			setFd(newFd);
+
+			// Load system secrets for WooCommerce
+			if (provider.code === 'woocommerce' && store.integrations) {
+				setSystemSecrets({
+					webhookCreateOrderSecret: store.integrations.webhookCreateOrderSecret || '',
+					webhookUpdateStatusSecret: store.integrations.webhookUpdateStatusSecret || '',
+				});
+			}
+		} else if (!active) {
+			setFd({});
+			setStoreUrl('');
+			setStoreName('');
+			setSystemSecrets({});
+			setShowWebhooks(false);
+		}
+	}, [active]);
+
+	const save = async () => {
+		const isEditMode = !!stores[active];
+
+		// Validate store URL and name
+		if (!storeUrl.trim()) {
+			toast.error('يرجى إدخال رابط المتجر');
+			return;
+		}
+		if (!storeName.trim()) {
+			toast.error('يرجى إدخال اسم المتجر');
+			return;
+		}
+
+		// Validate required user-provided fields
+		if (!isEditMode && providerConfig) {
+			const missingFields = Object.keys(providerConfig.fields)
+				.filter(key => {
+					const field = providerConfig.fields[key];
+					return field.userProvides && field.required && !fd[key]?.trim();
+				});
+
+			if (missingFields.length > 0) {
+				toast.error('يرجى ملء جميع الحقول المطلوبة');
+				return;
+			}
+		}
+
+		// For edit mode: at least one field must be changed
+		if (isEditMode) {
+			const hasChanges = Object.keys(fd).some(key => fd[key]?.trim());
+			if (!hasChanges && storeUrl === stores[active].storeUrl && storeName === stores[active].name) {
+				toast.error('يرجى تعديل حقل واحد على الأقل');
+				return;
+			}
+		}
+
+		setSaving(true);
+		try {
+			const credentials = {};
+
+			// Only include user-provided fields
+			if (providerConfig) {
+				Object.keys(providerConfig.fields).forEach((fieldKey) => {
+					const field = providerConfig.fields[fieldKey];
+					if (field.userProvides && fd[fieldKey]?.trim()) {
+						credentials[fieldKey] = fd[fieldKey].trim();
+					}
+				});
+			}
+
+			const payload = {
+				name: storeName.trim(),
+				storeUrl: storeUrl.trim(),
+				isActive: true,
+			};
+
+			if (isEditMode) {
+				// Update existing store
+				if (Object.keys(credentials).length > 0) {
+					payload.credentials = credentials;
+				}
+
+				const { data } = await api.patch(`/stores/${stores[active].id}`, payload);
+
+				// Update system secrets for WooCommerce
+				if (provider.code === 'woocommerce' && data.credentials) {
+					setSystemSecrets({
+						webhookCreateOrderSecret: data.credentials.webhookCreateOrderSecret || '',
+						webhookUpdateStatusSecret: data.credentials.webhookUpdateStatusSecret || '',
+					});
+					setShowWebhooks(true);
+				}
+
+				toast.success(`تم تحديث ${provider.label} بنجاح ✓`);
+			} else {
+				// Create new store
+				payload.provider = provider.code;
+				payload.credentials = credentials;
+
+				const { data } = await api.post("/stores", payload);
+
+				// Get system secrets for WooCommerce
+				if (provider.code === 'woocommerce' && data.credentials) {
+					setSystemSecrets({
+						webhookCreateOrderSecret: data.credentials.webhookCreateOrderSecret || '',
+						webhookUpdateStatusSecret: data.credentials.webhookUpdateStatusSecret || '',
+					});
+					setShowWebhooks(true);
+				} else {
+					// For other providers, close form after save
+					setActive(null);
+					setFd({});
+					setStoreUrl('');
+					setStoreName('');
+				}
+
+				toast.success(`تم ربط ${provider.label} بنجاح ✓`);
+			}
+
+			// Refresh stores list
+			await fetchStores();
+
+			// Only close form for non-WooCommerce or if not showing webhooks
+			if (provider.code !== 'woocommerce' || (isEditMode && !showWebhooks)) {
+				setActive(null);
+				setFd({});
+				setStoreUrl('');
+				setStoreName('');
+				setSystemSecrets({});
+			}
+
+		} catch (error) {
+			console.error("Error saving store:", error);
+			toast.error(error?.response?.data?.message || 'حدث خطأ أثناء الحفظ');
+		} finally {
+			setSaving(false);
+		}
+	};
+
+	const connectedCount = useMemo(() => {
+		return Object.keys(connected || {}).length;
+	}, [connected]);
+
+	if (!open) return null;
+
 	return (
-		<motion.div key="store" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: .3 }}>
+		<motion.div
+			key="store"
+			initial={{ opacity: 0, y: 20 }}
+			animate={{ opacity: 1, y: 0 }}
+			exit={{ opacity: 0, y: -16 }}
+			transition={{ duration: .3 }}
+		>
 			<div style={{ marginBottom: 24 }}>
-				<h2 style={{ fontSize: 22, fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.4px', marginBottom: 6 }}>اربط متجرك</h2>
-				<p style={{ fontSize: 13.5, color: 'var(--text-3)' }}>أضف متجرك لاستقبال الطلبات تلقائياً — يمكن إضافة أكثر من متجر</p>
+				<h2 style={{ fontSize: 22, fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.4px', marginBottom: 6 }}>
+					اربط متجرك
+				</h2>
+				<p style={{ fontSize: 13.5, color: 'var(--text-3)' }}>
+					أضف متجرك لاستقبال الطلبات تلقائياً — يمكن إضافة أكثر من متجر
+				</p>
 			</div>
 
-			<AnimatePresence mode="wait">
-				{!active ? (
-					<motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-						<div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
-							{STORE_PROVIDERS.map(p => (
-								<div
-									key={p.key}
-									className={`prov-card${connected[p.key] ? ' connected' : ''}`}
-									onClick={() => !connected[p.key] && setActive(p.key)}
-									style={{ cursor: connected[p.key] ? 'default' : 'pointer' }}
-								>
-									{/* Logo container */}
-									<div style={{
-										width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-										background: connected[p.key] ? '#f0fdf4' : 'var(--surface2)',
-										border: `1.5px solid ${connected[p.key] ? '#bbf7d0' : 'var(--border)'}`,
-										display: 'flex', alignItems: 'center', justifyContent: 'center',
-										overflow: 'hidden',
-										transition: 'all .2s',
-									}}>
-										<img
-											src={p.img}
-											alt={p.label}
-											style={{ width: 28, height: 28, objectFit: 'contain' }}
-											onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement.innerHTML = `<span style="font-size:22px">${p.emoji || '🔗'}</span>`; }}
-										/>
-									</div>
-
-									{/* Text */}
-									<div style={{ flex: 1, minWidth: 0 }}>
-										<div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{p.label}</div>
-										<div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2, lineHeight: 1.4 }}>{p.desc}</div>
-									</div>
-
-									{/* Status badge */}
-									{connected[p.key] ? (
-										<motion.div
-											initial={{ scale: 0 }} animate={{ scale: 1 }}
-											style={{
-												display: 'flex', alignItems: 'center', gap: 5,
-												color: '#10b981', fontSize: 12, fontWeight: 700,
-												background: '#f0fdf4', border: '1px solid #bbf7d0',
-												borderRadius: 99, padding: '4px 10px', flexShrink: 0,
-											}}
-										>
-											<IcCheck /> متصل
-										</motion.div>
-									) : (
-										<div style={{
-											fontSize: 12, color: 'var(--p)', fontWeight: 700,
-											border: '1.5px solid var(--p)', borderRadius: 8,
-											padding: '4px 12px', flexShrink: 0,
-											transition: 'background .15s, color .15s',
+			{loading ? (
+				<ProvidersSkeleton />
+			) : (
+				<AnimatePresence mode="wait">
+					{!active ? (
+						<motion.div
+							key="list"
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							exit={{ opacity: 0 }}
+						>
+							<div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
+								{STORE_PROVIDERS.map(p => (
+									<div
+										key={p.key}
+										className={`prov-card${connected[p.key] ? ' connected' : ''}`}
+										style={{
+											cursor: 'pointer',
+											display: 'flex',
+											alignItems: 'center',
+											gap: 12,
+											padding: 14,
+											borderRadius: 14,
+											border: '1.5px solid var(--border)',
+											background: 'var(--surface)',
+											transition: 'all .2s',
 										}}
-											onMouseEnter={e => { e.currentTarget.style.background = 'var(--p)'; e.currentTarget.style.color = '#fff'; }}
-											onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--p)'; }}
+									>
+										<div
+											onClick={() => setActive(p.key)}
+											style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}
 										>
-											ربط
+											{/* Logo container */}
+											<div style={{
+												width: 44,
+												height: 44,
+												borderRadius: 12,
+												flexShrink: 0,
+												background: connected[p.key] ? '#f0fdf4' : 'var(--surface2)',
+												border: `1.5px solid ${connected[p.key] ? '#bbf7d0' : 'var(--border)'}`,
+												display: 'flex',
+												alignItems: 'center',
+												justifyContent: 'center',
+												overflow: 'hidden',
+												transition: 'all .2s',
+											}}>
+												<img
+													src={p.img}
+													alt={p.label}
+													style={{ width: 28, height: 28, objectFit: 'contain' }}
+													onError={e => {
+														e.currentTarget.style.display = 'none';
+														e.currentTarget.parentElement.innerHTML = `<span style="font-size:22px">${p.emoji || '🔗'}</span>`;
+													}}
+												/>
+											</div>
+
+											{/* Text */}
+											<div style={{ flex: 1, minWidth: 0 }}>
+												<div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
+													{p.label}
+												</div>
+												<div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2, lineHeight: 1.4 }}>
+													{p.desc}
+												</div>
+											</div>
+										</div>
+
+										{/* Status badge */}
+										{connected[p.key] ? (
+											<motion.div
+												initial={{ scale: 0 }}
+												animate={{ scale: 1 }}
+												style={{
+													display: 'flex',
+													alignItems: 'center',
+													gap: 5,
+													color: '#10b981',
+													fontSize: 12,
+													fontWeight: 700,
+													background: '#f0fdf4',
+													border: '1px solid #bbf7d0',
+													borderRadius: 99,
+													padding: '4px 10px',
+													flexShrink: 0,
+												}}
+											>
+												<IcCheck /> متصل
+											</motion.div>
+										) : (
+											<div
+												style={{
+													fontSize: 12,
+													color: 'var(--p)',
+													fontWeight: 700,
+													border: '1.5px solid var(--p)',
+													borderRadius: 8,
+													padding: '4px 12px',
+													flexShrink: 0,
+													transition: 'background .15s, color .15s',
+												}}
+												onMouseEnter={e => {
+													e.currentTarget.style.background = 'var(--p)';
+													e.currentTarget.style.color = '#fff';
+												}}
+												onMouseLeave={e => {
+													e.currentTarget.style.background = 'transparent';
+													e.currentTarget.style.color = 'var(--p)';
+												}}
+											>
+												ربط
+											</div>
+										)}
+									</div>
+								))}
+							</div>
+
+							<div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+								<BtnGhost onClick={onBack}>رجوع</BtnGhost>
+								{connectedCount === 0 && <BtnGhost onClick={onNext}>تخطي الآن</BtnGhost>}
+								{connectedCount > 0 && (
+									<BtnPrimary onClick={onNext}>
+										متابعة <IcArrow dir="right" />
+									</BtnPrimary>
+								)}
+							</div>
+						</motion.div>
+					) : (
+						<motion.div
+							key="form"
+							initial={{ opacity: 0, x: 12 }}
+							animate={{ opacity: 1, x: 0 }}
+							exit={{ opacity: 0, x: -12 }}
+						>
+							<div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 22 }}>
+								<div style={{
+									width: 44,
+									height: 44,
+									borderRadius: 12,
+									flexShrink: 0,
+									background: 'var(--surface2)',
+									border: '1.5px solid var(--border)',
+									display: 'flex',
+									alignItems: 'center',
+									justifyContent: 'center',
+									overflow: 'hidden',
+									transition: 'all .2s',
+								}}>
+									<img
+										src={provider.img}
+										alt={provider.label}
+										style={{ width: 28, height: 28, objectFit: 'contain' }}
+										onError={e => {
+											e.currentTarget.style.display = 'none';
+											e.currentTarget.parentElement.innerHTML = `<span style="font-size:22px">${provider.emoji || '🔗'}</span>`;
+										}}
+									/>
+								</div>
+
+								<div>
+									<div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>
+										{provider.label}
+									</div>
+									<div style={{ fontSize: 12, color: 'var(--text-3)' }}>
+										{connected[provider.key] ? 'تحديث بيانات الربط' : 'أدخل بيانات الربط'}
+									</div>
+								</div>
+							</div>
+
+							{/* Show webhook info if just saved WooCommerce */}
+							{showWebhooks && provider.code === 'woocommerce' && systemSecrets.webhookCreateOrderSecret ? (
+								<div style={{
+									background: '#fffbeb',
+									border: '1.5px solid #fde68a',
+									borderRadius: 12,
+									padding: 16,
+									marginBottom: 16,
+								}}>
+									<p style={{ fontSize: 13, fontWeight: 700, color: '#92400e', marginBottom: 8 }}>
+										🔑 أسرار Webhook الخاصة بك
+									</p>
+									<p style={{ fontSize: 11, color: '#78350f', marginBottom: 12, lineHeight: 1.5 }}>
+										انسخ هذه الأسرار والصقها في إعدادات WooCommerce
+									</p>
+
+									<div style={{ marginBottom: 8 }}>
+										<p style={{ fontSize: 11, fontWeight: 600, color: '#78350f', marginBottom: 4 }}>
+											Webhook Create Secret:
+										</p>
+										<CopyableCode text={systemSecrets.webhookCreateOrderSecret} />
+									</div>
+
+									<div>
+										<p style={{ fontSize: 11, fontWeight: 600, color: '#78350f', marginBottom: 4 }}>
+											Webhook Update Secret:
+										</p>
+										<CopyableCode text={systemSecrets.webhookUpdateStatusSecret} />
+									</div>
+								</div>
+							) : (
+								<>
+									{/* Store Name */}
+									<Field label="اسم المتجر" required>
+										<InputWrap icon={<span>🏪</span>}>
+											<input
+												className="ob-input"
+												placeholder="متجري الإلكتروني"
+												value={storeName}
+												onChange={e => setStoreName(e.target.value)}
+												style={{
+													paddingLeft: 36,
+													width: '100%',
+													height: 42,
+													borderRadius: 10,
+													border: '1.5px solid var(--border)',
+													background: 'var(--surface)',
+													fontSize: 13,
+													color: 'var(--text)',
+													outline: 'none',
+												}}
+											/>
+										</InputWrap>
+									</Field>
+
+									{/* Store URL */}
+									<Field label="رابط المتجر" required>
+										<InputWrap icon={<IcGlobe />}>
+											<input
+												className="ob-input"
+												placeholder="https://mystore.example.com"
+												value={storeUrl}
+												onChange={e => setStoreUrl(e.target.value)}
+												style={{
+													direction: 'ltr',
+													textAlign: 'left',
+													paddingLeft: 36,
+													width: '100%',
+													height: 42,
+													borderRadius: 10,
+													border: '1.5px solid var(--border)',
+													background: 'var(--surface)',
+													fontSize: 13,
+													color: 'var(--text)',
+													outline: 'none',
+												}}
+											/>
+										</InputWrap>
+									</Field>
+
+									{/* Webhook URLs Info */}
+									{providerConfig && user?.id && (
+										<div style={{
+											background: 'var(--surface2)',
+											border: '1.5px solid var(--border)',
+											borderRadius: 12,
+											padding: 12,
+											marginBottom: 16,
+										}}>
+											<p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>
+												📡 روابط Webhook
+											</p>
+											<div style={{ marginBottom: 8 }}>
+												<p style={{ fontSize: 10, color: 'var(--text-3)', marginBottom: 4 }}>Create Order:</p>
+												<CopyableCode text={providerConfig.webhookEndpoints(user.id).create} />
+											</div>
+											<div>
+												<p style={{ fontSize: 10, color: 'var(--text-3)', marginBottom: 4 }}>Update Status:</p>
+												<CopyableCode text={providerConfig.webhookEndpoints(user.id).update} />
+											</div>
 										</div>
 									)}
-								</div>
-							))}
-						</div>
-						<div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-							<BtnGhost onClick={onBack}>رجوع</BtnGhost>
-							<BtnGhost onClick={onNext}>تخطي الآن</BtnGhost>
-							{Object.keys(connected).length > 0 && <BtnPrimary onClick={onNext}>متابعة <IcArrow dir="right" /></BtnPrimary>}
-						</div>
-					</motion.div>
-				) : (
-					<motion.div key="form" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }}>
-						<div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 22 }}>
-							
-							<div style={{
-										width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-										background:  'var(--surface2)',
-										border: `1.5px solid  var(--border)'}`,
-										display: 'flex', alignItems: 'center', justifyContent: 'center',
-										overflow: 'hidden',
-										transition: 'all .2s',
-									}}>
-										<img
-											src={provider.img}
-											alt={provider.label}
-											style={{ width: 28, height: 28, objectFit: 'contain' }}
-											onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement.innerHTML = `<span style="font-size:22px">${provider.emoji || '🔗'}</span>`; }}
-										/>
-									</div>
-							<div>
 
+									{/* Integration Fields */}
+									{providerConfig && Object.keys(providerConfig.fields).map((fieldKey) => {
+										const field = providerConfig.fields[fieldKey];
+
+										// Only show user-provided fields
+										if (!field.userProvides) return null;
+
+										const existingValue = stores[active]?.integrations?.[fieldKey];
+										const placeholder = existingValue || field.label;
+
+										return (
+											<Field key={fieldKey} label={field.label} required={field.required}>
+												<InputWrap icon={<IcLock />}>
+													<input
+														className="ob-input"
+														type="password"
+														placeholder={placeholder}
+														value={fd[fieldKey] || ''}
+														onChange={e => setFd(p => ({ ...p, [fieldKey]: e.target.value }))}
+														style={{
+															direction: 'ltr',
+															textAlign: 'left',
+															paddingLeft: 36,
+															width: '100%',
+															height: 42,
+															borderRadius: 10,
+															border: '1.5px solid var(--border)',
+															background: 'var(--surface)',
+															fontSize: 13,
+															color: 'var(--text)',
+															outline: 'none',
+														}}
+													/>
+												</InputWrap>
+											</Field>
+										);
+									})}
+								</>
+							)}
+
+							<div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+								<BtnGhost onClick={() => {
+									setActive(null);
+									setFd({});
+									setStoreUrl('');
+									setStoreName('');
+									setSystemSecrets({});
+									setShowWebhooks(false);
+								}}>
+									{showWebhooks ? 'إغلاق' : 'إلغاء'}
+								</BtnGhost>
+
+								{!showWebhooks && (
+									<BtnPrimary onClick={save} loading={saving || nextLoading} disabled={nextLoading} style={{ flex: 1 }}>
+										{connected[provider.key] ? 'تحديث المتجر' : 'حفظ وربط المتجر'}
+									</BtnPrimary>
+								)}
 							</div>
-							<div>
-								<div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>{provider.label}</div>
-								<div style={{ fontSize: 12, color: 'var(--text-3)' }}>أدخل بيانات الربط</div>
-							</div>
-						</div>
-						<Field label="رابط المتجر" required>
-							<InputWrap icon={<IcGlobe />}>
-								<input className="ob-input" placeholder="https://mystore.example.com" value={url} onChange={e => setUrl(e.target.value)} style={{ direction: 'ltr', textAlign: 'left' }} />
-							</InputWrap>
-						</Field>
-						{provider.fields.map(f => (
-							<Field key={f.k} label={f.label}>
-								<InputWrap icon={<IcLock />}>
-									<input className="ob-input" type={f.t} placeholder={f.label} value={fd[f.k] || ''} onChange={e => setFd(p => ({ ...p, [f.k]: e.target.value }))} style={{ direction: 'ltr', textAlign: 'left' }} />
-								</InputWrap>
-							</Field>
-						))}
-						<div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-							<BtnGhost onClick={() => { setActive(null); setFd({}); setUrl(''); }}>إلغاء</BtnGhost>
-							<BtnPrimary onClick={save} loading={saving} style={{ flex: 1 }}>حفظ وربط المتجر</BtnPrimary>
-						</div>
-					</motion.div>
-				)}
-			</AnimatePresence>
+						</motion.div>
+					)}
+				</AnimatePresence>
+			)}
 		</motion.div>
 	);
 }
 
-/* ─── Step 4: Shipping ────────────────────────────────────── */
+
+
+const ProvidersSkeleton = () => (
+	<div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
+		{[1, 2, 3].map(i => (
+			<div
+				key={i}
+				className="prov-card"
+				style={{
+					display: 'flex',
+					alignItems: 'center',
+					gap: 12,
+					padding: 12,
+					borderRadius: 12,
+					border: '1.5px solid var(--border)',
+					background: 'var(--surface)',
+				}}
+			>
+				{/* Provider Icon */}
+				<div
+					className="skeleton-pulse"
+					style={{
+						width: 44,
+						height: 44,
+						borderRadius: 12,
+						background: '#f0f0f0',
+						flexShrink: 0,
+					}}
+				/>
+
+				{/* Provider Text */}
+				<div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+					<div
+						className="skeleton-pulse"
+						style={{
+							height: 12,
+							width: '35%',
+							borderRadius: 6,
+							background: '#eee',
+						}}
+					/>
+
+					<div
+						className="skeleton-pulse"
+						style={{
+							height: 10,
+							width: '70%',
+							borderRadius: 6,
+							background: '#f5f5f5',
+						}}
+					/>
+				</div>
+
+				{/* Connect Button */}
+				<div
+					className="skeleton-pulse"
+					style={{
+						height: 28,
+						width: 70,
+						borderRadius: 8,
+						background: '#eee',
+					}}
+				/>
+			</div>
+		))}
+	</div>
+);
+
+
+// Provider metadata matching ShippingCompaniesPage
+const PROVIDER_META = {
+	bosta: {
+		configFields: [
+			{ key: "apiKey", type: "password", label: 'مفتاح API', required: true, hide: true },
+		],
+		webhookHiddenFields: [], // Show all webhook fields
+	},
+	jt: {
+		configFields: [
+			{ key: "apiKey", type: "password", label: 'مفتاح API', required: true, hide: true },
+			{ key: "customerId", type: "text", label: 'معرف العميل', required: true, hide: false },
+		],
+		webhookHiddenFields: [],
+	},
+	turbo: {
+		configFields: [
+			{ key: "apiKey", type: "password", label: 'مفتاح API', required: true, hide: true },
+			{ key: "accountId", type: "text", label: 'معرف الحساب', required: true, hide: false },
+		],
+		webhookHiddenFields: ["headerName"], // Hide headerName for Turbo
+	},
+};
+
 const SHIP_PROVIDERS = [
-	{ key: 'bosta', label: 'بوسطة', img : "/integrate/bosta.png" , emoji: '📦', desc: 'أسرع شركات التوصيل في مصر', fields: [{ k: 'apiKey', label: 'مفتاح API', t: 'password', req: true }] },
-	{ key: 'jt', label: 'J&T Express', img : "/integrate/5.png" , emoji: '🚚', desc: 'تغطية واسعة في المنطقة العربية', fields: [{ k: 'apiKey', label: 'مفتاح API', t: 'password', req: true }, { k: 'cid', label: 'معرف العميل', t: 'text', req: true }] },
-	{ key: 'turbo', label: 'تيربو', img : "/integrate/4.png" , emoji: '⚡', desc: 'توصيل سريع داخل المدن', fields: [{ k: 'apiKey', label: 'مفتاح API', t: 'password', req: true }, { k: 'accId', label: 'معرف الحساب', t: 'text', req: true }] },
+	{
+		key: 'bosta',
+		code: 'bosta',
+		label: 'بوسطة',
+		img: "/integrate/bosta.png",
+		emoji: '📦',
+		desc: 'أسرع شركات التوصيل في مصر',
+	},
+	{
+		key: 'jt',
+		code: 'jt',
+		label: 'J&T Express',
+		img: "/integrate/5.png",
+		emoji: '🚚',
+		desc: 'تغطية واسعة في المنطقة العربية',
+	},
+	{
+		key: 'turbo',
+		code: 'turbo',
+		label: 'تيربو',
+		img: "/integrate/4.png",
+		emoji: '⚡',
+		desc: 'توصيل سريع داخل المدن',
+	},
 ];
 
-function ShippingStep({ onNext, onBack }) {
+
+const CopyableField = ({ label, value }) => {
+	const [copied, setCopied] = useState(false);
+
+	const copy = async () => {
+		try {
+			await navigator.clipboard.writeText(String(value || ""));
+			setCopied(true);
+			setTimeout(() => setCopied(false), 1500);
+		} catch (_) { }
+	};
+
+	return (
+		<div style={{ marginBottom: 12 }}>
+			<label style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', marginBottom: 4, display: 'block' }}>
+				{label}
+			</label>
+			<div style={{
+				display: 'flex',
+				alignItems: 'center',
+				gap: 8,
+				background: 'var(--surface2)',
+				border: '1.5px solid var(--border)',
+				borderRadius: 10,
+				padding: '8px 12px',
+			}}>
+				<input
+					readOnly
+					value={value || ''}
+					style={{
+						flex: 1,
+						background: 'transparent',
+						border: 'none',
+						outline: 'none',
+						fontSize: 12,
+						color: 'var(--text)',
+						fontFamily: 'monospace',
+					}}
+				/>
+				<button
+					onClick={copy}
+					style={{
+						background: 'transparent',
+						border: 'none',
+						cursor: 'pointer',
+						fontSize: 14,
+						padding: '2px 6px',
+					}}
+				>
+					{copied ? '✓' : '📋'}
+				</button>
+			</div>
+		</div>
+	);
+};
+
+const WebhookSkeleton = () => (
+	<div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+		{[1, 2, 3].map(i => (
+			<div
+				key={i}
+				style={{
+					border: '1.5px solid var(--border)',
+					borderRadius: 12,
+					padding: 12,
+					background: 'var(--surface)',
+					display: 'flex',
+					flexDirection: 'column',
+					gap: 8
+				}}
+			>
+				{/* label */}
+				<div
+					className="skeleton-pulse"
+					style={{
+						height: 10,
+						width: '30%',
+						borderRadius: 6,
+						background: '#eee'
+					}}
+				/>
+
+				{/* value field */}
+				<div
+					className="skeleton-pulse"
+					style={{
+						height: 34,
+						width: '100%',
+						borderRadius: 8,
+						background: '#f5f5f5'
+					}}
+				/>
+			</div>
+		))}
+
+		{/* Security box skeleton */}
+		<div
+			style={{
+				display: 'flex',
+				alignItems: 'center',
+				justifyContent: 'space-between',
+				gap: 12,
+				borderRadius: 12,
+				padding: 12,
+				border: '1.5px solid var(--border)',
+				background: 'var(--surface2)'
+			}}
+		>
+			<div
+				className="skeleton-pulse"
+				style={{
+					height: 10,
+					width: '60%',
+					borderRadius: 6,
+					background: '#eee'
+				}}
+			/>
+
+			<div
+				className="skeleton-pulse"
+				style={{
+					height: 28,
+					width: 70,
+					borderRadius: 8,
+					background: '#eee'
+				}}
+			/>
+		</div>
+
+	</div>
+);
+
+function ShippingStep({ onNext, onBack, open, nextLoading }) {
 	const [active, setActive] = useState(null);
 	const [fd, setFd] = useState({});
 	const [connected, setConnected] = useState({});
 	const [saving, setSaving] = useState(false);
+	const [loading, setLoading] = useState(true);
+	const [integrations, setIntegrations] = useState({});
+
+	// Webhook state
+	const [showWebhook, setShowWebhook] = useState(false);
+	const [webhookData, setWebhookData] = useState(null);
+	const [webhookLoading, setWebhookLoading] = useState(false);
+	const [rotatingSecret, setRotatingSecret] = useState(false);
 
 	const provider = SHIP_PROVIDERS.find(p => p.key === active);
+	const providerMeta = provider ? PROVIDER_META[provider.code] : null;
+	const fields = providerMeta?.configFields || [];
+	const webhookHiddenFields = providerMeta?.webhookHiddenFields || [];
 
-	const save = async () => {
-		const miss = provider.fields.filter(f => f.req && !fd[f.k]?.trim());
-		if (miss.length) { toast.error('يرجى ملء الحقول المطلوبة'); return; }
-		setSaving(true);
-		await new Promise(r => setTimeout(r, 900));
-		setSaving(false);
-		toast.success(`تم ربط ${provider.label} بنجاح ✓`);
-		setConnected(p => ({ ...p, [active]: true }));
-		setActive(null); setFd({});
+	// Fetch existing integrations
+	const fetchIntegrations = async () => {
+		setLoading(true);
+		try {
+			const { data } = await api.get("/shipping/integrations/status");
+			const integrationsMap = {};
+			const connectedMap = {};
+
+			if (data?.integrations) {
+				data.integrations.forEach((integration) => {
+					integrations[integration.provider] = integration;
+					if (integration.credentialsConfigured) {
+						connectedMap[integration.provider] = true;
+					}
+				});
+			}
+
+			setIntegrations(integrations);
+			setConnected(connectedMap);
+		} catch (e) {
+			console.error("Error fetching integrations:", e);
+		} finally {
+			setLoading(false);
+		}
 	};
 
+	// Fetch webhook setup
+	const fetchWebhookSetup = async (providerCode) => {
+		setWebhookLoading(true);
+		try {
+			const res = await api.get(`/shipping/providers/${providerCode}/webhook-setup`);
+			setWebhookData(res.data);
+		} catch (e) {
+			console.error("Error fetching webhook setup:", e);
+			toast.error('فشل في تحميل إعدادات Webhook');
+		} finally {
+			setWebhookLoading(false);
+		}
+	};
+
+	// Rotate webhook secret
+	const rotateSecret = async () => {
+		if (!provider) return;
+
+		setRotatingSecret(true);
+		try {
+			await api.post(`/shipping/providers/${provider.code}/webhook-setup/rotate-secret`, {});
+			await fetchWebhookSetup(provider.code);
+			toast.success('تم تجديد السر بنجاح ✓');
+		} catch (e) {
+			console.error("Error rotating secret:", e);
+			toast.error('فشل في تجديد السر');
+		} finally {
+			setRotatingSecret(false);
+		}
+	};
+
+	useEffect(() => {
+		if (open) {
+			fetchIntegrations();
+		}
+	}, [open]);
+
+	// When opening a provider form, load existing non-hidden values
+	useEffect(() => {
+		if (active && integrations[active]) {
+			const integration = integrations[active];
+			const newFd = {};
+
+			fields.forEach((field) => {
+				// Only populate non-hidden fields
+				if (!field.hide && integration.credentials?.[field.key]) {
+					newFd[field.key] = integration.credentials[field.key];
+				}
+			});
+
+			setFd(newFd);
+		} else if (!active) {
+			setFd({});
+			setShowWebhook(false);
+			setWebhookData(null);
+		}
+	}, [active]);
+
+	const save = async () => {
+		// Check required fields
+		const missingRequired = fields.filter(f => f.required && !fd[f.key]?.trim());
+
+		// For edit mode: allow save if at least one field has a new value
+		const hasAtLeastOneValue = fields.some(f => fd[f.key]?.trim());
+		const isEditMode = integrations[active]?.credentialsConfigured;
+
+		if (!isEditMode && missingRequired.length) {
+			toast.error('يرجى ملء الحقول المطلوبة');
+			return;
+		}
+
+		if (isEditMode && !hasAtLeastOneValue) {
+			toast.error('يرجى إدخال قيمة واحدة على الأقل');
+			return;
+		}
+
+		setSaving(true);
+		try {
+			const credentials = {};
+			fields.forEach((field) => {
+				const val = fd[field.key]?.trim();
+				if (val && val.length > 0) {
+					credentials[field.key] = val;
+				}
+			});
+
+			await api.post(`/shipping/providers/${provider.code}/credentials`, { credentials });
+
+			toast.success(`تم ${isEditMode ? 'تحديث' : 'ربط'} ${provider.label} بنجاح ✓`);
+
+			// Refresh integrations
+			await fetchIntegrations();
+
+			// If first setup, show webhook modal
+			if (!isEditMode) {
+				setShowWebhook(true);
+				await fetchWebhookSetup(provider.code);
+			} else {
+				setActive(null);
+				setFd({});
+			}
+		} catch (error) {
+			console.error("Error saving credentials:", error);
+			toast.error(error?.response?.data?.message || 'حدث خطأ أثناء الحفظ');
+		} finally {
+			setSaving(false);
+		}
+	};
+
+	const openWebhookSetup = async (providerKey) => {
+		setActive(providerKey);
+		setShowWebhook(true);
+		await fetchWebhookSetup(providerKey);
+	};
+
+	if (!open) return null;
+
 	return (
-		<motion.div key="ship" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: .3 }}>
+		<motion.div
+			key="ship"
+			initial={{ opacity: 0, y: 20 }}
+			animate={{ opacity: 1, y: 0 }}
+			exit={{ opacity: 0, y: -16 }}
+			transition={{ duration: .3 }}
+		>
 			<div style={{ marginBottom: 24 }}>
-				<h2 style={{ fontSize: 22, fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.4px', marginBottom: 6 }}>اربط شركة الشحن</h2>
-				<p style={{ fontSize: 13.5, color: 'var(--text-3)' }}>أرسل الطلبات لشركة الشحن تلقائياً بضغطة واحدة</p>
+				<h2 style={{ fontSize: 22, fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.4px', marginBottom: 6 }}>
+					اربط شركة الشحن
+				</h2>
+				<p style={{ fontSize: 13.5, color: 'var(--text-3)' }}>
+					أرسل الطلبات لشركة الشحن تلقائياً بضغطة واحدة
+				</p>
 			</div>
 
-			<AnimatePresence mode="wait">
-				{!active ? (
-					<motion.div key="slist" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-						<div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
-							{SHIP_PROVIDERS.map(p => (
-								<div key={p.key} className={`prov-card${connected[p.key] ? ' connected' : ''}`}
-									onClick={() => !connected[p.key] && setActive(p.key)}>
-									
-									<div style={{
-										width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-										background: connected[p.key] ? '#f0fdf4' : 'var(--surface2)',
-										border: `1.5px solid ${connected[p.key] ? '#bbf7d0' : 'var(--border)'}`,
-										display: 'flex', alignItems: 'center', justifyContent: 'center',
-										overflow: 'hidden',
-										transition: 'all .2s',
-									}}>
-										<img
-											src={p.img}
-											alt={p.label}
-											style={{ width: 28, height: 28, objectFit: 'contain' }}
-											onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement.innerHTML = `<span style="font-size:22px">${p.emoji || '🔗'}</span>`; }}
-										/>
-									</div>
-									
+			{loading ? (
+				<ProvidersSkeleton />
+			) : (
+				<AnimatePresence mode="wait">
+					{!active ? (
+						<motion.div
+							key="slist"
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							exit={{ opacity: 0 }}
+						>
+							<div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
+								{SHIP_PROVIDERS.map(p => (
+									<div
+										key={p.key}
+										className={`prov-card${connected[p.key] ? ' connected' : ''}`}
+										style={{
+											cursor: 'pointer',
+											display: 'flex',
+											alignItems: 'center',
+											gap: 12,
+											padding: 14,
+											borderRadius: 14,
+											border: '1.5px solid var(--border)',
+											background: 'var(--surface)',
+											transition: 'all .2s',
+										}}
+									>
+										<div
+											onClick={() => setActive(p.key)}
+											style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}
+										>
+											<div style={{
+												width: 44,
+												height: 44,
+												borderRadius: 12,
+												flexShrink: 0,
+												background: connected[p.key] ? '#f0fdf4' : 'var(--surface2)',
+												border: `1.5px solid ${connected[p.key] ? '#bbf7d0' : 'var(--border)'}`,
+												display: 'flex',
+												alignItems: 'center',
+												justifyContent: 'center',
+												overflow: 'hidden',
+												transition: 'all .2s',
+											}}>
+												<img
+													src={p.img}
+													alt={p.label}
+													style={{ width: 28, height: 28, objectFit: 'contain' }}
+													onError={e => {
+														e.currentTarget.style.display = 'none';
+														e.currentTarget.parentElement.innerHTML = `<span style="font-size:22px">${p.emoji || '🔗'}</span>`;
+													}}
+												/>
+											</div>
 
-									<div style={{ flex: 1 }}>
-										<div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{p.label}</div>
-										<div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>{p.desc}</div>
+											<div style={{ flex: 1 }}>
+												<div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
+													{p.label}
+												</div>
+												<div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>
+													{p.desc}
+												</div>
+											</div>
+										</div>
+
+										<div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+											{/* Webhook button - only show if connected */}
+											{connected[p.key] && (
+												<button
+													onClick={(e) => {
+														e.stopPropagation();
+														openWebhookSetup(p.key);
+													}}
+													style={{
+														fontSize: 11,
+														color: 'var(--p)',
+														fontWeight: 600,
+														border: '1.5px solid var(--border)',
+														borderRadius: 8,
+														padding: '4px 10px',
+														background: 'var(--surface)',
+														display: 'flex',
+														alignItems: 'center',
+														gap: 4,
+														cursor: 'pointer',
+														transition: 'all .15s',
+													}}
+													onMouseEnter={e => {
+														e.currentTarget.style.background = 'var(--surface2)';
+													}}
+													onMouseLeave={e => {
+														e.currentTarget.style.background = 'var(--surface)';
+													}}
+												>
+													<Webhook /> Webhook
+												</button>
+											)}
+
+											{/* Status badge */}
+											{connected[p.key] ? (
+												<motion.div
+													initial={{ scale: 0 }}
+													animate={{ scale: 1 }}
+													style={{
+														display: 'flex',
+														alignItems: 'center',
+														gap: 5,
+														color: '#10b981',
+														fontSize: 12,
+														fontWeight: 700,
+														background: '#f0fdf4',
+														border: '1px solid #bbf7d0',
+														borderRadius: 99,
+														padding: '4px 10px',
+														flexShrink: 0,
+													}}
+												>
+													<IcCheck /> متصل
+												</motion.div>
+											) : (
+												<div
+													onClick={() => setActive(p.key)}
+													style={{
+														fontSize: 12,
+														color: 'var(--p)',
+														fontWeight: 700,
+														border: '1.5px solid var(--p)',
+														borderRadius: 8,
+														padding: '4px 12px',
+														flexShrink: 0,
+														transition: 'background .15s, color .15s',
+													}}
+													onMouseEnter={e => {
+														e.currentTarget.style.background = 'var(--p)';
+														e.currentTarget.style.color = '#fff';
+													}}
+													onMouseLeave={e => {
+														e.currentTarget.style.background = 'transparent';
+														e.currentTarget.style.color = 'var(--p)';
+													}}
+												>
+													ربط
+												</div>
+											)}
+										</div>
 									</div>
-									{connected[p.key]
-										? <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#10b981', fontSize: 13, fontWeight: 700 }}><IcCheck /> متصل</div>
-										: <div style={{ fontSize: 12, color: 'var(--p)', fontWeight: 700, border: '1.5px solid var(--p)', borderRadius: 8, padding: '4px 12px' }}>ربط</div>
-									}
+								))}
+							</div>
+
+							<div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+								<BtnGhost onClick={onBack}>رجوع</BtnGhost>
+								<BtnPrimary onClick={onNext}>
+									{Object.keys(connected).length > 0 ? 'إنهاء الإعداد' : 'تخطي وإنهاء'} <IcArrow dir="right" />
+								</BtnPrimary>
+							</div>
+						</motion.div>
+					) : showWebhook ? (
+						// Webhook Setup View
+						<motion.div
+							key="webhook"
+							initial={{ opacity: 0, x: 12 }}
+							animate={{ opacity: 1, x: 0 }}
+							exit={{ opacity: 0, x: -12 }}
+						>
+							<div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 22 }}>
+								<div style={{
+									width: 44,
+									height: 44,
+									borderRadius: 12,
+									flexShrink: 0,
+									background: 'var(--surface2)',
+									border: '1.5px solid var(--border)',
+									display: 'flex',
+									alignItems: 'center',
+									justifyContent: 'center',
+									overflow: 'hidden',
+								}}>
+									<img
+										src={provider.img}
+										alt={provider.label}
+										style={{ width: 28, height: 28, objectFit: 'contain' }}
+										onError={e => {
+											e.currentTarget.style.display = 'none';
+											e.currentTarget.parentElement.innerHTML = `<span style="font-size:22px">${provider.emoji || '🔗'}</span>`;
+										}}
+									/>
 								</div>
-							))}
-						</div>
-						<div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-							<BtnGhost onClick={onBack}>رجوع</BtnGhost>
-							<BtnPrimary onClick={onNext}>
-								{Object.keys(connected).length > 0 ? 'إنهاء الإعداد' : 'تخطي وإنهاء'} <IcArrow dir="right" />
-							</BtnPrimary>
-						</div>
-					</motion.div>
-				) : (
-					<motion.div key="sform" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }}>
-						<div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 22 }}>
-							
-							<div style={{
-										width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-										background:  'var(--surface2)',
-										border: `1.5px solid  var(--border)'}`,
-										display: 'flex', alignItems: 'center', justifyContent: 'center',
-										overflow: 'hidden',
-										transition: 'all .2s',
-									}}>
-										<img
-											src={provider.img}
-											alt={provider.label}
-											style={{ width: 28, height: 28, objectFit: 'contain' }}
-											onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement.innerHTML = `<span style="font-size:22px">${provider.emoji || '🔗'}</span>`; }}
-										/>
-									</div>
-							<div>
 
+								<div>
+									<div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>
+										إعدادات Webhook - {provider.label}
+									</div>
+									<div style={{ fontSize: 12, color: 'var(--text-3)' }}>
+										انسخ هذه البيانات إلى لوحة تحكم {provider.label}
+									</div>
+								</div>
 							</div>
-							<div>
-								<div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>{provider.label}</div>
-								<div style={{ fontSize: 12, color: 'var(--text-3)' }}>أدخل بيانات الربط</div>
+
+							{/* Info box */}
+							<div style={{
+								background: 'var(--surface2)',
+								border: '1.5px solid var(--border)',
+								borderRadius: 12,
+								padding: 14,
+								marginBottom: 16,
+							}}>
+								<p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>
+									📡 متى يتم تشغيل Webhook؟
+								</p>
+								<p style={{ fontSize: 11, color: 'var(--text-3)', lineHeight: 1.5 }}>
+									يتم إرسال إشعار تلقائي عند تغيير حالة الشحنة (تم التسليم، قيد التوصيل، إلخ)
+								</p>
 							</div>
-						</div>
-						{provider.fields.map(f => (
-							<Field key={f.k} label={f.label} required={f.req}>
-								<InputWrap icon={<IcLock />}>
-									<input className="ob-input" type={f.t} placeholder={f.label} value={fd[f.k] || ''} onChange={e => setFd(p => ({ ...p, [f.k]: e.target.value }))} style={{ direction: 'ltr', textAlign: 'left' }} />
-								</InputWrap>
-							</Field>
-						))}
-						<div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-							<BtnGhost onClick={() => { setActive(null); setFd({}); }}>إلغاء</BtnGhost>
-							<BtnPrimary onClick={save} loading={saving} style={{ flex: 1 }}>حفظ وربط الشحن</BtnPrimary>
-						</div>
-					</motion.div>
-				)}
-			</AnimatePresence>
+
+							{webhookLoading ? (
+								<WebhookSkeleton />
+							) : webhookData ? (
+								<>
+									{/* Webhook URL */}
+									{!webhookHiddenFields.includes('webhookUrl') && (
+										<CopyableField
+											label="رابط Webhook"
+											value={webhookData.webhookUrl}
+										/>
+									)}
+
+									{/* Header Name */}
+									{!webhookHiddenFields.includes('headerName') && (
+										<CopyableField
+											label="اسم الهيدر (Header Name)"
+											value={webhookData.headerName}
+										/>
+									)}
+
+									{/* Header Value (Secret) */}
+									{!webhookHiddenFields.includes('headerValue') && (
+										<CopyableField
+											label="قيمة الهيدر (Secret)"
+											value={webhookData.headerValue}
+										/>
+									)}
+
+									{/* Security hint with rotate button */}
+									<div style={{
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'space-between',
+										gap: 12,
+										background: 'var(--surface2)',
+										border: '1.5px solid var(--border)',
+										borderRadius: 12,
+										padding: 12,
+										marginTop: 16,
+									}}>
+										<p style={{ fontSize: 11, color: 'var(--text-3)', lineHeight: 1.5, flex: 1 }}>
+											لتحسين الأمان، يمكنك تجديد السر (Secret) في أي وقت
+										</p>
+										<button
+											onClick={rotateSecret}
+											disabled={rotatingSecret}
+											style={{
+												display: 'flex',
+												alignItems: 'center',
+												gap: 6,
+												fontSize: 11,
+												fontWeight: 700,
+												color: 'var(--text)',
+												background: 'var(--surface)',
+												border: '1.5px solid var(--border)',
+												borderRadius: 8,
+												padding: '6px 12px',
+												cursor: rotatingSecret ? 'not-allowed' : 'pointer',
+												opacity: rotatingSecret ? 0.5 : 1,
+												transition: 'all .2s',
+											}}
+										>
+											<RefreshCw /> {rotatingSecret ? 'جارٍ...' : 'تجديد'}
+										</button>
+									</div>
+								</>
+							) : null}
+
+							<div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+								<BtnGhost onClick={() => {
+									setShowWebhook(false);
+									setWebhookData(null);
+									setActive(null);
+								}}>
+									إغلاق
+								</BtnGhost>
+							</div>
+						</motion.div>
+					) : (
+						// Credentials Form View
+						<motion.div
+							key="sform"
+							initial={{ opacity: 0, x: 12 }}
+							animate={{ opacity: 1, x: 0 }}
+							exit={{ opacity: 0, x: -12 }}
+						>
+							<div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 22 }}>
+								<div style={{
+									width: 44,
+									height: 44,
+									borderRadius: 12,
+									flexShrink: 0,
+									background: 'var(--surface2)',
+									border: '1.5px solid var(--border)',
+									display: 'flex',
+									alignItems: 'center',
+									justifyContent: 'center',
+									overflow: 'hidden',
+									transition: 'all .2s',
+								}}>
+									<img
+										src={provider.img}
+										alt={provider.label}
+										style={{ width: 28, height: 28, objectFit: 'contain' }}
+										onError={e => {
+											e.currentTarget.style.display = 'none';
+											e.currentTarget.parentElement.innerHTML = `<span style="font-size:22px">${provider.emoji || '🔗'}</span>`;
+										}}
+									/>
+								</div>
+
+								<div>
+									<div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>
+										{provider.label}
+									</div>
+									<div style={{ fontSize: 12, color: 'var(--text-3)' }}>
+										{connected[provider.key] ? 'تحديث بيانات الربط' : 'أدخل بيانات الربط'}
+									</div>
+								</div>
+							</div>
+
+							{fields.map(f => {
+								const existingValue = integrations[active]?.credentials?.[f.key];
+								const placeholder = f.hide && existingValue ? existingValue : f.label;
+
+								return (
+									<Field key={f.key} label={f.label} required={f.required}>
+										<InputWrap icon={<IcLock />}>
+											<input
+												className="ob-input"
+												type={f.type}
+												placeholder={placeholder}
+												value={fd[f.key] || ''}
+												onChange={e => setFd(p => ({ ...p, [f.key]: e.target.value }))}
+												style={{
+													direction: 'ltr',
+													textAlign: 'left',
+													paddingLeft: 36,
+													width: '100%',
+													height: 42,
+													borderRadius: 10,
+													border: '1.5px solid var(--border)',
+													background: 'var(--surface)',
+													fontSize: 13,
+													color: 'var(--text)',
+													outline: 'none',
+												}}
+											/>
+										</InputWrap>
+									</Field>
+								);
+							})}
+
+							<div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+								<BtnGhost onClick={() => { setActive(null); setFd({}); }}>
+									إلغاء
+								</BtnGhost>
+								<BtnPrimary onClick={save} loading={saving || nextLoading} disabled={nextLoading} style={{ flex: 1 }}>
+									{connected[provider.key] ? 'تحديث البيانات' : 'حفظ وربط الشحن'}
+								</BtnPrimary>
+							</div>
+						</motion.div>
+					)}
+				</AnimatePresence>
+			)}
 		</motion.div>
 	);
 }
+
+
+
+
+const stepMap = {
+	welcome: 0,
+	plan: 1,
+	company: 2,
+	store: 3,
+	shipping: 4,
+	finished: 5
+};
+
+const OnboardingSkeleton = () => (
+	<div style={{
+		display: 'flex', width: '100%', maxWidth: 1000, minHeight: 580,
+		borderRadius: 'var(--radius-xl)', background: 'var(--surface)',
+		overflow: 'hidden', boxShadow: '0 28px 80px rgba(103,99,175,.1)'
+	}}>
+		{/* Mock Sidebar */}
+		<div style={{ width: 300, background: '#1b1945', padding: 40, display: 'flex', flexDirection: 'column', gap: 20 }}>
+			{[1, 2, 3, 4].map(i => (
+				<div key={i} className="skeleton-pulse" style={{ height: 40, width: '100%', borderRadius: 8, background: 'rgba(255,255,255,0.05)' }} />
+			))}
+		</div>
+		{/* Mock Content Area */}
+		<div style={{ flex: 1, padding: 44, display: 'flex', flexDirection: 'column', gap: 20 }}>
+			<div className="skeleton-pulse" style={{ height: 32, width: '40%', borderRadius: 8, background: '#eee' }} />
+			<div className="skeleton-pulse" style={{ height: 100, width: '100%', borderRadius: 12, background: '#f5f5f5' }} />
+			<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginTop: 20 }}>
+				<div className="skeleton-pulse" style={{ height: 180, borderRadius: 12, background: '#f5f5f5' }} />
+				<div className="skeleton-pulse" style={{ height: 180, borderRadius: 12, background: '#f5f5f5' }} />
+			</div>
+		</div>
+	</div>
+);
 
 /* ─── Main ────────────────────────────────────────────────── */
 export default function OnboardingPage() {
-	const [step, setStep] = useState(0);
-	const next = () => setStep(s => Math.min(s + 1, 4));
-	const back = () => setStep(s => Math.max(s - 1, 0));
+	const [step, setStep] = useState(0); // Start null to show a loader
+	const [dbStep, setDbStep] = useState(null); // Furthest step reached
+	const [user, setUser] = useState(null); // Furthest step reached
+	const [loading, setLoading] = useState(true);
 
-	const finish = () => {
-		toast.success('اكتمل الإعداد! مرحباً بك 🎉');
-		setTimeout(() => { window.location.href = '/orders'; }, 1200);
+	const stepMap = { welcome: 0, plan: 1, company: 2, store: 3, shipping: 4, finished: 5 };
+	const revStepMap = ['welcome', 'plan', 'company', 'store', 'shipping', 'finished'];
+
+	// PROBLEM 2 FIX: Resume from last time
+	useEffect(() => {
+		async function init() {
+			const { data } = await api.get('/users/me'); // Create this simple GET endpoint
+			const user = data?.user || data;
+			setUser(user)
+			const current = stepMap[user.currentOnboardingStep] || 0;
+			setStep(current);
+			setDbStep(current);
+			setLoading(false);
+		}
+		init();
+	}, []);
+
+	const [nextLoading, setNextLoading] = useState(false);
+
+	const next = async () => {
+		// If current step is less than the max saved step, just increment locally
+		if (step < dbStep) {
+			setStep(s => s + 1);
+			return;
+		}
+
+		setNextLoading(true); // start loading
+		try {
+			const { data } = await api.post('/users/onboarding/next');
+			const nextIndex = stepMap[data.nextStep];
+
+			setStep(() => nextIndex);
+			setDbStep(() => nextIndex);
+		} catch (err) {
+			toast.error(err.message, { id: tid });
+		} finally {
+			setNextLoading(false); // stop loading
+		}
 	};
+
+	const back = () => setStep(s => Math.max(s - 1, 0));
+	const finish = async () => {
+		const tid = toast.loading('جاري إنهاء الإعداد...');
+		try {
+			// 1️⃣ Call the same endpoint to move currentOnboardingStep to 'finished' or 'completed'
+			await api.post('/users/onboarding/next');
+
+			// 2️⃣ Show success and redirect
+			toast.success('اكتمل الإعداد! مرحباً بك 🎉', { id: tid });
+
+			setTimeout(() => {
+				window.location.href = '/orders';
+			}, 1200);
+		} catch (err) {
+			const msg = err.response?.data?.message || "حدث خطأ أثناء إنهاء الإعداد";
+			toast.error(msg, { id: tid });
+		}
+	};
+	if (loading) {
+		return (
+			<div style={{
+				minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+				background: 'linear-gradient(145deg, #eeeef8 0%, #e8e7f4 50%, #f3f3fb 100%)', padding: 24
+			}}>
+				<OnboardingSkeleton />
+			</div>
+		);
+	}
 
 	return (
 		<>
@@ -1130,12 +2745,13 @@ export default function OnboardingPage() {
 						padding: '44px 40px',
 						overflowY: 'auto', maxHeight: '88vh',
 					}}>
+
 						<AnimatePresence mode="wait">
-							{step === 0 && <WelcomeStep key="w" onNext={next} />}
-							{step === 1 && <PlanStep key="p" onNext={next} onBack={back} />}
-							{step === 2 && <CompanyStep key="c" onNext={next} onBack={back} />}
-							{step === 3 && <StoreStep key="s" onNext={next} onBack={back} />}
-							{step === 4 && <ShippingStep key="sh" onNext={finish} onBack={back} />}
+							<WelcomeStep key="w" onNext={next} loading={loading} open={step === 0} nextLoading={nextLoading} />
+							<PlanStep key="p" onNext={next} onBack={back} selectedId={user?.subscription?.planId} open={step === 1} nextLoading={nextLoading} />
+							<CompanyStep key="c" onNext={next} onBack={back} open={step === 2} nextLoading={nextLoading} />
+							<StoreStep key="s" onNext={next} onBack={back} open={step === 3} nextLoading={nextLoading} />
+							<ShippingStep key="sh" onNext={finish} onBack={back} open={step === 4} nextLoading={nextLoading} />
 						</AnimatePresence>
 					</div>
 				</motion.div>

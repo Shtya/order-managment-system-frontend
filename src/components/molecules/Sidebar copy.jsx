@@ -102,6 +102,11 @@ export default function Sidebar({ isOpen, isRTL }) {
 			localStorage.removeItem('refreshToken');
 			localStorage.removeItem('user');
 
+			await fetch('/api/auth/logout', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+			});
+
 			try {
 				const auth = getAuth();
 				if (auth?.currentUser) await signOut(auth);
@@ -574,7 +579,7 @@ export default function Sidebar({ isOpen, isRTL }) {
 									))}
 								</div>
 							</div>
-						</div> 
+						</div>
 					</div>}
 
 				</div>

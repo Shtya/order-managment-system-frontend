@@ -3936,5 +3936,1790 @@
     "search": {
       "placeholder": "Search for an order..."
     }
+  },
+  "callCenter": {
+    "breadcrumb": {
+      "home": "Home",
+      "callCenter": "Call Center"
+    },
+    "title": "Call Center",
+    "tabs": {
+      "createOrder": "Create Order",
+      "ordersList": "Orders List"
+    },
+    "quickStats": {
+      "newOrders": "New",
+      "postponed": "Postponed",
+      "totalOrders": "Total Orders",
+      "wrongNumber": "Wrong Number",
+      "cancelled": "Cancelled",
+      "waitingStock": "Waiting for Stock"
+    },
+    "customerInfo": {
+      "title": "Customer Information",
+      "name": "Customer Name",
+      "phone": "Phone Number",
+      "alternativePhone": "Alternative Phone",
+      "location": "Location and Address",
+      "city": "City",
+      "area": "Area",
+      "fullAddress": "Full Address"
+    },
+    "orderInfo": {
+      "title": "Order Information",
+      "products": "Products",
+      "quantity": "Quantity",
+      "price": "Price",
+      "shippingCost": "Shipping Cost",
+      "total": "Total",
+      "paymentMethod": "Payment Method",
+      "deposit": "Advance Payment",
+      "remaining": "Remaining Amount"
+    },
+    "productSelection": {
+      "title": "Product Selection",
+      "addProduct": "Add Product"
+    },
+    "notes": {
+      "title": "Notes",
+      "placeholder": "Add any notes about the order..."
+    },
+    "actions": {
+      "confirm": "Confirm Order",
+      "cancel": "Cancel",
+      "save": "Save Draft",
+      "cancelOrder": "Cancel Order",
+      "postpone": "Postpone",
+      "wrongNumber": "Wrong Number",
+      "exportRange": "Export Range",
+      "importTemplate": "Import Template"
+    },
+    "bottomActions": {
+      "delete": "Cancel",
+      "exportRange": "Out of Delivery Range",
+      "importTemplate": "Wrong Program",
+      "wrongNumber": "Duplicate Order",
+      "postpone": "No Answer",
+      "callCenter": "Confirm Order"
+    },
+    "messages": {
+      "orderConfirmed": "Order confirmed successfully",
+      "orderCancelled": "Order cancelled",
+      "orderPostponed": "Order postponed",
+      "draftSaved": "Draft saved"
+    }
+  },
+  "createOrder": {
+    "breadcrumb": {
+      "home": "Home",
+      "orders": "Orders",
+      "createOrder": "Create New Order",
+      "editOrder": "Edit Order"
+    },
+    "common": {
+      "none": "None"
+    },
+    "title": "Create New Order",
+    "sections": {
+      "customerInfo": "Customer Information",
+      "paymentShipping": "Payment and Shipping",
+      "addProducts": "Add Products",
+      "productsTable": "Products Table",
+      "notes": "Notes",
+      "orderSummary": "Order Summary",
+      "address": "Address"
+    },
+    "bosta": {
+      "sectionTitle": "Shipping Information (Bosta)",
+      "loading": "Loading...",
+      "city": "City",
+      "selectCity": "Select City",
+      "district": "District",
+      "selectDistrict": "Select District",
+      "zone": "Zone",
+      "selectZone": "Select Zone",
+      "pickupLocation": "Pickup Location",
+      "selectPickupLocation": "Select Pickup Location",
+      "optional": "Optional",
+      "defaultLocation": "Default Location",
+      "pickupLocationNote": "If you do not select a location, the default pickup location assigned in Bosta will be used automatically."
+    },
+    "fields": {
+      "store": "Store",
+      "customerName": "Customer Name",
+      "phoneNumber": "Phone Number",
+      "alternativePhone": "Alternative Phone Number",
+      "email": "Email",
+      "address": "Address",
+      "city": "City",
+      "area": "Area",
+      "landmark": "Landmark",
+      "paymentMethod": "Payment Method",
+      "paymentStatus": "Payment Status",
+      "shippingCompany": "Shipping Company",
+      "shippingCost": "Shipping Cost",
+      "discount": "Discount",
+      "deposit": "Deposit",
+      "notes": "Internal Notes",
+      "customerNotes": "Customer Notes"
+    },
+    "placeholders": {
+      "store": "Select Store",
+      "customerName": "Enter customer name",
+      "phoneNumber": "Example: 01234567890",
+      "alternativePhone": "Additional phone number (optional)",
+      "email": "example@email.com",
+      "address": "Enter full address",
+      "bostaAddress": "Enter address",
+      "city": "Enter city",
+      "area": "Enter area",
+      "landmark": "Example: Next to Al Noor Mosque",
+      "shippingCompany": "Select shipping company",
+      "notes": "Add internal notes to the order...",
+      "customerNotes": "Add notes from the customer..."
+    },
+    "paymentMethods": {
+      "cash": "Cash",
+      "card": "Credit Card",
+      "bankTransfer": "Bank Transfer",
+      "cod": "Cash on Delivery",
+      "unknown": "Unknown Method",
+      "wallet": "E-Wallet",
+      "other": "Other Method"
+    },
+    "paymentStatuses": {
+      "pending": "Pending",
+      "paid": "Paid",
+      "partial": "Partially Paid"
+    },
+    "table": {
+      "sku": "Product Code",
+      "name": "Product Name",
+      "unitPrice": "Unit Price",
+      "quantity": "Quantity",
+      "total": "Total",
+      "actions": "Actions"
+    },
+    "summary": {
+      "productCount": "Product Count",
+      "productsTotal": "Products Total",
+      "shippingCost": "Shipping Cost",
+      "discount": "Discount",
+      "finalTotal": "Final Total",
+      "deposit": "Paid Deposit",
+      "remaining": "Remaining Amount"
+    },
+    "actions": {
+      "save": "Save Order",
+      "saving": "Saving...",
+      "update": "Update Order",
+      "cancel": "Cancel",
+      "howToUse": "How to Use"
+    },
+    "validation": {
+      "customerNameRequired": "Customer name is required",
+      "phoneNumberRequired": "Phone number is required",
+      "invalidEmail": "Invalid email address",
+      "addressRequired": "Address is required",
+      "cityRequired": "City is required",
+      "paymentMethodRequired": "Payment method is required",
+      "itemsRequired": "At least one product must be added",
+      "districtRequired": "Please select the area / district",
+      "zoneRequired": "Please select the sub-district / zone",
+      "locationRequired": "Please select the pickup location (warehouse)",
+      "fixErrors": "Please fix the errors first"
+    },
+    "messages": {
+      "createSuccess": "Order created successfully",
+      "createFailed": "Failed to create order",
+      "updateSuccess": "Order updated successfully",
+      "updateFailed": "Failed to update order",
+      "fillRequired": "Please fill in all required fields",
+      "noProducts": "No products have been added"
+    },
+    "loading": {
+      "message": "Loading...",
+      "notFound": "Order not found"
+    },
+    "currency": "EGP"
+  },
+  "CreateReplacement": {
+    "title": "Create Replacement",
+    "titleEdit": "Edit Replacement",
+    "breadcrumb": {
+      "home": "Home",
+      "orders": "Orders"
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "submit": "Submit",
+      "update": "Update",
+      "saving": "Saving..."
+    },
+    "sections": {
+      "searchOrder": "Search Order",
+      "replacementInfo": "Replacement Information",
+      "replacementItems": "Replacement Items",
+      "images": "Images",
+      "priceSummary": "Price Summary"
+    },
+    "placeholders": {
+      "orderNumber": "Order Number",
+      "reasonOfReplacement": "Write the reason for replacement",
+      "anotherReason": "Write an additional reason (optional)",
+      "shippingCompany": "Select shipping company"
+    },
+    "labels": {
+      "ordersFound": "Orders Found",
+      "selectedOrder": "Selected Order"
+    },
+    "details": {
+      "customerName": "Customer Name",
+      "phone": "Phone Number",
+      "address": "Address",
+      "total": "Total",
+      "createdAt": "Created At",
+      "status": "Status",
+      "table": {
+        "image": "Image",
+        "product": "Product",
+        "qty": "Quantity",
+        "unitPrice": "Unit Price",
+        "total": "Total"
+      }
+    },
+    "fields": {
+      "reasonOfReplacement": "Reason for Replacement",
+      "anotherReason": "Additional Reason",
+      "shippingCompany": "Shipping Company"
+    },
+    "noShipping": "No Shipping Company",
+    "noOrdersFound": "No matching orders found",
+    "noOrdersFoundHint": "Try a different order number",
+    "selectOrderFirst": "Select an order first to continue",
+    "chooseItemsToReplace": "Choose items to replace",
+    "selected": "Selected",
+    "replacementDetails": "Replacement Details",
+    "noItemsAdded": "No items added",
+    "selectFromDropdownAbove": "Select items from the dropdown above to start",
+    "selectItems": "Select items to replace…",
+    "availableItems": "Available Items",
+    "clearAll": "Clear All",
+    "clickToSelect": "Click items to select them",
+    "itemCard": {
+      "title": "Replacement Item",
+      "originalItem": "Original Item",
+      "newItem": "New Item",
+      "quantity": "Quantity",
+      "oldPrice": "Old Price",
+      "newPrice": "New Price",
+      "priceDiff": "Price Difference"
+    },
+    "summary": {
+      "items": "Items Count",
+      "oldTotal": "Old Total",
+      "newTotal": "New Total",
+      "shipping": "Shipping",
+      "discount": "Discount",
+      "priceDiff": "Total Difference",
+      "finalTotal": "Final Total"
+    },
+    "reasons": {
+      "wrong_size": "Wrong Size",
+      "damaged": "Damaged Product",
+      "wrong_item": "Wrong Product",
+      "color_issue": "Different Color",
+      "quality": "Poor Quality",
+      "not_as_described": "Not as Described",
+      "missing_parts": "Missing Parts",
+      "change_of_mind": "Change of Mind",
+      "late_delivery": "Late Delivery",
+      "faulty": "Faulty",
+      "other": "Other Reason"
+    },
+    "errors": {
+      "itemAlreadyAdded": "This item has already been added",
+      "loadFailed": "Failed to load data"
+    },
+    "validation": {
+      "orderRequired": "Order is required",
+      "reasonRequired": "Reason is required",
+      "paymentMethodRequired": "Payment method is required",
+      "itemsRequired": "At least one item must be selected",
+      "fixErrors": "Please fix the errors first"
+    },
+    "messages": {
+      "loading": "Loading...",
+      "createSuccess": "Replacement created successfully",
+      "updateSuccess": "Replacement updated successfully",
+      "createFailed": "Failed to create replacement",
+      "updateFailed": "Failed to update replacement"
+    }
+  },
+  "employeeOrders": {
+    "title": "My Orders",
+    "breadcrumb": {
+      "home": "Home",
+      "myOrders": "My Orders"
+    },
+    "totalOrders": "Total {count} orders on {date}",
+    "backToHome": "Back to Home",
+    "viewDetails": "Details",
+    "currency": "EGP",
+    "orderMoved": "Order moved to {status}",
+    "statuses": {
+      "new": "New",
+      "confirmed": "Confirmed",
+      "pendingConfirmation": "Pending Confirmation",
+      "inShipping": "In Shipping",
+      "delivered": "Delivered",
+      "retry": "Retry"
+    },
+    "retry": {
+      "attempt": "Attempt {current} of {max}",
+      "available": "Available",
+      "locked": "Locked",
+      "interval": "Time interval: {minutes} minutes",
+      "waitMessage": "You must wait {time} for the next attempt",
+      "cannotMove": "Cannot move the order during the waiting period"
+    },
+    "todo": {
+      "title": "Daily To-Do List",
+      "pending": "Pending Tasks",
+      "completedTasks": "Completed Tasks",
+      "completed": "{completed} of {total} completed",
+      "noTasks": "No tasks for this day",
+      "taskCompleted": "Task completed ✓",
+      "taskUncompleted": "Task cancelled"
+    },
+    "calendar": {
+      "today": "Today",
+      "previousDay": "Previous Day",
+      "nextDay": "Next Day"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "{total} notifications · {unread} unread",
+    "subtitleEmpty": "No notifications",
+    "unread": "Unread",
+    "breadcrumb": {
+      "home": "Home",
+      "current": "Notifications"
+    },
+    "searchPlaceholder": "Search notifications...",
+    "refresh": "Refresh",
+    "markAllRead": "Mark All as Read",
+    "loadMore": "Load More",
+    "allLoaded": "All notifications loaded",
+    "showing": "Showing {shown} of {total}",
+    "allMarkedRead": "All notifications marked as read",
+    "justNow": "Just now",
+    "minutesAgo": "{count} minutes ago",
+    "hoursAgo": "{count} hours ago",
+    "daysAgo": "{count} days ago",
+    "filters": {
+      "all": "All",
+      "unread": "Unread",
+      "read": "Read"
+    },
+    "empty": {
+      "noUnread": "No unread notifications",
+      "noNotifications": "No notifications",
+      "description": "Your new notifications will appear here when they arrive",
+      "showAll": "Show all notifications"
+    },
+    "errors": {
+      "fetchFailed": "Failed to load notifications",
+      "markAllFailed": "Failed to mark notifications as read"
+    },
+    "types": {
+      "order": "Order",
+      "user": "User",
+      "product": "Product",
+      "system": "System",
+      "payment": "Payment",
+      "alert": "Alert"
+    }
+  },
+  "orderAnalysis": {
+    "breadcrumb": {
+      "home": "Home",
+      "orderAnalysis": "Order Analysis"
+    },
+    "search": {
+      "orderPlaceholder": "Search by order number or customer name..."
+    },
+    "actions": {
+      "howToUse": "Usage Guide"
+    },
+    "chart": {
+      "newOrders": "New Orders",
+      "deliveredOrders": "Delivered Orders"
+    },
+    "ranges": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "this_week": "This Week",
+      "last_week": "Last Week",
+      "this_month": "This Month",
+      "last_month": "Last Month",
+      "this_year": "This Year"
+    },
+    "filters": {
+      "apply": "Apply",
+      "dateRange": "Time Range",
+      "dateRangePlaceholder": "Select date range",
+      "store": "Store",
+      "allStores": "All Stores",
+      "search": "Search Orders"
+    },
+    "kpi": {
+      "totalOrders": "Total Orders",
+      "confirmedOrders": "Confirmed Orders",
+      "deliveredOrders": "Delivered Orders",
+      "cancelledOrders": "Cancelled Orders",
+      "deliveryRate": "Delivery from Total",
+      "deliveryFromConf": "Delivery from Confirmed",
+      "inDelivery": "In Delivery",
+      "totalSales": "Total Sales (Without Shipping)",
+      "totalWithShipping": "Total with Shipping",
+      "totalSalesBosta": "Total Bosta Sales"
+    },
+    "charts": {
+      "generalReports": "General Reports",
+      "topProducts": "Your Best-Selling Products",
+      "newOrders": "New Orders",
+      "deliveredOrders": "Delivered Orders"
+    },
+    "areas": {
+      "title": "Top-Selling Areas",
+      "columns": {
+        "cityArea": "City/Area",
+        "totalOrders": "Total Orders",
+        "confirmed": "Confirmed",
+        "inDelivery": "In Delivery",
+        "delivered": "Delivered",
+        "netSales": "Net Sales",
+        "successRate": "Success Rate"
+      }
+    },
+    "products": {
+      "title": "Best-Selling Products",
+      "columns": {
+        "name": "Product Name",
+        "ordersCount": "Orders Count",
+        "confirmedOrders": "Confirmed Orders",
+        "inDelivery": "In Delivery",
+        "deliveryFromTotal": "Delivery from Total",
+        "deliveryFromConfirmed": "Delivery from Confirmed"
+      }
+    },
+    "export": {
+      "exporting": "Exporting...",
+      "success": "Exported successfully",
+      "failed": "Export failed"
+    }
+  },
+  "dashboard": {
+    "actions": {
+      "howToUse": "Usage Guide"
+    },
+    "common": {
+      "noData": "No data available",
+      "noOperations": "No operations were recorded in this time range",
+      "refresh": "Refresh",
+      "export": "Export"
+    },
+    "breadcrumb": {
+      "home": "Home",
+      "dashboard": "Dashboard"
+    },
+    "filters": {
+      "apply": "Apply",
+      "dateRange": "Time Range",
+      "dateRangePlaceholder": "Select date range",
+      "store": "Store",
+      "allStores": "All Stores"
+    },
+    "kpi": {
+      "totalSales": "Total Sales",
+      "costOfGoods": "Cost of Goods Sold",
+      "totalProfit": "Total Profit",
+      "profitMargin": "Profit Margin %",
+      "confirmRate": "Confirmation Rate",
+      "deliveryRate": "Delivery Rate",
+      "cancelled": "Cancelled Rate",
+      "returned": "Returned Rate",
+      "inDelivery": "In Delivery",
+      "newOrders": "New",
+      "totalOrders": "Total Orders",
+      "totalCollected": "Total Collections"
+    },
+    "chart": {
+      "ordersCount": "Orders Count",
+      "sales": "Sales"
+    },
+    "charts": {
+      "generalReports": "General Reports",
+      "topProducts": "Your Best-Selling Products"
+    },
+    "profitTable": {
+      "title": "Detailed Profit Table",
+      "columns": {
+        "period": "Time Period",
+        "totalSales": "Total Sales",
+        "costs": "Cost of Goods",
+        "totalProfit": "Total Profit",
+        "profitMargin": "Profit Margin"
+      }
+    },
+    "export": {
+      "exporting": "Exporting...",
+      "success": "Exported successfully",
+      "failed": "Export failed"
+    }
+  },
+  "orderCollection": {
+    "collectionMethods": {
+      "visa": "Visa",
+      "bank": "Bank Transfer",
+      "cash": "Cash",
+      "other": "Other",
+      "vodafone_cash": "Vodafone Cash",
+      "orange_cash": "Orange Cash",
+      "etisalat_cash": "Etisalat Cash",
+      "we_pay": "We Pay",
+      "insta": "InstaPay",
+      "fawry": "Fawry",
+      "aman": "Aman",
+      "meeza": "Meeza",
+      "valu": "Valu",
+      "sympl": "Sympl",
+      "tabby": "Tabby",
+      "tamara": "Tamara",
+      "shipping_company": "Shipping Company",
+      "office_pickup": "Office Pickup"
+    },
+    "tabs": {
+      "notCollected": "Not Collected",
+      "collected": "Collected"
+    },
+    "breadcrumb": {
+      "home": "Home",
+      "notCollected": "Uncollected Orders",
+      "fullyCollected": "Fully Collected Orders"
+    },
+    "columns": {
+      "orderNumber": "Order Number",
+      "shippingCompany": "Shipping Company",
+      "collectedAmount": "Collected Amount",
+      "remainingBalance": "Remaining Balance",
+      "shippingCost": "Shipping Cost",
+      "collectionMethod": "Collection Method",
+      "deliveredAt": "Delivery Date",
+      "collectionStatus": "Collection Status",
+      "lastCollectionDate": "Last Collection Date",
+      "totalAmount": "Total Amount"
+    },
+    "collectionStatus": {
+      "pending": "Pending",
+      "partial": "Partially Collected",
+      "fullyCollected": "Fully Collected"
+    },
+    "stats": {
+      "notCollected": "Not Collected",
+      "partialCollected": "Partially Collected",
+      "fullyCollected": "Fully Collected"
+    },
+    "actions": {
+      "collect": "Collect",
+      "howToUse": "How to Use"
+    },
+    "toolbar": {
+      "export": "Export",
+      "filter": "Filter"
+    },
+    "filters": {
+      "shippingCompany": "Shipping Company",
+      "shippingCompanyPlaceholder": "All Shipping Companies",
+      "date": "Date Range",
+      "datePlaceholder": "Select date range",
+      "all": "All",
+      "apply": "Apply"
+    },
+    "searchPlaceholder": "Search by order number or customer name...",
+    "pagination": {
+      "total": "Total",
+      "limit": "Per Page"
+    },
+    "empty": {
+      "title": "No Orders",
+      "subtitle": "No orders found matching the search criteria"
+    },
+    "messages": {
+      "exportStarted": "Exporting data...",
+      "exportSuccess": "Data exported successfully",
+      "exportFailed": "Failed to export data"
+    },
+    "errors": {
+      "fetchFailed": "Failed to load orders",
+      "fetchStatsFailed": "Failed to load statistics"
+    },
+    "table": {
+      "actions": "Actions"
+    }
+  },
+  "collectOrder": {
+    "currency": "EGP",
+    "breadcrumb": {
+      "home": "Home",
+      "title": "Collect Order"
+    },
+    "fields": {
+      "orderNumber": "Order Number",
+      "orderTotal": "Order Total",
+      "collectedAmount": "Collected Amount",
+      "shippingCost": "Shipping Cost",
+      "shippingCompany": "Shipping Company",
+      "collectionDate": "Collection Date",
+      "source": "Payment Method",
+      "currency": "Currency",
+      "amount": "Amount",
+      "notes": "Notes"
+    },
+    "placeholders": {
+      "shippingCompany": "Select shipping company",
+      "collectionDate": "Select collection date",
+      "amount": "0.00",
+      "notes": "Add any additional notes here..."
+    },
+    "sections": {
+      "collectionForm": "Collection Form",
+      "collectionFormSub": "Record a payment collection operation"
+    },
+    "stats": {
+      "remainingBalance": "Remaining Balance"
+    },
+    "info": {
+      "customer": "Customer Name",
+      "phone": "Phone Number",
+      "city": "City",
+      "delivered": "Delivery Date"
+    },
+    "timeline": {
+      "placed": "Order Placed",
+      "delivered": "Delivered",
+      "collection": "Collection",
+      "pending": "Pending"
+    },
+    "status": {
+      "delivered": "Delivered"
+    },
+    "hints": {
+      "afterCollection": "After this collection:",
+      "remaining": "Remaining"
+    },
+    "actions": {
+      "save": "Save",
+      "saving": "Saving..."
+    },
+    "validation": {
+      "shippingCompanyRequired": "Shipping company is required",
+      "collectionDateRequired": "Collection date is required",
+      "sourceRequired": "Payment method is required",
+      "currencyRequired": "Currency is required",
+      "amountRequired": "Amount is required",
+      "amountMin": "Amount must be greater than zero"
+    },
+    "messages": {
+      "loading": "Loading...",
+      "success": "Collection recorded successfully"
+    },
+    "errors": {
+      "invalidOrderId": "Invalid order ID",
+      "fetchFailed": "Failed to load order data",
+      "createFailed": "Failed to create collection",
+      "orderNotFound": "Order not found"
+    }
+  },
+  "plans": {
+    "manageSubscription": {
+      "breadcrumb": {
+        "users": "Users",
+        "create": "Add Subscription",
+        "edit": "Edit Subscription"
+      },
+      "sections": {
+        "userInfo": "User Information",
+        "selectedPlan": "Selected Plan",
+        "subscriptionForm": "Subscription Information"
+      },
+      "fields": {
+        "userName": "User Name",
+        "userEmail": "Email",
+        "userPhone": "Phone Number",
+        "joinedDate": "Join Date",
+        "plan": "Plan",
+        "status": "Status",
+        "price": "Price",
+        "payed": "Paid",
+        "paymentMethod": "Payment Method",
+        "usersLimit": "Users Limit",
+        "shippingLimit": "Shipping Companies Limit",
+        "bulkUploadLimit": "Monthly Upload Limit"
+      },
+      "placeholders": {
+        "plan": "Select plan",
+        "price": "Enter price (optional)",
+        "paymentMethod": "Select payment method"
+      },
+      "hints": {
+        "priceOverride": "Leave empty to use the default plan price",
+        "payed": "Enable if payment has already been made"
+      },
+      "messages": {
+        "createSuccess": "Subscription created successfully",
+        "updateSuccess": "Subscription updated successfully"
+      },
+      "errors": {
+        "invalidUserId": "Invalid user ID",
+        "fetchUserFailed": "Failed to load user data",
+        "fetchSubscriptionFailed": "Failed to load subscription data",
+        "saveFailed": "Failed to save subscription",
+        "userNotFound": "User not found"
+      }
+    },
+    "tabs": {
+      "plans": "Manage Plans",
+      "transactions": "All Transactions",
+      "subscriptions": "Subscriptions"
+    },
+    "breadcrumb": {
+      "home": "Home",
+      "subscriptions": "Subscription Management"
+    },
+    "columns": {
+      "transactionId": "Transaction ID",
+      "user": "User",
+      "subscription": "Subscription",
+      "amount": "Amount",
+      "status": "Status",
+      "paymentMethod": "Payment Method",
+      "paymentProof": "Payment Proof",
+      "createdAt": "Created At",
+      "lastUpdate": "Last Update"
+    },
+    "actions": {
+      "addSubscription": "Add Subscription",
+      "howToUse": "How to Use",
+      "view": "View",
+      "save": "Save",
+      "saving": "Saving..."
+    },
+    "validation": {
+      "planRequired": "Plan is required",
+      "statusRequired": "Status is required",
+      "priceMin": "Price must be 0 or greater",
+      "paymentMethodRequired": "Payment method is required"
+    },
+    "transactions": {
+      "emptyTitle": "No transactions",
+      "emptySubtitle": "No transactions to display"
+    },
+    "currency": "EGP",
+    "subscriptions": {
+      "statuses": {
+        "active": "Active",
+        "cancelled": "Cancelled",
+        "expired": "Expired"
+      }
+    },
+    "filters": {
+      "status": "Status",
+      "statusPlaceholder": "Select status",
+      "date": "Date",
+      "datePlaceholder": "Select period",
+      "all": "All",
+      "apply": "Apply"
+    },
+    "statuses": {
+      "active": "Active",
+      "processing": "Processing",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "toolbar": {
+      "export": "Export",
+      "searchPlaceholder": "Search...",
+      "filter": "Filter"
+    },
+    "image": {
+      "preview": "Preview"
+    },
+    "pagination": {
+      "total": "Total",
+      "limit": "Results Count"
+    },
+    "messages": {
+      "errorFetchingTransactions": "Failed to load transactions",
+      "filtersApplied": "Filters applied successfully",
+      "exportStarted": "Transaction export started",
+      "exportSuccess": "Transactions exported successfully",
+      "exportFailed": "Failed to export transactions",
+      "loading": "Loading...",
+      "errorFetchingPlans": "An error occurred while loading plans",
+      "fetchPlansFailed": "Failed to load plans",
+      "createPlanSuccess": "Plan created successfully",
+      "createPlanFailed": "Failed to create plan",
+      "updatePlanSuccess": "Plan updated successfully",
+      "updatePlanFailed": "Failed to update plan",
+      "deletePlanSuccess": "Plan deleted successfully",
+      "deletePlanFailed": "Failed to delete plan",
+      "deletePlanHasActiveSubscriptions": "Cannot delete a plan that has active subscriptions. Disable it instead."
+    },
+    "planPage": {
+      "newPlanCreatingTitle": "Creating plan...",
+      "newPlanCreatingHint": "Please wait",
+      "newPlanTitle": "Add New Plan",
+      "newPlanHint": "Click to create a new subscription plan"
+    },
+    "planCard": {
+      "featuresLabel": "Features:",
+      "featureCount": "Feature",
+      "addNewFeaturePlaceholder": "Add a new feature...",
+      "planNamePlaceholder": "Plan name",
+      "planDescriptionPlaceholder": "Plan description...",
+      "pricePlaceholder": "50",
+      "duration": {
+        "monthly": "Monthly",
+        "yearly": "Yearly",
+        "lifetime": "Lifetime"
+      }
+    },
+    "limitsUi": {
+      "usersLimitLabel": "Allowed Users Count",
+      "shippingCompaniesLimitLabel": "Allowed Shipping Companies Count",
+      "bulkUploadPerMonthLabel": "Allowed monthly order uploads",
+      "users": "Users",
+      "shippingCompanies": "Shipping Companies",
+      "bulkUploadPerMonth": "Allowed monthly order uploads",
+      "selectCount": "Select count"
+    },
+    "color": {
+      "blue": "Blue",
+      "purple": "Purple",
+      "orange": "Orange",
+      "green": "Green",
+      "pink": "Pink",
+      "cyan": "Cyan"
+    },
+    "tooltips": {
+      "saving": "Saving...",
+      "save": "Save",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "transactionDetails": {
+      "title": "Transaction Details",
+      "description": "Complete information about transaction #{{id}}",
+      "transactionNumber": "Transaction Number",
+      "customerName": "Customer Name",
+      "planName": "Plan Name",
+      "amount": "Amount",
+      "subscriptionDate": "Subscription Date",
+      "status": "Status",
+      "notAvailable": "Not Available",
+      "close": "Close"
+    },
+    "deletePlanDialog": {
+      "title": "Delete Plan",
+      "confirmText": "Are you sure you want to delete this plan? This action cannot be undone.",
+      "deleting": "Deleting..."
+    }
+  },
+  "subscriptions": {
+    "breadcrumb": {
+      "home": "Home",
+      "subscriptions": "Subscriptions"
+    },
+    "tabs": {
+      "plans": "Plans",
+      "transactions": "Transactions"
+    },
+    "duration": {
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "lifetime": "Lifetime"
+    },
+    "card": {
+      "currency": "EGP",
+      "users": "User",
+      "shippingCompanies": "Shipping Company",
+      "popular": "Most Popular",
+      "active": "Active",
+      "subscribe": "Subscribe Now",
+      "cancelPlan": "Cancel Plan"
+    },
+    "banner": {
+      "currentPlan": "Your Current Plan",
+      "active": "Active"
+    },
+    "empty": {
+      "title": "No plans available",
+      "subtitle": "Plans will be added soon, please check back later."
+    },
+    "errors": {
+      "fetchPlans": "Unable to load plans, please try again."
+    }
+  },
+  "pagination": {
+    "showing": "Showing",
+    "of": "of",
+    "records": "records",
+    "perPage": "per page",
+    "firstPage": "First Page",
+    "prevPage": "Previous",
+    "nextPage": "Next",
+    "lastPage": "Last Page"
+  },
+  "landing": {
+    "brand": {
+      "name": "Talabaty",
+      "suffix": "Tech"
+    },
+    "nav": {
+      "home": "Home",
+      "services": "Services",
+      "about": "About the Platform",
+      "pricing": "Pricing",
+      "contact": "Contact Us"
+    },
+    "auth": {
+      "signup": "Create Account",
+      "signin": "Sign In",
+      "dashboard": "Dashboard"
+    },
+    "hero": {
+      "badge": "#1 E-Commerce Platform",
+      "title1": "Everything you need to sell and scale…",
+      "title2": "in one platform.",
+      "subtitle": "We provide product storage, packaging, and shipping anywhere, with secure payments and fast delivery through fulfillment centers in the UAE, Saudi Arabia, and Oman, helping you build a strong, scalable brand.",
+      "trialNote": "30-day free trial, no card or commitment"
+    },
+    "cta": {
+      "button": "Try the Platform Now",
+      "placeholder": "Enter your email",
+      "sent": "Sent"
+    },
+    "stats": {
+      "merchants": {
+        "value": "+5,000",
+        "label": "Active Merchant"
+      },
+      "orders": {
+        "value": "+1M",
+        "label": "Orders Shipped"
+      },
+      "countries": {
+        "value": "3",
+        "label": "Gulf Countries"
+      },
+      "uptime": {
+        "value": "99.9%",
+        "label": "Uptime"
+      }
+    },
+    "floatingCards": {
+      "orders": "New Orders",
+      "thisWeek": "This Week",
+      "delivery": "Fast Delivery",
+      "fastDelivery": "Within 24 Hours"
+    },
+    "lang": {
+      "ar": "AR",
+      "en": "EN"
+    }
+  },
+  "features": {
+    "badge": "All-in-One Platform",
+    "headlines": [
+      {
+        "part1": "Expand",
+        "part2": "Your Sales Without Limits"
+      },
+      {
+        "part1": "Control",
+        "part2": "Your Orders Smartly"
+      },
+      {
+        "part1": "Save",
+        "part2": "Your Time and Effort"
+      },
+      {
+        "part1": "Grow",
+        "part2": "Your Store with Confidence"
+      }
+    ],
+    "pills": [
+      {
+        "label": "Inventory Management"
+      },
+      {
+        "label": "Reports and Statistics"
+      },
+      {
+        "label": "Returns Management"
+      },
+      {
+        "label": "Product Management"
+      },
+      {
+        "label": "User Permissions"
+      }
+    ],
+    "benefitsLabel": "Why Talabaty Tech?",
+    "benefits": [
+      {
+        "label": "Smooth User Experience",
+        "desc": "An intuitive interface that needs no training"
+      },
+      {
+        "label": "24/7 Continuous Support",
+        "desc": "A support team ready around the clock"
+      },
+      {
+        "label": "Cost Savings",
+        "desc": "Flexible pricing that fits your business size"
+      },
+      {
+        "label": "Full Protection and Security",
+        "desc": "Full encryption and protection for your data"
+      }
+    ]
+  },
+  "servicesSection": {
+    "header": {
+      "title": "All your commerce services... under",
+      "highlight": "your full control",
+      "subtitle": "Manage orders, shipping, inventory, and smart reports — easily and quickly."
+    },
+    "services": {
+      "cards": [
+        {
+          "img": "landing/service-1.png",
+          "title": "We manage your business completely from <span style='color:#6763AF'>start to finish</span>",
+          "desc": "A complete system to manage orders from receipt to delivery, with precise tracking at every step. We ensure your orders arrive quickly and safely while preserving your products better than any other system.",
+          "cta": "Start Your Trial Now"
+        },
+        {
+          "img": "landing/service-2.png",
+          "title": "Every product in its right place… and reaches <span style='color:#f59e0b'>your customer safely</span>",
+          "desc": "The inventory system ensures organized products, with real-time updates and alerts. Accurate, it delivers every order quickly and safely and ensures successful fulfillment.",
+          "cta": "Start Your Trial Now"
+        },
+        {
+          "img": "landing/service-3.png",
+          "title": "Track all your shipments easily… and save <span style='color:#10b981'>your effort</span>",
+          "desc": "Choose the shipping companies that fit your customers and track every order through one solution. Instant updates for every shipment, money tracking, reliable delivery, and safety.",
+          "cta": "Start Your Trial Now"
+        }
+      ]
+    },
+    "dashboard": {
+      "badge": "Smart Dashboard",
+      "title": {
+        "part1": "All your data",
+        "highlight": "always in front of you"
+      },
+      "subtitle": "Track your store performance moment by moment and control everything from one place.",
+      "chips": ["See all products and quantities in real time", "Get accurate reports to make faster decisions", "Track orders from confirmation to delivery"]
+    }
+  },
+  "marquee": {
+    "lines": [
+      [
+        {
+          "bullet": true,
+          "text": "Order Management"
+        },
+        {
+          "bullet": false,
+          "text": "An advanced digital platform for e-commerce management, redefining the way"
+        }
+      ],
+      [
+        {
+          "bullet": false,
+          "text": "daily operations work for stores and companies."
+        },
+        {
+          "bullet": true,
+          "text": "Our platform is designed to be a single control center that connects"
+        }
+      ],
+      [
+        {
+          "bullet": false,
+          "text": "sales"
+        },
+        {
+          "bullet": true,
+          "text": "operations"
+        },
+        {
+          "bullet": true,
+          "text": "shipping"
+        },
+        {
+          "bullet": true,
+          "text": "in one smart and seamless experience."
+        }
+      ]
+    ]
+  },
+  "howItWorks": {
+    "header": {
+      "title": "From order to delivery — all your work perfectly organized",
+      "highlight": "One platform",
+      "subtitle": "Track your orders and inventory easily… everything organized in one place"
+    },
+    "steps": [
+      {
+        "stepLabel": "Step One",
+        "title": "Create your account and connect your store",
+        "desc": "Register on the platform easily, and connect your online store in minutes to start syncing orders automatically."
+      },
+      {
+        "stepLabel": "Step Two",
+        "title": "Track your products, orders, and reports accurately",
+        "desc": "Monitor every product, every order, and get smart reports that help you manage your business quickly and intelligently."
+      },
+      {
+        "stepLabel": "Step Three",
+        "title": "Activate shipping companies easily",
+        "desc": "Connect the shipping companies you work with, define coverage areas, shipping rates, and delivery statuses."
+      }
+    ]
+  },
+  "shippingNetwork": {
+    "heading": {
+      "prefix": "All shipping companies connected in",
+      "highlight": "one platform",
+      "suffix": ""
+    },
+    "subheading": "Track shipments, delivery statuses, and collections in real time from inside the platform.",
+    "centerLabel": "Talabaty Tech",
+    "companies": {
+      "smsa": "SMSA",
+      "aramex": "Aramex",
+      "fedex": "FedEx",
+      "imile": "iMile",
+      "spl": "SPL",
+      "jt": "J&T Express",
+      "makane": "MakanE",
+      "thabit": "Thabit",
+      "naqel": "NAQEL"
+    }
+  },
+  "testimonials": {
+    "heading": {
+      "prefix": "What our customers say about their experience",
+      "highlight": "with our platform"
+    },
+    "subheading": "See the success stories of customers who used our platform",
+    "reviews": {
+      "r1": {
+        "name": "Ahmed Sami",
+        "role": "Online Store Owner",
+        "text": "The platform made order management much easier for us. After using it, we were able to track orders, inventory, and shipping from one place without getting distracted. The integration with shipping companies saved us a lot of time and effort and made tracking more accurate and faster."
+      },
+      "r2": {
+        "name": "Mariam Khaled",
+        "role": "Online Store Manager",
+        "text": "The interface is very simple, and the team learned it quickly. Technical support is always helpful, and that helped us run our daily work smoothly without problems."
+      },
+      "r3": {
+        "name": "Mohamed Fouad",
+        "role": "E-Commerce Merchant",
+        "text": "The platform saved us a lot of time and effort, and helped us track everything moment by moment. Integration with shipping companies made follow-up and collection much easier."
+      },
+      "r4": {
+        "name": "Hesham Ali",
+        "role": "Online Store Founder",
+        "text": "The platform helped us bring all operations into one place, from orders to inventory and shipping. It saved us a lot of time and effort, and also reduced daily errors."
+      },
+      "r5": {
+        "name": "Nourhan سعيد",
+        "role": "Customer Service Manager",
+        "text": "A very smooth experience, tracking orders and shipping has become clear and easy. Technical support is always cooperative, and we felt our daily work became more organized."
+      },
+      "r6": {
+        "name": "Rami Gad",
+        "role": "Digital Store Operations Manager",
+        "text": "The platform saved us a lot of time and costs, and gave us complete visibility over all orders and inventory. Integration with shipping companies made tracking and collection easier."
+      },
+      "r7": {
+        "name": "Sarah Al-Ghamdi",
+        "role": "Perfume Store Owner",
+        "text": "One system, from selling to shipping and collection. Before the platform, we used more than one system and it was exhausting. Now everything is in one place."
+      },
+      "r8": {
+        "name": "Laila Mostafa",
+        "role": "E-Commerce Operations Manager",
+        "text": "The reports are clear and accurate, and that helped us understand product and sales performance better. Integration with shipping companies was a game changer and saved us from many errors."
+      },
+      "r9": {
+        "name": "Ahmed Fawzy",
+        "role": "Online Brand Owner",
+        "text": "The interface is very smooth, and it was easy for the whole team to use the platform. Technical support is fast and helpful, and that made the daily work experience very enjoyable."
+      },
+      "r10": {
+        "name": "Mona Adel",
+        "role": "Procurement Manager",
+        "text": "We needed a solution that brings all operations together in one place, and the platform was exactly what we were looking for. The continuous updates show that they listen to customer feedback."
+      }
+    }
+  },
+  "pricing": {
+    "heading": {
+      "prefix": "Plans designed to meet",
+      "highlight": "your needs"
+    },
+    "subheading": "Choose your plan and start managing your business easily and smartly, from orders to shipping and inventory.",
+    "trialNote": "3 free days",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "perMonth": "Per Month",
+    "cta": "Subscribe Now",
+    "badge": "New",
+    "plans": {
+      "starter": {
+        "name": "Starter Plan",
+        "subtitle": "Suitable for anyone just starting or selling at a small scale",
+        "features": {
+          "f1": "Integration with a limited number of shipping companies",
+          "f2": "Manage orders from one place",
+          "f3": "Basic reports on orders and sales",
+          "f4": "Track orders from confirmation to delivery",
+          "f5": "Support beyond chat"
+        }
+      },
+      "pro": {
+        "name": "Professional Plan",
+        "subtitle": "The best choice for merchants who want to grow their business",
+        "features": {
+          "f1": "All features of the Starter Plan",
+          "f2": "Integration with more shipping companies",
+          "f3": "Manage multiple warehouses",
+          "f4": "Collection and returns tracking",
+          "f5": "Advanced reports and detailed analytics",
+          "f6": "Multiple team permissions"
+        }
+      },
+      "enterprise": {
+        "name": "Enterprise Plan",
+        "subtitle": "Designed for merchants and large companies",
+        "features": {
+          "f1": "All features of the Professional Plan",
+          "f2": "Unlimited integration with shipping companies",
+          "f3": "Unlimited order and inventory management",
+          "f4": "Custom reports and smart dashboards",
+          "f5": "Custom integrations and API",
+          "f6": "24/7 Technical Support"
+        }
+      }
+    }
+  },
+  "faq": {
+    "heading": {
+      "prefix": "Everything you need to know... before",
+      "highlight": "you start"
+    },
+    "subheading": "Questions and answers about everything related to managing your orders.",
+    "items": {
+      "q1": {
+        "q": "How do I start using the platform?",
+        "a": "After creating your account, you can immediately start adding products, connecting shipping companies, and managing orders from one easy-to-use dashboard."
+      },
+      "q2": {
+        "q": "Can I manage orders from mobile?",
+        "a": "Yes, the platform is compatible with all devices including desktop, mobile, and tablet, and works smoothly from any browser without needing to install an app."
+      },
+      "q3": {
+        "q": "Is the platform integrated with shipping companies?",
+        "a": "Yes, we support direct integrations with top shipping companies in the region such as Aramex, SMSA, FedEx, NAQEL, and others. You can connect more than one company depending on your plan."
+      },
+      "q4": {
+        "q": "How do I deal with returns and replacements?",
+        "a": "The platform provides a complete return management system through which you can track the status of every return, update inventory automatically, and create detailed reports about replacements."
+      },
+      "q5": {
+        "q": "Does the platform support SKU and barcode?",
+        "a": "Absolutely, the platform fully supports product management via SKU and barcode, making stock counting and accurate inventory tracking easier at any time."
+      }
+    }
+  },
+  "heroBanner": {
+    "heading": {
+      "prefix": "Full control over your business from.....",
+      "highlight": "one place"
+    },
+    "subheading": "Organize your orders, inventory, shipping, and collections in one smart platform designed to simplify your daily work and support your business growth.",
+    "ctaPrimary": "Start Your Trial Now",
+    "ctaSecondary": "Learn More"
+  },
+  "footer": {
+    "logo": "Talabaty Tech",
+    "nav": {
+      "home": "Home",
+      "services": "Services",
+      "pricing": "Pricing",
+      "about": "About the Platform",
+      "contact": "Contact Us"
+    },
+    "copyright": "All rights reserved to the platform @2026"
+  },
+  "auth": {
+    "logout": {
+      "loading": "Logging out...",
+      "success": "Logged out successfully.",
+      "failed": "An error occurred while logging out. Please try again"
+    },
+    "brand": {
+      "name": "Talabaty Tech",
+      "tagline": "The Integrated Management Platform",
+      "live": "Live",
+      "mode_signin": "Sign In",
+      "mode_signup": "Create Account",
+      "headline_signin": "Welcome Back\nManage Your Business Efficiently",
+      "headline_signup": "Join the Platform\nStart Your Journey Today",
+      "desc_signin": "Sign in to access your dashboard and manage your orders and operations with ease.",
+      "desc_signup": "Create your account now and start managing your inventory and orders with maximum efficiency.",
+      "stat_val_merchants": "+12k",
+      "stat_val_orders": "+3M",
+      "stat_val_uptime": "99.9%",
+      "stat_merchants": "Active Merchant",
+      "stat_orders": "Completed Order",
+      "stat_uptime": "Uptime Guarantee",
+      "feature_1": "Smart and integrated inventory management",
+      "feature_2": "Integration with leading commerce platforms",
+      "feature_3": "Instant reports and analytics",
+      "feature_4": "Real-time shipment tracking",
+      "follow_us": "Follow us on",
+      "community": "50K+ Community",
+      "trust_ssl": "SSL Secured",
+      "trust_egypt": "Made in Egypt",
+      "trust_fast": "Instant Response"
+    },
+    "mode": {
+      "signin": "Sign In",
+      "signup": "Create Account"
+    },
+    "signin": {
+      "title": "Welcome Back",
+      "subtitle": "Enter your details to continue",
+      "email": "Email",
+      "email_placeholder": "you@example.com",
+      "password": "Password",
+      "password_placeholder": "Password",
+      "forgot": "Forgot Password?",
+      "submit": "Sign In",
+      "loading": "Signing in…",
+      "or": "Or continue with",
+      "google": "Continue with Google",
+      "google_wip": "Connecting Google…",
+      "no_account": "Don't have an account?",
+      "create": "Create Account",
+      "success": "Welcome! Redirecting…",
+      "error": "Incorrect email or password",
+      "googleLoginFailed": "Failed to start Google sign-in",
+      "failedToCompleteGoogleLogin": "Failed to complete Google login. Please try again.",
+      "google_failed": "An error occurred while connecting to your Google account."
+    },
+    "signup": {
+      "step1_title": "Your Personal Information",
+      "step1_sub": "Tell us a little about yourself",
+      "step2_title": "Your Business Information",
+      "step2_sub": "We’ll customize the experience for you",
+      "step3_title": "Secure Your Account",
+      "step3_sub": "Choose a strong password",
+      "step4_title": "Verify Your Email",
+      "step4_sub": "Enter the verification code sent to",
+      "step_account": "Account",
+      "step_biz": "Business",
+      "step_security": "Security",
+      "step_verify": "Verification",
+      "name": "Full Name",
+      "name_placeholder": "Ahmed Mostafa",
+      "company": "Company / Store Name",
+      "email": "Email",
+      "email_placeholder": "you@example.com",
+      "company_placeholder": "Ahmed Online Store",
+      "phone": "Phone Number",
+      "phone_placeholder": "100 000 0000",
+      "business_type": "Business Type",
+      "business_placeholder": "Select business type…",
+      "business_ecommerce": "E-Commerce / Online Store",
+      "business_wholesale": "Wholesale / B2B",
+      "business_retail": "Retail / Physical Store",
+      "business_dropshipping": "Dropshipping",
+      "business_brand": "Brand / Manufacturer",
+      "business_other": "Other",
+      "biz_hint": "We’ll use this information to customize your dashboard and show the most suitable tools for your business.",
+      "password": "Password",
+      "password_placeholder": "At least 8 characters",
+      "confirm_password": "Confirm Password",
+      "confirm_placeholder": "Re-enter password",
+      "pw_weak": "Please use a stronger password",
+      "otp_title": "Verification Code",
+      "otp_sub": "We sent a 6-digit code to",
+      "otp_resend": "Resend",
+      "otp_timer": "Resend after",
+      "otp_expired": "The code has expired",
+      "otp_verify": "Verify",
+      "otp_verifying": "Verifying…",
+      "otp_success": "Verified successfully!",
+      "otp_wrong": "Incorrect code",
+      "next": "Next",
+      "back": "Back",
+      "submit": "Create Account",
+      "creating": "Creating account…",
+      "success": "Account created successfully! Please confirm your email.",
+      "error": "An error occurred during registration",
+      "terms": "By signing up, you agree to the",
+      "terms_link": "Terms of Service",
+      "and": "and",
+      "privacy": "Privacy Policy",
+      "has_account": "Already have an account?",
+      "login": "Sign In",
+      "resending": "Resending...",
+      "resend_success": "A new code has been sent to your email",
+      "resend_error": "Failed to resend code, try again later",
+      "verify_btn": "Confirm and Activate Account",
+      "loading": "Processing..."
+    },
+    "forgot": {
+      "title": "Forgot Password?",
+      "sub": "We will send you a verification code to your email",
+      "email": "Email",
+      "email_placeholder": "you@example.com",
+      "submit": "Send Code",
+      "sending": "Sending code…",
+      "sent": "Verification code sent to your email",
+      "back": "Back to Sign In",
+      "error": "An error occurred, please try again",
+      "otp_title": "Enter Verification Code",
+      "otp_sub": "We sent a 6-digit code to",
+      "otp_resend": "Resend",
+      "otp_timer": "Resend after",
+      "otp_expired": "The code has expired",
+      "otp_verify": "Verify",
+      "otp_wrong": "The code is incorrect or expired",
+      "verifying": "Verifying…",
+      "verified": "Verified successfully",
+      "resending": "Resending…",
+      "resent": "Resent successfully",
+      "reset_title": "New Password",
+      "reset_sub": "Choose a strong password for your account",
+      "new_password": "New Password",
+      "confirm": "Confirm Password",
+      "reset_submit": "Set Password",
+      "resetting": "Setting password…",
+      "reset_success": "Password changed successfully!",
+      "done_title": "Done successfully! 🎉",
+      "done_sub": "Your password has been changed successfully.",
+      "redirecting": "Redirecting to sign in…"
+    },
+    "validation": {
+      "required": "This field is required",
+      "email_invalid": "Invalid email address",
+      "password_min": "Password must be at least 8 characters",
+      "password_upper": "Must contain an uppercase letter",
+      "password_lower": "Must contain a lowercase letter",
+      "password_number": "Must contain a number",
+      "passwords_match": "Passwords do not match",
+      "phone_invalid": "Invalid phone number"
+    },
+    "strength": {
+      "label": "Password Strength",
+      "weak": "Weak",
+      "medium": "Medium",
+      "strong": "Strong",
+      "req_length": "8+ chars",
+      "req_upper": "Uppercase letter",
+      "req_lower": "Lowercase letter",
+      "req_number": "Number"
+    }
+  },
+  "onboarding": {
+    "welcome_title": "Welcome to Talabaty Tech! 🎉",
+    "welcome_sub": "It will only take a few minutes to set up your system",
+    "welcome_desc": "We’ll help you choose the right plan, add your company details, and connect your store and shipping company so you can start receiving orders immediately.",
+    "welcome_btn": "Let’s Start Setup",
+    "steps": ["Choose Your Plan", "Company Information", "Connect Store", "Shipping Company"],
+    "plan": {
+      "title": "Choose the right plan for you",
+      "sub": "You can change the plan at any time",
+      "popular": "Most Popular",
+      "currency": "EGP",
+      "per_month": "/ month",
+      "per_year": "/ year",
+      "lifetime": "Lifetime",
+      "users": "User",
+      "shipping": "Shipping Company",
+      "subscribe": "Choose This Plan",
+      "current": "Your Current Plan",
+      "loading": "Loading plans…"
+    },
+    "company": {
+      "title": "Your Company Information",
+      "sub": "This information will appear on your invoices and reports",
+      "name": "Company Name",
+      "name_placeholder": "Ahmed Trading Company",
+      "country": "Country *",
+      "country_placeholder": "Select country",
+      "currency": "Currency *",
+      "currency_placeholder": "Select currency",
+      "tax_number": "Tax Number",
+      "tax_placeholder": "Please enter tax registration number",
+      "commercial_number": "Commercial Registration",
+      "commercial_placeholder": "Please enter commercial registration number",
+      "phone": "Main Phone",
+      "phone_placeholder": "+20 100 000 0000",
+      "website": "Website",
+      "website_placeholder": "https://mystore.com",
+      "address": "Address",
+      "address_placeholder": "Street, city, governorate",
+      "optional": "(Optional)",
+      "required_note": "* Country and currency are required"
+    },
+    "store": {
+      "title": "Connect Your Store",
+      "sub": "Add your store to receive orders automatically",
+      "skip": "Skip for now",
+      "connect": "Connect Store",
+      "connected": "Connected",
+      "configure": "Configure",
+      "provider_easyorder": "Easy Order",
+      "provider_shopify": "Shopify",
+      "provider_woocommerce": "WooCommerce",
+      "api_key": "API Key",
+      "secret": "Secret",
+      "store_url": "Store URL",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "shipping": {
+      "title": "Connect Shipping Company",
+      "sub": "Add a shipping company to send orders automatically",
+      "skip": "Skip and finish setup",
+      "api_key": "API Key",
+      "account_id": "Account ID",
+      "save": "Save",
+      "cancel": "Cancel",
+      "bosta": "Bosta",
+      "jt": "J&T Express",
+      "turbo": "Turbo"
+    },
+    "nav": {
+      "next": "Next",
+      "back": "Back",
+      "finish": "Finish Setup",
+      "skip": "Skip"
+    },
+    "complete": {
+      "title": "Setup Complete! 🚀",
+      "sub": "Your system is ready, let’s get started!",
+      "go": "Go to Dashboard"
+    }
+  },
+  "wallet": {
+    "pageTitle": "Wallet",
+    "breadcrumb": {
+      "dashboard": "Home",
+      "wallet": "Wallet"
+    },
+    "stats": {
+      "walletBalance": "Wallet Balance",
+      "available": "Available Balance",
+      "pendingCOD": "Pending Cash on Delivery",
+      "totalWithdrawn": "Total Withdrawn"
+    },
+    "tabs": {
+      "all": "All",
+      "deposits": "Deposits",
+      "withdrawals": "Withdrawals",
+      "cod": "Cash on Delivery"
+    },
+    "actions": {
+      "deposit": "Deposit",
+      "withdraw": "Withdraw",
+      "export": "Export"
+    },
+    "methods": {
+      "vodafoneCash": "Vodafone Cash",
+      "instapay": "InstaPay",
+      "bankTransfer": "Bank Transfer",
+      "walletMethod": "Wallet"
+    },
+    "deposit": {
+      "title": "Deposit Balance",
+      "subtitle": "Add funds instantly to your wallet",
+      "amountLabel": "Amount (Egyptian Pound)",
+      "cta": "Deposit Now"
+    },
+    "withdraw": {
+      "title": "Withdraw Balance",
+      "available": "Available Balance",
+      "method": "Withdrawal Method",
+      "phone": "Phone Number",
+      "name": "Account Holder Name",
+      "namePlaceholder": "Full name",
+      "email": "Email",
+      "amount": "Amount (Egyptian Pound)",
+      "cta": "Withdraw Balance"
+    },
+    "table": {
+      "date": "Date",
+      "type": "Type",
+      "description": "Description",
+      "amount": "Amount",
+      "status": "Status",
+      "searchPlaceholder": "Search transactions…",
+      "filter": "Filter",
+      "apply": "Apply",
+      "emptyTitle": "No transactions",
+      "emptySubtitle": "Try changing the search or filter criteria"
+    },
+    "txLabels": {
+      "walletTopup": "Wallet Balance Top-up",
+      "vodafoneCashWithdraw": "Withdraw via Vodafone Cash",
+      "instapayWithdraw": "Withdraw via InstaPay",
+      "bankTransferWithdraw": "Bank Transfer",
+      "walletMethodWithdraw": "Withdraw from Wallet",
+      "codOrder": "Cash on Delivery Collection – Order {orderId}"
+    },
+    "txTypes": {
+      "deposit": "Deposit",
+      "withdraw": "Withdraw",
+      "cod": "Cash on Delivery"
+    },
+    "status": {
+      "completed": "Completed",
+      "pending": "Pending"
+    },
+    "validation": {
+      "required": "This field is required",
+      "validAmount": "Enter a valid amount",
+      "validEmail": "Enter a valid email address",
+      "maxAmount": "Maximum amount"
+    },
+    "toasts": {
+      "depositSuccess": "{amount} EGP deposited successfully!",
+      "withdrawSuccess": "Withdrawal request for {amount} EGP submitted!",
+      "exported": "Transactions exported successfully"
+    },
+    "common": {
+      "cancel": "Cancel"
+    }
+  },
+  "orders-work": {
+    "orderNumber": "Order Number",
+    "customer": "Customer",
+    "phone": "Phone",
+    "finalTotal": "Final Total",
+    "profit": "Profit",
+    "addressDetails": "Address Details",
+    "paymentShipping": "Payment and Shipping",
+    "items": "Products",
+    "pieces": "Piece",
+    "stock": "Stock",
+    "productsTotal": "Products Total",
+    "shippingCost": "Shipping Cost",
+    "discount": "Discount",
+    "deposit": "Deposit",
+    "collected": "Collected",
+    "notes": "Notes",
+    "customerNotes": "Customer Note",
+    "internalNotes": "Internal Notes",
+    "statusHistory": "Status History",
+    "upselling": "Suggest to Customer",
+    "replacement": "Replacement",
+    "currentStatus": "Current Status",
+    "clickToSet": "Click to set",
+    "retry": "Retry",
+    "product": "Product",
+    "attrs": "Specifications",
+    "qty": "Quantity",
+    "unitPrice": "Unit Price",
+    "total": "Total",
+    "addProduct": "Add Product",
+    "paymentStatus": {
+      "paid": "Paid",
+      "unpaid": "Unpaid",
+      "partial": "Partially Paid",
+      "refunded": "Refunded",
+      "pending": "Pending"
+    },
+    "statuses": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "failed": "Failed",
+      "on_hold": "On Hold",
+      "out_for_delivery": "Out for Delivery",
+      "new": "New",
+      "confirmed": "Confirmed",
+      "pendingConfirmation": "Pending Confirmation",
+      "pending_confirmation": "Pending Confirmation",
+      "wrong_number": "Wrong Number",
+      "duplicate": "Duplicate",
+      "postponed": "Postponed",
+      "delivered": "Delivered",
+      "in_shipping": "In Shipping",
+      "waiting_stock": "Waiting for Stock",
+      "no_answer_shipping": "No Answer from Shipping",
+      "cancelled_shipping": "Cancelled by Shipping",
+      "cancelledShipping": "Cancelled by Shipping",
+      "cancelled": "Cancelled",
+      "noAnswerShipping": "No Answer from Shipping",
+      "inShipping": "In Shipping",
+      "waitingStock": "Waiting for Stock",
+      "wrongNumber": "Wrong Number",
+      "under_review": "Under Review",
+      "preparing": "Preparing",
+      "ready": "Ready",
+      "shipped": "Shipped",
+      "returned": "Returned",
+      "no_answer": "No Answer",
+      "out_of_area": "Out of Delivery Area"
+    },
+    "workPage": {
+      "changeStatus": "Update Order Status",
+      "selectStatus": "Select the appropriate status for the order",
+      "nextOrder": "Next Order",
+      "notes": "Order Note",
+      "notesPlaceholder": "Add a note to this order...",
+      "lockedMessage": "The order is temporarily locked, wait until the lock timer ends",
+      "orderLocked": "Order Locked",
+      "statusChanged": "Status updated successfully",
+      "orderUpdated": "Order data updated successfully",
+      "updatingOrder": "Updating order...",
+      "pleaseWait": "Please wait...",
+      "clickNext": "Next",
+      "retriesExhausted": "Retries Exhausted",
+      "retriesExhaustedMessage": "You have reached the maximum number of retry attempts for this order",
+      "noOrders": "No Orders",
+      "noOrdersDescription": "There are no pending orders in your list right now. You can try again or return to My Orders.",
+      "backToMyOrders": "Back to My Orders",
+      "selectFromBottom": "Select the status from the bar at the bottom of the screen"
+    },
+    "messages": {
+      "statusUpdated": "Order status updated successfully",
+      "errorFetchingOrder": "An error occurred while fetching the order",
+      "errorFetchingStatuses": "An error occurred while fetching statuses",
+      "errorUpdatingStatus": "An error occurred while updating the status"
+    }
   }
 }

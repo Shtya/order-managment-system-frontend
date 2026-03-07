@@ -96,6 +96,7 @@ const GlobalStyles = () => (
 const createOrderSchema = (t) =>
 	yup.object({
 		customerName: yup.string().trim().required(t("validation.customerNameRequired")),
+		email: yup.string().email(),
 		phoneNumber: yup.string().trim().required(t("validation.phoneRequired")),
 		secondPhoneNumber: yup.string().trim(),
 		city: yup.string().trim().required(t("validation.cityRequired")),
@@ -185,7 +186,7 @@ export default function OrderConfirmationWorkPage() {
 				return nextState;
 			});
 		}
-	}, [watchedOrder?.customerName, watchedOrder?.phoneNumber, watchedOrder?.city, watchedOrder?.address, watchedOrder?.paymentMethod, watchedOrder?.shippingCost, watchedOrder?.deposit]);
+	}, [watchedOrder?.customerName, watchedOrder?.phoneNumber, watchedOrder?.city, watchedOrder?.address, watchedOrder?.paymentMethod, watchedOrder?.shippingCost, watchedOrder?.deposit, watchedOrder.email]);
 
 	const hasUnsavedChanges = useMemo(() => {
 		if (!editedOrder) return false;
@@ -246,7 +247,6 @@ export default function OrderConfirmationWorkPage() {
 		}
 
 		checkLockStatus(data);
-		setStatusDecided(false);
 	};
 
 	const checkLockStatus = (data) => {
@@ -288,6 +288,7 @@ export default function OrderConfirmationWorkPage() {
 
 	// Handlers for Add/Remove Products via Search Popover
 	const handleSelectSku = useCallback((sku) => {
+		console.log(sku)
 		if (selectedSkus.some((s) => s.id === sku.id)) return;
 		setSelectedSkus((prev) => [...prev, sku]);
 
@@ -301,6 +302,8 @@ export default function OrderConfirmationWorkPage() {
 						id: sku.id,
 						sku: sku.sku || sku.key,
 						attributes: sku.attributes || {},
+						stockOnHand: sku.stockOnHand || 0,
+						reserved: sku.reserved || 0,
 						product: { id: sku.productId, name: sku.label || sku.productName }
 					},
 					productName: sku.label || sku.productName,
@@ -316,11 +319,16 @@ export default function OrderConfirmationWorkPage() {
 		toast.success(t("productAdded"));
 	}, [selectedSkus, t]);
 
+	const [removedItemsIds, setRemovedItemsIds] = useState([]);
+
 	const handleRemoveItem = (itemToRemove) => {
+		const vId = itemToRemove.variant?.id || itemToRemove.variantId;
 		setEditedOrder(prev => {
 			const newItems = prev.items.filter(i => (i.id ? i.id !== itemToRemove.id : i.variantId !== itemToRemove.variantId));
 			return recalculateTotals({ ...prev, items: newItems });
 		});
+
+		setRemovedItemsIds(prev => [...prev, { variantId: vId }]);
 		setSelectedSkus(prev => prev.filter(s => s.id !== (itemToRemove.variant?.id || itemToRemove.variantId)));
 	};
 
@@ -340,27 +348,36 @@ export default function OrderConfirmationWorkPage() {
 
 			const payload = {
 				...rest,
-				items: editedOrder.items.map(i => ({
+				removedItems: removedItemsIds,
+				items: editedOrder?.items.map(i => ({
 					variantId: i.variant?.id || i.variantId,
-					quantity: i.quantity,
+					quantity: Number(i.quantity),
 					unitPrice: i.unitPrice,
 					isAdditional: i.isAdditional
 				}))
 			};
-			await api.patch(`/orders/${editedOrder.id}`, payload);
+			await api.patch(`/orders/${editedOrder?.id}`, payload);
 			toast.success(t("messages.updateSuccess"));
 
-			const res = await api.get(`/orders/${editedOrder.id}`);
+			const res = await api.get(`/orders/${editedOrder?.id}`);
 			initializeOrderData(res.data);
 		} catch (err) {
-			toast.error(t("messages.updateFailed"));
+			const msg = err.response?.data?.message || "حدث خطأ أثناء التقدم";
+			toast.error(msg);
 		} finally {
 			setSaving(false);
 		}
 	};
 
 	const handleCancelChanges = () => {
-		setEditedOrder(JSON.parse(JSON.stringify(originalOrder)));
+		// 1. Clear the tracker for removed items
+		setRemovedItemsIds([]);
+
+		// 2. Reset the local order state (used for the items list)
+		const baseline = JSON.parse(JSON.stringify(originalOrder));
+		setEditedOrder(baseline);
+
+		// 3. Sync the SKU selection UI
 		setSelectedSkus(originalOrder.items.map((item) => ({
 			id: item.variant?.id || item.variantId,
 			label: item.variant?.product?.name || item.productName,
@@ -370,6 +387,22 @@ export default function OrderConfirmationWorkPage() {
 			price: item.unitPrice || 0,
 			cost: item.unitCost || item.unitPrice || 0,
 		})));
+
+		// 4. Reset React Hook Form to original baseline values
+		// This clears validation errors and resets "isDirty" status
+		reset({
+			customerName: originalOrder.customerName || "",
+			email: originalOrder.email || "",
+			phoneNumber: originalOrder.phoneNumber || "",
+			secondPhoneNumber: originalOrder.secondPhoneNumber || "",
+			city: originalOrder.city || "",
+			area: originalOrder.area || "",
+			address: originalOrder.address || "",
+			paymentMethod: originalOrder.paymentMethod || "",
+			shippingCost: originalOrder.shippingCost ?? 0,
+			deposit: originalOrder.deposit ?? 0,
+			allowOpenPackage: originalOrder.allowOpenPackage ?? 0,
+		});
 	};
 
 	const handleStatusChange = async (statusId) => {
@@ -379,11 +412,11 @@ export default function OrderConfirmationWorkPage() {
 			setSelectedStatusId(statusId);
 			await api.put(`/orders/${originalOrder.id}/confirm-status`, { statusId, notes: notes.trim() || undefined });
 			toast.success(t("messages.statusUpdated"));
-			setStatusDecided(true);
 			setShowSuccessCard(true);
 			setRefetchingOrder(true);
 			const res = await api.get(`/orders/${originalOrder.id}`);
 			initializeOrderData(res.data);
+			setStatusDecided(true);
 			setNotes("");
 			setSelectedStatusId(null);
 		} catch (err) {
@@ -408,7 +441,7 @@ export default function OrderConfirmationWorkPage() {
 		fetchNextOrder();
 	};
 	const shared = { t, isRtl };
-	const items = editedOrder.items || [];
+	const items = editedOrder ? editedOrder?.items : [];
 	const { mainItems, additionalItems } = useMemo(() => {
 		return {
 			mainItems: items.filter(i => !i.isAdditional),
@@ -1188,6 +1221,7 @@ function EditSaveBar({ onSave, onCancel, loading, t, isRtl }) {
 
 function FloatingActionBar({ order, allowedStatuses, changingStatus, selectedStatusId, isLocked, statusDecided, refetchingOrder, handleStatusChange, handleNextOrder, loading, t, isRtl }) {
 	const canNext = statusDecided && !loading && !changingStatus && !refetchingOrder;
+	console.log(statusDecided, loading, changingStatus, refetchingOrder)
 	return (
 		<motion.div initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3, duration: 0.44 }} className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
 			<div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 0%, color-mix(in oklab, var(--background) 85%, transparent) 28%, var(--background) 100%)" }} />

@@ -12,7 +12,7 @@ import { SocketProvider } from '../../context/SocketContext';
 
 export default function LayoutShell({ children }) {
 	return (
-		<ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+		<ThemeProvider attribute="class" defaultTheme="light" enableSystem>
 			<SocketProvider>
 				<DashboardLayout>{children}</DashboardLayout>
 			</SocketProvider>

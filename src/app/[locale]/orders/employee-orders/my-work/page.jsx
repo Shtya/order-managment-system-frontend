@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
 	Package, Phone, MapPin, Truck, Calendar, CheckCircle,
@@ -10,6 +10,12 @@ import {
 	Clock, Landmark, Building2, BadgeCheck, Banknote, StickyNote,
 	Mail, ExternalLink, Receipt, Star, Navigation,
 	ChevronDown, Plus,
+	Minus,
+	X,
+	Search,
+	Save,
+	Info,
+	Trash2,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -17,24 +23,37 @@ import toast from "react-hot-toast";
 import { Textarea } from "@/components/ui/textarea";
 import api from "@/utils/api";
 import { cn } from "@/utils/cn";
-
+import { ProductSkuSearchPopover } from "@/components/molecules/ProductSkuSearchPopover";
+import { avatarSrc } from "@/components/atoms/UserSelect";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Controller, useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { Input } from "@/components/ui/input";
 // ─────────────────────────────────────────────────────────────────────────────
 // DESIGN TOKENS — single source of truth for the color system
 // ─────────────────────────────────────────────────────────────────────────────
 const COLORS = {
-	primary:   "#f97316",   // orange
-	customer:  "#7c3aed",   // violet
-	phone:     "#0369a1",   // sky
-	money:     "#f97316",   // orange
-	profit:    "#16a34a",   // green
-	upsell:    "#7c3aed",   // violet
-	notes:     "#0891b2",   // cyan
-	history:   "#16a34a",   // green
-	locked:    "#dc2626",   // red
-	success:   "#16a34a",
-	warning:   "#d97706",
-	danger:    "#dc2626",
-	info:      "#0369a1",
+	primary: "#f97316",   // orange
+	customer: "#7c3aed",   // violet
+	phone: "#0369a1",   // sky
+	money: "#f97316",   // orange
+	profit: "#16a34a",   // green
+	upsell: "#7c3aed",   // violet
+	notes: "#0891b2",   // cyan
+	history: "#16a34a",   // green
+	locked: "#dc2626",   // red
+	success: "#16a34a",
+	warning: "#d97706",
+	danger: "#dc2626",
+	info: "#0369a1",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -74,6 +93,386 @@ const GlobalStyles = () => (
 	`}</style>
 );
 
+const createOrderSchema = (t) =>
+	yup.object({
+		customerName: yup.string().trim().required(t("validation.customerNameRequired")),
+		phoneNumber: yup.string().trim().required(t("validation.phoneRequired")),
+		secondPhoneNumber: yup.string().trim(),
+		city: yup.string().trim().required(t("validation.cityRequired")),
+		address: yup.string().trim().required(t("validation.addressRequired")),
+		paymentMethod: yup.string().trim().required(t("validation.paymentMethodRequired")),
+		shippingCost: yup
+			.number()
+			.transform((value) => (isNaN(value) ? undefined : value))
+			.typeError(t("validation.mustBeNumber"))
+			.min(0, t("validation.minZero")),
+		deposit: yup
+			.number()
+			.transform((value) => (isNaN(value) ? undefined : value))
+			.typeError(t("validation.mustBeNumber"))
+			.min(0, t("validation.minZero")),
+	});
+export default function OrderConfirmationWorkPage() {
+	const t = useTranslations("orders-work");
+	const router = useRouter();
+	const locale = useLocale();
+	const isRtl = locale?.startsWith("ar");
+
+	const [originalOrder, setOriginalOrder] = useState(null);
+	const [editedOrder, setEditedOrder] = useState(null);
+	const [loading, setLoading] = useState(true);
+	const [saving, setSaving] = useState(false);
+	const [selectedSkus, setSelectedSkus] = useState([]);
+
+	const [changingStatus, setChangingStatus] = useState(false);
+	const [refetchingOrder, setRefetchingOrder] = useState(false);
+	const [showSuccessCard, setShowSuccessCard] = useState(false);
+	const [selectedStatusId, setSelectedStatusId] = useState(null);
+	const [notes, setNotes] = useState("");
+	const [allowedStatuses, setAllowedStatuses] = useState([]);
+	const [isLocked, setIsLocked] = useState(false);
+	const [lockedUntil, setLockedUntil] = useState(null);
+	const [statusDecided, setStatusDecided] = useState(false);
+
+	const [upsellModalOpen, setUpsellModalOpen] = useState(false);
+	const [selectedUpsellProduct, setSelectedUpsellProduct] = useState(null);
+
+
+	useEffect(() => {
+		fetchNextOrder();
+		fetchAllowedStatuses();
+	}, []);
+
+	const fetchNextOrder = async () => {
+		try {
+			setLoading(true);
+			const res = await api.get("/orders/employee/orders/next");
+			initializeOrderData(res.data);
+		} catch {
+			toast.error(t("messages.errorFetchingOrder"));
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const fetchAllowedStatuses = async () => {
+		try {
+			const res = await api.get("/orders/allowed-confirmation");
+			setAllowedStatuses(res.data || []);
+		} catch { }
+	};
+
+
+
+	const { control, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm({
+		resolver: yupResolver(createOrderSchema(t)),
+		mode: "onChange", // Triggers validation on every change
+	});
+	const watchedOrder = watch();
+
+
+	// 3. Sync watched form data to editedOrder state for tracking/comparison
+	useEffect(() => {
+		if (watchedOrder && Object.keys(watchedOrder).length > 0) {
+			setEditedOrder((prev) => {
+				// 1. Create the next state by merging
+				const nextState = {
+					...prev,
+					...watchedOrder
+				};
+
+
+				return nextState;
+			});
+		}
+	}, [watchedOrder?.customerName, watchedOrder?.phoneNumber, watchedOrder?.city, watchedOrder?.address, watchedOrder?.paymentMethod, watchedOrder?.shippingCost, watchedOrder?.deposit]);
+
+	const hasUnsavedChanges = useMemo(() => {
+		if (!editedOrder) return false;
+		return JSON.stringify(originalOrder) !== JSON.stringify(editedOrder);
+	}, [originalOrder, editedOrder]);
+
+
+	// Watch fields for real-time total calculations
+	const watchedItems = watch("items");
+	const watchedShipping = watch("shippingCost");
+	const watchedDiscount = watch("discount");
+
+	// Update totals whenever items or costs change
+	useEffect(() => {
+		if (watchedItems) {
+			const productsTotal = watchedItems.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
+			const finalTotal = productsTotal + Number(watchedShipping || 0) - Number(watchedDiscount || 0);
+			setValue("productsTotal", productsTotal);
+			setValue("finalTotal", finalTotal);
+		}
+	}, [watchedItems, watchedShipping, watchedDiscount, setValue]);
+
+	const initializeOrderData = (data) => {
+		if (!data) return;
+		setOriginalOrder(data);
+		setEditedOrder(JSON.parse(JSON.stringify(data)));
+		// 2. Extract only schema-relevant fields from data
+		const schemaFields = {
+			customerName: data.customerName || "",
+			email: data.email || "",
+			phoneNumber: data.phoneNumber || "",
+			secondPhoneNumber: data.secondPhoneNumber || "",
+			city: data.city || "",
+			area: data.area || "",
+			address: data.address || "",
+			deposit: data.deposit || 0,
+			shippingCost: data.shippingCost || 0,
+			paymentMethod: data.paymentMethod || "cod",
+			allowOpenPackage: data.allowOpenPackage ?? false,
+			items: data.items || []
+		};
+
+		// 3. Reset React Hook Form with specifically these fields
+		reset(schemaFields);
+
+		if (data.items?.length > 0) {
+			setSelectedSkus(data.items.map((item) => ({
+				id: item.variant?.id || item.variantId,
+				label: item.variant?.product?.name || item.productName,
+				productName: item.variant?.product?.name || item.productName,
+				sku: item.variant?.sku || item.sku,
+				attributes: item.variant?.attributes || item.attributes || {},
+				price: item.unitPrice || 0,
+				cost: item.unitCost || item.unitPrice || 0,
+			})));
+		} else {
+			setSelectedSkus([]);
+		}
+
+		checkLockStatus(data);
+		setStatusDecided(false);
+	};
+
+	const checkLockStatus = (data) => {
+		if (!data) return;
+		const assignment = data.assignments?.find(a => a.isAssignmentActive);
+		if (assignment?.lockedUntil) {
+			setIsLocked(new Date(assignment.lockedUntil) > new Date());
+			setLockedUntil(assignment.lockedUntil);
+		} else {
+			setIsLocked(false);
+			setLockedUntil(null);
+		}
+	};
+
+	const handleFieldChange = (field, value) => {
+		setEditedOrder(prev => ({ ...prev, [field]: value }));
+	};
+
+	const handleUpdateQty = (itemToUpdate, delta) => {
+		setEditedOrder(prev => {
+			const newItems = prev.items.map(i => {
+				if ((i.id && i.id === itemToUpdate.id) || (i.variantId === itemToUpdate.variantId)) {
+					return { ...i, quantity: Math.max(1, i.quantity + delta) };
+				}
+				return i;
+			});
+			return recalculateTotals({ ...prev, items: newItems });
+		});
+	};
+
+	const recalculateTotals = (orderData) => {
+		const productsTotal = orderData.items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
+		const shippingCost = parseFloat(orderData.shippingCost || 0);
+		const discount = parseFloat(orderData.discount || 0);
+		orderData.productsTotal = productsTotal;
+		orderData.finalTotal = productsTotal + shippingCost - discount;
+		return orderData;
+	};
+
+	// Handlers for Add/Remove Products via Search Popover
+	const handleSelectSku = useCallback((sku) => {
+		if (selectedSkus.some((s) => s.id === sku.id)) return;
+		setSelectedSkus((prev) => [...prev, sku]);
+
+		setEditedOrder(prev => {
+			const newItems = [
+				...prev.items,
+				{
+					isAdditional: true,
+					variantId: sku.id,
+					variant: {
+						id: sku.id,
+						sku: sku.sku || sku.key,
+						attributes: sku.attributes || {},
+						product: { id: sku.productId, name: sku.label || sku.productName }
+					},
+					productName: sku.label || sku.productName,
+					sku: sku.sku || sku.key,
+					attributes: sku.attributes || {},
+					quantity: 1,
+					unitPrice: sku.price || 0,
+					unitCost: sku.cost || sku.price || 0,
+				}
+			];
+			return recalculateTotals({ ...prev, items: newItems });
+		});
+		toast.success(t("productAdded"));
+	}, [selectedSkus, t]);
+
+	const handleRemoveItem = (itemToRemove) => {
+		setEditedOrder(prev => {
+			const newItems = prev.items.filter(i => (i.id ? i.id !== itemToRemove.id : i.variantId !== itemToRemove.variantId));
+			return recalculateTotals({ ...prev, items: newItems });
+		});
+		setSelectedSkus(prev => prev.filter(s => s.id !== (itemToRemove.variant?.id || itemToRemove.variantId)));
+	};
+
+	// Save Edits
+	const onSave = async (data) => {
+		try {
+			setSaving(true);
+
+			const {
+				productsTotal,
+				finalTotal,
+				items: _, // ignore the raw items from data, we map them below
+				assignments,
+				logs,
+				...rest
+			} = data;
+
+			const payload = {
+				...rest,
+				items: editedOrder.items.map(i => ({
+					variantId: i.variant?.id || i.variantId,
+					quantity: i.quantity,
+					unitPrice: i.unitPrice,
+					isAdditional: i.isAdditional
+				}))
+			};
+			await api.patch(`/orders/${editedOrder.id}`, payload);
+			toast.success(t("messages.updateSuccess"));
+
+			const res = await api.get(`/orders/${editedOrder.id}`);
+			initializeOrderData(res.data);
+		} catch (err) {
+			toast.error(t("messages.updateFailed"));
+		} finally {
+			setSaving(false);
+		}
+	};
+
+	const handleCancelChanges = () => {
+		setEditedOrder(JSON.parse(JSON.stringify(originalOrder)));
+		setSelectedSkus(originalOrder.items.map((item) => ({
+			id: item.variant?.id || item.variantId,
+			label: item.variant?.product?.name || item.productName,
+			productName: item.variant?.product?.name || item.productName,
+			sku: item.variant?.sku || item.sku,
+			attributes: item.variant?.attributes || item.attributes || {},
+			price: item.unitPrice || 0,
+			cost: item.unitCost || item.unitPrice || 0,
+		})));
+	};
+
+	const handleStatusChange = async (statusId) => {
+		if (!originalOrder || isLocked || statusDecided) return;
+		try {
+			setChangingStatus(true);
+			setSelectedStatusId(statusId);
+			await api.put(`/orders/${originalOrder.id}/confirm-status`, { statusId, notes: notes.trim() || undefined });
+			toast.success(t("messages.statusUpdated"));
+			setStatusDecided(true);
+			setShowSuccessCard(true);
+			setRefetchingOrder(true);
+			const res = await api.get(`/orders/${originalOrder.id}`);
+			initializeOrderData(res.data);
+			setNotes("");
+			setSelectedStatusId(null);
+		} catch (err) {
+			toast.error(err.response?.data?.message || t("messages.errorUpdatingStatus"));
+			setSelectedStatusId(null);
+			setStatusDecided(false);
+		} finally {
+			setChangingStatus(false);
+			setRefetchingOrder(false);
+		}
+	};
+
+	const handleNextOrder = () => {
+		setOriginalOrder(null);
+		setEditedOrder(null);
+		setNotes("");
+		setSelectedStatusId(null);
+		setIsLocked(false);
+		setLockedUntil(null);
+		setStatusDecided(false);
+		setShowSuccessCard(false);
+		fetchNextOrder();
+	};
+	const shared = { t, isRtl };
+	const items = editedOrder.items || [];
+	const { mainItems, additionalItems } = useMemo(() => {
+		return {
+			mainItems: items.filter(i => !i.isAdditional),
+			additionalItems: items.filter(i => i.isAdditional)
+		};
+	}, [items]);
+
+	if (loading) return <PageSkeleton />;
+	if (!originalOrder) return <EmptyState onRetry={fetchNextOrder} onBack={() => router.push("/orders/employee-orders")} t={t} isRtl={isRtl} />;
+
+
+
+	return (
+		<div className="p-5 pb-32">
+			<GlobalStyles />
+			<OrderHeader order={editedOrder} {...shared} />
+
+			<div className="grid gap-[14px] items-start" style={{ gridTemplateColumns: "minmax(0,2fr) minmax(0,3fr)" }}>
+				<div className={cn("flex flex-col gap-3", isRtl ? "order-2" : "order-1")}>
+					<EditableItemsCard
+						title={t("mainProducts")} eyebrow={t("items")} icon={ShoppingBag} color={COLORS.primary}
+						items={mainItems} onUpdateQty={handleUpdateQty} onRemove={handleRemoveItem} isAdditional={false}
+						handleSelectSku={handleSelectSku} selectedSkus={selectedSkus} {...shared}
+					/>
+					<EditableItemsCard
+						title={t("additionalProducts")} eyebrow={t("items")} icon={Package} color={COLORS.profit}
+						items={additionalItems} onUpdateQty={handleUpdateQty} onRemove={handleRemoveItem} isAdditional={true}
+						handleSelectSku={handleSelectSku} selectedSkus={selectedSkus} {...shared}
+					/>
+					<UpsellingCardWithAction
+						order={originalOrder} items={editedOrder.items}
+						onOpenModal={(p) => { setSelectedUpsellProduct(p); setUpsellModalOpen(true); }} {...shared} />
+					<NotesCard order={editedOrder} {...shared} />
+					<StatusHistoryCard order={editedOrder} {...shared} />
+				</div>
+
+				<div className={cn("flex flex-col gap-3 sticky top-4", isRtl ? "order-1" : "order-2")}>
+					<CustomerEditCard order={editedOrder} control={control} errors={errors} {...shared} />
+					<FinancialsEditCard order={editedOrder} control={control} errors={errors} {...shared} />
+					<ActionPanel
+						order={editedOrder} notes={notes} setNotes={setNotes} changingStatus={changingStatus} isLocked={isLocked} statusDecided={statusDecided}
+						refetchingOrder={refetchingOrder} showSuccessCard={showSuccessCard} lockedUntil={lockedUntil} {...shared}
+					/>
+
+				</div>
+			</div>
+
+			<UpsellSearchModal
+				isOpen={upsellModalOpen} onClose={() => setUpsellModalOpen(false)} product={selectedUpsellProduct}
+				handleSelectSku={handleSelectSku} selectedSkus={selectedSkus} {...shared}
+			/>
+
+			{hasUnsavedChanges ? (
+				<EditSaveBar onSave={handleSubmit(onSave)} onCancel={handleCancelChanges} loading={saving} {...shared} />
+			) : (
+				<FloatingActionBar
+					order={originalOrder} allowedStatuses={allowedStatuses} changingStatus={changingStatus} selectedStatusId={selectedStatusId}
+					isLocked={isLocked} statusDecided={statusDecided} refetchingOrder={refetchingOrder} handleStatusChange={handleStatusChange}
+					handleNextOrder={handleNextOrder} loading={loading} {...shared}
+				/>
+			)}
+		</div>
+	);
+}
 // ─────────────────────────────────────────────────────────────────────────────
 // UTILITIES
 // ─────────────────────────────────────────────────────────────────────────────
@@ -91,9 +490,9 @@ const fmtDateTime = (d, locale = "ar-EG") =>
 // color helpers
 const alpha = (hex, opacity) => {
 	// Returns hex with opacity as inline style-compatible rgba
-	const r = parseInt(hex.slice(1,3),16);
-	const g = parseInt(hex.slice(3,5),16);
-	const b = parseInt(hex.slice(5,7),16);
+	const r = parseInt(hex.slice(1, 3), 16);
+	const g = parseInt(hex.slice(3, 5), 16);
+	const b = parseInt(hex.slice(5, 7), 16);
 	return `rgba(${r},${g},${b},${opacity})`;
 };
 
@@ -208,30 +607,14 @@ function Pill({ children, color, size = "sm" }) {
 	);
 }
 
-/** Pulsing live dot */
-function LiveDot({ color }) {
-	return (
-		<span className="relative inline-flex shrink-0" style={{ width: 8, height: 8 }}>
-			<span
-				className="absolute inset-0 rounded-full"
-				style={{ background: color, opacity: 0.45, animation: "ping 1.6s cubic-bezier(0,0,.2,1) infinite" }}
-			/>
-			<span
-				className="relative rounded-full"
-				style={{ width: 8, height: 8, background: color, boxShadow: `0 0 6px ${alpha(color, 0.7)}` }}
-			/>
-		</span>
-	);
-}
-
-/** Card wrapper with optional top accent bar */
+//** Card wrapper with optional top accent bar */
 function Card({ children, className, accentColor, style }) {
 	return (
 		<div
 			className={cn("bg-card !p-1 rounded-[var(--radius)] border border-border overflow-hidden", className)}
 			style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.055)", ...style }}
 		>
-			 
+
 			{children}
 		</div>
 	);
@@ -291,6 +674,557 @@ function CollapseTrigger({ open, onToggle, color, icon: Icon, eyebrow, title, su
 		</button>
 	);
 }
+
+function LiveDot({ color }) {
+	return (
+		<span className="relative inline-flex shrink-0" style={{ width: 8, height: 8 }}>
+			<span className="absolute inset-0 rounded-full" style={{ background: color, opacity: 0.45, animation: "ping 1.6s cubic-bezier(0,0,.2,1) infinite" }} />
+			<span className="relative rounded-full" style={{ width: 8, height: 8, background: color, boxShadow: `0 0 6px ${alpha(color, 0.7)}` }} />
+		</span>
+	);
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NEW EDITABLE COMPONENTS
+// ─────────────────────────────────────────────────────────────────────────────
+function SimpleInput({ label, name, control, error, isRtl, ...props }) {
+	return (
+		<div className="flex flex-col gap-1.5 w-full">
+			<Label className={cn("text-[11px] font-bold text-muted-foreground uppercase", isRtl ? "text-right" : "text-left")}>
+				{label}
+			</Label>
+			<Controller
+				name={name}
+				control={control}
+				render={({ field }) => (
+					<Input
+						{...field}
+						{...props}
+						className={cn(
+							"h-10 rounded-xl bg-[#fafafa] dark:bg-slate-800/50 border-border/60",
+							error && "border-red-500 focus-visible:ring-red-500",
+							isRtl ? "text-right" : "text-left"
+						)}
+					/>
+				)}
+			/>
+			{error && (
+				<p className="text-xs text-red-500">{error.message}</p>
+			)}
+		</div>
+	);
+}
+
+
+function CustomerEditCard({ order, onChange, control, errors, t, isRtl }) {
+	return (
+		<motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+			<Card accentColor={COLORS.customer}>
+				<div className="px-4 py-3 border-b border-border flex items-center gap-2">
+					<IconTile icon={User} color={COLORS.customer} size={24} />
+					<span className="text-[13px] font-bold text-card-foreground">{t("editCustomerInfo")}</span>
+				</div>
+				<div className="p-4 grid grid-cols-2 gap-4">
+					<SimpleInput name="customerName" label={t("customerName")} control={control} error={errors.customerName} isRtl={isRtl} />
+					<SimpleInput name="email" label={t("email")} control={control} error={errors.email} type="email" isRtl={isRtl} />
+					<SimpleInput name="phoneNumber" label={t("phone")} control={control} error={errors.phoneNumber} isRtl={isRtl} />
+					<SimpleInput name="secondPhoneNumber" label={t("secondPhone")} control={control} error={errors.secondPhoneNumber} isRtl={isRtl} />
+					<SimpleInput name="city" label={t("city")} control={control} error={errors.city} isRtl={isRtl} />
+					<SimpleInput name="area" label={t("area")} control={control} error={errors.area} isRtl={isRtl} />
+					<div className="col-span-2">
+						<SimpleInput name="address" label={t("address")} control={control} error={errors.address} isRtl={isRtl} />
+					</div>
+				</div>
+			</Card>
+		</motion.div>
+	);
+}
+
+function FinancialsEditCard({ control, order, errors, t, isRtl }) {
+	const total = order.finalTotal || 0;
+	const deposit = parseFloat(order.deposit || 0);
+	const remaining = total - deposit;
+	const tOrder = useTranslations("createOrder");
+	return (
+		<motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+			<Card accentColor={COLORS.money}>
+				<div className="px-4 py-3 border-b border-border flex items-center gap-2">
+					<IconTile icon={Banknote} color={COLORS.money} size={24} />
+					<span className="text-[13px] font-bold text-card-foreground">{t("editFinancials")}</span>
+				</div>
+				<div className="p-4 grid grid-cols-2 gap-4">
+					<SimpleInput name="productsTotal" label={t("finalTotal")} control={control} disabled isRtl={isRtl} />
+					<SimpleInput name="deposit" label={t("deposit")} control={control} error={errors.deposit} type="number" isRtl={isRtl} />
+					<div className="flex flex-col gap-1.5">
+						<Label className="text-[11px] font-bold text-muted-foreground uppercase">{t("remaining")}</Label>
+						<div className="h-10 px-3 flex items-center rounded-xl bg-muted/30 border border-dashed text-[13px] font-bold">
+							{remaining}
+						</div>
+					</div>
+					<SimpleInput name="shippingCost" label={t("shippingCost")} control={control} error={errors.shippingCost} type="number" isRtl={isRtl} />
+
+
+					<div className="space-y-2">
+						<Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{tOrder("fields.paymentMethod")} *</Label>
+						<Controller
+							name="paymentMethod"
+							control={control}
+							render={({ field }) => (
+								<Select value={field.value} onValueChange={field.onChange} dir={isRtl ? "rtl" : "ltr"}>
+									<SelectTrigger className={cn("w-full rounded-xl !h-[45px] bg-[#fafafa] dark:bg-slate-800/50 border-border/60", errors.paymentMethod && "border-red-500")}>
+										<SelectValue placeholder={tOrder("placeholders.selectPayment")} />
+									</SelectTrigger>
+									<SelectContent className="bg-card-select border-border shadow-xl rounded-xl">
+										<SelectItem value="cod">{tOrder("paymentMethods.cod")}</SelectItem>
+										<SelectItem value="cash">{tOrder("paymentMethods.cash")}</SelectItem>
+										<SelectItem value="card">{tOrder("paymentMethods.card")}</SelectItem>
+										<SelectItem value="bank_transfer">{tOrder("paymentMethods.bankTransfer")}</SelectItem>
+										<SelectItem value="wallet">{tOrder("paymentMethods.wallet")}</SelectItem>
+										<SelectItem value="other">{tOrder("paymentMethods.other")}</SelectItem>
+										<SelectItem value="unknown">{tOrder("paymentMethods.unknown")}</SelectItem>
+									</SelectContent>
+								</Select>
+							)}
+						/>
+						{errors.paymentMethod && (
+							<p className="text-[10px] text-red-500 font-medium">{errors.paymentMethod.message}</p>
+						)}
+					</div>
+
+					{/* Allow Open Select */}
+					<div className="space-y-2">
+						<Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{tOrder("fields.allowOpenPackage")}</Label>
+						<Controller
+							name="allowOpenPackage"
+							control={control}
+							render={({ field }) => (
+								<Select
+									value={field.value ? "true" : "false"}
+									onValueChange={(val) => field.onChange(val === "true")}
+									dir={isRtl ? "rtl" : "ltr"}
+								>
+									<SelectTrigger className="w-full rounded-xl !h-[45px] bg-[#fafafa] dark:bg-slate-800/50 border-border/60">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent className="bg-card-select border-border shadow-xl rounded-xl">
+										<SelectItem value="true">{tOrder("allowOpenOptions.yes")}</SelectItem>
+										<SelectItem value="false">{tOrder("allowOpenOptions.no")}</SelectItem>
+									</SelectContent>
+								</Select>
+							)}
+						/>
+					</div>
+				</div>
+			</Card>
+		</motion.div>
+	);
+}
+
+function EditableItemsCard({ title, eyebrow, icon, color, items, onUpdateQty, onRemove, isAdditional, t, isRtl, handleSelectSku, selectedSkus }) {
+	const [open, setOpen] = useState(true);
+	if (!items?.length && !isAdditional) return null;
+
+	const totalQty = items?.reduce((s, i) => s + (parseInt(i.quantity) || 0), 0) || 0;
+	const productsTotal = items?.reduce((s, i) => s + (i.unitPrice * i.quantity), 0) || 0;
+
+	return (
+		<motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+			<Card accentColor={color}>
+				<CollapseTrigger
+					open={open}
+					onToggle={() => setOpen(p => !p)}
+					color={color}
+					icon={icon}
+					eyebrow={eyebrow}
+					title={title}
+					subtitle={`${totalQty} ${t("pieces")} · ${fmtMoney(productsTotal)}`}
+					right={
+						<span className="inline-flex items-center px-[9px] py-[3px] rounded-full text-[11px] font-bold"
+							style={{ background: alpha(color, 0.08), color, border: `1px solid ${alpha(color, 0.2)}` }}>
+							{items?.length || 0}
+						</span>
+					}
+				/>
+
+				<AnimatePresence>
+					{open && (
+						<motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden">
+							<div className="px-[18px] pt-1 pb-4 flex flex-col">
+								{items?.map((item, idx) => {
+									const product = item.variant?.product;
+									const attrs = item.variant?.attributes || {};
+									const stockLeft = (item.variant?.stockOnHand ?? 0) - (item.variant?.reserved ?? 0);
+									const isLow = stockLeft < 5;
+									const isLast = idx === items.length - 1;
+
+									return (
+										<motion.div
+											key={item.id || idx}
+											initial={{ opacity: 0, x: isRtl ? 8 : -8 }}
+											animate={{ opacity: 1, x: 0 }}
+											transition={{ delay: idx * 0.05 }}
+											className={cn("relative py-4", !isLast && "border-b border-border")}
+										>
+											<div className="flex items-start gap-3">
+												{/* Thumbnail with Overlay Qty Badge */}
+												<div className="relative shrink-0">
+													<div className="rounded-[calc(var(--radius)-1px)] overflow-hidden bg-muted border border-border flex items-center justify-center"
+														style={{ width: 52, height: 52 }}>
+														{product?.mainImage ? (
+															<img src={avatarSrc(product.mainImage)} alt="" className="w-full h-full object-cover" />
+														) : (
+															<Package size={18} className="text-muted-foreground" />
+														)}
+													</div>
+													<span className="absolute -bottom-1 -right-1 flex items-center justify-center rounded-full text-[10px] font-bold text-white border-2 border-card shadow-sm"
+														style={{ width: 20, height: 20, background: color }}>
+														{item.quantity}
+													</span>
+
+
+												</div>
+
+												{/* Info Section */}
+												<div className={cn("flex-1 min-w-0", isRtl ? "text-right" : "text-left")}>
+													<p className="text-[13px] font-bold text-card-foreground leading-tight mb-[2px]">
+														{product?.name || item.productName || "Product"}
+													</p>
+													<div className="flex flex-wrap items-center gap-[5px] mb-2">
+														<span className="font-mono text-[9px] font-semibold px-[5px] py-[1px] rounded bg-muted text-muted-foreground border border-border tracking-wider">
+															{item.variant?.sku || item.sku}
+														</span>
+														{Object.entries(attrs).map(([k, v]) => (
+															<Pill key={k} size="xs" color={color}>{k}: {v}</Pill>
+														))}
+													</div>
+
+
+													{/* Quantity Controls Integrated Here */}
+													<div className="flex items-center gap-2 mt-2">
+														<motion.button
+															whileTap={{ scale: 0.9 }}
+															onClick={() => onUpdateQty(item, -1)}
+															className="w-7 h-7 rounded-lg bg-muted hover:bg-border flex items-center justify-center transition-colors border border-border/50"
+														>
+															<Minus size={12} />
+														</motion.button>
+														<input
+															type="number"
+															value={item.quantity}
+															onChange={(e) => onUpdateQty(item, parseInt(e.target.value) - item.quantity)}
+															className="h-7 w-10 text-center bg-transparent text-[12px] font-bold outline-none"
+														/>
+														<motion.button
+															whileTap={{ scale: 0.9 }}
+															onClick={() => onUpdateQty(item, 1)}
+															className="w-7 h-7 rounded-lg bg-muted hover:bg-border flex items-center justify-center transition-colors border border-border/50"
+														>
+															<Plus size={12} />
+														</motion.button>
+													</div>
+												</div>
+
+												{/* Pricing & Actions */}
+												<div className={cn("shrink-0 flex flex-col gap-1 items-center")}>
+													<span className="text-[15px] font-bold tabular-nums text-card-foreground">
+														{fmtMoney(item.unitPrice * item.quantity)}
+													</span>
+													<span className="text-[10px] text-muted-foreground tabular-nums">
+														{item.quantity} × {fmtMoney(item.unitPrice)}
+													</span>
+													<div className={cn("flex items-center gap-3 mt-3", isRtl ? "justify-end" : "justify-start")}>
+														<button
+															type="button"
+															onClick={() => onRemove(item)}
+															className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 p-1.5 rounded-lg transition-colors mt-1"
+														>
+															<Trash2 size={15} />
+														</button>
+														{item.variant && (
+															<div className="flex items-center gap-[6px]">
+																<div className="rounded-full overflow-hidden"
+																	style={{ width: 42, height: 4, background: "var(--muted)", border: "1px solid var(--border)" }}>
+																	<motion.div
+																		initial={{ width: 0 }}
+																		animate={{ width: `${Math.min(100, (stockLeft / 20) * 100)}%` }}
+																		className="h-full rounded-full"
+																		style={{ background: isLow ? "#ef4444" : "#16a34a" }}
+																	/>
+																</div>
+																<span className="text-[10px] font-bold tabular-nums" style={{ color: isLow ? "#ef4444" : "#16a34a" }}>
+																	{stockLeft}
+																</span>
+																<span className="text-[9px] text-muted-foreground font-medium uppercase tracking-tight">{t("stock")}</span>
+															</div>
+
+														)}
+
+													</div>
+
+												</div>
+											</div>
+
+											{/* Stock indicator (matches OrderItems style) */}
+
+
+
+
+										</motion.div>
+									);
+								})}
+
+								{isAdditional && (
+									<div className="mt-4 border-t border-dashed border-border pt-5">
+										<h4 className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground mb-3 px-1">
+											{t("addAdditionalProduct")}
+										</h4>
+										<ProductSkuSearchPopover
+											closeOnSelect={false}
+											handleSelectSku={handleSelectSku}
+											selectedSkus={selectedSkus}
+											trigger={(open) => {
+												return (<motion.button
+													type="button"
+													whileHover={{ y: -1 }}
+													whileTap={{ scale: 0.98 }}
+													className="w-full flex items-center justify-center gap-2 py-[9px] rounded-[var(--radius)] text-[12px] font-semibold cursor-pointer outline-none transition-all"
+													style={{
+														background: alpha(color, 0.05),
+														border: `1.5px dashed ${alpha(color, 0.35)}`,
+														color,
+													}}
+													onMouseEnter={e => { e.currentTarget.style.background = alpha(color, 0.1); }}
+													onMouseLeave={e => { e.currentTarget.style.background = alpha(color, 0.05); }}
+												>
+													<span className="flex items-center justify-center rounded-full text-white font-bold" style={{ width: 20, height: 20, background: color, fontSize: 15 }}>
+														+
+													</span>
+													{t("addProduct")}
+												</motion.button>)
+											}}
+										/>
+									</div>
+								)}
+							</div>
+						</motion.div>
+					)}
+				</AnimatePresence>
+			</Card>
+		</motion.div>
+	);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UPSELLING POPOVER MODAL & CARD
+// ─────────────────────────────────────────────────────────────────────────────
+function UpsellSearchModal({ isOpen, onClose, product, handleSelectSku, selectedSkus, t, isRtl }) {
+	if (!isOpen) return null;
+	return (
+		<div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-2" dir={isRtl ? "rtl" : "ltr"}>
+			<motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-card w-full max-w-lg rounded-2xl shadow-xl border border-border flex flex-col min-h-[200px] max-h-[80vh]">
+				<div className="px-5 py-4 border-b border-border flex items-center justify-between">
+					<h3 className="text-[16px] font-bold text-card-foreground">
+						{product ? product.label || product.name : t("addAdditionalProduct")}
+					</h3>
+					<button onClick={onClose} className="p-1 rounded-lg hover:bg-muted text-muted-foreground transition-colors"><X size={18} /></button>
+				</div>
+				<div className="p-2 flex-1 overflow-visible">
+					<p className="text-[13px] text-muted-foreground mb-4">{t("searchVariants")}</p>
+					<ProductSkuSearchPopover
+						closeOnSelect={false}
+						handleSelectSku={(sku) => { handleSelectSku(sku); onClose(); }} // Close auto on single upsell click if preferred, else remove onClose()
+						selectedSkus={selectedSkus}
+						// trigger={() => (
+						// 	<div className="px-[18px] pb-4 pt-2">
+						// 		<motion.button
+						// 			type="button"
+						// 			whileHover={{ y: -1 }}
+						// 			whileTap={{ scale: 0.98 }}
+						// 			className="w-full flex items-center justify-center gap-2 py-[9px] rounded-[var(--radius)] text-[12px] font-semibold cursor-pointer outline-none transition-all"
+						// 			style={{
+						// 				background: `${COLORS.primary}0D`,
+						// 				border: `1.5px dashed ${COLORS.primary}59`,
+						// 				color: COLORS.primary,
+						// 			}}
+						// 		>
+						// 			<span
+						// 				className="flex items-center justify-center rounded-full text-white font-bold"
+						// 				style={{ width: 20, height: 20, background: COLORS.primary, fontSize: 15 }}
+						// 			>
+						// 				+
+						// 			</span>
+						// 			{product ? (product.label || product.name) : t("addProduct")}
+						// 		</motion.button>
+						// 	</div>
+						// )}
+						// Depending on ProductSkuSearchPopover implementation, passing product ID / context helps pre-filter
+						initialSearch={product?.label || product?.name}
+						productId={product?.id || product?.productId}
+					/>
+				</div>
+			</motion.div>
+		</div>
+	);
+}
+
+function UpsellingCardWithAction({ order, items, onOpenModal, t, isRtl }) {
+	const upItems = order?.items?.flatMap(item => item.variant?.product?.upsellingEnabled ? item.variant.product.upsellingProducts || [] : []) || [];
+	if (!upItems.length) return null;
+	const color = COLORS.upsell;
+
+	const addedIds = useMemo(() => {
+		return new Set(
+			items.flatMap(item => [
+				Number(item.variant?.product?.id)
+			]).filter(Boolean)
+		);
+	}, [items]);
+
+
+	const addedSkusMap = useMemo(() => {
+		const map = new Map();
+		items.forEach(item => {
+			const pId = Number(item.variant?.product?.id || item.productId);
+			const sku = item.variant?.sku || item.sku;
+
+			if (pId && sku) {
+				if (!map.has(pId)) map.set(pId, new Set());
+				map.get(pId).add(sku);
+			}
+		});
+		return map;
+	}, [items]);
+
+	// 2. Helper to get skus for a specific product
+	const getAddedSkus = (upsellProductId) => {
+		const skus = addedSkusMap.get(Number(upsellProductId));
+		return skus ? Array.from(skus) : [];
+	};
+
+	return (
+		<motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.13 }}>
+			<Card accentColor={color}>
+				<div className="flex items-center justify-between px-[18px] py-[13px] border-b border-border">
+					<div className="flex items-center gap-[10px]">
+						<IconTile icon={Star} color={color} size={32} />
+						<span className="text-[13px] font-bold tracking-[-0.01em] text-card-foreground">{t("upselling")}</span>
+					</div>
+					<Pill color={color}>{upItems.length}</Pill>
+				</div>
+				<div className="flex flex-col gap-2 px-[18px] py-3">
+					{upItems.map((up, i) => {
+						const addedSkus = getAddedSkus(up.productId);
+
+						return (
+							<div key={i} className="flex flex-col gap-2 px-[13px] py-[11px] rounded-[calc(var(--radius)-2px)]"
+								style={{ background: alpha(color, 0.06), border: `1px solid ${alpha(color, 0.18)}` }}>
+
+								<div className="flex items-center justify-between">
+									<div className="flex items-center gap-[10px]">
+										<IconTile icon={Zap} color={color} size={28} />
+										<div className={isRtl ? "text-right" : "text-left"}>
+											<p className="text-[12.5px] font-bold mb-[2px]" style={{ color }}>{up.label}</p>
+											{up.callCenterDescription && (
+												<p className="text-[11px] text-muted-foreground leading-[1.5]">{up.callCenterDescription}</p>
+											)}
+										</div>
+									</div>
+
+									{/* Action button remains on the right */}
+									<button onClick={() => onOpenModal(up)} className="p-2 bg-white dark:bg-slate-800 border border-border rounded-lg shadow-sm hover:border-primary hover:text-primary transition-colors">
+										<Plus size={16} />
+									</button>
+								</div>
+
+								{/* Show specific SKUs added for this product */}
+								{addedSkus.length > 0 && (
+									<div className="flex flex-wrap gap-1.5 mt-1 pt-2 border-t border-white/20">
+										{addedSkus.map(sku => (
+											<Pill key={sku} size="xs" color={COLORS.success} className="font-mono text-[9px]">
+												<CheckCircle size={8} className={isRtl ? "ml-1" : "mr-1"} />
+												{sku}
+											</Pill>
+										))}
+									</div>
+								)}
+							</div>
+						);
+					})}
+				</div>
+			</Card>
+		</motion.div>
+	);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FLOATING ACTION BARS
+// ─────────────────────────────────────────────────────────────────────────────
+function EditSaveBar({ onSave, onCancel, loading, t, isRtl }) {
+	return (
+		<motion.div initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
+			<div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 0%, color-mix(in oklab, var(--background) 85%, transparent) 28%, var(--background) 100%)" }} />
+			<div className="relative px-5 pb-5 pt-3 pointer-events-auto">
+				<div className="max-w-5xl mx-auto rounded-2xl overflow-hidden bg-card border-2 border-primary shadow-2xl flex items-center justify-between px-6 py-4">
+					<div className="flex items-center gap-3">
+						<div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center"><Info size={20} className="text-primary" /></div>
+						<div>
+							<h4 className="text-[14px] font-bold text-card-foreground">{t("unsavedChanges")}</h4>
+							<p className="text-[12px] text-muted-foreground">{t("unsavedChangesDesc")}</p>
+						</div>
+					</div>
+					<div className="flex items-center gap-3">
+						<button onClick={onCancel} disabled={loading} className="px-5 py-2.5 rounded-xl text-[13px] font-bold text-muted-foreground hover:bg-muted transition-colors disabled:opacity-50">{t("cancel")}</button>
+						<button onClick={onSave} disabled={loading} className="px-6 py-2.5 rounded-xl bg-primary text-white text-[13px] font-bold shadow-[0_4px_14px_rgba(249,115,22,0.3)] hover:bg-primary/90 transition-all flex items-center gap-2 disabled:opacity-50">
+							{loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+							{t("saveChanges")}
+						</button>
+					</div>
+				</div>
+			</div>
+		</motion.div>
+	);
+}
+
+function FloatingActionBar({ order, allowedStatuses, changingStatus, selectedStatusId, isLocked, statusDecided, refetchingOrder, handleStatusChange, handleNextOrder, loading, t, isRtl }) {
+	const canNext = statusDecided && !loading && !changingStatus && !refetchingOrder;
+	return (
+		<motion.div initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3, duration: 0.44 }} className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
+			<div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 0%, color-mix(in oklab, var(--background) 85%, transparent) 28%, var(--background) 100%)" }} />
+			<div className="relative px-5 pb-5 pt-3 pointer-events-auto">
+				<div className="max-w-5xl mx-auto rounded-2xl overflow-hidden bg-card border border-border shadow-2xl">
+					<div className="h-[3px] w-full" style={{ background: statusDecided ? `linear-gradient(90deg, ${COLORS.profit}, #22c55e 60%, transparent)` : `linear-gradient(90deg, ${COLORS.primary}, transparent)` }} />
+					<div className="flex items-center gap-3 px-4 py-3">
+						<div className="flex-1 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+							<div className="flex items-center gap-2 min-w-max">
+								{allowedStatuses.map((status, idx) => {
+									const isCurrent = status.id === order?.status?.id;
+									const isChangingThis = changingStatus && selectedStatusId === status.id;
+									const isDisabled = isLocked || changingStatus || isCurrent || statusDecided;
+									const c = status.color;
+									const label = status.system ? t(`statuses.${status.code}`) : status.name;
+
+									return (
+										<motion.button key={status.id} type="button" onClick={() => !isDisabled && handleStatusChange(status.id)} disabled={isDisabled} whileHover={!isDisabled ? { y: -2, boxShadow: `0 6px 18px ${alpha(c, 0.28)}` } : {}} whileTap={!isDisabled ? { scale: 0.97 } : {}} className="relative flex items-center gap-2 px-4 py-[9px] rounded-xl text-[12.5px] font-semibold whitespace-nowrap outline-none transition-all overflow-hidden" style={{ background: isCurrent ? c : alpha(c, 0.08), border: `1.5px solid ${isCurrent ? c : alpha(c, 0.3)}`, color: isCurrent ? "#fff" : c, opacity: isDisabled && !isCurrent ? 0.35 : 1, cursor: isDisabled ? "not-allowed" : "pointer" }}>
+											<span className="inline-block rounded-full shrink-0" style={{ width: 7, height: 7, background: isCurrent ? "rgba(255,255,255,0.85)" : c }} />
+											{label} {isChangingThis && <Loader2 size={12} className="animate-spin" />} {isCurrent && <BadgeCheck size={13} style={{ color: "rgba(255,255,255,0.85)" }} />}
+										</motion.button>
+									);
+								})}
+							</div>
+						</div>
+						<div className="shrink-0 w-px self-stretch bg-border" />
+						<motion.button type="button" onClick={handleNextOrder} disabled={!canNext} className="shrink-0 flex items-center gap-2 px-5 py-[9px] rounded-xl text-[12.5px] font-bold border-none outline-none transition-all" style={canNext ? { background: COLORS.primary, color: "#fff", cursor: "pointer" } : { background: "var(--muted)", color: "var(--muted-foreground)", opacity: 0.5, cursor: "not-allowed" }}>
+							{t("workPage.nextOrder")} {loading || refetchingOrder ? <Loader2 size={13} className="animate-spin" /> : <SkipForward size={13} className="rtl:scale-x-[-1]" />}
+						</motion.button>
+					</div>
+				</div>
+			</div>
+		</motion.div>
+	);
+}
+
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // METRIC TILE
@@ -856,10 +1790,10 @@ function OrderHeader({ order, t, isRtl }) {
 				{/* Metrics */}
 				<div className="grid gap-3 px-5 py-4 border-b border-border" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(160px,1fr))" }}>
 					{[
-						{ icon: User,    label: t("customer"),   value: order.customerName || "—", color: COLORS.customer, delay: 0.08, plain: true  },
-						{ icon: Phone,   label: t("phone"),      value: order.phoneNumber  || "—", color: COLORS.phone,    delay: 0.13, plain: true  },
-						{ icon: Banknote,label: t("finalTotal"), value: fmtMoney(order.finalTotal),color: COLORS.money,   delay: 0.18, plain: false },
-						{ icon: TrendingUp,label: t("profit"),   value: fmtMoney(order.profit),    color: COLORS.profit,  delay: 0.23, plain: false },
+						{ icon: User, label: t("customer"), value: order.customerName || "—", color: COLORS.customer, delay: 0.08, plain: true },
+						{ icon: Phone, label: t("phone"), value: order.phoneNumber || "—", color: COLORS.phone, delay: 0.13, plain: true },
+						{ icon: Banknote, label: t("finalTotal"), value: fmtMoney(order.finalTotal), color: COLORS.money, delay: 0.18, plain: false },
+						{ icon: TrendingUp, label: t("profit"), value: fmtMoney(order.profit), color: COLORS.profit, delay: 0.23, plain: false },
 					].map(props => <MetricTile key={props.label} {...props} />)}
 				</div>
 
@@ -870,11 +1804,11 @@ function OrderHeader({ order, t, isRtl }) {
 						<SectionLabel color={COLORS.primary}>{t("addressDetails")}</SectionLabel>
 						{[
 							[order.area, order.city].filter(Boolean).join("، ")
-								? { icon: MapPin,    val: [order.area, order.city].filter(Boolean).join("، "), color: COLORS.primary }
+								? { icon: MapPin, val: [order.area, order.city].filter(Boolean).join("، "), color: COLORS.primary }
 								: null,
-							order.address  ? { icon: Building2, val: order.address,  color: COLORS.primary } : null,
-							order.landmark ? { icon: Landmark,  val: order.landmark, color: COLORS.primary } : null,
-							order.email    ? { icon: Mail,      val: order.email,    color: COLORS.phone   } : null,
+							order.address ? { icon: Building2, val: order.address, color: COLORS.primary } : null,
+							order.landmark ? { icon: Landmark, val: order.landmark, color: COLORS.primary } : null,
+							order.email ? { icon: Mail, val: order.email, color: COLORS.phone } : null,
 						].filter(Boolean).map(({ icon: Icon, val, color }, i) => (
 							<div key={i} className="flex items-center gap-2">
 								<Icon size={11} style={{ color }} className="shrink-0" />
@@ -940,9 +1874,9 @@ function OrderItems({ order, t, isRtl }) {
 	const [open, setOpen] = useState(true);
 	if (!order?.items?.length) return null;
 
-	const totalQty  = order.items.reduce((s, i) => s + i.quantity, 0);
+	const totalQty = order.items.reduce((s, i) => s + i.quantity, 0);
 	const itemCount = order.items.length;
-	const color     = COLORS.primary;
+	const color = COLORS.primary;
 
 	return (
 		<motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.07, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}>
@@ -982,11 +1916,11 @@ function OrderItems({ order, t, isRtl }) {
 							{/* Product list */}
 							<div className="px-[18px] pt-3 pb-1 flex flex-col">
 								{order.items.map((item, idx) => {
-									const product  = item.variant?.product;
-									const attrs    = item.variant?.attributes || {};
+									const product = item.variant?.product;
+									const attrs = item.variant?.attributes || {};
 									const stockLeft = (item.variant?.stockOnHand ?? 0) - (item.variant?.reserved ?? 0);
-									const isLow    = stockLeft < 5;
-									const isLast   = idx === order.items.length - 1;
+									const isLow = stockLeft < 5;
+									const isLast = idx === order.items.length - 1;
 
 									return (
 										<motion.div
@@ -1005,7 +1939,7 @@ function OrderItems({ order, t, isRtl }) {
 													>
 														{product?.mainImage ? (
 															<img
-																src={product.mainImage}
+																src={avatarSrc(product.mainImage)}
 																alt={product.name}
 																className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
 																onError={e => { e.currentTarget.style.display = "none"; }}
@@ -1117,7 +2051,7 @@ function OrderItems({ order, t, isRtl }) {
 								<div className="flex flex-col gap-[8px] mt-3">
 									{[
 										{ label: t("productsTotal"), val: fmtMoney(order.productsTotal), icon: ShoppingBag, color: color },
-										{ label: t("shippingCost"),  val: fmtMoney(order.shippingCost),  icon: Truck,       color: COLORS.phone },
+										{ label: t("shippingCost"), val: fmtMoney(order.shippingCost), icon: Truck, color: COLORS.phone },
 										...(order.discount ? [{ label: t("discount"), val: `-${fmtMoney(order.discount)}`, icon: Tag, color: COLORS.danger, red: true }] : []),
 									].map(({ label, val, icon: RowIcon, color: c, red }) => (
 										<div key={label} className="flex items-center justify-between">
@@ -1201,9 +2135,9 @@ function NotesCard({ order, t, isRtl }) {
 	const [open, setOpen] = useState(true);
 	if (!order?.customerNotes && !order?.notes) return null;
 
-	const color     = COLORS.notes;
+	const color = COLORS.notes;
 	const noteCount = [order.customerNotes, order.notes].filter(Boolean).length;
-	const preview   = (order.customerNotes || order.notes || "").slice(0, 55);
+	const preview = (order.customerNotes || order.notes || "").slice(0, 55);
 
 	const noteTitle = order.customerNotes && order.notes
 		? `${t("customerNotes")} & ${t("internalNotes")}`
@@ -1305,7 +2239,7 @@ function StatusHistoryCard({ order, t, isRtl }) {
 	const history = order?.statusHistory;
 	if (!history?.length) return null;
 
-	const color  = COLORS.history;
+	const color = COLORS.history;
 	const sorted = [...history].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 	const latest = sorted[sorted.length - 1];
 
@@ -1349,9 +2283,9 @@ function StatusHistoryCard({ order, t, isRtl }) {
 						>
 							<div className="flex flex-col px-[18px] py-3 pb-4">
 								{sorted.map((entry, idx) => {
-									const isLast    = idx === sorted.length - 1;
-									const toColor   = entry.toStatus?.color   || "#94a3b8";
-									const fromColor = entry.fromStatus?.color  || "#94a3b8";
+									const isLast = idx === sorted.length - 1;
+									const toColor = entry.toStatus?.color || "#94a3b8";
+									const fromColor = entry.fromStatus?.color || "#94a3b8";
 
 									return (
 										<motion.div
@@ -1432,7 +2366,7 @@ function StatusHistoryCard({ order, t, isRtl }) {
 // ─────────────────────────────────────────────────────────────────────────────
 function ResultBanner({ refetchingOrder, showSuccessCard, newStatus, retriesExhausted, isLocked, lockedUntil, t, isRtl }) {
 	const countdown = useLockCountdown(isLocked ? lockedUntil : null);
-	const visible   = showSuccessCard || refetchingOrder || isLocked || retriesExhausted;
+	const visible = showSuccessCard || refetchingOrder || isLocked || retriesExhausted;
 
 	const accentGrad = showSuccessCard && !refetchingOrder
 		? `linear-gradient(90deg, ${COLORS.profit}, #22c55e)`
@@ -1590,7 +2524,7 @@ function ActionPanel({
 							style={{ textAlign: isRtl ? "right" : "left" }}
 						/>
 					</div>
- 
+
 
 					{/* Hint */}
 					{!statusDecided && !isLocked && (
@@ -1609,290 +2543,5 @@ function ActionPanel({
 				</div>
 			</Card>
 		</motion.div>
-	);
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// FLOATING ACTION BAR
-// ─────────────────────────────────────────────────────────────────────────────
-function FloatingActionBar({
-	order, allowedStatuses, changingStatus, selectedStatusId,
-	isLocked, statusDecided, refetchingOrder, handleStatusChange,
-	handleNextOrder, loading, t, isRtl,
-}) {
-	const canNext = statusDecided && !loading && !changingStatus && !refetchingOrder;
-
-	return (
-		<motion.div
-			initial={{ y: 80, opacity: 0 }}
-			animate={{ y: 0, opacity: 1 }}
-			transition={{ delay: 0.3, duration: 0.44, ease: [0.16, 1, 0.3, 1] }}
-			className="fixed bottom-0 left-0 right-0 z-50"
-			style={{ pointerEvents: "none" }}
-		>
-			{/* Fade overlay */}
-			<div
-				className="absolute inset-0"
-				style={{ background: "linear-gradient(180deg, transparent 0%, color-mix(in oklab, var(--background) 85%, transparent) 28%, var(--background) 100%)" }}
-			/>
-
-			<div className="relative px-5 pb-5 pt-3" style={{ pointerEvents: "auto" }}>
-				<div
-					className="max-w-5xl mx-auto rounded-2xl overflow-hidden"
-					style={{
-						background: "var(--card)",
-						border: "1px solid var(--border)",
-						boxShadow: "0 -2px 20px rgba(0,0,0,0.06), 0 8px 40px rgba(0,0,0,0.1)",
-					}}
-				>
-					{/* Accent rule */}
-					<div
-						className="h-[3px] w-full"
-						style={{
-							background: statusDecided
-								? `linear-gradient(90deg, ${COLORS.profit}, #22c55e 60%, transparent)`
-								: `linear-gradient(90deg, ${COLORS.primary}, transparent)`,
-						}}
-					/>
-
-					<div className="flex items-center gap-3 px-4 py-3">
-						{/* Status buttons */}
-						<div className="flex-1 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-							<div className="flex items-center gap-2 min-w-max">
-								{allowedStatuses.map((status, idx) => {
-									const isCurrent      = status.id === order?.status?.id;
-									const isChangingThis = changingStatus && selectedStatusId === status.id;
-									const isDisabled     = isLocked || changingStatus || isCurrent || statusDecided;
-									const c              = status.color;
-									const label          = status.system ? t(`statuses.${status.code}`) : status.name;
-
-									return (
-										<motion.button
-											key={status.id}
-											type="button"
-											initial={{ opacity: 0, y: 8 }}
-											animate={{ opacity: 1, y: 0 }}
-											transition={{ delay: 0.35 + idx * 0.04 }}
-											whileHover={!isDisabled ? { y: -2, boxShadow: `0 6px 18px ${alpha(c, 0.28)}` } : {}}
-											whileTap={!isDisabled ? { scale: 0.97 } : {}}
-											onClick={() => !isDisabled && handleStatusChange(status.id)}
-											disabled={isDisabled}
-											className="relative flex items-center gap-2 px-4 py-[9px] rounded-xl text-[12.5px] font-semibold whitespace-nowrap outline-none transition-all overflow-hidden"
-											style={{
-												background: isCurrent ? c : alpha(c, 0.08),
-												border: `1.5px solid ${isCurrent ? c : alpha(c, 0.3)}`,
-												color: isCurrent ? "#fff" : c,
-												opacity: isDisabled && !isCurrent ? 0.35 : 1,
-												cursor: isDisabled ? "not-allowed" : "pointer",
-												boxShadow: isCurrent ? `0 4px 14px ${alpha(c, 0.4)}` : "none",
-											}}
-										>
-											<span
-												className="inline-block rounded-full shrink-0"
-												style={{
-													width: 7, height: 7,
-													background: isCurrent ? "rgba(255,255,255,0.85)" : c,
-													boxShadow: isCurrent ? "none" : `0 0 5px ${alpha(c, 0.8)}`,
-												}}
-											/>
-											{label}
-											{isChangingThis && <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} />}
-											{isCurrent && <BadgeCheck size={13} style={{ color: "rgba(255,255,255,0.85)" }} />}
-										</motion.button>
-									);
-								})}
-							</div>
-						</div>
-
-						{/* Divider */}
-						<div className="shrink-0 w-px self-stretch bg-border" />
-
-						{/* Next order */}
-						<motion.button
-							type="button"
-							onClick={handleNextOrder}
-							disabled={!canNext}
-							whileHover={canNext ? { y: -2, boxShadow: `0 8px 24px ${alpha(COLORS.primary, 0.4)}` } : {}}
-							whileTap={canNext ? { scale: 0.96 } : {}}
-							className="shrink-0 flex items-center gap-2 px-5 py-[9px] rounded-xl text-[12.5px] font-bold border-none outline-none transition-all"
-							style={canNext ? {
-								background: COLORS.primary,
-								color: "#fff",
-								boxShadow: `0 4px 16px ${alpha(COLORS.primary, 0.32)}`,
-								cursor: "pointer",
-							} : {
-								background: "var(--muted)",
-								color: "var(--muted-foreground)",
-								opacity: 0.5,
-								cursor: "not-allowed",
-							}}
-						>
-							{t("workPage.nextOrder")}
-							{loading || refetchingOrder
-								? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} />
-								: <SkipForward size={13} className="rtl:scale-x-[-1]" />
-							}
-						</motion.button>
-					</div>
-				</div>
-			</div>
-		</motion.div>
-	);
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN PAGE
-// ─────────────────────────────────────────────────────────────────────────────
-export default function OrderConfirmationWorkPage() {
-	const t      = useTranslations("orders-work");
-	const router = useRouter();
-	const locale = useLocale();
-	const isRtl  = locale?.startsWith("ar");
-
-	const [order,          setOrder]          = useState(null);
-	const [loading,        setLoading]        = useState(true);
-	const [changingStatus, setChangingStatus] = useState(false);
-	const [refetchingOrder,setRefetchingOrder]= useState(false);
-	const [showSuccessCard,setShowSuccessCard]= useState(false);
-	const [selectedStatusId,setSelectedStatusId] = useState(null);
-	const [notes,          setNotes]          = useState("");
-	const [allowedStatuses,setAllowedStatuses]= useState([]);
-	const [isLocked,       setIsLocked]       = useState(false);
-	const [lockedUntil,    setLockedUntil]    = useState(null);
-	const [statusDecided,  setStatusDecided]  = useState(false);
-
-	useEffect(() => {
-		fetchNextOrder();
-		fetchAllowedStatuses();
-	}, []);
-
-	const fetchNextOrder = async () => {
-		try {
-			setLoading(true);
-			const res = await api.get("/orders/employee/orders/next");
-			setOrder(res.data);
-			checkLockStatus(res.data);
-			setStatusDecided(false);
-		} catch {
-			toast.error(t("messages.errorFetchingOrder"));
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	const fetchAllowedStatuses = async () => {
-		try {
-			const res = await api.get("/orders/allowed-confirmation");
-			setAllowedStatuses(res.data || []);
-		} catch {
-			toast.error(t("messages.errorFetchingStatuses"));
-		}
-	};
-
-	const checkLockStatus = (data) => {
-		if (!data) return;
-		const assignment = data.assignments?.find(a => a.isAssignmentActive);
-		if (assignment?.lockedUntil) {
-			setIsLocked(new Date(assignment.lockedUntil) > new Date());
-			setLockedUntil(assignment.lockedUntil);
-		} else {
-			setIsLocked(false);
-			setLockedUntil(null);
-		}
-	};
-
-	const handleStatusChange = async (statusId) => {
-		if (!order || isLocked || statusDecided) return;
-		try {
-			setChangingStatus(true);
-			setSelectedStatusId(statusId);
-			await api.put(`/orders/${order.id}/confirm-status`, {
-				statusId, notes: notes.trim() || undefined,
-			});
-			toast.success(t("messages.statusUpdated"));
-			setStatusDecided(true);
-			setShowSuccessCard(true);
-			setRefetchingOrder(true);
-			const res = await api.get(`/orders/${order.id}`);
-			setOrder(res.data);
-			checkLockStatus(res.data);
-			setNotes("");
-			setSelectedStatusId(null);
-		} catch (err) {
-			toast.error(err.response?.data?.message || t("messages.errorUpdatingStatus"));
-			setSelectedStatusId(null);
-			setStatusDecided(false);
-		} finally {
-			setChangingStatus(false);
-			setRefetchingOrder(false);
-		}
-	};
-
-	const handleNextOrder = () => {
-		setOrder(null);
-		setNotes("");
-		setSelectedStatusId(null);
-		setIsLocked(false);
-		setLockedUntil(null);
-		setStatusDecided(false);
-		setShowSuccessCard(false);
-		fetchNextOrder();
-	};
-
-	if (loading) return <PageSkeleton />;
-	if (!order)  return (
-		<EmptyState
-			onRetry={fetchNextOrder}
-			onBack={() => router.push("/orders/employee-orders")}
-			t={t} isRtl={isRtl}
-		/>
-	);
-
-	const shared = { t, isRtl };
-
-	return (
-		<div className="p-5 pb-32">
-			<GlobalStyles />
-			<OrderHeader order={order} {...shared} />
-
-			<div className="grid gap-[14px] items-start" style={{ gridTemplateColumns: "minmax(0,2fr) minmax(0,3fr)" }}>
-				{/* Detail column */}
-				<div className={cn("flex flex-col gap-3", isRtl ? "order-2" : "order-1")}>
-					<OrderItems        order={order} {...shared} />
-					<UpsellingCard     order={order} {...shared} />
-					<NotesCard         order={order} {...shared} />
-					<StatusHistoryCard order={order} {...shared} />
-				</div>
-
-				{/* Action panel */}
-				<div className={cn("sticky top-4", isRtl ? "order-1" : "order-2")}>
-					<ActionPanel
-						order={order}
-						notes={notes} setNotes={setNotes}
-						changingStatus={changingStatus}
-						isLocked={isLocked}
-						statusDecided={statusDecided}
-						refetchingOrder={refetchingOrder}
-						showSuccessCard={showSuccessCard}
-						lockedUntil={lockedUntil}
-						{...shared}
-					/>
-				</div>
-			</div>
-
-			<FloatingActionBar
-				order={order}
-				allowedStatuses={allowedStatuses}
-				changingStatus={changingStatus}
-				selectedStatusId={selectedStatusId}
-				isLocked={isLocked}
-				statusDecided={statusDecided}
-				refetchingOrder={refetchingOrder}
-				handleStatusChange={handleStatusChange}
-				handleNextOrder={handleNextOrder}
-				loading={loading}
-				{...shared}
-			/>
-		</div>
 	);
 }

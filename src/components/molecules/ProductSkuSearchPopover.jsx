@@ -102,15 +102,17 @@ export function ProductSkuSearchPopover({
 	selectedSkus = [],
 	closeOnSelect = true,
 	closeOnOutsideClick = true,
+	productId,
+	initialSearch,
+	trigger
 }) {
-
 	const t = useTranslations("productSearch");
 
 	const [open, setOpen] = useState(false);
 	const triggerRef = useRef(null);
 	const [triggerWidth, setTriggerWidth] = useState(0);
 
-	const [searchQuery, setSearchQuery] = useState("");
+	const [searchQuery, setSearchQuery] = useState(initialSearch ?? "");
 	const debounced = useDebouncedValue(searchQuery, 350);
 
 	const [isSearching, setIsSearching] = useState(false);
@@ -146,7 +148,7 @@ export function ProductSkuSearchPopover({
 
 		try {
 			const res = await api.get(`/lookups/skus`, {
-				params: { q: term }
+				params: { q: term, productId }
 			});
 
 			const records = Array.isArray(res.data) ? res.data : [];
@@ -194,31 +196,38 @@ export function ProductSkuSearchPopover({
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
-				<Button
-					ref={triggerRef}
-					variant="outline"
-					role="combobox"
-					aria-expanded={open}
-					className="w-full justify-between rounded-xl h-[50px] bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-900 dark:to-slate-800 border-2 border-gray-200 dark:border-slate-700 hover:border-primary/50 dark:hover:border-primary/50 hover:bg-white dark:hover:bg-slate-900 transition-all shadow-sm hover:shadow-md"
-				>
-					<span
-						className={cn(
-							"flex items-center gap-2.5 font-medium",
-							searchQuery ? "text-foreground" : "text-gray-400"
-						)}
+				{trigger ? (
+					/* Render the custom trigger provided from the parent */
+					<div ref={triggerRef} className="cursor-pointer">
+						{trigger(open)}
+					</div>
+				) : (
+					<Button
+						ref={triggerRef}
+						variant="outline"
+						role="combobox"
+						aria-expanded={open}
+						className="w-full justify-between rounded-xl h-[50px] bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-900 dark:to-slate-800 border-2 border-gray-200 dark:border-slate-700 hover:border-primary/50 dark:hover:border-primary/50 hover:bg-white dark:hover:bg-slate-900 transition-all shadow-sm hover:shadow-md"
 					>
-						<div className="flex items-center justify-center w-5 h-5 rounded-xl bg-primary/10 text-primary">
-							<Search className="h-3.5 w-3.5" />
-						</div>
-						{searchQuery || t("triggerPlaceholder")}
-					</span>
-					<ChevronDown
-						className={cn(
-							"h-4 w-4 shrink-0 transition-transform duration-200",
-							open && "rotate-180"
-						)}
-					/>
-				</Button>
+						<span
+							className={cn(
+								"flex items-center gap-2.5 font-medium",
+								searchQuery ? "text-foreground" : "text-gray-400"
+							)}
+						>
+							<div className="flex items-center justify-center w-5 h-5 rounded-xl bg-primary/10 text-primary">
+								<Search className="h-3.5 w-3.5" />
+							</div>
+							{searchQuery || t("triggerPlaceholder")}
+						</span>
+						<ChevronDown
+							className={cn(
+								"h-4 w-4 shrink-0 transition-transform duration-200",
+								open && "rotate-180"
+							)}
+						/>
+					</Button>
+				)}
 			</PopoverTrigger>
 
 			<PopoverContent

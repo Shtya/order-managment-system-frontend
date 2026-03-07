@@ -461,16 +461,16 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 										<Input {...register('name')} placeholder={t('placeholders.productName')} className={inputClass} />
 									</Field>
 
-										<SlugInput
-											errors={errors}
-											register={register}
-											name={productName}
-											slugStatus={slugStatus}
-											slug={watchSlug}
-											setValue={setValue}
-											labelClassName="text-[13px] font-medium text-gray-500 dark:text-slate-400 tracking-wide"
-											className={inputClass}
-										/> 
+									<SlugInput
+										errors={errors}
+										register={register}
+										name={productName}
+										slugStatus={slugStatus}
+										slug={watchSlug}
+										setValue={setValue}
+										labelClassName="text-[13px] font-medium text-gray-500 dark:text-slate-400 tracking-wide"
+										className={inputClass}
+									/>
 
 									<Field label={t('fields.wholesalePrice')} error={errors?.wholesalePrice?.message}>
 										<Input

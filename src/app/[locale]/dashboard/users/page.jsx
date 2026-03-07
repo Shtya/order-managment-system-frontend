@@ -1244,7 +1244,7 @@ function EditUserDialog({
 				name: user.name || "",
 				email: user.email || "",
 				roleId: user.role?.id ? String(user.role.id) : "",
-				planId: user.subscription.plan?.id ? String(user.subscription.plan.id) : "",
+				planId: user.subscription?.plan?.id ? String(user.subscription.plan.id) : "",
 				isActive: typeof user.isActive === "boolean" ? user.isActive : true,
 			});
 		}

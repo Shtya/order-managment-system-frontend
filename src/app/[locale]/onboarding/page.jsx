@@ -621,7 +621,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
 					setSelected(selectedId || arranged[defaultIndex]?.id || arranged[0].id);
 				}
 			} catch (err) {
-				toast.error("حدث خطأ أثناء جلب الخطط");
+				// toast.error("حدث خطأ أثناء جلب الخطط");
 			} finally {
 				if (mounted) setIsLoading(false);
 			}
@@ -2621,6 +2621,278 @@ const OnboardingSkeleton = () => (
 	</div>
 );
 
+/* ─── Step 5: Finished ─────────────────────────────────────── */
+function FinishedStep({ open }) {
+
+	if (!open) return null;
+
+	const highlights = [
+		{ emoji: "📦", title: "الطلبات جاهزة", desc: "يمكنك الآن استقبال وإدارة الطلبات بسهولة." },
+		{ emoji: "🚚", title: "الشحن متكامل", desc: "اربط شركات الشحن وابدأ إرسال الطلبات فوراً." },
+		{ emoji: "📊", title: "تقارير الأداء", desc: "تابع نمو متجرك من خلال التقارير الذكية." },
+	];
+
+	return (
+		<motion.div
+			initial={{ opacity: 0, y: 20 }}
+			animate={{ opacity: 1, y: 0 }}
+			exit={{ opacity: 0, y: -16 }}
+			transition={{ duration: .35 }}
+		>
+
+			{/* Celebration Hero */}
+			<div style={{ marginBottom: 36, textAlign: "center" }}>
+
+				<motion.div
+					initial={{ scale: 0 }}
+					animate={{ scale: 1 }}
+					transition={{ type: "spring", duration: .7 }}
+					style={{
+						width: 80,
+						height: 80,
+						borderRadius: 24,
+						margin: "0 auto 20px",
+						background: "linear-gradient(145deg, #22c55e, #16a34a)",
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "center",
+						fontSize: 36,
+						boxShadow: "0 14px 40px rgba(34,197,94,.35)"
+					}}
+				>
+					🎉
+				</motion.div>
+
+				<h1 style={{
+					fontSize: 26,
+					fontWeight: 900,
+					color: "var(--text)",
+					marginBottom: 10
+				}}>
+					تم الإعداد بنجاح!
+				</h1>
+
+				<p style={{
+					fontSize: 14,
+					color: "var(--text-3)",
+					lineHeight: 1.7,
+					maxWidth: 420,
+					margin: "0 auto"
+				}}>
+					رائع! أصبح متجرك الآن جاهزاً للعمل.
+					ابدأ باستقبال الطلبات وإدارة عملياتك بكل سهولة.
+				</p>
+			</div>
+
+			{/* Highlights */}
+			<div style={{
+				display: "grid",
+				gridTemplateColumns: "1fr",
+				gap: 12,
+				marginBottom: 36
+			}}>
+				{highlights.map((t, i) => (
+					<motion.div
+						key={i}
+						initial={{ opacity: 0, y: 12 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ delay: .2 + i * .08 }}
+						style={{
+							background: "var(--surface)",
+							border: "1px solid var(--border)",
+							borderRadius: 14,
+							padding: "16px 14px",
+							display: "flex",
+							gap: 12,
+							alignItems: "flex-start",
+							boxShadow: "0 2px 8px rgba(0,0,0,.05)"
+						}}
+					>
+						<span style={{ fontSize: 24 }}>{t.emoji}</span>
+
+						<div>
+							<div style={{
+								fontSize: 13,
+								fontWeight: 700,
+								color: "var(--text)",
+								marginBottom: 3
+							}}>
+								{t.title}
+							</div>
+
+							<div style={{
+								fontSize: 11.5,
+								color: "var(--text-3)",
+								lineHeight: 1.55
+							}}>
+								{t.desc}
+							</div>
+						</div>
+					</motion.div>
+				))}
+			</div>
+
+			{/* Go to dashboard */}
+			{/* <BtnPrimary
+				onClick={() => window.location.href = "/orders"}
+				style={{ width: "100%" }}
+			>
+				الذهاب إلى لوحة الطلبات 🚀
+			</BtnPrimary> */}
+
+		</motion.div>
+	);
+}
+
+function NoStepFound() {
+	return (
+		<motion.div
+			initial={{ opacity: 0, y: 20 }}
+			animate={{ opacity: 1, y: 0 }}
+			exit={{ opacity: 0, y: -16 }}
+			transition={{ duration: .35 }}
+		>
+			{/* Icon */}
+			<motion.div
+				initial={{ scale: 0 }}
+				animate={{ scale: 1 }}
+				transition={{ type: "spring", duration: .7 }}
+				style={{
+					width: 72,
+					height: 72,
+					borderRadius: 22,
+					background: "linear-gradient(145deg, #f59e0b, #d97706)",
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "center",
+					fontSize: 34,
+					margin: "0 auto 22px",
+					boxShadow: "0 12px 40px rgba(245,158,11,.35)"
+				}}
+			>
+				⚠️
+			</motion.div>
+
+			<h2 style={{
+				fontSize: 22,
+				fontWeight: 900,
+				marginBottom: 10,
+				color: "var(--text)",
+				textAlign: "center"
+			}}>
+				تعذر تحديد خطوة الإعداد
+			</h2>
+
+			<p style={{
+				fontSize: 14,
+				color: "var(--text-3)",
+				lineHeight: 1.7,
+				marginBottom: 28,
+				textAlign: "center"
+			}}>
+				يبدو أن هناك مشكلة في حالة الإعداد الخاصة بحسابك.
+				يمكنك إعادة بدء عملية الإعداد أو الانتقال إلى لوحة التحكم.
+			</p>
+
+			<div style={{
+				display: "flex",
+				gap: 12,
+				justifyContent: "center"
+			}}>
+
+				<BtnPrimary
+					onClick={() => window.location.reload()}
+				>
+					إعادة المحاولة
+				</BtnPrimary>
+
+				{/* <BtnGhost
+					onClick={() => window.location.href = "/orders"}
+				>
+					الذهاب إلى الطلبات
+				</BtnGhost> */}
+
+			</div>
+
+		</motion.div>
+	)
+}
+
+function UnauthorizedUser() {
+	return (
+		<motion.div
+			initial={{ opacity: 0, y: 20 }}
+			animate={{ opacity: 1, y: 0 }}
+			exit={{ opacity: 0, y: -16 }}
+			transition={{ duration: .35 }}
+		>
+			{/* Icon */}
+			<motion.div
+				initial={{ scale: 0 }}
+				animate={{ scale: 1 }}
+				transition={{ type: "spring", duration: 0.7 }}
+				style={{
+					width: 72,
+					height: 72,
+					borderRadius: 22,
+					background: "linear-gradient(145deg, #f87171, #dc2626)",
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "center",
+					fontSize: 34,
+					margin: "0 auto 22px",
+					boxShadow: "0 12px 40px rgba(220,38,38,.35)",
+				}}
+			>
+				🚫
+			</motion.div>
+
+			{/* Heading */}
+			<h2 style={{
+				fontSize: 22,
+				fontWeight: 900,
+				marginBottom: 10,
+				color: "var(--text)",
+				textAlign: "center",
+			}}>
+				غير مصرح لك بالوصول
+			</h2>
+
+			{/* Description */}
+			<p style={{
+				fontSize: 14,
+				color: "var(--text-3)",
+				lineHeight: 1.7,
+				marginBottom: 28,
+				textAlign: "center",
+			}}>
+				هذه الصفحة مخصصة للمشرفين فقط.
+				يرجى تسجيل الدخول بحساب مدير النظام لإكمال عملية الإعداد.
+			</p>
+
+			{/* Action buttons */}
+			{/* <div style={{
+				display: "flex",
+				gap: 12,
+				justifyContent: "center",
+				flexWrap: "wrap",
+			}}>
+				<BtnPrimary
+					onClick={() => window.location.href = "/auth?mode=signin"}
+				>
+					تسجيل الدخول بحساب مشرف
+				</BtnPrimary>
+
+				<BtnGhost
+					onClick={() => window.location.href = "/orders"}
+				>
+					العودة إلى لوحة الطلبات
+				</BtnGhost>
+			</div> */}
+		</motion.div>
+	)
+}
+
 /* ─── Main ────────────────────────────────────────────────── */
 export default function OnboardingPage() {
 	const [step, setStep] = useState(0); // Start null to show a loader
@@ -2638,12 +2910,61 @@ export default function OnboardingPage() {
 
 				const { data } = await api.get('/users/me'); // Create this simple GET endpoint
 				const user = data?.user || data;
+				if (!user) {
+					toast.error("يجب تسجيل الدخول أولاً");
+					setStep(-2); // e.g., -2 = unauthorized
+					setTimeout(() => {
+						router.replace('/auth?mode=signin');
+					}, 1200);
+
+				}
+				// Only admins can access onboarding
+				if (user.role.name !== "admin") {
+					toast.error("غير مصرح لك بالوصول إلى صفحة الإعداد");
+					setStep(-2); // e.g., -2 = unauthorized
+					setTimeout(() => {
+						router.replace("/");
+					}, 1200);
+					return;
+				}
+
+				if (user.onboardingStatus === 'completed') {
+					toast.success("تم إكمال خطوات الإعداد مسبقاً");
+					const redirect =
+						user.role.name === "super_admin"
+							? '/dashboard/users'
+							: '/orders';
+					setStep(5);
+					setTimeout(() => {
+						router.replace(redirect);
+					}, 1200);
+					return;
+				}
+
+
 				setUser(user)
 				const current = stepMap[user.currentOnboardingStep] || 0;
+				if (current === undefined) {
+					setStep(-1);
+					return;
+				}
 				setStep(current);
 				setDbStep(current);
-			} catch {
-				router.push("/auth?mode=signin")
+			} catch (error) {
+				const status = error?.response?.status;
+
+				if (status === 401) {
+					toast.error("انتهت الجلسة، يرجى تسجيل الدخول مرة أخرى");
+				} else if (status === 403) {
+					toast.error("هذه الصفحة مخصصة للمشرفين فقط. يرجى تسجيل الدخول بحساب مشرف.");
+				} else {
+					toast.error("حدث خطأ غير متوقع");
+				}
+				setStep(-2); // e.g., -2 = unauthorized
+				setTimeout(() => {
+
+					router.push("/auth?mode=signin");
+				}, 1200);
 			} finally {
 				setLoading(false);
 			}
@@ -2668,7 +2989,8 @@ export default function OnboardingPage() {
 			setStep(() => nextIndex);
 			setDbStep(() => nextIndex);
 		} catch (err) {
-			toast.error(err.message, { id: tid });
+			const msg = err.response?.data?.message || "حدث خطأ أثناء التقدم";
+			toast.error(msg);
 		} finally {
 			setNextLoading(false); // stop loading
 		}
@@ -2757,6 +3079,9 @@ export default function OnboardingPage() {
 							<CompanyStep key="c" onNext={next} onBack={back} open={step === 2} nextLoading={nextLoading} />
 							<StoreStep key="s" onNext={next} onBack={back} open={step === 3} nextLoading={nextLoading} />
 							<ShippingStep key="sh" onNext={finish} onBack={back} open={step === 4} nextLoading={nextLoading} />
+							<FinishedStep key="f" open={step === 5} />
+							{step === -1 && <NoStepFound />}
+							{step === -2 && <UnauthorizedUser />}
 						</AnimatePresence>
 					</div>
 				</motion.div>

@@ -81,15 +81,25 @@ export default function SignIn({ t: tProp, onSwitchMode, onForgotPassword }) {
         body: JSON.stringify({ accessToken: data.accessToken, user: data.user }),
       });
 
-
-
       toast.success(t('signin.success'), { id: tid });
-      const isOnboarded = data.user?.onboardingStatus === 'completed'; // Matches our Enum
+      const role = String(data?.user?.role || '');
+      const isOnboarded = data.user?.onboardingStatus === 'completed' || role !== 'admin'; // Matches our Enum
 
-      const role = String(data?.user?.role || '').toUpperCase();
-      setTimeout(() => { window.location.href = role === 'SUPER_ADMIN' ? '/dashboard/users' : !isOnboarded ? "/onboarding" : '/orders'; }, 900);
-    } catch (err) {
-      toast.error(err?.message || t('signin.error'), { id: tid });
+      setTimeout(() => { window.location.href = role === 'super_admin' ? '/dashboard/users' : !isOnboarded ? "/onboarding" : '/orders'; }, 900);
+    } catch (error) {
+      const status = error?.response?.status;
+
+      if (status === 401) {
+        toast.error("انتهت الجلسة، يرجى تسجيل الدخول مرة أخرى");
+      } else if (status === 403) {
+        toast.error("هذه الصفحة مخصصة للمشرفين فقط. يرجى تسجيل الدخول بحساب مشرف.");
+      } else {
+        toast.error("حدث خطأ غير متوقع");
+      }
+
+      setTimeout(() => {
+        router.push("/auth?mode=signin");
+      }, 1200);
     } finally { setLoading(false); }
   };
 

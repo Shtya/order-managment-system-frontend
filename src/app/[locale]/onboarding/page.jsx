@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import api from '@/utils/api';
@@ -10,6 +10,8 @@ import * as yup from 'yup';
 import { getUser } from '@/hook/getUser';
 import { RefreshCw, Webhook } from 'lucide-react';
 import { useRouter } from '@/i18n/navigation';
+import { PROVIDER_META, SHIP_PROVIDERS, useShippingSettings, useShippingWebhook } from '@/hook/shipping';
+import { useTranslations } from 'next-intl';
 /* ─── CSS ─────────────────────────────────────────────────── */
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
@@ -1841,55 +1843,6 @@ const ProvidersSkeleton = () => (
 
 
 // Provider metadata matching ShippingCompaniesPage
-const PROVIDER_META = {
-	bosta: {
-		configFields: [
-			{ key: "apiKey", type: "password", label: 'مفتاح API', required: true, hide: true },
-		],
-		webhookHiddenFields: [], // Show all webhook fields
-	},
-	jt: {
-		configFields: [
-			{ key: "apiKey", type: "password", label: 'مفتاح API', required: true, hide: true },
-			{ key: "customerId", type: "text", label: 'معرف العميل', required: true, hide: false },
-		],
-		webhookHiddenFields: [],
-	},
-	turbo: {
-		configFields: [
-			{ key: "apiKey", type: "password", label: 'مفتاح API', required: true, hide: true },
-			{ key: "accountId", type: "text", label: 'معرف الحساب', required: true, hide: false },
-		],
-		webhookHiddenFields: ["headerName"], // Hide headerName for Turbo
-	},
-};
-
-const SHIP_PROVIDERS = [
-	{
-		key: 'bosta',
-		code: 'bosta',
-		label: 'بوسطة',
-		img: "/integrate/bosta.png",
-		emoji: '📦',
-		desc: 'أسرع شركات التوصيل في مصر',
-	},
-	{
-		key: 'jt',
-		code: 'jt',
-		label: 'J&T Express',
-		img: "/integrate/5.png",
-		emoji: '🚚',
-		desc: 'تغطية واسعة في المنطقة العربية',
-	},
-	{
-		key: 'turbo',
-		code: 'turbo',
-		label: 'تيربو',
-		img: "/integrate/4.png",
-		emoji: '⚡',
-		desc: 'توصيل سريع داخل المدن',
-	},
-];
 
 
 const CopyableField = ({ label, value }) => {
@@ -2025,163 +1978,61 @@ const WebhookSkeleton = () => (
 );
 
 function ShippingStep({ onNext, onBack, open, nextLoading }) {
-	const [active, setActive] = useState(null);
-	const [fd, setFd] = useState({});
-	const [connected, setConnected] = useState({});
-	const [saving, setSaving] = useState(false);
-	const [loading, setLoading] = useState(true);
-	const [integrations, setIntegrations] = useState({});
+	const t = useTranslations("shipping");
 
-	// Webhook state
+	const [active, setActive] = useState(null); // The provider code
 	const [showWebhook, setShowWebhook] = useState(false);
-	const [webhookData, setWebhookData] = useState(null);
-	const [webhookLoading, setWebhookLoading] = useState(false);
-	const [rotatingSecret, setRotatingSecret] = useState(false);
 
-	const provider = SHIP_PROVIDERS.find(p => p.key === active);
+	// Find current provider object
+	const provider = SHIP_PROVIDERS.find(p => p.code === active) || null;
+
+	const handleOnSaved = useCallback((isEditMode) => {
+		if (!isEditMode) {
+			setShowWebhook(true);
+		} else {
+			setActive(null);
+		}
+	}, [active, provider?.label]);
+
+	// 3. Settings Hook (Renamed to match your original variable names)
+	const {
+		integrations, connected,
+		fields,
+		values: fd,             // Rename 'values' to 'fd'
+		setValue: setFd,        // Rename 'setValue' to 'setFd'
+		handleSave: save,       // Rename 'handleSave' to 'save'
+		saving,
+		loading: settingsLoading,
+		integrationData
+	} = useShippingSettings(provider?.key, {
+		onSaved: handleOnSaved,
+		onFirstSetup: () => setShowWebhook(true),
+		onClose: () => {
+			setActive(null);
+			setShowWebhook(false);
+		},
+	});
+
+	// 4. Webhook Hook (Renamed to match your original variable names)
+	const {
+		data: webhookData,      // Rename 'data' to 'webhookData'
+		setData: setWebhookData,
+		loading: webhookLoading,
+		rotating: rotatingSecret,
+		handleRotateSecret: rotateSecret, // Rename to match your function name
+		handleCopy: copy,
+		refresh,
+	} = useShippingWebhook(showWebhook ? active : null);
+
+	// Helper logic for the UI
 	const providerMeta = provider ? PROVIDER_META[provider.code] : null;
-	const fields = providerMeta?.configFields || [];
 	const webhookHiddenFields = providerMeta?.webhookHiddenFields || [];
 
-	// Fetch existing integrations
-	const fetchIntegrations = async () => {
-		setLoading(true);
-		try {
-			const { data } = await api.get("/shipping/integrations/status");
-			const integrationsMap = {};
-			const connectedMap = {};
-
-			if (data?.integrations) {
-				data.integrations.forEach((integration) => {
-					integrations[integration.provider] = integration;
-					if (integration.credentialsConfigured) {
-						connectedMap[integration.provider] = true;
-					}
-				});
-			}
-
-			setIntegrations(integrations);
-			setConnected(connectedMap);
-		} catch (e) {
-			console.error("Error fetching integrations:", e);
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	// Fetch webhook setup
-	const fetchWebhookSetup = async (providerCode) => {
-		setWebhookLoading(true);
-		try {
-			const res = await api.get(`/shipping/providers/${providerCode}/webhook-setup`);
-			setWebhookData(res.data);
-		} catch (e) {
-			console.error("Error fetching webhook setup:", e);
-			toast.error('فشل في تحميل إعدادات Webhook');
-		} finally {
-			setWebhookLoading(false);
-		}
-	};
-
-	// Rotate webhook secret
-	const rotateSecret = async () => {
-		if (!provider) return;
-
-		setRotatingSecret(true);
-		try {
-			await api.post(`/shipping/providers/${provider.code}/webhook-setup/rotate-secret`, {});
-			await fetchWebhookSetup(provider.code);
-			toast.success('تم تجديد السر بنجاح ✓');
-		} catch (e) {
-			console.error("Error rotating secret:", e);
-			toast.error('فشل في تجديد السر');
-		} finally {
-			setRotatingSecret(false);
-		}
-	};
-
-	useEffect(() => {
-		if (open) {
-			fetchIntegrations();
-		}
-	}, [open]);
-
-	// When opening a provider form, load existing non-hidden values
-	useEffect(() => {
-		if (active && integrations[active]) {
-			const integration = integrations[active];
-			const newFd = {};
-
-			fields.forEach((field) => {
-				// Only populate non-hidden fields
-				if (!field.hide && integration.credentials?.[field.key]) {
-					newFd[field.key] = integration.credentials[field.key];
-				}
-			});
-
-			setFd(newFd);
-		} else if (!active) {
-			setFd({});
-			setShowWebhook(false);
-			setWebhookData(null);
-		}
-	}, [active]);
-
-	const save = async () => {
-		// Check required fields
-		const missingRequired = fields.filter(f => f.required && !fd[f.key]?.trim());
-
-		// For edit mode: allow save if at least one field has a new value
-		const hasAtLeastOneValue = fields.some(f => fd[f.key]?.trim());
-		const isEditMode = integrations[active]?.credentialsConfigured;
-
-		if (!isEditMode && missingRequired.length) {
-			toast.error('يرجى ملء الحقول المطلوبة');
-			return;
-		}
-
-		if (isEditMode && !hasAtLeastOneValue) {
-			toast.error('يرجى إدخال قيمة واحدة على الأقل');
-			return;
-		}
-
-		setSaving(true);
-		try {
-			const credentials = {};
-			fields.forEach((field) => {
-				const val = fd[field.key]?.trim();
-				if (val && val.length > 0) {
-					credentials[field.key] = val;
-				}
-			});
-
-			await api.post(`/shipping/providers/${provider.code}/credentials`, { credentials });
-
-			toast.success(`تم ${isEditMode ? 'تحديث' : 'ربط'} ${provider.label} بنجاح ✓`);
-
-			// Refresh integrations
-			await fetchIntegrations();
-
-			// If first setup, show webhook modal
-			if (!isEditMode) {
-				setShowWebhook(true);
-				await fetchWebhookSetup(provider.code);
-			} else {
-				setActive(null);
-				setFd({});
-			}
-		} catch (error) {
-			console.error("Error saving credentials:", error);
-			toast.error(error?.response?.data?.message || 'حدث خطأ أثناء الحفظ');
-		} finally {
-			setSaving(false);
-		}
-	};
 
 	const openWebhookSetup = async (providerKey) => {
 		setActive(providerKey);
 		setShowWebhook(true);
-		await fetchWebhookSetup(providerKey);
+		await refresh(providerKey);
 	};
 
 	if (!open) return null;
@@ -2203,7 +2054,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
 				</p>
 			</div>
 
-			{loading ? (
+			{settingsLoading ? (
 				<ProvidersSkeleton />
 			) : (
 				<AnimatePresence mode="wait">
@@ -2541,17 +2392,17 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
 
 							{fields.map(f => {
 								const existingValue = integrations[active]?.credentials?.[f.key];
-								const placeholder = f.hide && existingValue ? existingValue : f.label;
+								const placeholder = f.hide && existingValue ? existingValue : t(f.labelKey);
 
 								return (
-									<Field key={f.key} label={f.label} required={f.required}>
+									<Field key={f.key} label={t(f.labelKey)} required={f.required}>
 										<InputWrap icon={<IcLock />}>
 											<input
 												className="ob-input"
 												type={f.type}
 												placeholder={placeholder}
 												value={fd[f.key] || ''}
-												onChange={e => setFd(p => ({ ...p, [f.key]: e.target.value }))}
+												onChange={e => setFd(f.key, e.target.value)}
 												style={{
 													direction: 'ltr',
 													textAlign: 'left',
@@ -2572,7 +2423,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
 							})}
 
 							<div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-								<BtnGhost onClick={() => { setActive(null); setFd({}); }}>
+								<BtnGhost onClick={() => { setActive(null); }}>
 									إلغاء
 								</BtnGhost>
 								<BtnPrimary onClick={save} loading={saving || nextLoading} disabled={nextLoading} style={{ flex: 1 }}>

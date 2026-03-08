@@ -250,8 +250,8 @@ export function ActionButtons({ row, onDelete, onEdit, onView }) {
 
 // Main Orders Page Component
 export default function OrdersTab({ stats, fetchStats, statsLoading }) {
-	const t = useTranslations("orders");
 	const tShipping = useTranslations("shipping");
+	const t = useTranslations("orders");
 
 	const router = useRouter();
 	const [retrySettingsOpen, setRetrySettingsOpen] = useState(false);
@@ -731,7 +731,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
 						{new Date(row.created_at).toLocaleDateString("en-US")}
 					</span>
 				),
-			}, 
+			},
 			{
 				key: "actions",
 				header: t("table.actions"),

@@ -6,6 +6,8 @@ import {
   Settings, Save, Loader2, Bell, Zap,
   RefreshCw, X, Truck, Shield,
   AlertCircle, ChevronDown, RotateCcw, CheckCheck,
+  Warehouse,
+  Info,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
@@ -22,6 +24,7 @@ import {
   Select, SelectContent, SelectItem,
   SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import useOrdersSettings from "@/hook/useOrdersSettings";
 
 /* ══════════════════════════════════════════════════════════════
    HELPERS
@@ -36,10 +39,11 @@ function rgba(hex, a = 0.12) {
    TABS CONFIG
 ══════════════════════════════════════════════════════════════ */
 const TABS = [
-  { key: "general",       icon: Settings,   labelKey: "retrySettings.tabs.general"       },
-  { key: "automation",    icon: Zap,        labelKey: "retrySettings.tabs.automation"    },
-  { key: "shipping",      icon: Truck,      labelKey: "retrySettings.tabs.shipping"      },
-  { key: "notifications", icon: Bell,       labelKey: "retrySettings.tabs.notifications" },
+  { key: "general", icon: Settings, labelKey: "retrySettings.tabs.general" },
+  { key: "automation", icon: Zap, labelKey: "retrySettings.tabs.automation" },
+  { key: "shipping", icon: Truck, labelKey: "retrySettings.tabs.shipping" },
+  { key: "warehouse", icon: Warehouse, labelKey: "retrySettings.tabs.warehouse" }, // Added
+  { key: "notifications", icon: Bell, labelKey: "retrySettings.tabs.notifications" },
 ];
 
 /* ══════════════════════════════════════════════════════════════
@@ -318,9 +322,9 @@ function NumberField({ label, description, value, onChange, min, max, suffix }) 
         {label}
       </Label>
       <div className="flex items-center gap-2 relative">
-        <Input endIcon= {suffix && <span className=" text-sm text-muted-foreground shrink-0">{suffix}</span>} type="number" min={min} max={max} value={value} onChange={onChange}
+        <Input endIcon={suffix && <span className=" text-sm text-muted-foreground shrink-0">{suffix}</span>} type="number" min={min} max={max} value={value} onChange={onChange}
           className="rounded-xl h-10 flex-1" />
-       
+
       </div>
       {description && <p className="text-[11px] text-muted-foreground">{description}</p>}
     </div>
@@ -372,83 +376,16 @@ function FieldSubLabel({ children }) {
 export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [] }) {
   const t = useTranslations("orders");
   const [activeTab, setActiveTab] = useState("general");
-  const [loading, setLoading]   = useState(true);
-  const [saving,  setSaving]    = useState(false);
-
-  const [settings, setSettings] = useState({
-    enabled:               true,
-    maxRetries:            3,
-    retryInterval:         30,
-    autoMoveStatus:        "",
-    retryStatuses:         [],
-    confirmationStatuses:  [],
-    notifyEmployee:        true,
-    notifyAdmin:           false,
-    workingHours:          { enabled: true, start: "09:00", end: "18:00" },
-    shipping: {
-      autoSendToShipping:      false,
-      shippingCompanyId:       "",
-      triggerStatus:           "",
-      requirePaymentConfirm:   true,
-      notifyOnShipment:        true,
-      autoGenerateLabel:       false,
-      partialPaymentThreshold: 0,
-      requireFullPayment:      false,
-      allowReturnCreation:     true,
-    },
-  });
-
-  const [shippingCompanies, setShippingCompanies] = useState([]);
-
-  /* ── fetch settings on open ─── */
-  useEffect(() => {
-    if (!isOpen) return;
-    (async () => {
-      setLoading(true);
-      try {
-        const [settingsRes, shippingRes] = await Promise.all([
-          api.get("/orders/retry-settings"),
-          api.get("/shipping/integrations/active").catch(() => ({ data: { integrations: [] } })),
-        ]);
-        if (settingsRes.data) {
-          setSettings(prev => ({
-            ...prev,
-            ...settingsRes.data,
-            shipping: { ...prev.shipping, ...(settingsRes.data.shipping ?? {}) },
-          }));
-        }
-        const integrations = shippingRes.data?.integrations ?? shippingRes.data ?? [];
-        setShippingCompanies(Array.isArray(integrations) ? integrations : []);
-      } catch (e) {
-        toast.error(normalizeAxiosError(e));
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [isOpen]);
-
-  const patch         = (p) => setSettings(prev => ({ ...prev, ...p }));
-  const patchShipping = (p) => setSettings(prev => ({ ...prev, shipping: { ...prev.shipping, ...p } }));
-
-  const toggleCode = (field, code) =>
-    patch({
-      [field]: settings[field].includes(code)
-        ? settings[field].filter(c => c !== code)
-        : [...settings[field], code],
-    });
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      await api.post("/orders/retry-settings", settings);
-      toast.success(t("messages.settingsSaved"));
-      onClose();
-    } catch (e) {
-      toast.error(normalizeAxiosError(e));
-    } finally {
-      setSaving(false);
-    }
-  };
+  const {
+    settings,
+    loading,
+    saving,
+    shippingCompanies,
+    patch,
+    patchShipping,
+    handleSave,
+    toggleCode
+  } = useOrdersSettings({ isOpen, onClose })
 
   /* ═══════════════════════════════════════════════════════════
      RENDER
@@ -608,7 +545,7 @@ export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [
                             <div className="grid grid-cols-2 gap-4 pt-1">
                               {[
                                 { key: "start", labelKey: "retrySettings.workingStart", def: "09:00" },
-                                { key: "end",   labelKey: "retrySettings.workingEnd",   def: "18:00" },
+                                { key: "end", labelKey: "retrySettings.workingEnd", def: "18:00" },
                               ].map(f => (
                                 <div key={f.key} className="space-y-1.5">
                                   <Label className="text-xs font-black uppercase tracking-wider text-muted-foreground/70">
@@ -897,9 +834,9 @@ export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [
                             subtitle={t("retrySettings.shipping.otherOptionsDesc")}
                           >
                             {[
-                              { key: "autoGenerateLabel",   labelKey: "retrySettings.shipping.autoLabel",        descKey: "retrySettings.shipping.autoLabelDesc"        },
-                              { key: "notifyOnShipment",    labelKey: "retrySettings.shipping.notifyOnShipment", descKey: "retrySettings.shipping.notifyOnShipmentDesc" },
-                              { key: "allowReturnCreation", labelKey: "retrySettings.shipping.allowReturn",      descKey: "retrySettings.shipping.allowReturnDesc"      },
+                              { key: "autoGenerateLabel", labelKey: "retrySettings.shipping.autoLabel", descKey: "retrySettings.shipping.autoLabelDesc" },
+                              { key: "notifyOnShipment", labelKey: "retrySettings.shipping.notifyOnShipment", descKey: "retrySettings.shipping.notifyOnShipmentDesc" },
+                              { key: "allowReturnCreation", labelKey: "retrySettings.shipping.allowReturn", descKey: "retrySettings.shipping.allowReturnDesc" },
                             ].map((opt, i, arr) => (
                               <div key={opt.key}>
                                 <InlineToggle
@@ -936,15 +873,58 @@ export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [
                   </div>
                 )}
 
+                {activeTab === "warehouse" && (
+                  <div className="space-y-5">
+                    <SectionCard
+                      icon={Warehouse}
+                      iconColor="#8b5cf6"
+                      title={t("retrySettings.warehouse.flowTitle")}
+                      subtitle={t("retrySettings.warehouse.flowSubtitle")}
+                    >
+                      <div className="space-y-3">
+                        <FieldSubLabel>{t("retrySettings.warehouse.flowLabel")}</FieldSubLabel>
+
+                        <Select
+                          value={settings.orderFlowPath} // assuming 'orderFlowPath' is your state key
+                          onValueChange={v => patch({ orderFlowPath: v })}
+                        >
+                          <SelectTrigger className="h-12 rounded-xl text-sm border-2">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="warehouse">
+                              <div className="flex flex-col py-1">
+                                <span className="">{t("retrySettings.warehouse.afterConfirmation")}</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="shipping">
+                              <div className="flex flex-col py-1">
+                                <span className="">{t("retrySettings.warehouse.directToShipping")}</span>
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+
+                        <div className="flex gap-2 items-start mt-2 bg-muted/30 p-3 rounded-lg">
+                          <Info size={14} className="mt-0.5 text-muted-foreground shrink-0" />
+                          <p className="text-[11px] text-muted-foreground leading-relaxed">
+                            {t("retrySettings.warehouse.flowHint")}
+                          </p>
+                        </div>
+                      </div>
+                    </SectionCard>
+                  </div>
+                )}
+
                 {/* ══════════════ TAB: NOTIFICATIONS ══════════════ */}
                 {activeTab === "notifications" && (
                   <>
-                    <ToggleRow
+                    {/* <ToggleRow
                       label={t("retrySettings.notifyEmployee")}
                       description={t("retrySettings.notifyEmployeeDesc")}
                       checked={settings.notifyEmployee}
                       onCheckedChange={v => patch({ notifyEmployee: v })}
-                    />
+                    /> */}
                     <ToggleRow
                       label={t("retrySettings.notifyAdmin")}
                       description={t("retrySettings.notifyAdminDesc")}
@@ -1002,7 +982,7 @@ export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [
                 transition-all duration-200"
             >
               {saving
-                ? <><Loader2 size={14} className="animate-spin" />{t("common.saving")}</>
+                ? <><Loader2 size={14} className="animate-spin" />{t("actions.saving")}</>
                 : <><Save size={14} />{t("common.save")}</>
               }
             </motion.button>

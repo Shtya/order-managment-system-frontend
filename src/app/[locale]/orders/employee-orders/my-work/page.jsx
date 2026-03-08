@@ -336,7 +336,7 @@ export default function OrderConfirmationWorkPage() {
 	const onSave = async (data) => {
 		try {
 			setSaving(true);
-
+			const removedSet = new Set(removedItemsIds.map(id => id));
 			const {
 				productsTotal,
 				finalTotal,
@@ -349,12 +349,17 @@ export default function OrderConfirmationWorkPage() {
 			const payload = {
 				...rest,
 				removedItems: removedItemsIds,
-				items: editedOrder?.items.map(i => ({
-					variantId: i.variant?.id || i.variantId,
-					quantity: Number(i.quantity),
-					unitPrice: i.unitPrice,
-					isAdditional: i.isAdditional
-				}))
+				items: editedOrder?.items
+					.filter(i => {
+						const id = i.variant?.id || i.variantId;
+						return !removedSet.has(id); // Only keep items NOT in the removed list
+					})
+					.map(i => ({
+						variantId: i.variant?.id || i.variantId,
+						quantity: Number(i.quantity),
+						unitPrice: i.unitPrice,
+						isAdditional: i.isAdditional
+					}))
 			};
 			await api.patch(`/orders/${editedOrder?.id}`, payload);
 			toast.success(t("messages.updateSuccess"));

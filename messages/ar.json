@@ -4061,7 +4061,8 @@
       "deposit": "العربون",
       "notes": "ملاحظات داخلية",
       "customerNotes": "ملاحظات العميل",
-      "allowOpenPackage": "فتح الطرد"
+      "allowOpenPackage": "فتح الطرد",
+      "secondPhoneNumber": "رقم هاتف ثانٍ (اختياري)"
     },
     "placeholders": {
       "store": "اختر المتجر",

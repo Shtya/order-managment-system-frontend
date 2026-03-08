@@ -46,6 +46,7 @@ const createSchema = (t) =>
 	yup.object({
 		customerName: yup.string().required(t("validation.customerNameRequired")),
 		phoneNumber: yup.string().required(t("validation.phoneNumberRequired")),
+		secondPhoneNumber: yup.string(),
 		email: yup.string().email(t("validation.invalidEmail")).optional(),
 		// city & area are always present in the payload (auto-filled for Bosta)
 		address: yup.string().required(t("validation.addressRequired")),
@@ -484,6 +485,8 @@ export default function CreateOrderPageComplete({
 			return {
 				customerName: existingOrder.customerName || "",
 				phoneNumber: existingOrder.phoneNumber || "",
+				secondPhoneNumber: existingOrder.secondPhoneNumber || "",
+				allowOpenPackage: existingOrder.allowOpenPackage ?? false,
 				email: existingOrder.email || "",
 				address: existingOrder.address || "",
 				city: existingOrder.city || "",
@@ -515,6 +518,7 @@ export default function CreateOrderPageComplete({
 		return {
 			customerName: "",
 			phoneNumber: "",
+			secondPhoneNumber: "",
 			email: "",
 			address: "",
 			city: "",
@@ -732,14 +736,37 @@ export default function CreateOrderPageComplete({
 		[selectedSkus, watchedItems, setValue]
 	);
 
+	// const handleDeleteProduct = useCallback(
+	// 	(index) => {
+	// 		const deleted = watchedItems[index];
+	// 		setValue(
+	// 			"items",
+	// 			watchedItems.filter((_, i) => i !== index)
+	// 		);
+	// 		setSelectedSkus((prev) => prev.filter((s) => s.id !== deleted.variantId));
+	// 	},
+	// 	[watchedItems, setValue]
+	// );
+	const [removedItemsIds, setRemovedItemsIds] = useState([]);
 	const handleDeleteProduct = useCallback(
 		(index) => {
 			const deleted = watchedItems[index];
+
+			// Track removed items
+			if (deleted?.variantId) {
+				setRemovedItemsIds(prev => [...prev, { variantId: deleted.variantId }]);
+			}
+
+			// Remove from form items
 			setValue(
 				"items",
 				watchedItems.filter((_, i) => i !== index)
 			);
-			setSelectedSkus((prev) => prev.filter((s) => s.id !== deleted.variantId));
+
+			// Remove from selected SKUs
+			setSelectedSkus(prev =>
+				prev.filter(s => s.id !== deleted.variantId)
+			);
 		},
 		[watchedItems, setValue]
 	);
@@ -796,6 +823,8 @@ export default function CreateOrderPageComplete({
 			const payload = {
 				customerName: data.customerName,
 				phoneNumber: data.phoneNumber,
+				secondPhoneNumber: data.secondPhoneNumber,
+				allowOpenPackage: data.allowOpenPackage ?? false,
 				email: data.email || undefined,
 				address: data.address,
 				city: data.city,
@@ -823,6 +852,7 @@ export default function CreateOrderPageComplete({
 							locationId: providerMeta.locationId || undefined,
 						}
 						: undefined,
+				removedItems: removedItemsIds,
 				items: data.items.map((item) => ({
 					variantId: item.variantId,
 					quantity: Number(item.quantity),
@@ -877,8 +907,8 @@ export default function CreateOrderPageComplete({
 			<PageHeader
 				breadcrumbs={[
 					{ name: t("breadcrumb.home"), href: "/" },
-					{ name:  t("breadcrumb.orders") , href : "/orders" },
-					{ name: isEditMode ? t("breadcrumb.editOrder") : t("breadcrumb.createOrder")  },
+					{ name: t("breadcrumb.orders"), href: "/orders" },
+					{ name: isEditMode ? t("breadcrumb.editOrder") : t("breadcrumb.createOrder") },
 				]}
 				buttons={
 					<div className="flex items-center gap-4">
@@ -901,8 +931,8 @@ export default function CreateOrderPageComplete({
 						/>
 					</div>
 				}
-				
-			></PageHeader> 
+
+			></PageHeader>
 
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<div className="flex flex-col lg:flex-row gap-6">
@@ -973,6 +1003,27 @@ export default function CreateOrderPageComplete({
 										<p className="text-xs text-red-500">{errors.email.message}</p>
 									)}
 								</div>
+
+								<div className="space-y-2">
+									<Label className="text-sm text-gray-600 dark:text-slate-300">
+										{t("fields.secondPhoneNumber")}
+									</Label>
+									<Controller
+										name="secondPhoneNumber"
+										control={control}
+										render={({ field }) => (
+											<Input
+												{...field}
+												placeholder={t("placeholders.phoneNumber")}
+												className={INPUT_CLS}
+											/>
+										)}
+									/>
+									{errors.secondPhoneNumber && (
+										<p className="text-xs text-red-500">{errors.secondPhoneNumber.message}</p>
+									)}
+								</div>
+
 
 								{/* Store */}
 								<div className="space-y-2">
@@ -1051,6 +1102,29 @@ export default function CreateOrderPageComplete({
 													<SelectItem value="pending">{t("paymentStatuses.pending")}</SelectItem>
 													<SelectItem value="paid">{t("paymentStatuses.paid")}</SelectItem>
 													<SelectItem value="partial">{t("paymentStatuses.partial")}</SelectItem>
+												</SelectContent>
+											</Select>
+										)}
+									/>
+								</div>
+
+								{/* Allow Open Select */}
+								<div className="space-y-2">
+									<Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{t("fields.allowOpenPackage")}</Label>
+									<Controller
+										name="allowOpenPackage"
+										control={control}
+										render={({ field }) => (
+											<Select
+												value={field.value ? "true" : "false"}
+												onValueChange={(val) => field.onChange(val === "true")}
+											>
+												<SelectTrigger className="w-full rounded-xl !h-[45px] bg-[#fafafa] dark:bg-slate-800/50 border-border/60">
+													<SelectValue />
+												</SelectTrigger>
+												<SelectContent className="bg-card-select border-border shadow-xl rounded-xl">
+													<SelectItem value="true">{t("allowOpenOptions.yes")}</SelectItem>
+													<SelectItem value="false">{t("allowOpenOptions.no")}</SelectItem>
 												</SelectContent>
 											</Select>
 										)}
@@ -1423,94 +1497,94 @@ export default function CreateOrderPageComplete({
 // Order Summary sidebar
 // ─────────────────────────────────────────────────────────────────────────────
 function OrderSummary({ t, summary }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 0.2 }}
-      className="bg-card sticky top-6"
-    >
-      <h3 className="text-lg font-semibold text-foreground mb-4">
-        {t("sections.orderSummary")}
-      </h3>
+	return (
+		<motion.div
+			initial={{ opacity: 0, x: 20 }}
+			animate={{ opacity: 1, x: 0 }}
+			transition={{ delay: 0.2 }}
+			className="bg-card sticky top-6"
+		>
+			<h3 className="text-lg font-semibold text-foreground mb-4">
+				{t("sections.orderSummary")}
+			</h3>
 
-      <div className="space-y-2">
+			<div className="space-y-2">
 
-        {/* Product count — primary accent */}
-        <div className="flex items-center justify-between px-4 py-3 rounded-xl
+				{/* Product count — primary accent */}
+				<div className="flex items-center justify-between px-4 py-3 rounded-xl
           bg-[var(--primary)]/8 border border-[var(--primary)]/20">
-          <span className="text-sm text-muted-foreground">{t("summary.productCount")}</span>
-          <span className="text-lg font-bold text-[var(--primary)]">{summary.productCount}</span>
-        </div>
+					<span className="text-sm text-muted-foreground">{t("summary.productCount")}</span>
+					<span className="text-lg font-bold text-[var(--primary)]">{summary.productCount}</span>
+				</div>
 
-        {/* Products total */}
-        <div className="flex items-center justify-between px-4 py-3 rounded-xl
+				{/* Products total */}
+				<div className="flex items-center justify-between px-4 py-3 rounded-xl
           bg-muted/50 border border-border">
-          <span className="text-sm text-muted-foreground">{t("summary.productsTotal")}</span>
-          <span className="text-sm font-semibold text-foreground">
-            {summary.productsTotal.toFixed(2)} {t("currency")}
-          </span>
-        </div>
+					<span className="text-sm text-muted-foreground">{t("summary.productsTotal")}</span>
+					<span className="text-sm font-semibold text-foreground">
+						{summary.productsTotal.toFixed(2)} {t("currency")}
+					</span>
+				</div>
 
-        {/* Shipping */}
-        <div className="flex items-center justify-between px-4 py-3 rounded-xl
+				{/* Shipping */}
+				<div className="flex items-center justify-between px-4 py-3 rounded-xl
           bg-muted/50 border border-border">
-          <span className="text-sm text-muted-foreground">{t("summary.shippingCost")}</span>
-          <span className="text-sm font-semibold text-foreground">
-            {summary.shippingCost.toFixed(2)} {t("currency")}
-          </span>
-        </div>
+					<span className="text-sm text-muted-foreground">{t("summary.shippingCost")}</span>
+					<span className="text-sm font-semibold text-foreground">
+						{summary.shippingCost.toFixed(2)} {t("currency")}
+					</span>
+				</div>
 
-        {/* Discount */}
-        <div className="flex items-center justify-between px-4 py-3 rounded-xl
+				{/* Discount */}
+				<div className="flex items-center justify-between px-4 py-3 rounded-xl
           bg-destructive/[0.06] border border-destructive/20">
-          <span className="text-sm text-muted-foreground">{t("summary.discount")}</span>
-          <span className="text-sm font-semibold text-destructive">
-            -{summary.discount.toFixed(2)} {t("currency")}
-          </span>
-        </div>
+					<span className="text-sm text-muted-foreground">{t("summary.discount")}</span>
+					<span className="text-sm font-semibold text-destructive">
+						-{summary.discount.toFixed(2)} {t("currency")}
+					</span>
+				</div>
 
-        {/* Final total — gradient hero row */}
-        <div className="relative flex items-center justify-between px-4 py-3.5 rounded-xl overflow-hidden
+				{/* Final total — gradient hero row */}
+				<div className="relative flex items-center justify-between px-4 py-3.5 rounded-xl overflow-hidden
           border-2 border-[var(--primary)]/35">
-          {/* gradient bg */}
-          <span aria-hidden className="pointer-events-none absolute inset-0
+					{/* gradient bg */}
+					<span aria-hidden className="pointer-events-none absolute inset-0
             bg-gradient-to-br from-[var(--primary)]/10 via-[var(--secondary)]/8 to-[var(--third)]/8" />
-          {/* top sheen */}
-          <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-1/2
+					{/* top sheen */}
+					<span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-1/2
             bg-gradient-to-b from-white/10 to-transparent dark:from-white/[0.05]" />
-          <span className="relative text-sm font-semibold text-foreground">{t("summary.finalTotal")}</span>
-          <span className="relative text-xl font-bold text-[var(--primary)]">
-            {summary.finalTotal.toFixed(2)} {t("currency")}
-          </span>
-        </div>
+					<span className="relative text-sm font-semibold text-foreground">{t("summary.finalTotal")}</span>
+					<span className="relative text-xl font-bold text-[var(--primary)]">
+						{summary.finalTotal.toFixed(2)} {t("currency")}
+					</span>
+				</div>
 
-        {/* Deposit + Remaining */}
-        {summary.deposit > 0 && (
-          <>
-            {/* Deposit — secondary accent */}
-            <div className="flex items-center justify-between px-4 py-3 rounded-xl
+				{/* Deposit + Remaining */}
+				{summary.deposit > 0 && (
+					<>
+						{/* Deposit — secondary accent */}
+						<div className="flex items-center justify-between px-4 py-3 rounded-xl
               bg-[var(--secondary)]/[0.08] border border-[var(--secondary)]/25">
-              <span className="text-sm text-muted-foreground">{t("summary.deposit")}</span>
-              <span className="text-sm font-semibold text-[var(--secondary)]">
-                {summary.deposit.toFixed(2)} {t("currency")}
-              </span>
-            </div>
+							<span className="text-sm text-muted-foreground">{t("summary.deposit")}</span>
+							<span className="text-sm font-semibold text-[var(--secondary)]">
+								{summary.deposit.toFixed(2)} {t("currency")}
+							</span>
+						</div>
 
-            {/* Remaining — third accent */}
-            <div className="relative flex items-center justify-between px-4 py-3.5 rounded-xl overflow-hidden
+						{/* Remaining — third accent */}
+						<div className="relative flex items-center justify-between px-4 py-3.5 rounded-xl overflow-hidden
               border-2 border-[var(--third)]/35">
-              <span aria-hidden className="pointer-events-none absolute inset-0
+							<span aria-hidden className="pointer-events-none absolute inset-0
                 bg-gradient-to-br from-[var(--third)]/10 to-[var(--primary)]/5" />
-              <span className="relative text-sm font-semibold text-foreground">{t("summary.remaining")}</span>
-              <span className="relative text-xl font-bold text-[var(--third)]">
-                {summary.remaining.toFixed(2)} {t("currency")}
-              </span>
-            </div>
-          </>
-        )}
+							<span className="relative text-sm font-semibold text-foreground">{t("summary.remaining")}</span>
+							<span className="relative text-xl font-bold text-[var(--third)]">
+								{summary.remaining.toFixed(2)} {t("currency")}
+							</span>
+						</div>
+					</>
+				)}
 
-      </div>
-    </motion.div>
-  )
+			</div>
+		</motion.div>
+	)
 }

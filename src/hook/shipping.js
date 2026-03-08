@@ -283,6 +283,7 @@ export function useShippingSettings(companyCode, callbacks = {}) {
             setConnected(connectedMap);
 
         } catch (e) {
+            console.error(e?.response?.data?.message || t("settings.errorFetch"))
             toast.error(e?.response?.data?.message || t("settings.errorFetch"));
         } finally {
             setLoading(false);

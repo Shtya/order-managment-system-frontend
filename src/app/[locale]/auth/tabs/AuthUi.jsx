@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 
 /* ── Icons ─────────────────────────────────────────────────── */
 export const IconEye = () => (
@@ -122,7 +123,8 @@ export function PasswordInput({ label, icon, error, placeholder, value, onChange
 }
 
 /* ── Password strength meter ──────────────────────────────── */
-export function PasswordStrength({ password, t }) {
+export function PasswordStrength({ password }) {
+	const t = useTranslations('auth');
 	const checks = {
 		length: password.length >= 8,
 		upper: /[A-Z]/.test(password),

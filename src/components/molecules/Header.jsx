@@ -93,8 +93,8 @@ export default function Header({ toggleSidebar, isSidebarOpen }) {
 	const locale = useLocale();
 	const pathname = usePathname();
 	const router = useRouter();
-	const { theme, setTheme } = useTheme();
-	const isDark = theme === "dark";
+	const { theme, resolvedTheme, setTheme } = useTheme();
+	const isDark = resolvedTheme === "dark";
 	const { isFullscreen, toggle: toggleFullscreen } = useFullscreen();
 
 	const [notifications, setNotifications] = useState([]);

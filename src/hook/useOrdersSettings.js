@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 
-export default function useOrdersSettings({ isOpen, onClose }) {
+export default function useOrdersSettings({ isOpen = true, onClose } = {}) {
     const t = useTranslations("orders");
 
     const [loading, setLoading] = useState(true);
@@ -47,11 +47,39 @@ export default function useOrdersSettings({ isOpen, onClose }) {
                     api.get("/orders/retry-settings"),
                     api.get("/shipping/integrations/active").catch(() => ({ data: { integrations: [] } })),
                 ]);
-                if (settingsRes.data) {
+                const data = settingsRes.data;
+
+                if (data) {
                     setSettings(prev => ({
-                        ...prev,
-                        ...settingsRes.data,
-                        shipping: { ...prev.shipping, ...(settingsRes.data.shipping ?? {}) },
+                        // تحديث القيم الأساسية يدوياً
+                        enabled: data.enabled ?? prev.enabled,
+                        maxRetries: data.maxRetries ?? prev.maxRetries,
+                        retryInterval: data.retryInterval ?? prev.retryInterval,
+                        autoMoveStatus: data.autoMoveStatus ?? prev.autoMoveStatus,
+                        retryStatuses: data.retryStatuses ?? prev.retryStatuses,
+                        confirmationStatuses: data.confirmationStatuses ?? prev.confirmationStatuses,
+                        notifyEmployee: data.notifyEmployee ?? prev.notifyEmployee,
+                        notifyAdmin: data.notifyAdmin ?? prev.notifyAdmin,
+                        orderFlowPath: data.orderFlowPath ?? prev.orderFlowPath,
+
+                        // تحديث الكائنات المتداخلة (Nested Objects)
+                        workingHours: {
+                            enabled: data.workingHours?.enabled ?? prev.workingHours.enabled,
+                            start: data.workingHours?.start ?? prev.workingHours.start,
+                            end: data.workingHours?.end ?? prev.workingHours.end,
+                        },
+
+                        shipping: data.shipping ? {
+                            autoSendToShipping: data.shipping?.autoSendToShipping ?? prev.shipping.autoSendToShipping,
+                            shippingCompanyId: data.shipping?.shippingCompanyId ?? prev.shipping.shippingCompanyId,
+                            triggerStatus: data.shipping?.triggerStatus ?? prev.shipping.triggerStatus,
+                            requirePaymentConfirm: data.shipping?.requirePaymentConfirm ?? prev.shipping.requirePaymentConfirm,
+                            notifyOnShipment: data.shipping?.notifyOnShipment ?? prev.shipping.notifyOnShipment,
+                            autoGenerateLabel: data.shipping?.autoGenerateLabel ?? prev.shipping.autoGenerateLabel,
+                            partialPaymentThreshold: data.shipping?.partialPaymentThreshold ?? prev.shipping.partialPaymentThreshold,
+                            requireFullPayment: data.shipping?.requireFullPayment ?? prev.shipping.requireFullPayment,
+                            allowReturnCreation: data.shipping?.allowReturnCreation ?? prev.shipping.allowReturnCreation,
+                        } : { ...prev.shipping },
                     }));
                 }
                 const integrations = shippingRes.data?.integrations ?? shippingRes.data ?? [];
@@ -77,7 +105,13 @@ export default function useOrdersSettings({ isOpen, onClose }) {
     const handleSave = async () => {
         setSaving(true);
         try {
-            await api.post("/orders/retry-settings", settings);
+            const payload = { ...settings };
+
+            // حذف الحقول قبل الإرسال
+            delete payload.shipping;
+            delete payload.orderFlowPath;
+
+            await api.post("/orders/retry-settings", payload);
             toast.success(t("messages.settingsSaved"));
             onClose?.();
         } catch (e) {

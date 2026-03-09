@@ -29,6 +29,18 @@ import {
 	Smartphone,
 	MapPin,
 	Clock,
+	Warehouse,
+	Store,
+	Settings2,
+	Building2,
+	Hash,
+	FileText,
+	Phone,
+	LayoutGrid,
+	Zap,
+	Truck,
+	Mail,
+	KeyRound,
 } from 'lucide-react';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -44,7 +56,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 // shadcn select
 import {
@@ -81,6 +93,13 @@ import {
 import { cn } from '@/utils/cn';
 import { getUser } from '../../../hook/getUser';
 import SlugInput from '@/components/atoms/SlugInput';
+import { AutomationTab, GeneralTab, ShippingTab, WarehouseTab } from '../orders/atoms/SettingsModal';
+import useOrdersSettings from '@/hook/useOrdersSettings';
+import { useTheme } from 'next-themes';
+import { usePathname, useRouter } from '@/i18n/navigation';
+import { avatarSrc } from '@/components/atoms/UserSelect';
+import { BIZ_TYPES_KEYS } from '../auth/tabs/Signup';
+import { IconArrow, OtpInput, PasswordStrength } from '../auth/tabs/AuthUi';
 
 
 
@@ -210,18 +229,25 @@ const accountSchema = yup.object({
 
 export default function SettingsPage() {
 	const t = useTranslations('settings');
-	const [activeTab, setActiveTab] = useState('categories');
+	const [activeTab, setActiveTab] = useState('company');
 
 	const TABS = [
+		// التبويبات الحالية والمضافة حديثاً
+		{ id: 'company', label: t('tabs.company.label'), icon: Building2, description: t('tabs.company.description') },
+		{ id: 'configuration', label: t('tabs.configuration.label'), icon: Settings2, description: t('tabs.configuration.description') },
 		{ id: 'categories', label: t('tabs.categories.label'), icon: Layers, description: t('tabs.categories.description') },
 		{ id: 'account', label: t('tabs.account.label'), icon: User, description: t('tabs.account.description') },
-		{ id: 'notifications', label: t('tabs.notifications.label'), icon: Bell, description: t('tabs.notifications.description') },
 		{ id: 'security', label: t('tabs.security.label'), icon: Shield, description: t('tabs.security.description') },
+		{ id: 'notifications', label: t('tabs.notifications.label'), icon: Bell, description: t('tabs.notifications.description') },
 		{ id: 'appearance', label: t('tabs.appearance.label'), icon: Palette, description: t('tabs.appearance.description') },
 	];
 
 	const ActiveTabComponent = () => {
 		switch (activeTab) {
+			case 'company':
+				return <CompanyTab />;
+			case 'configuration':
+				return <SettingsTab />;
 			case 'categories':
 				return <CategoriesTab />;
 			case 'account':
@@ -317,6 +343,617 @@ export default function SettingsPage() {
 				</motion.div>
 			</div>
 		</motion.div>
+	);
+}
+
+const createCompanySchema = (t) =>
+	yup.object({
+		country: yup.string().required(t('company.validation.countryRequired')),
+		currency: yup.string().required(t('company.validation.currencyRequired')),
+		name: yup.string().trim().required(t('company.validation.nameRequired')),
+		tax: yup.string().trim(),
+		commercial: yup.string().trim(),
+		businessType: yup
+			.string()
+			.required(t('company.validation.businessRequired')),
+		phone: yup.string().trim(),
+		website: yup
+			.string()
+			.trim()
+			.notRequired()
+			.nullable()
+			.test('is-url-or-empty', t('company.validation.invalidUrl'), v => !v || /^(https?:\/\/)/.test(v)),
+		address: yup.string().trim(),
+	});
+
+function CompanyTab() {
+	const tsignup = useTranslations('auth.signup');
+	const t = useTranslations('settings');
+	const [loading, setLoading] = useState(true);
+	// // const fileInputRef = useRef(null);
+	// // const [logoUploading, setLogoUploading] = useState(false);
+	const [companyData, setCompanyData] = useState(null);
+
+	const {
+		control,
+		register,
+		handleSubmit,
+		reset,
+		watch,
+		formState: { errors, isSubmitting },
+	} = useForm({
+		resolver: yupResolver(createCompanySchema(t)), // قم بتمرير الـ schema الخاص بك هنا
+		defaultValues: {
+			country: '',
+			currency: '',
+			name: '',
+			tax: '',
+			businessType: '',
+			commercial: '',
+			phone: '',
+			website: '',
+			address: '',
+		}
+	});
+
+	// جلب بيانات الشركة عند فتح التبويب
+	useEffect(() => {
+		const loadCompany = async () => {
+			setLoading(true)
+			try {
+				const res = await api.get('/users/company');
+				if (res.data) {
+					setCompanyData(res.data);
+					reset({
+						country: res.data.country || '',
+						currency: res.data.currency || '',
+						businessType: res.data.businessType || '',
+						name: res.data.name || '',
+						tax: res.data.tax || '',
+						commercial: res.data.commercial || '',
+						phone: res.data.phone || '',
+						website: res.data.website || '',
+						address: res.data.address || '',
+					});
+				}
+			} catch (err) {
+				console.error("Error loading company:", err);
+			} finally {
+
+				setLoading(false)
+			}
+		};
+		loadCompany();
+	}, []);
+
+	// // منطق رفع اللوجو (Logo)
+	// const handleLogoUpload = async (e) => {
+	// 	const file = e.target.files?.[0];
+	// 	if (!file) return;
+
+	// 	setLogoUploading(true);
+	// 	const formData = new FormData();
+	// 	formData.append('file', file);
+
+	// 	try {
+	// 		const res = await api.post('/users/company/logo', formData);
+	// 		setCompanyData(prev => ({ ...prev, logoUrl: res.data.url }));
+	// 		toast.success(t('company.logoUpdated'));
+	// 	} catch (err) {
+	// 		toast.error(t('company.logoError'));
+	// 	} finally {
+	// 		setLogoUploading(false);
+	// 		e.target.value = '';
+	// 	}
+	// };
+	const onSubmit = async (data) => {
+		try {
+			await api.post('/users/company', data);
+			toast.success(t('company.saveSuccess'));
+		} catch (err) {
+			const msg = err.response?.data?.message || t('common.error');
+			toast.error(Array.isArray(msg) ? msg[0] : msg);
+		}
+	};
+
+	return (
+		<div className="space-y-6">
+			<div>
+				<h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t('tabs.company.label')}</h2>
+				<p className="text-slate-500 dark:text-slate-400 mt-1">{t('tabs.company.description')}</p>
+			</div>
+
+			{loading ? (
+
+				<div className='space-y-3' style={{ gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
+
+					{/* Bottom Info Section */}
+					{[...Array(5)].map((_, i) => (
+						<motion.div
+							key={i}
+							className="skeleton rounded-md p-2 space-y-1"
+							animate={{ opacity: [0.5, 0.9, 0.5] }}
+							transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 + i * 0.1 }}
+						>
+							<div className="rounded-md bg-muted/40 h-5 w-1/2" /> {/* Label */}
+							<div className="rounded-md bg-muted/40 h-5 w-3/4" /> {/* Value */}
+						</motion.div>
+					))}
+				</div>
+			) : (
+				<Card className="p-6 bg-gradient-to-br from-primary/5 to-transparent border-primary/20">
+					{/* Header: Logo & Basic Info */}
+					<div className="flex items-center gap-6 mb-8">
+
+						<div className="flex-1">
+							<h3 className="text-xl font-bold text-slate-900 dark:text-white">
+								{watch('name') || t('company.placeholderName')}
+							</h3>
+							<div className="flex items-center gap-2 mt-2">
+								<Badge variant="outline" className="bg-white/50 dark:bg-slate-800/50">
+									{watch('country') || t('company.noCountry')}
+								</Badge>
+								<Badge variant="secondary" className="font-mono">
+									{watch('currency') || '---'}
+								</Badge>
+							</div>
+						</div>
+					</div>
+
+					<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+							{/* Company Name */}
+							<div className="space-y-2">
+								<Label>{t('company.form.companyName')} *</Label>
+								<Input
+									{...register('name')}
+									className="h-11 bg-white dark:bg-slate-900"
+									placeholder={t('company.form.companyNamePlaceholder')}
+								/>
+								{errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
+							</div>
+
+							<div className="space-y-2">
+								<Label>{tsignup('business_type')} *</Label>
+								<Controller
+									control={control}
+									name="businessType"
+									render={({ field }) => (
+										<select
+											{...field}
+											className="h-11 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:outline-none"
+										>
+											<option value="">{tsignup('business_placeholder')}</option>
+											{BIZ_TYPES_KEYS.map(k => (
+												<option key={k} value={k}>
+													{tsignup(`business_${k}`)}
+												</option>
+											))}
+										</select>
+									)}
+								/>
+								{errors.businessType && (
+									<p className="text-xs text-red-500">{errors.businessType.message}</p>
+								)}
+							</div>
+
+
+							{/* Country Select */}
+							<div className="space-y-2">
+								<Label>{t('company.form.country')} *</Label>
+								<Controller
+									control={control}
+									name="country"
+									render={({ field }) => (
+										<Select onValueChange={field.onChange} value={field.value}>
+											<SelectTrigger className="h-11 bg-white dark:bg-slate-900">
+												<SelectValue placeholder={t('company.form.selectCountry')} />
+											</SelectTrigger>
+											<SelectContent>
+												{/* COUNTRIES should be imported or defined */}
+												{['Egypt', 'Saudi Arabia', 'UAE'].map(c => (
+													<SelectItem key={c} value={c}>{c}</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									)}
+								/>
+							</div>
+							{/* Phone */}
+							<div className="space-y-2">
+								<Label>{t('company.form.phone')}</Label>
+								<div className="relative">
+									{/* <Phone className="absolute left-3 top-3 w-4 h-4 text-slate-400" /> */}
+									<Input {...register('phone')} dir="ltr" className="h-11 pl-10 bg-white dark:bg-slate-900" />
+								</div>
+							</div>
+
+							{/* Website */}
+							<div className="space-y-2">
+								<Label>{t('company.form.website')}</Label>
+								<div className="relative">
+									{/* <Globe className="absolute left-3 top-3 w-4 h-4 text-slate-400" /> */}
+									<Input {...register('website')} dir="ltr" className="h-11 pl-10 bg-white dark:bg-slate-900" />
+								</div>
+							</div>
+
+							{/* Tax Number */}
+							<div className="space-y-2">
+								<Label>{t('company.form.taxNumber')}</Label>
+								<div className="relative">
+									{/* <Hash className="absolute left-3 top-3 w-4 h-4 text-slate-400" /> */}
+									<Input {...register('tax')} className="h-11 pl-10 bg-white dark:bg-slate-900" />
+								</div>
+							</div>
+
+							{/* Commercial Register */}
+							<div className="space-y-2">
+								<Label>{t('company.form.commercialRegister')}</Label>
+								<div className="relative">
+									{/* <FileText className="absolute left-3 top-3 w-4 h-4 text-slate-400" /> */}
+									<Input {...register('commercial')} className="h-11 pl-10 bg-white dark:bg-slate-900" />
+								</div>
+							</div>
+
+
+							{/* Currency */}
+							<div className="space-y-2">
+								<Label>{t('company.form.currency')} *</Label>
+								<Controller
+									control={control}
+									name="currency"
+									render={({ field }) => (
+										<Select onValueChange={field.onChange} value={field.value}>
+											<SelectTrigger className="h-11 bg-white dark:bg-slate-900">
+												<SelectValue placeholder={t('company.form.selectCurrency')} />
+											</SelectTrigger>
+											<SelectContent>
+												{['EGP', 'SAR', 'USD', 'AED'].map(curr => (
+													<SelectItem key={curr} value={curr}>{curr}</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									)}
+								/>
+							</div>
+
+							{/* Address */}
+							<div className="space-y-2 md:col-span-2">
+								<Label>{t('company.form.address')}</Label>
+								<div className="relative">
+									<MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+									<Input {...register('address')} className="h-11 pl-10 bg-white dark:bg-slate-900" />
+								</div>
+							</div>
+						</div>
+
+						<Separator className="my-2" />
+
+						<div className="flex justify-end">
+							<Button
+								className="bg-primary hover:bg-primary/90 min-w-[140px]"
+								onClick={handleSubmit(onSubmit)}
+								disabled={isSubmitting}
+							>
+								{isSubmitting ? (
+									<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+								) : (
+									<Save className="w-4 h-4 mr-2" />
+								)}
+								{t('common.saveChanges')}
+							</Button>
+						</div>
+					</form>
+				</Card>)}
+		</div>
+	);
+}
+
+const TABS = [
+	{ key: "password", icon: Lock, labelKey: "tabs.password.label" },
+	{ key: "email", icon: Mail, labelKey: "tabs.email.label" },
+];
+
+
+function SecurityTab() {
+	const t = useTranslations('settings.security');
+	const [activeTab, setActiveTab] = useState("password");
+
+	return (
+		<div className="flex flex-col h-full">
+			{/* ══════════════ HEADER ══════════════ */}
+			<div className="px-6 py-6 border-b border-border/50">
+				<div className="flex items-center justify-between">
+					<div>
+						<h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+							{t('title')}
+						</h2>
+						<p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">
+							{t('subtitle')}
+						</p>
+					</div>
+				</div>
+
+				{/* Tab bar */}
+				<div className="flex gap-1 mt-6 -mb-6">
+					{TABS.map((tab) => {
+						const Icon = tab.icon;
+						const isActive = activeTab === tab.key;
+						return (
+							<button
+								key={tab.key}
+								onClick={() => setActiveTab(tab.key)}
+								className={cn(
+									"relative flex items-center gap-1.5 px-4 py-3 text-xs font-bold transition-all duration-200 border-b-2",
+									isActive
+										? "border-primary text-primary"
+										: "border-transparent text-muted-foreground hover:text-foreground"
+								)}
+							>
+								<Icon size={14} />
+								{t(tab.labelKey)}
+							</button>
+						);
+					})}
+				</div>
+			</div>
+
+			{/* ══════════════ CONTENT AREA ══════════════ */}
+			<div className="flex-1 overflow-y-auto p-6">
+				<div className="">
+					{activeTab === "password" && <PasswordSection t={t} />}
+					{activeTab === "email" && <EmailSection t={t} />}
+				</div>
+			</div>
+		</div>
+	);
+}
+
+function PasswordSection({ t }) {
+	const [data, setData] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
+	const [loading, setLoading] = useState(false);
+
+	const handleUpdate = async () => {
+
+
+		// const score = [/[A-Z]/, /[a-z]/, /[0-9]/].filter(r => r.test(data.newPassword)).length + (data.newPassword.length >= 8 ? 1 : 0);
+		// if (score < 3) { toast.error(t('errors.pw_weak')); return; }
+
+		if (data.newPassword !== data.confirmPassword) {
+			return toast.error(t('errors.mismatch'));
+		}
+
+		setLoading(true);
+		try {
+			const payload = {
+				newPassword: data.newPassword,
+				oldPassword: data.oldPassword
+			}
+			await api.post(`/auth/change-password`, payload);
+			toast.success(t('password_success'));
+			setData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+		} catch (err) {
+			toast.error(err?.response?.data?.message || t('errors.failed'));
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	return (
+		<Card className="p-6 bg-gradient-to-br from-primary/5 to-transparent border-primary/20">
+			<div className="space-y-2">
+				<Label>{t('form.old_password')}</Label>
+				<Input
+					type="password"
+					value={data.oldPassword}
+					onChange={(e) => setData({ ...data, oldPassword: e.target.value })}
+				/>
+			</div>
+			<div className="space-y-2">
+				<Label>{t('form.new_password')}</Label>
+				<Input
+					type="password"
+					value={data.newPassword}
+					onChange={(e) => setData({ ...data, newPassword: e.target.value })}
+				/>
+				<PasswordStrength password={data.newPassword} />
+			</div>
+			<div className="space-y-2">
+				<Label>{t('form.confirm_password')}</Label>
+				<Input
+					type="password"
+					value={data.confirmPassword}
+					onChange={(e) => setData({ ...data, confirmPassword: e.target.value })}
+				/>
+			</div>
+			<div className="flex justify-end">
+				<Button
+					className="bg-primary hover:bg-primary/90 min-w-[140px]"
+					onClick={handleUpdate}
+					disabled={loading}
+				>
+					{loading ? (
+						<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+					) : (
+						<KeyRound className="w-4 h-4 mr-2" />
+					)}
+					{t('form.update_password')}
+				</Button>
+			</div>
+		</Card>
+	);
+}
+
+function EmailSection({ t }) {
+	const [step, setStep] = useState(1); // 1: Request, 2: OTP
+	const [newEmail, setNewEmail] = useState('');
+	const [loading, setLoading] = useState(false);
+
+	const requestChange = async () => {
+		setLoading(true);
+		try {
+			await api.post(`/auth/request-email-change`, { newEmail });
+			toast.success(t('email_otp_sent'));
+			setStep(2);
+		} catch (err) {
+			toast.error(err?.response?.data?.message || t('errors.failedSendEmailOTP'));
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	async function onVerified(data) {
+		setStep(1);
+		setNewEmail("")
+
+		if (data?.accessToken) {
+			localStorage.setItem('accessToken', data.accessToken);
+			localStorage.setItem('user', JSON.stringify(data.user));
+		}
+		await fetch('/api/auth/login', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ accessToken: data.accessToken, user: data.user }),
+		});
+
+	}
+
+	if (step === 2) return <EmailOtpStep email={newEmail} t={t} onVerified={onVerified} />;
+
+	return (
+		<Card className="p-6 bg-gradient-to-br from-primary/5 to-transparent border-primary/20">
+			<div className="space-y-2">
+				<Label>{t('form.new_email')}</Label>
+				<Input
+					type="email"
+					placeholder="example@mail.com"
+					value={newEmail}
+					onChange={(e) => setNewEmail(e.target.value)}
+				/>
+			</div>
+			<div className="flex justify-end">
+				<div className="flex justify-end">
+					<Button
+						className="bg-primary hover:bg-primary/90 min-w-[140px]"
+						onClick={requestChange}
+						disabled={loading}
+					>
+						{loading ? (
+							<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+						) : (
+							<Mail className="w-4 h-4 mr-2" />
+						)}
+						{t('form.send_otp')}
+					</Button>
+				</div>
+			</div>
+		</Card>
+	);
+}
+
+function EmailOtpStep({ email, t, onVerified }) {
+	const [otp, setOtp] = useState('');
+	const [otpErr, setOtpErr] = useState(false);
+	const [timer, setTimer] = useState(120);
+	const [canResend, setCanResend] = useState(false);
+	const [loading, setLoading] = useState(false);
+	const [resending, setResending] = useState(false);
+
+	useEffect(() => {
+		const iv = setInterval(() => setTimer(p => {
+			if (p <= 1) { clearInterval(iv); setCanResend(true); return 0; }
+			return p - 1;
+		}), 1000);
+		return () => clearInterval(iv);
+	}, [canResend]);
+
+	const handleVerify = async () => {
+		setLoading(true);
+		try {
+			const { data } = await api.post(`/auth/verify-email-change`, { otp });
+			toast.success(t('email_success'));
+			onVerified(data);
+			setOtpErr(false);
+		} catch (err) {
+			toast.error(err?.response?.data?.message || t('signup.otp_wrong'));
+			setOtpErr(true);
+			setOtp('');
+		} finally {
+			setLoading(false);
+		}
+	};
+
+
+	const handleResend = async () => {
+		if (!canResend || resending) return;
+
+		setResending(true);
+		const tid = toast.loading(t('signup.resending'));
+		try {
+			await api.post(`/auth/resend-email-request`);
+
+			toast.success(t('signup.resend_success'), { id: tid });
+
+			// Reset UI state
+			setCanResend(false);
+			setTimer(120);
+			setOtp('');
+			setOtpErr(false);
+		} catch (err) {
+			toast.error(err?.message || t('signup.resend_error'), { id: tid });
+		} finally {
+			setResending(false);
+		}
+	};
+
+	return (
+		<Card className="p-6 bg-gradient-to-br from-primary/5 to-transparent border-primary/20">
+			<div className="bg-primary/10 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
+				<Mail className="text-primary" size={32} />
+			</div>
+			<h3 className="text-lg font-bold">{t('otp_title')}</h3>
+			<p className="text-sm text-slate-500 mb-6">{t('otp_sub')} <b>{email}</b></p>
+
+			<OtpInput value={otp} onChange={setOtp} />
+			{otpErr && <p style={{ textAlign: 'center', fontSize: 12, color: '#ef4444', marginTop: 7 }}>⚠ {t('otp_wrong')}</p>}
+
+			<div className="flex justify-between items-center mt-6 text-sm">
+				<span className="text-slate-500">
+					{canResend ? t('otp_expired') : `${t('otp_timer')} ${Math.floor(timer / 60)}:${String(timer % 60).padStart(2, '0')}`}
+				</span>
+				<Button
+					variant="ghost" // or variant="link" to keep it as a text-link style
+					disabled={!canResend || resending}
+					className="text-primary font-bold disabled:opacity-50 h-auto p-0 hover:bg-transparent"
+					onClick={handleResend}
+				>
+					{resending ? (
+						<>
+							<Loader2 className="w-3 h-3 animate-spin mr-2 rtl:ml-2 rtl:mr-0" />
+							{t('loading')}
+						</>
+					) : (
+						t('otp_resend')
+					)}
+				</Button>
+			</div>
+			<div className="flex justify-end">
+				<Button
+					className="bg-primary hover:bg-primary/90 min-w-[140px]"
+					onClick={handleVerify}
+					disabled={loading || otp.length !== 6}
+				>
+					{loading ? (
+						<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+					) : (
+						<>
+							{t('otp_verify')}
+							<IconArrow size={16} className="ml-2" />
+						</>
+					)}
+				</Button>
+			</div>
+		</Card>
 	);
 }
 
@@ -578,9 +1215,26 @@ function CategoriesTab() {
 
 			{/* Categories List */}
 			{loading ? (
-				<div className="flex items-center gap-2 text-slate-500">
-					<Loader2 className="w-5 h-5 animate-spin" />
-					{t('loading')}
+				<div className="space-y-3">
+					{/* عرض 5 عناصر كمثال أثناء التحميل */}
+					{[...Array(5)].map((_, i) => (
+						<div key={i} className="p-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 animate-pulse flex items-center gap-4">
+							{/* Skeleton للصورة */}
+							<div className="w-16 h-16 rounded-xl bg-slate-200 dark:bg-slate-700 shrink-0" />
+
+							{/* Skeleton للنصوص */}
+							<div className="flex-1 space-y-2">
+								<div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/3" />
+								<div className="h-3 bg-slate-100 dark:bg-slate-800 rounded w-1/4" />
+							</div>
+
+							{/* Skeleton للأزرار */}
+							<div className="flex gap-2">
+								<div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800" />
+								<div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800" />
+							</div>
+						</div>
+					))}
 				</div>
 			) : (
 				<div className="space-y-3">
@@ -970,14 +1624,6 @@ function AccountTab() {
 		}
 	}
 
-	if (loading) {
-		return (
-			<div className="flex items-center gap-2 text-slate-500">
-				<Loader2 className="w-5 h-5 animate-spin" />
-				{t('loading')}
-			</div>
-		);
-	}
 
 	return (
 		<div className="space-y-6">
@@ -986,11 +1632,31 @@ function AccountTab() {
 				<p className="text-slate-500 dark:text-slate-400 mt-1">{t('subtitle')}</p>
 			</div>
 
-			<Card className="p-6 bg-gradient-to-br from-primary/5 to-transparent border-primary/20">
+			{loading ? (
+				<>
+
+					<div className='space-y-3' style={{ gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
+
+						{/* Bottom Info Section */}
+						{[...Array(5)].map((_, i) => (
+							<motion.div
+								key={i}
+								className="skeleton rounded-md p-2 space-y-1"
+								animate={{ opacity: [0.5, 0.9, 0.5] }}
+								transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 + i * 0.1 }}
+							>
+								<div className="rounded-md bg-muted/40 h-5 w-1/2" /> {/* Label */}
+								<div className="rounded-md bg-muted/40 h-5 w-3/4" /> {/* Value */}
+							</motion.div>
+						))}
+					</div>
+				</>
+
+			) : (<Card className="p-6 bg-gradient-to-br from-primary/5 to-transparent border-primary/20">
 				<div className="flex items-center gap-6 mb-6">
 					<div className="relative">
 						<Avatar className="w-24 h-24 border-4 border-primary/20">
-							<AvatarImage src={avatarPreview || me?.avatarUrl || ''} />
+							<AvatarImage src={avatarPreview || avatarSrc(me?.avatarUrl || '')} />
 							<AvatarFallback>{(me?.name || 'U').slice(0, 2).toUpperCase()}</AvatarFallback>
 						</Avatar>
 
@@ -1041,11 +1707,11 @@ function AccountTab() {
 						{errors?.name?.message && <div className="text-xs text-red-600">{errors.name.message}</div>}
 					</div>
 
-					<div className="space-y-2">
+					{/* <div className="space-y-2">
 						<Label>{t('profile.email')}</Label>
 						<Input {...register('email')} className="h-11" />
 						{errors?.email?.message && <div className="text-xs text-red-600">{errors.email.message}</div>}
-					</div>
+					</div> */}
 
 					{/* ✅ Phone: country + digits (old style) */}
 					<div className="space-y-2">
@@ -1099,10 +1765,6 @@ function AccountTab() {
 						)}
 					</div>
 
-					<div className="space-y-2">
-						<Label>{t('profile.employeeType')}</Label>
-						<Input {...register('employeeType')} className="h-11" placeholder={t('profile.employeeTypePlaceholder')} />
-					</div>
 
 					{/* ✅ removed isActive switch */}
 
@@ -1116,7 +1778,7 @@ function AccountTab() {
 
 				<Separator className="my-6" />
 
-				<div className="grid grid-cols-2 gap-4 text-sm text-slate-600 dark:text-slate-300">
+				<div className="grid grid-cols-3 gap-4 text-sm text-slate-600 dark:text-slate-300">
 					<div>
 						<div className="font-semibold">{t('profile.userId')}</div>
 						<div>{me?.id ?? '—'}</div>
@@ -1125,8 +1787,12 @@ function AccountTab() {
 						<div className="font-semibold">{t('profile.adminId')}</div>
 						<div>{me?.adminId ?? '—'}</div>
 					</div>
+					<div>
+						<div className="font-semibold">{t('profile.employeeType')}</div>
+						<div>{me?.employeeType ?? '—'}</div>
+					</div>
 				</div>
-			</Card>
+			</Card>)}
 		</div>
 	);
 }
@@ -1171,138 +1837,184 @@ function NotificationsTab() {
 /* =========================
  * SECURITY TAB (sessions only)
  * ========================= */
-function SecurityTab() {
-	const t = useTranslations('settings.security');
+// function SecurityTab() {
+// 	const t = useTranslations('settings.security');
 
-	const [loading, setLoading] = useState(true);
-	const [sessions, setSessions] = useState([]);
+// 	const [loading, setLoading] = useState(true);
+// 	const [sessions, setSessions] = useState([]);
 
-	function prettyTime(iso) {
-		if (!iso) return '—';
-		const d = new Date(iso);
-		if (Number.isNaN(d.getTime())) return '—';
-		return d.toLocaleString();
-	}
+// 	function prettyTime(iso) {
+// 		if (!iso) return '—';
+// 		const d = new Date(iso);
+// 		if (Number.isNaN(d.getTime())) return '—';
+// 		return d.toLocaleString();
+// 	}
 
-	function sessionIcon(agent = '') {
-		const a = String(agent).toLowerCase();
-		if (a.includes('android') || a.includes('iphone') || a.includes('mobile')) return Smartphone;
-		if (a.includes('mac') || a.includes('windows') || a.includes('linux')) return Laptop;
-		return Monitor;
-	}
+// 	function sessionIcon(agent = '') {
+// 		const a = String(agent).toLowerCase();
+// 		if (a.includes('android') || a.includes('iphone') || a.includes('mobile')) return Smartphone;
+// 		if (a.includes('mac') || a.includes('windows') || a.includes('linux')) return Laptop;
+// 		return Monitor;
+// 	}
 
-	async function loadSessions() {
-		setLoading(true);
-		try {
-			// ✅ endpoint recommendation: GET /auth/sessions
-			// return shape example:
-			// [{ id, isCurrent, ip, city, country, userAgent, createdAt, lastSeenAt }]
-			const res = await api.get('/auth/sessions');
-			const list = Array.isArray(res.data?.records) ? res.data.records : Array.isArray(res.data) ? res.data : [];
-			setSessions(list);
-		} catch (e) {
-			// if endpoint not ready, show empty state (no extra options)
-			setSessions([]);
-			toast.error(normalizeAxiosError(e));
-		} finally {
-			setLoading(false);
-		}
-	}
+// 	async function loadSessions() {
+// 		setLoading(true);
+// 		try {
+// 			// ✅ endpoint recommendation: GET /auth/sessions
+// 			// return shape example:
+// 			// [{ id, isCurrent, ip, city, country, userAgent, createdAt, lastSeenAt }]
+// 			const res = await api.get('/auth/sessions');
+// 			const list = Array.isArray(res.data?.records) ? res.data.records : Array.isArray(res.data) ? res.data : [];
+// 			setSessions(list);
+// 		} catch (e) {
+// 			// if endpoint not ready, show empty state (no extra options)
+// 			setSessions([]);
+// 			toast.error(normalizeAxiosError(e));
+// 		} finally {
+// 			setLoading(false);
+// 		}
+// 	}
 
-	useEffect(() => {
-		loadSessions();
-	}, []);
+// 	useEffect(() => {
+// 		loadSessions();
+// 	}, []);
+
+// 	return (
+// 		<div className="space-y-6">
+// 			<div>
+// 				<h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t('title')}</h2>
+// 				<p className="text-slate-500 dark:text-slate-400 mt-1">{t('subtitle')}</p>
+// 			</div>
+
+// 			<Card className="p-6">
+// 				<div className="flex items-center justify-between gap-3 mb-4">
+// 					<div>
+// 						<h3 className="font-semibold text-lg text-slate-900 dark:text-white">{t('sessions.title')}</h3>
+// 						<p className="text-sm text-slate-500 dark:text-slate-400">{t('sessions.subtitle')}</p>
+// 					</div>
+// 					<Button variant="outline" onClick={loadSessions} className="rounded-xl">
+// 						{t('sessions.refresh')}
+// 					</Button>
+// 				</div>
+
+// 				{loading ? (
+// 					<div className="flex items-center gap-2 text-slate-500">
+// 						<Loader2 className="w-5 h-5 animate-spin" />
+// 						{t('sessions.loading')}
+// 					</div>
+// 				) : sessions.length === 0 ? (
+// 					<div className="text-sm text-slate-500 dark:text-slate-400">{t('sessions.empty')}</div>
+// 				) : (
+// 					<div className="space-y-3">
+// 						{sessions.map((s) => {
+// 							const Icon = sessionIcon(s?.userAgent);
+// 							const location = [s?.city, s?.country].filter(Boolean).join(', ');
+// 							return (
+// 								<div
+// 									key={s?.id ?? makeId()}
+// 									className={cn(
+// 										'p-4 rounded-xl border bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700',
+// 										s?.isCurrent && 'border-primary/40 bg-primary/5 dark:bg-primary/10'
+// 									)}
+// 								>
+// 									<div className="flex items-start justify-between gap-4">
+// 										<div className="flex items-start gap-3">
+// 											<div className={cn('w-10 h-10 rounded-xl flex items-center justify-center', s?.isCurrent ? 'bg-primary/15' : 'bg-white dark:bg-slate-900')}>
+// 												<Icon className={cn('w-5 h-5', s?.isCurrent ? 'text-primary' : 'text-slate-600 dark:text-slate-300')} />
+// 											</div>
+
+// 											<div className="space-y-1">
+// 												<div className="flex items-center gap-2 flex-wrap">
+// 													<div className="font-semibold text-slate-900 dark:text-white">
+// 														{s?.deviceName || t('sessions.deviceUnknown')}
+// 													</div>
+// 													{s?.isCurrent ? (
+// 														<Badge className="rounded-full bg-primary text-white">{t('sessions.current')}</Badge>
+// 													) : (
+// 														<Badge variant="secondary" className="rounded-full">{t('sessions.other')}</Badge>
+// 													)}
+// 												</div>
+
+// 												<div className="text-xs text-slate-500 dark:text-slate-400 break-all">
+// 													{s?.userAgent || '—'}
+// 												</div>
+
+// 												<div className="flex items-center gap-4 flex-wrap text-sm text-slate-600 dark:text-slate-300 mt-2">
+// 													<div className="inline-flex items-center gap-2">
+// 														<MapPin className="w-4 h-4 text-slate-400" />
+// 														<span>{location || t('sessions.locationUnknown')}</span>
+// 													</div>
+
+// 													<div className="inline-flex items-center gap-2">
+// 														<Clock className="w-4 h-4 text-slate-400" />
+// 														<span>
+// 															{t('sessions.lastSeen')}: {prettyTime(s?.lastSeenAt || s?.updatedAt)}
+// 														</span>
+// 													</div>
+
+// 													<div className="inline-flex items-center gap-2">
+// 														<span className="text-slate-400">{t('sessions.ip')}:</span>
+// 														<span className="font-en" dir="ltr">{s?.ip || '—'}</span>
+// 													</div>
+// 												</div>
+// 											</div>
+// 										</div>
+
+// 										{/* requested: show only sessions, no revoke/delete/2fa options */}
+// 									</div>
+// 								</div>
+// 							);
+// 						})}
+// 					</div>
+// 				)}
+// 			</Card>
+// 		</div>
+// 	);
+// }
+
+
+function LanguageSetting() {
+	const t = useTranslations('settings.appearance');
+	const router = useRouter();
+	const pathname = usePathname();
+	const locale = useLocale();
+
+	const changeLang = (newLocale) => {
+		router.replace(pathname, { locale: newLocale });
+	};
 
 	return (
-		<div className="space-y-6">
-			<div>
-				<h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t('title')}</h2>
-				<p className="text-slate-500 dark:text-slate-400 mt-1">{t('subtitle')}</p>
-			</div>
+		<Card className="p-6">
+			<h3 className="font-semibold text-lg mb-4 text-slate-900 dark:text-white">
+				{t('language.title')}
+			</h3>
 
-			<Card className="p-6">
-				<div className="flex items-center justify-between gap-3 mb-4">
-					<div>
-						<h3 className="font-semibold text-lg text-slate-900 dark:text-white">{t('sessions.title')}</h3>
-						<p className="text-sm text-slate-500 dark:text-slate-400">{t('sessions.subtitle')}</p>
-					</div>
-					<Button variant="outline" onClick={loadSessions} className="rounded-xl">
-						{t('sessions.refresh')}
-					</Button>
+			<div className="flex items-center gap-3">
+				<div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+					<Globe className="w-5 h-5 text-slate-600 dark:text-slate-300" />
 				</div>
 
-				{loading ? (
-					<div className="flex items-center gap-2 text-slate-500">
-						<Loader2 className="w-5 h-5 animate-spin" />
-						{t('sessions.loading')}
+				<div className="flex-1">
+					<Label className="text-sm">{t('language.label')}</Label>
+
+					<div className="mt-2">
+						<Select
+							value={locale}
+							onValueChange={(value) => changeLang(value)}
+						>
+							<SelectTrigger className="h-11 rounded-xl bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+								<SelectValue />
+							</SelectTrigger>
+
+							<SelectContent>
+								<SelectItem value="ar">{t('language.ar')}</SelectItem>
+								<SelectItem value="en">{t('language.en')}</SelectItem>
+							</SelectContent>
+						</Select>
 					</div>
-				) : sessions.length === 0 ? (
-					<div className="text-sm text-slate-500 dark:text-slate-400">{t('sessions.empty')}</div>
-				) : (
-					<div className="space-y-3">
-						{sessions.map((s) => {
-							const Icon = sessionIcon(s?.userAgent);
-							const location = [s?.city, s?.country].filter(Boolean).join(', ');
-							return (
-								<div
-									key={s?.id ?? makeId()}
-									className={cn(
-										'p-4 rounded-xl border bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700',
-										s?.isCurrent && 'border-primary/40 bg-primary/5 dark:bg-primary/10'
-									)}
-								>
-									<div className="flex items-start justify-between gap-4">
-										<div className="flex items-start gap-3">
-											<div className={cn('w-10 h-10 rounded-xl flex items-center justify-center', s?.isCurrent ? 'bg-primary/15' : 'bg-white dark:bg-slate-900')}>
-												<Icon className={cn('w-5 h-5', s?.isCurrent ? 'text-primary' : 'text-slate-600 dark:text-slate-300')} />
-											</div>
-
-											<div className="space-y-1">
-												<div className="flex items-center gap-2 flex-wrap">
-													<div className="font-semibold text-slate-900 dark:text-white">
-														{s?.deviceName || t('sessions.deviceUnknown')}
-													</div>
-													{s?.isCurrent ? (
-														<Badge className="rounded-full bg-primary text-white">{t('sessions.current')}</Badge>
-													) : (
-														<Badge variant="secondary" className="rounded-full">{t('sessions.other')}</Badge>
-													)}
-												</div>
-
-												<div className="text-xs text-slate-500 dark:text-slate-400 break-all">
-													{s?.userAgent || '—'}
-												</div>
-
-												<div className="flex items-center gap-4 flex-wrap text-sm text-slate-600 dark:text-slate-300 mt-2">
-													<div className="inline-flex items-center gap-2">
-														<MapPin className="w-4 h-4 text-slate-400" />
-														<span>{location || t('sessions.locationUnknown')}</span>
-													</div>
-
-													<div className="inline-flex items-center gap-2">
-														<Clock className="w-4 h-4 text-slate-400" />
-														<span>
-															{t('sessions.lastSeen')}: {prettyTime(s?.lastSeenAt || s?.updatedAt)}
-														</span>
-													</div>
-
-													<div className="inline-flex items-center gap-2">
-														<span className="text-slate-400">{t('sessions.ip')}:</span>
-														<span className="font-en" dir="ltr">{s?.ip || '—'}</span>
-													</div>
-												</div>
-											</div>
-										</div>
-
-										{/* requested: show only sessions, no revoke/delete/2fa options */}
-									</div>
-								</div>
-							);
-						})}
-					</div>
-				)}
-			</Card>
-		</div>
+				</div>
+			</div>
+		</Card>
 	);
 }
 
@@ -1310,11 +2022,10 @@ function SecurityTab() {
  * APPEARANCE TAB (6 palettes + language + mode + sidebar options)
  * ========================= */
 function AppearanceTab() {
+	const { theme, setTheme, resolvedTheme } = useTheme();
 	const t = useTranslations('settings.appearance');
 
 	// local preferences (you can wire them later)
-	const [mode, setMode] = useState(() => (typeof window !== 'undefined' ? localStorage.getItem('ui_mode') || 'system' : 'system')); // light|dark|system
-	const [lang, setLang] = useState(() => (typeof window !== 'undefined' ? localStorage.getItem('ui_lang') || 'ar' : 'ar')); // ar|en
 	const [sidebarExpanded, setSidebarExpanded] = useState(() => (typeof window !== 'undefined' ? localStorage.getItem('ui_sidebar') !== 'collapsed' : true));
 	const [compact, setCompact] = useState(() => (typeof window !== 'undefined' ? localStorage.getItem('ui_compact') === '1' : false));
 
@@ -1327,22 +2038,33 @@ function AppearanceTab() {
 		{ id: 'mono', name: t('palettes.mono'), colors: ['#111827', '#6B7280', '#E5E7EB', '#F9FAFB'] },
 	];
 
+	const modeOptions = [
+		{ id: 'light', label: t('mode.light'), icon: Sun },
+		{ id: 'dark', label: t('mode.dark'), icon: Moon },
+		{ id: 'system', label: t('mode.system'), icon: Monitor },
+	];
+
 	const [paletteId, setPaletteId] = useState(() => (typeof window !== 'undefined' ? localStorage.getItem('ui_palette') || 'royal' : 'royal'));
 
-	useEffect(() => {
+	function handleSidebarSwitch(newValue) {
+		setSidebarExpanded(newValue)
 		if (typeof window === 'undefined') return;
-		localStorage.setItem('ui_mode', mode);
-	}, [mode]);
+		localStorage.setItem('ui_sidebar', newValue ? 'expanded' : 'collapsed');
+		window.dispatchEvent(new Event("sidebarChange"));
+	}
+	useEffect(() => {
+		const handler = () => {
+			const value = localStorage.getItem("ui_sidebar");
+			setSidebarExpanded(value === "expanded");
+		};
 
-	useEffect(() => {
-		if (typeof window === 'undefined') return;
-		localStorage.setItem('ui_lang', lang);
-	}, [lang]);
+		window.addEventListener("sidebarChangeBack", handler);
 
-	useEffect(() => {
-		if (typeof window === 'undefined') return;
-		localStorage.setItem('ui_sidebar', sidebarExpanded ? 'expanded' : 'collapsed');
-	}, [sidebarExpanded]);
+		return () => {
+			window.removeEventListener("sidebarChangeBack", handler);
+		};
+	}, []);
+
 
 	useEffect(() => {
 		if (typeof window === 'undefined') return;
@@ -1363,36 +2085,41 @@ function AppearanceTab() {
 
 			{/* Theme mode */}
 			<Card className="p-6">
-				<h3 className="font-semibold text-lg mb-4 text-slate-900 dark:text-white">{t('mode.title')}</h3>
+				<h3 className="font-semibold text-lg mb-4">{t('mode.title')}</h3>
 
 				<div className="grid grid-cols-3 gap-4">
-					{[
-						{ id: 'light', label: t('mode.light'), icon: Sun },
-						{ id: 'dark', label: t('mode.dark'), icon: Moon },
-						{ id: 'system', label: t('mode.system'), icon: Monitor },
-					].map((opt) => (
-						<button
-							key={opt.id}
-							onClick={() => setMode(opt.id)}
-							className={cn(
-								'p-4 rounded-xl border-2 transition-all text-left',
-								mode === opt.id ? 'border-primary bg-primary/5' : 'border-slate-200 dark:border-slate-700'
-							)}
-						>
-							<div className="flex items-center gap-2 mb-3">
-								<div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', mode === opt.id ? 'bg-primary/15' : 'bg-slate-100 dark:bg-slate-800')}>
-									<opt.icon className={cn('w-5 h-5', mode === opt.id ? 'text-primary' : 'text-slate-600 dark:text-slate-300')} />
+					{modeOptions.map(opt => {
+						const selected = theme === opt.id; // preference stored (system|light|dark)
+						return (
+							<button
+								key={opt.id}
+								onClick={() => setTheme(opt.id)}
+								className={cn(
+									'p-4 rounded-xl border-2 transition-all text-left',
+									selected ? 'border-primary bg-primary/5' : 'border-slate-200 dark:border-slate-700'
+								)}
+							>
+								<div className="flex items-center gap-2 mb-3">
+									<div className={cn('w-9 h-9 rounded-xl flex items-center justify-center',
+										selected ? 'bg-primary/15' : 'bg-slate-100 dark:bg-slate-800')}>
+										<opt.icon className={cn('w-5 h-5', selected ? 'text-primary' : 'text-slate-600 dark:text-slate-300')} />
+									</div>
+									<div className="font-semibold text-slate-900 dark:text-white">{opt.label}</div>
 								</div>
-								<div className="font-semibold text-slate-900 dark:text-white">{opt.label}</div>
-							</div>
-							<div className="h-20 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900" />
-						</button>
-					))}
+
+								{/* Preview uses resolvedTheme (actual applied theme) so the box looks correct */}
+								<div className={cn(
+									'h-20 rounded-xl',
+									resolvedTheme === 'dark' ? 'bg-slate-800' : 'bg-slate-100'
+								)} />
+							</button>
+						);
+					})}
 				</div>
 			</Card>
 
 			{/* Palettes */}
-			<Card className="p-6">
+			{/* <Card className="p-6">
 				<h3 className="font-semibold text-lg mb-4 text-slate-900 dark:text-white">{t('palette.title')}</h3>
 
 				<div className="grid grid-cols-3 gap-4">
@@ -1418,33 +2145,10 @@ function AppearanceTab() {
 				<div className="mt-3 text-xs text-slate-500 dark:text-slate-400">
 					{t('palette.note')}
 				</div>
-			</Card>
+			</Card> */}
 
 			{/* Language */}
-			<Card className="p-6">
-				<h3 className="font-semibold text-lg mb-4 text-slate-900 dark:text-white">{t('language.title')}</h3>
-				<div className="flex items-center gap-3">
-					<div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-						<Globe className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-					</div>
-
-					<div className="flex-1">
-						<Label className="text-sm">{t('language.label')}</Label>
-						<div className="mt-2">
-							<Select value={lang} onValueChange={setLang}>
-								<SelectTrigger className="h-11 rounded-xl bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="ar">{t('language.ar')}</SelectItem>
-									<SelectItem value="en">{t('language.en')}</SelectItem>
-								</SelectContent>
-							</Select>
-						</div>
-					</div>
-				</div>
-
-			</Card>
+			<LanguageSetting />
 
 			{/* Layout options */}
 			<Card className="p-6">
@@ -1456,16 +2160,16 @@ function AppearanceTab() {
 							<div className="font-semibold text-slate-900 dark:text-white">{t('layout.sidebar')}</div>
 							<div className="text-sm text-slate-500 dark:text-slate-400">{t('layout.sidebarDesc')}</div>
 						</div>
-						<Switch checked={sidebarExpanded} onCheckedChange={setSidebarExpanded} />
+						<Switch checked={sidebarExpanded} onCheckedChange={handleSidebarSwitch} />
 					</div>
 
-					<div className="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40">
+					{/* <div className="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40">
 						<div>
 							<div className="font-semibold text-slate-900 dark:text-white">{t('layout.compact')}</div>
 							<div className="text-sm text-slate-500 dark:text-slate-400">{t('layout.compactDesc')}</div>
 						</div>
 						<Switch checked={compact} onCheckedChange={setCompact} />
-					</div>
+					</div> */}
 				</div>
 			</Card>
 		</div>

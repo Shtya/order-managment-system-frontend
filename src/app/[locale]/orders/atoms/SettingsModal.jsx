@@ -370,10 +370,556 @@ function FieldSubLabel({ children }) {
   );
 }
 
+export function GeneralTab({ settings, patch, t }) {
+  return (
+    <>
+      {/* Master on/off */}
+      <ToggleRow
+        label={t("retrySettings.enableRetry")}
+        description={t("retrySettings.enableRetryDesc")}
+        checked={settings.enabled}
+        onCheckedChange={(v) => patch({ enabled: v })}
+      />
+
+      {/* Retry limits card */}
+      <SectionCard
+        icon={RotateCcw}
+        iconColor="#ff8b00"
+        title={t("retrySettings.retryLimitsTitle")}
+        subtitle={t("retrySettings.retryLimitsSubtitle")}
+      >
+        <div className="grid grid-cols-2 gap-4">
+          <NumberField
+            label={t("retrySettings.maxRetries")}
+            description={t("retrySettings.maxRetriesDesc")}
+            value={settings.maxRetries}
+            onChange={(e) => patch({ maxRetries: parseInt(e.target.value) || 1 })}
+            min={1}
+            max={10}
+          />
+          <NumberField
+            label={t("retrySettings.retryInterval")}
+            description={t("retrySettings.retryIntervalDesc")}
+            value={settings.retryInterval}
+            onChange={(e) => patch({ retryInterval: parseInt(e.target.value) || 5 })}
+            min={5}
+            max={1440}
+            suffix={t("retrySettings.minutes")}
+          />
+        </div>
+      </SectionCard>
+
+      {/* Working hours */}
+      <div className="space-y-3">
+        <ToggleRow
+          label={t("retrySettings.workingHours")}
+          description={t("retrySettings.workingHoursDesc")}
+          checked={settings.workingHours?.enabled ?? false}
+          onCheckedChange={(v) =>
+            patch({ workingHours: { ...settings.workingHours, enabled: v } })
+          }
+        />
+        <AnimatePresence>
+          {settings.workingHours?.enabled && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="grid grid-cols-2 gap-4 pt-1">
+                {[
+                  { key: "start", labelKey: "retrySettings.workingStart", def: "09:00" },
+                  { key: "end", labelKey: "retrySettings.workingEnd", def: "18:00" },
+                ].map((f) => (
+                  <div key={f.key} className="space-y-1.5">
+                    <Label className="text-xs font-black uppercase tracking-wider text-muted-foreground/70">
+                      {t(f.labelKey)}
+                    </Label>
+                    <Input
+                      type="time"
+                      value={settings.workingHours?.[f.key] ?? f.def}
+                      onChange={(e) =>
+                        patch({
+                          workingHours: { ...settings.workingHours, [f.key]: e.target.value },
+                        })
+                      }
+                      className="rounded-xl h-10"
+                    />
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// AUTOMATION TAB
+// ────────────────────────────────────────────────────────────────────────────
+export function AutomationTab({ settings, statuses, patch, toggleCode, t }) {
+  return (
+    <div className="space-y-5">
+      {/* 1 — Auto-move status */}
+      <SectionCard
+        icon={Zap}
+        iconColor="#6366f1"
+        title={t("retrySettings.autoMoveTitle")}
+        subtitle={t("retrySettings.autoMoveSubtitle")}
+      >
+        <FieldSubLabel>{t("retrySettings.autoMoveStatus")}</FieldSubLabel>
+        <Select
+          value={settings.autoMoveStatus}
+          onValueChange={(v) => patch({ autoMoveStatus: v })}
+        >
+          <SelectTrigger className="h-10 rounded-xl text-sm">
+            <SelectValue placeholder={t("retrySettings.selectStatus")} />
+          </SelectTrigger>
+          <SelectContent>
+            {statuses.map((s) => (
+              <SelectItem key={s.code || s.id} value={s.code || String(s.id)}>
+                <span className="flex items-center gap-2">
+                  <span
+                    className="w-2 h-2 rounded-full shrink-0"
+                    style={{ backgroundColor: s.color || "#6366f1" }}
+                  />
+                  {s.system ? t(`statuses.${s.code}`) : s.name}
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-[11px] text-muted-foreground pt-0.5">
+          {t("retrySettings.autoMoveHint")}
+        </p>
+      </SectionCard>
+
+      {/* 2 — Retry statuses */}
+      <SectionCard
+        icon={RotateCcw}
+        iconColor="#ff8b00"
+        title={t("retrySettings.retryStatusesTitle")}
+        subtitle={t("retrySettings.retryStatusesSubtitle")}
+        badge={settings.retryStatuses.length}
+      >
+        <StatusMultiSelect
+          statuses={statuses}
+          selected={settings.retryStatuses}
+          onToggle={(code) => toggleCode("retryStatuses", code)}
+          onClear={() => patch({ retryStatuses: [] })}
+          placeholder={t("retrySettings.selectStatusesPlaceholder")}
+          t={t}
+        />
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
+          {t("retrySettings.retryStatusesHint")}
+        </p>
+      </SectionCard>
+
+      {/* 3 — Confirmation statuses */}
+      <SectionCard
+        icon={CheckCheck}
+        iconColor="#10b981"
+        title={t("retrySettings.confirmationStatusesTitle")}
+        subtitle={t("retrySettings.confirmationStatusesSubtitle")}
+        badge={settings.confirmationStatuses.length}
+      >
+        <StatusMultiSelect
+          statuses={statuses}
+          selected={settings.confirmationStatuses}
+          onToggle={(code) => toggleCode("confirmationStatuses", code)}
+          onClear={() => patch({ confirmationStatuses: [] })}
+          placeholder={t("retrySettings.selectStatusesPlaceholder")}
+          t={t}
+        />
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
+          {t("retrySettings.confirmationStatusesHint")}
+        </p>
+      </SectionCard>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// SHIPPING TAB
+// ────────────────────────────────────────────────────────────────────────────
+export function ShippingTab({ settings, statuses, shippingCompanies, patchShipping, t }) {
+  return (
+    <div className="space-y-4">
+      {/* Master toggle */}
+      <div
+        className={cn(
+          "relative overflow-hidden rounded-xl border-2 transition-all duration-300",
+          settings.shipping.autoSendToShipping
+            ? "border-[var(--primary)]/40 dark:border-[#5b4bff]/40"
+            : "border-border"
+        )}
+      >
+        {settings.shipping.autoSendToShipping && (
+          <div
+            className="absolute inset-x-0 top-0 h-[2.5px]
+              bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)]
+              dark:from-[#5b4bff] dark:via-[#8b7cff] dark:to-[#3be7ff]"
+          />
+        )}
+        <div
+          className="p-4 flex items-center gap-4"
+          style={
+            settings.shipping.autoSendToShipping ? { background: rgba("#ff8b00", 0.03) } : {}
+          }
+        >
+          <div
+            className={cn(
+              "w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
+              settings.shipping.autoSendToShipping
+                ? "bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)] dark:from-[#5b4bff] dark:to-[#3be7ff] shadow-[0_4px_12px_rgba(var(--primary-shadow))]"
+                : "bg-muted border border-border"
+            )}
+          >
+            <Truck
+              size={18}
+              className={
+                settings.shipping.autoSendToShipping ? "text-white" : "text-muted-foreground"
+              }
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-black text-foreground">
+              {t("retrySettings.shipping.autoSend")}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+              {t("retrySettings.shipping.autoSendDesc")}
+            </p>
+          </div>
+          <Switch
+            checked={settings.shipping.autoSendToShipping}
+            onCheckedChange={(v) => patchShipping({ autoSendToShipping: v })}
+            className="shrink-0 ms-auto"
+          />
+        </div>
+      </div>
+
+      {/* Expanded shipping config */}
+      <AnimatePresence>
+        {settings.shipping.autoSendToShipping && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.22 }}
+            className="space-y-4"
+          >
+            {/* Card: Routing */}
+            <SectionCard
+              icon={Truck}
+              iconColor="#ff8b00"
+              title={t("retrySettings.shipping.routing")}
+              subtitle={t("retrySettings.shipping.routingDesc")}
+            >
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <FieldSubLabel>{t("retrySettings.shipping.company")}</FieldSubLabel>
+                  <Select
+                    value={settings.shipping.shippingCompanyId}
+                    onValueChange={(v) => patchShipping({ shippingCompanyId: v })}
+                  >
+                    <SelectTrigger className="h-10 rounded-xl text-sm">
+                      <SelectValue placeholder={t("retrySettings.shipping.selectCompany")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {shippingCompanies.length === 0 ? (
+                        <div className="py-4 text-center text-sm text-muted-foreground">
+                          {t("retrySettings.shipping.noCompanies")}
+                        </div>
+                      ) : (
+                        shippingCompanies.map((c) => (
+                          <SelectItem
+                            key={c.providerId ?? c.id}
+                            value={String(c.providerId ?? c.id)}
+                          >
+                            {c.name}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <FieldSubLabel>{t("retrySettings.shipping.triggerStatus")}</FieldSubLabel>
+                  <Select
+                    value={settings.shipping.triggerStatus}
+                    onValueChange={(v) => patchShipping({ triggerStatus: v })}
+                  >
+                    <SelectTrigger className="h-10 rounded-xl text-sm">
+                      <SelectValue placeholder={t("retrySettings.shipping.selectTrigger")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statuses.map((s) => (
+                        <SelectItem key={s.code || s.id} value={s.code || String(s.id)}>
+                          <span className="flex items-center gap-2">
+                            <span
+                              className="w-2 h-2 rounded-full shrink-0"
+                              style={{ backgroundColor: s.color || "#6366f1" }}
+                            />
+                            {s.system ? t(`statuses.${s.code}`) : s.name}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <p className="text-[11px] text-muted-foreground pt-0.5">
+                {t("retrySettings.shipping.triggerStatusDesc")}
+              </p>
+            </SectionCard>
+
+            {/* Card: Payment */}
+            <SectionCard
+              icon={Shield}
+              iconColor="#10b981"
+              title={t("retrySettings.shipping.paymentOptions")}
+              subtitle={t("retrySettings.shipping.paymentOptionsDesc")}
+            >
+              <InlineToggle
+                label={t("retrySettings.shipping.requireFullPayment")}
+                description={t("retrySettings.shipping.requireFullPaymentDesc")}
+                checked={settings.shipping.requireFullPayment}
+                onCheckedChange={(v) => patchShipping({ requireFullPayment: v })}
+              />
+
+              <AnimatePresence>
+                {!settings.shipping.requireFullPayment && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.18 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="mt-3 pt-3 border-t border-border/60">
+                      <div className="flex items-end gap-3">
+                        <div className="flex-1 space-y-1.5">
+                          <FieldSubLabel>
+                            {t("retrySettings.shipping.partialThreshold")}
+                          </FieldSubLabel>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              min={0}
+                              value={settings.shipping.partialPaymentThreshold}
+                              onChange={(e) =>
+                                patchShipping({
+                                  partialPaymentThreshold: parseInt(e.target.value) || 0,
+                                })
+                              }
+                              className="h-10 rounded-xl flex-1 text-sm"
+                            />
+                            <span className="text-xs text-muted-foreground shrink-0 font-semibold">
+                              {t("currency") ?? "EGP"}
+                            </span>
+                          </div>
+                        </div>
+                        <div
+                          className="mb-0.5 px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/30
+                            border border-emerald-200 dark:border-emerald-800"
+                        >
+                          <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-400">
+                            {settings.shipping.partialPaymentThreshold === 0
+                              ? t("retrySettings.shipping.anyDeposit")
+                              : `≥ ${settings.shipping.partialPaymentThreshold}`}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="mt-1.5 text-[11px] text-muted-foreground">
+                        {t("retrySettings.shipping.partialThresholdDesc")}
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="h-px bg-border/60" />
+
+              <InlineToggle
+                label={t("retrySettings.shipping.requirePaymentConfirm")}
+                description={t("retrySettings.shipping.requirePaymentConfirmDesc")}
+                checked={settings.shipping.requirePaymentConfirm}
+                onCheckedChange={(v) => patchShipping({ requirePaymentConfirm: v })}
+              />
+            </SectionCard>
+
+            {/* Card: Automation Options */}
+            <SectionCard
+              icon={Zap}
+              iconColor="#f59e0b"
+              title={t("retrySettings.shipping.otherOptions")}
+              subtitle={t("retrySettings.shipping.otherOptionsDesc")}
+            >
+              {[
+                {
+                  key: "autoGenerateLabel",
+                  labelKey: "retrySettings.shipping.autoLabel",
+                  descKey: "retrySettings.shipping.autoLabelDesc",
+                },
+                {
+                  key: "notifyOnShipment",
+                  labelKey: "retrySettings.shipping.notifyOnShipment",
+                  descKey: "retrySettings.shipping.notifyOnShipmentDesc",
+                },
+                {
+                  key: "allowReturnCreation",
+                  labelKey: "retrySettings.shipping.allowReturn",
+                  descKey: "retrySettings.shipping.allowReturnDesc",
+                },
+              ].map((opt, i, arr) => (
+                <div key={opt.key}>
+                  <InlineToggle
+                    label={t(opt.labelKey)}
+                    description={t(opt.descKey)}
+                    checked={settings.shipping[opt.key]}
+                    onCheckedChange={(v) => patchShipping({ [opt.key]: v })}
+                  />
+                  {i < arr.length - 1 && <div className="h-px bg-border/60 mt-3" />}
+                </div>
+              ))}
+            </SectionCard>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Disabled hint */}
+      {!settings.shipping.autoSendToShipping && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex items-start gap-3 p-4 rounded-xl bg-muted/30 border border-border/50"
+        >
+          <div className="w-8 h-8 rounded-xl bg-muted border border-border flex items-center justify-center shrink-0">
+            <AlertCircle size={14} className="text-muted-foreground/60" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-foreground mb-0.5">
+              {t("retrySettings.shipping.disabledTitle")}
+            </p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {t("retrySettings.shipping.disabledHint")}
+            </p>
+          </div>
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// WAREHOUSE TAB
+// ────────────────────────────────────────────────────────────────────────────
+export function WarehouseTab({ settings, patch, t }) {
+  return (
+    <div className="space-y-5">
+      <SectionCard
+        icon={Warehouse}
+        iconColor="#8b5cf6"
+        title={t("retrySettings.warehouse.flowTitle")}
+        subtitle={t("retrySettings.warehouse.flowSubtitle")}
+      >
+        <div className="space-y-3">
+          <FieldSubLabel>{t("retrySettings.warehouse.flowLabel")}</FieldSubLabel>
+
+          <Select
+            value={settings.orderFlowPath}
+            onValueChange={(v) => patch({ orderFlowPath: v })}
+          >
+            <SelectTrigger className="h-12 rounded-xl text-sm border-2">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="warehouse">
+                <div className="flex flex-col py-1">
+                  <span>{t("retrySettings.warehouse.afterConfirmation")}</span>
+                </div>
+              </SelectItem>
+              <SelectItem value="shipping">
+                <div className="flex flex-col py-1">
+                  <span>{t("retrySettings.warehouse.directToShipping")}</span>
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+
+          <div className="flex gap-2 items-start mt-2 bg-muted/30 p-3 rounded-lg">
+            <Info size={14} className="mt-0.5 text-muted-foreground shrink-0" />
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              {t("retrySettings.warehouse.flowHint")}
+            </p>
+          </div>
+        </div>
+      </SectionCard>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// NOTIFICATIONS TAB
+// ────────────────────────────────────────────────────────────────────────────
+export function NotificationsTab({ settings, patch, t }) {
+  return (
+    <>
+      <ToggleRow
+        label={t("retrySettings.notifyAdmin")}
+        description={t("retrySettings.notifyAdminDesc")}
+        checked={settings.notifyAdmin}
+        onCheckedChange={(v) => patch({ notifyAdmin: v })}
+      />
+
+      {/* Preview card */}
+      <div className="relative overflow-hidden rounded-xl border border-[var(--primary)]/20 dark:border-[#5b4bff]/25 p-5">
+        <div
+          className="absolute inset-0 pointer-events-none
+            bg-gradient-to-br from-[var(--primary)]/5 to-transparent dark:from-[#5b4bff]/8"
+        />
+        <div
+          className="absolute inset-x-0 top-0 h-[2px] opacity-60
+            bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)]
+            dark:from-[#5b4bff] dark:via-[#8b7cff] dark:to-[#3be7ff]"
+        />
+        <div className="relative flex items-start gap-3">
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0
+              bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]
+              dark:from-[#5b4bff] dark:to-[#3be7ff]"
+          >
+            <Bell size={15} className="text-white" />
+          </div>
+          <div>
+            <p className="text-sm font-black text-foreground mb-1.5">
+              {t("retrySettings.notificationPreview")}
+            </p>
+            <div className="px-3 py-2 rounded-xl bg-background border border-border text-xs text-muted-foreground">
+              {t("retrySettings.notificationPreviewText")}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TAB CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MAIN SETTINGS MODAL
+
 /* ══════════════════════════════════════════════════════════════
    MAIN COMPONENT
 ══════════════════════════════════════════════════════════════ */
 export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [] }) {
+
   const t = useTranslations("orders");
   const [activeTab, setActiveTab] = useState("general");
   const {
@@ -384,8 +930,8 @@ export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [
     patch,
     patchShipping,
     handleSave,
-    toggleCode
-  } = useOrdersSettings({ isOpen, onClose })
+    toggleCode,
+  } = useOrdersSettings({ isOpen, onClose });
 
   /* ═══════════════════════════════════════════════════════════
      RENDER
@@ -400,19 +946,25 @@ export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [
         {/* ────────────────── HEADER ────────────────── */}
         <div className="relative overflow-hidden shrink-0">
           {/* background tint */}
-          <div className="absolute inset-0 pointer-events-none opacity-[0.06]
+          <div
+            className="absolute inset-0 pointer-events-none opacity-[0.06]
             bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]
-            dark:from-[#5b4bff] dark:to-[#3be7ff]" />
+            dark:from-[#5b4bff] dark:to-[#3be7ff]"
+          />
           {/* bottom accent bar */}
-          <div className="absolute inset-x-0 bottom-0 h-[2px]
+          <div
+            className="absolute inset-x-0 bottom-0 h-[2px]
             bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)]
-            dark:from-[#5b4bff] dark:via-[#8b7cff] dark:to-[#3be7ff] opacity-60" />
+            dark:from-[#5b4bff] dark:via-[#8b7cff] dark:to-[#3be7ff] opacity-60"
+          />
 
           <div className="relative flex items-center gap-4 px-6 py-5">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0
               bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]
               dark:from-[#5b4bff] dark:to-[#3be7ff]
-              shadow-[0_6px_20px_rgba(var(--primary-shadow))]">
+              shadow-[0_6px_20px_rgba(var(--primary-shadow))]"
+            >
               <Settings size={22} className="text-white" />
             </div>
             <div className="flex-1 min-w-0">
@@ -424,7 +976,8 @@ export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [
               </p>
             </div>
             <motion.button
-              whileHover={{ scale: 1.1, rotate: 90 }} whileTap={{ scale: 0.9 }}
+              whileHover={{ scale: 1.1, rotate: 90 }}
+              whileTap={{ scale: 0.9 }}
               onClick={onClose}
               className="w-8 h-8 rounded-xl flex items-center justify-center
                 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800
@@ -436,7 +989,7 @@ export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [
 
           {/* Tab bar */}
           <div className="relative flex gap-1 px-5 pb-0">
-            {TABS.map(tab => {
+            {TABS.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.key;
               return (
@@ -447,7 +1000,7 @@ export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [
                     "relative flex items-center gap-1.5 px-3.5 py-2.5 rounded-t-xl text-xs font-bold transition-all duration-200",
                     isActive
                       ? "text-[var(--primary)] dark:text-[#8b7cff] bg-background"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40",
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
                   )}
                 >
                   <Icon size={13} />
@@ -466,13 +1019,17 @@ export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [
           </div>
         </div>
 
-        {/* ────────────────── BODY ────────────────── */}
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[var(--primary)]/10 to-[var(--primary)]/5
-                flex items-center justify-center">
-                <Loader2 size={24} className="animate-spin text-[var(--primary)] dark:text-[#5b4bff]" />
+              <div
+                className="w-14 h-14 rounded-xl bg-gradient-to-br from-[var(--primary)]/10 to-[var(--primary)]/5
+                flex items-center justify-center"
+              >
+                <Loader2
+                  size={24}
+                  className="animate-spin text-[var(--primary)] dark:text-[#5b4bff]"
+                />
               </div>
               <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
             </div>
@@ -486,478 +1043,33 @@ export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [
                 transition={{ duration: 0.18 }}
                 className="p-6 space-y-5"
               >
+                {activeTab === "general" && <GeneralTab settings={settings} patch={patch} t={t} />}
 
-                {/* ══════════════ TAB: GENERAL ══════════════ */}
-                {activeTab === "general" && (
-                  <>
-                    {/* Master on/off */}
-                    <ToggleRow
-                      label={t("retrySettings.enableRetry")}
-                      description={t("retrySettings.enableRetryDesc")}
-                      checked={settings.enabled}
-                      onCheckedChange={v => patch({ enabled: v })}
-                    />
-
-                    {/* Retry limits card */}
-                    <SectionCard
-                      icon={RotateCcw}
-                      iconColor="#ff8b00"
-                      title={t("retrySettings.retryLimitsTitle")}
-                      subtitle={t("retrySettings.retryLimitsSubtitle")}
-                    >
-                      <div className="grid grid-cols-2 gap-4">
-                        <NumberField
-                          label={t("retrySettings.maxRetries")}
-                          description={t("retrySettings.maxRetriesDesc")}
-                          value={settings.maxRetries}
-                          onChange={e => patch({ maxRetries: parseInt(e.target.value) || 1 })}
-                          min={1} max={10}
-                        />
-                        <NumberField
-                          label={t("retrySettings.retryInterval")}
-                          description={t("retrySettings.retryIntervalDesc")}
-                          value={settings.retryInterval}
-                          onChange={e => patch({ retryInterval: parseInt(e.target.value) || 5 })}
-                          min={5} max={1440}
-                          suffix={t("retrySettings.minutes")}
-                        />
-                      </div>
-                    </SectionCard>
-
-                    {/* Working hours */}
-                    <div className="space-y-3">
-                      <ToggleRow
-                        label={t("retrySettings.workingHours")}
-                        description={t("retrySettings.workingHoursDesc")}
-                        checked={settings.workingHours?.enabled ?? false}
-                        onCheckedChange={v =>
-                          patch({ workingHours: { ...settings.workingHours, enabled: v } })
-                        }
-                      />
-                      <AnimatePresence>
-                        {settings.workingHours?.enabled && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="grid grid-cols-2 gap-4 pt-1">
-                              {[
-                                { key: "start", labelKey: "retrySettings.workingStart", def: "09:00" },
-                                { key: "end", labelKey: "retrySettings.workingEnd", def: "18:00" },
-                              ].map(f => (
-                                <div key={f.key} className="space-y-1.5">
-                                  <Label className="text-xs font-black uppercase tracking-wider text-muted-foreground/70">
-                                    {t(f.labelKey)}
-                                  </Label>
-                                  <Input
-                                    type="time"
-                                    value={settings.workingHours?.[f.key] ?? f.def}
-                                    onChange={e =>
-                                      patch({ workingHours: { ...settings.workingHours, [f.key]: e.target.value } })
-                                    }
-                                    className="rounded-xl h-10"
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </>
-                )}
-
-                {/* ══════════════ TAB: AUTOMATION ══════════════ */}
                 {activeTab === "automation" && (
-                  <div className="space-y-5">
-
-                    {/* 1 — Auto-move status */}
-                    <SectionCard
-                      icon={Zap}
-                      iconColor="#6366f1"
-                      title={t("retrySettings.autoMoveTitle")}
-                      subtitle={t("retrySettings.autoMoveSubtitle")}
-                    >
-                      <FieldSubLabel>{t("retrySettings.autoMoveStatus")}</FieldSubLabel>
-                      <Select
-                        value={settings.autoMoveStatus}
-                        onValueChange={v => patch({ autoMoveStatus: v })}
-                      >
-                        <SelectTrigger className="h-10 rounded-xl text-sm">
-                          <SelectValue placeholder={t("retrySettings.selectStatus")} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {statuses.map(s => (
-                            <SelectItem key={s.code || s.id} value={s.code || String(s.id)}>
-                              <span className="flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full shrink-0"
-                                  style={{ backgroundColor: s.color || "#6366f1" }} />
-                                {s.system ? t(`statuses.${s.code}`) : s.name}
-                              </span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <p className="text-[11px] text-muted-foreground pt-0.5">
-                        {t("retrySettings.autoMoveHint")}
-                      </p>
-                    </SectionCard>
-
-                    {/* 2 — Retry statuses */}
-                    <SectionCard
-                      icon={RotateCcw}
-                      iconColor="#ff8b00"
-                      title={t("retrySettings.retryStatusesTitle")}
-                      subtitle={t("retrySettings.retryStatusesSubtitle")}
-                      badge={settings.retryStatuses.length}
-                    >
-                      <StatusMultiSelect
-                        statuses={statuses}
-                        selected={settings.retryStatuses}
-                        onToggle={code => toggleCode("retryStatuses", code)}
-                        onClear={() => patch({ retryStatuses: [] })}
-                        placeholder={t("retrySettings.selectStatusesPlaceholder")}
-                        t={t}
-                      />
-                      <p className="text-[11px] text-muted-foreground leading-relaxed">
-                        {t("retrySettings.retryStatusesHint")}
-                      </p>
-                    </SectionCard>
-
-                    {/* 3 — Confirmation statuses */}
-                    <SectionCard
-                      icon={CheckCheck}
-                      iconColor="#10b981"
-                      title={t("retrySettings.confirmationStatusesTitle")}
-                      subtitle={t("retrySettings.confirmationStatusesSubtitle")}
-                      badge={settings.confirmationStatuses.length}
-                    >
-                      <StatusMultiSelect
-                        statuses={statuses}
-                        selected={settings.confirmationStatuses}
-                        onToggle={code => toggleCode("confirmationStatuses", code)}
-                        onClear={() => patch({ confirmationStatuses: [] })}
-                        placeholder={t("retrySettings.selectStatusesPlaceholder")}
-                        t={t}
-                      />
-                      <p className="text-[11px] text-muted-foreground leading-relaxed">
-                        {t("retrySettings.confirmationStatusesHint")}
-                      </p>
-                    </SectionCard>
-
-                  </div>
+                  <AutomationTab
+                    settings={settings}
+                    statuses={statuses}
+                    patch={patch}
+                    toggleCode={toggleCode}
+                    t={t}
+                  />
                 )}
 
-                {/* ══════════════ TAB: SHIPPING ══════════════ */}
                 {activeTab === "shipping" && (
-                  <div className="space-y-4">
-
-                    {/* Master toggle */}
-                    <div className={cn(
-                      "relative overflow-hidden rounded-xl border-2 transition-all duration-300",
-                      settings.shipping.autoSendToShipping
-                        ? "border-[var(--primary)]/40 dark:border-[#5b4bff]/40"
-                        : "border-border",
-                    )}>
-                      {settings.shipping.autoSendToShipping && (
-                        <div className="absolute inset-x-0 top-0 h-[2.5px]
-                          bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)]
-                          dark:from-[#5b4bff] dark:via-[#8b7cff] dark:to-[#3be7ff]" />
-                      )}
-                      <div
-                        className="p-4 flex items-center gap-4"
-                        style={settings.shipping.autoSendToShipping ? { background: rgba("#ff8b00", 0.03) } : {}}
-                      >
-                        <div className={cn(
-                          "w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
-                          settings.shipping.autoSendToShipping
-                            ? "bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)] dark:from-[#5b4bff] dark:to-[#3be7ff] shadow-[0_4px_12px_rgba(var(--primary-shadow))]"
-                            : "bg-muted border border-border",
-                        )}>
-                          <Truck size={18} className={settings.shipping.autoSendToShipping ? "text-white" : "text-muted-foreground"} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-black text-foreground">
-                            {t("retrySettings.shipping.autoSend")}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                            {t("retrySettings.shipping.autoSendDesc")}
-                          </p>
-                        </div>
-                        {/* ms-auto = RTL/LTR safe */}
-                        <Switch
-                          checked={settings.shipping.autoSendToShipping}
-                          onCheckedChange={v => patchShipping({ autoSendToShipping: v })}
-                          className="shrink-0 ms-auto"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Expanded shipping config */}
-                    <AnimatePresence>
-                      {settings.shipping.autoSendToShipping && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -6 }}
-                          transition={{ duration: 0.22 }}
-                          className="space-y-4"
-                        >
-                          {/* Card: Routing */}
-                          <SectionCard
-                            icon={Truck} iconColor="#ff8b00"
-                            title={t("retrySettings.shipping.routing")}
-                            subtitle={t("retrySettings.shipping.routingDesc")}
-                          >
-                            <div className="grid grid-cols-2 gap-3">
-                              <div className="space-y-1.5">
-                                <FieldSubLabel>{t("retrySettings.shipping.company")}</FieldSubLabel>
-                                <Select
-                                  value={settings.shipping.shippingCompanyId}
-                                  onValueChange={v => patchShipping({ shippingCompanyId: v })}
-                                >
-                                  <SelectTrigger className="h-10 rounded-xl text-sm">
-                                    <SelectValue placeholder={t("retrySettings.shipping.selectCompany")} />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {shippingCompanies.length === 0 ? (
-                                      <div className="py-4 text-center text-sm text-muted-foreground">
-                                        {t("retrySettings.shipping.noCompanies")}
-                                      </div>
-                                    ) : shippingCompanies.map(c => (
-                                      <SelectItem key={c.providerId ?? c.id} value={String(c.providerId ?? c.id)}>
-                                        {c.name}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              <div className="space-y-1.5">
-                                <FieldSubLabel>{t("retrySettings.shipping.triggerStatus")}</FieldSubLabel>
-                                <Select
-                                  value={settings.shipping.triggerStatus}
-                                  onValueChange={v => patchShipping({ triggerStatus: v })}
-                                >
-                                  <SelectTrigger className="h-10 rounded-xl text-sm">
-                                    <SelectValue placeholder={t("retrySettings.shipping.selectTrigger")} />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {statuses.map(s => (
-                                      <SelectItem key={s.code || s.id} value={s.code || String(s.id)}>
-                                        <span className="flex items-center gap-2">
-                                          <span className="w-2 h-2 rounded-full shrink-0"
-                                            style={{ backgroundColor: s.color || "#6366f1" }} />
-                                          {s.system ? t(`statuses.${s.code}`) : s.name}
-                                        </span>
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            </div>
-                            <p className="text-[11px] text-muted-foreground pt-0.5">
-                              {t("retrySettings.shipping.triggerStatusDesc")}
-                            </p>
-                          </SectionCard>
-
-                          {/* Card: Payment */}
-                          <SectionCard
-                            icon={Shield} iconColor="#10b981"
-                            title={t("retrySettings.shipping.paymentOptions")}
-                            subtitle={t("retrySettings.shipping.paymentOptionsDesc")}
-                          >
-                            <InlineToggle
-                              label={t("retrySettings.shipping.requireFullPayment")}
-                              description={t("retrySettings.shipping.requireFullPaymentDesc")}
-                              checked={settings.shipping.requireFullPayment}
-                              onCheckedChange={v => patchShipping({ requireFullPayment: v })}
-                            />
-
-                            <AnimatePresence>
-                              {!settings.shipping.requireFullPayment && (
-                                <motion.div
-                                  initial={{ height: 0, opacity: 0 }}
-                                  animate={{ height: "auto", opacity: 1 }}
-                                  exit={{ height: 0, opacity: 0 }}
-                                  transition={{ duration: 0.18 }}
-                                  className="overflow-hidden"
-                                >
-                                  <div className="mt-3 pt-3 border-t border-border/60">
-                                    <div className="flex items-end gap-3">
-                                      <div className="flex-1 space-y-1.5">
-                                        <FieldSubLabel>{t("retrySettings.shipping.partialThreshold")}</FieldSubLabel>
-                                        <div className="flex items-center gap-2">
-                                          <Input
-                                            type="number" min={0}
-                                            value={settings.shipping.partialPaymentThreshold}
-                                            onChange={e => patchShipping({ partialPaymentThreshold: parseInt(e.target.value) || 0 })}
-                                            className="h-10 rounded-xl flex-1 text-sm"
-                                          />
-                                          <span className="text-xs text-muted-foreground shrink-0 font-semibold">
-                                            {t("currency") ?? "EGP"}
-                                          </span>
-                                        </div>
-                                      </div>
-                                      <div className="mb-0.5 px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/30
-                                        border border-emerald-200 dark:border-emerald-800">
-                                        <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-400">
-                                          {settings.shipping.partialPaymentThreshold === 0
-                                            ? t("retrySettings.shipping.anyDeposit")
-                                            : `≥ ${settings.shipping.partialPaymentThreshold}`}
-                                        </p>
-                                      </div>
-                                    </div>
-                                    <p className="mt-1.5 text-[11px] text-muted-foreground">
-                                      {t("retrySettings.shipping.partialThresholdDesc")}
-                                    </p>
-                                  </div>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-
-                            <div className="h-px bg-border/60" />
-
-                            <InlineToggle
-                              label={t("retrySettings.shipping.requirePaymentConfirm")}
-                              description={t("retrySettings.shipping.requirePaymentConfirmDesc")}
-                              checked={settings.shipping.requirePaymentConfirm}
-                              onCheckedChange={v => patchShipping({ requirePaymentConfirm: v })}
-                            />
-                          </SectionCard>
-
-                          {/* Card: Automation Options */}
-                          <SectionCard
-                            icon={Zap} iconColor="#f59e0b"
-                            title={t("retrySettings.shipping.otherOptions")}
-                            subtitle={t("retrySettings.shipping.otherOptionsDesc")}
-                          >
-                            {[
-                              { key: "autoGenerateLabel", labelKey: "retrySettings.shipping.autoLabel", descKey: "retrySettings.shipping.autoLabelDesc" },
-                              { key: "notifyOnShipment", labelKey: "retrySettings.shipping.notifyOnShipment", descKey: "retrySettings.shipping.notifyOnShipmentDesc" },
-                              { key: "allowReturnCreation", labelKey: "retrySettings.shipping.allowReturn", descKey: "retrySettings.shipping.allowReturnDesc" },
-                            ].map((opt, i, arr) => (
-                              <div key={opt.key}>
-                                <InlineToggle
-                                  label={t(opt.labelKey)}
-                                  description={t(opt.descKey)}
-                                  checked={settings.shipping[opt.key]}
-                                  onCheckedChange={v => patchShipping({ [opt.key]: v })}
-                                />
-                                {i < arr.length - 1 && <div className="h-px bg-border/60 mt-3" />}
-                              </div>
-                            ))}
-                          </SectionCard>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
-                    {/* Disabled hint */}
-                    {!settings.shipping.autoSendToShipping && (
-                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                        className="flex items-start gap-3 p-4 rounded-xl bg-muted/30 border border-border/50">
-                        <div className="w-8 h-8 rounded-xl bg-muted border border-border flex items-center justify-center shrink-0">
-                          <AlertCircle size={14} className="text-muted-foreground/60" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-foreground mb-0.5">
-                            {t("retrySettings.shipping.disabledTitle")}
-                          </p>
-                          <p className="text-xs text-muted-foreground leading-relaxed">
-                            {t("retrySettings.shipping.disabledHint")}
-                          </p>
-                        </div>
-                      </motion.div>
-                    )}
-                  </div>
+                  <ShippingTab
+                    settings={settings}
+                    statuses={statuses}
+                    shippingCompanies={shippingCompanies}
+                    patchShipping={patchShipping}
+                    t={t}
+                  />
                 )}
 
-                {activeTab === "warehouse" && (
-                  <div className="space-y-5">
-                    <SectionCard
-                      icon={Warehouse}
-                      iconColor="#8b5cf6"
-                      title={t("retrySettings.warehouse.flowTitle")}
-                      subtitle={t("retrySettings.warehouse.flowSubtitle")}
-                    >
-                      <div className="space-y-3">
-                        <FieldSubLabel>{t("retrySettings.warehouse.flowLabel")}</FieldSubLabel>
+                {activeTab === "warehouse" && <WarehouseTab settings={settings} patch={patch} t={t} />}
 
-                        <Select
-                          value={settings.orderFlowPath} // assuming 'orderFlowPath' is your state key
-                          onValueChange={v => patch({ orderFlowPath: v })}
-                        >
-                          <SelectTrigger className="h-12 rounded-xl text-sm border-2">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="warehouse">
-                              <div className="flex flex-col py-1">
-                                <span className="">{t("retrySettings.warehouse.afterConfirmation")}</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="shipping">
-                              <div className="flex flex-col py-1">
-                                <span className="">{t("retrySettings.warehouse.directToShipping")}</span>
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-
-                        <div className="flex gap-2 items-start mt-2 bg-muted/30 p-3 rounded-lg">
-                          <Info size={14} className="mt-0.5 text-muted-foreground shrink-0" />
-                          <p className="text-[11px] text-muted-foreground leading-relaxed">
-                            {t("retrySettings.warehouse.flowHint")}
-                          </p>
-                        </div>
-                      </div>
-                    </SectionCard>
-                  </div>
-                )}
-
-                {/* ══════════════ TAB: NOTIFICATIONS ══════════════ */}
                 {activeTab === "notifications" && (
-                  <>
-                    {/* <ToggleRow
-                      label={t("retrySettings.notifyEmployee")}
-                      description={t("retrySettings.notifyEmployeeDesc")}
-                      checked={settings.notifyEmployee}
-                      onCheckedChange={v => patch({ notifyEmployee: v })}
-                    /> */}
-                    <ToggleRow
-                      label={t("retrySettings.notifyAdmin")}
-                      description={t("retrySettings.notifyAdminDesc")}
-                      checked={settings.notifyAdmin}
-                      onCheckedChange={v => patch({ notifyAdmin: v })}
-                    />
-
-                    {/* Preview card */}
-                    <div className="relative overflow-hidden rounded-xl border border-[var(--primary)]/20 dark:border-[#5b4bff]/25 p-5">
-                      <div className="absolute inset-0 pointer-events-none
-                        bg-gradient-to-br from-[var(--primary)]/5 to-transparent dark:from-[#5b4bff]/8" />
-                      <div className="absolute inset-x-0 top-0 h-[2px] opacity-60
-                        bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)]
-                        dark:from-[#5b4bff] dark:via-[#8b7cff] dark:to-[#3be7ff]" />
-                      <div className="relative flex items-start gap-3">
-                        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0
-                          bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]
-                          dark:from-[#5b4bff] dark:to-[#3be7ff]">
-                          <Bell size={15} className="text-white" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-black text-foreground mb-1.5">
-                            {t("retrySettings.notificationPreview")}
-                          </p>
-                          <div className="px-3 py-2 rounded-xl bg-background border border-border text-xs text-muted-foreground">
-                            {t("retrySettings.notificationPreviewText")}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </>
+                  <NotificationsTab settings={settings} patch={patch} t={t} />
                 )}
-
               </motion.div>
             </AnimatePresence>
           )}
@@ -966,11 +1078,16 @@ export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [
         {/* ────────────────── FOOTER ────────────────── */}
         {!loading && (
           <div className="shrink-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-border bg-muted/20">
-            <Button variant="outline" onClick={onClose} className="rounded-xl h-10 px-5 text-sm font-semibold">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="rounded-xl h-10 px-5 text-sm font-semibold"
+            >
               {t("common.cancel")}
             </Button>
             <motion.button
-              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
               onClick={handleSave}
               disabled={saving}
               className="h-10 px-6 rounded-xl text-sm font-bold text-white flex items-center gap-2
@@ -981,10 +1098,17 @@ export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [
                 hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed
                 transition-all duration-200"
             >
-              {saving
-                ? <><Loader2 size={14} className="animate-spin" />{t("actions.saving")}</>
-                : <><Save size={14} />{t("common.save")}</>
-              }
+              {saving ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  {t("actions.saving")}
+                </>
+              ) : (
+                <>
+                  <Save size={14} />
+                  {t("common.save")}
+                </>
+              )}
             </motion.button>
           </div>
         )}

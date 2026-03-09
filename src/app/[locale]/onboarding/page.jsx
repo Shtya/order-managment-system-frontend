@@ -882,6 +882,7 @@ const schema = yup.object({
 });
 
 function CompanyStep({ onNext, onBack, open, nextLoading }) {
+
 	const {
 		control,
 		register,
@@ -901,6 +902,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
 			address: '',
 		},
 		mode: 'onTouched', // validate on touch so errors show after interaction
+
 	});
 
 	useEffect(() => {

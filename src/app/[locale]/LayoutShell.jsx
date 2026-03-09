@@ -1,14 +1,14 @@
 // app/[locale]/LayoutShell.jsx
 'use client';
 
-import React, { useState } from 'react';
-import { ThemeProvider } from 'next-themes';
+import React, { useEffect, useState } from 'react';
 import { useLocale } from 'next-intl';
 import Header from '@/components/molecules/Header';
 import Sidebar from '@/components/molecules/Sidebar';
 import { usePathname } from 'next/navigation';
 import { Toaster } from 'react-hot-toast';
 import { SocketProvider } from '../../context/SocketContext';
+import { ThemeProvider } from 'next-themes';
 
 export default function LayoutShell({ children }) {
 	return (
@@ -51,7 +51,31 @@ function DashboardLayout({ children }) {
 	const isRTL = locale === 'ar';
 	const AllPathname = usePathname();
 	const pathname = AllPathname?.slice(3, 1000);
-	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+	const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+		if (typeof window === "undefined") return false;
+		return localStorage.getItem("ui_sidebar") === "expanded";
+	});
+
+	useEffect(() => {
+		localStorage.setItem(
+			"ui_sidebar",
+			isSidebarOpen ? "expanded" : "collapsed"
+		);
+		window.dispatchEvent(new Event("sidebarChangeBack"));
+	}, [isSidebarOpen]);
+
+	useEffect(() => {
+		const handler = () => {
+			const value = localStorage.getItem("ui_sidebar");
+			setIsSidebarOpen(value === "expanded");
+		};
+
+		window.addEventListener("sidebarChange", handler);
+
+		return () => {
+			window.removeEventListener("sidebarChange", handler);
+		};
+	}, []);
 
 	const isAuthRoute =
 		pathname?.startsWith('/auth') ||

@@ -2710,7 +2710,7 @@ export default function OnboardingPage() {
 			toast.success('اكتمل الإعداد! مرحباً بك 🎉', { id: tid });
 
 			setTimeout(() => {
-				window.location.href = '/orders';
+				window.location.href = user?.role === 'admin' ? '/orders' : '/orders/employee-orders';
 			}, 1200);
 		} catch (err) {
 			const msg = err.response?.data?.message || "حدث خطأ أثناء إنهاء الإعداد";

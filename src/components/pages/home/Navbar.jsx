@@ -17,7 +17,7 @@ const stagger = (i) => ({
 function getDashboardRoute(role) {
 	if (role === "admin") return "/orders";
 	if (role === "super_admin") return "/dashboard/users";
-	return "/overview";
+	return '/orders/employee-orders';
 }
 
 function getRoleLabel(role) {

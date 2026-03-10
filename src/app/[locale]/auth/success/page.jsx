@@ -36,7 +36,7 @@ export default function SuccessPage() {
                 });
                 const isOnboarded = user?.onboardingStatus === 'completed' || user?.role !== 'admin';
 
-                const redirect = user?.role === 'super_admin' ? '/dashboard/users' : !isOnboarded ? "/onboarding" : '/orders';
+                const redirect = user?.role === 'super_admin' ? '/dashboard/users' : !isOnboarded ? "/onboarding" : user?.role === 'admin' ? '/orders' : '/orders/employee-orders';
                 router.push(redirect);
             } catch (e) {
                 console.error('OAuth finalize failed', e);

@@ -85,7 +85,7 @@ export default function SignIn({ t: tProp, onSwitchMode, onForgotPassword }) {
       const role = String(data?.user?.role || '');
       const isOnboarded = data.user?.onboardingStatus === 'completed' || role !== 'admin'; // Matches our Enum
 
-      setTimeout(() => { window.location.href = role === 'super_admin' ? '/dashboard/users' : !isOnboarded ? "/onboarding" : '/orders'; }, 900);
+      setTimeout(() => { window.location.href = role === 'super_admin' ? '/dashboard/users' : !isOnboarded ? "/onboarding" : role === 'admin' ? '/orders' : '/orders/employee-orders'; }, 900);
     } catch (error) {
       const status = error?.response?.status;
 

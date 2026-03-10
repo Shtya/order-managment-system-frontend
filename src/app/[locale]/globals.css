@@ -409,7 +409,7 @@
 
 .bg-card {
   @apply p-4 md:p-6 rounded-lg border transition-all duration-300 bg-card border-gray-300/70;
-  @apply dark:bg-[#182337]/95 dark:border-white/10 dark:hover:border-white/15;
+  @apply dark:bg-[#182337]  dark:border-white/10 dark:hover:border-white/15;
 
   transition:
     box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),

@@ -1,752 +1,2491 @@
 "use client";
 
-import React, { useMemo, useState, useRef, useEffect } from "react";
+import React, { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-	RefreshCw, Truck, Package, ScanLine, Save,
-	CheckCircle2, Loader2, Download, FileDown, Calendar,
-	Info, ChevronDown, FileText,
+  RefreshCw,
+  Truck,
+  Package,
+  ScanLine,
+  CheckCircle2,
+  Loader2,
+  FileDown,
+  Calendar,
+  Info,
+  ChevronDown,
+  FileText,
+  X,
+  Volume2,
+  VolumeX,
+  AlertCircle,
+  Hash,
+  MapPin,
+  User,
+  CreditCard,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
 import {
-	Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import Table, { FilterField } from "@/components/atoms/Table";
 import PageHeader from "../../../../components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
-import { STATUS, CARRIERS, PRODUCT_CONDITIONS, returnInventoryFromCarrier } from "./data";
-import ScanBar from "../atoms/ScanBar";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import ActionButtons from "@/components/atoms/Actions";
+import {
+  STATUS,
+  CARRIERS,
+  PRODUCT_CONDITIONS,
+  returnInventoryFromCarrier,
+} from "./data";
 
-// ── PDF ────────────────────────────────────────────────────────────────────────
-const PDF_STYLE = `<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',Tahoma,sans-serif;direction:rtl;color:#1e293b;background:#fff;padding:28px 32px}.header-bar{background:linear-gradient(135deg,#f59e0b,#f97316);color:#fff;padding:16px 20px;border-radius:12px;margin-bottom:20px}table{width:100%;border-collapse:collapse;font-size:13px}thead{background:#fefce8}th{text-align:right;padding:9px 12px;font-weight:600;color:#92400e;border-bottom:2px solid #fde68a}td{padding:8px 12px;border-bottom:1px solid #fef9c3}.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}.info-card{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 14px}.info-label{font-size:10px;color:#92400e;margin-bottom:3px}.info-value{font-size:13px;font-weight:600}.badge-ok{background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:99px;font-size:11px}.badge-damaged{background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:99px;font-size:11px}@media print{button{display:none}}</style>`;
+// ─────────────────────────────────────────────────────────────
+// DESIGN TOKENS
+// ─────────────────────────────────────────────────────────────
+const DS = {
+  radius: "rounded-lg",
+  radiusSm: "rounded-md",
+  radiusXl: "rounded-xl",
 
-// ── Wrong Scan Log PDF ─────────────────────────────────────────────────────────
-const WRONG_SCAN_PDF_STYLE = `<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',Tahoma,sans-serif;direction:rtl;color:#1e293b;background:#fff;padding:28px 32px}.header-bar{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;padding:16px 20px;border-radius:12px;margin-bottom:20px}table{width:100%;border-collapse:collapse;font-size:13px}thead{background:#fef2f2}th{text-align:right;padding:9px 12px;font-weight:600;color:#991b1b;border-bottom:2px solid #fecaca}td{padding:8px 12px;border-bottom:1px solid #fff1f2}.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}.info-card{background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px 14px}.info-label{font-size:10px;color:#991b1b;margin-bottom:3px}.info-value{font-size:13px;font-weight:600}.badge-error{background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:99px;font-size:11px;border:1px solid #fecaca}@media print{button{display:none}}</style>`;
+  primary: "#ff8b00",
+  primaryLight: "rgba(255,139,0,0.10)",
+  primaryBorder: "rgba(255,139,0,0.25)",
+  accent: "#6763af",
+  success: "#10b981",
+  successLight: "rgba(16,185,129,0.10)",
+  danger: "#ef4444",
+  dangerLight: "rgba(239,68,68,0.10)",
+  warning: "#ffb703",
 
-function buildReturnPDF(orders, carrier, employee, now) {
-	const rows = orders.map((o) => `<tr><td style="font-family:monospace;font-weight:700">${o.code}</td><td>${o.customer}</td><td>${o.city}</td><td>${o.products.map((p) => `${p.name} ×${p.requestedQty}`).join("<br/>")}</td><td>${o.total} ر.س</td><td><span class="${o.returnCondition === "تالف" ? "badge-damaged" : "badge-ok"}">${o.returnCondition || "سليم"}</span></td></tr>`).join("");
-	return `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>ملف مرتجعات</title>${PDF_STYLE}</head><body><div class="header-bar"><div style="font-size:18px;font-weight:700;margin-bottom:4px">↩ ملف استلام المرتجعات — ${carrier}</div><div style="font-size:12px;opacity:.85">تاريخ الاستلام: ${now} | الموظف: ${employee} | عدد المرتجعات: ${orders.length}</div></div><div class="info-grid"><div class="info-card"><div class="info-label">شركة الشحن</div><div class="info-value">${carrier}</div></div><div class="info-card"><div class="info-label">تاريخ الاستلام</div><div class="info-value">${now}</div></div><div class="info-card"><div class="info-label">الموظف</div><div class="info-value">${employee}</div></div><div class="info-card"><div class="info-label">إجمالي المرتجعات</div><div class="info-value">${orders.length} طلب</div></div></div><table><thead><tr><th>رقم الطلب</th><th>العميل</th><th>المدينة</th><th>المنتجات</th><th>الإجمالي</th><th>حالة المنتج</th></tr></thead><tbody>${rows}</tbody></table></body></html>`;
+  headerGradient: "linear-gradient(135deg, var(--primary) 0%, #ff5c2b 100%)",
+  successGradient: "linear-gradient(135deg, #059669 0%, #10b981 100%)",
+  dangerGradient: "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)",
+  cardGradient: "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)",
+  successCardGradient: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)",
+
+  shadow: "shadow-sm",
+  shadowMd: "shadow-md",
+
+  scanline: {
+    backgroundImage:
+      "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.015) 3px, rgba(0,0,0,0.015) 4px)",
+  },
+};
+
+// ─────────────────────────────────────────────────────────────
+// SHARED PRIMITIVES
+// ─────────────────────────────────────────────────────────────
+function Panel({ children, className }) {
+  return (
+    <div
+      className={cn(
+        "bg-white dark:bg-slate-800/80",
+        DS.radiusXl,
+        "border border-slate-100 dark:border-slate-700",
+        DS.shadow,
+        "overflow-hidden",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
 }
 
-function buildWrongScanLogPDF(logs, carrier, employee, now) {
-	const rows = logs.map((l, i) => `<tr><td style="text-align:center;color:#94a3b8">${i + 1}</td><td style="font-family:monospace;font-weight:700;color:#dc2626">${l.code}</td><td><span class="badge-error">${l.reason}</span></td><td style="color:#94a3b8;font-size:11px">${l.time}</td></tr>`).join("");
-	return `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>سجل المسح الفاشل</title>${WRONG_SCAN_PDF_STYLE}</head><body><div class="header-bar"><div style="font-size:18px;font-weight:700;margin-bottom:4px">⚠ سجل محاولات المسح الفاشلة — ${carrier}</div><div style="font-size:12px;opacity:.85">تاريخ الطباعة: ${now} | الموظف: ${employee} | إجمالي المحاولات: ${logs.length}</div></div><div class="info-grid"><div class="info-card"><div class="info-label">شركة الشحن</div><div class="info-value">${carrier}</div></div><div class="info-card"><div class="info-label">الموظف</div><div class="info-value">${employee}</div></div><div class="info-card"><div class="info-label">التاريخ</div><div class="info-value">${now}</div></div><div class="info-card"><div class="info-label">إجمالي المحاولات الفاشلة</div><div class="info-value">${logs.length} محاولة</div></div></div><table><thead><tr><th style="text-align:center;width:40px">#</th><th>الكود الممسوح</th><th>سبب الفشل</th><th>الوقت</th></tr></thead><tbody>${rows}</tbody></table></body></html>`;
+function PanelHeader({ icon: Icon, pretitle, title, right, children }) {
+  return (
+    <div className="relative px-5 py-4 overflow-hidden" style={{ background: DS.headerGradient }}>
+      <div className="absolute -top-5 -left-5 w-20 h-20 rounded-full bg-white/10 pointer-events-none" />
+      <div className="absolute -bottom-5 -right-5 w-16 h-16 rounded-full bg-white/10 pointer-events-none" />
+      <div className="relative flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div
+            className={cn(
+              "w-9 h-9 flex-shrink-0 flex items-center justify-center",
+              DS.radiusSm,
+              "bg-white/20 backdrop-blur-sm"
+            )}
+          >
+            <Icon size={18} className="text-white" />
+          </div>
+          <div className="min-w-0">
+            {pretitle && (
+              <p className="text-white/60 text-[10px] font-semibold uppercase tracking-wider mb-0.5">
+                {pretitle}
+              </p>
+            )}
+            <h3 className="text-white font-black text-sm tracking-tight truncate">{title}</h3>
+          </div>
+        </div>
+        {right && <div className="flex items-center gap-1.5 flex-shrink-0">{right}</div>}
+      </div>
+      {children && <div className="relative mt-3">{children}</div>}
+    </div>
+  );
+}
+
+function HeaderBadge({ children, onClick }) {
+  const Tag = onClick ? "button" : "span";
+  return (
+    <Tag
+      onClick={onClick}
+      className={cn(
+        "inline-flex items-center gap-1.5",
+        "bg-white/20 hover:bg-white/30 text-white",
+        "text-[11px] font-semibold px-2.5 py-1.5",
+        DS.radiusSm,
+        "transition-colors",
+        onClick ? "cursor-pointer" : "cursor-default"
+      )}
+    >
+      {children}
+    </Tag>
+  );
+}
+
+function HeaderIconBtn({ onClick, children }) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "w-8 h-8 flex items-center justify-center",
+        DS.radiusSm,
+        "bg-white/20 hover:bg-white/30 transition-colors"
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function CarrierPill({ carrier }) {
+  const map = {
+    ARAMEX: {
+      bg: "bg-red-50 dark:bg-red-950/20",
+      border: "border-red-200 dark:border-red-800",
+      text: "text-red-700 dark:text-red-400",
+    },
+    SMSA: {
+      bg: "bg-blue-50 dark:bg-blue-950/20",
+      border: "border-blue-200 dark:border-blue-800",
+      text: "text-blue-700 dark:text-blue-400",
+    },
+    DHL: {
+      bg: "bg-yellow-50 dark:bg-yellow-950/20",
+      border: "border-yellow-200 dark:border-yellow-800",
+      text: "text-yellow-700 dark:text-yellow-400",
+    },
+    BOSTA: {
+      bg: "bg-orange-50 dark:bg-orange-950/20",
+      border: "border-orange-200 dark:border-orange-800",
+      text: "text-orange-700 dark:text-orange-400",
+    },
+  };
+  const s = map[carrier] || {};
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 px-2.5 py-1",
+        DS.radiusSm,
+        "text-xs font-bold border",
+        s.bg,
+        s.border,
+        s.text
+      )}
+    >
+      <Truck size={11} />
+      {carrier}
+    </span>
+  );
+}
+
+function ArcRing({ pct, size = 44, stroke = 3.5, color, trackColor }) {
+  const r = (size - stroke) / 2;
+  const circ = 2 * Math.PI * r;
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      className="absolute inset-0 w-full h-full -rotate-90"
+    >
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={trackColor} strokeWidth={stroke} />
+      <motion.circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        stroke={color}
+        strokeWidth={stroke}
+        strokeLinecap="round"
+        strokeDasharray={circ}
+        initial={{ strokeDashoffset: circ }}
+        animate={{ strokeDashoffset: circ * (1 - Math.min(pct / 100, 1)) }}
+        transition={{ duration: 0.55, ease: "easeOut" }}
+      />
+    </svg>
+  );
+}
+
+function playBeep(type = "success") {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    if (type === "success") {
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.25);
+    } else {
+      osc.frequency.setValueAtTime(220, ctx.currentTime);
+      osc.frequency.setValueAtTime(160, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.35, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.35);
+    }
+  } catch (_) {}
+}
+
+// ─────────────────────────────────────────────────────────────
+// PDF STYLES
+// ─────────────────────────────────────────────────────────────
+const PDF_STYLE_WARM = `
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Tajawal:wght@300;400;500;700&display=swap');
+
+  :root {
+    --charcoal:       #2c2c2e;
+    --charcoal-mid:   #48484a;
+    --charcoal-soft:  #6c6c70;
+    --charcoal-muted: #98989d;
+    --charcoal-faint: #c7c7cc;
+    --cream:          #f5f4f0;
+    --cream-warm:     #efede8;
+    --cream-deep:     #e8e5de;
+    --white:          #ffffff;
+    --rule:           #dddad3;
+    --rule-soft:      #eceae4;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Tajawal', sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--white);
+    color: var(--charcoal);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .header-band { background: var(--cream); border-bottom: 2px solid var(--cream-deep); }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .header-brand {
+    padding: 26px 32px;
+    border-left: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .brand-icon {
+    width: 40px; height: 40px;
+    background: var(--charcoal);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .brand-icon svg {
+    width: 20px; height: 20px;
+    fill: none; stroke: #f5f4f0;
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  .doc-title {
+    font-family: var(--sans);
+    font-size: 19px; font-weight: 700;
+    color: var(--charcoal);
+    line-height: 1.1; letter-spacing: -0.3px;
+  }
+
+  .doc-subtitle {
+    font-family: var(--mono);
+    font-size: 11px; font-weight: 400;
+    color: var(--charcoal-soft);
+    margin-top: 3px; letter-spacing: 0.3px;
+  }
+
+  .header-ref {
+    padding: 26px 32px;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    gap: 5px;
+  }
+
+  .ref-badge {
+    font-family: var(--mono);
+    font-size: 10px; font-weight: 600;
+    color: var(--charcoal-soft);
+    background: var(--cream-deep);
+    padding: 3px 9px; border-radius: 4px;
+    letter-spacing: 0.8px; text-transform: uppercase;
+  }
+
+  .ref-date  { font-family: var(--mono); font-size: 11px; color: var(--charcoal-muted); }
+  .ref-employee { font-family: var(--sans); font-size: 12px; color: var(--charcoal-mid); font-weight: 500; }
+
+  .meta-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: var(--cream-warm);
+  }
+
+  .meta-cell { padding: 16px 20px; border-left: 1px solid var(--rule); position: relative; }
+  .meta-cell:last-child { border-left: none; }
+  .meta-cell.highlight::before {
+    content: ''; position: absolute;
+    top: 0; right: 0;
+    width: 3px; height: 100%;
+    background: var(--charcoal);
+  }
+
+  .meta-label {
+    font-family: var(--mono);
+    font-size: 8.5px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1.4px;
+    color: var(--charcoal-faint); margin-bottom: 6px;
+  }
+
+  .meta-value {
+    font-family: var(--sans);
+    font-size: 15px; font-weight: 700;
+    color: var(--charcoal); line-height: 1;
+  }
+
+  .meta-value.mono { font-family: var(--mono); font-size: 13px; }
+
+  .orders-wrap { padding: 28px 32px; background: var(--white); }
+
+  .section-label {
+    display: flex; align-items: center;
+    gap: 12px; margin-bottom: 20px;
+  }
+
+  .section-label-text {
+    font-family: var(--mono);
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--charcoal-faint); white-space: nowrap;
+  }
+
+  .section-label-line { flex: 1; height: 1px; background: var(--rule-soft); }
+
+  .order-card {
+    margin-bottom: 14px;
+    border: 1.5px solid var(--rule);
+    border-radius: 8px; overflow: hidden;
+    background: var(--white);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .order-card:last-child { margin-bottom: 0; }
+
+  .order-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 16px;
+    background: var(--cream);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .order-head-left { display: flex; align-items: center; gap: 10px; }
+
+  .order-index {
+    width: 22px; height: 22px;
+    background: var(--charcoal); color: var(--white);
+    border-radius: 50%;
+    font-family: var(--mono); font-size: 10px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .order-code { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--charcoal); letter-spacing: 0.3px; }
+  .order-sep  { width: 1px; height: 14px; background: var(--rule); }
+  .order-customer { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--charcoal-mid); }
+  .order-city {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--charcoal-muted);
+    background: var(--cream-deep);
+    padding: 2px 8px; border-radius: 20px; letter-spacing: 0.3px;
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  thead tr { background: var(--cream-warm); border-bottom: 1px solid var(--rule); }
+
+  th {
+    font-family: var(--mono);
+    font-size: 8.5px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1.2px;
+    color: var(--charcoal-muted);
+    padding: 9px 16px; text-align: right;
+  }
+
+  th.center, td.center { text-align: center; }
+
+  tbody tr { border-bottom: 1px solid var(--rule-soft); }
+  tbody tr:last-child { border-bottom: none; }
+
+  td {
+    font-family: var(--sans);
+    font-size: 12.5px; color: var(--charcoal-mid);
+    padding: 10px 16px;
+    text-align: right; vertical-align: middle;
+  }
+
+  td.sku-cell   { font-family: var(--mono); font-size: 11px; color: var(--charcoal); font-weight: 500; }
+  td.qty-cell   { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--charcoal); text-align: center; }
+  td.track-cell { font-family: var(--mono); font-size: 10px; color: var(--charcoal-muted); }
+  td.track-cell span {
+    background: var(--cream-warm);
+    padding: 2px 8px; border-radius: 4px;
+    border: 1px solid var(--rule);
+  }
+
+  .condition-badge {
+    display: inline-block;
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--rule);
+    background: var(--cream-warm);
+    color: var(--charcoal-mid);
+  }
+
+  .sig-wrap {
+    margin: 4px 32px 32px;
+    border: 1.5px solid var(--rule);
+    border-radius: 8px; overflow: hidden;
+  }
+
+  .sig-head {
+    padding: 11px 18px;
+    background: var(--cream-warm);
+    border-bottom: 1px solid var(--rule);
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .sig-head-dot { width: 7px; height: 7px; background: var(--charcoal-soft); border-radius: 50%; }
+
+  .sig-head-text {
+    font-family: var(--mono);
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--charcoal-soft);
+  }
+
+  .sig-fields { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--white); }
+
+  .sig-field { padding: 22px 20px 16px; border-left: 1px solid var(--rule-soft); }
+  .sig-field:last-child { border-left: none; }
+
+  .sig-field-label {
+    font-family: var(--mono);
+    font-size: 8.5px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1.2px;
+    color: var(--charcoal-faint); margin-bottom: 28px;
+  }
+
+  .sig-line {
+    height: 1px;
+    background: linear-gradient(to left, var(--rule), var(--charcoal-faint));
+    border-radius: 1px;
+  }
+
+  .doc-footer {
+    background: var(--cream);
+    border-top: 1px solid var(--rule);
+    padding: 12px 32px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+
+  .footer-left { display: flex; align-items: center; gap: 8px; }
+
+  .footer-mark {
+    width: 16px; height: 16px;
+    background: var(--charcoal-mid);
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .footer-mark svg { width: 9px; height: 9px; stroke: var(--cream); stroke-width: 2; fill: none; stroke-linecap: round; }
+  .footer-divider { width: 1px; height: 10px; background: var(--rule); margin: 0 2px; }
+  .footer-text { font-family: var(--mono); font-size: 9px; color: var(--charcoal-muted); letter-spacing: 0.5px; }
+
+  @media print { body { background: white; } }
+</style>`;
+
+const WRONG_SCAN_PDF_STYLE = `
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Tajawal:wght@300;400;500;700&display=swap');
+
+  :root {
+    --charcoal:       #2c2c2e;
+    --charcoal-mid:   #48484a;
+    --charcoal-soft:  #6c6c70;
+    --charcoal-muted: #98989d;
+    --charcoal-faint: #c7c7cc;
+    --cream:          #f5f4f0;
+    --cream-warm:     #efede8;
+    --cream-deep:     #e8e5de;
+    --white:          #ffffff;
+    --rule:           #dddad3;
+    --rule-soft:      #eceae4;
+    --err:            #9b3a2f;
+    --err-mid:        #b34335;
+    --err-soft:       #e8d5d2;
+    --err-bg:         #fdf5f4;
+    --err-rule:       #dfc8c5;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Tajawal', sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--white);
+    color: var(--charcoal);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .header-band {
+    background: var(--cream);
+    border-bottom: 2px solid var(--cream-deep);
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .header-brand {
+    padding: 24px 32px;
+    border-left: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .brand-icon {
+    width: 42px; height: 42px;
+    background: var(--err);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .brand-icon svg {
+    width: 22px; height: 22px;
+    fill: none; stroke: #fdf5f4;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  .doc-title {
+    font-family: var(--sans);
+    font-size: 19px; font-weight: 700;
+    color: var(--charcoal);
+    line-height: 1.1; letter-spacing: -0.3px;
+  }
+
+  .doc-subtitle {
+    font-family: var(--mono);
+    font-size: 11px; font-weight: 400;
+    color: var(--charcoal-soft);
+    margin-top: 3px; letter-spacing: 0.3px;
+  }
+
+  .header-ref {
+    padding: 24px 32px;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    gap: 5px;
+  }
+
+  .ref-badge {
+    font-family: var(--mono);
+    font-size: 10px; font-weight: 600;
+    color: var(--err-mid);
+    background: var(--err-soft);
+    padding: 3px 9px; border-radius: 4px;
+    letter-spacing: 0.8px; text-transform: uppercase;
+    border: 1px solid var(--err-rule);
+  }
+
+  .ref-date     { font-family: var(--mono); font-size: 11px; color: var(--charcoal-muted); }
+  .ref-employee { font-family: var(--sans); font-size: 12px; color: var(--charcoal-mid); font-weight: 500; }
+
+  .meta-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: var(--cream-warm);
+  }
+
+  .meta-cell { padding: 16px 20px; border-left: 1px solid var(--rule); position: relative; }
+  .meta-cell:last-child { border-left: none; }
+
+  .meta-cell.highlight::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 3px; height: 100%;
+    background: var(--err);
+  }
+
+  .meta-label {
+    font-family: var(--mono);
+    font-size: 8.5px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1.4px;
+    color: var(--charcoal-faint); margin-bottom: 6px;
+  }
+
+  .meta-value {
+    font-family: var(--sans);
+    font-size: 15px; font-weight: 700;
+    color: var(--charcoal); line-height: 1;
+  }
+
+  .meta-value.mono { font-family: var(--mono); font-size: 13px; }
+  .meta-value.err  { color: var(--err); }
+
+  .print-alert {
+    display: none;
+    margin: 20px 32px 0;
+    padding: 12px 18px;
+    border: 1.5px solid var(--err-rule);
+    border-radius: 6px;
+    background: var(--err-bg);
+  }
+
+  .print-alert-inner {
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .print-alert-icon {
+    width: 18px; height: 18px;
+    border: 1.5px solid var(--err);
+    border-radius: 50%;
+    color: var(--err);
+    font-family: var(--mono);
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .print-alert-text {
+    font-family: var(--sans);
+    font-size: 12px; font-weight: 500;
+    color: var(--err-mid);
+    line-height: 1.4;
+  }
+
+  .table-wrap { padding: 24px 32px 32px; }
+
+  .section-label {
+    display: flex; align-items: center;
+    gap: 12px; margin-bottom: 16px;
+  }
+
+  .section-label-text {
+    font-family: var(--mono);
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--charcoal-faint); white-space: nowrap;
+  }
+
+  .section-label-line { flex: 1; height: 1px; background: var(--rule-soft); }
+
+  .table-card {
+    border: 1.5px solid var(--rule);
+    border-radius: 8px; overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  thead tr {
+    background: var(--cream-warm);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  th {
+    font-family: var(--mono);
+    font-size: 8.5px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1.2px;
+    color: var(--charcoal-muted);
+    padding: 10px 16px; text-align: right;
+  }
+
+  th.center { text-align: center; }
+
+  tbody tr { border-bottom: 1px solid var(--rule-soft); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:nth-child(even) td { background: #fdfcfb; }
+
+  td {
+    font-family: var(--sans);
+    font-size: 12.5px; color: var(--charcoal-mid);
+    padding: 11px 16px;
+    text-align: right; vertical-align: middle;
+  }
+
+  td.idx-cell {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--charcoal-faint);
+    text-align: center; font-weight: 500;
+    width: 42px;
+  }
+
+  td.code-cell {
+    font-family: var(--mono);
+    font-size: 12px; font-weight: 600;
+    color: var(--err);
+    letter-spacing: 0.3px;
+  }
+
+  .badge-error {
+    display: inline-block;
+    font-family: var(--sans);
+    font-size: 11px; font-weight: 600;
+    color: var(--err-mid);
+    background: var(--err-soft);
+    border: 1px solid var(--err-rule);
+    padding: 3px 10px;
+    border-radius: 20px;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+
+  td.time-cell {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--charcoal-muted);
+    letter-spacing: 0.2px;
+  }
+
+  td.time-cell span {
+    background: var(--cream-warm);
+    border: 1px solid var(--rule);
+    padding: 2px 8px; border-radius: 4px;
+  }
+
+  .doc-footer {
+    background: var(--cream);
+    border-top: 1px solid var(--rule);
+    padding: 12px 32px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+
+  .footer-left { display: flex; align-items: center; gap: 8px; }
+
+  .footer-mark {
+    width: 16px; height: 16px;
+    background: var(--err);
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .footer-mark svg {
+    width: 9px; height: 9px;
+    stroke: var(--cream); stroke-width: 2.2;
+    fill: none; stroke-linecap: round;
+  }
+
+  .footer-text { font-family: var(--mono); font-size: 9px; color: var(--charcoal-muted); letter-spacing: 0.5px; }
+  .footer-divider { width: 1px; height: 10px; background: var(--rule); margin: 0 2px; }
+
+  @media print {
+    body { background: white; }
+
+    .print-alert { display: block !important; }
+
+    .header-band,
+    .meta-strip,
+    .meta-cell,
+    thead tr,
+    .badge-error,
+    .doc-footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+    tbody tr { page-break-inside: avoid; }
+    .table-card { box-shadow: none; }
+  }
+</style>`;
+
+// ─────────────────────────────────────────────────────────────
+// PDF BUILDERS
+// ─────────────────────────────────────────────────────────────
+function buildReturnPDF(orders, carrier, employee, now, labels) {
+  const ordersHTML = orders
+    .map((o, idx) => {
+      const rows = (o.products || [])
+        .map(
+          (p) => `
+      <tr>
+        <td class="sku-cell">${p.sku || "—"}</td>
+        <td>${p.name || "—"}</td>
+        <td class="qty-cell">${p.requestedQty || p.scannedQty || 1}</td>
+        <td class="track-cell"><span>${o.trackingCode || "—"}</span></td>
+      </tr>`
+        )
+        .join("");
+
+      return `
+      <div class="order-card">
+        <div class="order-head">
+          <div class="order-head-left">
+            <div class="order-index">${idx + 1}</div>
+            <span class="order-code">${o.code}</span>
+            <div class="order-sep"></div>
+            <span class="order-customer">${o.customer || "—"}</span>
+          </div>
+          <span class="order-city">${o.city || "—"}</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>${labels.pdf.sku}</th>
+              <th>${labels.pdf.product}</th>
+              <th class="center">${labels.pdf.qty}</th>
+              <th>${labels.pdf.trackingCode}</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <div style="padding:10px 16px;border-top:1px solid #eceae4;background:#faf9f7;display:flex;justify-content:space-between;align-items:center;">
+          <span class="condition-badge">${labels.pdf.condition}: ${o.returnCondition || "سليم"}</span>
+          <span style="font-family:'IBM Plex Mono', monospace;font-size:11px;color:#6c6c70;">
+            ${labels.pdf.total}: ${o.total || 0} ${labels.common.currency}
+          </span>
+        </div>
+      </div>`;
+    })
+    .join("");
+
+  return `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>${labels.pdf.title}</title>
+  ${PDF_STYLE_WARM}
+</head>
+<body>
+
+  <div class="header-band">
+    <div class="header-top">
+      <div class="header-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/>
+            <path d="m7.5 4.27 9 5.15M3.29 7 12 12l8.71-5M12 22V12"/>
+            <path d="M18 15l3 3-3 3M15 18h6"/>
+          </svg>
+        </div>
+        <div>
+          <div class="doc-title">${labels.pdf.title}</div>
+          <div class="doc-subtitle">RETURN RECEIPT · ${carrier}</div>
+        </div>
+      </div>
+      <div class="header-ref">
+        <div class="ref-badge">${labels.pdf.refPrefix}-${now.replace(/\D/g, "").slice(0, 8)}</div>
+        <div class="ref-date">${now}</div>
+        <div class="ref-employee">${employee}</div>
+      </div>
+    </div>
+
+    <div class="meta-strip">
+      <div class="meta-cell">
+        <div class="meta-label">${labels.pdf.carrier}</div>
+        <div class="meta-value">${carrier}</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">${labels.pdf.returnDate}</div>
+        <div class="meta-value mono">${now}</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">${labels.pdf.employee}</div>
+        <div class="meta-value">${employee}</div>
+      </div>
+      <div class="meta-cell highlight">
+        <div class="meta-label">${labels.pdf.totalOrders}</div>
+        <div class="meta-value">${orders.length} ${labels.pdf.orderUnit}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="orders-wrap">
+    <div class="section-label">
+      <span class="section-label-text">${labels.pdf.ordersDetail}</span>
+      <div class="section-label-line"></div>
+    </div>
+    ${ordersHTML}
+  </div>
+
+  <div class="sig-wrap">
+    <div class="sig-head">
+      <div class="sig-head-dot"></div>
+      <span class="sig-head-text">${labels.pdf.receiptConfirmation}</span>
+    </div>
+    <div class="sig-fields">
+      <div class="sig-field">
+        <div class="sig-field-label">${labels.pdf.courierName}</div>
+        <div class="sig-line"></div>
+      </div>
+      <div class="sig-field">
+        <div class="sig-field-label">${labels.pdf.signature}</div>
+        <div class="sig-line"></div>
+      </div>
+      <div class="sig-field">
+        <div class="sig-field-label">${labels.pdf.dateTime}</div>
+        <div class="sig-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="doc-footer">
+    <div class="footer-left">
+      <div class="footer-mark">
+        <svg viewBox="0 0 10 10"><polyline points="2,5 4,7 8,3"/></svg>
+      </div>
+      <span class="footer-text">${labels.pdf.title}</span>
+      <div class="footer-divider"></div>
+      <span class="footer-text">${labels.pdf.system}</span>
+    </div>
+    <span class="footer-text">${now}</span>
+  </div>
+
+</body>
+</html>`;
+}
+
+function buildWrongScanLogPDF(logs, carrier, employee, now, labels) {
+  const rows = logs
+    .map(
+      (l, i) => `
+    <tr>
+      <td class="idx-cell">${i + 1}</td>
+      <td class="code-cell">${l.code}</td>
+      <td><span class="badge-error">${l.reason}</span></td>
+      <td class="time-cell"><span>${l.time}</span></td>
+    </tr>`
+    )
+    .join("");
+
+  return `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>${labels.wrongPdf.title}</title>
+  ${WRONG_SCAN_PDF_STYLE}
+</head>
+<body>
+
+  <div class="header-band">
+    <div class="header-top">
+      <div class="header-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <div>
+          <div class="doc-title">${labels.wrongPdf.title}</div>
+          <div class="doc-subtitle">WRONG SCAN LOG · ${carrier}</div>
+        </div>
+      </div>
+      <div class="header-ref">
+        <div class="ref-badge">ERR · ${now.replace(/\D/g, "").slice(0, 8)}</div>
+        <div class="ref-date">${now}</div>
+        <div class="ref-employee">${employee}</div>
+      </div>
+    </div>
+
+    <div class="meta-strip">
+      <div class="meta-cell">
+        <div class="meta-label">${labels.wrongPdf.carrier}</div>
+        <div class="meta-value">${carrier}</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">${labels.wrongPdf.employee}</div>
+        <div class="meta-value">${employee}</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">${labels.wrongPdf.date}</div>
+        <div class="meta-value mono">${now}</div>
+      </div>
+      <div class="meta-cell highlight">
+        <div class="meta-label">${labels.wrongPdf.totalFailedAttempts}</div>
+        <div class="meta-value err">${logs.length} ${labels.wrongPdf.attemptUnit}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="print-alert">
+    <div class="print-alert-inner">
+      <div class="print-alert-icon">!</div>
+      <div class="print-alert-text">
+        ${labels.wrongPdf.printAlertText}
+      </div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="section-label">
+      <span class="section-label-text">${labels.wrongPdf.totalAttempts}: ${logs.length}</span>
+      <div class="section-label-line"></div>
+    </div>
+
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th class="center">#</th>
+            <th>${labels.wrongPdf.scannedCode}</th>
+            <th>${labels.wrongPdf.failReason}</th>
+            <th>${labels.wrongPdf.time}</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="doc-footer">
+    <div class="footer-left">
+      <div class="footer-mark">
+        <svg viewBox="0 0 10 10">
+          <line x1="3" y1="3" x2="7" y2="7"/>
+          <line x1="7" y1="3" x2="3" y2="7"/>
+        </svg>
+      </div>
+      <span class="footer-text">${labels.wrongPdf.title}</span>
+      <div class="footer-divider"></div>
+      <span class="footer-text">${labels.wrongPdf.system}</span>
+    </div>
+    <span class="footer-text">${now}</span>
+  </div>
+
+</body>
+</html>`;
 }
 
 function openPrintWindow(html) {
-	const win = window.open("", "_blank", "width=900,height=700");
-	if (!win) return;
-	win.document.write(html); win.document.close(); win.focus();
-	setTimeout(() => win.print(), 600);
+  const win = window.open("", "_blank", "width=900,height=700");
+  if (!win) return;
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 600);
 }
 
-// ── Carrier meta ───────────────────────────────────────────────────────────────
-const CARRIER_META = {
-	ARAMEX: { color: "#ef4444", light: "#fef2f2" },
-	SMSA: { color: "#3b82f6", light: "#eff6ff" },
-	DHL: { color: "#ca8a04", light: "#fefce8" },
-	BOSTA: { color: "#f97316", light: "#fff7ed" },
-};
-function getCarrierMeta(c = "") {
-	return CARRIER_META[c.toUpperCase().replace(/\s/g, "")] || { color: "#f59e0b", light: "#fffbeb" };
+// ─────────────────────────────────────────────────────────────
+// RETURN DETAIL MODAL
+// ─────────────────────────────────────────────────────────────
+function ReturnOrderDetailModal({ open, onClose, order, t }) {
+  if (!order) return null;
+
+  const infoRows = [
+    { label: t("detail.customer"), value: order.customer, icon: User, color: DS.primary },
+    { label: t("detail.phone"), value: order.phone, icon: Hash, color: DS.accent },
+    { label: t("detail.city"), value: order.city, icon: MapPin, color: DS.primary },
+    { label: t("detail.area"), value: order.area || "—", icon: MapPin, color: DS.warning },
+    { label: t("detail.carrier"), value: order.carrier || t("common.unspecified"), icon: Truck, color: "#ff5c2b" },
+    { label: t("detail.trackingCode"), value: order.trackingCode || "—", icon: Hash, color: DS.accent },
+    { label: t("detail.total"), value: `${order.total || 0} ${t("common.currency")}`, icon: CreditCard, color: DS.success },
+    { label: t("detail.returnCondition"), value: order.returnCondition || "—", icon: RefreshCw, color: DS.warning },
+  ];
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100000] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" >
+ 			
+      <div className="w-full max-w-2xl bg-white dark:bg-slate-900 max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl rounded-xl">
+        <div className="relative px-6 pt-6 pb-5 rounded-t-xl overflow-hidden" style={{ background: DS.headerGradient }}>
+          <div className="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white/10 pointer-events-none" />
+          <div className="absolute -bottom-6 -right-2 w-32 h-32 rounded-full bg-white/10 pointer-events-none" />
+
+					
+          <div className="relative flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              <div className={cn("w-11 h-11 flex items-center justify-center bg-white/20 backdrop-blur-sm", DS.radiusSm)}>
+                <RefreshCw className="text-white" size={22} />
+              </div>
+              <div>
+                <p className="text-white/70 text-xs font-medium mb-0.5">{t("detail.orderLabel")}</p>
+                <h2 className="text-white text-xl font-black font-mono">{order.code}</h2>
+              </div>
+            </div>
+            <HeaderIconBtn onClick={onClose}>
+              <X size={15} className="text-white" />
+            </HeaderIconBtn>
+          </div>
+          <div className="relative mt-3 flex items-center gap-2 flex-wrap">
+            {order.carrier && (
+              <HeaderBadge>
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                {order.carrier}
+              </HeaderBadge>
+            )}
+            {order.returnedAt && (
+              <HeaderBadge>
+                <CheckCircle2 size={11} />
+                {t("detail.returnedAt")}: {order.returnedAt}
+              </HeaderBadge>
+            )}
+          </div>
+        </div>
+
+        <div className="p-6 space-y-5">
+          <div className="grid grid-cols-2 gap-2">
+            {infoRows.map(({ label, value, icon: Icon, color }) => (
+              <div
+                key={label}
+                className={cn(
+                  "flex items-start gap-3 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 p-3 transition-colors",
+                  DS.radius
+                )}
+              >
+                <div
+                  className={cn("w-7 h-7 flex items-center justify-center flex-shrink-0 mt-0.5", DS.radiusSm)}
+                  style={{ backgroundColor: color + "18" }}
+                >
+                  <Icon size={13} style={{ color }} />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] text-slate-400 mb-0.5 font-semibold uppercase tracking-wide">{label}</p>
+                  <p className="font-bold text-sm text-slate-800 dark:text-slate-100 truncate">{value}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className={cn("border border-slate-100 dark:border-slate-700 overflow-hidden", DS.radius)}>
+            <div className="px-4 py-2.5 flex items-center gap-2 bg-slate-50 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-700">
+              <Package size={13} style={{ color: DS.accent }} />
+              <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">{t("detail.products")}</span>
+              <span className="ms-auto text-[11px] font-semibold text-slate-400">
+                {(order.products || []).length} {t("detail.items")}
+              </span>
+            </div>
+            <div className="divide-y divide-slate-50 dark:divide-slate-700/40">
+              {(order.products || []).map((p, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -6 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.04 }}
+                  className="flex items-center gap-3 px-4 py-3"
+                >
+                  <div
+                    className={cn("w-6 h-6 flex items-center justify-center text-[10px] font-black flex-shrink-0", DS.radiusSm)}
+                    style={{ backgroundColor: DS.primary + "18", color: DS.primary }}
+                  >
+                    {i + 1}
+                  </div>
+                  <span
+                    className={cn("font-mono text-[11px] px-2 py-0.5 font-bold", DS.radiusSm)}
+                    style={{ backgroundColor: DS.accent + "12", color: DS.accent }}
+                  >
+                    {p.sku}
+                  </span>
+                  <span className="flex-1 text-sm text-slate-700 dark:text-slate-200 font-medium">{p.name}</span>
+                  <span className="text-xs text-slate-400 font-mono">×{p.requestedQty}</span>
+                  <span className="font-bold text-sm" style={{ color: DS.primary }}>
+                    {(Number(p.price) || 0) * (Number(p.requestedQty) || 0)} {t("common.currency")}
+                  </span>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-1">
+            <Button variant="outline" onClick={onClose} className={DS.radiusSm}>
+              {t("detail.close")}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-// ── Stat Boxes (matching outgoing style exactly) ───────────────────────────────
-function StatBoxes({ scannedCount, wrongScans }) {
-	return (
-		<div className="grid grid-cols-2 gap-3 mt-3">
-			{/* Scanned returns */}
-			<motion.div
-				initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
-				className="relative overflow-hidden rounded-xl border border-amber-200/70 bg-gradient-to-br from-amber-50 to-orange-50 p-4"
-			>
-				<div className="absolute -right-2 top-2 w-20 h-20 rounded-full bg-amber-400/10" />
-				<div className="relative flex gap-4 items-center justify-between">
-					<div>
-						<svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<rect x="0.5" y="0.5" width="37" height="37" rx="18.5" fill="white" />
-							<rect x="0.5" y="0.5" width="37" height="37" rx="18.5" stroke="#d97706" strokeDasharray="2 2" />
-							<path d="M20.2793 27.75L21.5293 29H11.5V11.5H16.5C16.5 11.1549 16.5651 10.8327 16.6953 10.5332C16.8255 10.2337 17.0046 9.9668 17.2324 9.73242C17.4603 9.49805 17.724 9.31901 18.0234 9.19531C18.3229 9.07161 18.6484 9.00651 19 9C19.3451 9 19.6673 9.0651 19.9668 9.19531C20.2663 9.32552 20.5332 9.50456 20.7676 9.73242C21.002 9.96029 21.181 10.224 21.3047 10.5234C21.4284 10.8229 21.4935 11.1484 21.5 11.5H26.5V21.5293L25.25 22.7793V12.75H24V15.25H14V12.75H12.75V27.75H20.2793ZM15.25 12.75V14H22.75V12.75H20.25V11.5C20.25 11.3242 20.2174 11.1615 20.1523 11.0117C20.0872 10.862 19.9993 10.7318 19.8887 10.6211C19.778 10.5104 19.6445 10.4193 19.4883 10.3477C19.332 10.276 19.1693 10.2435 19 10.25C18.8242 10.25 18.6615 10.2826 18.5117 10.3477C18.362 10.4128 18.2318 10.5007 18.1211 10.6113C18.0104 10.722 17.9193 10.8555 17.8477 11.0117C17.776 11.168 17.7435 11.3307 17.75 11.5V12.75H15.25ZM28.8145 23.1895L23.375 28.6387L20.748 26.002L21.627 25.123L23.375 26.8613L27.9355 22.3105L28.8145 23.1895Z" fill="#d97706" />
-						</svg>
-					</div>
-					<div className="flex-1">
-						<p className="text-[16px] font-bold uppercase tracking-widest text-amber-600/70 mb-1">المرتجعات الممسوحة</p>
-						<AnimatePresence mode="wait">
-							<motion.p
-								key={scannedCount}
-								initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 10, opacity: 0 }}
-								transition={{ type: "spring", stiffness: 500, damping: 28 }}
-								className="text-4xl font-black tabular-nums text-amber-700 leading-none"
-							>
-								{scannedCount}
-							</motion.p>
-						</AnimatePresence>
-					</div>
-					<svg width="45" height="45" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<path fillRule="evenodd" clipRule="evenodd" d="M22.5 41.25C32.8556 41.25 41.25 32.8556 41.25 22.5C41.25 12.1444 32.8556 3.75 22.5 3.75C12.1444 3.75 3.75 12.1444 3.75 22.5C3.75 32.8556 12.1444 41.25 22.5 41.25ZM32.5706 16.5656C32.6583 16.4753 32.727 16.3682 32.7724 16.2507C32.8178 16.1332 32.8391 16.0078 32.8349 15.882C32.8308 15.7561 32.8014 15.6323 32.7484 15.5181C32.6954 15.4039 32.6199 15.3015 32.5265 15.217C32.433 15.1326 32.3235 15.0679 32.2045 15.0267C32.0855 14.9855 31.9594 14.9687 31.8338 14.9773C31.7081 14.986 31.5855 15.0198 31.4732 15.0768C31.361 15.1339 31.2613 15.213 31.1803 15.3094L19.95 27.7191L13.7719 21.8212C13.5921 21.6494 13.3515 21.5561 13.1028 21.5617C12.8542 21.5673 12.6181 21.6715 12.4462 21.8512C12.2744 22.031 12.1811 22.2717 12.1867 22.5203C12.1923 22.7689 12.2965 23.0051 12.4762 23.1769L19.3519 29.7394L20.0484 30.405L20.6944 29.6906L32.5706 16.5656Z" fill="#d97706" />
-					</svg>
-				</div>
-			</motion.div>
+// ─────────────────────────────────────────────────────────────
+// SCAN INPUT BAR
+// ─────────────────────────────────────────────────────────────
+function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSuccess, isError, placeholder }) {
+  const t = useTranslations("warehouse.returns");
+  const [isFocused, setIsFocused] = useState(false);
+  const [errorFlash, setErrorFlash] = useState(false);
+  const prevIsError = useRef(isError);
 
-			{/* Wrong scans */}
-			<motion.div
-				initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-				className={cn(
-					"relative overflow-hidden rounded-xl border p-4 transition-colors duration-300",
-					wrongScans > 0
-						? "border-red-200/70 bg-gradient-to-br from-red-50 to-rose-50"
-						: "border-slate-200/70 bg-gradient-to-br from-slate-50 to-slate-50/50"
-				)}
-			>
-				<div className={cn(
-					"absolute -right-2 top-2 w-20 h-20 rounded-full transition-colors duration-300",
-					wrongScans > 0 ? "bg-red-400/10" : "bg-slate-200/20"
-				)} />
-				<div className="relative flex items-center gap-4 justify-between">
-					<svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<rect x="0.5" y="0.5" width="37" height="37" rx="18.5" fill="white" />
-						<rect x="0.5" y="0.5" width="37" height="37" rx="18.5" stroke="#A32E2E" strokeDasharray="2 2" />
-						<path d="M20.2793 27.75L21.5293 29H11.5V11.5H16.5C16.5 11.1549 16.5651 10.8327 16.6953 10.5332C16.8255 10.2337 17.0046 9.9668 17.2324 9.73242C17.4603 9.49805 17.724 9.31901 18.0234 9.19531C18.3229 9.07161 18.6484 9.00651 19 9C19.3451 9 19.6673 9.0651 19.9668 9.19531C20.2663 9.32552 20.5332 9.50456 20.7676 9.73242C21.002 9.96029 21.181 10.224 21.3047 10.5234C21.4284 10.8229 21.4935 11.1484 21.5 11.5H26.5V21.5293L25.25 22.7793V12.75H24V15.25H14V12.75H12.75V27.75H20.2793ZM15.25 12.75V14H22.75V12.75H20.25V11.5C20.25 11.3242 20.2174 11.1615 20.1523 11.0117C20.0872 10.862 19.9993 10.7318 19.8887 10.6211C19.778 10.5104 19.6445 10.4193 19.4883 10.3477C19.332 10.276 19.1693 10.2435 19 10.25C18.8242 10.25 18.6615 10.2826 18.5117 10.3477C18.362 10.4128 18.2318 10.5007 18.1211 10.6113C18.0104 10.722 17.9193 10.8555 17.8477 11.0117C17.776 11.168 17.7435 11.3307 17.75 11.5V12.75H15.25ZM28.8145 23.1895L23.375 28.6387L20.748 26.002L21.627 25.123L23.375 26.8613L27.9355 22.3105L28.8145 23.1895Z" fill="#A32E2E" />
-					</svg>
-					<div className="flex-1">
-						<p className={cn(
-							"text-[16px] font-bold uppercase tracking-widest mb-1 transition-colors duration-300",
-							wrongScans > 0 ? "text-red-600/70" : "text-slate-400"
-						)}>محاولات المسح الفاشلة</p>
-						<AnimatePresence mode="wait">
-							<motion.p
-								key={wrongScans}
-								initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 10, opacity: 0 }}
-								transition={{ type: "spring", stiffness: 500, damping: 28 }}
-								className={cn(
-									"text-4xl font-black tabular-nums leading-none transition-colors duration-300",
-									wrongScans > 0 ? "text-red-700" : "text-slate-300"
-								)}
-							>
-								{wrongScans}
-							</motion.p>
-						</AnimatePresence>
-					</div>
-					<svg width="45" height="45" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<path fillRule="evenodd" clipRule="evenodd" d="M22.5 41.25C32.8556 41.25 41.25 32.8556 41.25 22.5C41.25 12.1444 32.8556 3.75 22.5 3.75C12.1444 3.75 3.75 12.1444 3.75 22.5C3.75 32.8556 12.1444 41.25 22.5 41.25ZM30.1238 14.8763C30.3871 15.1399 30.535 15.4973 30.535 15.87C30.535 16.2427 30.3871 16.6001 30.1238 16.8638L24.4875 22.5L30.1219 28.1344C30.3703 28.401 30.5055 28.7535 30.4991 29.1179C30.4926 29.4822 30.3451 29.8298 30.0874 30.0874C29.8298 30.3451 29.4822 30.4926 29.1179 30.4991C28.7535 30.5055 28.401 30.3703 28.1344 30.1219L22.5 24.4913L16.8656 30.1256C16.7369 30.2638 16.5816 30.3746 16.4091 30.4515C16.2366 30.5283 16.0504 30.5697 15.8616 30.573C15.6728 30.5763 15.4852 30.5416 15.3101 30.4709C15.135 30.4001 14.976 30.2949 14.8424 30.1613C14.7089 30.0278 14.6036 29.8687 14.5329 29.6936C14.4622 29.5185 14.4274 29.331 14.4308 29.1421C14.4341 28.9533 14.4754 28.7671 14.5523 28.5946C14.6291 28.4221 14.74 28.2669 14.8781 28.1381L20.5087 22.5L14.8763 16.8656C14.7381 16.7369 14.6273 16.5816 14.5504 16.4091C14.4736 16.2366 14.4322 16.0504 14.4289 15.8616C14.4256 15.6728 14.4603 15.4852 14.531 15.3101C14.6017 15.135 14.707 14.976 14.8406 14.8424C14.9741 14.7089 15.1332 14.6036 15.3083 14.5329C15.4834 14.4622 15.6709 14.4274 15.8597 14.4308C16.0485 14.4341 16.2348 14.4754 16.4073 14.5523C16.5798 14.6291 16.735 14.74 16.8638 14.8781L22.5 20.5087L28.1344 14.8744C28.398 14.611 28.7555 14.4631 29.1281 14.4631C29.5008 14.4631 29.8582 14.611 30.1219 14.8744" fill="#F04665" />
-					</svg>
-				</div>
+  useEffect(() => {
+    if (isError && !prevIsError.current) {
+      setErrorFlash(true);
+      setTimeout(() => setErrorFlash(false), 500);
+    }
+    prevIsError.current = isError;
+  }, [isError]);
 
-			</motion.div>
-		</div>
-	);
+  const handleScan = useCallback(() => {
+    if (disabled || !value?.trim()) return;
+    onScan();
+  }, [disabled, value, onScan]);
+
+  const isActive = isFocused || !!value;
+  const hasContent = !!value?.trim();
+
+  const cornerClass = cn(
+    "rounded-full transition-colors duration-200",
+    isSuccess
+      ? "bg-emerald-500"
+      : isError
+      ? "bg-red-500"
+      : isActive
+      ? "bg-primary"
+      : "bg-slate-300 dark:bg-slate-600"
+  );
+
+  return (
+    <motion.div animate={errorFlash ? { x: [0, -5, 6, -4, 2, 0] } : { x: 0 }} transition={{ duration: 0.35 }} className="relative">
+      {[
+        "absolute -top-[3px] -left-[3px]",
+        "absolute -top-[3px] -right-[3px]",
+        "absolute -bottom-[3px] -left-[3px]",
+        "absolute -bottom-[3px] -right-[3px]",
+      ].map((pos, idx) => (
+        <motion.div
+          key={idx}
+          animate={{ opacity: isActive ? 1 : 0.25, scale: isActive ? 1 : 0.9 }}
+          transition={{ duration: 0.2 }}
+          className={cn(pos, "w-3 h-3 pointer-events-none z-20")}
+        >
+          <div className={cn("absolute w-full h-[2px]", cornerClass, idx < 2 ? "top-0" : "bottom-0")} />
+          <div className={cn("absolute h-full w-[2px]", cornerClass, idx % 2 === 0 ? "left-0" : "right-0")} />
+        </motion.div>
+      ))}
+
+      <div
+        className={cn(
+          "relative flex items-center border transition-all duration-200 overflow-hidden",
+          DS.radius,
+          disabled && "opacity-50 pointer-events-none",
+          isSuccess && "border-emerald-500 bg-background shadow-[0_0_0_3px_rgba(16,185,129,0.10)]",
+          isError && "border-red-500 bg-background shadow-[0_0_0_3px_rgba(239,68,68,0.10)]",
+          !isSuccess && !isError && !isFocused && "border-border bg-background/60",
+          !isSuccess && !isError && isFocused && "border-primary/60 bg-background shadow-[0_0_0_3px_rgba(255,139,0,0.08)]"
+        )}
+        style={{ height: 46 }}
+      >
+        <AnimatePresence>
+          {isSuccess && (
+            <motion.div
+              key="sweep"
+              initial={{ x: "-100%", opacity: 0.7 }}
+              animate={{ x: "100%", opacity: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.6 }}
+              className="absolute inset-0 pointer-events-none z-0"
+              style={{ background: "linear-gradient(90deg, transparent, rgba(16,185,129,0.16), transparent)" }}
+            />
+          )}
+          {errorFlash && (
+            <motion.div
+              key="errflash"
+              initial={{ opacity: 0.15 }}
+              animate={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              className={cn("absolute inset-0 bg-red-400 pointer-events-none z-0", DS.radius)}
+            />
+          )}
+          {hasContent && !isSuccess && !isError && (
+            <motion.div
+              key="beam"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 overflow-hidden pointer-events-none rounded-lg"
+            >
+              <motion.div
+                animate={{ left: ["-4%", "104%"] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: "linear", repeatDelay: 0.4 }}
+                className="absolute inset-y-0 w-[2px]"
+                style={{
+                  background:
+                    "linear-gradient(180deg, transparent 0%, rgba(255,139,0,0.0) 15%, rgba(255,139,0,0.5) 45%, rgba(255,187,0,0.65) 50%, rgba(255,139,0,0.5) 55%, transparent 85%)",
+                  filter: "blur(0.8px)",
+                }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="ps-3 flex-shrink-0 z-10">
+          <ScanLine
+            size={15}
+            className={cn(
+              "transition-colors duration-200",
+              isSuccess
+                ? "text-emerald-500"
+                : isError
+                ? "text-red-500"
+                : isFocused
+                ? "text-primary"
+                : "text-muted-foreground/30"
+            )}
+          />
+        </div>
+
+        <div className="relative flex-shrink-0 mx-2.5 z-10">
+          <div className="w-px h-4 bg-border/40" />
+          <motion.div
+            animate={
+              isSuccess
+                ? { backgroundColor: DS.success, scale: [1, 1.3, 1], opacity: [1, 0.6, 1] }
+                : isError
+                ? { backgroundColor: DS.danger, scale: [1, 1.3, 1] }
+                : isFocused
+                ? { backgroundColor: DS.primary, opacity: [1, 0.4, 1] }
+                : { backgroundColor: "#94a3b8" }
+            }
+            transition={isSuccess || isFocused ? { duration: 1.5, repeat: Infinity } : { duration: 0.3 }}
+            className="absolute -top-[8px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
+          />
+        </div>
+
+        <input
+          ref={inputRef}
+          value={value}
+          onChange={onChange}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleScan();
+          }}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          placeholder={placeholder}
+          autoFocus
+          disabled={disabled}
+          dir="rtl"
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
+          className="relative z-10 flex-1 h-full bg-transparent border-none !outline-none focus:ring-0 text-sm font-semibold text-foreground placeholder:text-muted-foreground/35 px-1"
+        />
+
+        <AnimatePresence>
+          {value && (
+            <motion.button
+              key="clear"
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.7 }}
+              transition={{ duration: 0.15 }}
+              type="button"
+              onClick={() => {
+                onChange({ target: { value: "" } });
+                inputRef?.current?.focus();
+              }}
+              className="relative z-10 flex-shrink-0 mx-1.5 w-[18px] h-[18px] rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+            >
+              <X size={9} className="text-slate-500" />
+            </motion.button>
+          )}
+        </AnimatePresence>
+
+        <div className="pe-2 flex-shrink-0 z-10">
+          <motion.button
+            type="button"
+            onClick={handleScan}
+            disabled={disabled}
+            whileHover={!disabled ? { scale: 1.03 } : {}}
+            whileTap={!disabled ? { scale: 0.95 } : {}}
+            className={cn(
+              "relative h-8 px-3.5 text-white text-xs font-black flex items-center gap-1.5 overflow-hidden disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200",
+              DS.radius
+            )}
+            style={{
+              background: isSuccess ? DS.successGradient : isError ? DS.dangerGradient : DS.headerGradient,
+              boxShadow: `0 2px 10px -2px ${
+                isSuccess
+                  ? "rgba(16,185,129,0.45)"
+                  : isError
+                  ? "rgba(239,68,68,0.45)"
+                  : "rgba(255,139,0,0.35)"
+              }`,
+            }}
+          >
+            <span
+              aria-hidden
+              className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-t-lg pointer-events-none"
+            />
+            <motion.span
+              key={isSuccess ? "check" : isError ? "x" : "scan"}
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex"
+            >
+              {isSuccess ? (
+                <CheckCircle2 size={11} strokeWidth={2.5} />
+              ) : isError ? (
+                <X size={11} strokeWidth={2.5} />
+              ) : (
+                <ScanLine size={11} strokeWidth={2.5} />
+              )}
+            </motion.span>
+            <motion.span
+              key={isSuccess ? "done" : isError ? "err" : "lbl"}
+              initial={{ opacity: 0, x: 3 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="text-[11px]"
+            >
+              {isSuccess ? t("scan.status.done") : isError ? t("scan.status.retry") : t("scan.status.scanBtn")}
+            </motion.span>
+          </motion.button>
+        </div>
+      </div>
+    </motion.div>
+  );
 }
 
-// ── Condition badge ────────────────────────────────────────────────────────────
-const CONDITION_COLORS = {
-	"سليم": { bg: "#f0fdf4", border: "#bbf7d0", text: "#16a34a" },
-	"تالف": { bg: "#fef2f2", border: "#fecaca", text: "#dc2626" },
-	" جزء مفقود": { bg: "#fffbeb", border: "#fde68a", text: "#d97706" },
-};
-function ConditionBadge({ condition }) {
-	const c = CONDITION_COLORS[condition] || CONDITION_COLORS["سليم"];
-	return (
-		<span className="text-nowrap" style={{
-			fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 99,
-			background: c.bg, border: `1px solid ${c.border}`, color: c.text,
-		}}>{condition || "سليم"}</span>
-	);
+// ─────────────────────────────────────────────────────────────
+// SCAN LOG BOXES
+// ─────────────────────────────────────────────────────────────
+function ScanLogBoxes({ successCount, errorCount, t }) {
+  const total = successCount + errorCount;
+  const successPct = total > 0 ? (successCount / total) * 100 : 0;
+
+  const prevErrorRef = useRef(errorCount);
+  const [shaking, setShaking] = useState(false);
+
+  useEffect(() => {
+    if (errorCount > prevErrorRef.current) {
+      setShaking(true);
+      setTimeout(() => setShaking(false), 550);
+    }
+    prevErrorRef.current = errorCount;
+  }, [errorCount]);
+
+  const cardBase = cn("relative overflow-hidden border p-4 transition-all duration-300", DS.radiusXl);
+
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.04 }}
+        className={cn(cardBase, "border-emerald-200/70 dark:border-emerald-700/35")}
+        style={{ background: DS.successCardGradient, ...DS.scanline }}
+      >
+        <motion.div
+          key={`s${successCount}`}
+          initial={{ x: "-110%" }}
+          animate={{ x: "110%" }}
+          transition={{ duration: 0.85, ease: "easeInOut" }}
+          className="absolute inset-y-0 w-1/3 pointer-events-none z-[1]"
+          style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)" }}
+        />
+        <div className="absolute -bottom-3 -right-3 w-20 h-20 rounded-full bg-emerald-300/15 dark:bg-emerald-500/10" />
+        <div className="relative z-10 flex items-center gap-3">
+          <div className="relative w-[52px] h-[52px] flex-shrink-0">
+            <ArcRing pct={successPct} color="#16a34a" trackColor="rgba(134,239,172,0.3)" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <CheckCircle2 size={16} className="text-emerald-600" />
+            </div>
+          </div>
+          <div className="flex-1 min-w-0" dir="rtl">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-emerald-600/60 mb-1 leading-none">
+              {t("scan.counters.scannedReturns")}
+            </p>
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={successCount}
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 6 }}
+                transition={{ type: "spring", stiffness: 480, damping: 26 }}
+                className="block text-[2.4rem] font-black tabular-nums leading-none text-emerald-700 dark:text-emerald-400"
+              >
+                {successCount}
+              </motion.span>
+            </AnimatePresence>
+          </div>
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={shaking ? { opacity: 1, x: [0, -5, 6, -4, 2, 0], y: 0 } : { opacity: 1, x: 0, y: 0 }}
+        transition={shaking ? { duration: 0.4 } : { delay: 0.08 }}
+        className={cn(
+          cardBase,
+          errorCount > 0 ? "border-red-200/70 dark:border-red-700/35" : "border-slate-200/60 dark:border-slate-700/35"
+        )}
+        style={{
+          background: errorCount > 0 ? "linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)" : DS.cardGradient,
+          ...DS.scanline,
+        }}
+      >
+        <AnimatePresence>
+          {shaking && (
+            <motion.div
+              initial={{ opacity: 0.16 }}
+              animate={{ opacity: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              className={cn("absolute inset-0 bg-red-400 pointer-events-none z-20", DS.radiusXl)}
+            />
+          )}
+        </AnimatePresence>
+
+        <div
+          className="absolute -bottom-3 -right-3 w-20 h-20 rounded-full transition-colors duration-300"
+          style={{ background: errorCount > 0 ? "rgba(252,165,165,0.18)" : "rgba(226,232,240,0.18)" }}
+        />
+        <div className="relative z-10 flex items-center gap-3">
+          <div className="relative w-[52px] h-[52px] flex-shrink-0">
+            <AnimatePresence>
+              {errorCount > 0 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: [0.35, 0, 0.35], scale: [1, 1.25, 1] }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1.8, repeat: Infinity }}
+                  className="absolute inset-0 rounded-full border-2 border-red-400/45"
+                />
+              )}
+            </AnimatePresence>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <AlertCircle size={16} className={errorCount > 0 ? "text-red-600" : "text-slate-300"} />
+            </div>
+          </div>
+          <div className="flex-1 min-w-0" dir="rtl">
+            <p
+              className={cn(
+                "text-[10px] font-extrabold uppercase tracking-[0.1em] mb-1 leading-none transition-colors duration-300",
+                errorCount > 0 ? "text-red-600/60" : "text-slate-400/65"
+              )}
+            >
+              {t("scan.counters.failedScans")}
+            </p>
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={errorCount}
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 6 }}
+                transition={{ type: "spring", stiffness: 480, damping: 26 }}
+                className={cn(
+                  "block text-[2.4rem] font-black tabular-nums leading-none transition-colors duration-300",
+                  errorCount > 0 ? "text-red-700 dark:text-red-400" : "text-slate-300 dark:text-slate-600"
+                )}
+              >
+                {errorCount}
+              </motion.span>
+            </AnimatePresence>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
 }
 
-// ── Returns orders table ───────────────────────────────────────────────────────
-function ReturnsTable({ orders, scannedReturns, conditionMap, onConditionChange, onRemove, lastHighlight }) {
-	const [expanded, setExpanded] = useState({});
-	const toggle = (code) => setExpanded(p => ({ ...p, [code]: !p[code] }));
+// ─────────────────────────────────────────────────────────────
+// RETURNS SCANNED ORDER TABLE
+// ─────────────────────────────────────────────────────────────
+function ReturnScannedOrderTable({
+  order,
+  selectedItems,
+  onToggleItem,
+  onSelectAll,
+  onUnselectAll,
+  returnCondition,
+  onConditionChange,
+  t,
+}) {
+  const products = order?.products || [];
+  const totalQty = products.reduce((s, p) => s + (p.requestedQty || 0), 0);
+  const selectedQty = products.reduce((s, p) => (selectedItems[p.sku] ? s + (p.requestedQty || 0) : s), 0);
+  const pct = totalQty === 0 ? 0 : Math.round((selectedQty / totalQty) * 100);
 
-	if (orders.length === 0) {
-		return (
-			<div className="flex flex-col items-center justify-center py-16">
-				<div className="w-14 h-14 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-3">
-					<RefreshCw size={22} className="text-slate-300" />
-				</div>
-				<p className="text-sm font-semibold text-slate-400">لا توجد طلبات شُحنت بعد</p>
-			</div>
-		);
-	}
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+      className={cn("border overflow-hidden transition-all duration-500", DS.radiusXl, "border-slate-200 dark:border-slate-700", DS.shadow)}
+    >
+      <div
+        className="relative overflow-hidden px-4 py-3 border-b border-slate-100 dark:border-slate-700/60"
+        style={{ background: DS.cardGradient, ...DS.scanline }}
+      >
+        <div className="relative flex flex-wrap items-center gap-x-4 gap-y-2">
+          <div className="relative w-11 h-11 flex-shrink-0">
+            <ArcRing pct={pct} color={DS.primary} trackColor={"rgba(203,213,225,0.5)"} />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={pct}
+                  initial={{ opacity: 0, scale: 0.7 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.7 }}
+                  className="text-[9px] font-black tabular-nums"
+                  style={{ color: DS.primary }}
+                >
+                  {pct}%
+                </motion.span>
+              </AnimatePresence>
+            </div>
+          </div>
 
-	return (
-		<div className="overflow-hidden">
-			{/* Header */}
-			<div className="grid text-[10px] font-bold uppercase tracking-widest text-slate-400 px-5 py-2.5 border-b border-slate-100 bg-slate-50/60"
-				style={{ gridTemplateColumns: "32px 1fr 110px 90px 80px 120px 36px" }}>
-				<span />
-				<span>الطلب</span>
-				<span>العميل</span>
-				<span>المدينة</span>
-				<span className="text-center">المنتجات</span>
-				<span className="text-center">الحالة</span>
-				<span />
-			</div>
+          <div className="min-w-0">
+            <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">{t("scan.table.orderNumber")}</p>
+            <p className="font-mono font-black text-sm" style={{ color: DS.primary }}>
+              {order.code}
+            </p>
+          </div>
 
-			<div className="divide-y divide-slate-100/80">
-				{orders.map((order, idx) => {
-					const isScanned = scannedReturns.some(o => o.code === order.code);
-					const isFlash = lastHighlight?.code === order.code;
-					const isOpen = !!expanded[order.code];
-					const prodCount = order.products?.length ?? 0;
-					const condition = conditionMap[order.code] || "سليم";
+          <div className="hidden sm:block min-w-0">
+            <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">{t("scan.table.trackingCode")}</p>
+            <p className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300">{order.trackingCode || "—"}</p>
+          </div>
 
-					return (
-						<motion.div key={order.code} layout initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: idx * 0.025, duration: 0.18 }}>
+          <div className="hidden md:block min-w-0">
+            <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">{t("scan.table.customer")}</p>
+            <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate max-w-[140px]">{order.customer}</p>
+          </div>
 
-							{/* Main row */}
-							<div
-								className={cn(
-									"relative grid items-center px-5 py-3 transition-all duration-200 cursor-pointer select-none",
-									isScanned ? "bg-amber-50/60" : "hover:bg-slate-50/70"
-								)}
-								style={{ gridTemplateColumns: "32px 1fr 110px 90px 80px 120px 36px" }}
-								onClick={() => prodCount > 0 && toggle(order.code)}
-							>
-								{/* Flash overlay */}
-								<AnimatePresence>
-									{isFlash && (
-										<motion.div initial={{ opacity: 0.45 }} animate={{ opacity: 0 }} transition={{ duration: 0.9 }}
-											className={cn("absolute inset-0 pointer-events-none",
-												lastHighlight?.ok ? "bg-amber-400/20" : "bg-red-400/20")} />
-									)}
-								</AnimatePresence>
+          {order.carrier && <CarrierPill carrier={order.carrier} />}
 
-								{/* Left scanned indicator bar */}
-								{isScanned && (
-									<div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-amber-400 to-orange-500" />
-								)}
+          <div className="ms-auto flex-shrink-0">
+            <div
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1 border text-xs font-black tabular-nums transition-colors duration-300",
+                DS.radius,
+                "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200"
+              )}
+            >
+              <RefreshCw size={11} style={{ color: DS.primary }} />
+              {selectedQty}
+              <span className="text-slate-300 dark:text-slate-600 font-normal">/</span>
+              {totalQty}
+            </div>
+          </div>
+        </div>
+      </div>
 
-								{/* Status indicator */}
-								<div className="flex items-center justify-center">
-									<div className={cn(
-										"w-7 h-7 rounded-xl flex items-center justify-center transition-all duration-200",
-										isScanned
-											? "bg-amber-500 text-white shadow-[0_2px_8px_-2px_#f59e0b60]"
-											: "bg-slate-100 text-slate-500"
-									)}>
-										{isScanned
-											? <CheckCircle2 size={14} className="text-white" />
-											: <span className="text-[10px] font-bold text-slate-300 tabular-nums">{idx + 1}</span>
-										}
-									</div>
-								</div>
+      <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex flex-wrap items-center gap-2 justify-between bg-white dark:bg-slate-900">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onSelectAll}
+            className={cn("px-3 py-1.5 text-xs font-bold border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700", DS.radiusSm)}
+          >
+            {t("scan.actions.selectAll")}
+          </button>
+          <button
+            type="button"
+            onClick={onUnselectAll}
+            className={cn("px-3 py-1.5 text-xs font-bold border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700", DS.radiusSm)}
+          >
+            {t("scan.actions.unselectAll")}
+          </button>
+        </div>
 
-								{/* Code */}
-								<div className="flex items-center gap-2 min-w-0">
-									<span className={cn("font-black font-mono text-[13px] transition-colors",
-										isScanned ? "text-amber-700" : "text-slate-800")}>{order.code}</span>
-									{isScanned && (
-										<motion.span initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-											className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200/60">
-											↩ مرتجع
-										</motion.span>
-									)}
-								</div>
+        <div className="flex items-center gap-2 min-w-[220px]">
+          <span className="text-xs font-bold text-slate-500">{t("scan.actions.condition")}</span>
+          <Select value={returnCondition} onValueChange={onConditionChange}>
+            <SelectTrigger className={cn("h-9 border-border bg-background text-sm", DS.radiusSm)}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PRODUCT_CONDITIONS.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {c}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
-								{/* Customer */}
-								<div className="min-w-0">
-									<div className="text-[12px] font-semibold text-slate-700 truncate">{order.customer || "—"}</div>
-								</div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm" dir="rtl">
+          <thead>
+            <tr className="border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/60 dark:bg-slate-800/30">
+              {[
+                "",
+                "#",
+                t("scan.table.productName"),
+                "SKU",
+                t("scan.table.qty"),
+                t("scan.table.price"),
+                t("scan.table.return"),
+              ].map((h, i) => (
+                <th
+                  key={i}
+                  className={cn(
+                    "py-2 px-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.07em]",
+                    i === 0 ? "w-10 text-center" : i === 1 ? "w-8 text-right" : i >= 4 ? "text-center" : "text-right"
+                  )}
+                >
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((p, i) => {
+              const checked = !!selectedItems[p.sku];
+              return (
+                <motion.tr
+                  key={p.sku}
+                  initial={{ opacity: 0, x: 6 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ opacity: { delay: i * 0.04 }, x: { delay: i * 0.04 } }}
+                  className={cn(
+                    "border-b border-slate-50 dark:border-slate-700/20 transition-colors duration-200",
+                    checked ? "bg-primary/5" : ""
+                  )}
+                >
+                  <td className="px-4 py-3 text-center">
+                    <Checkbox checked={checked} onCheckedChange={() => onToggleItem(p.sku)} />
+                  </td>
 
-								{/* City */}
-								<div className="text-[11px] text-slate-400 truncate">{order.city || "—"}</div>
+                  <td className="px-4 py-3">
+                    <div
+                      className={cn("w-6 h-6 flex items-center justify-center text-[10px] font-black", DS.radiusSm)}
+                      style={{ backgroundColor: checked ? DS.primary + "18" : "rgba(148,163,184,0.12)", color: checked ? DS.primary : "#94a3b8" }}
+                    >
+                      {i + 1}
+                    </div>
+                  </td>
 
-								{/* Product count + expand */}
-								<div className="flex items-center justify-center gap-1.5">
-									<span className="text-xs font-black text-slate-700 tabular-nums">{prodCount}</span>
-									{prodCount > 0 && (
-										<motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-											<ChevronDown size={12} className="text-slate-400" />
-										</motion.div>
-									)}
-								</div>
+                  <td className="px-4 py-2.5">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={cn(
+                          "w-9 h-9 flex items-center justify-center border overflow-hidden transition-all duration-300",
+                          DS.radius,
+                          checked
+                            ? "border-primary/40 bg-primary/5"
+                            : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
+                        )}
+                      >
+                        {p.image ? (
+                          <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <Package size={14} className={checked ? "text-primary" : "text-slate-300"} />
+                        )}
+                      </div>
+                      <span
+                        className={cn(
+                          "font-semibold text-sm truncate max-w-[220px] transition-colors duration-300",
+                          checked ? "text-slate-800 dark:text-slate-100" : "text-slate-500 dark:text-slate-400"
+                        )}
+                      >
+                        {p.name}
+                      </span>
+                    </div>
+                  </td>
 
-								{/* Condition selector (only when scanned) */}
-								<div className="flex items-center justify-center" onClick={e => e.stopPropagation()}>
-									{isScanned ? (
-										<Select value={condition} onValueChange={(v) => onConditionChange(order.code, v)}>
-											<SelectTrigger className={cn(
-												"h-7 rounded-xl text-[11px] font-bold border px-2 w-28",
-												condition === "تالف" ? "bg-red-50 border-red-200 text-red-700" :
-													condition === "مفقود جزء" ? "bg-amber-50 border-amber-200 text-amber-700" :
-														"bg-emerald-50 border-emerald-200 text-emerald-700"
-											)}>
-												<SelectValue />
-											</SelectTrigger>
-											<SelectContent>
-												{PRODUCT_CONDITIONS.map((c) => (
-													<SelectItem key={c} value={c}>
-														<ConditionBadge condition={c} />
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-									) : (
-										<span className="text-[11px] text-slate-300">—</span>
-									)}
-								</div>
+                  <td className="px-4 py-3">
+                    <span
+                      className={cn("inline-flex items-center gap-1 font-mono text-[11px] px-2 py-1 font-bold", DS.radiusSm)}
+                      style={{ backgroundColor: DS.accent + "14", color: DS.accent }}
+                    >
+                      {p.sku}
+                    </span>
+                  </td>
 
-								{/* Empty last column */}
-								<div />
-							</div>
+                  <td className="px-4 py-3 text-center">
+                    <span className="font-mono text-sm font-bold text-slate-700 dark:text-slate-200">{p.requestedQty}</span>
+                  </td>
 
-							{/* Products sub-table */}
-							<AnimatePresence>
-								{isOpen && prodCount > 0 && (
-									<motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
-										exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-										style={{ overflow: "hidden" }}>
-										<div className={cn(
-											"border-t",
-											isScanned ? "border-amber-100 bg-amber-50/30" : "border-slate-100 bg-slate-50/50"
-										)}>
-											{/* Sub-table header */}
-											<div className={cn(
-												"grid text-[9px] font-bold uppercase tracking-widest px-5 py-2.5 border-b",
-												isScanned ? "text-amber-600/70 border-amber-100" : "text-slate-400 border-slate-100"
-											)} style={{ gridTemplateColumns: "2fr 90px 70px 80px" }}>
-												<span>المنتج</span>
-												<span className="text-center">SKU</span>
-												<span className="text-center">الكمية</span>
-												<span className="text-center">السعر</span>
-											</div>
-											<div className="divide-y divide-slate-100/60">
-												{order.products.map((p, pi) => (
-													<motion.div
-														key={p.sku || pi}
-														initial={{ opacity: 0, x: -4 }} animate={{ opacity: 1, x: 0 }}
-														transition={{ delay: pi * 0.04 }}
-														className="grid items-center px-5 py-3 hover:bg-white/70 transition-colors"
-														style={{ gridTemplateColumns: "2fr 90px 70px 80px" }}
-													>
-														<div className="flex items-center gap-2.5 min-w-0">
-															<div className="w-6 h-6 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#f59e0b15" }}>
-																<Package size={11} style={{ color: "#f59e0b" }} />
-															</div>
-															<span className="text-[12px] font-semibold text-slate-700 truncate">{p.name}</span>
-														</div>
-														<div className="text-center">
-															<code className="text-[10px] font-mono text-slate-500 bg-white px-1.5 py-0.5 rounded border border-slate-100">{p.sku}</code>
-														</div>
-														<div className="flex justify-center">
-															<span className="inline-flex items-center justify-center w-7 h-7 rounded-xl text-[11px] font-black" style={{ background: "#f59e0b15", color: "#f59e0b" }}>
-																{p.requestedQty}
-															</span>
-														</div>
-														<div className="text-center text-[12px] font-bold text-slate-600 tabular-nums">
-															{p.price ? `${p.price} ر.س` : "—"}
-														</div>
-													</motion.div>
-												))}
-											</div>
-											{/* Footer */}
-											<div className={cn(
-												"flex items-center justify-between px-5 py-2.5 border-t text-[11px] font-semibold",
-												isScanned ? "border-amber-100 text-amber-700 bg-amber-50/50" : "border-slate-100 text-slate-500 bg-slate-50"
-											)}>
-												<span>{prodCount} منتج إجمالاً</span>
-												{order.total && <span className="font-black text-[13px]">{order.total} ر.س</span>}
-											</div>
-										</div>
-									</motion.div>
-								)}
-							</AnimatePresence>
-						</motion.div>
-					);
-				})}
-			</div>
-		</div>
-	);
+                  <td className="px-4 py-3 text-center">
+                    <span className="font-mono text-sm font-bold text-slate-700 dark:text-slate-200">
+                      {p.price || 0} {t("common.currency")}
+                    </span>
+                  </td>
+
+                  <td className="px-4 py-3 text-center">
+                    {checked ? (
+                      <span
+                        className={cn("inline-flex items-center gap-1.5 text-[11px] font-black border px-2.5 py-1", DS.radius)}
+                        style={{ backgroundColor: DS.primary + "15", color: DS.primary, borderColor: DS.primary + "30" }}
+                      >
+                        <CheckCircle2 size={10} strokeWidth={2.5} />
+                        {t("scan.table.selected")}
+                      </span>
+                    ) : (
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1",
+                          DS.radius
+                        )}
+                      >
+                        {t("scan.table.notSelected")}
+                      </span>
+                    )}
+                  </td>
+                </motion.tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </motion.div>
+  );
 }
 
-// ── Scan Return Subtab ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// SCAN RETURN SUBTAB
+// ─────────────────────────────────────────────────────────────
 function ScanReturnSubtab({ orders, updateOrder, pushOp, inventory, updateInventory, addReturnFile }) {
-	const t = useTranslations("warehouse.returns");
-	const shippedOrders = useMemo(() => orders.filter((o) => o.status === STATUS.SHIPPED), [orders]);
+  const t = useTranslations("warehouse.returns");
+  const shippedOrders = useMemo(() => orders.filter((o) => o.status === STATUS.SHIPPED), [orders]);
 
-	const defaultCarrier = useMemo(() => {
-		return CARRIERS.find(c => shippedOrders.some(o => o.carrier === c)) || CARRIERS[0] || "";
-	}, [shippedOrders]);
+  const [scanInput, setScanInput] = useState("");
+  const [currentOrder, setCurrentOrder] = useState(null);
+  const [selectedItems, setSelectedItems] = useState({});
+  const [returnCondition, setReturnCondition] = useState("سليم");
+  const [wrongScans, setWrongScans] = useState(0);
+  const [wrongScanLogs, setWrongScanLogs] = useState([]);
+  const [lastScanMsg, setLastScanMsg] = useState(null);
+  const [scanState, setScanState] = useState("idle");
+  const [successCount, setSuccessCount] = useState(0);
+  const [errorCount, setErrorCount] = useState(0);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-	const [selectedCarrier, setSelectedCarrier] = useState(defaultCarrier);
-	const [scanInput, setScanInput] = useState("");
-	const [scannedReturns, setScannedReturns] = useState([]);
-	const [conditionMap, setConditionMap] = useState({});
-	const [wrongScans, setWrongScans] = useState(0);
-	const [wrongScanLogs, setWrongScanLogs] = useState([]); // [{ code, reason, time }]
-	const [lastHighlight, setLastHighlight] = useState(null);
-	const [saving, setSaving] = useState(false);
-	const [savedSuccess, setSavedSuccess] = useState(false);
-	const [lastScanMsg, setLastScanMsg] = useState(null);
-	const scanRef = useRef(null);
+  const scanRef = useRef(null);
 
-	const availableForCarrier = useMemo(
-		() => shippedOrders.filter(o => !selectedCarrier || o.carrier === selectedCarrier),
-		[shippedOrders, selectedCarrier]
-	);
+  useEffect(() => {
+    const id = setTimeout(() => scanRef.current?.focus(), 120);
+    return () => clearTimeout(id);
+  }, []);
 
-	useEffect(() => { setTimeout(() => scanRef.current?.focus(), 120); }, [selectedCarrier]);
+  const showFeedback = useCallback((type, msg) => {
+    setLastScanMsg({ success: type === "success", message: msg });
+    setScanState(type);
+    setTimeout(() => {
+      setLastScanMsg(null);
+      setScanState("idle");
+    }, 2200);
+  }, []);
 
-	const handleCarrierChange = (val) => {
-		setSelectedCarrier(val);
-		setScannedReturns([]); setConditionMap({});
-		setWrongScans(0); setWrongScanLogs([]);
-		setLastScanMsg(null); setLastHighlight(null);
-	};
+  const resetCurrentOrder = useCallback(() => {
+    setCurrentOrder(null);
+    setSelectedItems({});
+    setReturnCondition("سليم");
+    setScanInput("");
+    setTimeout(() => scanRef.current?.focus(), 100);
+  }, []);
 
-	const handleScan = () => {
-		const code = scanInput.trim();
-		setScanInput("");
-		if (!code) return;
+  const handleScan = useCallback(() => {
+    const code = scanInput.trim();
+    if (!code) return;
 
-		const now = new Date().toLocaleTimeString("ar-SA");
+    setScanInput("");
+    const now = new Date().toLocaleTimeString("ar-SA");
 
-		if (scannedReturns.find(o => o.code === code)) {
-			const reason = t("scan.alreadyScanned", { code }) || `الطلب ${code} تم مسحه مسبقاً`;
-			setLastScanMsg({ success: false, message: reason });
-			setWrongScans(p => p + 1);
-			setWrongScanLogs(prev => [...prev, { code, reason: "تم مسحه مسبقاً", time: now }]);
-			setLastHighlight({ code, ok: false });
-			setTimeout(() => { setLastScanMsg(null); setLastHighlight(null); }, 2500);
-			return;
-		}
-		const order = availableForCarrier.find(o => o.code === code);
-		if (!order) {
-			const reason = t("scan.notFound", { code }) || `الطلب ${code} غير موجود`;
-			setLastScanMsg({ success: false, message: reason });
-			setWrongScans(p => p + 1);
-			setWrongScanLogs(prev => [...prev, { code, reason: "الطلب غير موجود أو لا ينتمي لهذه الشركة", time: now }]);
-			setLastHighlight({ code: null, ok: false });
-			setTimeout(() => { setLastScanMsg(null); setLastHighlight(null); }, 2500);
-			return;
-		}
-		setScannedReturns(prev => [...prev, order]);
-		setConditionMap(prev => ({ ...prev, [code]: "سليم" }));
-		setLastScanMsg({ success: true, message: t("scan.addedSuccess", { code }) || `✓ تم إضافة الطلب ${code}` });
-		setLastHighlight({ code, ok: true });
-		setTimeout(() => { setLastScanMsg(null); setLastHighlight(null); }, 2500);
-		setTimeout(() => scanRef.current?.focus(), 50);
-	};
+    const order = shippedOrders.find((o) => o.code === code || o.trackingCode === code);
 
-	const removeScanned = (code) => {
-		setScannedReturns(prev => prev.filter(o => o.code !== code));
-		setConditionMap(prev => { const n = { ...prev }; delete n[code]; return n; });
-		if (lastHighlight?.code === code) setLastHighlight(null);
-	};
+    if (!order) {
+      if (soundEnabled) playBeep("error");
+      setWrongScans((p) => p + 1);
+      setErrorCount((p) => p + 1);
+      setWrongScanLogs((prev) => [
+        ...prev,
+        { code, reason: t("scan.messages.notFoundReason"), time: now },
+      ]);
+      showFeedback("error", t("scan.messages.notFound", { code }));
+      return;
+    }
 
-	const handleConditionChange = (code, val) => setConditionMap(prev => ({ ...prev, [code]: val }));
+    if (order.returnedAt) {
+      if (soundEnabled) playBeep("error");
+      setWrongScans((p) => p + 1);
+      setErrorCount((p) => p + 1);
+      setWrongScanLogs((prev) => [
+        ...prev,
+        { code, reason: t("scan.messages.alreadyReturnedReason"), time: now },
+      ]);
+      showFeedback("error", t("scan.messages.alreadyReturned", { code: order.code }));
+      return;
+    }
 
-	const handleDownloadWrongLogs = () => {
-		const now = new Date().toISOString().slice(0, 16).replace("T", " ");
-		openPrintWindow(buildWrongScanLogPDF(wrongScanLogs, selectedCarrier, "System", now));
-	};
+    const initialSelected = {};
+    (order.products || []).forEach((p) => {
+      initialSelected[p.sku] = true;
+    });
 
-	const handleSave = async () => {
-		if (scannedReturns.length === 0 || !selectedCarrier) return;
-		setSaving(true);
-		try {
-			const now = new Date().toISOString().slice(0, 16).replace("T", " ");
-			const codes = scannedReturns.map(o => o.code);
-			codes.forEach(code => {
-				const order = scannedReturns.find(o => o.code === code);
-				const condition = conditionMap[code] || "سليم";
-				updateOrder(code, { status: STATUS.CONFIRMED, returnedAt: now, returnCondition: condition, carrier: "", trackingCode: "" });
-				if (inventory && updateInventory) updateInventory(returnInventoryFromCarrier(order.products, inventory));
-				pushOp({ id: `OP-${Date.now()}-${code}`, operationType: "RETURN_ORDER", orderCode: code, carrier: selectedCarrier, employee: "System", result: "SUCCESS", details: `${t("scan.returnOpDetails")} ${selectedCarrier}`, createdAt: now });
-			});
-			const ordersWithCondition = scannedReturns.map(o => ({ ...o, returnCondition: conditionMap[o.code] || "سليم" }));
-			addReturnFile({ id: `RET-${Date.now()}`, carrier: selectedCarrier, type: "return", orderCodes: codes, createdAt: now, createdBy: "System", filename: `returns_${selectedCarrier}_${now.split(" ")[0].replace(/-/g, "")}.pdf`, ordersSnapshot: ordersWithCondition, wrongScanLogs });
-			openPrintWindow(buildReturnPDF(ordersWithCondition, selectedCarrier, "System", now));
-			setScannedReturns([]); setConditionMap({}); setWrongScans(0); setWrongScanLogs([]); setLastHighlight(null);
-			setSavedSuccess(true);
-			setTimeout(() => setSavedSuccess(false), 3000);
-		} finally { setSaving(false); }
-	};
+    setCurrentOrder(order);
+    setSelectedItems(initialSelected);
+    setReturnCondition("سليم");
+    setSuccessCount((p) => p + 1);
 
-	const scannedCount = scannedReturns.length;
-	const meta = selectedCarrier ? getCarrierMeta(selectedCarrier) : null;
-	const damagedCount = Object.values(conditionMap).filter(v => v !== "سليم").length;
+    if (soundEnabled) playBeep("success");
+    showFeedback("success", t("scan.messages.found", { code: order.code }));
+  }, [scanInput, shippedOrders, soundEnabled, t, showFeedback]);
 
-	return (
-		<div className="space-y-4">
+  const handleToggleItem = (sku) => {
+    setSelectedItems((prev) => ({
+      ...prev,
+      [sku]: !prev[sku],
+    }));
+  };
 
-			{/* ── Scan bar card ── */}
-			<div className="bg-card">
-				<ScanBar
-					className="!p-0"
-					cnLabel={"hidden"}
-					CARRIERS={CARRIERS}
-					shippedOrders={shippedOrders}
-					selectedCarrier={selectedCarrier}
-					onCarrierChange={handleCarrierChange}
-					scanInput={scanInput}
-					onScanChange={setScanInput}
-					onScan={handleScan}
-					lastScanMsg={lastScanMsg}
-					scanRef={scanRef}
-				/>
+  const handleSelectAll = () => {
+    if (!currentOrder) return;
+    const map = {};
+    currentOrder.products.forEach((p) => {
+      map[p.sku] = true;
+    });
+    setSelectedItems(map);
+  };
 
-				<div className="pt-4">
-					<StatBoxes
-						scannedCount={scannedCount}
-						wrongScans={wrongScans}
-					/>
-				</div>
-			</div>
+  const handleUnselectAll = () => {
+    if (!currentOrder) return;
+    const map = {};
+    currentOrder.products.forEach((p) => {
+      map[p.sku] = false;
+    });
+    setSelectedItems(map);
+  };
 
-			{selectedCarrier && (
-				<>
-					{/* ── Orders table card ── */}
-					<div className="bg-card overflow-hidden">
+  const handleProcessReturn = async () => {
+    if (!currentOrder || isProcessing) return;
 
-						{/* Table header bar */}
-						<div className="flex items-center justify-between pb-4 border-b border-slate-100">
-							<div className="flex items-center gap-2.5">
-								<div className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: meta?.color + "12" }}>
-									<RefreshCw size={13} style={{ color: meta?.color || "#f59e0b" }} />
-								</div>
-								<span className="text-sm font-bold text-slate-700">مرتجعات {selectedCarrier}</span>
-								<span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-mono tabular-nums">
-									{availableForCarrier.length}
-								</span>
+    const returnedProducts = currentOrder.products.filter((p) => selectedItems[p.sku]);
 
-								{/* Scanned progress */}
-								{availableForCarrier.length > 0 && scannedCount > 0 && (
-									<div className="flex items-center gap-2 ms-1">
-										<div className="w-20 h-1.5 rounded-full bg-slate-100 overflow-hidden">
-											<motion.div
-												animate={{ width: `${(scannedCount / availableForCarrier.length) * 100}%` }}
-												transition={{ duration: 0.4, ease: "easeOut" }}
-												className="h-full rounded-full"
-												style={{ background: "#f59e0b" }}
-											/>
-										</div>
-										<span className="text-[10px] font-bold tabular-nums" style={{ color: "#f59e0b" }}>
-											{scannedCount}/{availableForCarrier.length}
-										</span>
-									</div>
-								)}
-							</div>
+    if (returnedProducts.length === 0) {
+      if (soundEnabled) playBeep("error");
+      showFeedback("error", t("scan.messages.selectAtLeastOne"));
+      return;
+    }
 
-							{/* Actions */}
-							{scannedCount > 0 && (
-								<div className="flex items-center gap-3">
-									<AnimatePresence>
-										{savedSuccess && (
-											<motion.span initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
-												className="text-xs font-semibold text-emerald-600 flex items-center gap-1">
-												<CheckCircle2 size={12} /> تم الحفظ
-											</motion.span>
-										)}
-									</AnimatePresence>
+    setIsProcessing(true);
 
-									{/* Download wrong scan logs button (header area) */}
-									{wrongScans > 0 && (
-										<motion.button
-											initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-											onClick={handleDownloadWrongLogs}
-											whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-											className="h-9 px-4 rounded-xl flex items-center gap-2 text-xs font-bold
-                        text-red-700 bg-red-50 border border-red-200
-                        hover:bg-red-500 hover:text-white hover:border-red-500
-                        transition-all duration-150"
-										>
-											<FileText size={13} />
-											سجل الأخطاء
-											<span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 text-red-700 text-[10px] font-black">
-												{wrongScans}
-											</span>
-										</motion.button>
-									)}
+    try {
+      const now = new Date().toISOString().slice(0, 16).replace("T", " ");
+      const nextStatus = STATUS.RETURNED || STATUS.CONFIRMED;
 
-									<motion.button
-										onClick={handleSave} disabled={saving}
-										whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-										className="h-9 px-4 rounded-xl flex items-center gap-2 text-xs font-bold text-white
-                      bg-gradient-to-r from-amber-500 to-orange-500
-                      shadow-[0_2px_10px_-2px_rgba(245,158,11,0.5)]
-                      hover:shadow-[0_4px_14px_-2px_rgba(245,158,11,0.6)]
-                      disabled:opacity-60 transition-shadow duration-150"
-									>
-										{saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
-										تأكيد الاستلام
-										<span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-[10px] font-black">
-											{scannedCount}
-										</span>
-									</motion.button>
-								</div>
-							)}
-						</div>
+      updateOrder(currentOrder.code, {
+        status: nextStatus,
+        returnedAt: now,
+        returnCondition,
+        returnedItems: returnedProducts.map((p) => p.sku),
+        products: currentOrder.products.map((p) =>
+          selectedItems[p.sku]
+            ? {
+                ...p,
+                returnCondition,
+              }
+            : p
+        ),
+      });
 
-						{/* The table */}
-						<ReturnsTable
-							orders={availableForCarrier}
-							scannedReturns={scannedReturns}
-							conditionMap={conditionMap}
-							onConditionChange={handleConditionChange}
-							onRemove={removeScanned}
-							lastHighlight={lastHighlight}
-						/>
-					</div>
+      if (inventory && updateInventory) {
+        updateInventory(returnInventoryFromCarrier(returnedProducts, inventory));
+      }
 
-					{/* ── Save note ── */}
-					{scannedCount > 0 && (
-						<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-							className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-amber-50/80 border border-amber-200/50 text-amber-700">
-							<Info size={13} className="flex-shrink-0 mt-0.5" />
-							<p className="text-[12px]">{t("scan.saveWarning")}</p>
-						</motion.div>
-					)}
-				</>
-			)}
-		</div>
-	);
+      pushOp({
+        id: `OP-${Date.now()}`,
+        operationType: "RETURN_ORDER",
+        orderCode: currentOrder.code,
+        carrier: currentOrder.carrier || "-",
+        employee: "System",
+        result: "SUCCESS",
+        details: t("scan.messages.returnProcessedLog", { count: returnedProducts.length }),
+        createdAt: now,
+      });
+
+      addReturnFile({
+        id: `RET-${Date.now()}`,
+        carrier: currentOrder.carrier || "—",
+        type: "return",
+        orderCodes: [currentOrder.code],
+        createdAt: now,
+        createdBy: "System",
+        filename: `return_${currentOrder.code}_${now.split(" ")[0]}.pdf`,
+        ordersSnapshot: [
+          {
+            ...currentOrder,
+            returnCondition,
+            returnedItems: returnedProducts.map((p) => p.sku),
+            products: returnedProducts,
+          },
+        ],
+        wrongScanLogs,
+      });
+
+      if (soundEnabled) playBeep("success");
+      showFeedback("success", t("scan.messages.returnSuccess", { code: currentOrder.code }));
+      setWrongScans(0);
+      setWrongScanLogs([]);
+      resetCurrentOrder();
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4" dir="rtl">
+      <Panel>
+        <PanelHeader
+          icon={RefreshCw}
+          pretitle={!currentOrder ? t("scan.header.subtitleReady") : `${t("scan.header.orderLabel")}: ${currentOrder?.code}`}
+          title={!currentOrder ? t("scan.header.title") : t("scan.header.titleActive")}
+          right={
+            <>
+              <HeaderIconBtn onClick={() => setSoundEnabled((v) => !v)}>
+                {soundEnabled ? <Volume2 size={13} className="text-white" /> : <VolumeX size={13} className="text-white/60" />}
+              </HeaderIconBtn>
+              {currentOrder && (
+                <HeaderBadge onClick={resetCurrentOrder}>
+                  <X size={12} />
+                  {t("scan.actions.cancel")}
+                </HeaderBadge>
+              )}
+            </>
+          }
+        >
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-white" />
+            <div className="h-px flex-1 max-w-[20px] rounded-full bg-white/30" />
+            <div className={cn("w-2 h-2 rounded-full transition-all duration-500", currentOrder ? "bg-white" : "bg-white/30")} />
+          </div>
+        </PanelHeader>
+
+        <div className="px-4 pt-8 py-5 space-y-4">
+          <ScanInputBar
+            inputRef={scanRef}
+            value={scanInput}
+            onChange={(e) => setScanInput(e.target.value)}
+            onScan={handleScan}
+            isSuccess={scanState === "success"}
+            isError={scanState === "error"}
+            disabled={isProcessing}
+            placeholder={!currentOrder ? t("scan.placeholders.scanOrder") : t("scan.placeholders.scanAnother")}
+          />
+
+          <AnimatePresence>
+            {lastScanMsg && (
+              <motion.div
+                initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                transition={{ duration: 0.18 }}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-2.5 border text-sm font-semibold",
+                  DS.radius,
+                  lastScanMsg.success
+                    ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300"
+                    : "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800 text-red-600 dark:text-red-300"
+                )}
+              >
+                {lastScanMsg.success ? <CheckCircle2 size={14} className="flex-shrink-0" /> : <AlertCircle size={14} className="flex-shrink-0" />}
+                {lastScanMsg.message}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <ScanLogBoxes successCount={successCount} errorCount={errorCount} t={t} />
+
+          {currentOrder ? (
+            <>
+              <ReturnScannedOrderTable
+                order={currentOrder}
+                selectedItems={selectedItems}
+                onToggleItem={handleToggleItem}
+                onSelectAll={handleSelectAll}
+                onUnselectAll={handleUnselectAll}
+                returnCondition={returnCondition}
+                onConditionChange={setReturnCondition}
+                t={t}
+              />
+
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={resetCurrentOrder}
+                  className={cn(
+                    "px-4 h-11 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors",
+                    DS.radius
+                  )}
+                >
+                  {t("scan.actions.cancel")}
+                </button>
+
+                <motion.button
+                  type="button"
+                  onClick={handleProcessReturn}
+                  disabled={isProcessing}
+                  whileHover={!isProcessing ? { scale: 1.02 } : {}}
+                  whileTap={!isProcessing ? { scale: 0.98 } : {}}
+                  className={cn(
+                    "flex items-center gap-2 px-5 h-11 font-bold text-sm text-white transition-opacity disabled:opacity-60",
+                    DS.radius
+                  )}
+                  style={{ background: DS.headerGradient }}
+                >
+                  {isProcessing ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                  {t("scan.actions.confirmReturn")}
+                </motion.button>
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-10 text-center">
+              <motion.div
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 2.5, repeat: Infinity }}
+                className={cn("w-14 h-14 flex items-center justify-center mb-4", DS.radius)}
+                style={{ background: DS.primary + "12", border: `1px dashed ${DS.primary}35` }}
+              >
+                <RefreshCw size={26} style={{ color: DS.primary }} />
+              </motion.div>
+              <p className="text-slate-600 dark:text-slate-300 font-semibold mb-1">{t("scan.empty.title")}</p>
+              <p className="text-sm text-slate-400">{t("scan.empty.subtitle")}</p>
+            </div>
+          )}
+        </div>
+      </Panel>
+    </div>
+  );
 }
 
-// ── Return Files Subtab ────────────────────────────────────────────────────────
-function ReturnFilesSubtab({ returnFiles, orders }) {
-	const t = useTranslations("warehouse.returns");
-	const [search, setSearch] = useState("");
-	const [filterCarrier, setFilterCarrier] = useState("all");
-	const [downloading, setDownloading] = useState({});
-	const [downloadingWrongLog, setDownloadingWrongLog] = useState({});
-	const [page, setPage] = useState({ current_page: 1, per_page: 12 });
+// ─────────────────────────────────────────────────────────────
+// RETURN FILES SUBTAB
+// ─────────────────────────────────────────────────────────────
+function ReturnFilesSubtab({ returnFiles, orders, resetToken }) {
+  const t = useTranslations("warehouse.returns");
+  const [search, setSearch] = useState("");
+  const [filterCarrier, setFilterCarrier] = useState("all");
+  const [downloading, setDownloading] = useState({});
+  const [downloadingWrongLog, setDownloadingWrongLog] = useState({});
+  const [detailModal, setDetailModal] = useState(null);
+  const [page, setPage] = useState({ current_page: 1, per_page: 12 });
 
-	const filtered = useMemo(() => {
-		let base = returnFiles;
-		const q = search.trim().toLowerCase();
-		if (q) base = base.filter(f => [f.id, f.carrier, f.filename].some(x => String(x || "").toLowerCase().includes(q)));
-		if (filterCarrier !== "all") base = base.filter(f => f.carrier === filterCarrier);
-		return base;
-	}, [returnFiles, search, filterCarrier]);
+  React.useEffect(() => {
+    setSearch("");
+    setFilterCarrier("all");
+    setPage({ current_page: 1, per_page: 12 });
+    setDetailModal(null);
+  }, [resetToken]);
 
-	const handleDownload = async (file) => {
-		setDownloading(p => ({ ...p, [file.id]: true }));
-		await new Promise(r => setTimeout(r, 800));
-		const snap = file.ordersSnapshot || orders.filter(o => file.orderCodes.includes(o.code)).map(o => ({ ...o, returnCondition: "سليم" }));
-		openPrintWindow(buildReturnPDF(snap, file.carrier, file.createdBy, file.createdAt));
-		setDownloading(p => ({ ...p, [file.id]: false }));
-	};
+  const filtered = useMemo(() => {
+    let base = returnFiles;
+    const q = search.trim().toLowerCase();
+    if (q) base = base.filter((f) => [f.id, f.carrier, f.filename, ...(f.orderCodes || [])].some((x) => String(x || "").toLowerCase().includes(q)));
+    if (filterCarrier !== "all") base = base.filter((f) => f.carrier === filterCarrier);
+    return base;
+  }, [returnFiles, search, filterCarrier]);
 
-	const handleDownloadWrongLog = async (file) => {
-		setDownloadingWrongLog(p => ({ ...p, [file.id]: true }));
-		await new Promise(r => setTimeout(r, 600));
-		const logs = file.wrongScanLogs || [];
-		openPrintWindow(buildWrongScanLogPDF(logs, file.carrier, file.createdBy, file.createdAt));
-		setDownloadingWrongLog(p => ({ ...p, [file.id]: false }));
-	};
+  const handleDownload = async (file) => {
+    setDownloading((p) => ({ ...p, [file.id]: true }));
+    try {
+      await new Promise((r) => setTimeout(r, 500));
+      const snap =
+        file.ordersSnapshot ||
+        orders.filter((o) => file.orderCodes.includes(o.code)).map((o) => ({
+          ...o,
+          returnCondition: "سليم",
+        }));
 
-	const columns = useMemo(() => [
-		{ key: "id", header: t("files.th.fileNumber"), cell: (row) => <span className="font-mono font-bold text-primary">{row.id}</span> },
-		{
-			key: "carrier", header: t("files.th.carrier"),
-			cell: (row) => {
-				const m = getCarrierMeta(row.carrier);
-				return (
-					<span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border"
-						style={{ background: m.light, borderColor: m.color + "30", color: m.color }}>
-						<Truck size={11} /> {row.carrier}
-					</span>
-				);
-			},
-		},
-		{
-			key: "orderCodes", header: t("files.th.returnedOrders"),
-			cell: (row) => (
-				<div className="flex flex-wrap gap-1">
-					{row.orderCodes.map(code => (
-						<span key={code} className="font-mono text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded">{code}</span>
-					))}
-				</div>
-			),
-		},
-		{ key: "createdAt", header: t("files.th.createdAt"), cell: (row) => <span className="text-sm text-slate-500">{row.createdAt}</span> },
-		{ key: "createdBy", header: t("files.th.createdBy") },
-		{
-			key: "actions", header: t("files.th.actions"),
-			cell: (row) => (
-				<div className="flex items-center gap-2">
-					<motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-						onClick={() => handleDownload(row)} disabled={!!downloading[row.id]}
-						className="px-3 h-9 rounded-full border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-500 hover:text-white text-sm font-medium transition-all flex items-center gap-1 disabled:opacity-60">
-						{downloading[row.id] ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
-						{t("files.download")}
-					</motion.button>
-					<motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-						onClick={() => handleDownloadWrongLog(row)} disabled={!!downloadingWrongLog[row.id]}
-						title="تحميل سجل الأخطاء"
-						className="px-3 h-9 rounded-full border border-red-200 bg-red-50 text-red-700 hover:bg-red-500 hover:text-white text-sm font-medium transition-all flex items-center gap-1 disabled:opacity-60">
-						{downloadingWrongLog[row.id] ? <Loader2 size={13} className="animate-spin" /> : <FileText size={13} />}
-						سجل الأخطاء
-					</motion.button>
-				</div>
-			),
-		},
-	], [downloading, downloadingWrongLog, t]);
+      openPrintWindow(
+        buildReturnPDF(snap, file.carrier, file.createdBy, file.createdAt, {
+          common: { currency: t("common.currency") },
+          pdf: {
+            title: t("pdf.title"),
+            refPrefix: t("pdf.refPrefix"),
+            carrier: t("pdf.carrier"),
+            returnDate: t("pdf.returnDate"),
+            employee: t("pdf.employee"),
+            totalOrders: t("pdf.totalOrders"),
+            orderUnit: t("pdf.orderUnit"),
+            ordersDetail: t("pdf.ordersDetail"),
+            sku: t("pdf.sku"),
+            product: t("pdf.product"),
+            qty: t("pdf.qty"),
+            trackingCode: t("pdf.trackingCode"),
+            condition: t("pdf.condition"),
+            total: t("pdf.total"),
+            receiptConfirmation: t("pdf.receiptConfirmation"),
+            courierName: t("pdf.courierName"),
+            signature: t("pdf.signature"),
+            dateTime: t("pdf.dateTime"),
+            system: t("pdf.system"),
+          },
+        })
+      );
+    } finally {
+      setDownloading((p) => ({ ...p, [file.id]: false }));
+    }
+  };
 
-	return (
-		<Table
-			searchValue={search} onSearchChange={setSearch} onSearch={() => { }}
-			labels={{ searchPlaceholder: t("files.searchPlaceholder"), filter: t("common.filter"), apply: t("common.apply"), total: t("common.total"), limit: t("common.limit"), emptyTitle: t("files.emptyTitle"), emptySubtitle: "" }}
-			actions={[]} hasActiveFilters={filterCarrier !== "all"} onApplyFilters={() => { }}
-			filters={
-				<FilterField label={t("common.carrier")}>
-					<Select value={filterCarrier} onValueChange={setFilterCarrier}>
-						<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={t("common.allCarriers")} /></SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">{t("common.allCarriers")}</SelectItem>
-							{CARRIERS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-						</SelectContent>
-					</Select>
-				</FilterField>
-			}
-			columns={columns} data={filtered} isLoading={false}
-			pagination={{ total_records: filtered.length, current_page: page.current_page, per_page: page.per_page }}
-			onPageChange={({ page: p, per_page }) => setPage({ current_page: p, per_page })}
-		/>
-	);
+  const handleDownloadWrongLog = async (file) => {
+    setDownloadingWrongLog((p) => ({ ...p, [file.id]: true }));
+    try {
+      await new Promise((r) => setTimeout(r, 400));
+      const logs = file.wrongScanLogs || [];
+      openPrintWindow(
+        buildWrongScanLogPDF(logs, file.carrier, file.createdBy, file.createdAt, {
+          wrongPdf: {
+            title: t("wrongPdf.title"),
+            carrier: t("wrongPdf.carrier"),
+            employee: t("wrongPdf.employee"),
+            date: t("wrongPdf.date"),
+            totalFailedAttempts: t("wrongPdf.totalFailedAttempts"),
+            attemptUnit: t("wrongPdf.attemptUnit"),
+            printAlertText: t("wrongPdf.printAlertText"),
+            totalAttempts: t("wrongPdf.totalAttempts"),
+            scannedCode: t("wrongPdf.scannedCode"),
+            failReason: t("wrongPdf.failReason"),
+            time: t("wrongPdf.time"),
+            system: t("wrongPdf.system"),
+          },
+        })
+      );
+    } finally {
+      setDownloadingWrongLog((p) => ({ ...p, [file.id]: false }));
+    }
+  };
+
+  const getFileOrder = (file) => {
+    const snap = file.ordersSnapshot?.[0];
+    if (snap) return snap;
+    return orders.find((o) => file.orderCodes?.includes(o.code)) || null;
+  };
+
+  const columns = useMemo(
+    () => [
+      {
+        key: "id",
+        header: t("files.th.fileNumber"),
+        cell: (row) => <span className="font-mono font-bold text-primary">{row.id}</span>,
+      },
+      {
+        key: "carrier",
+        header: t("files.th.carrier"),
+        cell: (row) =>
+          row.carrier ? (
+            <CarrierPill carrier={row.carrier} />
+          ) : (
+            <span className="text-slate-400 text-sm italic">{t("common.unspecified")}</span>
+          ),
+      },
+      {
+        key: "orderCodes",
+        header: t("files.th.returnedOrders"),
+        cell: (row) => (
+          <div className="flex flex-wrap gap-1">
+            {(row.orderCodes || []).map((code) => (
+              <span
+                key={code}
+                className="font-mono text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded"
+              >
+                {code}
+              </span>
+            ))}
+          </div>
+        ),
+      },
+      {
+        key: "createdAt",
+        header: t("files.th.createdAt"),
+        cell: (row) => <span className="text-sm text-slate-500">{row.createdAt}</span>,
+      },
+      {
+        key: "createdBy",
+        header: t("files.th.createdBy"),
+      },
+      {
+        key: "actions",
+        header: t("files.th.actions"),
+        cell: (row) => (
+          <ActionButtons
+            row={row}
+            actions={[
+              {
+                icon: <Info />,
+                tooltip: t("files.tooltip.details"),
+                onClick: (r) => setDetailModal(getFileOrder(r)),
+                variant: "purple",
+              },
+              {
+                icon: downloading[row.id] ? <Loader2 className="animate-spin" /> : <FileDown />,
+                tooltip: t("files.tooltip.downloadFile"),
+                onClick: (r) => handleDownload(r),
+                variant: "blue",
+              },
+              {
+                icon: downloadingWrongLog[row.id] ? <Loader2 className="animate-spin" /> : <FileText />,
+                tooltip: t("files.tooltip.downloadWrongLog"),
+                onClick: (r) => handleDownloadWrongLog(r),
+                variant: "red",
+              },
+            ]}
+          />
+        ),
+      },
+    ],
+    [t, downloading, downloadingWrongLog, orders]
+  );
+
+  return (
+    <div className="relative " >
+      <Table
+        searchValue={search}
+        onSearchChange={setSearch}
+        onSearch={() => {}}
+        labels={{
+          searchPlaceholder: t("files.searchPlaceholder"),
+          filter: t("common.filter"),
+          apply: t("common.apply"),
+          total: t("common.total"),
+          limit: t("common.limit"),
+          emptyTitle: t("files.emptyTitle"),
+          emptySubtitle: "",
+        }}
+        actions={[]}
+        hasActiveFilters={filterCarrier !== "all"}
+        onApplyFilters={() => {}}
+        filters={
+          <FilterField label={t("common.carrier")}>
+            <Select value={filterCarrier} onValueChange={setFilterCarrier}>
+              <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+                <SelectValue placeholder={t("common.allCarriers")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("common.allCarriers")}</SelectItem>
+                {CARRIERS.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FilterField>
+        }
+        columns={columns}
+        data={filtered}
+        isLoading={false}
+        pagination={{ total_records: filtered.length, current_page: page.current_page, per_page: page.per_page }}
+        onPageChange={({ page: p, per_page }) => setPage({ current_page: p, per_page })}
+      />
+
+      <ReturnOrderDetailModal open={!!detailModal} onClose={() => setDetailModal(null)} order={detailModal} t={t} />
+    </div>
+  );
 }
 
-// ── Main ReturnsTab ────────────────────────────────────────────────────────────
-export default function ReturnsTab({ orders, updateOrder, pushOp, inventory, updateInventory, returnFiles, addReturnFile, subtab, setSubtab }) {
-	const t = useTranslations("warehouse.returns");
-	const shipped = orders.filter(o => o.status === STATUS.SHIPPED);
-	const today = new Date().toISOString().split("T")[0];
+// ─────────────────────────────────────────────────────────────
+// MAIN RETURNS TAB
+// ─────────────────────────────────────────────────────────────
+export default function ReturnsTab({
+  orders,
+  updateOrder,
+  pushOp,
+  inventory,
+  updateInventory,
+  returnFiles,
+  addReturnFile,
+  subtab,
+  setSubtab,
+  resetToken,
+}) {
+  const t = useTranslations("warehouse.returns");
+  const shipped = orders.filter((o) => o.status === STATUS.SHIPPED);
+  const today = new Date().toISOString().split("T")[0];
 
-	const stats = [
-		{ id: "with-carrier", name: t("stats.withCarrier"), value: shipped.length, icon: Truck, color: "#3b82f6", sortOrder: 0 },
-		{ id: "return-files", name: t("stats.returnFiles"), value: returnFiles.length, icon: RefreshCw, color: "#f59e0b", sortOrder: 1 },
-		{ id: "returned-today", name: t("stats.returnedToday"), value: orders.filter(o => o.returnedAt?.startsWith(today)).length, icon: Calendar, color: "#ef4444", sortOrder: 2 },
-		{ id: "total-returns", name: t("stats.totalReturns"), value: orders.filter(o => !!o.returnedAt).length, icon: Package, color: "#a855f7", sortOrder: 3 },
-	];
+  const stats = [
+    { id: "with-carrier", name: t("stats.withCarrier"), value: shipped.length, icon: Truck, color: "#3b82f6", sortOrder: 0 },
+    { id: "return-files", name: t("stats.returnFiles"), value: returnFiles.length, icon: RefreshCw, color: "#f59e0b", sortOrder: 1 },
+    {
+      id: "returned-today",
+      name: t("stats.returnedToday"),
+      value: orders.filter((o) => o.returnedAt?.startsWith(today)).length,
+      icon: Calendar,
+      color: "#ef4444",
+      sortOrder: 2,
+    },
+    {
+      id: "total-returns",
+      name: t("stats.totalReturns"),
+      value: orders.filter((o) => !!o.returnedAt).length,
+      icon: Package,
+      color: "#a855f7",
+      sortOrder: 3,
+    },
+  ];
 
-	return (
-		<div className="space-y-4">
-			<PageHeader
-				breadcrumbs={[
-					{ name: t("breadcrumbs.home"), href: "/" },
-					{ name: t("breadcrumbs.warehouse"), href: "/warehouse" },
-					{ name: t("breadcrumbs.returns") },
-				]}
-				buttons={<Button_ size="sm" label={t("header.howItWorks")} variant="ghost" onClick={() => { }} icon={<Info size={18} />} />}
-				stats={stats}
-				items={[
-					{ id: "scan", label: t("subtabs.scanReturn"), count: shipped.length, icon: ScanLine },
-					{ id: "files", label: t("subtabs.files"), count: returnFiles.length, icon: FileDown },
-				]}
-				active={subtab}
-				setActive={setSubtab}
-			/>
+  return (
+    <div className="space-y-4 relative z-[1000] ">
+      <PageHeader
+        breadcrumbs={[
+          { name: t("breadcrumbs.home"), href: "/" },
+          { name: t("breadcrumbs.warehouse"), href: "/warehouse" },
+          { name: t("breadcrumbs.returns") },
+        ]}
+        buttons={<Button_ size="sm" label={t("header.howItWorks")} variant="ghost" onClick={() => {}} icon={<Info size={18} />} />}
+        stats={subtab === "files" ? stats : []}
+        items={[
+          { id: "scan", label: t("subtabs.scanReturn"), count: shipped.length, icon: ScanLine },
+          { id: "files", label: t("subtabs.files"), count: returnFiles.length, icon: FileDown },
+        ]}
+        active={subtab}
+        setActive={setSubtab}
+      />
 
-			<AnimatePresence mode="wait">
-				<motion.div key={subtab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15 }}>
-					{subtab === "scan" && <ScanReturnSubtab orders={orders} updateOrder={updateOrder} pushOp={pushOp} inventory={inventory} updateInventory={updateInventory} addReturnFile={addReturnFile} />}
-					{subtab === "files" && <ReturnFilesSubtab returnFiles={returnFiles} orders={orders} />}
-				</motion.div>
-			</AnimatePresence>
-		</div>
-	);
+      <AnimatePresence mode="wait">
+        <motion.div key={subtab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15 }}>
+          {subtab === "scan" && (
+            <ScanReturnSubtab
+              orders={orders}
+              updateOrder={updateOrder}
+              pushOp={pushOp}
+              inventory={inventory}
+              updateInventory={updateInventory}
+              addReturnFile={addReturnFile}
+            />
+          )}
+
+          {subtab === "files" && <ReturnFilesSubtab returnFiles={returnFiles} orders={orders} resetToken={resetToken} />}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
 }

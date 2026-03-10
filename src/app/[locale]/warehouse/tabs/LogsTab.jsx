@@ -1,46 +1,116 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { motion } from "framer-motion";
 import {
-  ClipboardList, CheckCircle2, XCircle, Package, FileDown,
-  Eye, AlertCircle, FileText, PenLine, Download, FileX,
+  ClipboardList,
+  CheckCircle2,
+  XCircle,
+  Package,
+  FileDown,
+  AlertCircle,
+  FileText,
+  PenLine,
+  Download,
+  FileX,
+  Info,
+  Eye,
+  X,
+  Hash,
+  Truck,
+  User,
+  Calendar,
+  FileStack,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
 import Table, { FilterField } from "@/components/atoms/Table";
+import ActionButtons from "@/components/atoms/Actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import PageHeader from "../../../../components/atoms/Pageheader";
 
-const OPERATION_TYPE_KEYS = {
-  ORDER_PREPARED: "opTypes.orderPrepared",
-  REJECT_ORDER:   "opTypes.rejectOrder",
-  ASSIGN_CARRIER: "opTypes.assignCarrier",
-  PRINT_LABEL:    "opTypes.printLabel",
-  SHIP_ORDER:     "opTypes.shipOrder",
-  RETURN_ORDER:   "opTypes.returnOrder",
-  RETRY_ORDER:    "opTypes.retryOrder",
-  BULK_REJECT:    "opTypes.bulkReject",
-  REPRINT_LABEL:  "opTypes.reprintLabel",
+const DS = {
+  radius: "rounded-lg",
+  radiusSm: "rounded-md",
+  radiusXl: "rounded-xl",
+  primary: "#ff8b00",
+  accent: "#6763af",
+  success: "#10b981",
+  danger: "#ef4444",
+  warning: "#ffb703",
+  headerGradient: "linear-gradient(135deg, #ff8b00 0%, #ff5c2b 100%)",
+  dangerGradient: "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)",
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PDF GENERATORS
-// ─────────────────────────────────────────────────────────────────────────────
-function openPrintWindow(htmlContent) {
+const OPERATION_TYPE_KEYS = {
+  ORDER_PREPARED: "opTypes.orderPrepared",
+  REJECT_ORDER: "opTypes.rejectOrder",
+  ASSIGN_CARRIER: "opTypes.assignCarrier",
+  PRINT_LABEL: "opTypes.printLabel",
+  SHIP_ORDER: "opTypes.shipOrder",
+  RETURN_ORDER: "opTypes.returnOrder",
+  RETRY_ORDER: "opTypes.retryOrder",
+  BULK_REJECT: "opTypes.bulkReject",
+  REPRINT_LABEL: "opTypes.reprintLabel",
+};
+
+// ─────────────────────────────────────────────────────────────
+// SHARED HEADER PRIMITIVES
+// ─────────────────────────────────────────────────────────────
+function HeaderBadge({ children }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5",
+        "bg-white/20 text-white",
+        "text-[11px] font-semibold px-2.5 py-1.5",
+        DS.radiusSm
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+function HeaderIconBtn({ onClick, children }) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "w-8 h-8 flex items-center justify-center",
+        DS.radiusSm,
+        "bg-white/20 hover:bg-white/30 transition-colors"
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// PDF HELPERS
+// ─────────────────────────────────────────────────────────────
+function openPrintWindow(htmlContent, popupMessage) {
   const win = window.open("", "_blank", "width=900,height=700");
-  if (!win) { alert("يرجى السماح بالنوافذ المنبثقة لتتمكن من تحميل الـ PDF"); return; }
+  if (!win) {
+    alert(popupMessage);
+    return;
+  }
   win.document.write(htmlContent);
   win.document.close();
   win.focus();
-  setTimeout(() => { win.print(); }, 600);
+  setTimeout(() => {
+    win.print();
+  }, 600);
 }
 
 const PDF_STYLE = `
@@ -80,110 +150,220 @@ const PDF_STYLE = `
   </style>
 `;
 
-function buildCorrectPDF(prepOps) {
+function buildCorrectPDF(prepOps, labels) {
   const now = new Date().toLocaleString("en-US");
-  const ordersHTML = prepOps.map((op) => {
-    const order = op.orderSnapshot || {};
-    const products = op.productsSnapshot || [];
-    const correctLogs = (op.scanLogs || []).filter((l) => l.success);
-    const productsRows = products.map((p) => {
-      const done = p.scannedQty >= p.requestedQty;
-      return `<tr><td><code>${p.sku}</code></td><td>${p.name}</td><td style="text-align:center">${p.requestedQty}</td><td style="text-align:center" class="${done ? "complete" : "incomplete"}">${p.scannedQty}</td><td><span class="badge ${done ? "badge-ok" : "badge-err"}">${done ? "مكتمل" : "ناقص"}</span></td></tr>`;
-    }).join("");
-    return `<div style="margin-bottom:28px;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;"><div style="background:#f8fafc;padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;"><div><div style="font-size:15px;font-weight:700;font-family:monospace;">${op.orderCode}</div><div style="font-size:12px;color:#64748b;margin-top:2px;">${order.customer || ""} — ${order.city || ""}</div></div><div style="text-align:left;"><div style="font-size:11px;color:#94a3b8;">شركة الشحن</div><div style="font-size:13px;font-weight:600;">${op.carrier || "—"}</div></div></div><div style="padding:14px 16px;"><table><thead><tr><th>SKU</th><th>اسم المنتج</th><th style="text-align:center">المطلوب</th><th style="text-align:center">الممسوح</th><th>الحالة</th></tr></thead><tbody>${productsRows}</tbody></table><div style="margin-top:10px;font-size:11px;color:#94a3b8;">عمليات المسح الصحيحة: <strong>${correctLogs.length}</strong></div></div></div>`;
-  }).join("");
-  return `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>ملف التحضير</title>${PDF_STYLE}</head><body><div class="header-bar"><div style="font-size:18px;font-weight:700;margin-bottom:4px;">✓ ملف التحضير — المسح الصحيح</div><div style="font-size:12px;opacity:.85;">تاريخ الطباعة: ${now} | عدد الطلبات: ${prepOps.length}</div></div>${ordersHTML}<div class="sig-box"><div class="sig-title">✍ تأكيد الاستلام — موظف شركة الشحن</div><p style="font-size:12px;color:#64748b;margin-bottom:12px;">أقر أنا الموظف المذكور أدناه بأنني استلمت الطلبات المُحضَّرة المدرجة في هذا الملف كاملةً وبدون نقصان.</p><div class="sig-row"><div class="sig-field"><div class="sig-field-label">اسم موظف شركة الشحن</div></div><div class="sig-field"><div class="sig-field-label">التوقيع</div></div><div class="sig-field"><div class="sig-field-label">التاريخ</div></div></div></div></body></html>`;
+
+  const ordersHTML = prepOps
+    .map((op) => {
+      const order = op.orderSnapshot || {};
+      const products = op.productsSnapshot || [];
+      const correctLogs = (op.scanLogs || []).filter((l) => l.success);
+
+      const productsRows = products
+        .map((p) => {
+          const done = (p.scannedQty || 0) >= p.requestedQty;
+          return `
+            <tr>
+              <td><code>${p.sku}</code></td>
+              <td>${p.name}</td>
+              <td style="text-align:center">${p.requestedQty}</td>
+              <td style="text-align:center" class="${done ? "complete" : "incomplete"}">${p.scannedQty || 0}</td>
+              <td><span class="badge ${done ? "badge-ok" : "badge-err"}">${done ? labels.completed : labels.incomplete}</span></td>
+            </tr>
+          `;
+        })
+        .join("");
+
+      return `
+        <div style="margin-bottom:28px;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+          <div style="background:#f8fafc;padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:15px;font-weight:700;font-family:monospace;">${op.orderCode}</div>
+              <div style="font-size:12px;color:#64748b;margin-top:2px;">${order.customer || ""} — ${order.city || ""}</div>
+            </div>
+            <div style="text-align:left;">
+              <div style="font-size:11px;color:#94a3b8;">${labels.carrier}</div>
+              <div style="font-size:13px;font-weight:600;">${op.carrier || "—"}</div>
+            </div>
+          </div>
+          <div style="padding:14px 16px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>SKU</th>
+                  <th>${labels.productName}</th>
+                  <th style="text-align:center">${labels.requested}</th>
+                  <th style="text-align:center">${labels.scanned}</th>
+                  <th>${labels.status}</th>
+                </tr>
+              </thead>
+              <tbody>${productsRows}</tbody>
+            </table>
+            <div style="margin-top:10px;font-size:11px;color:#94a3b8;">${labels.correctScans}: <strong>${correctLogs.length}</strong></div>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+
+  return `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>${labels.title}</title>${PDF_STYLE}</head><body><div class="header-bar"><div style="font-size:18px;font-weight:700;margin-bottom:4px;">${labels.title}</div><div style="font-size:12px;opacity:.85;">${labels.printedAt}: ${now} | ${labels.ordersCount}: ${prepOps.length}</div></div>${ordersHTML}<div class="sig-box"><div class="sig-title">${labels.signatureTitle}</div><p style="font-size:12px;color:#64748b;margin-bottom:12px;">${labels.signatureText}</p><div class="sig-row"><div class="sig-field"><div class="sig-field-label">${labels.signerName}</div></div><div class="sig-field"><div class="sig-field-label">${labels.signature}</div></div><div class="sig-field"><div class="sig-field-label">${labels.date}</div></div></div></div></body></html>`;
 }
 
-function buildErrorsPDF(prepOps) {
+function buildErrorsPDF(prepOps, labels) {
   const now = new Date().toLocaleString("en-US");
   const hasErrors = prepOps.some((op) => (op.scanLogs || []).some((l) => !l.success));
   if (!hasErrors) return null;
-  const ordersHTML = prepOps.map((op) => {
-    const errorLogs = (op.scanLogs || []).filter((l) => !l.success);
-    if (errorLogs.length === 0) return "";
-    const rows = errorLogs.map((log, i) => `<tr class="err-row"><td>${i + 1}</td><td class="err-msg">${log.message}</td><td class="err-reason">${log.reason || "—"}</td><td class="ts">${log.timestamp ? log.timestamp.slice(11, 19) : "—"}</td></tr>`).join("");
-    return `<div style="margin-bottom:24px;border:1px solid #fecaca;border-radius:12px;overflow:hidden;"><div style="background:#fff7f7;padding:10px 16px;border-bottom:1px solid #fecaca;display:flex;justify-content:space-between;align-items:center;"><div style="font-family:monospace;font-size:14px;font-weight:700;color:#dc2626;">${op.orderCode}</div><span class="badge badge-err">${errorLogs.length} خطأ</span></div><div style="padding:12px 16px;"><table><thead><tr><th style="width:36px">#</th><th>الخطأ</th><th>السبب</th><th>الوقت</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
-  }).join("");
-  return `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>ملف الأخطاء</title>${PDF_STYLE}</head><body><div class="header-bar err-bar"><div style="font-size:18px;font-weight:700;margin-bottom:4px;">⚠ ملف التحضير — أخطاء المسح</div><div style="font-size:12px;opacity:.85;">تاريخ الطباعة: ${now} | عدد الطلبات: ${prepOps.length}</div></div><p style="font-size:13px;color:#64748b;margin-bottom:20px;">يوضح هذا الملف جميع عمليات المسح الخاطئة التي حدثت أثناء تحضير الطلبات، مرتبةً حسب الطلب والوقت.</p>${ordersHTML}</body></html>`;
+
+  const ordersHTML = prepOps
+    .map((op) => {
+      const errorLogs = (op.scanLogs || []).filter((l) => !l.success);
+      if (errorLogs.length === 0) return "";
+
+      const rows = errorLogs
+        .map(
+          (log, i) => `
+          <tr class="err-row">
+            <td>${i + 1}</td>
+            <td class="err-msg">${log.message}</td>
+            <td class="err-reason">${log.reason || "—"}</td>
+            <td class="ts">${log.timestamp ? log.timestamp.slice(11, 19) : "—"}</td>
+          </tr>
+        `
+        )
+        .join("");
+
+      return `
+        <div style="margin-bottom:24px;border:1px solid #fecaca;border-radius:12px;overflow:hidden;">
+          <div style="background:#fff7f7;padding:10px 16px;border-bottom:1px solid #fecaca;display:flex;justify-content:space-between;align-items:center;">
+            <div style="font-family:monospace;font-size:14px;font-weight:700;color:#dc2626;">${op.orderCode}</div>
+            <span class="badge badge-err">${errorLogs.length} ${labels.errorUnit}</span>
+          </div>
+          <div style="padding:12px 16px;">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:36px">#</th>
+                  <th>${labels.error}</th>
+                  <th>${labels.reason}</th>
+                  <th>${labels.time}</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+
+  return `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>${labels.title}</title>${PDF_STYLE}</head><body><div class="header-bar err-bar"><div style="font-size:18px;font-weight:700;margin-bottom:4px;">${labels.title}</div><div style="font-size:12px;opacity:.85;">${labels.printedAt}: ${now} | ${labels.ordersCount}: ${prepOps.length}</div></div><p style="font-size:13px;color:#64748b;margin-bottom:20px;">${labels.description}</p>${ordersHTML}</body></html>`;
 }
 
-/** Generic operation info PDF for non-prep ops */
-function buildGenericOpPDF(op, order) {
+function buildGenericOpPDF(op, order, labels) {
   const now = new Date().toLocaleString("en-US");
-  const opTypeLabel = {
-    REJECT_ORDER: "رفض طلب", ASSIGN_CARRIER: "تعيين شركة شحن",
-    PRINT_LABEL: "طباعة ملصق", SHIP_ORDER: "شحن طلب",
-    RETURN_ORDER: "استلام مرتجع", RETRY_ORDER: "إعادة محاولة",
-    BULK_REJECT: "رفض جماعي", REPRINT_LABEL: "إعادة طباعة ملصق",
-  }[op.operationType] || op.operationType;
   const resultColor = op.result === "SUCCESS" ? "#16a34a" : "#dc2626";
-  const resultLabel = op.result === "SUCCESS" ? "ناجح" : "فاشل";
-  return `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>سجل العملية ${op.id}</title>${PDF_STYLE}</head><body><div class="header-bar info-bar"><div style="font-size:18px;font-weight:700;margin-bottom:4px;">📋 سجل العملية — ${opTypeLabel}</div><div style="font-size:12px;opacity:.85;">تاريخ الطباعة: ${now} | رقم العملية: ${op.id}</div></div><div class="info-grid"><div class="info-card"><div class="info-label">رقم العملية</div><div class="info-value" style="font-family:monospace">${op.id}</div></div><div class="info-card"><div class="info-label">نوع العملية</div><div class="info-value">${opTypeLabel}</div></div><div class="info-card"><div class="info-label">رقم الطلب</div><div class="info-value" style="font-family:monospace">${op.orderCode || "—"}</div></div><div class="info-card"><div class="info-label">شركة الشحن</div><div class="info-value">${op.carrier || "—"}</div></div><div class="info-card"><div class="info-label">الموظف</div><div class="info-value">${op.employee || "—"}</div></div><div class="info-card"><div class="info-label">النتيجة</div><div class="info-value" style="color:${resultColor}">${resultLabel}</div></div><div class="info-card"><div class="info-label">التاريخ والوقت</div><div class="info-value" style="font-family:monospace;font-size:12px">${op.createdAt || "—"}</div></div><div class="info-card"><div class="info-label">التفاصيل</div><div class="info-value">${op.details || "—"}</div></div></div>${order ? `<h2>بيانات الطلب</h2><div class="info-grid"><div class="info-card"><div class="info-label">العميل</div><div class="info-value">${order.customer || "—"}</div></div><div class="info-card"><div class="info-label">المدينة</div><div class="info-value">${order.city || "—"}</div></div><div class="info-card"><div class="info-label">الإجمالي</div><div class="info-value">${order.total ? order.total + " ر.س" : "—"}</div></div><div class="info-card"><div class="info-label">الحالة</div><div class="info-value">${order.status || "—"}</div></div></div>` : ""}</body></html>`;
+  const resultLabel = op.result === "SUCCESS" ? labels.success : labels.failed;
+
+  return `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>${labels.title} ${op.id}</title>${PDF_STYLE}</head><body><div class="header-bar info-bar"><div style="font-size:18px;font-weight:700;margin-bottom:4px;">${labels.title} — ${labels.opTypeLabel}</div><div style="font-size:12px;opacity:.85;">${labels.printedAt}: ${now} | ${labels.opNumber}: ${op.id}</div></div><div class="info-grid"><div class="info-card"><div class="info-label">${labels.opNumber}</div><div class="info-value" style="font-family:monospace">${op.id}</div></div><div class="info-card"><div class="info-label">${labels.opType}</div><div class="info-value">${labels.opTypeLabel}</div></div><div class="info-card"><div class="info-label">${labels.orderNumber}</div><div class="info-value" style="font-family:monospace">${op.orderCode || "—"}</div></div><div class="info-card"><div class="info-label">${labels.carrier}</div><div class="info-value">${op.carrier || "—"}</div></div><div class="info-card"><div class="info-label">${labels.employee}</div><div class="info-value">${op.employee || "—"}</div></div><div class="info-card"><div class="info-label">${labels.result}</div><div class="info-value" style="color:${resultColor}">${resultLabel}</div></div><div class="info-card"><div class="info-label">${labels.datetime}</div><div class="info-value" style="font-family:monospace;font-size:12px">${op.createdAt || "—"}</div></div><div class="info-card"><div class="info-label">${labels.details}</div><div class="info-value">${op.details || "—"}</div></div></div>${order ? `<h2>${labels.orderInfo}</h2><div class="info-grid"><div class="info-card"><div class="info-label">${labels.customer}</div><div class="info-value">${order.customer || "—"}</div></div><div class="info-card"><div class="info-label">${labels.city}</div><div class="info-value">${order.city || "—"}</div></div><div class="info-card"><div class="info-label">${labels.total}</div><div class="info-value">${order.total ? order.total + " " + labels.currency : "—"}</div></div><div class="info-card"><div class="info-label">${labels.status}</div><div class="info-value">${order.status || "—"}</div></div></div>` : ""}</body></html>`;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GENERIC OP MODAL — for non-prep operations
-// ─────────────────────────────────────────────────────────────────────────────
-function GenericOpModal({ open, onClose, op, orders }) {
+// ─────────────────────────────────────────────────────────────
+// GENERIC OP MODAL
+// ─────────────────────────────────────────────────────────────
+function GenericOpModal({ open, onClose, op, orders, t }) {
   if (!op) return null;
-  const order = orders?.find(o => o.code === op.orderCode);
-  const opTypeLabel = {
-    REJECT_ORDER: "رفض طلب", ASSIGN_CARRIER: "تعيين شركة شحن",
-    PRINT_LABEL: "طباعة ملصق", SHIP_ORDER: "شحن طلب",
-    RETURN_ORDER: "استلام مرتجع", RETRY_ORDER: "إعادة محاولة",
-    BULK_REJECT: "رفض جماعي", REPRINT_LABEL: "إعادة طباعة ملصق",
-  }[op.operationType] || op.operationType;
+
+  const order = orders?.find((o) => o.code === op.orderCode);
+  const opTypeLabel = t(OPERATION_TYPE_KEYS[op.operationType] ?? "opTypes.unknown");
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="!max-w-lg bg-white dark:bg-slate-900 rounded-xl" dir="rtl">
-        <DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
-          <DialogTitle className="text-lg font-bold flex items-center gap-2">
-            <ClipboardList className="text-[#ff8b00]" size={20} />
-            سجل العملية — {op.id}
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="!max-w-2xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl" dir="rtl">
+        <div className="relative px-6 pt-6 pb-5 rounded-t-xl overflow-hidden" style={{ background: DS.headerGradient }}>
+          <div className="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white/10 pointer-events-none" />
+          <div className="absolute -bottom-6 -right-2 w-32 h-32 rounded-full bg-white/10 pointer-events-none" />
 
-        <div className="pt-4 space-y-4">
-          {/* Op details grid */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="relative flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              <div className={cn("w-11 h-11 flex items-center justify-center bg-white/20 backdrop-blur-sm", DS.radiusSm)}>
+                <ClipboardList className="text-white" size={22} />
+              </div>
+              <div>
+                <p className="text-white/70 text-xs font-medium mb-0.5">{t("genericModal.operationLabel")}</p>
+                <h2 className="text-white text-xl font-black font-mono">{op.id}</h2>
+              </div>
+            </div>
+
+            <HeaderIconBtn onClick={onClose}>
+              <X size={15} className="text-white" />
+            </HeaderIconBtn>
+          </div>
+
+          <div className="relative mt-3 flex items-center gap-2 flex-wrap">
+            <HeaderBadge>
+              <FileText size={11} />
+              {opTypeLabel}
+            </HeaderBadge>
+            <HeaderBadge>
+              {op.result === "SUCCESS" ? t("result.success") : t("result.failed")}
+            </HeaderBadge>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-5">
+          <div className="grid grid-cols-2 gap-2">
             {[
-              { label: "نوع العملية", value: opTypeLabel },
-              { label: "رقم الطلب",   value: op.orderCode || "—" },
-              { label: "شركة الشحن",  value: op.carrier   || "—" },
-              { label: "الموظف",      value: op.employee  || "—" },
-              { label: "التاريخ",     value: op.createdAt || "—" },
-              { label: "التفاصيل",    value: op.details   || "—" },
-            ].map(({ label, value }) => (
-              <div key={label} className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3">
-                <p className="text-xs text-slate-400 mb-1">{label}</p>
-                <p className="font-semibold text-sm truncate">{value}</p>
+              { label: t("genericModal.opType"), value: opTypeLabel, icon: ClipboardList, color: DS.primary },
+              { label: t("genericModal.orderNumber"), value: op.orderCode || "—", icon: Hash, color: DS.accent },
+              { label: t("genericModal.carrier"), value: op.carrier || "—", icon: Truck, color: DS.warning },
+              { label: t("genericModal.employee"), value: op.employee || "—", icon: User, color: DS.accent },
+              { label: t("genericModal.datetime"), value: op.createdAt || "—", icon: Calendar, color: DS.warning },
+              { label: t("genericModal.details"), value: op.details || "—", icon: Info, color: DS.primary },
+            ].map(({ label, value, icon: Icon, color }) => (
+              <div
+                key={label}
+                className={cn(
+                  "flex items-start gap-3 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 p-3 transition-colors",
+                  DS.radius
+                )}
+              >
+                <div
+                  className={cn("w-7 h-7 flex items-center justify-center flex-shrink-0 mt-0.5", DS.radiusSm)}
+                  style={{ backgroundColor: color + "18" }}
+                >
+                  <Icon size={13} style={{ color }} />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] text-slate-400 mb-0.5 font-semibold uppercase tracking-wide">{label}</p>
+                  <p className="font-bold text-sm text-slate-800 dark:text-slate-100 truncate">{value}</p>
+                </div>
               </div>
             ))}
           </div>
 
-          {/* Result badge */}
           <div className="flex items-center gap-2 px-4 py-3 rounded-xl border bg-slate-50 dark:bg-slate-800">
-            <span className="text-sm font-medium text-slate-500">النتيجة:</span>
-            <Badge className={cn("rounded-full text-xs border",
-              op.result === "SUCCESS"
-                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                : "bg-red-50 text-red-700 border-red-200")}>
-              {op.result === "SUCCESS" ? "ناجح" : "فاشل"}
+            <span className="text-sm font-medium text-slate-500">{t("genericModal.result")}:</span>
+            <Badge
+              className={cn(
+                "rounded-full text-xs border",
+                op.result === "SUCCESS"
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                  : "bg-red-50 text-red-700 border-red-200"
+              )}
+            >
+              {op.result === "SUCCESS" ? t("result.success") : t("result.failed")}
             </Badge>
           </div>
 
-          {/* Order info if found */}
           {order && (
             <div>
-              <h4 className="text-sm font-bold mb-2 text-slate-600">بيانات الطلب</h4>
+              <h4 className="text-sm font-bold mb-2 text-slate-600">{t("genericModal.orderInfo")}</h4>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { label: "العميل", value: order.customer },
-                  { label: "المدينة", value: order.city },
-                  { label: "الإجمالي", value: order.total ? `${order.total} ر.س` : "—" },
-                  { label: "الحالة", value: order.status },
+                  { label: t("genericModal.customer"), value: order.customer },
+                  { label: t("genericModal.city"), value: order.city },
+                  { label: t("genericModal.total"), value: order.total ? `${order.total} ${t("common.currency")}` : "—" },
+                  { label: t("genericModal.status"), value: order.status || "—" },
                 ].map(({ label, value }) => (
                   <div key={label} className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3">
                     <p className="text-xs text-slate-400 mb-1">{label}</p>
@@ -194,17 +374,43 @@ function GenericOpModal({ open, onClose, op, orders }) {
             </div>
           )}
 
-          {/* Download PDF */}
           <button
-            onClick={() => openPrintWindow(buildGenericOpPDF(op, order))}
+            onClick={() =>
+              openPrintWindow(
+                buildGenericOpPDF(op, order, {
+                  title: t("genericPdf.title"),
+                  printedAt: t("genericPdf.printedAt"),
+                  opNumber: t("genericPdf.opNumber"),
+                  opType: t("genericPdf.opType"),
+                  opTypeLabel,
+                  orderNumber: t("genericPdf.orderNumber"),
+                  carrier: t("genericPdf.carrier"),
+                  employee: t("genericPdf.employee"),
+                  result: t("genericPdf.result"),
+                  datetime: t("genericPdf.datetime"),
+                  details: t("genericPdf.details"),
+                  orderInfo: t("genericPdf.orderInfo"),
+                  customer: t("genericPdf.customer"),
+                  city: t("genericPdf.city"),
+                  total: t("genericPdf.total"),
+                  status: t("genericPdf.status"),
+                  currency: t("common.currency"),
+                  success: t("result.success"),
+                  failed: t("result.failed"),
+                }),
+                t("popupBlocked")
+              )
+            }
             className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-blue-200 bg-blue-50 dark:bg-blue-950/20 text-blue-700 font-semibold text-sm hover:bg-blue-100 transition-colors"
           >
             <Download className="w-4 h-4" />
-            تحميل PDF سجل العملية
+            {t("genericModal.downloadPdf")}
           </button>
 
           <div className="flex justify-end">
-            <Button variant="outline" onClick={onClose}>إغلاق</Button>
+            <Button variant="outline" onClick={onClose}>
+              {t("close")}
+            </Button>
           </div>
         </div>
       </DialogContent>
@@ -212,41 +418,72 @@ function GenericOpModal({ open, onClose, op, orders }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ORDER LOG MODAL — for ORDER_PREPARED ops
-// ─────────────────────────────────────────────────────────────────────────────
-function OrderLogModal({ open, onClose, op, opsLogs, t }) {
+// ─────────────────────────────────────────────────────────────
+// ORDER LOG MODAL
+// ─────────────────────────────────────────────────────────────
+function OrderLogModal({ open, onClose, op, t }) {
   const [signerName, setSignerName] = useState("");
-  const [signed, setSigned]         = useState(false);
+  const [signed, setSigned] = useState(false);
 
   if (!op) return null;
 
-  const products    = op.productsSnapshot || [];
+  const products = op.productsSnapshot || [];
   const correctLogs = (op.scanLogs || []).filter((l) => l.success);
-  const errorLogs   = (op.scanLogs || []).filter((l) => !l.success);
-  const order       = op.orderSnapshot || {};
+  const errorLogs = (op.scanLogs || []).filter((l) => !l.success);
+  const order = op.orderSnapshot || {};
 
-  const handleSign  = () => { if (signerName.trim()) setSigned(true); };
-  const handleClose = () => { setSigned(false); setSignerName(""); onClose(); };
+  const handleSign = () => {
+    if (signerName.trim()) setSigned(true);
+  };
+
+  const handleClose = () => {
+    setSigned(false);
+    setSignerName("");
+    onClose();
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="!max-w-2xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto" dir="rtl">
-        <DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
-          <DialogTitle className="text-lg font-bold flex items-center gap-2">
-            <FileText className="text-[#ff8b00]" size={22} />
-            ملف الطلب — {op.orderCode}
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="!max-w-2xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl" dir="rtl">
+        <div className="relative px-6 pt-6 pb-5 rounded-t-xl overflow-hidden" style={{ background: DS.headerGradient }}>
+          <div className="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white/10 pointer-events-none" />
+          <div className="absolute -bottom-6 -right-2 w-32 h-32 rounded-full bg-white/10 pointer-events-none" />
 
-        <div className="pt-3 space-y-5">
-          {/* Order info */}
+          <div className="relative flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              <div className={cn("w-11 h-11 flex items-center justify-center bg-white/20 backdrop-blur-sm", DS.radiusSm)}>
+                <FileText className="text-white" size={22} />
+              </div>
+              <div>
+                <p className="text-white/70 text-xs font-medium mb-0.5">{t("orderLogModal.fileLabel")}</p>
+                <h2 className="text-white text-xl font-black font-mono">{op.orderCode}</h2>
+              </div>
+            </div>
+
+            <HeaderIconBtn onClick={handleClose}>
+              <X size={15} className="text-white" />
+            </HeaderIconBtn>
+          </div>
+
+          <div className="relative mt-3 flex items-center gap-2 flex-wrap">
+            <HeaderBadge>
+              <Truck size={11} />
+              {op.carrier || "—"}
+            </HeaderBadge>
+            <HeaderBadge>
+              <Calendar size={11} />
+              {op.createdAt || "—"}
+            </HeaderBadge>
+          </div>
+        </div>
+
+        <div className="pt-3 p-6 space-y-5">
           <div className="grid grid-cols-2 gap-3">
             {[
-              { label: "العميل",       value: order.customer || "—" },
-              { label: "المدينة",      value: order.city     || "—" },
-              { label: "شركة الشحن",  value: op.carrier     || "غير محدد" },
-              { label: "وقت التحضير", value: op.createdAt   || "—" },
+              { label: t("orderLogModal.customer"), value: order.customer || "—" },
+              { label: t("orderLogModal.city"), value: order.city || "—" },
+              { label: t("orderLogModal.carrier"), value: op.carrier || t("common.unspecified") },
+              { label: t("orderLogModal.preparedAt"), value: op.createdAt || "—" },
             ].map(({ label, value }) => (
               <div key={label} className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3">
                 <p className="text-xs text-slate-400 mb-1">{label}</p>
@@ -255,32 +492,79 @@ function OrderLogModal({ open, onClose, op, opsLogs, t }) {
             ))}
           </div>
 
-          {/* PDF download buttons */}
           <div className="grid grid-cols-2 gap-3">
-            <button onClick={() => openPrintWindow(buildCorrectPDF([op]))}
-              className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 font-semibold text-sm hover:bg-emerald-100 transition-colors">
+            <button
+              onClick={() =>
+                openPrintWindow(
+                  buildCorrectPDF([op], {
+                    title: t("correctPdf.title"),
+                    printedAt: t("correctPdf.printedAt"),
+                    ordersCount: t("correctPdf.ordersCount"),
+                    carrier: t("correctPdf.carrier"),
+                    productName: t("correctPdf.productName"),
+                    requested: t("correctPdf.requested"),
+                    scanned: t("correctPdf.scanned"),
+                    status: t("correctPdf.status"),
+                    completed: t("correctPdf.completed"),
+                    incomplete: t("correctPdf.incomplete"),
+                    correctScans: t("correctPdf.correctScans"),
+                    signatureTitle: t("correctPdf.signatureTitle"),
+                    signatureText: t("correctPdf.signatureText"),
+                    signerName: t("correctPdf.signerName"),
+                    signature: t("correctPdf.signature"),
+                    date: t("correctPdf.date"),
+                  }),
+                  t("popupBlocked")
+                )
+              }
+              className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 font-semibold text-sm hover:bg-emerald-100 transition-colors"
+            >
               <Download className="w-4 h-4" />
-              PDF المسح الصحيح
+              {t("orderLogModal.correctPdf")}
             </button>
-            <button onClick={() => { const html = buildErrorsPDF([op]); if (!html) { alert("لا توجد أخطاء في هذا الطلب"); return; } openPrintWindow(html); }}
-              className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-red-300 bg-red-50 dark:bg-red-950/20 text-red-700 font-semibold text-sm hover:bg-red-100 transition-colors">
+
+            <button
+              onClick={() => {
+                const html = buildErrorsPDF(
+                  [op],
+                  {
+                    title: t("errorsPdf.title"),
+                    printedAt: t("errorsPdf.printedAt"),
+                    ordersCount: t("errorsPdf.ordersCount"),
+                    description: t("errorsPdf.description"),
+                    errorUnit: t("errorsPdf.errorUnit"),
+                    error: t("errorsPdf.error"),
+                    reason: t("errorsPdf.reason"),
+                    time: t("errorsPdf.time"),
+                  }
+                );
+                if (!html) {
+                  alert(t("orderLogModal.noErrors"));
+                  return;
+                }
+                openPrintWindow(html, t("popupBlocked"));
+              }}
+              className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-red-300 bg-red-50 dark:bg-red-950/20 text-red-700 font-semibold text-sm hover:bg-red-100 transition-colors"
+            >
               <FileX className="w-4 h-4" />
-              PDF أخطاء المسح ({errorLogs.length})
+              {t("orderLogModal.errorsPdf", { count: errorLogs.length })}
             </button>
           </div>
 
-          {/* Products table */}
           {products.length > 0 && (
             <div>
               <h4 className="text-sm font-bold mb-3 flex items-center gap-2">
-                <Package className="w-4 h-4 text-[#ff8b00]" /> المنتجات
+                <Package className="w-4 h-4 text-[#ff8b00]" />
+                {t("orderLogModal.products")}
               </h4>
               <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
                 <table className="w-full text-sm">
                   <thead className="bg-slate-50 dark:bg-slate-800">
                     <tr>
-                      {["SKU", "الاسم", "المطلوب", "الممسوح", "الحالة"].map((h) => (
-                        <th key={h} className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase">{h}</th>
+                      {[t("orderLogModal.sku"), t("orderLogModal.name"), t("orderLogModal.requested"), t("orderLogModal.scanned"), t("orderLogModal.status")].map((h) => (
+                        <th key={h} className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase">
+                          {h}
+                        </th>
                       ))}
                     </tr>
                   </thead>
@@ -294,10 +578,15 @@ function OrderLogModal({ open, onClose, op, opsLogs, t }) {
                           <td className="px-4 py-3 text-center font-mono">{p.requestedQty}</td>
                           <td className="px-4 py-3 text-center font-mono">{p.scannedQty || 0}</td>
                           <td className="px-4 py-3">
-                            <Badge className={cn("rounded-full text-xs border",
-                              done ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                   : "bg-amber-50 text-amber-700 border-amber-200")}>
-                              {done ? "مكتمل" : "ناقص"}
+                            <Badge
+                              className={cn(
+                                "rounded-full text-xs border",
+                                done
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                  : "bg-amber-50 text-amber-700 border-amber-200"
+                              )}
+                            >
+                              {done ? t("orderLogModal.completed") : t("orderLogModal.incomplete")}
                             </Badge>
                           </td>
                         </tr>
@@ -309,16 +598,18 @@ function OrderLogModal({ open, onClose, op, opsLogs, t }) {
             </div>
           )}
 
-          {/* Scan errors */}
           {errorLogs.length > 0 && (
             <div>
               <h4 className="text-sm font-bold mb-3 flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 text-red-500" />
-                أخطاء المسح ({errorLogs.length})
+                {t("orderLogModal.scanErrors", { count: errorLogs.length })}
               </h4>
               <div className="space-y-2 max-h-40 overflow-y-auto">
                 {errorLogs.map((err, i) => (
-                  <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200">
+                  <div
+                    key={i}
+                    className="flex items-start gap-3 p-3 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200"
+                  >
                     <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                     <div>
                       <p className="text-xs font-semibold text-red-700 dark:text-red-300">{err.message}</p>
@@ -330,16 +621,18 @@ function OrderLogModal({ open, onClose, op, opsLogs, t }) {
             </div>
           )}
 
-          {/* Correct scans */}
           {correctLogs.length > 0 && (
             <div>
               <h4 className="text-sm font-bold mb-3 flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                عمليات المسح الصحيحة ({correctLogs.length})
+                {t("orderLogModal.correctScans", { count: correctLogs.length })}
               </h4>
               <div className="space-y-1.5 max-h-40 overflow-y-auto">
                 {correctLogs.map((log, i) => (
-                  <div key={i} className="flex items-start gap-2 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 text-xs">
+                  <div
+                    key={i}
+                    className="flex items-start gap-2 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 text-xs"
+                  >
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 mt-0.5 shrink-0" />
                     <p className="font-medium text-emerald-800 dark:text-emerald-200">{log.message}</p>
                   </div>
@@ -348,34 +641,44 @@ function OrderLogModal({ open, onClose, op, opsLogs, t }) {
             </div>
           )}
 
-          {/* Signature */}
           <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-5 space-y-4">
             <h4 className="text-sm font-bold flex items-center gap-2">
-              <PenLine className="w-4 h-4 text-[#ff8b00]" /> تأكيد الاستلام — موظف شركة الشحن
+              <PenLine className="w-4 h-4 text-[#ff8b00]" />
+              {t("orderLogModal.signatureSection")}
             </h4>
+
             {signed ? (
               <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 rounded-xl p-4 text-center">
                 <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
-                <p className="font-semibold text-emerald-800 dark:text-emerald-200">تم التوقيع بواسطة: {signerName}</p>
+                <p className="font-semibold text-emerald-800 dark:text-emerald-200">
+                  {t("orderLogModal.signedBy", { name: signerName })}
+                </p>
                 <p className="text-xs text-slate-500 mt-1">{new Date().toLocaleString("ar-SA")}</p>
               </div>
             ) : (
               <>
-                <p className="text-xs text-slate-500">أقر بأنني استلمت الطلبات المُحضَّرة المدرجة في هذا الملف كاملةً وبدون نقصان.</p>
+                <p className="text-xs text-slate-500">{t("orderLogModal.signatureText")}</p>
                 <div className="space-y-2">
-                  <label className="text-xs font-medium text-slate-600 dark:text-slate-400">اسم الموظف</label>
-                  <Input value={signerName} onChange={(e) => setSignerName(e.target.value)} placeholder="اسم موظف شركة الشحن" className="h-10 rounded-xl" />
+                  <label className="text-xs font-medium text-slate-600 dark:text-slate-400">{t("orderLogModal.signerName")}</label>
+                  <Input
+                    value={signerName}
+                    onChange={(e) => setSignerName(e.target.value)}
+                    placeholder={t("orderLogModal.signerPlaceholder")}
+                    className="h-10 rounded-xl"
+                  />
                 </div>
-                <Button onClick={handleSign} disabled={!signerName.trim()}
-                  className="w-full bg-[#ff8b00] hover:bg-[#e07a00] text-white gap-2">
-                  <PenLine size={16} /> تأكيد التوقيع
+                <Button onClick={handleSign} disabled={!signerName.trim()} className="w-full bg-[#ff8b00] hover:bg-[#e07a00] text-white gap-2">
+                  <PenLine size={16} />
+                  {t("orderLogModal.confirmSignature")}
                 </Button>
               </>
             )}
           </div>
 
           <div className="flex justify-end">
-            <Button variant="outline" onClick={handleClose}>إغلاق</Button>
+            <Button variant="outline" onClick={handleClose}>
+              {t("close")}
+            </Button>
           </div>
         </div>
       </DialogContent>
@@ -383,50 +686,70 @@ function OrderLogModal({ open, onClose, op, opsLogs, t }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 // PREP SESSION MODAL
-// ─────────────────────────────────────────────────────────────────────────────
-function PrepSessionModal({ open, onClose, sessionOps }) {
+// ─────────────────────────────────────────────────────────────
+function PrepSessionModal({ open, onClose, sessionOps, t }) {
   if (!sessionOps || sessionOps.length === 0) return null;
 
-  const totalErrors  = sessionOps.reduce((s, op) => s + (op.scanLogs || []).filter((l) => !l.success).length, 0);
+  const totalErrors = sessionOps.reduce((s, op) => s + (op.scanLogs || []).filter((l) => !l.success).length, 0);
   const totalCorrect = sessionOps.reduce((s, op) => s + (op.scanLogs || []).filter((l) => l.success).length, 0);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="!max-w-xl bg-white dark:bg-slate-900 rounded-xl" dir="rtl">
-        <DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
-          <DialogTitle className="text-lg font-bold flex items-center gap-2">
-            <ClipboardList className="text-[#ff8b00]" size={20} />
-            ملفات جلسة التحضير
-          </DialogTitle>
-        </DialogHeader>
-        <div className="pt-4 space-y-5">
-          {/* Stats */}
+      <DialogContent className="!max-w-xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl" dir="rtl">
+        <div className="relative px-6 pt-6 pb-5 rounded-t-xl overflow-hidden" style={{ background: DS.headerGradient }}>
+          <div className="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white/10 pointer-events-none" />
+          <div className="absolute -bottom-6 -right-2 w-32 h-32 rounded-full bg-white/10 pointer-events-none" />
+
+          <div className="relative flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              <div className={cn("w-11 h-11 flex items-center justify-center bg-white/20 backdrop-blur-sm", DS.radiusSm)}>
+                <FileStack className="text-white" size={22} />
+              </div>
+              <div>
+                <p className="text-white/70 text-xs font-medium mb-0.5">{t("sessionModal.sessionLabel")}</p>
+                <h2 className="text-white text-xl font-black">{t("sessionModal.title")}</h2>
+              </div>
+            </div>
+
+            <HeaderIconBtn onClick={onClose}>
+              <X size={15} className="text-white" />
+            </HeaderIconBtn>
+          </div>
+
+          <div className="relative mt-3 flex items-center gap-2 flex-wrap">
+            <HeaderBadge>{t("sessionModal.ordersCount", { count: sessionOps.length })}</HeaderBadge>
+          </div>
+        </div>
+
+        <div className="pt-4 p-6 space-y-5">
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 text-center">
               <p className="text-2xl font-bold">{sessionOps.length}</p>
-              <p className="text-xs text-slate-500 mt-1">طلب محضَّر</p>
+              <p className="text-xs text-slate-500 mt-1">{t("sessionModal.preparedOrders")}</p>
             </div>
             <div className="bg-emerald-50 dark:bg-emerald-950/20 rounded-xl p-3 text-center border border-emerald-200">
               <p className="text-2xl font-bold text-emerald-700">{totalCorrect}</p>
-              <p className="text-xs text-emerald-600 mt-1">مسح صحيح</p>
+              <p className="text-xs text-emerald-600 mt-1">{t("sessionModal.correctScans")}</p>
             </div>
             <div className="bg-red-50 dark:bg-red-950/20 rounded-xl p-3 text-center border border-red-200">
               <p className="text-2xl font-bold text-red-600">{totalErrors}</p>
-              <p className="text-xs text-red-500 mt-1">مسح خاطئ</p>
+              <p className="text-xs text-red-500 mt-1">{t("sessionModal.errorScans")}</p>
             </div>
           </div>
 
-          {/* Orders list */}
           <div className="space-y-2 max-h-48 overflow-y-auto">
             {sessionOps.map((op) => {
-              const errs  = (op.scanLogs || []).filter((l) => !l.success).length;
+              const errs = (op.scanLogs || []).filter((l) => !l.success).length;
               const prods = op.productsSnapshot || [];
-              const done  = prods.every((p) => (p.scannedQty || 0) >= p.requestedQty);
+              const done = prods.every((p) => (p.scannedQty || 0) >= p.requestedQty);
+
               return (
-                <div key={op.orderCode}
-                  className="flex items-center justify-between px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                <div
+                  key={op.orderCode}
+                  className="flex items-center justify-between px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                >
                   <div className="flex items-center gap-2">
                     {done ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <AlertCircle className="w-4 h-4 text-amber-500" />}
                     <span className="font-mono font-bold text-sm">{op.orderCode}</span>
@@ -434,12 +757,19 @@ function PrepSessionModal({ open, onClose, sessionOps }) {
                   </div>
                   <div className="flex items-center gap-2">
                     {errs > 0 && (
-                      <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">{errs} خطأ</span>
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
+                        {t("sessionModal.errorsBadge", { count: errs })}
+                      </span>
                     )}
-                    <Badge className={cn("rounded-full text-xs border",
-                      done ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                           : "bg-amber-50 text-amber-700 border-amber-200")}>
-                      {done ? "مكتمل" : "ناقص"}
+                    <Badge
+                      className={cn(
+                        "rounded-full text-xs border",
+                        done
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-amber-50 text-amber-700 border-amber-200"
+                      )}
+                    >
+                      {done ? t("sessionModal.completed") : t("sessionModal.incomplete")}
                     </Badge>
                   </div>
                 </div>
@@ -447,29 +777,73 @@ function PrepSessionModal({ open, onClose, sessionOps }) {
             })}
           </div>
 
-          {/* PDF buttons */}
           <div className="grid grid-cols-1 gap-3">
-            <button onClick={() => openPrintWindow(buildCorrectPDF(sessionOps))}
-              className="flex items-center justify-center gap-3 px-5 py-4 rounded-xl border-2 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 font-semibold hover:bg-emerald-100 transition-colors">
+            <button
+              onClick={() =>
+                openPrintWindow(
+                  buildCorrectPDF(sessionOps, {
+                    title: t("correctPdf.title"),
+                    printedAt: t("correctPdf.printedAt"),
+                    ordersCount: t("correctPdf.ordersCount"),
+                    carrier: t("correctPdf.carrier"),
+                    productName: t("correctPdf.productName"),
+                    requested: t("correctPdf.requested"),
+                    scanned: t("correctPdf.scanned"),
+                    status: t("correctPdf.status"),
+                    completed: t("correctPdf.completed"),
+                    incomplete: t("correctPdf.incomplete"),
+                    correctScans: t("correctPdf.correctScans"),
+                    signatureTitle: t("correctPdf.signatureTitle"),
+                    signatureText: t("correctPdf.signatureText"),
+                    signerName: t("correctPdf.signerName"),
+                    signature: t("correctPdf.signature"),
+                    date: t("correctPdf.date"),
+                  }),
+                  t("popupBlocked")
+                )
+              }
+              className="flex items-center justify-center gap-3 px-5 py-4 rounded-xl border-2 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 font-semibold hover:bg-emerald-100 transition-colors"
+            >
               <Download className="w-5 h-5" />
               <div className="text-right">
-                <p className="font-bold text-sm">PDF المسح الصحيح</p>
-                <p className="text-xs font-normal opacity-75">جميع الطلبات والمنتجات + نموذج التوقيع</p>
+                <p className="font-bold text-sm">{t("sessionModal.correctPdfTitle")}</p>
+                <p className="text-xs font-normal opacity-75">{t("sessionModal.correctPdfDesc")}</p>
               </div>
             </button>
-            <button onClick={() => { const html = buildErrorsPDF(sessionOps); if (!html) { alert("لا توجد أخطاء في هذه الجلسة"); return; } openPrintWindow(html); }}
+
+            <button
+              onClick={() => {
+                const html = buildErrorsPDF(sessionOps, {
+                  title: t("errorsPdf.title"),
+                  printedAt: t("errorsPdf.printedAt"),
+                  ordersCount: t("errorsPdf.ordersCount"),
+                  description: t("errorsPdf.description"),
+                  errorUnit: t("errorsPdf.errorUnit"),
+                  error: t("errorsPdf.error"),
+                  reason: t("errorsPdf.reason"),
+                  time: t("errorsPdf.time"),
+                });
+                if (!html) {
+                  alert(t("sessionModal.noErrors"));
+                  return;
+                }
+                openPrintWindow(html, t("popupBlocked"));
+              }}
               disabled={totalErrors === 0}
-              className="flex items-center justify-center gap-3 px-5 py-4 rounded-xl border-2 border-red-300 bg-red-50 dark:bg-red-950/20 text-red-700 font-semibold hover:bg-red-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+              className="flex items-center justify-center gap-3 px-5 py-4 rounded-xl border-2 border-red-300 bg-red-50 dark:bg-red-950/20 text-red-700 font-semibold hover:bg-red-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
               <FileX className="w-5 h-5" />
               <div className="text-right">
-                <p className="font-bold text-sm">PDF أخطاء المسح ({totalErrors})</p>
-                <p className="text-xs font-normal opacity-75">جميع الأكواد الخاطئة وأسباب الرفض</p>
+                <p className="font-bold text-sm">{t("sessionModal.errorsPdfTitle", { count: totalErrors })}</p>
+                <p className="text-xs font-normal opacity-75">{t("sessionModal.errorsPdfDesc")}</p>
               </div>
             </button>
           </div>
 
           <div className="flex justify-end">
-            <Button variant="outline" onClick={onClose}>إغلاق</Button>
+            <Button variant="outline" onClick={onClose}>
+              {t("close")}
+            </Button>
           </div>
         </div>
       </DialogContent>
@@ -477,50 +851,56 @@ function PrepSessionModal({ open, onClose, sessionOps }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 // MAIN LOGS TAB
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 export function LogsTab({ opsLogs, orders = [] }) {
   const t = useTranslations("warehouse.logs");
 
-  const [search,         setSearch]         = useState("");
-  const [filterOpType,   setFilterOpType]   = useState("all");
-  const [filterResult,   setFilterResult]   = useState("all");
-  const [filterCarrier,  setFilterCarrier]  = useState("all");
-  const [page,           setPage]           = useState({ current_page: 1, per_page: 12 });
+  const [search, setSearch] = useState("");
+  const [filterOpType, setFilterOpType] = useState("all");
+  const [filterResult, setFilterResult] = useState("all");
+  const [filterCarrier, setFilterCarrier] = useState("all");
+  const [page, setPage] = useState({ current_page: 1, per_page: 12 });
 
-  const [orderLogModal,  setOrderLogModal]  = useState(null); // prep op
-  const [genericOpModal, setGenericOpModal] = useState(null); // non-prep op
-  const [sessionModal,   setSessionModal]   = useState(null); // batch
+  const [orderLogModal, setOrderLogModal] = useState(null);
+  const [genericOpModal, setGenericOpModal] = useState(null);
+  const [sessionModal, setSessionModal] = useState(null);
 
-  // Derive unique carriers from logs
   const allCarriers = useMemo(() => {
-    const set = new Set(opsLogs.map(l => l.carrier).filter(Boolean));
+    const set = new Set(opsLogs.map((l) => l.carrier).filter(Boolean));
     return [...set].sort();
   }, [opsLogs]);
 
-  const hasActiveFilters = filterOpType !== "all" || filterResult !== "all" || filterCarrier !== "all";
+  const hasActiveFilters =
+    filterOpType !== "all" || filterResult !== "all" || filterCarrier !== "all";
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return opsLogs.filter((l) => {
-      if (filterOpType  !== "all" && l.operationType !== filterOpType)  return false;
-      if (filterResult  !== "all" && l.result        !== filterResult)  return false;
-      if (filterCarrier !== "all" && l.carrier       !== filterCarrier) return false;
-      if (q && !([l.id, l.orderCode, l.carrier, l.employee, l.details].some((x) => String(x || "").toLowerCase().includes(q)))) return false;
+      if (filterOpType !== "all" && l.operationType !== filterOpType) return false;
+      if (filterResult !== "all" && l.result !== filterResult) return false;
+      if (filterCarrier !== "all" && l.carrier !== filterCarrier) return false;
+      if (
+        q &&
+        ![l.id, l.orderCode, l.carrier, l.employee, l.details].some((x) =>
+          String(x || "").toLowerCase().includes(q)
+        )
+      )
+        return false;
       return true;
     });
   }, [opsLogs, search, filterOpType, filterResult, filterCarrier]);
 
   const successCount = opsLogs.filter((l) => l.result === "SUCCESS").length;
-  const failCount    = opsLogs.filter((l) => l.result === "FAILED").length;
-  const rate         = opsLogs.length > 0 ? Math.round((successCount / opsLogs.length) * 100) : 0;
+  const failCount = opsLogs.filter((l) => l.result === "FAILED").length;
+  const rate = opsLogs.length > 0 ? Math.round((successCount / opsLogs.length) * 100) : 0;
 
   const stats = [
-    { id: "total-ops", name: t("stats.totalOps"),    value: opsLogs.length, icon: ClipboardList, color: "#64748b", sortOrder: 0 },
-    { id: "success",   name: t("stats.success"),      value: successCount,   icon: CheckCircle2,  color: "#10b981", sortOrder: 1 },
-    { id: "failed",    name: t("stats.failed"),        value: failCount,      icon: XCircle,       color: "#ef4444", sortOrder: 2 },
-    { id: "rate",      name: t("stats.successRate"),  value: `${rate}%`,     icon: Package,       color: "#a855f7", sortOrder: 3 },
+    { id: "total-ops", name: t("stats.totalOps"), value: opsLogs.length, icon: ClipboardList, color: "#64748b", sortOrder: 0 },
+    { id: "success", name: t("stats.success"), value: successCount, icon: CheckCircle2, color: "#10b981", sortOrder: 1 },
+    { id: "failed", name: t("stats.failed"), value: failCount, icon: XCircle, color: "#ef4444", sortOrder: 2 },
+    { id: "rate", name: t("stats.successRate"), value: `${rate}%`, icon: Package, color: "#a855f7", sortOrder: 3 },
   ];
 
   const prepGroups = useMemo(() => {
@@ -534,127 +914,117 @@ export function LogsTab({ opsLogs, orders = [] }) {
     return groups;
   }, [opsLogs]);
 
-  const openSingleLog    = (op) => setOrderLogModal(op);
+  const openSingleLog = (op) => setOrderLogModal(op);
   const openSessionForOp = (op) => {
-    const key   = op.createdAt || op.id;
+    const key = op.createdAt || op.id;
     const group = prepGroups[key];
     if (group && group.length > 1) setSessionModal(group);
     else setOrderLogModal(op);
   };
   const openGenericLog = (op) => setGenericOpModal(op);
 
-  const handleResetFilters = () => {
-    setFilterOpType("all");
-    setFilterResult("all");
-    setFilterCarrier("all");
-  };
-
-  const columns = useMemo(() => [
-    {
-      key: "id",
-      header: t("table.opNumber"),
-      cell: (row) => <span className="font-mono font-bold text-primary text-xs">{row.id}</span>,
-    },
-    {
-      key: "operationType",
-      header: t("table.opType"),
-      cell: (row) => <span className="text-sm font-medium">{t(OPERATION_TYPE_KEYS[row.operationType] ?? "opTypes.unknown")}</span>,
-    },
-    {
-      key: "orderCode",
-      header: t("table.orderNumber"),
-      cell: (row) => <span className="font-mono text-sm font-semibold">{row.orderCode}</span>,
-    },
-    { key: "carrier",  header: t("table.carrier") },
-    { key: "employee", header: t("table.employee") },
-    {
-      key: "result",
-      header: t("table.result"),
-      cell: (row) => (
-        <Badge className={cn("rounded-full text-xs border",
-          row.result === "SUCCESS"
-            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-            : "bg-red-50 text-red-700 border-red-200")}>
-          {row.result === "SUCCESS" ? t("result.success") : t("result.failed")}
-        </Badge>
-      ),
-    },
-    {
-      key: "details",
-      header: t("table.details"),
-      cell: (row) => <span className="text-sm text-slate-500">{row.details}</span>,
-    },
-    {
-      key: "createdAt",
-      header: t("table.datetime"),
-      cell: (row) => <span className="text-sm text-slate-500 font-mono">{row.createdAt}</span>,
-    },
-    {
-      key: "actions",
-      header: "",
-      cell: (row) => {
-        const isPrepOp  = row.operationType === "ORDER_PREPARED" && row.scanLogs;
-        const key       = row.createdAt || row.id;
-        const isSession = isPrepOp && prepGroups[key] && prepGroups[key].length > 1;
-
-        return (
-          <TooltipProvider>
-            <div className="flex items-center gap-1.5">
-              {isPrepOp && (
-                <>
-                  {/* Single order file */}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
-                        onClick={() => openSingleLog(row)}
-                        className="w-9 h-9 rounded-full border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:border-blue-600 hover:text-white flex items-center justify-center transition-all shadow-sm">
-                        <Eye size={15} />
-                      </motion.button>
-                    </TooltipTrigger>
-                    <TooltipContent>ملف الطلب + PDF</TooltipContent>
-                  </Tooltip>
-
-                  {/* Session (batch) */}
-                  {isSession && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
-                          onClick={() => openSessionForOp(row)}
-                          className="w-9 h-9 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white flex items-center justify-center transition-all shadow-sm">
-                          <FileDown size={15} />
-                        </motion.button>
-                      </TooltipTrigger>
-                      <TooltipContent>ملف الجلسة كاملة ({prepGroups[key].length} طلبات)</TooltipContent>
-                    </Tooltip>
-                  )}
-                </>
-              )}
-
-              {/* Generic op modal for all non-prep ops — NOW WIRED */}
-              {!isPrepOp && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
-                      onClick={() => openGenericLog(row)}
-                      className="w-9 h-9 rounded-full border border-slate-200 bg-slate-50 text-slate-500 hover:bg-slate-600 hover:text-white flex items-center justify-center transition-all shadow-sm">
-                      <Eye size={15} />
-                    </motion.button>
-                  </TooltipTrigger>
-                  <TooltipContent>{t("table.orderFile")}</TooltipContent>
-                </Tooltip>
-              )}
-            </div>
-          </TooltipProvider>
-        );
+  const columns = useMemo(
+    () => [
+      {
+        key: "id",
+        header: t("table.opNumber"),
+        cell: (row) => <span className="font-mono font-bold text-primary text-xs">{row.id}</span>,
       },
-    },
-  ], [t, prepGroups]);
+      {
+        key: "operationType",
+        header: t("table.opType"),
+        cell: (row) => (
+          <span className="text-sm font-medium">
+            {t(OPERATION_TYPE_KEYS[row.operationType] ?? "opTypes.unknown")}
+          </span>
+        ),
+      },
+      {
+        key: "orderCode",
+        header: t("table.orderNumber"),
+        cell: (row) => <span className="font-mono text-sm font-semibold">{row.orderCode}</span>,
+      },
+      { key: "carrier", header: t("table.carrier") },
+      { key: "employee", header: t("table.employee") },
+      {
+        key: "result",
+        header: t("table.result"),
+        cell: (row) => (
+          <Badge
+            className={cn(
+              "rounded-full text-xs border",
+              row.result === "SUCCESS"
+                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                : "bg-red-50 text-red-700 border-red-200"
+            )}
+          >
+            {row.result === "SUCCESS" ? t("result.success") : t("result.failed")}
+          </Badge>
+        ),
+      },
+      {
+        key: "details",
+        header: t("table.details"),
+        cell: (row) => <span className="text-sm text-slate-500">{row.details}</span>,
+      },
+      {
+        key: "createdAt",
+        header: t("table.datetime"),
+        cell: (row) => <span className="text-sm text-slate-500 font-mono">{row.createdAt}</span>,
+      },
+      {
+        key: "actions",
+        header: t("table.actions"),
+        cell: (row) => {
+          const isPrepOp = row.operationType === "ORDER_PREPARED" && row.scanLogs;
+          const key = row.createdAt || row.id;
+          const isSession = isPrepOp && prepGroups[key] && prepGroups[key].length > 1;
+
+          return (
+            <ActionButtons
+              row={row}
+              actions={
+                isPrepOp
+                  ? [
+                      {
+                        icon: <Eye />,
+                        tooltip: t("actions.viewOrderFile"),
+                        onClick: (r) => openSingleLog(r),
+                        variant: "purple",
+                      },
+                      ...(isSession
+                        ? [
+                            {
+                              icon: <FileDown />,
+                              tooltip: t("actions.viewSessionFile", { count: prepGroups[key].length }),
+                              onClick: (r) => openSessionForOp(r),
+                              variant: "emerald",
+                            },
+                          ]
+                        : []),
+                    ]
+                  : [
+                      {
+                        icon: <Info />,
+                        tooltip: t("actions.viewOperationLog"),
+                        onClick: (r) => openGenericLog(r),
+                        variant: "purple",
+                      },
+                    ]
+              }
+            />
+          );
+        },
+      },
+    ],
+    [t, prepGroups]
+  );
 
   return (
     <div className="space-y-4">
       <PageHeader
         breadcrumbs={[
-          { name: t("breadcrumbs.home"),      href: "/" },
+          { name: t("breadcrumbs.home"), href: "/" },
           { name: t("breadcrumbs.warehouse"), href: "/warehouse" },
           { name: t("breadcrumbs.logs") },
         ]}
@@ -667,98 +1037,90 @@ export function LogsTab({ opsLogs, orders = [] }) {
         onSearch={() => {}}
         labels={{
           searchPlaceholder: t("searchPlaceholder"),
-          filter:     t("filter"),
-          apply:      t("apply"),
-          total:      t("total"),
-          limit:      t("limit"),
+          filter: t("filter"),
+          apply: t("apply"),
+          total: t("total"),
+          limit: t("limit"),
           emptyTitle: t("emptyTitle"),
           emptySubtitle: "",
         }}
         actions={[
-          { key: "export", label: t("export"), icon: <FileDown size={14} />, color: "blue", onClick: () => {} },
+          {
+            key: "export",
+            label: t("export"),
+            icon: <FileDown size={14} />,
+            color: "blue",
+            onClick: () => {},
+          },
         ]}
         hasActiveFilters={hasActiveFilters}
         onApplyFilters={() => {}}
         filters={
           <>
-            {/* Operation type */}
             <FilterField label={t("table.opType")}>
               <Select value={filterOpType} onValueChange={setFilterOpType}>
                 <SelectTrigger className="h-10 min-w-[160px] rounded-xl border-border bg-background text-sm">
-                  <SelectValue placeholder="جميع الأنواع" />
+                  <SelectValue placeholder={t("filters.allTypes")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">جميع الأنواع</SelectItem>
+                  <SelectItem value="all">{t("filters.allTypes")}</SelectItem>
                   {Object.entries(OPERATION_TYPE_KEYS).map(([key, labelKey]) => (
-                    <SelectItem key={key} value={key}>{t(labelKey)}</SelectItem>
+                    <SelectItem key={key} value={key}>
+                      {t(labelKey)}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </FilterField>
 
-            {/* Result */}
             <FilterField label={t("table.result")}>
               <Select value={filterResult} onValueChange={setFilterResult}>
                 <SelectTrigger className="h-10 min-w-[140px] rounded-xl border-border bg-background text-sm">
-                  <SelectValue placeholder="جميع النتائج" />
+                  <SelectValue placeholder={t("filters.allResults")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">جميع النتائج</SelectItem>
+                  <SelectItem value="all">{t("filters.allResults")}</SelectItem>
                   <SelectItem value="SUCCESS">{t("result.success")}</SelectItem>
                   <SelectItem value="FAILED">{t("result.failed")}</SelectItem>
                 </SelectContent>
               </Select>
             </FilterField>
 
-            {/* Carrier */}
             {allCarriers.length > 0 && (
               <FilterField label={t("table.carrier")}>
                 <Select value={filterCarrier} onValueChange={setFilterCarrier}>
                   <SelectTrigger className="h-10 min-w-[140px] rounded-xl border-border bg-background text-sm">
-                    <SelectValue placeholder="جميع الشركات" />
+                    <SelectValue placeholder={t("filters.allCarriers")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">جميع الشركات</SelectItem>
-                    {allCarriers.map(c => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    <SelectItem value="all">{t("filters.allCarriers")}</SelectItem>
+                    {allCarriers.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </FilterField>
             )}
- 
           </>
         }
         columns={columns}
         data={filtered}
         isLoading={false}
-        pagination={{ total_records: filtered.length, current_page: page.current_page, per_page: page.per_page }}
+        pagination={{
+          total_records: filtered.length,
+          current_page: page.current_page,
+          per_page: page.per_page,
+        }}
         onPageChange={({ page: p, per_page }) => setPage({ current_page: p, per_page })}
       />
 
-      {/* Prep order log modal */}
-      <OrderLogModal
-        open={!!orderLogModal}
-        onClose={() => setOrderLogModal(null)}
-        op={orderLogModal}
-        opsLogs={opsLogs}
-        t={t}
-      />
+      <OrderLogModal open={!!orderLogModal} onClose={() => setOrderLogModal(null)} op={orderLogModal} t={t} />
 
-      {/* Generic (non-prep) op modal */}
-      <GenericOpModal
-        open={!!genericOpModal}
-        onClose={() => setGenericOpModal(null)}
-        op={genericOpModal}
-        orders={orders}
-      />
+      <GenericOpModal open={!!genericOpModal} onClose={() => setGenericOpModal(null)} op={genericOpModal} orders={orders} t={t} />
 
-      {/* Full session modal */}
-      <PrepSessionModal
-        open={!!sessionModal}
-        onClose={() => setSessionModal(null)}
-        sessionOps={sessionModal}
-      />
+      <PrepSessionModal open={!!sessionModal} onClose={() => setSessionModal(null)} sessionOps={sessionModal} t={t} />
     </div>
   );
 }

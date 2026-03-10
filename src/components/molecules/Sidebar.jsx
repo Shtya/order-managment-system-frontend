@@ -376,45 +376,7 @@ function SubItem({ child, isActive, isRTL, index }) {
 	);
 }
 
-/* ══════════════════════════════════════════════════════════════
-	 LOGO BLOCK — top of sidebar
-══════════════════════════════════════════════════════════════ */
-function SidebarLogo({ isOpen }) {
-	return (
-		<div className={`flex items-center h-14 flex-shrink-0 border-b border-border/50 px-3 ${isOpen ? 'gap-2.5' : 'justify-center'}`}>
-			<div className="relative w-7 h-7 rounded-xl overflow-hidden flex-shrink-0 shadow-md shadow-primary/20">
-				<div className="absolute inset-0 bg-primary" />
-				<motion.div
-					className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent skew-x-12"
-					animate={{ x: ["-150%", "250%"] }}
-					transition={{ duration: 3.5, repeat: Infinity, repeatDelay: 2.5, ease: "easeInOut" }}
-				/>
-				<div className="relative flex items-center justify-center h-full">
-					<Package2 className="text-white" size={14} />
-				</div>
-			</div>
-
-			<AnimatePresence>
-				{isOpen && (
-					<motion.span
-						initial={{ opacity: 0, x: -8 }}
-						animate={{ opacity: 1, x: 0 }}
-						exit={{ opacity: 0, x: -8 }}
-						transition={{ duration: 0.18 }}
-						className="text-[14px] font-bold tracking-tight bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent whitespace-nowrap"
-					>
-						أوردر فلو
-					</motion.span>
-				)}
-			</AnimatePresence>
-		</div>
-	);
-}
-
-
-/* ══════════════════════════════════════════════════════════════
-	 SIDEBAR — full height (top-0, not top-16)
-══════════════════════════════════════════════════════════════ */
+  
 const Sidebar = ({ isOpen, isRTL, onOpenSidebar }) => {
 	const pathname = usePathname();
 	const [expandedItems, setExpandedItems] = useState(new Set());
@@ -511,7 +473,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar }) => {
 				transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
 				className={`
           fixed top-0 ${isRTL ? 'right-0' : 'left-0'}
-          h-screen flex flex-col overflow-hidden z-50
+          h-screen flex flex-col overflow-hidden z-10
           ${isRTL ? 'border-l' : 'border-r'} border-border
         `}
 				style={{

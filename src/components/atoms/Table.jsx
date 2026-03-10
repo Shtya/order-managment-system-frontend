@@ -1,11 +1,10 @@
 "use client";
 
 import React, {
-  memo, useState, useCallback, useMemo, useEffect,
+  memo, useState, useCallback, useMemo, useEffect, useRef
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/utils/cn";
-
+import { cn } from "@/utils/cn"; 
 import {
   Table as ShadTable,
   TableHeader, TableBody, TableRow, TableHead, TableCell,
@@ -106,24 +105,12 @@ export const TableToolbar = memo(function TableToolbar({
   return (
     <div className="flex items-center justify-between gap-3 flex-wrap">
       {/* Search */}
-      <div
-        className="relative flex-1 w-full max-w-[350px] focus-within:max-w-[400px]"
-        style={{ transition: "max-width .3s cubic-bezier(.16,1,.3,1)" }}
-      >
-        <Input
-          value={searchValue}
-          onChange={(e) => onSearchChange?.(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={searchPlaceholder}
-          startIcon={<Search size={16} />}
-          className={cn(
-            "h-10 rounded-xl border-border bg-background/70 text-sm",
-            "placeholder:text-muted-foreground/50",
-            "focus:border-[var(--primary)]/50 focus:ring-2 focus:ring-[var(--primary)]/10",
-            "transition-all duration-200",
-          )}
-        />
-      </div>
+      <FloatingSearchInput
+				searchValue={searchValue}
+				onSearchChange={onSearchChange}
+				onKeyDown={handleKeyDown}
+				searchPlaceholder={searchPlaceholder}
+			/>
 
       <div className="flex items-center gap-2 flex-wrap">
         {/* Filters toggle */}
@@ -822,6 +809,89 @@ export default function Table({
         onClose={closeImage}
         labels={labels}
       />
+    </div>
+  );
+}
+
+
+
+
+
+
+
+
+
+function FloatingSearchInput({ searchValue, onSearchChange, onKeyDown, searchPlaceholder }) {
+  const [focused, setFocused] = useState(false);
+  const inputRef = useRef(null);
+  const isFloating = focused || (searchValue && searchValue.length > 0);
+
+  return (
+    <div
+      className={cn(
+        "relative flex-1 w-full max-w-[380px]",
+        focused && "max-w-[420px]"
+      )}
+      style={{ transition: "max-width .35s cubic-bezier(.16,1,.3,1)" }}
+      onClick={() => inputRef.current?.focus()}
+    >
+      {/* Border container with gap for floating label */}
+      <div
+        className={cn(
+          "relative h-[38px] rounded-xl border  cursor-text",
+          "transition-all duration-200",
+          focused
+            ? "border-[var(--primary)] shadow-[0_0_0_3px_color-mix(in_srgb,var(--primary)_12%,transparent)]"
+            : "border-border hover:border-[var(--primary)]/40"
+        )}
+      >
+        {/* Floating label — sits on the border when active */}
+        <label
+          className={cn(
+            "absolute right-9 pointer-events-none select-none",
+            "font-medium text-sm origin-right",
+            "transition-all duration-200 ease-out",
+            isFloating
+              ? [
+                  "top-0 -translate-y-1/2 text-[10px] px-1.5 py-0 leading-none",
+                  "bg-white dark:bg-[#182337] rounded",
+                  focused ? "text-[var(--primary)]" : "text-muted-foreground/70",
+                ]
+              : "top-1/2 -translate-y-1/2 text-muted-foreground/50"
+          )}
+        >
+          {searchPlaceholder}
+        </label>
+
+        {/* Search icon */}
+        <div
+          className={cn(
+            "absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none",
+            "transition-colors duration-200",
+            focused ? "text-[var(--primary)]" : "text-muted-foreground/40"
+          )}
+        >
+          <Search size={15} />
+        </div>
+
+        {/* Actual input — no native placeholder since we use floating label */}
+        <input
+          ref={inputRef}
+          value={searchValue}
+          onChange={(e) => onSearchChange?.(e.target.value)}
+          onKeyDown={onKeyDown}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          placeholder=""
+          className={cn(
+            "absolute inset-0 w-full h-full bg-transparent !outline-none",
+            "text-sm pr-9 pl-4 pt-0.5",
+            "rounded-xl text-foreground",
+            // hide browser autofill styling
+            "[&:-webkit-autofill]:bg-transparent"
+          )}
+        />
+      </div>
     </div>
   );
 }

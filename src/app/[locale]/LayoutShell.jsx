@@ -81,7 +81,7 @@ function DashboardLayout({ children }) {
 			/>
 
 			<div
-				className="flex flex-col flex-1 overflow-hidden transition-all duration-300"
+				className=" relative  flex flex-col flex-1 overflow-hidden transition-all duration-300"
 				style={{
 					marginRight: isRTL ? sidebarW : 0,
 					marginLeft: isRTL ? 0 : sidebarW,
@@ -93,7 +93,7 @@ function DashboardLayout({ children }) {
 				/>
 
 				{/* Scrollable page content */}
-				<main className="flex-1 overflow-y-auto overflow-x-hidden relative  ">
+				<main className=" z-[10] flex-1 overflow-y-auto overflow-x-hidden relative  ">
 
 					<div className="pointer-events-none absolute inset-0" style={{ zIndex: 0 }}>
 

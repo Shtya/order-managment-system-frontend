@@ -93,6 +93,7 @@ import BulkUploadModal from "../atoms/BulkUploadModal";
 import Table, { FilterField } from "@/components/atoms/Table";
 import PageHeader from "@/components/atoms/Pageheader";
 import SettingsModal from "../atoms/SettingsModal";
+import ActionButtons from "@/components/atoms/Actions";
 
 
 // ✅ Order Status Constants (Mirroring your Enum)
@@ -189,69 +190,11 @@ export const validTransitions = {
 };
 
 
-export function ActionButtons({ row, onDelete, onEdit, onView }) {
-	const t = useTranslations("orders");
-	return (
-		<TooltipProvider>
-			<div className="flex items-center gap-2">
-				{/* Delete */}
-				<Tooltip>
-					<TooltipTrigger asChild>
-						<motion.button
-							whileHover={{ scale: 1.1 }}
-							whileTap={{ scale: 0.95 }}
-							onClick={() => onDelete?.(row)}
-							className="group w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm
-                border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:border-red-600 hover:text-white"
-						>
-							<Trash2 size={16} className="transition-transform group-hover:scale-110 group-hover:rotate-12" />
-						</motion.button>
-					</TooltipTrigger>
-					<TooltipContent>{t("actions.delete")}</TooltipContent>
-				</Tooltip>
-
-				{/* Edit */}
-				<Tooltip>
-					<TooltipTrigger asChild>
-						<motion.button
-							whileHover={{ scale: 1.1 }}
-							whileTap={{ scale: 0.95 }}
-							onClick={() => onEdit?.(row)}
-							className="group w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm
-                border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:border-blue-600 hover:text-white"
-						>
-							<Edit2 size={16} className="transition-transform group-hover:scale-110 group-hover:-rotate-12" />
-						</motion.button>
-					</TooltipTrigger>
-					<TooltipContent>{t("actions.edit")}</TooltipContent>
-				</Tooltip>
-
-				{/* View */}
-				<Tooltip>
-					<TooltipTrigger asChild>
-						<motion.button
-							whileHover={{ scale: 1.1 }}
-							whileTap={{ scale: 0.95 }}
-							onClick={() => onView?.(row)}
-							className="group w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm
-                border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:border-purple-600 hover:text-white"
-						>
-							<Eye size={16} className="transition-transform group-hover:scale-110" />
-						</motion.button>
-					</TooltipTrigger>
-					<TooltipContent>{t("actions.view")}</TooltipContent>
-				</Tooltip>
-			</div>
-		</TooltipProvider>
-	);
-}
-
-
 
 // Main Orders Page Component
 export default function OrdersTab({ stats, fetchStats, statsLoading }) {
-	const t = useTranslations("orders");
 	const tShipping = useTranslations("shipping");
+	const t = useTranslations("orders");
 
 	const router = useRouter();
 	const [retrySettingsOpen, setRetrySettingsOpen] = useState(false);
@@ -731,16 +674,36 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
 						{new Date(row.created_at).toLocaleDateString("en-US")}
 					</span>
 				),
-			}, 
+			},
 			{
 				key: "actions",
 				header: t("table.actions"),
 				cell: (row) => (
 					<ActionButtons
 						row={row}
-						onDelete={(r) => { setDeletingOrder(r); setDeleteOrderModalOpen(true); }}
-						onEdit={(r) => router.push(`/orders/edit/${r.id}`)}
-						onView={(r) => router.push(`/orders/details/${r.id}`)}
+						actions={[
+							{
+								icon: <Eye />,
+								tooltip: t("actions.view"),
+								onClick: (r) => router.push(`/orders/details/${r.id}`),
+								variant: "purple",
+							},
+							{
+								icon: <Edit2 />,
+								tooltip: t("actions.edit"),
+								onClick: (r) => router.push(`/orders/edit/${r.id}`),
+								variant: "blue",
+							},
+							{
+								icon: <Trash2 />,
+								tooltip: t("actions.delete"),
+								onClick: (r) => {
+									setDeletingOrder(r);
+									setDeleteOrderModalOpen(true);
+								},
+								variant: "red",
+							},
+						]}
 					/>
 				),
 			},

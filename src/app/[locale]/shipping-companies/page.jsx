@@ -36,154 +36,8 @@ import { normalizeAxiosError } from "@/utils/axios";
 import { ModalHeader, ModalShell } from "@/components/ui/modalShell";
 import { GhostBtn, PrimaryBtn } from "@/components/atoms/Button";
 import PageHeader from "@/components/atoms/Pageheader";
+import { PROVIDER_META, useShippingIntegration, useShippingSettings, useShippingUsage, useShippingWebhook } from "@/hook/shipping";
 
-const PROVIDER_META = {
-	bosta: {
-		configFields: [
-			{ key: "apiKey", type: "password", labelKey: "settings.fields.apiKey", required: true, hide: true },
-			// { key: "accountId", type: "text", labelKey: "settings.fields.accountId", required: false },
-		],
-		webhookHiddenFields: [],
-		guide: {
-			docsUrl: "https://docs.bosta.co/docs/how-to/get-your-api-key",
-			showSteps: false,
-			steps: [
-				{
-					image: "/guide/bosta/step-img-0.png",
-					tab: { en: "Signup", ar: "إنشاء حساب" },
-					title: { en: "Create a Bosta business account", ar: "إنشاء حساب بوسطة للأعمال" },
-					desc: {
-						en: "Go to https://business.bosta.co/signup then create your account and log in to the dashboard.",
-						ar: "اذهب إلى https://business.bosta.co/signup ثم أنشئ حسابك وسجّل الدخول للوحة التحكم.",
-					},
-					tip: null,
-				},
-				{
-					image: "/guide/bosta/step-img-settings.png",
-					tab: { en: "Settings", ar: "الإعدادات" },
-					title: { en: "Open Settings from the top bar", ar: "افتح الإعدادات من الأعلى" },
-					desc: {
-						en: "From the dashboard, click the settings icon at the top to open Settings.",
-						ar: "من لوحة التحكم اضغط على أيقونة الإعدادات بالأعلى لفتح صفحة الإعدادات.",
-					},
-					tip: null,
-				},
-				{
-					image: "/guide/bosta/step-img-1.png",
-					tab: { en: "Integrations", ar: "ربط التطبيقات" },
-					title: { en: "Open the Integrations tab", ar: "افتح تبويب ربط التطبيقات" },
-					desc: {
-						en: "In Settings, open the Integrations tab (ربط التطبيقات).",
-						ar: "داخل الإعدادات افتح تبويب «ربط التطبيقات».",
-					},
-					tip: null,
-				},
-				{
-					image: "/guide/bosta/step-img-otp.png",
-					tab: { en: "OTP", ar: "OTP" },
-					title: { en: "Request OTP", ar: "اطلب OTP" },
-					desc: {
-						en: "Click Request OTP then enter the code sent to your phone to enable API Integration options.",
-						ar: "اضغط «طلب OTP» ثم أدخل الرمز المرسل إلى هاتفك لتفعيل خيارات التكامل.",
-					},
-					tip: null,
-				},
-				{
-					image: "/guide/bosta/step-img-api-key.png",
-					tab: { en: "API Key", ar: "مفتاح API" },
-					title: { en: "Create an API key", ar: "إنشاء مفتاح API" },
-					desc: {
-						en: "Click Create API key, set a name and permissions, then copy the key (it will not be shown again).",
-						ar: "اضغط «إنشاء مفتاح API»، اختر اسمًا وصلاحيات، ثم انسخ المفتاح (لن يظهر مرة أخرى).",
-					},
-					tip: null,
-				},
-				{
-					image: "/guide/bosta/step-img-webhook.png",
-					tab: { en: "Webhook", ar: "Webhook" },
-					title: { en: "Add Webhook URL", ar: "إضافة رابط Webhook" },
-					desc: {
-						en: "Scroll to Webhook section, paste the Webhook URL from your system, and (optionally) set a custom header name + secret.",
-						ar: "انزل إلى قسم الـ Webhook، الصق رابط الـ Webhook من نظامك، ويمكنك إضافة اسم هيدر مخصص + Secret للأمان.",
-					},
-					tip: {
-						en: "Webhook triggers on status changes, not on order creation.",
-						ar: "الـ Webhook يعمل عند تغيّر حالة الشحنة، وليس عند الإنشاء.",
-					},
-				},
-				{
-					image: null,
-					tab: { en: "Paste & Save", ar: "اللصق والحفظ" },
-					title: { en: "Paste API key here and Save", ar: "الصق المفتاح هنا واضغط حفظ" },
-					desc: {
-						en: "Return to this page, paste API key into Settings, click Save. Then open Webhook modal to copy webhook URL/secret to Bosta.",
-						ar: "ارجع لهذه الصفحة، الصق مفتاح API واضغط حفظ. ثم افتح نافذة Webhook لنسخ الرابط/السر ووضعه في بوسطة.",
-					},
-					tip: null,
-				},
-			],
-		},
-	},
-
-	jt: {
-		configFields: [
-			{ key: "apiKey", type: "password", labelKey: "settings.fields.apiKey", required: true, hide: true },
-			{ key: "customerId", type: "text", labelKey: "settings.fields.customerId", required: true, hide: false },
-		],
-		webhookHiddenFields: [],
-		guide: { docsUrl: "https://developer.jtexpress.com", showSteps: false, steps: [] },
-	},
-
-	turbo: {
-		configFields: [
-			{ key: "apiKey", type: "password", labelKey: "settings.fields.apiKey", required: true, hide: true },
-			{ key: "accountId", type: "text", labelKey: "settings.fields.customerId", required: true, hide: false },
-		],
-		webhookHiddenFields: ["headerName"],
-		guide: {
-			mainUrl: "https://turbo-eg.com",
-			showSteps: true,
-			steps: [
-				{
-					image: "/guide/turbo/step1.png",
-					tab: { en: "Login", ar: "تسجيل الدخول" },
-					title: { en: "Login to your account", ar: "تسجيل الدخول إلى حسابك" },
-					desc: {
-						en: "Access your Turbo dashboard using your merchant credentials at https://business.turbo.info/login",
-						ar: "قم بالدخول إلى لوحة تحكم تيربو باستخدام بيانات التاجر الخاصة بك عبر الرابط: https://business.turbo.info/login",
-					},
-				},
-				{
-					image: "/guide/turbo/step2.png",
-					tab: { en: "Settings", ar: "الإعدادات" },
-					title: { en: "Navigate to Settings", ar: "الانتقال إلى تبويب الإعدادات" },
-					desc: {
-						en: "Go to the Settings tab to find your integration credentials.",
-						ar: "انتقل إلى تبويب الإعدادات (Settings) للعثور على بيانات الربط الخاصة بك.",
-					},
-				},
-				{
-					image: "/guide/turbo/step3.png",
-					tab: { en: "API Keys", ar: "بيانات الربط" },
-					title: { en: "Copy Credentials", ar: "نسخ كود العميل ومفتاح الربط" },
-					desc: {
-						en: "Locate 'كود العميل الخاص بك' and 'مفتاح الربط الخاص بك'. Copy and paste them into the Account ID and API Key fields here.",
-						ar: "ابحث عن «كود العميل الخاص بك» و «مفتاح الربط الخاص بك». قم بنسخهم ولصقهم في خانة كود العميل ومفتاح API هنا.",
-					},
-				},
-				{
-					image: "/guide/turbo/step4.png",
-					tab: { en: "Webhook", ar: "الويب هوك" },
-					title: { en: "Configure Webhook", ar: "إعداد الـ Webhook" },
-					desc: {
-						en: "Copy the Webhook URL and Secret from our system and paste them into the Webhook section in your Turbo settings.",
-						ar: "انسخ رابط الـ Webhook والـ Secret من نظامنا والقصقهم في قسم الويب هوك داخل إعدادات تيربو.",
-					},
-				},
-			]
-		},
-	},
-};
 
 function pick(bilingualObj, locale) {
 	if (!bilingualObj) return "";
@@ -218,94 +72,11 @@ function SectionLabel({ icon: Icon, label }) {
 // ─────────────────────────────────────────────────────────────────────────────
 function SettingsModal({ company, onClose, onFirstSetup, onSaved }) {
 	const t = useTranslations("shipping");
-	const fields =
-		PROVIDER_META[company.code]?.configFields || [{ key: "apiKey", type: "password", labelKey: "settings.fields.apiKey", required: true }];
-
-	const [values, setValues] = useState(() => Object.fromEntries(fields.map((f) => [f.key, ""])));
-	const [showFields, setShow] = useState({});
-	const [saving, setSaving] = useState(false);
-	const [error, setError] = useState(null);
-	const [success, setSuccess] = useState(false);
-	const [integrationData, setIntegrationData] = useState(null);
-	const [loading, setLoading] = useState(true);
-
-	async function fetchSetup() {
-		setLoading(true);
-		setError(null);
-		try {
-			const { data } = await api.get("/shipping/integrations/status");
-			const entry = data?.integrations?.find((i) => i.provider === company.code);
-			setIntegrationData(entry)
-
-			if (entry?.credentials) {
-				const newValues = { ...values };
-				fields.forEach((f) => {
-					if (!f.hide && entry.credentials[f.key]) {
-						newValues[f.key] = entry.credentials[f.key];
-					}
-				});
-				setValues(newValues);
-			}
-		} catch (e) {
-			setError(e?.response?.data?.message || t("settings.errorFetch"));
-		} finally {
-			setLoading(false);
-		}
-	}
-	useEffect(() => {
-		fetchSetup()
-	}, [company.code]);
-
-	const setValue = (key, val) => {
-		setValues((v) => ({ ...v, [key]: val }));
-		setSuccess(false);
-		setError(null);
-	};
-
-	const toggleShow = (key) => setShow((v) => ({ ...v, [key]: !v[key] }));
-
-	const isAllMasked = () => fields.every((f) => values[f.key]?.startsWith("•"));
-	const isValid = () => {
-		const allRequiredSatisfied = fields
-			.filter((f) => f.required)
-			.every((f) => {
-				const hasNewValue = values[f.key]?.trim().length > 0;
-				const hasExistingValue = !!integrationData?.credentials?.[f.key];
-				return hasExistingValue || hasNewValue;
-			});
-
-		const hasAtLeastOneNewValue = fields.some((f) => values[f.key]?.trim().length > 0);
-
-		return allRequiredSatisfied && hasAtLeastOneNewValue;
-	};
-	async function handleSave() {
-		if (!isValid()) return;
-		setSaving(true);
-		setError(null);
-		try {
-			const credentials = {};
-			fields.forEach((f) => {
-				const val = values[f.key]?.trim();
-				if (val && val.length > 0) {
-					credentials[f.key] = val;
-				}
-			});
-			await api.post(`/shipping/providers/${company.code}/credentials`, { credentials });
-			setSuccess(true);
-			onSaved?.();
-
-			if (integrationData?.credentialsConfigured) {
-				setTimeout(onClose, 900);
-			} else {
-				setTimeout(onFirstSetup, 900);
-			}
-		} catch (e) {
-			console.log(e?.response?.data)
-			setError(e?.response?.data?.message || t("settings.error"));
-		} finally {
-			setSaving(false);
-		}
-	}
+	const {
+		fields, values, setValue, handleSave, isFormValid,
+		loading, saving, error, success,
+		showFields, toggleShow, integrationData, meta
+	} = useShippingSettings(company?.code, { onClose, onFirstSetup, onSaved });
 
 	return (
 		<ModalShell onClose={onClose}>
@@ -372,14 +143,14 @@ function SettingsModal({ company, onClose, onFirstSetup, onSaved }) {
 					</div>
 				)}
 				<p className="text-[11px] text-[var(--muted-foreground)]">{t("settings.securityNote")}</p>
-				{success && (
+				{/* {success && (
 					<div className="flex items-center gap-2 rounded-xl border border-emerald-500/25 bg-emerald-500/8 px-3.5 py-2.5 text-sm text-emerald-700 dark:text-emerald-400">
 						<Check size={14} className="flex-shrink-0" />
 						{t("settings.success")}
 					</div>
-				)}
+				)} */}
 
-				<PrimaryBtn onClick={handleSave} disabled={!isValid()} loading={saving} className="w-full">
+				<PrimaryBtn onClick={handleSave} disabled={!isFormValid()} loading={saving} className="w-full">
 					{!saving && <Check size={14} />}
 					{saving ? t("settings.saving") : t("settings.save")}
 				</PrimaryBtn>
@@ -530,27 +301,7 @@ function GuideModal({ company, onClose }) {
 // -----------------------
 function UsageModal({ company, onClose }) {
 	const t = useTranslations("shipping");
-	const [data, setData] = useState(null);
-	const [loading, setLoad] = useState(true);
-	const [error, setError] = useState(null);
-
-	useEffect(() => {
-		(async () => {
-			try {
-				const [capsRes, svcRes] = await Promise.all([
-					api.get(`/shipping/providers/${company.code}/capabilities`),
-					api.get(`/shipping/providers/${company.code}/services`),
-				]);
-				setData({ capabilities: capsRes.data?.capabilities, services: svcRes.data?.services || [] });
-			} catch (e) {
-				setError(e?.response?.data?.message || t("usage.error"));
-			} finally {
-				setLoad(false);
-			}
-		})();
-	}, [company.code]);
-
-	const caps = data?.capabilities;
+	const { capabilities, services, loading, error } = useShippingUsage(company.code);
 
 	return (
 		<ModalShell onClose={onClose} maxWidth="max-w-lg">
@@ -567,64 +318,62 @@ function UsageModal({ company, onClose }) {
 						{error}
 					</div>
 				)}
-				{data && (
-					<>
-						{data.services?.length > 0 && (
-							<div className="space-y-2.5">
-								<SectionLabel icon={Zap} label={t("usage.services")} />
-								<div className="flex flex-wrap gap-2">
-									{data.services.map((s) => (
-										<span key={s} className="px-3 py-1 rounded-full text-xs font-medium bg-[var(--muted)] border border-[var(--border)] text-[var(--foreground)]">
-											{s}
-										</span>
-									))}
-								</div>
-							</div>
-						)}
 
-						{caps && (
-							<div className="space-y-2.5">
-								<SectionLabel icon={Globe} label={t("usage.capabilities")} />
-								<div className="grid grid-cols-2 gap-3">
-									{[
-										{ key: "coverage", label: t("usage.coverage"), icon: Globe },
-										{ key: "pricing", label: t("usage.pricing"), icon: TrendingUp },
-										{ key: "limits", label: t("usage.limits"), icon: Shield },
-										{ key: "quote", label: t("usage.quote"), icon: Package },
-									].map(({ key, label, icon: Icon }) => {
-										const cap = caps[key];
-										return (
-											<div key={key} className="rounded-xl border border-[var(--border)] bg-[var(--muted)] p-3 space-y-2">
-												<div className="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)]">
-													<Icon size={11} />
-													{label}
-												</div>
-												<CapBadge available={cap?.available} label={cap?.available ? t("usage.available") : t("usage.unavailable")} />
-												{!cap?.available && cap?.reason && (
-													<p className="text-[10px] text-[var(--muted-foreground)] opacity-70 leading-snug">{cap.reason}</p>
-												)}
-											</div>
-										);
-									})}
-								</div>
-							</div>
-						)}
-
-						{caps?.services?.available && caps.services.data?.length > 0 && (
-							<div className="space-y-2.5">
-								<SectionLabel icon={Info} label={t("usage.operations")} />
-								<div className="rounded-xl border border-[var(--border)] bg-[var(--muted)] p-3 space-y-2">
-									{caps.services.data.map((s) => (
-										<div key={s} className="flex items-center gap-2 text-xs text-[var(--card-foreground)]">
-											<Check size={11} className="text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
-											{s}
-										</div>
-									))}
-								</div>
-							</div>
-						)}
-					</>
+				{services?.length > 0 && (
+					<div className="space-y-2.5">
+						<SectionLabel icon={Zap} label={t("usage.services")} />
+						<div className="flex flex-wrap gap-2">
+							{services.map((s) => (
+								<span key={s} className="px-3 py-1 rounded-full text-xs font-medium bg-[var(--muted)] border border-[var(--border)] text-[var(--foreground)]">
+									{s}
+								</span>
+							))}
+						</div>
+					</div>
 				)}
+
+				{capabilities && (
+					<div className="space-y-2.5">
+						<SectionLabel icon={Globe} label={t("usage.capabilities")} />
+						<div className="grid grid-cols-2 gap-3">
+							{[
+								{ key: "coverage", label: t("usage.coverage"), icon: Globe },
+								{ key: "pricing", label: t("usage.pricing"), icon: TrendingUp },
+								{ key: "limits", label: t("usage.limits"), icon: Shield },
+								{ key: "quote", label: t("usage.quote"), icon: Package },
+							].map(({ key, label, icon: Icon }) => {
+								const cap = capabilities[key];
+								return (
+									<div key={key} className="rounded-xl border border-[var(--border)] bg-[var(--muted)] p-3 space-y-2">
+										<div className="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)]">
+											<Icon size={11} />
+											{label}
+										</div>
+										<CapBadge available={cap?.available} label={cap?.available ? t("usage.available") : t("usage.unavailable")} />
+										{!cap?.available && cap?.reason && (
+											<p className="text-[10px] text-[var(--muted-foreground)] opacity-70 leading-snug">{cap.reason}</p>
+										)}
+									</div>
+								);
+							})}
+						</div>
+					</div>
+				)}
+
+				{capabilities?.services?.available && capabilities.services.data?.length > 0 && (
+					<div className="space-y-2.5">
+						<SectionLabel icon={Info} label={t("usage.operations")} />
+						<div className="rounded-xl border border-[var(--border)] bg-[var(--muted)] p-3 space-y-2">
+							{capabilities.services.data.map((s) => (
+								<div key={s} className="flex items-center gap-2 text-xs text-[var(--card-foreground)]">
+									<Check size={11} className="text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
+									{s}
+								</div>
+							))}
+						</div>
+					</div>
+				)}
+
 			</div>
 		</ModalShell>
 	);
@@ -635,49 +384,15 @@ function UsageModal({ company, onClose }) {
 // -----------------------
 function WebhookModal({ company, onClose }) {
 	const t = useTranslations("shipping");
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState(null);
-	const [data, setData] = useState(null);
-	const [rotating, setRotating] = useState(false);
-
-	const hiddenFields = PROVIDER_META[company.code]?.webhookHiddenFields || [];
-	const isHidden = (key) => hiddenFields.includes(key);
-
-	const fetchSetup = async () => {
-		setLoading(true);
-		setError(null);
-		try {
-			const res = await api.get(`/shipping/providers/${company.code}/webhook-setup`);
-			setData(res.data);
-		} catch (e) {
-			setError(e?.response?.data?.message || t("webhook.errorFetch"));
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	useEffect(() => {
-		fetchSetup();
-	}, [company.code]);
-
-	const copy = async (txt) => {
-		try {
-			await navigator.clipboard.writeText(String(txt || ""));
-		} catch (_) { }
-	};
-
-	const rotate = async () => {
-		setRotating(true);
-		setError(null);
-		try {
-			await api.post(`/shipping/providers/${company.code}/webhook-setup/rotate-secret`, {});
-			await fetchSetup();
-		} catch (e) {
-			setError(e?.response?.data?.message || t("webhook.errorRotate"));
-		} finally {
-			setRotating(false);
-		}
-	};
+	const {
+		data,
+		loading,
+		error,
+		rotating,
+		isFieldHidden,
+		handleCopy,
+		handleRotateSecret
+	} = useShippingWebhook(company.code);
 
 	return (
 		<ModalShell onClose={onClose} maxWidth="max-w-lg">
@@ -706,7 +421,7 @@ function WebhookModal({ company, onClose }) {
 
 				{data && (
 					<div className="space-y-4">
-						{!isHidden("webhookUrl") && (<div className="space-y-1.5">
+						{!isFieldHidden("webhookUrl") && (<div className="space-y-1.5">
 							<label className="text-sm font-medium text-[var(--card-foreground)]">{t("webhook.urlLabel")}</label>
 							<div className="flex gap-2">
 								<input
@@ -715,7 +430,7 @@ function WebhookModal({ company, onClose }) {
 									className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
 								/>
 								<button
-									onClick={() => copy(data.webhookUrl)}
+									onClick={() => handleCopy(data.webhookUrl)}
 									className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
 									title="Copy"
 								>
@@ -727,8 +442,8 @@ function WebhookModal({ company, onClose }) {
 							</p>
 						</div>)}
 
-						<div className={`grid gap-3 ${isHidden("headerName") || isHidden("headerValue") ? "grid-cols-1" : "md:grid-cols-2 grid-cols-1"}`}>
-							{!isHidden("headerName") && (<div className="space-y-1.5">
+						<div className={`grid gap-3 ${isFieldHidden("headerName") || isFieldHidden("headerValue") ? "grid-cols-1" : "md:grid-cols-2 grid-cols-1"}`}>
+							{!isFieldHidden("headerName") && (<div className="space-y-1.5">
 								<label className="text-sm font-medium text-[var(--card-foreground)]">{t("webhook.headerName")}</label>
 								<div className="flex gap-2">
 									<input
@@ -737,7 +452,7 @@ function WebhookModal({ company, onClose }) {
 										className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
 									/>
 									<button
-										onClick={() => copy(data.headerName)}
+										onClick={() => handleCopy(data.headerName)}
 										className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
 										title="Copy"
 									>
@@ -746,7 +461,7 @@ function WebhookModal({ company, onClose }) {
 								</div>
 							</div>)}
 
-							{!isHidden("headerValue") && (<div className="space-y-1.5">
+							{!isFieldHidden("headerValue") && (<div className="space-y-1.5">
 								<label className="text-sm font-medium text-[var(--card-foreground)]">{t("webhook.headerValue")}</label>
 								<div className="flex gap-2">
 									<input
@@ -755,7 +470,7 @@ function WebhookModal({ company, onClose }) {
 										className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
 									/>
 									<button
-										onClick={() => copy(data.headerValue)}
+										onClick={() => handleCopy(data.headerValue)}
 										className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
 										title="Copy"
 									>
@@ -770,7 +485,7 @@ function WebhookModal({ company, onClose }) {
 								{t("webhook.securityHint")}
 							</p>
 							<button
-								onClick={rotate}
+								onClick={handleRotateSecret}
 								disabled={rotating}
 								className="flex items-center gap-2 text-nowrap px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all disabled:opacity-50"
 							>
@@ -837,35 +552,21 @@ function SkeletonCard() {
 // ─────────────────────────────────────────────────────────────────────────────
 function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) {
 	const t = useTranslations("shipping");
-	const [openModal, setOpenModal] = useState(null);
-	const [toggling, setToggling] = useState(false);
-	const meta = PROVIDER_META[company.code];
-	const isConfigured = integrationStatus?.credentialsConfigured ?? false;
-	const isActive = integrationStatus?.isActive ?? false;
-
-	async function handleToggle() {
-		if (!isConfigured) {
-			setOpenModal("settings");
-			return;
-		}
-		setToggling(true);
-		try {
-			await api.post(`/shipping/providers/${company.code}/active`, { isActive: !isActive });
-			onRefreshStatus?.();
-		} catch (e) {
-			toast.error(normalizeAxiosError(e));
-			console.error(e);
-		} finally {
-			setToggling(false);
-		}
-	}
-
+	const {
+		meta,
+		isActive,
+		isConfigured,
+		toggling,
+		openModal,
+		setOpenModal,
+		handleToggle
+	} = useShippingIntegration(company, integrationStatus, onRefreshStatus);
 	// accent shortcuts from the three new company tokens
-	const accent   = company.accent;
+	const accent = company.accent;
 	const accentBg = company.accentBg;
 
 	// shared footer ghost-button; hover tints border+text to accent
-	const fbCls   = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 bg-white/80 dark:bg-white/10 border border-white/60 dark:border-white/10 text-gray-600 dark:text-gray-300 shadow-sm";
+	const fbCls = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 bg-white/80 dark:bg-white/10 border border-white/60 dark:border-white/10 text-gray-600 dark:text-gray-300 shadow-sm";
 	const onEnter = (e) => { e.currentTarget.style.borderColor = accent; e.currentTarget.style.color = accent; };
 	const onLeave = (e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.color = ""; };
 

@@ -1,5 +1,5 @@
 // --- File: IdleTab.jsx ---
-"use client";
+"use client"; 
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { CalendarDays, DollarSign, Edit2, Eye, QrCode, Tag, Trash2 } from "lucide-react";
@@ -10,6 +10,7 @@ import { cn } from "@/utils/cn";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { useRouter } from "@/i18n/navigation";
+import ActionButtons from "@/components/atoms/Actions";
 
 function normalizeAxiosError(err) {
   const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -168,66 +169,35 @@ export default function useIdleTab({ t, searchDebounced, filters, idleFromDate, 
         )
       },
       {
-        key: "actions",
-        header: t("table.options"),
-        className: "bg-white dark:bg-slate-900",
-        cell: (row) => (
-          <TooltipProvider>
-            <div className="flex items-center gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={cn(
-                      "group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
-                      "border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:border-red-600 hover:text-white"
-                    )}
-                    onClick={() => onAskDelete?.(row.id, "idle")}
-                  >
-                    <Trash2 size={16} className="transition-transform group-hover:scale-110 group-hover:rotate-12" />
-                  </motion.button>
-                </TooltipTrigger>
-                <TooltipContent>{t("actions.delete")}</TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={cn(
-                      "group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
-                      "border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:border-blue-600 hover:text-white"
-                    )}
-                    onClick={() => router.push(`/products/edit/${row.id}`)}
-                  >
-                    <Edit2 size={16} className="transition-transform group-hover:scale-110 group-hover:-rotate-12" />
-                  </motion.button>
-                </TooltipTrigger>
-                <TooltipContent>{t("actions.edit")}</TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={cn(
-                      "group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
-                      "border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:border-purple-600 hover:text-white"
-                    )}
-                    onClick={() => onOpenView?.(row.id, "idle")}
-                  >
-                    <Eye size={16} className="transition-transform group-hover:scale-110" />
-                  </motion.button>
-                </TooltipTrigger>
-                <TooltipContent>{t("actions.view")}</TooltipContent>
-              </Tooltip>
-            </div>
-          </TooltipProvider>
-        )
-      }
+  key: "actions",
+  header: t("table.options"),
+  className: "bg-white dark:bg-slate-900",
+  cell: (row) => (
+    <ActionButtons
+      row={row}
+      actions={[
+        {
+          icon: <Trash2 />,
+          tooltip: t("actions.delete"),
+          onClick: (r) => onAskDelete?.(r.id, "bundles"),
+          variant: "red",
+        },
+        {
+          icon: <Edit2 />,
+          tooltip: t("actions.edit"),
+          onClick: (r) => router.push(`/bundles/edit/${r.id}`),
+          variant: "blue",
+        },
+        {
+          icon: <Eye />,
+          tooltip: t("actions.view"),
+          onClick: (r) => onOpenView?.(r, "bundles"),
+          variant: "purple",
+        },
+      ]}
+    />
+  )
+}
     ];
   }, [router, t, onAskDelete, onOpenView]);
 

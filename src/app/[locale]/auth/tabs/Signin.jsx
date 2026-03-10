@@ -90,11 +90,11 @@ export default function SignIn({ t: tProp, onSwitchMode, onForgotPassword }) {
       const status = error?.response?.status;
 
       if (status === 401) {
-        toast.error("انتهت الجلسة، يرجى تسجيل الدخول مرة أخرى");
+        toast.error("انتهت الجلسة، يرجى تسجيل الدخول مرة أخرى", { id: tid });
       } else if (status === 403) {
-        toast.error("هذه الصفحة مخصصة للمشرفين فقط. يرجى تسجيل الدخول بحساب مشرف.");
+        toast.error("هذه الصفحة مخصصة للمشرفين فقط. يرجى تسجيل الدخول بحساب مشرف.", { id: tid });
       } else {
-        toast.error("حدث خطأ غير متوقع");
+        toast.error("حدث خطأ غير متوقع", { id: tid });
       }
 
       setTimeout(() => {

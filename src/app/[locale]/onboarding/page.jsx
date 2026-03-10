@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import api from '@/utils/api';
@@ -8,8 +8,12 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { getUser } from '@/hook/getUser';
-import { RefreshCw, Webhook } from 'lucide-react';
+import { Copy, Loader2, RefreshCw, RotateCcw, Webhook } from 'lucide-react';
 import { useRouter } from '@/i18n/navigation';
+import { PROVIDER_META, SHIP_PROVIDERS, useShippingSettings, useShippingWebhook } from '@/hook/shipping';
+import { useTranslations } from 'next-intl';
+import { STORE_PROVIDERS, useStoreConfig, useStoreWebhook } from '@/hook/stores';
+import { PrimaryBtn } from '@/components/atoms/Button';
 /* ─── CSS ─────────────────────────────────────────────────── */
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
@@ -878,6 +882,7 @@ const schema = yup.object({
 });
 
 function CompanyStep({ onNext, onBack, open, nextLoading }) {
+
 	const {
 		control,
 		register,
@@ -897,6 +902,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
 			address: '',
 		},
 		mode: 'onTouched', // validate on touch so errors show after interaction
+
 	});
 
 	useEffect(() => {
@@ -1103,71 +1109,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
 
 /* ─── Step 3: Store ───────────────────────────────────────── */
 
-// Provider metadata matching StoresIntegrationPage
-const PROVIDER_CONFIG = {
-	easyorder: {
-		fields: {
-			apiKey: { label: "مفتاح API", required: true, userProvides: true },
-			webhookCreateOrderSecret: { label: "سر إنشاء الطلب", required: true, userProvides: true },
-			webhookUpdateStatusSecret: { label: "سر تحديث الحالة", required: true, userProvides: true },
-		},
-		webhookEndpoints: (adminId) => ({
-			create: `${window.location.origin}/stores/webhooks/${adminId}/easyorder/orders/create`,
-			update: `${window.location.origin}/stores/webhooks/easyorder/orders/status`,
-		}),
-	},
-	shopify: {
-		fields: {
-			apiKey: { label: "مفتاح API", required: true, userProvides: true },
-			clientSecret: { label: "السر", required: true, userProvides: true },
-			webhookSecret: { label: "سر Webhook", required: true, userProvides: true },
-		},
-		webhookEndpoints: (adminId) => ({
-			create: `${window.location.origin}/stores/webhooks/${adminId}/shopify/orders/create`,
-			update: `${window.location.origin}/stores/webhooks/shopify/orders/status`,
-		}),
-	},
-	woocommerce: {
-		fields: {
-			apiKey: { label: "مفتاح API", required: true, userProvides: true },
-			clientSecret: { rlabel: "السر", equired: true, userProvides: true },
-			webhookSecret: { label: "سر Webhook", required: true, userProvides: true },
-			webhookCreateOrderSecret: { label: "سر إنشاء الطلب", required: true, systemProvides: true },
-			webhookUpdateStatusSecret: { label: "سر تحديث الحالة", required: true, systemProvides: true },
-		},
-		webhookEndpoints: (adminId) => ({
-			create: `${window.location.origin}/stores/webhooks/${adminId}/woocommerce/orders/create`,
-			update: `${window.location.origin}/stores/webhooks/woocommerce/orders/status`,
-		}),
-	},
-};
 
-const STORE_PROVIDERS = [
-	{
-		key: 'easyorder',
-		code: 'easyorder',
-		label: 'إيزي أوردر',
-		img: "/integrate/easyorder.png",
-		emoji: '🛒',
-		desc: 'ربط مباشر مع منصة إيزي أوردر',
-	},
-	{
-		key: 'shopify',
-		code: 'shopify',
-		label: 'Shopify',
-		img: "/integrate/shopify.png",
-		emoji: '🟢',
-		desc: 'ربط متجر Shopify الخاص بك',
-	},
-	{
-		key: 'woocommerce',
-		code: 'woocommerce',
-		label: 'WooCommerce',
-		img: "/integrate/WooCommerce.png",
-		emoji: '🛍️',
-		desc: 'ربط متجر WooCommerce',
-	},
-];
 
 
 const CopyableCode = ({ text }) => {
@@ -1208,207 +1150,89 @@ const CopyableCode = ({ text }) => {
 };
 
 function StoreStep({ onNext, onBack, open, nextLoading }) {
+	const t = useTranslations("storeIntegrations");
 	const [active, setActive] = useState(null);
-	const [fd, setFd] = useState({});
-	const [storeUrl, setStoreUrl] = useState('');
-	const [storeName, setStoreName] = useState('');
-	const [connected, setConnected] = useState({});
-	const [saving, setSaving] = useState(false);
-	const [loading, setLoading] = useState(true);
-	const [stores, setStores] = useState([]);
-	const [systemSecrets, setSystemSecrets] = useState({});
 	const [showWebhooks, setShowWebhooks] = useState(false);
+	const [stores, setStores] = useState({});
+	const [connected, setConnected] = useState({});
+	const [listLoading, setListLoading] = useState(true);
 
 	const user = getUser();
 	const provider = STORE_PROVIDERS.find(p => p.key === active);
-	const providerConfig = provider ? PROVIDER_CONFIG[provider.code] : null;
+	const existingStore = active ? stores[active] : null;
 
-	// Fetch existing stores
+	// --- 1. Fetch Logic (Trimmed & Optimized) ---
 	const fetchStores = async () => {
-		setLoading(true);
+		setListLoading(true);
 		try {
-			const { data } = await api.get("/stores");
+			const { data } = await api.get("/stores/integrations");
 			const storesArray = Array.isArray(data) ? data : data?.records || [];
+
 			const storesMap = {};
+			const connectedMap = {};
 
 			storesArray.forEach((store) => {
 				storesMap[store.provider] = store;
+				connectedMap[store.provider] = true;
 			});
 
 			setStores(storesMap);
-
-			// Mark as connected if store exists
-			const connectedMap = {};
-			storesArray.forEach((store) => {
-				connectedMap[store.provider] = true;
-			});
 			setConnected(connectedMap);
 		} catch (e) {
 			console.error("Error fetching stores:", e);
 		} finally {
-			setLoading(false);
+			setListLoading(false);
 		}
 	};
 
 	useEffect(() => {
-		if (open) {
-			fetchStores();
-		}
+		if (open) fetchStores();
 	}, [open]);
 
-	// When opening a provider form, load existing data
-	useEffect(() => {
-		if (active && stores[active]) {
-			const store = stores[active];
-			setStoreName(store.name || '');
-			setStoreUrl(store.storeUrl || '');
-
-			// Load integrations (non-system-provided fields)
-			const newFd = {};
-			if (providerConfig) {
-				Object.keys(providerConfig.fields).forEach((fieldKey) => {
-					const field = providerConfig.fields[fieldKey];
-					if (field.userProvides && store.integrations?.[fieldKey]) {
-						newFd[fieldKey] = store.integrations[fieldKey];
-					}
-				});
-			}
-			setFd(newFd);
-
-			// Load system secrets for WooCommerce
-			if (provider.code === 'woocommerce' && store.integrations) {
-				setSystemSecrets({
-					webhookCreateOrderSecret: store.integrations.webhookCreateOrderSecret || '',
-					webhookUpdateStatusSecret: store.integrations.webhookUpdateStatusSecret || '',
-				});
-			}
-		} else if (!active) {
-			setFd({});
-			setStoreUrl('');
-			setStoreName('');
-			setSystemSecrets({});
+	// --- 2. Store Config Hook (Mapped to your original names) ---
+	const {
+		config: providerConfig,        // Mapped from 'config'
+		isSubmitting: saving,          // Mapped from 'isSubmitting'
+		fetchingStore: configLoading,
+		fields: fd,                    // Mapped from 'fields'
+		markTouched,
+		setFields: setFd,              // Mapped from 'setFields'
+		systemSecrets,                 // Exact match
+		handleSubmit,
+		onSubmit,
+		register,                      // 💡 Used for name/url inputs
+		errors
+	} = useStoreConfig({
+		open: !!active,
+		onClose: () => {
+			setActive(null);
 			setShowWebhooks(false);
-		}
-	}, [active]);
+		},
+		provider: active,
+		existingStore,
+		fetchStores,
+		onCreated: () => setShowWebhooks(true)
+	});
 
-	const save = async () => {
-		const isEditMode = !!stores[active];
+	// --- 3. Webhook Hook (Exact match) ---
+	const {
+		loading: webhookLoading,
+		webhookFields,
+		setWebhookFields,
+		rotating,
+		copyToClipboard,
+		saveSecrets,
+		rotateWooCommerce,
+		cred
+	} = useStoreWebhook({
+		store: existingStore,
+		provider: active,
+		onClose: () => setShowWebhooks(false)
+	});
 
-		// Validate store URL and name
-		if (!storeUrl.trim()) {
-			toast.error('يرجى إدخال رابط المتجر');
-			return;
-		}
-		if (!storeName.trim()) {
-			toast.error('يرجى إدخال اسم المتجر');
-			return;
-		}
-
-		// Validate required user-provided fields
-		if (!isEditMode && providerConfig) {
-			const missingFields = Object.keys(providerConfig.fields)
-				.filter(key => {
-					const field = providerConfig.fields[key];
-					return field.userProvides && field.required && !fd[key]?.trim();
-				});
-
-			if (missingFields.length > 0) {
-				toast.error('يرجى ملء جميع الحقول المطلوبة');
-				return;
-			}
-		}
-
-		// For edit mode: at least one field must be changed
-		if (isEditMode) {
-			const hasChanges = Object.keys(fd).some(key => fd[key]?.trim());
-			if (!hasChanges && storeUrl === stores[active].storeUrl && storeName === stores[active].name) {
-				toast.error('يرجى تعديل حقل واحد على الأقل');
-				return;
-			}
-		}
-
-		setSaving(true);
-		try {
-			const credentials = {};
-
-			// Only include user-provided fields
-			if (providerConfig) {
-				Object.keys(providerConfig.fields).forEach((fieldKey) => {
-					const field = providerConfig.fields[fieldKey];
-					if (field.userProvides && fd[fieldKey]?.trim()) {
-						credentials[fieldKey] = fd[fieldKey].trim();
-					}
-				});
-			}
-
-			const payload = {
-				name: storeName.trim(),
-				storeUrl: storeUrl.trim(),
-				isActive: true,
-			};
-
-			if (isEditMode) {
-				// Update existing store
-				if (Object.keys(credentials).length > 0) {
-					payload.credentials = credentials;
-				}
-
-				const { data } = await api.patch(`/stores/${stores[active].id}`, payload);
-
-				// Update system secrets for WooCommerce
-				if (provider.code === 'woocommerce' && data.credentials) {
-					setSystemSecrets({
-						webhookCreateOrderSecret: data.credentials.webhookCreateOrderSecret || '',
-						webhookUpdateStatusSecret: data.credentials.webhookUpdateStatusSecret || '',
-					});
-					setShowWebhooks(true);
-				}
-
-				toast.success(`تم تحديث ${provider.label} بنجاح ✓`);
-			} else {
-				// Create new store
-				payload.provider = provider.code;
-				payload.credentials = credentials;
-
-				const { data } = await api.post("/stores", payload);
-
-				// Get system secrets for WooCommerce
-				if (provider.code === 'woocommerce' && data.credentials) {
-					setSystemSecrets({
-						webhookCreateOrderSecret: data.credentials.webhookCreateOrderSecret || '',
-						webhookUpdateStatusSecret: data.credentials.webhookUpdateStatusSecret || '',
-					});
-					setShowWebhooks(true);
-				} else {
-					// For other providers, close form after save
-					setActive(null);
-					setFd({});
-					setStoreUrl('');
-					setStoreName('');
-				}
-
-				toast.success(`تم ربط ${provider.label} بنجاح ✓`);
-			}
-
-			// Refresh stores list
-			await fetchStores();
-
-			// Only close form for non-WooCommerce or if not showing webhooks
-			if (provider.code !== 'woocommerce' || (isEditMode && !showWebhooks)) {
-				setActive(null);
-				setFd({});
-				setStoreUrl('');
-				setStoreName('');
-				setSystemSecrets({});
-			}
-
-		} catch (error) {
-			console.error("Error saving store:", error);
-			toast.error(error?.response?.data?.message || 'حدث خطأ أثناء الحفظ');
-		} finally {
-			setSaving(false);
-		}
-	};
+	// --- 4. Aliases for your JSX ---
+	const loading = listLoading || configLoading;
+	const save = handleSubmit(onSubmit); // Mapped: Replaces your manual save()
 
 	const connectedCount = useMemo(() => {
 		return Object.keys(connected || {}).length;
@@ -1634,96 +1458,113 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
 								</div>
 							) : (
 								<>
-									{/* Store Name */}
-									<Field label="اسم المتجر" required>
-										<InputWrap icon={<span>🏪</span>}>
-											<input
-												className="ob-input"
-												placeholder="متجري الإلكتروني"
-												value={storeName}
-												onChange={e => setStoreName(e.target.value)}
-												style={{
-													paddingLeft: 36,
-													width: '100%',
-													height: 42,
-													borderRadius: 10,
-													border: '1.5px solid var(--border)',
-													background: 'var(--surface)',
-													fontSize: 13,
-													color: 'var(--text)',
-													outline: 'none',
-												}}
-											/>
-										</InputWrap>
-									</Field>
+									<div className='grid grid-cols-2 gap-2'>
 
-									{/* Store URL */}
-									<Field label="رابط المتجر" required>
-										<InputWrap icon={<IcGlobe />}>
-											<input
-												className="ob-input"
-												placeholder="https://mystore.example.com"
-												value={storeUrl}
-												onChange={e => setStoreUrl(e.target.value)}
-												style={{
-													direction: 'ltr',
-													textAlign: 'left',
-													paddingLeft: 36,
-													width: '100%',
-													height: 42,
-													borderRadius: 10,
-													border: '1.5px solid var(--border)',
-													background: 'var(--surface)',
-													fontSize: 13,
-													color: 'var(--text)',
-													outline: 'none',
-												}}
-											/>
-										</InputWrap>
-									</Field>
+
+										{/* Store Name - Updated to use register */}
+										<Field label="اسم المتجر" required error={errors?.name?.message}>
+											<InputWrap icon={<span>🏪</span>}>
+												<input
+													className="ob-input"
+													placeholder="متجري الإلكتروني"
+													{...register('name')}
+													style={{
+														paddingLeft: 36,
+														width: '100%',
+														height: 42,
+														borderRadius: 10,
+														border: '1.5px solid var(--border)',
+														background: 'var(--surface)',
+														fontSize: 13,
+														color: 'var(--text)',
+														outline: 'none',
+													}}
+												/>
+											</InputWrap>
+										</Field>
+
+										{/* Store URL - Updated to use register */}
+										<Field label="رابط المتجر" required error={errors?.storeUrl?.message}>
+											<InputWrap icon={<IcGlobe />}>
+												<input
+													className="ob-input"
+													placeholder="https://mystore.example.com"
+													{...register('storeUrl')}
+													style={{
+														direction: 'ltr',
+														textAlign: 'left',
+														paddingLeft: 36,
+														width: '100%',
+														height: 42,
+														borderRadius: 10,
+														border: '1.5px solid var(--border)',
+														background: 'var(--surface)',
+														fontSize: 13,
+														color: 'var(--text)',
+														outline: 'none',
+													}}
+												/>
+											</InputWrap>
+										</Field>
+									</div>
 
 									{/* Webhook URLs Info */}
 									{providerConfig && user?.id && (
-										<div style={{
-											background: 'var(--surface2)',
-											border: '1.5px solid var(--border)',
-											borderRadius: 12,
-											padding: 12,
-											marginBottom: 16,
-										}}>
-											<p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>
-												📡 روابط Webhook
-											</p>
-											<div style={{ marginBottom: 8 }}>
-												<p style={{ fontSize: 10, color: 'var(--text-3)', marginBottom: 4 }}>Create Order:</p>
-												<CopyableCode text={providerConfig.webhookEndpoints(user.id).create} />
-											</div>
-											<div>
-												<p style={{ fontSize: 10, color: 'var(--text-3)', marginBottom: 4 }}>Update Status:</p>
-												<CopyableCode text={providerConfig.webhookEndpoints(user.id).update} />
-											</div>
+										<div className="space-y-3">
+											<Field label={t("instructions.webhookCreateOrderLabel")}>
+												<div className="flex gap-2">
+													<input readOnly value={providerConfig.webhookEndpoints.create(user?.id)} className="ob-input flex-1" style={{ background: 'var(--surface2)' }} />
+													<button type="button" onClick={() => copyToClipboard(providerConfig.webhookEndpoints.create(user?.id))} className="copy-btn">
+														<Copy size={16} />
+													</button>
+												</div>
+											</Field>
+
+											<Field label={t("instructions.webhookUpdateStatusLabel")}>
+												<div className="flex gap-2">
+													<input readOnly value={providerConfig.webhookEndpoints.update(user?.id)} className="ob-input flex-1" style={{ background: 'var(--surface2)' }} />
+													<button type="button" onClick={() => copyToClipboard(providerConfig.webhookEndpoints.update(user?.id))} className="copy-btn">
+														<Copy size={16} />
+													</button>
+												</div>
+											</Field>
 										</div>
+
 									)}
 
 									{/* Integration Fields */}
 									{providerConfig && Object.keys(providerConfig.fields).map((fieldKey) => {
 										const field = providerConfig.fields[fieldKey];
+										if (!field.userProvides) {
+											if (cred[fieldKey]) {
+												return (
+													<Field key={fieldKey} label={t(`form.${fieldKey}`)}>
+														<div className="flex gap-2">
+															<input readOnly value={cred[fieldKey]} className="ob-input flex-1" style={{ background: 'var(--surface2)' }} />
+															<button type="button" onClick={() => copyToClipboard(cred[fieldKey])} className="copy-btn">
+																<Copy size={16} />
+															</button>
+														</div>
+													</Field>
+												);
+											}
+											return null;
+										}
 
-										// Only show user-provided fields
-										if (!field.userProvides) return null;
-
-										const existingValue = stores[active]?.integrations?.[fieldKey];
-										const placeholder = existingValue || field.label;
-
+										const existingValue = stores[active]?.credentials?.[fieldKey];
+										const placeholder = existingValue || t(`form.${fieldKey}`);
 										return (
-											<Field key={fieldKey} label={field.label} required={field.required}>
+											<Field key={fieldKey} label={t(`form.${fieldKey}`)} required={field.required}>
 												<InputWrap icon={<IcLock />}>
 													<input
 														className="ob-input"
 														type="password"
 														placeholder={placeholder}
 														value={fd[fieldKey] || ''}
-														onChange={e => setFd(p => ({ ...p, [fieldKey]: e.target.value }))}
+														onChange={e => {
+															setFd(p => ({ ...p, [fieldKey]: e.target.value }))
+															markTouched(fieldKey);
+														}}
 														style={{
 															direction: 'ltr',
 															textAlign: 'left',
@@ -1742,17 +1583,30 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
 											</Field>
 										);
 									})}
+									{/* --- 3. Webhook Hook (Dynamic Fields Handling) --- */}
+									{!webhookLoading && providerConfig && active === "woocommerce" && (
+										<div className="flex items-center justify-between gap-4 p-3! rounded-xl bg-[var(--surface2)] border border-[var(--border)]">
+											<p className="text-xs text-[var(--text-3)] leading-relaxed flex-1">
+												{t("webhook.securityHint")}
+											</p>
+											<button
+												onClick={rotateWooCommerce}
+												disabled={rotating}
+												className="flex items-center gap-2 text-nowrap px-3! py-2! rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:brightness-95 transition-all disabled:opacity-50"
+											>
+												{rotating ? <Loader2 size={14} className="animate-spin" /> : <RotateCcw size={14} />}
+												<span className="text-xs font-semibold">{t("webhook.rotate")}</span>
+											</button>
+										</div>
+									)}
 								</>
 							)}
 
 							<div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
 								<BtnGhost onClick={() => {
 									setActive(null);
-									setFd({});
-									setStoreUrl('');
-									setStoreName('');
-									setSystemSecrets({});
 									setShowWebhooks(false);
+									// Note: Fields and Secrets are now managed by hooks' internal state/onClose
 								}}>
 									{showWebhooks ? 'إغلاق' : 'إلغاء'}
 								</BtnGhost>
@@ -1841,55 +1695,6 @@ const ProvidersSkeleton = () => (
 
 
 // Provider metadata matching ShippingCompaniesPage
-const PROVIDER_META = {
-	bosta: {
-		configFields: [
-			{ key: "apiKey", type: "password", label: 'مفتاح API', required: true, hide: true },
-		],
-		webhookHiddenFields: [], // Show all webhook fields
-	},
-	jt: {
-		configFields: [
-			{ key: "apiKey", type: "password", label: 'مفتاح API', required: true, hide: true },
-			{ key: "customerId", type: "text", label: 'معرف العميل', required: true, hide: false },
-		],
-		webhookHiddenFields: [],
-	},
-	turbo: {
-		configFields: [
-			{ key: "apiKey", type: "password", label: 'مفتاح API', required: true, hide: true },
-			{ key: "accountId", type: "text", label: 'معرف الحساب', required: true, hide: false },
-		],
-		webhookHiddenFields: ["headerName"], // Hide headerName for Turbo
-	},
-};
-
-const SHIP_PROVIDERS = [
-	{
-		key: 'bosta',
-		code: 'bosta',
-		label: 'بوسطة',
-		img: "/integrate/bosta.png",
-		emoji: '📦',
-		desc: 'أسرع شركات التوصيل في مصر',
-	},
-	{
-		key: 'jt',
-		code: 'jt',
-		label: 'J&T Express',
-		img: "/integrate/5.png",
-		emoji: '🚚',
-		desc: 'تغطية واسعة في المنطقة العربية',
-	},
-	{
-		key: 'turbo',
-		code: 'turbo',
-		label: 'تيربو',
-		img: "/integrate/4.png",
-		emoji: '⚡',
-		desc: 'توصيل سريع داخل المدن',
-	},
-];
 
 
 const CopyableField = ({ label, value }) => {
@@ -2025,163 +1830,61 @@ const WebhookSkeleton = () => (
 );
 
 function ShippingStep({ onNext, onBack, open, nextLoading }) {
-	const [active, setActive] = useState(null);
-	const [fd, setFd] = useState({});
-	const [connected, setConnected] = useState({});
-	const [saving, setSaving] = useState(false);
-	const [loading, setLoading] = useState(true);
-	const [integrations, setIntegrations] = useState({});
+	const t = useTranslations("shipping");
 
-	// Webhook state
+	const [active, setActive] = useState(null); // The provider code
 	const [showWebhook, setShowWebhook] = useState(false);
-	const [webhookData, setWebhookData] = useState(null);
-	const [webhookLoading, setWebhookLoading] = useState(false);
-	const [rotatingSecret, setRotatingSecret] = useState(false);
 
-	const provider = SHIP_PROVIDERS.find(p => p.key === active);
+	// Find current provider object
+	const provider = SHIP_PROVIDERS.find(p => p.code === active) || null;
+
+	const handleOnSaved = useCallback((isEditMode) => {
+		if (!isEditMode) {
+			setShowWebhook(true);
+		} else {
+			setActive(null);
+		}
+	}, [active, provider?.label]);
+
+	// 3. Settings Hook (Renamed to match your original variable names)
+	const {
+		integrations, connected,
+		fields,
+		values: fd,             // Rename 'values' to 'fd'
+		setValue: setFd,        // Rename 'setValue' to 'setFd'
+		handleSave: save,       // Rename 'handleSave' to 'save'
+		saving,
+		loading: settingsLoading,
+		integrationData
+	} = useShippingSettings(provider?.key, {
+		onSaved: handleOnSaved,
+		onFirstSetup: () => setShowWebhook(true),
+		onClose: () => {
+			setActive(null);
+			setShowWebhook(false);
+		},
+	});
+
+	// 4. Webhook Hook (Renamed to match your original variable names)
+	const {
+		data: webhookData,      // Rename 'data' to 'webhookData'
+		setData: setWebhookData,
+		loading: webhookLoading,
+		rotating: rotatingSecret,
+		handleRotateSecret: rotateSecret, // Rename to match your function name
+		handleCopy: copy,
+		refresh,
+	} = useShippingWebhook(showWebhook ? active : null);
+
+	// Helper logic for the UI
 	const providerMeta = provider ? PROVIDER_META[provider.code] : null;
-	const fields = providerMeta?.configFields || [];
 	const webhookHiddenFields = providerMeta?.webhookHiddenFields || [];
 
-	// Fetch existing integrations
-	const fetchIntegrations = async () => {
-		setLoading(true);
-		try {
-			const { data } = await api.get("/shipping/integrations/status");
-			const integrationsMap = {};
-			const connectedMap = {};
-
-			if (data?.integrations) {
-				data.integrations.forEach((integration) => {
-					integrations[integration.provider] = integration;
-					if (integration.credentialsConfigured) {
-						connectedMap[integration.provider] = true;
-					}
-				});
-			}
-
-			setIntegrations(integrations);
-			setConnected(connectedMap);
-		} catch (e) {
-			console.error("Error fetching integrations:", e);
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	// Fetch webhook setup
-	const fetchWebhookSetup = async (providerCode) => {
-		setWebhookLoading(true);
-		try {
-			const res = await api.get(`/shipping/providers/${providerCode}/webhook-setup`);
-			setWebhookData(res.data);
-		} catch (e) {
-			console.error("Error fetching webhook setup:", e);
-			toast.error('فشل في تحميل إعدادات Webhook');
-		} finally {
-			setWebhookLoading(false);
-		}
-	};
-
-	// Rotate webhook secret
-	const rotateSecret = async () => {
-		if (!provider) return;
-
-		setRotatingSecret(true);
-		try {
-			await api.post(`/shipping/providers/${provider.code}/webhook-setup/rotate-secret`, {});
-			await fetchWebhookSetup(provider.code);
-			toast.success('تم تجديد السر بنجاح ✓');
-		} catch (e) {
-			console.error("Error rotating secret:", e);
-			toast.error('فشل في تجديد السر');
-		} finally {
-			setRotatingSecret(false);
-		}
-	};
-
-	useEffect(() => {
-		if (open) {
-			fetchIntegrations();
-		}
-	}, [open]);
-
-	// When opening a provider form, load existing non-hidden values
-	useEffect(() => {
-		if (active && integrations[active]) {
-			const integration = integrations[active];
-			const newFd = {};
-
-			fields.forEach((field) => {
-				// Only populate non-hidden fields
-				if (!field.hide && integration.credentials?.[field.key]) {
-					newFd[field.key] = integration.credentials[field.key];
-				}
-			});
-
-			setFd(newFd);
-		} else if (!active) {
-			setFd({});
-			setShowWebhook(false);
-			setWebhookData(null);
-		}
-	}, [active]);
-
-	const save = async () => {
-		// Check required fields
-		const missingRequired = fields.filter(f => f.required && !fd[f.key]?.trim());
-
-		// For edit mode: allow save if at least one field has a new value
-		const hasAtLeastOneValue = fields.some(f => fd[f.key]?.trim());
-		const isEditMode = integrations[active]?.credentialsConfigured;
-
-		if (!isEditMode && missingRequired.length) {
-			toast.error('يرجى ملء الحقول المطلوبة');
-			return;
-		}
-
-		if (isEditMode && !hasAtLeastOneValue) {
-			toast.error('يرجى إدخال قيمة واحدة على الأقل');
-			return;
-		}
-
-		setSaving(true);
-		try {
-			const credentials = {};
-			fields.forEach((field) => {
-				const val = fd[field.key]?.trim();
-				if (val && val.length > 0) {
-					credentials[field.key] = val;
-				}
-			});
-
-			await api.post(`/shipping/providers/${provider.code}/credentials`, { credentials });
-
-			toast.success(`تم ${isEditMode ? 'تحديث' : 'ربط'} ${provider.label} بنجاح ✓`);
-
-			// Refresh integrations
-			await fetchIntegrations();
-
-			// If first setup, show webhook modal
-			if (!isEditMode) {
-				setShowWebhook(true);
-				await fetchWebhookSetup(provider.code);
-			} else {
-				setActive(null);
-				setFd({});
-			}
-		} catch (error) {
-			console.error("Error saving credentials:", error);
-			toast.error(error?.response?.data?.message || 'حدث خطأ أثناء الحفظ');
-		} finally {
-			setSaving(false);
-		}
-	};
 
 	const openWebhookSetup = async (providerKey) => {
 		setActive(providerKey);
 		setShowWebhook(true);
-		await fetchWebhookSetup(providerKey);
+		await refresh(providerKey);
 	};
 
 	if (!open) return null;
@@ -2203,7 +1906,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
 				</p>
 			</div>
 
-			{loading ? (
+			{settingsLoading ? (
 				<ProvidersSkeleton />
 			) : (
 				<AnimatePresence mode="wait">
@@ -2541,17 +2244,17 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
 
 							{fields.map(f => {
 								const existingValue = integrations[active]?.credentials?.[f.key];
-								const placeholder = f.hide && existingValue ? existingValue : f.label;
+								const placeholder = f.hide && existingValue ? existingValue : t(f.labelKey);
 
 								return (
-									<Field key={f.key} label={f.label} required={f.required}>
+									<Field key={f.key} label={t(f.labelKey)} required={f.required}>
 										<InputWrap icon={<IcLock />}>
 											<input
 												className="ob-input"
 												type={f.type}
 												placeholder={placeholder}
 												value={fd[f.key] || ''}
-												onChange={e => setFd(p => ({ ...p, [f.key]: e.target.value }))}
+												onChange={e => setFd(f.key, e.target.value)}
 												style={{
 													direction: 'ltr',
 													textAlign: 'left',
@@ -2572,7 +2275,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
 							})}
 
 							<div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-								<BtnGhost onClick={() => { setActive(null); setFd({}); }}>
+								<BtnGhost onClick={() => { setActive(null); }}>
 									إلغاء
 								</BtnGhost>
 								<BtnPrimary onClick={save} loading={saving || nextLoading} disabled={nextLoading} style={{ flex: 1 }}>

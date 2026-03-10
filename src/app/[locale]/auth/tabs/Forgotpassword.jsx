@@ -8,17 +8,17 @@ import { Field, AuthInput, PasswordInput, PasswordStrength, BtnPrimary, BtnLink,
 
 const MailIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+    <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
   </svg>
 );
 const LockIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
   </svg>
 );
 
 const IconBadge = ({ icon }) => (
-  <div style={{ width:50, height:50, borderRadius:13, background:'var(--p-xlight)', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--p)', flexShrink:0 }}>
+  <div style={{ width: 50, height: 50, borderRadius: 13, background: 'var(--p-xlight)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--p)', flexShrink: 0 }}>
     {icon}
   </div>
 );
@@ -27,15 +27,15 @@ export default function ForgotPassword({ t: tProp, onBack }) {
   const tLocal = useTranslations('auth');
   const t = tProp ?? tLocal;
 
-  const [step,      setStep]      = useState(0); // 0=email 1=otp 2=reset 3=done
-  const [email,     setEmail]     = useState('');
-  const [otp,       setOtp]       = useState('');
-  const [otpErr,    setOtpErr]    = useState(false);
-  const [pw,        setPw]        = useState('');
-  const [cpw,       setCpw]       = useState('');
-  const [touched,   setTouched]   = useState({});
-  const [loading,   setLoading]   = useState(false);
-  const [timer,     setTimer]     = useState(120);
+  const [step, setStep] = useState(0); // 0=email 1=otp 2=reset 3=done
+  const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [otpErr, setOtpErr] = useState(false);
+  const [pw, setPw] = useState('');
+  const [cpw, setCpw] = useState('');
+  const [touched, setTouched] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [timer, setTimer] = useState(120);
   const [canResend, setCanResend] = useState(false);
 
   useEffect(() => {
@@ -48,11 +48,11 @@ export default function ForgotPassword({ t: tProp, onBack }) {
     return () => clearInterval(iv);
   }, [step]);
 
-  const fmt = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+  const fmt = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
   const emailErr = !email.trim() ? t('validation.required') : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? t('validation.email_invalid') : '';
-  const pwErr    = !pw  ? t('validation.required') : pw.length < 8 ? t('validation.password_min') : '';
-  const cpwErr   = !cpw ? t('validation.required') : pw !== cpw ? t('validation.passwords_match') : '';
+  const pwErr = !pw ? t('validation.required') : pw.length < 8 ? t('validation.password_min') : '';
+  const cpwErr = !cpw ? t('validation.required') : pw !== cpw ? t('validation.passwords_match') : '';
 
   const post = async (url, body) => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}${url}`, {
@@ -65,7 +65,7 @@ export default function ForgotPassword({ t: tProp, onBack }) {
   };
 
   const sendOtp = async () => {
-    setTouched({ email:true });
+    setTouched({ email: true });
     if (emailErr) return;
     setLoading(true);
     const tid = toast.loading(t('forgot.sending'));
@@ -93,7 +93,7 @@ export default function ForgotPassword({ t: tProp, onBack }) {
   };
 
   const resetPw = async () => {
-    setTouched({ pw:true, cpw:true });
+    setTouched({ pw: true, cpw: true });
     if (pwErr || cpwErr) return;
     setLoading(true);
     const tid = toast.loading(t('forgot.resetting'));
@@ -107,31 +107,31 @@ export default function ForgotPassword({ t: tProp, onBack }) {
   };
 
   return (
-    <motion.div key="forgot" initial={{ opacity:0, y:14 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-14 }} transition={{ duration:.28 }}>
+    <motion.div key="forgot" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={{ duration: .28 }}>
       <AnimatePresence mode="wait">
 
         {/* ── Step 0: email ── */}
         {step === 0 && (
-          <motion.div key="f0" initial={{ opacity:0, x:20 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:-20 }} transition={{ duration:.25 }}>
-            <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:22 }}>
+          <motion.div key="f0" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: .25 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22 }}>
               <IconBadge icon={<MailIcon />} />
               <div>
-                <h2 style={{ fontSize:19, fontWeight:800, color:'var(--text)', marginBottom:3 }}>{t('forgot.title')}</h2>
-                <p style={{ fontSize:13, color:'var(--text-3)' }}>{t('forgot.sub')}</p>
+                <h2 style={{ fontSize: 19, fontWeight: 800, color: 'var(--text)', marginBottom: 3 }}>{t('forgot.title')}</h2>
+                <p style={{ fontSize: 13, color: 'var(--text-3)' }}>{t('forgot.sub')}</p>
               </div>
             </div>
             <Field label={t('forgot.email')} error={touched.email && emailErr}>
               <AuthInput type="email" placeholder={t('forgot.email_placeholder')}
                 value={email} onChange={e => setEmail(e.target.value)}
-                onBlur={() => setTouched(p => ({...p, email:true}))}
+                onBlur={() => setTouched(p => ({ ...p, email: true }))}
                 error={touched.email && emailErr} icon={<MailIcon />}
-                style={{ direction:'ltr', textAlign:'right' }}
+                style={{ direction: 'ltr', textAlign: 'right' }}
               />
             </Field>
             <BtnPrimary loading={loading} type="button" onClick={sendOtp}>
               {t('forgot.submit')} <IconArrow dir="right" />
             </BtnPrimary>
-            <p style={{ textAlign:'center', fontSize:13, color:'var(--text-3)', marginTop:16 }}>
+            <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-3)', marginTop: 16 }}>
               <BtnLink onClick={onBack}>{t('forgot.back')}</BtnLink>
             </p>
           </motion.div>
@@ -139,22 +139,22 @@ export default function ForgotPassword({ t: tProp, onBack }) {
 
         {/* ── Step 1: OTP ── */}
         {step === 1 && (
-          <motion.div key="f1" initial={{ opacity:0, x:20 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:-20 }} transition={{ duration:.25 }}>
-            <div style={{ textAlign:'center', marginBottom:22 }}>
-              <div style={{ width:60, height:60, borderRadius:16, margin:'0 auto 12px', background:'var(--p-xlight)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                <span style={{ fontSize:28 }}>🔐</span>
+          <motion.div key="f1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: .25 }}>
+            <div style={{ textAlign: 'center', marginBottom: 22 }}>
+              <div style={{ width: 60, height: 60, borderRadius: 16, margin: '0 auto 12px', background: 'var(--p-xlight)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: 28 }}>🔐</span>
               </div>
-              <h2 style={{ fontSize:19, fontWeight:800, color:'var(--text)', marginBottom:5 }}>{t('forgot.otp_title')}</h2>
-              <p style={{ fontSize:13, color:'var(--text-3)' }}>
+              <h2 style={{ fontSize: 19, fontWeight: 800, color: 'var(--text)', marginBottom: 5 }}>{t('forgot.otp_title')}</h2>
+              <p style={{ fontSize: 13, color: 'var(--text-3)' }}>
                 {t('forgot.otp_sub')}{' '}
-                <span style={{ fontWeight:700, color:'var(--text)', direction:'ltr', display:'inline-block' }}>{email}</span>
+                <span style={{ fontWeight: 700, color: 'var(--text)', direction: 'ltr', display: 'inline-block' }}>{email}</span>
               </p>
             </div>
 
             <OtpInput value={otp} onChange={v => { setOtp(v); setOtpErr(false); }} hasError={otpErr} />
-            {otpErr && <p style={{ textAlign:'center', fontSize:12, color:'#ef4444', marginTop:7 }}>⚠ {t('forgot.otp_wrong')}</p>}
+            {otpErr && <p style={{ textAlign: 'center', fontSize: 12, color: '#ef4444', marginTop: 7 }}>⚠ {t('forgot.otp_wrong')}</p>}
 
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', margin:'14px 0', fontSize:13, color:'var(--text-3)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '14px 0', fontSize: 13, color: 'var(--text-3)' }}>
               <span>{!canResend ? `${t('forgot.otp_timer')} ${fmt(timer)}` : t('forgot.otp_expired')}</span>
               <BtnLink style={{ opacity: canResend ? 1 : .4, pointerEvents: canResend ? 'auto' : 'none' }}
                 onClick={async () => {
@@ -176,26 +176,26 @@ export default function ForgotPassword({ t: tProp, onBack }) {
 
         {/* ── Step 2: reset ── */}
         {step === 2 && (
-          <motion.div key="f2" initial={{ opacity:0, x:20 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:-20 }} transition={{ duration:.25 }}>
-            <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:22 }}>
+          <motion.div key="f2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: .25 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22 }}>
               <IconBadge icon={<LockIcon />} />
               <div>
-                <h2 style={{ fontSize:19, fontWeight:800, color:'var(--text)', marginBottom:3 }}>{t('forgot.reset_title')}</h2>
-                <p style={{ fontSize:13, color:'var(--text-3)' }}>{t('forgot.reset_sub')}</p>
+                <h2 style={{ fontSize: 19, fontWeight: 800, color: 'var(--text)', marginBottom: 3 }}>{t('forgot.reset_title')}</h2>
+                <p style={{ fontSize: 13, color: 'var(--text-3)' }}>{t('forgot.reset_sub')}</p>
               </div>
             </div>
             <PasswordInput label={t('forgot.new_password')} placeholder={t('signup.password_placeholder')}
-              value={pw} onChange={e => setPw(e.target.value)} onBlur={() => setTouched(p=>({...p,pw:true}))}
+              value={pw} onChange={e => setPw(e.target.value)} onBlur={() => setTouched(p => ({ ...p, pw: true }))}
               error={touched.pw && pwErr} icon={<LockIcon />}
             />
-            <PasswordStrength password={pw} t={t} />
-            <div style={{ marginTop:12 }}>
+            <PasswordStrength password={pw} />
+            <div style={{ marginTop: 12 }}>
               <PasswordInput label={t('forgot.confirm')} placeholder={t('signup.confirm_placeholder')}
-                value={cpw} onChange={e => setCpw(e.target.value)} onBlur={() => setTouched(p=>({...p,cpw:true}))}
+                value={cpw} onChange={e => setCpw(e.target.value)} onBlur={() => setTouched(p => ({ ...p, cpw: true }))}
                 error={touched.cpw && cpwErr} icon={<LockIcon />}
               />
             </div>
-            <BtnPrimary loading={loading} type="button" onClick={resetPw} style={{ marginTop:8 }}>
+            <BtnPrimary loading={loading} type="button" onClick={resetPw} style={{ marginTop: 8 }}>
               {t('forgot.reset_submit')} <IconArrow dir="right" />
             </BtnPrimary>
           </motion.div>
@@ -203,16 +203,16 @@ export default function ForgotPassword({ t: tProp, onBack }) {
 
         {/* ── Step 3: done ── */}
         {step === 3 && (
-          <motion.div key="f3" initial={{ opacity:0, scale:.92 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0 }} transition={{ duration:.35 }}
-            style={{ textAlign:'center', padding:'36px 20px' }}>
-            <motion.div initial={{ scale:0 }} animate={{ scale:1 }} transition={{ type:'spring', duration:.6 }}
-              style={{ fontSize:60, marginBottom:14 }}>✅</motion.div>
-            <h2 style={{ fontSize:21, fontWeight:800, color:'var(--text)', marginBottom:8 }}>{t('forgot.done_title')}</h2>
-            <p style={{ fontSize:13.5, color:'var(--text-3)' }}>{t('forgot.done_sub')}</p>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginTop:18 }}>
-              <motion.div animate={{ scale:[1,1.2,1] }} transition={{ duration:1, repeat:Infinity }}
-                style={{ width:8, height:8, borderRadius:'50%', background:'var(--p)' }} />
-              <span style={{ fontSize:13, color:'var(--text-3)' }}>{t('forgot.redirecting')}</span>
+          <motion.div key="f3" initial={{ opacity: 0, scale: .92 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: .35 }}
+            style={{ textAlign: 'center', padding: '36px 20px' }}>
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', duration: .6 }}
+              style={{ fontSize: 60, marginBottom: 14 }}>✅</motion.div>
+            <h2 style={{ fontSize: 21, fontWeight: 800, color: 'var(--text)', marginBottom: 8 }}>{t('forgot.done_title')}</h2>
+            <p style={{ fontSize: 13.5, color: 'var(--text-3)' }}>{t('forgot.done_sub')}</p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 18 }}>
+              <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 1, repeat: Infinity }}
+                style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--p)' }} />
+              <span style={{ fontSize: 13, color: 'var(--text-3)' }}>{t('forgot.redirecting')}</span>
             </div>
           </motion.div>
         )}

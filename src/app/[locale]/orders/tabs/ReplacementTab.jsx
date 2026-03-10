@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import PageHeader from "@/components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
+import ActionButtons from "@/components/atoms/Actions";
 
 
 function hexToBg(hex) {
@@ -385,24 +386,17 @@ export function ReplacementTab({ statuses }) {
 			key: "actions",
 			header: t("table.actions"),
 			cell: (row) => (
-				<TooltipProvider>
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<m.button
-								whileHover={{ scale: 1.1 }}
-								whileTap={{ scale: 0.95 }}
-								onClick={() => router.push(`/orders/details/${row.replacementOrderId}`)}
-								className="group w-9 h-9 rounded-full border transition-all duration-200
-                  flex items-center justify-center shadow-sm
-                  border-purple-200 bg-purple-50 text-purple-600
-                  hover:bg-purple-600 hover:border-purple-600 hover:text-white"
-							>
-								<Eye size={16} className="transition-transform group-hover:scale-110" />
-							</m.button>
-						</TooltipTrigger>
-						<TooltipContent>{t("actions.view")}</TooltipContent>
-					</Tooltip>
-				</TooltipProvider>
+				<ActionButtons
+					row={row}
+					actions={[
+						{
+							icon: <Eye />,
+							tooltip: t("actions.view"),
+							onClick: (r) => router.push(`/orders/details/${r.replacementOrderId}`),
+							variant: "purple",
+						},
+					]}
+				/>
 			),
 		},
 	], [t, router]);

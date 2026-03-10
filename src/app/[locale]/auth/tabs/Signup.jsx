@@ -112,7 +112,7 @@ export default function SignUp({ t: tProp, onSwitchMode }) {
 	);
 }
 
-const BIZ_TYPES_KEYS = ['ecommerce', 'wholesale', 'retail', 'dropshipping', 'brand', 'other'];
+export const BIZ_TYPES_KEYS = ['ecommerce', 'wholesale', 'retail', 'dropshipping', 'brand', 'other'];
 
 /* ── Step 1 ── */
 function Step1({ data, onChange, onNext, t }) {
@@ -278,7 +278,7 @@ function Step3({ onNext, onBack, t }) {
 				value={pw} onChange={e => setPw(e.target.value)} onBlur={() => setTouched(p => ({ ...p, pw: true }))}
 				error={touched.pw && pwErr} icon={<LockIcon />}
 			/>
-			<PasswordStrength password={pw} t={t} />
+			<PasswordStrength password={pw} />
 
 			<div style={{ marginTop: 12 }}>
 				<PasswordInput label={t('signup.confirm_password')} placeholder={t('signup.confirm_placeholder')}

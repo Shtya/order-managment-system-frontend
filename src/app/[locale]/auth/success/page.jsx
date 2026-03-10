@@ -34,7 +34,7 @@ export default function SuccessPage() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ accessToken: accessTokenFromUrl, user }),
                 });
-                const isOnboarded = user?.onboardingStatus === 'completed' || role !== 'admin';
+                const isOnboarded = user?.onboardingStatus === 'completed' || user?.role !== 'admin';
 
                 const redirect = user?.role === 'super_admin' ? '/dashboard/users' : !isOnboarded ? "/onboarding" : '/orders';
                 router.push(redirect);

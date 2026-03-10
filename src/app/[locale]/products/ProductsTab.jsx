@@ -16,6 +16,7 @@ import { baseImg } from "@/utils/axios";
 import { useTranslations } from "next-intl";
 import { BannerSkeleton, Bone } from "@/components/atoms/BannerSkeleton";
 import { avatarSrc } from "@/components/atoms/UserSelect";
+import ActionButtons from "@/components/atoms/Actions";
 
 function normalizeAxiosError(err) {
   const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -187,66 +188,35 @@ export default function useProductsTab({ t, searchDebounced, filters, filtersOpe
         )
       },
       {
-        key: "actions",
-        header: t("table.options"),
-        className: "",
-        cell: (row) => (
-          <TooltipProvider>
-            <div className="flex items-center gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={cn(
-                      "group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
-                      "border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:border-red-600 hover:text-white"
-                    )}
-                    onClick={() => onAskDelete?.(row.id, "products")}
-                  >
-                    <Trash2 size={16} className="transition-transform group-hover:scale-110 group-hover:rotate-12" />
-                  </motion.button>
-                </TooltipTrigger>
-                <TooltipContent>{t("actions.delete")}</TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={cn(
-                      "group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
-                      "border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:border-blue-600 hover:text-white"
-                    )}
-                    onClick={() => router.push(`/products/edit/${row.id}`)}
-                  >
-                    <Edit2 size={16} className="transition-transform group-hover:scale-110 group-hover:-rotate-12" />
-                  </motion.button>
-                </TooltipTrigger>
-                <TooltipContent>{t("actions.edit")}</TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={cn(
-                      "group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
-                      "border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:border-purple-600 hover:text-white"
-                    )}
-                    onClick={() => onOpenView?.(row.id, "products")}
-                  >
-                    <Eye size={16} className="transition-transform group-hover:scale-110" />
-                  </motion.button>
-                </TooltipTrigger>
-                <TooltipContent>{t("actions.view")}</TooltipContent>
-              </Tooltip>
-            </div>
-          </TooltipProvider>
-        )
-      }
+  key: "actions",
+  header: t("table.options"),
+  className: "",
+  cell: (row) => (
+    <ActionButtons
+      row={row}
+      actions={[
+        {
+          icon: <Trash2 />,
+          tooltip: t("actions.delete"),
+          onClick: (r) => onAskDelete?.(r.id, "products"),
+          variant: "red",
+        },
+        {
+          icon: <Edit2 />,
+          tooltip: t("actions.edit"),
+          onClick: (r) => router.push(`/products/edit/${r.id}`),
+          variant: "blue",
+        },
+        {
+          icon: <Eye />,
+          tooltip: t("actions.view"),
+          onClick: (r) => onOpenView?.(r.id, "products"),
+          variant: "purple",
+        },
+      ]}
+    />
+  )
+}
     ];
   }, [router, t, onAskDelete, onOpenView]);
 

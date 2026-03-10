@@ -32,6 +32,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useSearchParams } from "next/navigation";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import ActionButtons from "@/components/atoms/Actions";
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatCurrency(amount) {
@@ -445,38 +446,20 @@ export default function OrderCollectionPage() {
 			{
 				key: "actions",
 				header: t("table.actions"),
-				cell: (row) => {
-					return (<TooltipProvider>
-						<div className="flex items-center gap-2">
-
-							{/* Collect Button */}
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.1 }}
-										whileTap={{ scale: 0.95 }}
-										onClick={() =>
-											router.push(`/orders/collections/collect/${row.orderId}`)
-										}
-										className="group w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm
-              border-emerald-200 bg-emerald-50 text-emerald-600
-              hover:bg-emerald-600 hover:border-emerald-600 hover:text-white"
-									>
-										<HandCoins
-											size={16}
-											className="transition-transform group-hover:scale-110"
-										/>
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>
-									{t("actions.collect")}
-								</TooltipContent>
-							</Tooltip>
-
-						</div>
-					</TooltipProvider>)
-				},
-			} 
+				cell: (row) => (
+					<ActionButtons
+						row={row}
+						actions={[
+							{
+								icon: <HandCoins />,
+								tooltip: t("actions.collect"),
+								onClick: (r) => router.push(`/orders/collections/collect/${r.orderId}`),
+								variant: "emerald",
+							},
+						]}
+					/>
+				),
+			},
 		],
 		[t]
 	);
@@ -574,7 +557,7 @@ export default function OrderCollectionPage() {
 				stats={allStats}
 			>
 			</PageHeader>
- 
+
 
 			<Table
 				searchValue={search}

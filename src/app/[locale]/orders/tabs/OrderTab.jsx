@@ -875,7 +875,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
 									endDate: end ? end.toISOString().split("T")[0] : null,
 								}))}
 								options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
-								className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm
+								className="w-full !h-10 px-3 rounded-md border border-border bg-background text-sm
             text-foreground focus:outline-none focus:border-[var(--primary)]
             dark:focus:border-[#5b4bff] transition-all"
 								placeholder={t("filters.datePlaceholder")}

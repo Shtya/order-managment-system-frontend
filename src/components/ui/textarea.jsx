@@ -27,7 +27,7 @@ function Textarea({ className, error, resize = "y", ...props }) {
         // aria-invalid mirrors error state automatically
         "aria-invalid:border-destructive",
         "aria-invalid:focus:shadow-[0_0_0_3px_oklch(var(--destructive)/0.15)]",
-        className
+        // className
       )}
       {...props}
     />

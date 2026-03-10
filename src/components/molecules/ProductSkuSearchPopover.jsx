@@ -13,422 +13,519 @@ import { Separator } from "@/components/ui/separator";
 import { motion, AnimatePresence } from "framer-motion";
 
 import {
-	ChevronDown,
-	Loader2,
-	Search,
-	Package,
-	Box,
-	Tag,
-	CheckCircle2,
-	AlertCircle,
-	XCircle,
-	Sparkles,
+  ChevronDown,
+  Loader2,
+  Search,
+  Package,
+  Box,
+  Tag,
+  CheckCircle2,
+  AlertCircle,
+  XCircle,
+  Sparkles,
+  ScanBarcode,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 
+/* ─────────────────────────────────────────────────────────────────────────
+   Utilities
+───────────────────────────────────────────────────────────────────────── */
 function useDebouncedValue(value, delay = 350) {
-	const [debounced, setDebounced] = useState(value);
-	useEffect(() => {
-		const id = setTimeout(() => setDebounced(value), delay);
-		return () => clearTimeout(id);
-	}, [value, delay]);
-	return debounced;
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(id);
+  }, [value, delay]);
+  return debounced;
 }
 
 function highlight(text, q) {
-	if (!text) return text;
-	const query = (q ?? "").trim();
-	if (!query) return text;
-
-	const idx = text.toLowerCase().indexOf(query.toLowerCase());
-	if (idx === -1) return text;
-
-	const before = text.slice(0, idx);
-	const match = text.slice(idx, idx + query.length);
-	const after = text.slice(idx + query.length);
-
-	return (
-		<>
-			{before}
-			<mark className="bg-primary/20 text-primary font-bold px-1 rounded">{match}</mark>
-			{after}
-		</>
-	);
+  if (!text) return text;
+  const query = (q ?? "").trim();
+  if (!query) return text;
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return text;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <mark className="bg-[var(--primary)]/15 text-[var(--primary)] font-bold rounded px-0.5 not-italic">
+        {text.slice(idx, idx + query.length)}
+      </mark>
+      {text.slice(idx + query.length)}
+    </>
+  );
 }
 
-function StockBadge({ available, stockOnHand, reserved, t }) {
-	const isLow = available < 10 && available > 0;
-	const isOut = available === 0;
+/* ─────────────────────────────────────────────────────────────────────────
+   StockPill — compact, purposeful indicator
+───────────────────────────────────────────────────────────────────────── */
+function StockPill({ available, stockOnHand, t }) {
+  const isOut = available === 0;
+  const isLow = available < 10 && available > 0;
 
-	return (
-		<div className="flex items-center gap-2  ">
-			<motion.div
-				initial={{ scale: 0 }}
-				animate={{ scale: 1 }}
-				transition={{ type: "spring", stiffness: 400 }}
-				className={cn(
-					"inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold shadow-sm",
-					isOut
-						? "bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950/30 dark:to-rose-950/30 border-red-300 dark:border-red-800 text-red-700 dark:text-red-300"
-						: isLow
-							? "bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30 border-yellow-300 dark:border-yellow-800 text-yellow-700 dark:text-yellow-300"
-							: "bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-green-300 dark:border-green-800 text-green-700 dark:text-green-300"
-				)}
-			>
-				{isOut ? (
-					<XCircle className="w-3.5 h-3.5" />
-				) : isLow ? (
-					<AlertCircle className="w-3.5 h-3.5" />
-				) : (
-					<CheckCircle2 className="w-3.5 h-3.5" />
-				)}
-				<span className="text-nowrap" >
-					{available} {isOut ? t("outOfStock") : isLow ? t("lowStock") : t("available")}
-				</span>
-			</motion.div>
+  return (
+    <div className="flex items-center gap-1.5 shrink-0">
+      {/* Primary status pill */}
+      <motion.span
+        initial={{ opacity: 0, scale: 0.85 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: "spring", stiffness: 380, damping: 22 }}
+        className={cn(
+          "inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold border leading-none",
+          isOut
+            ? "bg-red-50 dark:bg-red-950/25 border-red-200 dark:border-red-800/60 text-red-600 dark:text-red-400"
+            : isLow
+            ? "bg-amber-50 dark:bg-amber-950/25 border-amber-200 dark:border-amber-800/60 text-amber-600 dark:text-amber-400"
+            : "bg-emerald-50 dark:bg-emerald-950/25 border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400"
+        )}
+      >
+        {isOut ? (
+          <XCircle className="w-3 h-3" />
+        ) : isLow ? (
+          <AlertCircle className="w-3 h-3" />
+        ) : (
+          <CheckCircle2 className="w-3 h-3" />
+        )}
+        <span className="tabular-nums">{available}</span>
+        <span className="hidden sm:inline opacity-70">
+          {isOut ? t("outOfStock") : isLow ? t("lowStock") : t("available")}
+        </span>
+      </motion.span>
 
-			<div className="flex items-center gap-2 text-xs text-muted-foreground">
-				<div className="inline-flex items-center gap-1 px-2 py-1 rounded-xl bg-slate-100 dark:bg-slate-800">
-					<Package className="w-3 h-3" />
-					<span className="text-nowrap">{t("stock")}: {stockOnHand}</span>
-				</div>
-			</div>
-		</div>
-	);
+      {/* Secondary: on-hand count */}
+      <span className="hidden md:inline-flex items-center gap-1 px-2 py-1 rounded-md bg-border/40 dark:bg-border/20 text-[11px] text-muted-foreground leading-none">
+        <Package className="w-2.5 h-2.5" />
+        <span className="tabular-nums">{stockOnHand}</span>
+      </span>
+    </div>
+  );
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   Empty / Loading states
+───────────────────────────────────────────────────────────────────────── */
+function StateBlock({ icon: Icon, title, subtitle, spin }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col items-center justify-center py-14 gap-4"
+    >
+      <div className="relative">
+        {/* Soft halo */}
+        <div className="absolute inset-0 rounded-2xl bg-[var(--primary)]/8 blur-xl scale-150" />
+        <motion.div
+          animate={spin ? { rotate: 360 } : { rotate: [0, -6, 6, 0] }}
+          transition={
+            spin
+              ? { duration: 1.4, repeat: Infinity, ease: "linear" }
+              : { duration: 3, repeat: Infinity, ease: "easeInOut" }
+          }
+          className="relative w-14 h-14 rounded-2xl bg-background border border-border flex items-center justify-center shadow-sm"
+        >
+          <Icon className="w-6 h-6 text-[var(--primary)]" />
+        </motion.div>
+      </div>
+      <div className="text-center space-y-1">
+        <p className="text-sm font-semibold text-foreground">{title}</p>
+        {subtitle && (
+          <p className="text-xs text-muted-foreground max-w-[200px] leading-relaxed">{subtitle}</p>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Result row
+───────────────────────────────────────────────────────────────────────── */
+function SkuRow({ sku, idx, isSelected, debounced, onSelect, t }) {
+  return (
+    <motion.div
+      key={sku.id}
+      initial={{ opacity: 0, x: -6 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: idx * 0.04, duration: 0.18 }}
+    >
+      <div
+        onClick={() => !isSelected && onSelect(sku)}
+        className={cn(
+          "group relative flex items-center gap-3 px-3.5 py-3 rounded-md border transition-all duration-200 cursor-pointer select-none",
+          isSelected
+            ? "border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/60 dark:bg-emerald-950/15 cursor-not-allowed"
+            : [
+                "border-border/60 bg-background/60 hover:bg-[var(--primary)]/[0.03]",
+                "hover:border-[var(--primary)]/40",
+                "hover:shadow-[0_2px_12px_rgba(0,0,0,0.06)]",
+              ]
+        )}
+      >
+        {/* Left: icon */}
+        <motion.div
+          whileHover={!isSelected ? { rotate: 8, scale: 1.05 } : {}}
+          transition={{ type: "spring", stiffness: 400 }}
+          className={cn(
+            "shrink-0 w-9 h-9 rounded-md border flex items-center justify-center transition-colors duration-200",
+            isSelected
+              ? "bg-emerald-100 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700 text-emerald-600 dark:text-emerald-400"
+              : "bg-[var(--primary)]/8 border-[var(--primary)]/20 text-[var(--primary)] group-hover:bg-[var(--primary)]/15"
+          )}
+        >
+          {isSelected ? (
+            <CheckCircle2 className="w-4 h-4" />
+          ) : (
+            <ScanBarcode className="w-4 h-4" />
+          )}
+        </motion.div>
+
+        {/* Middle: label */}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-foreground truncate leading-tight">
+            {highlight(sku?.label || sku?.sku || "—", debounced)}
+          </p>
+          {sku?.sku && sku?.label && (
+            <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5 font-mono">
+              {sku.sku}
+            </p>
+          )}
+        </div>
+
+        {/* Right: stock + action */}
+        <div className="flex items-center gap-2 shrink-0">
+          <StockPill
+            available={sku.available ?? 0}
+            stockOnHand={sku.stockOnHand ?? 0}
+            reserved={sku.reserved ?? 0}
+            t={t}
+          />
+
+          <AnimatePresence mode="wait">
+            {isSelected ? (
+              <motion.span
+                key="selected"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-emerald-200 dark:border-emerald-800/60 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-[11px] font-semibold"
+              >
+                <CheckCircle2 className="w-3 h-3" />
+                {t("selected")}
+              </motion.span>
+            ) : (
+              <motion.div
+                key="cta"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
+              >
+                <Button
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelect(sku);
+                  }}
+                  className={cn(
+                    "h-7 px-3 text-[11px] font-semibold rounded-md gap-1.5",
+                    "bg-[var(--primary)] hover:bg-[var(--primary)]/90 text-white",
+                    "shadow-[0_1px_6px_rgba(0,0,0,0.12)] hover:shadow-[0_2px_10px_rgba(0,0,0,0.18)]",
+                    "transition-all duration-150"
+                  )}
+                >
+                  {t("select")}
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Hover left-edge accent */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute start-0 top-3 bottom-3 w-[2.5px] rounded-full
+            bg-gradient-to-b from-[var(--primary)] to-[var(--third,#ff5c2b)]
+            opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        />
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Main component
+───────────────────────────────────────────────────────────────────────── */
 export function ProductSkuSearchPopover({
-	handleSelectSku,
-	selectedSkus = [],
-	closeOnSelect = true,
-	closeOnOutsideClick = true,
-	productId,
-	initialSearch,
-	trigger
+  handleSelectSku,
+  selectedSkus = [],
+  closeOnSelect = true,
+  closeOnOutsideClick = true,
+  productId,
+  initialSearch,
+  trigger,
 }) {
-	const t = useTranslations("productSearch");
+  const t = useTranslations("productSearch");
 
-	const [open, setOpen] = useState(false);
-	const triggerRef = useRef(null);
-	const [triggerWidth, setTriggerWidth] = useState(0);
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef(null);
+  const inputRef = useRef(null);
+  const [triggerWidth, setTriggerWidth] = useState(0);
 
-	const [searchQuery, setSearchQuery] = useState(initialSearch ?? "");
-	const debounced = useDebouncedValue(searchQuery, 350);
+  const [searchQuery, setSearchQuery] = useState(initialSearch ?? "");
+  const debounced = useDebouncedValue(searchQuery, 350);
 
-	const [isSearching, setIsSearching] = useState(false);
-	const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
 
-	// Measure trigger width
-	useEffect(() => {
-		if (!triggerRef.current) return;
-		const resizeObserver = new ResizeObserver((entries) => {
-			for (const entry of entries) {
-				setTriggerWidth(entry.contentRect.width);
-			}
-		});
-		resizeObserver.observe(triggerRef.current);
-		return () => resizeObserver.disconnect();
-	}, []);
+  // Measure trigger width
+  useEffect(() => {
+    if (!triggerRef.current) return;
+    const ro = new ResizeObserver((entries) => {
+      for (const e of entries) setTriggerWidth(e.contentRect.width);
+    });
+    ro.observe(triggerRef.current);
+    return () => ro.disconnect();
+  }, []);
 
-	// Create a Set of selected SKU IDs for quick lookup
-	const selectedSkuIds = useMemo(() => {
-		return new Set((selectedSkus || []).map((s) => s.id));
-	}, [selectedSkus]);
+  // Auto-focus input on open
+  useEffect(() => {
+    if (open) setTimeout(() => inputRef.current?.focus(), 80);
+  }, [open]);
 
-	async function runSearch(raw) {
-		const term = (raw ?? "").trim();
+  const selectedSkuIds = useMemo(
+    () => new Set((selectedSkus || []).map((s) => s.id)),
+    [selectedSkus]
+  );
 
-		if (term.length < 2) {
-			setSearchResults([]);
-			setIsSearching(false);
-			return;
-		}
+  async function runSearch(raw) {
+    const term = (raw ?? "").trim();
+    if (term.length < 2) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+    setIsSearching(true);
+    try {
+      const res = await api.get(`/lookups/skus`, { params: { q: term, productId } });
+      setSearchResults(Array.isArray(res.data) ? res.data : []);
+    } catch (e) {
+      console.error("Search error:", e);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }
 
-		setIsSearching(true);
+  function resetSearch() {
+    setIsSearching(false);
+    setSearchResults([]);
+    setSearchQuery("");
+  }
 
-		try {
-			const res = await api.get(`/lookups/skus`, {
-				params: { q: term, productId }
-			});
+  useEffect(() => {
+    if (!open) return;
+    runSearch(debounced);
+  }, [debounced, open]);
 
-			const records = Array.isArray(res.data) ? res.data : [];
-			setSearchResults(records);
-		} catch (e) {
-			console.error("Search error:", e);
-			setSearchResults([]);
-		} finally {
-			setIsSearching(false);
-		}
-	}
-	function resetSearch() {
-		setIsSearching(false);
-		setSearchResults([]);
-		setSearchQuery("");
-	}
+  useEffect(() => {
+    if (!open) resetSearch();
+  }, [open]);
 
-	useEffect(() => {
-		if (!open) return;
-		runSearch(debounced);
-	}, [debounced, open]);
+  function selectSku(sku) {
+    handleSelectSku(sku);
+    if (closeOnSelect) {
+      setOpen(false);
+      resetSearch();
+    }
+  }
 
-	// cleanup when closing
-	useEffect(() => {
-		if (!open) {
-			setIsSearching(false);
-			setSearchResults([]);
-			setSearchQuery("");
-		}
-	}, [open]);
+  /* ── Derived UI state ─────────────────────────────────────────────── */
+  const showResults  = !isSearching && searchResults.length > 0;
+  const showEmpty    = !isSearching && searchResults.length === 0 && debounced.length >= 2;
+  const showIdle     = !isSearching && debounced.length < 2;
 
-	function selectSku(sku) {
-		handleSelectSku(sku);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      {/* ── Trigger ───────────────────────────────────────────────────── */}
+      <PopoverTrigger asChild>
+        {trigger ? (
+          <div ref={triggerRef} className="cursor-pointer">
+            {trigger(open)}
+          </div>
+        ) : (
+          <Button
+            ref={triggerRef}
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className={cn(
+              "w-full justify-between h-11 px-3.5 rounded-md",
+              "border border-border/70 bg-background/60 text-foreground",
+              "hover:border-[var(--primary)]/50 hover:bg-background",
+              "data-[state=open]:border-[var(--primary)] data-[state=open]:shadow-[0_0_0_3px_rgb(var(--primary-shadow))]",
+              "transition-all duration-200 text-sm font-normal"
+            )}
+          >
+            <span className="flex items-center gap-2.5 text-muted-foreground/60">
+              <Search className="w-4 h-4 shrink-0" />
+              {t("triggerPlaceholder")}
+            </span>
+            <ChevronDown
+              className={cn(
+                "w-4 h-4 shrink-0 text-muted-foreground/50 transition-transform duration-250",
+                open && "rotate-180 text-[var(--primary)]"
+              )}
+            />
+          </Button>
+        )}
+      </PopoverTrigger>
 
-		if (closeOnSelect) {
-			setOpen(false);
-			resetSearch();
-		}
-	}
+      {/* ── Panel ─────────────────────────────────────────────────────── */}
+      <PopoverContent
+        className="p-0 border-0 shadow-none"
+        align="start"
+        style={{ width: Math.max(triggerWidth + 24, 380) }}
+        onInteractOutside={() => closeOnOutsideClick && setOpen(false)}
+        onEscapeKeyDown={() => setOpen(false)}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: -6, scale: 0.985 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+          className={cn(
+            "relative w-full overflow-hidden",
+            "rounded-2xl border border-[var(--primary)]/20",
+            "bg-popover/96 backdrop-blur-md",
+            "shadow-[0_4px_6px_rgba(0,0,0,0.04),0_12px_40px_rgba(0,0,0,0.13)]",
+            "dark:shadow-[0_4px_6px_rgba(0,0,0,0.2),0_12px_40px_rgba(0,0,0,0.5)]"
+          )}
+        >
+          {/* Top accent gradient bar */}
+          <div
+            aria-hidden
+            className="absolute inset-x-0 top-0 h-[2px] rounded-t-2xl
+              bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)]"
+          />
 
+          {/* ── Search header ──────────────────────────────────────────── */}
+          <div className="px-4 pt-5 pb-3.5 flex items-center gap-3">
+            {/* Icon block */}
+            <div className="shrink-0 w-9 h-9 rounded-md bg-[var(--primary)]/10 border border-[var(--primary)]/20 flex items-center justify-center text-[var(--primary)]">
+              <Package className="w-4 h-4" />
+            </div>
 
+            {/* Input */}
+            <div className="relative flex-1">
+              <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 pointer-events-none" />
+              <input
+                ref={inputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t("inputPlaceholder")}
+                className={cn(
+                  "w-full h-10 ps-10 pe-4 rounded-md text-sm",
+                  "border border-border/70 bg-background/60",
+                  "placeholder:text-muted-foreground/45",
+                  "hover:border-[var(--primary)]/40 hover:bg-background",
+                  "focus:border-[var(--primary)] focus:bg-background",
+                  "focus:shadow-[0_0_0_3px_rgb(var(--primary-shadow))]",
+                  "outline-none transition-all duration-200"
+                )}
+              />
+            </div>
 
+            {/* Counter badge */}
+            <AnimatePresence>
+              {(isSearching || searchResults.length > 0) && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.75 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.75 }}
+                  className="shrink-0"
+                >
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-semibold",
+                      "border border-border/60 bg-background text-muted-foreground"
+                    )}
+                  >
+                    {isSearching ? (
+                      <>
+                        <Loader2 className="w-3 h-3 animate-spin text-[var(--primary)]" />
+                        {t("searching")}
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-3 h-3 text-[var(--primary)]" />
+                        {searchResults.length}
+                      </>
+                    )}
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
+          {/* Thin divider */}
+          <div className="mx-4 h-px bg-gradient-to-r from-transparent via-border/60 to-transparent" />
 
-	return (
-		<Popover open={open} onOpenChange={setOpen}>
-			<PopoverTrigger asChild>
-				{trigger ? (
-					/* Render the custom trigger provided from the parent */
-					<div ref={triggerRef} className="cursor-pointer">
-						{trigger(open)}
-					</div>
-				) : (
-					<Button
-						ref={triggerRef}
-						variant="outline"
-						role="combobox"
-						aria-expanded={open}
-						className="w-full justify-between rounded-xl h-[50px] bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-900 dark:to-slate-800 border-2 border-gray-200 dark:border-slate-700 hover:border-primary/50 dark:hover:border-primary/50 hover:bg-white dark:hover:bg-slate-900 transition-all shadow-sm hover:shadow-md"
-					>
-						<span
-							className={cn(
-								"flex items-center gap-2.5 font-medium",
-								searchQuery ? "text-foreground" : "text-gray-400"
-							)}
-						>
-							<div className="flex items-center justify-center w-5 h-5 rounded-xl bg-primary/10 text-primary">
-								<Search className="h-3.5 w-3.5" />
-							</div>
-							{searchQuery || t("triggerPlaceholder")}
-						</span>
-						<ChevronDown
-							className={cn(
-								"h-4 w-4 shrink-0 transition-transform duration-200",
-								open && "rotate-180"
-							)}
-						/>
-					</Button>
-				)}
-			</PopoverTrigger>
+          {/* ── Results area ─────────────────────────────────────────── */}
+          <div className="max-h-[380px] overflow-y-auto overflow-x-hidden">
+            <AnimatePresence mode="wait">
+              {isSearching ? (
+                <StateBlock
+                  key="loading"
+                  icon={Loader2}
+                  title={t("searching")}
+                  spin
+                />
+              ) : showEmpty ? (
+                <StateBlock
+                  key="empty"
+                  icon={Search}
+                  title={t("noResults")}
+                  subtitle={t("tryDifferent")}
+                />
+              ) : showIdle ? (
+                <StateBlock
+                  key="idle"
+                  icon={ScanBarcode}
+                  title={t("inputPlaceholder")}
+                  subtitle={null}
+                />
+              ) : showResults ? (
+                <motion.div
+                  key="results"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="p-3 space-y-1.5"
+                >
+                  {searchResults.map((sku, idx) => (
+                    <SkuRow
+                      key={sku.id}
+                      sku={sku}
+                      idx={idx}
+                      isSelected={selectedSkuIds.has(sku.id)}
+                      debounced={debounced}
+                      onSelect={selectSku}
+                      t={t}
+                    />
+                  ))}
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
+          </div>
 
-			<PopoverContent
-				className="p-0 border-0 shadow-2xl"
-				align="start"
-				style={{ width: triggerWidth + 25 }}
-				onInteractOutside={(e) => {
-					if (!closeOnOutsideClick) return;
-					setOpen(false);
-				}}
-				onEscapeKeyDown={() => setOpen(false)}
-			>
-
-				<motion.div
-					initial={{ opacity: 0, y: -10 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.2 }}
-					className=" w-full border-2 border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden"
-				>
-
-					{/* Search Input - Removed Command wrapper to fix filtering issue */}
-					<div className="p-4 flex items-center gap-2 bg-gradient-to-b from-gray-50/50 to-transparent dark:from-slate-800/30">
-						<motion.div
-							initial={{ scale: 0 }}
-							animate={{ scale: 1 }}
-							transition={{ type: "spring", stiffness: 500, damping: 25 }}
-							className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 text-white shadow-lg shadow-primary/30"
-						>
-							<Package className="h-6 w-6" />
-						</motion.div>
-
-						<div className="relative max-w-full flex-1">
-							<Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-							<input
-								type="text"
-								placeholder={t("inputPlaceholder")}
-								value={searchQuery}
-								onChange={(e) => setSearchQuery(e.target.value)}
-								className="w-full h-12 pr-12 pl-4 rounded-xl border-2 border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-base font-medium focus:border-primary focus:outline-none transition-colors"
-							/>
-						</div>
-
-						<AnimatePresence>
-							{(searchResults.length > 0 || isSearching) && (
-								<motion.div
-									initial={{ scale: 0, opacity: 0 }}
-									animate={{ scale: 1, opacity: 1 }}
-									exit={{ scale: 0, opacity: 0 }}
-								>
-									<Badge
-										variant="secondary"
-										className="rounded-xl px-4 py-2 text-sm font-semibold shadow-sm"
-									>
-										{isSearching ? (
-											<span className="inline-flex items-center gap-2">
-												<Loader2 className="h-4 w-4 animate-spin" />
-												{t("searching")}
-											</span>
-										) : (
-											<span className="inline-flex items-center gap-2">
-												<Sparkles className="h-4 w-4 text-primary" />
-												{searchResults.length} {searchResults?.length > 1 ? t("results") : t("result")}
-
-
-											</span>
-										)}
-									</Badge>
-								</motion.div>
-							)}
-						</AnimatePresence>
-					</div>
-
-					{/* Results List */}
-					<div className="max-h-[395px] overflow-y-auto custom-scrollbar">
-						{isSearching ? (
-							<motion.div
-								initial={{ opacity: 0, y: 20 }}
-								animate={{ opacity: 1, y: 0 }}
-								className="flex flex-col items-center justify-center py-16 text-center"
-							>
-								<motion.div
-									animate={{ rotate: 360 }}
-									transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-									className="w-20 h-20 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mb-4 shadow-lg"
-								>
-									<Loader2 className="h-10 w-10 text-primary" />
-								</motion.div>
-								<div className="font-bold text-lg text-gray-900 dark:text-slate-100 mb-2">
-									{t("searching")}
-								</div>
-							</motion.div>
-						) : searchResults.length === 0 && debounced.length >= 2 ? (
-							<motion.div
-								initial={{ opacity: 0, y: 20 }}
-								animate={{ opacity: 1, y: 0 }}
-								className="flex flex-col items-center justify-center py-16 text-center"
-							>
-								<motion.div
-									animate={{ rotate: [0, 10, -10, 0] }}
-									transition={{ duration: 2, repeat: Infinity }}
-									className="w-20 h-20 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center mb-4 shadow-lg"
-								>
-									<Search className="h-10 w-10 text-gray-400" />
-								</motion.div>
-								<div className="font-bold text-lg text-gray-900 dark:text-slate-100 mb-2">
-									{t("noResults")}
-								</div>
-								<div className="text-sm text-muted-foreground max-w-xs">
-									{t("tryDifferent")}
-								</div>
-							</motion.div>
-						) : searchResults.length > 0 ? (
-							<div className="p-3 space-y-3">
-								{searchResults.map((sku, idx) => {
-									const isSelected = selectedSkuIds.has(sku.id);
-
-									return (
-										<motion.div
-											key={sku.id}
-											initial={{ opacity: 0, y: 20 }}
-											animate={{ opacity: 1, y: 0 }}
-											transition={{ delay: idx * 0.05 }}
-										>
-											{idx > 0 && <Separator className="my-3" />}
-
-											<div
-												onClick={() => !isSelected && selectSku(sku)}
-												className={cn(
-													"cursor-pointer rounded-xl px-4 py-4 border-2 transition-all duration-200",
-													isSelected
-														? "border-green-300 dark:border-green-800 bg-green-50/50 dark:bg-green-950/20 opacity-60 cursor-not-allowed"
-														: "border-gray-200 dark:border-slate-700 hover:border-primary hover:bg-primary/5"
-												)}
-											>
-												<div className="flex items-center justify-between w-full gap-4">
-													<div className="flex-1 min-w-0 space-y-3">
-														{/* SKU Header */}
-														<div className="flex items-center gap-3">
-															<motion.div
-																whileHover={{ rotate: 360 }}
-																transition={{ duration: 0.5 }}
-																className={cn(
-																	"flex items-center justify-center w-10 h-10 rounded-xl border-2 shadow-sm",
-																	isSelected
-																		? "bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-800 text-green-600 dark:text-green-400"
-																		: "bg-primary/10 border-primary/30 text-primary"
-																)}
-															>
-																{isSelected ? (
-																	<CheckCircle2 className="h-5 w-5" />
-																) : (
-																	<Box className="h-5 w-5" />
-																)}
-															</motion.div>
-
-															<div className="flex-1 min-w-0">
-																<div className="font-[Inter] font-bold text-sm text-gray-900 dark:text-slate-100 truncate">
-																	{highlight(sku?.label || sku?.sku || "—", debounced)}
-																</div>
-															</div>
-
-															<StockBadge
-																available={sku.available ?? 0}
-																stockOnHand={sku.stockOnHand ?? 0}
-																reserved={sku.reserved ?? 0}
-																t={t}
-															/>
-
-															{isSelected && (
-																<Badge
-																	variant="outline"
-																	className="rounded-xl bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-800"
-																>
-																	✓ {t("selected")}
-																</Badge>
-															)}
-														</div>
-													</div>
-
-													{/* Select Button */}
-													{!isSelected && (
-														<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-															<Button
-																size="sm"
-																className="rounded-xl shrink-0 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white shadow-md hover:shadow-lg transition-all"
-															>
-																<Package className="h-4 w-4 " />
-																{t("select")}
-															</Button>
-														</motion.div>
-													)}
-												</div>
-											</div>
-										</motion.div>
-									);
-								})}
-							</div>
-						) : null}
-					</div>
-				</motion.div>
-			</PopoverContent>
-		</Popover>
-	);
+          {/* Bottom fade gradient */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-6
+              bg-gradient-to-t from-popover/80 to-transparent rounded-b-2xl"
+          />
+        </motion.div>
+      </PopoverContent>
+    </Popover>
+  );
 }

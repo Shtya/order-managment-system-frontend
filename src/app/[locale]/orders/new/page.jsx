@@ -3,7 +3,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Trash2, Plus, Minus, Loader2, Info, Save } from "lucide-react";
+import { ChevronLeft, Trash2, Plus, Minus, Loader2, Info, Save, Package } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -18,7 +18,7 @@ import {
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/FloatingSelect";
 import Button_ from "@/components/atoms/Button";
 import { useRouter } from "@/i18n/navigation";
 
@@ -26,6 +26,7 @@ import { useLocale, useTranslations } from "next-intl";
 import api from "@/utils/api";
 import { ProductSkuSearchPopover } from "@/components/molecules/ProductSkuSearchPopover";
 import PageHeader from "@/components/atoms/Pageheader";
+import { cn } from "@/utils/cn";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -74,11 +75,6 @@ const createSchema = (t) =>
 			.min(1, t("validation.itemsRequired")),
 	});
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Shared field styles
-// ─────────────────────────────────────────────────────────────────────────────
-const INPUT_CLS = "rounded-xl h-[45px] bg-[#fafafa] dark:bg-slate-800/50";
-const SELECT_CLS = "w-full rounded-xl !h-[50px] bg-[#fafafa] dark:bg-slate-800/50";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Section wrapper
@@ -116,7 +112,7 @@ function GeoSelect({ label, required, value, onValueChange, items, isLoading, pl
 				onValueChange={onValueChange}
 				disabled={disabled || isLoading}
 			>
-				<SelectTrigger className={SELECT_CLS}>
+				<SelectTrigger >
 					{isLoading ? (
 						<span className="flex items-center gap-2 text-muted-foreground text-sm">
 							<Loader2 size={14} className="animate-spin" />
@@ -319,7 +315,7 @@ function AddressSection({
 								<Input
 									{...field}
 									placeholder={t("placeholders.landmark")}
-									className={INPUT_CLS}
+
 								/>
 							)}
 						/>
@@ -374,7 +370,7 @@ function AddressSection({
 						name="city"
 						control={control}
 						render={({ field }) => (
-							<Input {...field} placeholder={t("placeholders.city")} className={INPUT_CLS} />
+							<Input {...field} placeholder={t("placeholders.city")} />
 						)}
 					/>
 					{errors.city && <p className="text-xs text-red-500">{errors.city.message}</p>}
@@ -389,7 +385,7 @@ function AddressSection({
 						name="area"
 						control={control}
 						render={({ field }) => (
-							<Input {...field} placeholder={t("placeholders.area")} className={INPUT_CLS} />
+							<Input {...field} placeholder={t("placeholders.area")} />
 						)}
 					/>
 				</div>
@@ -424,7 +420,7 @@ function AddressSection({
 						name="landmark"
 						control={control}
 						render={({ field }) => (
-							<Input {...field} placeholder={t("placeholders.landmark")} className={INPUT_CLS} />
+							<Input {...field} placeholder={t("placeholders.landmark")} />
 						)}
 					/>
 				</div>
@@ -952,7 +948,7 @@ export default function CreateOrderPageComplete({
 											<Input
 												{...field}
 												placeholder={t("placeholders.customerName")}
-												className={INPUT_CLS}
+
 											/>
 										)}
 									/>
@@ -973,7 +969,7 @@ export default function CreateOrderPageComplete({
 											<Input
 												{...field}
 												placeholder={t("placeholders.phoneNumber")}
-												className={INPUT_CLS}
+
 											/>
 										)}
 									/>
@@ -995,7 +991,7 @@ export default function CreateOrderPageComplete({
 												{...field}
 												type="email"
 												placeholder={t("placeholders.email")}
-												className={INPUT_CLS}
+
 											/>
 										)}
 									/>
@@ -1015,7 +1011,7 @@ export default function CreateOrderPageComplete({
 											<Input
 												{...field}
 												placeholder={t("placeholders.phoneNumber")}
-												className={INPUT_CLS}
+
 											/>
 										)}
 									/>
@@ -1035,7 +1031,7 @@ export default function CreateOrderPageComplete({
 										name="storeId"
 										render={({ field }) => (
 											<Select value={field.value || ""} onValueChange={field.onChange}>
-												<SelectTrigger className={SELECT_CLS}>
+												<SelectTrigger >
 													<SelectValue placeholder={t("placeholders.store")} />
 												</SelectTrigger>
 												<SelectContent>
@@ -1065,7 +1061,7 @@ export default function CreateOrderPageComplete({
 										control={control}
 										render={({ field }) => (
 											<Select value={field.value} onValueChange={field.onChange}>
-												<SelectTrigger className="w-full rounded-xl !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
+												<SelectTrigger >
 													<SelectValue />
 												</SelectTrigger>
 												<SelectContent className="bg-card-select">
@@ -1095,7 +1091,7 @@ export default function CreateOrderPageComplete({
 										control={control}
 										render={({ field }) => (
 											<Select value={field.value} onValueChange={field.onChange}>
-												<SelectTrigger className="w-full rounded-xl !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
+												<SelectTrigger >
 													<SelectValue />
 												</SelectTrigger>
 												<SelectContent className="bg-card-select">
@@ -1110,7 +1106,7 @@ export default function CreateOrderPageComplete({
 
 								{/* Allow Open Select */}
 								<div className="space-y-2">
-									<Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{t("fields.allowOpenPackage")}</Label>
+									<Label className=" uppercase tracking-wider">{t("fields.allowOpenPackage")}</Label>
 									<Controller
 										name="allowOpenPackage"
 										control={control}
@@ -1119,7 +1115,7 @@ export default function CreateOrderPageComplete({
 												value={field.value ? "true" : "false"}
 												onValueChange={(val) => field.onChange(val === "true")}
 											>
-												<SelectTrigger className="w-full rounded-xl !h-[45px] bg-[#fafafa] dark:bg-slate-800/50 border-border/60">
+												<SelectTrigger >
 													<SelectValue />
 												</SelectTrigger>
 												<SelectContent className="bg-card-select border-border shadow-xl rounded-xl">
@@ -1141,7 +1137,7 @@ export default function CreateOrderPageComplete({
 										name="shippingCompanyId"
 										render={({ field }) => (
 											<Select value={field.value || ""} onValueChange={field.onChange}>
-												<SelectTrigger className={SELECT_CLS}>
+												<SelectTrigger >
 													<SelectValue placeholder={t("placeholders.shippingCompany")} />
 												</SelectTrigger>
 												<SelectContent>
@@ -1174,7 +1170,7 @@ export default function CreateOrderPageComplete({
 												min="0"
 												step="0.01"
 												placeholder="0.00"
-												className={INPUT_CLS}
+
 											/>
 										)}
 									/>
@@ -1195,7 +1191,7 @@ export default function CreateOrderPageComplete({
 												min="0"
 												step="0.01"
 												placeholder="0.00"
-												className={INPUT_CLS}
+
 											/>
 										)}
 									/>
@@ -1216,7 +1212,7 @@ export default function CreateOrderPageComplete({
 												min="0"
 												step="0.01"
 												placeholder="0.00"
-												className={INPUT_CLS}
+
 											/>
 										)}
 									/>
@@ -1241,7 +1237,7 @@ export default function CreateOrderPageComplete({
 											}
 											disabled={providerLoading.locations}
 										>
-											<SelectTrigger className={SELECT_CLS}>
+											<SelectTrigger >
 												{providerLoading.locations ? (
 													<span className="flex items-center gap-2 text-muted-foreground text-sm">
 														<Loader2 size={14} className="animate-spin" />
@@ -1497,94 +1493,136 @@ export default function CreateOrderPageComplete({
 // Order Summary sidebar
 // ─────────────────────────────────────────────────────────────────────────────
 function OrderSummary({ t, summary }) {
-	return (
-		<motion.div
-			initial={{ opacity: 0, x: 20 }}
-			animate={{ opacity: 1, x: 0 }}
-			transition={{ delay: 0.2 }}
-			className="bg-card sticky top-6"
-		>
-			<h3 className="text-lg font-semibold text-foreground mb-4">
-				{t("sections.orderSummary")}
-			</h3>
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.2, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      className="sticky top-6"
+    >
+      {/* ── Card shell ─────────────────────────────────────────────────── */}
+      <div className="relative overflow-hidden rounded-2xl border border-[var(--primary)]/20 bg-card">
+  
+        {/* ── Header ───────────────────────────────────────────────────── */}
+        <div className="px-5 pt-5 pb-4 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-foreground tracking-tight">
+            {t("sections.orderSummary")}
+          </h3>
+          {/* Product count pill */}
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg
+            bg-[var(--primary)]/10 border border-[var(--primary)]/20
+            text-[11px] font-bold text-[var(--primary)] tabular-nums leading-none">
+            <Package className="w-3 h-3" />
+            {summary.productCount}
+          </span>
+        </div>
 
-			<div className="space-y-2">
+        {/* Divider */}
+        <div className="mx-5 h-px bg-gradient-to-r from-transparent via-border/70 to-transparent" />
 
-				{/* Product count — primary accent */}
-				<div className="flex items-center justify-between px-4 py-3 rounded-xl
-          bg-[var(--primary)]/8 border border-[var(--primary)]/20">
-					<span className="text-sm text-muted-foreground">{t("summary.productCount")}</span>
-					<span className="text-lg font-bold text-[var(--primary)]">{summary.productCount}</span>
-				</div>
+        {/* ── Line items ───────────────────────────────────────────────── */}
+        <div className="px-5 py-4 space-y-1">
 
-				{/* Products total */}
-				<div className="flex items-center justify-between px-4 py-3 rounded-xl
-          bg-muted/50 border border-border">
-					<span className="text-sm text-muted-foreground">{t("summary.productsTotal")}</span>
-					<span className="text-sm font-semibold text-foreground">
-						{summary.productsTotal.toFixed(2)} {t("currency")}
-					</span>
-				</div>
+          {/* Products subtotal */}
+          <SummaryRow
+            label={t("summary.productsTotal")}
+            value={`${summary.productsTotal.toFixed(2)} ${t("currency")}`}
+          />
 
-				{/* Shipping */}
-				<div className="flex items-center justify-between px-4 py-3 rounded-xl
-          bg-muted/50 border border-border">
-					<span className="text-sm text-muted-foreground">{t("summary.shippingCost")}</span>
-					<span className="text-sm font-semibold text-foreground">
-						{summary.shippingCost.toFixed(2)} {t("currency")}
-					</span>
-				</div>
+          {/* Shipping */}
+          <SummaryRow
+            label={t("summary.shippingCost")}
+            value={`${summary.shippingCost.toFixed(2)} ${t("currency")}`}
+          />
 
-				{/* Discount */}
-				<div className="flex items-center justify-between px-4 py-3 rounded-xl
-          bg-destructive/[0.06] border border-destructive/20">
-					<span className="text-sm text-muted-foreground">{t("summary.discount")}</span>
-					<span className="text-sm font-semibold text-destructive">
-						-{summary.discount.toFixed(2)} {t("currency")}
-					</span>
-				</div>
+          {/* Discount */}
+          {summary.discount > 0 && (
+            <SummaryRow
+              label={t("summary.discount")}
+              value={`-${summary.discount.toFixed(2)} ${t("currency")}`}
+              valueClassName="text-destructive"
+            />
+          )}
 
-				{/* Final total — gradient hero row */}
-				<div className="relative flex items-center justify-between px-4 py-3.5 rounded-xl overflow-hidden
-          border-2 border-[var(--primary)]/35">
-					{/* gradient bg */}
-					<span aria-hidden className="pointer-events-none absolute inset-0
-            bg-gradient-to-br from-[var(--primary)]/10 via-[var(--secondary)]/8 to-[var(--third)]/8" />
-					{/* top sheen */}
-					<span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-1/2
-            bg-gradient-to-b from-white/10 to-transparent dark:from-white/[0.05]" />
-					<span className="relative text-sm font-semibold text-foreground">{t("summary.finalTotal")}</span>
-					<span className="relative text-xl font-bold text-[var(--primary)]">
-						{summary.finalTotal.toFixed(2)} {t("currency")}
-					</span>
-				</div>
+        </div>
 
-				{/* Deposit + Remaining */}
-				{summary.deposit > 0 && (
-					<>
-						{/* Deposit — secondary accent */}
-						<div className="flex items-center justify-between px-4 py-3 rounded-xl
-              bg-[var(--secondary)]/[0.08] border border-[var(--secondary)]/25">
-							<span className="text-sm text-muted-foreground">{t("summary.deposit")}</span>
-							<span className="text-sm font-semibold text-[var(--secondary)]">
-								{summary.deposit.toFixed(2)} {t("currency")}
-							</span>
-						</div>
+        {/* ── Grand total ──────────────────────────────────────────────── */}
+        <div className=" pb-5">
+          <TotalRow
+            label={t("summary.finalTotal")}
+            value={`${summary.finalTotal.toFixed(2)} ${t("currency")}`}
+            accentFrom="var(--primary)"
+            accentTo="var(--secondary,#ffb703)"
+            textColor="text-[var(--primary)]"
+            borderColor="border-[var(--primary)]/30"
+          />
+        </div>
 
-						{/* Remaining — third accent */}
-						<div className="relative flex items-center justify-between px-4 py-3.5 rounded-xl overflow-hidden
-              border-2 border-[var(--third)]/35">
-							<span aria-hidden className="pointer-events-none absolute inset-0
-                bg-gradient-to-br from-[var(--third)]/10 to-[var(--primary)]/5" />
-							<span className="relative text-sm font-semibold text-foreground">{t("summary.remaining")}</span>
-							<span className="relative text-xl font-bold text-[var(--third)]">
-								{summary.remaining.toFixed(2)} {t("currency")}
-							</span>
-						</div>
-					</>
-				)}
+        {/* ── Deposit / Remaining (conditional) ───────────────────────── */}
+        {summary.deposit > 0 && (
+          <>
+            {/* Thin section divider */}
+            <div className="mx-5 h-px bg-gradient-to-r from-transparent via-border/70 to-transparent" />
 
-			</div>
-		</motion.div>
-	)
+            <div className="px-5 py-4 space-y-1">
+              <SummaryRow
+                label={t("summary.deposit")}
+                value={`${summary.deposit.toFixed(2)} ${t("currency")}`}
+                valueClassName="text-[var(--secondary,#ffb703)]"
+              />
+            </div>
+
+            <div className=" pb-5">
+              <TotalRow
+                label={t("summary.remaining")}
+                value={`${summary.remaining.toFixed(2)} ${t("currency")}`}
+                accentFrom="var(--third,#ff5c2b)"
+                accentTo="var(--primary)"
+                textColor="text-[var(--third,#ff5c2b)]"
+                borderColor="border-[var(--third,#ff5c2b)]/30"
+              />
+            </div>
+          </>
+        )}
+
+      </div>
+    </motion.div>
+  )
+}
+function SummaryRow({ label, value, valueClassName }) {
+  return (
+    <div className="flex items-center justify-between py-2.5">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className={cn("text-sm font-semibold text-foreground tabular-nums", valueClassName)}>
+        {value}
+      </span>
+    </div>
+  )
+}
+
+function TotalRow({ label, value, accentFrom, accentTo, textColor, borderColor }) {
+  return (
+    <div className={cn(
+      "relative flex items-center justify-between px-4 py-3.5 rounded-md overflow-hidden",
+      "border-1", borderColor
+    )}>
+      {/* Gradient fill */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.07]"
+        style={{
+          background: `linear-gradient(135deg, ${accentFrom}, ${accentTo})`
+        }}
+      />
+      {/* Top sheen */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-1/2
+          bg-gradient-to-b from-white/[0.08] to-transparent dark:from-white/[0.04]"
+      />
+
+      <span className="relative text-sm font-semibold text-foreground">{label}</span>
+      <span className={cn("relative text-xl font-bold tabular-nums", textColor)}>{value}</span>
+    </div>
+  )
 }

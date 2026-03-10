@@ -47,14 +47,13 @@ function SelectTrigger({ className, size = "default", children, ...props }) {
         // layout overrides for trigger
         "group relative rtl:flex-row-reverse inline-flex items-center justify-between gap-2",
         // sizes — identical to InputBase
-        "data-[size=sm]:h-9  data-[size=sm]:text-xs  data-[size=sm]:px-3",
-        "data-[size=default]:h-11 data-[size=default]:text-sm data-[size=default]:px-3.5",
-        "data-[size=lg]:h-12 data-[size=lg]:text-sm data-[size=lg]:px-4",
+        "  data-[size=sm]:text-xs  data-[size=sm]:px-3",
+        "!h-10 data-[size=default]:text-sm data-[size=default]:px-3.5",
+        " data-[size=lg]:text-sm data-[size=lg]:px-4",
         // open state — same glow so the panel looks connected
         "data-[state=open]:border-[var(--primary)]",
         "data-[state=open]:shadow-[0_0_0_3px_rgb(var(--primary-shadow))]",
-        "data-[state=open]:bg-background",
-        // placeholder
+        "data-[state=open]:bg-background", 
         "data-[placeholder]:text-muted-foreground/50",
         // inner helpers
         "*:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2",
@@ -122,11 +121,9 @@ function SelectContent({ className, children, position = "popper", align = "star
           minWidth: "var(--radix-select-trigger-width)",
         }}
         className={cn(
-          "relative z-50 overflow-hidden rounded-xl",
-          // border — a gentle tint of primary
-          "border border-[var(--primary)]/20",
-          // background
-          "bg-popover/95 backdrop-blur-sm text-popover-foreground",
+          "relative  z-50 overflow-hidden !rounded-md",
+           "border border-[var(--primary)]/20",
+           "bg-popover/95 backdrop-blur-sm text-popover-foreground",
           // shadow
           "shadow-[0_8px_32px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.08)]",
           "dark:shadow-[0_8px_32px_rgba(0,0,0,0.5),0_2px_8px_rgba(0,0,0,0.3)]",
@@ -141,13 +138,7 @@ function SelectContent({ className, children, position = "popper", align = "star
         )}
         {...props}
       >
-        {/* Top gradient accent bar */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-[2px]
-            bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)]
-            opacity-70"
-        />
+         
 
         {/* Inner top sheen */}
         <div
@@ -201,7 +192,7 @@ function SelectItem({ className, children, ...props }) {
       className={cn(
         "group relative rtl:flex-row-reverse",
         "flex w-full cursor-default select-none items-center gap-2.5",
-        "rounded-xl px-3 py-2.5 text-sm outline-none",
+        "!rounded-md px-3 py-2.5 text-sm outline-none",
         // default
         "text-foreground/80",
         // hover / focus — uses primary token
@@ -221,7 +212,7 @@ function SelectItem({ className, children, ...props }) {
 
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-0 rounded-xl
+        className="pointer-events-none absolute inset-0 !rounded-md
           bg-gradient-to-r from-[var(--primary)]/0 via-[var(--primary)]/6 to-[var(--primary)]/0
           opacity-0 group-focus:opacity-100 transition-opacity duration-150"
       />

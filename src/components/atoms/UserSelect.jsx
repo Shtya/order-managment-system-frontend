@@ -86,7 +86,7 @@ export default function UserSelect({ value, onSelect, placeholder = "Select user
 				}
 			}}
 		>
-			<SelectTrigger className="w-full rounded-full !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
+			<SelectTrigger  >
 				<SelectValue placeholder={placeholder} />
 			</SelectTrigger>
 

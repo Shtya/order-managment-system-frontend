@@ -806,7 +806,7 @@ export default function SuperAdminUsersPage() {
 					{ name: t("breadcrumb.users") },
 				]}
 				buttons={
-					<>
+					<> 
 						<Button_
 							size="sm"
 							label={t("actions.refresh")}

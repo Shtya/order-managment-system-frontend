@@ -5819,386 +5819,214 @@
 		}
 	},
 	"settings": {
-		"header": {
-			"title": "الإعدادات",
-			"subtitle": "إدارة حسابك وتفضيلاتك"
-		},
-		"quickStats": {
-			"title": "إحصائيات سريعة",
-			"totalCategories": "إجمالي التصنيفات",
-			"activeStores": "المتاجر النشطة",
-			"warehouses": "المستودعات"
-		},
-		"tabs": {
-			"categories": {
-				"label": "التصنيفات",
-				"description": "إدارة تصنيفات المنتجات"
-			},
-			"stores": {
-				"label": "المتاجر",
-				"description": "إدارة مواقع المتاجر"
-			},
-			"warehouses": {
-				"label": "المستودعات",
-				"description": "إدارة المستودعات"
-			},
-			"account": {
-				"label": "الحساب",
-				"description": "إعدادات الحساب"
-			},
-			"notifications": {
-				"label": "الإشعارات",
-				"description": "تفضيلات الإشعارات"
-			},
-			"security": {
-				"label": "الأمان",
-				"description": "الأمان والخصوصية"
-			},
-			"appearance": {
-				"label": "المظهر",
-				"description": "السمة والعرض"
-			},
-			"company": {
-				"label": "بيانات الشركة",
-				"description": "إدارة معلومات ونشاط الشركة"
-			},
-			"configuration": {
-				"label": "الإعدادات العامة",
-				"description": "تهيئة النظام والخيارات المتقدمة"
-			}
-		},
-		"common": {
-			"saveChanges": "حفظ التغييرات",
-			"error": "حدث خطأ غير متوقع، يرجى المحاولة مرة أخرى"
-		},
-		"categories": {
-			"toast": {
-				"creating": "جاري إنشاء التصنيف...",
-				"created": "تم إنشاء التصنيف بنجاح",
-				"updating": "جاري تحديث التصنيف...",
-				"updated": "تم تحديث التصنيف بنجاح",
-				"deleting": "جاري حذف التصنيف...",
-				"deleted": "تم حذف التصنيف بنجاح",
-				"toggling": "جاري تغيير الحالة...",
-				"toggled": "تم تغيير الحالة",
-				"duplicating": "جاري التكرار...",
-				"duplicated": "تم تكرار التصنيف بنجاح",
-				"archiving": "جاري الأرشفة...",
-				"archived": "تم أرشفة التصنيف بنجاح"
-			},
-			"delete": {
-				"confirm": "هل تريد حذف هذا التصنيف؟"
-			},
-			"title": "إدارة التصنيفات",
-			"subtitle": "تنظيم منتجاتك في تصنيفات",
-			"addButton": "إضافة تصنيف",
-			"searchPlaceholder": "البحث في التصنيفات...",
-			"loading": "جاري التحميل...",
-			"dialogs": {
-				"delete": {
-					"title": "تأكيد الحذف",
-					"description": "هل أنت متأكد من حذف التصنيف \"{name}\"؟",
-					"warning": "هذا الإجراء لا يمكن التراجع عنه!"
-				}
-			},
-			"addForm": {
-				"title": "إضافة تصنيف جديد"
-			},
-			"editForm": {
-				"title": "تعديل التصنيف"
-			},
-			"form": {
-				"currentImage": "هناك صورة حالية (يمكنك رفع صورة جديدة)",
-				"name": "اسم التصنيف",
-				"namePlaceholder": "مثال: إلكترونيات",
-				"slug": "الرابط المختصر",
-				"slugPlaceholder": "مثال: electronics",
-				"image": "صورة التصنيف",
-				"uploadImage": "رفع صورة",
-				"noFileChosen": "لم يتم اختيار ملف",
-				"active": "نشط",
-				"save": "حفظ التصنيف",
-				"cancel": "إلغاء"
-			},
-			"list": {
-				"toggle": "تغيير الحالة",
-				"products": "منتجات",
-				"active": "نشط",
-				"inactive": "غير نشط",
-				"edit": "تعديل",
-				"delete": "حذف",
-				"view": "عرض التفاصيل",
-				"duplicate": "تكرار",
-				"archive": "أرشفة",
-				"activate": "تفعيل",
-				"deactivate": "إلغاء التفعيل",
-				"toggleStatus": "تغيير الحالة",
-				"moreActions": "المزيد من الإجراءات",
-				"actions": "الإجراءات"
-			},
-			"common": {
-				"loading": "جاري التحميل...",
-				"saving": "جاري الحفظ...",
-				"deleting": "جاري الحذف...",
-				"cancel": "إلغاء",
-				"delete": "حذف",
-				"save": "حفظ",
-				"edit": "تعديل",
-				"view": "عرض",
-				"search": "بحث"
-			},
-			"global": {
-				"lockedHint": "العناصر العامة لا يمكن تعديلها أو حذفها",
-				"lockedToast": "لا يمكن تعديل أو حذف العناصر العامة",
-				"globalItem": "عنصر عام",
-				"badge": "عام"
-			}
-		},
-		"stores": {
-			"title": "إدارة المتاجر",
-			"subtitle": "إدارة مواقع متاجرك",
-			"addButton": "إضافة متجر",
-			"addForm": {
-				"title": "إضافة متجر جديد"
-			},
-			"form": {
-				"name": "اسم المتجر",
-				"namePlaceholder": "مثال: الفرع الرئيسي",
-				"code": "كود المتجر",
-				"codePlaceholder": "مثال: MB-001",
-				"location": "الموقع",
-				"locationPlaceholder": "مثال: وسط المدينة",
-				"phone": "الهاتف",
-				"phonePlaceholder": "+1234567890",
-				"address": "العنوان",
-				"addressPlaceholder": "العنوان الكامل",
-				"active": "نشط",
-				"save": "حفظ المتجر",
-				"cancel": "إلغاء"
-			},
-			"list": {
-				"active": "نشط",
-				"inactive": "غير نشط",
-				"edit": "تعديل",
-				"delete": "حذف"
-			}
-		},
-		"account": {
-			"title": "إعدادات الحساب",
-			"subtitle": "إدارة معلومات حسابك",
-			"loading": "جاري تحميل بيانات الحساب...",
-			"toast": {
-				"saving": "جاري حفظ التغييرات...",
-				"saved": "تم حفظ التغييرات بنجاح",
-				"uploadingAvatar": "جاري رفع الصورة...",
-				"avatarUpdated": "تم تحديث الصورة بنجاح"
-			},
-			"errors": {
-				"missingMeEndpoint": "لا يوجد endpoint /users/me — أضفه أو احفظ userId في localStorage",
-				"missingAvatarEndpoint": "لا يوجد endpoint /users/me/avatar — أضفه لرفع صورة الحساب"
-			},
-			"profile": {
-				"role": "الدور",
-				"plan": "الخطة",
-				"active": "نشط",
-				"inactive": "غير نشط",
-				"employeeType": "نوع الموظف",
-				"employeeTypePlaceholder": "مثال: sales / support / manager",
-				"isActive": "تفعيل الحساب",
-				"userId": "رقم المستخدم",
-				"adminId": "رقم الأدمن",
-				"createdAt": "تاريخ الإنشاء",
-				"updatedAt": "آخر تحديث",
-				"changePhoto": "تغيير الصورة",
-				"fullName": "الاسم الكامل",
-				"email": "البريد الإلكتروني",
-				"phone": "الهاتف",
-				"company": "الشركة",
-				"saveChanges": "حفظ التغييرات"
-			},
-			"password": {
-				"title": "كلمة المرور",
-				"subtitle": "تحديث كلمة المرور الخاصة بك",
-				"change": "تغيير كلمة المرور",
-				"cancel": "إلغاء",
-				"current": "كلمة المرور الحالية",
-				"new": "كلمة المرور الجديدة",
-				"confirm": "تأكيد كلمة المرور الجديدة",
-				"update": "تحديث كلمة المرور"
-			},
-			"phone": {
-				"label": "رقم الجوال",
-				"countryPlaceholder": "اختر الدولة",
-				"invalid": "رقم الجوال غير صحيح"
-			}
-		},
-		"notifications": {
-			"title": "تفضيلات الإشعارات",
-			"subtitle": "إدارة كيفية تلقي الإشعارات",
-			"items": {
-				"orderUpdates": {
-					"title": "تحديثات الطلبات",
-					"description": "احصل على إشعارات حول تغييرات حالة الطلب"
-				},
-				"newProducts": {
-					"title": "منتجات جديدة",
-					"description": "إشعارات عند إضافة منتجات جديدة"
-				},
-				"lowStock": {
-					"title": "تنبيهات المخزون المنخفض",
-					"description": "احصل على تنبيهات عندما تكون المنتجات منخفضة في المخزون"
-				},
-				"marketing": {
-					"title": "رسائل التسويق",
-					"description": "تلقي رسائل البريد الإلكتروني التسويقية والترويجية"
-				}
-			}
-		},
-		"company": {
-			"logoUpdated": "تم تحديث شعار الشركة بنجاح ✓",
-			"logoError": "حدث خطأ أثناء رفع الشعار، يرجى المحاولة لاحقاً",
-			"saveSuccess": "تم حفظ بيانات الشركة بنجاح ✓",
-			"placeholderName": "اسم شركتك الناشئة",
-			"noCountry": "الدولة غير محددة",
-			"form": {
-				"companyName": "اسم الشركة / المتجر",
-				"companyNamePlaceholder": "مثال: مؤسسة الحلول التقنية",
-				"country": "الدولة",
-				"selectCountry": "اختر الدولة",
-				"taxNumber": "الرقم الضريبي",
-				"commercialRegister": "السجل التجاري",
-				"phone": "رقم الهاتف",
-				"website": "الموقع الإلكتروني",
-				"currency": "العملة الأساسية",
-				"selectCurrency": "اختر العملة",
-				"address": "العنوان بالتفصيل",
-				"required": "هذا الحقل مطلوب"
-			},
-			"validation": {
-				"countryRequired": "الدولة مطلوبة",
-				"currencyRequired": "العملة مطلوبة",
-				"businessRequired": "النشاط التجاري مطلوبة",
-				"nameRequired": "اسم الشركة مطلوب",
-				"invalidUrl": "رابط غير صالح (يجب أن يبدأ بـ http:// أو https://)",
-				"genericError": "هذا الحقل غير صالح"
-			}
-		},
-		"security": {
-			"title": "إعدادات الأمان",
-			"subtitle": "إدارة أمان حسابك",
-			"tabs": {
-				"password": {
-					"label": "كلمة المرور"
-				},
-				"email": {
-					"label": "البريد الإلكتروني"
-				}
-			},
-			"twoFactor": {
-				"title": "المصادقة الثنائية",
-				"description": "أضف طبقة إضافية من الأمان إلى حسابك",
-				"enable": "تفعيل المصادقة الثنائية"
-			},
-			"sessions": {
-				"title": "الجلسات النشطة",
-				"current": "الجلسة الحالية",
-				"details": "Chrome على Windows • نشط الآن",
-				"active": "نشط",
-				"subtitle": "الأجهزة والجلسات التي سجّلت الدخول على حسابك",
-				"refresh": "تحديث",
-				"loading": "جاري تحميل الجلسات...",
-				"empty": "لا توجد جلسات متاحة للعرض حالياً",
-				"deviceUnknown": "جهاز غير معروف",
-				"locationUnknown": "موقع غير معروف",
-				"other": "جلسة أخرى",
-				"lastSeen": "آخر نشاط",
-				"ip": "IP"
-			},
-			"danger": {
-				"title": "منطقة الخطر",
-				"description": "حذف حسابك وجميع البيانات بشكل دائم",
-				"delete": "حذف الحساب"
-			},
-			"form": {
-				"old_password": "كلمة المرور الحالية",
-				"new_password": "كلمة المرور الجديدة",
-				"confirm_password": "تأكيد كلمة المرور الجديدة",
-				"update_password": "تحديث كلمة المرور",
-				"new_email": "البريد الإلكتروني الجديد",
-				"send_otp": "إرسال رمز التحقق"
-			},
-			"otp_title": "التحقق من البريد الإلكتروني",
-			"otp_sub": "لقد أرسلنا رمزاً مكوناً من 6 أرقام إلى",
-			"otp_timer": "إعادة الإرسال خلال",
-			"otp_expired": "انتهت صلاحية الرمز",
-			"otp_resend": "إعادة إرسال الرمز",
-			"otp_verify": "التحقق والتحديث",
-			"otp_wrong": "رمز التحقق غير صحيح أو منتهي الصلاحية",
-			"email_otp_sent": "تم إرسال رمز التحقق إلى بريدك الإلكتروني الجديد",
-			"email_success": "تم تحديث البريد الإلكتروني بنجاح",
-			"password_success": "تم تحديث كلمة المرور بنجاح",
-			"loading": "جارٍ التحميل...",
-			"signup": {
-				"resending": "جارٍ إعادة إرسال الرمز...",
-				"resend_success": "تم إعادة إرسال الرمز بنجاح",
-				"resend_error": "فشل إعادة إرسال الرمز",
-				"otp_wrong": "رمز التحقق غير صحيح"
-			},
-			"errors": {
-				"failedSendEmailOTP": "فشل إرسال رمز التحقق. يرجى التأكد من البريد الإلكتروني والمحاولة مرة أخرى.",
-				"mismatch": "كلمات المرور غير متطابقة",
-				"failed": "فشلت العملية، يرجى المحاولة مرة أخرى",
-				"pw_weak": "يرجى استخدام كلمة مرور أقوى"
-			}
-		},
-		"appearance": {
-			"title": "إعدادات المظهر",
-			"subtitle": "تخصيص شكل التطبيق",
-			"theme": {
-				"title": "السمة",
-				"light": "فاتح",
-				"dark": "داكن",
-				"system": "النظام"
-			},
-			"language": {
-				"title": "اللغة",
-				"current": "العربية",
-				"ar": "العربية",
-				"en": "الإنجليزية",
-				"label": "اللغة"
-			},
-			"mode": {
-				"title": "وضع العرض",
-				"light": "فاتح",
-				"dark": "داكن",
-				"system": "حسب النظام"
-			},
-			"palette": {
-				"title": "ألوان الواجهة (6 لوحات)",
-				"note": "هذه اللوحات للعرض الآن — ستستخدمها لاحقًا لتطبيق ألوان النظام بالكامل."
-			},
-			"palettes": {
-				"royal": "ملكي",
-				"emerald": "زمردي",
-				"sunset": "غروب",
-				"rose": "وردي",
-				"cyan": "سماوي",
-				"mono": "أحادي"
-			},
-			"language2": {
-				"title": "اللغة الافتراضية",
-				"label": "اختر اللغة",
-				"ar": "العربية",
-				"en": "الإنجليزية",
-				"note": "سيتم حفظ الاختيار في المتصفح الآن — ويمكن ربطه لاحقًا بإعدادات المستخدم."
-			},
-			"layout": {
-				"title": "إعدادات التخطيط",
-				"sidebar": "توسيع القائمة الجانبية",
-				"sidebarDesc": "عرض القائمة بشكل موسّع أو مختصر",
-				"compact": "وضع مدمج",
-				"compactDesc": "تقليل المسافات في الواجهة (للشاشات الصغيرة/كثافة أعلى)"
-			}
-		}
-	}
+    "breadcrumb": {
+      "home": "الرئيسية"
+    },
+    "header": {
+      "title": "الإعدادات",
+      "refresh": "تحديث"
+    },
+    "common": {
+      "saveChanges": "حفظ التغييرات",
+      "cancel": "إلغاء",
+      "delete": "حذف",
+      "deleting": "جارٍ الحذف...",
+      "error": "حدث خطأ، حاول مجدداً"
+    },
+    "tabs": {
+      "company": {
+        "label": "الشركة",
+        "description": "معلومات شركتك الأساسية والبيانات التجارية"
+      },
+      "configuration": {
+        "label": "الإعدادات",
+        "description": "إعدادات النظام والأتمتة والشحن"
+      },
+      "categories": {
+        "label": "التصنيفات",
+        "description": "إدارة تصنيفات المنتجات"
+      },
+      "account": {
+        "label": "الحساب",
+        "description": "معلوماتك الشخصية وبيانات حسابك"
+      },
+      "security": {
+        "label": "الأمان",
+        "description": "كلمة المرور والبريد الإلكتروني"
+      },
+      "notifications": {
+        "label": "الإشعارات",
+        "description": "إدارة تفضيلات الإشعارات"
+      }
+    },
+    "company": {
+      "saveSuccess": "تم حفظ بيانات الشركة بنجاح",
+      "placeholderName": "اسم شركتك",
+      "noCountry": "الدولة",
+      "validation": {
+        "countryRequired": "الدولة مطلوبة",
+        "currencyRequired": "العملة مطلوبة",
+        "nameRequired": "اسم الشركة مطلوب",
+        "businessRequired": "نوع النشاط التجاري مطلوب",
+        "invalidUrl": "يجب أن يبدأ الرابط بـ http:// أو https://"
+      },
+      "form": {
+        "companyName": "اسم الشركة",
+        "companyNamePlaceholder": "أدخل اسم شركتك",
+        "country": "الدولة",
+        "selectCountry": "اختر الدولة",
+        "currency": "العملة",
+        "selectCurrency": "اختر العملة",
+        "phone": "رقم الهاتف",
+        "website": "الموقع الإلكتروني",
+        "taxNumber": "الرقم الضريبي",
+        "commercialRegister": "السجل التجاري",
+        "address": "العنوان"
+      }
+    },
+    "categories": {
+      "title": "التصنيفات",
+      "subtitle": "أضف وعدّل تصنيفات منتجاتك",
+      "addButton": "إضافة تصنيف",
+      "addForm": {
+        "title": "إضافة تصنيف جديد"
+      },
+      "editForm": {
+        "title": "تعديل التصنيف"
+      },
+      "form": {
+        "name": "الاسم",
+        "namePlaceholder": "أدخل اسم التصنيف",
+        "slug": "المسار (slug)",
+        "save": "حفظ",
+        "cancel": "إلغاء"
+      },
+      "global": {
+        "badge": "افتراضي",
+        "lockedToast": "لا يمكن تعديل التصنيفات الافتراضية",
+        "lockedHint": "هذا التصنيف محمي ولا يمكن تعديله"
+      },
+      "list": {
+        "edit": "تعديل",
+        "delete": "حذف",
+        "toggleStatus": "تبديل الحالة"
+      },
+      "dialogs": {
+        "delete": {
+          "title": "تأكيد الحذف",
+          "description": "هل أنت متأكد من حذف تصنيف \"{name}\"؟",
+          "warning": "هذا الإجراء لا يمكن التراجع عنه."
+        }
+      },
+      "toast": {
+        "updating": "جارٍ التحديث...",
+        "updated": "تم تحديث التصنيف بنجاح",
+        "creating": "جارٍ الإنشاء...",
+        "created": "تم إنشاء التصنيف بنجاح",
+        "deleted": "تم حذف التصنيف بنجاح",
+        "duplicating": "جارٍ النسخ...",
+        "duplicated": "تم نسخ التصنيف بنجاح"
+      },
+      "common": {
+        "cancel": "إلغاء",
+        "delete": "حذف",
+        "deleting": "جارٍ الحذف..."
+      }
+    },
+    "account": {
+      "title": "الحساب الشخصي",
+      "subtitle": "إدارة معلوماتك الشخصية وبيانات اتصالك",
+      "profile": {
+        "fullName": "الاسم الكامل",
+        "email": "البريد الإلكتروني",
+        "role": "الدور",
+        "plan": "الخطة",
+        "userId": "معرّف المستخدم",
+        "adminId": "معرّف المسؤول",
+        "employeeType": "نوع الموظف",
+        "saveChanges": "حفظ التغييرات",
+        "changePhoto": "تغيير الصورة الشخصية"
+      },
+      "phone": {
+        "label": "رقم الجوال",
+        "countryPlaceholder": "الدولة",
+        "invalid": "رقم الجوال غير صحيح"
+      },
+      "toast": {
+        "saving": "جارٍ الحفظ...",
+        "saved": "تم حفظ البيانات بنجاح",
+        "uploadingAvatar": "جارٍ رفع الصورة...",
+        "avatarUpdated": "تم تحديث الصورة الشخصية بنجاح"
+      },
+      "errors": {
+        "missingMeEndpoint": "تعذّر جلب بيانات المستخدم",
+        "missingAvatarEndpoint": "تعذّر رفع الصورة الشخصية"
+      }
+    },
+    "security": {
+      "title": "الأمان",
+      "subtitle": "إدارة كلمة المرور والبريد الإلكتروني لحسابك",
+      "tabs": {
+        "password": {
+          "label": "كلمة المرور"
+        },
+        "email": {
+          "label": "البريد الإلكتروني"
+        }
+      },
+      "form": {
+        "old_password": "كلمة المرور الحالية",
+        "new_password": "كلمة المرور الجديدة",
+        "confirm_password": "تأكيد كلمة المرور",
+        "update_password": "تحديث كلمة المرور",
+        "new_email": "البريد الإلكتروني الجديد",
+        "send_otp": "إرسال رمز التحقق"
+      },
+      "errors": {
+        "mismatch": "كلمتا المرور غير متطابقتين",
+        "failed": "فشل تحديث كلمة المرور",
+        "pw_weak": "كلمة المرور ضعيفة جداً",
+        "failedSendEmailOTP": "فشل إرسال رمز التحقق"
+      },
+      "password_success": "تم تحديث كلمة المرور بنجاح",
+      "email_otp_sent": "تم إرسال رمز التحقق إلى بريدك الجديد",
+      "email_success": "تم تحديث البريد الإلكتروني بنجاح",
+      "otp_title": "تحقق من بريدك الإلكتروني",
+      "otp_sub": "أدخل رمز التحقق المُرسل إلى",
+      "otp_wrong": "رمز التحقق غير صحيح",
+      "otp_timer": "انتهاء الصلاحية خلال",
+      "otp_expired": "انتهت صلاحية الرمز",
+      "otp_resend": "إعادة إرسال الرمز",
+      "otp_verify": "تحقق",
+      "loading": "جارٍ التحميل...",
+      "signup": {
+        "resending": "جارٍ إعادة الإرسال...",
+        "resend_success": "تم إعادة إرسال رمز التحقق",
+        "resend_error": "فشل إعادة الإرسال",
+        "otp_wrong": "رمز التحقق غير صحيح"
+      }
+    },
+    "notifications": {
+      "title": "الإشعارات",
+      "subtitle": "تحكّم في الإشعارات التي تريد تلقّيها",
+      "items": {
+        "orderUpdates": {
+          "title": "تحديثات الطلبات",
+          "description": "احصل على إشعارات عند تغيير حالة الطلبات"
+        },
+        "newProducts": {
+          "title": "المنتجات الجديدة",
+          "description": "احصل على إشعارات عند إضافة منتجات جديدة"
+        },
+        "lowStock": {
+          "title": "نقص المخزون",
+          "description": "تنبيه عند وصول المنتج لحد المخزون المنخفض"
+        },
+        "marketing": {
+          "title": "التسويق والعروض",
+          "description": "إشعارات حملات التسويق والعروض الترويجية"
+        }
+      }
+    }
+  }
 }

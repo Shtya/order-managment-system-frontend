@@ -4,21 +4,19 @@ import React, {
   memo, useState, useCallback, useMemo, useEffect, useRef
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/utils/cn"; 
+import { cn } from "@/utils/cn";
 import {
   Table as ShadTable,
   TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-
 import {
   Search, Filter, Download,
   ChevronDown, ChevronLeft, ChevronRight,
   ChevronsLeft, ChevronsRight,
   Image as ImageIcon, X, Maximize2, SlidersHorizontal,
+  Package,
 } from "lucide-react";
-
 import { baseImg } from "@/utils/axios";
 import { useTranslations } from "next-intl";
 
@@ -32,8 +30,15 @@ const ACTION_COLORS = {
   purple:  "btn btn-solid btn-sm btn-purple",
   rose:    "btn btn-solid btn-sm btn-rose",
   amber:   "btn btn-solid btn-sm btn-amber",
-  default: "btn btn-ghost btn-sm btn-default !border !border-border !border-[1px]",
+  default: "btn btn-ghost btn-sm btn-default !border !border-border",
 };
+
+// ── Tokens ────────────────────────────────────────────────────────────────────
+const P_04 = "color-mix(in oklab, var(--primary)  4%, transparent)";
+const P_08 = "color-mix(in oklab, var(--primary)  8%, transparent)";
+const P_12 = "color-mix(in oklab, var(--primary) 12%, transparent)";
+const P_20 = "color-mix(in oklab, var(--primary) 20%, transparent)";
+const P_30 = "color-mix(in oklab, var(--primary) 30%, transparent)";
 
 function toFullSrc(src) {
   if (!src) return "";
@@ -67,6 +72,19 @@ function useIsRTL() {
   return isRTL;
 }
 
+// ── Accent bar ────────────────────────────────────────────────────────────────
+function AccentBar({ className }) {
+  return (
+    <div
+      aria-hidden
+      className={cn(
+        "h-[2.5px] bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)]",
+        className
+      )}
+    />
+  );
+}
+
 /* ══════════════════════════════════════════════════════════════
    FILTER FIELD
 ══════════════════════════════════════════════════════════════ */
@@ -74,7 +92,7 @@ export function FilterField({ label, children, className }) {
   return (
     <div className={cn("space-y-1.5", className)}>
       {label && (
-        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 block">
+        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/55 block">
           {label}
         </label>
       )}
@@ -84,8 +102,7 @@ export function FilterField({ label, children, className }) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   TABLE TOOLBAR
-   — same API, refreshed with --primary tints + left accent bar
+   TOOLBAR
 ══════════════════════════════════════════════════════════════ */
 export const TableToolbar = memo(function TableToolbar({
   searchValue = "",
@@ -104,16 +121,14 @@ export const TableToolbar = memo(function TableToolbar({
 
   return (
     <div className="flex items-center justify-between gap-3 flex-wrap">
-      {/* Search */}
       <FloatingSearchInput
-				searchValue={searchValue}
-				onSearchChange={onSearchChange}
-				onKeyDown={handleKeyDown}
-				searchPlaceholder={searchPlaceholder}
-			/>
+        searchValue={searchValue}
+        onSearchChange={onSearchChange}
+        onKeyDown={handleKeyDown}
+        searchPlaceholder={searchPlaceholder}
+      />
 
       <div className="flex items-center gap-2 flex-wrap">
-        {/* Filters toggle */}
         {onToggleFilters && (
           <motion.button
             whileHover={{ scale: 1.02, y: -1 }}
@@ -121,20 +136,18 @@ export const TableToolbar = memo(function TableToolbar({
             onClick={onToggleFilters}
             type="button"
             className={cn(
-              "relative btn btn-sm",
+              "relative btn btn-sm gap-1.5",
               isFiltersOpen ? "btn-solid" : "btn-outline",
             )}
           >
-            <SlidersHorizontal size={14} />
+            <SlidersHorizontal size={13} />
             {filterLabel}
             {hasActiveFilters && !isFiltersOpen && (
               <span
-                className="absolute -top-1.5 -end-1.5 w-4 h-4 rounded-full flex items-center justify-center z-10"
+                className="absolute -top-1.5 -end-1.5 w-4 h-4 rounded-full flex items-center justify-center z-10 text-[8px] font-black"
                 style={{
                   background: "var(--primary)",
                   color: "var(--primary-foreground)",
-                  fontSize: 8,
-                  fontWeight: 900,
                   boxShadow: "0 0 0 2px var(--card)",
                 }}
               >
@@ -143,15 +156,14 @@ export const TableToolbar = memo(function TableToolbar({
             )}
             <motion.span
               animate={{ rotate: isFiltersOpen ? 180 : 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.22 }}
               style={{ display: "flex" }}
             >
-              <ChevronDown size={13} />
+              <ChevronDown size={12} />
             </motion.span>
           </motion.button>
         )}
 
-        {/* Action buttons */}
         {actions.map((action) => (
           <motion.button
             key={action.key}
@@ -162,7 +174,7 @@ export const TableToolbar = memo(function TableToolbar({
             disabled={action.disabled}
             className={cn(
               ACTION_COLORS[action.color ?? "default"] ?? ACTION_COLORS.default,
-              "disabled:opacity-50 disabled:cursor-not-allowed",
+              "disabled:opacity-50 disabled:cursor-not-allowed gap-1.5",
             )}
           >
             {action.icon}
@@ -175,8 +187,7 @@ export const TableToolbar = memo(function TableToolbar({
 });
 
 /* ══════════════════════════════════════════════════════════════
-   TABLE FILTERS PANEL
-   — card with --primary hairline top accent bar (first-design)
+   FILTERS PANEL
 ══════════════════════════════════════════════════════════════ */
 export const TableFilters = memo(function TableFilters({
   children, onApply, applyLabel = "Apply",
@@ -186,23 +197,11 @@ export const TableFilters = memo(function TableFilters({
       initial={{ height: 0, opacity: 0 }}
       animate={{ height: "auto", opacity: 1 }}
       exit={{ height: 0, opacity: 0 }}
-      transition={{ duration: 0.25, ease: "easeInOut" }}
-      className="overflow-hidden"
+      transition={{ duration: 0.22, ease: "easeInOut" }}
+      className=""
     >
-      <div
-        className="mt-3 rounded-xl border border-border overflow-hidden"
-        style={{
-          background: "color-mix(in oklab, var(--muted) 60%, var(--card))",
-          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
-        }}
-      >
-        {/* Hairline top accent bar — same signature as InfoCard */}
-        <div style={{
-          height: 2.5,
-          background: "linear-gradient(90deg, var(--primary), var(--secondary))",
-          borderRadius: "0 0 0 0",
-        }} />
-
+      <div className="overflow-hidden !shadow-none mt-3 rounded-2xl border border-border/60 overflow-hidden bg-card !p-0 backdrop-blur-sm">
+        {/* <AccentBar /> */}
         <div className="p-4 flex items-end gap-6">
           <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {children}
@@ -214,9 +213,9 @@ export const TableFilters = memo(function TableFilters({
                 whileTap={{ scale: 0.97 }}
                 onClick={onApply}
                 type="button"
-                className="btn !h-[42px] btn-solid btn-sm rtl:mr-auto ltr:ml-auto"
+                className="btn !h-[42px] btn-solid btn-sm gap-1.5 rtl:mr-auto ltr:ml-auto"
               >
-                <Filter size={14} />
+                <Filter size={13} />
                 {applyLabel}
               </motion.button>
             </div>
@@ -228,8 +227,7 @@ export const TableFilters = memo(function TableFilters({
 });
 
 /* ══════════════════════════════════════════════════════════════
-   TABLE PAGINATION
-   — uses --primary / --secondary / --primary-shadow vars only
+   PAGINATION
 ══════════════════════════════════════════════════════════════ */
 export const TablePagination = memo(function TablePagination({
   pagination, onPageChange, isLoading = false,
@@ -276,7 +274,6 @@ export const TablePagination = memo(function TablePagination({
   const to    = Math.min(currentPage * perPage, pagination?.total_records ?? 0);
   const total = pagination?.total_records ?? 0;
 
-  /* Shared nav button */
   const NavBtn = ({ onClick, disabled, children, title }) => (
     <motion.button
       type="button"
@@ -287,12 +284,12 @@ export const TablePagination = memo(function TablePagination({
       title={title}
       className={cn(
         "relative w-9 h-9 rounded-xl flex items-center justify-center",
-        "border border-border bg-background/60 text-muted-foreground",
-        "transition-all duration-150 overflow-hidden",
+        "border border-border/60 bg-background/60 text-muted-foreground",
+        "transition-all duration-150",
         "hover:border-[var(--primary)]/50 hover:text-[var(--primary)]",
         "hover:bg-[color-mix(in_oklab,var(--primary)_5%,transparent)]",
-        "disabled:opacity-35 disabled:cursor-not-allowed",
-        "disabled:hover:border-border disabled:hover:text-muted-foreground disabled:hover:bg-background/60",
+        "disabled:opacity-30 disabled:cursor-not-allowed",
+        "disabled:hover:border-border disabled:hover:text-muted-foreground disabled:hover:bg-transparent",
       )}
     >
       {children}
@@ -302,27 +299,25 @@ export const TablePagination = memo(function TablePagination({
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-5 py-4">
 
-      {/* Left: record range */}
-      <div className="flex items-center gap-2 flex-shrink-0">
-        <span className="text-xs text-muted-foreground/70">
-          {t("showing")}{" "}
-          <span className="font-bold text-foreground tabular-nums">{from}–{to}</span>
-          {" "}{t("of")}{" "}
-          <span
-            className="inline-flex items-center px-2 py-0.5 rounded-xl border text-xs font-black tabular-nums"
-            style={{
-              background: "color-mix(in oklab, var(--primary) 10%, transparent)",
-              borderColor: "color-mix(in oklab, var(--primary) 20%, transparent)",
-              color: "var(--primary)",
-            }}
-          >
-            {total}
-          </span>
-          {" "}{t("records")}
+      {/* Record range */}
+      <p className="text-xs text-muted-foreground/70 flex-shrink-0">
+        {t("showing")}{" "}
+        <span className="font-bold text-foreground tabular-nums">{from}–{to}</span>
+        {" "}{t("of")}{" "}
+        <span
+          className="inline-flex items-center px-2 py-0.5 rounded-lg border text-xs font-black tabular-nums"
+          style={{
+            background: P_08,
+            borderColor: P_20,
+            color: "var(--primary)",
+          }}
+        >
+          {total}
         </span>
-      </div>
+        {" "}{t("records")}
+      </p>
 
-      {/* Center: page buttons */}
+      {/* Page buttons */}
       <div className="flex items-center gap-1">
         <NavBtn onClick={() => goTo(1)} disabled={currentPage <= 1} title={t("firstPage")}>
           <ChevronsRight size={13} />
@@ -331,12 +326,10 @@ export const TablePagination = memo(function TablePagination({
           <ChevronRight size={13} />
         </NavBtn>
 
-        <div className="flex items-center gap-1 mx-0.5">
+        <div className="flex items-center gap-1 mx-1">
           {pageItems.map((p, idx) =>
             p === "…" ? (
-              <span key={`d-${idx}`} className="w-7 text-center text-muted-foreground/40 text-xs select-none">
-                ···
-              </span>
+              <span key={`d-${idx}`} className="w-7 text-center text-muted-foreground/35 text-xs select-none">···</span>
             ) : (
               <motion.button
                 key={p}
@@ -347,22 +340,20 @@ export const TablePagination = memo(function TablePagination({
                 disabled={isLoading}
                 className={cn(
                   "relative w-9 h-9 rounded-xl text-xs font-bold border transition-all duration-150 overflow-hidden",
-                  p === currentPage
-                    ? "font-black"
-                    : [
-                        "bg-background/60 border-border text-muted-foreground",
-                        "hover:border-[var(--primary)]/40 hover:text-[var(--primary)]",
-                        "hover:bg-[color-mix(in_oklab,var(--primary)_4%,transparent)]",
-                      ],
+                  p !== currentPage && [
+                    "bg-background/60 border-border/60 text-muted-foreground",
+                    "hover:border-[var(--primary)]/40 hover:text-[var(--primary)]",
+                    "hover:bg-[color-mix(in_oklab,var(--primary)_4%,transparent)]",
+                  ],
                 )}
                 style={p === currentPage ? {
-                  background: "color-mix(in oklab, var(--primary) 10%, transparent)",
-                  borderColor: "color-mix(in oklab, var(--primary) 40%, transparent)",
+                  background: P_08,
+                  borderColor: P_30,
                   color: "var(--primary)",
-                  boxShadow: "0 0 0 3px color-mix(in oklab, var(--primary) 14%, transparent)",
+                  fontWeight: 900,
+                  boxShadow: `0 0 0 3px ${P_12}`,
                 } : {}}
               >
-                {/* Active page top sheen */}
                 {p === currentPage && (
                   <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-t-xl" />
                 )}
@@ -380,12 +371,10 @@ export const TablePagination = memo(function TablePagination({
         </NavBtn>
       </div>
 
-      {/* Right: per-page selector */}
+      {/* Per-page selector */}
       <div className="flex items-center gap-2 flex-shrink-0">
-        <span className="text-xs text-muted-foreground/70 hidden sm:block">{t("perPage")}</span>
-        <div
-          className="flex items-center gap-1 p-1 rounded-xl border border-border bg-background/60"
-        >
+        <span className="text-xs text-muted-foreground/60 hidden sm:block">{t("perPage")}</span>
+        <div className="flex items-center gap-0.5 p-1 rounded-xl border border-border/60 bg-background/60">
           {perPageOptions.map((lim) => (
             <button
               key={lim}
@@ -393,16 +382,15 @@ export const TablePagination = memo(function TablePagination({
               onClick={() => changeLimit(lim)}
               disabled={isLoading}
               className={cn(
-                "relative w-9 h-7 rounded-xl text-[11px] font-bold transition-all duration-150 overflow-hidden",
-                perPage === lim
-                  ? "font-black"
-                  : "text-muted-foreground hover:text-[var(--primary)] hover:bg-[color-mix(in_oklab,var(--primary)_5%,transparent)]",
+                "relative w-9 h-7 rounded-lg text-[11px] font-bold transition-all duration-150 overflow-hidden",
+                perPage !== lim && "text-muted-foreground hover:text-[var(--primary)] hover:bg-[color-mix(in_oklab,var(--primary)_5%,transparent)]",
               )}
               style={perPage === lim ? {
-                background: "color-mix(in oklab, var(--primary) 10%, transparent)",
-                border: "1px solid color-mix(in oklab, var(--primary) 30%, transparent)",
+                background: P_08,
+                border: `1px solid ${P_30}`,
                 color: "var(--primary)",
-                boxShadow: "0 1px 4px color-mix(in oklab, var(--primary) 18%, transparent)",
+                fontWeight: 900,
+                boxShadow: `0 1px 4px ${P_12}`,
               } : {}}
             >
               {perPage === lim && (
@@ -418,19 +406,18 @@ export const TablePagination = memo(function TablePagination({
 });
 
 /* ══════════════════════════════════════════════════════════════
-   TABLE SKELETON
-   — warm shimmer using muted/border tokens, auto dark
+   SKELETON
 ══════════════════════════════════════════════════════════════ */
 const TableSkeleton = memo(function TableSkeleton({ columns, rows = 6, compact }) {
   return (
     <>
       {Array.from({ length: rows }).map((_, ri) => (
-        <TableRow key={ri} className="border-b border-border/50">
+        <TableRow key={ri} className="border-b border-border/40">
           {columns.map((col, ci) => (
             <TableCell key={ci} className={cn("!px-5", compact ? "py-2.5" : "py-4")}>
               <div
-                className="h-4 rounded-xl skeleton"
-                style={{ width: col.type === "img" ? "44px" : `${50 + ((ri * 13 + ci * 7) % 40)}%` }}
+                className="rounded-xl animate-pulse bg-muted/60"
+                style={{ height: 16, width: col.type === "img" ? 44 : `${50 + ((ri * 13 + ci * 7) % 40)}%` }}
               />
             </TableCell>
           ))}
@@ -445,28 +432,27 @@ const TableSkeleton = memo(function TableSkeleton({ columns, rows = 6, compact }
 ══════════════════════════════════════════════════════════════ */
 const ImgCell = memo(function ImgCell({ src, alt, onOpen }) {
   const fullSrc = toFullSrc(src);
-  if (!fullSrc) return <span className="text-muted-foreground text-sm">—</span>;
+  if (!fullSrc) return <span className="text-muted-foreground/40 text-sm">—</span>;
   return (
     <motion.button
       whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.95 }}
       type="button" onClick={() => onOpen(fullSrc, alt)}
       className={cn(
         "group/img relative w-11 h-11 rounded-xl overflow-hidden block",
-        "border-2 border-border hover:border-[var(--primary)]",
-        "shadow-sm hover:shadow-md",
-        "transition-all duration-200",
+        "border-2 border-border/60 hover:border-[var(--primary)]/60",
+        "shadow-sm hover:shadow-md transition-all duration-200",
       )}
     >
       <img src={fullSrc} alt={alt} className="w-full h-full object-cover" loading="lazy" />
-      <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/25 transition-colors flex items-center justify-center">
-        <Maximize2 size={11} className="text-white opacity-0 group-hover/img:opacity-100 transition-opacity" />
+      <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/30 transition-colors flex items-center justify-center">
+        <Maximize2 size={11} className="text-white opacity-0 group-hover/img:opacity-100 transition-opacity drop-shadow" />
       </div>
     </motion.button>
   );
 });
 
 const ImgsCell = memo(function ImgsCell({ images, onOpen }) {
-  if (!images.length) return <span className="text-muted-foreground text-sm">—</span>;
+  if (!images.length) return <span className="text-muted-foreground/40 text-sm">—</span>;
   return (
     <div className="flex items-center">
       {images.map((img, idx) => {
@@ -475,9 +461,10 @@ const ImgsCell = memo(function ImgsCell({ images, onOpen }) {
           <motion.button
             key={`${img.src}-${idx}`} type="button"
             onClick={() => onOpen(fullSrc, img.alt)}
-            style={{ zIndex: images.length - idx, marginInlineStart: idx === 0 ? 0 : "-14px" }}
-            whileHover={{ scale: 1.12, zIndex: 50 }} whileTap={{ scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            style={{ zIndex: images.length - idx, marginInlineStart: idx === 0 ? 0 : -14 }}
+            whileHover={{ scale: 1.14, zIndex: 50, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 28 }}
             className="relative w-11 h-11 rounded-xl overflow-hidden border-2 border-background shadow-md cursor-pointer"
           >
             <img src={fullSrc} alt={img.alt} className="w-full h-full object-cover" loading="lazy" />
@@ -490,7 +477,6 @@ const ImgsCell = memo(function ImgsCell({ images, onOpen }) {
 
 /* ══════════════════════════════════════════════════════════════
    IMAGE MODAL
-   — header uses --primary gradient blob, same design language
 ══════════════════════════════════════════════════════════════ */
 const ImageModal = memo(function ImageModal({ src, alt, open, onClose, labels = {} }) {
   const [zoomed, setZoomed] = useState(false);
@@ -507,70 +493,54 @@ const ImageModal = memo(function ImageModal({ src, alt, open, onClose, labels = 
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent
         showCloseButton={false}
-        className="max-w-4xl !p-0 overflow-hidden rounded-xl border border-border bg-card shadow-2xl"
+        className="max-w-4xl !p-0 overflow-hidden rounded-2xl border border-border/60 bg-card !p-0 shadow-2xl"
       >
         {/* Header */}
-        <div className="relative flex items-center justify-between gap-4 px-5 py-4 border-b border-border overflow-hidden">
-          {/* Top accent bar — matches the filter panel and InfoCard */}
-          <div
-            className="absolute top-0 left-0 right-0 h-[2.5px]"
-            style={{ background: "linear-gradient(90deg, var(--primary), var(--secondary))" }}
-          />
+        <div className="relative flex items-center justify-between gap-4 px-5 py-4 border-b border-border/40 overflow-hidden">
+          <AccentBar className="absolute inset-x-0 top-0" />
 
-          <div className="relative flex items-center gap-3">
+          <div className="relative flex items-center gap-3 mt-0.5">
             <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center btn-solid flex-shrink-0"
-              style={{
-                background: "linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))",
-                boxShadow: "0 4px 14px -4px rgb(var(--primary-shadow))",
-              }}
+              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: P_12, border: `1px solid ${P_20}` }}
             >
-              <ImageIcon size={16} className="text-white" />
+              <ImageIcon size={15} style={{ color: "var(--primary)" }} />
             </div>
             <div>
-              <p
-                className="text-sm font-bold leading-tight"
-                style={{ color: "var(--card-foreground)" }}
-              >
+              <p className="text-sm font-bold text-foreground leading-tight">
                 {labels.preview ?? "Image Preview"}
               </p>
-              {alt && (
-                <p className="text-xs text-muted-foreground leading-tight mt-0.5">{alt}</p>
-              )}
+              {alt && <p className="text-xs text-muted-foreground leading-tight mt-0.5">{alt}</p>}
             </div>
           </div>
 
-          <div className="relative flex items-center gap-1.5">
-             
+          <div className="relative flex items-center gap-1.5 mt-0.5">
             <motion.button
               whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}
               onClick={download}
               className="flex items-center justify-center btn btn-solid btn-sm !w-8 !h-8 !px-0"
             >
-              <Download size={14} />
+              <Download size={13} />
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.08, rotate: 90 }} whileTap={{ scale: 0.92 }}
               onClick={onClose}
               className="flex items-center justify-center btn btn-ghost btn-sm btn-rose !w-8 !h-8 !px-0"
             >
-              <X size={14} />
+              <X size={13} />
             </motion.button>
           </div>
         </div>
 
         {/* Image area */}
-        <div
-          className="p-8 flex items-center justify-center min-h-[380px]"
-          style={{ background: "var(--muted)" }}
-        >
+        <div className="p-8 flex items-center justify-center min-h-[380px] bg-muted/40">
           <motion.img
             src={src} alt={alt}
             animate={{ scale: zoomed ? 1.65 : 1 }}
             transition={{ type: "spring", stiffness: 280, damping: 28 }}
             onClick={() => setZoomed((z) => !z)}
-            className="max-w-full max-h-[65vh] object-contain rounded-xl shadow-2xl cursor-zoom-in"
-            style={{ border: "4px solid var(--card)" }}
+            className="max-w-full max-h-[65vh] object-contain rounded-2xl shadow-2xl cursor-zoom-in"
+            style={{ border: "3px solid var(--card)" }}
           />
         </div>
       </DialogContent>
@@ -580,9 +550,6 @@ const ImageModal = memo(function ImageModal({ src, alt, open, onClose, labels = 
 
 /* ══════════════════════════════════════════════════════════════
    MAIN TABLE
-   — bg-card picks up your global .bg-card rule (light + dark)
-   — all accent colours use --primary / --secondary / --third
-   — no hardcoded colours anywhere
 ══════════════════════════════════════════════════════════════ */
 export default function Table({
   searchValue = "", onSearchChange, onSearch,
@@ -602,25 +569,25 @@ export default function Table({
   const closeImage = useCallback(() => setImgModal({ open: false, src: "", alt: "" }), []);
   const helpers    = useMemo(() => ({ openImage }), [openImage]);
 
-  const hasFilters  = Boolean(filters);
-  const stickyEnd   = isRTL ? "left-0" : "right-0";
+  const hasFilters   = Boolean(filters);
+  const stickyEnd    = isRTL ? "left-0" : "right-0";
   const stickyShadow = isRTL
-    ? "shadow-[8px_0_12px_-10px_rgba(0,0,0,0.18)] dark:shadow-[8px_0_12px_-10px_rgba(0,0,0,0.5)]"
-    : "shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)] dark:shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.5)]";
+    ? "shadow-[8px_0_12px_-10px_rgba(0,0,0,0.15)] dark:shadow-[8px_0_12px_-10px_rgba(0,0,0,0.45)]"
+    : "shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.15)] dark:shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.45)]";
 
   return (
-    <div className={cn("w-full" )}>
+    <div className={cn("w-full", className)}>
       <motion.div
-        initial={{ opacity: 0, y: 16 }}
+        initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-        className="bg-card !p-0 overflow-hidden"
+        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        className="relative bg-card !p-0 rounded-2xl border border-border/50 overflow-hidden"
+        style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05), 0 6px 24px rgba(0,0,0,0.05)" }}
       >
-         
-        {/* ── Toolbar ──────────────────────────────────── */}
-        <div
-          className="px-5 py-4 border-b border-border" 
-        >
+      
+
+        {/* ── Toolbar ──────────────────────────────────────── */}
+        <div className="px-5 py-4 border-b border-border/40">
           <TableToolbar
             searchValue={searchValue}
             onSearchChange={onSearchChange}
@@ -641,13 +608,13 @@ export default function Table({
           </AnimatePresence>
         </div>
 
-        {/* ── Table ──────────────────────────────────────── */}
+        {/* ── Table ────────────────────────────────────────── */}
         <div className="relative overflow-x-auto">
           <ShadTable>
             {/* Header */}
             <TableHeader
-              className="border-b border-border"
-              style={{ background: "color-mix(in oklab, var(--muted) 55%, var(--card))" }}
+              className="border-b border-border/40"
+              style={{ background: "color-mix(in oklab, var(--muted) 50%, var(--card))" }}
             >
               <TableRow className="hover:bg-transparent">
                 {columns.map((col, idx) => (
@@ -655,24 +622,19 @@ export default function Table({
                     key={col.key}
                     className={cn(
                       "!px-5 whitespace-nowrap ltr:text-left rtl:text-right",
-                      compact ? "py-3" : "py-4",
+                      compact ? "py-3" : "py-3.5",
                       col.headClassName,
                       ACTION_KEYS.has(col.key) && cn("sticky z-30", stickyEnd, stickyShadow),
                     )}
                     style={ACTION_KEYS.has(col.key) ? {
-                      background: "color-mix(in oklab, var(--muted) 55%, var(--card))",
+                      background: "color-mix(in oklab, var(--muted) 50%, var(--card))",
                     } : {}}
                   >
                     <motion.span
-                      initial={{ opacity: 0, y: -5 }}
+                      initial={{ opacity: 0, y: -4 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.04 }}
-                      className="flex items-center gap-2"
-                      style={{
-                        fontSize: 10, fontWeight: 800,
-                        letterSpacing: "0.1em", textTransform: "uppercase",
-                        color: "var(--muted-foreground)",
-                      }}
+                      transition={{ delay: idx * 0.035 }}
+                      className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/60"
                     >
                       {col.header}
                     </motion.span>
@@ -688,34 +650,32 @@ export default function Table({
                   <TableSkeleton key="skel" columns={columns} rows={Number(pagination?.per_page ?? 6)} compact={compact} />
 
                 ) : data.length === 0 ? (
-                  /* ── Empty state ── */
                   <TableRow key="empty">
                     <TableCell colSpan={columns.length} className="py-20">
                       <motion.div
-                        initial={{ opacity: 0, scale: 0.92 }}
+                        initial={{ opacity: 0, scale: 0.94 }}
                         animate={{ opacity: 1, scale: 1 }}
                         className="flex flex-col items-center gap-4"
                       >
+                        {/* Halo + icon */}
                         <div className="relative">
                           <div
-                            className="absolute inset-0 blur-2xl rounded-full"
-                            style={{ background: "color-mix(in oklab, var(--primary) 15%, transparent)" }}
+                            className="absolute inset-0 blur-2xl rounded-full scale-150"
+                            style={{ background: P_08 }}
                           />
-                          <div
-                            className="relative w-16 h-16 rounded-xl border border-border flex items-center justify-center shadow-sm"
-                            style={{ background: "color-mix(in oklab, var(--muted) 80%, var(--card))" }}
+                          <motion.div
+                            animate={{ rotate: [0, -5, 5, 0] }}
+                            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                            className="relative w-14 h-14 rounded-2xl border border-border/60 flex items-center justify-center bg-card shadow-sm"
                           >
-                            <ImageIcon
-                              className="w-8 h-8"
-                              style={{ color: "color-mix(in oklab, var(--muted-foreground) 45%, transparent)" }}
-                            />
-                          </div>
+                            <Package size={22} style={{ color: "color-mix(in oklab, var(--muted-foreground) 40%, transparent)" }} />
+                          </motion.div>
                         </div>
                         <div className="text-center space-y-1">
-                          <p className="text-sm font-bold" style={{ color: "var(--foreground)" }}>
+                          <p className="text-sm font-bold text-foreground">
                             {emptyState ?? labels.emptyTitle ?? "No results found"}
                           </p>
-                          <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                          <p className="text-xs text-muted-foreground/70">
                             {labels.emptySubtitle ?? "Try adjusting your search or filters"}
                           </p>
                         </div>
@@ -724,50 +684,47 @@ export default function Table({
                   </TableRow>
 
                 ) : (
-                  /* ── Data rows ── */
                   data.map((row, i) => (
                     <motion.tr
                       key={rowKey(row, i)}
-                      initial={{ opacity: 0, x: -8 }}
+                      initial={{ opacity: 0, x: -6 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0 }}
-                      transition={{ delay: Math.min(i * 0.025, 0.3), ease: [0.16, 1, 0.3, 1] }}
+                      transition={{ delay: Math.min(i * 0.022, 0.28), ease: [0.16, 1, 0.3, 1] }}
                       className={cn(
-                        "border-b border-border/50 group transition-colors duration-150",
-                        hoverable && "hover:bg-[color-mix(in_oklab,var(--primary)_3.5%,transparent)]",
-                        striped && i % 2 === 1 && "bg-[color-mix(in_oklab,var(--muted)_50%,transparent)]",
+                        "group border-b border-border/35 transition-colors duration-150",
+                        hoverable && "hover:bg-[color-mix(in_oklab,var(--primary)_3%,transparent)]",
+                        striped && i % 2 === 1 && "bg-[color-mix(in_oklab,var(--muted)_45%,transparent)]",
                       )}
                     >
                       {columns.map((col) => {
-                        /* img cell */
                         if (col.type === "img") return (
-                          <TableCell key={col.key} className={cn("!px-5", compact ? "py-2.5" : "py-4", col.className)}>
+                          <TableCell key={col.key} className={cn("!px-5", compact ? "py-2.5" : "py-3.5", col.className)}>
                             <ImgCell src={row[col.key]} alt={col.header ?? ""} onOpen={openImage} />
                           </TableCell>
                         );
 
-                        /* imgs cell */
                         if (col.type === "imgs") {
                           const imgs = normalizeImages(row[col.key], col.header ?? "");
                           return (
-                            <TableCell key={col.key} className={cn("!px-5", compact ? "py-2.5" : "py-4", col.className)}>
+                            <TableCell key={col.key} className={cn("!px-5", compact ? "py-2.5" : "py-3.5", col.className)}>
                               <ImgsCell images={imgs} onOpen={openImage} />
                             </TableCell>
                           );
                         }
 
-                        /* default / custom cell */
                         return (
                           <TableCell
                             key={col.key}
                             className={cn(
                               "!px-5 text-sm whitespace-nowrap ltr:text-left rtl:text-right",
-                              compact ? "py-2.5" : "py-4",
-                              "transition-colors duration-150 bg-white/50 backdrop-blur-[3px] dark:bg-slate-900",
+                              compact ? "py-2.5" : "py-3.5",
                               col.className,
                               ACTION_KEYS.has(col.key) && cn("sticky z-20", stickyEnd, stickyShadow),
                             )}
-                             
+                            style={ACTION_KEYS.has(col.key) ? {
+                              background: "color-mix(in oklab, var(--card) 97%, transparent)",
+                            } : {}}
                           >
                             {typeof col.cell === "function" ? col.cell(row, i, helpers) : row[col.key]}
                           </TableCell>
@@ -781,15 +738,10 @@ export default function Table({
           </ShadTable>
         </div>
 
-        {/* ── Pagination ── */}
+        {/* ── Pagination ─────────────────────────────────── */}
         {pagination && (
           <>
-            <div
-              className="h-px"
-              style={{
-                background: "linear-gradient(90deg, transparent, var(--border), transparent)",
-              }}
-            />
+            <div className="h-px bg-gradient-to-r from-transparent via-border/50 to-transparent" />
             <TablePagination
               pagination={pagination}
               onPageChange={onPageChange}
@@ -813,14 +765,9 @@ export default function Table({
   );
 }
 
-
-
-
-
-
-
-
-
+/* ══════════════════════════════════════════════════════════════
+   FLOATING SEARCH INPUT
+══════════════════════════════════════════════════════════════ */
 function FloatingSearchInput({ searchValue, onSearchChange, onKeyDown, searchPlaceholder }) {
   const [focused, setFocused] = useState(false);
   const inputRef = useRef(null);

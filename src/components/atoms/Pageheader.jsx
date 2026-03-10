@@ -523,8 +523,7 @@ export function PageHeader({
 												style={{ display: "flex", alignItems: "center", gap: 8 }}
 											>
 												<span style={{
-													fontFamily: "'Instrument Serif', serif",
-													fontSize: 20, fontWeight: 400,
+ 													fontSize: 20, fontWeight: 400,
 													letterSpacing: "-0.022em",
 													color: "var(--card-foreground)",
 													lineHeight: 1,
@@ -622,11 +621,10 @@ export function PageHeader({
 												className="flex items-center gap-2.5"
 											>
 												<span style={{
-													fontFamily: "'Instrument Serif', serif",
-													fontSize: 22, fontWeight: 400,
+ 													fontSize: 18, fontWeight: 400,
 													letterSpacing: "-0.025em",
 													color: "var(--card-foreground)",
-												}}>
+												}} className=" ">
 													{crumb.name}
 												</span>
 												<span className="relative flex h-2 w-2">

@@ -372,7 +372,7 @@ function FieldSubLabel({ children }) {
 
 export function GeneralTab({ settings, patch, t }) {
   return (
-    <>
+    <div className="space-y-5">
       {/* Master on/off */}
       <ToggleRow
         label={t("retrySettings.enableRetry")}
@@ -453,7 +453,7 @@ export function GeneralTab({ settings, patch, t }) {
           )}
         </AnimatePresence>
       </div>
-    </>
+    </div>
   );
 }
 

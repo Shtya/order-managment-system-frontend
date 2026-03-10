@@ -101,7 +101,13 @@ import { avatarSrc } from '@/components/atoms/UserSelect';
 import { BIZ_TYPES_KEYS } from '../auth/tabs/Signup';
 import { IconArrow, OtpInput, PasswordStrength } from '../auth/tabs/AuthUi';
 
-
+const SETTINGS_TABS = [
+	{ key: "general", icon: Settings, labelKey: "retrySettings.tabs.general" },
+	{ key: "automation", icon: Zap, labelKey: "retrySettings.tabs.automation" },
+	{ key: "shipping", icon: Truck, labelKey: "retrySettings.tabs.shipping" },
+	{ key: "warehouse", icon: Warehouse, labelKey: "retrySettings.tabs.warehouse" },
+	{ key: "notifications", icon: Bell, labelKey: "retrySettings.tabs.notifications" },
+];
 
 function normalizeAxiosError(err) {
 	const msg =
@@ -226,6 +232,142 @@ const accountSchema = yup.object({
 	employeeType: yup.string().trim().nullable(),
 	// phone handled manually with your country rules
 });
+
+function SettingsTab({ statuses = [] }) {
+	// Translations
+	const tSettings = useTranslations('settings');
+	const tOrders = useTranslations('orders'); // Used for the inner forms from the original modal
+
+	const [activeTab, setActiveTab] = useState("general");
+
+	// We pass isOpen: true so the hook fetches data immediately upon mounting
+	const {
+		settings,
+		loading,
+		saving,
+		shippingCompanies,
+		patch,
+		patchShipping,
+		handleSave,
+		toggleCode,
+	} = useOrdersSettings({ isOpen: true, onClose: () => { } });
+
+	return (
+		<div className="space-y-6">
+			{/* 1. Page Header */}
+			<div>
+				<h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+					{tSettings('tabs.configuration.label')}
+				</h2>
+				<p className="text-slate-500 dark:text-slate-400 mt-1">
+					{tSettings('tabs.configuration.description')}
+				</p>
+			</div>
+
+			{/* 2. Sub-Tabs Bar */}
+			<div className="flex gap-4 border-b border-slate-200 dark:border-slate-800 pb-px overflow-x-auto hide-scrollbar">
+				{SETTINGS_TABS.map((tab) => {
+					const Icon = tab.icon;
+					const isActive = activeTab === tab.key;
+					return (
+						<button
+							key={tab.key}
+							onClick={() => setActiveTab(tab.key)}
+							className={cn(
+								"relative flex items-center gap-2 px-1 py-3 text-sm font-semibold transition-colors border-b-2 -mb-px whitespace-nowrap",
+								isActive
+									? "border-primary text-primary"
+									: "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+							)}
+						>
+							<Icon size={16} />
+							{/* Using tOrders here assuming the keys live in the orders JSON */}
+							{tOrders(tab.labelKey)}
+						</button>
+					);
+				})}
+			</div>
+
+			{/* 3. Content Area & Skeleton */}
+			{loading ? (
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+					{[...Array(6)].map((_, i) => (
+						<motion.div
+							key={i}
+							className="skeleton rounded-md p-4 space-y-3 border border-slate-100 dark:border-slate-800"
+							animate={{ opacity: [0.5, 0.9, 0.5] }}
+							transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 + i * 0.1 }}
+						>
+							<div className="rounded-md bg-muted/40 h-5 w-1/3" />
+							<div className="rounded-md bg-muted/40 h-10 w-full" />
+						</motion.div>
+					))}
+				</div>
+			) : (
+				<Card className="p-6 bg-gradient-to-br from-primary/5 to-transparent border-primary/20">
+					<AnimatePresence mode="wait">
+						<motion.div
+							key={activeTab}
+							initial={{ opacity: 0, y: 8 }}
+							animate={{ opacity: 1, y: 0 }}
+							exit={{ opacity: 0, y: -8 }}
+							transition={{ duration: 0.18 }}
+							className="min-h-[300px]"
+						>
+							{activeTab === "general" && (
+								<GeneralTab settings={settings} patch={patch} t={tOrders} />
+							)}
+
+							{activeTab === "automation" && (
+								<AutomationTab
+									settings={settings}
+									statuses={statuses}
+									patch={patch}
+									toggleCode={toggleCode}
+									t={tOrders}
+								/>
+							)}
+
+							{activeTab === "shipping" && (
+								<ShippingTab
+									settings={settings}
+									statuses={statuses}
+									shippingCompanies={shippingCompanies}
+									patchShipping={patchShipping}
+									t={tOrders}
+								/>
+							)}
+
+							{activeTab === "warehouse" && (
+								<WarehouseTab settings={settings} patch={patch} t={tOrders} />
+							)}
+
+							{activeTab === "notifications" && (
+								<NotificationsTab settings={settings} patch={patch} t={tOrders} />
+							)}
+						</motion.div>
+					</AnimatePresence>
+
+					{/* Footer Actions */}
+					<div className="flex justify-end pt-6 mt-6 border-t border-slate-200 dark:border-slate-800">
+						<Button
+							className="bg-primary hover:bg-primary/90 min-w-[140px]"
+							onClick={handleSave}
+							disabled={saving}
+						>
+							{saving ? (
+								<Loader2 className="w-4 h-4 mr-2 rtl:ml-2 rtl:mr-0 animate-spin" />
+							) : (
+								<Save className="w-4 h-4 mr-2 rtl:ml-2 rtl:mr-0" />
+							)}
+							{tSettings('common.saveChanges')}
+						</Button>
+					</div>
+				</Card>
+			)}
+		</div>
+	);
+}
 
 export default function SettingsPage() {
 	const t = useTranslations('settings');

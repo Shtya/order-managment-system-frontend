@@ -981,7 +981,6 @@
     "loading": "Loading...",
     "empty": "No roles found"
   },
-
   "settings": {
     "header": {
       "title": "Settings",
@@ -3826,7 +3825,16 @@
         "general": "General",
         "automation": "Automation",
         "shipping": "Shipping",
-        "notifications": "Notifications"
+        "notifications": "Notifications",
+        "warehouse": "Warehouse"
+      },
+      "warehouse": {
+        "flowTitle": "Order Processing Flow",
+        "flowSubtitle": "Determine where orders move after they are confirmed",
+        "flowLabel": "Next Step After Confirmation",
+        "afterConfirmation": "Move to Warehouse (Packing & Preparation)",
+        "directToShipping": "Direct to Shipping (Ready for Delivery)",
+        "flowHint": "If set to Warehouse, orders will require a packing step before labels are generated. If set to Shipping, confirmed orders will appear immediately in the shipping queue."
       },
       "enableRetry": "Enable Retry System",
       "enableRetryDesc": "If the customer does not answer, the system automatically retries contacting them several times until the order is received or retries are exhausted",
@@ -5034,7 +5042,11 @@
         "highlight": "always in front of you"
       },
       "subtitle": "Track your store performance moment by moment and control everything from one place.",
-      "chips": ["See all products and quantities in real time", "Get accurate reports to make faster decisions", "Track orders from confirmation to delivery"]
+      "chips": [
+        "See all products and quantities in real time",
+        "Get accurate reports to make faster decisions",
+        "Track orders from confirmation to delivery"
+      ]
     }
   },
   "marquee": {
@@ -5458,7 +5470,12 @@
     "welcome_sub": "It will only take a few minutes to set up your system",
     "welcome_desc": "We’ll help you choose the right plan, add your company details, and connect your store and shipping company so you can start receiving orders immediately.",
     "welcome_btn": "Let’s Start Setup",
-    "steps": ["Choose Your Plan", "Company Information", "Connect Store", "Shipping Company"],
+    "steps": [
+      "Choose Your Plan",
+      "Company Information",
+      "Connect Store",
+      "Shipping Company"
+    ],
     "plan": {
       "title": "Choose the right plan for you",
       "sub": "You can change the plan at any time",

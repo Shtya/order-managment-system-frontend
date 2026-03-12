@@ -375,7 +375,7 @@ export default function ManageSubscription({ userId, subscriptionId, onSaved }) 
                                                 onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
                                                 placeholder={
                                                     field.value === null
-                                                        ? (isFeeField ? t("manageSubscription.fields.notAllowed") : !limit.noInfinity ? null : "∞ Unlimited")
+                                                        ? (isFeeField ? t("manageSubscription.fields.notAllowed") : limit.noInfinity ? null : "∞ Unlimited")
                                                         : "0"
                                                 }
                                                 className={`${INPUT_CLS} ${field.value === null ? "border-primary/40 bg-primary/5 font-bold text-primary" : ""}`}

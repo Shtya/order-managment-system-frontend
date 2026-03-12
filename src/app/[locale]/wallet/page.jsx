@@ -24,163 +24,7 @@ function formatCurrency(n) {
 }
 
 // ─── Deposit Modal ────────────────────────────────────────────────────────────
-function DepositModal({ onClose, onDeposit, t }) {
-  const [amount, setAmount] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [err, setErr] = useState("");
 
-  async function submit(e) {
-    e.preventDefault();
-    const amt = parseFloat(amount);
-
-    if (!amount || isNaN(amt) || amt <= 0) {
-      setErr(t("validation.validAmount"));
-      return;
-    }
-
-    setSubmitting(true);
-    setErr("");
-
-    try {
-      await onDeposit(amt);
-    } catch (error) {
-      setErr(error?.response?.data?.message || t("errors.depositFailed"));
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ scale: 0.95, opacity: 0, y: 12 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.95, opacity: 0, y: 12 }}
-        transition={{ duration: 0.2 }}
-        onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-md mx-4 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-slate-800"
-      >
-        {/* Header */}
-        <div className="relative overflow-hidden px-6 py-5 bg-gradient-to-br from-primary/10 to-primary/5 border-b border-gray-200 dark:border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
-              <Plus size={24} className="text-white" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                {t("deposit.title")}
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {t("deposit.subtitle")}
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 flex items-center justify-center transition-colors"
-            >
-              <span className="text-gray-600 dark:text-gray-400">✕</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={submit} className="p-6 space-y-5">
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-              {t("deposit.amountLabel")}
-            </label>
-            <div className="relative">
-              <input
-                type="number"
-                step="0.01"
-                min="0.01"
-                value={amount}
-                onChange={(e) => {
-                  setAmount(e.target.value);
-                  setErr("");
-                }}
-                placeholder={t("deposit.amountPlaceholder")}
-                className="w-full h-12 px-4 pr-16 rounded-xl border-2 border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none"
-                disabled={submitting}
-              />
-              <span className="absolute end-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-gray-500 dark:text-gray-400">
-                {t("currency")}
-              </span>
-            </div>
-            {err && (
-              <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1.5">
-                <span>⚠</span> {err}
-              </p>
-            )}
-          </div>
-
-          {/* Quick amounts */}
-          <div className="space-y-2">
-            <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
-              {t("deposit.quickAmounts")}
-            </p>
-            <div className="grid grid-cols-4 gap-2">
-              {[100, 500, 1000, 5000].map((quick) => (
-                <button
-                  key={quick}
-                  type="button"
-                  onClick={() => setAmount(String(quick))}
-                  disabled={submitting}
-                  className="px-3 py-2 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-primary/10 dark:hover:bg-primary/20 border border-gray-200 dark:border-slate-700 hover:border-primary text-sm font-bold text-gray-700 dark:text-gray-300 transition-all disabled:opacity-50"
-                >
-                  {quick}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Info */}
-          <div className="flex items-start gap-2 p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-            <span className="text-blue-600 dark:text-blue-400 text-lg">ℹ️</span>
-            <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
-              {t("deposit.info")}
-            </p>
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={submitting}
-              className="flex-1 h-11 rounded-xl border-2 border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
-            >
-              {t("actions.cancel")}
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="flex-1 h-11 rounded-xl bg-gradient-to-r from-primary to-primary/90 text-white font-bold hover:shadow-lg hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 size={18} className="animate-spin" />
-                  {t("actions.processing")}
-                </>
-              ) : (
-                <>
-                  <Plus size={18} />
-                  {t("actions.topUp")}
-                </>
-              )}
-            </button>
-          </div>
-        </form>
-      </motion.div>
-    </motion.div>
-  );
-}
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 const WalletIcon = ({ size = 16 }) => (
@@ -351,5 +195,163 @@ export default function WalletPage() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+function DepositModal({ onClose, onDeposit, t }) {
+  const [amount, setAmount] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState("");
+
+  async function submit(e) {
+    e.preventDefault();
+    const amt = parseFloat(amount);
+
+    if (!amount || isNaN(amt) || amt <= 0) {
+      setErr(t("validation.validAmount"));
+      return;
+    }
+
+    setSubmitting(true);
+    setErr("");
+
+    try {
+      await onDeposit(amt);
+    } catch (error) {
+      setErr(error?.response?.data?.message || t("errors.depositFailed"));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0, y: 12 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 12 }}
+        transition={{ duration: 0.2 }}
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-md mx-4 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-slate-800"
+      >
+        {/* Header */}
+        <div className="relative overflow-hidden px-6 py-5 bg-gradient-to-br from-primary/10 to-primary/5 border-b border-gray-200 dark:border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
+              <Plus size={24} className="text-white" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                {t("deposit.title")}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {t("deposit.subtitle")}
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 flex items-center justify-center transition-colors"
+            >
+              <span className="text-gray-600 dark:text-gray-400">✕</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={submit} className="p-6 space-y-5">
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+              {t("deposit.amountLabel")}
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                value={amount}
+                onChange={(e) => {
+                  setAmount(e.target.value);
+                  setErr("");
+                }}
+                placeholder={t("deposit.amountPlaceholder")}
+                className="w-full h-12 px-4 pr-16 rounded-xl border-2 border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+                disabled={submitting}
+              />
+              <span className="absolute end-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-gray-500 dark:text-gray-400">
+                {t("currency")}
+              </span>
+            </div>
+            {err && (
+              <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1.5">
+                <span>⚠</span> {err}
+              </p>
+            )}
+          </div>
+
+          {/* Quick amounts */}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+              {t("deposit.quickAmounts")}
+            </p>
+            <div className="grid grid-cols-4 gap-2">
+              {[100, 500, 1000, 5000].map((quick) => (
+                <button
+                  key={quick}
+                  type="button"
+                  onClick={() => setAmount(String(quick))}
+                  disabled={submitting}
+                  className="px-3 py-2 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-primary/10 dark:hover:bg-primary/20 border border-gray-200 dark:border-slate-700 hover:border-primary text-sm font-bold text-gray-700 dark:text-gray-300 transition-all disabled:opacity-50"
+                >
+                  {quick}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Info */}
+          <div className="flex items-start gap-2 p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+            <span className="text-blue-600 dark:text-blue-400 text-lg">ℹ️</span>
+            <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
+              {t("deposit.info")}
+            </p>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={submitting}
+              className="flex-1 h-11 rounded-xl border-2 border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+            >
+              {t("actions.cancel")}
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="flex-1 h-11 rounded-xl bg-gradient-to-r from-primary to-primary/90 text-white font-bold hover:shadow-lg hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  {t("actions.processing")}
+                </>
+              ) : (
+                <>
+                  <Plus size={18} />
+                  {t("actions.topUp")}
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </motion.div>
   );
 }

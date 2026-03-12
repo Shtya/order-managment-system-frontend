@@ -1,0 +1,189 @@
+import { useEffect, useState, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+    Loader2,
+    ShoppingCart,
+    CheckCircle2,
+    AlertCircle,
+    ExternalLink,
+    Search,
+    CreditCard
+} from "lucide-react";
+import { useTranslations } from "next-intl";
+import api from "@/utils/api";
+import toast from "react-hot-toast";
+import Table from "@/components/atoms/Table";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/utils/cn";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+function formatCurrency(amount) {
+    if (amount === undefined || amount === null) return "—";
+    // تنسيق الرقم مع إضافة "ج.م"
+    return Number(amount).toLocaleString("ar-EG") + " ج.م";
+}
+
+export default function PurchasedFeaturesTab() {
+    const tf = useTranslations("extraFeatures");
+    const t = useTranslations("plans");
+
+    const [features, setFeatures] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [search, setSearch] = useState('');
+    const [purchasingId, setPurchasingId] = useState(null);
+
+    const fetchUserFeatures = async () => {
+        try {
+            setLoading(true);
+            // استدعاء المسار الجديد الذي يدمج الميزات مع حالة اشتراك المستخدم
+            const { data } = await api.get("/extra-features/user");
+            setFeatures(data);
+        } catch (error) {
+            toast.error(tf("messages.fetchFailed") || "Error fetching features");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchUserFeatures();
+    }, []);
+
+    const handlePurchase = async (featureId) => {
+        try {
+            setPurchasingId(featureId);
+            const { data } = await api.post("/extra-features/purchase-addon", { featureId });
+
+            if (data.checkoutUrl) {
+                toast.success(tf("messages.redirecting") || "Redirecting to payment...");
+                // فتح رابط الدفع في نافذة جديدة
+                window.location.href = data.checkoutUrl;
+            } else {
+                toast.error("Checkout URL not found");
+            }
+        } catch (error) {
+            toast.error(error?.response?.data?.message || "Purchase failed");
+        } finally {
+            setPurchasingId(null);
+        }
+    };
+
+    const filteredFeatures = useMemo(() => {
+        if (!search) return features;
+        const lower = search.toLowerCase();
+        return features.filter(f =>
+            f.name.toLowerCase().includes(lower) ||
+            f.type.toLowerCase().includes(lower)
+        );
+    }, [features, search]);
+
+    const columns = useMemo(() => [
+        {
+            key: "name",
+            header: tf("columns.featureName").trim(),
+            cell: (row) => (
+                <div className="flex flex-col">
+                    <span className="font-bold text-slate-900 dark:text-slate-100">{row.name.trim()}</span>
+                    <span className="text-[10px] uppercase text-muted-foreground font-medium tracking-wider">{row.type}</span>
+                </div>
+            ),
+        },
+        {
+            key: "price",
+            header: tf("columns.price").trim(),
+            cell: (row) => (
+                <div className="flex items-center gap-1 font-semibold text-blue-600 dark:text-blue-400">
+                    {/* تم استبدال USD بـ ج.م من خلال function التنسيق */}
+                    <span className="font-mono">{formatCurrency(row.price)}</span>
+                </div>
+            ),
+        },
+        {
+            key: "status",
+            header: tf("columns.status").trim(),
+            cell: (row) => {
+                const isSubscribed = !!row.subscription;
+                return (
+                    <Badge
+                        variant="outline"
+                        className={cn(
+                            "text-[11px] px-3 py-0.5 rounded-full border shadow-sm",
+                            isSubscribed
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400"
+                                : "bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-900/50"
+                        )}
+                    >
+                        {isSubscribed ? (
+                            <div className="flex items-center gap-1">
+                                <CheckCircle2 size={12} />
+                                {tf("status.active").trim()}
+                            </div>
+                        ) : (
+                            tf("status.notSubscribed").trim()
+                        )}
+                    </Badge>
+                );
+            },
+        },
+        {
+            key: "actions",
+            header: tf("columns.actions").trim(),
+            cell: (row) => (
+                <div className="flex items-center justify-end">
+                    {row.subscription ? (
+                        <div className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100">
+                            {tf("messages.alreadyOwned").trim()}
+                        </div>
+                    ) : (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => handlePurchase(row.id)}
+                                        disabled={purchasingId === row.id}
+                                        className="h-9 px-4 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-md shadow-emerald-200 dark:shadow-none disabled:opacity-50"
+                                    >
+                                        {purchasingId === row.id ? (
+                                            <Loader2 size={14} className="animate-spin" />
+                                        ) : (
+                                            <ShoppingCart size={14} />
+                                        )}
+                                        {/* <span className="text-xs font-bold">{tf("actions.purchase").trim()}</span> */}
+                                    </motion.button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    {tf("tooltips.purchaseNow").trim()}
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
+                </div>
+            ),
+        }
+    ], [tf, purchasingId]);
+
+    return (
+        <div className="space-y-4">
+            <Table
+                searchValue={search}
+                onSearchChange={setSearch}
+                labels={{
+                    searchPlaceholder: tf("toolbar.searchPlaceholder").trim(),
+                    total: t("pagination.total").trim(),
+                    emptyTitle: tf("messages.noFeaturesFound").trim(),
+                }}
+                columns={columns}
+                data={filteredFeatures}
+                isLoading={loading}
+                pagination={null}
+            />
+        </div>
+    );
+}

@@ -826,7 +826,10 @@
 			"resetAndShow": "إعادة تعيين وعرض كلمة المرور",
 			"sendWhatsapp": "إرسال عبر واتساب",
 			"openWhatsapp": "فتح واتساب",
-			"manageSubscription": "إدارة الاشتراك"
+			"manageSubscription": "إدارة الاشتراك الحالي",
+			"addSubscription": "إضافة اشتراك جديد",
+			"manageFeatures": "إدارة المميزات",
+			"manageWallet": "إدارة المحفظة"
 		},
 		"loading": "جاري التحميل...",
 		"empty": "لا يوجد مستخدمون",
@@ -1051,7 +1054,16 @@
 		},
 		"toolbar": {
 			"addRole": "إضافة دور",
-			"searchPlaceholder": "ابحث عن دور..."
+			"searchPlaceholder": "ابحث عن دور...",
+			"filter": "الفلاتر"
+		},
+		"filters": {
+			"name": "الاسم",
+			"namePlaceholder": "اسم الدور (Role)",
+			"type": "النوع",
+			"typePlaceholder": "عام / مخصص (global / custom)",
+			"apply": "تطبيق",
+			"datePlaceholder": "اختر التاريخ"
 		},
 		"stats": {
 			"totalRoles": "إجمالي الأدوار",
@@ -4728,6 +4740,9 @@
 				"subscriptionForm": "بيانات الاشتراك"
 			},
 			"fields": {
+				"endDate": "تاريخ الانتهاء",
+				"usedOrders": "الطلبات المستخدمة",
+				"extraFeePlaceholder": "القيمة الفارغة = غير مسموح بتجاوز الحد",
 				"userName": "اسم المستخدم",
 				"userEmail": "البريد الإلكتروني",
 				"userPhone": "رقم الهاتف",
@@ -4737,20 +4752,34 @@
 				"price": "السعر",
 				"payed": "تم الدفع",
 				"paymentMethod": "طريقة الدفع",
+				"duration": "نوع المدة",
+				"customDays": "المدة بالأيام",
+				"includedOrders": "عدد الطلبات المضمنة",
+				"extraOrderFee": "رسوم الطلب الإضافي",
 				"usersLimit": "حد المستخدمين",
+				"storesLimit": "حد المتاجر",
 				"shippingLimit": "حد شركات الشحن",
-				"bulkUploadLimit": "حد الرفع الشهري"
+				"bulkUpload": "الرفع الجماعي شهريًا",
+				"unlimited": "غير محدود",
+				"customOverride": "تخصيص القيم",
+				"notAllowed": "غير مسموح",
+				"noExceed": "تم تعطيل تجاوز الحد"
 			},
-			"placeholders": {
-				"plan": "اختر الخطة",
-				"price": "أدخل السعر (اختياري)",
-				"paymentMethod": "اختر طريقة الدفع"
+			"tooltips": {
+				"unlimited": "تعيين كغير محدود",
+				"setUnlimited": "تعيين كغير محدود",
+				"setDisabled": "تعطيل تجاوز الحد"
 			},
 			"hints": {
-				"priceOverride": "اتركه فارغاً لاستخدام سعر الخطة الافتراضي",
-				"payed": "فعّل إذا تم الدفع بالفعل"
+				"customOverride": "قم بتفعيل هذا الخيار لتحديد حدود مخصصة لهذا الاشتراك بدلاً من القيم الافتراضية للخطة."
+			},
+			"placeholders": {
+				"enterDays": "مثال: 30",
+				"enterLimit": "أدخل قيمة الحد"
 			},
 			"messages": {
+				"planSelected": "تم تطبيق إعدادات الباقة",
+				"saveSuccess": "تم حفظ بيانات الاشتراك بنجاح",
 				"createSuccess": "تم إنشاء الاشتراك بنجاح",
 				"updateSuccess": "تم تحديث الاشتراك بنجاح"
 			},
@@ -4762,25 +4791,43 @@
 				"userNotFound": "المستخدم غير موجود"
 			}
 		},
+		"durations": {
+			"monthly": "شهري",
+			"yearly": "سنوي",
+			"lifetime": "مدى الحياة",
+			"quarterly": "ربع سنوي",
+			"semi_annual": "نصف سنوي",
+			"custom": "مخصص (بالأيام)"
+		},
 		"tabs": {
 			"plans": "إدارة الباقات",
 			"transactions": "جميع المعاملات",
-			"subscriptions": "الاشتراكات"
+			"subscriptions": "الاشتراكات",
+			"features": "قائمة المميزات",
+			"userFeatures": "اشتراكات المستخدمين"
 		},
 		"breadcrumb": {
 			"home": "الرئيسية",
 			"subscriptions": "إدارة الاشتراكات"
 		},
 		"columns": {
+			"purpose": "الغرض من العملية",
 			"transactionId": "معرف المعاملة",
 			"user": "المستخدم",
-			"subscription": "الاشتراك",
 			"amount": "المبلغ",
 			"status": "الحالة",
 			"paymentMethod": "طريقة الدفع",
 			"paymentProof": "إثبات الدفع",
 			"createdAt": "تاريخ الإنشاء",
-			"lastUpdate": "آخر تحديث"
+			"lastUpdate": "آخر تحديث",
+			"feature": "الميزة المشتراة",
+			"subscription": "باقة الاشتراك"
+		},
+		"purposes": {
+			"wallet_top_up": "شحن محفظة",
+			"subscription_payment": "دفع اشتراك",
+			"feature_purchase": "شراء مميزات",
+			"wallet_withdrawal": "سحب من المحفظة"
 		},
 		"actions": {
 			"addSubscription": "إضافة اشتراك",
@@ -4813,13 +4860,18 @@
 			"date": "التاريخ",
 			"datePlaceholder": "اختر فترة",
 			"all": "الكل",
-			"apply": "تطبيق"
+			"apply": "تطبيق",
+			"purpose": "غرض الدفع",
+			"purposePlaceholder": "اختر الغرض",
+			"cancel": "إلغاء"
 		},
 		"statuses": {
-			"active": "نشطة",
-			"processing": "قيد المعالجة",
-			"completed": "مكتملة",
-			"cancelled": "ملغاة"
+			"success": "ناجحة",
+			"pending": "قيد الانتظار",
+			"failed": "فاشلة",
+			"cancelled": "ملغاة",
+			"refunded": "مستردة",
+			"active": "نشطة"
 		},
 		"toolbar": {
 			"export": "تصدير",
@@ -4909,6 +4961,84 @@
 			"title": "حذف الباقة",
 			"confirmText": "هل أنت متأكد من حذف هذه الباقة؟ لا يمكن التراجع.",
 			"deleting": "جاري الحذف..."
+		},
+		"paymentMethods": {
+			"card": "بطاقة ائتمان",
+			"wallet": "محفظة إلكترونية",
+			"manual_adjustment": "يدوي من الأدمن",
+			"cash": "نقدي (كاش)",
+			"visa": "بطاقة ائتمان (فيزا/ماستركارد)",
+			"bank": "تحويل بنكي",
+			"other": "وسيلة أخرى",
+			"vodafone_cash": "فودافون كاش",
+			"orange_cash": "أورانج كاش",
+			"etisalat_cash": "اتصالات كاش",
+			"we_pay": "وي باي (WE Pay)",
+			"insta": "إنستا باي (InstaPay)",
+			"fawry": "فوري",
+			"aman": "أمان",
+			"meeza": "ميزة",
+			"valu": "فالو (valU)",
+			"sympl": "سيمبل (Sympl)",
+			"tabby": "تابي (Tabby)",
+			"tamara": "تمارا (Tamara)"
+		}
+	},
+	"extraFeatures": {
+		"assignModal": {
+			"title": "إدارة مميزات المستخدم",
+			"userHas": "المميزات النشطة حالياً",
+			"selectFeature": "اختر ميزة جديدة",
+			"alreadyOwned": "يمتلك هذه الميزة بالفعل",
+			"noFeatures": "لا توجد مميزات نشطة حالياً",
+			"assign": "تخصيص الميزة",
+			"price": "سعر التخصيص",
+			"paymentMethod": "طريقة الدفع"
+		},
+		"columns": {
+			"featureName": "اسم الميزة",
+			"featureType": "نوع الميزة",
+			"paidPrice": "السعر المدفوع",
+			"price": "السعر",
+			"isActive": "نشط؟",
+			"purchaseDate": "تاريخ الشراء",
+			"actions": "إجراءات",
+			"status": "الحالة"
+		},
+		"status": {
+			"active": "نشط",
+			"notSubscribed": "غير مشترك"
+		},
+		"filters": {
+			"feature": "الميزة",
+			"featurePlaceholder": "اختر الميزة",
+			"cancel": "إلغاء"
+		},
+		"tooltips": {
+			"purchaseNow": "إتمام عملية الشراء والاشتراك"
+		},
+		"toolbar": {
+			"searchPlaceholder": "بحث عن ميزة..."
+		},
+		"actions": {
+			"editFeature": "تعديل الميزة",
+			"purchase": "شراء الآن"
+		},
+		"modal": {
+			"editTitle": "تعديل بيانات الميزة",
+			"name": "الاسم",
+			"price": "السعر",
+			"isActive": "تفعيل الميزة",
+			"save": "حفظ التغييرات",
+			"cancel": "إلغاء"
+		},
+		"messages": {
+			"updateSuccess": "تم تحديث الميزة بنجاح",
+			"updateFailed": "حدث خطأ أثناء تحديث الميزة",
+			"fetchFailed": "فشل في جلب الميزات",
+			"redirecting": "جاري توجيهك لصفحة الدفع...",
+			"alreadyOwned": "تم الشراء مسبقاً",
+			"noFeaturesFound": "لا توجد ميزات متاحة حالياً"
 		}
 	},
 	"subscriptions": {
@@ -4916,14 +5046,63 @@
 			"home": "الرئيسية",
 			"subscriptions": "الاشتراكات"
 		},
-		"tabs": {
-			"plans": "الخطط",
-			"transactions": "المعاملات"
+		"limits": {
+			"users": "المستخدمين",
+			"stores": "المتاجر",
+			"shipping": "شركات الشحن",
+			"orders": "الطلبات المتضمنة",
+			"extraFee": "رسوم الطلب الإضافي",
+			"bulkUpload": "رفع الطلبات/شهرياً",
+			"unlimited": "غير محدود",
+			"notAllowed": "غير مسموح"
 		},
 		"duration": {
-			"monthly": "شهريًا",
-			"yearly": "سنويًا",
-			"lifetime": "مدى الحياة"
+			"monthly": "شهرياً",
+			"yearly": "سنوياً",
+			"lifetime": "مدى الحياة",
+			"days": "يوم"
+		},
+		"activeAlert": {
+			"title": "لديك اشتراك نشط",
+			"message": "لا يمكنك الاشتراك في باقة أخرى أثناء وجود اشتراك نشط. يرجى إلغاء اشتراكك الحالي أولاً."
+		},
+		"cancel": {
+			"title": "إلغاء الاشتراك؟",
+			"message": "هل أنت متأكد من رغبتك في إلغاء اشتراكك الحالي؟ لا يمكن التراجع عن هذا الإجراء.",
+			"yes": "نعم، إلغاء",
+			"no": "لا، الإبقاء عليه"
+		},
+		"success": {
+			"subscribed": "تم الاشتراك في الباقة بنجاح!",
+			"cancelled": "تم إلغاء الاشتراك بنجاح"
+		},
+		"dialogs": {
+			"cancelSubTitle": "تأكيد إلغاء الاشتراك",
+			"cancelSubDesc": "هل أنت متأكد أنك تريد إلغاء الاشتراك النشط لـ",
+			"inPlan": "في خطة",
+			"cancelWarning": "ملاحظة: سيتم إيقاف الميزات المتاحة في هذه الخطة فوراً."
+		},
+		"actions": {
+			"cancelSubscription": "إلغاء الاشتراك",
+			"confirmCancel": "نعم، قم بالإلغاء",
+			"subscribe": "اشترك الآن",
+			"cancel": "إلغاء الاشتراك",
+			"hasActive": "لديك اشتراك نشط",
+			"trialNotAllowed": "النسخة التجريبية غير متاحة",
+			"contactToSubscribe": "تواصل للاشتراك"
+		},
+		"tabs": {
+			"plans": "الخطط",
+			"transactions": "المعاملات",
+			"features": "قائمة المميزات",
+			"subscriptionsHistory": "تاريخ الإشتراكات",
+			"history": "سجل الاشتراكات"
+		},
+		"durations": {
+			"monthly": "شهرياً",
+			"yearly": "سنوياً",
+			"lifetime": "مدى الحياة",
+			"custom": "مخصص"
 		},
 		"card": {
 			"currency": "ج.م",
@@ -4932,7 +5111,9 @@
 			"popular": "الأكثر طلبًا",
 			"active": "نشط",
 			"subscribe": "اشترك الآن",
-			"cancelPlan": "إلغاء الخطة"
+			"cancelPlan": "إلغاء الخطة",
+			"negotiated": "حسب الاتفاق",
+			"trial": "تجريبي"
 		},
 		"banner": {
 			"currentPlan": "خطتك الحالية",
@@ -4943,7 +5124,78 @@
 			"subtitle": "سيتم إضافة الخطط قريبًا، تحقق مرة أخرى لاحقًا."
 		},
 		"errors": {
-			"fetchPlans": "تعذّر تحميل الخطط، حاول مجددًا."
+			"fetchPlans": "تعذّر تحميل الخطط، حاول مجددًا.",
+			"fetchUserFailed": "فشل تحميل معلومات المستخدم",
+			"fetchPlansFailed": "فشل تحميل الباقات",
+			"subscribeFailed": "فشل الاشتراك في الباقة",
+			"cancelFailed": "فشل إلغاء الاشتراك"
+		},
+		"title": "إدارة الاشتراكات",
+		"emptyTitle": "لا توجد اشتراكات",
+		"emptySubtitle": "لم يتم العثور على أي بيانات اشتراك تطابق معايير البحث الخاصة بك.",
+		"columns": {
+			"user": "المستخدم",
+			"plan": "الباقة",
+			"usage": "استهلاك الطلبات",
+			"limits": "الحدود المتاحة",
+			"price": "التكلفة",
+			"status": "الحالة",
+			"duration": "فترة الاشتراك",
+			"actions": "الإجراءات"
+		},
+		"status_labels": {
+			"deleted_plan": "باقة محذوفة",
+			"unlimited_access": "استهلاك مفتوح",
+			"excess_not_allowed": "تجاوز الباقة غير مسموح",
+			"per_extra_order": "للطلب الإضافي",
+			"free_excess": "تجاوز مجاني"
+		},
+		"units": {
+			"orders": "طلب",
+			"day": "يوم",
+			"days": "{count, plural, =1 {يوم} =2 {يومان} one {يوم} two {يومان} few {# أيام} many {# يوماً} other {# يوم}}"
+		},
+		"labels": {
+			"from": "من",
+			"to": "إلى"
+		},
+		"statuses": {
+			"active": "نشط",
+			"pending": "قيد الانتظار",
+			"expired": "منتهي",
+			"cancelled": "ملغي"
+		},
+		"toolbar": {
+			"searchPlaceholder": "البحث عن مستخدم، بريد إلكتروني، أو باقة...",
+			"filter": "تصفية",
+			"export": "تصدير البيانات"
+		},
+		"filters": {
+			"users": "المستخدمين",
+			"stores": "المتاجر",
+			"shipping": "شركات الشحن",
+			"bulk": "الرفع الجماعي",
+			"status": "حالة الاشتراك",
+			"statusPlaceholder": "اختر الحالة",
+			"all": "كل الحالات",
+			"date": "نطاق التاريخ",
+			"datePlaceholder": "اختر نطاق التاريخ",
+			"apply": "تطبيق الفلاتر"
+		},
+		"pagination": {
+			"total": "إجمالي السجلات",
+			"limit": "عرض"
+		},
+		"messages": {
+			"errorFetching": "حدث خطأ أثناء جلب بيانات الاشتراكات.",
+			"filtersApplied": "تم تطبيق الفلاتر بنجاح",
+			"exportStarted": "بدأت عملية التصدير، يرجى الانتظار...",
+			"exportSuccess": "تم تصدير ملف الاشتراكات بنجاح",
+			"exportFailed": "فشل تصدير الملف، يرجى المحاولة مرة أخرى",
+			"cancelSuccess": "تم إلغاء الاشتراك بنجاح",
+			"cancelError": "حدث خطأ أثناء محاولة إلغاء الاشتراك، يرجى المحاولة لاحقاً",
+			"error": "حدث خطأ غير متوقع",
+			"whatsappInterested": "مرحباً، أنا مهتم بخطة {planName} وأود معرفة المزيد من التفاصيل."
 		}
 	},
 	"pagination": {
@@ -5394,6 +5646,9 @@
 			"signup": "إنشاء حساب"
 		},
 		"signin": {
+			"session_expired": "انتهت صلاحية الجلسة، يرجى تسجيل الدخول مجدداً",
+			"no_permission": "عذراً، ليس لديك الصلاحية للوصول إلى هذه الصفحة",
+			"invalid_credentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
 			"title": "أهلاً بعودتك",
 			"subtitle": "أدخل بياناتك للمتابعة",
 			"email": "البريد الإلكتروني",
@@ -5540,19 +5795,50 @@
 			"ربط المتجر",
 			"شركة الشحن"
 		],
-		"plan": {
-			"title": "اختر الخطة المناسبة لك",
-			"sub": "يمكنك تغيير الخطة في أي وقت",
-			"popular": "الأكثر طلباً",
+		"plans": {
+			"title": "اختر باقتك",
+			"subtitle": "اختر الباقة التي تناسب احتياجات عملك بشكل أفضل. يمكنك دائماً الترقية أو التغيير لاحقاً.",
+			"loading": "جارٍ تحميل الباقات...",
+			"popular": "شائعة",
+			"active": "نشطة",
+			"trial": "تجريبي",
+			"negotiated": "حسب الاتفاق",
 			"currency": "ج.م",
-			"per_month": "/ شهر",
-			"per_year": "/ سنة",
-			"lifetime": "مدى الحياة",
-			"users": "مستخدم",
-			"shipping": "شركة شحن",
-			"subscribe": "اختيار هذه الخطة",
-			"current": "خطتك الحالية",
-			"loading": "جارٍ تحميل الخطط…"
+			"whatsappMessage": "مرحباً، أنا مهتم بخطة {planName}",
+			"duration": {
+				"monthly": "شهرياً",
+				"yearly": "سنوياً",
+				"lifetime": "مدى الحياة",
+				"days": "يوم"
+			},
+			"limits": {
+				"users": "المستخدمين",
+				"stores": "المتاجر",
+				"shipping": "شركات الشحن",
+				"orders": "الطلبات المتضمنة",
+				"extraFee": "رسوم الطلب الإضافي",
+				"bulkUpload": "رفع الطلبات/شهرياً",
+				"unlimited": "غير محدود"
+			},
+			"actions": {
+				"subscribe": "اختر هذه الباقة",
+				"cancel": "إلغاء الاشتراك",
+				"contactUs": "تواصل معنا عبر واتساب",
+				"hasActive": "لديك اشتراك نشط",
+				"trialNotAllowed": "النسخة التجريبية غير متاحة",
+				"skip": "تخطي الآن",
+				"continue": "المتابعة"
+			},
+			"activeAlert": {
+				"title": "لديك اشتراك نشط",
+				"message": "أنت مشترك حالياً في باقة. يمكنك المتابعة إلى الخطوة التالية أو إلغاء اشتراكك الحالي إذا كنت ترغب في اختيار باقة مختلفة."
+			},
+			"cancel": {
+				"title": "إلغاء الاشتراك؟",
+				"message": "هل أنت متأكد من رغبتك في إلغاء اشتراكك الحالي؟ لا يمكن التراجع عن هذا الإجراء.",
+				"yes": "نعم، إلغاء",
+				"no": "لا، الإبقاء عليه"
+			}
 		},
 		"company": {
 			"title": "بيانات شركتك",
@@ -5617,16 +5903,56 @@
 		}
 	},
 	"wallet": {
+		"pageSubtitle": "إدارة رصيد محفظتك والمعاملات المالية",
+		"loading": "جارٍ تحميل بيانات المحفظة...",
+		"currency": "ريال",
+		"transactions": {
+			"title": "المعاملات المالية",
+			"subtitle": "تتبع جميع عمليات الإيداع والسحب"
+		},
+		"deposit": {
+			"title": "شحن المحفظة",
+			"subtitle": "أضف رصيد إلى محفظتك",
+			"amountLabel": "المبلغ المراد شحنه",
+			"amountPlaceholder": "أدخل المبلغ",
+			"quickAmounts": "مبالغ سريعة",
+			"info": "سيتم تحويلك إلى صفحة الدفع لإتمام عملية الشحن بشكل آمن",
+			"cta": "إيداع الآن"
+		},
+		"errors": {
+			"fetchWalletFailed": "فشل في تحميل بيانات المحفظة",
+			"depositFailed": "فشل في بدء عملية الشحن",
+			"noCheckoutUrl": "لم يتم توفير رابط الدفع",
+			"withdrawFailed": "فشل في عملية السحب"
+		},
+		"messages": {
+			"depositSuccess": "تم بدء عملية الشحن بنجاح",
+			"withdrawSuccess": "تم طلب السحب بنجاح",
+			"redirecting": "جارٍ التحويل إلى صفحة الدفع..."
+		},
 		"pageTitle": "المحفظة",
 		"breadcrumb": {
-			"dashboard": "الرئيسية",
+			"home": "الرئيسية",
 			"wallet": "المحفظة"
+		},
+		"controlModal": {
+			"title": "إدارة محفظة المستخدم",
+			"currentBalance": "الرصيد الحالي",
+			"totalCharged": "إجمالي المشحون",
+			"totalWithdrawn": "إجمالي المسحوب",
+			"adjustTitle": "تعديل الرصيد",
+			"amountLabel": "القيمة (موجب للإضافة / سالب للخصم)",
+			"noteLabel": "ملاحظات التعديل",
+			"submit": "تحديث الرصيد",
+			"success": "تم تحديث المحفظة بنجاح"
 		},
 		"stats": {
 			"walletBalance": "رصيد المحفظة",
 			"available": "الرصيد المتاح",
 			"pendingCOD": "الدفع عند الاستلام المعلق",
-			"totalWithdrawn": "إجمالي المسحوبات"
+			"currentBalance": "الرصيد الحالي",
+			"totalCharged": "إجمالي الشحن",
+			"totalWithdrawn": "إجمالي السحب"
 		},
 		"tabs": {
 			"all": "الكل",
@@ -5637,19 +5963,16 @@
 		"actions": {
 			"deposit": "إيداع",
 			"withdraw": "سحب",
-			"export": "تصدير"
+			"export": "تصدير",
+			"cancel": "إلغاء",
+			"topUp": "شحن المحفظة",
+			"processing": "جارٍ المعالجة..."
 		},
 		"methods": {
 			"vodafoneCash": "فودافون كاش",
 			"instapay": "انستاباي",
 			"bankTransfer": "تحويل بنكي",
 			"walletMethod": "محفظة"
-		},
-		"deposit": {
-			"title": "إيداع رصيد",
-			"subtitle": "أضف أموالاً فوراً إلى محفظتك",
-			"amountLabel": "المبلغ (جنيه مصري)",
-			"cta": "إيداع الآن"
 		},
 		"withdraw": {
 			"title": "سحب الرصيد",
@@ -5819,214 +6142,315 @@
 		}
 	},
 	"settings": {
-    "breadcrumb": {
-      "home": "الرئيسية"
-    },
-    "header": {
-      "title": "الإعدادات",
-      "refresh": "تحديث"
-    },
-    "common": {
-      "saveChanges": "حفظ التغييرات",
-      "cancel": "إلغاء",
-      "delete": "حذف",
-      "deleting": "جارٍ الحذف...",
-      "error": "حدث خطأ، حاول مجدداً"
-    },
-    "tabs": {
-      "company": {
-        "label": "الشركة",
-        "description": "معلومات شركتك الأساسية والبيانات التجارية"
-      },
-      "configuration": {
-        "label": "الإعدادات",
-        "description": "إعدادات النظام والأتمتة والشحن"
-      },
-      "categories": {
-        "label": "التصنيفات",
-        "description": "إدارة تصنيفات المنتجات"
-      },
-      "account": {
-        "label": "الحساب",
-        "description": "معلوماتك الشخصية وبيانات حسابك"
-      },
-      "security": {
-        "label": "الأمان",
-        "description": "كلمة المرور والبريد الإلكتروني"
-      },
-      "notifications": {
-        "label": "الإشعارات",
-        "description": "إدارة تفضيلات الإشعارات"
-      }
-    },
-    "company": {
-      "saveSuccess": "تم حفظ بيانات الشركة بنجاح",
-      "placeholderName": "اسم شركتك",
-      "noCountry": "الدولة",
-      "validation": {
-        "countryRequired": "الدولة مطلوبة",
-        "currencyRequired": "العملة مطلوبة",
-        "nameRequired": "اسم الشركة مطلوب",
-        "businessRequired": "نوع النشاط التجاري مطلوب",
-        "invalidUrl": "يجب أن يبدأ الرابط بـ http:// أو https://"
-      },
-      "form": {
-        "companyName": "اسم الشركة",
-        "companyNamePlaceholder": "أدخل اسم شركتك",
-        "country": "الدولة",
-        "selectCountry": "اختر الدولة",
-        "currency": "العملة",
-        "selectCurrency": "اختر العملة",
-        "phone": "رقم الهاتف",
-        "website": "الموقع الإلكتروني",
-        "taxNumber": "الرقم الضريبي",
-        "commercialRegister": "السجل التجاري",
-        "address": "العنوان"
-      }
-    },
-    "categories": {
-      "title": "التصنيفات",
-      "subtitle": "أضف وعدّل تصنيفات منتجاتك",
-      "addButton": "إضافة تصنيف",
-      "addForm": {
-        "title": "إضافة تصنيف جديد"
-      },
-      "editForm": {
-        "title": "تعديل التصنيف"
-      },
-      "form": {
-        "name": "الاسم",
-        "namePlaceholder": "أدخل اسم التصنيف",
-        "slug": "المسار (slug)",
-        "save": "حفظ",
-        "cancel": "إلغاء"
-      },
-      "global": {
-        "badge": "افتراضي",
-        "lockedToast": "لا يمكن تعديل التصنيفات الافتراضية",
-        "lockedHint": "هذا التصنيف محمي ولا يمكن تعديله"
-      },
-      "list": {
-        "edit": "تعديل",
-        "delete": "حذف",
-        "toggleStatus": "تبديل الحالة"
-      },
-      "dialogs": {
-        "delete": {
-          "title": "تأكيد الحذف",
-          "description": "هل أنت متأكد من حذف تصنيف \"{name}\"؟",
-          "warning": "هذا الإجراء لا يمكن التراجع عنه."
-        }
-      },
-      "toast": {
-        "updating": "جارٍ التحديث...",
-        "updated": "تم تحديث التصنيف بنجاح",
-        "creating": "جارٍ الإنشاء...",
-        "created": "تم إنشاء التصنيف بنجاح",
-        "deleted": "تم حذف التصنيف بنجاح",
-        "duplicating": "جارٍ النسخ...",
-        "duplicated": "تم نسخ التصنيف بنجاح"
-      },
-      "common": {
-        "cancel": "إلغاء",
-        "delete": "حذف",
-        "deleting": "جارٍ الحذف..."
-      }
-    },
-    "account": {
-      "title": "الحساب الشخصي",
-      "subtitle": "إدارة معلوماتك الشخصية وبيانات اتصالك",
-      "profile": {
-        "fullName": "الاسم الكامل",
-        "email": "البريد الإلكتروني",
-        "role": "الدور",
-        "plan": "الخطة",
-        "userId": "معرّف المستخدم",
-        "adminId": "معرّف المسؤول",
-        "employeeType": "نوع الموظف",
-        "saveChanges": "حفظ التغييرات",
-        "changePhoto": "تغيير الصورة الشخصية"
-      },
-      "phone": {
-        "label": "رقم الجوال",
-        "countryPlaceholder": "الدولة",
-        "invalid": "رقم الجوال غير صحيح"
-      },
-      "toast": {
-        "saving": "جارٍ الحفظ...",
-        "saved": "تم حفظ البيانات بنجاح",
-        "uploadingAvatar": "جارٍ رفع الصورة...",
-        "avatarUpdated": "تم تحديث الصورة الشخصية بنجاح"
-      },
-      "errors": {
-        "missingMeEndpoint": "تعذّر جلب بيانات المستخدم",
-        "missingAvatarEndpoint": "تعذّر رفع الصورة الشخصية"
-      }
-    },
-    "security": {
-      "title": "الأمان",
-      "subtitle": "إدارة كلمة المرور والبريد الإلكتروني لحسابك",
-      "tabs": {
-        "password": {
-          "label": "كلمة المرور"
-        },
-        "email": {
-          "label": "البريد الإلكتروني"
-        }
-      },
-      "form": {
-        "old_password": "كلمة المرور الحالية",
-        "new_password": "كلمة المرور الجديدة",
-        "confirm_password": "تأكيد كلمة المرور",
-        "update_password": "تحديث كلمة المرور",
-        "new_email": "البريد الإلكتروني الجديد",
-        "send_otp": "إرسال رمز التحقق"
-      },
-      "errors": {
-        "mismatch": "كلمتا المرور غير متطابقتين",
-        "failed": "فشل تحديث كلمة المرور",
-        "pw_weak": "كلمة المرور ضعيفة جداً",
-        "failedSendEmailOTP": "فشل إرسال رمز التحقق"
-      },
-      "password_success": "تم تحديث كلمة المرور بنجاح",
-      "email_otp_sent": "تم إرسال رمز التحقق إلى بريدك الجديد",
-      "email_success": "تم تحديث البريد الإلكتروني بنجاح",
-      "otp_title": "تحقق من بريدك الإلكتروني",
-      "otp_sub": "أدخل رمز التحقق المُرسل إلى",
-      "otp_wrong": "رمز التحقق غير صحيح",
-      "otp_timer": "انتهاء الصلاحية خلال",
-      "otp_expired": "انتهت صلاحية الرمز",
-      "otp_resend": "إعادة إرسال الرمز",
-      "otp_verify": "تحقق",
-      "loading": "جارٍ التحميل...",
-      "signup": {
-        "resending": "جارٍ إعادة الإرسال...",
-        "resend_success": "تم إعادة إرسال رمز التحقق",
-        "resend_error": "فشل إعادة الإرسال",
-        "otp_wrong": "رمز التحقق غير صحيح"
-      }
-    },
-    "notifications": {
-      "title": "الإشعارات",
-      "subtitle": "تحكّم في الإشعارات التي تريد تلقّيها",
-      "items": {
-        "orderUpdates": {
-          "title": "تحديثات الطلبات",
-          "description": "احصل على إشعارات عند تغيير حالة الطلبات"
-        },
-        "newProducts": {
-          "title": "المنتجات الجديدة",
-          "description": "احصل على إشعارات عند إضافة منتجات جديدة"
-        },
-        "lowStock": {
-          "title": "نقص المخزون",
-          "description": "تنبيه عند وصول المنتج لحد المخزون المنخفض"
-        },
-        "marketing": {
-          "title": "التسويق والعروض",
-          "description": "إشعارات حملات التسويق والعروض الترويجية"
-        }
-      }
-    }
-  }
+		"breadcrumb": {
+			"home": "الرئيسية"
+		},
+		"header": {
+			"title": "الإعدادات",
+			"refresh": "تحديث"
+		},
+		"common": {
+			"saveChanges": "حفظ التغييرات",
+			"cancel": "إلغاء",
+			"delete": "حذف",
+			"deleting": "جارٍ الحذف...",
+			"error": "حدث خطأ، حاول مجدداً"
+		},
+		"tabs": {
+			"company": {
+				"label": "الشركة",
+				"description": "معلومات شركتك الأساسية والبيانات التجارية"
+			},
+			"configuration": {
+				"label": "الإعدادات",
+				"description": "إعدادات النظام والأتمتة والشحن"
+			},
+			"categories": {
+				"label": "التصنيفات",
+				"description": "إدارة تصنيفات المنتجات"
+			},
+			"account": {
+				"label": "الحساب",
+				"description": "معلوماتك الشخصية وبيانات حسابك"
+			},
+			"security": {
+				"label": "الأمان",
+				"description": "كلمة المرور والبريد الإلكتروني"
+			},
+			"notifications": {
+				"label": "الإشعارات",
+				"description": "إدارة تفضيلات الإشعارات"
+			}
+		},
+		"company": {
+			"saveSuccess": "تم حفظ بيانات الشركة بنجاح",
+			"placeholderName": "اسم شركتك",
+			"noCountry": "الدولة",
+			"validation": {
+				"countryRequired": "الدولة مطلوبة",
+				"currencyRequired": "العملة مطلوبة",
+				"nameRequired": "اسم الشركة مطلوب",
+				"businessRequired": "نوع النشاط التجاري مطلوب",
+				"invalidUrl": "يجب أن يبدأ الرابط بـ http:// أو https://"
+			},
+			"form": {
+				"companyName": "اسم الشركة",
+				"companyNamePlaceholder": "أدخل اسم شركتك",
+				"country": "الدولة",
+				"selectCountry": "اختر الدولة",
+				"currency": "العملة",
+				"selectCurrency": "اختر العملة",
+				"phone": "رقم الهاتف",
+				"website": "الموقع الإلكتروني",
+				"taxNumber": "الرقم الضريبي",
+				"commercialRegister": "السجل التجاري",
+				"address": "العنوان"
+			}
+		},
+		"categories": {
+			"title": "التصنيفات",
+			"subtitle": "أضف وعدّل تصنيفات منتجاتك",
+			"addButton": "إضافة تصنيف",
+			"addForm": {
+				"title": "إضافة تصنيف جديد"
+			},
+			"editForm": {
+				"title": "تعديل التصنيف"
+			},
+			"form": {
+				"name": "الاسم",
+				"namePlaceholder": "أدخل اسم التصنيف",
+				"slug": "المسار (slug)",
+				"save": "حفظ",
+				"cancel": "إلغاء"
+			},
+			"global": {
+				"badge": "افتراضي",
+				"lockedToast": "لا يمكن تعديل التصنيفات الافتراضية",
+				"lockedHint": "هذا التصنيف محمي ولا يمكن تعديله"
+			},
+			"list": {
+				"edit": "تعديل",
+				"delete": "حذف",
+				"toggleStatus": "تبديل الحالة"
+			},
+			"dialogs": {
+				"delete": {
+					"title": "تأكيد الحذف",
+					"description": "هل أنت متأكد من حذف تصنيف \"{name}\"؟",
+					"warning": "هذا الإجراء لا يمكن التراجع عنه."
+				}
+			},
+			"toast": {
+				"updating": "جارٍ التحديث...",
+				"updated": "تم تحديث التصنيف بنجاح",
+				"creating": "جارٍ الإنشاء...",
+				"created": "تم إنشاء التصنيف بنجاح",
+				"deleted": "تم حذف التصنيف بنجاح",
+				"duplicating": "جارٍ النسخ...",
+				"duplicated": "تم نسخ التصنيف بنجاح"
+			},
+			"common": {
+				"cancel": "إلغاء",
+				"delete": "حذف",
+				"deleting": "جارٍ الحذف..."
+			}
+		},
+		"account": {
+			"title": "الحساب الشخصي",
+			"subtitle": "إدارة معلوماتك الشخصية وبيانات اتصالك",
+			"profile": {
+				"fullName": "الاسم الكامل",
+				"email": "البريد الإلكتروني",
+				"role": "الدور",
+				"plan": "الخطة",
+				"userId": "معرّف المستخدم",
+				"adminId": "معرّف المسؤول",
+				"employeeType": "نوع الموظف",
+				"saveChanges": "حفظ التغييرات",
+				"changePhoto": "تغيير الصورة الشخصية"
+			},
+			"phone": {
+				"label": "رقم الجوال",
+				"countryPlaceholder": "الدولة",
+				"invalid": "رقم الجوال غير صحيح"
+			},
+			"toast": {
+				"saving": "جارٍ الحفظ...",
+				"saved": "تم حفظ البيانات بنجاح",
+				"uploadingAvatar": "جارٍ رفع الصورة...",
+				"avatarUpdated": "تم تحديث الصورة الشخصية بنجاح"
+			},
+			"errors": {
+				"missingMeEndpoint": "تعذّر جلب بيانات المستخدم",
+				"missingAvatarEndpoint": "تعذّر رفع الصورة الشخصية"
+			}
+		},
+		"security": {
+			"title": "الأمان",
+			"subtitle": "إدارة كلمة المرور والبريد الإلكتروني لحسابك",
+			"tabs": {
+				"password": {
+					"label": "كلمة المرور"
+				},
+				"email": {
+					"label": "البريد الإلكتروني"
+				}
+			},
+			"form": {
+				"old_password": "كلمة المرور الحالية",
+				"new_password": "كلمة المرور الجديدة",
+				"confirm_password": "تأكيد كلمة المرور",
+				"update_password": "تحديث كلمة المرور",
+				"new_email": "البريد الإلكتروني الجديد",
+				"send_otp": "إرسال رمز التحقق"
+			},
+			"errors": {
+				"mismatch": "كلمتا المرور غير متطابقتين",
+				"failed": "فشل تحديث كلمة المرور",
+				"pw_weak": "كلمة المرور ضعيفة جداً",
+				"failedSendEmailOTP": "فشل إرسال رمز التحقق"
+			},
+			"password_success": "تم تحديث كلمة المرور بنجاح",
+			"email_otp_sent": "تم إرسال رمز التحقق إلى بريدك الجديد",
+			"email_success": "تم تحديث البريد الإلكتروني بنجاح",
+			"otp_title": "تحقق من بريدك الإلكتروني",
+			"otp_sub": "أدخل رمز التحقق المُرسل إلى",
+			"otp_wrong": "رمز التحقق غير صحيح",
+			"otp_timer": "انتهاء الصلاحية خلال",
+			"otp_expired": "انتهت صلاحية الرمز",
+			"otp_resend": "إعادة إرسال الرمز",
+			"otp_verify": "تحقق",
+			"loading": "جارٍ التحميل...",
+			"signup": {
+				"resending": "جارٍ إعادة الإرسال...",
+				"resend_success": "تم إعادة إرسال رمز التحقق",
+				"resend_error": "فشل إعادة الإرسال",
+				"otp_wrong": "رمز التحقق غير صحيح"
+			}
+		},
+		"notifications": {
+			"title": "الإشعارات",
+			"subtitle": "تحكّم في الإشعارات التي تريد تلقّيها",
+			"items": {
+				"orderUpdates": {
+					"title": "تحديثات الطلبات",
+					"description": "احصل على إشعارات عند تغيير حالة الطلبات"
+				},
+				"newProducts": {
+					"title": "المنتجات الجديدة",
+					"description": "احصل على إشعارات عند إضافة منتجات جديدة"
+				},
+				"lowStock": {
+					"title": "نقص المخزون",
+					"description": "تنبيه عند وصول المنتج لحد المخزون المنخفض"
+				},
+				"marketing": {
+					"title": "التسويق والعروض",
+					"description": "إشعارات حملات التسويق والعروض الترويجية"
+				}
+			}
+		}
+	},
+	"paymentSuccess": {
+		"title": "تم الدفع بنجاح!",
+		"subtitle": "تمت معالجة دفعتك بنجاح",
+		"loading": "جارٍ تحميل تفاصيل الدفع...",
+		"successMessage": "شكراً لك على الدفع. تم إرسال بريد إلكتروني للتأكيد إلى بريدك الوارد.",
+		"labels": {
+			"paymentFor": "الدفع مقابل",
+			"amount": "المبلغ المدفوع",
+			"date": "تاريخ الدفع",
+			"customer": "العميل",
+			"subscription": "خطة الاشتراك",
+			"feature": "الميزة المشتراة",
+			"duration": "المدة",
+			"status": "الحالة"
+		},
+		"purpose": {
+			"walletTopUp": "شحن المحفظة",
+			"subscriptionPayment": "دفع الاشتراك",
+			"featurePurchase": "شراء ميزة"
+		},
+		"duration": {
+			"monthly": "شهرياً",
+			"yearly": "سنوياً",
+			"lifetime": "مدى الحياة"
+		},
+		"status": {
+			"active": "نشط"
+		},
+		"common": {
+			"subscription": "اشتراك",
+			"feature": "ميزة"
+		},
+		"actions": {
+			"goToWallet": "الذهاب إلى المحفظة",
+			"goToSubscriptions": "عرض اشتراكي",
+			"goToFeatures": "عرض ميزاتي",
+			"backToHome": "العودة للرئيسية",
+			"completeOnboarding": "إكمال إعداد الحساب الآن"
+		},
+		"errors": {
+			"title": "تعذر تحميل تفاصيل الدفع",
+			"noSessionId": "لم يتم توفير معرف جلسة الدفع",
+			"fetchFailed": "فشل تحميل معلومات الدفع"
+		}
+	},
+	"paymentFail": {
+		"title": "فشل الدفع",
+		"subtitle": "لم نتمكن من معالجة دفعتك",
+		"loading": "جارٍ تحميل تفاصيل الدفع...",
+		"helpMessage": "إذا كنت بحاجة إلى مساعدة، يرجى التواصل مع فريق الدعم لدينا.",
+		"labels": {
+			"paymentFor": "الدفع مقابل",
+			"amount": "المبلغ",
+			"date": "تاريخ المحاولة",
+			"customer": "العميل",
+			"status": "حالة الدفع",
+			"subscription": "خطة الاشتراك",
+			"feature": "الميزة",
+			"duration": "المدة",
+			"paymentStatus": "حالة الدفع",
+			"possibleReasons": "الأسباب المحتملة"
+		},
+		"purpose": {
+			"walletTopUp": "شحن المحفظة",
+			"subscriptionPayment": "دفع الاشتراك",
+			"featurePurchase": "شراء ميزة"
+		},
+		"duration": {
+			"monthly": "شهرياً",
+			"yearly": "سنوياً",
+			"lifetime": "مدى الحياة"
+		},
+		"status": {
+			"failed": "فشل",
+			"cancelled": "ملغى",
+			"expired": "منتهي الصلاحية",
+			"paymentFailed": "فشل الدفع"
+		},
+		"reasons": {
+			"insufficientFunds": "رصيد غير كافٍ في حسابك",
+			"cardDeclined": "تم رفض بطاقتك من قبل البنك",
+			"networkIssue": "مشكلة في الاتصال بالشبكة أثناء الدفع",
+			"cancelledByUser": "تم إلغاء الدفع من قبلك"
+		},
+		"common": {
+			"subscription": "اشتراك",
+			"feature": "ميزة"
+		},
+		"actions": {
+			"tryAgain": "حاول مرة أخرى",
+			"retryWallet": "حاول شحن المحفظة مرة أخرى",
+			"retrySubscription": "حاول الاشتراك مرة أخرى",
+			"retryFeature": "حاول شراء الميزة مرة أخرى",
+			"backToHome": "العودة للرئيسية"
+		},
+		"errors": {
+			"title": "تعذر تحميل تفاصيل الدفع",
+			"noSessionId": "لم يتم توفير معرف جلسة الدفع",
+			"fetchFailed": "فشل تحميل معلومات الدفع"
+		}
+	}
 }

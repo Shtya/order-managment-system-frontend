@@ -1,6 +1,6 @@
-// /middleware.js
 import createMiddleware from 'next-intl/middleware';
 import { NextResponse } from 'next/server';
+import { isPublicOrSpecialRoute } from './utils/route-utils';
 
 const intlMiddleware = createMiddleware({
   locales: ['en', 'ar'],
@@ -11,14 +11,30 @@ const intlMiddleware = createMiddleware({
 export default function middleware(req) {
   const { pathname } = req.nextUrl;
 
-  // const hasLocale = pathname.startsWith('/en/') || pathname.startsWith('/ar/') || pathname === '/en' || pathname === '/ar';
+  const userCookie = req.cookies.get('user')?.value;
+  if (isPublicOrSpecialRoute(pathname)) {
+    return intlMiddleware(req);
+  }
+  if (userCookie) {
+    try {
+      const user = JSON.parse(userCookie);
 
-  // if (!hasLocale) {
-  //   const newUrl = new URL(`/ar${pathname}`, req.url);
-  //   return NextResponse.redirect(newUrl);
-  // }
+      const isOnboardingPage = pathname.includes('/onboarding');
 
-  // استخدام middleware العادي
+      if (
+        user.role === 'admin' &&
+        user.onboardingStatus !== 'completed' &&
+        !isOnboardingPage
+      ) {
+        const locale = pathname.startsWith('/en') ? 'en' : 'ar';
+
+        return NextResponse.redirect(new URL(`/${locale}/onboarding`, req.url));
+      }
+    } catch (error) {
+      console.error("Error parsing user cookie in middleware:", error);
+    }
+  }
+
   return intlMiddleware(req);
 }
 

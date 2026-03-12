@@ -9,6 +9,7 @@ import { usePathname } from 'next/navigation';
 import { Toaster } from 'react-hot-toast';
 import { SocketProvider } from '../../context/SocketContext';
 import { ThemeProvider } from 'next-themes';
+import { isPublicOrSpecialRoute } from '@/utils/route-utils';
 
 export default function LayoutShell({ children }) {
 	return (
@@ -77,12 +78,7 @@ function DashboardLayout({ children }) {
 		};
 	}, []);
 
-	const isAuthRoute =
-		pathname?.startsWith('/auth') ||
-		pathname?.startsWith('/onboarding') ||
-		pathname?.startsWith('/warehouse/print') ||
-		pathname?.includes('reset-password') ||
-		pathname?.includes('forgot-password');
+	const isAuthRoute = isPublicOrSpecialRoute(AllPathname);
 
 	if (isAuthRoute || pathname === '') {
 		return (

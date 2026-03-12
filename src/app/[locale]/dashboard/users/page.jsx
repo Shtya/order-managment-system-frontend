@@ -22,6 +22,8 @@ import {
 	CheckCircle2,
 	Loader2,
 	CreditCard,
+	Sparkles,
+	Wallet,
 } from "lucide-react";
 
 import InfoCard from "@/components/atoms/InfoCard";
@@ -75,6 +77,8 @@ import { useRouter } from "@/i18n/navigation";
 import ManageSubscription from "./manageSubscription";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table, { FilterField } from "@/components/atoms/Table";
+import AssignFeatureModal from "./assignFeatureModal";
+import ManageWalletModal from "./ManageWalletModal";
 
 
 /** =========================
@@ -410,6 +414,7 @@ export default function SuperAdminUsersPage() {
 	const [editOpen, setEditOpen] = useState(false);
 	const [deactivateOpen, setDeactivateOpen] = useState(false);
 	const [credOpen, setCredOpen] = useState(false);
+	const [subscriptionId, setSubscriptionId] = useState(false);
 	const [subOpen, setSubOpen] = useState(false);
 	const [waOpen, setWaOpen] = useState(false);
 
@@ -582,6 +587,9 @@ export default function SuperAdminUsersPage() {
 			setError(getApiMsg(e, "Failed to export"));
 		}
 	}
+	const [assignOpen, setAssignOpen] = useState(false);
+	const [walletOpen, setWalletOpen] = useState(false);
+
 
 	const columns = useMemo(() => {
 		return [
@@ -727,9 +735,89 @@ export default function SuperAdminUsersPage() {
 			{
 				key: "options",
 				header: t.has("table.options") ? t("table.options") : "Options",
-				cell: (row) => (
-					<div className="flex items-center gap-2">
-						<TooltipProvider>
+				cell: (row) => {
+					const isAdmin = row.role?.name === "admin";
+					// التحقق من وجود اشتراك حالي
+					const hasSubscription = !!row.subscription?.id;
+
+					return (<div className="flex items-center gap-2">
+						{isAdmin && (
+							<TooltipProvider>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<motion.button
+											whileHover={{ scale: 1.06 }}
+											whileTap={{ scale: 0.95 }}
+											onClick={() => {
+												setSelectedUser(row);
+												setSubscriptionId(null); // نضع القيمة null لفتح وضع "إضافة"
+												setSubOpen(true);
+											}}
+											className="w-9 h-9 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center dark:bg-emerald-950/30 dark:hover:bg-emerald-600"
+										>
+											<Plus size={16} />
+										</motion.button>
+									</TooltipTrigger>
+									<TooltipContent>
+										{t.has("actions.addSubscription") ? t("actions.addSubscription").trim() : "إضافة اشتراك جديد"}
+									</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
+						)}
+
+
+						{hasSubscription && isAdmin && (
+							<TooltipProvider>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<motion.button
+											whileHover={{ scale: 1.06 }}
+											whileTap={{ scale: 0.95 }}
+											onClick={() => {
+												setSelectedUser(row);
+												// نمرر الـ id للاشتراك الموجود
+												setSubscriptionId(row.subscription.id);
+												setSubOpen(true);
+											}}
+											className="w-9 h-9 rounded-full border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center dark:bg-blue-950/30 dark:hover:bg-blue-600"
+										>
+											<CreditCard size={16} />
+										</motion.button>
+									</TooltipTrigger>
+									<TooltipContent>
+										{t.has("actions.manageSubscription") ? t("actions.manageSubscription").trim() : "إدارة الاشتراك"}
+									</TooltipContent>
+								</Tooltip>
+
+							</TooltipProvider>
+						)}
+
+						{isAdmin && <TooltipProvider>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<motion.button
+										whileHover={{ scale: 1.06 }}
+										whileTap={{ scale: 0.95 }}
+										onClick={() => {
+											console.log(row)
+											setSelectedUser(row); // نضع بيانات المستخدم بالكامل
+											setAssignOpen(true);  // نفتح نافذة تخصيص الميزات
+										}}
+										className="w-9 h-9 rounded-full border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center dark:bg-blue-950/30 dark:hover:bg-blue-600"
+									>
+										<Sparkles size={16} />
+									</motion.button>
+								</TooltipTrigger>
+								<TooltipContent>
+									{t.has("actions.manageFeatures")
+										? t("actions.manageFeatures").trim()
+										: "إدارة المميزات"}
+								</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>}
+
+
+						{isAdmin && <TooltipProvider>
 							<Tooltip>
 								<TooltipTrigger asChild>
 									<motion.button
@@ -737,20 +825,18 @@ export default function SuperAdminUsersPage() {
 										whileTap={{ scale: 0.95 }}
 										onClick={() => {
 											setSelectedUser(row);
-											setSubOpen(true);
+											setWalletOpen(true); // افتح نافذة المحفظة
 										}}
-										className="w-9 h-9 rounded-full border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center dark:bg-blue-950/30 dark:hover:bg-blue-600"
+										className="w-9 h-9 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center dark:bg-emerald-950/30 dark:hover:bg-emerald-600"
 									>
-										<CreditCard size={16} />
+										<Wallet size={16} />
 									</motion.button>
 								</TooltipTrigger>
 								<TooltipContent>
-									{t.has("actions.manageSubscription")
-										? t("actions.manageSubscription").trim()
-										: "إدارة الاشتراك"}
+									{t.has("actions.manageWallet") ? t("actions.manageWallet").trim() : "إدارة المحفظة"}
 								</TooltipContent>
 							</Tooltip>
-						</TooltipProvider>
+						</TooltipProvider>}
 
 						<TooltipProvider>
 							<Tooltip>
@@ -791,8 +877,9 @@ export default function SuperAdminUsersPage() {
 								</TooltipContent>
 							</Tooltip>
 						</TooltipProvider>
-					</div>
-				),
+					</div>)
+				}
+				,
 			},
 		];
 	}, [t]);
@@ -806,7 +893,7 @@ export default function SuperAdminUsersPage() {
 					{ name: t("breadcrumb.users") },
 				]}
 				buttons={
-					<> 
+					<>
 						<Button_
 							size="sm"
 							label={t("actions.refresh")}
@@ -969,13 +1056,53 @@ export default function SuperAdminUsersPage() {
 								: ""}
 						</DialogDescription>
 					</DialogHeader>
-					<ManageSubscription userId={selectedUser?.id} subscriptionId={selectedUser?.subscription?.id} onSaved={async () => {
+					<ManageSubscription userId={selectedUser?.id} subscriptionId={subscriptionId} onSaved={async () => {
 						setSubOpen(false)
 						await fetchUsers({ page: 1, per_page: pagination.per_page });
 
 					}} />
 				</DialogContent>
 			</Dialog>
+			<Dialog open={assignOpen} onOpenChange={setAssignOpen}>
+
+				<DialogContent className="sm:max-w-2xl rounded-xl">
+					<DialogTitle>
+						{t("actions.manageFeatures").trim()}
+					</DialogTitle>
+
+					<AssignFeatureModal
+						isOpen={assignOpen}
+						onClose={() => setAssignOpen(false)}
+						user={selectedUser}
+						onSaved={async () => {
+							setAssignOpen(false)
+							await fetchData({ page: 1, per_page: pagination.per_page });
+
+						}}
+					/>
+				</DialogContent>
+			</Dialog>
+			<Dialog open={walletOpen} onOpenChange={setWalletOpen}>
+
+				<DialogContent className="sm:max-w-2xl rounded-xl">
+					<DialogTitle>
+						{t("actions.manageWallet").trim()}
+					</DialogTitle>
+
+					<ManageWalletModal
+						isOpen={walletOpen}
+						onClose={() => setWalletOpen(false)}
+						user={selectedUser}
+						onSaved={async () => {
+							setWalletOpen(false)
+							await fetchData({ page: 1, per_page: pagination.per_page });
+
+						}}
+					/>
+				</DialogContent>
+			</Dialog>
+
+
 
 			<EditUserDialog
 				t={t}
@@ -1068,14 +1195,18 @@ function CreateUserDialog({
 		name: "",
 		email: "",
 		roleId: "",
-		planId: "",
+		// planId: "",
 		password: "",
 	});
 	const [showPassword, setShowPassword] = useState(false);
 
 	useEffect(() => {
 		if (!open) {
-			setForm({ name: "", email: "", roleId: "", planId: "", password: "" });
+			setForm({
+				name: "", email: "", roleId: "",
+				// planId: "", 
+				password: ""
+			});
 			setShowPassword(false);
 		}
 	}, [open]);
@@ -1139,7 +1270,7 @@ function CreateUserDialog({
 						</div>
 					</div>
 
-					<div>
+					{/* <div>
 						<Label className="text-xs text-gray-500 dark:text-slate-400">
 							{t.has("fields.plan") ? t("fields.plan") : "Plan"}
 						</Label>
@@ -1164,7 +1295,7 @@ function CreateUserDialog({
 								</SelectContent>
 							</Select>
 						</div>
-					</div>
+					</div> */}
 
 					<div>
 						<Label className="text-xs text-gray-500 dark:text-slate-400">
@@ -1201,7 +1332,7 @@ function CreateUserDialog({
 								name: form.name.trim(),
 								email: form.email.trim(),
 								roleId: Number(form.roleId),
-								planId: form.planId && form.planId !== "none" ? Number(form.planId) : undefined,
+								// planId: form.planId && form.planId !== "none" ? Number(form.planId) : undefined,
 								password: form.password?.trim() || undefined,
 							};
 							onCreated?.(payload);
@@ -1234,7 +1365,7 @@ function EditUserDialog({
 		name: "",
 		email: "",
 		roleId: "",
-		planId: "",
+		// planId: "",
 		isActive: true,
 	});
 
@@ -1244,11 +1375,15 @@ function EditUserDialog({
 				name: user.name || "",
 				email: user.email || "",
 				roleId: user.role?.id ? String(user.role.id) : "",
-				planId: user.subscription?.plan?.id ? String(user.subscription.plan.id) : "",
+				// planId: user.subscription?.plan?.id ? String(user.subscription.plan.id) : "",
 				isActive: typeof user.isActive === "boolean" ? user.isActive : true,
 			});
 		}
-		if (!open) setForm({ name: "", email: "", roleId: "", planId: "", isActive: true });
+		if (!open) setForm({
+			name: "", email: "", roleId: "",
+			// planId: "",
+			isActive: true
+		});
 	}, [open, user]);
 
 	const roleOptions = Array.isArray(roles) ? roles : [];
@@ -1309,7 +1444,7 @@ function EditUserDialog({
 						</div>
 					</div>
 
-					<div>
+					{/* <div>
 						<Label className="text-xs text-gray-500 dark:text-slate-400">
 							{t.has("fields.plan") ? t("fields.plan") : "Plan"}
 						</Label>
@@ -1334,7 +1469,7 @@ function EditUserDialog({
 								</SelectContent>
 							</Select>
 						</div>
-					</div>
+					</div> */}
 
 					<div className="flex items-center justify-between rounded-xl border border-gray-200 dark:border-slate-800 bg-[#fafafa] dark:bg-slate-800/40 p-4 mt-1">
 						<div className="text-right">
@@ -1362,8 +1497,8 @@ function EditUserDialog({
 							if (form.email.trim()) patch.email = form.email.trim();
 							if (form.roleId) patch.roleId = Number(form.roleId);
 
-							if (!form.planId || form.planId === "none") patch.planId = null;
-							else patch.planId = Number(form.planId);
+							// if (!form.planId || form.planId === "none") patch.planId = null;
+							// else patch.planId = Number(form.planId);
 
 							patch.isActive = !!form.isActive;
 							onSaved?.(patch);

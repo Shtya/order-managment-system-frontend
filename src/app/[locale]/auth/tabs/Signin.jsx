@@ -90,11 +90,12 @@ export default function SignIn({ t: tProp, onSwitchMode, onForgotPassword }) {
       const status = error?.response?.status;
 
       if (status === 401) {
-        toast.error("انتهت الجلسة، يرجى تسجيل الدخول مرة أخرى", { id: tid });
+        toast.error(t("signin.session_expired"), { id: tid });
       } else if (status === 403) {
-        toast.error("هذه الصفحة مخصصة للمشرفين فقط. يرجى تسجيل الدخول بحساب مشرف.", { id: tid });
+        toast.error(t("signin.no_permission"), { id: tid });
       } else {
-        toast.error("حدث خطأ غير متوقع", { id: tid });
+        // This usually handles 400 or 401 (invalid login)
+        toast.error(t("signin.invalid_credentials"), { id: tid });
       }
 
       setTimeout(() => {

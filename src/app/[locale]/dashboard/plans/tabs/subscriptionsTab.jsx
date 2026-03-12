@@ -1,10 +1,10 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-
+import { motion, AnimatePresence } from "framer-motion";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/material_blue.css";
-import { User, Calendar, Download, Loader2, Package } from "lucide-react";
+import { User, Calendar, Download, Loader2, Package, Infinity, Ban } from "lucide-react";
 import api from "@/utils/api";
 import Table, { FilterField } from "@/components/atoms/Table";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,22 @@ import {
 } from "@/components/ui/select";
 import toast from "react-hot-toast";
 import { useDebounce } from "@/hook/useDebounce";
+
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/components/ui/dialog";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
 
 function formatCurrency(amount) {
     if (amount === undefined || amount === null) return "—";
@@ -139,28 +155,49 @@ export default function SubscriptionsTab() {
         }
     };
 
+    const [cancelOpen, setCancelOpen] = useState(false);
+    const [selectedSub, setSelectedSub] = useState(null);
+    const [isCancelling, setIsCancelling] = useState(false);
+
+    const handleCancelSubscription = async () => {
+        if (!selectedSub) return;
+
+        setIsCancelling(true);
+        try {
+            await api.post(`/subscriptions/cancel/${selectedSub.id}`);
+
+            toast.success(t("messages.cancelSuccess") || "تم إلغاء الاشتراك بنجاح");
+            setCancelOpen(false);
+            setSelectedSub(null);
+
+            fetchSubscriptions();
+
+        } catch (error) {
+            toast.error(t("messages.error") || "حدث خطأ أثناء الإلغاء");
+        } finally {
+            setIsCancelling(false);
+        }
+    };
+
+
     // ── Columns Definition ────────────────────────────────────────────────
     const columns = useMemo(() => {
         return [
-            // {
-            //     key: "id",
-            //     header: t("columns.id"),
-            //     cell: (row) => (
-            //         <span className="font-mono text-sm text-primary font-bold">SUB-{row.id}</span>
-            //     ),
-            // },
             {
                 key: "user",
                 header: t("columns.user"),
                 cell: (row) => (
-                    <div className="flex items-center gap-1">
-                        <User size={14} className="text-muted-foreground" />
-                        <div>
-
-                            <span className="text-sm font-medium">{row.user?.name || "—"}</span>
-                            <div dir="ltr" className="font-en text-xs text-gray-500 dark:text-slate-400">
-                                {row.user.email || ""}
-                            </div>
+                    <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <User size={14} className="text-primary" />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-sm font-semibold leading-none mb-1">
+                                {row.user?.name || "—"}
+                            </span>
+                            <span className="text-xs text-muted-foreground font-mono">
+                                {row.user?.email}
+                            </span>
                         </div>
                     </div>
                 ),
@@ -169,147 +206,319 @@ export default function SubscriptionsTab() {
                 key: "plan",
                 header: t("columns.plan"),
                 cell: (row) => (
-                    <div className="flex items-center gap-1">
-                        <Package size={14} className="text-muted-foreground" />
-                        <span className="text-sm font-medium">{row.plan?.name || "—"}</span>
+                    <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-1">
+                            <Package size={14} className="text-blue-500" />
+                            <span className="text-sm font-medium">{row.plan?.name || t("status_labels.deleted_plan")}</span>
+                        </div>
+                        <Badge variant="secondary" className="w-fit text-[10px] px-1 py-0 h-4">
+                            {row.planType}
+                        </Badge>
                     </div>
                 ),
+            },
+            {
+                key: "usage_orders",
+                header: t("columns.usage"),
+                cell: (row) => {
+                    const total = row.includedOrders;
+                    const used = row.usedOrders || 0;
+                    const isUnlimited = total === null;
+                    const percentage = isUnlimited ? 0 : Math.min((used / total) * 100, 100);
+
+                    return (
+                        <div className="flex flex-col w-32 gap-1.5">
+                            <div className="flex justify-between text-[10px] font-medium">
+                                <span>{used} {t("units.orders")}</span>
+                                <span>{isUnlimited ? <Infinity size={14} className="text-muted-foreground/70" /> : total}</span>
+                            </div>
+                            {!isUnlimited ? (
+                                <div className="h-1.5 w-full bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                    <div
+                                        className={`h-full transition-all ${percentage > 90 ? 'bg-red-500' : 'bg-green-500'}`}
+                                        style={{ width: `${percentage}%` }}
+                                    />
+                                </div>
+                            ) : (
+                                <span className="text-[10px] text-green-600 font-bold">{t("status_labels.unlimited_access")}</span>
+                            )}
+                        </div>
+                    );
+                },
+            },
+            {
+                key: "limits",
+                header: t("columns.limits"),
+                cell: (row) => (
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] min-w-[150px]">
+                        <div className="flex justify-between border-b pb-1">
+                            <span className="text-muted-foreground">{t("filters.users")}:</span>
+                            <span className="font-medium">{(!row.usersLimit && row.usersLimit !== 0) ? <Infinity size={14} className="text-muted-foreground/70" /> : row.usersLimit}</span>
+                        </div>
+                        <div className="flex justify-between border-b pb-1">
+                            <span className="text-muted-foreground">{t("filters.stores")}:</span>
+                            <span className="font-medium">{(!row.storesLimit && row.storesLimit !== 0) ? <Infinity size={14} className="text-muted-foreground/70" /> : row.storesLimit}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">{t("filters.shipping")}:</span>
+                            <span className="font-medium">{(!row.shippingCompaniesLimit && row.shippingCompaniesLimit !== 0) ? <Infinity size={14} className="text-muted-foreground/70" /> : row.shippingCompaniesLimit}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">{t("filters.bulk")}:</span>
+                            <span className="font-medium">{row.bulkUploadPerMonth || 0}</span>
+                        </div>
+                    </div>
+                )
             },
             {
                 key: "price",
                 header: t("columns.price"),
                 cell: (row) => (
-                    <span className="font-semibold text-blue-600 dark:text-blue-400 tabular-nums">
-                        {formatCurrency(row.price)}
-                    </span>
+                    <div className="flex flex-col">
+                        <div className="flex items-baseline gap-1">
+                            <span className="font-bold text-primary tabular-nums text-sm">
+                                {formatCurrency(row.price)}
+                            </span>
+                            {/* عرض المدة بجانب السعر */}
+                            <span className="text-[10px] text-muted-foreground font-medium">
+                                / {row.duration !== 'custom' ? (
+                                    t(`durations.${row.duration || 'monthly'}`)
+                                ) : (
+                                    <span>
+                                        {t('units.days', { count: row.durationIndays })}
+                                    </span>
+                                )}
+                            </span>
+                        </div>
+
+                        <div className="text-[10px] leading-tight mt-1">
+                            {row.extraOrderFee === null ? (
+                                <span className="text-red-500 font-medium">
+                                    {t("status_labels.excess_not_allowed")}
+                                </span>
+                            ) : Number(row.extraOrderFee) > 0 ? (
+                                <span className="text-muted-foreground">
+                                    +{row.extraOrderFee} {t("status_labels.per_extra_order")}
+                                </span>
+                            ) : (
+                                <span className="text-green-600 font-medium">
+                                    {t("status_labels.free_excess")}
+                                </span>
+                            )}
+                        </div>
+                    </div>
                 ),
             },
             {
                 key: "status",
                 header: t("columns.status"),
                 cell: (row) => {
-                    let color = "gray";
-                    if (row.status === "active") color = "green";
-                    if (row.status === "expired") color = "yellow";
-                    if (row.status === "cancelled") color = "red";
-
+                    const statusConfig = {
+                        active: { color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400", label: t("statuses.active") },
+                        pending: { color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400", label: t("statuses.pending") },
+                        expired: { color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400", label: t("statuses.expired") },
+                        cancelled: { color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400", label: t("statuses.cancelled") },
+                    };
+                    const config = statusConfig[row.status] || { color: "bg-gray-100 text-gray-700", label: row.status };
                     return (
-                        <Badge variant="outline" className={`text-xs text-${color}-600`}>
-                            {t(`statuses.${row.status}`)}
+                        <Badge variant="none" className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${config.color}`}>
+                            {config.label}
                         </Badge>
                     );
                 },
             },
             {
-                key: "startDate",
-                header: t("columns.startDate"),
+                key: "duration",
+                header: t("columns.duration"),
                 cell: (row) => (
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Calendar size={12} />
-                        {row.startDate ? formatDate(row.startDate) : "—"}
+                    <div className="flex flex-col text-[11px] text-muted-foreground gap-0.5">
+                        <div className="flex items-center gap-1">
+                            <span className="font-medium text-foreground">{t("labels.from")}:</span>
+                            {formatDate(row.startDate)}
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <span className="font-medium text-foreground">{t("labels.to")}:</span>
+                            {row.endDate ? formatDate(row.endDate) : "—"}
+                        </div>
                     </div>
                 ),
             },
+
             {
-                key: "endDate",
-                header: t("columns.endDate"),
+                key: "actions",
+                header: t("columns.actions") || "الإجراءات",
                 cell: (row) => (
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Calendar size={12} />
-                        {row.endDate ? formatDate(row.endDate) : "—"}
+                    <div className="flex items-center justify-center gap-2">
+                        {/* إظهار زر الإلغاء فقط إذا كان الاشتراك نشطاً */}
+                        {row.status === 'active' && (
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <motion.button
+                                            whileHover={{ scale: 1.06 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => {
+                                                setSelectedSub(row);
+                                                setCancelOpen(true);
+                                            }}
+                                            className="w-9 h-9 rounded-full border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all flex items-center justify-center dark:bg-red-950/30 dark:hover:bg-red-600 dark:border-red-900"
+                                        >
+                                            <Ban size={16} />
+                                        </motion.button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        {t("actions.cancelSubscription") || "إلغاء الاشتراك"}
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        )}
                     </div>
                 ),
-            }
+            },
         ];
     }, [t]);
 
     return (
-        <Table
-            // ── Search ─────────────────────────────────────────────────────────────
-            searchValue={search}
-            onSearchChange={setSearch}
-            onSearch={applyFilters}
+        <>
 
-            // ── i18n labels ───────────────────────────────────────────────────────
-            labels={{
-                searchPlaceholder: t("toolbar.searchPlaceholder"),
-                filter: t("toolbar.filter"),
-                apply: t("filters.apply"),
-                total: t("pagination.total"),
-                limit: t("pagination.limit"),
-                emptyTitle: t("emptyTitle"),
-                emptySubtitle: t("emptySubtitle"),
-            }}
+            <Table
+                // ── Search ─────────────────────────────────────────────────────────────
+                searchValue={search}
+                onSearchChange={setSearch}
+                onSearch={applyFilters}
 
-            // ── Actions ───────────────────────────────────────────────────────────
-            actions={[
-                {
-                    key: "export",
-                    label: t("toolbar.export"),
-                    icon: exportLoading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />,
-                    color: "blue",
-                    onClick: handleExport,
-                    disabled: exportLoading,
-                },
-            ]}
+                // ── i18n labels ───────────────────────────────────────────────────────
+                labels={{
+                    searchPlaceholder: t("toolbar.searchPlaceholder"),
+                    filter: t("toolbar.filter"),
+                    apply: t("filters.apply"),
+                    total: t("pagination.total"),
+                    limit: t("pagination.limit"),
+                    emptyTitle: t("emptyTitle"),
+                    emptySubtitle: t("emptySubtitle"),
+                }}
 
-            // ── Filters ───────────────────────────────────────────────────────────
-            hasActiveFilters={filters.status !== 'all' || filters.startDate || filters.endDate}
-            onApplyFilters={applyFilters}
-            filters={
-                <>
-                    {/* Subscription Status */}
-                    <FilterField label={t("filters.status")}>
-                        <Select
-                            value={filters.status}
-                            onValueChange={(v) => setFilters(f => ({ ...f, status: v }))}
+                // ── Actions ───────────────────────────────────────────────────────────
+                actions={[
+                    {
+                        key: "export",
+                        label: t("toolbar.export"),
+                        icon: exportLoading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />,
+                        color: "blue",
+                        onClick: handleExport,
+                        disabled: exportLoading,
+                    },
+                ]}
+
+                // ── Filters ───────────────────────────────────────────────────────────
+                hasActiveFilters={filters.status !== 'all' || filters.startDate || filters.endDate}
+                onApplyFilters={applyFilters}
+                filters={
+                    <>
+                        {/* Subscription Status */}
+                        <FilterField label={t("filters.status")}>
+                            <Select
+                                value={filters.status}
+                                onValueChange={(v) => setFilters(f => ({ ...f, status: v }))}
+                            >
+                                <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm transition-all">
+                                    <SelectValue placeholder={t("filters.statusPlaceholder")} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">{t("filters.all")}</SelectItem>
+                                    <SelectItem value={SubscriptionStatus.ACTIVE}>{t("statuses.active")}</SelectItem>
+                                    <SelectItem value={SubscriptionStatus.EXPIRED}>{t("statuses.expired")}</SelectItem>
+                                    <SelectItem value={SubscriptionStatus.CANCELLED}>{t("statuses.cancelled")}</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </FilterField>
+
+                        {/* Date Range */}
+                        <FilterField label={t("filters.date")}>
+                            <Flatpickr
+                                value={[
+                                    filters.startDate ? new Date(filters.startDate) : null,
+                                    filters.endDate ? new Date(filters.endDate) : null,
+                                ]}
+                                onChange={([start, end]) =>
+                                    setFilters(f => ({
+                                        ...f,
+                                        startDate: start ? start.toISOString().split("T")[0] : null,
+                                        endDate: end ? end.toISOString().split("T")[0] : null,
+                                    }))
+                                }
+                                options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
+                                className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:border-[var(--primary)] transition-all"
+                                placeholder={t("filters.datePlaceholder")}
+                            />
+                        </FilterField>
+                    </>
+                }
+
+                // ── Table ─────────────────────────────────────────────────────────────
+                columns={columns}
+                data={pager.records}
+                isLoading={loading}
+
+                // ── Pagination ────────────────────────────────────────────────────────
+                pagination={{
+                    total_records: pager.total_records,
+                    current_page: pager.current_page,
+                    per_page: pager.per_page,
+                }}
+                onPageChange={handlePageChange}
+            />
+            <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="text-red-600 flex items-center gap-2">
+                            <Ban size={20} />
+                            {t("dialogs.cancelSubTitle")}
+                        </DialogTitle>
+                        <DialogDescription className="py-4 text-base leading-relaxed">
+                            {t("dialogs.cancelSubDesc")}
+                            <span className="font-bold text-foreground mx-1">
+                                {selectedSub?.user?.name || selectedSub?.user?.email}
+                            </span>
+                            {t("dialogs.inPlan")}
+                            <span className="font-bold text-foreground mx-1">
+                                {selectedSub?.plan?.name}
+                            </span>
+                            ؟
+                            <br /><br />
+                            <span className="text-sm text-red-500/80 bg-red-50 dark:bg-red-950/30 p-2 rounded-lg block border border-red-100 dark:border-red-900/50">
+                                {t("dialogs.cancelWarning")}
+                            </span>
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="flex items-center gap-2 mt-2 sm:justify-start">
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={handleCancelSubscription}
+                            disabled={isCancelling}
+                            className="w-full sm:w-auto flex items-center gap-2"
                         >
-                            <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm transition-all">
-                                <SelectValue placeholder={t("filters.statusPlaceholder")} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">{t("filters.all")}</SelectItem>
-                                <SelectItem value={SubscriptionStatus.ACTIVE}>{t("statuses.active")}</SelectItem>
-                                <SelectItem value={SubscriptionStatus.EXPIRED}>{t("statuses.expired")}</SelectItem>
-                                <SelectItem value={SubscriptionStatus.CANCELLED}>{t("statuses.cancelled")}</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </FilterField>
+                            {isCancelling ? (
+                                <Loader2 size={16} className="animate-spin" />
+                            ) : (
+                                <Ban size={16} />
+                            )}
+                            {t("actions.confirmCancel")}
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setCancelOpen(false)}
+                            disabled={isCancelling}
+                            className="w-full sm:w-auto"
+                        >
+                            {t("actions.cancel")}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
-                    {/* Date Range */}
-                    <FilterField label={t("filters.date")}>
-                        <Flatpickr
-                            value={[
-                                filters.startDate ? new Date(filters.startDate) : null,
-                                filters.endDate ? new Date(filters.endDate) : null,
-                            ]}
-                            onChange={([start, end]) =>
-                                setFilters(f => ({
-                                    ...f,
-                                    startDate: start ? start.toISOString().split("T")[0] : null,
-                                    endDate: end ? end.toISOString().split("T")[0] : null,
-                                }))
-                            }
-                            options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
-                            className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:border-[var(--primary)] transition-all"
-                            placeholder={t("filters.datePlaceholder")}
-                        />
-                    </FilterField>
-                </>
-            }
-
-            // ── Table ─────────────────────────────────────────────────────────────
-            columns={columns}
-            data={pager.records}
-            isLoading={loading}
-
-            // ── Pagination ────────────────────────────────────────────────────────
-            pagination={{
-                total_records: pager.total_records,
-                current_page: pager.current_page,
-                per_page: pager.per_page,
-            }}
-            onPageChange={handlePageChange}
-        />
+        </>
     );
 }

@@ -5330,6 +5330,9 @@
       "signup": "Create Account"
     },
     "signin": {
+      "session_expired": "Session expired, please log in again",
+      "no_permission": "Sorry, you do not have permission to access this page",
+      "invalid_credentials": "Invalid email or password",
       "title": "Welcome Back",
       "subtitle": "Enter your details to continue",
       "email": "Email",
@@ -5737,6 +5740,106 @@
       "errorFetchingOrder": "An error occurred while fetching the order",
       "errorFetchingStatuses": "An error occurred while fetching statuses",
       "errorUpdatingStatus": "An error occurred while updating the status"
+    }
+  },
+  "paymentSuccess": {
+    "title": "Payment Successful!",
+    "subtitle": "Your payment has been processed successfully",
+    "loading": "Loading payment details...",
+    "successMessage": "Thank you for your payment. A confirmation email has been sent to your inbox.",
+    "labels": {
+      "paymentFor": "Payment For",
+      "amount": "Amount Paid",
+      "date": "Payment Date",
+      "customer": "Customer",
+      "subscription": "Subscription Plan",
+      "feature": "Feature Purchased",
+      "duration": "Duration",
+      "status": "Status"
+    },
+    "purpose": {
+      "walletTopUp": "Wallet Top-Up",
+      "subscriptionPayment": "Subscription Payment",
+      "featurePurchase": "Feature Purchase"
+    },
+    "duration": {
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "lifetime": "Lifetime"
+    },
+    "status": {
+      "active": "Active"
+    },
+    "common": {
+      "subscription": "Subscription",
+      "feature": "Feature"
+    },
+    "actions": {
+      "goToWallet": "Go to Wallet",
+      "goToSubscriptions": "View My Subscription",
+      "goToFeatures": "View My Features",
+      "backToHome": "Back to Home"
+    },
+    "errors": {
+      "title": "Unable to Load Payment Details",
+      "noSessionId": "No payment session ID provided",
+      "fetchFailed": "Failed to load payment information"
+    }
+  },
+  "paymentFail": {
+    "title": "Payment Failed",
+    "subtitle": "We couldn't process your payment",
+    "loading": "Loading payment details...",
+    "helpMessage": "If you need assistance, please contact our support team.",
+    "labels": {
+      "paymentFor": "Payment For",
+      "amount": "Amount",
+      "date": "Attempted On",
+      "customer": "Customer",
+      "status": "Payment Status",
+      "subscription": "Subscription Plan",
+      "feature": "Feature",
+      "duration": "Duration",
+      "paymentStatus": "Payment Status",
+      "possibleReasons": "Possible Reasons"
+    },
+    "purpose": {
+      "walletTopUp": "Wallet Top-Up",
+      "subscriptionPayment": "Subscription Payment",
+      "featurePurchase": "Feature Purchase"
+    },
+    "duration": {
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "lifetime": "Lifetime"
+    },
+    "status": {
+      "failed": "Failed",
+      "cancelled": "Cancelled",
+      "expired": "Expired",
+      "paymentFailed": "Payment Failed"
+    },
+    "reasons": {
+      "insufficientFunds": "Insufficient funds in your account",
+      "cardDeclined": "Your card was declined by the bank",
+      "networkIssue": "Network connection issue during payment",
+      "cancelledByUser": "Payment was cancelled by you"
+    },
+    "common": {
+      "subscription": "Subscription",
+      "feature": "Feature"
+    },
+    "actions": {
+      "tryAgain": "Try Again",
+      "retryWallet": "Try Wallet Top-Up Again",
+      "retrySubscription": "Try Subscription Again",
+      "retryFeature": "Try Feature Purchase Again",
+      "backToHome": "Back to Home"
+    },
+    "errors": {
+      "title": "Unable to Load Payment Details",
+      "noSessionId": "No payment session ID provided",
+      "fetchFailed": "Failed to load payment information"
     }
   }
 }

@@ -8,12 +8,14 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { getUser } from '@/hook/getUser';
-import { Copy, Loader2, RefreshCw, RotateCcw, Webhook } from 'lucide-react';
+import { AlertCircle, ArrowRight, Check, Copy, Crown, Loader2, MessageCircle, Package, RefreshCw, RotateCcw, Store, Truck, Upload, Users, Webhook, X } from 'lucide-react';
 import { useRouter } from '@/i18n/navigation';
 import { PROVIDER_META, SHIP_PROVIDERS, useShippingSettings, useShippingWebhook } from '@/hook/shipping';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { STORE_PROVIDERS, useStoreConfig, useStoreWebhook } from '@/hook/stores';
 import { PrimaryBtn } from '@/components/atoms/Button';
+import { useSubscriptionsApi } from '../plans/page';
+import { cn } from '@/utils/cn';
 /* ─── CSS ─────────────────────────────────────────────────── */
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
@@ -163,43 +165,6 @@ const IcGlobe = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none
 const IcPhone = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.58 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.56a16 16 0 0 0 6.29 6.29l.87-.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" /></svg>;
 const IcLock = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>;
 
-/* ─── Primitives ──────────────────────────────────────────── */
-const BtnPrimary = ({ children, loading, onClick, disabled, style }) => (
-	<button type="button" onClick={onClick} disabled={disabled || loading}
-		style={{
-			height: 50, padding: '0 28px',
-			background: disabled ? 'var(--p-light)' : 'var(--p)', color: '#fff',
-			border: 'none', borderRadius: 'var(--radius-sm)',
-			fontFamily: 'var(--font)', fontSize: 15, fontWeight: 700,
-			cursor: disabled || loading ? 'not-allowed' : 'pointer',
-			display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-			boxShadow: disabled ? 'none' : '0 6px 20px rgba(103,99,175,.3)',
-			opacity: disabled ? .55 : 1,
-			transition: 'all .18s', ...style,
-		}}
-		onMouseOver={e => { if (!disabled && !loading) { e.currentTarget.style.background = 'var(--p2)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
-		onMouseOut={e => { e.currentTarget.style.background = disabled ? 'var(--p-light)' : 'var(--p)'; e.currentTarget.style.transform = 'translateY(0)'; }}
-	>
-		{loading ? <div className="spinner" /> : children}
-	</button>
-);
-
-const BtnGhost = ({ children, onClick, style }) => (
-	<button type="button" onClick={onClick}
-		style={{
-			height: 48, padding: '0 22px',
-			background: 'transparent', color: 'var(--text-3)',
-			border: '1.5px solid var(--border)', borderRadius: 'var(--radius-sm)',
-			fontFamily: 'var(--font)', fontSize: 14, fontWeight: 600,
-			cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-			transition: 'all .18s', ...style,
-		}}
-		onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--p)'; e.currentTarget.style.color = 'var(--p)'; e.currentTarget.style.background = 'var(--p-xlight)'; }}
-		onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-3)'; e.currentTarget.style.background = 'transparent'; }}
-	>
-		{children}
-	</button>
-);
 
 function Field({ label, required, children, error, style }) {
 	return (
@@ -482,71 +447,34 @@ const PLANS = [
 	},
 ];
 
-/* ── Feature row — matches your PricingSection SVG badge icon ── */
-function PlanFeature({ label, featured }) {
-	return (
-		<div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', direction: 'rtl' }}>
-			<svg width="18" height="18" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
-				<path d="M6.98 10l2.01 2.02 4.03-4.04"
-					stroke={featured ? '#fff' : '#6763AF'}
-					strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-				<path d="M8.96 2.04a1.5 1.5 0 0 1 2.08 0l1.32 1.13c.25.22.72.39 1.05.39h1.42c.88 0 1.61.72 1.61 1.61v1.42c0 .32.17.8.38 1.05l1.14 1.32a1.5 1.5 0 0 1 0 2.08l-1.14 1.32c-.21.25-.38.72-.38 1.05v1.42c0 .88-.73 1.61-1.61 1.61H13.4c-.32 0-.8.17-1.05.38l-1.32 1.14a1.5 1.5 0 0 1-2.08 0L7.64 16.8c-.25-.21-.72-.38-1.05-.38H5.15c-.88 0-1.61-.73-1.61-1.61V13.4c0-.33-.18-.8-.39-1.05L2.03 11.04a1.5 1.5 0 0 1 0-2.08l1.12-1.3c.21-.25.39-.73.39-1.06V5.18c0-.88.73-1.61 1.61-1.61H6.6c.32 0 .8-.17 1.04-.39z"
-					stroke={featured ? 'rgba(255,255,255,0.5)' : '#6763AF'}
-					strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" />
-			</svg>
-			<span style={{
-				fontSize: 12,
-				color: featured ? 'rgba(255,255,255,0.82)' : 'var(--text-2)',
-				lineHeight: 1.5,
-			}}>{label}</span>
-		</div>
-	);
-}
-
 
 function PlanSkeleton() {
 	return (
-		<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 24, alignItems: 'center' }}>
-			{[0, 1, 2].map(i => {
-				const isCenter = i === 1;
+		<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 24 }}>
+			{[0, 1, 2].map(idx => {
+				const isCenter = idx === 1;
 				return (
-					<div key={i} style={{
-						position: 'relative',
-						borderRadius: 20,
-						padding: isCenter ? '28px 20px' : '24px 18px',
-						height: isCenter ? 350 : 300,
-						background: isCenter ? '#1b1945' : 'var(--surface)',
-						border: isCenter ? '2px solid transparent' : '2px solid rgba(103,99,175,.08)',
-						transform: isCenter ? 'scale(1.03)' : 'scale(1)',
-						opacity: 1,
-						overflow: 'hidden',
-					}}>
-						{/* top badge skeleton */}
-						<div style={{
-							position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)',
-							width: isCenter ? 120 : 90, height: 14, borderRadius: 10, background: 'rgba(255,255,255,0.08)'
-						}} />
-
-						<div style={{ marginTop: 36 }}>
-							{/* checkmark placeholder */}
-							<div style={{
-								position: 'absolute', top: 22, left: 12,
-								width: 22, height: 22, borderRadius: '50%',
-								background: isCenter ? 'rgba(186,235,51,0.18)' : 'rgba(103,99,175,0.06)'
-							}} />
-
-							{/* tier / name skeleton */}
+					<div
+						key={idx}
+						style={{
+							borderRadius: 20,
+							padding: isCenter ? '28px 20px' : '24px 18px',
+							background: isCenter ? '#1b1945' : 'var(--surface)',
+							border: '2px solid rgba(103,99,175,0.08)',
+							transform: isCenter ? 'scale(1.03)' : 'scale(1)',
+						}}
+					>
+						<div style={{ marginTop: isCenter ? 18 : 0 }}>
+							{/* tier+name skeleton */}
 							<div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, direction: 'rtl' }}>
-								<div style={{ width: 7, height: 7, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }} />
-								<div style={{ width: 80, height: 12, borderRadius: 6, background: 'rgba(255,255,255,0.06)' }} />
-								<div style={{ flex: 1, width: 120, height: 16, borderRadius: 6, background: isCenter ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.04)' }} />
+								<div style={{ width: 7, height: 7, borderRadius: '50%', background: 'rgba(0,0,0,0.1)' }} />
+								<div style={{ width: 40, height: 10, borderRadius: 6, background: 'rgba(0,0,0,0.06)' }} />
+								<div style={{ width: 60, height: 12, borderRadius: 6, background: 'rgba(0,0,0,0.08)' }} />
 							</div>
 
 							{/* price skeleton */}
-							<div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10, direction: 'rtl' }}>
-								<div style={{ width: isCenter ? 120 : 90, height: isCenter ? 34 : 28, borderRadius: 6, background: isCenter ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.04)' }} />
-								<div style={{ width: 60, height: 12, borderRadius: 6, background: 'rgba(255,255,255,0.05)' }} />
-							</div>
+							<div style={{ width: 100, height: 36, borderRadius: 8, background: 'rgba(0,0,0,0.08)', marginBottom: 4 }} />
+							<div style={{ width: 80, height: 10, borderRadius: 6, background: 'rgba(0,0,0,0.05)', marginBottom: 18 }} />
 
 							{/* CTA skeleton */}
 							<div style={{ width: '100%', height: 40, borderRadius: 99, background: isCenter ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)', marginBottom: 12 }} />
@@ -554,7 +482,7 @@ function PlanSkeleton() {
 							{/* divider */}
 							<div style={{ height: 1, background: isCenter ? 'rgba(255,255,255,0.06)' : 'var(--border)', marginBottom: 14 }} />
 
-							{/* features skeleton (a few short lines) */}
+							{/* features skeleton */}
 							<div style={{ background: isCenter ? 'rgba(255,255,255,0.03)' : '#F8F9FFC7', borderRadius: 12, padding: '10px', display: 'flex', flexDirection: 'column', gap: 8 }}>
 								{[0, 1, 2, 3].map(r => (
 									<div key={r} style={{ width: `${60 + r * 8}%`, height: 10, borderRadius: 6, background: 'rgba(0,0,0,0.06)' }} />
@@ -568,168 +496,304 @@ function PlanSkeleton() {
 	);
 }
 
+/* ─────────────────────────────────────────────────────────
+   PLAN FEATURE ITEM (Keep original styling)
+───────────────────────────────────────────────────────── */
+function PlanFeature({ label, featured }) {
+	return (
+		<div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, direction: 'rtl', marginBottom: 6 }}>
+			<IcCheck
+				size={12}
+				style={{
+					flexShrink: 0,
+					marginTop: 2,
+					color: featured ? '#BAEB33' : 'var(--p)',
+				}}
+			/>
+			<span style={{ fontSize: 11.5, lineHeight: 1.4, color: featured ? 'rgba(255,255,255,.75)' : 'var(--text-2)' }}>
+				{label}
+			</span>
+		</div>
+	);
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   BUTTONS (Keep original styling)
+───────────────────────────────────────────────────────── */
+function BtnGhost({ children, onClick, disabled }) {
+	return (
+		<button
+			onClick={onClick}
+			disabled={disabled}
+			style={{
+				padding: '10px 22px',
+				borderRadius: 99,
+				border: '1.5px solid var(--border)',
+				background: 'var(--surface)',
+				color: 'var(--text-2)',
+				fontSize: 13,
+				fontWeight: 700,
+				cursor: disabled ? 'not-allowed' : 'pointer',
+				opacity: disabled ? 0.5 : 1,
+				transition: 'all .18s',
+			}}
+			onMouseEnter={e => !disabled && (e.currentTarget.style.background = 'var(--surface2)')}
+			onMouseLeave={e => (e.currentTarget.style.background = 'var(--surface)')}
+		>
+			{children}
+		</button>
+	);
+}
+
+function BtnPrimary({ children, onClick, disabled, loading }) {
+	return (
+		<button
+			onClick={onClick}
+			disabled={disabled || loading}
+			style={{
+				padding: '10px 24px',
+				borderRadius: 99,
+				border: 'none',
+				background: 'var(--p)',
+				color: '#fff',
+				fontSize: 13,
+				fontWeight: 700,
+				cursor: disabled || loading ? 'not-allowed' : 'pointer',
+				opacity: disabled ? 0.5 : 1,
+				display: 'flex',
+				alignItems: 'center',
+				gap: 6,
+				boxShadow: '0 4px 16px rgba(103,99,175,.25)',
+				transition: 'all .18s',
+			}}
+			onMouseEnter={e => !disabled && !loading && (e.currentTarget.style.opacity = '0.88')}
+			onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+		>
+			{loading ? <div className="spinner" /> : children}
+		</button>
+	);
+}
+
+/* ─────────────────────────────────────────────────────────
+   MAIN PLAN STEP COMPONENT
+───────────────────────────────────────────────────────── */
 function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
-	const [plans, setPlans] = useState([]);
-	const [isLoading, setIsLoading] = useState(true);
 	const [selected, setSelected] = useState(selectedId || null);
-	const [isYearly, setIsYearly] = useState(false);
+	const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
+	// Use the shared hook for all subscription logic
+	const {
+		loading,
+		isLoading,
+		plans: rawPlans,
+		activeSubscription,
+		user,
+		subscribe,
+		cancelSubscription,
+	} = useSubscriptionsApi();
+	console.log(loading)
+	const currentPlanId = activeSubscription?.plan?.id || activeSubscription?.planId;
+	const hasActiveSubscription = !!activeSubscription;
+
+	// Update selected when selectedId prop changes
 	useEffect(() => {
-		setSelected(selectedId)
-	}, [selectedId])
-	useEffect(() => {
-		let mounted = true;
-		const fetchAvailablePlans = async () => {
-			setIsLoading(true);
-			try {
-				const { data } = await api.get("/plans/available");
-				const formatted = (data || []).map((plan, index) => {
-					const price = Number(plan.price || 0);
-					return {
-						id: plan.id,
-						name: plan.name,
-						priceMonthly: price,
-						priceYearly: Math.round(price * 0.8),
-						badge: plan.isPopular ? 'الأكثر شيوعاً' : null,
-						dotColor: plan.color || (index === 0 ? '#8B88C1' : index === 1 ? '#BAEB33' : '#FF5C2B'),
-						tier: plan.duration || 'باقة',
-						isPopular: !!plan.isPopular,
-						features: [
-							...(Array.isArray(plan.features) ? plan.features : []),
-							`${Number(plan.usersLimit ?? plan.maxUsers ?? 1)} مستخدمين`,
-							`${Number(plan.shippingCompaniesLimit ?? plan.maxShippingCompanies ?? 0)} شركات شحن`
-						]
-					};
-				});
+		setSelected(selectedId);
+	}, [selectedId]);
 
-				if (!mounted) return;
 
-				// Place the most popular plan at center (index 1). If none, keep original order but ensure middle style.
-				const arranged = [...formatted];
-				const popularIndex = arranged.findIndex(p => p.isPopular);
-				if (popularIndex > -1 && arranged.length >= 3) {
-					const [popularPlan] = arranged.splice(popularIndex, 1);
-					// insert in middle (index 1)
-					arranged.splice(1, 0, popularPlan);
-				} else if (arranged.length >= 3) {
-					// If no popular, keep as is but ensure the middle plan is visually featured (handled in render)
-				}
 
-				setPlans(arranged);
+	// Format plans for display (matching old structure)
+	const plans = rawPlans.map((plan, index) => {
+		const price = Number(plan.price || 0);
 
-				if (arranged.length > 0) {
-					// default selection: the featured plan (the center one) or first available
-					const defaultIndex = arranged.findIndex(p => p.isPopular) !== -1
-						? arranged.findIndex(p => p.isPopular)
-						: Math.min(1, arranged.length - 1); // prefer middle if exists
-					setSelected(selectedId || arranged[defaultIndex]?.id || arranged[0].id);
-				}
-			} catch (err) {
-				// toast.error("حدث خطأ أثناء جلب الخطط");
-			} finally {
-				if (mounted) setIsLoading(false);
-			}
+		// Build features array with limits
+		const features = [
+			...(Array.isArray(plan.features) ? plan.features : []),
+		];
+
+		// Add limit details
+		if (plan.usersLimit !== null) {
+			features.push(`${plan.usersLimit} مستخدمين`);
+		} else {
+			features.push('مستخدمين غير محدود');
+		}
+
+		if (plan.storesLimit !== null) {
+			features.push(`${plan.storesLimit} متاجر`);
+		} else {
+			features.push('متاجر غير محدودة');
+		}
+
+		if (plan.shippingCompaniesLimit !== null) {
+			features.push(`${plan.shippingCompaniesLimit} شركات شحن`);
+		} else {
+			features.push('شركات شحن غير محدودة');
+		}
+
+		if (plan.includedOrders !== null) {
+			features.push(`${plan.includedOrders} طلب متضمن`);
+		} else {
+			features.push('طلبات غير محدودة');
+		}
+
+		if (plan.extraOrderFee !== null && plan.extraOrderFee > 0) {
+			features.push(`${plan.extraOrderFee} ج.م رسوم طلب إضافي`);
+		}
+
+		if (plan.bulkUploadPerMonth > 0) {
+			features.push(`${plan.bulkUploadPerMonth} رفع جماعي/شهر`);
+		}
+
+		return {
+			id: plan.id,
+			name: plan.name,
+			type: plan.type, // 'standard', 'trial', 'negotiated'
+			priceMonthly: price,
+			priceYearly: Math.round(price * 0.8),
+			badge: plan.isPopular ? 'الأكثر شيوعاً' : null,
+			dotColor: plan.color || (index === 0 ? '#8B88C1' : index === 1 ? '#BAEB33' : '#FF5C2B'),
+			tier: plan.duration === 'monthly' ? 'شهرية' : plan.duration === 'yearly' ? 'سنوية' : plan.duration === 'lifetime' ? 'مدى الحياة' : 'باقة',
+			isPopular: !!plan.isPopular,
+			features,
 		};
+	});
 
-		fetchAvailablePlans();
-		return () => { mounted = false; };
-	}, []);
+	// Arrange plans: popular in center
+	const arranged = [...plans];
+	const popularIndex = arranged.findIndex(p => p.isPopular);
+	if (popularIndex > -1 && arranged.length >= 3) {
+		const [popularPlan] = arranged.splice(popularIndex, 1);
+		arranged.splice(1, 0, popularPlan);
+	}
 
-	// Add this to your state declarations at the top of PlanStep
-	const [isSubmitting, setIsSubmitting] = useState(false);
+	// Set default selection
+	useEffect(() => {
+		if (arranged.length > 0 && !selected) {
+			const defaultIndex = arranged.findIndex(p => p.isPopular) !== -1
+				? arranged.findIndex(p => p.isPopular)
+				: Math.min(1, arranged.length - 1);
+			setSelected(selectedId || arranged[defaultIndex]?.id || arranged[0].id);
+		}
+	}, [arranged.length, selectedId]);
 
-	const go = async () => {
-		if (!selected) {
+	// Check if trial plan and user completed onboarding
+	const cannotSubscribeToTrial = (planId) => {
+		const plan = rawPlans.find(p => p.id === planId);
+		return plan?.type === 'trial' && user?.onboardingStatus === 'completed';
+	};
+
+	// Handle subscribe with new logic
+	const go = async (newSelected) => {
+
+		const finalSelected = newSelected ? newSelected : selected;
+		if (currentPlanId === finalSelected || (!finalSelected && currentPlanId)) {
+			onNext()
+			return;
+		}
+		if (!finalSelected) {
 			toast.error('يرجى اختيار خطة');
 			return;
 		}
 
-		setIsSubmitting(true);
+		// Check if trying to subscribe to trial when not allowed
+		if (cannotSubscribeToTrial(finalSelected)) {
+			toast.error('النسخة التجريبية غير متاحة بعد إكمال التسجيل');
+			return;
+		}
+
 		try {
-			// Calling your new endpoint with the selected planId and the current billing cycle
-			const response = await api.post("/subscriptions/mock", {
-				planId: selected,
-			});
-
-			toast.success('تم الاشتراك بنجاح');
-
-			// Pass the response data to the next step (e.g., success screen)
-			onNext(response?.data);
+			await subscribe(finalSelected);
+			// If subscribe doesn't redirect (free/trial plan), call onNext
+			// Otherwise, the subscribe function will redirect to checkout
 		} catch (err) {
-			console.log(err)
-			const errorMsg = err.response?.data?.message || "حدث خطأ أثناء تفعيل الاشتراك";
-			toast.error(errorMsg);
-		} finally {
-			setIsSubmitting(false);
+			// Error already handled in hook
+		}
+	};
+
+	// Handle cancel
+	const handleCancel = async () => {
+		if (!activeSubscription?.id) return;
+
+		try {
+			await cancelSubscription(activeSubscription.id);
+			setShowCancelConfirm(false);
+		} catch (err) {
+			// Error already handled in hook
 		}
 	};
 
 	if (!open) return null;
+
 	return (
-		<motion.div key="plan" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: .3 }}>
+		<motion.div
+			key="plan"
+			initial={{ opacity: 0, y: 20 }}
+			animate={{ opacity: 1, y: 0 }}
+			exit={{ opacity: 0, y: -16 }}
+			transition={{ duration: 0.3 }}
+		>
 			{/* Header */}
 			<div style={{ marginBottom: 24 }}>
-				<h2 style={{ fontSize: 22, fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.4px', marginBottom: 6 }}>اختر خطتك</h2>
-				<p style={{ fontSize: 13.5, color: 'var(--text-3)' }}>يمكنك الترقية أو التخفيض في أي وقت</p>
+				<h2 style={{ fontSize: 22, fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.4px', marginBottom: 6 }}>
+					اختر خطتك
+				</h2>
+				<p style={{ fontSize: 13.5, color: 'var(--text-3)' }}>
+					يمكنك الترقية أو التخفيض في أي وقت
+				</p>
 			</div>
 
-			{/* Monthly / Yearly toggle */}
-			<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, direction: 'rtl', marginBottom: 28 }}>
-				<span style={{ fontSize: 13, fontWeight: !isYearly ? 700 : 400, color: !isYearly ? 'var(--text)' : 'var(--text-3)', transition: 'color .2s' }}>
-					شهري
-				</span>
-				<div
-					onClick={() => setIsYearly(v => !v)}
-					style={{
-						width: 44, height: 24, borderRadius: 12,
-						background: isYearly ? '#1b1945' : 'var(--border)',
-						position: 'relative', cursor: 'pointer', transition: 'background .3s',
-					}}
-				>
-					<div style={{
-						position: 'absolute', top: 3,
-						left: isYearly ? 23 : 3,
-						width: 18, height: 18, borderRadius: '50%',
-						background: '#fff', transition: 'left .3s',
-						boxShadow: '0 1px 4px rgba(0,0,0,.2)',
-					}} />
+			{/* Active Subscription Alert */}
+			{hasActiveSubscription && (
+				<div style={{
+					marginBottom: 20,
+					padding: 14,
+					background: '#f0f9ff',
+					border: '1.5px solid #bfdbfe',
+					borderRadius: 12,
+					display: 'flex',
+					alignItems: 'start',
+					gap: 10,
+					direction: 'rtl',
+				}}>
+					<IcCheck size={18} style={{ color: '#3b82f6', marginTop: 2 }} />
+					<div style={{ flex: 1 }}>
+						<div style={{ fontSize: 13, fontWeight: 700, color: '#1e40af', marginBottom: 3 }}>
+							لديك اشتراك نشط
+						</div>
+						<div style={{ fontSize: 12, color: '#3b82f6' }}>
+							أنت مشترك حالياً في باقة. يمكنك إلغاء اشتراكك الحالي إذا كنت ترغب في اختيار باقة مختلفة.
+						</div>
+					</div>
 				</div>
-				<span style={{ fontSize: 13, fontWeight: isYearly ? 700 : 400, color: isYearly ? 'var(--text)' : 'var(--text-3)', transition: 'color .2s' }}>
-					سنوي
-				</span>
-				{isYearly && (
-					<motion.span initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }}
-						style={{ fontSize: 11, fontWeight: 700, background: '#BAEB33', color: '#fff', padding: '2px 8px', borderRadius: 20 }}>
-						وفّر ٢٠٪
-					</motion.span>
-				)}
-			</div>
+			)}
+
 
 			{/* Cards */}
 			{isLoading ? (
 				<PlanSkeleton />
 			) : (
 				<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 24, alignItems: 'center' }}>
-					{plans.map((p, index) => {
-						const price = isYearly ? p.priceYearly : p.priceMonthly;
+					{arranged.map((p, index) => {
+						const price = p.priceMonthly;
 						const isSelected = selected === p.id;
-
-						// Featured card is always the center (index 1) after arrangement
 						const isFeatured = index === 1;
+						const isCurrentPlan = p.id === currentPlanId;
+						const isTrialDisabled = cannotSubscribeToTrial(p.id);
 
 						return (
 							<motion.div
 								key={p.id}
 								initial={{ opacity: 0, y: 20 }}
 								animate={{ opacity: 1, y: 0 }}
-								transition={{ delay: index * 0.08, duration: .35, ease: [.34, 1.56, .64, 1] }}
-								onClick={() => setSelected(p.id)}
+								transition={{ delay: index * 0.08, duration: 0.35, ease: [0.34, 1.56, 0.64, 1] }}
+								onClick={() => !isTrialDisabled && !hasActiveSubscription && setSelected(p.id)}
 								style={{
 									position: 'relative',
 									borderRadius: 20,
 									padding: isFeatured ? '28px 20px' : '24px 18px',
 									direction: 'rtl',
-									cursor: 'pointer',
+									cursor: isTrialDisabled || hasActiveSubscription ? 'not-allowed' : 'pointer',
 									background: isFeatured ? '#1b1945' : 'var(--surface)',
 									border: isFeatured
 										? `2px solid ${isSelected ? '#BAEB33' : 'transparent'}`
@@ -740,31 +804,74 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
 									transform: isFeatured ? 'scale(1.03)' : 'scale(1)',
 									zIndex: isFeatured ? 2 : 1,
 									transition: 'border-color .2s, box-shadow .2s, transform .2s',
+									opacity: isTrialDisabled ? 0.6 : 1,
 								}}
 							>
 								{/* Top badge strip */}
 								{p.badge && (
-									<div style={{
-										position: 'absolute', top: 0, left: 0, right: 0,
-										background: isFeatured ? '#BAEB33' : 'var(--p)',
-										color: '#fff',
-										fontSize: 9.5, fontWeight: 700, textAlign: 'center',
-										padding: '4px 0', letterSpacing: '.6px',
-										borderRadius: '18px 18px 0 0',
-									}}>{p.badge}</div>
+									<div
+										style={{
+											position: 'absolute',
+											top: 0,
+											left: 0,
+											right: 0,
+											background: isFeatured ? '#BAEB33' : 'var(--p)',
+											color: '#fff',
+											fontSize: 9.5,
+											fontWeight: 700,
+											textAlign: 'center',
+											padding: '4px 0',
+											letterSpacing: '.6px',
+											borderRadius: '18px 18px 0 0',
+										}}
+									>
+										{p.badge}
+									</div>
+								)}
+
+								{/* Active Plan Badge */}
+								{isCurrentPlan && (
+									<div
+										style={{
+											position: 'absolute',
+											top: p.badge ? 30 : 12,
+											right: 12,
+											background: '#10b981',
+											color: '#fff',
+											fontSize: 9,
+											fontWeight: 700,
+											padding: '4px 10px',
+											borderRadius: 99,
+											display: 'flex',
+											alignItems: 'center',
+											gap: 4,
+										}}
+									>
+										<span style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff', animation: 'pulse 2s infinite' }} />
+										نشطة
+									</div>
 								)}
 
 								<div style={{ marginTop: p.badge ? 18 : 0 }}>
 									{/* Selected checkmark */}
 									<AnimatePresence>
-										{isSelected && (
+										{isSelected && !isCurrentPlan && (
 											<motion.div
-												initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
+												initial={{ scale: 0 }}
+												animate={{ scale: 1 }}
+												exit={{ scale: 0 }}
 												style={{
-													position: 'absolute', top: p.badge ? 30 : 12, left: 12,
-													width: 22, height: 22, borderRadius: '50%',
+													position: 'absolute',
+													top: p.badge ? 30 : 12,
+													left: 12,
+													width: 22,
+													height: 22,
+													borderRadius: '50%',
 													background: isFeatured ? '#BAEB33' : 'var(--p)',
-													display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff',
+													display: 'flex',
+													alignItems: 'center',
+													justifyContent: 'center',
+													color: '#fff',
 												}}
 											>
 												<IcCheck size={11} />
@@ -774,67 +881,206 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
 
 									{/* Tier dot + label */}
 									<div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, direction: 'rtl' }}>
-										<span style={{
-											width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
-											background: p.dotColor,
-											boxShadow: `0 0 6px ${p.dotColor}`,
-										}} />
-										<span style={{ fontSize: 11, color: isFeatured ? 'rgba(255,255,255,.5)' : 'var(--text-3)', fontWeight: 500 }}>{p.tier}</span>
-										<span style={{ fontSize: 14, fontWeight: 800, color: isFeatured ? '#fff' : 'var(--text)' }}>{p.name}</span>
+										<span
+											style={{
+												width: 7,
+												height: 7,
+												borderRadius: '50%',
+												flexShrink: 0,
+												background: p.dotColor,
+												boxShadow: `0 0 6px ${p.dotColor}`,
+											}}
+										/>
+										<span style={{ fontSize: 11, color: isFeatured ? 'rgba(255,255,255,.5)' : 'var(--text-3)', fontWeight: 500 }}>
+											{p.tier}
+										</span>
+										<span style={{ fontSize: 14, fontWeight: 800, color: isFeatured ? '#fff' : 'var(--text)' }}>
+											{p.name}
+										</span>
+										{p.type === 'trial' && (
+											<span style={{ fontSize: 9, background: '#3b82f6', color: '#fff', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>
+												تجريبي
+											</span>
+										)}
 									</div>
 
 									{/* Price */}
-									<div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 4, direction: 'rtl' }}>
-										<span style={{
-											fontSize: isFeatured ? 32 : 26,
-											fontWeight: 900,
-											color: isFeatured ? '#fff' : 'var(--text)',
-											fontFamily: 'var(--mono)', lineHeight: 1,
-											letterSpacing: '-1px',
-										}}>
-											{price.toLocaleString()}
-										</span>
-										<span style={{ fontSize: 11, color: isFeatured ? 'rgba(255,255,255,.55)' : 'var(--text-3)', fontWeight: 500 }}>
-											ج.م / شهر
-										</span>
-									</div>
-
-									{isYearly && (
-										<div style={{ fontSize: 10.5, color: isFeatured ? 'rgba(255,255,255,.4)' : 'var(--text-3)', marginBottom: 8 }}>
-											يُدفع {(price * 12).toLocaleString()} ج.م سنوياً
+									{p.type === 'negotiated' ? (
+										<div style={{ marginBottom: 12 }}>
+											<span style={{ fontSize: 20, fontWeight: 900, color: isFeatured ? '#BAEB33' : '#FF5C2B' }}>
+												حسب الاتفاق
+											</span>
 										</div>
+									) : (
+										<>
+											<div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 4, direction: 'rtl' }}>
+												<span
+													style={{
+														fontSize: isFeatured ? 32 : 26,
+														fontWeight: 900,
+														color: isFeatured ? '#fff' : 'var(--text)',
+														fontFamily: 'var(--mono)',
+														lineHeight: 1,
+														letterSpacing: '-1px',
+													}}
+												>
+													{price.toLocaleString()}
+												</span>
+												<span style={{ fontSize: 11, color: isFeatured ? 'rgba(255,255,255,.55)' : 'var(--text-3)', fontWeight: 500 }}>
+													ج.م / شهر
+												</span>
+											</div>
+										</>
 									)}
 
-									{/* CTA */}
-									<button
-										style={{
-											width: '100%', padding: '10px 0',
-											borderRadius: 99, border: 'none',
-											fontFamily: 'var(--font)', fontSize: 13, fontWeight: 700,
-											cursor: 'pointer', marginBottom: 18, marginTop: 6,
-											background: isFeatured ? '#BAEB33' : '#1b1945',
-											color: '#fff',
-											boxShadow: isFeatured ? '0 4px 16px rgba(186,235,51,.35)' : '0 4px 16px rgba(27,25,69,.25)',
-											transition: 'opacity .18s, transform .18s',
-										}}
-										disabled={isSubmitting}
-										onMouseEnter={e => { e.currentTarget.style.opacity = '.88'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-										onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'none'; }}
-										onClick={e => { e.stopPropagation(); setSelected(p.id); }}
-									>
-										ابدأ الآن
-									</button>
+									{/* CTA Button */}
+									{isCurrentPlan ? (
+										<button
+											onClick={(e) => {
+												e.stopPropagation();
+												setShowCancelConfirm(true);
+											}}
+											style={{
+												width: '100%',
+												padding: '10px 0',
+												borderRadius: 99,
+												border: 'none',
+												fontFamily: 'var(--font)',
+												fontSize: 13,
+												fontWeight: 700,
+												cursor: 'pointer',
+												marginBottom: 18,
+												marginTop: 6,
+												background: '#ef4444',
+												color: '#fff',
+												boxShadow: '0 4px 16px rgba(239,68,68,.35)',
+												transition: 'opacity .18s, transform .18s',
+												display: 'flex',
+												alignItems: 'center',
+												justifyContent: 'center',
+												gap: 6,
+											}}
+											onMouseEnter={e => {
+												e.currentTarget.style.opacity = '.88';
+												e.currentTarget.style.transform = 'translateY(-1px)';
+											}}
+											onMouseLeave={e => {
+												e.currentTarget.style.opacity = '1';
+												e.currentTarget.style.transform = 'none';
+											}}
+										>
+											<X size={14} /> إلغاء الاشتراك
+										</button>
+									) : p.type === 'negotiated' ? (
+										<a
+											href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent(
+												`مرحباً، أنا مهتم بخطة ${p.name}`
+											)}`}
+											target="_blank"
+											rel="noopener noreferrer"
+											onClick={(e) => e.stopPropagation()}
+											style={{
+												width: '100%',
+												padding: '10px 0',
+												borderRadius: 99,
+												border: 'none',
+												fontFamily: 'var(--font)',
+												fontSize: 13,
+												fontWeight: 700,
+												cursor: 'pointer',
+												marginBottom: 18,
+												marginTop: 6,
+												background: '#25D366',
+												color: '#fff',
+												boxShadow: '0 4px 16px rgba(37,211,102,.35)',
+												transition: 'opacity .18s, transform .18s',
+												display: 'flex',
+												alignItems: 'center',
+												justifyContent: 'center',
+												gap: 6,
+												textDecoration: 'none',
+											}}
+											onMouseEnter={e => {
+												e.currentTarget.style.opacity = '.88';
+												e.currentTarget.style.transform = 'translateY(-1px)';
+											}}
+											onMouseLeave={e => {
+												e.currentTarget.style.opacity = '1';
+												e.currentTarget.style.transform = 'none';
+											}}
+										>
+											<MessageCircle size={14} /> تواصل معنا
+										</a>
+									) : (
+										<button
+											style={{
+												width: '100%',
+												padding: '10px 0',
+												borderRadius: 99,
+												border: 'none',
+												fontFamily: 'var(--font)',
+												fontSize: 13,
+												fontWeight: 700,
+												cursor: isTrialDisabled || hasActiveSubscription ? 'not-allowed' : 'pointer',
+												marginBottom: 18,
+												marginTop: 6,
+												background: isTrialDisabled || hasActiveSubscription ? '#9ca3af' : isFeatured ? '#BAEB33' : '#1b1945',
+												color: '#fff',
+												boxShadow: isFeatured ? '0 4px 16px rgba(186,235,51,.35)' : '0 4px 16px rgba(27,25,69,.25)',
+												transition: 'opacity .18s, transform .18s',
+												opacity: isTrialDisabled || hasActiveSubscription ? 0.5 : 1,
+												display: 'flex',
+												alignItems: 'center',
+												justifyContent: 'center',
+												gap: 6,
+											}}
+											disabled={loading || isTrialDisabled || hasActiveSubscription}
+											onMouseEnter={e => {
+												if (!isTrialDisabled && !hasActiveSubscription) {
+													e.currentTarget.style.opacity = '.88';
+													e.currentTarget.style.transform = 'translateY(-1px)';
+												}
+											}}
+											onMouseLeave={e => {
+												e.currentTarget.style.opacity = isTrialDisabled || hasActiveSubscription ? '0.5' : '1';
+												e.currentTarget.style.transform = 'none';
+											}}
+											onClick={e => {
+												e.stopPropagation();
+												if (!isTrialDisabled && !hasActiveSubscription && !loading) {
+													go(p.id);
+												}
+											}}
+										>
+											{isTrialDisabled ? (
+												<>
+													<AlertCircle size={14} /> غير متاح
+												</>
+											) : hasActiveSubscription ? (
+												<>
+													<AlertCircle size={14} /> لديك اشتراك نشط
+												</>
+											) : (
+
+												loading ? <Loader2 className="animate-spin" /> : 'ابدأ الآن'
+											)}
+										</button>
+									)}
 
 									{/* Divider */}
 									<div style={{ height: 1, background: isFeatured ? 'rgba(255,255,255,.1)' : 'var(--border)', marginBottom: 14 }} />
 
 									{/* Features list */}
-									<div style={{
-										background: isFeatured ? 'rgba(255,255,255,.05)' : '#F8F9FFC7',
-										border: `1px solid ${isFeatured ? 'rgba(255,255,255,.08)' : '#6763AF14'}`,
-										borderRadius: 12, padding: '10px 10px 6px',
-										display: 'flex', flexDirection: 'column',
-									}}>
+									<div
+										style={{
+											background: isFeatured ? 'rgba(255,255,255,.05)' : '#F8F9FFC7',
+											border: `1px solid ${isFeatured ? 'rgba(255,255,255,.08)' : '#6763AF14'}`,
+											borderRadius: 12,
+											padding: '10px 10px 6px',
+											display: 'flex',
+											flexDirection: 'column',
+										}}
+									>
 										{p.features.map((f, i) => (
 											<PlanFeature key={i} label={f} featured={isFeatured} />
 										))}
@@ -846,13 +1092,105 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
 				</div>
 			)}
 
+			{/* Buttons */}
 			<div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
 				<BtnGhost onClick={onBack}>رجوع</BtnGhost>
-				<BtnPrimary onClick={go} disabled={!selected || isLoading || nextLoading} loading={nextLoading}>متابعة <IcArrow dir="right" /></BtnPrimary>
+				<BtnPrimary onClick={go} disabled={!(selected || hasActiveSubscription) || isLoading || nextLoading || loading} loading={nextLoading || loading}>
+					متابعة <IcArrow dir="right" />
+				</BtnPrimary>
 			</div>
+
+			{/* Cancel Confirmation Modal */}
+			{showCancelConfirm && (
+				<div
+					style={{
+						position: 'fixed',
+						inset: 0,
+						background: 'rgba(0,0,0,0.5)',
+						backdropFilter: 'blur(4px)',
+						display: 'flex',
+						alignItems: 'center',
+						justifyContent: 'center',
+						zIndex: 9999,
+					}}
+					onClick={() => setShowCancelConfirm(false)}
+				>
+					<motion.div
+						initial={{ opacity: 0, scale: 0.95 }}
+						animate={{ opacity: 1, scale: 1 }}
+						onClick={e => e.stopPropagation()}
+						style={{
+							background: 'var(--surface)',
+							borderRadius: 16,
+							padding: 24,
+							maxWidth: 420,
+							width: '90%',
+							border: '2px solid #fecaca',
+							boxShadow: '0 24px 48px rgba(0,0,0,0.2)',
+						}}
+					>
+						<div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+							<div
+								style={{
+									width: 48,
+									height: 48,
+									borderRadius: 12,
+									background: '#fee2e2',
+									display: 'flex',
+									alignItems: 'center',
+									justifyContent: 'center',
+								}}
+							>
+								<AlertCircle size={24} style={{ color: '#dc2626' }} />
+							</div>
+							<h3 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text)' }}>إلغاء الاشتراك؟</h3>
+						</div>
+						<p style={{ fontSize: 13.5, color: 'var(--text-2)', marginBottom: 20, lineHeight: 1.6 }}>
+							هل أنت متأكد من رغبتك في إلغاء اشتراكك الحالي؟ لا يمكن التراجع عن هذا الإجراء.
+						</p>
+						<div style={{ display: 'flex', gap: 10 }}>
+							<button
+								onClick={() => setShowCancelConfirm(false)}
+								style={{
+									flex: 1,
+									padding: '10px 0',
+									borderRadius: 99,
+									border: '1.5px solid var(--border)',
+									background: 'var(--surface)',
+									color: 'var(--text-2)',
+									fontSize: 13,
+									fontWeight: 700,
+									cursor: 'pointer',
+								}}
+							>
+								لا، الإبقاء عليه
+							</button>
+							<button
+								onClick={handleCancel}
+								disabled={loading}
+								style={{
+									flex: 1,
+									padding: '10px 0',
+									borderRadius: 99,
+									border: 'none',
+									background: '#dc2626',
+									color: '#fff',
+									fontSize: 13,
+									fontWeight: 700,
+									cursor: loading ? 'not-allowed' : 'pointer',
+									opacity: loading ? 0.7 : 1,
+								}}
+							>
+								{loading ? 'جاري الإلغاء...' : 'نعم، إلغاء'}
+							</button>
+						</div>
+					</motion.div>
+				</div>
+			)}
 		</motion.div>
 	);
 }
+
 
 
 /* ─── Step 2: Company ─────────────────────────────────────── */
@@ -2705,12 +3043,21 @@ export default function OnboardingPage() {
 		try {
 			// 1️⃣ Call the same endpoint to move currentOnboardingStep to 'finished' or 'completed'
 			await api.post('/users/onboarding/next');
-
+			const { data } = await api.get('/auth/sign');
+			if (data?.accessToken) {
+				localStorage.setItem('accessToken', data.accessToken);
+				localStorage.setItem('user', JSON.stringify(data.user));
+			}
+			await fetch('/api/auth/login', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ accessToken: data.accessToken, user: data.user }),
+			});
 			// 2️⃣ Show success and redirect
 			toast.success('اكتمل الإعداد! مرحباً بك 🎉', { id: tid });
 
 			setTimeout(() => {
-				window.location.href = user?.role === 'admin' ? '/orders' : '/orders/employee-orders';
+				window.location.href = user?.role.name === 'admin' ? '/orders' : '/orders/employee-orders';
 			}, 1200);
 		} catch (err) {
 			const msg = err.response?.data?.message || "حدث خطأ أثناء إنهاء الإعداد";

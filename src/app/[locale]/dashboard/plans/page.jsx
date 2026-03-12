@@ -67,6 +67,9 @@ import { useTranslations } from "next-intl";
 import TransactionTab from "./tabs/transactionTab";
 import SubscriptionsTab from "./tabs/subscriptionsTab";
 import PageHeader from "@/components/atoms/Pageheader";
+import { Checkbox } from "@/components/ui/checkbox";
+import FeaturesTab from "./tabs/FeaturesTab";
+import UserFeaturesTab from "./tabs/UserFeaturesTab";
 
 /** =========================
  * Tiny Spinner
@@ -122,32 +125,50 @@ export function useSubscriptionsApi() {
 
 	// ✅ Fetch Plans
 	const fetchPlans = useCallback(async () => {
+		// Standardized to one loading state unless you specifically need two
+		setLoading(true);
 		setIsLoading(true);
+
 		try {
-			setLoading(true);
 			const { data } = await api.get("/plans");
 
-			const transformedPlans = (data || []).map((plan) => ({
-				id: plan.id,
-				name: plan.name,
-				price: Number(plan.price),
-				duration: plan.duration,
-				description: plan.description || "",
-				features: Array.isArray(plan.features) ? plan.features : [],
-				color: plan.color || "from-blue-500 to-blue-600",
-				isActive: plan.isActive !== false,
-				isPopular: plan.isPopular || false,
+			const transformedPlans = (data || []).map((plan) => {
+				// Helper to handle the "Number or Null" logic for unlimited fields
+				const parseLimit = (val) => (val === null ? null : Number(val));
 
-				// ✅ NEW (limits)
-				// You can adjust fallback keys if backend uses different names
-				usersLimit: Number(plan.usersLimit ?? plan.maxUsers ?? 1),
-				shippingCompaniesLimit: Number(plan.shippingCompaniesLimit ?? plan.maxShippingCompanies ?? 0),
-				bulkUploadPerMonth: Number(plan.bulkUploadPerMonth ?? plan.maxShippingCompanies ?? 0),
+				return {
+					id: plan.id,
+					name: plan.name,
+					description: plan.description || "",
+					color: plan.color || "from-blue-500 to-blue-600",
+					features: Array.isArray(plan.features) ? plan.features : [],
+					isActive: plan.isActive !== false,
+					isPopular: !!plan.isPopular,
 
-				adminId: plan.adminId,
-				createdAt: plan.createdAt,
-				updatedAt: plan.updatedAt,
-			}));
+					// 1. Handle Negotiated/Custom Logic
+					// Maps 'negotiated' or 'custom' string from SQL to boolean for UI
+					type: plan.type,
+					price: plan.price === null ? null : Number(plan.price),
+
+					// 2. Duration Logic
+					duration: plan.duration,
+					durationIndays: plan.durationIndays, // Matches updated DTO
+
+					// 3. Limits (Preserve NULL for 'Unlimited' toggles)
+					usersLimit: parseLimit(plan.usersLimit),
+					storesLimit: parseLimit(plan.storesLimit),
+					shippingCompaniesLimit: parseLimit(plan.shippingCompaniesLimit),
+					includedOrders: parseLimit(plan.includedOrders),
+
+					// 4. Fixed Fees
+					extraOrderFee: parseLimit(plan.extraOrderFee),
+					bulkUploadPerMonth: Number(plan.bulkUploadPerMonth ?? 0),
+
+					// Metadata
+					createdAt: plan.createdAt,
+					updatedAt: plan.updatedAt,
+				};
+			});
 
 			setPlans(transformedPlans);
 			return transformedPlans;
@@ -157,52 +178,58 @@ export function useSubscriptionsApi() {
 			throw error;
 		} finally {
 			setLoading(false);
-			setTimeout(() => setIsLoading(false), 100);
+			setIsLoading(false);
 		}
 	}, []);
-
-	// ✅ Create Plan
 	const createPlan = useCallback(async (planData) => {
 		try {
 			setLoading(true);
 
+			// Construct payload using cleaned data from handleSave
 			const payload = {
 				name: planData.name,
-				price: Number(planData.price),
+				// Map the UI boolean to the SQL string 'negotiated' or 'standard'
+				type: planData.type,
+				price: planData.price, // Null or Number, already handled in handleSave
 				duration: planData.duration,
+				durationIndays: planData.durationIndays, // Typo fixed to match DTO
 				description: planData.description || "",
 				features: Array.isArray(planData.features) ? planData.features : [],
 				color: planData.color || "from-blue-500 to-blue-600",
-				isActive: true, // Always true
-				isPopular: planData.isPopular || false,
+				isActive: true,
+				isPopular: !!planData.isPopular,
 
-				// ✅ NEW (limits) - sent to backend
-				usersLimit: Number(planData.usersLimit ?? 1),
-				shippingCompaniesLimit: Number(planData.shippingCompaniesLimit ?? 0),
-				bulkUploadPerMonth: Number(planData.bulkUploadPerMonth ?? 0),
+				// Limits: Passing values directly (handleSave sends null for 'unlimited')
+				usersLimit: planData.usersLimit,
+				storesLimit: planData.storesLimit,
+				shippingCompaniesLimit: planData.shippingCompaniesLimit,
+				includedOrders: planData.includedOrders,
+				extraOrderFee: planData.extraOrderFee,
+				bulkUploadPerMonth: planData.bulkUploadPerMonth,
 			};
 
 			const { data } = await api.post("/plans", payload);
 			toast.success("تم إنشاء الباقة بنجاح");
 
+			// Normalize the return data so the UI state stays in sync
 			return {
 				...data,
-				price: Number(data.price),
-				features: Array.isArray(data.features) ? data.features : [],
-				isPopular: data.isPopular || false,
+				price: data.price === null ? null : Number(data.price),
+				isPopular: !!data.isPopular,
+				type: data.type,
 
-				// ✅ NEW (limits) normalize return
-				usersLimit: Number(data.usersLimit ?? data.maxUsers ?? payload.usersLimit ?? 1),
-				shippingCompaniesLimit: Number(
-					data.shippingCompaniesLimit ?? data.maxShippingCompanies ?? payload.shippingCompaniesLimit ?? 0
-				),
-				bulkUploadPerMonth: Number(
-					data.bulkUploadPerMonth ?? data.maxShippingCompanies ?? payload.bulkUploadPerMonth ?? 0
-				),
+				// Reconstruct the unlimited flags for the frontend UI toggles
+				usersUnlimited: data.usersLimit === null,
+				storesUnlimited: data.storesLimit === null,
+				shippingUnlimited: data.shippingCompaniesLimit === null,
+				ordersUnlimited: data.includedOrders === null,
+
+				extraFeeNotAllowed: data.extraOrderFee !== null
 			};
 		} catch (error) {
+			// Handle validation errors or generic failures
 			const message = error?.response?.data?.message || "فشل في إنشاء الباقة";
-			toast.error(message);
+			toast.error(Array.isArray(message) ? message[0] : message);
 			throw error;
 		} finally {
 			setLoading(false);
@@ -214,40 +241,46 @@ export function useSubscriptionsApi() {
 		try {
 			setLoading(true);
 
+			// We use the cleaned data from planData (from handleSave) 
+			// to support the 'null' = unlimited logic.
 			const payload = {
 				name: planData.name,
-				price: Number(planData.price),
+				// PlanType is standard or custom based on isNegotiated
+				type: planData.type,
+				price: planData.price, // Already null or Number from handleSave
 				duration: planData.duration,
+				durationIndays: planData.durationIndays,
 				description: planData.description || "",
 				features: Array.isArray(planData.features) ? planData.features : [],
 				color: planData.color || "from-blue-500 to-blue-600",
-				isActive: true, // Always true
-				isPopular: planData.isPopular || false,
+				isActive: true,
+				isPopular: !!planData.isPopular,
 
-				// ✅ NEW (limits) - sent to backend
-				usersLimit: Number(planData.usersLimit ?? 1),
-				shippingCompaniesLimit: Number(planData.shippingCompaniesLimit ?? 0),
-				bulkUploadPerMonth: Number(planData.bulkUploadPerMonth ?? 0),
+				// Limits (preserving null for unlimited)
+				usersLimit: planData.usersLimit,
+				storesLimit: planData.storesLimit,
+				shippingCompaniesLimit: planData.shippingCompaniesLimit,
+				includedOrders: planData.includedOrders,
+				extraOrderFee: planData.extraOrderFee,
+				bulkUploadPerMonth: planData.bulkUploadPerMonth,
 			};
 
 			const { data } = await api.patch(`/plans/${id}`, payload);
 			toast.success("تم تحديث الباقة بنجاح");
 
+			// Normalize the return data for the state
 			return {
 				...data,
-				price: Number(data.price),
-				features: Array.isArray(data.features) ? data.features : [],
-				isPopular: data.isPopular || false,
+				price: data.price === null ? null : Number(data.price),
+				isPopular: !!data.isPopular,
+				type: data.type,
 
-				// ✅ NEW (limits) normalize return
-				usersLimit: Number(data.usersLimit ?? data.maxUsers ?? payload.usersLimit ?? 1),
-				shippingCompaniesLimit: Number(
-					data.shippingCompaniesLimit ?? data.maxShippingCompanies ?? payload.shippingCompaniesLimit ?? 0
-				),
-
-				bulkUploadPerMonth: Number(
-					data.bulkUploadPerMonth ?? data.maxShippingCompanies ?? payload.bulkUploadPerMonth ?? 0
-				),
+				// Sync UI unlimited flags based on null values from server
+				usersUnlimited: data.usersLimit === null,
+				storesUnlimited: data.storesLimit === null,
+				shippingUnlimited: data.shippingCompaniesLimit === null,
+				ordersUnlimited: data.includedOrders === null,
+				extraFeeNotAllowed: data.extraOrderFee !== null
 			};
 		} catch (error) {
 			const message = error?.response?.data?.message || "فشل في تحديث الباقة";
@@ -256,7 +289,7 @@ export function useSubscriptionsApi() {
 		} finally {
 			setLoading(false);
 		}
-	}, []);
+	}, [t]); // Added t if you are using translation
 
 	// ✅ Delete Plan
 	const deletePlan = useCallback(async (id) => {
@@ -306,15 +339,28 @@ function EditablePlanCard({
 		name: plan.name || "",
 		price: plan.price || "",
 		duration: plan.duration || "monthly",
+		durationIndays: plan.durationIndays || 30,
 		description: plan.description || "",
 		features: plan.features || [],
 		color: plan.color || "from-blue-500 to-blue-600",
 		isPopular: plan.isPopular || false,
+		type: plan.type,
 
-		// ✅ NEW (limits)
+		// Limits
 		usersLimit: plan.usersLimit ?? 1,
+		storesLimit: plan.storesLimit ?? 1,
 		shippingCompaniesLimit: plan.shippingCompaniesLimit ?? 0,
+		includedOrders: plan.includedOrders ?? 100,
+		extraOrderFee: plan.extraOrderFee ?? 0.75,
 		bulkUploadPerMonth: plan.bulkUploadPerMonth ?? 0,
+
+		// Unlimited flags
+		usersUnlimited: plan.usersLimit === null,
+		storesUnlimited: plan.storesLimit === null,
+		shippingUnlimited: plan.shippingCompaniesLimit === null,
+		ordersUnlimited: plan.includedOrders === null,
+
+		extraFeeNotAllowed: plan.extraOrderFee === null
 	});
 
 	const [newFeature, setNewFeature] = useState("");
@@ -325,28 +371,57 @@ function EditablePlanCard({
 				name: plan.name || "",
 				price: plan.price || "",
 				duration: plan.duration || "monthly",
+				durationIndays: plan.durationIndays || 30,
 				description: plan.description || "",
 				features: plan.features || [],
 				color: plan.color || "from-blue-500 to-blue-600",
 				isPopular: plan.isPopular || false,
+				type: plan.type,
 
-				// ✅ NEW (limits)
+				// Limits
 				usersLimit: plan.usersLimit ?? 1,
+				storesLimit: plan.storesLimit ?? 1,
 				shippingCompaniesLimit: plan.shippingCompaniesLimit ?? 0,
+				includedOrders: plan.includedOrders ?? 100,
+				extraOrderFee: plan.extraOrderFee ?? 0.75,
 				bulkUploadPerMonth: plan.bulkUploadPerMonth ?? 0,
+
+				// Unlimited flags
+				usersUnlimited: plan.usersLimit === null,
+				storesUnlimited: plan.storesLimit === null,
+				shippingUnlimited: plan.shippingCompaniesLimit === null,
+				ordersUnlimited: plan.includedOrders === null,
+				extraFeeNotAllowed: plan.extraOrderFee === null
 			});
 		}
 	}, [isEditing, plan]);
 
 	const handleSave = () => {
 		if (isSaving) return;
-		onSave({
+		const payload = {
 			...formData,
-			price: Number(formData.price),
-			usersLimit: Number(formData.usersLimit ?? 1),
-			shippingCompaniesLimit: Number(formData.shippingCompaniesLimit ?? 0),
+			// Handle negotiated plans
+			price: formData.type === 'negotiated' ? null : Number(formData.price),
+
+			// Handle unlimited values
+			usersLimit: formData.usersUnlimited ? null : Number(formData.usersLimit ?? 1),
+			storesLimit: formData.storesUnlimited ? null : Number(formData.storesLimit ?? 1),
+			shippingCompaniesLimit: formData.shippingUnlimited ? null : Number(formData.shippingCompaniesLimit ?? 0),
+			includedOrders: formData.ordersUnlimited ? null : Number(formData.includedOrders ?? 100),
+			extraOrderFee: formData.extraFeeNotAllowed ? null : Number(formData.extraOrderFee),
 			bulkUploadPerMonth: Number(formData.bulkUploadPerMonth ?? 0),
-		});
+			durationIndays: formData.duration === 'custom' ? Number(formData.durationIndays ?? 30) : null,
+
+			// Remove UI-only flags before saving
+			usersUnlimited: undefined,
+			storesUnlimited: undefined,
+			shippingUnlimited: undefined,
+			ordersUnlimited: undefined,
+			extraFeeNotAllowed: undefined
+		};
+
+		console.log(formData)
+		onSave(payload);
 	};
 
 	const handleAddFeature = () => {
@@ -390,6 +465,16 @@ function EditablePlanCard({
 
 	const userOptions = [1, 2, 3, 5, 10, 15, 20, 30, 50, 100, 200];
 	const shippingOptions = [0, 1, 2, 3, 5, 10, 15, 20, 30, 50];
+	const storesOptions = [1, 2, 3, 5, 10, 15, 20, 30, 50, 100];
+	const ordersOptions = [50, 100, 200, 500, 1000, 2000, 5000, 10000];
+
+	const getDurationLabel = () => {
+		if (plan.duration === "monthly") return "شهرياً";
+		if (plan.duration === "yearly") return "سنوياً";
+		if (plan.duration === "lifetime") return "مدى الحياة";
+		if (plan.duration === "custom") return `${plan.durationIndays || 0} يوم`;
+		return "";
+	};
 
 	return (
 		<motion.div
@@ -522,6 +607,12 @@ function EditablePlanCard({
 								شائعة
 							</Badge>
 						)}
+
+						{plan.type === 'negotiated' && (
+							<Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl">
+								حسب الاتفاق
+							</Badge>
+						)}
 					</div>
 				)}
 			</div>
@@ -570,16 +661,62 @@ function EditablePlanCard({
 			<div className="text-center mb-6">
 				{isEditing ? (
 					<div className="space-y-3">
-						<div className="flex items-center justify-center gap-2">
-							<Input
-								type="number"
-								value={formData.price}
-								onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-								className="w-24 h-12 text-center text-3xl font-black rounded-xl"
-								placeholder="50"
-								disabled={isSaving}
-							/>
-							<span className="text-2xl text-gray-500 dark:text-slate-400">ج.م</span>
+						{/* Negotiated Toggle */}
+						<div className="space-y-4">
+							{/* 1. Plan Type Selection */}
+							<div className="flex flex-col gap-2">
+								<label className="text-sm font-medium text-gray-700 dark:text-slate-300">
+									نوع الخظة
+								</label>
+								<Select
+									value={formData.type}
+									onValueChange={(value) => {
+										setFormData({
+											...formData,
+											type: value,
+											// Optional: Reset price to 0 if moving to negotiated
+											price: value === 'negotiated' ? 0 : formData.price
+										});
+									}}
+									disabled={isSaving}
+								>
+									<SelectTrigger className="w-full h-12 rounded-xl border-orange-200 bg-orange-50/50 dark:bg-orange-950/20">
+										<SelectValue placeholder="إختر نوع الخطة" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="trial">تجريبية (Trial)</SelectItem>
+										<SelectItem value="standard">إعتيادية (Standard)</SelectItem>
+										<SelectItem value="negotiated">بالتفاوض (Negotiated)</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+
+							{/* 2. Price Display Logic */}
+							<div className="flex flex-col items-center justify-center p-4">
+								{formData.type === 'negotiated' ? (
+									<div className="text-2xl font-black text-orange-600 dark:text-orange-400 py-2">
+										السعر بالتفاوض
+									</div>
+								) : (
+									<div className="flex items-center justify-center gap-2">
+										<Input
+											type="number"
+											value={formData.price}
+											onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+											className="w-32 h-12 text-center text-3xl font-black rounded-xl border-2 focus:border-orange-500"
+											placeholder="0"
+											disabled={isSaving}
+										/>
+										<span className="text-2xl font-bold text-gray-500 dark:text-slate-400">ج.م</span>
+									</div>
+								)}
+
+								{formData.type === 'trial' && (
+									<span className="text-xs text-blue-600 mt-2 italic font-medium">
+										* يمكنك تحديد سعر رمزي أو 0 للفترة التجريبية
+									</span>
+								)}
+							</div>
 						</div>
 
 						<Input
@@ -598,8 +735,24 @@ function EditablePlanCard({
 								<SelectItem value="monthly">شهرياً</SelectItem>
 								<SelectItem value="yearly">سنوياً</SelectItem>
 								<SelectItem value="lifetime">مدى الحياة</SelectItem>
+								<SelectItem value="custom">مخصص</SelectItem>
 							</SelectContent>
 						</Select>
+
+						{formData.duration === 'custom' && (
+							<div className="space-y-1">
+								<Label className="text-xs text-gray-500 dark:text-slate-400">عدد الأيام</Label>
+								<Input
+									type="number"
+									value={formData.durationIndays}
+									onChange={(e) => setFormData({ ...formData, durationIndays: Number(e.target.value) || 30 })}
+									className="text-center rounded-xl"
+									placeholder="30"
+									min="1"
+									disabled={isSaving}
+								/>
+							</div>
+						)}
 
 						<Textarea
 							value={formData.description}
@@ -612,15 +765,43 @@ function EditablePlanCard({
 					</div>
 				) : (
 					<>
-						<div className="flex items-baseline justify-center gap-2">
-							<span className="text-5xl font-black text-gray-900 dark:text-white">{plan.price}</span>
-							<span className="text-2xl text-gray-500 dark:text-slate-400">ج.م</span>
-						</div>
-						<p className="text-lg font-bold text-gray-700 dark:text-slate-300 mt-2">{plan.name}</p>
-						<p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
-							{plan.duration === "monthly" ? "شهرياً" : plan.duration === "yearly" ? "سنوياً" : "مدى الحياة"}
-						</p>
-						{!!plan.description && <p className="text-xs text-gray-500 dark:text-slate-400 mt-2">{plan.description}</p>}
+						<>
+							{plan.type === 'negotiated' ? (
+								<div className="text-4xl font-black text-orange-600 dark:text-orange-400">
+									حسب الاتفاق
+								</div>
+							) : (
+								<div className="flex items-baseline justify-center gap-2">
+									<span className="text-5xl font-black text-gray-900 dark:text-white">
+										{plan.price}
+									</span>
+									{Number(plan.price) !== 0 && (
+										<span className="text-2xl text-gray-500 dark:text-slate-400">ج.م</span>
+									)}
+								</div>
+							)}
+
+							<div className="mt-4 text-center">
+								<p className="text-lg font-bold text-gray-700 dark:text-slate-300">
+									{plan.name}
+									{plan.type === 'trial' && (
+										<span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+											تجريبي
+										</span>
+									)}
+								</p>
+
+								<p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
+									{getDurationLabel()}
+								</p>
+
+								{!!plan.description && (
+									<p className="text-xs text-gray-500 dark:text-slate-400 mt-2 px-4 italic">
+										{plan.description}
+									</p>
+								)}
+							</div>
+						</>
 					</>
 				)}
 			</div>
@@ -634,57 +815,197 @@ function EditablePlanCard({
 
 				{isEditing ? (
 					<div className="space-y-3">
-						{/* ✅ NEW: Limits dropdowns */}
-						<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+						{/* Limits with Unlimited checkboxes */}
+						<div className="space-y-3">
+							{/* Users Limit */}
 							<div className="space-y-1">
 								<Label className="text-xs text-gray-500 dark:text-slate-400">عدد المستخدمين المسموح</Label>
-								<Select
-									value={String(formData.usersLimit ?? 1)}
-									onValueChange={(v) => setFormData({ ...formData, usersLimit: Number(v) })}
-									disabled={isSaving}
-								>
-									<SelectTrigger className="rounded-xl !w-full !h-9 text-sm">
-										<SelectValue placeholder="اختر العدد" />
-									</SelectTrigger>
-									<SelectContent>
-										{userOptions.map((n) => (
-											<SelectItem key={n} value={String(n)}>
-												{n}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
+								<div className="flex items-center gap-2">
+									<Select
+										value={String(formData.usersLimit ?? 1)}
+										onValueChange={(v) => setFormData({ ...formData, usersLimit: Number(v) })}
+										disabled={isSaving || formData.usersUnlimited}
+									>
+										<SelectTrigger className="rounded-xl !w-full !h-9 text-sm">
+											<SelectValue placeholder="اختر العدد" />
+										</SelectTrigger>
+										<SelectContent>
+											{userOptions.map((n) => (
+												<SelectItem key={n} value={String(n)}>
+													{n}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									<div className="flex items-center gap-1.5 whitespace-nowrap">
+										<Checkbox
+											id="users-unlimited"
+											checked={formData.usersUnlimited}
+											onCheckedChange={(checked) => setFormData({ ...formData, usersUnlimited: checked })}
+											disabled={isSaving}
+										/>
+										<Label htmlFor="users-unlimited" className="text-xs text-gray-600 dark:text-slate-400 cursor-pointer">
+											غير محدود
+										</Label>
+									</div>
+								</div>
 							</div>
 
+							{/* Stores Limit */}
+							<div className="space-y-1">
+								<Label className="text-xs text-gray-500 dark:text-slate-400">عدد المتاجر المسموح</Label>
+								<div className="flex items-center gap-2">
+									<Select
+										value={String(formData.storesLimit ?? 1)}
+										onValueChange={(v) => setFormData({ ...formData, storesLimit: Number(v) })}
+										disabled={isSaving || formData.storesUnlimited}
+									>
+										<SelectTrigger className="rounded-xl !w-full !h-9 text-sm">
+											<SelectValue placeholder="اختر العدد" />
+										</SelectTrigger>
+										<SelectContent>
+											{storesOptions.map((n) => (
+												<SelectItem key={n} value={String(n)}>
+													{n}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									<div className="flex items-center gap-1.5 whitespace-nowrap">
+										<Checkbox
+											id="stores-unlimited"
+											checked={formData.storesUnlimited}
+											onCheckedChange={(checked) => setFormData({ ...formData, storesUnlimited: checked })}
+											disabled={isSaving}
+										/>
+										<Label htmlFor="stores-unlimited" className="text-xs text-gray-600 dark:text-slate-400 cursor-pointer">
+											غير محدود
+										</Label>
+									</div>
+								</div>
+							</div>
+
+							{/* Shipping Companies Limit */}
 							<div className="space-y-1">
 								<Label className="text-xs text-gray-500 dark:text-slate-400">عدد شركات الشحن المسموح</Label>
-								<Select
-									value={String(formData.shippingCompaniesLimit ?? 0)}
-									onValueChange={(v) => setFormData({ ...formData, shippingCompaniesLimit: Number(v) })}
-									disabled={isSaving}
-								>
-									<SelectTrigger className="rounded-xl !w-full !h-9 text-sm">
-										<SelectValue placeholder="اختر العدد" />
-									</SelectTrigger>
-									<SelectContent>
-										{shippingOptions.map((n) => (
-											<SelectItem key={n} value={String(n)}>
-												{n}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
+								<div className="flex items-center gap-2">
+									<Select
+										value={String(formData.shippingCompaniesLimit ?? 0)}
+										onValueChange={(v) => setFormData({ ...formData, shippingCompaniesLimit: Number(v) })}
+										disabled={isSaving || formData.shippingUnlimited}
+									>
+										<SelectTrigger className="rounded-xl !w-full !h-9 text-sm">
+											<SelectValue placeholder="اختر العدد" />
+										</SelectTrigger>
+										<SelectContent>
+											{shippingOptions.map((n) => (
+												<SelectItem key={n} value={String(n)}>
+													{n}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									<div className="flex items-center gap-1.5 whitespace-nowrap">
+										<Checkbox
+											id="shipping-unlimited"
+											checked={formData.shippingUnlimited}
+											onCheckedChange={(checked) => setFormData({ ...formData, shippingUnlimited: checked })}
+											disabled={isSaving}
+										/>
+										<Label htmlFor="shipping-unlimited" className="text-xs text-gray-600 dark:text-slate-400 cursor-pointer">
+											غير محدود
+										</Label>
+									</div>
+								</div>
 							</div>
-						</div>
-						<div className="space-y-1">
-							<Label className="text-xs text-gray-500 dark:text-slate-400">عدد الطلبات المسموح رفعها في الشهر</Label>
-							<Input
-								value={String(formData.bulkUploadPerMonth ?? 0)}
-								onChange={(e) => handleUpdateFeature(index, e.target.value)}
-								onValueChange={(v) => setFormData({ ...formData, bulkUploadPerMonth: Number(e.target.value || 0) })}
-								className="flex-1 h-9 text-sm rounded-xl"
-								disabled={isSaving}
-							/>
+
+							{/* Included Orders */}
+							<div className="space-y-1">
+								<Label className="text-xs text-gray-500 dark:text-slate-400">عدد الطلبات المتضمنة</Label>
+								<div className="flex items-center gap-2">
+									<Input
+										type="number"
+										// Use an empty string if value is null to avoid React warnings
+										value={formData.includedOrders ?? ""}
+										onChange={(e) => {
+											const val = e.target.value;
+											// Keep it as a number, but handle empty input gracefully
+											setFormData({ ...formData, includedOrders: val === "" ? 0 : Number(val) });
+										}}
+										className="h-9 text-sm rounded-xl"
+										placeholder="100" // Default visual hint
+										min="0"
+										step="1" // Orders are usually whole numbers
+										disabled={isSaving || formData.ordersUnlimited}
+									/>
+									<div className="flex items-center gap-1.5 whitespace-nowrap">
+										<Checkbox
+											id="orders-unlimited"
+											checked={formData.ordersUnlimited}
+											onCheckedChange={(checked) => setFormData({ ...formData, ordersUnlimited: checked })}
+											disabled={isSaving}
+										/>
+										<Label htmlFor="orders-unlimited" className="text-xs text-gray-600 dark:text-slate-400 cursor-pointer">
+											غير محدود
+										</Label>
+									</div>
+								</div>
+							</div>
+
+							{/* Extra Order Fee */}
+							{/* Extra Order Fee */}
+							<div className="space-y-1">
+								<Label className="text-xs text-gray-500 dark:text-slate-400">
+									رسوم الطلب الإضافي (بعد تجاوز الحد)
+								</Label>
+								<div className="flex items-center gap-2">
+									<Input
+										type="number"
+										// نستخدم قيمة فارغة إذا كانت القيمة null لتجنب أخطاء React
+										value={formData.extraOrderFee ?? ""}
+										onChange={(e) => {
+											const val = e.target.value;
+											setFormData({ ...formData, extraOrderFee: val === "" ? 0 : Number(val) });
+										}}
+										className="h-9 text-sm rounded-xl"
+										placeholder="0.00"
+										min="0"
+										step="0.01"
+										// يتم تعطيل الحقل إذا كان الحفظ جارياً أو إذا تم اختيار "غير مسموح"
+										disabled={isSaving || formData.extraFeeNotAllowed}
+									/>
+									<div className="flex items-center gap-1.5 whitespace-nowrap">
+										<Checkbox
+											id="extra-fee-not-allowed"
+											checked={formData.extraFeeNotAllowed}
+											onCheckedChange={(checked) =>
+												setFormData({ ...formData, extraFeeNotAllowed: !!checked })
+											}
+											disabled={isSaving}
+										/>
+										<Label
+											htmlFor="extra-fee-not-allowed"
+											className="text-xs text-gray-600 dark:text-slate-400 cursor-pointer"
+										>
+											غير مسموح
+										</Label>
+									</div>
+								</div>
+							</div>
+
+							{/* Bulk Upload Per Month */}
+							<div className="space-y-1">
+								<Label className="text-xs text-gray-500 dark:text-slate-400">عدد الطلبات المسموح رفعها في الشهر</Label>
+								<Input
+									type="number"
+									value={formData.bulkUploadPerMonth}
+									onChange={(e) => setFormData({ ...formData, bulkUploadPerMonth: Number(e.target.value) || 0 })}
+									className="h-9 text-sm rounded-xl"
+									placeholder="0"
+									min="0"
+									disabled={isSaving}
+								/>
+							</div>
 						</div>
 
 						{/* Existing features editor */}
@@ -734,20 +1055,52 @@ function EditablePlanCard({
 					</div>
 				) : (
 					<>
-						{/* ✅ NEW: show limits in view mode */}
+						{/* Show limits in view mode */}
 						<div className="space-y-2 mb-3">
 							<div className="flex items-center justify-between text-sm">
 								<span className="text-gray-500 dark:text-slate-400">المستخدمين</span>
-								<span className="font-semibold text-gray-800 dark:text-slate-200">{plan.usersLimit ?? 1}</span>
+								<span className="font-semibold text-gray-800 dark:text-slate-200">
+									{plan.usersLimit === null ? "غير محدود" : plan.usersLimit}
+								</span>
+							</div>
+							<div className="flex items-center justify-between text-sm">
+								<span className="text-gray-500 dark:text-slate-400">المتاجر</span>
+								<span className="font-semibold text-gray-800 dark:text-slate-200">
+									{plan.storesLimit === null ? "غير محدود" : plan.storesLimit}
+								</span>
 							</div>
 							<div className="flex items-center justify-between text-sm">
 								<span className="text-gray-500 dark:text-slate-400">شركات الشحن</span>
-								<span className="font-semibold text-gray-800 dark:text-slate-200">{plan.shippingCompaniesLimit ?? 0}</span>
+								<span className="font-semibold text-gray-800 dark:text-slate-200">
+									{plan.shippingCompaniesLimit === null ? "غير محدود" : plan.shippingCompaniesLimit}
+								</span>
 							</div>
 							<div className="flex items-center justify-between text-sm">
-								<span className="text-gray-500 dark:text-slate-400">عدد الطلبات المسموح رفعها في الشهر</span>
-								<span className="font-semibold text-gray-800 dark:text-slate-200">{plan.bulkUploadPerMonth ?? 0}</span>
+								<span className="text-gray-500 dark:text-slate-400">الطلبات المتضمنة</span>
+								<span className="font-semibold text-gray-800 dark:text-slate-200">
+									{plan.includedOrders === null ? "غير محدود" : plan.includedOrders}
+								</span>
 							</div>
+							<div className="flex items-center justify-between text-sm">
+								<span className="text-gray-500 dark:text-slate-400">رسوم الطلب الإضافي</span>
+								<span className="font-semibold text-gray-800 dark:text-slate-200">
+									{plan.extraOrderFee === null ? (
+										<span className="text-red-500 dark:text-red-400 text-xs font-medium">
+											غير مسموح بتجاوز الحد
+										</span>
+									) : (
+										`${plan.extraOrderFee} ج.م`
+									)}
+								</span>
+							</div>
+							{plan.bulkUploadPerMonth > 0 && (
+								<div className="flex items-center justify-between text-sm">
+									<span className="text-gray-500 dark:text-slate-400">رفع الطلبات شهرياً</span>
+									<span className="font-semibold text-gray-800 dark:text-slate-200">
+										{plan.bulkUploadPerMonth}
+									</span>
+								</div>
+							)}
 						</div>
 
 						{(plan.features || []).map((feature, index) => (
@@ -908,6 +1261,8 @@ export default function AdminSubscriptionsPage() {
 			{ id: "plans", label: t("tabs.plans").trim() },
 			{ id: "transactions", label: t("tabs.transactions").trim() },
 			{ id: "subscriptions", label: t("tabs.subscriptions").trim() },
+			{ id: "features", label: t("tabs.features").trim() },
+			{ id: "userFeatures", label: t("tabs.userFeatures").trim() },
 		],
 		[t]
 	);
@@ -937,7 +1292,9 @@ export default function AdminSubscriptionsPage() {
 			features: ["ميزة 1", "ميزة 2", "ميزة 3"],
 			isActive: true,
 			color: "from-blue-500 to-blue-600",
-
+			includedOrders: 30,
+			extraOrderFee: 0.75,
+			storesLimit: 1,
 			// ✅ NEW defaults (limits)
 			usersLimit: 1,
 			shippingCompaniesLimit: 0,
@@ -1001,14 +1358,14 @@ export default function AdminSubscriptionsPage() {
 				breadcrumbs={[
 					{ name: t("breadcrumb.home"), href: "/dashboard" },
 					{ name: t("breadcrumb.subscriptions") },
-				]} 
+				]}
 
 				items={tabs}
 				active={activeTab}
 				setActive={setActiveTab}
 			/>
 
- 
+
 			{/* Content */}
 			<div className={`${activeTab === "plans" ? "bg-card" : ""}  `}>
 				<div className=" ">
@@ -1051,6 +1408,13 @@ export default function AdminSubscriptionsPage() {
 					{/* ── Subscriptions Tab ── */}
 					{activeTab === "subscriptions" && (
 						<SubscriptionsTab />
+					)}
+					{activeTab === "features" && (
+						<FeaturesTab />
+					)}
+
+					{activeTab === "userFeatures" && (
+						<UserFeaturesTab />
 					)}
 
 				</div>

@@ -18,6 +18,7 @@ import { avatarSrc } from "@/components/atoms/UserSelect";
 import api from "@/utils/api";
 import { useDebounce } from "@/hook/useDebounce";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/utils/cn";
 
 function formatCurrency(amount) {
     if (amount === undefined || amount === null) return "—";
@@ -33,13 +34,21 @@ function formatDate(dateStr) {
     });
 }
 export const TransactionStatus = Object.freeze({
-    ACTIVE: 'active',
-    PROCESSING: 'processing',
-    COMPLETED: 'completed',
+    SUCCESS: 'success',
+    FAILED: 'failed',
     CANCELLED: 'cancelled',
+    REFUNDED: 'refunded',
+    PENDING: 'pending',
 });
 
-export default function TransactionTab() {
+export const PaymentPurposeEnum = {
+    WALLET_TOP_UP: 'wallet_top_up',
+    WALLET_WITHDRAWAL: 'wallet_withdrawal',
+    SUBSCRIPTION_PAYMENT: 'subscription_payment',
+    FEATURE_PURCHASE: 'feature_purchase'
+};
+
+export default function TransactionTab({ defaultPurpose, allowedPurposes }) {
     const t = useTranslations("plans")
     const router = useRouter()
 
@@ -47,7 +56,7 @@ export default function TransactionTab() {
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
     const { debouncedValue: debouncedSearch } = useDebounce({ value: search })
-    const [filters, setFilters] = useState({ status: 'all', startDate: null, endDate: null });
+    const [filters, setFilters] = useState({ status: 'all', startDate: null, purpose: defaultPurpose || "", endDate: null });
 
     const [exportLoading, setExportLoading] = useState()
     // ── Build API params ────────────────────────────────────────────────
@@ -58,6 +67,9 @@ export default function TransactionTab() {
         if (filters.status && filters.status !== 'all') params.status = filters.status;
         if (filters.startDate) params.startDate = filters.startDate;
         if (filters.endDate) params.endDate = filters.endDate;
+        if (allowedPurposes) params.allowedPurposes = allowedPurposes;
+        if (defaultPurpose) params.purpose = defaultPurpose;
+        else if (filters.purpose && filters.purpose !== 'all') params.purpose = filters.purpose;
 
         return params;
     };
@@ -111,6 +123,9 @@ export default function TransactionTab() {
             if (filters.status && filters.status !== 'all') params.status = filters.status;
             if (filters.startDate) params.startDate = filters.startDate;
             if (filters.endDate) params.endDate = filters.endDate;
+            if (allowedPurposes) params.allowedPurposes = allowedPurposes;
+            if (defaultPurpose) params.purpose = defaultPurpose;
+            else if (filters.purpose && filters.purpose !== 'all') params.purpose = filters.purpose;
 
             const response = await api.get("/transactions/export", {
                 params,
@@ -171,10 +186,43 @@ export default function TransactionTab() {
             ),
         },
         {
+            key: "purpose",
+            header: t("columns.purpose"),
+            cell: (row) => {
+                const purposeColors = {
+                    wallet_withdrawal: "bg-rose-50 text-rose-700 border-rose-100",
+                    wallet_top_up: "bg-blue-50 text-blue-700 border-blue-100",
+                    subscription_payment: "bg-purple-50 text-purple-700 border-purple-100",
+                    feature_purchase: "bg-amber-50 text-amber-700 border-amber-100",
+                };
+                return (
+                    <Badge variant="outline" className={cn("text-[10px] font-medium", purposeColors[row.purpose])}>
+                        {t(`purposes.${row.purpose}`)}
+                    </Badge>
+                );
+            },
+        },
+        {
             key: "subscription",
             header: t("columns.subscription"),
             cell: (row) => (
-                <span className="text-sm font-medium">{row.subscription?.plan?.name}</span>
+                <span className="text-sm font-medium">{row.subscription?.plan?.name || "—"}</span>
+            ),
+        },
+        {
+            key: "feature",
+            header: t("columns.feature"),
+            cell: (row) => (
+                <div className="flex flex-col">
+                    <span className="text-sm font-medium text-purple-600 dark:text-purple-400">
+                        {row.userFeature?.feature?.name || "—"}
+                    </span>
+                    {row.userFeature?.feature?.type && (
+                        <span className="text-[10px] text-muted-foreground uppercase">
+                            {row.userFeature.feature.type}
+                        </span>
+                    )}
+                </div>
             ),
         },
         {
@@ -190,15 +238,19 @@ export default function TransactionTab() {
             key: "status",
             header: t("columns.status"),
             cell: (row) => {
-                let color = "gray";
-                if (row.status === "active") color = "green";
-                if (row.status === "processing") color = "yellow";
-                if (row.status === "completed") color = "blue";
-                if (row.status === "cancelled") color = "red";
+                const statusConfig = {
+                    [TransactionStatus.SUCCESS]: { color: "text-emerald-600 border-emerald-200 bg-emerald-50", label: "success" },
+                    [TransactionStatus.PENDING]: { color: "text-amber-600 border-amber-200 bg-amber-50", label: "pending" },
+                    [TransactionStatus.FAILED]: { color: "text-red-600 border-red-200 bg-red-50", label: "failed" },
+                    [TransactionStatus.CANCELLED]: { color: "text-gray-600 border-gray-200 bg-gray-50", label: "cancelled" },
+                    [TransactionStatus.REFUNDED]: { color: "text-blue-600 border-blue-200 bg-blue-50", label: "refunded" },
+                };
+
+                const config = statusConfig[row.status] || { color: "text-gray-500", label: row.status };
 
                 return (
-                    <Badge variant="outline" className={`text-xs text-${color}-600`}>
-                        {t(`statuses.${row.status}`)}
+                    <Badge variant="outline" className={cn("text-xs font-bold", config.color)}>
+                        {t(`statuses.${config.label}`)}
                     </Badge>
                 );
             },
@@ -211,7 +263,7 @@ export default function TransactionTab() {
                     {row.paymentMethod && <CreditCard size={12} className="text-muted-foreground" />}
                     <span className="text-sm">
                         {row.paymentMethod
-                            ? t(`paymentMethods.${row.paymentMethod}`).trim()
+                            ? t.has(`paymentMethods.${row.paymentMethod.toLowerCase()}`) ? t(`paymentMethods.${row.paymentMethod.toLowerCase()}`).trim() : row.paymentMethod.toLowerCase()
                             : "—"}
                     </span>
                 </div>
@@ -297,19 +349,42 @@ export default function TransactionTab() {
                             value={filters.status}
                             onValueChange={(v) => setFilters(f => ({ ...f, status: v }))}
                         >
-                            <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm transition-all">
+                            <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm transition-all focus:ring-primary/20">
                                 <SelectValue placeholder={t("filters.statusPlaceholder")} />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">{t("filters.all")}</SelectItem>
-                                <SelectItem value={TransactionStatus.ACTIVE}>{t("statuses.active")}</SelectItem>
-                                <SelectItem value={TransactionStatus.PROCESSING}>{t("statuses.processing")}</SelectItem>
-                                <SelectItem value={TransactionStatus.COMPLETED}>{t("statuses.completed")}</SelectItem>
+                                <SelectItem value={TransactionStatus.SUCCESS}>{t("statuses.success")}</SelectItem>
+                                <SelectItem value={TransactionStatus.PENDING}>{t("statuses.pending")}</SelectItem>
+                                <SelectItem value={TransactionStatus.FAILED}>{t("statuses.failed")}</SelectItem>
                                 <SelectItem value={TransactionStatus.CANCELLED}>{t("statuses.cancelled")}</SelectItem>
+                                <SelectItem value={TransactionStatus.REFUNDED}>{t("statuses.refunded")}</SelectItem>
                             </SelectContent>
                         </Select>
                     </FilterField>
 
+                    {!defaultPurpose && <FilterField label={t("filters.purpose")}>
+                        <Select
+                            value={filters.purpose}
+                            onValueChange={(v) => setFilters(f => ({ ...f, purpose: v }))}
+                        >
+                            <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+                                <SelectValue placeholder={t("filters.purposePlaceholder")} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">{t("filters.all")}</SelectItem>
+                                {Object.values(PaymentPurposeEnum)
+                                    // التصفية: إرجاع العنصر فقط إذا كان موجوداً في القائمة المسموحة
+                                    .filter(p => !allowedPurposes || allowedPurposes.includes(p))
+                                    .map(p => (
+                                        <SelectItem key={p} value={p}>
+                                            {t(`purposes.${p}`)}
+                                        </SelectItem>
+                                    ))
+                                }
+                            </SelectContent>
+                        </Select>
+                    </FilterField>}
                     {/* Date Range */}
                     <FilterField label={t("filters.date")}>
                         <Flatpickr

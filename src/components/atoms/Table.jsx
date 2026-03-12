@@ -26,10 +26,10 @@ const DEFAULT_PER_PAGE_OPTIONS = [6, 12, 24, 48];
 const ACTION_COLORS = {
   primary: "btn btn-solid btn-sm",
   emerald: "btn btn-solid btn-sm btn-emerald",
-  blue:    "btn btn-solid btn-sm btn-blue",
-  purple:  "btn btn-solid btn-sm btn-purple",
-  rose:    "btn btn-solid btn-sm btn-rose",
-  amber:   "btn btn-solid btn-sm btn-amber",
+  blue: "btn btn-solid btn-sm btn-blue",
+  purple: "btn btn-solid btn-sm btn-purple",
+  rose: "btn btn-solid btn-sm btn-rose",
+  amber: "btn btn-solid btn-sm btn-amber",
   default: "btn btn-ghost btn-sm btn-default !border !border-border",
 };
 
@@ -238,12 +238,12 @@ export const TablePagination = memo(function TablePagination({
 
   const totalPages = useMemo(() => {
     const total = Number(pagination?.total_records ?? 0);
-    const per   = Number(pagination?.per_page ?? 6);
+    const per = Number(pagination?.per_page ?? 6);
     return Math.max(1, Math.ceil(total / per));
   }, [pagination]);
 
   const currentPage = Number(pagination?.current_page ?? 1);
-  const perPage     = Number(pagination?.per_page ?? 6);
+  const perPage = Number(pagination?.per_page ?? 6);
 
   const pageItems = useMemo(() => {
     const tot = totalPages;
@@ -251,7 +251,7 @@ export const TablePagination = memo(function TablePagination({
     if (tot <= 7) return Array.from({ length: tot }, (_, i) => i + 1);
     const items = [1];
     const start = Math.max(2, cur - 2);
-    const end   = Math.min(tot - 1, cur + 2);
+    const end = Math.min(tot - 1, cur + 2);
     if (start > 2) items.push("…");
     for (let p = start; p <= end; p++) items.push(p);
     if (end < tot - 1) items.push("…");
@@ -270,8 +270,8 @@ export const TablePagination = memo(function TablePagination({
     onPageChange({ page: 1, per_page: lim, [pageParamName]: 1, [limitParamName]: lim });
   };
 
-  const from  = pagination?.total_records ? (currentPage - 1) * perPage + 1 : 0;
-  const to    = Math.min(currentPage * perPage, pagination?.total_records ?? 0);
+  const from = pagination?.total_records ? (currentPage - 1) * perPage + 1 : 0;
+  const to = Math.min(currentPage * perPage, pagination?.total_records ?? 0);
   const total = pagination?.total_records ?? 0;
 
   const NavBtn = ({ onClick, disabled, children, title }) => (
@@ -563,14 +563,14 @@ export default function Table({
 }) {
   const isRTL = useIsRTL();
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [imgModal, setImgModal]       = useState({ open: false, src: "", alt: "" });
+  const [imgModal, setImgModal] = useState({ open: false, src: "", alt: "" });
 
-  const openImage  = useCallback((src, alt = "") => setImgModal({ open: true, src, alt }), []);
+  const openImage = useCallback((src, alt = "") => setImgModal({ open: true, src, alt }), []);
   const closeImage = useCallback(() => setImgModal({ open: false, src: "", alt: "" }), []);
-  const helpers    = useMemo(() => ({ openImage }), [openImage]);
+  const helpers = useMemo(() => ({ openImage }), [openImage]);
 
-  const hasFilters   = Boolean(filters);
-  const stickyEnd    = isRTL ? "left-0" : "right-0";
+  const hasFilters = Boolean(filters);
+  const stickyEnd = isRTL ? "left-0" : "right-0";
   const stickyShadow = isRTL
     ? "shadow-[8px_0_12px_-10px_rgba(0,0,0,0.15)] dark:shadow-[8px_0_12px_-10px_rgba(0,0,0,0.45)]"
     : "shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.15)] dark:shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.45)]";
@@ -584,7 +584,7 @@ export default function Table({
         className="relative bg-card !p-0 rounded-2xl border border-border/50 overflow-hidden"
         style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05), 0 6px 24px rgba(0,0,0,0.05)" }}
       >
-      
+
 
         {/* ── Toolbar ──────────────────────────────────────── */}
         <div className="px-5 py-4 border-b border-border/40">
@@ -645,7 +645,7 @@ export default function Table({
 
             {/* Body */}
             <TableBody>
-              <AnimatePresence mode="wait">
+              <AnimatePresence >
                 {isLoading ? (
                   <TableSkeleton key="skel" columns={columns} rows={Number(pagination?.per_page ?? 6)} compact={compact} />
 
@@ -800,10 +800,10 @@ function FloatingSearchInput({ searchValue, onSearchChange, onKeyDown, searchPla
             "transition-all duration-200 ease-out",
             isFloating
               ? [
-                  "top-0 -translate-y-1/2 text-[10px] px-1.5 py-0 leading-none",
-                  "bg-white dark:bg-[#182337] rounded",
-                  focused ? "text-[var(--primary)]" : "text-muted-foreground/70",
-                ]
+                "top-0 -translate-y-1/2 text-[10px] px-1.5 py-0 leading-none",
+                "bg-white dark:bg-[#182337] rounded",
+                focused ? "text-[var(--primary)]" : "text-muted-foreground/70",
+              ]
               : "top-1/2 -translate-y-1/2 text-muted-foreground/50"
           )}
         >

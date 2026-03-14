@@ -443,7 +443,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar }) => {
 
 
 	if (!userRole) {
-		return (
+		return ( 
 			<motion.aside
 				initial={false}
 				animate={{ width: isOpen ? 260 : 68 }}

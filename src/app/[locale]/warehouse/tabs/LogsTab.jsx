@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import {
   ClipboardList,
   CheckCircle2,
@@ -20,6 +20,7 @@ import {
   User,
   Calendar,
   FileStack,
+  Loader2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
@@ -37,6 +38,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import PageHeader from "../../../../components/atoms/Pageheader";
+import api from "@/utils/api";
+import { useDebounce } from "@/hook/useDebounce";
+import { useExport } from "@/hook/useExport";
+import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
+import StoreFilter from "@/components/atoms/StoreFilter";
+import ProductFilter from "@/components/atoms/ProductFilter";
 
 const DS = {
   radius: "rounded-lg",
@@ -52,15 +59,18 @@ const DS = {
 };
 
 const OPERATION_TYPE_KEYS = {
-  ORDER_PREPARED: "opTypes.orderPrepared",
-  REJECT_ORDER: "opTypes.rejectOrder",
-  ASSIGN_CARRIER: "opTypes.assignCarrier",
-  PRINT_LABEL: "opTypes.printLabel",
-  SHIP_ORDER: "opTypes.shipOrder",
-  RETURN_ORDER: "opTypes.returnOrder",
-  RETRY_ORDER: "opTypes.retryOrder",
-  BULK_REJECT: "opTypes.bulkReject",
-  REPRINT_LABEL: "opTypes.reprintLabel",
+  CONFIRMED: "opTypes.orderConfirmed",
+  COURIER_ASSIGNED: "opTypes.assignCarrier",
+  PREPARATION_STARTED: "opTypes.preparationStarted",
+  WAYBILL_PRINTED: "opTypes.printLabel",
+  WAYBILL_REPRINTED: "opTypes.reprintLabel",
+  OUTGOING_DISPATCHED: "opTypes.shipOrder",
+  MANIFEST_PRINTED: "opTypes.printManifest",
+  MANIFEST_REPRINTED: "opTypes.reprintManifest",
+  REJECTED: "opTypes.rejectOrder",
+  RETURN: "opTypes.returnRequested",
+  RETURN_RECEIVED: "opTypes.returnOrder",
+  RETRY_ATTEMPT: "opTypes.retryOrder",
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -150,6 +160,387 @@ const PDF_STYLE = `
   </style>
 `;
 
+// ─────────────────────────────────────────────────────────────
+// MAIN LOGS TAB
+// ─────────────────────────────────────────────────────────────
+export function LogsTab({ orders = [] }) {
+  const t = useTranslations("warehouse.logs");
+
+  const [search, setSearch] = useState("");
+  const { debouncedValue: debouncedSearch } = useDebounce({ value: search, delay: 350 })
+  const [filters, setFilters] = useState({
+    actionType: "all",
+    result: "all",
+    carrier: "all",
+    date: "",
+  });
+  const [appliedFilters, setAppliedFilters] = useState({
+    actionType: "all",
+    result: "all",
+    carrier: "all",
+    date: "",
+  });
+
+  const [pager, setPager] = useState({
+    total_records: 0,
+    current_page: 1,
+    per_page: 12,
+    records: [],
+  });
+  const [logStats, setLogStats] = useState({
+    totalOperations: 0,
+    successCount: 0,
+    failedCount: 0,
+    rawSuccessRate: 0,
+  });
+  const [loading, setLoading] = useState(false);
+  const { handleExport, exportLoading } = useExport();
+
+  const [orderLogModal, setOrderLogModal] = useState(null);
+  const [genericOpModal, setGenericOpModal] = useState(null);
+  const [sessionModal, setSessionModal] = useState(null);
+
+  const buildParams = useCallback(
+    (page = pager.current_page, per_page = pager.per_page) => {
+      const params = {
+        page,
+        limit: per_page,
+      };
+
+      if (debouncedSearch) params.search = debouncedSearch;
+      if (appliedFilters.actionType !== "all") params.actionType = appliedFilters.actionType;
+      if (appliedFilters.result !== "all") params.result = appliedFilters.result;
+      if (appliedFilters.carrier !== "all") params.shippingCompanyId = appliedFilters.carrier;
+      if (appliedFilters.date) {
+        params.startDate = appliedFilters.date;
+        params.endDate = appliedFilters.date;
+      }
+
+      return params;
+    },
+    [pager.current_page, pager.per_page, debouncedSearch, appliedFilters]
+  );
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await api.get("/orders/stats/logs");
+      if (res.data) setLogStats(res.data);
+    } catch (e) {
+      console.error("Error fetching log stats", e);
+    }
+  }, []);
+
+  const fetchLogs = useCallback(
+    async (page = pager.current_page, per_page = pager.per_page) => {
+      try {
+        setLoading(true);
+        const params = buildParams(page, per_page);
+        const res = await api.get("/orders/logs", { params });
+        const data = res.data || {};
+        setPager({
+          total_records: data.total_records || 0,
+          current_page: data.current_page || page,
+          per_page: data.per_page || per_page,
+          records: Array.isArray(data.records) ? data.records : [],
+        });
+      } catch (e) {
+        console.error("Error fetching logs", e);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [buildParams, pager.current_page, pager.per_page]
+  );
+
+  useEffect(() => {
+    fetchLogs(1, pager.per_page);
+    fetchStats();
+  }, [debouncedSearch, appliedFilters, fetchLogs, fetchStats]);
+
+  const handlePageChange = ({ page, per_page }) => {
+    fetchLogs(page, per_page);
+  };
+
+  const applyFilters = () => {
+    setAppliedFilters({ ...filters });
+  };
+
+  const onExport = async () => {
+    const params = buildParams(1, 100000);
+    delete params.page;
+    delete params.limit;
+    await handleExport({
+      endpoint: "/orders/logs/export",
+      params,
+      filename: `warehouse_logs_${Date.now()}.xlsx`,
+    });
+  };
+
+  const hasActiveFilters =
+    appliedFilters.actionType !== "all" ||
+    appliedFilters.result !== "all" ||
+    appliedFilters.carrier !== "all" ||
+    !!appliedFilters.date;
+
+  const stats = [
+    {
+      id: "total-ops",
+      name: t("stats.totalOps"),
+      value: logStats.totalOperations,
+      icon: ClipboardList,
+      color: "#64748b",
+      sortOrder: 0,
+    },
+    {
+      id: "success",
+      name: t("stats.success"),
+      value: logStats.successCount,
+      icon: CheckCircle2,
+      color: "#10b981",
+      sortOrder: 1,
+    },
+    {
+      id: "failed",
+      name: t("stats.failed"),
+      value: logStats.failedCount,
+      icon: XCircle,
+      color: "#ef4444",
+      sortOrder: 2,
+    },
+    {
+      id: "rate",
+      name: t("stats.successRate"),
+      value: `${logStats.rawSuccessRate}%`,
+      icon: Package,
+      color: "#a855f7",
+      sortOrder: 3,
+    },
+  ];
+
+  const openSingleLog = (op) => setOrderLogModal(op);
+  const openGenericLog = (op) => setGenericOpModal(op);
+
+  const columns = useMemo(
+    () => [
+      {
+        key: "operationNumber",
+        header: t("table.opNumber"),
+        cell: (row) => (
+          <span className="font-mono font-bold text-primary text-xs">
+            {row.operationNumber}
+          </span>
+        ),
+      },
+      {
+        key: "actionType",
+        header: t("table.opType"),
+        cell: (row) => (
+          <span className="text-sm font-medium">
+            {t(OPERATION_TYPE_KEYS[row.actionType] ?? "opTypes.unknown")}
+          </span>
+        ),
+      },
+      {
+        key: "orderCode",
+        header: t("table.orderNumber"),
+        cell: (row) => (
+          <span className="font-mono text-sm font-semibold">
+            {row.order?.orderNumber || "—"}
+          </span>
+        ),
+      },
+      {
+        key: "carrier",
+        header: t("table.carrier"),
+        cell: (row) => row.shippingCompany?.name || "—",
+      },
+      {
+        key: "employee",
+        header: t("table.employee"),
+        cell: (row) => row.user?.name || "—",
+      },
+      {
+        key: "result",
+        header: t("table.result"),
+        cell: (row) => (
+          <Badge
+            className={cn(
+              "rounded-full text-xs border",
+              row.result === "SUCCESS"
+                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                : "bg-red-50 text-red-700 border-red-200"
+            )}
+          >
+            {row.result === "SUCCESS" ? t("result.success") : t("result.failed")}
+          </Badge>
+        ),
+      },
+      {
+        key: "details",
+        header: t("table.details"),
+        cell: (row) => (
+          <span className="text-sm text-slate-500 truncate max-w-[200px]" title={row.details}>
+            {row.details}
+          </span>
+        ),
+      },
+      {
+        key: "createdAt",
+        header: t("table.datetime"),
+        cell: (row) => (
+          <span className="text-sm text-slate-500 font-mono">
+            {row.createdAt ? new Date(row.createdAt).toLocaleString() : "—"}
+          </span>
+        ),
+      },
+      {
+        key: "actions",
+        header: t("table.actions"),
+        cell: (row) => (
+          <ActionButtons
+            row={row}
+            actions={[
+              {
+                icon: <Info />,
+                tooltip: t("actions.viewOperationLog"),
+                onClick: (r) => openGenericLog(r),
+                variant: "purple",
+              },
+            ]}
+          />
+        ),
+      },
+    ],
+    [t]
+  );
+
+  return (
+    <div className="space-y-4">
+      <PageHeader
+        breadcrumbs={[
+          { name: t("breadcrumbs.home"), href: "/" },
+          { name: t("breadcrumbs.warehouse"), href: "/warehouse" },
+          { name: t("breadcrumbs.logs") },
+        ]}
+        stats={stats}
+      />
+
+      <Table
+        searchValue={search}
+        onSearchChange={setSearch}
+        onSearch={applyFilters}
+        labels={{
+          searchPlaceholder: t("searchPlaceholder"),
+          filter: t("filter"),
+          apply: t("apply"),
+          total: t("total"),
+          limit: t("limit"),
+          emptyTitle: t("emptyTitle"),
+          emptySubtitle: "",
+        }}
+        actions={[
+          {
+            key: "export",
+            label: t("export"),
+            icon: exportLoading ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <FileDown size={14} />
+            ),
+            color: "blue",
+            onClick: onExport,
+            disabled: exportLoading,
+          },
+        ]}
+        hasActiveFilters={hasActiveFilters}
+        onApplyFilters={applyFilters}
+        filters={
+          <>
+            <FilterField label={t("table.opType")}>
+              <Select
+                value={filters.actionType}
+                onValueChange={(v) => setFilters((f) => ({ ...f, actionType: v }))}
+              >
+                <SelectTrigger className="h-10 min-w-[160px] rounded-xl border-border bg-background text-sm">
+                  <SelectValue placeholder={t("filters.allTypes")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("filters.allTypes")}</SelectItem>
+                  {Object.entries(OPERATION_TYPE_KEYS).map(([key, labelKey]) => (
+                    <SelectItem key={key} value={key}>
+                      {t(labelKey)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FilterField>
+
+            <FilterField label={t("table.result")}>
+              <Select
+                value={filters.result}
+                onValueChange={(v) => setFilters((f) => ({ ...f, result: v }))}
+              >
+                <SelectTrigger className="h-10 min-w-[140px] rounded-xl border-border bg-background text-sm">
+                  <SelectValue placeholder={t("filters.allResults")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("filters.allResults")}</SelectItem>
+                  <SelectItem value="SUCCESS">{t("result.success")}</SelectItem>
+                  <SelectItem value="FAILED">{t("result.failed")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </FilterField>
+
+            <ShippingCompanyFilter
+              value={filters.carrier}
+              onChange={(v) => setFilters((f) => ({ ...f, carrier: v }))}
+            />
+
+            <FilterField label={t("table.datetime")}>
+              <Input
+                type="date"
+                value={filters.date}
+                onChange={(e) => setFilters((f) => ({ ...f, date: e.target.value }))}
+                className="h-10 rounded-xl text-sm"
+              />
+            </FilterField>
+          </>
+        }
+        columns={columns}
+        data={pager.records}
+        isLoading={loading}
+        pagination={{
+          total_records: pager.total_records,
+          current_page: pager.current_page,
+          per_page: pager.per_page,
+        }}
+        onPageChange={handlePageChange}
+      />
+
+      <OrderLogModal
+        open={!!orderLogModal}
+        onClose={() => setOrderLogModal(null)}
+        op={orderLogModal}
+        t={t}
+      />
+
+      <GenericOpModal
+        open={!!genericOpModal}
+        onClose={() => setGenericOpModal(null)}
+        op={genericOpModal}
+        orders={orders}
+        t={t}
+      />
+
+      <PrepSessionModal
+        open={!!sessionModal}
+        onClose={() => setSessionModal(null)}
+        sessionOps={sessionModal}
+        t={t}
+      />
+    </div>
+  );
+}
 function buildCorrectPDF(prepOps, labels) {
   const now = new Date().toLocaleString("en-US");
 
@@ -264,17 +655,17 @@ function buildGenericOpPDF(op, order, labels) {
   const resultColor = op.result === "SUCCESS" ? "#16a34a" : "#dc2626";
   const resultLabel = op.result === "SUCCESS" ? labels.success : labels.failed;
 
-  return `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>${labels.title} ${op.id}</title>${PDF_STYLE}</head><body><div class="header-bar info-bar"><div style="font-size:18px;font-weight:700;margin-bottom:4px;">${labels.title} — ${labels.opTypeLabel}</div><div style="font-size:12px;opacity:.85;">${labels.printedAt}: ${now} | ${labels.opNumber}: ${op.id}</div></div><div class="info-grid"><div class="info-card"><div class="info-label">${labels.opNumber}</div><div class="info-value" style="font-family:monospace">${op.id}</div></div><div class="info-card"><div class="info-label">${labels.opType}</div><div class="info-value">${labels.opTypeLabel}</div></div><div class="info-card"><div class="info-label">${labels.orderNumber}</div><div class="info-value" style="font-family:monospace">${op.orderCode || "—"}</div></div><div class="info-card"><div class="info-label">${labels.carrier}</div><div class="info-value">${op.carrier || "—"}</div></div><div class="info-card"><div class="info-label">${labels.employee}</div><div class="info-value">${op.employee || "—"}</div></div><div class="info-card"><div class="info-label">${labels.result}</div><div class="info-value" style="color:${resultColor}">${resultLabel}</div></div><div class="info-card"><div class="info-label">${labels.datetime}</div><div class="info-value" style="font-family:monospace;font-size:12px">${op.createdAt || "—"}</div></div><div class="info-card"><div class="info-label">${labels.details}</div><div class="info-value">${op.details || "—"}</div></div></div>${order ? `<h2>${labels.orderInfo}</h2><div class="info-grid"><div class="info-card"><div class="info-label">${labels.customer}</div><div class="info-value">${order.customer || "—"}</div></div><div class="info-card"><div class="info-label">${labels.city}</div><div class="info-value">${order.city || "—"}</div></div><div class="info-card"><div class="info-label">${labels.total}</div><div class="info-value">${order.total ? order.total + " " + labels.currency : "—"}</div></div><div class="info-card"><div class="info-label">${labels.status}</div><div class="info-value">${order.status || "—"}</div></div></div>` : ""}</body></html>`;
+  return `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>${labels.title} ${op.id}</title>${PDF_STYLE}</head><body><div class="header-bar info-bar"><div style="font-size:18px;font-weight:700;margin-bottom:4px;">${labels.title} — ${labels.opTypeLabel}</div><div style="font-size:12px;opacity:.85;">${labels.printedAt}: ${now} | ${labels.opNumber}: ${op.id}</div></div><div class="info-grid"><div class="info-card"><div class="info-label">${labels.opNumber}</div><div class="info-value" style="font-family:monospace">${op.id}</div></div><div class="info-card"><div class="info-label">${labels.opType}</div><div class="info-value">${labels.opTypeLabel}</div></div><div class="info-card"><div class="info-label">${labels.orderNumber}</div><div class="info-value" style="font-family:monospace">${op.orderCode || "—"}</div></div><div class="info-card"><div class="info-label">${labels.carrier}</div><div class="info-value">${op.carrier || "—"}</div></div><div class="info-card"><div class="info-label">${labels.employee}</div><div class="info-value">${op.employee || "—"}</div></div><div class="info-card"><div class="info-label">${labels.result}</div><div class="info-value" style="color:${resultColor}">${resultLabel}</div></div><div class="info-card"><div class="info-label">${labels.datetime}</div><div class="info-value" style="font-family:monospace;font-size:12px">${op.createdAt || "—"}</div></div><div class="info-card"><div class="info-label">${labels.details}</div><div class="info-value">${op.details || "—"}</div></div></div>${order ? `<h2>${labels.orderInfo}</h2><div class="info-grid"><div class="info-card"><div class="info-label">${labels.customer}</div><div class="info-value">${order.customer || "—"}</div></div><div class="info-card"><div class="info-label">${labels.city}</div><div class="info-value">${order.city || "—"}</div></div><div class="info-card"><div class="info-label">${labels.total}</div><div class="info-value">${order.finalTotal ? order.finalTotal + " " + labels.currency : "—"}</div></div><div class="info-card"><div class="info-label">${labels.status}</div><div class="info-value">${order.status || "—"}</div></div></div>` : ""}</body></html>`;
 }
 
 // ─────────────────────────────────────────────────────────────
 // GENERIC OP MODAL
 // ─────────────────────────────────────────────────────────────
-function GenericOpModal({ open, onClose, op, orders, t }) {
+function GenericOpModal({ open, onClose, op, t }) {
   if (!op) return null;
 
-  const order = orders?.find((o) => o.code === op.orderCode);
-  const opTypeLabel = t(OPERATION_TYPE_KEYS[op.operationType] ?? "opTypes.unknown");
+  const order = op.order;
+  const opTypeLabel = t(OPERATION_TYPE_KEYS[op.actionType] ?? "opTypes.unknown");
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -290,7 +681,7 @@ function GenericOpModal({ open, onClose, op, orders, t }) {
               </div>
               <div>
                 <p className="text-white/70 text-xs font-medium mb-0.5">{t("genericModal.operationLabel")}</p>
-                <h2 className="text-white text-xl font-black font-mono">{op.id}</h2>
+                <h2 className="text-white text-xl font-black font-mono">{op.operationNumber}</h2>
               </div>
             </div>
 
@@ -314,10 +705,10 @@ function GenericOpModal({ open, onClose, op, orders, t }) {
           <div className="grid grid-cols-2 gap-2">
             {[
               { label: t("genericModal.opType"), value: opTypeLabel, icon: ClipboardList, color: DS.primary },
-              { label: t("genericModal.orderNumber"), value: op.orderCode || "—", icon: Hash, color: DS.accent },
-              { label: t("genericModal.carrier"), value: op.carrier || "—", icon: Truck, color: DS.warning },
-              { label: t("genericModal.employee"), value: op.employee || "—", icon: User, color: DS.accent },
-              { label: t("genericModal.datetime"), value: op.createdAt || "—", icon: Calendar, color: DS.warning },
+              { label: t("genericModal.orderNumber"), value: op.order?.orderNumber || "—", icon: Hash, color: DS.accent },
+              { label: t("genericModal.carrier"), value: op.shippingCompany?.name || "—", icon: Truck, color: DS.warning },
+              { label: t("genericModal.employee"), value: op.user?.name || "—", icon: User, color: DS.accent },
+              { label: t("genericModal.datetime"), value: op.createdAt ? new Date(op.createdAt).toLocaleString() : "—", icon: Calendar, color: DS.warning },
               { label: t("genericModal.details"), value: op.details || "—", icon: Info, color: DS.primary },
             ].map(({ label, value, icon: Icon, color }) => (
               <div
@@ -360,10 +751,10 @@ function GenericOpModal({ open, onClose, op, orders, t }) {
               <h4 className="text-sm font-bold mb-2 text-slate-600">{t("genericModal.orderInfo")}</h4>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { label: t("genericModal.customer"), value: order.customer },
+                  { label: t("genericModal.customer"), value: order.customerName },
                   { label: t("genericModal.city"), value: order.city },
-                  { label: t("genericModal.total"), value: order.total ? `${order.total} ${t("common.currency")}` : "—" },
-                  { label: t("genericModal.status"), value: order.status || "—" },
+                  { label: t("genericModal.total"), value: order.finalTotal ? `${order.finalTotal} ${t("common.currency")}` : "—" },
+                  { label: t("genericModal.status"), value: order.status?.name || "—" },
                 ].map(({ label, value }) => (
                   <div key={label} className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3">
                     <p className="text-xs text-slate-400 mb-1">{label}</p>
@@ -377,27 +768,42 @@ function GenericOpModal({ open, onClose, op, orders, t }) {
           <button
             onClick={() =>
               openPrintWindow(
-                buildGenericOpPDF(op, order, {
-                  title: t("genericPdf.title"),
-                  printedAt: t("genericPdf.printedAt"),
-                  opNumber: t("genericPdf.opNumber"),
-                  opType: t("genericPdf.opType"),
-                  opTypeLabel,
-                  orderNumber: t("genericPdf.orderNumber"),
-                  carrier: t("genericPdf.carrier"),
-                  employee: t("genericPdf.employee"),
-                  result: t("genericPdf.result"),
-                  datetime: t("genericPdf.datetime"),
-                  details: t("genericPdf.details"),
-                  orderInfo: t("genericPdf.orderInfo"),
-                  customer: t("genericPdf.customer"),
-                  city: t("genericPdf.city"),
-                  total: t("genericPdf.total"),
-                  status: t("genericPdf.status"),
-                  currency: t("common.currency"),
-                  success: t("result.success"),
-                  failed: t("result.failed"),
-                }),
+                buildGenericOpPDF(
+                  {
+                    ...op,
+                    id: op.operationNumber,
+                    carrier: op.shippingCompany?.name,
+                    employee: op.user?.name,
+                    createdAt: op.createdAt ? new Date(op.createdAt).toLocaleString() : "—"
+                  },
+                  {
+                    ...order,
+                    customer: order.customerName,
+                    total: order.finalTotal,
+                    status: order.status?.name
+                  },
+                  {
+                    title: t("genericPdf.title"),
+                    printedAt: t("genericPdf.printedAt"),
+                    opNumber: t("genericPdf.opNumber"),
+                    opType: t("genericPdf.opType"),
+                    opTypeLabel,
+                    orderNumber: t("genericPdf.orderNumber"),
+                    carrier: t("genericPdf.carrier"),
+                    employee: t("genericPdf.employee"),
+                    result: t("genericPdf.result"),
+                    datetime: t("genericPdf.datetime"),
+                    details: t("genericPdf.details"),
+                    orderInfo: t("genericPdf.orderInfo"),
+                    customer: t("genericPdf.customer"),
+                    city: t("genericPdf.city"),
+                    total: t("genericPdf.total"),
+                    status: t("genericPdf.status"),
+                    currency: t("common.currency"),
+                    success: t("result.success"),
+                    failed: t("result.failed"),
+                  }
+                ),
                 t("popupBlocked")
               )
             }
@@ -848,279 +1254,5 @@ function PrepSessionModal({ open, onClose, sessionOps, t }) {
         </div>
       </DialogContent>
     </Dialog>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────
-// MAIN LOGS TAB
-// ─────────────────────────────────────────────────────────────
-export function LogsTab({ opsLogs, orders = [] }) {
-  const t = useTranslations("warehouse.logs");
-
-  const [search, setSearch] = useState("");
-  const [filterOpType, setFilterOpType] = useState("all");
-  const [filterResult, setFilterResult] = useState("all");
-  const [filterCarrier, setFilterCarrier] = useState("all");
-  const [page, setPage] = useState({ current_page: 1, per_page: 12 });
-
-  const [orderLogModal, setOrderLogModal] = useState(null);
-  const [genericOpModal, setGenericOpModal] = useState(null);
-  const [sessionModal, setSessionModal] = useState(null);
-
-  const allCarriers = useMemo(() => {
-    const set = new Set(opsLogs.map((l) => l.carrier).filter(Boolean));
-    return [...set].sort();
-  }, [opsLogs]);
-
-  const hasActiveFilters =
-    filterOpType !== "all" || filterResult !== "all" || filterCarrier !== "all";
-
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return opsLogs.filter((l) => {
-      if (filterOpType !== "all" && l.operationType !== filterOpType) return false;
-      if (filterResult !== "all" && l.result !== filterResult) return false;
-      if (filterCarrier !== "all" && l.carrier !== filterCarrier) return false;
-      if (
-        q &&
-        ![l.id, l.orderCode, l.carrier, l.employee, l.details].some((x) =>
-          String(x || "").toLowerCase().includes(q)
-        )
-      )
-        return false;
-      return true;
-    });
-  }, [opsLogs, search, filterOpType, filterResult, filterCarrier]);
-
-  const successCount = opsLogs.filter((l) => l.result === "SUCCESS").length;
-  const failCount = opsLogs.filter((l) => l.result === "FAILED").length;
-  const rate = opsLogs.length > 0 ? Math.round((successCount / opsLogs.length) * 100) : 0;
-
-  const stats = [
-    { id: "total-ops", name: t("stats.totalOps"), value: opsLogs.length, icon: ClipboardList, color: "#64748b", sortOrder: 0 },
-    { id: "success", name: t("stats.success"), value: successCount, icon: CheckCircle2, color: "#10b981", sortOrder: 1 },
-    { id: "failed", name: t("stats.failed"), value: failCount, icon: XCircle, color: "#ef4444", sortOrder: 2 },
-    { id: "rate", name: t("stats.successRate"), value: `${rate}%`, icon: Package, color: "#a855f7", sortOrder: 3 },
-  ];
-
-  const prepGroups = useMemo(() => {
-    const prepared = opsLogs.filter((l) => l.operationType === "ORDER_PREPARED" && l.scanLogs);
-    const groups = {};
-    prepared.forEach((op) => {
-      const key = op.createdAt || op.id;
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(op);
-    });
-    return groups;
-  }, [opsLogs]);
-
-  const openSingleLog = (op) => setOrderLogModal(op);
-  const openSessionForOp = (op) => {
-    const key = op.createdAt || op.id;
-    const group = prepGroups[key];
-    if (group && group.length > 1) setSessionModal(group);
-    else setOrderLogModal(op);
-  };
-  const openGenericLog = (op) => setGenericOpModal(op);
-
-  const columns = useMemo(
-    () => [
-      {
-        key: "id",
-        header: t("table.opNumber"),
-        cell: (row) => <span className="font-mono font-bold text-primary text-xs">{row.id}</span>,
-      },
-      {
-        key: "operationType",
-        header: t("table.opType"),
-        cell: (row) => (
-          <span className="text-sm font-medium">
-            {t(OPERATION_TYPE_KEYS[row.operationType] ?? "opTypes.unknown")}
-          </span>
-        ),
-      },
-      {
-        key: "orderCode",
-        header: t("table.orderNumber"),
-        cell: (row) => <span className="font-mono text-sm font-semibold">{row.orderCode}</span>,
-      },
-      { key: "carrier", header: t("table.carrier") },
-      { key: "employee", header: t("table.employee") },
-      {
-        key: "result",
-        header: t("table.result"),
-        cell: (row) => (
-          <Badge
-            className={cn(
-              "rounded-full text-xs border",
-              row.result === "SUCCESS"
-                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                : "bg-red-50 text-red-700 border-red-200"
-            )}
-          >
-            {row.result === "SUCCESS" ? t("result.success") : t("result.failed")}
-          </Badge>
-        ),
-      },
-      {
-        key: "details",
-        header: t("table.details"),
-        cell: (row) => <span className="text-sm text-slate-500">{row.details}</span>,
-      },
-      {
-        key: "createdAt",
-        header: t("table.datetime"),
-        cell: (row) => <span className="text-sm text-slate-500 font-mono">{row.createdAt}</span>,
-      },
-      {
-        key: "actions",
-        header: t("table.actions"),
-        cell: (row) => {
-          const isPrepOp = row.operationType === "ORDER_PREPARED" && row.scanLogs;
-          const key = row.createdAt || row.id;
-          const isSession = isPrepOp && prepGroups[key] && prepGroups[key].length > 1;
-
-          return (
-            <ActionButtons
-              row={row}
-              actions={
-                isPrepOp
-                  ? [
-                      {
-                        icon: <Eye />,
-                        tooltip: t("actions.viewOrderFile"),
-                        onClick: (r) => openSingleLog(r),
-                        variant: "purple",
-                      },
-                      ...(isSession
-                        ? [
-                            {
-                              icon: <FileDown />,
-                              tooltip: t("actions.viewSessionFile", { count: prepGroups[key].length }),
-                              onClick: (r) => openSessionForOp(r),
-                              variant: "emerald",
-                            },
-                          ]
-                        : []),
-                    ]
-                  : [
-                      {
-                        icon: <Info />,
-                        tooltip: t("actions.viewOperationLog"),
-                        onClick: (r) => openGenericLog(r),
-                        variant: "purple",
-                      },
-                    ]
-              }
-            />
-          );
-        },
-      },
-    ],
-    [t, prepGroups]
-  );
-
-  return (
-    <div className="space-y-4">
-      <PageHeader
-        breadcrumbs={[
-          { name: t("breadcrumbs.home"), href: "/" },
-          { name: t("breadcrumbs.warehouse"), href: "/warehouse" },
-          { name: t("breadcrumbs.logs") },
-        ]}
-        stats={stats}
-      />
-
-      <Table
-        searchValue={search}
-        onSearchChange={setSearch}
-        onSearch={() => {}}
-        labels={{
-          searchPlaceholder: t("searchPlaceholder"),
-          filter: t("filter"),
-          apply: t("apply"),
-          total: t("total"),
-          limit: t("limit"),
-          emptyTitle: t("emptyTitle"),
-          emptySubtitle: "",
-        }}
-        actions={[
-          {
-            key: "export",
-            label: t("export"),
-            icon: <FileDown size={14} />,
-            color: "blue",
-            onClick: () => {},
-          },
-        ]}
-        hasActiveFilters={hasActiveFilters}
-        onApplyFilters={() => {}}
-        filters={
-          <>
-            <FilterField label={t("table.opType")}>
-              <Select value={filterOpType} onValueChange={setFilterOpType}>
-                <SelectTrigger className="h-10 min-w-[160px] rounded-xl border-border bg-background text-sm">
-                  <SelectValue placeholder={t("filters.allTypes")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("filters.allTypes")}</SelectItem>
-                  {Object.entries(OPERATION_TYPE_KEYS).map(([key, labelKey]) => (
-                    <SelectItem key={key} value={key}>
-                      {t(labelKey)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FilterField>
-
-            <FilterField label={t("table.result")}>
-              <Select value={filterResult} onValueChange={setFilterResult}>
-                <SelectTrigger className="h-10 min-w-[140px] rounded-xl border-border bg-background text-sm">
-                  <SelectValue placeholder={t("filters.allResults")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("filters.allResults")}</SelectItem>
-                  <SelectItem value="SUCCESS">{t("result.success")}</SelectItem>
-                  <SelectItem value="FAILED">{t("result.failed")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </FilterField>
-
-            {allCarriers.length > 0 && (
-              <FilterField label={t("table.carrier")}>
-                <Select value={filterCarrier} onValueChange={setFilterCarrier}>
-                  <SelectTrigger className="h-10 min-w-[140px] rounded-xl border-border bg-background text-sm">
-                    <SelectValue placeholder={t("filters.allCarriers")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("filters.allCarriers")}</SelectItem>
-                    {allCarriers.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FilterField>
-            )}
-          </>
-        }
-        columns={columns}
-        data={filtered}
-        isLoading={false}
-        pagination={{
-          total_records: filtered.length,
-          current_page: page.current_page,
-          per_page: page.per_page,
-        }}
-        onPageChange={({ page: p, per_page }) => setPage({ current_page: p, per_page })}
-      />
-
-      <OrderLogModal open={!!orderLogModal} onClose={() => setOrderLogModal(null)} op={orderLogModal} t={t} />
-
-      <GenericOpModal open={!!genericOpModal} onClose={() => setGenericOpModal(null)} op={genericOpModal} orders={orders} t={t} />
-
-      <PrepSessionModal open={!!sessionModal} onClose={() => setSessionModal(null)} sessionOps={sessionModal} t={t} />
-    </div>
   );
 }

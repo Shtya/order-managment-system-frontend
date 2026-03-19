@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect, useCallback } from "react";
-import { Info, RefreshCw, AlertCircle, Package, Calendar, FileDown, X, XCircle, User, Hash, MapPin } from "lucide-react";
+import { Info, RefreshCw, AlertCircle, Package, Calendar, FileDown, X, XCircle, User, Hash, MapPin, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { cn } from "@/utils/cn";
@@ -15,6 +15,10 @@ import PageHeader from "../../../../components/atoms/Pageheader";
 import ActionButtons from "@/components/atoms/Actions";
 import { Button } from "@/components/ui/button";
 import { STATUS } from "./data";
+import api from "@/utils/api";
+import { useDebounce } from "@/hook/useDebounce";
+import { useExport } from "@/hook/useExport";
+import toast from "react-hot-toast";
 
 // ─────────────────────────────────────────────────────────────
 // DESIGN TOKENS
@@ -76,12 +80,12 @@ function RejectedOrderDetailModal({ open, onClose, order }) {
   if (!order) return null;
 
   const infoRows = [
-    { label: t("detail.customer"), value: order.customer, icon: User, color: DS.primary },
-    { label: t("detail.phone"), value: order.phone, icon: Hash, color: DS.accent },
+    { label: t("detail.customer"), value: order.customerName, icon: User, color: DS.primary },
+    { label: t("detail.phone"), value: order.phoneNumber, icon: Hash, color: DS.accent },
     { label: t("detail.city"), value: order.city, icon: MapPin, color: DS.primary },
-    { label: t("detail.employee"), value: order.assignedEmployee || "—", icon: User, color: DS.accent },
-    { label: t("detail.rejectedAt"), value: order.rejectedAt || "—", icon: Calendar, color: DS.warning },
-    { label: t("detail.totalItems"), value: order.products?.reduce((s, p) => s + (p.requestedQty || 0), 0) || 0, icon: Package, color: DS.warning },
+    { label: t("detail.employee"), value: order.rejectedBy?.name || "—", icon: User, color: DS.accent },
+    { label: t("detail.rejectedAt"), value: order.rejectedAt ? new Date(order.rejectedAt).toLocaleString() : "—", icon: Calendar, color: DS.warning },
+    { label: t("detail.totalItems"), value: order.items?.reduce((s, p) => s + (p.quantity || 0), 0) || 0, icon: Package, color: DS.warning },
   ];
 
   return (
@@ -164,12 +168,12 @@ function RejectedOrderDetailModal({ open, onClose, order }) {
               <Package size={13} style={{ color: DS.accent }} />
               <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">{t("detail.products")}</span>
               <span className="ms-auto text-[11px] font-semibold text-slate-400">
-                {order.products?.length || 0} {t("detail.items")}
+                {order.items?.length || 0} {t("detail.items")}
               </span>
             </div>
 
             <div className="divide-y divide-slate-50 dark:divide-slate-700/40">
-              {order.products?.map((p, i) => (
+              {order.items?.map((p, i) => (
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, x: -6 }}
@@ -187,10 +191,10 @@ function RejectedOrderDetailModal({ open, onClose, order }) {
                     className={cn("font-mono text-[11px] px-2 py-0.5 font-bold", DS.radiusSm)}
                     style={{ backgroundColor: DS.accent + "12", color: DS.accent }}
                   >
-                    {p.sku}
+                    {p.variant?.sku || p.sku}
                   </span>
-                  <span className="flex-1 text-sm text-slate-700 dark:text-slate-200 font-medium">{p.name}</span>
-                  <span className="text-xs text-slate-400 font-mono">×{p.requestedQty}</span>
+                  <span className="flex-1 text-sm text-slate-700 dark:text-slate-200 font-medium">{p.variant?.product?.name || p.name}</span>
+                  <span className="text-xs text-slate-400 font-mono">×{p.quantity}</span>
                 </motion.div>
               ))}
             </div>
@@ -210,36 +214,91 @@ function RejectedOrderDetailModal({ open, onClose, order }) {
 // ─────────────────────────────────────────────────────────────
 // MAIN REJECTED TAB
 // ─────────────────────────────────────────────────────────────
-export function RejectedTab({ orders, updateOrder, pushOp, resetToken }) {
+export function RejectedTab({ resetToken }) {
   const t = useTranslations("warehouse.rejected");
 
-  const rejectedOrders = useMemo(
-    () => orders.filter((o) => o.status === STATUS.REJECTED),
-    [orders]
+  const [search, setSearch] = useState("");
+  const { debouncedValue: debouncedSearch } = useDebounce({ value: search, delay: 350 });
+  const [pager, setPager] = useState({
+    total_records: 0,
+    current_page: 1,
+    per_page: 12,
+    records: [],
+  });
+  const [rejectedStats, setRejectedStats] = useState({
+    totalRejected: 0,
+    rejectedToday: 0,
+    rejectedThisWeek: 0,
+  });
+  const [loading, setLoading] = useState(false);
+  const [retrying, setRetrying] = useState({});
+  const { handleExport, exportLoading } = useExport();
+
+  const [detailModal, setDetailModal] = useState(null);
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await api.get("/orders/stats/rejected-orders");
+      if (res.data) setRejectedStats(res.data);
+    } catch (e) {
+      console.error("Error fetching rejected stats", e);
+    }
+  }, []);
+
+  const fetchOrders = useCallback(
+    async (page = pager.current_page, per_page = pager.per_page) => {
+      try {
+        setLoading(true);
+        const params = {
+          page,
+          limit: per_page,
+          status: "rejected",
+        };
+        if (debouncedSearch) params.search = debouncedSearch;
+
+        const res = await api.get("/orders", { params });
+        const data = res.data || {};
+        setPager({
+          total_records: data.total_records || 0,
+          current_page: data.current_page || page,
+          per_page: data.per_page || per_page,
+          records: Array.isArray(data.records) ? data.records : [],
+        });
+      } catch (e) {
+        console.error("Error fetching rejected orders", e);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [debouncedSearch, pager.current_page, pager.per_page]
   );
 
-  const [search, setSearch] = useState("");
-  const [detailModal, setDetailModal] = useState(null);
-  const [page, setPage] = useState({ current_page: 1, per_page: 12 });
-
   useEffect(() => {
-    setSearch("");
-    setDetailModal(null);
-    setPage({ current_page: 1, per_page: 12 });
-  }, [resetToken]);
+    console.log("called")
+    fetchOrders(1, pager.per_page);
+    fetchStats();
+  }, [debouncedSearch, resetToken, fetchOrders, fetchStats]);
 
-  const today = new Date().toISOString().split("T")[0];
-  const todayCount = rejectedOrders.filter((o) => o.rejectedAt?.startsWith(today)).length;
+  const handlePageChange = ({ page, per_page }) => {
+    fetchOrders(page, per_page);
+  };
 
-  const weekAgo = new Date();
-  weekAgo.setDate(weekAgo.getDate() - 7);
-  const weekCount = rejectedOrders.filter((o) => o.rejectedAt && new Date(o.rejectedAt) >= weekAgo).length;
+  const onExport = async () => {
+    const params = { status: "rejected" };
+    if (debouncedSearch) params.search = debouncedSearch;
+
+    await handleExport({
+      endpoint: "/orders/export",
+      params,
+      filename: `rejected_orders_${Date.now()}.xlsx`,
+    });
+  };
 
   const stats = [
     {
       id: "total-rejected",
       name: t("stats.totalRejected"),
-      value: rejectedOrders.length,
+      value: rejectedStats.totalRejected,
       icon: XCircle,
       color: "#ef4444",
       sortOrder: 0,
@@ -247,7 +306,7 @@ export function RejectedTab({ orders, updateOrder, pushOp, resetToken }) {
     {
       id: "today",
       name: t("stats.today"),
-      value: todayCount,
+      value: rejectedStats.rejectedToday,
       icon: Calendar,
       color: "#f97316",
       sortOrder: 1,
@@ -255,72 +314,46 @@ export function RejectedTab({ orders, updateOrder, pushOp, resetToken }) {
     {
       id: "this-week",
       name: t("stats.thisWeek"),
-      value: weekCount,
+      value: rejectedStats.rejectedThisWeek,
       icon: AlertCircle,
       color: "#f59e0b",
       sortOrder: 2,
     },
-    {
-      id: "total-items",
-      name: t("stats.totalItems"),
-      value: rejectedOrders.reduce(
-        (s, o) => s + (o.products || []).reduce((ps, p) => ps + (p.requestedQty || 0), 0),
-        0
-      ),
-      icon: Package,
-      color: "#64748b",
-      sortOrder: 3,
-    },
   ];
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return rejectedOrders;
-    return rejectedOrders.filter((o) =>
-      [o.code, o.customer, o.phone, o.city, o.rejectReason, o.assignedEmployee].some((x) =>
-        String(x || "").toLowerCase().includes(q)
-      )
-    );
-  }, [rejectedOrders, search]);
-
   const handleRetry = useCallback(
-    (order) => {
-      updateOrder(order.code, {
-        status: STATUS.CONFIRMED,
-        rejectReason: "",
-        rejectedAt: "",
-      });
-
-      pushOp({
-        id: `OP-${Date.now()}`,
-        operationType: "RETRY_ORDER",
-        orderCode: order.code,
-        carrier: order.carrier || "-",
-        employee: "System",
-        result: "SUCCESS",
-        details: t("retryOpDetails"),
-        createdAt: new Date().toISOString().slice(0, 16).replace("T", " "),
-      });
+    async (order) => {
+      setRetrying((prev) => ({ ...prev, [order.id]: true }));
+      try {
+        await api.patch(`/orders/${order.id}/re-confirm`);
+        toast.success(t("messages.retrySuccess") || "Order re-confirmed successfully");
+        fetchOrders();
+      } catch (error) {
+        console.error("Error retrying order", error);
+        toast.error(error.response?.data?.message || t("messages.retryError") || "Error re-confirming order");
+      } finally {
+        setRetrying((prev) => ({ ...prev, [order.id]: false }));
+      }
     },
-    [updateOrder, pushOp, t]
+    [fetchOrders, t]
   );
 
   const columns = useMemo(
     () => [
       {
-        key: "code",
+        key: "orderNumber",
         header: t("table.orderNumber"),
-        cell: (row) => <span className="font-mono font-bold text-primary">{row.code}</span>,
+        cell: (row) => <span className="font-mono font-bold text-primary">{row.orderNumber}</span>,
       },
       {
-        key: "customer",
+        key: "customerName",
         header: t("table.customer"),
-        cell: (row) => <span className="font-semibold">{row.customer}</span>,
+        cell: (row) => <span className="font-semibold">{row.customerName}</span>,
       },
       {
-        key: "phone",
+        key: "phoneNumber",
         header: t("table.phone"),
-        cell: (row) => <span className="font-mono text-slate-500 text-sm">{row.phone}</span>,
+        cell: (row) => <span className="font-mono text-slate-500 text-sm">{row.phoneNumber}</span>,
       },
       { key: "city", header: t("table.city") },
       {
@@ -335,9 +368,13 @@ export function RejectedTab({ orders, updateOrder, pushOp, resetToken }) {
       {
         key: "rejectedAt",
         header: t("table.rejectedAt"),
-        cell: (row) => <span className="text-sm text-slate-500">{row.rejectedAt || "—"}</span>,
+        cell: (row) => <span className="text-sm text-slate-500">{row.rejectedAt ? new Date(row.rejectedAt).toLocaleString() : "—"}</span>,
       },
-      { key: "assignedEmployee", header: t("table.employee") },
+      {
+        key: "assignedEmployee",
+        header: t("table.employee"),
+        cell: (row) => row.rejectedBy?.name || "—",
+      },
       {
         key: "actions",
         header: t("table.actions"),
@@ -352,19 +389,19 @@ export function RejectedTab({ orders, updateOrder, pushOp, resetToken }) {
                 variant: "purple",
               },
               {
-                icon: <RefreshCw />,
+                icon: retrying[row.id] ? <Loader2 className="animate-spin" /> : <RefreshCw />,
                 tooltip: t("actions.retryToConfirmed"),
                 onClick: (r) => handleRetry(r),
                 variant: "orange",
+                disabled: !!retrying[row.id],
               },
             ]}
           />
         ),
       },
     ],
-    [t, handleRetry]
+    [t, handleRetry, retrying]
   );
-
   return (
     <div className="space-y-4">
       <PageHeader
@@ -379,7 +416,7 @@ export function RejectedTab({ orders, updateOrder, pushOp, resetToken }) {
       <Table
         searchValue={search}
         onSearchChange={setSearch}
-        onSearch={() => {}}
+        onSearch={() => fetchOrders(1, pager.per_page)}
         labels={{
           searchPlaceholder: t("searchPlaceholder"),
           filter: t("filter"),
@@ -393,23 +430,24 @@ export function RejectedTab({ orders, updateOrder, pushOp, resetToken }) {
           {
             key: "export",
             label: t("export"),
-            icon: <FileDown size={14} />,
+            icon: exportLoading ? <Loader2 size={14} className="animate-spin" /> : <FileDown size={14} />,
             color: "blue",
-            onClick: () => {},
+            onClick: onExport,
+            disabled: exportLoading,
           },
         ]}
         hasActiveFilters={false}
-        onApplyFilters={() => {}}
+        onApplyFilters={() => { }}
         filters={null}
         columns={columns}
-        data={filtered}
-        isLoading={false}
+        data={pager.records}
+        isLoading={loading}
         pagination={{
-          total_records: filtered.length,
-          current_page: page.current_page,
-          per_page: page.per_page,
+          total_records: pager.total_records,
+          current_page: pager.current_page,
+          per_page: pager.per_page,
         }}
-        onPageChange={({ page: p, per_page }) => setPage({ current_page: p, per_page })}
+        onPageChange={handlePageChange}
       />
 
       <RejectedOrderDetailModal

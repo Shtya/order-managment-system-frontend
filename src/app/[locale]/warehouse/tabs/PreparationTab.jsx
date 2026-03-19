@@ -6,7 +6,8 @@ import {
 	Clock, ScanLine, Package, CheckCircle2, Ban, FileDown, Truck, Info,
 	X, Layers, AlertCircle, Hash, MapPin, User, ShoppingBag,
 	TrendingUp, Volume2, VolumeX, CreditCard, Store, ChevronDown,
-	ClipboardList, Barcode, Search, Zap,
+	Loader2,
+	FileText,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
@@ -17,10 +18,18 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import toast from "react-hot-toast";
+import api from "@/utils/api";
 import PageHeader from "../../../../components/atoms/Pageheader";
 import ActionButtons from "@/components/atoms/Actions";
 import Button_ from "@/components/atoms/Button";
-import { STATUS, CARRIERS } from "./data";
+import { STATUS, CARRIERS, CARRIER_STYLES, CARRIER_META } from "./data";
+import { OrderDetailModal } from "./DistributionTab";
+import { useDebounce } from "@/hook/useDebounce";
+import { useExport } from "@/hook/useExport";
+import StoreFilter from "@/components/atoms/StoreFilter";
+import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
+import ProductFilter from "@/components/atoms/ProductFilter";
 
 // ─────────────────────────────────────────────────────────────
 // DESIGN TOKENS — Single source of truth for the whole page
@@ -58,15 +67,464 @@ const DS = {
 	}
 };
 
-// ─────────────────────────────────────────────────────────────
-// CARRIER STYLES
-// ─────────────────────────────────────────────────────────────
-const CARRIER_STYLES = {
-	ARAMEX: { bg: "bg-red-50 dark:bg-red-950/20", border: "border-red-200 dark:border-red-800", text: "text-red-700 dark:text-red-400" },
-	SMSA: { bg: "bg-blue-50 dark:bg-blue-950/20", border: "border-blue-200 dark:border-blue-800", text: "text-blue-700 dark:text-blue-400" },
-	DHL: { bg: "bg-yellow-50 dark:bg-yellow-950/20", border: "border-yellow-200 dark:border-yellow-800", text: "text-yellow-700 dark:text-yellow-400" },
-	BOSTA: { bg: "bg-orange-50 dark:bg-orange-950/20", border: "border-orange-200 dark:border-orange-800", text: "text-orange-700 dark:text-orange-400" },
-};
+const WRONG_SCAN_PDF_STYLE = `
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+  :root {
+    --primary: #ff8b00;
+    --primary-soft: #fff4e6;
+    --err: #ef4444;
+    --err-mid: #b91c1c;
+    --err-soft: #fef2f2;
+    --err-bg: #fff5f5;
+    --err-rule: #fee2e2;
+    --cream: #fdfcfb;
+    --cream-warm: #faf9f6;
+    --cream-deep: #f5f2ed;
+    --charcoal: #1e293b;
+    --charcoal-soft: #475569;
+    --charcoal-mid: #64748b;
+    --charcoal-muted: #94a3b8;
+    --charcoal-faint: #cbd5e1;
+    --white: #ffffff;
+    --rule: #e2e8f0;
+    --rule-soft: #f1f5f9;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Tajawal', sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--white);
+    color: var(--charcoal);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     HEADER BAND
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  .header-band {
+    background: var(--cream);
+    border-bottom: 2px solid var(--cream-deep);
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .header-brand {
+    padding: 24px 32px;
+    border-left: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .brand-icon {
+    width: 42px; height: 42px;
+    background: var(--err);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .brand-icon svg {
+    width: 22px; height: 22px;
+    fill: none; stroke: #fdf5f4;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  .doc-title {
+    font-family: var(--sans);
+    font-size: 19px; font-weight: 700;
+    color: var(--charcoal);
+    line-height: 1.1; letter-spacing: -0.3px;
+  }
+
+  .doc-subtitle {
+    font-family: var(--mono);
+    font-size: 11px; font-weight: 400;
+    color: var(--charcoal-soft);
+    margin-top: 3px; letter-spacing: 0.3px;
+  }
+
+  .header-ref {
+    padding: 24px 32px;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    gap: 5px;
+  }
+
+  .ref-badge {
+    font-family: var(--mono);
+    font-size: 10px; font-weight: 600;
+    color: var(--err-mid);
+    background: var(--err-soft);
+    padding: 3px 9px; border-radius: 4px;
+    letter-spacing: 0.8px; text-transform: uppercase;
+    border: 1px solid var(--err-rule);
+  }
+
+  .ref-date     { font-family: var(--mono); font-size: 11px; color: var(--charcoal-muted); }
+  .ref-employee { font-family: var(--sans); font-size: 12px; color: var(--charcoal-mid); font-weight: 500; }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     META STRIP
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  .meta-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: var(--cream-warm);
+  }
+
+  .meta-cell { padding: 16px 20px; border-left: 1px solid var(--rule); position: relative; }
+  .meta-cell:last-child { border-left: none; }
+
+  .meta-cell.highlight::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 3px; height: 100%;
+    background: var(--err);
+  }
+
+  .meta-label {
+    font-family: var(--mono);
+    font-size: 8.5px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1.4px;
+    color: var(--charcoal-faint); margin-bottom: 6px;
+  }
+
+  .meta-value {
+    font-family: var(--sans);
+    font-size: 15px; font-weight: 700;
+    color: var(--charcoal); line-height: 1;
+  }
+
+  .meta-value.mono { font-family: var(--mono); font-size: 13px; }
+  .meta-value.err  { color: var(--err); }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     ALERT BANNER (appears only on print)
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  .print-alert {
+    display: none;
+    margin: 20px 32px 0;
+    padding: 12px 18px;
+    border: 1.5px solid var(--err-rule);
+    border-radius: 6px;
+    background: var(--err-bg);
+  }
+
+  .print-alert-inner {
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .print-alert-icon {
+    width: 18px; height: 18px;
+    border: 1.5px solid var(--err);
+    border-radius: 50%;
+    color: var(--err);
+    font-family: var(--mono);
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .print-alert-text {
+    font-family: var(--sans);
+    font-size: 12px; font-weight: 500;
+    color: var(--err-mid);
+    line-height: 1.4;
+  }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     TABLE SECTION
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  .table-wrap { padding: 24px 32px 32px; }
+
+  .section-label {
+    display: flex; align-items: center;
+    gap: 12px; margin-bottom: 16px;
+  }
+
+  .section-label-text {
+    font-family: var(--mono);
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--charcoal-faint); white-space: nowrap;
+  }
+
+  .section-label-line { flex: 1; height: 1px; background: var(--rule-soft); }
+
+  .table-card {
+    border: 1.5px solid var(--rule);
+    border-radius: 8px; overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  thead tr {
+    background: var(--cream-warm);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  th {
+    font-family: var(--mono);
+    font-size: 8.5px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1.2px;
+    color: var(--charcoal-muted);
+    padding: 10px 16px; text-align: right;
+  }
+
+  th.center { text-align: center; }
+
+  tbody tr { border-bottom: 1px solid var(--rule-soft); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:nth-child(even) td { background: #fdfcfb; }
+
+  td {
+    font-family: var(--sans);
+    font-size: 12.5px; color: var(--charcoal-mid);
+    padding: 11px 16px;
+    text-align: right; vertical-align: middle;
+  }
+
+  td.idx-cell {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--charcoal-faint);
+    text-align: center; font-weight: 500;
+    width: 42px;
+  }
+
+  td.code-cell {
+    font-family: var(--mono);
+    font-size: 12px; font-weight: 600;
+    color: var(--err);
+    letter-spacing: 0.3px;
+  }
+
+  .badge-error {
+    display: inline-block;
+    font-family: var(--sans);
+    font-size: 11px; font-weight: 600;
+    color: var(--err-mid);
+    background: var(--err-soft);
+    border: 1px solid var(--err-rule);
+    padding: 3px 10px;
+    border-radius: 20px;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+
+  td.time-cell {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--charcoal-muted);
+    letter-spacing: 0.2px;
+  }
+
+  td.time-cell span {
+    background: var(--cream-warm);
+    border: 1px solid var(--rule);
+    padding: 2px 8px; border-radius: 4px;
+  }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     FOOTER
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  .doc-footer {
+    background: var(--cream);
+    border-top: 1px solid var(--rule);
+    padding: 12px 32px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+
+  .footer-left { display: flex; align-items: center; gap: 8px; }
+
+  .footer-mark {
+    width: 16px; height: 16px;
+    background: var(--err);
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .footer-mark svg {
+    width: 9px; height: 9px;
+    stroke: var(--cream); stroke-width: 2.2;
+    fill: none; stroke-linecap: round;
+  }
+
+  .footer-text { font-family: var(--mono); font-size: 9px; color: var(--charcoal-muted); letter-spacing: 0.5px; }
+  .footer-divider { width: 1px; height: 10px; background: var(--rule); margin: 0 2px; }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     PRINT OVERRIDES
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  @media print {
+    body { background: white; }
+    .print-alert { display: block !important; }
+    .header-band, .meta-strip, .meta-cell, thead tr, .badge-error, .doc-footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    tbody tr { page-break-inside: avoid; }
+    .table-card { box-shadow: none; }
+  }
+</style>`;
+
+function buildWrongScanLogPDF(logs, carrier, employee, now, labels, orderInfo = null) {
+	const rows = logs.map((l, i) => `
+    <tr>
+      <td class="idx-cell">${i + 1}</td>
+      <td class="code-cell">${l.orderNumber}</td>
+      <td class="code-cell">${l.sku}</td>
+      <td>${l.userName}</td>
+      <td><span class="badge-error">${labels.reasons?.[l.reason] || l.reason}</span></td>
+      <td class="time-cell"><span>${l.time}</span></td>
+    </tr>`
+	).join("");
+
+	let orderHeader = "";
+	if (orderInfo) {
+		orderHeader = `
+    <div style="padding: 20px 32px; border-bottom: 1px solid var(--rule); background: var(--cream-warm);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3 style="margin: 0; font-size: 16px; color: var(--charcoal);">${labels.orderInfo || "بيانات الطلب"}</h3>
+        <span style="font-family: var(--mono); font-weight: 700; color: var(--primary);">${orderInfo.orderNumber}</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+        <div>
+          <div style="font-size: 10px; color: var(--charcoal-muted); margin-bottom: 4px;">${labels.customer || "العميل"}</div>
+          <div style="font-weight: 600; font-size: 13px;">${orderInfo.customerName}</div>
+        </div>
+        <div>
+          <div style="font-size: 10px; color: var(--charcoal-muted); margin-bottom: 4px;">${labels.city || "المدينة"}</div>
+          <div style="font-weight: 600; font-size: 13px;">${orderInfo.city}</div>
+        </div>
+        <div>
+          <div style="font-size: 10px; color: var(--charcoal-muted); margin-bottom: 4px;">${labels.phone || "الهاتف"}</div>
+          <div style="font-weight: 600; font-size: 13px; font-family: var(--mono);">${orderInfo.phoneNumber}</div>
+        </div>
+      </div>
+    </div>`;
+	}
+
+	return `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>${labels.title}</title>
+  ${WRONG_SCAN_PDF_STYLE}
+</head>
+<body>
+
+  <!-- ── HEADER ── -->
+  <div class="header-band">
+    <div class="header-top">
+      <div class="header-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <div>
+          <div class="doc-title">${labels.title}</div>
+          <div class="doc-subtitle">WRONG SCAN LOG · ${carrier}</div>
+        </div>
+      </div>
+      <div class="header-ref">
+        <div class="ref-badge">ERR · ${now.replace(/\D/g, '').slice(0, 8)}</div>
+        <div class="ref-date">${now}</div>
+        
+      </div>
+    </div>
+
+    ${orderHeader}
+
+    <div class="meta-strip">
+      <div class="meta-cell">
+        <div class="meta-label">${labels.carrier}</div>
+        <div class="meta-value">${carrier}</div>
+      </div>
+      
+      <div class="meta-cell">
+        <div class="meta-label">${labels.date}</div>
+        <div class="meta-value mono">${now}</div>
+      </div>
+      <div class="meta-cell highlight">
+        <div class="meta-label">${labels.totalFailedAttempts}</div>
+        <div class="meta-value err">${logs.length} ${labels.attemptUnit}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PRINT-ONLY ALERT BANNER ── -->
+  <div class="print-alert">
+    <div class="print-alert-inner">
+      <div class="print-alert-icon">!</div>
+      <div class="print-alert-text">
+        ${labels.printAlertText || "هذا المستند يحتوي على محاولات مسح فاشلة — يُرجى المراجعة والتحقق من الباركود"}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TABLE ── -->
+  <div class="table-wrap">
+    <div class="section-label">
+      <span class="section-label-text">${labels.totalAttempts}: ${logs.length}</span>
+      <div class="section-label-line"></div>
+    </div>
+
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th class="center">#</th>
+            <th>${labels.orderNumber}</th>
+            <th>${labels.scannedCode}</th>
+            <th>${labels.userName}</th>
+            <th>${labels.failReason}</th>
+            <th>${labels.time}</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── FOOTER ── -->
+  <div class="doc-footer">
+    <div class="footer-left">
+      <div class="footer-mark">
+        <svg viewBox="0 0 10 10">
+          <line x1="3" y1="3" x2="7" y2="7"/>
+          <line x1="7" y1="3" x2="3" y2="7"/>
+        </svg>
+      </div>
+      <span class="footer-text">${labels.title}</span>
+      <div class="footer-divider"></div>
+      <span class="footer-text">${labels.system || "نظام إدارة المستودعات"}</span>
+    </div>
+    <span class="footer-text">${now}</span>
+  </div>
+
+</body>
+</html>`;
+}
+
+function openPrintWindow(html) {
+	const win = window.open("", "_blank", "width=900,height=700");
+	if (!win) return;
+	win.document.write(html);
+	win.document.close();
+	win.focus();
+	setTimeout(() => win.print(), 600);
+}
+
 
 // ─────────────────────────────────────────────────────────────
 // SHARED PRIMITIVES
@@ -196,8 +654,8 @@ function playBeep(type = "success") {
 // SCAN PROGRESS BAR (table cell)
 // ─────────────────────────────────────────────────────────────
 function ScanProgress({ products }) {
-	const total = products.reduce((s, p) => s + p.requestedQty, 0);
-	const scanned = products.reduce((s, p) => s + (p.scannedQty || 0), 0);
+	const total = products.reduce((s, p) => s + p.quantity, 0);
+	const scanned = products.reduce((s, p) => s + (p.scannedQuantity || 0), 0);
 	const pct = total === 0 ? 0 : Math.round((scanned / total) * 100);
 	return (
 		<div className="flex items-center gap-2 min-w-[120px]">
@@ -243,115 +701,97 @@ function ArcRing({
 	);
 }
 
-// ─────────────────────────────────────────────────────────────
-// ORDER DETAIL MODAL
-// ─────────────────────────────────────────────────────────────
-function OrderDetailModal({ open, onClose, order }) {
-	const t = useTranslations("warehouse.preparation");
-	if (!order) return null;
 
-	const infoRows = [
-		{ label: t("modal.customer"), value: order.customer, icon: User, color: DS.primary },
-		{ label: t("modal.phone"), value: order.phone, icon: Hash, color: DS.accent },
-		{ label: t("modal.city"), value: order.city, icon: MapPin, color: DS.primary },
-		{ label: t("modal.area"), value: order.area || "—", icon: MapPin, color: DS.warning },
-		{ label: t("modal.store"), value: order.store, icon: Store, color: DS.accent },
-		{ label: t("modal.carrier"), value: order.carrier || t("modal.notSpecified"), icon: Truck, color: "#ff5c2b" },
-		{ label: t("modal.trackingCode"), value: order.trackingCode || "—", icon: Hash, color: DS.accent },
-		{ label: t("modal.total"), value: `${order.total} ر.س`, icon: TrendingUp, color: DS.success },
+// ─────────────────────────────────────────────────────────────
+// ROOT EXPORT
+// ─────────────────────────────────────────────────────────────
+export default function PreparationTab({
+	pushOp, subtab, setSubtab, onPrepareMultiple,
+	setDistributionDialog, setSelectedOrdersGlobal, resetToken,
+}) {
+	const t = useTranslations("warehouse.preparation");
+
+	const [panelOpen, setPanelOpen] = useState(false);
+	const [jumpToOrder, setJumpToOrder] = useState(null);
+	const [loading, setLoading] = useState(true);
+	const [statsData, setStatsData] = useState({
+		scanning: 0,
+		notStarted: 0,
+		total: 0
+	});
+
+	const fetchStats = useCallback(async () => {
+		try {
+			setLoading(true);
+			const { data } = await api.get('/orders/stats/preparation-summary');
+			setStatsData(data);
+		} catch (error) {
+			console.error("Failed to fetch preparation stats", error);
+		} finally {
+			setLoading(false);
+		}
+	}, []);
+
+	const updateStatsAfterScanStart = useCallback(() => {
+		setStatsData(prev => ({
+			...prev,
+			scanning: prev.scanning + 1,
+			notStarted: Math.max(0, prev.notStarted - 1)
+		}));
+	}, []);
+
+	useEffect(() => {
+		fetchStats();
+	}, [fetchStats, resetToken]);
+
+	const handlePrepareOrder = useCallback((order) => {
+		setJumpToOrder(order); setSubtab("scanning");
+	}, [setSubtab]);
+
+	useEffect(() => { if (subtab !== "scanning") setJumpToOrder(null); }, [subtab]);
+
+	const stats = [
+		{ id: "scanning", name: t("stats.scanning"), value: statsData.scanning, icon: Clock, color: DS.accent, sortOrder: 0 },
+		{ id: "not-started", name: t("stats.notStarted"), value: statsData.notStarted, icon: Package, color: DS.warning, sortOrder: 1 },
+		{ id: "total", name: t("stats.total"), value: statsData.total, icon: CheckCircle2, color: DS.primary, sortOrder: 2 },
 	];
 
 	return (
-		<Dialog open={open} onOpenChange={onClose}>
-			<DialogContent
-				className="!max-w-2xl bg-white dark:bg-slate-900 max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl rounded-xl"
-				dir="rtl"
-			>
-				{/* Header */}
-				<div className="relative px-6 pt-6 pb-5 rounded-t-xl overflow-hidden" style={{ background: DS.headerGradient }}>
-					<div className="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white/10 pointer-events-none" />
-					<div className="absolute -bottom-6 -right-2 w-32 h-32 rounded-full bg-white/10 pointer-events-none" />
-					<div className="relative flex items-start justify-between">
-						<div className="flex items-center gap-3">
-							<div className={cn("w-11 h-11 flex items-center justify-center bg-white/20 backdrop-blur-sm", DS.radiusSm)}>
-								<Package className="text-white" size={22} />
-							</div>
-							<div>
-								<p className="text-white/70 text-xs font-medium mb-0.5">{t("modal.orderLabel")}</p>
-								<h2 className="text-white text-xl font-black font-mono">{order.code}</h2>
-							</div>
-						</div>
-						<HeaderIconBtn onClick={onClose}><X size={15} className="text-white" /></HeaderIconBtn>
-					</div>
-					<div className="relative mt-3 flex items-center gap-2 flex-wrap">
-						{order.carrier && <HeaderBadge><span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />{order.carrier}</HeaderBadge>}
-						<HeaderBadge>
-							<CreditCard size={11} />
-							{order.paymentType === "COD" ? t("modal.cod") : t("modal.paid")}
-						</HeaderBadge>
-					</div>
-				</div>
+		<div className="space-y-4">
+			<PageHeader
+				breadcrumbs={[
+					{ name: t("breadcrumbs.home"), href: "/" },
+					{ name: t("breadcrumbs.warehouse"), href: "/warehouse" },
+					{ name: t("breadcrumbs.preparation") },
+				]}
+				buttons={<Button_ size="sm" label={t("howItWorks")} variant="ghost" onClick={() => { }} icon={<Info size={18} />} />}
+				statsLoading={loading}
+				stats={stats}
+				items={[
+					{ id: "scanning", label: t("subtabs.scanning"), count: statsData.scanning, icon: ScanLine },
+					{ id: "preparing", label: t("subtabs.inProgress"), count: statsData.scanning + statsData.notStarted, icon: Clock },
+				]}
+				active={subtab}
+				setActive={setSubtab}
+			/>
 
-				{/* Body */}
-				<div className="p-6 space-y-5">
-					<div className="grid grid-cols-2 gap-2">
-						{infoRows.map(({ label, value, icon: Icon, color }) => (
-							<div key={label} className={cn("flex items-start gap-3 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 p-3 transition-colors", DS.radius)}>
-								<div className={cn("w-7 h-7 flex items-center justify-center flex-shrink-0 mt-0.5", DS.radiusSm)}
-									style={{ backgroundColor: color + "18" }}>
-									<Icon size={13} style={{ color }} />
-								</div>
-								<div className="min-w-0">
-									<p className="text-[10px] text-slate-400 mb-0.5 font-semibold uppercase tracking-wide">{label}</p>
-									<p className="font-bold text-sm text-slate-800 dark:text-slate-100 truncate">{value}</p>
-								</div>
-							</div>
-						))}
-					</div>
-
-					{/* Products list */}
-					<div className={cn("border border-slate-100 dark:border-slate-700 overflow-hidden", DS.radius)}>
-						<div className="px-4 py-2.5 flex items-center gap-2 bg-slate-50 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-700">
-							<ShoppingBag size={13} style={{ color: DS.accent }} />
-							<span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">{t("modal.products")}</span>
-							<span className="ms-auto text-[11px] font-semibold text-slate-400">{order.products?.length || 0} {t("modal.items")}</span>
-						</div>
-						<div className="divide-y divide-slate-50 dark:divide-slate-700/40">
-							{order.products?.map((p, i) => (
-								<motion.div key={i} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
-									className="flex items-center gap-3 px-4 py-3">
-									<div className={cn("w-6 h-6 flex items-center justify-center text-[10px] font-black flex-shrink-0", DS.radiusSm)}
-										style={{ backgroundColor: DS.primary + "18", color: DS.primary }}>{i + 1}</div>
-									<span className={cn("font-mono text-[11px] px-2 py-0.5 font-bold", DS.radiusSm)}
-										style={{ backgroundColor: DS.accent + "12", color: DS.accent }}>{p.sku}</span>
-									<span className="flex-1 text-sm text-slate-700 dark:text-slate-200 font-medium">{p.name}</span>
-									<span className="text-xs text-slate-400 font-mono">×{p.requestedQty}</span>
-									<span className="font-bold text-sm" style={{ color: DS.primary }}>
-										{(Number(p.price) || 0) * (Number(p.requestedQty) || 0)} ر.س
-									</span>
-								</motion.div>
-							))}
-						</div>
-					</div>
-
-					{order.notes && (
-						<div className={cn("p-4 border", DS.radius)} style={{ backgroundColor: DS.warning + "10", borderColor: DS.warning + "35" }}>
-							<div className="flex items-center gap-2 mb-1.5">
-								<AlertCircle size={13} style={{ color: DS.warning }} />
-								<p className="text-xs font-bold" style={{ color: DS.primary }}>{t("modal.notes")}</p>
-							</div>
-							<p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{order.notes}</p>
-						</div>
+			<AnimatePresence mode="wait">
+				<motion.div key={subtab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.14 }}>
+					{subtab === "scanning" && (
+						<>
+							<ScanWorkflowPanel pushOp={pushOp} onOpenPanel={() => setPanelOpen(true)} jumpToOrder={jumpToOrder} fetchStats={fetchStats} updateStatsAfterScanStart={updateStatsAfterScanStart} />
+							<OrdersSlidePanel open={panelOpen} onClose={() => setPanelOpen(false)} activeOrderCode={null} onSelectOrder={(order) => { handlePrepareOrder(order); setPanelOpen(false); }} />
+						</>
 					)}
-
-					<div className="flex justify-end pt-1">
-						<Button variant="outline" onClick={onClose} className={DS.radiusSm}>{t("modal.close")}</Button>
-					</div>
-				</div>
-			</DialogContent>
-		</Dialog>
+					{subtab === "preparing" && (
+						<InProgressSubtab pushOp={pushOp} onPrepareOrder={handlePrepareOrder} resetToken={resetToken} fetchStats={fetchStats} />
+					)}
+				</motion.div>
+			</AnimatePresence>
+		</div>
 	);
 }
+
 
 // ─────────────────────────────────────────────────────────────
 // REJECT ORDER MODAL
@@ -359,14 +799,31 @@ function OrderDetailModal({ open, onClose, order }) {
 export function RejectOrderModal({ open, onClose, order, onConfirm }) {
 	const t = useTranslations("warehouse.preparation");
 	const [reason, setReason] = useState("");
+	const [loading, setLoading] = useState(false);
 
 	const presets = [t("reject.preset1"), t("reject.preset2"), t("reject.preset3"), t("reject.preset4")];
 
-	const handleConfirm = () => {
+	const handleConfirm = async () => {
 		if (!reason.trim()) return;
-		onConfirm(order, reason); setReason(""); onClose();
+		setLoading(true);
+		try {
+			// Hit the new reject endpoint
+			const res = await api.patch(`/orders/${order.id}/reject`, { notes: reason });
+			console.log(res);
+			if (res.status === 200 || res.status === 201) {
+				toast.success(t("messages.orderRejected") || "Order rejected successfully");
+				onConfirm(order.code, { status: "rejected", rejectReason: reason, notes: reason });
+				setReason("");
+				onClose();
+			}
+		} catch (error) {
+			console.error("Error rejecting order", error);
+			toast.error(error.response?.data?.message || t("messages.errorRejectingOrder") || "Error rejecting order");
+		} finally {
+			setLoading(false);
+		}
 	};
-	const handleClose = () => { setReason(""); onClose(); };
+	const handleClose = () => { if (!loading) { setReason(""); onClose(); } };
 	if (!order) return null;
 
 	return (
@@ -428,13 +885,13 @@ export function RejectOrderModal({ open, onClose, order, onConfirm }) {
 					<div className="flex justify-end gap-2 pt-1">
 						<Button variant="outline" onClick={handleClose} className={DS.radiusSm}>{t("reject.cancel")}</Button>
 						<motion.button
-							onClick={handleConfirm} disabled={!reason.trim()}
-							whileHover={reason.trim() ? { scale: 1.02 } : {}}
-							whileTap={reason.trim() ? { scale: 0.98 } : {}}
-							className={cn("flex items-center gap-2 px-5 py-2.5 font-bold text-sm text-white transition-opacity", DS.radius, !reason.trim() ? "opacity-40 cursor-not-allowed" : "")}
+							onClick={handleConfirm} disabled={!reason.trim() || loading}
+							whileHover={reason.trim() && !loading ? { scale: 1.02 } : {}}
+							whileTap={reason.trim() && !loading ? { scale: 0.98 } : {}}
+							className={cn("flex items-center gap-2 px-5 py-2.5 font-bold text-sm text-white transition-opacity", DS.radius, (!reason.trim() || loading) ? "opacity-40 cursor-not-allowed" : "")}
 							style={{ background: DS.dangerGradient }}
 						>
-							<Ban size={13} />{t("reject.confirm")}
+							{loading ? <Loader2 size={14} className="animate-spin" /> : <> <Ban size={13} /> {t("reject.confirm")} </>}
 						</motion.button>
 					</div>
 				</div>
@@ -446,10 +903,31 @@ export function RejectOrderModal({ open, onClose, order, onConfirm }) {
 // ─────────────────────────────────────────────────────────────
 // ORDERS SLIDE PANEL
 // ─────────────────────────────────────────────────────────────
-function OrdersSlidePanel({ open, onClose, orders, activeOrderCode, onSelectOrder }) {
+function OrdersSlidePanel({ open, onClose, activeOrderCode, onSelectOrder }) {
 	const t = useTranslations("warehouse.preparation");
 	const locale = useLocale();
 	const isRtl = locale !== "en";
+
+	const [orders, setOrders] = useState([]);
+	const [loading, setLoading] = useState(false);
+
+	const fetchOrders = useCallback(async () => {
+		try {
+			setLoading(true);
+			const res = await api.get('/orders', {
+				params: { status: 'preparing,printed', limit: 50 }
+			});
+			setOrders(res.data?.records || []);
+		} catch (error) {
+			console.error("Failed to fetch sliding panel orders", error);
+		} finally {
+			setLoading(false);
+		}
+	}, []);
+
+	useEffect(() => {
+		if (open) fetchOrders();
+	}, [open, fetchOrders]);
 
 	return (
 		<AnimatePresence>
@@ -475,44 +953,51 @@ function OrdersSlidePanel({ open, onClose, orders, activeOrderCode, onSelectOrde
 						</PanelHeader>
 
 						<div className="flex-1 overflow-y-auto p-3 space-y-2">
-							{orders.map((order) => {
-								const total = order.products.reduce((s, p) => s + p.requestedQty, 0);
-								const scanned = order.products.reduce((s, p) => s + (p.scannedQty || 0), 0);
-								const pct = total === 0 ? 0 : Math.round((scanned / total) * 100);
-								const isActive = activeOrderCode === order.code;
-								return (
-									<motion.div key={order.code} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
-										onClick={() => onSelectOrder(order)}
-										className={cn(
-											"p-3 border cursor-pointer transition-all",
-											DS.radius,
-											isActive
-												? "border-primary/40 bg-primary/5"
-												: "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300"
-										)}
-									>
-										<div className="flex items-start justify-between mb-1.5">
-											<span className="font-mono font-black text-sm" style={{ color: DS.primary }}>{order.code}</span>
-											{pct === 100 && (
-												<span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-1.5 py-0.5 rounded-full">
-													{t("panel.done")}
-												</span>
+							{loading ? (
+								<div className="flex flex-col items-center justify-center py-12 space-y-3">
+									<Loader2 className="animate-spin text-primary" size={24} />
+									<p className="text-xs text-slate-400 font-medium tracking-wide">جاري التحميل...</p>
+								</div>
+							) : (
+								orders.map((order) => {
+									const total = (order.items || []).reduce((s, p) => s + p.quantity, 0);
+									const scanned = (order.items || []).reduce((s, p) => s + (p.scannedQuantity || 0), 0);
+									const pct = total === 0 ? 0 : Math.round((scanned / total) * 100);
+									const isActive = activeOrderCode === order.orderNumber;
+									return (
+										<motion.div key={order.orderNumber} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+											onClick={() => onSelectOrder(order)}
+											className={cn(
+												"p-3 border cursor-pointer transition-all",
+												DS.radius,
+												isActive
+													? "border-primary/40 bg-primary/5"
+													: "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300"
 											)}
-										</div>
-										<p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-2 truncate">{order.customer}</p>
-										<div className="flex items-center gap-2">
-											<div className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-												<div
-													className={cn("h-full rounded-full transition-all duration-500", pct === 100 ? "bg-emerald-500" : "bg-primary")}
-													style={{ width: `${pct}%` }}
-												/>
+										>
+											<div className="flex items-start justify-between mb-1.5">
+												<span className="font-mono font-black text-sm" style={{ color: DS.primary }}>{order.orderNumber}</span>
+												{pct === 100 && (
+													<span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-1.5 py-0.5 rounded-full">
+														{t("panel.done")}
+													</span>
+												)}
 											</div>
-											<span className="text-[11px] font-mono font-semibold text-slate-400 tabular-nums">{scanned}/{total}</span>
-										</div>
-									</motion.div>
-								);
-							})}
-							{orders.length === 0 && (
+											<p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-2 truncate">{order.customerName}</p>
+											<div className="flex items-center gap-2">
+												<div className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+													<div
+														className={cn("h-full rounded-full transition-all duration-500", pct === 100 ? "bg-emerald-500" : "bg-primary")}
+														style={{ width: `${pct}%` }}
+													/>
+												</div>
+												<span className="text-[11px] font-mono font-semibold text-slate-400 tabular-nums">{scanned}/{total}</span>
+											</div>
+										</motion.div>
+									);
+								})
+							)}
+							{!loading && orders.length === 0 && (
 								<div className="text-center py-12">
 									<Package size={36} className="text-slate-300 mx-auto mb-2" />
 									<p className="text-slate-400 text-sm">{t("panel.empty")}</p>
@@ -532,8 +1017,8 @@ function OrdersSlidePanel({ open, onClose, orders, activeOrderCode, onSelectOrde
 function ScannedOrderTable({ order, localProducts, justScanned }) {
 	const t = useTranslations("warehouse.preparation");
 
-	const totalScanned = localProducts.reduce((s, p) => s + (p.scannedQty || 0), 0);
-	const totalQty = localProducts.reduce((s, p) => s + p.requestedQty, 0);
+	const totalScanned = localProducts.reduce((s, p) => s + (p.scannedQuantity || 0), 0);
+	const totalQty = localProducts.reduce((s, p) => s + p.quantity, 0);
 	const pct = totalQty === 0 ? 0 : Math.round((totalScanned / totalQty) * 100);
 	const isAllDone = pct === 100 && totalQty > 0;
 
@@ -602,17 +1087,17 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
 
 					<div className="min-w-0">
 						<p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">{t("table.orderNumber")}</p>
-						<p className="font-mono font-black text-sm" style={{ color: DS.primary }}>{order.code}</p>
+						<p className="font-mono font-black text-sm" style={{ color: DS.primary }}>{order.orderNumber}</p>
 					</div>
 					<div className="hidden sm:block min-w-0">
 						<p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">{t("modal.trackingCode")}</p>
-						<p className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300">{order.trackingCode || "—"}</p>
+						<p className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300">{order.trackingNumber || "—"}</p>
 					</div>
 					<div className="hidden md:block min-w-0">
 						<p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">{t("table.customer")}</p>
-						<p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate max-w-[140px]">{order.customer}</p>
+						<p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate max-w-[140px]">{order.customerName}</p>
 					</div>
-					{order.carrier && <CarrierPill carrier={order.carrier} />}
+					{order.shippingCompany?.name && <CarrierPill carrier={order.shippingCompany.name} />}
 
 					<div className="ms-auto flex-shrink-0">
 						<motion.div key={totalScanned} initial={{ scale: 1.15 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 22 }}
@@ -649,15 +1134,15 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
 					</thead>
 					<tbody>
 						{localProducts.map((p, i) => {
-							const scanned = p.scannedQty || 0;
-							const total = p.requestedQty;
+							const scanned = p.scannedQuantity || 0;
+							const total = p.quantity;
 							const done = scanned >= total;
-							const isJust = justScanned === p.sku;
+							const isJust = justScanned === p?.variant?.sku;
 							const pct2 = total === 0 ? 0 : Math.round((scanned / total) * 100);
-							const isCopied = copiedSku === p.sku;
+							const isCopied = copiedSku === p?.variant?.sku;
 
 							return (
-								<motion.tr key={p.sku}
+								<motion.tr key={p?.variant?.sku}
 									initial={{ opacity: 0, x: 6 }}
 									animate={{ opacity: 1, x: 0 }}
 									transition={{ opacity: { delay: i * 0.04 }, x: { delay: i * 0.04 } }}
@@ -715,7 +1200,7 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
 
 									{/* SKU */}
 									<td className="px-4 py-3">
-										<motion.button type="button" onClick={() => handleCopySku(p.sku)}
+										<motion.button type="button" onClick={() => handleCopySku(p?.variant?.sku)}
 											whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
 											className={cn("inline-flex items-center gap-1 font-mono text-[11px] px-2 py-1 font-bold cursor-pointer", DS.radiusSm)}
 											style={{ backgroundColor: DS.accent + "14", color: DS.accent }}>
@@ -724,16 +1209,16 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
 													<CheckCircle2 size={9} /> {t("common.copied")}
 												</motion.span>
 											) : (
-												<motion.span key="sku" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{p.sku}</motion.span>
+												<motion.span key="sku" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{p?.variant?.sku}</motion.span>
 											)}
 										</motion.button>
 									</td>
 
 									{/* Shelf */}
 									<td className="px-4 py-3">
-										{p.shelfLocation ? (
+										{p.variant?.shelfLocation || p.shelfLocation ? (
 											<span className={cn("inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5", DS.radiusSm)}>
-												<MapPin size={9} className="text-slate-400 flex-shrink-0" />{p.shelfLocation}
+												<MapPin size={9} className="text-slate-400 flex-shrink-0" />{p.variant?.shelfLocation || p.shelfLocation}
 											</span>
 										) : <span className="text-slate-300 dark:text-slate-600 text-xs">—</span>}
 									</td>
@@ -798,7 +1283,7 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
 								style={{ background: "linear-gradient(90deg, transparent, rgba(52,211,153,0.15), transparent)" }} />
 							<CheckCircle2 size={14} className="text-emerald-500 relative z-10" />
 							<span className="text-sm font-black text-emerald-700 dark:text-emerald-400 relative z-10" dir="rtl">
-								{t("scan.orderComplete", { code: order.code })}
+								{t("scan.orderComplete", { code: order.orderNumber })}
 							</span>
 						</div>
 					</motion.div>
@@ -987,7 +1472,7 @@ export function ScanLogBoxes({ successCount, errorCount }) {
 							</motion.span>
 						</AnimatePresence>
 					</div>
-				</div> 
+				</div>
 			</motion.div>
 
 			{/* Error */}
@@ -1027,7 +1512,7 @@ export function ScanLogBoxes({ successCount, errorCount }) {
 							</motion.span>
 						</AnimatePresence>
 					</div>
-				</div> 
+				</div>
 			</motion.div>
 		</div>
 	);
@@ -1036,7 +1521,7 @@ export function ScanLogBoxes({ successCount, errorCount }) {
 // ─────────────────────────────────────────────────────────────
 // SCAN WORKFLOW PANEL
 // ─────────────────────────────────────────────────────────────
-function ScanWorkflowPanel({ orders, updateOrder, pushOp, onOpenPanel, jumpToOrder }) {
+function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updateStatsAfterScanStart }) {
 	const t = useTranslations("warehouse.preparation");
 
 	const [scanStep, setScanStep] = useState("order");
@@ -1045,75 +1530,149 @@ function ScanWorkflowPanel({ orders, updateOrder, pushOp, onOpenPanel, jumpToOrd
 	const [localProducts, setLocalProducts] = useState([]);
 	const [feedback, setFeedback] = useState(null);
 	const [scanState, setScanState] = useState("idle");
+	const [isFetchingOrder, setIsFetchingOrder] = useState(false);
 	const [successCount, setSuccessCount] = useState(0);
 	const [errorCount, setErrorCount] = useState(0);
 	const [justScanned, setJustScanned] = useState(null);
 	const [soundEnabled, setSoundEnabled] = useState(true);
 	const scanInputRef = useRef(null);
-
-	useEffect(() => {
-		if (!jumpToOrder) return;
-		setActiveOrder(jumpToOrder);
-		setLocalProducts(jumpToOrder.products.map((p) => ({ ...p, scannedQty: p.scannedQty || 0 })));
-		setScanStep("items"); setScanValue("");
-		setTimeout(() => scanInputRef.current?.focus(), 120);
-	}, [jumpToOrder]);
-
-	useEffect(() => { scanInputRef.current?.focus(); }, [scanStep, activeOrder]);
-
 	const showFeedback = useCallback((type, msg) => {
 		setFeedback({ type, msg }); setScanState(type);
 		setTimeout(() => { setFeedback(null); setScanState("idle"); }, 2200);
 	}, []);
+
+	const fetchActiveOrder = useCallback(async (idOrCode) => {
+		try {
+			setIsFetchingOrder(true);
+			const res = await api.get(`/orders/${idOrCode}`);
+			const order = res.data;
+			if (order) {
+				setActiveOrder(order);
+				setLocalProducts((order.items || []).map((p) => ({
+					...p,
+					sku: p.variant?.sku || p?.variant?.sku,
+					name: p.variant?.product?.name || p.name,
+					scannedQuantity: p.scannedQuantity || 0,
+					quantity: p.quantity
+				})));
+				setScanStep("items");
+				setScanValue("");
+				setSuccessCount(0);
+				setErrorCount(order.failedScanCounts?.preparation || 0);
+				if (soundEnabled) playBeep("success");
+				showFeedback("success", t("scan.orderFound", { code: order.orderNumber }));
+			}
+		} catch (error) {
+			if (soundEnabled) playBeep("error");
+			showFeedback("error", t("scan.orderNotFound"));
+			setScanValue("");
+		} finally {
+			setIsFetchingOrder(false);
+		}
+	}, [soundEnabled, showFeedback, t]);
+
+	useEffect(() => {
+		if (!jumpToOrder) return;
+		fetchActiveOrder(jumpToOrder.id);
+	}, [jumpToOrder, fetchActiveOrder]);
+
+	useEffect(() => { scanInputRef.current?.focus(); }, [scanStep, activeOrder]);
+
 
 	const resetCurrentOrder = useCallback(() => {
 		setScanStep("order"); setScanValue(""); setActiveOrder(null); setLocalProducts([]); setJustScanned(null);
 		setTimeout(() => scanInputRef.current?.focus(), 100);
 	}, []);
 
-	const handleScan = useCallback(() => {
+	const handleScan = useCallback(async () => {
 		const val = scanValue.trim();
 		if (!val) return;
+
 		if (scanStep === "order") {
-			const found = orders.find((o) => o.code === val || o.trackingCode === val);
-			if (found) {
-				setActiveOrder(found);
-				setLocalProducts(found.products.map((p) => ({ ...p, scannedQty: p.scannedQty || 0 })));
-				setScanStep("items"); setScanValue("");
-				if (soundEnabled) playBeep("success");
-				showFeedback("success", t("scan.orderFound", { code: found.code }));
-			} else {
-				if (soundEnabled) playBeep("error");
-				setErrorCount((c) => c + 1);
-				showFeedback("error", t("scan.orderNotFound")); setScanValue("");
-			}
+			await fetchActiveOrder(val);
 		} else {
-			const productIndex = localProducts.findIndex((p) => p.sku === val || p.barcode === val);
-			if (productIndex === -1) {
-				if (soundEnabled) playBeep("error");
-				setErrorCount((c) => c + 1);
-				showFeedback("error", t("scan.barcodeNotFound", { val })); setScanValue(""); return;
-			}
+			const productIndex = localProducts.findIndex((p) => p?.variant?.sku === val || p.barcode === val);
 			const product = localProducts[productIndex];
-			if (product.scannedQty >= product.requestedQty) {
+			// if (productIndex === -1) {
+			// 	if (soundEnabled) playBeep("error");
+			// 	setErrorCount((c) => c + 1);
+			// 	showFeedback("error", t("scan.barcodeNotFound", { val }));
+			// 	setScanValue("");
+			// 	return;
+			// }
+
+			// const product = localProducts[productIndex];
+			// if (product.scannedQuantity >= product.quantity) {
+			// 	if (soundEnabled) playBeep("error");
+			// 	showFeedback("error", t("scan.alreadyScanned", { name: product.name }));
+			// 	setScanValue("");
+			// 	return;
+			// }
+
+			try {
+				const res = await api.post(`/orders/${activeOrder.id}/scan-preparation/${val}`);
+				const { scanned, success, message, total, isOrderComplete } = res.data;
+				console.log(res.data)
+				if (!success) {
+					if (soundEnabled) playBeep("error");
+					setErrorCount((c) => c + 1);
+					showFeedback("error", message || t("scan.errorScanning"));
+					setScanValue("");
+					return;
+				}
+				// Update stats if it was printed (first scan for this order)
+				if (activeOrder.status?.code === 'printed') {
+					updateStatsAfterScanStart?.();
+					// update local activeOrder status to prevent double stat update
+					setActiveOrder(prev => ({
+						...prev,
+						status: {
+							...prev.status,
+							code: 'preparing' // Specifically updating the code property
+						}
+					}));
+				}
+
+				const updated = localProducts.map((p, i) =>
+					i === productIndex ? { ...p, scannedQuantity: scanned } : p
+				);
+
+				setLocalProducts(updated);
+				setJustScanned(product.sku);
+				setTimeout(() => setJustScanned(null), 900);
+				setSuccessCount((c) => c + 1);
+
+				if (soundEnabled) playBeep("success");
+				showFeedback("success", t("scan.itemScanned", { name: product.name }));
+				setScanValue("");
+
+				if (isOrderComplete) {
+					const now = new Date().toISOString().slice(0, 16).replace("T", " ");
+					pushOp({
+						id: `OP-${Date.now()}`,
+						operationType: "PREPARE_ORDER",
+						orderCode: activeOrder.orderNumber,
+						carrier: activeOrder.shippingCompany?.name || "-",
+						employee: "System",
+						result: "SUCCESS",
+						details: t("scan.orderPreparedLog"),
+						createdAt: now
+					});
+					setTimeout(() => {
+						showFeedback("success", t("scan.orderComplete", { code: activeOrder.orderNumber }));
+						fetchStats?.();
+						resetCurrentOrder();
+					}, 900);
+				}
+			} catch (error) {
+				console.error(error)
 				if (soundEnabled) playBeep("error");
 				setErrorCount((c) => c + 1);
-				showFeedback("error", t("scan.alreadyScanned", { name: product.name })); setScanValue(""); return;
+				showFeedback("error", error.response?.data?.message || t("scan.errorScanning"));
+				setScanValue("");
 			}
-			const updated = localProducts.map((p, i) => i === productIndex ? { ...p, scannedQty: p.scannedQty + 1 } : p);
-			setLocalProducts(updated); setJustScanned(product.sku); setTimeout(() => setJustScanned(null), 900);
-			setSuccessCount((c) => c + 1);
-			if (soundEnabled) playBeep("success");
-			showFeedback("success", t("scan.itemScanned", { name: product.name })); setScanValue("");
-			const allDone = updated.every((p) => p.scannedQty >= p.requestedQty);
-			if (allDone) {
-				const now = new Date().toISOString().slice(0, 16).replace("T", " ");
-				updateOrder(activeOrder.code, { status: STATUS.PREPARED, products: updated, preparedAt: now });
-				pushOp({ id: `OP-${Date.now()}`, operationType: "PREPARE_ORDER", orderCode: activeOrder.code, carrier: activeOrder.carrier || "-", employee: "System", result: "SUCCESS", details: t("scan.orderPreparedLog"), createdAt: now });
-				setTimeout(() => { showFeedback("success", t("scan.orderComplete", { code: activeOrder.code })); resetCurrentOrder(); }, 900);
-			} else { updateOrder(activeOrder.code, { products: updated }); }
 		}
-	}, [scanValue, scanStep, orders, localProducts, activeOrder, soundEnabled, updateOrder, pushOp, showFeedback, resetCurrentOrder, t]);
+	}, [scanValue, scanStep, localProducts, activeOrder, soundEnabled, fetchActiveOrder, updateStatsAfterScanStart, pushOp, showFeedback, resetCurrentOrder, fetchStats, t]);
 
 	const isItemsMode = scanStep === "items";
 
@@ -1123,7 +1682,7 @@ function ScanWorkflowPanel({ orders, updateOrder, pushOp, onOpenPanel, jumpToOrd
 				{/* Header */}
 				<PanelHeader
 					icon={ScanLine}
-					pretitle={!isItemsMode ? t("scan.step1of2") : `${t("scan.orderLabel")}: ${activeOrder?.code}`}
+					pretitle={!isItemsMode ? t("scan.step1of2") : `${t("scan.orderLabel")}: ${activeOrder?.orderNumber}`}
 					title={!isItemsMode ? t("scan.scanOrderTitle") : t("scan.scanItemsTitle")}
 					right={
 						<>
@@ -1144,11 +1703,19 @@ function ScanWorkflowPanel({ orders, updateOrder, pushOp, onOpenPanel, jumpToOrd
 				</PanelHeader>
 
 				<div className=" px-4 pt-8 py-5 space-y-4">
-					<ScanInputBar
-						inputRef={scanInputRef} value={scanValue} onChange={(e) => setScanValue(e.target.value)}
-						onScan={handleScan} isSuccess={scanState === "success"} isError={scanState === "error"}
-						placeholder={!isItemsMode ? t("scan.scanOrderPlaceholder") : t("scan.scanItemsPlaceholder", { code: activeOrder?.code })}
-					/>
+					<div className="relative">
+						<ScanInputBar
+							inputRef={scanInputRef} value={scanValue} onChange={(e) => setScanValue(e.target.value)}
+							onScan={handleScan} isSuccess={scanState === "success"} isError={scanState === "error"}
+							placeholder={!isItemsMode ? t("scan.scanOrderPlaceholder") : t("scan.scanItemsPlaceholder", { code: activeOrder?.orderNumber })}
+							disabled={isFetchingOrder}
+						/>
+						{isFetchingOrder && (
+							<div className="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-slate-900/50 rounded-xl z-10">
+								<Loader2 className="animate-spin text-primary" size={24} />
+							</div>
+						)}
+					</div>
 
 					<AnimatePresence>
 						{feedback && (
@@ -1190,84 +1757,210 @@ function ScanWorkflowPanel({ orders, updateOrder, pushOp, onOpenPanel, jumpToOrd
 // ─────────────────────────────────────────────────────────────
 // IN-PROGRESS SUBTAB
 // ─────────────────────────────────────────────────────────────
-function InProgressSubtab({ orders, updateOrder, pushOp, onPrepareOrder, onPrepareMultiple, resetToken }) {
+function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fetchStats }) {
+	const tongoining = useTranslations("warehouse.outgoing");
 	const t = useTranslations("warehouse.preparation");
-	const preparing = useMemo(() => orders.filter((o) => o.status === STATUS.PREPARING), [orders]);
 
-	const [selectedOrders, setSelectedOrders] = useState([]);
 	const [search, setSearch] = useState("");
-	const [filters, setFilters] = useState({ carrier: "all" });
+	const { debouncedValue: debouncedSearch } = useDebounce({ value: search, delay: 350 })
+	const [filters, setFilters] = useState({ store: "all", carrier: "all", productId: "all", date: "" });
+	const [appliedFilters, setAppliedFilters] = useState({ store: "all", carrier: "all", productId: "all", date: "" });
+	const [selectedOrders, setSelectedOrders] = useState([]);
 	const [detailModal, setDetailModal] = useState(null);
 	const [rejectModal, setRejectModal] = useState(null);
-	const [page, setPage] = useState({ current_page: 1, per_page: 12 });
+
+	const [pager, setPager] = useState({
+		total_records: 0,
+		current_page: 1,
+		per_page: 12,
+		records: [],
+	});
+	const [ordersLoading, setOrdersLoading] = useState(false);
+	const [downloadingWrongLog, setDownloadingWrongLog] = useState({});
+	const { handleExport, exportLoading } = useExport();
+
+	const wrongLogLabels = {
+		title: t("pdf.wrongLog.title"),
+		printDate: t("pdf.wrongLog.printDate"),
+		employee: t("pdf.wrongLog.employee"),
+		totalAttempts: t("pdf.wrongLog.totalAttempts"),
+		carrier: t("pdf.wrongLog.carrier"),
+		date: t("pdf.wrongLog.date"),
+		totalFailedAttempts: t("pdf.wrongLog.totalFailedAttempts"),
+		attemptUnit: t("pdf.wrongLog.attemptUnit"),
+		scannedCode: t("pdf.wrongLog.scannedCode"),
+		orderNumber: t("pdf.wrongLog.orderNumber"),
+		userName: t("pdf.wrongLog.employee"),
+		failReason: t("pdf.wrongLog.failReason"),
+		time: t("pdf.wrongLog.time"),
+		reasons: {
+			SKU_NOT_IN_ORDER: tongoining("scan.reasons.SKU_NOT_IN_ORDER"),
+			ALREADY_FULLY_SCANNED: tongoining("scan.reasons.ALREADY_FULLY_SCANNED"),
+			INVALID_STATUS: tongoining("scan.reasons.INVALID_STATUS"),
+			OTHER: tongoining("scan.reasons.OTHER"),
+		}
+	};
+
+	const handleDownloadWrongLog = async (row) => {
+		setDownloadingWrongLog((p) => ({ ...p, [row.id]: true }));
+		try {
+			const res = await api.get(`/orders/${row.id}/scan-logs/PREPARATION`);
+			const logsData = res.data || [];
+
+			const logs = logsData.map(l => ({
+				sku: l.sku || "-",
+				reason: l.reason || "-",
+				orderNumber: l.order?.orderNumber || row.orderNumber || "-",
+				userName: l.user?.name || "-",
+				time: new Date(l.createdAt).toLocaleTimeString()
+			}));
+
+			openPrintWindow(
+				buildWrongScanLogPDF(
+					logs,
+					row.shippingCompany?.name || "-",
+					null,
+					new Date().toLocaleString(),
+					wrongLogLabels,
+					row
+				)
+			);
+		} catch (error) {
+			console.error("Error downloading wrong log", error);
+			toast.error(t("messages.errorDownloadingLogs") || "Error downloading logs");
+		} finally {
+			setDownloadingWrongLog((p) => ({ ...p, [row.id]: false }));
+		}
+	};
+
+	const buildParams = useCallback((page = pager.current_page, per_page = pager.per_page) => {
+		const params = {
+			page,
+			limit: per_page,
+			status: 'preparing,printed',
+		};
+
+		if (debouncedSearch) params.search = debouncedSearch;
+		if (appliedFilters.store !== "all") params.storeId = appliedFilters.store;
+		if (appliedFilters.carrier !== "all") params.shippingCompanyId = appliedFilters.carrier;
+		if (appliedFilters.date) params.startDate = appliedFilters.date;
+		if (appliedFilters.productId !== "all") params.productId = appliedFilters.productId;
+
+		return params;
+	}, [pager.current_page, pager.per_page, debouncedSearch, appliedFilters]);
+
+	const fetchOrders = useCallback(async (page = pager.current_page, per_page = pager.per_page) => {
+		try {
+			setOrdersLoading(true);
+			const params = buildParams(page, per_page);
+			const res = await api.get('/orders', { params });
+			const data = res.data || {};
+			setPager({
+				total_records: data.total_records || 0,
+				current_page: data.current_page || page,
+				per_page: data.per_page || per_page,
+				records: Array.isArray(data.records) ? data.records : [],
+			});
+		} catch (e) {
+			console.error('Error fetching orders', e);
+		} finally {
+			setOrdersLoading(false);
+		}
+	}, [buildParams, pager.current_page, pager.per_page]);
 
 	useEffect(() => {
-		setSearch(""); setFilters({ carrier: "all" }); setSelectedOrders([]);
-		setDetailModal(null); setRejectModal(null); setPage({ current_page: 1, per_page: 12 });
-	}, [resetToken]);
+		fetchOrders(1, pager.per_page);
+	}, [debouncedSearch, appliedFilters, resetToken, fetchOrders]);
 
-	const filtered = useMemo(() => {
-		let base = preparing;
-		const q = search.trim().toLowerCase();
-		if (q) base = base.filter((o) => [o.code, o.customer, o.phone, o.city].some((x) => String(x || "").toLowerCase().includes(q)));
-		if (filters.carrier !== "all") base = base.filter((o) => o.carrier === filters.carrier);
-		return base;
-	}, [preparing, search, filters]);
+	const handlePageChange = ({ page, per_page }) => {
+		fetchOrders(page, per_page);
+	};
 
-	const toggleOrder = (code) => setSelectedOrders(prev => prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]);
-	const selectAll = () => setSelectedOrders(selectedOrders.length === filtered.length ? [] : filtered.map((o) => o.code));
+	const applyFilters = () => {
+		setAppliedFilters({ ...filters });
+	};
 
-	const handleConfirmReject = useCallback((row, reason) => {
+	const onExport = async () => {
+		const params = buildParams(1, 10000);
+		delete params.page;
+		delete params.limit;
+		await handleExport({
+			endpoint: "/orders/export",
+			params,
+			filename: `in_progress_orders_${Date.now()}.xlsx`,
+		});
+	};
+
+	const toggleOrder = (orderNumber) => setSelectedOrders(prev => prev.includes(orderNumber) ? prev.filter(c => c !== orderNumber) : [...prev, orderNumber]);
+	const selectAll = () => setSelectedOrders(selectedOrders.length === pager.records.length ? [] : pager.records.map((o) => o.orderNumber));
+
+	const handleConfirmReject = useCallback((code, p) => {
+		fetchOrders();
+		fetchStats?.();
 		const now = new Date().toISOString().slice(0, 16).replace("T", " ");
-		updateOrder(row.code, { status: STATUS.REJECTED, rejectReason: reason, rejectedAt: now });
-		pushOp({ id: `OP-${Date.now()}`, operationType: "REJECT_ORDER", orderCode: row.code, carrier: row.carrier || "-", employee: "System", result: "FAILED", details: reason, createdAt: now });
-	}, [updateOrder, pushOp]);
+		pushOp({ id: `OP-${Date.now()}`, operationType: "REJECT_ORDER", orderCode: code, carrier: "-", employee: "System", result: "FAILED", details: p.notes || "Rejected", createdAt: now });
+	}, [fetchStats, pushOp, fetchOrders]);
 
 	const columns = useMemo(() => [
-		{
-			key: "select",
-			header: <div className="flex items-center justify-center"><Checkbox checked={filtered.length > 0 && selectedOrders.length === filtered.length} onCheckedChange={selectAll} /></div>,
-			className: "w-[48px]",
-			cell: (row) => <div className="flex items-center justify-center"><Checkbox checked={selectedOrders.includes(row.code)} onCheckedChange={() => toggleOrder(row.code)} /></div>,
-		},
-		{ key: "code", header: t("table.orderNumber"), cell: (row) => <span className="font-mono font-black text-sm" style={{ color: DS.primary }}>{row.code}</span> },
-		{ key: "customer", header: t("table.customer"), cell: (row) => <span className="font-semibold">{row.customer}</span> },
-		{ key: "phone", header: t("table.phone"), cell: (row) => <span className="font-mono text-slate-500 text-sm">{row.phone}</span> },
+		// {
+		// 	key: "select",
+		// 	header: <div className="flex items-center justify-center"><Checkbox checked={pager.records.length > 0 && selectedOrders.length === pager.records.length} onCheckedChange={selectAll} /></div>,
+		// 	className: "w-[48px]",
+		// 	cell: (row) => <div className="flex items-center justify-center"><Checkbox checked={selectedOrders.includes(row.orderNumber)} onCheckedChange={() => toggleOrder(row.orderNumber)} /></div>,
+		// },
+		{ key: "code", header: t("table.orderNumber"), cell: (row) => <span className="font-mono font-black text-sm" style={{ color: DS.primary }}>{row.orderNumber}</span> },
+		{ key: "customer", header: t("table.customer"), cell: (row) => <span className="font-semibold">{row.customerName}</span> },
+		{ key: "phone", header: t("table.phone"), cell: (row) => <span className="font-mono text-slate-500 text-sm">{row.phoneNumber}</span> },
 		{ key: "city", header: t("table.city") },
-		{ key: "carrier", header: t("table.carrier"), cell: (row) => row.carrier ? <CarrierPill carrier={row.carrier} /> : <span className="text-slate-400 text-sm italic">{t("unspecified")}</span> },
-		{ key: "products", header: t("table.products"), cell: (row) => <span className={cn("bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-sm font-semibold", DS.radius)}>{row.products.length} {t("product")}</span> },
-		{ key: "progress", header: t("table.scanProgress"), cell: (row) => <ScanProgress products={row.products} /> },
-		{ key: "assignedEmployee", header: t("table.employee") },
+		{ key: "carrier", header: t("table.carrier"), cell: (row) => row.shippingCompany?.name ? <CarrierPill carrier={row.shippingCompany.name} /> : <span className="text-slate-400 text-sm italic">{t("unspecified")}</span> },
+		{ key: "products", header: t("table.products"), cell: (row) => <span className={cn("bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-sm font-semibold", DS.radius)}>{row.items?.length || 0} {t("product")}</span> },
+		{ key: "progress", header: t("table.scanProgress"), cell: (row) => <ScanProgress products={row.items || []} /> },
+		{ key: "assignedEmployee", header: t("table.employee"), cell: (row) => row.assignments?.[0]?.employee?.name || "—" },
 		{
 			key: "actions", header: t("table.actions"),
 			cell: (row) => (
 				<ActionButtons row={row} actions={[
 					{ icon: <Info />, tooltip: t("actions.details"), onClick: (r) => setDetailModal(r), variant: "purple" },
 					{ icon: <ScanLine />, tooltip: t("actions.continuePrepare"), onClick: (r) => onPrepareOrder?.(r), variant: "blue" },
+					{
+						icon: downloadingWrongLog[row.id] ? (
+							<Loader2 size={13} className="animate-spin" />
+						) : (
+							<FileText size={13} />
+						),
+						tooltip: t("pdf.wrongLog.title"),
+						onClick: (r) => handleDownloadWrongLog(r),
+						variant: "red",
+						disabled: !!downloadingWrongLog[row.id],
+					},
 					{ icon: <Ban />, tooltip: t("actions.reject"), onClick: (r) => setRejectModal(r), variant: "red" },
 				]} />
 			),
 		},
-	], [filtered, selectedOrders, t, onPrepareOrder]);
+	], [pager.records, selectedOrders, t, onPrepareOrder]);
+
+	const hasActiveFilters = appliedFilters.carrier !== "all" || appliedFilters.store !== "all" || !!appliedFilters.date || appliedFilters.productId !== "all";
 
 	return (
 		<div className="space-y-4">
 			<Table
-				searchValue={search} onSearchChange={setSearch} onSearch={() => { }}
+				searchValue={search} onSearchChange={setSearch} onSearch={applyFilters}
 				labels={{ searchPlaceholder: t("searchPlaceholder"), filter: t("filter"), apply: t("apply"), total: t("total"), limit: t("limit"), emptyTitle: t("inProgress.emptyTitle"), emptySubtitle: "" }}
-				actions={[{ key: "export", label: t("export"), icon: <FileDown size={14} />, color: "blue", onClick: () => { } }]}
-				hasActiveFilters={filters.carrier !== "all"} onApplyFilters={() => { }}
+				actions={[{ key: "export", label: t("export"), icon: exportLoading ? <Loader2 size={14} className="animate-spin" /> : <FileDown size={14} />, color: "blue", onClick: onExport, disabled: exportLoading }]}
+				hasActiveFilters={hasActiveFilters} onApplyFilters={applyFilters}
 				filters={
-					<FilterField label={t("filters.carrier")}>
-						<Select value={filters.carrier} onValueChange={(v) => setFilters(f => ({ ...f, carrier: v }))}>
-							<SelectTrigger className={cn("h-10 border-border bg-background text-sm", DS.radiusSm)}><SelectValue placeholder={t("filters.allCarriers")} /></SelectTrigger>
-							<SelectContent>{[{ value: "all", label: t("filters.allCarriers") }, ...CARRIERS.map((c) => ({ value: c, label: c }))].map(i => <SelectItem key={i.value} value={i.value}>{i.label}</SelectItem>)}</SelectContent>
-						</Select>
-					</FilterField>
+					<>
+						<ShippingCompanyFilter value={filters.carrier} onChange={(v) => setFilters(f => ({ ...f, carrier: v }))} />
+						<StoreFilter value={filters.store} onChange={(v) => setFilters(f => ({ ...f, store: v }))} />
+						<ProductFilter value={filters.productId} onChange={(v) => setFilters(f => ({ ...f, productId: v }))} />
+						<FilterField label={t("table.date")}>
+							<Input type="date" value={filters.date} onChange={(e) => setFilters((f) => ({ ...f, date: e.target.value }))} className="h-10 rounded-xl text-sm" />
+						</FilterField>
+					</>
 				}
-				columns={columns} data={filtered} isLoading={false}
-				pagination={{ total_records: filtered.length, current_page: page.current_page, per_page: page.per_page }}
-				onPageChange={({ page: p, per_page }) => setPage({ current_page: p, per_page })}
+				columns={columns} data={pager.records} isLoading={ordersLoading}
+				pagination={{ total_records: pager.total_records, current_page: pager.current_page, per_page: pager.per_page }}
+				onPageChange={handlePageChange}
 			/>
 			<OrderDetailModal open={!!detailModal} onClose={() => setDetailModal(null)} order={detailModal} />
 			<RejectOrderModal open={!!rejectModal} onClose={() => setRejectModal(null)} order={rejectModal} onConfirm={handleConfirmReject} />
@@ -1309,7 +2002,7 @@ function PreparedSubtab({ orders, setDistributionDialog, setSelectedOrdersGlobal
 				<div className="space-y-0.5">
 					{row.products.map((p, i) => (
 						<div key={i} className="text-xs text-slate-500">
-							<span className={cn("font-mono bg-slate-100 dark:bg-slate-800 px-1", DS.radiusSm)}>{p.sku}</span>{" "}{p.name} ×{p.scannedQty}
+							<span className={cn("font-mono bg-slate-100 dark:bg-slate-800 px-1", DS.radiusSm)}>{p?.variant?.sku}</span>{" "}{p.name} ×{p.scannedQuantity}
 						</div>
 					))}
 				</div>
@@ -1331,10 +2024,10 @@ function PreparedSubtab({ orders, setDistributionDialog, setSelectedOrdersGlobal
 	return (
 		<div className="space-y-4">
 			<Table
-				searchValue={search} onSearchChange={setSearch} onSearch={() => { }}
+				searchValue={search} onSearchChange={setSearch} onSearch={applyFilters}
 				labels={{ searchPlaceholder: t("searchPlaceholder"), filter: t("filter"), apply: t("apply"), total: t("total"), limit: t("limit"), emptyTitle: t("prepared.emptyTitle"), emptySubtitle: "" }}
 				actions={[{ key: "export", label: t("export"), icon: <FileDown size={14} />, color: "blue", onClick: () => { } }]}
-				hasActiveFilters={filters.carrier !== "all"} onApplyFilters={() => { }}
+				hasActiveFilters={filters.carrier !== "all"} onApplyFilters={applyFilters}
 				filters={
 					<FilterField label={t("filters.carrier")}>
 						<Select value={filters.carrier} onValueChange={(v) => setFilters(f => ({ ...f, carrier: v }))}>
@@ -1348,75 +2041,6 @@ function PreparedSubtab({ orders, setDistributionDialog, setSelectedOrdersGlobal
 				onPageChange={({ page: p, per_page }) => setPage({ current_page: p, per_page })}
 			/>
 			<OrderDetailModal open={!!detailModal} onClose={() => setDetailModal(null)} order={detailModal} />
-		</div>
-	);
-}
-
-// ─────────────────────────────────────────────────────────────
-// ROOT EXPORT
-// ─────────────────────────────────────────────────────────────
-export default function PreparationTab({
-	orders, updateOrder, pushOp, subtab, setSubtab, onPrepareOrder, onPrepareMultiple,
-	setDistributionDialog, setSelectedOrdersGlobal, resetToken,
-}) {
-	const t = useTranslations("warehouse.preparation");
-
-	const preparing = orders.filter((o) => o.status === STATUS.PREPARING);
-	const prepared = orders.filter((o) => o.status === STATUS.PREPARED);
-	const totalItems = preparing.reduce((s, o) => s + o.products.reduce((ps, p) => ps + p.requestedQty, 0), 0);
-	const scannedItems = preparing.reduce((s, o) => s + o.products.reduce((ps, p) => ps + (p.scannedQty || 0), 0), 0);
-
-	const [panelOpen, setPanelOpen] = useState(false);
-	const [jumpToOrder, setJumpToOrder] = useState(null);
-
-	const handlePrepareOrder = useCallback((order) => {
-		setJumpToOrder(order); setSubtab("scanning");
-	}, [setSubtab]);
-
-	useEffect(() => { if (subtab !== "scanning") setJumpToOrder(null); }, [subtab]);
-
-	const stats = [
-		{ id: "in-progress", name: t("stats.inProgress"), value: preparing.length, icon: Clock, color: DS.accent, sortOrder: 0 },
-		{ id: "total-items", name: t("stats.totalItems"), value: totalItems, icon: Package, color: DS.warning, sortOrder: 1 },
-		{ id: "scanned", name: t("stats.scanned"), value: scannedItems, icon: CheckCircle2, color: DS.success, sortOrder: 2 },
-		{ id: "prepared", name: t("stats.prepared"), value: prepared.length, icon: CheckCircle2, color: DS.primary, sortOrder: 3 },
-	];
-
-	return (
-		<div className="space-y-4">
-			<PageHeader
-				breadcrumbs={[
-					{ name: t("breadcrumbs.home"), href: "/" },
-					{ name: t("breadcrumbs.warehouse"), href: "/warehouse" },
-					{ name: t("breadcrumbs.preparation") },
-				]}
-				buttons={<Button_ size="sm" label={t("howItWorks")} variant="ghost" onClick={() => { }} icon={<Info size={18} />} />}
-				stats={stats}
-				items={[
-					{ id: "scanning", label: t("subtabs.scanning"), count: preparing.length, icon: ScanLine },
-					{ id: "preparing", label: t("subtabs.inProgress"), count: preparing.length, icon: Clock },
-					{ id: "prepared", label: t("subtabs.prepared"), count: prepared.length, icon: CheckCircle2 },
-				]}
-				active={subtab}
-				setActive={setSubtab}
-			/>
-
-			<AnimatePresence mode="wait">
-				<motion.div key={subtab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.14 }}>
-					{subtab === "scanning" && (
-						<>
-							<ScanWorkflowPanel orders={orders} updateOrder={updateOrder} pushOp={pushOp} onOpenPanel={() => setPanelOpen(true)} jumpToOrder={jumpToOrder} />
-							<OrdersSlidePanel open={panelOpen} onClose={() => setPanelOpen(false)} orders={preparing} activeOrderCode={null} onSelectOrder={() => setPanelOpen(false)} />
-						</>
-					)}
-					{subtab === "preparing" && (
-						<InProgressSubtab orders={orders} updateOrder={updateOrder} pushOp={pushOp} onPrepareOrder={handlePrepareOrder} onPrepareMultiple={onPrepareMultiple} resetToken={resetToken} />
-					)}
-					{subtab === "prepared" && (
-						<PreparedSubtab orders={orders} setDistributionDialog={setDistributionDialog} setSelectedOrdersGlobal={setSelectedOrdersGlobal} resetToken={resetToken} />
-					)}
-				</motion.div>
-			</AnimatePresence>
 		</div>
 	);
 }

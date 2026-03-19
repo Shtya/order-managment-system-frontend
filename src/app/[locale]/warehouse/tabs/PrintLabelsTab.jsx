@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useMemo, useState, useRef } from "react";
+import React, { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Printer, CheckCircle2, Package, Truck, FileDown, Info, X,
   MapPin, Phone, User, Hash, ShoppingBag, TrendingUp, AlertCircle,
-  CreditCard, Store, Clock, BarChart3,
+  CreditCard, Store, Clock, BarChart3, Loader2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
@@ -19,149 +19,94 @@ import Table, { FilterField } from "@/components/atoms/Table";
 import Button_ from "@/components/atoms/Button";
 import PageHeader from "../../../../components/atoms/Pageheader";
 import ActionButtons from "@/components/atoms/Actions";
-import { STATUS, CARRIERS } from "./data";
-
-// ── Carrier Styles ───────────────────────────────────────────────────────────
-const CARRIER_STYLES = {
-  ARAMEX: { bg: "bg-red-50 dark:bg-red-950/20", border: "border-red-200 dark:border-red-800", text: "text-red-700 dark:text-red-400" },
-  SMSA: { bg: "bg-blue-50 dark:bg-blue-950/20", border: "border-blue-200 dark:border-blue-800", text: "text-blue-700 dark:text-blue-400" },
-  DHL: { bg: "bg-yellow-50 dark:bg-yellow-950/20", border: "border-yellow-200 dark:border-yellow-800", text: "text-yellow-700 dark:text-yellow-400" },
-  BOSTA: { bg: "bg-orange-50 dark:bg-orange-950/20", border: "border-orange-200 dark:border-orange-800", text: "text-orange-700 dark:text-orange-400" },
-};
+import { STATUS, CARRIERS, CARRIER_STYLES, CARRIER_META } from "./data";
+import { useDebounce } from "@/hook/useDebounce";
+import { useExport } from "@/hook/useExport";
+import StoreFilter from "@/components/atoms/StoreFilter";
+import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
+import ProductFilter from "@/components/atoms/ProductFilter";
+import api from "@/utils/api";
+import { useSocket } from "@/context/SocketContext";
+import { toast } from "react-hot-toast";
+import { OrderDetailModal } from "./DistributionTab";
+import BarcodeCell from "@/components/atoms/BarcodeCell";
 
 function CarrierPill({ carrier }) {
-  const s = CARRIER_STYLES[carrier] || {};
+  const s = CARRIER_STYLES[carrier?.toUpperCase()] || CARRIER_STYLES.NONE;
   return (
     <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border", s.bg, s.border, s.text)}>
-      <Truck size={12} />{carrier}
+      <Truck size={12} />{carrier || "None"}
     </span>
   );
 }
 
-// ── Order Detail Modal — Enhanced ─────────────────────────────────────────────
-function OrderDetailModal({ open, onClose, order }) {
+// ── Main Print Labels Tab ─────────────────────────────────────────────────────
+export default function PrintLabelsTab({ subtab, setSubtab, resetToken }) {
   const t = useTranslations("warehouse.print");
-  if (!order) return null;
+  const [loading, setLoading] = useState(true);
+  const [statsData, setStatsData] = useState({
+    totalDistributed: 0,
+    printed: 0,
+    notPrinted: 0
+  });
 
-  const infoRows = [
-    { label: t("modal.customerName"), value: order.customer, icon: User, accent: "#ff8b00" },
-    { label: t("modal.phone"), value: order.phone, icon: Phone, accent: "#6763af" },
-    { label: t("modal.city"), value: order.city, icon: MapPin, accent: "#ff8b00" },
-    { label: t("modal.area"), value: order.area || "—", icon: MapPin, accent: "#ffb703" },
-    { label: t("modal.store"), value: order.store, icon: Store, accent: "#6763af" },
-    { label: t("modal.carrier"), value: order.carrier || t("modal.notSpecified"), icon: Truck, accent: "#ff5c2b" },
-    { label: t("modal.trackingCode"), value: order.trackingCode || "—", icon: Hash, accent: "#6763af" },
-    {
-      label: t("modal.paymentType"),
-      value: order.paymentType === "COD" ? t("modal.cod") : t("modal.paid"),
-      icon: CreditCard,
-      accent: order.paymentType === "COD" ? "#ffb703" : "#10b981",
-    },
-    { label: t("modal.total"), value: `${order.total} ر.س`, icon: TrendingUp, accent: "#10b981" },
-    { label: t("modal.shippingCost"), value: `${order.shippingCost || 0} ر.س`, icon: Truck, accent: "#ff8b00" },
+  const fetchStats = useCallback(async () => {
+    try {
+      setLoading(true);
+      const { data } = await api.get('/orders/stats/print-lifecycle-summary');
+      setStatsData(data);
+    } catch (error) {
+      console.error("Failed to fetch print stats", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats, resetToken]);
+
+  const stats = [
+    { id: "total-distributed", name: t("stats.totalDistributed"), value: statsData.totalDistributed, icon: Truck, color: "#6763af", bgColor: "#6763af15", sortOrder: 0 },
+    { id: "not-printed", name: t("stats.notPrinted"), value: statsData.notPrinted, icon: Printer, color: "#ffb703", bgColor: "#ffb70315", sortOrder: 1 },
+    { id: "printed", name: t("stats.printed"), value: statsData.printed, icon: CheckCircle2, color: "#10b981", bgColor: "#10b98115", sortOrder: 2 },
   ];
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="!max-w-2xl bg-white dark:bg-slate-900 rounded-2xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl" dir="rtl">
-        {/* Gradient header */}
-        <div className="relative px-6 pt-6 pb-5 rounded-t-2xl overflow-hidden"
-          style={{ background: "linear-gradient(135deg, #ff8b00 0%, #ff5c2b 55%, #ffb703 100%)" }}>
-          <div className="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white/10" />
-          <div className="absolute -bottom-6 -right-2 w-32 h-32 rounded-full bg-white/10" />
-          <div className="relative flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                <Package className="text-white" size={22} />
-              </div>
-              <div>
-                <p className="text-white/70 text-xs font-medium mb-0.5">{t("modal.orderDetailsLabel")}</p>
-                <h2 className="text-white text-xl font-bold font-mono">{order.code}</h2>
-              </div>
-            </div>
-            <button onClick={onClose} className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
-              <X size={16} className="text-white" />
-            </button>
-          </div>
-          <div className="relative mt-4 flex items-center gap-2">
-            {order.carrier && (
-              <span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                {order.carrier}
-              </span>
-            )}
-            <span className={cn(
-              "inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full",
-              order.paymentType === "COD"
-                ? "bg-yellow-400/30 text-white border border-yellow-300/40"
-                : "bg-green-400/30 text-white border border-green-300/40"
-            )}>
-              <CreditCard size={11} />
-              {order.paymentType === "COD" ? t("modal.cod") : t("modal.paid")}
-            </span>
-            {order.labelPrinted && (
-              <span className="inline-flex items-center gap-1.5 bg-emerald-400/30 text-white text-xs font-semibold px-3 py-1.5 rounded-full border border-emerald-300/40">
-                <CheckCircle2 size={11} />
-                {t("modal.printed")}
-              </span>
-            )}
-          </div>
-        </div>
+    <div className="space-y-4">
+      <PageHeader
+        breadcrumbs={[
+          { name: t("breadcrumbs.home"), href: "/" },
+          { name: t("breadcrumbs.warehouse"), href: "/warehouse" },
+          { name: t("breadcrumbs.printLabels") },
+        ]}
+        buttons={
+          <Button_ size="sm" label={t("howItWorks")} variant="ghost" onClick={() => { }} icon={<Info size={18} />} />
+        }
+        statsLoading={loading}
+        stats={stats}
+        items={[
+          { id: "not_printed", label: t("tabs.notPrinted"), count: statsData.notPrinted, icon: Printer },
+          { id: "printed", label: t("tabs.printed"), count: statsData.printed, icon: CheckCircle2 },
+        ]}
+        active={subtab}
+        setActive={setSubtab}
+      />
 
-        <div className="p-6 space-y-5">
-          <div className="grid grid-cols-2 gap-2.5">
-            {infoRows.map(({ label, value, icon: Icon, accent }) => (
-              <div key={label} className="flex items-start gap-3 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl p-3 transition-colors">
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: accent + "18" }}>
-                  <Icon size={13} style={{ color: accent }} />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mb-0.5 font-medium">{label}</p>
-                  <p className="font-semibold text-sm text-slate-800 dark:text-slate-100 truncate">{value}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Products */}
-          <div className="rounded-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
-            <div className="px-4 py-2.5 flex items-center gap-2" style={{ background: "linear-gradient(90deg, #6763af15 0%, transparent 100%)" }}>
-              <ShoppingBag size={14} style={{ color: "#6763af" }} />
-              <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">{t("modal.products")}</span>
-              <span className="ml-auto text-xs font-semibold text-slate-400">{order.products?.length || 0} {t("modal.items")}</span>
-            </div>
-            <div className="divide-y divide-slate-100 dark:divide-slate-700/60">
-              {order.products?.map((p, i) => (
-                <motion.div key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
-                  className="flex items-center gap-3 px-4 py-3">
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0" style={{ backgroundColor: "#ff8b0018", color: "#ff8b00" }}>{i + 1}</div>
-                  <span className="font-mono text-[11px] px-2 py-0.5 rounded-md font-bold" style={{ backgroundColor: "#6763af12", color: "#6763af" }}>{p.sku}</span>
-                  <span className="flex-1 text-sm text-slate-700 dark:text-slate-200 font-medium">{p.name}</span>
-                  <span className="text-xs text-slate-400 font-mono">×{p.requestedQty}</span>
-                  <span className="font-bold text-sm" style={{ color: "#ff8b00" }}>{(Number(p.price) || 0) * (Number(p.requestedQty) || 0)} ر.س</span>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-
-          {order.notes && (
-            <div className="rounded-xl p-4 border" style={{ backgroundColor: "#ffb70310", borderColor: "#ffb70340" }}>
-              <div className="flex items-center gap-2 mb-2">
-                <AlertCircle size={14} style={{ color: "#ffb703" }} />
-                <p className="text-xs font-bold" style={{ color: "#ff8b00" }}>{t("modal.notes")}</p>
-              </div>
-              <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{order.notes}</p>
-            </div>
+      <AnimatePresence mode="wait">
+        <motion.div key={subtab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15 }}>
+          {subtab === "not_printed" && (
+            <NotPrintedSubtab onPrinted={() => setSubtab("printed")} resetToken={resetToken} fetchStats={fetchStats} />
           )}
-
-          <div className="flex justify-end pt-1">
-            <Button variant="outline" onClick={onClose} className="rounded-xl">{t("common.close")}</Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+          {subtab === "printed" && (
+            <PrintedSubtab resetToken={resetToken} fetchStats={fetchStats} />
+          )}
+        </motion.div>
+      </AnimatePresence>
+    </div>
   );
 }
+
 
 // ── Print Preview Modal — Enhanced ────────────────────────────────────────────
 function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
@@ -173,42 +118,74 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
     if (!printContent) return;
     const w = window.open("", "_blank");
     w.document.write(`
-      <html dir="rtl">
-        <head>
-          <title>طباعة البوالص</title>
-          <style>
-            * { box-sizing: border-box; margin: 0; padding: 0; }
-            body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f8fafc; }
-            .page { page-break-after: always; padding: 24px; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-            .label { border: 2px solid #e2e8f0; border-radius: 16px; padding: 24px; width: 420px; background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
-            .label-header { background: linear-gradient(135deg, #ff8b00, #ff5c2b); border-radius: 12px; padding: 16px; margin-bottom: 16px; color: #fff; }
-            .label-code { font-size: 22px; font-weight: 800; letter-spacing: 1px; font-family: monospace; }
-            .label-carrier { font-size: 12px; font-weight: 700; background: rgba(255,255,255,0.25); padding: 4px 10px; border-radius: 20px; display: inline-block; margin-top: 6px; }
-            .section { margin-bottom: 14px; }
-            .section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #f1f5f9; }
-            .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; }
-            .key { font-size: 11px; color: #64748b; flex-shrink: 0; }
-            .val { font-size: 12px; font-weight: 600; color: #0f172a; text-align: left; }
-            .products-table { width: 100%; border-collapse: collapse; }
-            .products-table th { font-size: 10px; color: #94a3b8; font-weight: 600; text-align: right; padding: 4px 8px; border-bottom: 1px solid #f1f5f9; }
-            .products-table td { font-size: 11px; color: #334155; padding: 5px 8px; border-bottom: 1px solid #f8fafc; }
-            .sku { font-family: monospace; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 10px; }
-            .barcode-area { margin-top: 16px; background: #f8fafc; border-radius: 10px; padding: 12px; text-align: center; border: 1px solid #e2e8f0; }
-            .barcode-lines { height: 48px; background: repeating-linear-gradient(90deg, #1e293b 0 2px, #fff 2px 5px); border-radius: 4px; margin-bottom: 8px; }
-            .barcode-text { font-family: monospace; font-size: 13px; font-weight: 700; color: #0f172a; letter-spacing: 2px; }
-            .payment-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-            .cod { background: #fef3c7; color: #92400e; }
-            .paid { background: #d1fae5; color: #065f46; }
-            @media print { .page { page-break-after: always; min-height: auto; } }
-          </style>
-        </head>
-        <body>${printContent}</body>
-      </html>
-    `);
+  <html dir="rtl" class="light">
+    <head>
+      <title>طباعة البوالص</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <script>
+        tailwind.config = { darkMode: 'class' }
+      </script>
+      
+      <style>
+        /* 1. Force the paper size and remove browser headers/footers */
+        @page {
+          size: auto;
+          margin: 0mm; /* This removes the "URL/Date" headers that cause extra pages */
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body { 
+          background: white !important; 
+          width: 100%; 
+        }
+
+        /* 2. The Page Container */
+        .page { 
+          
+          page-break-inside: avoid;
+          overflow: hidden; /* Prevents tiny bits of shadow/border from leaking */
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          /* Use fixed height for the preview, but auto for print */
+          
+          width: 100%;
+          padding: 20px;
+        }
+
+        /* 3. The Print-Specific reset */
+        @media print {
+          body { 
+            -webkit-print-color-adjust: exact; 
+            print-color-adjust: exact; 
+          }
+          .page { 
+            min-height: 0 !important; /* CRITICAL: Remove the 100vh during print */
+            padding: 5mm !important; 
+            display: block !important;
+          }
+          /* Prevent a blank page at the very end */
+          .page:last-child {
+            page-break-after: auto !important;
+          }
+        }
+      </style>
+    </head>
+    <body class="bg-white">
+      ${printContent}
+      <script>
+        setTimeout(function() {
+          window.print();
+        }, 1000);
+      </script>
+    </body>
+  </html>
+`);
     w.document.close();
     w.focus();
     setTimeout(() => { w.print(); w.close(); }, 300);
-    onConfirmPrint(orders.map((o) => o.code));
+    onConfirmPrint(orders.map((o) => o.orderNumber));
     onClose();
   };
 
@@ -245,20 +222,20 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
 
         {/* Preview cards */}
         <div className="p-5 max-h-[52vh] overflow-y-auto space-y-3 bg-slate-50 dark:bg-slate-800/30">
-          <div ref={printRef}>
+          <div ref={printRef} className="w-full">
             {orders.map((order) => (
-              <div key={order.code} className="page">
+              <div key={order.orderNumber} className="page">
                 {/* Screen preview card */}
-                <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm mb-3">
+                <div className="w-full bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm mb-3">
                   {/* Label header */}
                   <div className="label-header p-4" style={{ background: "linear-gradient(135deg, #ff8b00, #ff5c2b)" }}>
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="text-white/70 text-[11px] mb-0.5">{t("printPreview.orderCode")}</p>
-                        <p className="text-white text-xl font-bold font-mono">{order.code}</p>
+                        <p className="text-white text-xl font-bold font-mono">{order.orderNumber}</p>
                       </div>
                       <span className="label-carrier text-white text-xs font-bold bg-white/25 px-3 py-1.5 rounded-full">
-                        {order.carrier}
+                        {order.shippingCompany?.name}
                       </span>
                     </div>
                   </div>
@@ -269,8 +246,8 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
                       <p className="section-title text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{t("printPreview.customerInfo")}</p>
                       <div className="grid grid-cols-2 gap-2">
                         {[
-                          [t("labelFields.customer"), order.customer],
-                          [t("labelFields.phone"), order.phone],
+                          [t("labelFields.customer"), order.customerName],
+                          [t("labelFields.phone"), order.phoneNumber],
                           [t("labelFields.city"), order.city],
                           [t("labelFields.area"), order.area || "—"],
                         ].map(([k, v]) => (
@@ -287,10 +264,10 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
                       <p className="section-title text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{t("printPreview.shippingInfo")}</p>
                       <div className="grid grid-cols-2 gap-2">
                         {[
-                          [t("labelFields.store"), order.store],
-                          [t("labelFields.trackingCode"), order.trackingCode || "—"],
+                          [t("labelFields.store"), order.store?.name],
+                          [t("labelFields.trackingCode"), order.trackingNumber || "—"],
                           [t("labelFields.shippingCost"), `${order.shippingCost || 0} ر.س`],
-                          [t("labelFields.paymentType"), order.paymentType === "COD" ? t("labelFields.cod") : t("labelFields.paid")],
+                          [t("labelFields.paymentType"), order.paymentStatus === "paid" ? t("payment.paid") : order.paymentMethod === "cod" ? t("payment.cod") : order.paymentMethod],
                         ].map(([k, v]) => (
                           <div key={k} className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2.5">
                             <p className="text-[10px] text-slate-400 mb-0.5">{k}</p>
@@ -301,11 +278,13 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
                     </div>
 
                     {/* Barcode area */}
-                    <div className="barcode-area bg-slate-50 dark:bg-slate-700/40 rounded-xl p-3 text-center border border-slate-100 dark:border-slate-700">
-                      <div className="barcode-lines h-10 rounded-md mb-2"
-                        style={{ background: "repeating-linear-gradient(90deg, #1e293b 0 2px, #f8fafc 2px 5px)" }} />
-                      <p className="barcode-text font-mono text-sm font-bold text-slate-800 dark:text-slate-100 tracking-widest">
-                        {order.trackingCode || order.code}
+                    {/* Replace the entire barcode-area div with this */}
+                    <div>
+                      <BarcodeCell
+                        value={order.orderNumber} className="w-full mt-2"
+                      />
+                      <p className="barcode-text font-mono mt-2 text-center text-sm font-bold text-slate-800 dark:text-slate-100 tracking-widest">
+                        {order.orderNumber}
                       </p>
                     </div>
                   </div>
@@ -314,30 +293,30 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
                 {/* Hidden print-only version */}
                 <div className="label" style={{ display: "none" }}>
                   <div className="label-header">
-                    <div className="label-code">{order.code}</div>
-                    <div className="label-carrier">{order.carrier}</div>
+                    <div className="label-code">{order.orderNumber}</div>
+                    <div className="label-carrier">{order.shippingCompany?.name}</div>
                   </div>
                   <div className="section">
                     <div className="section-title">معلومات العميل</div>
-                    {[[t("labelFields.customer"), order.customer], [t("labelFields.phone"), order.phone], [t("labelFields.city"), order.city], [t("labelFields.area"), order.area || "—"], [t("labelFields.address"), order.address || "—"]].map(([k, v]) => (
+                    {[[t("labelFields.customer"), order.customerName], [t("labelFields.phone"), order.phoneNumber], [t("labelFields.city"), order.city], [t("labelFields.area"), order.area || "—"], [t("labelFields.address"), order.address || "—"]].map(([k, v]) => (
                       <div className="row" key={k}><span className="key">{k}</span><span className="val">{v}</span></div>
                     ))}
                   </div>
                   <div className="section">
                     <div className="section-title">معلومات الشحن</div>
-                    {[[t("labelFields.store"), order.store], [t("labelFields.trackingCode"), order.trackingCode || "—"], [t("labelFields.shippingCost"), `${order.shippingCost || 0} ر.س`]].map(([k, v]) => (
+                    {[[t("labelFields.store"), order.store?.name], [t("labelFields.trackingCode"), order.trackingNumber || "—"], [t("labelFields.shippingCost"), `${order.shippingCost || 0} ر.س`]].map(([k, v]) => (
                       <div className="row" key={k}><span className="key">{k}</span><span className="val">{v}</span></div>
                     ))}
                     <div className="row">
                       <span className="key">{t("labelFields.paymentType")}</span>
-                      <span className={`payment-badge ${order.paymentType === "COD" ? "cod" : "paid"}`}>
-                        {order.paymentType === "COD" ? t("labelFields.cod") : t("labelFields.paid")}
+                      <span className={`payment-badge ${order.paymentStatus === "paid" ? "paid" : "cod"}`}>
+                        {order.paymentStatus === "paid" ? t("payment.paid") : order.paymentMethod === "cod" ? t("payment.cod") : order.paymentMethod}
                       </span>
                     </div>
                   </div>
                   <div className="barcode-area">
                     <div className="barcode-lines" />
-                    <div className="barcode-text">{order.trackingCode || order.code}</div>
+                    <div className="barcode-text">{order.trackingNumber || order.orderNumber}</div>
                   </div>
                 </div>
               </div>
@@ -364,79 +343,123 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
 }
 
 // ── NOT-PRINTED SUBTAB ────────────────────────────────────────────────────────
-function NotPrintedSubtab({ orders, updateOrder, pushOp, onPrinted, resetToken }) {
+function NotPrintedSubtab({ onPrinted, resetToken, fetchStats }) {
   const t = useTranslations("warehouse.print");
 
-  const notPrinted = useMemo(
-    () => orders.filter((o) => o.status === STATUS.CONFIRMED && !!o.carrier && !o.labelPrinted),
-    [orders]
-  );
-
   const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState({ carrier: "all", store: "all", date: "", productName: "" });
+  const { debouncedValue: debouncedSearch } = useDebounce({ value: search, delay: 350 })
+  const [filters, setFilters] = useState({ carrier: "all", store: "all", date: "", productId: "all" });
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [detailModal, setDetailModal] = useState(null);
   const [printPreview, setPrintPreview] = useState({ open: false, orders: [] });
-  const [page, setPage] = useState({ current_page: 1, per_page: 12 });
 
-  React.useEffect(() => {
-    setSearch("");
-    setFilters({ carrier: "all", store: "all", date: "", productName: "" });
-    setSelectedOrders([]);
-    setDetailModal(null);
-    setPrintPreview({ open: false, orders: [] });
-    setPage({ current_page: 1, per_page: 12 });
-  }, [resetToken]);
+  const [pager, setPager] = useState({
+    total_records: 0,
+    current_page: 1,
+    per_page: 12,
+    records: [],
+  });
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const { handleExport, exportLoading } = useExport();
 
-  const stores = useMemo(() => [...new Set(notPrinted.map((o) => o.store))], [notPrinted]);
+  const buildParams = (page = pager.current_page, per_page = pager.per_page) => {
+    const params = {
+      page,
+      limit: per_page,
+      status: 'distributed',
+      labelPrinted: 'false'
+    };
 
-  const filtered = useMemo(() => {
-    let base = notPrinted;
-    const q = search.trim().toLowerCase();
-    if (q) base = base.filter((o) => [o.code, o.customer, o.phone, o.city, o.carrier].some((x) => String(x || "").toLowerCase().includes(q)));
-    if (filters.carrier !== "all") base = base.filter((o) => o.carrier === filters.carrier);
-    if (filters.store !== "all") base = base.filter((o) => o.store === filters.store);
-    if (filters.date) base = base.filter((o) => o.orderDate === filters.date);
-    if (filters.productName) base = base.filter((o) => o.products.some((p) => p.name.includes(filters.productName)));
-    return base;
-  }, [notPrinted, search, filters]);
+    if (debouncedSearch) params.search = debouncedSearch;
+    if (filters.store !== "all") params.storeId = filters.store;
+    if (filters.carrier !== "all") params.shippingCompanyId = filters.carrier;
+    if (filters.date) params.startDate = filters.date;
+    if (filters.productId !== "all") params.productId = filters.productId;
 
-  const toggleOrder = (code) => setSelectedOrders((prev) => prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]);
-  const selectAll = () => setSelectedOrders(selectedOrders.length === filtered.length ? [] : filtered.map((o) => o.code));
-
-  const handleConfirmPrint = (codes) => {
-    const now = new Date().toISOString().slice(0, 16).replace("T", " ");
-    codes.forEach((code) => {
-      updateOrder(code, { labelPrinted: true, printedAt: now, status: STATUS.PREPARING });
-      pushOp({ id: `OP-${Date.now()}-${code}`, operationType: "PRINT_LABEL", orderCode: code, carrier: orders.find((o) => o.code === code)?.carrier || "-", employee: "System", result: "SUCCESS", details: "تم طباعة البوليصة", createdAt: now });
-    });
-    setSelectedOrders([]);
-    onPrinted?.();
+    return params;
   };
 
-  const hasActiveFilters = filters.carrier !== "all" || filters.store !== "all" || !!filters.date || !!filters.productName;
+  const fetchOrders = async (page = pager.current_page, per_page = pager.per_page) => {
+    try {
+      setOrdersLoading(true);
+      const params = buildParams(page, per_page);
+      const res = await api.get('/orders', { params });
+      const data = res.data || {};
+      setPager({
+        total_records: data.total_records || 0,
+        current_page: data.current_page || page,
+        per_page: data.per_page || per_page,
+        records: Array.isArray(data.records) ? data.records : [],
+      });
+    } catch (e) {
+      console.error('Error fetching orders', e);
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders(1, pager.per_page);
+  }, [debouncedSearch, resetToken]);
+
+  const handlePageChange = ({ page, per_page }) => {
+    fetchOrders(page, per_page);
+  };
+
+  const applyFilters = () => {
+    fetchOrders(1, pager.per_page);
+  };
+
+  const onExport = async () => {
+    const params = buildParams(1, 10000);
+    delete params.page;
+    delete params.limit;
+    await handleExport({
+      endpoint: "/orders/export",
+      params,
+      filename: `not_printed_orders_${Date.now()}.xlsx`,
+    });
+  };
+
+  const toggleOrder = (orderNumber) => setSelectedOrders((prev) => prev.includes(orderNumber) ? prev.filter((c) => c !== orderNumber) : [...prev, orderNumber]);
+  const selectAll = () => setSelectedOrders(selectedOrders.length === pager.records.length ? [] : pager.records.map((o) => o.orderNumber));
+
+  const handleConfirmPrint = async (orderNumbers) => {
+    try {
+      await api.post('/orders/bulk-print', { orderNumbers });
+      toast.success(t("messages.printSuccess") || "Labels marked as printed");
+      fetchOrders();
+      fetchStats();
+      onPrinted?.();
+    } catch (error) {
+      console.error("Print confirmation failed", error);
+    }
+    setSelectedOrders([]);
+  };
+
+  const hasActiveFilters = filters.carrier !== "all" || filters.store !== "all" || !!filters.date || filters.productId !== "all";
 
   const columns = useMemo(() => [
     {
       key: "select",
-      header: (<div className="flex items-center justify-center"><Checkbox checked={filtered.length > 0 && selectedOrders.length === filtered.length} onCheckedChange={selectAll} /></div>),
+      header: (<div className="flex items-center justify-center"><Checkbox checked={pager.records.length > 0 && selectedOrders.length === pager.records.length} onCheckedChange={selectAll} /></div>),
       className: "w-[48px]",
-      cell: (row) => (<div className="flex items-center justify-center"><Checkbox checked={selectedOrders.includes(row.code)} onCheckedChange={() => toggleOrder(row.code)} /></div>),
+      cell: (row) => (<div className="flex items-center justify-center"><Checkbox checked={selectedOrders.includes(row.orderNumber)} onCheckedChange={() => toggleOrder(row.orderNumber)} /></div>),
     },
-    { key: "code", header: t("field.orderCode"), cell: (row) => <span className="font-mono font-bold text-[#ff8b00]">{row.code}</span> },
-    { key: "customer", header: t("field.customer"), cell: (row) => <span className="font-semibold">{row.customer}</span> },
-    { key: "phone", header: t("field.phone"), cell: (row) => <span className="font-mono text-slate-500 text-sm" dir="ltr">{row.phone}</span> },
+    { key: "code", header: t("field.orderCode"), cell: (row) => <span className="font-mono font-bold text-[#ff8b00]">{row.orderNumber}</span> },
+    { key: "customer", header: t("field.customer"), cell: (row) => <span className="font-semibold">{row.customerName}</span> },
+    { key: "phone", header: t("field.phone"), cell: (row) => <span className="font-mono text-slate-500 text-sm" dir="ltr">{row.phoneNumber}</span> },
     { key: "city", header: t("field.city") },
     { key: "area", header: t("field.area") },
-    { key: "carrier", header: t("field.carrier"), cell: (row) => <CarrierPill carrier={row.carrier} /> },
+    { key: "carrier", header: t("field.carrier"), cell: (row) => <CarrierPill carrier={row.shippingCompany?.name} /> },
     {
       key: "trackingCode", header: t("field.trackingCode"),
-      cell: (row) => row.trackingCode
-        ? <span className="font-mono text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">{row.trackingCode}</span>
+      cell: (row) => row.trackingNumber
+        ? <span className="font-mono text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">{row.trackingNumber}</span>
         : <span className="text-slate-400">{t("common.none")}</span>,
     },
-    { key: "total", header: t("field.total"), cell: (row) => <span className="font-bold text-emerald-700 dark:text-emerald-400">{row.total} ر.س</span> },
-    { key: "orderDate", header: t("field.orderDate"), cell: (row) => <span className="text-sm text-slate-500">{row.orderDate}</span> },
+    { key: "total", header: t("field.total"), cell: (row) => <span className="font-bold text-emerald-700 dark:text-emerald-400">{row.finalTotal} ر.س</span> },
+    { key: "orderDate", header: t("field.orderDate"), cell: (row) => <span className="text-sm text-slate-500">{new Date(row.created_at).toLocaleDateString("en-US")}</span> },
     {
       key: "actions", header: t("field.actions"),
       cell: (row) => (
@@ -449,132 +472,147 @@ function NotPrintedSubtab({ orders, updateOrder, pushOp, onPrinted, resetToken }
         />
       ),
     },
-  ], [filtered, selectedOrders, t]);
+  ], [pager.records, selectedOrders, t]);
 
   return (
     <div className="space-y-4">
       <Table
-        searchValue={search} onSearchChange={setSearch} onSearch={() => {}}
+        searchValue={search} onSearchChange={setSearch} onSearch={applyFilters}
         labels={{ searchPlaceholder: t("notPrinted.search"), filter: t("common.filter"), apply: t("common.apply"), total: t("common.total"), limit: t("common.limit"), emptyTitle: t("notPrinted.empty"), emptySubtitle: "" }}
         actions={[
-          { key: "printSelected", label: selectedOrders.length > 0 ? t("notPrinted.printSelected", { count: selectedOrders.length }) : t("notPrinted.printSelectedDefault"), icon: <Printer size={14} />, color: "emerald", onClick: () => selectedOrders.length > 0 && setPrintPreview({ open: true, orders: orders.filter((o) => selectedOrders.includes(o.code)) }), disabled: selectedOrders.length === 0 },
-          { key: "export", label: t("common.export"), icon: <FileDown size={14} />, color: "blue", onClick: () => {} },
+          { key: "printSelected", label: selectedOrders.length > 0 ? t("notPrinted.printSelected", { count: selectedOrders.length }) : t("notPrinted.printSelectedDefault"), icon: <Printer size={14} />, color: "emerald", onClick: () => selectedOrders.length > 0 && setPrintPreview({ open: true, orders: pager.records.filter((o) => selectedOrders.includes(o.orderNumber)) }), disabled: selectedOrders.length === 0 },
+          { key: "export", label: t("common.export"), icon: exportLoading ? <Loader2 className="animate-spin" size={14} /> : <FileDown size={14} />, color: "blue", onClick: onExport, disabled: exportLoading },
         ]}
-        hasActiveFilters={hasActiveFilters} onApplyFilters={() => {}}
+        hasActiveFilters={hasActiveFilters} onApplyFilters={applyFilters}
         filters={
           <>
-            <FilterField label={t("filter.carrier")}>
-              <Select value={filters.carrier} onValueChange={(v) => setFilters((f) => ({ ...f, carrier: v }))}>
-                <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={t("filter.allCarriers")} /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("filter.allCarriers")}</SelectItem>
-                  {CARRIERS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </FilterField>
-            <FilterField label={t("filter.store")}>
-              <Select value={filters.store} onValueChange={(v) => setFilters((f) => ({ ...f, store: v }))}>
-                <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={t("filter.allStores")} /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("filter.allStores")}</SelectItem>
-                  {stores.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </FilterField>
+            <ShippingCompanyFilter value={filters.carrier} onChange={(v) => setFilters(f => ({ ...f, carrier: v }))} />
+            <StoreFilter value={filters.store} onChange={(v) => setFilters(f => ({ ...f, store: v }))} />
+            <ProductFilter value={filters.productId} onChange={(v) => setFilters(f => ({ ...f, productId: v }))} />
             <FilterField label={t("filter.date")}>
               <Input type="date" value={filters.date} onChange={(e) => setFilters((f) => ({ ...f, date: e.target.value }))} className="h-10 rounded-xl text-sm" />
             </FilterField>
-            <FilterField label={t("filter.productName")}>
-              <Input value={filters.productName} onChange={(e) => setFilters((f) => ({ ...f, productName: e.target.value }))} placeholder={t("filter.productNamePlaceholder")} className="h-10 rounded-xl text-sm" />
-            </FilterField>
           </>
         }
-        columns={columns} data={filtered} isLoading={false}
-        pagination={{ total_records: filtered.length, current_page: page.current_page, per_page: page.per_page }}
-        onPageChange={({ page: p, per_page }) => setPage({ current_page: p, per_page })}
+        columns={columns} data={pager.records} isLoading={ordersLoading}
+        pagination={{ total_records: pager.total_records, current_page: pager.current_page, per_page: pager.per_page }}
+        onPageChange={handlePageChange}
       />
       <PrintPreviewModal open={printPreview.open} onClose={() => setPrintPreview({ open: false, orders: [] })} orders={printPreview.orders} onConfirmPrint={handleConfirmPrint} />
-      <OrderDetailModal open={!!detailModal} onClose={() => setDetailModal(null)} order={detailModal} />
+      <OrderDetailModal open={!!detailModal} onClose={() => setDetailModal(null)} order={detailModal} hideNotes={true} />
     </div>
   );
 }
 
 // ── PRINTED SUBTAB ────────────────────────────────────────────────────────────
-function PrintedSubtab({ orders, updateOrder, pushOp, resetToken }) {
+function PrintedSubtab({ resetToken, fetchStats }) {
   const t = useTranslations("warehouse.print");
 
-  const printed = useMemo(
-    () => orders.filter((o) => o.labelPrinted && [STATUS.CONFIRMED, STATUS.PREPARING, STATUS.PREPARED].includes(o.status)),
-    [orders]
-  );
-
   const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState({ carrier: "all", store: "all", status: "all", date: "", productName: "" });
+  const { debouncedValue: debouncedSearch } = useDebounce({ value: search, delay: 350 })
+  const [filters, setFilters] = useState({ carrier: "all", store: "all", date: "", productId: "all" });
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [detailModal, setDetailModal] = useState(null);
   const [printPreview, setPrintPreview] = useState({ open: false, orders: [] });
-  const [page, setPage] = useState({ current_page: 1, per_page: 12 });
 
-  React.useEffect(() => {
-    setSearch("");
-    setFilters({ carrier: "all", store: "all", status: "all", date: "", productName: "" });
-    setSelectedOrders([]);
-    setDetailModal(null);
-    setPrintPreview({ open: false, orders: [] });
-    setPage({ current_page: 1, per_page: 12 });
-  }, [resetToken]);
+  const [pager, setPager] = useState({
+    total_records: 0,
+    current_page: 1,
+    per_page: 12,
+    records: [],
+  });
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const { handleExport, exportLoading } = useExport();
 
-  const stores = useMemo(() => [...new Set(printed.map((o) => o.store))], [printed]);
+  const buildParams = (page = pager.current_page, per_page = pager.per_page) => {
+    const params = {
+      page,
+      limit: per_page,
+      status: 'printed',
+      labelPrinted: 'true'
+    };
 
-  const filtered = useMemo(() => {
-    let base = printed;
-    const q = search.trim().toLowerCase();
-    if (q) base = base.filter((o) => [o.code, o.customer, o.phone, o.city, o.carrier].some((x) => String(x || "").toLowerCase().includes(q)));
-    if (filters.carrier !== "all") base = base.filter((o) => o.carrier === filters.carrier);
-    if (filters.store !== "all") base = base.filter((o) => o.store === filters.store);
-    if (filters.status !== "all") base = base.filter((o) => o.status === filters.status);
-    if (filters.date) base = base.filter((o) => o.printedAt?.startsWith(filters.date));
-    if (filters.productName) base = base.filter((o) => o.products.some((p) => p.name.includes(filters.productName)));
-    return base;
-  }, [printed, search, filters]);
+    if (debouncedSearch) params.search = debouncedSearch;
+    if (filters.store !== "all") params.storeId = filters.store;
+    if (filters.carrier !== "all") params.shippingCompanyId = filters.carrier;
+    if (filters.date) params.startDate = filters.date;
+    if (filters.productId !== "all") params.productId = filters.productId;
 
-  const toggleOrder = (code) => setSelectedOrders((prev) => prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]);
-  const selectAll = () => setSelectedOrders(selectedOrders.length === filtered.length ? [] : filtered.map((o) => o.code));
-
-  const statusLabel = (status) => {
-    if (status === STATUS.PREPARING) return { label: t("printed.statusPreparing"), cls: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800 dark:text-blue-400" };
-    if (status === STATUS.PREPARED) return { label: t("printed.statusReady"), cls: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800 dark:text-emerald-400" };
-    return { label: t("printed.statusPrinting"), cls: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/20 dark:border-purple-800 dark:text-purple-400" };
+    return params;
   };
 
-  const handleReprintConfirm = (codes) => {
-    const now = new Date().toISOString().slice(0, 16).replace("T", " ");
-    codes.forEach((code) => {
-      updateOrder(code, { printedAt: now });
-      pushOp({ id: `OP-${Date.now()}-${code}`, operationType: "PRINT_LABEL", orderCode: code, employee: "System", result: "SUCCESS", details: "إعادة طباعة البوليصة", createdAt: now });
+  const fetchOrders = async (page = pager.current_page, per_page = pager.per_page) => {
+    try {
+      setOrdersLoading(true);
+      const params = buildParams(page, per_page);
+      const res = await api.get('/orders', { params });
+      const data = res.data || {};
+      setPager({
+        total_records: data.total_records || 0,
+        current_page: data.current_page || page,
+        per_page: data.per_page || per_page,
+        records: Array.isArray(data.records) ? data.records : [],
+      });
+    } catch (e) {
+      console.error('Error fetching orders', e);
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders(1, pager.per_page);
+  }, [debouncedSearch, resetToken]);
+
+  const handlePageChange = ({ page, per_page }) => {
+    fetchOrders(page, per_page);
+  };
+
+  const applyFilters = () => {
+    fetchOrders(1, pager.per_page);
+  };
+
+  const onExport = async () => {
+    const params = buildParams(1, 10000);
+    delete params.page;
+    delete params.limit;
+    await handleExport({
+      endpoint: "/orders/export",
+      params,
+      filename: `printed_orders_${Date.now()}.xlsx`,
     });
   };
 
-  const hasActiveFilters = filters.carrier !== "all" || filters.store !== "all" || filters.status !== "all" || !!filters.date || !!filters.productName;
+  const toggleOrder = (orderNumber) => setSelectedOrders((prev) => prev.includes(orderNumber) ? prev.filter((c) => c !== orderNumber) : [...prev, orderNumber]);
+  const selectAll = () => setSelectedOrders(selectedOrders.length === pager.records.length ? [] : pager.records.map((o) => o.orderNumber));
+
+  const handleReprintConfirm = async (orderNumbers) => {
+    try {
+      await api.post('/orders/bulk-print', { orderNumbers });
+      toast.success(t("messages.reprintSuccess") || "Labels reprinted successfully");
+      fetchOrders();
+      fetchStats();
+    } catch (error) {
+      console.error("Reprint confirmation failed", error);
+    }
+  };
+
+  const hasActiveFilters = filters.carrier !== "all" || filters.store !== "all" || !!filters.date || filters.productId !== "all";
 
   const columns = useMemo(() => [
     {
       key: "select",
-      header: (<div className="flex items-center justify-center"><Checkbox checked={filtered.length > 0 && selectedOrders.length === filtered.length} onCheckedChange={selectAll} /></div>),
+      header: (<div className="flex items-center justify-center"><Checkbox checked={pager.records.length > 0 && selectedOrders.length === pager.records.length} onCheckedChange={selectAll} /></div>),
       className: "w-[48px]",
-      cell: (row) => (<div className="flex items-center justify-center"><Checkbox checked={selectedOrders.includes(row.code)} onCheckedChange={() => toggleOrder(row.code)} /></div>),
+      cell: (row) => (<div className="flex items-center justify-center"><Checkbox checked={selectedOrders.includes(row.orderNumber)} onCheckedChange={() => toggleOrder(row.orderNumber)} /></div>),
     },
-    { key: "code", header: t("field.orderCode"), cell: (row) => <span className="font-mono font-bold text-[#ff8b00]">{row.code}</span> },
-    { key: "customer", header: t("field.customer"), cell: (row) => <span className="font-semibold">{row.customer}</span> },
-    { key: "phone", header: t("field.phone"), cell: (row) => <span className="font-mono text-slate-500 text-sm" dir="ltr">{row.phone}</span> },
+    { key: "code", header: t("field.orderCode"), cell: (row) => <span className="font-mono font-bold text-[#ff8b00]">{row.orderNumber}</span> },
+    { key: "customer", header: t("field.customer"), cell: (row) => <span className="font-semibold">{row.customerName}</span> },
+    { key: "phone", header: t("field.phone"), cell: (row) => <span className="font-mono text-slate-500 text-sm" dir="ltr">{row.phoneNumber}</span> },
     { key: "city", header: t("field.city") },
-    { key: "carrier", header: t("field.carrier"), cell: (row) => <CarrierPill carrier={row.carrier} /> },
-    { key: "printedAt", header: t("field.printedAt"), cell: (row) => <span className="text-sm text-slate-500">{row.printedAt || "—"}</span> },
-    {
-      key: "status", header: t("field.status"),
-      cell: (row) => { const s = statusLabel(row.status); return <Badge className={cn("rounded-full text-xs border", s.cls)}>{s.label}</Badge>; },
-    },
-    { key: "total", header: t("field.total"), cell: (row) => <span className="font-bold text-emerald-700 dark:text-emerald-400">{row.total} ر.س</span> },
+    { key: "carrier", header: t("field.carrier"), cell: (row) => <CarrierPill carrier={row.shippingCompany?.name} /> },
+    { key: "printedAt", header: t("field.printedAt"), cell: (row) => <span className="text-sm text-slate-500">{row.labelPrinted ? new Date(row.labelPrinted).toLocaleString() : "—"}</span> },
+    { key: "total", header: t("field.total"), cell: (row) => <span className="font-bold text-emerald-700 dark:text-emerald-400">{row.finalTotal} ر.س</span> },
     {
       key: "actions", header: t("field.actions"),
       cell: (row) => (
@@ -587,60 +625,31 @@ function PrintedSubtab({ orders, updateOrder, pushOp, resetToken }) {
         />
       ),
     },
-  ], [filtered, selectedOrders, t]);
+  ], [pager.records, selectedOrders, t]);
 
   return (
     <div className="space-y-4">
       <Table
-        searchValue={search} onSearchChange={setSearch} onSearch={() => {}}
+        searchValue={search} onSearchChange={setSearch} onSearch={applyFilters}
         labels={{ searchPlaceholder: t("printed.search"), filter: t("common.filter"), apply: t("common.apply"), total: t("common.total"), limit: t("common.limit"), emptyTitle: t("printed.empty"), emptySubtitle: "" }}
         actions={[
-          { key: "reprintSelected", label: selectedOrders.length > 0 ? t("printed.printSelected", { count: selectedOrders.length }) : t("printed.printSelectedDefault"), icon: <Printer size={14} />, color: "emerald", onClick: () => selectedOrders.length > 0 && setPrintPreview({ open: true, orders: orders.filter((o) => selectedOrders.includes(o.code)) }), disabled: selectedOrders.length === 0 },
-          { key: "export", label: t("common.export"), icon: <FileDown size={14} />, color: "blue", onClick: () => {} },
+          { key: "reprintSelected", label: selectedOrders.length > 0 ? t("printed.printSelected", { count: selectedOrders.length }) : t("printed.printSelectedDefault"), icon: <Printer size={14} />, color: "emerald", onClick: () => selectedOrders.length > 0 && setPrintPreview({ open: true, orders: pager.records.filter((o) => selectedOrders.includes(o.orderNumber)) }), disabled: selectedOrders.length === 0 },
+          { key: "export", label: t("common.export"), icon: exportLoading ? <Loader2 className="animate-spin" size={14} /> : <FileDown size={14} />, color: "blue", onClick: onExport, disabled: exportLoading },
         ]}
-        hasActiveFilters={hasActiveFilters} onApplyFilters={() => {}}
+        hasActiveFilters={hasActiveFilters} onApplyFilters={applyFilters}
         filters={
           <>
-            <FilterField label={t("filter.carrier")}>
-              <Select value={filters.carrier} onValueChange={(v) => setFilters((f) => ({ ...f, carrier: v }))}>
-                <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={t("filter.allCarriers")} /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("filter.allCarriers")}</SelectItem>
-                  {CARRIERS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </FilterField>
-            <FilterField label={t("filter.store")}>
-              <Select value={filters.store} onValueChange={(v) => setFilters((f) => ({ ...f, store: v }))}>
-                <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={t("filter.allStores")} /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("filter.allStores")}</SelectItem>
-                  {stores.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </FilterField>
-            <FilterField label={t("filter.status")}>
-              <Select value={filters.status} onValueChange={(v) => setFilters((f) => ({ ...f, status: v }))}>
-                <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={t("filter.allStatuses")} /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("filter.allStatuses")}</SelectItem>
-                  <SelectItem value={STATUS.CONFIRMED}>{t("printed.statusPrinting")}</SelectItem>
-                  <SelectItem value={STATUS.PREPARING}>{t("printed.statusPreparing")}</SelectItem>
-                  <SelectItem value={STATUS.PREPARED}>{t("printed.statusReady")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </FilterField>
+            <ShippingCompanyFilter value={filters.carrier} onChange={(v) => setFilters(f => ({ ...f, carrier: v }))} />
+            <StoreFilter value={filters.store} onChange={(v) => setFilters(f => ({ ...f, store: v }))} />
+            <ProductFilter value={filters.productId} onChange={(v) => setFilters(f => ({ ...f, productId: v }))} />
             <FilterField label={t("filter.printDate")}>
               <Input type="date" value={filters.date} onChange={(e) => setFilters((f) => ({ ...f, date: e.target.value }))} className="h-10 rounded-xl text-sm" />
             </FilterField>
-            <FilterField label={t("filter.productName")}>
-              <Input value={filters.productName} onChange={(e) => setFilters((f) => ({ ...f, productName: e.target.value }))} placeholder={t("filter.productNamePlaceholder")} className="h-10 rounded-xl text-sm" />
-            </FilterField>
           </>
         }
-        columns={columns} data={filtered} isLoading={false}
-        pagination={{ total_records: filtered.length, current_page: page.current_page, per_page: page.per_page }}
-        onPageChange={({ page: p, per_page }) => setPage({ current_page: p, per_page })}
+        columns={columns} data={pager.records} isLoading={ordersLoading}
+        pagination={{ total_records: pager.total_records, current_page: pager.current_page, per_page: pager.per_page }}
+        onPageChange={handlePageChange}
       />
       <PrintPreviewModal open={printPreview.open} onClose={() => setPrintPreview({ open: false, orders: [] })} orders={printPreview.orders} onConfirmPrint={handleReprintConfirm} />
       <OrderDetailModal open={!!detailModal} onClose={() => setDetailModal(null)} order={detailModal} />
@@ -648,51 +657,3 @@ function PrintedSubtab({ orders, updateOrder, pushOp, resetToken }) {
   );
 }
 
-// ── Main Print Labels Tab ─────────────────────────────────────────────────────
-export default function PrintLabelsTab({ orders, updateOrder, pushOp, subtab, setSubtab, resetToken }) {
-  const t = useTranslations("warehouse.print");
-
-  const distributedOrders = useMemo(() => orders.filter((o) => o.status === STATUS.CONFIRMED && !!o.carrier), [orders]);
-  const notPrinted = distributedOrders.filter((o) => !o.labelPrinted);
-  const printed = orders.filter((o) => o.labelPrinted && [STATUS.CONFIRMED, STATUS.PREPARING, STATUS.PREPARED].includes(o.status));
-
-  const stats = [
-    { id: "total-distributed", name: t("stats.totalDistributed"), value: distributedOrders.length, icon: Truck, color: "#6763af", bgColor: "#6763af15", sortOrder: 0 },
-    { id: "not-printed", name: t("stats.notPrinted"), value: notPrinted.length, icon: Printer, color: "#ffb703", bgColor: "#ffb70315", sortOrder: 1 },
-    { id: "printed", name: t("stats.printed"), value: printed.length, icon: CheckCircle2, color: "#10b981", bgColor: "#10b98115", sortOrder: 2 },
-    { id: "in-preparation", name: t("stats.inPreparation"), value: orders.filter((o) => o.status === STATUS.PREPARING).length, icon: Package, color: "#ff8b00", bgColor: "#ff8b0015", sortOrder: 3 },
-  ];
-
-  return (
-    <div className="space-y-4">
-      <PageHeader
-        breadcrumbs={[
-          { name: t("breadcrumbs.home"), href: "/" },
-          { name: t("breadcrumbs.warehouse"), href: "/warehouse" },
-          { name: t("breadcrumbs.printLabels") },
-        ]}
-        buttons={
-          <Button_ size="sm" label={t("howItWorks")} variant="ghost" onClick={() => {}} icon={<Info size={18} />} />
-        }
-        stats={stats}
-        items={[
-          { id: "not_printed", label: t("tabs.notPrinted"), count: notPrinted.length, icon: Printer },
-          { id: "printed", label: t("tabs.printed"), count: printed.length, icon: CheckCircle2 },
-        ]}
-        active={subtab}
-        setActive={setSubtab}
-      />
-
-      <AnimatePresence mode="wait">
-        <motion.div key={subtab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15 }}>
-          {subtab === "not_printed" && (
-            <NotPrintedSubtab orders={orders} updateOrder={updateOrder} pushOp={pushOp} onPrinted={() => setSubtab("printed")} resetToken={resetToken} />
-          )}
-          {subtab === "printed" && (
-            <PrintedSubtab orders={orders} updateOrder={updateOrder} pushOp={pushOp} resetToken={resetToken} />
-          )}
-        </motion.div>
-      </AnimatePresence>
-    </div>
-  );
-}

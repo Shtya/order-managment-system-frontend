@@ -21,8 +21,9 @@ import {
 	Hash,
 	Boxes,
 	ClipboardList,
+	Layers,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/utils/cn";
 import {
 	Select,
@@ -31,12 +32,17 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import Table, { FilterField } from "@/components/atoms/Table";
 import PageHeader from "../../../../components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
-import { STATUS, CARRIERS, deductInventoryForShipment } from "./data";
+import { STATUS, CARRIERS, deductInventoryForShipment, CARRIER_STYLES, CARRIER_META } from "./data";
 import ActionButtons from "@/components/atoms/Actions";
-
+import { toast } from "react-hot-toast";
+import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
+import { useDebounce } from "@/hook/useDebounce";
+import api from "@/utils/api";
+// ─────────────────────────────────────────────
 // ─────────────────────────────────────────────────────────────
 // DESIGN TOKENS
 // ─────────────────────────────────────────────────────────────
@@ -73,35 +79,6 @@ const DS = {
 // ─────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────
-const CARRIER_STYLES = {
-	ARAMEX: {
-		bg: "bg-red-50 dark:bg-red-950/20",
-		border: "border-red-200 dark:border-red-800",
-		text: "text-red-700 dark:text-red-400",
-	},
-	SMSA: {
-		bg: "bg-blue-50 dark:bg-blue-950/20",
-		border: "border-blue-200 dark:border-blue-800",
-		text: "text-blue-700 dark:text-blue-400",
-	},
-	DHL: {
-		bg: "bg-yellow-50 dark:bg-yellow-950/20",
-		border: "border-yellow-200 dark:border-yellow-800",
-		text: "text-yellow-700 dark:text-yellow-400",
-	},
-	BOSTA: {
-		bg: "bg-orange-50 dark:bg-orange-950/20",
-		border: "border-orange-200 dark:border-orange-800",
-		text: "text-orange-700 dark:text-orange-400",
-	},
-};
-
-const CARRIER_META = {
-	ARAMEX: { color: "#ef4444", light: "#fef2f2" },
-	SMSA: { color: "#3b82f6", light: "#eff6ff" },
-	DHL: { color: "#ca8a04", light: "#fefce8" },
-	BOSTA: { color: "#f97316", light: "#fff7ed" },
-};
 
 function getCarrierMeta(c = "") {
 	return (
@@ -302,9 +279,9 @@ function formatTimeForLogs() {
 		second: "2-digit",
 	});
 }
- 
- 
- 
+
+
+
 const PDF_STYLE_WARM = `
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -586,16 +563,15 @@ const PDF_STYLE_WARM = `
 
 
 function buildOutgoingPDF(orders, carrier, employee, now, labels) {
-  const ordersHTML = orders.map((o, idx) => {
-    const rows = o.products.map((p) => `
+	const ordersHTML = orders.map((o, idx) => {
+		const rows = o.products.map((p) => `
       <tr>
         <td class="sku-cell">${p.sku}</td>
-        <td>${p.name}</td>
-        <td class="qty-cell">${p.requestedQty}</td>
-        <td class="track-cell"><span>${o.trackingCode || "—"}</span></td>
+        <td>${p?.name}</td>
+        <td class="qty-cell">${p.quantity}</td>
       </tr>`).join("");
 
-    return `
+		return `
       <div class="order-card">
         <div class="order-head">
           <div class="order-head-left">
@@ -612,15 +588,14 @@ function buildOutgoingPDF(orders, carrier, employee, now, labels) {
               <th>${labels.sku}</th>
               <th>${labels.product}</th>
               <th class="center">${labels.qty}</th>
-              <th>${labels.trackingCode}</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
         </table>
       </div>`;
-  }).join("");
+	}).join("");
 
-  return `<!DOCTYPE html>
+	return `<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -1044,16 +1019,17 @@ const WRONG_SCAN_PDF_STYLE = `
 
 
 function buildWrongScanLogPDF(logs, carrier, employee, now, labels) {
-  const rows = logs.map((l, i) => `
+	const rows = logs.map((l, i) => `
     <tr>
       <td class="idx-cell">${i + 1}</td>
-      <td class="code-cell">${l.code}</td>
-      <td><span class="badge-error">${l.reason}</span></td>
+      <td class="code-cell">${l.orderNumber}</td>
+      <td class="code-cell">${l.sku}</td>
+      <td><span class="badge-error">${labels.reasons?.[l.reason] || l.reason}</span></td>
       <td class="time-cell"><span>${l.time}</span></td>
     </tr>`
-  ).join("");
+	).join("");
 
-  return `<!DOCTYPE html>
+	return `<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -1079,7 +1055,7 @@ function buildWrongScanLogPDF(logs, carrier, employee, now, labels) {
         </div>
       </div>
       <div class="header-ref">
-        <div class="ref-badge">ERR · ${now.replace(/\D/g,'').slice(0,8)}</div>
+        <div class="ref-badge">ERR · ${now.replace(/\D/g, '').slice(0, 8)}</div>
         <div class="ref-date">${now}</div>
         <div class="ref-employee">${employee}</div>
       </div>
@@ -1127,6 +1103,7 @@ function buildWrongScanLogPDF(logs, carrier, employee, now, labels) {
         <thead>
           <tr>
             <th class="center">#</th>
+            <th>${labels.orderNumber}</th>
             <th>${labels.scannedCode}</th>
             <th>${labels.failReason}</th>
             <th>${labels.time}</th>
@@ -1174,15 +1151,14 @@ function OutgoingScanInputBar({
 	value,
 	onChange,
 	onScan,
-	disabled,
 	isSuccess,
 	isError,
 	placeholder,
 	selectedCarrier,
 	onCarrierChange,
-	carriers,
 	soundEnabled,
 	onToggleSound,
+	disabled = false,
 }) {
 	const t = useTranslations("warehouse.outgoing");
 	const [isFocused, setIsFocused] = useState(false);
@@ -1320,19 +1296,8 @@ function OutgoingScanInputBar({
 					)}
 				</AnimatePresence>
 
-				<div className="px-2.5 flex-shrink-0 z-10 border-l border-slate-100 dark:border-slate-700">
-					<Select value={selectedCarrier} onValueChange={onCarrierChange}>
-						<SelectTrigger className="h-9 min-w-[140px] border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/60 text-xs font-bold rounded-md">
-							<SelectValue placeholder={t("scan.selectCarrier")} />
-						</SelectTrigger>
-						<SelectContent>
-							{carriers.map((c) => (
-								<SelectItem key={c} value={c}>
-									{c}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+				<div className="px-2.5 flex-shrink-0 z-10 border-l border-slate-100 dark:border-slate-700 min-w-[200px]">
+					<ShippingCompanyFilter value={selectedCarrier} onChange={onCarrierChange} hideLabel={true} />
 				</div>
 
 				<div className="ps-3 flex-shrink-0 z-10">
@@ -1448,10 +1413,10 @@ function OutgoingScanInputBar({
 									? DS.dangerGradient
 									: DS.headerGradient,
 							boxShadow: `0 2px 10px -2px ${isSuccess
-									? "rgba(16,185,129,0.45)"
-									: isError
-										? "rgba(239,68,68,0.45)"
-										: "rgba(255,139,0,0.35)"
+								? "rgba(16,185,129,0.45)"
+								: isError
+									? "rgba(239,68,68,0.45)"
+									: "rgba(255,139,0,0.35)"
 								}`,
 						}}
 					>
@@ -1494,171 +1459,7 @@ function OutgoingScanInputBar({
 
 // ─────────────────────────────────────────────────────────────
 // OUTGOING SCAN LOG BOXES
-// ─────────────────────────────────────────────────────────────
-function OutgoingScanLogBoxes({
-	successCount,
-	errorCount,
-}) {
-	const t = useTranslations("warehouse.outgoing");
-	const total = successCount + errorCount;
-	const successPct = total > 0 ? (successCount / total) * 100 : 0;
-
-	const prevErrorRef = useRef(errorCount);
-	const [shaking, setShaking] = useState(false);
-
-	useEffect(() => {
-		if (errorCount > prevErrorRef.current) {
-			setShaking(true);
-			setTimeout(() => setShaking(false), 550);
-		}
-		prevErrorRef.current = errorCount;
-	}, [errorCount]);
-
-	const cardBase = cn(
-		"relative overflow-hidden border p-4 transition-all duration-300",
-		DS.radiusXl
-	);
-
-	return (
-		<div className="grid grid-cols-2 gap-3">
-			<motion.div
-				initial={{ opacity: 0, y: 8 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ delay: 0.04 }}
-				className={cn(cardBase, "border-emerald-200/70 dark:border-emerald-700/35")}
-				style={{ background: DS.successCardGradient, ...DS.scanline }}
-			>
-				<motion.div
-					key={`s${successCount}`}
-					initial={{ x: "-110%" }}
-					animate={{ x: "110%" }}
-					transition={{ duration: 0.85, ease: "easeInOut" }}
-					className="absolute inset-y-0 w-1/3 pointer-events-none z-[1]"
-					style={{
-						background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)",
-					}}
-				/>
-				<div className="absolute -bottom-3 -right-3 w-20 h-20 rounded-full bg-emerald-300/15 dark:bg-emerald-500/10" />
-				<div className="relative z-10 flex items-center gap-3">
-					<div className="relative w-[52px] h-[52px] flex-shrink-0">
-						<ArcRing
-							pct={successPct}
-							color="#16a34a"
-							trackColor="rgba(134,239,172,0.3)"
-						/>
-						<div className="absolute inset-0 flex items-center justify-center">
-							<CheckCircle2 size={16} className="text-emerald-600" />
-						</div>
-					</div>
-					<div className="flex-1 min-w-0" dir="rtl">
-						<p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-emerald-600/60 mb-1 leading-none">
-							{t("scan.scannedOrders")}
-						</p>
-						<AnimatePresence mode="wait">
-							<motion.span
-								key={successCount}
-								initial={{ opacity: 0, y: -6 }}
-								animate={{ opacity: 1, y: 0 }}
-								exit={{ opacity: 0, y: 6 }}
-								transition={{ type: "spring", stiffness: 480, damping: 26 }}
-								className="block text-[2.4rem] font-black tabular-nums leading-none text-emerald-700 dark:text-emerald-400"
-							>
-								{successCount}
-							</motion.span>
-						</AnimatePresence>
-					</div>
-				</div>
-			</motion.div>
-
-			<motion.div
-				initial={{ opacity: 0, y: 8 }}
-				animate={
-					shaking
-						? { opacity: 1, x: [0, -5, 6, -4, 2, 0], y: 0 }
-						: { opacity: 1, x: 0, y: 0 }
-				}
-				transition={shaking ? { duration: 0.4 } : { delay: 0.08 }}
-				className={cn(
-					cardBase,
-					errorCount > 0
-						? "border-red-200/70 dark:border-red-700/35"
-						: "border-slate-200/60 dark:border-slate-700/35"
-				)}
-				style={{
-					background:
-						errorCount > 0
-							? "linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)"
-							: DS.cardGradient,
-					...DS.scanline,
-				}}
-			>
-				<AnimatePresence>
-					{shaking && (
-						<motion.div
-							initial={{ opacity: 0.16 }}
-							animate={{ opacity: 0 }}
-							exit={{ opacity: 0 }}
-							transition={{ duration: 0.4 }}
-							className={cn("absolute inset-0 bg-red-400 pointer-events-none z-20", DS.radiusXl)}
-						/>
-					)}
-				</AnimatePresence>
-				<div
-					className="absolute -bottom-3 -right-3 w-20 h-20 rounded-full transition-colors duration-300"
-					style={{
-						background:
-							errorCount > 0 ? "rgba(252,165,165,0.18)" : "rgba(226,232,240,0.18)",
-					}}
-				/>
-				<div className="relative z-10 flex items-center gap-3">
-					<div className="relative w-[52px] h-[52px] flex-shrink-0">
-						<AnimatePresence>
-							{errorCount > 0 && (
-								<motion.div
-									initial={{ opacity: 0 }}
-									animate={{ opacity: [0.35, 0, 0.35], scale: [1, 1.25, 1] }}
-									exit={{ opacity: 0 }}
-									transition={{ duration: 1.8, repeat: Infinity }}
-									className="absolute inset-0 rounded-full border-2 border-red-400/45"
-								/>
-							)}
-						</AnimatePresence>
-						<div className="absolute inset-0 flex items-center justify-center">
-							<AlertCircle size={16} className={errorCount > 0 ? "text-red-600" : "text-slate-300"} />
-						</div>
-					</div>
-					<div className="flex-1 min-w-0" dir="rtl">
-						<p
-							className={cn(
-								"text-[10px] font-extrabold uppercase tracking-[0.1em] mb-1 leading-none transition-colors duration-300",
-								errorCount > 0 ? "text-red-600/60" : "text-slate-400/65"
-							)}
-						>
-							{t("scan.failedScans")}
-						</p>
-						<AnimatePresence mode="wait">
-							<motion.span
-								key={errorCount}
-								initial={{ opacity: 0, y: -6 }}
-								animate={{ opacity: 1, y: 0 }}
-								exit={{ opacity: 0, y: 6 }}
-								transition={{ type: "spring", stiffness: 480, damping: 26 }}
-								className={cn(
-									"block text-[2.4rem] font-black tabular-nums leading-none transition-colors duration-300",
-									errorCount > 0
-										? "text-red-700 dark:text-red-400"
-										: "text-slate-300 dark:text-slate-600"
-								)}
-							>
-								{errorCount}
-							</motion.span>
-						</AnimatePresence>
-					</div>
-				</div>
-			</motion.div>
-		</div>
-	);
-}
+// ───────────────────────────────────────────────────────────
 
 // ─────────────────────────────────────────────────────────────
 // ORDERS LIST
@@ -1667,6 +1468,7 @@ function OrdersList({
 	orders,
 	scannedOrders,
 	lastHighlight,
+	onSelectOrder,
 }) {
 	const t = useTranslations("warehouse.outgoing");
 	const [expanded, setExpanded] = useState({});
@@ -1688,7 +1490,7 @@ function OrdersList({
 		<div className="overflow-hidden">
 			<div
 				className="grid text-[10px] font-bold uppercase tracking-widest text-slate-400 px-5 py-2.5 border-b border-slate-100 bg-slate-50/60"
-				style={{ gridTemplateColumns: "32px 1fr 120px 90px 80px 110px" }}
+				style={{ gridTemplateColumns: "32px 1fr 120px 90px 80px 110px 48px" }}
 			>
 				<span />
 				<span>{t("scan.table.order")}</span>
@@ -1696,18 +1498,20 @@ function OrdersList({
 				<span>{t("scan.table.city")}</span>
 				<span className="text-center">{t("scan.table.products")}</span>
 				<span className="text-center">{t("scan.table.total")}</span>
+				<span />
 			</div>
 
 			<div className="divide-y divide-slate-100/80">
 				{orders.map((order, idx) => {
-					const isScanned = scannedOrders.some((o) => o.code === order.code);
-					const isFlash = lastHighlight?.code === order.code;
-					const isOpen = !!expanded[order.code];
-					const prodCount = order.products?.length ?? 0;
+					const code = order.orderNumber;
+					const isScanned = scannedOrders.some((o) => o.code === code);
+					const isFlash = lastHighlight?.code === code;
+					const isOpen = !!expanded[code];
+					const prodCount = order.items?.length ?? 0;
 
 					return (
 						<motion.div
-							key={order.code}
+							key={code}
 							layout
 							initial={{ opacity: 0, y: 6 }}
 							animate={{ opacity: 1, y: 0 }}
@@ -1718,8 +1522,8 @@ function OrdersList({
 									"relative grid items-center px-5 py-3 transition-all duration-200 cursor-pointer select-none",
 									isScanned ? "bg-emerald-50/60" : "hover:bg-slate-50/70"
 								)}
-								style={{ gridTemplateColumns: "32px 1fr 120px 90px 80px 110px" }}
-								onClick={() => prodCount > 0 && toggle(order.code)}
+								style={{ gridTemplateColumns: "32px 1fr 120px 90px 80px 110px 48px" }}
+								onClick={() => prodCount > 0 && toggle(code)}
 							>
 								<AnimatePresence>
 									{isFlash && (
@@ -1765,7 +1569,7 @@ function OrdersList({
 											isScanned ? "text-emerald-800" : "text-slate-800"
 										)}
 									>
-										{order.code}
+										{code}
 									</span>
 									{isScanned && (
 										<motion.span
@@ -1780,41 +1584,48 @@ function OrdersList({
 
 								<div className="min-w-0">
 									<div className="text-[12px] font-semibold text-slate-700 truncate">
-										{order.customer || "—"}
+										{order.customerName || "—"}
+									</div>
+									<div className="text-[10px] text-slate-400 font-medium tabular-nums">
+										{order.phoneNumber || "—"}
 									</div>
 								</div>
 
-								<div className="text-[11px] text-slate-400 truncate">{order.city || "—"}</div>
-
-								<div className="flex items-center justify-center gap-1.5">
-									<span className="text-xs font-black text-slate-700 tabular-nums">
-										{prodCount}
-									</span>
-									{prodCount > 0 && (
-										<motion.div
-											animate={{ rotate: isOpen ? 180 : 0 }}
-											transition={{ duration: 0.2 }}
-										>
-											<ChevronDown size={12} className="text-slate-400" />
-										</motion.div>
-									)}
+								<div className="text-[11px] font-bold text-slate-500 uppercase tracking-tight">
+									{order.city || "—"}
 								</div>
 
-								<div className="flex items-center justify-center">
-									{order.total ? (
-										<span className="text-[12px] font-black text-slate-700 tabular-nums">
-											{order.total}
-											<span className="text-[9px] text-slate-400 font-normal ms-0.5">
-												{t("common.currency")}
-											</span>
+								<div className="flex justify-center">
+									<span
+										className="inline-flex items-center justify-center px-2 py-1 rounded-xl bg-slate-100 text-[11px] font-black text-slate-600 min-w-[32px]"
+									>
+										{prodCount}
+									</span>
+								</div>
+
+								<div className="flex justify-center">
+									<span className="text-[12px] font-black text-slate-800 tabular-nums">
+										{order.totalPrice}
+										<span className="text-[9px] text-slate-400 font-normal ms-0.5">
+											{t("common.currency")}
 										</span>
-									) : (
-										<span className="text-slate-300 text-xs">—</span>
-									)}
+									</span>
+								</div>
+
+								<div className="flex items-center justify-end">
+									<button
+										onClick={(e) => {
+											e.stopPropagation();
+											onSelectOrder?.(order);
+										}}
+										className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all active:scale-95"
+									>
+										<ScanLine size={16} />
+									</button>
 								</div>
 							</div>
 
-							<AnimatePresence>
+							<AnimatePresence initial={false}>
 								{isOpen && prodCount > 0 && (
 									<motion.div
 										initial={{ height: 0, opacity: 0 }}
@@ -1836,7 +1647,7 @@ function OrdersList({
 											</div>
 
 											<div className="divide-y divide-slate-100/60">
-												{order.products.map((p, pi) => (
+												{order.items.map((p, pi) => (
 													<motion.div
 														key={p.sku || pi}
 														initial={{ opacity: 0, x: -4 }}
@@ -1854,11 +1665,11 @@ function OrdersList({
 															</div>
 															<div className="min-w-0">
 																<p className="text-[12px] font-semibold text-slate-700 truncate">
-																	{p.name}
+																	{p.variant?.product?.name || p.name}
 																</p>
-																{p.category && (
+																{p.variant?.sku && (
 																	<p className="text-[10px] text-slate-400 truncate">
-																		{p.category}
+																		{p.variant.sku}
 																	</p>
 																)}
 															</div>
@@ -1866,7 +1677,7 @@ function OrdersList({
 
 														<div className="text-center">
 															<code className="text-[10px] font-mono text-slate-500 bg-white px-1.5 py-0.5 rounded border border-slate-100">
-																{p.sku || "—"}
+																{p.sku || p.variant?.sku || "—"}
 															</code>
 														</div>
 
@@ -1875,7 +1686,7 @@ function OrdersList({
 																className="inline-flex items-center justify-center w-7 h-7 rounded-xl text-[11px] font-black"
 																style={{ background: "#ff8b0015", color: "#ff8b00" }}
 															>
-																{p.requestedQty}
+																{p.quantity}
 															</span>
 														</div>
 
@@ -1891,9 +1702,9 @@ function OrdersList({
 														</div>
 
 														<div className="text-center">
-															{p.price && p.requestedQty ? (
+															{p.price && p.quantity ? (
 																<span className="text-[12px] font-black text-slate-800 tabular-nums">
-																	{(p.price * p.requestedQty).toFixed(2)}
+																	{(p.price * p.quantity).toFixed(2)}
 																	<span className="text-[9px] text-slate-400 font-normal ms-0.5">
 																		{t("common.currency")}
 																	</span>
@@ -1910,9 +1721,9 @@ function OrdersList({
 												<span>
 													{prodCount} {t("scan.totalProducts")}
 												</span>
-												{order.total && (
+												{order.totalPrice && (
 													<span className="font-black text-[13px] text-slate-700">
-														{order.total} {t("common.currency")}
+														{order.totalPrice} {t("common.currency")}
 													</span>
 												)}
 											</div>
@@ -1928,59 +1739,341 @@ function OrdersList({
 	);
 }
 
+function ScannedOrderTable({ order, localProducts, justScanned }) {
+	const t = useTranslations("warehouse.preparation");
+	const [copiedSku, setCopiedSku] = useState(null);
+
+	const handleCopySku = (sku) => {
+		if (!sku) return;
+		navigator.clipboard.writeText(sku);
+		setCopiedSku(sku);
+		setTimeout(() => setCopiedSku(null), 2000);
+	};
+
+	return (
+		<div className="overflow-hidden border-t border-slate-100 dark:border-slate-800">
+			<div
+				className="grid text-[10px] font-black uppercase tracking-widest text-slate-400 px-5 py-2.5 bg-slate-50/50 dark:bg-slate-900/30"
+				style={{ gridTemplateColumns: "2fr 120px 80px 80px" }}
+			>
+				<span>{t("table.products")}</span>
+				<span className="text-center">{t("scan.sku")}</span>
+				<span className="text-center">{t("table.qty")}</span>
+				<span className="text-center">{t("table.status")}</span>
+			</div>
+
+			<div className="divide-y divide-slate-100 dark:divide-slate-800">
+				{localProducts.map((p, idx) => {
+					const isDone = p.shippingScannedQuantity >= p.quantity;
+					const isJustScanned = justScanned === p.sku;
+					const isCopied = copiedSku === p.sku;
+
+					return (
+						<motion.div
+							key={p.sku || idx}
+							initial={isJustScanned ? { backgroundColor: "rgba(16,185,129,0.15)" } : false}
+							animate={isJustScanned ? { backgroundColor: "rgba(16,185,129,0)" } : false}
+							transition={{ duration: 1.5 }}
+							className={cn(
+								"grid items-center px-5 py-3 transition-colors",
+								isDone ? "bg-emerald-50/30 dark:bg-emerald-950/10" : "hover:bg-slate-50/50 dark:hover:bg-slate-800/30"
+							)}
+							style={{ gridTemplateColumns: "2fr 120px 80px 80px" }}
+						>
+							<div className="flex items-center gap-3 min-w-0">
+								<div className={cn(
+									"w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors",
+									isDone ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600" : "bg-slate-100 dark:bg-slate-800 text-slate-400"
+								)}>
+									<Package size={14} />
+								</div>
+								<div className="min-w-0">
+									<p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{p.name}</p>
+									<p className="text-[10px] text-slate-400 truncate">{p.category || "—"}</p>
+								</div>
+							</div>
+
+							<div className="text-center">
+								<motion.button type="button" onClick={() => handleCopySku(p.sku)}
+									whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+									className={cn("inline-flex items-center gap-1 font-mono text-[10px] px-2 py-1 font-bold cursor-pointer rounded-md")}
+									style={{ backgroundColor: "#ff8b0014", color: "#ff8b00" }}>
+									{isCopied ? (
+										<motion.span key="copied" initial={{ opacity: 0, y: -3 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-1 text-emerald-600">
+											<CheckCircle2 size={9} /> {t("common.copied")}
+										</motion.span>
+									) : (
+										<motion.span key="sku" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{p.sku}</motion.span>
+									)}
+								</motion.button>
+							</div>
+
+							<div className="flex justify-center">
+								<div className={cn(
+									"px-2 py-0.5 rounded-lg text-[11px] font-black tabular-nums",
+									isDone ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700" : "bg-slate-100 dark:bg-slate-800 text-slate-600"
+								)}>
+									{p.shippingScannedQuantity} / {p.quantity}
+								</div>
+							</div>
+
+							<div className="flex justify-center">
+								{isDone ? (
+									<div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-sm shadow-emerald-200">
+										<CheckCircle2 size={12} className="text-white" />
+									</div>
+								) : (
+									<div className="w-5 h-5 rounded-full border-2 border-slate-200 dark:border-slate-700" />
+								)}
+							</div>
+						</motion.div>
+					);
+				})}
+			</div>
+		</div>
+	);
+}
+
+function OutgoingScanLogBoxes({ successCount, errorCount }) {
+	const t = useTranslations("warehouse.preparation");
+
+	return (
+		<div className="grid grid-cols-2 gap-4">
+			<div className={cn("p-4 border transition-all", DS.radius, "bg-emerald-50/40 border-emerald-100 dark:bg-emerald-950/10 dark:border-emerald-900/30")}>
+				<div className="flex items-center gap-3 mb-1">
+					<div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-200/50">
+						<CheckCircle2 size={16} className="text-white" />
+					</div>
+					<p className="text-[11px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">{t("scan.scannedOrders")}</p>
+				</div>
+				<p className="text-2xl font-black text-emerald-900 dark:text-emerald-100 tabular-nums ps-11">{successCount}</p>
+			</div>
+
+			<div className={cn("p-4 border transition-all", DS.radius, "bg-red-50/40 border-red-100 dark:bg-red-950/10 dark:border-red-900/30")}>
+				<div className="flex items-center gap-3 mb-1">
+					<div className="w-8 h-8 rounded-xl bg-red-500 flex items-center justify-center shadow-lg shadow-red-200/50">
+						<AlertCircle size={16} className="text-white" />
+					</div>
+					<p className="text-[11px] font-black text-red-700 dark:text-red-400 uppercase tracking-wider">{t("scan.failedScans")}</p>
+				</div>
+				<p className="text-2xl font-black text-red-900 dark:text-red-100 tabular-nums ps-11">{errorCount}</p>
+			</div>
+		</div>
+	);
+}
+
+// ─────────────────────────────────────────────────────────────
+// OUTGOING ORDERS SLIDE PANEL (For Picked Orders -> Manifest)
+// ─────────────────────────────────────────────────────────────
+function OutgoingOrdersSlidePanel({ open, onClose, selectedCarrier, onManifestCreated }) {
+	const t = useTranslations("warehouse.outgoing");
+	const locale = useLocale();
+	const isRtl = locale !== "en";
+
+	const [orders, setOrders] = useState([]);
+	const [loading, setLoading] = useState(false);
+	const [selectedOrderIds, setSelectedOrderIds] = useState([]);
+	const [creatingManifest, setCreatingManifest] = useState(false);
+
+	const fetchPickedOrders = useCallback(async () => {
+		// if (!selectedCarrier || selectedCarrier === "all") return;
+		try {
+			setLoading(true);
+			const res = await api.get('/orders', {
+				params: {
+					status: 'packed',
+					shippingCompanyId: selectedCarrier,
+					limit: 100
+				}
+			});
+			setOrders(res.data?.records || []);
+			setSelectedOrderIds([]);
+		} catch (error) {
+			console.error("Failed to fetch picked orders", error);
+		} finally {
+			setLoading(false);
+		}
+	}, [selectedCarrier]);
+
+	useEffect(() => {
+		if (open) fetchPickedOrders();
+	}, [open, fetchPickedOrders]);
+
+	const toggleSelect = (id) => {
+		setSelectedOrderIds(prev =>
+			prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+		);
+	};
+
+	const handleCreateManifest = async () => {
+		if (selectedOrderIds.length === 0) return;
+		try {
+			setCreatingManifest(true);
+			await api.post('/orders/manifests', {
+				shippingCompanyId: Number(selectedCarrier),
+				orderIds: selectedOrderIds,
+				type: "SHIPPING"
+			});
+			toast.success(t("scan.messages.manifestCreated") || "Manifest created successfully");
+			onManifestCreated();
+			onClose();
+		} catch (error) {
+			console.error("Failed to create manifest", error);
+			toast.error(error.response?.data?.message || "Failed to create manifest");
+		} finally {
+			setCreatingManifest(false);
+		}
+	};
+
+	return (
+		<AnimatePresence>
+			{open && (
+				<>
+					<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+						className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[1000]" onClick={onClose} />
+					<motion.div
+						initial={{ x: isRtl ? "-100%" : "100%" }}
+						animate={{ x: 0 }}
+						exit={{ x: isRtl ? "-100%" : "100%" }}
+						transition={{ type: "spring", damping: 28, stiffness: 300 }}
+						className="fixed top-0 ltr:right-0 rtl:left-0 h-full w-96 bg-white dark:bg-slate-900 shadow-2xl z-[1000000] flex flex-col"
+						dir="rtl"
+					>
+						<PanelHeader
+							icon={Layers}
+							pretitle={t("scan.ordersCard.carrier")}
+							title={t("scan.confirmOutgoing")}
+							right={<HeaderIconBtn onClick={onClose}><X size={13} className="text-white" /></HeaderIconBtn>}
+						>
+							<HeaderBadge><Package size={11} />{orders.length} {t("scan.readyOrders", { count: orders.length })}</HeaderBadge>
+						</PanelHeader>
+
+						<div className="flex-1 overflow-y-auto p-4 space-y-3">
+							{loading ? (
+								<div className="flex flex-col items-center justify-center py-12 space-y-3">
+									<Loader2 className="animate-spin text-primary" size={24} />
+									<p className="text-xs text-slate-400 font-medium tracking-wide">جاري التحميل...</p>
+								</div>
+							) : (
+								orders.map((order) => {
+									const isSelected = selectedOrderIds.includes(order.id);
+									return (
+										<motion.div key={order.id} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+											onClick={() => toggleSelect(order.id)}
+											className={cn(
+												"p-3 border cursor-pointer transition-all flex items-center gap-3",
+												DS.radius,
+												isSelected
+													? "border-primary/40 bg-primary/5 shadow-sm"
+													: "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300"
+											)}
+										>
+											<Checkbox checked={isSelected} />
+											<div className="flex-1 min-w-0">
+												<div className="flex items-center justify-between mb-0.5">
+													<span className="font-mono font-black text-sm" style={{ color: DS.primary }}>{order.orderNumber}</span>
+													<span className="text-[10px] font-bold text-slate-400">{new Date(order.created_at).toLocaleDateString()}</span>
+												</div>
+												<p className="text-xs text-slate-600 dark:text-slate-300 font-medium truncate">{order.customerName}</p>
+												<p className="text-[10px] text-slate-400 truncate">{order.city} · {order.items?.length} {t("scan.table.products")}</p>
+											</div>
+										</motion.div>
+									);
+								})
+							)}
+							{!loading && orders.length === 0 && (
+								<div className="text-center py-16">
+									<div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center mx-auto mb-4 border border-slate-100 dark:border-slate-700/50">
+										<Package size={32} className="text-slate-300 dark:text-slate-600" />
+									</div>
+									<p className="text-slate-400 text-sm font-medium">{t("scan.emptyOrders")}</p>
+								</div>
+							)}
+						</div>
+
+						{orders.length > 0 && (
+							<div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+								<button
+									onClick={handleCreateManifest}
+									disabled={selectedOrderIds.length === 0 || creatingManifest}
+									className="w-full h-11 rounded-xl bg-primary text-white font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50 transition-all active:scale-95"
+								>
+									{creatingManifest ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+									{t("scan.confirmOutgoing")} ({selectedOrderIds.length})
+								</button>
+							</div>
+						)}
+					</motion.div>
+				</>
+			)}
+		</AnimatePresence>
+	);
+}
+
 // ─────────────────────────────────────────────────────────────
 // SCAN SUBTAB
 // ─────────────────────────────────────────────────────────────
 export function ScanOutgoingSubtab({
-	orders,
 	updateOrder,
 	pushOp,
-	inventory,
-	updateInventory,
-	addDeliveryFile,
+	fetchStats,
+	setSubtab
 }) {
 	const t = useTranslations("warehouse.outgoing");
-	const preparedOrders = useMemo(
-		() => orders.filter((o) => o.status === STATUS.PREPARED),
-		[orders]
-	);
 
-	const defaultCarrier = useMemo(() => {
-		return CARRIERS.find((c) => preparedOrders.some((o) => o.carrier === c)) || CARRIERS[0] || "";
-	}, [preparedOrders]);
-
-	const [selectedCarrier, setSelectedCarrier] = useState(defaultCarrier);
+	const [selectedCarrier, setSelectedCarrier] = useState("all");
+	const [scanStep, setScanStep] = useState("order"); // "order" | "items"
 	const [scanInput, setScanInput] = useState("");
-	const [scannedOrders, setScannedOrders] = useState([]);
+	const [activeOrder, setActiveOrder] = useState(null);
+	const [localProducts, setLocalProducts] = useState([]);
+	const [availableForCarrier, setAvailableForCarrier] = useState([]);
+	const [scannedOrdersCount, setScannedOrdersCount] = useState(0);
 	const [wrongScans, setWrongScans] = useState(0);
-	const [wrongScanLogs, setWrongScanLogs] = useState([]);
 	const [lastHighlight, setLastHighlight] = useState(null);
-	const [saving, setSaving] = useState(false);
-	const [savedSuccess, setSavedSuccess] = useState(false);
 	const [lastScanMsg, setLastScanMsg] = useState(null);
 	const [scanState, setScanState] = useState("idle");
 	const [soundEnabled, setSoundEnabled] = useState(true);
+	const [isFetchingOrder, setIsFetchingOrder] = useState(false);
+	const [loadingOrders, setLoadingOrders] = useState(false);
+	const [panelOpen, setPanelOpen] = useState(false);
 	const scanRef = useRef(null);
 
-	const availableForCarrier = useMemo(
-		() => preparedOrders.filter((o) => !selectedCarrier || o.carrier === selectedCarrier),
-		[preparedOrders, selectedCarrier]
-	);
+	const fetchAvailableOrders = useCallback(async () => {
+		// if (selectedCarrier === "all" || selectedCarrier === "none") {
+		// 	setAvailableForCarrier([]);
+		// 	return;
+		// }
+		try {
+			setLoadingOrders(true);
+			const res = await api.get('/orders', {
+				params: {
+					status: 'ready',
+					shippingCompanyId: selectedCarrier,
+					limit: 100
+				}
+			});
+			setAvailableForCarrier(res.data?.records || []);
+		} catch (error) {
+			console.error("Failed to fetch available orders", error);
+		} finally {
+			setLoadingOrders(false);
+		}
+	}, [selectedCarrier]);
+
+	useEffect(() => {
+		fetchAvailableOrders();
+	}, [fetchAvailableOrders]);
 
 	const availableItemsCount = useMemo(
 		() =>
 			availableForCarrier.reduce(
 				(sum, order) =>
 					sum +
-					(order.products?.reduce((itemSum, p) => itemSum + (Number(p.requestedQty) || 0), 0) || 0),
+					(order.items?.reduce((itemSum, p) => itemSum + (Number(p.quantity) || 0), 0) || 0),
 				0
 			),
 		[availableForCarrier]
 	);
-
-	useEffect(() => {
-		setTimeout(() => scanRef.current?.focus(), 120);
-	}, [selectedCarrier]);
 
 	const showFeedback = useCallback((type, message) => {
 		setLastScanMsg({ success: type === "success", message });
@@ -1991,136 +2084,138 @@ export function ScanOutgoingSubtab({
 		}, 2200);
 	}, []);
 
+	const fetchActiveOrder = useCallback(async (idOrCode) => {
+		try {
+			setIsFetchingOrder(true);
+			const res = await api.get(`/orders/number/${idOrCode}`);
+			const order = res.data;
+
+			// Validation: order must be prepared and belong to selected carrier
+			if (!order || order.status?.code !== 'ready') {
+				if (soundEnabled) playBeep("error");
+				showFeedback("error", t("scan.errors.notFoundOrWrongCarrier"));
+				setScanInput("");
+				return;
+			}
+
+			setActiveOrder(order);
+			setLocalProducts((order.items || []).map((p) => ({
+				sku: p.variant?.sku || p.sku,
+				name: p.variant?.product?.name || p.name,
+				shippingScannedQuantity: p.shippingScannedQuantity || 0,
+				quantity: p.quantity
+			})));
+			setScanStep("items");
+			setScanInput("");
+			if (soundEnabled) playBeep("success");
+			showFeedback("success", t("scan.success.addedOrder", { code: order.orderNumber }));
+		} catch (error) {
+			if (soundEnabled) playBeep("error");
+			showFeedback("error", t("scan.errors.notFound", { code: idOrCode }));
+			setScanInput("");
+		} finally {
+			setIsFetchingOrder(false);
+		}
+	}, [selectedCarrier, soundEnabled, showFeedback, t]);
+
 	const handleCarrierChange = (val) => {
 		setSelectedCarrier(val);
-		setScannedOrders([]);
-		setWrongScans(0);
-		setWrongScanLogs([]);
+		setScanStep("order");
+		setActiveOrder(null);
+		setLocalProducts([]);
 		setLastScanMsg(null);
 		setLastHighlight(null);
 		setScanState("idle");
 	};
 
-	const handleScan = () => {
-		const code = scanInput.trim();
+	const resetCurrentOrder = useCallback(() => {
+		setScanStep("order");
 		setScanInput("");
-		if (!code) return;
+		setActiveOrder(null);
+		setLocalProducts([]);
+		setTimeout(() => scanRef.current?.focus(), 100);
+	}, []);
 
-		const nowTime = formatTimeForLogs();
+	const handleScan = async () => {
+		const val = scanInput.trim();
+		if (!val) return;
 
-		if (scannedOrders.find((o) => o.code === code)) {
-			if (soundEnabled) playBeep("error");
-			setWrongScans((p) => p + 1);
-			setWrongScanLogs((prev) => [
-				...prev,
-				{ code, reason: t("scan.errors.alreadyScanned"), time: nowTime },
-			]);
-			setLastHighlight({ code, ok: false });
-			showFeedback("error", t("scan.errors.alreadyScannedWithCode", { code }));
-			setTimeout(() => setLastHighlight(null), 2500);
-			return;
-		}
+		if (scanStep === "order") {
+			await fetchActiveOrder(val);
+		} else {
+			const productIndex = localProducts.findIndex((p) => p.sku === val);
+			if (productIndex === -1) {
+				if (soundEnabled) playBeep("error");
+				setWrongScans((p) => p + 1);
+				showFeedback("error", t("scan.errors.notFound", { code: val }));
+				setScanInput("");
+				return;
+			}
 
-		const order = availableForCarrier.find((o) => o.code === code);
+			const product = localProducts[productIndex];
+			if (product.shippingScannedQuantity >= product.quantity) {
+				if (soundEnabled) playBeep("error");
+				showFeedback("error", t("scan.errors.alreadyScannedWithCode", { code: product.sku }));
+				setScanInput("");
+				return;
+			}
 
-		if (!order) {
-			if (soundEnabled) playBeep("error");
-			setWrongScans((p) => p + 1);
-			setWrongScanLogs((prev) => [
-				...prev,
-				{
-					code,
-					reason: t("scan.errors.notFoundOrWrongCarrier"),
-					time: nowTime,
-				},
-			]);
-			setLastHighlight({ code: null, ok: false });
-			showFeedback("error", t("scan.errors.notFound", { code }));
-			setTimeout(() => setLastHighlight(null), 2500);
-			return;
-		}
+			try {
+				const res = await api.post(`/orders/${activeOrder.id}/scan-shipping/${val}`);
+				const { scanned, success, message, isShippingReady } = res.data;
 
-		if (soundEnabled) playBeep("success");
-		setScannedOrders((prev) => [...prev, order]);
-		setLastHighlight({ code, ok: true });
-		showFeedback("success", t("scan.success.addedOrder", { code }));
-		setTimeout(() => setLastHighlight(null), 2500);
-		setTimeout(() => scanRef.current?.focus(), 50);
-	};
-
-	const handleSave = async () => {
-		if (scannedOrders.length === 0 || !selectedCarrier) return;
-
-		setSaving(true);
-		try {
-			const now = new Date().toISOString().slice(0, 16).replace("T", " ");
-			const codes = scannedOrders.map((o) => o.code);
-
-			codes.forEach((code) => {
-				const order = scannedOrders.find((o) => o.code === code);
-				updateOrder(code, { status: STATUS.SHIPPED, shippedAt: now });
-
-				if (inventory && updateInventory) {
-					updateInventory(deductInventoryForShipment(order.products, inventory));
+				if (!success) {
+					if (soundEnabled) playBeep("error");
+					setWrongScans((p) => p + 1);
+					showFeedback("error", message || t("scan.errors.notFound", { code: val }));
+					setScanInput("");
+					return;
 				}
 
-				pushOp({
-					id: `OP-${Date.now()}-${code}`,
-					operationType: "SHIP_ORDER",
-					orderCode: code,
-					carrier: selectedCarrier,
-					employee: "System",
-					result: "SUCCESS",
-					details: t("scan.shippedVia", { carrier: selectedCarrier }),
-					createdAt: now,
-				});
-			});
+				const updated = localProducts.map((p, i) =>
+					i === productIndex ? { ...p, shippingScannedQuantity: scanned } : p
+				);
+				setLocalProducts(updated);
+				setLastHighlight({ code: val, ok: true });
+				if (soundEnabled) playBeep("success");
+				showFeedback("success", t("scan.success.addedOrder", { code: val }));
+				setScanInput("");
 
-			addDeliveryFile({
-				id: `DEL-${Date.now()}`,
-				carrier: selectedCarrier,
-				type: "outgoing",
-				orderCodes: codes,
-				createdAt: now,
-				createdBy: "System",
-				filename: `delivery_${selectedCarrier}_${now.split(" ")[0].replace(/-/g, "")}.pdf`,
-				ordersSnapshot: scannedOrders,
-				wrongScanLogs,
-			});
-
-			setScannedOrders([]);
-			setWrongScans(0);
-			setWrongScanLogs([]);
-			setLastHighlight(null);
-			setSavedSuccess(true);
-			setTimeout(() => setSavedSuccess(false), 3000);
-		} finally {
-			setSaving(false);
+				if (isShippingReady) {
+					setScannedOrdersCount(prev => prev + 1);
+					toast.success(t("scan.success.orderComplete") || "Order fully scanned and ready for shipping");
+					fetchAvailableOrders();
+					fetchStats?.();
+					setTimeout(() => {
+						resetCurrentOrder();
+					}, 1500);
+				}
+			} catch (error) {
+				if (soundEnabled) playBeep("error");
+				setWrongScans((p) => p + 1);
+				showFeedback("error", error.response?.data?.message || t("scan.errors.notFound", { code: val }));
+				setScanInput("");
+			}
 		}
 	};
 
-	const scannedCount = scannedOrders.length;
-	const meta = selectedCarrier ? getCarrierMeta(selectedCarrier) : null;
+	const isItemsMode = scanStep === "items";
+	const meta = selectedCarrier !== "all" ? getCarrierMeta(selectedCarrier) : null;
 
 	return (
 		<div className="space-y-4" dir="rtl">
 			<Panel>
 				<PanelHeader
 					icon={ScanLine}
-					pretitle={t("scan.subtitle")}
-					title={t("scan.title")}
+					pretitle={!isItemsMode ? t("scan.subtitle") : `${t("scan.orderLabel")}: ${activeOrder?.orderNumber}`}
+					title={!isItemsMode ? t("scan.title") : t("scan.scanItemsTitle")}
 					right={
 						<>
-							{selectedCarrier && (
-								<HeaderBadge>
-									<Truck size={12} />
-									{selectedCarrier}
-								</HeaderBadge>
-							)}
-							<HeaderBadge>
-								<Hash size={12} />
-								{scannedCount}/{availableForCarrier.length}
-							</HeaderBadge>
+							<HeaderIconBtn onClick={() => setSoundEnabled(v => !v)}>
+								{soundEnabled ? <Volume2 size={13} className="text-white" /> : <VolumeX size={13} className="text-white/60" />}
+							</HeaderIconBtn>
+							<HeaderBadge onClick={() => setPanelOpen(true)}><Layers size={12} />{t("scan.ordersBtn")}</HeaderBadge>
+							{isItemsMode && <HeaderBadge onClick={resetCurrentOrder}><X size={12} />{t("scan.cancelBtn")}</HeaderBadge>}
 						</>
 					}
 				>
@@ -2137,20 +2232,27 @@ export function ScanOutgoingSubtab({
 				</PanelHeader>
 
 				<div className="px-4 pt-8 py-5 space-y-4">
-					<OutgoingScanInputBar
-						inputRef={scanRef}
-						value={scanInput}
-						onChange={(e) => setScanInput(e.target.value)}
-						onScan={handleScan}
-						isSuccess={scanState === "success"}
-						isError={scanState === "error"}
-						placeholder={t("scan.placeholder")}
-						selectedCarrier={selectedCarrier}
-						onCarrierChange={handleCarrierChange}
-						carriers={CARRIERS}
-						soundEnabled={soundEnabled}
-						onToggleSound={() => setSoundEnabled((v) => !v)}
-					/>
+					<div className="relative">
+						<OutgoingScanInputBar
+							inputRef={scanRef}
+							value={scanInput}
+							onChange={(e) => setScanInput(e.target.value)}
+							onScan={handleScan}
+							isSuccess={scanState === "success"}
+							isError={scanState === "error"}
+							placeholder={!isItemsMode ? t("scan.placeholder") : t("scan.scanItemsPlaceholder", { code: activeOrder?.orderNumber })}
+							selectedCarrier={selectedCarrier}
+							onCarrierChange={handleCarrierChange}
+							soundEnabled={soundEnabled}
+							onToggleSound={() => setSoundEnabled((v) => !v)}
+							disabled={isFetchingOrder}
+						/>
+						{isFetchingOrder && (
+							<div className="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-slate-900/50 rounded-xl z-10">
+								<Loader2 className="animate-spin text-primary" size={24} />
+							</div>
+						)}
+					</div>
 
 					<AnimatePresence>
 						{lastScanMsg && (
@@ -2177,11 +2279,11 @@ export function ScanOutgoingSubtab({
 						)}
 					</AnimatePresence>
 
-					<OutgoingScanLogBoxes successCount={scannedCount} errorCount={wrongScans} />
+					<OutgoingScanLogBoxes successCount={scannedOrdersCount} errorCount={wrongScans} />
 				</div>
 			</Panel>
 
-			{selectedCarrier && (
+			{selectedCarrier !== "all" && (
 				<>
 					<Panel>
 						<div
@@ -2189,26 +2291,6 @@ export function ScanOutgoingSubtab({
 							style={{ background: DS.cardGradient, ...DS.scanline }}
 						>
 							<div className="relative flex flex-wrap items-center gap-x-4 gap-y-2">
-								<div className="relative w-11 h-11 flex-shrink-0">
-									<ArcRing
-										pct={
-											availableForCarrier.length === 0
-												? 0
-												: Math.round((scannedCount / availableForCarrier.length) * 100)
-										}
-										color={DS.primary}
-										trackColor="rgba(203,213,225,0.5)"
-									/>
-									<div className="absolute inset-0 flex items-center justify-center">
-										<span className="text-[9px] font-black tabular-nums" style={{ color: DS.primary }}>
-											{availableForCarrier.length === 0
-												? 0
-												: Math.round((scannedCount / availableForCarrier.length) * 100)}
-											%
-										</span>
-									</div>
-								</div>
-
 								<div className="min-w-0">
 									<p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">
 										{t("scan.ordersCard.carrier")}
@@ -2243,64 +2325,41 @@ export function ScanOutgoingSubtab({
 										{availableItemsCount}
 									</p>
 								</div>
-
-								<div className="ms-auto flex items-center gap-3">
-									<AnimatePresence>
-										{savedSuccess && (
-											<motion.span
-												initial={{ opacity: 0, x: 6 }}
-												animate={{ opacity: 1, x: 0 }}
-												exit={{ opacity: 0 }}
-												className="text-xs font-semibold text-emerald-600 flex items-center gap-1"
-											>
-												<CheckCircle2 size={12} />
-												{t("scan.saved")}
-											</motion.span>
-										)}
-									</AnimatePresence>
-
-									{scannedCount > 0 && (
-										<motion.button
-											onClick={handleSave}
-											disabled={saving}
-											whileHover={{ scale: 1.02 }}
-											whileTap={{ scale: 0.97 }}
-											className="h-9 px-4 rounded-xl flex items-center gap-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-500 shadow-[0_2px_10px_-2px_rgba(16,185,129,0.5)] hover:shadow-[0_4px_14px_-2px_rgba(16,185,129,0.6)] disabled:opacity-60 transition-shadow duration-150"
-										>
-											{saving ? (
-												<Loader2 size={13} className="animate-spin" />
-											) : (
-												<Save size={13} />
-											)}
-											{t("scan.confirmOutgoing")}
-											<span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-[10px] font-black">
-												{scannedCount}
-											</span>
-										</motion.button>
-									)}
-								</div>
 							</div>
 						</div>
 
-						<OrdersList
-							orders={availableForCarrier}
-							scannedOrders={scannedOrders}
-							lastHighlight={lastHighlight}
-						/>
+						{loadingOrders ? (
+							<div className="flex flex-col items-center justify-center py-20 space-y-4">
+								<Loader2 className="animate-spin text-primary" size={32} />
+								<p className="text-sm font-bold text-slate-400 tracking-wide animate-pulse">جاري تحميل الطلبات الجاهزة...</p>
+							</div>
+						) : isItemsMode && activeOrder ? (
+							<ScannedOrderTable
+								order={activeOrder}
+								localProducts={localProducts}
+								justScanned={lastHighlight?.ok ? lastHighlight.code : null}
+							/>
+						) : (
+							<OrdersList
+								orders={availableForCarrier}
+								scannedOrders={[]}
+								lastHighlight={lastHighlight}
+								onSelectOrder={(order) => fetchActiveOrder(order.orderNumber)}
+							/>
+						)}
 					</Panel>
-
-					{scannedCount > 0 && (
-						<motion.div
-							initial={{ opacity: 0 }}
-							animate={{ opacity: 1 }}
-							className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-blue-50/80 border border-blue-200/50 text-blue-700"
-						>
-							<Info size={13} className="flex-shrink-0 mt-0.5" />
-							<p className="text-[12px]">{t("scan.saveNote")}</p>
-						</motion.div>
-					)}
 				</>
 			)}
+
+			<OutgoingOrdersSlidePanel
+				open={panelOpen}
+				onClose={() => setPanelOpen(false)}
+				selectedCarrier={selectedCarrier}
+				onManifestCreated={() => {
+					fetchStats?.();
+					setSubtab("files");
+				}}
+			/>
 		</div>
 	);
 }
@@ -2309,84 +2368,99 @@ export function ScanOutgoingSubtab({
 // FILES SUBTAB
 // ─────────────────────────────────────────────────────────────
 function FileSummaryCell({ row }) {
-  const t = useTranslations("warehouse.outgoing");
-  const totalOrders = row.orderCodes?.length || 0;
-  const totalItems =
-    row.ordersSnapshot?.reduce(
-      (sum, order) =>
-        sum + (order.products?.reduce((itemSum, p) => itemSum + (Number(p.requestedQty) || 0), 0) || 0),
-      0
-    ) || 0;
+	const t = useTranslations("warehouse.outgoing");
+	const totalOrders = row.orderCodes?.length || 0;
+	const totalItems =
+		row.ordersSnapshot?.reduce(
+			(sum, order) =>
+				sum + (order.products?.reduce((itemSum, p) => itemSum + (Number(p.quantity) || 0), 0) || 0),
+			0
+		) || 0;
 
-  return (
-    <div className="flex items-center gap-2">
-      {/* Orders badge */}
-      <div className="flex items-center gap-1">
-        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">
-          {t("files.summary.orders")}
-        </span>
-        <span
-          className="text-xs font-black px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800"
-          style={{ color: DS.primary }}
-        >
-          {totalOrders}
-        </span>
-      </div>
+	return (
+		<div className="flex items-center gap-2">
+			{/* Orders badge */}
+			<div className="flex items-center gap-1">
+				<span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">
+					{t("files.summary.orders")}
+				</span>
+				<span
+					className="text-xs font-black px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800"
+					style={{ color: DS.primary }}
+				>
+					{totalOrders}
+				</span>
+			</div>
 
-      {/* Divider */}
-      <span className="text-slate-300 dark:text-slate-600 text-xs">·</span>
+			{/* Divider */}
+			<span className="text-slate-300 dark:text-slate-600 text-xs">·</span>
 
-      {/* Items badge */}
-      <div className="flex items-center gap-1">
-        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">
-          {t("files.summary.items")}
-        </span>
-        <span className="text-xs font-black px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
-          {totalItems}
-        </span>
-      </div>
-    </div>
-  );
+			{/* Items badge */}
+			<div className="flex items-center gap-1">
+				<span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">
+					{t("files.summary.items")}
+				</span>
+				<span className="text-xs font-black px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
+					{totalItems}
+				</span>
+			</div>
+		</div>
+	);
 }
 
 function OutgoingFilesSubtab({
-	deliveryFiles,
-	orders,
 	resetToken,
 }) {
 	const t = useTranslations("warehouse.outgoing");
 	const [search, setSearch] = useState("");
+	const { debouncedValue: debouncedSearch } = useDebounce({ value: search, delay: 350 })
 	const [filterCarrier, setFilterCarrier] = useState("all");
+	const [filterIsPrinted, setFilterIsPrinted] = useState("false");
 	const [downloading, setDownloading] = useState({});
 	const [downloadingWrongLog, setDownloadingWrongLog] = useState({});
-	const [page, setPage] = useState({ current_page: 1, per_page: 12 });
+
+	const [pager, setPager] = useState({
+		total_records: 0,
+		current_page: 1,
+		per_page: 12,
+		records: [],
+	});
+	const [loading, setLoading] = useState(false);
+
+	const fetchManifests = useCallback(async (page = pager.current_page, per_page = pager.per_page) => {
+		try {
+			setLoading(true);
+			const params = {
+				page,
+				limit: per_page,
+				search: debouncedSearch,
+				shippingCompanyId: filterCarrier === "all" ? undefined : filterCarrier,
+				isPrinted: filterIsPrinted === "all" ? undefined : filterIsPrinted,
+			};
+			const res = await api.get('/orders/manifests', { params });
+			setPager({
+				total_records: res.data.total_records,
+				current_page: res.data.current_page || page,
+				per_page: res.data.per_page || per_page,
+				records: res.data.records,
+				type: "SHIPPING"
+			});
+		} catch (error) {
+			console.error("Error fetching manifests", error);
+		} finally {
+			setLoading(false);
+		}
+	}, [debouncedSearch, filterIsPrinted, filterCarrier, pager.current_page, pager.per_page]);
 
 	useEffect(() => {
-		setSearch("");
-		setFilterCarrier("all");
-		setPage({ current_page: 1, per_page: 12 });
-	}, [resetToken]);
+		fetchManifests(1, pager.per_page);
+	}, [debouncedSearch, resetToken]);
 
-	const filtered = useMemo(() => {
-		let base = deliveryFiles;
-		const q = search.trim().toLowerCase();
 
-		if (q) {
-			base = base.filter((f) =>
-				[f.id, f.carrier, f.filename].some((x) =>
-					String(x || "")
-						.toLowerCase()
-						.includes(q)
-				)
-			);
-		}
+	const applyFilters = () => {
+		fetchManifests(1, pager.per_page);
+	};
 
-		if (filterCarrier !== "all") {
-			base = base.filter((f) => f.carrier === filterCarrier);
-		}
-
-		return base;
-	}, [deliveryFiles, search, filterCarrier]);
 
 	const outgoingPdfLabels = {
 		title: t("pdf.outgoing.title"),
@@ -2416,28 +2490,86 @@ function OutgoingFilesSubtab({
 		totalFailedAttempts: t("pdf.wrongLog.totalFailedAttempts"),
 		attemptUnit: t("pdf.wrongLog.attemptUnit"),
 		scannedCode: t("pdf.wrongLog.scannedCode"),
+		orderNumber: t("pdf.wrongLog.orderNumber"),
 		failReason: t("pdf.wrongLog.failReason"),
 		time: t("pdf.wrongLog.time"),
+		reasons: {
+			SKU_NOT_IN_ORDER: t("scan.reasons.SKU_NOT_IN_ORDER"),
+			ALREADY_FULLY_SCANNED: t("scan.reasons.ALREADY_FULLY_SCANNED"),
+			INVALID_STATUS: t("scan.reasons.INVALID_STATUS"),
+			OTHER: t("scan.reasons.OTHER"),
+		}
 	};
 
-	const handleDownload = async (file) => {
-		setDownloading((p) => ({ ...p, [file.id]: true }));
-		await new Promise((r) => setTimeout(r, 800));
-		const snap = file.ordersSnapshot || orders.filter((o) => file.orderCodes.includes(o.code));
-		openPrintWindow(
-			buildOutgoingPDF(snap, file.carrier, file.createdBy, file.createdAt, outgoingPdfLabels)
-		);
-		setDownloading((p) => ({ ...p, [file.id]: false }));
+	const handleDownload = async (row) => {
+		setDownloading((p) => ({ ...p, [row.id]: true }));
+		try {
+			const res = await api.get(`/orders/manifests/${row.id}`);
+			const manifest = res.data;
+
+			// Prepare snapshot for PDF
+			const ordersSnapshot = manifest.orders.map(o => ({
+				code: o.orderNumber,
+				customer: o.customerName,
+				city: o.city,
+				carrier: manifest.shippingCompany?.name,
+				products: o.items.map(i => ({
+					sku: i.variant?.sku || i.sku,
+					name: i.variant?.product?.name || i.name,
+					quantity: i.quantity
+				})),
+				trackingNumber: o.trackingNumber
+			}));
+
+			openPrintWindow(
+				buildOutgoingPDF(
+					ordersSnapshot,
+					manifest.shippingCompany?.name || "-",
+					manifest.changedByUser?.name || "System",
+					new Date(manifest.createdAt).toLocaleString(),
+					outgoingPdfLabels
+				)
+			);
+
+			// Mark as printed
+			await api.patch(`/orders/${row.id}/mark-manifest-printed`);
+			fetchManifests();
+		} catch (error) {
+			console.error("Error downloading manifest", error);
+			toast.error(t("messages.errorDownloadingManifest") || "Error downloading manifest");
+		} finally {
+			setDownloading((p) => ({ ...p, [row.id]: false }));
+		}
 	};
 
-	const handleDownloadWrongLog = async (file) => {
-		setDownloadingWrongLog((p) => ({ ...p, [file.id]: true }));
-		await new Promise((r) => setTimeout(r, 600));
-		const logs = file.wrongScanLogs || [];
-		openPrintWindow(
-			buildWrongScanLogPDF(logs, file.carrier, file.createdBy, file.createdAt, wrongLogLabels)
-		);
-		setDownloadingWrongLog((p) => ({ ...p, [file.id]: false }));
+	const handleDownloadWrongLog = async (row) => {
+		setDownloadingWrongLog((p) => ({ ...p, [row.id]: true }));
+		try {
+			const res = await api.get(`/orders/${row.id}/manifests/scan-logs`);
+			const logsData = res.data || [];
+
+			const logs = logsData.map(l => ({
+				sku: l.sku || "-",
+				reason: l.reason || "-",
+				orderNumber: l.order?.orderNumber || "-",
+				time: new Date(l.createdAt).toLocaleTimeString()
+			}));
+
+			openPrintWindow(
+				buildWrongScanLogPDF(
+					logs,
+					row.shippingCompany?.name || "-",
+					row.order?.user?.name || "System",
+					new Date().toLocaleString(),
+					wrongLogLabels
+				)
+			);
+		} catch (error) {
+			console.error("Error downloading wrong log", error);
+			toast.error(t("messages.errorDownloadingLogs") || "Error downloading logs");
+		} finally {
+			setDownloadingWrongLog((p) => ({ ...p, [row.id]: false }));
+		}
 	};
 
 	const columns = useMemo(
@@ -2446,29 +2578,53 @@ function OutgoingFilesSubtab({
 				key: "id",
 				header: t("files.th.fileNumber"),
 				cell: (row) => (
-					<span className="font-mono font-bold text-primary">{row.id}</span>
+					<span className="font-mono font-bold text-primary">{row.manifestNumber}</span>
 				),
 			},
 			{
 				key: "carrier",
 				header: t("files.th.carrier"),
-				cell: (row) => <CarrierPill carrier={row.carrier} />,
+				cell: (row) => <CarrierPill carrier={row.shippingCompany?.name} />,
+			},
+			{
+				key: "isPrinted",
+				header: t("files.th.isPrinted"),
+				cell: (row) => (
+					<div className="flex items-center justify-center">
+						{row.lastPrintedAt ? (
+							<span className="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase tracking-wider">
+								{t("files.status.printed")}
+							</span>
+						) : (
+							<span className="px-2 py-1 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+								{t("files.status.notPrinted")}
+							</span>
+						)}
+					</div>
+				),
 			},
 			{
 				key: "orderCodes",
 				header: t("files.th.orders"),
-				cell: (row) => <FileSummaryCell row={row} />,
+				cell: (row) => (
+					<FileSummaryCell
+						row={row}
+						totalOrders={row.totalOrders}
+						totalItems={row.orders?.reduce((acc, o) => acc + (o.items?.reduce((sum, i) => sum + i.quantity, 0) || 0), 0) || 0}
+					/>
+				),
 			},
 			{
 				key: "createdAt",
 				header: t("files.th.createdAt"),
 				cell: (row) => (
-					<span className="text-sm text-slate-500">{row.createdAt}</span>
+					<span className="text-sm text-slate-500">{new Date(row.createdAt).toLocaleString()}</span>
 				),
 			},
 			{
 				key: "createdBy",
 				header: t("files.th.createdBy"),
+				cell: (row) => row.changedByUser?.name || "—"
 			},
 			{
 				key: "actions",
@@ -2511,7 +2667,7 @@ function OutgoingFilesSubtab({
 		<Table
 			searchValue={search}
 			onSearchChange={setSearch}
-			onSearch={() => { }}
+			onApplyFilters={applyFilters}
 			labels={{
 				searchPlaceholder: t("files.searchPlaceholder"),
 				filter: t("common.filter"),
@@ -2522,35 +2678,35 @@ function OutgoingFilesSubtab({
 				emptySubtitle: "",
 			}}
 			actions={[]}
-			hasActiveFilters={filterCarrier !== "all"}
-			onApplyFilters={() => { }}
+			hasActiveFilters={filterCarrier !== "all" || filterIsPrinted !== "all"}
+			onSearch={applyFilters}
 			filters={
-				<FilterField label={t("common.carrier")}>
-					<Select value={filterCarrier} onValueChange={setFilterCarrier}>
-						<SelectTrigger className={cn("h-10 border-border bg-background text-sm", DS.radiusSm)}>
-							<SelectValue placeholder={t("common.allCarriers")} />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">{t("common.allCarriers")}</SelectItem>
-							{CARRIERS.map((c) => (
-								<SelectItem key={c} value={c}>
-									{c}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				</FilterField>
+				<>
+					<ShippingCompanyFilter value={filterCarrier} onChange={setFilterCarrier} />
+					<FilterField label={t("files.th.isPrinted")}>
+						<Select value={filterIsPrinted} onValueChange={setFilterIsPrinted}>
+							<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm focus:border-[var(--primary)] transition-all">
+								<SelectValue placeholder={t("files.th.isPrinted")} />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">{t("common.all")}</SelectItem>
+								<SelectItem value="true">{t("files.status.printed")}</SelectItem>
+								<SelectItem value="false">{t("files.status.notPrinted")}</SelectItem>
+							</SelectContent>
+						</Select>
+					</FilterField>
+				</>
 			}
 			columns={columns}
-			data={filtered}
-			isLoading={false}
+			data={pager.records}
+			isLoading={loading}
 			pagination={{
-				total_records: filtered.length,
-				current_page: page.current_page,
-				per_page: page.per_page,
+				total_records: pager.total_records,
+				current_page: pager.current_page,
+				per_page: pager.per_page,
 			}}
 			onPageChange={({ page: p, per_page }) =>
-				setPage({ current_page: p, per_page })
+				fetchManifests(p, per_page)
 			}
 		/>
 	);
@@ -2565,17 +2721,36 @@ export default function OutgoingTab({
 	pushOp,
 	inventory,
 	updateInventory,
-	deliveryFiles,
-	addDeliveryFile,
 	subtab,
 	setSubtab,
 	resetToken,
 }) {
 	const t = useTranslations("warehouse.outgoing");
-	const prepared = orders.filter((o) => o.status === STATUS.PREPARED);
-	const shipped = orders.filter((o) => o.status === STATUS.SHIPPED);
-	const today = new Date().toISOString().split("T")[0];
-	const todayShipped = shipped.filter((o) => o.shippedAt?.startsWith(today)).length;
+
+	const [statsData, setStatsData] = useState({
+		readyForShipment: 0,
+		pickedOrders: 0,
+		shippedToday: 0,
+		totalShippedEver: 0,
+		deliveryFiles: 0,
+	});
+	const [statsLoading, setStatsLoading] = useState(true);
+
+	const fetchStats = useCallback(async () => {
+		try {
+			setStatsLoading(true);
+			const { data } = await api.get('/orders/stats/shipping-summary');
+			setStatsData(data);
+		} catch (error) {
+			console.error("Failed to fetch shipping stats", error);
+		} finally {
+			setStatsLoading(false);
+		}
+	}, []);
+
+	useEffect(() => {
+		fetchStats();
+	}, [fetchStats, resetToken]);
 
 	return (
 		<div className="space-y-4" dir="rtl">
@@ -2594,11 +2769,12 @@ export default function OutgoingTab({
 						icon={<Info size={18} />}
 					/>
 				}
+				statsLoading={statsLoading}
 				stats={[
 					{
 						id: "ready-to-ship",
 						name: t("stats.readyToShip"),
-						value: prepared.length,
+						value: statsData.readyForShipment,
 						icon: Package,
 						color: "#3b82f6",
 						sortOrder: 0,
@@ -2606,7 +2782,7 @@ export default function OutgoingTab({
 					{
 						id: "shipped-today",
 						name: t("stats.shippedToday"),
-						value: todayShipped,
+						value: statsData.shippedToday,
 						icon: Truck,
 						color: "#10b981",
 						sortOrder: 1,
@@ -2614,7 +2790,7 @@ export default function OutgoingTab({
 					{
 						id: "total-shipped",
 						name: t("stats.totalShipped"),
-						value: shipped.length,
+						value: statsData.totalShippedEver,
 						icon: CheckCircle2,
 						color: "#a855f7",
 						sortOrder: 2,
@@ -2622,15 +2798,15 @@ export default function OutgoingTab({
 					{
 						id: "delivery-files",
 						name: t("stats.deliveryFiles"),
-						value: deliveryFiles.length,
+						value: statsData.deliveryFiles,
 						icon: FileText,
 						color: "#f59e0b",
 						sortOrder: 3,
 					},
 				]}
 				items={[
-					{ id: "scan", label: t("subtabs.scan"), count: prepared.length, icon: ScanLine },
-					{ id: "files", label: t("subtabs.files"), count: deliveryFiles.length, icon: FileDown },
+					{ id: "scan", label: t("subtabs.scan"), count: statsData.readyForShipment, icon: ScanLine },
+					{ id: "files", label: t("subtabs.files"), count: statsData.deliveryFiles, icon: FileDown },
 				]}
 				active={subtab}
 				setActive={setSubtab}
@@ -2651,14 +2827,13 @@ export default function OutgoingTab({
 							pushOp={pushOp}
 							inventory={inventory}
 							updateInventory={updateInventory}
-							addDeliveryFile={addDeliveryFile}
+							fetchStats={fetchStats}
+							setSubtab={setSubtab}
 						/>
 					)}
 
 					{subtab === "files" && (
 						<OutgoingFilesSubtab
-							deliveryFiles={deliveryFiles}
-							orders={orders}
 							resetToken={resetToken}
 						/>
 					)}

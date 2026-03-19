@@ -179,7 +179,7 @@ const DEFAULT_SUBTABS = {
 const SUBTABS = {
   distribution: ["unassigned", "assigned"],
   print: ["not_printed", "printed"],
-  preparation: ["preparing", "prepared" , "scanning"],
+  preparation: ["preparing", "prepared", "scanning"],
   outgoing: ["scan", "files"],
   returns: ["scan", "files"],
   rejected: [],
@@ -251,7 +251,7 @@ export default function WarehouseFlowPage() {
   // ── Prepare view state ─────────────────────────────────────────────────────
   // On mount: check if there's a saved session and restore it automatically
   const [preparingOrders, setPreparingOrders] = useState(() => {
-     if (typeof window !== "undefined") {
+    if (typeof window !== "undefined") {
       const saved = getSavedPrepareOrders();
       if (saved && saved.length > 0) return saved;
     }
@@ -312,7 +312,6 @@ export default function WarehouseFlowPage() {
 
           {activeTab === "distribution" && (
             <DistributionTab
-              orders={orders} updateOrder={updateOrder} pushOp={pushOp}
               subtab={activeSubtab} setSubtab={setActiveSubtab}
             />
           )}
@@ -356,11 +355,11 @@ export default function WarehouseFlowPage() {
           )}
 
           {activeTab === "rejected" && (
-            <RejectedTab orders={orders} updateOrder={updateOrder} pushOp={pushOp} />
+            <RejectedTab />
           )}
 
           {activeTab === "logs" && (
-            <LogsTab opsLogs={opsLogs} orders={orders} />
+            <LogsTab orders={orders} />
           )}
 
         </motion.div>

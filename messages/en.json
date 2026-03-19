@@ -1516,6 +1516,12 @@
         "orders": "Order Management",
         "distribution": "Distribute Orders to Shipping Companies"
       },
+      "messages": {
+        "errorFetchingStatuses": "Failed to load available statuses",
+        "shipmentCreated": "Shipment for order {{orderNumber}} created successfully",
+        "shipmentFailed": "Failed to create shipment for order {{orderNumber}}",
+        "errorFetchingOrders": "An error occurred while loading orders"
+      },
       "header": {
         "howItWorks": "How it works?"
       },
@@ -1717,6 +1723,27 @@
       "howItWorks": "How it works?"
     },
     "preparation": {
+      "pdf": {
+        "wrongLog": {
+          "title": "Preparation Error Log",
+          "printDate": "Print Date",
+          "scanner": "Scanner",
+          "userName": "User",
+          "totalAttempts": "Total Attempts",
+          "carrier": "Shipping Company",
+          "date": "Date",
+          "totalFailedAttempts": "Total Failed Attempts",
+          "attemptUnit": "attempt(s)",
+          "scannedCode": "Scanned Code",
+          "orderNumber": "Order Number",
+          "failReason": "Failure Reason",
+          "time": "Time",
+          "orderInfo": "Order Information",
+          "customer": "Customer",
+          "city": "City",
+          "phone": "Phone"
+        }
+      },
       "breadcrumbs": {
         "home": "Home",
         "warehouse": "Warehouse Management",
@@ -1734,7 +1761,17 @@
         "inProgress": "In Preparation",
         "totalItems": "Total Items",
         "scanned": "Scanned",
-        "prepared": "Prepared"
+        "prepared": "Prepared",
+        "scanning": "Scanning",
+        "notStarted": "Not Started",
+        "total": "Total Orders"
+      },
+      "scan": {
+        "sku": "SKU",
+        "scannedOrders": "Scanned Orders",
+        "failedScans": "Failed Scans",
+        "successCount": "Success Count",
+        "errorCount": "Error Count"
       },
       "table": {
         "orderNumber": "Order Number",
@@ -1802,29 +1839,63 @@
         "totalShipped": "Total Shipments",
         "deliveryFiles": "Delivery Files"
       },
+      "messages": {
+        "errorDownloadingManifest": "Error downloading manifest",
+        "errorDownloadingLogs": "Error downloading scan logs",
+        "manifestCreated": "Manifest created successfully"
+      },
       "scan": {
-        "selectCarrierFirst": "Select the shipping company first",
-        "selectCarrierPlaceholder": "Select shipping company",
-        "availableOrders": "Ready orders with {carrier}: {count} order(s)",
-        "singleCarrierWarning": "Warning: Different shipping companies cannot be mixed in the same outgoing process. Make sure to select the correct shipping company.",
-        "scanOrders": "Scan Orders",
-        "inputPlaceholder": "Scan or type the order code...",
-        "scanButton": "Scan",
-        "alreadyScanned": "Order {code} has already been scanned",
-        "notFound": "Order {code} does not exist or is not available",
-        "addedSuccess": "✓ Order {code} added",
-        "scannedOrders": "Scanned Orders ({count})",
-        "confirmOutgoing": "Confirm Outgoing and Create PDF",
-        "savedSuccess": "Outgoing saved successfully!",
-        "saveNote": "On save: order statuses will be changed to \"Shipped\", stock will be deducted, and a delivery PDF file will be created.",
-        "shipOpDetails": "The order was handed over to the shipping company",
-        "th": {
-          "orderNumber": "Order Number",
+        "subtitle": "Scanning and delivery step",
+        "title": "Scan Outgoing Orders",
+        "orderLabel": "Order",
+        "scanItemsTitle": "Scan Items",
+        "ordersBtn": "Ready Orders",
+        "cancelBtn": "Cancel",
+        "selectCarrier": "Select Shipping Company",
+        "toggleSound": "Toggle Sound",
+        "placeholder": "Scan order code to register for outgoing",
+        "scanItemsPlaceholder": "Scan items for order {code}",
+        "readyOrders": "{count} order(s) ready",
+        "totalItemsCount": "{count} item(s)",
+        "saved": "Saved",
+        "confirmOutgoing": "Confirm Outgoing",
+        "saveNote": "On confirm: order statuses will be updated to \"Shipped\" and delivery file will be saved.",
+        "emptyOrders": "No ready orders",
+        "scannedBadge": "Scanned",
+        "totalProducts": "products total",
+        "shippedVia": "Shipped via {carrier}",
+        "sku": "SKU",
+        "ordersCard": {
+          "carrier": "Carrier",
+          "orders": "Orders",
+          "items": "Items"
+        },
+        "table": {
+          "order": "Order",
           "customer": "Customer",
           "city": "City",
-          "trackingCode": "Tracking Code",
+          "products": "Products",
           "total": "Total",
-          "remove": "Remove"
+          "product": "Product",
+          "qty": "Qty",
+          "price": "Price",
+          "lineTotal": "Total"
+        },
+        "success": {
+          "addedOrder": "Order {code} added",
+          "orderComplete": "Order fully scanned and ready for shipping"
+        },
+        "errors": {
+          "alreadyScanned": "Already scanned",
+          "alreadyScannedWithCode": "Order {code} already scanned",
+          "notFound": "Order {code} not found",
+          "notFoundOrWrongCarrier": "Order not found or doesn't belong to this carrier"
+        },
+        "reasons": {
+          "SKU_NOT_IN_ORDER": "Product not in order",
+          "ALREADY_FULLY_SCANNED": "Already fully scanned",
+          "INVALID_STATUS": "Invalid order status",
+          "OTHER": "Other"
         }
       },
       "files": {
@@ -1837,7 +1908,12 @@
           "orders": "Orders",
           "createdAt": "Created At",
           "createdBy": "By",
+          "isPrinted": "Print Status",
           "actions": "Actions"
+        },
+        "status": {
+          "printed": "Printed",
+          "notPrinted": "Not Printed"
         }
       },
       "common": {
@@ -1974,7 +2050,26 @@
       "limit": "Results per page",
       "export": "Export",
       "emptyTitle": "No rejected orders",
-      "retryOpDetails": "The order was returned to confirmed"
+      "retryOpDetails": "The order was returned to confirmed",
+      "detail": {
+        "orderLabel": "Order Number",
+        "rejected": "Rejected",
+        "customer": "Customer",
+        "phone": "Phone",
+        "city": "City",
+        "employee": "Employee",
+        "rejectedAt": "Rejection Date",
+        "totalItems": "Total Items",
+        "reason": "Rejection Reason",
+        "unspecified": "Not Specified",
+        "products": "Products",
+        "items": "Item",
+        "itemsCount": "Items"
+      },
+      "messages": {
+        "retrySuccess": "Order re-confirmed successfully",
+        "retryError": "Error re-confirming order"
+      }
     },
     "logs": {
       "breadcrumbs": {
@@ -2001,6 +2096,8 @@
       },
       "opTypes": {
         "orderPrepared": "Prepare Order",
+        "orderConfirmed": "Confirm Order",
+        "preparationStarted": "Preparation Started",
         "rejectOrder": "Reject Order",
         "assignCarrier": "Assign Shipping Company",
         "printLabel": "Print Label",
@@ -2824,6 +2921,11 @@
       "exportFailed": "Failed to export file"
     },
     "common": {
+      "productName": "Product Name",
+      "allProducts": "All Products",
+      "searchProducts": "Search for a product...",
+      "loading": "Loading...",
+      "noProductsFound": "No products found.",
       "na": "—",
       "id": "ID",
       "sku": "SKU",
@@ -3533,8 +3635,7 @@
       "statusUpdating": "Updating status...",
       "loading": "Loading...",
       "errorFetchingOrder": "Failed to load order data",
-      "orderNotFound": "Order not found",
-      "errorFetchingStatuses": "Failed to load available statuses"
+      "orderNotFound": "Order not found"
     },
     "details": {
       "customerInfo": "Customer Information",
@@ -3639,7 +3740,13 @@
       "shipped": "Shipped",
       "returned": "Returned",
       "no_answer": "No Answer",
-      "out_of_area": "Out of Delivery Area"
+      "out_of_area": "Out of Delivery Area",
+      "distributed": "Distributed",
+      "printed": "Printed",
+      "packed": "Packed",
+      "rejected": "Rejected",
+      "return_preparing": "Return Preparing",
+      "returnPreparing": "Return Preparing"
     },
     "statusForm": {
       "addTitle": "Add New Status",

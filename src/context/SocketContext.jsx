@@ -1,6 +1,6 @@
 import { getUser } from "@/hook/getUser";
 import api from "@/utils/api";
-import { createContext, useContext, useRef, useEffect, useState } from "react";
+import { createContext, useContext, useRef, useEffect, useState, useCallback } from "react";
 import io from "socket.io-client";
 
 
@@ -21,24 +21,35 @@ export const SocketProvider = ({ children }) => {
     // ------------------------------
     // Pub/Sub
     // ------------------------------
-    const publish = (action) => {
-        subscribers.current.forEach((cb) => cb(action));
-    };
+    const publish = useCallback(({ type, payload }) => {
+        // We create the standardized action object
+        const action = {
+            type: type,
+            payload: payload
+        };
 
+        // We iterate through every registered callback in the Map
+        subscribers.current.forEach((callback) => {
+            if (typeof callback === "function") {
+                callback(action);
+            }
+        });
+    }, []); // Empty deps because subscribers.current (Ref) doesn't change
 
-    const subscribe = (actionName, cb) => {
+    /**
+     * Subscribes a callback to a specific action name.
+     */
+    const subscribe = useCallback((actionName, cb) => {
         if (!actionName || typeof cb !== "function") return;
 
-        if (subscribers.current.has(actionName)) {
-            subscribers.current.delete(actionName);
-        }
-
+        // Set the new callback (overwrites if actionName exists)
         subscribers.current.set(actionName, cb);
 
+        // Return unsubscribe function
         return () => {
             subscribers.current.delete(actionName);
         };
-    };
+    }, []); //
 
 
     // ------------------------------
@@ -141,6 +152,14 @@ export const SocketProvider = ({ children }) => {
             });
         });
 
+        socket.on("shipment:status", (payload) => {
+
+            publish({
+                type: "SHIPMENT_STATUS",
+                payload,
+            });
+        });
+
         // Cleanup listeners
         return () => {
             socket.off("connect");
@@ -150,6 +169,7 @@ export const SocketProvider = ({ children }) => {
             socket.off("new_notification");
             socket.off("store:sync-status");
             socket.off("failed-order:update");
+            socket.off("shipment:status");
         };
     }, [user?.id, user?.accessToken]);
 

@@ -1,3 +1,5 @@
+import { Truck } from "lucide-react";
+
 // ==================== STATUS CONSTANTS ====================
 export const STATUS = {
   CONFIRMED: 'CONFIRMED',
@@ -9,8 +11,69 @@ export const STATUS = {
   PENDING: 'PENDING',
 };
 
-export const CARRIERS = ['ARAMEX', 'SMSA', 'DHL', 'BOSTA'];
-export const PAYMENT_TYPES = ['COD', 'PAID'];
+export const CARRIERS = ['ARAMEX', 'SMSA', 'DHL', 'BOSTA', "JT", "TURBO"];
+
+export const CARRIER_STYLES = {
+  ARAMEX: {
+    bg: "bg-red-50 dark:bg-red-950/20",
+    border: "border-red-200 dark:border-red-800",
+    text: "text-red-700 dark:text-red-400",
+    gradient: "from-red-500 to-red-600",
+    glow: "shadow-red-200 dark:shadow-red-900/40",
+  },
+  SMSA: {
+    bg: "bg-blue-50 dark:bg-blue-950/20",
+    border: "border-blue-200 dark:border-blue-800",
+    text: "text-blue-700 dark:text-blue-400",
+    gradient: "from-blue-500 to-blue-600",
+    glow: "shadow-blue-200 dark:shadow-blue-900/40",
+  },
+  DHL: {
+    bg: "bg-yellow-50 dark:bg-yellow-950/20",
+    border: "border-yellow-200 dark:border-yellow-800",
+    text: "text-yellow-700 dark:text-yellow-400",
+    gradient: "from-yellow-400 to-yellow-500",
+    glow: "shadow-yellow-200 dark:shadow-yellow-900/40",
+  },
+  BOSTA: {
+    bg: "bg-orange-50 dark:bg-orange-950/20",
+    border: "border-orange-200 dark:border-orange-800",
+    text: "text-orange-700 dark:text-orange-400",
+    gradient: "from-orange-500 to-orange-600",
+    glow: "shadow-orange-200 dark:shadow-orange-900/40",
+  },
+  // Added TURBO (Deep Purple/Indigo)
+  TURBO: {
+    bg: "bg-indigo-50 dark:bg-indigo-950/20",
+    border: "border-indigo-200 dark:border-indigo-800",
+    text: "text-indigo-700 dark:text-indigo-400",
+    gradient: "from-indigo-500 to-indigo-600",
+    glow: "shadow-indigo-200 dark:shadow-indigo-900/40",
+  },
+  // Added JT (J&T Express - Bright Red)
+  JT: {
+    bg: "bg-rose-50 dark:bg-rose-950/20",
+    border: "border-rose-200 dark:border-rose-800",
+    text: "text-rose-700 dark:text-rose-400",
+    gradient: "from-rose-500 to-rose-600",
+    glow: "shadow-rose-200 dark:shadow-rose-900/40",
+  },
+  NONE: {
+    bg: "bg-slate-50 dark:bg-slate-900/50",
+    border: "border-slate-200 dark:border-slate-800",
+    text: "text-slate-500 dark:text-slate-400",
+  },
+};
+
+export const CARRIER_META = {
+  ARAMEX: { icon: Truck, color: "#ef4444", ...CARRIER_STYLES.ARAMEX },
+  SMSA: { icon: Truck, color: "#3b82f6", ...CARRIER_STYLES.SMSA },
+  DHL: { icon: Truck, color: "#eab308", ...CARRIER_STYLES.DHL },
+  BOSTA: { icon: Truck, color: "#f97316", ...CARRIER_STYLES.BOSTA },
+  TURBO: { icon: Truck, color: "#6366f1", ...CARRIER_STYLES.TURBO },
+  JT: { icon: Truck, color: "#f43f5e", ...CARRIER_STYLES.JT },
+};
+export const PAYMENT_TYPES = ['code', 'paid'];
 export const PRODUCT_CONDITIONS = ['سليم', 'تالف', 'مفقود جزء'];
 export const WAREHOUSE_LOCATIONS = ['الرياض', 'جدة', 'الدمام'];
 export const REGIONS = ['الرياض', 'جدة', 'الدمام', 'مكة المكرمة', 'أبها', 'مكة'];
@@ -227,7 +290,7 @@ export const initialOrders = [
     address: 'مكة، العزيزية',
     store: 'متجر النور',
     products: [
-      { sku: 'PRD-003', name: 'ساعة ذكية', requestedQty: 2, scannedQty: 1, price: 900, shelf: 'C-02' },
+      { sku: 'PRD-003', name: 'ساعة ذكية', requestedQty: 4, scannedQty: 1, price: 900, shelf: 'C-02' },
       { sku: 'PRD-004', name: 'كاميرا', requestedQty: 1, scannedQty: 0, price: 650, shelf: 'C-04' },
     ],
     carrier: 'DHL',

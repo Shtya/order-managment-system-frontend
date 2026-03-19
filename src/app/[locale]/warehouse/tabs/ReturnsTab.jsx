@@ -3,27 +3,28 @@
 import React, { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  RefreshCw,
-  Truck,
-  Package,
-  ScanLine,
-  CheckCircle2,
-  Loader2,
+  Download,
   FileDown,
-  Calendar,
-  Info,
-  ChevronDown,
   FileText,
+  RotateCcw,
+  Package,
+  CheckCircle2,
+  ChevronDown,
+  Save,
+  Loader2,
+  Info,
+  ScanLine,
   X,
+  AlertCircle,
   Volume2,
   VolumeX,
-  AlertCircle,
   Hash,
-  MapPin,
-  User,
-  CreditCard,
+  Boxes,
+  ClipboardList,
+  Layers,
+  ArchiveRestore,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/utils/cn";
 import {
   Select,
@@ -32,18 +33,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import Table, { FilterField } from "@/components/atoms/Table";
 import PageHeader from "../../../../components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
+import { STATUS, CARRIERS, returnInventoryFromCarrier, CARRIER_STYLES, CARRIER_META } from "./data";
 import ActionButtons from "@/components/atoms/Actions";
-import {
-  STATUS,
-  CARRIERS,
-  PRODUCT_CONDITIONS,
-  returnInventoryFromCarrier,
-} from "./data";
+import { toast } from "react-hot-toast";
+import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
+import { useDebounce } from "@/hook/useDebounce";
+import api from "@/utils/api";
+const RETURN_CONDITIONS = [
+  "سليم",           // Intact / Brand New / Sellable
+  "مفتوح الغلاف",   // Opened Box / Unsealed (but item is fine)
+  "مستخدم",         // Used (shows signs of wear)
+  "تالف",           // Damaged (broken during shipping or by customer)
+  "معيب مصنعياً",   // Defective (Manufacturer defect, e.g., won't turn on)
+  "مفقود جزء",      // Missing parts or accessories
+  "أخرى"            // Other
+];
 
 // ─────────────────────────────────────────────────────────────
 // DESIGN TOKENS
@@ -79,8 +87,105 @@ const DS = {
 };
 
 // ─────────────────────────────────────────────────────────────
-// SHARED PRIMITIVES
+// HELPERS
 // ─────────────────────────────────────────────────────────────
+
+function getCarrierMeta(c = "") {
+  return (
+    CARRIER_META[c.toUpperCase().replace(/\s/g, "")] || {
+      color: "#ff8b00",
+      light: "#fff8f0",
+    }
+  );
+}
+
+function playBeep(type = "success") {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    if (type === "success") {
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.25);
+    } else {
+      osc.frequency.setValueAtTime(220, ctx.currentTime);
+      osc.frequency.setValueAtTime(160, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.35, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.35);
+    }
+  } catch (_) { }
+}
+
+function ArcRing({
+  pct,
+  size = 44,
+  stroke = 3.5,
+  color,
+  trackColor,
+}) {
+  const r = (size - stroke) / 2;
+  const circ = 2 * Math.PI * r;
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      className="absolute inset-0 w-full h-full -rotate-90"
+    >
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        stroke={trackColor}
+        strokeWidth={stroke}
+      />
+      <motion.circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        stroke={color}
+        strokeWidth={stroke}
+        strokeLinecap="round"
+        strokeDasharray={circ}
+        initial={{ strokeDashoffset: circ }}
+        animate={{ strokeDashoffset: circ * (1 - Math.min(pct / 100, 1)) }}
+        transition={{ duration: 0.55, ease: "easeOut" }}
+      />
+    </svg>
+  );
+}
+
+function CarrierPill({ carrier }) {
+  const s = CARRIER_STYLES[carrier] || {};
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 px-2.5 py-1",
+        DS.radiusSm,
+        "text-xs font-bold border",
+        s.bg,
+        s.border,
+        s.text
+      )}
+    >
+      <RotateCcw size={11} />
+      {carrier}
+    </span>
+  );
+}
+
 function Panel({ children, className }) {
   return (
     <div
@@ -98,11 +203,21 @@ function Panel({ children, className }) {
   );
 }
 
-function PanelHeader({ icon: Icon, pretitle, title, right, children }) {
+function PanelHeader({
+  icon: Icon,
+  pretitle,
+  title,
+  right,
+  children,
+}) {
   return (
-    <div className="relative px-5 py-4 overflow-hidden" style={{ background: DS.headerGradient }}>
+    <div
+      className="relative px-5 py-4 overflow-hidden"
+      style={{ background: DS.headerGradient }}
+    >
       <div className="absolute -top-5 -left-5 w-20 h-20 rounded-full bg-white/10 pointer-events-none" />
       <div className="absolute -bottom-5 -right-5 w-16 h-16 rounded-full bg-white/10 pointer-events-none" />
+
       <div className="relative flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div
@@ -120,11 +235,14 @@ function PanelHeader({ icon: Icon, pretitle, title, right, children }) {
                 {pretitle}
               </p>
             )}
-            <h3 className="text-white font-black text-sm tracking-tight truncate">{title}</h3>
+            <h3 className="text-white font-black text-sm tracking-tight truncate">
+              {title}
+            </h3>
           </div>
         </div>
         {right && <div className="flex items-center gap-1.5 flex-shrink-0">{right}</div>}
       </div>
+
       {children && <div className="relative mt-3">{children}</div>}
     </div>
   );
@@ -164,104 +282,16 @@ function HeaderIconBtn({ onClick, children }) {
   );
 }
 
-function CarrierPill({ carrier }) {
-  const map = {
-    ARAMEX: {
-      bg: "bg-red-50 dark:bg-red-950/20",
-      border: "border-red-200 dark:border-red-800",
-      text: "text-red-700 dark:text-red-400",
-    },
-    SMSA: {
-      bg: "bg-blue-50 dark:bg-blue-950/20",
-      border: "border-blue-200 dark:border-blue-800",
-      text: "text-blue-700 dark:text-blue-400",
-    },
-    DHL: {
-      bg: "bg-yellow-50 dark:bg-yellow-950/20",
-      border: "border-yellow-200 dark:border-yellow-800",
-      text: "text-yellow-700 dark:text-yellow-400",
-    },
-    BOSTA: {
-      bg: "bg-orange-50 dark:bg-orange-950/20",
-      border: "border-orange-200 dark:border-orange-800",
-      text: "text-orange-700 dark:text-orange-400",
-    },
-  };
-  const s = map[carrier] || {};
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 px-2.5 py-1",
-        DS.radiusSm,
-        "text-xs font-bold border",
-        s.bg,
-        s.border,
-        s.text
-      )}
-    >
-      <Truck size={11} />
-      {carrier}
-    </span>
-  );
+function formatTimeForLogs() {
+  return new Date().toLocaleTimeString("ar-SA", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 }
 
-function ArcRing({ pct, size = 44, stroke = 3.5, color, trackColor }) {
-  const r = (size - stroke) / 2;
-  const circ = 2 * Math.PI * r;
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox={`0 0 ${size} ${size}`}
-      className="absolute inset-0 w-full h-full -rotate-90"
-    >
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={trackColor} strokeWidth={stroke} />
-      <motion.circle
-        cx={size / 2}
-        cy={size / 2}
-        r={r}
-        fill="none"
-        stroke={color}
-        strokeWidth={stroke}
-        strokeLinecap="round"
-        strokeDasharray={circ}
-        initial={{ strokeDashoffset: circ }}
-        animate={{ strokeDashoffset: circ * (1 - Math.min(pct / 100, 1)) }}
-        transition={{ duration: 0.55, ease: "easeOut" }}
-      />
-    </svg>
-  );
-}
 
-function playBeep(type = "success") {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
 
-    if (type === "success") {
-      osc.frequency.setValueAtTime(880, ctx.currentTime);
-      osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.08);
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.25);
-    } else {
-      osc.frequency.setValueAtTime(220, ctx.currentTime);
-      osc.frequency.setValueAtTime(160, ctx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.35, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.35);
-    }
-  } catch (_) {}
-}
-
-// ─────────────────────────────────────────────────────────────
-// PDF STYLES
-// ─────────────────────────────────────────────────────────────
 const PDF_STYLE_WARM = `
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -291,6 +321,7 @@ const PDF_STYLE_WARM = `
     -webkit-font-smoothing: antialiased;
   }
 
+  /* ── HEADER ── */
   .header-band { background: var(--cream); border-bottom: 2px solid var(--cream-deep); }
 
   .header-top {
@@ -355,6 +386,7 @@ const PDF_STYLE_WARM = `
   .ref-date  { font-family: var(--mono); font-size: 11px; color: var(--charcoal-muted); }
   .ref-employee { font-family: var(--sans); font-size: 12px; color: var(--charcoal-mid); font-weight: 500; }
 
+  /* ── META STRIP ── */
   .meta-strip {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -385,6 +417,7 @@ const PDF_STYLE_WARM = `
 
   .meta-value.mono { font-family: var(--mono); font-size: 13px; }
 
+  /* ── SECTION LABEL ── */
   .orders-wrap { padding: 28px 32px; background: var(--white); }
 
   .section-label {
@@ -401,6 +434,7 @@ const PDF_STYLE_WARM = `
 
   .section-label-line { flex: 1; height: 1px; background: var(--rule-soft); }
 
+  /* ── ORDER CARD ── */
   .order-card {
     margin-bottom: 14px;
     border: 1.5px solid var(--rule);
@@ -438,6 +472,7 @@ const PDF_STYLE_WARM = `
     padding: 2px 8px; border-radius: 20px; letter-spacing: 0.3px;
   }
 
+  /* ── TABLE ── */
   table { width: 100%; border-collapse: collapse; }
 
   thead tr { background: var(--cream-warm); border-bottom: 1px solid var(--rule); }
@@ -471,18 +506,7 @@ const PDF_STYLE_WARM = `
     border: 1px solid var(--rule);
   }
 
-  .condition-badge {
-    display: inline-block;
-    font-family: var(--sans);
-    font-size: 11px;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 999px;
-    border: 1px solid var(--rule);
-    background: var(--cream-warm);
-    color: var(--charcoal-mid);
-  }
-
+  /* ── SIGNATURE ── */
   .sig-wrap {
     margin: 4px 32px 32px;
     border: 1.5px solid var(--rule);
@@ -523,6 +547,7 @@ const PDF_STYLE_WARM = `
     border-radius: 1px;
   }
 
+  /* ── FOOTER ── */
   .doc-footer {
     background: var(--cream);
     border-top: 1px solid var(--rule);
@@ -545,6 +570,150 @@ const PDF_STYLE_WARM = `
 
   @media print { body { background: white; } }
 </style>`;
+
+
+function buildReturnPDF(orders, carrier, employee, now, labels) {
+  const ordersHTML = orders
+    .map((o, idx) => {
+      // Use lastReturn items if available, otherwise fallback to products
+      const returnItems = o.lastReturn?.items || [];
+      const rows = returnItems
+        .map(
+          (p) => `
+      <tr>
+        <td class="sku-cell">${p.sku || p.returnedVariant?.sku || "—"}</td>
+        <td>${p.name || p.returnedVariant?.product?.name || "—"}</td>
+        <td class="qty-cell">${p.quantity || p.returnedQty || 1}</td>
+        <td class="track-cell"><span>${o.trackingNumber || o.trackingCode || "—"}</span></td>
+      </tr>`
+        )
+        .join("");
+
+      return `
+      <div class="order-card">
+        <div class="order-head">
+          <div class="order-head-left">
+            <div class="order-index">${idx + 1}</div>
+            <span class="order-code">${o.code || o.orderNumber}</span>
+            <div class="order-sep"></div>
+            <span class="order-customer">${o.customer || o.customerName || "—"}</span>
+          </div>
+          <span class="order-city">${o.city || "—"}</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>${labels.sku}</th>
+              <th>${labels.product}</th>
+              <th class="center">${labels.qty}</th>
+              <th>${labels.trackingCode || "رقم التتبع"}</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <div style="padding:10px 16px;border-top:1px solid #eceae4;background:#faf9f7;display:flex;justify-content:space-between;align-items:center;">
+          <span class="condition-badge">${labels.condition || "الحالة"}: ${o.lastReturn?.reason || "سليم"}</span>
+        
+        </div>
+      </div>`;
+    })
+    .join("");
+
+  return `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>${labels.title}</title>
+  ${PDF_STYLE_WARM}
+</head>
+<body>
+
+  <div class="header-band">
+    <div class="header-top">
+      <div class="header-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/>
+            <path d="m7.5 4.27 9 5.15M3.29 7 12 12l8.71-5M12 22V12"/>
+            <path d="M18 15l3 3-3 3M15 18h6"/>
+          </svg>
+        </div>
+        <div>
+          <div class="doc-title">${labels.title}</div>
+          <div class="doc-subtitle">RETURN RECEIPT · ${carrier}</div>
+        </div>
+      </div>
+      <div class="header-ref">
+        <div class="ref-badge">${labels.refPrefix || "RET"}-${now.replace(/\D/g, "").slice(0, 8)}</div>
+        <div class="ref-date">${now}</div>
+        <div class="ref-employee">${employee}</div>
+      </div>
+    </div>
+
+    <div class="meta-strip">
+      <div class="meta-cell">
+        <div class="meta-label">${labels.carrier}</div>
+        <div class="meta-value">${carrier}</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">${labels.returnDate || "تاريخ الإرجاع"}</div>
+        <div class="meta-value mono">${now}</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">${labels.employee}</div>
+        <div class="meta-value">${employee}</div>
+      </div>
+      <div class="meta-cell highlight">
+        <div class="meta-label">${labels.totalOrders}</div>
+        <div class="meta-value">${orders.length} ${labels.orderUnit}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="orders-wrap">
+    <div class="section-label">
+      <span class="section-label-text">${labels.ordersDetail || "تفاصيل المرتجعات"}</span>
+      <div class="section-label-line"></div>
+    </div>
+    ${ordersHTML}
+  </div>
+
+  <div class="sig-wrap">
+    <div class="sig-head">
+      <div class="sig-head-dot"></div>
+      <span class="sig-head-text">${labels.receiptConfirmation || "تأكيد الاستلام"}</span>
+    </div>
+    <div class="sig-fields">
+      <div class="sig-field">
+        <div class="sig-field-label">${labels.courierName || "اسم المندوب"}</div>
+        <div class="sig-line"></div>
+      </div>
+      <div class="sig-field">
+        <div class="sig-field-label">${labels.signature || "التوقيع"}</div>
+        <div class="sig-line"></div>
+      </div>
+      <div class="sig-field">
+        <div class="sig-field-label">${labels.dateTime || "التاريخ والوقت"}</div>
+        <div class="sig-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="doc-footer">
+    <div class="footer-left">
+      <div class="footer-mark">
+        <svg viewBox="0 0 10 10"><polyline points="2,5 4,7 8,3"/></svg>
+      </div>
+      <span class="footer-text">${labels.title}</span>
+      <div class="footer-divider"></div>
+      <span class="footer-text">${labels.system || "نظام إدارة المستودعات"}</span>
+    </div>
+    <span class="footer-text">${now}</span>
+  </div>
+
+</body>
+</html>`;
+}
 
 const WRONG_SCAN_PDF_STYLE = `
 <style>
@@ -828,189 +997,40 @@ const WRONG_SCAN_PDF_STYLE = `
 
   @media print {
     body { background: white; }
-
     .print-alert { display: block !important; }
-
     .header-band,
     .meta-strip,
     .meta-cell,
     thead tr,
     .badge-error,
     .doc-footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-
     tbody tr { page-break-inside: avoid; }
     .table-card { box-shadow: none; }
   }
 </style>`;
 
-// ─────────────────────────────────────────────────────────────
-// PDF BUILDERS
-// ─────────────────────────────────────────────────────────────
-function buildReturnPDF(orders, carrier, employee, now, labels) {
-  const ordersHTML = orders
-    .map((o, idx) => {
-      const rows = (o.products || [])
-        .map(
-          (p) => `
-      <tr>
-        <td class="sku-cell">${p.sku || "—"}</td>
-        <td>${p.name || "—"}</td>
-        <td class="qty-cell">${p.requestedQty || p.scannedQty || 1}</td>
-        <td class="track-cell"><span>${o.trackingCode || "—"}</span></td>
-      </tr>`
-        )
-        .join("");
-
-      return `
-      <div class="order-card">
-        <div class="order-head">
-          <div class="order-head-left">
-            <div class="order-index">${idx + 1}</div>
-            <span class="order-code">${o.code}</span>
-            <div class="order-sep"></div>
-            <span class="order-customer">${o.customer || "—"}</span>
-          </div>
-          <span class="order-city">${o.city || "—"}</span>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>${labels.pdf.sku}</th>
-              <th>${labels.pdf.product}</th>
-              <th class="center">${labels.pdf.qty}</th>
-              <th>${labels.pdf.trackingCode}</th>
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
-        <div style="padding:10px 16px;border-top:1px solid #eceae4;background:#faf9f7;display:flex;justify-content:space-between;align-items:center;">
-          <span class="condition-badge">${labels.pdf.condition}: ${o.returnCondition || "سليم"}</span>
-          <span style="font-family:'IBM Plex Mono', monospace;font-size:11px;color:#6c6c70;">
-            ${labels.pdf.total}: ${o.total || 0} ${labels.common.currency}
-          </span>
-        </div>
-      </div>`;
-    })
-    .join("");
-
-  return `<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <title>${labels.pdf.title}</title>
-  ${PDF_STYLE_WARM}
-</head>
-<body>
-
-  <div class="header-band">
-    <div class="header-top">
-      <div class="header-brand">
-        <div class="brand-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/>
-            <path d="m7.5 4.27 9 5.15M3.29 7 12 12l8.71-5M12 22V12"/>
-            <path d="M18 15l3 3-3 3M15 18h6"/>
-          </svg>
-        </div>
-        <div>
-          <div class="doc-title">${labels.pdf.title}</div>
-          <div class="doc-subtitle">RETURN RECEIPT · ${carrier}</div>
-        </div>
-      </div>
-      <div class="header-ref">
-        <div class="ref-badge">${labels.pdf.refPrefix}-${now.replace(/\D/g, "").slice(0, 8)}</div>
-        <div class="ref-date">${now}</div>
-        <div class="ref-employee">${employee}</div>
-      </div>
-    </div>
-
-    <div class="meta-strip">
-      <div class="meta-cell">
-        <div class="meta-label">${labels.pdf.carrier}</div>
-        <div class="meta-value">${carrier}</div>
-      </div>
-      <div class="meta-cell">
-        <div class="meta-label">${labels.pdf.returnDate}</div>
-        <div class="meta-value mono">${now}</div>
-      </div>
-      <div class="meta-cell">
-        <div class="meta-label">${labels.pdf.employee}</div>
-        <div class="meta-value">${employee}</div>
-      </div>
-      <div class="meta-cell highlight">
-        <div class="meta-label">${labels.pdf.totalOrders}</div>
-        <div class="meta-value">${orders.length} ${labels.pdf.orderUnit}</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="orders-wrap">
-    <div class="section-label">
-      <span class="section-label-text">${labels.pdf.ordersDetail}</span>
-      <div class="section-label-line"></div>
-    </div>
-    ${ordersHTML}
-  </div>
-
-  <div class="sig-wrap">
-    <div class="sig-head">
-      <div class="sig-head-dot"></div>
-      <span class="sig-head-text">${labels.pdf.receiptConfirmation}</span>
-    </div>
-    <div class="sig-fields">
-      <div class="sig-field">
-        <div class="sig-field-label">${labels.pdf.courierName}</div>
-        <div class="sig-line"></div>
-      </div>
-      <div class="sig-field">
-        <div class="sig-field-label">${labels.pdf.signature}</div>
-        <div class="sig-line"></div>
-      </div>
-      <div class="sig-field">
-        <div class="sig-field-label">${labels.pdf.dateTime}</div>
-        <div class="sig-line"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="doc-footer">
-    <div class="footer-left">
-      <div class="footer-mark">
-        <svg viewBox="0 0 10 10"><polyline points="2,5 4,7 8,3"/></svg>
-      </div>
-      <span class="footer-text">${labels.pdf.title}</span>
-      <div class="footer-divider"></div>
-      <span class="footer-text">${labels.pdf.system}</span>
-    </div>
-    <span class="footer-text">${now}</span>
-  </div>
-
-</body>
-</html>`;
-}
 
 function buildWrongScanLogPDF(logs, carrier, employee, now, labels) {
-  const rows = logs
-    .map(
-      (l, i) => `
+  const rows = logs.map((l, i) => `
     <tr>
       <td class="idx-cell">${i + 1}</td>
-      <td class="code-cell">${l.code}</td>
-      <td><span class="badge-error">${l.reason}</span></td>
+      <td class="code-cell">${l.orderNumber}</td>
+      <td class="code-cell">${l.sku}</td>
+      <td><span class="badge-error">${labels.reasons?.[l.reason] || l.reason}</span></td>
       <td class="time-cell"><span>${l.time}</span></td>
     </tr>`
-    )
-    .join("");
+  ).join("");
 
   return `<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>${labels.wrongPdf.title}</title>
+  <title>${labels.title}</title>
   ${WRONG_SCAN_PDF_STYLE}
 </head>
 <body>
 
+  <!-- ── HEADER ── -->
   <div class="header-band">
     <div class="header-top">
       <div class="header-brand">
@@ -1022,12 +1042,12 @@ function buildWrongScanLogPDF(logs, carrier, employee, now, labels) {
           </svg>
         </div>
         <div>
-          <div class="doc-title">${labels.wrongPdf.title}</div>
+          <div class="doc-title">${labels.title}</div>
           <div class="doc-subtitle">WRONG SCAN LOG · ${carrier}</div>
         </div>
       </div>
       <div class="header-ref">
-        <div class="ref-badge">ERR · ${now.replace(/\D/g, "").slice(0, 8)}</div>
+        <div class="ref-badge">ERR · ${now.replace(/\D/g, '').slice(0, 8)}</div>
         <div class="ref-date">${now}</div>
         <div class="ref-employee">${employee}</div>
       </div>
@@ -1035,36 +1055,38 @@ function buildWrongScanLogPDF(logs, carrier, employee, now, labels) {
 
     <div class="meta-strip">
       <div class="meta-cell">
-        <div class="meta-label">${labels.wrongPdf.carrier}</div>
+        <div class="meta-label">${labels.carrier}</div>
         <div class="meta-value">${carrier}</div>
       </div>
       <div class="meta-cell">
-        <div class="meta-label">${labels.wrongPdf.employee}</div>
+        <div class="meta-label">${labels.employee}</div>
         <div class="meta-value">${employee}</div>
       </div>
       <div class="meta-cell">
-        <div class="meta-label">${labels.wrongPdf.date}</div>
+        <div class="meta-label">${labels.date}</div>
         <div class="meta-value mono">${now}</div>
       </div>
       <div class="meta-cell highlight">
-        <div class="meta-label">${labels.wrongPdf.totalFailedAttempts}</div>
-        <div class="meta-value err">${logs.length} ${labels.wrongPdf.attemptUnit}</div>
+        <div class="meta-label">${labels.totalFailedAttempts}</div>
+        <div class="meta-value err">${logs.length} ${labels.attemptUnit}</div>
       </div>
     </div>
   </div>
 
+  <!-- ── PRINT-ONLY ALERT BANNER ── -->
   <div class="print-alert">
     <div class="print-alert-inner">
       <div class="print-alert-icon">!</div>
       <div class="print-alert-text">
-        ${labels.wrongPdf.printAlertText}
+        ${labels.printAlertText || "هذا المستند يحتوي على محاولات مسح فاشلة — يُرجى المراجعة والتحقق من الباركود قبل الاستلام"}
       </div>
     </div>
   </div>
 
+  <!-- ── TABLE ── -->
   <div class="table-wrap">
     <div class="section-label">
-      <span class="section-label-text">${labels.wrongPdf.totalAttempts}: ${logs.length}</span>
+      <span class="section-label-text">${labels.totalAttempts}: ${logs.length}</span>
       <div class="section-label-line"></div>
     </div>
 
@@ -1073,9 +1095,10 @@ function buildWrongScanLogPDF(logs, carrier, employee, now, labels) {
         <thead>
           <tr>
             <th class="center">#</th>
-            <th>${labels.wrongPdf.scannedCode}</th>
-            <th>${labels.wrongPdf.failReason}</th>
-            <th>${labels.wrongPdf.time}</th>
+            <th>${labels.orderNumber}</th>
+            <th>${labels.scannedCode}</th>
+            <th>${labels.failReason}</th>
+            <th>${labels.time}</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -1083,6 +1106,7 @@ function buildWrongScanLogPDF(logs, carrier, employee, now, labels) {
     </div>
   </div>
 
+  <!-- ── FOOTER ── -->
   <div class="doc-footer">
     <div class="footer-left">
       <div class="footer-mark">
@@ -1091,9 +1115,9 @@ function buildWrongScanLogPDF(logs, carrier, employee, now, labels) {
           <line x1="7" y1="3" x2="3" y2="7"/>
         </svg>
       </div>
-      <span class="footer-text">${labels.wrongPdf.title}</span>
+      <span class="footer-text">${labels.title}</span>
       <div class="footer-divider"></div>
-      <span class="footer-text">${labels.wrongPdf.system}</span>
+      <span class="footer-text">${labels.system || "نظام إدارة المستودعات"}</span>
     </div>
     <span class="footer-text">${now}</span>
   </div>
@@ -1112,152 +1136,164 @@ function openPrintWindow(html) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// RETURN DETAIL MODAL
+// ROOT EXPORT
 // ─────────────────────────────────────────────────────────────
-function ReturnOrderDetailModal({ open, onClose, order, t }) {
-  if (!order) return null;
+export default function ReturnsTab({
+  orders,
+  updateOrder,
+  pushOp,
+  inventory,
+  updateInventory,
+  subtab,
+  setSubtab,
+  resetToken,
+}) {
+  const t = useTranslations("warehouse.returns");
 
-  const infoRows = [
-    { label: t("detail.customer"), value: order.customer, icon: User, color: DS.primary },
-    { label: t("detail.phone"), value: order.phone, icon: Hash, color: DS.accent },
-    { label: t("detail.city"), value: order.city, icon: MapPin, color: DS.primary },
-    { label: t("detail.area"), value: order.area || "—", icon: MapPin, color: DS.warning },
-    { label: t("detail.carrier"), value: order.carrier || t("common.unspecified"), icon: Truck, color: "#ff5c2b" },
-    { label: t("detail.trackingCode"), value: order.trackingCode || "—", icon: Hash, color: DS.accent },
-    { label: t("detail.total"), value: `${order.total || 0} ${t("common.currency")}`, icon: CreditCard, color: DS.success },
-    { label: t("detail.returnCondition"), value: order.returnCondition || "—", icon: RefreshCw, color: DS.warning },
-  ];
+  const [statsData, setStatsData] = useState({
+    withCarrier: 0,
+    returnedToday: 0,
+    totalReturns: 0,
+    returnFiles: 0,
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
 
-  if (!open) return null;
+  const fetchStats = useCallback(async () => {
+    try {
+      setStatsLoading(true);
+      const { data } = await api.get('/orders/stats/returns-summary');
+      setStatsData(data);
+    } catch (error) {
+      console.error("Failed to fetch returns stats", error);
+    } finally {
+      setStatsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats, resetToken]);
 
   return (
-    <div className="fixed inset-0 z-[100000] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" >
- 			
-      <div className="w-full max-w-2xl bg-white dark:bg-slate-900 max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl rounded-xl">
-        <div className="relative px-6 pt-6 pb-5 rounded-t-xl overflow-hidden" style={{ background: DS.headerGradient }}>
-          <div className="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white/10 pointer-events-none" />
-          <div className="absolute -bottom-6 -right-2 w-32 h-32 rounded-full bg-white/10 pointer-events-none" />
+    <div className="space-y-4" dir="rtl">
+      <PageHeader
+        breadcrumbs={[
+          { name: t("breadcrumbs.home"), href: "/" },
+          { name: t("breadcrumbs.warehouse"), href: "/warehouse" },
+          { name: t("breadcrumbs.returns") },
+        ]}
+        buttons={
+          <Button_
+            size="sm"
+            label={t("header.howItWorks")}
+            variant="ghost"
+            onClick={() => { }}
+            icon={<Info size={18} />}
+          />
+        }
+        statsLoading={statsLoading}
+        stats={[
+          {
+            id: "with-carrier",
+            name: t("stats.withCarrier"),
+            value: statsData.withCarrier,
+            icon: RotateCcw,
+            color: "#3b82f6",
+            sortOrder: 0,
+          },
+          {
+            id: "returned-today",
+            name: t("stats.returnedToday"),
+            value: statsData.returnedToday,
+            icon: CheckCircle2,
+            color: "#10b981",
+            sortOrder: 1,
+          },
+          {
+            id: "total-returns",
+            name: t("stats.totalReturns"),
+            value: statsData.totalReturns,
+            icon: ArchiveRestore,
+            color: "#a855f7",
+            sortOrder: 2,
+          },
+          {
+            id: "return-files",
+            name: t("stats.returnFiles"),
+            value: statsData.returnFiles,
+            icon: FileText,
+            color: "#f59e0b",
+            sortOrder: 3,
+          },
+        ]}
+        items={[
+          { id: "scan", label: t("subtabs.scanReturn"), count: statsData.withCarrier, icon: ScanLine },
+          { id: "files", label: t("subtabs.files"), count: statsData.returnFiles, icon: FileDown },
+        ]}
+        active={subtab}
+        setActive={setSubtab}
+      />
 
-					
-          <div className="relative flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <div className={cn("w-11 h-11 flex items-center justify-center bg-white/20 backdrop-blur-sm", DS.radiusSm)}>
-                <RefreshCw className="text-white" size={22} />
-              </div>
-              <div>
-                <p className="text-white/70 text-xs font-medium mb-0.5">{t("detail.orderLabel")}</p>
-                <h2 className="text-white text-xl font-black font-mono">{order.code}</h2>
-              </div>
-            </div>
-            <HeaderIconBtn onClick={onClose}>
-              <X size={15} className="text-white" />
-            </HeaderIconBtn>
-          </div>
-          <div className="relative mt-3 flex items-center gap-2 flex-wrap">
-            {order.carrier && (
-              <HeaderBadge>
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                {order.carrier}
-              </HeaderBadge>
-            )}
-            {order.returnedAt && (
-              <HeaderBadge>
-                <CheckCircle2 size={11} />
-                {t("detail.returnedAt")}: {order.returnedAt}
-              </HeaderBadge>
-            )}
-          </div>
-        </div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={subtab}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.15 }}
+        >
+          {subtab === "scan" && (
+            <ScanReturnsSubtab
+              orders={orders}
+              updateOrder={updateOrder}
+              pushOp={pushOp}
+              inventory={inventory}
+              updateInventory={updateInventory}
+              fetchStats={fetchStats}
+              setSubtab={setSubtab}
+            />
+          )}
 
-        <div className="p-6 space-y-5">
-          <div className="grid grid-cols-2 gap-2">
-            {infoRows.map(({ label, value, icon: Icon, color }) => (
-              <div
-                key={label}
-                className={cn(
-                  "flex items-start gap-3 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 p-3 transition-colors",
-                  DS.radius
-                )}
-              >
-                <div
-                  className={cn("w-7 h-7 flex items-center justify-center flex-shrink-0 mt-0.5", DS.radiusSm)}
-                  style={{ backgroundColor: color + "18" }}
-                >
-                  <Icon size={13} style={{ color }} />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] text-slate-400 mb-0.5 font-semibold uppercase tracking-wide">{label}</p>
-                  <p className="font-bold text-sm text-slate-800 dark:text-slate-100 truncate">{value}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className={cn("border border-slate-100 dark:border-slate-700 overflow-hidden", DS.radius)}>
-            <div className="px-4 py-2.5 flex items-center gap-2 bg-slate-50 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-700">
-              <Package size={13} style={{ color: DS.accent }} />
-              <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">{t("detail.products")}</span>
-              <span className="ms-auto text-[11px] font-semibold text-slate-400">
-                {(order.products || []).length} {t("detail.items")}
-              </span>
-            </div>
-            <div className="divide-y divide-slate-50 dark:divide-slate-700/40">
-              {(order.products || []).map((p, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -6 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.04 }}
-                  className="flex items-center gap-3 px-4 py-3"
-                >
-                  <div
-                    className={cn("w-6 h-6 flex items-center justify-center text-[10px] font-black flex-shrink-0", DS.radiusSm)}
-                    style={{ backgroundColor: DS.primary + "18", color: DS.primary }}
-                  >
-                    {i + 1}
-                  </div>
-                  <span
-                    className={cn("font-mono text-[11px] px-2 py-0.5 font-bold", DS.radiusSm)}
-                    style={{ backgroundColor: DS.accent + "12", color: DS.accent }}
-                  >
-                    {p.sku}
-                  </span>
-                  <span className="flex-1 text-sm text-slate-700 dark:text-slate-200 font-medium">{p.name}</span>
-                  <span className="text-xs text-slate-400 font-mono">×{p.requestedQty}</span>
-                  <span className="font-bold text-sm" style={{ color: DS.primary }}>
-                    {(Number(p.price) || 0) * (Number(p.requestedQty) || 0)} {t("common.currency")}
-                  </span>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex justify-end pt-1">
-            <Button variant="outline" onClick={onClose} className={DS.radiusSm}>
-              {t("detail.close")}
-            </Button>
-          </div>
-        </div>
-      </div>
+          {subtab === "files" && (
+            <ReturnsFilesSubtab
+              resetToken={resetToken}
+            />
+          )}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }
 
+
 // ─────────────────────────────────────────────────────────────
-// SCAN INPUT BAR
+// RETURNS SCAN INPUT BAR
 // ─────────────────────────────────────────────────────────────
-function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSuccess, isError, placeholder }) {
+function ReturnsScanInputBar({
+  inputRef,
+  value,
+  onChange,
+  onScan,
+  isSuccess,
+  isError,
+  placeholder,
+  selectedCarrier,
+  onCarrierChange,
+  soundEnabled,
+  onToggleSound,
+  disabled = false,
+}) {
   const t = useTranslations("warehouse.returns");
   const [isFocused, setIsFocused] = useState(false);
   const [errorFlash, setErrorFlash] = useState(false);
-  const prevIsError = useRef(isError);
+  const prevIsError = useRef(!!isError);
 
   useEffect(() => {
     if (isError && !prevIsError.current) {
       setErrorFlash(true);
       setTimeout(() => setErrorFlash(false), 500);
     }
-    prevIsError.current = isError;
+    prevIsError.current = !!isError;
   }, [isError]);
 
   const handleScan = useCallback(() => {
@@ -1273,14 +1309,19 @@ function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSuccess, 
     isSuccess
       ? "bg-emerald-500"
       : isError
-      ? "bg-red-500"
-      : isActive
-      ? "bg-primary"
-      : "bg-slate-300 dark:bg-slate-600"
+        ? "bg-red-500"
+        : isActive
+          ? "bg-primary"
+          : "bg-slate-300 dark:bg-slate-600"
   );
 
   return (
-    <motion.div animate={errorFlash ? { x: [0, -5, 6, -4, 2, 0] } : { x: 0 }} transition={{ duration: 0.35 }} className="relative">
+    <motion.div
+      animate={errorFlash ? { x: [0, -5, 6, -4, 2, 0] } : { x: 0 }}
+      transition={{ duration: 0.35 }}
+      className="relative"
+      dir="rtl"
+    >
       {[
         "absolute -top-[3px] -left-[3px]",
         "absolute -top-[3px] -right-[3px]",
@@ -1293,8 +1334,20 @@ function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSuccess, 
           transition={{ duration: 0.2 }}
           className={cn(pos, "w-3 h-3 pointer-events-none z-20")}
         >
-          <div className={cn("absolute w-full h-[2px]", cornerClass, idx < 2 ? "top-0" : "bottom-0")} />
-          <div className={cn("absolute h-full w-[2px]", cornerClass, idx % 2 === 0 ? "left-0" : "right-0")} />
+          <div
+            className={cn(
+              "absolute w-full h-[2px]",
+              cornerClass,
+              idx < 2 ? "top-0" : "bottom-0"
+            )}
+          />
+          <div
+            className={cn(
+              "absolute h-full w-[2px]",
+              cornerClass,
+              idx % 2 === 0 ? "left-0" : "right-0"
+            )}
+          />
         </motion.div>
       ))}
 
@@ -1303,12 +1356,17 @@ function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSuccess, 
           "relative flex items-center border transition-all duration-200 overflow-hidden",
           DS.radius,
           disabled && "opacity-50 pointer-events-none",
-          isSuccess && "border-emerald-500 bg-background shadow-[0_0_0_3px_rgba(16,185,129,0.10)]",
-          isError && "border-red-500 bg-background shadow-[0_0_0_3px_rgba(239,68,68,0.10)]",
+          isSuccess &&
+          "border-emerald-500 bg-background shadow-[0_0_0_3px_rgba(16,185,129,0.10)]",
+          isError &&
+          "border-red-500 bg-background shadow-[0_0_0_3px_rgba(239,68,68,0.10)]",
           !isSuccess && !isError && !isFocused && "border-border bg-background/60",
-          !isSuccess && !isError && isFocused && "border-primary/60 bg-background shadow-[0_0_0_3px_rgba(255,139,0,0.08)]"
+          !isSuccess &&
+          !isError &&
+          isFocused &&
+          "border-primary/60 bg-background shadow-[0_0_0_3px_rgba(255,139,0,0.08)]"
         )}
-        style={{ height: 46 }}
+        style={{ minHeight: 56 }}
       >
         <AnimatePresence>
           {isSuccess && (
@@ -1319,7 +1377,10 @@ function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSuccess, 
               exit={{ opacity: 0 }}
               transition={{ duration: 0.6 }}
               className="absolute inset-0 pointer-events-none z-0"
-              style={{ background: "linear-gradient(90deg, transparent, rgba(16,185,129,0.16), transparent)" }}
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent, rgba(16,185,129,0.16), transparent)",
+              }}
             />
           )}
           {errorFlash && (
@@ -1341,7 +1402,12 @@ function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSuccess, 
             >
               <motion.div
                 animate={{ left: ["-4%", "104%"] }}
-                transition={{ duration: 1.8, repeat: Infinity, ease: "linear", repeatDelay: 0.4 }}
+                transition={{
+                  duration: 1.8,
+                  repeat: Infinity,
+                  ease: "linear",
+                  repeatDelay: 0.4,
+                }}
                 className="absolute inset-y-0 w-[2px]"
                 style={{
                   background:
@@ -1353,6 +1419,10 @@ function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSuccess, 
           )}
         </AnimatePresence>
 
+        <div className="px-2.5 flex-shrink-0 z-10 border-l border-slate-100 dark:border-slate-700 min-w-[200px]">
+          <ShippingCompanyFilter value={selectedCarrier} onChange={onCarrierChange} hideLabel={true} />
+        </div>
+
         <div className="ps-3 flex-shrink-0 z-10">
           <ScanLine
             size={15}
@@ -1361,10 +1431,10 @@ function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSuccess, 
               isSuccess
                 ? "text-emerald-500"
                 : isError
-                ? "text-red-500"
-                : isFocused
-                ? "text-primary"
-                : "text-muted-foreground/30"
+                  ? "text-red-500"
+                  : isFocused
+                    ? "text-primary"
+                    : "text-muted-foreground/30"
             )}
           />
         </div>
@@ -1374,14 +1444,22 @@ function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSuccess, 
           <motion.div
             animate={
               isSuccess
-                ? { backgroundColor: DS.success, scale: [1, 1.3, 1], opacity: [1, 0.6, 1] }
+                ? {
+                  backgroundColor: DS.success,
+                  scale: [1, 1.3, 1],
+                  opacity: [1, 0.6, 1],
+                }
                 : isError
-                ? { backgroundColor: DS.danger, scale: [1, 1.3, 1] }
-                : isFocused
-                ? { backgroundColor: DS.primary, opacity: [1, 0.4, 1] }
-                : { backgroundColor: "#94a3b8" }
+                  ? { backgroundColor: DS.danger, scale: [1, 1.3, 1] }
+                  : isFocused
+                    ? { backgroundColor: DS.primary, opacity: [1, 0.4, 1] }
+                    : { backgroundColor: "#94a3b8" }
             }
-            transition={isSuccess || isFocused ? { duration: 1.5, repeat: Infinity } : { duration: 0.3 }}
+            transition={
+              isSuccess || isFocused
+                ? { duration: 1.5, repeat: Infinity }
+                : { duration: 0.3 }
+            }
             className="absolute -top-[8px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
           />
         </div>
@@ -1425,6 +1503,21 @@ function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSuccess, 
           )}
         </AnimatePresence>
 
+        <div className="pe-1 flex-shrink-0 z-10">
+          <button
+            type="button"
+            onClick={onToggleSound}
+            className="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center"
+            title={t("scan.status.toggleSound")}
+          >
+            {soundEnabled ? (
+              <Volume2 size={14} className="text-slate-500" />
+            ) : (
+              <VolumeX size={14} className="text-slate-400" />
+            )}
+          </button>
+        </div>
+
         <div className="pe-2 flex-shrink-0 z-10">
           <motion.button
             type="button"
@@ -1437,14 +1530,17 @@ function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSuccess, 
               DS.radius
             )}
             style={{
-              background: isSuccess ? DS.successGradient : isError ? DS.dangerGradient : DS.headerGradient,
-              boxShadow: `0 2px 10px -2px ${
-                isSuccess
-                  ? "rgba(16,185,129,0.45)"
-                  : isError
+              background: isSuccess
+                ? DS.successGradient
+                : isError
+                  ? DS.dangerGradient
+                  : DS.headerGradient,
+              boxShadow: `0 2px 10px -2px ${isSuccess
+                ? "rgba(16,185,129,0.45)"
+                : isError
                   ? "rgba(239,68,68,0.45)"
                   : "rgba(255,139,0,0.35)"
-              }`,
+                }`,
             }}
           >
             <span
@@ -1471,7 +1567,11 @@ function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSuccess, 
               animate={{ opacity: 1, x: 0 }}
               className="text-[11px]"
             >
-              {isSuccess ? t("scan.status.done") : isError ? t("scan.status.retry") : t("scan.status.scanBtn")}
+              {isSuccess
+                ? t("scan.status.done")
+                : isError
+                  ? t("scan.status.retry")
+                  : t("scan.status.scanBtn")}
             </motion.span>
           </motion.button>
         </div>
@@ -1480,164 +1580,290 @@ function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSuccess, 
   );
 }
 
+
 // ─────────────────────────────────────────────────────────────
-// SCAN LOG BOXES
+// ORDERS LIST
 // ─────────────────────────────────────────────────────────────
-function ScanLogBoxes({ successCount, errorCount, t }) {
-  const total = successCount + errorCount;
-  const successPct = total > 0 ? (successCount / total) * 100 : 0;
+function OrdersList({
+  orders,
+  scannedOrders,
+  lastHighlight,
+  onSelectOrder,
+}) {
+  const t = useTranslations("warehouse.returns");
+  const [expanded, setExpanded] = useState({});
 
-  const prevErrorRef = useRef(errorCount);
-  const [shaking, setShaking] = useState(false);
+  const toggle = (code) => setExpanded((p) => ({ ...p, [code]: !p[code] }));
 
-  useEffect(() => {
-    if (errorCount > prevErrorRef.current) {
-      setShaking(true);
-      setTimeout(() => setShaking(false), 550);
-    }
-    prevErrorRef.current = errorCount;
-  }, [errorCount]);
-
-  const cardBase = cn("relative overflow-hidden border p-4 transition-all duration-300", DS.radiusXl);
+  if (orders.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16">
+        <div className="w-14 h-14 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-3">
+          <Package size={22} className="text-slate-300" />
+        </div>
+        <p className="text-sm font-semibold text-slate-400">{t("scan.empty.title")}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="grid grid-cols-2 gap-3">
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.04 }}
-        className={cn(cardBase, "border-emerald-200/70 dark:border-emerald-700/35")}
-        style={{ background: DS.successCardGradient, ...DS.scanline }}
+    <div className="overflow-hidden">
+      <div
+        className="grid text-[10px] font-bold uppercase tracking-widest text-slate-400 px-5 py-2.5 border-b border-slate-100 bg-slate-50/60"
+        style={{ gridTemplateColumns: "32px 1fr 120px 90px 80px 110px 48px" }}
       >
-        <motion.div
-          key={`s${successCount}`}
-          initial={{ x: "-110%" }}
-          animate={{ x: "110%" }}
-          transition={{ duration: 0.85, ease: "easeInOut" }}
-          className="absolute inset-y-0 w-1/3 pointer-events-none z-[1]"
-          style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)" }}
-        />
-        <div className="absolute -bottom-3 -right-3 w-20 h-20 rounded-full bg-emerald-300/15 dark:bg-emerald-500/10" />
-        <div className="relative z-10 flex items-center gap-3">
-          <div className="relative w-[52px] h-[52px] flex-shrink-0">
-            <ArcRing pct={successPct} color="#16a34a" trackColor="rgba(134,239,172,0.3)" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <CheckCircle2 size={16} className="text-emerald-600" />
-            </div>
-          </div>
-          <div className="flex-1 min-w-0" dir="rtl">
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-emerald-600/60 mb-1 leading-none">
-              {t("scan.counters.scannedReturns")}
-            </p>
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={successCount}
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 6 }}
-                transition={{ type: "spring", stiffness: 480, damping: 26 }}
-                className="block text-[2.4rem] font-black tabular-nums leading-none text-emerald-700 dark:text-emerald-400"
-              >
-                {successCount}
-              </motion.span>
-            </AnimatePresence>
-          </div>
-        </div>
-      </motion.div>
+        <span />
+        <span>{t("scan.table.orderNumber")}</span>
+        <span>{t("scan.table.customer")}</span>
+        <span>{t("scan.table.city") || "المدينة"}</span>
+        <span className="text-center">{t("scan.table.productName") || "المنتجات"}</span>
+        <span className="text-center">{t("scan.table.price") || "الإجمالي"}</span>
+        <span />
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={shaking ? { opacity: 1, x: [0, -5, 6, -4, 2, 0], y: 0 } : { opacity: 1, x: 0, y: 0 }}
-        transition={shaking ? { duration: 0.4 } : { delay: 0.08 }}
-        className={cn(
-          cardBase,
-          errorCount > 0 ? "border-red-200/70 dark:border-red-700/35" : "border-slate-200/60 dark:border-slate-700/35"
-        )}
-        style={{
-          background: errorCount > 0 ? "linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)" : DS.cardGradient,
-          ...DS.scanline,
-        }}
-      >
-        <AnimatePresence>
-          {shaking && (
+      <div className="divide-y divide-slate-100/80">
+        {orders.map((order, idx) => {
+          const code = order.orderNumber;
+          const isScanned = scannedOrders.some((o) => o.code === code);
+          const isFlash = lastHighlight?.code === code;
+          const isOpen = !!expanded[code];
+          const prodCount = order.items?.length ?? 0;
+
+          return (
             <motion.div
-              initial={{ opacity: 0.16 }}
-              animate={{ opacity: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4 }}
-              className={cn("absolute inset-0 bg-red-400 pointer-events-none z-20", DS.radiusXl)}
-            />
-          )}
-        </AnimatePresence>
-
-        <div
-          className="absolute -bottom-3 -right-3 w-20 h-20 rounded-full transition-colors duration-300"
-          style={{ background: errorCount > 0 ? "rgba(252,165,165,0.18)" : "rgba(226,232,240,0.18)" }}
-        />
-        <div className="relative z-10 flex items-center gap-3">
-          <div className="relative w-[52px] h-[52px] flex-shrink-0">
-            <AnimatePresence>
-              {errorCount > 0 && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: [0.35, 0, 0.35], scale: [1, 1.25, 1] }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 1.8, repeat: Infinity }}
-                  className="absolute inset-0 rounded-full border-2 border-red-400/45"
-                />
-              )}
-            </AnimatePresence>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <AlertCircle size={16} className={errorCount > 0 ? "text-red-600" : "text-slate-300"} />
-            </div>
-          </div>
-          <div className="flex-1 min-w-0" dir="rtl">
-            <p
-              className={cn(
-                "text-[10px] font-extrabold uppercase tracking-[0.1em] mb-1 leading-none transition-colors duration-300",
-                errorCount > 0 ? "text-red-600/60" : "text-slate-400/65"
-              )}
+              key={code}
+              layout
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.025, duration: 0.18 }}
             >
-              {t("scan.counters.failedScans")}
-            </p>
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={errorCount}
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 6 }}
-                transition={{ type: "spring", stiffness: 480, damping: 26 }}
+              <div
                 className={cn(
-                  "block text-[2.4rem] font-black tabular-nums leading-none transition-colors duration-300",
-                  errorCount > 0 ? "text-red-700 dark:text-red-400" : "text-slate-300 dark:text-slate-600"
+                  "relative grid items-center px-5 py-3 transition-all duration-200 cursor-pointer select-none",
+                  isScanned ? "bg-emerald-50/60" : "hover:bg-slate-50/70"
                 )}
+                style={{ gridTemplateColumns: "32px 1fr 120px 90px 80px 110px 48px" }}
+                onClick={() => prodCount > 0 && toggle(code)}
               >
-                {errorCount}
-              </motion.span>
-            </AnimatePresence>
-          </div>
-        </div>
-      </motion.div>
+                <AnimatePresence>
+                  {isFlash && (
+                    <motion.div
+                      initial={{ opacity: 0.45 }}
+                      animate={{ opacity: 0 }}
+                      transition={{ duration: 0.9 }}
+                      className={cn(
+                        "absolute inset-0 pointer-events-none",
+                        lastHighlight?.ok ? "bg-emerald-400/20" : "bg-red-400/20"
+                      )}
+                    />
+                  )}
+                </AnimatePresence>
+
+                {isScanned && (
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400 to-teal-500" />
+                )}
+
+                <div className="flex items-center justify-center">
+                  <div
+                    className={cn(
+                      "w-7 h-7 rounded-xl flex items-center justify-center transition-all duration-200",
+                      isScanned
+                        ? "bg-emerald-500 text-white shadow-[0_2px_8px_-2px_#10b98160]"
+                        : "bg-slate-100"
+                    )}
+                  >
+                    {isScanned ? (
+                      <CheckCircle2 size={14} className="text-white" />
+                    ) : (
+                      <span className="text-[10px] font-bold text-slate-300 tabular-nums">
+                        {idx + 1}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 min-w-0">
+                  <span
+                    className={cn(
+                      "font-black font-mono text-[13px] transition-colors",
+                      isScanned ? "text-emerald-800" : "text-slate-800"
+                    )}
+                  >
+                    {code}
+                  </span>
+                  {isScanned && (
+                    <motion.span
+                      initial={{ scale: 0.7, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200/60"
+                    >
+                      ✓ {t("scan.table.selected")}
+                    </motion.span>
+                  )}
+                </div>
+
+                <div className="min-w-0">
+                  <div className="text-[12px] font-semibold text-slate-700 truncate">
+                    {order.customerName || "—"}
+                  </div>
+                  <div className="text-[10px] text-slate-400 font-medium tabular-nums">
+                    {order.phoneNumber || "—"}
+                  </div>
+                </div>
+
+                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-tight">
+                  {order.city || "—"}
+                </div>
+
+                <div className="flex justify-center">
+                  <span
+                    className="inline-flex items-center justify-center px-2 py-1 rounded-xl bg-slate-100 text-[11px] font-black text-slate-600 min-w-[32px]"
+                  >
+                    {prodCount}
+                  </span>
+                </div>
+
+                <div className="flex justify-center">
+                  <span className="text-[12px] font-black text-slate-800 tabular-nums">
+                    {order.totalPrice}
+                    <span className="text-[9px] text-slate-400 font-normal ms-0.5">
+                      {t("common.currency")}
+                    </span>
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-end">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelectOrder?.(order);
+                    }}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all active:scale-95"
+                  >
+                    <ScanLine size={16} />
+                  </button>
+                </div>
+              </div>
+
+              <AnimatePresence initial={false}>
+                {isOpen && prodCount > 0 && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+                    style={{ overflow: "hidden" }}
+                  >
+                    <div className="border-t border-slate-100 bg-slate-50/50">
+                      <div
+                        className="grid text-[9px] font-bold uppercase tracking-widest px-5 py-2.5 border-b text-slate-400 border-slate-100"
+                        style={{ gridTemplateColumns: "2fr 90px 70px 80px 80px" }}
+                      >
+                        <span>{t("scan.table.productName")}</span>
+                        <span className="text-center">SKU</span>
+                        <span className="text-center">{t("scan.table.qty")}</span>
+                        <span className="text-center">{t("scan.table.price")}</span>
+                        <span className="text-center">{"الإجمالي"}</span>
+                      </div>
+
+                      <div className="divide-y divide-slate-100/60">
+                        {order.items.map((p, pi) => (
+                          <motion.div
+                            key={p.sku || pi}
+                            initial={{ opacity: 0, x: -4 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: pi * 0.04 }}
+                            className="grid items-center px-5 py-3 hover:bg-white/70 transition-colors"
+                            style={{ gridTemplateColumns: "2fr 90px 70px 80px 80px" }}
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div
+                                className="w-6 h-6 rounded-xl flex items-center justify-center flex-shrink-0"
+                                style={{ background: "#ff8b0012" }}
+                              >
+                                <Package size={11} style={{ color: "#ff8b00" }} />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-[12px] font-semibold text-slate-700 truncate">
+                                  {p.variant?.product?.name || p.name}
+                                </p>
+                                {p.variant?.sku && (
+                                  <p className="text-[10px] text-slate-400 truncate">
+                                    {p.variant.sku}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="text-center">
+                              <code className="text-[10px] font-mono text-slate-500 bg-white px-1.5 py-0.5 rounded border border-slate-100">
+                                {p.sku || p.variant?.sku || "—"}
+                              </code>
+                            </div>
+
+                            <div className="flex justify-center">
+                              <span
+                                className="inline-flex items-center justify-center w-7 h-7 rounded-xl text-[11px] font-black"
+                                style={{ background: "#ff8b0015", color: "#ff8b00" }}
+                              >
+                                {p.quantity}
+                              </span>
+                            </div>
+
+                            <div className="text-center">
+                              <span className="text-[12px] font-bold text-slate-600 tabular-nums">
+                                {p.price ? `${p.price}` : "—"}
+                              </span>
+                              {p.price && (
+                                <span className="text-[9px] text-slate-400 ms-0.5">
+                                  {t("common.currency")}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="text-center">
+                              {p.price && p.quantity ? (
+                                <span className="text-[12px] font-black text-slate-800 tabular-nums">
+                                  {(p.price * p.quantity).toFixed(2)}
+                                  <span className="text-[9px] text-slate-400 font-normal ms-0.5">
+                                    {t("common.currency")}
+                                  </span>
+                                </span>
+                              ) : (
+                                <span className="text-slate-300 text-xs">—</span>
+                              )}
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center justify-between px-5 py-2.5 border-t border-slate-100 text-[11px] font-semibold text-slate-500 bg-slate-50">
+                        <span>
+                          {prodCount} {"منتجات"}
+                        </span>
+                        {order.totalPrice && (
+                          <span className="font-black text-[13px] text-slate-700">
+                            {order.totalPrice} {t("common.currency")}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
-// ─────────────────────────────────────────────────────────────
-// RETURNS SCANNED ORDER TABLE
-// ─────────────────────────────────────────────────────────────
-function ReturnScannedOrderTable({
-  order,
-  selectedItems,
-  onToggleItem,
-  onSelectAll,
-  onUnselectAll,
-  returnCondition,
-  onConditionChange,
-  t,
-}) {
-  const products = order?.products || [];
-  const totalQty = products.reduce((s, p) => s + (p.requestedQty || 0), 0);
-  const selectedQty = products.reduce((s, p) => (selectedItems[p.sku] ? s + (p.requestedQty || 0) : s), 0);
+function ScannedOrderTable({ order, localProducts, onToggleItem, onQuantityChange, onSelectAll, onUnselectAll, selectedItems, returnReason, onReasonChange, onSave, isSaving }) {
+  const t = useTranslations("warehouse.returns");
+
+  const totalQty = localProducts.reduce((s, p) => s + (p.quantity || 0), 0);
+  const selectedQty = localProducts.reduce((s, p) => (selectedItems[p.sku] ? s + (selectedItems[p.sku].quantity || 0) : s), 0);
   const pct = totalQty === 0 ? 0 : Math.round((selectedQty / totalQty) * 100);
 
   return (
@@ -1669,25 +1895,17 @@ function ReturnScannedOrderTable({
               </AnimatePresence>
             </div>
           </div>
-
           <div className="min-w-0">
             <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">{t("scan.table.orderNumber")}</p>
             <p className="font-mono font-black text-sm" style={{ color: DS.primary }}>
-              {order.code}
+              {order.orderNumber}
             </p>
           </div>
-
-          <div className="hidden sm:block min-w-0">
-            <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">{t("scan.table.trackingCode")}</p>
-            <p className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300">{order.trackingCode || "—"}</p>
-          </div>
-
           <div className="hidden md:block min-w-0">
             <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">{t("scan.table.customer")}</p>
-            <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate max-w-[140px]">{order.customer}</p>
+            <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate max-w-[140px]">{order.customerName}</p>
           </div>
-
-          {order.carrier && <CarrierPill carrier={order.carrier} />}
+          {order.shippingCompany && <CarrierPill carrier={order.shippingCompany.name} />}
 
           <div className="ms-auto flex-shrink-0">
             <div
@@ -1697,7 +1915,7 @@ function ReturnScannedOrderTable({
                 "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200"
               )}
             >
-              <RefreshCw size={11} style={{ color: DS.primary }} />
+              <RotateCcw size={11} style={{ color: DS.primary }} />
               {selectedQty}
               <span className="text-slate-300 dark:text-slate-600 font-normal">/</span>
               {totalQty}
@@ -1706,32 +1924,32 @@ function ReturnScannedOrderTable({
         </div>
       </div>
 
-      <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex flex-wrap items-center gap-2 justify-between bg-white dark:bg-slate-900">
+      <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex flex-wrap items-center gap-3 justify-between bg-white dark:bg-slate-900">
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={onSelectAll}
-            className={cn("px-3 py-1.5 text-xs font-bold border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700", DS.radiusSm)}
+            className={cn("px-3 py-1.5 text-xs font-bold border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors", DS.radiusSm)}
           >
             {t("scan.actions.selectAll")}
           </button>
           <button
             type="button"
             onClick={onUnselectAll}
-            className={cn("px-3 py-1.5 text-xs font-bold border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700", DS.radiusSm)}
+            className={cn("px-3 py-1.5 text-xs font-bold border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors", DS.radiusSm)}
           >
             {t("scan.actions.unselectAll")}
           </button>
         </div>
 
-        <div className="flex items-center gap-2 min-w-[220px]">
-          <span className="text-xs font-bold text-slate-500">{t("scan.actions.condition")}</span>
-          <Select value={returnCondition} onValueChange={onConditionChange}>
-            <SelectTrigger className={cn("h-9 border-border bg-background text-sm", DS.radiusSm)}>
-              <SelectValue />
+        <div className="flex items-center gap-3 flex-1 max-w-md">
+          <span className="text-xs font-bold text-slate-500 whitespace-nowrap">{t("scan.actions.condition") || "سبب الإرجاع"}</span>
+          <Select value={returnReason} onValueChange={onReasonChange}>
+            <SelectTrigger className={cn("flex-1 h-9 px-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:border-primary outline-none transition-all", DS.radiusSm)}>
+              <SelectValue placeholder="اختر سبب الإرجاع..." />
             </SelectTrigger>
             <SelectContent>
-              {PRODUCT_CONDITIONS.map((c) => (
+              {RETURN_CONDITIONS.map((c) => (
                 <SelectItem key={c} value={c}>
                   {c}
                 </SelectItem>
@@ -1739,6 +1957,19 @@ function ReturnScannedOrderTable({
             </SelectContent>
           </Select>
         </div>
+
+        <button
+          onClick={onSave}
+          disabled={isSaving || Object.keys(selectedItems).length === 0}
+          className={cn(
+            "h-9 px-4 flex items-center gap-2 text-white text-xs font-bold shadow-lg shadow-primary/20 disabled:opacity-50 transition-all active:scale-95",
+            DS.radiusSm
+          )}
+          style={{ background: DS.headerGradient }}
+        >
+          {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+          {"حفظ المرتجع"}
+        </button>
       </div>
 
       <div className="overflow-x-auto">
@@ -1767,8 +1998,9 @@ function ReturnScannedOrderTable({
             </tr>
           </thead>
           <tbody>
-            {products.map((p, i) => {
-              const checked = !!selectedItems[p.sku];
+            {localProducts.map((p, i) => {
+              const selection = selectedItems[p.sku];
+              const checked = !!selection;
               return (
                 <motion.tr
                   key={p.sku}
@@ -1781,7 +2013,7 @@ function ReturnScannedOrderTable({
                   )}
                 >
                   <td className="px-4 py-3 text-center">
-                    <Checkbox checked={checked} onCheckedChange={() => onToggleItem(p.sku)} />
+                    <Checkbox checked={checked} onCheckedChange={() => onToggleItem(p)} />
                   </td>
 
                   <td className="px-4 py-3">
@@ -1810,14 +2042,17 @@ function ReturnScannedOrderTable({
                           <Package size={14} className={checked ? "text-primary" : "text-slate-300"} />
                         )}
                       </div>
-                      <span
-                        className={cn(
-                          "font-semibold text-sm truncate max-w-[220px] transition-colors duration-300",
-                          checked ? "text-slate-800 dark:text-slate-100" : "text-slate-500 dark:text-slate-400"
-                        )}
-                      >
-                        {p.name}
-                      </span>
+                      <div className="min-w-0">
+                        <span
+                          className={cn(
+                            "font-semibold text-sm truncate max-w-[220px] block transition-colors duration-300",
+                            checked ? "text-slate-800 dark:text-slate-100" : "text-slate-500 dark:text-slate-400"
+                          )}
+                        >
+                          {p.name}
+                        </span>
+                        {p.variantName && <p className="text-[10px] text-slate-400">{p.variantName}</p>}
+                      </div>
                     </div>
                   </td>
 
@@ -1831,7 +2066,21 @@ function ReturnScannedOrderTable({
                   </td>
 
                   <td className="px-4 py-3 text-center">
-                    <span className="font-mono text-sm font-bold text-slate-700 dark:text-slate-200">{p.requestedQty}</span>
+                    {checked ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <input
+                          type="number"
+                          min="1"
+                          max={p.quantity}
+                          value={selection.quantity}
+                          onChange={(e) => onQuantityChange(p.sku, parseInt(e.target.value) || 0)}
+                          className={cn("w-16 h-8 text-center text-sm font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-primary outline-none", DS.radiusSm)}
+                        />
+                        <span className="text-[10px] text-slate-400">/ {p.quantity}</span>
+                      </div>
+                    ) : (
+                      <span className="font-mono text-sm font-bold text-slate-400">{p.quantity}</span>
+                    )}
                   </td>
 
                   <td className="px-4 py-3 text-center">
@@ -1870,240 +2119,442 @@ function ReturnScannedOrderTable({
   );
 }
 
-// ─────────────────────────────────────────────────────────────
-// SCAN RETURN SUBTAB
-// ─────────────────────────────────────────────────────────────
-function ScanReturnSubtab({ orders, updateOrder, pushOp, inventory, updateInventory, addReturnFile }) {
+function ReturnsScanLogBoxes({ successCount, errorCount }) {
   const t = useTranslations("warehouse.returns");
-  const shippedOrders = useMemo(() => orders.filter((o) => o.status === STATUS.SHIPPED), [orders]);
 
-  const [scanInput, setScanInput] = useState("");
-  const [currentOrder, setCurrentOrder] = useState(null);
-  const [selectedItems, setSelectedItems] = useState({});
-  const [returnCondition, setReturnCondition] = useState("سليم");
-  const [wrongScans, setWrongScans] = useState(0);
-  const [wrongScanLogs, setWrongScanLogs] = useState([]);
-  const [lastScanMsg, setLastScanMsg] = useState(null);
-  const [scanState, setScanState] = useState("idle");
-  const [successCount, setSuccessCount] = useState(0);
-  const [errorCount, setErrorCount] = useState(0);
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [isProcessing, setIsProcessing] = useState(false);
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      <div className={cn("p-4 border transition-all", DS.radius, "bg-emerald-50/40 border-emerald-100 dark:bg-emerald-950/10 dark:border-emerald-900/30")}>
+        <div className="flex items-center gap-3 mb-1">
+          <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-200/50">
+            <CheckCircle2 size={16} className="text-white" />
+          </div>
+          <p className="text-[11px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">{t("scan.counters.scannedReturns")}</p>
+        </div>
+        <p className="text-2xl font-black text-emerald-900 dark:text-emerald-100 tabular-nums ps-11">{successCount}</p>
+      </div>
 
-  const scanRef = useRef(null);
+      <div className={cn("p-4 border transition-all", DS.radius, "bg-red-50/40 border-red-100 dark:bg-red-950/10 dark:border-red-900/30")}>
+        <div className="flex items-center gap-3 mb-1">
+          <div className="w-8 h-8 rounded-xl bg-red-500 flex items-center justify-center shadow-lg shadow-red-200/50">
+            <AlertCircle size={16} className="text-white" />
+          </div>
+          <p className="text-[11px] font-black text-red-700 dark:text-red-400 uppercase tracking-wider">{t("scan.counters.failedScans")}</p>
+        </div>
+        <p className="text-2xl font-black text-red-900 dark:text-red-100 tabular-nums ps-11">{errorCount}</p>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// RETURNS ORDERS SLIDE PANEL
+// ─────────────────────────────────────────────────────────────
+function ReturnsOrdersSlidePanel({ open, onClose, selectedCarrier, onManifestCreated }) {
+  const t = useTranslations("warehouse.returns");
+  const locale = useLocale();
+  const isRtl = locale !== "en";
+
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedOrderIds, setSelectedOrderIds] = useState([]);
+  const [creatingManifest, setCreatingManifest] = useState(false);
+
+  const fetchShippedOrders = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/orders', {
+        params: {
+          status: 'return_preparing',
+          shippingCompanyId: selectedCarrier,
+          limit: 100
+        }
+      });
+      setOrders(res.data?.records || []);
+      setSelectedOrderIds([]);
+    } catch (error) {
+      console.error("Failed to fetch shipped orders", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedCarrier]);
 
   useEffect(() => {
-    const id = setTimeout(() => scanRef.current?.focus(), 120);
-    return () => clearTimeout(id);
-  }, []);
+    if (open) fetchShippedOrders();
+  }, [open, fetchShippedOrders]);
 
-  const showFeedback = useCallback((type, msg) => {
-    setLastScanMsg({ success: type === "success", message: msg });
-    setScanState(type);
-    setTimeout(() => {
-      setLastScanMsg(null);
-      setScanState("idle");
-    }, 2200);
-  }, []);
-
-  const resetCurrentOrder = useCallback(() => {
-    setCurrentOrder(null);
-    setSelectedItems({});
-    setReturnCondition("سليم");
-    setScanInput("");
-    setTimeout(() => scanRef.current?.focus(), 100);
-  }, []);
-
-  const handleScan = useCallback(() => {
-    const code = scanInput.trim();
-    if (!code) return;
-
-    setScanInput("");
-    const now = new Date().toLocaleTimeString("ar-SA");
-
-    const order = shippedOrders.find((o) => o.code === code || o.trackingCode === code);
-
-    if (!order) {
-      if (soundEnabled) playBeep("error");
-      setWrongScans((p) => p + 1);
-      setErrorCount((p) => p + 1);
-      setWrongScanLogs((prev) => [
-        ...prev,
-        { code, reason: t("scan.messages.notFoundReason"), time: now },
-      ]);
-      showFeedback("error", t("scan.messages.notFound", { code }));
-      return;
-    }
-
-    if (order.returnedAt) {
-      if (soundEnabled) playBeep("error");
-      setWrongScans((p) => p + 1);
-      setErrorCount((p) => p + 1);
-      setWrongScanLogs((prev) => [
-        ...prev,
-        { code, reason: t("scan.messages.alreadyReturnedReason"), time: now },
-      ]);
-      showFeedback("error", t("scan.messages.alreadyReturned", { code: order.code }));
-      return;
-    }
-
-    const initialSelected = {};
-    (order.products || []).forEach((p) => {
-      initialSelected[p.sku] = true;
-    });
-
-    setCurrentOrder(order);
-    setSelectedItems(initialSelected);
-    setReturnCondition("سليم");
-    setSuccessCount((p) => p + 1);
-
-    if (soundEnabled) playBeep("success");
-    showFeedback("success", t("scan.messages.found", { code: order.code }));
-  }, [scanInput, shippedOrders, soundEnabled, t, showFeedback]);
-
-  const handleToggleItem = (sku) => {
-    setSelectedItems((prev) => ({
-      ...prev,
-      [sku]: !prev[sku],
-    }));
+  const toggleSelect = (id) => {
+    setSelectedOrderIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
   };
 
-  const handleSelectAll = () => {
-    if (!currentOrder) return;
-    const map = {};
-    currentOrder.products.forEach((p) => {
-      map[p.sku] = true;
-    });
-    setSelectedItems(map);
-  };
-
-  const handleUnselectAll = () => {
-    if (!currentOrder) return;
-    const map = {};
-    currentOrder.products.forEach((p) => {
-      map[p.sku] = false;
-    });
-    setSelectedItems(map);
-  };
-
-  const handleProcessReturn = async () => {
-    if (!currentOrder || isProcessing) return;
-
-    const returnedProducts = currentOrder.products.filter((p) => selectedItems[p.sku]);
-
-    if (returnedProducts.length === 0) {
-      if (soundEnabled) playBeep("error");
-      showFeedback("error", t("scan.messages.selectAtLeastOne"));
-      return;
-    }
-
-    setIsProcessing(true);
-
+  const handleCreateManifest = async () => {
+    if (selectedOrderIds.length === 0) return;
     try {
-      const now = new Date().toISOString().slice(0, 16).replace("T", " ");
-      const nextStatus = STATUS.RETURNED || STATUS.CONFIRMED;
-
-      updateOrder(currentOrder.code, {
-        status: nextStatus,
-        returnedAt: now,
-        returnCondition,
-        returnedItems: returnedProducts.map((p) => p.sku),
-        products: currentOrder.products.map((p) =>
-          selectedItems[p.sku]
-            ? {
-                ...p,
-                returnCondition,
-              }
-            : p
-        ),
+      setCreatingManifest(true);
+      await api.post('/orders/manifests/return', {
+        shippingCompanyId: Number(selectedCarrier),
+        orderIds: selectedOrderIds,
       });
-
-      if (inventory && updateInventory) {
-        updateInventory(returnInventoryFromCarrier(returnedProducts, inventory));
-      }
-
-      pushOp({
-        id: `OP-${Date.now()}`,
-        operationType: "RETURN_ORDER",
-        orderCode: currentOrder.code,
-        carrier: currentOrder.carrier || "-",
-        employee: "System",
-        result: "SUCCESS",
-        details: t("scan.messages.returnProcessedLog", { count: returnedProducts.length }),
-        createdAt: now,
-      });
-
-      addReturnFile({
-        id: `RET-${Date.now()}`,
-        carrier: currentOrder.carrier || "—",
-        type: "return",
-        orderCodes: [currentOrder.code],
-        createdAt: now,
-        createdBy: "System",
-        filename: `return_${currentOrder.code}_${now.split(" ")[0]}.pdf`,
-        ordersSnapshot: [
-          {
-            ...currentOrder,
-            returnCondition,
-            returnedItems: returnedProducts.map((p) => p.sku),
-            products: returnedProducts,
-          },
-        ],
-        wrongScanLogs,
-      });
-
-      if (soundEnabled) playBeep("success");
-      showFeedback("success", t("scan.messages.returnSuccess", { code: currentOrder.code }));
-      setWrongScans(0);
-      setWrongScanLogs([]);
-      resetCurrentOrder();
+      toast.success(t("scan.messages.returnSuccess", { code: "" }) || "Return manifest created successfully");
+      onManifestCreated();
+      onClose();
+    } catch (error) {
+      console.error("Failed to create return manifest", error);
+      toast.error(error.response?.data?.message || "Failed to create return manifest");
     } finally {
-      setIsProcessing(false);
+      setCreatingManifest(false);
     }
   };
 
   return (
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[1000]" onClick={onClose} />
+          <motion.div
+            initial={{ x: isRtl ? "-100%" : "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: isRtl ? "-100%" : "100%" }}
+            transition={{ type: "spring", damping: 28, stiffness: 300 }}
+            className="fixed top-0 ltr:right-0 rtl:left-0 h-full w-96 bg-white dark:bg-slate-900 shadow-2xl z-[1000000] flex flex-col"
+            dir="rtl"
+          >
+            <PanelHeader
+              icon={Layers}
+              pretitle={t("common.carrier")}
+              title={t("scan.actions.confirmReturn")}
+              right={<HeaderIconBtn onClick={onClose}><X size={13} className="text-white" /></HeaderIconBtn>}
+            >
+              <HeaderBadge><Package size={11} />{orders.length} {"طلب مع شركة الشحن"}</HeaderBadge>
+            </PanelHeader>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {loading ? (
+                <div className="flex flex-col items-center justify-center py-12 space-y-3">
+                  <Loader2 className="animate-spin text-primary" size={24} />
+                  <p className="text-xs text-slate-400 font-medium tracking-wide">جاري التحميل...</p>
+                </div>
+              ) : (
+                orders.map((order) => {
+                  const isSelected = selectedOrderIds.includes(order.id);
+                  return (
+                    <motion.div key={order.id} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+                      onClick={() => toggleSelect(order.id)}
+                      className={cn(
+                        "p-3 border cursor-pointer transition-all flex items-center gap-3",
+                        DS.radius,
+                        isSelected
+                          ? "border-primary/40 bg-primary/5 shadow-sm"
+                          : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300"
+                      )}
+                    >
+                      <Checkbox checked={isSelected} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="font-mono font-black text-sm" style={{ color: DS.primary }}>{order.orderNumber}</span>
+                          <span className="text-[10px] font-bold text-slate-400">{new Date(order.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <p className="text-xs text-slate-600 dark:text-slate-300 font-medium truncate">{order.customerName}</p>
+                        <p className="text-[10px] text-slate-400 truncate">{order.city} · {order.items?.length} {"منتجات"}</p>
+                      </div>
+                    </motion.div>
+                  );
+                })
+              )}
+              {!loading && orders.length === 0 && (
+                <div className="text-center py-16">
+                  <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center mx-auto mb-4 border border-slate-100 dark:border-slate-700/50">
+                    <Package size={32} className="text-slate-300 dark:text-slate-600" />
+                  </div>
+                  <p className="text-slate-400 text-sm font-medium">{"لا توجد طلبات مشحونة"}</p>
+                </div>
+              )}
+            </div>
+
+            {orders.length > 0 && (
+              <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                <button
+                  onClick={handleCreateManifest}
+                  disabled={selectedOrderIds.length === 0 || creatingManifest}
+                  className="w-full h-11 rounded-xl bg-primary text-white font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50 transition-all active:scale-95"
+                >
+                  {creatingManifest ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                  {t("scan.actions.confirmReturn")} ({selectedOrderIds.length})
+                </button>
+              </div>
+            )}
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// SCAN SUBTAB
+// ─────────────────────────────────────────────────────────────
+export function ScanReturnsSubtab({
+  fetchStats,
+  setSubtab
+}) {
+  const t = useTranslations("warehouse.returns");
+
+  const [selectedCarrier, setSelectedCarrier] = useState("all");
+  const [scanInput, setInput] = useState("");
+  const [activeOrder, setActiveOrder] = useState(null);
+  const [localProducts, setLocalProducts] = useState([]);
+  const [selectedItems, setSelectedItems] = useState({});
+  const [returnReason, setReturnReason] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  const [availableForCarrier, setAvailableForCarrier] = useState([]);
+  const [scannedOrdersCount, setnedOrdersCount] = useState(0);
+  const [wrongScans, setWrongScans] = useState(0);
+  const [lastHighlight, setLastHighlight] = useState(null);
+  const [lastMsg, setLastMsg] = useState(null);
+  const [scanState, setState] = useState("idle");
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [isFetchingOrder, setIsFetchingOrder] = useState(false);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const scanRef = useRef(null);
+
+  const fetchAvailableOrders = useCallback(async () => {
+    try {
+      setLoadingOrders(true);
+      const res = await api.get('/orders', {
+        params: {
+          status: 'shipped,delivered',
+          shippingCompanyId: selectedCarrier,
+          limit: 100
+        }
+      });
+      setAvailableForCarrier(res.data?.records || []);
+    } catch (error) {
+      console.error("Failed to fetch available orders", error);
+    } finally {
+      setLoadingOrders(false);
+    }
+  }, [selectedCarrier]);
+
+  useEffect(() => {
+    fetchAvailableOrders();
+  }, [fetchAvailableOrders]);
+
+  const availableItemsCount = useMemo(
+    () =>
+      availableForCarrier.reduce(
+        (sum, order) =>
+          sum +
+          (order.items?.reduce((itemSum, p) => itemSum + (Number(p.quantity) || 0), 0) || 0),
+        0
+      ),
+    [availableForCarrier]
+  );
+
+  const showFeedback = useCallback((type, message) => {
+    setLastMsg({ success: type === "success", message });
+    setState(type);
+    setTimeout(() => {
+      setLastMsg(null);
+      setState("idle");
+    }, 2200);
+  }, []);
+
+  const fetchActiveOrder = useCallback(async (idOrCode) => {
+    try {
+      setIsFetchingOrder(true);
+      const res = await api.get(`/orders/number/${idOrCode}`);
+      const order = res.data;
+
+      // Validation: order must be shipped or delivered
+      if (!order || (order.status?.code !== 'shipped' && order.status?.code !== 'delivered')) {
+        if (soundEnabled) playBeep("error");
+        showFeedback("error", t("scan.messages.notFound") || "Order not found or not in valid status for return");
+        setInput("");
+        return;
+      }
+      setActiveOrder(order);
+      setLocalProducts((order.items || []).map((p) => ({
+        id: p.id,
+        sku: p.variant?.sku || p.sku,
+        name: p.variant?.product?.name || p.name,
+        variantName: p.variant?.name,
+        image: p.variant?.image || p.image,
+        quantity: p.quantity,
+        price: p.price
+      })));
+      setSelectedItems({});
+      setReturnReason("");
+      setInput("");
+      if (soundEnabled) playBeep("success");
+      showFeedback("success", t("scan.messages.found", { code: order.orderNumber }));
+    } catch (error) {
+      if (soundEnabled) playBeep("error");
+      showFeedback("error", t("scan.messages.notFound", { code: idOrCode }));
+      setInput("");
+    } finally {
+      setIsFetchingOrder(false);
+    }
+  }, [soundEnabled, showFeedback, t]);
+
+  const handleCarrierChange = (val) => {
+    setSelectedCarrier(val);
+    setActiveOrder(null);
+    setLocalProducts([]);
+    setSelectedItems({});
+    setReturnReason("");
+    setLastMsg(null);
+    setLastHighlight(null);
+    setState("idle");
+  };
+
+  const resetCurrentOrder = useCallback(() => {
+    setInput("");
+    setActiveOrder(null);
+    setLocalProducts([]);
+    setSelectedItems({});
+    setReturnReason("");
+    setTimeout(() => scanRef.current?.focus(), 100);
+  }, []);
+
+  const handleScan = async () => {
+    const val = scanInput.trim();
+    if (!val) return;
+    await fetchActiveOrder(val);
+  };
+
+  const toggleItem = (p) => {
+    setSelectedItems(prev => {
+      const newItems = { ...prev };
+      if (newItems[p.sku]) {
+        delete newItems[p.sku];
+      } else {
+        newItems[p.sku] = {
+          originalItemId: p.id,
+          quantity: p.quantity,
+          sku: p.sku
+        };
+      }
+      return newItems;
+    });
+  };
+
+  const changeQuantity = (sku, qty) => {
+    setSelectedItems(prev => ({
+      ...prev,
+      [sku]: { ...prev[sku], quantity: qty }
+    }));
+  };
+
+  const selectAll = () => {
+    const all = {};
+    localProducts.forEach(p => {
+      all[p.sku] = {
+        originalItemId: p.id,
+        quantity: p.quantity,
+        sku: p.sku
+      };
+    });
+    setSelectedItems(all);
+  };
+
+  const unselectAll = () => setSelectedItems({});
+
+  const handleSaveReturn = async () => {
+    if (!activeOrder || Object.keys(selectedItems).length === 0) return;
+    try {
+      setIsSaving(true);
+      const payload = {
+        orderId: activeOrder.id,
+        reason: returnReason,
+        items: Object.values(selectedItems).map(item => ({
+          originalItemId: item.originalItemId,
+          quantity: item.quantity
+        }))
+      };
+
+      await api.post('/order-returns/return-request', payload);
+
+      setnedOrdersCount(prev => prev + 1);
+      toast.success(t("scan.messages.returnSuccess", { code: activeOrder.orderNumber }));
+
+      if (soundEnabled) playBeep("success");
+      fetchAvailableOrders();
+      fetchStats?.();
+
+      setTimeout(() => {
+        resetCurrentOrder();
+      }, 1000);
+    } catch (error) {
+      console.error("Failed to save return request", error);
+      toast.error(error.response?.data?.message || "Failed to save return request");
+      if (soundEnabled) playBeep("error");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const isItemsMode = !!activeOrder;
+  const meta = selectedCarrier !== "all" ? getCarrierMeta(selectedCarrier) : null;
+  console.log(isItemsMode, activeOrder)
+  return (
     <div className="space-y-4" dir="rtl">
       <Panel>
         <PanelHeader
-          icon={RefreshCw}
-          pretitle={!currentOrder ? t("scan.header.subtitleReady") : `${t("scan.header.orderLabel")}: ${currentOrder?.code}`}
-          title={!currentOrder ? t("scan.header.title") : t("scan.header.titleActive")}
+          icon={ScanLine}
+          pretitle={!isItemsMode ? t("scan.header.subtitleReady") : `${t("scan.header.orderLabel")}: ${activeOrder?.orderNumber}`}
+          title={!isItemsMode ? t("scan.header.title") : t("scan.header.titleActive")}
           right={
             <>
-              <HeaderIconBtn onClick={() => setSoundEnabled((v) => !v)}>
+              <HeaderIconBtn onClick={() => setSoundEnabled(v => !v)}>
                 {soundEnabled ? <Volume2 size={13} className="text-white" /> : <VolumeX size={13} className="text-white/60" />}
               </HeaderIconBtn>
-              {currentOrder && (
-                <HeaderBadge onClick={resetCurrentOrder}>
-                  <X size={12} />
-                  {t("scan.actions.cancel")}
-                </HeaderBadge>
-              )}
+              <HeaderBadge onClick={() => setPanelOpen(true)}><Layers size={12} />{"طلبات المرتجعات"}</HeaderBadge>
+              {isItemsMode && <HeaderBadge onClick={resetCurrentOrder}><X size={12} />{t("scan.actions.cancel")}</HeaderBadge>}
             </>
           }
         >
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-white" />
-            <div className="h-px flex-1 max-w-[20px] rounded-full bg-white/30" />
-            <div className={cn("w-2 h-2 rounded-full transition-all duration-500", currentOrder ? "bg-white" : "bg-white/30")} />
+          <div className="flex items-center gap-2 flex-wrap">
+            <HeaderBadge>
+              <ClipboardList size={11} />
+              {"الطلبات المتاحة"}: {availableForCarrier.length}
+            </HeaderBadge>
+            <HeaderBadge>
+              <Boxes size={11} />
+              {"إجمالي القطع"}: {availableItemsCount}
+            </HeaderBadge>
           </div>
         </PanelHeader>
 
         <div className="px-4 pt-8 py-5 space-y-4">
-          <ScanInputBar
-            inputRef={scanRef}
-            value={scanInput}
-            onChange={(e) => setScanInput(e.target.value)}
-            onScan={handleScan}
-            isSuccess={scanState === "success"}
-            isError={scanState === "error"}
-            disabled={isProcessing}
-            placeholder={!currentOrder ? t("scan.placeholders.scanOrder") : t("scan.placeholders.scanAnother")}
-          />
+          <div className="relative">
+            <ReturnsScanInputBar
+              inputRef={scanRef}
+              value={scanInput}
+              onChange={(e) => setInput(e.target.value)}
+              onScan={handleScan}
+              isSuccess={scanState === "success"}
+              isError={scanState === "error"}
+              placeholder={t("scan.placeholders.scanOrder")}
+              selectedCarrier={selectedCarrier}
+              onCarrierChange={handleCarrierChange}
+              soundEnabled={soundEnabled}
+              onToggleSound={() => setSoundEnabled((v) => !v)}
+              disabled={isFetchingOrder || isSaving}
+            />
+            {(isFetchingOrder || isSaving) && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-slate-900/50 rounded-xl z-10">
+                <Loader2 className="animate-spin text-primary" size={24} />
+              </div>
+            )}
+          </div>
 
           <AnimatePresence>
-            {lastScanMsg && (
+            {lastMsg && (
               <motion.div
                 initial={{ opacity: 0, y: -6, scale: 0.97 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -2112,182 +2563,322 @@ function ScanReturnSubtab({ orders, updateOrder, pushOp, inventory, updateInvent
                 className={cn(
                   "flex items-center gap-3 px-4 py-2.5 border text-sm font-semibold",
                   DS.radius,
-                  lastScanMsg.success
+                  lastMsg.success
                     ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300"
                     : "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800 text-red-600 dark:text-red-300"
                 )}
               >
-                {lastScanMsg.success ? <CheckCircle2 size={14} className="flex-shrink-0" /> : <AlertCircle size={14} className="flex-shrink-0" />}
-                {lastScanMsg.message}
+                {lastMsg.success ? (
+                  <CheckCircle2 size={14} className="flex-shrink-0" />
+                ) : (
+                  <AlertCircle size={14} className="flex-shrink-0" />
+                )}
+                {lastMsg.message}
               </motion.div>
             )}
           </AnimatePresence>
 
-          <ScanLogBoxes successCount={successCount} errorCount={errorCount} t={t} />
-
-          {currentOrder ? (
-            <>
-              <ReturnScannedOrderTable
-                order={currentOrder}
-                selectedItems={selectedItems}
-                onToggleItem={handleToggleItem}
-                onSelectAll={handleSelectAll}
-                onUnselectAll={handleUnselectAll}
-                returnCondition={returnCondition}
-                onConditionChange={setReturnCondition}
-                t={t}
-              />
-
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={resetCurrentOrder}
-                  className={cn(
-                    "px-4 h-11 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors",
-                    DS.radius
-                  )}
-                >
-                  {t("scan.actions.cancel")}
-                </button>
-
-                <motion.button
-                  type="button"
-                  onClick={handleProcessReturn}
-                  disabled={isProcessing}
-                  whileHover={!isProcessing ? { scale: 1.02 } : {}}
-                  whileTap={!isProcessing ? { scale: 0.98 } : {}}
-                  className={cn(
-                    "flex items-center gap-2 px-5 h-11 font-bold text-sm text-white transition-opacity disabled:opacity-60",
-                    DS.radius
-                  )}
-                  style={{ background: DS.headerGradient }}
-                >
-                  {isProcessing ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
-                  {t("scan.actions.confirmReturn")}
-                </motion.button>
-              </div>
-            </>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <motion.div
-                animate={{ scale: [1, 1.05, 1] }}
-                transition={{ duration: 2.5, repeat: Infinity }}
-                className={cn("w-14 h-14 flex items-center justify-center mb-4", DS.radius)}
-                style={{ background: DS.primary + "12", border: `1px dashed ${DS.primary}35` }}
-              >
-                <RefreshCw size={26} style={{ color: DS.primary }} />
-              </motion.div>
-              <p className="text-slate-600 dark:text-slate-300 font-semibold mb-1">{t("scan.empty.title")}</p>
-              <p className="text-sm text-slate-400">{t("scan.empty.subtitle")}</p>
-            </div>
-          )}
+          <ReturnsScanLogBoxes successCount={scannedOrdersCount} errorCount={wrongScans} />
         </div>
       </Panel>
+
+      {selectedCarrier !== "all" && (
+        <>
+          <Panel>
+            <div
+              className="relative overflow-hidden px-4 py-3 border-b border-slate-100 dark:border-slate-700/60"
+              style={{ background: DS.cardGradient, ...DS.scanline }}
+            >
+              <div className="relative flex flex-wrap items-center gap-x-4 gap-y-2">
+                <div className="min-w-0">
+                  <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">
+                    {t("common.carrier")}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={cn("w-7 h-7 rounded-lg flex items-center justify-center")}
+                      style={{ background: meta?.color + "15" }}
+                    >
+                      <RotateCcw size={13} style={{ color: meta?.color || DS.primary }} />
+                    </div>
+                    <p className="text-sm font-black text-slate-800 dark:text-slate-100">
+                      {selectedCarrier}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="min-w-0">
+                  <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">
+                    {"الطلبات"}
+                  </p>
+                  <p className="font-mono font-black text-sm" style={{ color: DS.primary }}>
+                    {availableForCarrier.length}
+                  </p>
+                </div>
+
+                <div className="min-w-0">
+                  <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">
+                    {"القطع"}
+                  </p>
+                  <p className="font-mono font-black text-sm text-slate-700 dark:text-slate-200">
+                    {availableItemsCount}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {loadingOrders ? (
+              <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                <Loader2 className="animate-spin text-primary" size={32} />
+                <p className="text-sm font-bold text-slate-400 tracking-wide animate-pulse">جاري تحميل الطلبات المشحونة...</p>
+              </div>
+            ) : isItemsMode && activeOrder ? (
+              <ScannedOrderTable
+                order={activeOrder}
+                localProducts={localProducts}
+                selectedItems={selectedItems}
+                onToggleItem={toggleItem}
+                onQuantityChange={changeQuantity}
+                onSelectAll={selectAll}
+                onUnselectAll={unselectAll}
+                returnReason={returnReason}
+                onReasonChange={setReturnReason}
+                onSave={handleSaveReturn}
+                isSaving={isSaving}
+              />
+            ) : (
+              <OrdersList
+                orders={availableForCarrier}
+                scannedOrders={[]}
+                lastHighlight={lastHighlight}
+                onSelectOrder={(order) => fetchActiveOrder(order.orderNumber)}
+              />
+            )}
+          </Panel>
+        </>
+      )}
+
+      <ReturnsOrdersSlidePanel
+        open={panelOpen}
+        onClose={() => setPanelOpen(false)}
+        selectedCarrier={selectedCarrier}
+        onManifestCreated={() => {
+          fetchStats?.();
+          setSubtab("files");
+        }}
+      />
     </div>
   );
 }
 
 // ─────────────────────────────────────────────────────────────
-// RETURN FILES SUBTAB
+// FILES SUBTAB
 // ─────────────────────────────────────────────────────────────
-function ReturnFilesSubtab({ returnFiles, orders, resetToken }) {
+function FileSummaryCell({ row }) {
+  const totalOrders = row.totalOrders || 0;
+  const totalItems =
+    row.orders?.reduce(
+      (sum, order) =>
+        sum + (order?.lastReturn?.items?.reduce((itemSum, p) => itemSum + (Number(p.quantity) || 0), 0) || 0),
+      0
+    ) || 0;
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
+        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">
+          {"طلبات"}
+        </span>
+        <span
+          className="text-xs font-black px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800"
+          style={{ color: DS.primary }}
+        >
+          {totalOrders}
+        </span>
+      </div>
+
+      <span className="text-slate-300 dark:text-slate-600 text-xs">·</span>
+
+      <div className="flex items-center gap-1">
+        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">
+          {"قطع"}
+        </span>
+        <span className="text-xs font-black px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
+          {totalItems}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function ReturnsFilesSubtab({
+  resetToken,
+}) {
   const t = useTranslations("warehouse.returns");
   const [search, setSearch] = useState("");
+  const { debouncedValue: debouncedSearch } = useDebounce({ value: search, delay: 350 })
   const [filterCarrier, setFilterCarrier] = useState("all");
+  const [filterIsPrinted, setFilterIsPrinted] = useState("false");
   const [downloading, setDownloading] = useState({});
   const [downloadingWrongLog, setDownloadingWrongLog] = useState({});
-  const [detailModal, setDetailModal] = useState(null);
-  const [page, setPage] = useState({ current_page: 1, per_page: 12 });
 
-  React.useEffect(() => {
-    setSearch("");
-    setFilterCarrier("all");
-    setPage({ current_page: 1, per_page: 12 });
-    setDetailModal(null);
-  }, [resetToken]);
+  const [pager, setPager] = useState({
+    total_records: 0,
+    current_page: 1,
+    per_page: 12,
+    records: [],
+  });
+  const [loading, setLoading] = useState(false);
 
-  const filtered = useMemo(() => {
-    let base = returnFiles;
-    const q = search.trim().toLowerCase();
-    if (q) base = base.filter((f) => [f.id, f.carrier, f.filename, ...(f.orderCodes || [])].some((x) => String(x || "").toLowerCase().includes(q)));
-    if (filterCarrier !== "all") base = base.filter((f) => f.carrier === filterCarrier);
-    return base;
-  }, [returnFiles, search, filterCarrier]);
-
-  const handleDownload = async (file) => {
-    setDownloading((p) => ({ ...p, [file.id]: true }));
+  const fetchManifests = useCallback(async (page = pager.current_page, per_page = pager.per_page) => {
     try {
-      await new Promise((r) => setTimeout(r, 500));
-      const snap =
-        file.ordersSnapshot ||
-        orders.filter((o) => file.orderCodes.includes(o.code)).map((o) => ({
-          ...o,
-          returnCondition: "سليم",
-        }));
-
-      openPrintWindow(
-        buildReturnPDF(snap, file.carrier, file.createdBy, file.createdAt, {
-          common: { currency: t("common.currency") },
-          pdf: {
-            title: t("pdf.title"),
-            refPrefix: t("pdf.refPrefix"),
-            carrier: t("pdf.carrier"),
-            returnDate: t("pdf.returnDate"),
-            employee: t("pdf.employee"),
-            totalOrders: t("pdf.totalOrders"),
-            orderUnit: t("pdf.orderUnit"),
-            ordersDetail: t("pdf.ordersDetail"),
-            sku: t("pdf.sku"),
-            product: t("pdf.product"),
-            qty: t("pdf.qty"),
-            trackingCode: t("pdf.trackingCode"),
-            condition: t("pdf.condition"),
-            total: t("pdf.total"),
-            receiptConfirmation: t("pdf.receiptConfirmation"),
-            courierName: t("pdf.courierName"),
-            signature: t("pdf.signature"),
-            dateTime: t("pdf.dateTime"),
-            system: t("pdf.system"),
-          },
-        })
-      );
+      setLoading(true);
+      const params = {
+        page,
+        limit: per_page,
+        search: debouncedSearch,
+        shippingCompanyId: filterCarrier === "all" ? undefined : filterCarrier,
+        isPrinted: filterIsPrinted === "all" ? undefined : filterIsPrinted,
+        type: "RETURN"
+      };
+      const res = await api.get('/orders/manifests', { params });
+      setPager({
+        total_records: res.data.total_records,
+        current_page: res.data.current_page || page,
+        per_page: res.data.per_page || per_page,
+        records: res.data.records
+      });
+    } catch (error) {
+      console.error("Error fetching return manifests", error);
     } finally {
-      setDownloading((p) => ({ ...p, [file.id]: false }));
+      setLoading(false);
+    }
+  }, [debouncedSearch, filterIsPrinted, filterCarrier, pager.current_page, pager.per_page]);
+
+  useEffect(() => {
+    fetchManifests(1, pager.per_page);
+  }, [debouncedSearch, resetToken]);
+
+
+  const applyFilters = () => {
+    fetchManifests(1, pager.per_page);
+  };
+
+
+  const returnPdfLabels = {
+    title: "إيصال استلام مرتجعات",
+    printDate: "تاريخ الطباعة",
+    employee: "الموظف",
+    totalOrders: "إجمالي الطلبات",
+    carrier: "شركة الشحن",
+    returnDate: "تاريخ الإرجاع",
+    orderUnit: "طلب",
+    sku: "SKU",
+    product: "المنتج",
+    qty: "الكمية",
+    trackingCode: "رقم التتبع",
+    receiptConfirmation: "تأكيد الاستلام",
+    courierName: "اسم المندوب",
+    signature: "التوقيع",
+    dateTime: "التاريخ والوقت",
+  };
+
+  const wrongLogLabels = {
+    title: "سجل الأخطاء في مسح المرتجعات",
+    printDate: "تاريخ الطباعة",
+    employee: "الموظف",
+    totalAttempts: "إجمالي المحاولات",
+    carrier: "شركة الشحن",
+    date: "التاريخ",
+    totalFailedAttempts: "محاولات فاشلة",
+    attemptUnit: "محاولة",
+    scannedCode: "الكود الممسوح",
+    orderNumber: "رقم الطلب",
+    failReason: "سبب الفشل",
+    time: "الوقت",
+    reasons: {
+      SKU_NOT_IN_ORDER: "المنتج ليس في الطلب",
+      ALREADY_FULLY_SCANNED: "تم المسح بالكامل مسبقاً",
+      INVALID_STATUS: "حالة الطلب غير صالحة",
+      OTHER: "سبب آخر",
     }
   };
 
-  const handleDownloadWrongLog = async (file) => {
-    setDownloadingWrongLog((p) => ({ ...p, [file.id]: true }));
+  const handleDownload = async (row) => {
+    setDownloading((p) => ({ ...p, [row.id]: true }));
     try {
-      await new Promise((r) => setTimeout(r, 400));
-      const logs = file.wrongScanLogs || [];
+      const res = await api.get(`/orders/manifests/${row.id}`);
+      const manifest = res.data;
+
+      const ordersSnapshot = manifest.orders.map(o => {
+        // Use lastReturn if available, otherwise fallback to manifest snapshot or items
+        const returnData = o.lastReturn || {};
+        const returnItems = returnData.items || o.items || [];
+
+        return {
+          code: o.orderNumber,
+          customer: o.customerName,
+          city: o.city,
+          carrier: manifest.shippingCompany?.name,
+          lastReturn: returnData,
+          products: returnItems.map(i => ({
+            sku: i.sku || i.variant?.sku || i.originalItem?.variant?.sku || "—",
+            name: i.name || i.variant?.product?.name || i.originalItem?.variant?.product?.name || "—",
+            quantity: i.quantity || i.returnedQty || 0
+          })),
+          trackingNumber: o.trackingNumber,
+          total: o.totalPrice
+        };
+      });
+
       openPrintWindow(
-        buildWrongScanLogPDF(logs, file.carrier, file.createdBy, file.createdAt, {
-          wrongPdf: {
-            title: t("wrongPdf.title"),
-            carrier: t("wrongPdf.carrier"),
-            employee: t("wrongPdf.employee"),
-            date: t("wrongPdf.date"),
-            totalFailedAttempts: t("wrongPdf.totalFailedAttempts"),
-            attemptUnit: t("wrongPdf.attemptUnit"),
-            printAlertText: t("wrongPdf.printAlertText"),
-            totalAttempts: t("wrongPdf.totalAttempts"),
-            scannedCode: t("wrongPdf.scannedCode"),
-            failReason: t("wrongPdf.failReason"),
-            time: t("wrongPdf.time"),
-            system: t("wrongPdf.system"),
-          },
-        })
+        buildReturnPDF(
+          ordersSnapshot,
+          manifest.shippingCompany?.name || "-",
+          manifest.changedByUser?.name || "System",
+          new Date(manifest.createdAt).toLocaleString(),
+          returnPdfLabels
+        )
       );
+
+      await api.patch(`/orders/${row.id}/mark-manifest-printed`);
+      fetchManifests();
+    } catch (error) {
+      console.error("Error downloading return manifest", error);
+      toast.error("حدث خطأ أثناء تحميل الملف");
     } finally {
-      setDownloadingWrongLog((p) => ({ ...p, [file.id]: false }));
+      setDownloading((p) => ({ ...p, [row.id]: false }));
     }
   };
 
-  const getFileOrder = (file) => {
-    const snap = file.ordersSnapshot?.[0];
-    if (snap) return snap;
-    return orders.find((o) => file.orderCodes?.includes(o.code)) || null;
+  const handleDownloadWrongLog = async (row) => {
+    setDownloadingWrongLog((p) => ({ ...p, [row.id]: true }));
+    try {
+      const res = await api.get(`/orders/${row.id}/return-manifests/scan-logs`);
+      const logsData = res.data || [];
+
+      const logs = logsData.map(l => ({
+        sku: l.sku || "-",
+        reason: l.reason || "-",
+        orderNumber: l.order?.orderNumber || "-",
+        time: new Date(l.createdAt).toLocaleTimeString()
+      }));
+
+      openPrintWindow(
+        buildWrongScanLogPDF(
+          logs,
+          row.shippingCompany?.name || "-",
+          row.order?.user?.name || "System",
+          new Date().toLocaleString(),
+          wrongLogLabels
+        )
+      );
+    } catch (error) {
+      console.error("Error downloading return wrong log", error);
+      toast.error("حدث خطأ أثناء تحميل سجل الأخطاء");
+    } finally {
+      setDownloadingWrongLog((p) => ({ ...p, [row.id]: false }));
+    }
   };
 
   const columns = useMemo(
@@ -2295,42 +2886,55 @@ function ReturnFilesSubtab({ returnFiles, orders, resetToken }) {
       {
         key: "id",
         header: t("files.th.fileNumber"),
-        cell: (row) => <span className="font-mono font-bold text-primary">{row.id}</span>,
+        cell: (row) => (
+          <span className="font-mono font-bold text-primary">{row.manifestNumber}</span>
+        ),
       },
       {
         key: "carrier",
         header: t("files.th.carrier"),
-        cell: (row) =>
-          row.carrier ? (
-            <CarrierPill carrier={row.carrier} />
-          ) : (
-            <span className="text-slate-400 text-sm italic">{t("common.unspecified")}</span>
-          ),
+        cell: (row) => <CarrierPill carrier={row.shippingCompany?.name} />,
       },
       {
-        key: "orderCodes",
-        header: t("files.th.returnedOrders"),
+        key: "isPrinted",
+        header: "حالة الطباعة",
         cell: (row) => (
-          <div className="flex flex-wrap gap-1">
-            {(row.orderCodes || []).map((code) => (
-              <span
-                key={code}
-                className="font-mono text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded"
-              >
-                {code}
+          <div className="flex items-center justify-center">
+            {row.lastPrintedAt ? (
+              <span className="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase tracking-wider">
+                {"تمت الطباعة"}
               </span>
-            ))}
+            ) : (
+              <span className="px-2 py-1 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+                {"لم تتم الطباعة"}
+              </span>
+            )}
           </div>
         ),
       },
       {
+        key: "orderCodes",
+        header: t("files.th.returnedOrders"),
+        cell: (row) => {
+          console.log(row)
+          return (
+            <FileSummaryCell
+              row={row}
+            />
+          )
+        },
+      },
+      {
         key: "createdAt",
         header: t("files.th.createdAt"),
-        cell: (row) => <span className="text-sm text-slate-500">{row.createdAt}</span>,
+        cell: (row) => (
+          <span className="text-sm text-slate-500">{new Date(row.createdAt).toLocaleString()}</span>
+        ),
       },
       {
         key: "createdBy",
         header: t("files.th.createdBy"),
+        cell: (row) => row.changedByUser?.name || "—"
       },
       {
         key: "actions",
@@ -2340,152 +2944,81 @@ function ReturnFilesSubtab({ returnFiles, orders, resetToken }) {
             row={row}
             actions={[
               {
-                icon: <Info />,
-                tooltip: t("files.tooltip.details"),
-                onClick: (r) => setDetailModal(getFileOrder(r)),
-                variant: "purple",
-              },
-              {
-                icon: downloading[row.id] ? <Loader2 className="animate-spin" /> : <FileDown />,
-                tooltip: t("files.tooltip.downloadFile"),
+                icon: downloading[row.id] ? (
+                  <Loader2 size={13} className="animate-spin" />
+                ) : (
+                  <Download size={13} />
+                ),
+                tooltip: "تحميل الإيصال",
                 onClick: (r) => handleDownload(r),
                 variant: "blue",
+                disabled: !!downloading[row.id],
               },
               {
-                icon: downloadingWrongLog[row.id] ? <Loader2 className="animate-spin" /> : <FileText />,
-                tooltip: t("files.tooltip.downloadWrongLog"),
+                icon: downloadingWrongLog[row.id] ? (
+                  <Loader2 size={13} className="animate-spin" />
+                ) : (
+                  <FileText size={13} />
+                ),
+                tooltip: "تحميل سجل الأخطاء",
                 onClick: (r) => handleDownloadWrongLog(r),
                 variant: "red",
+                disabled: !!downloadingWrongLog[row.id],
               },
             ]}
           />
         ),
       },
     ],
-    [t, downloading, downloadingWrongLog, orders]
+    [downloading, downloadingWrongLog, t]
   );
 
   return (
-    <div className="relative " >
-      <Table
-        searchValue={search}
-        onSearchChange={setSearch}
-        onSearch={() => {}}
-        labels={{
-          searchPlaceholder: t("files.searchPlaceholder"),
-          filter: t("common.filter"),
-          apply: t("common.apply"),
-          total: t("common.total"),
-          limit: t("common.limit"),
-          emptyTitle: t("files.emptyTitle"),
-          emptySubtitle: "",
-        }}
-        actions={[]}
-        hasActiveFilters={filterCarrier !== "all"}
-        onApplyFilters={() => {}}
-        filters={
-          <FilterField label={t("common.carrier")}>
-            <Select value={filterCarrier} onValueChange={setFilterCarrier}>
-              <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
-                <SelectValue placeholder={t("common.allCarriers")} />
+    <Table
+      searchValue={search}
+      onSearchChange={setSearch}
+      onApplyFilters={applyFilters}
+      labels={{
+        searchPlaceholder: t("files.searchPlaceholder"),
+        filter: t("common.filter"),
+        apply: t("common.apply"),
+        total: t("common.total"),
+        limit: t("common.limit"),
+        emptyTitle: t("files.emptyTitle"),
+        emptySubtitle: "",
+      }}
+      actions={[]}
+      hasActiveFilters={filterCarrier !== "all" || filterIsPrinted !== "all"}
+      onSearch={applyFilters}
+      filters={
+        <>
+          <ShippingCompanyFilter value={filterCarrier} onChange={setFilterCarrier} />
+          <FilterField label="حالة الطباعة">
+            <Select value={filterIsPrinted} onValueChange={setFilterIsPrinted}>
+              <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm focus:border-[var(--primary)] transition-all">
+                <SelectValue placeholder="حالة الطباعة" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t("common.allCarriers")}</SelectItem>
-                {CARRIERS.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {c}
-                  </SelectItem>
-                ))}
+                <SelectItem value="all">{t("common.all") || "الكل"}</SelectItem>
+                <SelectItem value="true">{"تمت الطباعة"}</SelectItem>
+                <SelectItem value="false">{"لم تتم الطباعة"}</SelectItem>
               </SelectContent>
             </Select>
           </FilterField>
-        }
-        columns={columns}
-        data={filtered}
-        isLoading={false}
-        pagination={{ total_records: filtered.length, current_page: page.current_page, per_page: page.per_page }}
-        onPageChange={({ page: p, per_page }) => setPage({ current_page: p, per_page })}
-      />
-
-      <ReturnOrderDetailModal open={!!detailModal} onClose={() => setDetailModal(null)} order={detailModal} t={t} />
-    </div>
+        </>
+      }
+      columns={columns}
+      data={pager.records}
+      isLoading={loading}
+      pagination={{
+        total_records: pager.total_records,
+        current_page: pager.current_page,
+        per_page: pager.per_page,
+      }}
+      onPageChange={({ page: p, per_page }) =>
+        fetchManifests(p, per_page)
+      }
+    />
   );
 }
 
-// ─────────────────────────────────────────────────────────────
-// MAIN RETURNS TAB
-// ─────────────────────────────────────────────────────────────
-export default function ReturnsTab({
-  orders,
-  updateOrder,
-  pushOp,
-  inventory,
-  updateInventory,
-  returnFiles,
-  addReturnFile,
-  subtab,
-  setSubtab,
-  resetToken,
-}) {
-  const t = useTranslations("warehouse.returns");
-  const shipped = orders.filter((o) => o.status === STATUS.SHIPPED);
-  const today = new Date().toISOString().split("T")[0];
-
-  const stats = [
-    { id: "with-carrier", name: t("stats.withCarrier"), value: shipped.length, icon: Truck, color: "#3b82f6", sortOrder: 0 },
-    { id: "return-files", name: t("stats.returnFiles"), value: returnFiles.length, icon: RefreshCw, color: "#f59e0b", sortOrder: 1 },
-    {
-      id: "returned-today",
-      name: t("stats.returnedToday"),
-      value: orders.filter((o) => o.returnedAt?.startsWith(today)).length,
-      icon: Calendar,
-      color: "#ef4444",
-      sortOrder: 2,
-    },
-    {
-      id: "total-returns",
-      name: t("stats.totalReturns"),
-      value: orders.filter((o) => !!o.returnedAt).length,
-      icon: Package,
-      color: "#a855f7",
-      sortOrder: 3,
-    },
-  ];
-
-  return (
-    <div className="space-y-4 relative z-[1000] ">
-      <PageHeader
-        breadcrumbs={[
-          { name: t("breadcrumbs.home"), href: "/" },
-          { name: t("breadcrumbs.warehouse"), href: "/warehouse" },
-          { name: t("breadcrumbs.returns") },
-        ]}
-        buttons={<Button_ size="sm" label={t("header.howItWorks")} variant="ghost" onClick={() => {}} icon={<Info size={18} />} />}
-        stats={subtab === "files" ? stats : []}
-        items={[
-          { id: "scan", label: t("subtabs.scanReturn"), count: shipped.length, icon: ScanLine },
-          { id: "files", label: t("subtabs.files"), count: returnFiles.length, icon: FileDown },
-        ]}
-        active={subtab}
-        setActive={setSubtab}
-      />
-
-      <AnimatePresence mode="wait">
-        <motion.div key={subtab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15 }}>
-          {subtab === "scan" && (
-            <ScanReturnSubtab
-              orders={orders}
-              updateOrder={updateOrder}
-              pushOp={pushOp}
-              inventory={inventory}
-              updateInventory={updateInventory}
-              addReturnFile={addReturnFile}
-            />
-          )}
-
-          {subtab === "files" && <ReturnFilesSubtab returnFiles={returnFiles} orders={orders} resetToken={resetToken} />}
-        </motion.div>
-      </AnimatePresence>
-    </div>
-  );
-}

@@ -36,7 +36,7 @@ const LargeBarcodeDisplay = ({ value }) => {
     return <svg ref={ref} className="max-w-full" />;
 };
 
-const BarcodeCell = ({ value }) => {
+const BarcodeCell = ({ value, className, height }) => {
     const t = useTranslations("barcode");
     const [isOpen, setIsOpen] = useState(false);
     const smallSvgRef = useRef(null);
@@ -47,7 +47,7 @@ const BarcodeCell = ({ value }) => {
             JsBarcode(smallSvgRef.current, value, {
                 format: "CODE128",
                 width: 1,
-                height: 30,
+                height: height || 20,
                 displayValue: false,
                 margin: 0
             });
@@ -59,10 +59,11 @@ const BarcodeCell = ({ value }) => {
             {/* Clickable Small Barcode in Table */}
             <button
                 onClick={() => setIsOpen(true)}
-                className="hover:opacity-70 transition-opacity cursor-zoom-in"
+                className={`hover:opacity-70 transition-opacity cursor-zoom-in ${className}`}
                 title={t("viewBarcode")}
             >
-                <svg ref={smallSvgRef} />
+                <svg ref={smallSvgRef} className="w-full !h-auto" // Force width 100% and maintain aspect ratio
+                    style={{ width: '100%', height: 'auto' }} />
             </button>
 
             {/* Popup Dialog */}

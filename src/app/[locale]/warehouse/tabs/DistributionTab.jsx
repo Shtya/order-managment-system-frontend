@@ -1,9 +1,10 @@
 // File: warehouse/tabs/DistributionTab.jsx
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
 import {
 	Truck,
 	Package,
@@ -29,6 +30,7 @@ import {
 	BoxSelect,
 	Layers,
 	Send,
+	Loader2,
 } from "lucide-react";
 
 import { cn } from "@/utils/cn";
@@ -45,78 +47,206 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
+import { useSocket } from "@/context/SocketContext";
 import Table, { FilterField } from "@/components/atoms/Table";
 import Button_ from "@/components/atoms/Button";
 import PageHeader from "../../../../components/atoms/Pageheader";
-import { STATUS, CARRIERS } from "./data";
 import ActionButtons from "@/components/atoms/Actions";
 import { RejectOrderModal } from "./PreparationTab";
-
+import { useDebounce } from "@/hook/useDebounce";
+import { useExport } from "@/hook/useExport";
+import StoreFilter from "@/components/atoms/StoreFilter";
+import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
+import ProductFilter from "@/components/atoms/ProductFilter";
+import api from "@/utils/api";
 // ─────────────────────────────────────────────
 // CARRIER BRAND STYLES
 // ─────────────────────────────────────────────
-const CARRIER_STYLES = {
-	ARAMEX: {
-		bg: "bg-red-50 dark:bg-red-950/20",
-		border: "border-red-200 dark:border-red-800",
-		text: "text-red-700 dark:text-red-400",
-		gradient: "from-red-500 to-red-600",
-		glow: "shadow-red-200 dark:shadow-red-900/40",
-	},
-	SMSA: {
-		bg: "bg-blue-50 dark:bg-blue-950/20",
-		border: "border-blue-200 dark:border-blue-800",
-		text: "text-blue-700 dark:text-blue-400",
-		gradient: "from-blue-500 to-blue-600",
-		glow: "shadow-blue-200 dark:shadow-blue-900/40",
-	},
-	DHL: {
-		bg: "bg-yellow-50 dark:bg-yellow-950/20",
-		border: "border-yellow-200 dark:border-yellow-800",
-		text: "text-yellow-700 dark:text-yellow-400",
-		gradient: "from-yellow-400 to-yellow-500",
-		glow: "shadow-yellow-200 dark:shadow-yellow-900/40",
-	},
-	BOSTA: {
-		bg: "bg-orange-50 dark:bg-orange-950/20",
-		border: "border-orange-200 dark:border-orange-800",
-		text: "text-orange-700 dark:text-orange-400",
-		gradient: "from-orange-500 to-orange-600",
-		glow: "shadow-orange-200 dark:shadow-orange-900/40",
-	},
-};
+import { CARRIER_STYLES, CARRIERS, CARRIER_META } from "./data";
 
-const CARRIER_META = {
-	ARAMEX: { icon: Truck, color: "#ef4444", ...CARRIER_STYLES.ARAMEX },
-	SMSA: { icon: Truck, color: "#3b82f6", ...CARRIER_STYLES.SMSA },
-	DHL: { icon: Truck, color: "#eab308", ...CARRIER_STYLES.DHL },
-	BOSTA: { icon: Truck, color: "#f97316", ...CARRIER_STYLES.BOSTA },
-};
+
+
+// ─────────────────────────────────────────────
+// MAIN TAB
+// ─────────────────────────────────────────────
+export default function DistributionTab({ subtab, setSubtab }) {
+	const t = useTranslations("warehouse.distribution");
+
+	const [statsData, setStatsData] = useState({
+		lifecycle: { confirmed: 0, distributed: 0, distributedNotPrinted: 0 },
+		companies: []
+	});
+	const [loading, setLoading] = useState(true);
+
+	const updateStatsAfterAssign = useCallback(() => {
+		setStatsData(prev => ({
+			...prev,
+			lifecycle: {
+				...prev.lifecycle,
+				confirmed: Math.max(0, prev.lifecycle.confirmed - 1),
+				distributed: prev.lifecycle.distributed + 1,
+				distributedNotPrinted: prev.lifecycle.distributedNotPrinted + 1,
+			}
+		}));
+	}, []);
+
+	// Fetch data from your two new endpoints
+	const fetchStats = useCallback(async () => {
+		try {
+			setLoading(true);
+			const [{ data: lifecycleData }, { data: companiesData }] = await Promise.all([
+				api.get('/shipping/stats/lifecycle-summary'),
+				api.get('/shipping/stats/companies-workload')
+			]);
+
+			setStatsData({
+				lifecycle: lifecycleData,
+				companies: companiesData
+			});
+		} catch (error) {
+			console.error("Failed to fetch shipping stats", error);
+		} finally {
+			setLoading(false);
+		}
+	}, []);
+
+	useEffect(() => {
+		fetchStats();
+	}, [fetchStats]);
+
+	// 1. General Stats: 3 Remaining (Removed withCarrier)
+	const generalStats = [
+		{
+			id: "total-confirmed",
+			name: t("stats.totalConfirmed"),
+			value: statsData.lifecycle.confirmed,
+			icon: CheckCircle2,
+			color: "#10b981",
+			bgColor: "#10b98115",
+			sortOrder: 0,
+		},
+		{
+			id: "with-carrier",
+			name: t("stats.withCarrier"),
+			value: statsData.lifecycle.distributed,
+			icon: Truck,
+			color: "#6763af",
+			bgColor: "#6763af15",
+			sortOrder: 2,
+		},
+		{
+			id: "ready-to-print",
+			name: t("stats.readyToPrint"),
+			value: statsData.lifecycle.distributedNotPrinted,
+			icon: Printer,
+			color: "#ff6a1e",
+			bgColor: "#ff6a1e15",
+			sortOrder: 3,
+		},
+	];
+
+	// 2. Carrier Stats: Dynamic from the second endpoint
+	const carrierStats = statsData?.companies ? statsData.companies.map((c) => {
+		// Fallback meta if company name doesn't match CARRIER_META keys
+		const meta = CARRIER_META[c.code?.toUpperCase()] || { icon: Truck, color: "#64748b" };
+		return {
+			id: `carrier-${c.companyId}`,
+			name: c.companyName,
+			icon: meta.icon,
+			color: meta.color,
+			bgColor: meta.color + "15",
+			value: c.count,
+		};
+	}) : [];
+	return (
+		<div className="space-y-4">
+			<PageHeader
+				breadcrumbs={[
+					{ name: t("breadcrumbs.home"), href: "/" },
+					{ name: t("breadcrumbs.orders"), href: "/orders" },
+					{ name: t("breadcrumbs.distribution") },
+				]}
+				buttons={
+					<>
+						<Button_
+							size="sm"
+							label={t("header.howItWorks")}
+							variant="ghost"
+							onClick={() => { }}
+							icon={<Info size={18} />}
+						/>
+					</>
+				}
+				statsLoading={loading}
+				stats={subtab === "unassigned" ? generalStats : carrierStats}
+				items={[
+					{ id: "unassigned", label: t("tabs.unassigned"), count: statsData.lifecycle.confirmed, icon: AlertCircle },
+					{ id: "assigned", label: t("tabs.assigned"), count: statsData.lifecycle.distributed, icon: Truck },
+				]}
+				active={subtab}
+				setActive={setSubtab}
+			/>
+
+			{/* <AssignCarrierDialog
+				t={t}
+				open={assignAllOpen}
+				onClose={() => setAssignAllOpen(false)}
+				orders={orders}
+				selectedOrderCodes={unassigned.map((o) => o.code)}
+				updateOrder={updateOrder}
+				pushOp={pushOp}
+			/> */}
+
+			<AnimatePresence mode="wait">
+				<motion.div
+					key={subtab}
+					initial={{ opacity: 0, y: 12 }}
+					animate={{ opacity: 1, y: 0 }}
+					exit={{ opacity: 0, y: -8 }}
+					transition={{ duration: 0.15 }}
+				>
+					{subtab === "unassigned" && (
+						<UnassignedOrdersSubtab
+							t={t}
+							fetchStats={fetchStats}
+							updateStatsAfterAssign={updateStatsAfterAssign}
+						/>
+					)}
+					{subtab === "assigned" && (
+						<AssignedOrdersSubtab
+							t={t}
+							fetchStats={fetchStats}
+							updateStatsAfterAssign={updateStatsAfterAssign}
+						/>
+					)}
+				</motion.div>
+			</AnimatePresence>
+		</div>
+	);
+}
 
 // ─────────────────────────────────────────────
 // ORDER DETAIL MODAL — REDESIGNED
 // ─────────────────────────────────────────────
-function OrderDetailModal({ t, open, onClose, order }) {
-	if (!order) return null;
+export function OrderDetailModal({ open, onClose, order, hideNotes }) {
+	const t = useTranslations("warehouse.distribution");
 
+	if (!order) return null;
 	const infoRows = [
-		{ label: t("field.customerName"), value: order.customer, icon: User, accent: "#ff6a1e" },
-		{ label: t("field.phoneNumber"), value: order.phone, icon: Phone, accent: "#6763af" },
+		{ label: t("field.customerName"), value: order.customerName, icon: User, accent: "#ff6a1e" },
+		{ label: t("field.phoneNumber"), value: order.phoneNumber, icon: Phone, accent: "#6763af" },
 		{ label: t("field.city"), value: order.city, icon: MapPin, accent: "#ff6a1e" },
 		{ label: t("field.area"), value: order.area, icon: MapPin, accent: "#ffb703" },
-		{ label: t("field.store"), value: order.store, icon: Store, accent: "#6763af" },
-		{ label: t("field.carrier"), value: order.carrier || t("common.notSpecified"), icon: Truck, accent: "#ff5c2b" },
-		{ label: t("field.trackingCode"), value: order.trackingCode || t("common.none"), icon: Hash, accent: "#6763af" },
+		{ label: t("field.store"), value: order.store?.name || "-", icon: Store, accent: "#6763af" },
+		{ label: t("field.carrier"), value: order.shippingCompany?.name || t("common.notSpecified"), icon: Truck, accent: "#ff5c2b" },
+		{ label: t("field.trackingCode"), value: order.trackingNumber || t("common.none"), icon: Hash, accent: "#6763af" },
 		{
 			label: t("field.paymentType"),
-			value: order.paymentType === "COD" ? t("payment.cod") : t("payment.paid"),
+			value: order.paymentStatus === "paid" ? t("payment.paid") : order.paymentMethod === "cod" ? t("payment.cod") : order.paymentMethod,
 			icon: CreditCard,
-			accent: order.paymentType === "COD" ? "#ffb703" : "#10b981",
+			accent: order.paymentMethod === "cod" ? "#ffb703" : "#10b981",
 		},
-		{ label: t("field.total"), value: `${order.total} ر.س`, icon: TrendingUp, accent: "#10b981" },
+		{ label: t("field.total"), value: `${order.finalTotal} ر.س`, icon: TrendingUp, accent: "#10b981" },
 		{ label: t("field.shippingCost"), value: `${order.shippingCost} ر.س`, icon: Truck, accent: "#ff6a1e" },
 		{
 			label: t("field.allowOpenPackage"),
@@ -125,10 +255,10 @@ function OrderDetailModal({ t, open, onClose, order }) {
 			accent: order.allowOpenPackage ? "#10b981" : "#ef4444",
 		},
 		{
-			label: t("field.allowReturn"),
-			value: order.allowReturn ? t("value.allowed") : t("value.notAllowed"),
+			label: t("field.returnOrder"),
+			value: order?.replacementResult?.originalOrder?.orderNumber || "-",
 			icon: BoxSelect,
-			accent: order.allowReturn ? "#10b981" : "#ef4444",
+			accent: order.replacementResult?.originalOrder?.orderNumber ? "#10b981" : "#ef4444",
 		},
 	];
 
@@ -152,7 +282,7 @@ function OrderDetailModal({ t, open, onClose, order }) {
 							</div>
 							<div>
 								<p className="text-white/70 text-xs font-medium mb-0.5">{t("modal.orderDetailsTitle", { code: "" })}</p>
-								<h2 className="text-white text-xl font-bold font-mono">{order.code}</h2>
+								<h2 className="text-white text-xl font-bold font-mono">{order.orderNumber}</h2>
 							</div>
 						</div>
 						<button
@@ -167,18 +297,18 @@ function OrderDetailModal({ t, open, onClose, order }) {
 					<div className="relative mt-4 flex items-center gap-2">
 						<span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full">
 							<span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-							{order.carrier ? order.carrier : t("stats.withoutCarrier")}
+							{order.shippingCompany?.name ? order.shippingCompany?.name : t("stats.withoutCarrier")}
 						</span>
 						<span
 							className={cn(
 								"inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full",
-								order.paymentType === "COD"
+								order.paymentMethod === "cod"
 									? "bg-yellow-400/30 text-white border border-yellow-300/40"
 									: "bg-green-400/30 text-white border border-green-300/40"
 							)}
 						>
 							<CreditCard size={11} />
-							{order.paymentType === "COD" ? t("payment.cod") : t("payment.paid")}
+							{order.paymentStatus === "paid" ? t("payment.paid") : order.paymentMethod === "cod" ? t("payment.cod") : order.paymentMethod}
 						</span>
 					</div>
 				</div>
@@ -216,11 +346,11 @@ function OrderDetailModal({ t, open, onClose, order }) {
 								{t("section.products")}
 							</span>
 							<span className="ml-auto text-xs font-semibold text-slate-400">
-								{order.products?.length || 0} {t("common.items") || "عنصر"}
+								{order.items?.length || 0} {t("common.items") || "عنصر"}
 							</span>
 						</div>
 						<div className="divide-y divide-slate-100 dark:divide-slate-700/60">
-							{order.products?.map((p, i) => (
+							{order.items?.map((p, i) => (
 								<motion.div
 									key={i}
 									initial={{ opacity: 0, x: -8 }}
@@ -238,12 +368,12 @@ function OrderDetailModal({ t, open, onClose, order }) {
 										className="font-mono text-[11px] px-2 py-0.5 rounded-md font-bold"
 										style={{ backgroundColor: "#6763af12", color: "#6763af" }}
 									>
-										{p.sku}
+										{p.variant?.sku}
 									</span>
-									<span className="flex-1 text-sm text-slate-700 dark:text-slate-200 font-medium">{p.name}</span>
-									<span className="text-xs text-slate-400 font-mono">×{p.requestedQty}</span>
+									<span className="flex-1 text-sm text-slate-700 dark:text-slate-200 font-medium">{p.variant?.product?.name}</span>
+									<span className="text-xs text-slate-400 font-mono">×{p.quantity}</span>
 									<span className="font-bold text-sm" style={{ color: "#ff6a1e" }}>
-										{(Number(p.price) || 0) * (Number(p.requestedQty) || 0)} ر.س
+										{(Number(p.unitPrice) || 0) * (Number(p.quantity) || 0)} ر.س
 									</span>
 								</motion.div>
 							))}
@@ -251,7 +381,7 @@ function OrderDetailModal({ t, open, onClose, order }) {
 					</div>
 
 					{/* Notes */}
-					{!!order.notes && (
+					{!!order.notes && !hideNotes && (
 						<div
 							className="rounded-xl p-4 border"
 							style={{ backgroundColor: "#ffb70310", borderColor: "#ffb70340" }}
@@ -284,52 +414,60 @@ function OrderDetailModal({ t, open, onClose, order }) {
 // ─────────────────────────────────────────────
 // ASSIGN CARRIER DIALOG — REDESIGNED
 // ─────────────────────────────────────────────
-function AssignCarrierDialog({ t, open, onClose, orders, selectedOrderCodes, updateOrder, pushOp }) {
+function AssignCarrierDialog({ t, open, onClose, orders, selectedOrderCodes, onConfirm }) {
 	const [selectedOrders, setSelectedOrders] = useState([]);
 	const [carrier, setCarrier] = useState("");
 	const [loading, setLoading] = useState(false);
 
 	const availableOrders = useMemo(
-		() => orders.filter((o) => selectedOrderCodes.includes(o.code)),
+		() => orders.filter((o) => selectedOrderCodes.includes(o.orderNumber)),
 		[orders, selectedOrderCodes]
 	);
 
 	useEffect(() => {
 		if (!open) return;
-		setSelectedOrders(availableOrders.map((o) => o.code));
+		setSelectedOrders(availableOrders.map((o) => o.orderNumber));
 		setCarrier("");
 	}, [open, availableOrders]);
 
-	const toggleOrder = (code) =>
-		setSelectedOrders((prev) => (prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]));
+	const toggleOrder = (orderNumber) =>
+		setSelectedOrders((prev) => (prev.includes(orderNumber) ? prev.filter((o) => o !== orderNumber) : [...prev, orderNumber]));
 
 	const handleAssign = async () => {
 		if (!carrier || selectedOrders.length === 0) return;
 		setLoading(true);
 		try {
-			selectedOrders.forEach((code) => {
-				updateOrder(code, {
-					carrier,
-					distributedAt: new Date().toISOString().slice(0, 16).replace("T", " "),
+			const provider = carrier.toLowerCase();
+			const orderIds = availableOrders
+				.filter(o => selectedOrders.includes(o.orderNumber))
+				.map(o => o.id);
+
+			let res;
+			if (orderIds.length === 1) {
+				// Single assignment
+				const orderId = orderIds[0];
+				res = await api.post(`/shipping/providers/${provider}/orders/${orderId}/assign`, {});
+				toast.success(t("modal.assignSuccess") || "Carrier assigned successfully");
+			} else {
+				// Bulk assignment
+				res = await api.post(`/shipping/providers/${provider}/orders/bulk-assign`, {
+					items: orderIds.map((id) => ({
+						orderId: Number(id) // Ensuring it's a number to match the DTO
+					}))
 				});
-				pushOp({
-					id: `OP-${Date.now()}-${code}`,
-					operationType: "ASSIGN_CARRIER",
-					orderCode: code,
-					carrier,
-					employee: "System",
-					result: "SUCCESS",
-					details: `Carrier assigned: ${carrier}`,
-					createdAt: new Date().toISOString().slice(0, 16).replace("T", " "),
-				});
-			});
+				toast.success(t("modal.bulkAssignStarted") || "Orders added to assignment queue");
+			}
+
 			onClose();
+			onConfirm?.(orderIds, res?.data);
+		} catch (error) {
+			console.error("Assignment failed", error);
+			toast.error(error.response?.data?.message || t("modal.assignFailed") || "Assignment failed");
 		} finally {
 			setLoading(false);
 		}
 	};
 
-	const selectedCarrierStyle = carrier ? CARRIER_STYLES[carrier] : null;
 
 	return (
 		<Dialog open={open} onOpenChange={onClose}>
@@ -399,6 +537,8 @@ function AssignCarrierDialog({ t, open, onClose, orders, selectedOrderCodes, upd
 									SMSA: { color: "#3b82f6" },
 									DHL: { color: "#eab308" },
 									BOSTA: { color: "#f97316" },
+									JT: { color: "#009688" },
+									TURBO: { color: "#00bcd4" },
 								};
 								const { color } = CARRIER_COLORS[c];
 								const isSelected = carrier === c;
@@ -450,10 +590,10 @@ function AssignCarrierDialog({ t, open, onClose, orders, selectedOrderCodes, upd
 
 						<div className="max-h-[260px] overflow-y-auto space-y-2 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 border border-slate-100 dark:border-slate-700">
 							{availableOrders.map((order) => {
-								const isChecked = selectedOrders.includes(order.code);
+								const isChecked = selectedOrders.includes(order.orderNumber);
 								return (
 									<motion.div
-										key={order.code}
+										key={order.orderNumber}
 										whileHover={{ scale: 1.01 }}
 										className={cn(
 											"flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
@@ -461,7 +601,7 @@ function AssignCarrierDialog({ t, open, onClose, orders, selectedOrderCodes, upd
 												? "bg-white dark:bg-slate-900 border-[#ff6a1e]/40 shadow-sm"
 												: "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-slate-300"
 										)}
-										onClick={() => toggleOrder(order.code)}
+										onClick={() => toggleOrder(order.orderNumber)}
 									>
 										<div
 											className={cn(
@@ -479,21 +619,21 @@ function AssignCarrierDialog({ t, open, onClose, orders, selectedOrderCodes, upd
 
 										<div className="flex-1 min-w-0">
 											<p className="font-mono font-bold text-sm" style={{ color: "#ff6a1e" }}>
-												{order.code}
+												{order.orderNumber}
 											</p>
 											<p className="text-xs text-slate-500 truncate">
-												{order.customer} — {order.city}
+												{order.customerName} — {order.city}
 											</p>
 										</div>
 
 										<div className="text-left flex-shrink-0">
-											<p className="font-bold text-sm text-emerald-600">{order.total} ر.س</p>
-											{order.carrier && (
+											<p className="font-bold text-sm text-emerald-600">{order.finalTotal} ر.س</p>
+											{order.shippingCompany?.name && (
 												<span
 													className="text-[10px] font-bold px-1.5 py-0.5 rounded-md"
 													style={{ backgroundColor: "#6763af18", color: "#6763af" }}
 												>
-													{order.carrier}
+													{order.shippingCompany?.name}
 												</span>
 											)}
 										</div>
@@ -555,67 +695,143 @@ function AssignCarrierDialog({ t, open, onClose, orders, selectedOrderCodes, upd
 // ─────────────────────────────────────────────
 // UNASSIGNED SUBTAB
 // ─────────────────────────────────────────────
-function UnassignedOrdersSubtab({ t, orders, updateOrder, pushOp }) {
-	const unassigned = useMemo(
-		() => orders.filter((o) => o.status === STATUS.CONFIRMED && !o.carrier),
-		[orders]
-	);
+function UnassignedOrdersSubtab({ t, fetchStats, updateStatsAfterAssign }) {
 
 	const [search, setSearch] = useState("");
+	const { debouncedValue: debouncedSearch } = useDebounce({ value: search, delay: 350 })
 	const [filters, setFilters] = useState({
 		store: "all",
 		paymentType: "all",
 		carrier: "all",
 		date: "",
-		productName: "",
-		region: "all",
+		productId: "all",
 	});
 
 	const [selectedOrders, setSelectedOrders] = useState([]);
 	const [assignDialog, setAssignDialog] = useState({ open: false, codes: [] });
-	const [cancelModal, setCancelModal] = useState({ open: false, code: "" });
+	const [cancelModal, setCancelModal] = useState({ open: false, order: null });
 	const [detailModal, setDetailModal] = useState(null);
-	const [page, setPage] = useState({ current_page: 1, per_page: 12 });
 
-	const stores = useMemo(() => [...new Set(unassigned.map((o) => o.store))], [unassigned]);
-	const regions = useMemo(() => [...new Set(unassigned.map((o) => o.region || o.city))], [unassigned]);
-	const products = useMemo(() => {
-		const allProducts = unassigned.flatMap((o) => o.products?.map((p) => p.name) || []);
-		return [...new Set(allProducts)];
-	}, [unassigned]);
+	const [pager, setPager] = useState({
+		total_records: 0,
+		current_page: 1,
+		per_page: 12,
+		records: [],
+	});
+	const [ordersLoading, setOrdersLoading] = useState(false);
+	const { handleExport, exportLoading } = useExport();
+	const { subscribe } = useSocket();
+
 
 	useEffect(() => {
-		setFilters({ store: "all", paymentType: "all", carrier: "all", date: "", productName: "", region: "all" });
+		const unsubscribe = subscribe("SHIPMENT_STATUS_UNASSIGNED", (action) => {
+
+			if (action.type !== "SHIPMENT_STATUS") return;
+			const { orderNumber, status, message } = action.payload;
+
+			if (status === "success") {
+				toast.success(t("messages.shipmentCreated", { orderNumber }));
+				updateStatsAfterAssign(orderNumber);
+				setPager(prev => ({
+					...prev,
+					records: prev.records.filter(r => r.orderNumber !== orderNumber)
+				}));
+			} else {
+				toast.error(`${t("messages.shipmentFailed", { orderNumber })}: ${message}`);
+				setPager(prev => ({
+					...prev,
+					records: prev.records.map(r => r.orderNumber !== orderNumber ? r : { ...r, isAssigning: false })
+				}));
+			}
+		});
+
+		return () => unsubscribe();
+	}, [subscribe, t]);
+
+	const buildParams = (page = pager.current_page, per_page = pager.per_page) => {
+		const params = {
+			page,
+			limit: per_page,
+			status: 'confirmed',
+		};
+
+		if (debouncedSearch) params.search = debouncedSearch;
+		if (filters.store !== "all") params.storeId = filters.store;
+		if (filters.paymentType !== "all") params.paymentStatus = filters.paymentType;
+		if (filters.carrier !== "all") params.shippingCompanyId = filters.carrier;
+		if (filters.date) params.startDate = filters.date;
+		if (filters.productId !== "all") params.productId = filters.productId;
+
+		return params;
+	};
+
+	const fetchOrders = async (page = pager.current_page, per_page = pager.per_page) => {
+		try {
+			setOrdersLoading(true);
+			const params = buildParams(page, per_page);
+			const res = await api.get('/orders', { params });
+			const data = res.data || {};
+			setPager({
+				total_records: data.total_records || 0,
+				current_page: data.current_page || page,
+				per_page: data.per_page || per_page,
+				records: Array.isArray(data.records) ? data.records : [],
+			});
+		} catch (e) {
+			console.error('Error fetching orders', e);
+			toast.error(t("messages.errorFetchingOrders") || "Error fetching orders");
+		} finally {
+			setOrdersLoading(false);
+		}
+	};
+
+	const onExport = async () => {
+		const params = buildParams(1, 10000);
+		delete params.page;
+		delete params.limit;
+		await handleExport({
+			endpoint: "/orders/export",
+			params,
+			filename: `unassigned_orders_${Date.now()}.xlsx`,
+		});
+	};
+
+	useEffect(() => {
+		fetchOrders(1, pager.per_page);
+	}, [debouncedSearch]);
+
+	const handlePageChange = ({ page, per_page }) => {
+		fetchOrders(page, per_page);
+	};
+
+	const applyFilters = () => {
+		fetchOrders(1, pager.per_page);
+	};
+
+	useEffect(() => {
+		setFilters({ store: "all", paymentType: "all", carrier: "all", date: "", productId: "all" });
 		setSearch("");
 	}, []);
 
-	const filtered = useMemo(() => {
-		let base = unassigned;
-		const q = search.trim().toLowerCase();
-		if (q) base = base.filter((o) => [o.code, o.customer, o.phone, o.city, o.store].some((x) => String(x || "").toLowerCase().includes(q)));
-		if (filters.store !== "all") base = base.filter((o) => o.store === filters.store);
-		if (filters.paymentType !== "all") base = base.filter((o) => o.paymentType === filters.paymentType);
-		if (filters.region !== "all") base = base.filter((o) => (o.region || o.city) === filters.region);
-		if (filters.carrier !== "all") {
-			if (filters.carrier === "none") base = base.filter((o) => !o.carrier);
-			else base = base.filter((o) => o.carrier === filters.carrier);
-		}
-		if (filters.date) base = base.filter((o) => o.orderDate === filters.date);
-		if (filters.productName) base = base.filter((o) => o.products?.some((p) => String(p.name || "").includes(filters.productName)));
-		return base;
-	}, [unassigned, search, filters]);
-
-	const toggleOrder = (code) =>
-		setSelectedOrders((prev) => (prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]));
+	const toggleOrder = (orderNumber) => {
+		const order = pager.records.find(r => r.orderNumber === orderNumber);
+		if (order?.isAssigning) return;
+		setSelectedOrders((prev) => (prev.includes(orderNumber) ? prev.filter((o) => o !== orderNumber) : [...prev, orderNumber]));
+	}
 
 	const selectAll = () => {
-		const codes = filtered.map((o) => o.code);
-		setSelectedOrders(selectedOrders.length === codes.length ? [] : codes);
+		const selectableOrderNumbers = pager.records
+			.filter(o => !o.isAssigning)
+			.map((o) => o.orderNumber);
+
+		const allSelectableSelected = selectableOrderNumbers.every(num => selectedOrders.includes(num));
+
+		setSelectedOrders(allSelectableSelected ? [] : selectableOrderNumbers);
 	};
 
 	const hasActiveFilters =
 		filters.store !== "all" || filters.paymentType !== "all" || filters.carrier !== "all" ||
-		filters.region !== "all" || !!filters.date || !!filters.productName;
+		!!filters.date || filters.productId !== "all";
 
 	const columns = useMemo(
 		() => [
@@ -623,53 +839,88 @@ function UnassignedOrdersSubtab({ t, orders, updateOrder, pushOp }) {
 				key: "select",
 				header: (
 					<div className="flex items-center justify-center">
-						<Checkbox checked={filtered.length > 0 && selectedOrders.length === filtered.length} onCheckedChange={selectAll} />
+						<Checkbox
+							checked={
+								pager.records.length > 0 &&
+								pager.records.every((r) => r.isAssigning || selectedOrders.includes(r.orderNumber))
+							}
+							onCheckedChange={selectAll}
+						/>
 					</div>
 				),
 				className: "w-[48px]",
-				cell: (row) => (
-					<div className="flex items-center justify-center">
-						<Checkbox checked={selectedOrders.includes(row.code)} onCheckedChange={() => toggleOrder(row.code)} />
-					</div>
-				),
+				cell: (row) => {
+					return (
+						<div className="flex items-center justify-center">
+							<Checkbox
+								checked={selectedOrders.includes(row.orderNumber)}
+								onCheckedChange={() => toggleOrder(row.orderNumber)}
+								disabled={row.isAssigning}
+							/>
+						</div>
+					);
+				},
 			},
 			{
 				key: "code",
 				header: t("field.orderCode"),
-				cell: (row) => <span className="font-mono font-bold text-[#ff6a1e] dark:text-[#ffb703]">{row.code}</span>,
+				cell: (row) => <span className="font-mono font-bold text-[#ff6a1e] dark:text-[#ffb703]">{row.orderNumber}</span>,
 			},
-			{ key: "customer", header: t("field.customer"), cell: (row) => <span className="font-semibold">{row.customer}</span> },
-			{ key: "phone", header: t("field.phone"), cell: (row) => <span className="font-mono text-slate-500 text-sm" dir="ltr">{row.phone}</span> },
+			{ key: "customer", header: t("field.customer"), cell: (row) => <span className="font-semibold">{row.customerName}</span> },
+			{ key: "phone", header: t("field.phone"), cell: (row) => <span className="font-mono text-slate-500 text-sm" dir="ltr">{row.phoneNumber}</span> },
 			{ key: "city", header: t("field.city") },
 			{ key: "area", header: t("field.area") },
 			{
+				key: "carrier",
+				header: t("field.carrier"),
+				cell: (row) => {
+					const carrierName = row.carrier || row.shippingCompany?.code?.toUpperCase();
+					const s = CARRIER_STYLES[carrierName] || CARRIER_STYLES.NONE;
+					return (
+						<span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border", s.bg, s.border, s.text)}>
+							<Truck size={12} />{carrierName || t("common.none")}
+						</span>
+					);
+				},
+			},
+			{
 				key: "store",
 				header: t("field.store"),
-				cell: (row) => (
-					<div className="flex items-center gap-1.5">
-						<Store className="w-3.5 h-3.5 text-slate-400" />
-						<span className="text-sm">{row.store}</span>
-					</div>
-				),
+				cell: (row) => {
+					const storeName = row.store?.name;
+					const s = CARRIER_STYLES.NONE;
+					return (
+						<div className="flex items-center gap-1.5">
+							<span className={cn("inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold border", storeName ? "bg-slate-100 text-slate-700 border-slate-200" : cn(s.bg, s.border, s.text))}>
+								<Store className="w-3 h-3" />
+								{storeName || t("common.none")}
+							</span>
+						</div>
+					);
+				},
 			},
 			{
 				key: "total",
 				header: t("field.total"),
-				cell: (row) => <span className="font-bold text-emerald-700 dark:text-emerald-400">{row.total} ر.س</span>,
+				cell: (row) => <span className="font-bold text-emerald-700 dark:text-emerald-400">{row.finalTotal} ر.س</span>,
 			},
 			{
 				key: "paymentType",
 				header: t("field.payment"),
 				cell: (row) => (
-					<Badge className={cn("rounded-full text-xs border", row.paymentType === "PAID" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-amber-50 text-amber-700 border-amber-200")}>
-						{row.paymentType === "PAID" ? t("payment.paid") : t("payment.cod")}
+					<Badge className={cn("rounded-full text-xs border", row.paymentStatus === "paid" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-amber-50 text-amber-700 border-amber-200")}>
+						{row.paymentStatus === "paid" ? t("payment.paid") : row.paymentMethod === "cod" ? t("payment.cod") : row.paymentMethod}
 					</Badge>
 				),
 			},
 			{
 				key: "orderDate",
 				header: t("field.orderDate"),
-				cell: (row) => <span className="text-sm text-slate-500">{row.orderDate}</span>,
+				cell: (row) => (
+					<span className="text-xs text-slate-500">
+						{new Date(row.created_at).toLocaleDateString("en-US")}
+					</span>
+				),
 			},
 			{
 				key: "actions",
@@ -686,22 +937,24 @@ function UnassignedOrdersSubtab({ t, orders, updateOrder, pushOp }) {
 							},
 							{
 								icon: <Truck />,
-								tooltip: row.carrier ? t("tooltip.changeAssign") : t("tooltip.assign"),
-								onClick: (r) => setAssignDialog({ open: true, codes: [r.code] }),
+								tooltip: row.isAssigning ? t("tooltip.assigning") : t("tooltip.assign"),
+								onClick: (r) => setAssignDialog({ open: true, codes: [r.orderNumber] }),
 								variant: "orange",
+								disabled: row.isAssigning,
 							},
 							{
 								icon: <Ban />,
 								tooltip: t("tooltip.reject"),
-								onClick: (r) => setCancelModal({ open: true, code: r.code }),
+								onClick: (r) => setCancelModal({ open: true, order: r }),
 								variant: "red",
+								disabled: row.isAssigning,
 							},
 						]}
 					/>
 				),
 			},
 		],
-		[t, filtered, selectedOrders]
+		[t, pager.records, selectedOrders, setDetailModal, setAssignDialog, setCancelModal]
 	);
 
 	return (
@@ -709,7 +962,7 @@ function UnassignedOrdersSubtab({ t, orders, updateOrder, pushOp }) {
 			<Table
 				searchValue={search}
 				onSearchChange={setSearch}
-				onSearch={() => { }}
+				onSearch={applyFilters}
 				labels={{
 					searchPlaceholder: t("table.searchUnassigned"),
 					filter: t("common.filter"),
@@ -731,76 +984,93 @@ function UnassignedOrdersSubtab({ t, orders, updateOrder, pushOp }) {
 					{
 						key: "export",
 						label: t("common.export"),
-						icon: <FileDown size={14} />,
+						icon: exportLoading ? <Loader2 className="animate-spin" size={14} /> : <FileDown size={14} />,
 						color: "blue",
-						onClick: () => { },
+						onClick: onExport,
+						disabled: exportLoading,
 					},
 				]}
 				hasActiveFilters={hasActiveFilters}
-				onApplyFilters={() => { }}
+				onApplyFilters={applyFilters}
 				filters={
 					<>
-						<FilterField label={t("field.store")}>
-							<Select value={filters.store} onValueChange={(v) => setFilters((f) => ({ ...f, store: v }))}>
-								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={t("common.allStores")} /></SelectTrigger>
-								<SelectContent>
-									<SelectItem value="all">{t("common.allStores")}</SelectItem>
-									{stores.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-								</SelectContent>
-							</Select>
-						</FilterField>
+						<StoreFilter
+							value={filters.store}
+							onChange={(v) => setFilters(f => ({ ...f, store: v }))}
+						/>
+						<ShippingCompanyFilter
+							value={filters.carrier}
+							onChange={(v) => setFilters(f => ({ ...f, carrier: v }))}
+						/>
 						<FilterField label={t("field.paymentType")}>
 							<Select value={filters.paymentType} onValueChange={(v) => setFilters((f) => ({ ...f, paymentType: v }))}>
 								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={t("common.all")} /></SelectTrigger>
 								<SelectContent>
 									<SelectItem value="all">{t("common.all")}</SelectItem>
-									<SelectItem value="COD">{t("payment.cod")}</SelectItem>
-									<SelectItem value="PAID">{t("payment.paid")}</SelectItem>
+									<SelectItem value="cod">{t("payment.cod")}</SelectItem>
+									<SelectItem value="paid">{t("payment.paid")}</SelectItem>
 								</SelectContent>
 							</Select>
 						</FilterField>
-						<FilterField label={t("field.region")}>
-							<Select value={filters.region} onValueChange={(v) => setFilters((f) => ({ ...f, region: v }))}>
-								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={t("common.allRegions")} /></SelectTrigger>
-								<SelectContent>
-									<SelectItem value="all">{t("common.allRegions")}</SelectItem>
-									{regions.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-								</SelectContent>
-							</Select>
-						</FilterField>
-						<FilterField label={t("field.productName")}>
-							<Select value={filters.productName} onValueChange={(v) => setFilters((f) => ({ ...f, productName: v }))}>
-								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={t("common.allProducts")} /></SelectTrigger>
-								<SelectContent>
-									<SelectItem value="all">{t("common.allProducts")}</SelectItem>
-									{products.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-								</SelectContent>
-							</Select>
-						</FilterField>
-						<FilterField label={t("field.carrier")}>
-							<Select value={filters.carrier} onValueChange={(v) => setFilters((f) => ({ ...f, carrier: v }))}>
-								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={t("common.allCarriers")} /></SelectTrigger>
-								<SelectContent>
-									<SelectItem value="all">{t("common.allCarriers")}</SelectItem>
-									<SelectItem value="none">{t("stats.withoutCarrier")}</SelectItem>
-									{CARRIERS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-								</SelectContent>
-							</Select>
-						</FilterField>
+						<ProductFilter
+							value={filters.productId}
+							onChange={(v) => setFilters(f => ({ ...f, productId: v }))}
+						/>
 						<FilterField label={t("field.date")}>
 							<Input type="date" value={filters.date} onChange={(e) => setFilters((f) => ({ ...f, date: e.target.value }))} className="h-10 rounded-xl text-sm" />
 						</FilterField>
 					</>
 				}
 				columns={columns}
-				data={filtered}
-				isLoading={false}
-				pagination={{ total_records: filtered.length, current_page: page.current_page, per_page: page.per_page }}
-				onPageChange={({ page: p, per_page }) => setPage({ current_page: p, per_page })}
+				data={pager.records}
+				isLoading={ordersLoading}
+				pagination={{ total_records: pager.total_records, current_page: pager.current_page, per_page: pager.per_page }}
+				onPageChange={handlePageChange}
 			/>
 
-			<AssignCarrierDialog t={t} open={assignDialog.open} onClose={() => setAssignDialog({ open: false, codes: [] })} orders={orders} selectedOrderCodes={assignDialog.codes} updateOrder={updateOrder} pushOp={pushOp} />
-			<RejectOrderModal open={!!cancelModal.open} onClose={() => setCancelModal({ open: false, code: "" })} order={cancelModal.code} onConfirm={updateOrder} />
+			<AssignCarrierDialog t={t}
+				open={assignDialog.open}
+				onClose={() => {
+					setAssignDialog({ open: false, codes: [] });
+				}}
+				orders={pager.records || []}
+				onConfirm={(orderIds) => {
+					setSelectedOrders([]); // Requirement 2: clear selection
+
+					if (orderIds.length === 1) {
+						// Requirement 1: single order, remove locally and update stats
+						updateStatsAfterAssign();
+						const orderNumber = pager.records.find(r => orderIds.includes(r.id))?.orderNumber;
+						if (orderNumber) {
+							setPager(prev => ({
+								...prev,
+								records: prev.records.filter(r => r.orderNumber !== orderNumber)
+							}));
+						}
+					} else if (orderIds.length > 1) {
+						// Requirement 1: bulk, set isAssigning to true
+						setPager((prev) => ({
+							...prev,
+							records: prev.records.map((r) =>
+								orderIds.includes(r.id) ? { ...r, isAssigning: true } : r
+							),
+						}));
+					}
+				}}
+				selectedOrderCodes={assignDialog.codes}
+			/>
+
+			<RejectOrderModal
+				open={cancelModal.open}
+				onClose={() => {
+					setCancelModal({ open: false, order: null });
+				}}
+				onConfirm={(data) => {
+					fetchOrders(); // Refetch after rejection
+					fetchStats?.(); // Update header stats
+				}}
+				order={cancelModal.order}
+			/>
 			<OrderDetailModal t={t} open={!!detailModal} onClose={() => setDetailModal(null)} order={detailModal} />
 		</div>
 	);
@@ -809,67 +1079,173 @@ function UnassignedOrdersSubtab({ t, orders, updateOrder, pushOp }) {
 // ─────────────────────────────────────────────
 // ASSIGNED SUBTAB
 // ─────────────────────────────────────────────
-function AssignedOrdersSubtab({ t, orders, updateOrder, pushOp }) {
-	const assigned = useMemo(() => orders.filter((o) => o.status === STATUS.CONFIRMED && !!o.carrier), [orders]);
+function AssignedOrdersSubtab({ t, pushOp, fetchStats, updateStatsAfterAssign }) {
 	const [search, setSearch] = useState("");
-	const [filters, setFilters] = useState({ carrier: "all", store: "all", paymentType: "all", date: "", productName: "", region: "all" });
+	const { debouncedValue: debouncedSearch } = useDebounce({ value: search, delay: 350 })
+	const [filters, setFilters] = useState({ carrier: "all", store: "all", paymentType: "all", date: "", productId: "all" });
 	const [detailModal, setDetailModal] = useState(null);
 	const [assignDialog, setAssignDialog] = useState({ open: false, codes: [] });
-	const [cancelModal, setCancelModal] = useState({ open: false, code: "" });
-	const [page, setPage] = useState({ current_page: 1, per_page: 12 });
+	const [cancelModal, setCancelModal] = useState({ open: false, order: null });
 
-	const stores = useMemo(() => [...new Set(assigned.map((o) => o.store))], [assigned]);
-	const regions = useMemo(() => [...new Set(assigned.map((o) => o.region || o.city))], [assigned]);
-	const products = useMemo(() => [...new Set(assigned.flatMap((o) => o.products?.map((p) => p.name) || []))], [assigned]);
+	const [pager, setPager] = useState({
+		total_records: 0,
+		current_page: 1,
+		per_page: 12,
+		records: [],
+	});
+	const [ordersLoading, setOrdersLoading] = useState(false);
+	const { handleExport, exportLoading } = useExport();
+	const { subscribe } = useSocket();
 
 	useEffect(() => {
-		setFilters({ carrier: "all", store: "all", paymentType: "all", date: "", productName: "", region: "all" });
+		const unsubscribe = subscribe("SHIPMENT_STATUS_ASSIGNED", async (action) => {
+			console.log(action)
+			if (action.type !== 'SHIPMENT_STATUS') return;
+			const { orderId, orderNumber, status, message } = action.payload;
+			if (status === "success") {
+				toast.success(t("messages.shipmentCreated", { orderNumber }));
+				try {
+					const res = await api.get(`/orders/${orderId}`);
+					const orderData = res.data;
+					if (orderData) {
+						setPager(prev => ({
+							...prev,
+							records: [orderData, ...prev.records.filter(r => r.orderNumber !== orderNumber)]
+						}));
+					}
+				} catch (e) {
+					console.error("Error fetching order details", e);
+				}
+			} else {
+
+				toast.error(`${t("messages.shipmentFailed", { orderNumber })}: ${message}`);
+			}
+		});
+
+		return () => unsubscribe();
+	}, [subscribe, t]);
+
+
+	const buildParams = (page = pager.current_page, per_page = pager.per_page) => {
+		const params = {
+			page,
+			limit: per_page,
+			status: 'distributed',
+		};
+
+		if (debouncedSearch) params.search = debouncedSearch;
+		if (filters.carrier !== "all") params.shippingCompanyId = filters.carrier;
+		if (filters.store !== "all") params.storeId = filters.store;
+		if (filters.paymentType !== "all") params.paymentStatus = filters.paymentType;
+		if (filters.date) params.startDate = filters.date;
+		if (filters.productId !== "all") params.productId = filters.productId;
+
+		return params;
+	};
+
+	const fetchOrders = async (page = pager.current_page, per_page = pager.per_page) => {
+		try {
+			setOrdersLoading(true);
+			const params = buildParams(page, per_page);
+			const res = await api.get('/orders', { params });
+			const data = res.data || {};
+			setPager({
+				total_records: data.total_records || 0,
+				current_page: data.current_page || page,
+				per_page: data.per_page || per_page,
+				records: Array.isArray(data.records) ? data.records : [],
+			});
+		} catch (e) {
+			console.error('Error fetching orders', e);
+			toast.error(t("messages.errorFetchingOrders") || "Error fetching orders");
+		} finally {
+			setOrdersLoading(false);
+		}
+	};
+
+	const onExport = async () => {
+		const params = buildParams(1, 10000);
+		delete params.page;
+		delete params.limit;
+		await handleExport({
+			endpoint: "/orders/export",
+			params,
+			filename: `assigned_orders_${Date.now()}.xlsx`,
+		});
+	};
+
+	useEffect(() => {
+		fetchOrders(1, pager.per_page);
+	}, [debouncedSearch]);
+
+	const handlePageChange = ({ page, per_page }) => {
+		fetchOrders(page, per_page);
+	};
+
+	const applyFilters = () => {
+		fetchOrders(1, pager.per_page);
+	};
+
+	useEffect(() => {
+		setFilters({ carrier: "all", store: "all", paymentType: "all", date: "", productId: "all" });
 		setSearch("");
 	}, []);
 
-	const filtered = useMemo(() => {
-		let base = assigned;
-		const q = search.trim().toLowerCase();
-		if (q) base = base.filter((o) => [o.code, o.customer, o.phone, o.city, o.carrier, o.store].some((x) => String(x || "").toLowerCase().includes(q)));
-		if (filters.carrier !== "all") base = base.filter((o) => o.carrier === filters.carrier);
-		if (filters.store !== "all") base = base.filter((o) => o.store === filters.store);
-		if (filters.paymentType !== "all") base = base.filter((o) => o.paymentType === filters.paymentType);
-		if (filters.region !== "all") base = base.filter((o) => (o.region || o.city) === filters.region);
-		if (filters.date) base = base.filter((o) => o.orderDate === filters.date);
-		if (filters.productName) base = base.filter((o) => o.products?.some((p) => String(p.name || "").includes(filters.productName)));
-		return base;
-	}, [assigned, search, filters]);
-
-	const hasActiveFilters = filters.carrier !== "all" || filters.store !== "all" || filters.paymentType !== "all" || filters.region !== "all" || !!filters.date || !!filters.productName;
+	const hasActiveFilters = filters.carrier !== "all" || filters.store !== "all" || filters.paymentType !== "all" || !!filters.date || filters.productId !== "all";
 
 	const columns = useMemo(
 		() => [
-			{ key: "code", header: t("field.orderCode"), cell: (row) => <span className="font-mono font-bold text-[#ff6a1e] dark:text-[#ffb703]">{row.code}</span> },
-			{ key: "customer", header: t("field.customer"), cell: (row) => <span className="font-semibold">{row.customer}</span> },
-			{ key: "phone", header: t("field.phone"), cell: (row) => <span className="font-mono text-slate-500 text-sm" dir="ltr">{row.phone}</span> },
+			{ key: "code", header: t("field.orderCode"), cell: (row) => <span className="font-mono font-bold text-[#ff6a1e] dark:text-[#ffb703]">{row.orderNumber}</span> },
+			{ key: "customer", header: t("field.customer"), cell: (row) => <span className="font-semibold">{row.customerName}</span> },
+			{ key: "phone", header: t("field.phone"), cell: (row) => <span className="font-mono text-slate-500 text-sm" dir="ltr">{row.phoneNumber}</span> },
 			{ key: "city", header: t("field.city") },
 			{ key: "area", header: t("field.area") },
 			{
 				key: "carrier",
 				header: t("field.carrier"),
 				cell: (row) => {
-					const s = CARRIER_STYLES[row.carrier] || {};
+					const carrierName = row.carrier || row.shippingCompany?.code?.toUpperCase();
+					const s = CARRIER_STYLES[carrierName?.toUpperCase()] || CARRIER_STYLES.NONE;
 					return (
 						<span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border", s.bg, s.border, s.text)}>
-							<Truck size={12} />{row.carrier}
+							<Truck size={12} />{carrierName || t("common.none")}
 						</span>
+					);
+				},
+			},
+			{
+				key: "store",
+				header: t("field.store"),
+				cell: (row) => {
+					const storeName = row.store?.name;
+					const s = CARRIER_STYLES.NONE;
+					return (
+						<div className="flex items-center gap-1.5">
+							<span className={cn("inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold border", storeName ? "bg-slate-100 text-slate-700 border-slate-200" : cn(s.bg, s.border, s.text))}>
+								<Store className="w-3 h-3" />
+								{storeName || t("common.none")}
+							</span>
+						</div>
 					);
 				},
 			},
 			{
 				key: "trackingCode",
 				header: t("field.trackingCode"),
-				cell: (row) => row.trackingCode ? (
-					<span className="font-mono text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">{row.trackingCode}</span>
+				cell: (row) => row.trackingNumber ? (
+					<span className="font-mono text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">{row.trackingNumber}</span>
 				) : <span className="text-slate-400">{t("common.none")}</span>,
 			},
-			{ key: "distributedAt", header: t("field.distributedAt"), cell: (row) => <span className="text-sm text-slate-500">{row.distributedAt || t("common.none")}</span> },
-			{ key: "total", header: t("field.total"), cell: (row) => <span className="font-bold text-emerald-700 dark:text-emerald-400">{row.total} ر.س</span> },
+			{
+				key: "distributedAt",
+				header: t("field.distributedAt"),
+				cell: (row) => (
+					<span className="text-xs text-slate-500">
+						{row.distributed_at ? new Date(row.distributed_at).toLocaleDateString("en-US") : t("common.none")}
+					</span>
+				),
+			},
+			{ key: "total", header: t("field.total"), cell: (row) => <span className="font-bold text-emerald-700 dark:text-emerald-400">{row.finalTotal} ر.س</span> },
 			{
 				key: "actions",
 				header: t("field.actions"),
@@ -885,76 +1261,98 @@ function AssignedOrdersSubtab({ t, orders, updateOrder, pushOp }) {
 							},
 							{
 								icon: <Truck />,
-								tooltip: t("tooltip.changeAssign"),
-								onClick: (r) => setAssignDialog({ open: true, codes: [r.code] }),
+								tooltip: row.isAssigning ? t("tooltip.assigning") : t("tooltip.changeAssign"),
+								onClick: (r) => setAssignDialog({ open: true, codes: [r.orderNumber] }),
 								variant: "orange",
+								disabled: row.isAssigning,
 							},
 							{
 								icon: <Ban />,
 								tooltip: t("tooltip.reject"),
-								onClick: (r) => setCancelModal({ open: true, code: r.code }),
+								onClick: (r) => setCancelModal({ open: true, order: r }),
 								variant: "red",
+								disabled: row.isAssigning,
 							},
 						]}
 					/>
 				),
 			},
 		],
-		[t]
+		[t, setDetailModal, setAssignDialog, setCancelModal]
 	);
+
+	const handleAssignOrders = useCallback(async (orderIds) => {
+		if (!orderIds || orderIds.length === 0) return;
+
+		// 1. Determine if we are doing Single or Bulk logic
+		const isSingle = orderIds.length === 1;
+
+		if (isSingle) {
+			const orderId = orderIds[0];
+			try {
+				const res = await api.get(`/orders/${orderId}`);
+				const orderData = res.data;
+
+				if (orderData) {
+					setPager(prev => ({
+						...prev,
+						records: prev.records.map(r => r.id === orderId ? orderData : r)
+					}));
+				}
+			} catch (e) {
+				console.error("Failed to refetch reassigned order", e);
+				// Fallback to full refresh if single fetch fails
+				fetchOrders();
+			}
+		} else {
+			// 2. Bulk logic: Optimistically set isAssigning to true
+			setPager((prev) => ({
+				...prev,
+				records: prev.records.map((r) =>
+					orderIds.includes(r.id) ? { ...r, isAssigning: true } : r
+				),
+			}));
+
+			// Note: Since the bulk process is handled by the background queue,
+			// we just set the UI state and let the socket/polling handle the update.
+		}
+	}, [api, fetchOrders, setPager]); // Dependencies for stability
 
 	return (
 		<div className="space-y-4">
 			<Table
-				searchValue={search} onSearchChange={setSearch} onSearch={() => { }}
+				searchValue={search} onSearchChange={setSearch} onSearch={applyFilters}
 				labels={{ searchPlaceholder: t("table.searchAssigned"), filter: t("common.filter"), apply: t("common.apply"), total: t("common.total"), limit: t("common.limit"), emptyTitle: t("table.emptyAssignedTitle"), emptySubtitle: "" }}
-				actions={[{ key: "export", label: t("common.export"), icon: <FileDown size={14} />, color: "blue", onClick: () => { } }]}
-				hasActiveFilters={hasActiveFilters} onApplyFilters={() => { }}
+				actions={[{
+					key: "export",
+					label: t("common.export"),
+					icon: exportLoading ? <Loader2 className="animate-spin" size={14} /> : <FileDown size={14} />,
+					color: "blue",
+					onClick: onExport,
+					disabled: exportLoading,
+				}]}
+				hasActiveFilters={hasActiveFilters} onApplyFilters={applyFilters}
 				filters={
 					<>
-						<FilterField label={t("field.carrier")}>
-							<Select value={filters.carrier} onValueChange={(v) => setFilters((f) => ({ ...f, carrier: v }))}>
-								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={t("common.allCarriers")} /></SelectTrigger>
-								<SelectContent>
-									<SelectItem value="all">{t("common.allCarriers")}</SelectItem>
-									{CARRIERS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-								</SelectContent>
-							</Select>
-						</FilterField>
-						<FilterField label={t("field.store")}>
-							<Select value={filters.store} onValueChange={(v) => setFilters((f) => ({ ...f, store: v }))}>
-								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={t("common.allStores")} /></SelectTrigger>
-								<SelectContent>
-									<SelectItem value="all">{t("common.allStores")}</SelectItem>
-									{stores.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-								</SelectContent>
-							</Select>
-						</FilterField>
-						<FilterField label={t("field.region")}>
-							<Select value={filters.region} onValueChange={(v) => setFilters((f) => ({ ...f, region: v }))}>
-								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={t("common.allRegions")} /></SelectTrigger>
-								<SelectContent>
-									<SelectItem value="all">{t("common.allRegions")}</SelectItem>
-									{regions.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-								</SelectContent>
-							</Select>
-						</FilterField>
-						<FilterField label={t("field.productName")}>
-							<Select value={filters.productName} onValueChange={(v) => setFilters((f) => ({ ...f, productName: v }))}>
-								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={t("common.allProducts")} /></SelectTrigger>
-								<SelectContent>
-									<SelectItem value="all">{t("common.allProducts")}</SelectItem>
-									{products.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-								</SelectContent>
-							</Select>
-						</FilterField>
+						<ShippingCompanyFilter
+							value={filters.carrier}
+							onChange={(v) => setFilters(f => ({ ...f, carrier: v }))}
+						/>
+						<StoreFilter
+							value={filters.store}
+							onChange={(v) => setFilters(f => ({ ...f, store: v }))}
+						/>
+						<ProductFilter
+							value={filters.productId}
+							onChange={(v) => setFilters(f => ({ ...f, productId: v }))}
+						/>
 						<FilterField label={t("field.paymentType")}>
 							<Select value={filters.paymentType} onValueChange={(v) => setFilters((f) => ({ ...f, paymentType: v }))}>
 								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={t("common.all")} /></SelectTrigger>
 								<SelectContent>
 									<SelectItem value="all">{t("common.all")}</SelectItem>
-									<SelectItem value="COD">{t("payment.cod")}</SelectItem>
-									<SelectItem value="PAID">{t("payment.paid")}</SelectItem>
+									<SelectItem value="cod">{t("payment.cod")}</SelectItem>
+									<SelectItem value="paid">{t("payment.paid")}</SelectItem>
 								</SelectContent>
 							</Select>
 						</FilterField>
@@ -963,143 +1361,34 @@ function AssignedOrdersSubtab({ t, orders, updateOrder, pushOp }) {
 						</FilterField>
 					</>
 				}
-				columns={columns} data={filtered} isLoading={false}
-				pagination={{ total_records: filtered.length, current_page: page.current_page, per_page: page.per_page }}
-				onPageChange={({ page: p, per_page }) => setPage({ current_page: p, per_page })}
+				columns={columns} data={pager.records} isLoading={ordersLoading}
+				pagination={{ total_records: pager.total_records, current_page: pager.current_page, per_page: pager.per_page }}
+				onPageChange={handlePageChange}
 			/>
 
-			<AssignCarrierDialog t={t} open={assignDialog.open} onClose={() => setAssignDialog({ open: false, codes: [] })} orders={orders} selectedOrderCodes={assignDialog.codes} updateOrder={updateOrder} pushOp={pushOp} />
-			<RejectOrderModal open={!!cancelModal.open} onClose={() => setCancelModal({ open: false, code: "" })} order={cancelModal.code} onConfirm={updateOrder} />
-
-			{/* <CancelOrderModal t={t} open={cancelModal.open} onClose={() => setCancelModal({ open: false, code: "" })} prefilledCode={cancelModal.code} updateOrder={updateOrder} pushOp={pushOp} /> */}
+			<AssignCarrierDialog
+				t={t}
+				open={assignDialog.open}
+				onClose={() => {
+					setAssignDialog({ open: false, codes: [] });
+				}}
+				onConfirm={handleAssignOrders}
+				orders={pager.records}
+				selectedOrderCodes={assignDialog.codes}
+			/>
+			<RejectOrderModal
+				open={!!cancelModal.open}
+				onClose={() => {
+					setCancelModal({ open: false, order: null });
+				}}
+				onConfirm={(data) => {
+					fetchOrders(); // Refetch after rejection
+					fetchStats?.(); // Update header stats
+				}}
+				order={cancelModal.order}
+			/>
 			<OrderDetailModal t={t} open={!!detailModal} onClose={() => setDetailModal(null)} order={detailModal} />
 		</div>
 	);
 }
 
-// ─────────────────────────────────────────────
-// MAIN TAB
-// ─────────────────────────────────────────────
-export default function DistributionTab({ orders, updateOrder, pushOp, subtab, setSubtab }) {
-	const t = useTranslations("warehouse.distribution");
-
-	const confirmedOrders = useMemo(() => orders.filter((o) => o.status === STATUS.CONFIRMED), [orders]);
-	const unassigned = confirmedOrders.filter((o) => !o.carrier);
-	const assigned = confirmedOrders.filter((o) => !!o.carrier);
-	const readyToPrint = assigned.filter((o) => !o.labelPrinted);
-
-	const [assignAllOpen, setAssignAllOpen] = useState(false);
-
-	// Stats with icons and brand colors
-	const stats = [
-		{
-			id: "total-confirmed",
-			name: t("stats.totalConfirmed"),
-			value: confirmedOrders.length,
-			icon: CheckCircle2,
-			color: "#10b981",
-			bgColor: "#10b98115",
-			sortOrder: 0,
-		},
-		{
-			id: "without-carrier",
-			name: t("stats.withoutCarrier"),
-			value: unassigned.length,
-			icon: AlertCircle,
-			color: "#ffb703",
-			bgColor: "#ffb70315",
-			sortOrder: 1,
-		},
-		{
-			id: "with-carrier",
-			name: t("stats.withCarrier"),
-			value: assigned.length,
-			icon: Truck,
-			color: "#6763af",
-			bgColor: "#6763af15",
-			sortOrder: 2,
-		},
-		{
-			id: "ready-to-print",
-			name: t("stats.readyToPrint"),
-			value: readyToPrint.length,
-			icon: Printer,
-			color: "#ff6a1e",
-			bgColor: "#ff6a1e15",
-			sortOrder: 3,
-		},
-	];
-
-	const statsAssignOrders = useMemo(() => {
-		const base = orders.filter((o) => o.status === STATUS.CONFIRMED && !!o.carrier);
-		return CARRIERS.map((carrier) => {
-			const meta = CARRIER_META[carrier] || { icon: Truck, color: "#64748b" };
-			const list = base.filter((o) => o.carrier === carrier);
-			return {
-				id: `carrier-${carrier}`,
-				name: carrier,
-				icon: meta.icon,
-				color: meta.color,
-				bgColor: meta.color + "15",
-				value: list.length,
-			};
-		});
-	}, [orders]);
-
-	return (
-		<div className="space-y-4">
-			<PageHeader
-				breadcrumbs={[
-					{ name: t("breadcrumbs.home"), href: "/" },
-					{ name: t("breadcrumbs.orders"), href: "/orders" },
-					{ name: t("breadcrumbs.distribution") },
-				]}
-				buttons={
-					<>
-						<Button_
-							size="sm"
-							label={t("header.howItWorks")}
-							variant="ghost"
-							onClick={() => { }}
-							icon={<Info size={18} />}
-						/>
-					</>
-				}
-				stats={subtab === "unassigned" ? stats : statsAssignOrders}
-				items={[
-					{ id: "unassigned", label: t("tabs.unassigned"), count: unassigned.length, icon: AlertCircle },
-					{ id: "assigned", label: t("tabs.assigned"), count: assigned.length, icon: Truck },
-				]}
-				active={subtab}
-				setActive={setSubtab}
-			/>
-
-			<AssignCarrierDialog
-				t={t}
-				open={assignAllOpen}
-				onClose={() => setAssignAllOpen(false)}
-				orders={orders}
-				selectedOrderCodes={unassigned.map((o) => o.code)}
-				updateOrder={updateOrder}
-				pushOp={pushOp}
-			/>
-
-			<AnimatePresence mode="wait">
-				<motion.div
-					key={subtab}
-					initial={{ opacity: 0, y: 12 }}
-					animate={{ opacity: 1, y: 0 }}
-					exit={{ opacity: 0, y: -8 }}
-					transition={{ duration: 0.15 }}
-				>
-					{subtab === "unassigned" && (
-						<UnassignedOrdersSubtab t={t} orders={orders} updateOrder={updateOrder} pushOp={pushOp} />
-					)}
-					{subtab === "assigned" && (
-						<AssignedOrdersSubtab t={t} orders={orders} updateOrder={updateOrder} pushOp={pushOp} />
-					)}
-				</motion.div>
-			</AnimatePresence>
-		</div>
-	);
-}

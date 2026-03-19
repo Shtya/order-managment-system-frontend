@@ -1238,13 +1238,23 @@
 				"withCarrier": "مع شركة شحن",
 				"readyToPrint": "جاهزة للطباعة"
 			},
+			"messages": {
+				"errorFetchingStatuses": "فشل تحميل الحالات المتاحة",
+				"shipmentCreated": "تم إنشاء شحنة للطلب رقم {orderNumber} بنجاح",
+				"shipmentFailed": "فشل إنشاء شحنة للطلب رقم {orderNumber}",
+				"errorFetchingOrders": "حدث خطأ أثناء جلب الطلبات"
+			},
 			"modal": {
 				"orderDetailsTitle": "تفاصيل الطلب {code}",
 				"assignCarrierSubtitle": "توزيع الطلبات",
 				"assignCarrierTitle": "تعيين شركة الشحن",
-				"rejectOrdersTitle": "رفض الطلب"
+				"rejectOrdersTitle": "رفض الطلب",
+				"assignSuccess": "تم تعيين شركة الشحن بنجاح",
+				"bulkAssignStarted": "تمت إضافة الطلبات إلى قائمة الانتظار للتوزيع. قد يستغرق الأمر بعض الوقت.",
+				"assignFailed": "فشل تعيين شركة الشحن"
 			},
 			"field": {
+				"returnOrder": "استلام مرتجع",
 				"customerName": "اسم العميل",
 				"phoneNumber": "رقم الهاتف",
 				"city": "المدينة",
@@ -1301,7 +1311,8 @@
 				"details": "عرض التفاصيل",
 				"changeAssign": "تغيير التعيين",
 				"assign": "تعيين شركة شحن",
-				"reject": "رفض الطلب"
+				"reject": "رفض الطلب",
+				"assigning": "جارٍ التعيين..."
 			},
 			"table": {
 				"searchUnassigned": "ابحث في الطلبات غير الموزعة...",
@@ -1347,6 +1358,10 @@
 			"tabs": {
 				"notPrinted": "غير مطبوعة",
 				"printed": "مطبوعة"
+			},
+			"payment": {
+				"cod": "الدفع عند الاستلام",
+				"paid": "مدفوع"
 			},
 			"stats": {
 				"totalDistributed": "إجمالي الموزعة",
@@ -1450,9 +1465,33 @@
 				"details": "عرض التفاصيل",
 				"printLabel": "طباعة البوليصة",
 				"reprint": "إعادة الطباعة"
+			},
+			"messages": {
+				"printSuccess": "تم تحديد الملصقات كمطبوعة بنجاح",
+				"reprintSuccess": "تمت إعادة طباعة الملصقات بنجاح"
 			}
 		},
 		"preparation": {
+			"pdf": {
+				"wrongLog": {
+					"title": "سجل أخطاء التحضير",
+					"printDate": "تاريخ الطباعة",
+					"employee": "الموظف",
+					"totalAttempts": "إجمالي المحاولات",
+					"carrier": "شركة الشحن",
+					"date": "التاريخ",
+					"totalFailedAttempts": "إجمالي المحاولات الفاشلة",
+					"attemptUnit": "محاولة",
+					"scannedCode": "الكود الممسوح",
+					"orderNumber": "رقم الطلب",
+					"failReason": "سبب الفشل",
+					"time": "الوقت",
+					"orderInfo": "بيانات الطلب",
+					"customer": "العميل",
+					"city": "المدينة",
+					"phone": "الهاتف"
+				}
+			},
 			"breadcrumbs": {
 				"home": "الرئيسية",
 				"warehouse": "المستودع",
@@ -1468,9 +1507,17 @@
 				"inProgress": "قيد التحضير",
 				"totalItems": "إجمالي العناصر",
 				"scanned": "تم تحضيرها",
-				"prepared": "جاهزة للشحن"
+				"prepared": "جاهزة للشحن",
+				"scanning": "جاري المسح",
+				"notStarted": "لم يبدأ بعد",
+				"total": "إجمالي الطلبات"
+			},
+			"common": {
+				"copied": "تم النسخ"
 			},
 			"scan": {
+				"retry": "إعادة المحاولة",
+				"errorScanning": "حدث خطأ أثناء المسح",
 				"step1of2": "الخطوة 1 من 2",
 				"orderLabel": "الطلب",
 				"scanOrderTitle": "امسح باركود الطلب",
@@ -1494,8 +1541,11 @@
 				"correct": "صحيح",
 				"wrong": "خطأ",
 				"items": "عنصر",
+				"sku": "الرمز (SKU)",
 				"scannedOrders": "الطلبات الممسوحة",
 				"failedScans": "محاولات المسح الفاشلة",
+				"successCount": "عدد الناجح",
+				"errorCount": "عدد الأخطاء",
 				"done": "مكتمل",
 				"scanned": "تم المسح",
 				"waiting": "بانتظار المسح",
@@ -1513,6 +1563,7 @@
 				"empty": "لا توجد طلبات"
 			},
 			"reject": {
+				"date": "التاريخ",
 				"subtitle": "تأكيد الرفض",
 				"title": "رفض الطلب",
 				"presetsLabel": "أسباب شائعة",
@@ -1545,6 +1596,7 @@
 				"close": "إغلاق"
 			},
 			"table": {
+				"date": "التاريخ",
 				"orderNumber": "الطلب",
 				"customer": "العميل",
 				"phone": "الهاتف",
@@ -1571,6 +1623,15 @@
 			"filters": {
 				"carrier": "شركة الشحن",
 				"allCarriers": "جميع الشركات"
+			},
+			"messages": {
+				"orderRejected": "تم رفض الطلب بنجاح",
+				"errorRejectingOrder": "حدث خطأ أثناء رفض الطلب",
+				"errorFetchingOrders": "حدث خطأ أثناء جلب الطلبات",
+				"exportStarted": "بدأ التصدير...",
+				"exportSuccess": "تم التصدير بنجاح",
+				"exportFailed": "فشل التصدير",
+				"errorDownloadingLogs": "حدث خطأ أثناء تحميل سجلات الفحص"
 			},
 			"searchPlaceholder": "ابحث في الطلبات...",
 			"filter": "تصفية",
@@ -1617,11 +1678,21 @@
 				"limit": "الحد",
 				"carrier": "شركة الشحن",
 				"allCarriers": "كل شركات الشحن",
-				"currency": "ر.س"
+				"currency": "ر.س",
+				"all": "الكل"
+			},
+			"messages": {
+				"errorDownloadingManifest": "خطأ في تحميل الملف",
+				"errorDownloadingLogs": "خطأ في تحميل سجل الأخطاء",
+				"manifestCreated": "تم إنشاء ملف الخروج بنجاح"
 			},
 			"scan": {
 				"subtitle": "خطوة المسح والتسليم",
 				"title": "مسح الطلبات الخارجة",
+				"orderLabel": "الطلب",
+				"scanItemsTitle": "مسح القطع",
+				"ordersBtn": "الطلبات الجاهزة",
+				"cancelBtn": "إلغاء",
 				"selectCarrier": "اختر شركة الشحن",
 				"toggleSound": "تشغيل أو إيقاف الصوت",
 				"scanBtn": "مسح",
@@ -1630,6 +1701,7 @@
 				"scannedOrders": "الطلبات الممسوحة",
 				"failedScans": "المحاولات الفاشلة",
 				"placeholder": "امسح كود الطلب لتسجيله ضمن الخروج",
+				"scanItemsPlaceholder": "امسح القطع للطلب {code}",
 				"readyOrders": "{count} طلب جاهز",
 				"totalItemsCount": "{count} قطعة",
 				"saved": "تم الحفظ",
@@ -1639,30 +1711,46 @@
 				"scannedBadge": "ممسوح",
 				"totalProducts": "منتج إجمالاً",
 				"shippedVia": "شحن عبر {carrier}",
+				"sku": "الرمز (SKU)",
 				"ordersCard": {
 					"carrier": "شركة الشحن",
 					"orders": "الطلبات",
 					"items": "القطع"
 				},
+				"messages": {
+					"manifestCreated": "تم إنشاء بيان الشحن بنجاح",
+					"manifestUpdated": "تم تحديث بيان الشحن",
+					"printSuccess": "بدأت عملية الطباعة",
+					"errorOccurred": "حدث خطأ غير متوقع"
+				},
 				"table": {
+					"products": "المنتجات",
+					"sku": "الرمز (SKU)",
 					"order": "الطلب",
 					"customer": "العميل",
 					"city": "المدينة",
-					"products": "المنتجات",
 					"total": "الإجمالي",
 					"product": "المنتج",
 					"qty": "الكمية",
 					"price": "السعر",
-					"lineTotal": "الإجمالي"
+					"lineTotal": "الإجمالي",
+					"status": "الحالة"
 				},
 				"success": {
-					"addedOrder": "تمت إضافة الطلب {code}"
+					"addedOrder": "تمت إضافة الطلب {code}",
+					"orderComplete": "تم مسح الطلب بالكامل وهو جاهز للشحن"
 				},
 				"errors": {
 					"alreadyScanned": "تم مسحه مسبقاً",
 					"alreadyScannedWithCode": "الطلب {code} تم مسحه مسبقاً",
 					"notFound": "الطلب {code} غير موجود",
 					"notFoundOrWrongCarrier": "الطلب غير موجود أو لا ينتمي لهذه الشركة"
+				},
+				"reasons": {
+					"SKU_NOT_IN_ORDER": "المنتج ليس في الطلب",
+					"ALREADY_FULLY_SCANNED": "تم مسحه بالكامل مسبقاً",
+					"INVALID_STATUS": "حالة الطلب غير صالحة",
+					"OTHER": "أخرى"
 				}
 			},
 			"files": {
@@ -1682,7 +1770,12 @@
 					"orders": "الطلبات والقطع",
 					"createdAt": "تاريخ الإنشاء",
 					"createdBy": "بواسطة",
+					"isPrinted": "حالة الطباعة",
 					"actions": "الإجراءات"
+				},
+				"status": {
+					"printed": "تمت الطباعة",
+					"notPrinted": "لم تطبع"
 				}
 			},
 			"pdf": {
@@ -1706,7 +1799,10 @@
 				"wrongLog": {
 					"title": "سجل محاولات المسح الفاشلة",
 					"printDate": "تاريخ الطباعة",
+					"orderNumber": "رقم الطلب",
 					"employee": "الموظف",
+					"scanner": "الفاحص",
+					"userName": "المستخدم",
 					"totalAttempts": "إجمالي المحاولات",
 					"carrier": "شركة الشحن",
 					"date": "التاريخ",
@@ -1738,6 +1834,7 @@
 				"totalReturns": "إجمالي المرتجعات"
 			},
 			"common": {
+				"all": "الكل",
 				"filter": "فلترة",
 				"apply": "تطبيق",
 				"total": "الإجمالي",
@@ -1761,7 +1858,8 @@
 				"status": {
 					"done": "تم",
 					"retry": "إعادة",
-					"scanBtn": "مسح"
+					"scanBtn": "مسح",
+					"toggleSound": "تشغيل أو إيقاف الصوت"
 				},
 				"counters": {
 					"scannedReturns": "المرتجعات الممسوحة",
@@ -1793,7 +1891,8 @@
 					"price": "السعر",
 					"return": "الإرجاع",
 					"selected": "محدد",
-					"notSelected": "غير محدد"
+					"notSelected": "غير محدد",
+					"city": "المدينة"
 				},
 				"empty": {
 					"title": "جاهز لمسح الطلب المرتجع",
@@ -1915,7 +2014,12 @@
 				"reason": "سبب الرفض",
 				"unspecified": "غير محدد",
 				"products": "المنتجات",
-				"items": "عنصر"
+				"items": "عنصر",
+				"itemsCount": "قطع"
+			},
+			"messages": {
+				"retrySuccess": "تمت إعادة الطلب للمؤكد بنجاح",
+				"retryError": "حدث خطأ أثناء إعادة الطلب للمؤكد"
 			}
 		},
 		"logs": {
@@ -1970,13 +2074,18 @@
 			},
 			"opTypes": {
 				"orderPrepared": "تحضير طلب",
+				"orderConfirmed": "تأكيد طلب",
+				"preparationStarted": "بدء التحضير",
 				"rejectOrder": "رفض طلب",
 				"assignCarrier": "تعيين شركة شحن",
 				"printLabel": "طباعة ملصق",
 				"shipOrder": "شحن طلب",
+				"return": "إرجاع الطلب",
 				"returnOrder": "استلام مرتجع",
 				"retryOrder": "إعادة محاولة",
 				"bulkReject": "رفض جماعي",
+				"printManifest": "طباعة بيان الشحن",
+				"reprintManifest": "إعادة طباعة بيان الشحن",
 				"reprintLabel": "إعادة طباعة ملصق",
 				"unknown": "عملية غير معروفة"
 			},
@@ -2885,6 +2994,11 @@
 			"exportFailed": "فشل في تصدير الملف"
 		},
 		"common": {
+			"allProducts": "كل المنتجات",
+			"searchProducts": "ابحث عن منتج...",
+			"loading": "جاري التحميل...",
+			"noProductsFound": "لا توجد منتجات.",
+			"productName": "اسم المنتج",
 			"na": "—",
 			"id": "ID",
 			"sku": "SKU",
@@ -3594,8 +3708,7 @@
 			"statusUpdating": "جاري تحديث الحالة...",
 			"loading": "جاري التحميل...",
 			"errorFetchingOrder": "فشل تحميل بيانات الطلب",
-			"orderNotFound": "الطلب غير موجود",
-			"errorFetchingStatuses": "فشل تحميل الحالات المتاحة"
+			"orderNotFound": "الطلب غير موجود"
 		},
 		"details": {
 			"statusUpdated": "تم تحديث الحالة",
@@ -3701,7 +3814,13 @@
 			"shipped": "تم الشحن",
 			"returned": "مرتجع",
 			"no_answer": "لا يوجد رد",
-			"out_of_area": "خارج نطاق التوصيل"
+			"out_of_area": "خارج نطاق التوصيل",
+			"distributed": "تم التوزيع",
+			"printed": "تم الطباعة",
+			"packed": "تم التغليف",
+			"rejected": "مرفوض",
+			"return_preparing": "تحت تجهيز المرتجع",
+			"returnPreparing": "تحت تجهيز المرتجع"
 		},
 		"statusForm": {
 			"addTitle": "إضافة حالة جديدة",
@@ -3747,6 +3866,7 @@
 		},
 		"filters": {
 			"all": "الكل",
+			"none": "بدون",
 			"status": "حالة الطلب",
 			"statusPlaceholder": "اختر الحالة",
 			"paymentStatus": "حالة الدفع",
@@ -6452,5 +6572,10 @@
 			"noSessionId": "لم يتم توفير معرف جلسة الدفع",
 			"fetchFailed": "فشل تحميل معلومات الدفع"
 		}
+	},
+	"export": {
+		"started": "بدأ التصدير...",
+		"success": "تم التصدير بنجاح",
+		"failed": "فشل التصدير"
 	}
 }

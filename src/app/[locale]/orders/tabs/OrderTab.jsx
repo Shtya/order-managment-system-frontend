@@ -94,6 +94,8 @@ import Table, { FilterField } from "@/components/atoms/Table";
 import PageHeader from "@/components/atoms/Pageheader";
 import SettingsModal from "../atoms/SettingsModal";
 import ActionButtons from "@/components/atoms/Actions";
+import StoreFilter from "@/components/atoms/StoreFilter";
+import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 
 
 // ✅ Order Status Constants (Mirroring your Enum)
@@ -101,6 +103,7 @@ export const OrderStatus = {
 	NEW: "new",
 	UNDER_REVIEW: "under_review",
 	CONFIRMED: "confirmed",
+	DISTRIBUTE: "distributed",
 	POSTPONED: "postponed",
 	NO_ANSWER: "no_answer",
 	WRONG_NUMBER: "wrong_number",
@@ -193,7 +196,7 @@ export const validTransitions = {
 
 // Main Orders Page Component
 export default function OrdersTab({ stats, fetchStats, statsLoading }) {
-	const tShipping = useTranslations("shipping");
+
 	const t = useTranslations("orders");
 
 	const router = useRouter();
@@ -231,13 +234,9 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
 		per_page: 12,
 		records: [],
 	});
-	const [storesList, setStoresList] = useState([]);
-	const [shippingCompaniesList, setShippingCompaniesList] = useState([]);
 	const [ordersLoading, setOrdersLoading] = useState(false);
 	const searchTimer = useRef(null);
 	useEffect(() => {
-
-		fetchLookups();
 		fetchOrders();
 	}, []);
 
@@ -254,20 +253,6 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
 	}, [debouncedSearch]);
 
 
-	const fetchLookups = async () => {
-		try {
-			const [storesRes, shippingRes] = await Promise.all([
-				api.get('/lookups/stores', { params: { limit: 200, isActive: true } }),
-				api.get('/shipping/integrations/active',),
-			]);
-
-			console.log(shippingRes.data)
-			setStoresList(Array.isArray(storesRes.data) ? storesRes.data : (storesRes.data?.records || []));
-			setShippingCompaniesList(Array.isArray(shippingRes.data.integrations) ? shippingRes.data.integrations : (Array.isArray(shippingRes.data) ? shippingRes.data : []));
-		} catch (e) {
-			console.error('Error fetching lookups', e);
-		}
-	};
 
 	const buildParams = (page = pager.current_page, per_page = pager.per_page) => {
 		const params = {
@@ -278,7 +263,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
 		if (search) params.search = search;
 		if (filters.status && filters.status !== 'all') params.status = filters.status;
 		if (filters.paymentStatus && filters.paymentStatus !== 'all') params.paymentStatus = filters.paymentStatus;
-		if (filters.paymentMethod && filters.paymentMethod !== 'all') params.paymentMethod = filters.paymentMethod;
+		// if (filters.paymentMethod && filters.paymentMethod !== 'all') params.paymentMethod = filters.paymentMethod;
 		if (filters.startDate) params.startDate = filters.startDate;
 		if (filters.endDate) params.endDate = filters.endDate;
 		if (filters.shippingCompany && filters.shippingCompany !== 'all') params.shippingCompanyId = filters.shippingCompany;
@@ -388,7 +373,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
 			if (search) params.search = search;
 			if (filters.status && filters.status !== 'all') params.status = filters.status;
 			if (filters.paymentStatus && filters.paymentStatus !== 'all') params.paymentStatus = filters.paymentStatus;
-			if (filters.paymentMethod && filters.paymentMethod !== 'all') params.paymentMethod = filters.paymentMethod;
+			// if (filters.paymentMethod && filters.paymentMethod !== 'all') params.paymentMethod = filters.paymentMethod;
 			if (filters.startDate) params.startDate = filters.startDate;
 			if (filters.endDate) params.endDate = filters.endDate;
 			if (filters.shippingCompany && filters.shippingCompany !== 'all') params.shippingCompanyId = filters.shippingCompany;
@@ -882,47 +867,15 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
 							/>
 						</FilterField>
 
-						{/* Store */}
-						<FilterField label={t("filters.store")}>
-							<Select
-								value={filters.store}
-								onValueChange={(v) => setFilters(f => ({ ...f, store: v }))}
-							>
-								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm
-            focus:border-[var(--primary)] dark:focus:border-[#5b4bff] transition-all">
-									<SelectValue placeholder={t("filters.storePlaceholder")} />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="all">{t("filters.all")}</SelectItem>
-									{storesList.map(store => (
-										<SelectItem key={store.id ?? store.value} value={String(store.id ?? store.value)}>
-											{store.name ?? store.label}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</FilterField>
+						<StoreFilter
+							value={filters.store}
+							onChange={(v) => setFilters(f => ({ ...f, store: v }))}
+						/>
 
-						{/* Shipping company */}
-						<FilterField label={t("filters.shippingCompany")}>
-							<Select
-								value={filters.shippingCompany}
-								onValueChange={(v) => setFilters(f => ({ ...f, shippingCompany: v }))}
-							>
-								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm
-            focus:border-[var(--primary)] dark:focus:border-[#5b4bff] transition-all">
-									<SelectValue placeholder={t("filters.shippingCompanyPlaceholder")} />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="all">{t("filters.all")}</SelectItem>
-									{shippingCompaniesList.map(c => (
-										<SelectItem key={c.providerId} value={String(c.providerId)}>
-											{tShipping(`providers.${c.provider.toLowerCase()}`, { defaultValue: c.name })}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</FilterField>
+						<ShippingCompanyFilter
+							value={filters.shippingCompany}
+							onChange={(v) => setFilters(f => ({ ...f, shippingCompany: v }))}
+						/>
 					</>
 				}
 

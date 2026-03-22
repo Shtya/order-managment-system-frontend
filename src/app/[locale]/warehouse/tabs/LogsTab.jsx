@@ -83,7 +83,7 @@ function HeaderBadge({ children }) {
         "inline-flex items-center gap-1.5",
         "bg-white/20 text-white",
         "text-[11px] font-semibold px-2.5 py-1.5",
-        DS.radiusSm
+        DS.radiusSm,
       )}
     >
       {children}
@@ -98,7 +98,7 @@ function HeaderIconBtn({ onClick, children }) {
       className={cn(
         "w-8 h-8 flex items-center justify-center",
         DS.radiusSm,
-        "bg-white/20 hover:bg-white/30 transition-colors"
+        "bg-white/20 hover:bg-white/30 transition-colors",
       )}
     >
       {children}
@@ -167,7 +167,10 @@ export function LogsTab({ orders = [] }) {
   const t = useTranslations("warehouse.logs");
 
   const [search, setSearch] = useState("");
-  const { debouncedValue: debouncedSearch } = useDebounce({ value: search, delay: 350 })
+  const { debouncedValue: debouncedSearch } = useDebounce({
+    value: search,
+    delay: 350,
+  });
   const [filters, setFilters] = useState({
     actionType: "all",
     result: "all",
@@ -208,9 +211,12 @@ export function LogsTab({ orders = [] }) {
       };
 
       if (debouncedSearch) params.search = debouncedSearch;
-      if (appliedFilters.actionType !== "all") params.actionType = appliedFilters.actionType;
-      if (appliedFilters.result !== "all") params.result = appliedFilters.result;
-      if (appliedFilters.carrier !== "all") params.shippingCompanyId = appliedFilters.carrier;
+      if (appliedFilters.actionType !== "all")
+        params.actionType = appliedFilters.actionType;
+      if (appliedFilters.result !== "all")
+        params.result = appliedFilters.result;
+      if (appliedFilters.carrier !== "all")
+        params.shippingCompanyId = appliedFilters.carrier;
       if (appliedFilters.date) {
         params.startDate = appliedFilters.date;
         params.endDate = appliedFilters.date;
@@ -218,7 +224,7 @@ export function LogsTab({ orders = [] }) {
 
       return params;
     },
-    [pager.current_page, pager.per_page, debouncedSearch, appliedFilters]
+    [pager.current_page, pager.per_page, debouncedSearch, appliedFilters],
   );
 
   const fetchStats = useCallback(async () => {
@@ -249,7 +255,7 @@ export function LogsTab({ orders = [] }) {
         setLoading(false);
       }
     },
-    [buildParams, pager.current_page, pager.per_page]
+    [buildParams, pager.current_page, pager.per_page],
   );
 
   useEffect(() => {
@@ -368,10 +374,12 @@ export function LogsTab({ orders = [] }) {
               "rounded-full text-xs border",
               row.result === "SUCCESS"
                 ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                : "bg-red-50 text-red-700 border-red-200"
+                : "bg-red-50 text-red-700 border-red-200",
             )}
           >
-            {row.result === "SUCCESS" ? t("result.success") : t("result.failed")}
+            {row.result === "SUCCESS"
+              ? t("result.success")
+              : t("result.failed")}
           </Badge>
         ),
       },
@@ -379,7 +387,10 @@ export function LogsTab({ orders = [] }) {
         key: "details",
         header: t("table.details"),
         cell: (row) => (
-          <span className="text-sm text-slate-500 truncate max-w-[200px]" title={row.details}>
+          <span
+            className="text-sm text-slate-500 truncate max-w-[200px]"
+            title={row.details}
+          >
             {row.details}
           </span>
         ),
@@ -411,7 +422,7 @@ export function LogsTab({ orders = [] }) {
         ),
       },
     ],
-    [t]
+    [t],
   );
 
   return (
@@ -459,18 +470,22 @@ export function LogsTab({ orders = [] }) {
             <FilterField label={t("table.opType")}>
               <Select
                 value={filters.actionType}
-                onValueChange={(v) => setFilters((f) => ({ ...f, actionType: v }))}
+                onValueChange={(v) =>
+                  setFilters((f) => ({ ...f, actionType: v }))
+                }
               >
                 <SelectTrigger className="h-10 min-w-[160px] rounded-xl border-border bg-background text-sm">
                   <SelectValue placeholder={t("filters.allTypes")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t("filters.allTypes")}</SelectItem>
-                  {Object.entries(OPERATION_TYPE_KEYS).map(([key, labelKey]) => (
-                    <SelectItem key={key} value={key}>
-                      {t(labelKey)}
-                    </SelectItem>
-                  ))}
+                  {Object.entries(OPERATION_TYPE_KEYS).map(
+                    ([key, labelKey]) => (
+                      <SelectItem key={key} value={key}>
+                        {t(labelKey)}
+                      </SelectItem>
+                    ),
+                  )}
                 </SelectContent>
               </Select>
             </FilterField>
@@ -500,7 +515,9 @@ export function LogsTab({ orders = [] }) {
               <Input
                 type="date"
                 value={filters.date}
-                onChange={(e) => setFilters((f) => ({ ...f, date: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((f) => ({ ...f, date: e.target.value }))
+                }
                 className="h-10 rounded-xl text-sm"
               />
             </FilterField>
@@ -602,7 +619,9 @@ function buildCorrectPDF(prepOps, labels) {
 
 function buildErrorsPDF(prepOps, labels) {
   const now = new Date().toLocaleString("en-US");
-  const hasErrors = prepOps.some((op) => (op.scanLogs || []).some((l) => !l.success));
+  const hasErrors = prepOps.some((op) =>
+    (op.scanLogs || []).some((l) => !l.success),
+  );
   if (!hasErrors) return null;
 
   const ordersHTML = prepOps
@@ -619,7 +638,7 @@ function buildErrorsPDF(prepOps, labels) {
             <td class="err-reason">${log.reason || "—"}</td>
             <td class="ts">${log.timestamp ? log.timestamp.slice(11, 19) : "—"}</td>
           </tr>
-        `
+        `,
         )
         .join("");
 
@@ -665,23 +684,40 @@ function GenericOpModal({ open, onClose, op, t }) {
   if (!op) return null;
 
   const order = op.order;
-  const opTypeLabel = t(OPERATION_TYPE_KEYS[op.actionType] ?? "opTypes.unknown");
+  const opTypeLabel = t(
+    OPERATION_TYPE_KEYS[op.actionType] ?? "opTypes.unknown",
+  );
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="!max-w-2xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl" dir="rtl">
-        <div className="relative px-6 pt-6 pb-5 rounded-t-xl overflow-hidden" style={{ background: DS.headerGradient }}>
+      <DialogContent
+        className="!max-w-2xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl"
+        dir="rtl"
+      >
+        <div
+          className="relative px-6 pt-6 pb-5 rounded-t-xl overflow-hidden"
+          style={{ background: DS.headerGradient }}
+        >
           <div className="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white/10 pointer-events-none" />
           <div className="absolute -bottom-6 -right-2 w-32 h-32 rounded-full bg-white/10 pointer-events-none" />
 
           <div className="relative flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <div className={cn("w-11 h-11 flex items-center justify-center bg-white/20 backdrop-blur-sm", DS.radiusSm)}>
+              <div
+                className={cn(
+                  "w-11 h-11 flex items-center justify-center bg-white/20 backdrop-blur-sm",
+                  DS.radiusSm,
+                )}
+              >
                 <ClipboardList className="text-white" size={22} />
               </div>
               <div>
-                <p className="text-white/70 text-xs font-medium mb-0.5">{t("genericModal.operationLabel")}</p>
-                <h2 className="text-white text-xl font-black font-mono">{op.operationNumber}</h2>
+                <p className="text-white/70 text-xs font-medium mb-0.5">
+                  {t("genericModal.operationLabel")}
+                </p>
+                <h2 className="text-white text-xl font-black font-mono">
+                  {op.operationNumber}
+                </h2>
               </div>
             </div>
 
@@ -696,7 +732,9 @@ function GenericOpModal({ open, onClose, op, t }) {
               {opTypeLabel}
             </HeaderBadge>
             <HeaderBadge>
-              {op.result === "SUCCESS" ? t("result.success") : t("result.failed")}
+              {op.result === "SUCCESS"
+                ? t("result.success")
+                : t("result.failed")}
             </HeaderBadge>
           </div>
         </div>
@@ -704,59 +742,118 @@ function GenericOpModal({ open, onClose, op, t }) {
         <div className="p-6 space-y-5">
           <div className="grid grid-cols-2 gap-2">
             {[
-              { label: t("genericModal.opType"), value: opTypeLabel, icon: ClipboardList, color: DS.primary },
-              { label: t("genericModal.orderNumber"), value: op.order?.orderNumber || "—", icon: Hash, color: DS.accent },
-              { label: t("genericModal.carrier"), value: op.shippingCompany?.name || "—", icon: Truck, color: DS.warning },
-              { label: t("genericModal.employee"), value: op.user?.name || "—", icon: User, color: DS.accent },
-              { label: t("genericModal.datetime"), value: op.createdAt ? new Date(op.createdAt).toLocaleString() : "—", icon: Calendar, color: DS.warning },
-              { label: t("genericModal.details"), value: op.details || "—", icon: Info, color: DS.primary },
+              {
+                label: t("genericModal.opType"),
+                value: opTypeLabel,
+                icon: ClipboardList,
+                color: DS.primary,
+              },
+              {
+                label: t("genericModal.orderNumber"),
+                value: op.order?.orderNumber || "—",
+                icon: Hash,
+                color: DS.accent,
+              },
+              {
+                label: t("genericModal.carrier"),
+                value: op.shippingCompany?.name || "—",
+                icon: Truck,
+                color: DS.warning,
+              },
+              {
+                label: t("genericModal.employee"),
+                value: op.user?.name || "—",
+                icon: User,
+                color: DS.accent,
+              },
+              {
+                label: t("genericModal.datetime"),
+                value: op.createdAt
+                  ? new Date(op.createdAt).toLocaleString()
+                  : "—",
+                icon: Calendar,
+                color: DS.warning,
+              },
+              {
+                label: t("genericModal.details"),
+                value: op.details || "—",
+                icon: Info,
+                color: DS.primary,
+              },
             ].map(({ label, value, icon: Icon, color }) => (
               <div
                 key={label}
                 className={cn(
                   "flex items-start gap-3 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 p-3 transition-colors",
-                  DS.radius
+                  DS.radius,
                 )}
               >
                 <div
-                  className={cn("w-7 h-7 flex items-center justify-center flex-shrink-0 mt-0.5", DS.radiusSm)}
+                  className={cn(
+                    "w-7 h-7 flex items-center justify-center flex-shrink-0 mt-0.5",
+                    DS.radiusSm,
+                  )}
                   style={{ backgroundColor: color + "18" }}
                 >
                   <Icon size={13} style={{ color }} />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] text-slate-400 mb-0.5 font-semibold uppercase tracking-wide">{label}</p>
-                  <p className="font-bold text-sm text-slate-800 dark:text-slate-100 truncate">{value}</p>
+                  <p className="text-[10px] text-slate-400 mb-0.5 font-semibold uppercase tracking-wide">
+                    {label}
+                  </p>
+                  <p className="font-bold text-sm text-slate-800 dark:text-slate-100 truncate">
+                    {value}
+                  </p>
                 </div>
               </div>
             ))}
           </div>
 
           <div className="flex items-center gap-2 px-4 py-3 rounded-xl border bg-slate-50 dark:bg-slate-800">
-            <span className="text-sm font-medium text-slate-500">{t("genericModal.result")}:</span>
+            <span className="text-sm font-medium text-slate-500">
+              {t("genericModal.result")}:
+            </span>
             <Badge
               className={cn(
                 "rounded-full text-xs border",
                 op.result === "SUCCESS"
                   ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                  : "bg-red-50 text-red-700 border-red-200"
+                  : "bg-red-50 text-red-700 border-red-200",
               )}
             >
-              {op.result === "SUCCESS" ? t("result.success") : t("result.failed")}
+              {op.result === "SUCCESS"
+                ? t("result.success")
+                : t("result.failed")}
             </Badge>
           </div>
 
           {order && (
             <div>
-              <h4 className="text-sm font-bold mb-2 text-slate-600">{t("genericModal.orderInfo")}</h4>
+              <h4 className="text-sm font-bold mb-2 text-slate-600">
+                {t("genericModal.orderInfo")}
+              </h4>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { label: t("genericModal.customer"), value: order.customerName },
+                  {
+                    label: t("genericModal.customer"),
+                    value: order.customerName,
+                  },
                   { label: t("genericModal.city"), value: order.city },
-                  { label: t("genericModal.total"), value: order.finalTotal ? `${order.finalTotal} ${t("common.currency")}` : "—" },
-                  { label: t("genericModal.status"), value: order.status?.name || "—" },
+                  {
+                    label: t("genericModal.total"),
+                    value: order.finalTotal
+                      ? `${order.finalTotal} ${t("common.currency")}`
+                      : "—",
+                  },
+                  {
+                    label: t("genericModal.status"),
+                    value: order.status?.name || "—",
+                  },
                 ].map(({ label, value }) => (
-                  <div key={label} className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3">
+                  <div
+                    key={label}
+                    className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3"
+                  >
                     <p className="text-xs text-slate-400 mb-1">{label}</p>
                     <p className="font-semibold text-sm">{value || "—"}</p>
                   </div>
@@ -774,13 +871,15 @@ function GenericOpModal({ open, onClose, op, t }) {
                     id: op.operationNumber,
                     carrier: op.shippingCompany?.name,
                     employee: op.user?.name,
-                    createdAt: op.createdAt ? new Date(op.createdAt).toLocaleString() : "—"
+                    createdAt: op.createdAt
+                      ? new Date(op.createdAt).toLocaleString()
+                      : "—",
                   },
                   {
                     ...order,
                     customer: order.customerName,
                     total: order.finalTotal,
-                    status: order.status?.name
+                    status: order.status?.name,
                   },
                   {
                     title: t("genericPdf.title"),
@@ -802,9 +901,9 @@ function GenericOpModal({ open, onClose, op, t }) {
                     currency: t("common.currency"),
                     success: t("result.success"),
                     failed: t("result.failed"),
-                  }
+                  },
                 ),
-                t("popupBlocked")
+                t("popupBlocked"),
               )
             }
             className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-blue-200 bg-blue-50 dark:bg-blue-950/20 text-blue-700 font-semibold text-sm hover:bg-blue-100 transition-colors"
@@ -850,19 +949,34 @@ function OrderLogModal({ open, onClose, op, t }) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="!max-w-2xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl" dir="rtl">
-        <div className="relative px-6 pt-6 pb-5 rounded-t-xl overflow-hidden" style={{ background: DS.headerGradient }}>
+      <DialogContent
+        className="!max-w-2xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl"
+        dir="rtl"
+      >
+        <div
+          className="relative px-6 pt-6 pb-5 rounded-t-xl overflow-hidden"
+          style={{ background: DS.headerGradient }}
+        >
           <div className="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white/10 pointer-events-none" />
           <div className="absolute -bottom-6 -right-2 w-32 h-32 rounded-full bg-white/10 pointer-events-none" />
 
           <div className="relative flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <div className={cn("w-11 h-11 flex items-center justify-center bg-white/20 backdrop-blur-sm", DS.radiusSm)}>
+              <div
+                className={cn(
+                  "w-11 h-11 flex items-center justify-center bg-white/20 backdrop-blur-sm",
+                  DS.radiusSm,
+                )}
+              >
                 <FileText className="text-white" size={22} />
               </div>
               <div>
-                <p className="text-white/70 text-xs font-medium mb-0.5">{t("orderLogModal.fileLabel")}</p>
-                <h2 className="text-white text-xl font-black font-mono">{op.orderCode}</h2>
+                <p className="text-white/70 text-xs font-medium mb-0.5">
+                  {t("orderLogModal.fileLabel")}
+                </p>
+                <h2 className="text-white text-xl font-black font-mono">
+                  {op.orderCode}
+                </h2>
               </div>
             </div>
 
@@ -886,12 +1000,24 @@ function OrderLogModal({ open, onClose, op, t }) {
         <div className="pt-3 p-6 space-y-5">
           <div className="grid grid-cols-2 gap-3">
             {[
-              { label: t("orderLogModal.customer"), value: order.customer || "—" },
+              {
+                label: t("orderLogModal.customer"),
+                value: order.customer || "—",
+              },
               { label: t("orderLogModal.city"), value: order.city || "—" },
-              { label: t("orderLogModal.carrier"), value: op.carrier || t("common.unspecified") },
-              { label: t("orderLogModal.preparedAt"), value: op.createdAt || "—" },
+              {
+                label: t("orderLogModal.carrier"),
+                value: op.carrier || t("common.unspecified"),
+              },
+              {
+                label: t("orderLogModal.preparedAt"),
+                value: op.createdAt || "—",
+              },
             ].map(({ label, value }) => (
-              <div key={label} className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3">
+              <div
+                key={label}
+                className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3"
+              >
                 <p className="text-xs text-slate-400 mb-1">{label}</p>
                 <p className="font-semibold text-sm">{value}</p>
               </div>
@@ -920,7 +1046,7 @@ function OrderLogModal({ open, onClose, op, t }) {
                     signature: t("correctPdf.signature"),
                     date: t("correctPdf.date"),
                   }),
-                  t("popupBlocked")
+                  t("popupBlocked"),
                 )
               }
               className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 font-semibold text-sm hover:bg-emerald-100 transition-colors"
@@ -931,19 +1057,16 @@ function OrderLogModal({ open, onClose, op, t }) {
 
             <button
               onClick={() => {
-                const html = buildErrorsPDF(
-                  [op],
-                  {
-                    title: t("errorsPdf.title"),
-                    printedAt: t("errorsPdf.printedAt"),
-                    ordersCount: t("errorsPdf.ordersCount"),
-                    description: t("errorsPdf.description"),
-                    errorUnit: t("errorsPdf.errorUnit"),
-                    error: t("errorsPdf.error"),
-                    reason: t("errorsPdf.reason"),
-                    time: t("errorsPdf.time"),
-                  }
-                );
+                const html = buildErrorsPDF([op], {
+                  title: t("errorsPdf.title"),
+                  printedAt: t("errorsPdf.printedAt"),
+                  ordersCount: t("errorsPdf.ordersCount"),
+                  description: t("errorsPdf.description"),
+                  errorUnit: t("errorsPdf.errorUnit"),
+                  error: t("errorsPdf.error"),
+                  reason: t("errorsPdf.reason"),
+                  time: t("errorsPdf.time"),
+                });
                 if (!html) {
                   alert(t("orderLogModal.noErrors"));
                   return;
@@ -967,8 +1090,17 @@ function OrderLogModal({ open, onClose, op, t }) {
                 <table className="w-full text-sm">
                   <thead className="bg-slate-50 dark:bg-slate-800">
                     <tr>
-                      {[t("orderLogModal.sku"), t("orderLogModal.name"), t("orderLogModal.requested"), t("orderLogModal.scanned"), t("orderLogModal.status")].map((h) => (
-                        <th key={h} className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase">
+                      {[
+                        t("orderLogModal.sku"),
+                        t("orderLogModal.name"),
+                        t("orderLogModal.requested"),
+                        t("orderLogModal.scanned"),
+                        t("orderLogModal.status"),
+                      ].map((h) => (
+                        <th
+                          key={h}
+                          className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase"
+                        >
                           {h}
                         </th>
                       ))}
@@ -979,20 +1111,28 @@ function OrderLogModal({ open, onClose, op, t }) {
                       const done = (p.scannedQty || 0) >= p.requestedQty;
                       return (
                         <tr key={i} className="bg-white dark:bg-slate-900">
-                          <td className="px-4 py-3 font-mono text-xs">{p.sku}</td>
+                          <td className="px-4 py-3 font-mono text-xs">
+                            {p.sku}
+                          </td>
                           <td className="px-4 py-3">{p.name}</td>
-                          <td className="px-4 py-3 text-center font-mono">{p.requestedQty}</td>
-                          <td className="px-4 py-3 text-center font-mono">{p.scannedQty || 0}</td>
+                          <td className="px-4 py-3 text-center font-mono">
+                            {p.requestedQty}
+                          </td>
+                          <td className="px-4 py-3 text-center font-mono">
+                            {p.scannedQty || 0}
+                          </td>
                           <td className="px-4 py-3">
                             <Badge
                               className={cn(
                                 "rounded-full text-xs border",
                                 done
                                   ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                  : "bg-amber-50 text-amber-700 border-amber-200"
+                                  : "bg-amber-50 text-amber-700 border-amber-200",
                               )}
                             >
-                              {done ? t("orderLogModal.completed") : t("orderLogModal.incomplete")}
+                              {done
+                                ? t("orderLogModal.completed")
+                                : t("orderLogModal.incomplete")}
                             </Badge>
                           </td>
                         </tr>
@@ -1018,8 +1158,14 @@ function OrderLogModal({ open, onClose, op, t }) {
                   >
                     <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-xs font-semibold text-red-700 dark:text-red-300">{err.message}</p>
-                      {err.reason && <p className="text-xs text-slate-500 mt-0.5">{err.reason}</p>}
+                      <p className="text-xs font-semibold text-red-700 dark:text-red-300">
+                        {err.message}
+                      </p>
+                      {err.reason && (
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          {err.reason}
+                        </p>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -1040,7 +1186,9 @@ function OrderLogModal({ open, onClose, op, t }) {
                     className="flex items-start gap-2 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 text-xs"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 mt-0.5 shrink-0" />
-                    <p className="font-medium text-emerald-800 dark:text-emerald-200">{log.message}</p>
+                    <p className="font-medium text-emerald-800 dark:text-emerald-200">
+                      {log.message}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -1059,13 +1207,19 @@ function OrderLogModal({ open, onClose, op, t }) {
                 <p className="font-semibold text-emerald-800 dark:text-emerald-200">
                   {t("orderLogModal.signedBy", { name: signerName })}
                 </p>
-                <p className="text-xs text-slate-500 mt-1">{new Date().toLocaleString("ar-SA")}</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  {new Date().toLocaleString("ar-SA")}
+                </p>
               </div>
             ) : (
               <>
-                <p className="text-xs text-slate-500">{t("orderLogModal.signatureText")}</p>
+                <p className="text-xs text-slate-500">
+                  {t("orderLogModal.signatureText")}
+                </p>
                 <div className="space-y-2">
-                  <label className="text-xs font-medium text-slate-600 dark:text-slate-400">{t("orderLogModal.signerName")}</label>
+                  <label className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                    {t("orderLogModal.signerName")}
+                  </label>
                   <Input
                     value={signerName}
                     onChange={(e) => setSignerName(e.target.value)}
@@ -1073,7 +1227,11 @@ function OrderLogModal({ open, onClose, op, t }) {
                     className="h-10 rounded-xl"
                   />
                 </div>
-                <Button onClick={handleSign} disabled={!signerName.trim()} className="w-full bg-[#ff8b00] hover:bg-[#e07a00] text-white gap-2">
+                <Button
+                  onClick={handleSign}
+                  disabled={!signerName.trim()}
+                  className="w-full bg-[#ff8b00] hover:bg-[#e07a00] text-white gap-2"
+                >
                   <PenLine size={16} />
                   {t("orderLogModal.confirmSignature")}
                 </Button>
@@ -1098,24 +1256,45 @@ function OrderLogModal({ open, onClose, op, t }) {
 function PrepSessionModal({ open, onClose, sessionOps, t }) {
   if (!sessionOps || sessionOps.length === 0) return null;
 
-  const totalErrors = sessionOps.reduce((s, op) => s + (op.scanLogs || []).filter((l) => !l.success).length, 0);
-  const totalCorrect = sessionOps.reduce((s, op) => s + (op.scanLogs || []).filter((l) => l.success).length, 0);
+  const totalErrors = sessionOps.reduce(
+    (s, op) => s + (op.scanLogs || []).filter((l) => !l.success).length,
+    0,
+  );
+  const totalCorrect = sessionOps.reduce(
+    (s, op) => s + (op.scanLogs || []).filter((l) => l.success).length,
+    0,
+  );
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="!max-w-xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl" dir="rtl">
-        <div className="relative px-6 pt-6 pb-5 rounded-t-xl overflow-hidden" style={{ background: DS.headerGradient }}>
+      <DialogContent
+        className="!max-w-xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl"
+        dir="rtl"
+      >
+        <div
+          className="relative px-6 pt-6 pb-5 rounded-t-xl overflow-hidden"
+          style={{ background: DS.headerGradient }}
+        >
           <div className="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white/10 pointer-events-none" />
           <div className="absolute -bottom-6 -right-2 w-32 h-32 rounded-full bg-white/10 pointer-events-none" />
 
           <div className="relative flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <div className={cn("w-11 h-11 flex items-center justify-center bg-white/20 backdrop-blur-sm", DS.radiusSm)}>
+              <div
+                className={cn(
+                  "w-11 h-11 flex items-center justify-center bg-white/20 backdrop-blur-sm",
+                  DS.radiusSm,
+                )}
+              >
                 <FileStack className="text-white" size={22} />
               </div>
               <div>
-                <p className="text-white/70 text-xs font-medium mb-0.5">{t("sessionModal.sessionLabel")}</p>
-                <h2 className="text-white text-xl font-black">{t("sessionModal.title")}</h2>
+                <p className="text-white/70 text-xs font-medium mb-0.5">
+                  {t("sessionModal.sessionLabel")}
+                </p>
+                <h2 className="text-white text-xl font-black">
+                  {t("sessionModal.title")}
+                </h2>
               </div>
             </div>
 
@@ -1125,7 +1304,9 @@ function PrepSessionModal({ open, onClose, sessionOps, t }) {
           </div>
 
           <div className="relative mt-3 flex items-center gap-2 flex-wrap">
-            <HeaderBadge>{t("sessionModal.ordersCount", { count: sessionOps.length })}</HeaderBadge>
+            <HeaderBadge>
+              {t("sessionModal.ordersCount", { count: sessionOps.length })}
+            </HeaderBadge>
           </div>
         </div>
 
@@ -1133,15 +1314,23 @@ function PrepSessionModal({ open, onClose, sessionOps, t }) {
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 text-center">
               <p className="text-2xl font-bold">{sessionOps.length}</p>
-              <p className="text-xs text-slate-500 mt-1">{t("sessionModal.preparedOrders")}</p>
+              <p className="text-xs text-slate-500 mt-1">
+                {t("sessionModal.preparedOrders")}
+              </p>
             </div>
             <div className="bg-emerald-50 dark:bg-emerald-950/20 rounded-xl p-3 text-center border border-emerald-200">
-              <p className="text-2xl font-bold text-emerald-700">{totalCorrect}</p>
-              <p className="text-xs text-emerald-600 mt-1">{t("sessionModal.correctScans")}</p>
+              <p className="text-2xl font-bold text-emerald-700">
+                {totalCorrect}
+              </p>
+              <p className="text-xs text-emerald-600 mt-1">
+                {t("sessionModal.correctScans")}
+              </p>
             </div>
             <div className="bg-red-50 dark:bg-red-950/20 rounded-xl p-3 text-center border border-red-200">
               <p className="text-2xl font-bold text-red-600">{totalErrors}</p>
-              <p className="text-xs text-red-500 mt-1">{t("sessionModal.errorScans")}</p>
+              <p className="text-xs text-red-500 mt-1">
+                {t("sessionModal.errorScans")}
+              </p>
             </div>
           </div>
 
@@ -1149,7 +1338,9 @@ function PrepSessionModal({ open, onClose, sessionOps, t }) {
             {sessionOps.map((op) => {
               const errs = (op.scanLogs || []).filter((l) => !l.success).length;
               const prods = op.productsSnapshot || [];
-              const done = prods.every((p) => (p.scannedQty || 0) >= p.requestedQty);
+              const done = prods.every(
+                (p) => (p.scannedQty || 0) >= p.requestedQty,
+              );
 
               return (
                 <div
@@ -1157,8 +1348,14 @@ function PrepSessionModal({ open, onClose, sessionOps, t }) {
                   className="flex items-center justify-between px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
                 >
                   <div className="flex items-center gap-2">
-                    {done ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <AlertCircle className="w-4 h-4 text-amber-500" />}
-                    <span className="font-mono font-bold text-sm">{op.orderCode}</span>
+                    {done ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4 text-amber-500" />
+                    )}
+                    <span className="font-mono font-bold text-sm">
+                      {op.orderCode}
+                    </span>
                     <span className="text-xs text-slate-400">{op.carrier}</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -1172,10 +1369,12 @@ function PrepSessionModal({ open, onClose, sessionOps, t }) {
                         "rounded-full text-xs border",
                         done
                           ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          : "bg-amber-50 text-amber-700 border-amber-200"
+                          : "bg-amber-50 text-amber-700 border-amber-200",
                       )}
                     >
-                      {done ? t("sessionModal.completed") : t("sessionModal.incomplete")}
+                      {done
+                        ? t("sessionModal.completed")
+                        : t("sessionModal.incomplete")}
                     </Badge>
                   </div>
                 </div>
@@ -1205,15 +1404,19 @@ function PrepSessionModal({ open, onClose, sessionOps, t }) {
                     signature: t("correctPdf.signature"),
                     date: t("correctPdf.date"),
                   }),
-                  t("popupBlocked")
+                  t("popupBlocked"),
                 )
               }
               className="flex items-center justify-center gap-3 px-5 py-4 rounded-xl border-2 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 font-semibold hover:bg-emerald-100 transition-colors"
             >
               <Download className="w-5 h-5" />
               <div className="text-right">
-                <p className="font-bold text-sm">{t("sessionModal.correctPdfTitle")}</p>
-                <p className="text-xs font-normal opacity-75">{t("sessionModal.correctPdfDesc")}</p>
+                <p className="font-bold text-sm">
+                  {t("sessionModal.correctPdfTitle")}
+                </p>
+                <p className="text-xs font-normal opacity-75">
+                  {t("sessionModal.correctPdfDesc")}
+                </p>
               </div>
             </button>
 
@@ -1240,8 +1443,12 @@ function PrepSessionModal({ open, onClose, sessionOps, t }) {
             >
               <FileX className="w-5 h-5" />
               <div className="text-right">
-                <p className="font-bold text-sm">{t("sessionModal.errorsPdfTitle", { count: totalErrors })}</p>
-                <p className="text-xs font-normal opacity-75">{t("sessionModal.errorsPdfDesc")}</p>
+                <p className="font-bold text-sm">
+                  {t("sessionModal.errorsPdfTitle", { count: totalErrors })}
+                </p>
+                <p className="text-xs font-normal opacity-75">
+                  {t("sessionModal.errorsPdfDesc")}
+                </p>
               </div>
             </button>
           </div>

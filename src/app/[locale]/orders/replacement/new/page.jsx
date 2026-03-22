@@ -65,7 +65,6 @@ import Img from "@/components/atoms/Img";
 import PageHeader from "@/components/atoms/Pageheader";
 
 
-const baseImg = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "") ?? "";
 
 let _imgIdCounter = 0;
 function makeId() {

@@ -3,8 +3,18 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Check, Zap, Crown, Users, Truck, X,
-  ArrowRight, Sparkles, Store, Package, Upload, AlertCircle,
+  Check,
+  Zap,
+  Crown,
+  Users,
+  Truck,
+  X,
+  ArrowRight,
+  Sparkles,
+  Store,
+  Package,
+  Upload,
+  AlertCircle,
   MessageCircle,
   Loader2,
 } from "lucide-react";
@@ -18,6 +28,7 @@ import PurchasedFeaturesTab from "./purchasedFeaturesTab";
 import { useSearchParams } from "next/navigation";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import SubscriptionsTab from "../dashboard/plans/tabs/subscriptionsTab";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 /* ─────────────────────────────────────────────────────────
    DESIGN TOKENS
@@ -90,60 +101,64 @@ export function useSubscriptionsApi() {
   }, [t]);
 
   // Subscribe to a plan
-  const subscribe = useCallback(async (planId) => {
-    setLoading(true);
-    try {
-      const { data } = await api.post("/subscriptions/subscribe", { planId });
+  const subscribe = useCallback(
+    async (planId) => {
+      setLoading(true);
+      try {
+        const { data } = await api.post("/subscriptions/subscribe", { planId });
 
-      if (data.subscriptionId) {
-        await fetchActiveSubscription();
-      }
-      // Redirect to checkout URL
-      else if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
-      } else {
-        toast.success(t("success.subscribed"));
-        // Refresh active subscription
-        await fetchActiveSubscription();
-      }
+        if (data.subscriptionId) {
+          await fetchActiveSubscription();
+        }
+        // Redirect to checkout URL
+        else if (data.checkoutUrl) {
+          window.location.href = data.checkoutUrl;
+        } else {
+          toast.success(t("success.subscribed"));
+          // Refresh active subscription
+          await fetchActiveSubscription();
+        }
 
-      return data;
-    } catch (error) {
-      console.log(error)
-      const message = error?.response?.data?.message || t("errors.subscribeFailed");
-      toast.error(Array.isArray(message) ? message[0] : message);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }, [t, fetchActiveSubscription]);
+        return data;
+      } catch (error) {
+        console.log(error);
+        const message =
+          error?.response?.data?.message || t("errors.subscribeFailed");
+        toast.error(Array.isArray(message) ? message[0] : message);
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [t, fetchActiveSubscription],
+  );
 
   // Cancel subscription
-  const cancelSubscription = useCallback(async (subscriptionId) => {
-    setLoading(true);
-    try {
-      await api.post(`/subscriptions/cancel/${subscriptionId}`);
-      toast.success(t("success.cancelled"));
+  const cancelSubscription = useCallback(
+    async (subscriptionId) => {
+      setLoading(true);
+      try {
+        await api.post(`/subscriptions/cancel/${subscriptionId}`);
+        toast.success(t("success.cancelled"));
 
-      // Refresh active subscription
-      await fetchActiveSubscription();
-    } catch (error) {
-      const message = error?.response?.data?.message || t("errors.cancelFailed");
-      toast.error(Array.isArray(message) ? message[0] : message);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }, [t, fetchActiveSubscription]);
+        // Refresh active subscription
+        await fetchActiveSubscription();
+      } catch (error) {
+        const message =
+          error?.response?.data?.message || t("errors.cancelFailed");
+        toast.error(Array.isArray(message) ? message[0] : message);
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [t, fetchActiveSubscription],
+  );
 
   // Initial data fetch
   useEffect(() => {
     const init = async () => {
-      await Promise.all([
-        fetchUser(),
-        fetchActiveSubscription(),
-        fetchPlans(),
-      ]);
+      await Promise.all([fetchUser(), fetchActiveSubscription(), fetchPlans()]);
     };
     init();
   }, [fetchUser, fetchActiveSubscription, fetchPlans]);
@@ -184,7 +199,10 @@ function PlanCardSkeleton({ idx = 0 }) {
           {[70, 85, 60, 75].map((w, i) => (
             <div key={i} className="flex items-center gap-3">
               <div className="w-5 h-5 rounded-full bg-muted/60 shrink-0" />
-              <div className="h-2.5 rounded-full bg-muted/50" style={{ width: `${w}%` }} />
+              <div
+                className="h-2.5 rounded-full bg-muted/50"
+                style={{ width: `${w}%` }}
+              />
             </div>
           ))}
         </div>
@@ -206,29 +224,34 @@ function PlanCard({
   activeSubscription,
   user,
   isDisabled,
-  idx = 0
+  idx = 0,
 }) {
+  const { settings, isLoading: isSettingsLoading } = usePlatformSettings();
+  const whatsapp = settings?.whatsapp;
   const t = useTranslations("subscriptions");
   const locale = useLocale();
   const isRTL = locale === "ar";
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   // Check if this is a trial plan and user completed onboarding
-  const cannotSubscribeToTrial = plan.type === 'trial' && user?.onboardingStatus === 'completed';
+  const cannotSubscribeToTrial =
+    plan.type === "trial" && user?.onboardingStatus === "completed";
 
   // Determine if subscribe button should be disabled
-  const isSubscribeDisabled = isDisabled || hasActiveSubscription || cannotSubscribeToTrial;
+  const isSubscribeDisabled =
+    isDisabled || hasActiveSubscription || cannotSubscribeToTrial;
 
   const getDurationLabel = () => {
     if (plan.duration === "monthly") return t("duration.monthly");
     if (plan.duration === "yearly") return t("duration.yearly");
     if (plan.duration === "lifetime") return t("duration.lifetime");
-    if (plan.duration === "custom") return `${plan.durationIndays || 0} ${t("duration.days")}`;
+    if (plan.duration === "custom")
+      return `${plan.durationIndays || 0} ${t("duration.days")}`;
     return "";
   };
 
   const getPriceDisplay = () => {
-    if (plan.type === 'negotiated') {
+    if (plan.type === "negotiated") {
       return (
         <span className="text-4xl font-black text-orange-600 dark:text-orange-400">
           {t("card.negotiated")}
@@ -236,12 +259,13 @@ function PlanCard({
       );
     }
 
-    if (plan.type === 'trial') {
+    if (plan.type === "trial") {
       return (
         <div className="flex flex-col items-center gap-2">
           <span
             style={{
-              fontFamily: "'Instrument Serif', 'DM Serif Display', Georgia, serif",
+              fontFamily:
+                "'Instrument Serif', 'DM Serif Display', Georgia, serif",
               fontSize: 68,
               lineHeight: 1,
               letterSpacing: "-0.04em",
@@ -284,7 +308,11 @@ function PlanCard({
       <motion.article
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: idx * 0.09, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+        transition={{
+          delay: idx * 0.09,
+          duration: 0.35,
+          ease: [0.16, 1, 0.3, 1],
+        }}
         whileHover={{ y: -5, transition: { duration: 0.22 } }}
         className={cn(
           "relative rounded-2xl overflow-hidden flex flex-col transition-shadow duration-300",
@@ -337,7 +365,9 @@ function PlanCard({
 
         {/* Active badge (current plan) */}
         {isCurrentPlan && (
-          <div className={cn("absolute top-5 z-10", isRTL ? "left-5" : "right-5")}>
+          <div
+            className={cn("absolute top-5 z-10", isRTL ? "left-5" : "right-5")}
+          >
             <span
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full
                 text-[10px] font-black uppercase tracking-[0.14em]"
@@ -358,7 +388,9 @@ function PlanCard({
           {/* Plan name */}
           <p
             className="text-[10.5px] font-black uppercase tracking-[0.2em]"
-            style={{ color: isCurrentPlan ? T.onInkMuted : "var(--muted-foreground)" }}
+            style={{
+              color: isCurrentPlan ? T.onInkMuted : "var(--muted-foreground)",
+            }}
           >
             {plan.name}
           </p>
@@ -366,17 +398,25 @@ function PlanCard({
           {/* Price */}
           <div className="flex items-end gap-2 -mt-2">
             {getPriceDisplay()}
-            {plan.type !== 'negotiated' && (
+            {plan.type !== "negotiated" && (
               <div className="flex flex-col mb-2 gap-1">
                 <span
                   className="text-[13px] font-bold leading-none"
-                  style={{ color: isCurrentPlan ? T.onInkMuted : "var(--muted-foreground)" }}
+                  style={{
+                    color: isCurrentPlan
+                      ? T.onInkMuted
+                      : "var(--muted-foreground)",
+                  }}
                 >
                   {t("card.currency")}
                 </span>
                 <span
                   className="text-[10.5px] font-semibold leading-none"
-                  style={{ color: isCurrentPlan ? "rgba(255,255,255,0.28)" : "var(--muted-foreground)" }}
+                  style={{
+                    color: isCurrentPlan
+                      ? "rgba(255,255,255,0.28)"
+                      : "var(--muted-foreground)",
+                  }}
                 >
                   / {getDurationLabel()}
                 </span>
@@ -388,7 +428,9 @@ function PlanCard({
           {plan.description ? (
             <p
               className="text-[12.5px] leading-relaxed -mt-2"
-              style={{ color: isCurrentPlan ? T.onInkMuted : "var(--muted-foreground)" }}
+              style={{
+                color: isCurrentPlan ? T.onInkMuted : "var(--muted-foreground)",
+              }}
             >
               {plan.description}
             </p>
@@ -407,51 +449,106 @@ function PlanCard({
           {/* Limits Display */}
           <div className="space-y-2.5">
             <div className="flex items-center justify-between text-sm">
-              <span style={{ color: isCurrentPlan ? T.onInkMuted : "var(--muted-foreground)" }}>
+              <span
+                style={{
+                  color: isCurrentPlan
+                    ? T.onInkMuted
+                    : "var(--muted-foreground)",
+                }}
+              >
                 <Users size={13} className="inline mr-1.5" />
                 {t("limits.users")}
               </span>
-              <span className="font-semibold" style={{ color: isCurrentPlan ? T.onInk : "var(--foreground)" }}>
-                {plan.usersLimit === null ? t("limits.unlimited") : plan.usersLimit}
+              <span
+                className="font-semibold"
+                style={{ color: isCurrentPlan ? T.onInk : "var(--foreground)" }}
+              >
+                {plan.usersLimit === null
+                  ? t("limits.unlimited")
+                  : plan.usersLimit}
               </span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
-              <span style={{ color: isCurrentPlan ? T.onInkMuted : "var(--muted-foreground)" }}>
+              <span
+                style={{
+                  color: isCurrentPlan
+                    ? T.onInkMuted
+                    : "var(--muted-foreground)",
+                }}
+              >
                 <Store size={13} className="inline mr-1.5" />
                 {t("limits.stores")}
               </span>
-              <span className="font-semibold" style={{ color: isCurrentPlan ? T.onInk : "var(--foreground)" }}>
-                {plan.storesLimit === null ? t("limits.unlimited") : plan.storesLimit}
+              <span
+                className="font-semibold"
+                style={{ color: isCurrentPlan ? T.onInk : "var(--foreground)" }}
+              >
+                {plan.storesLimit === null
+                  ? t("limits.unlimited")
+                  : plan.storesLimit}
               </span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
-              <span style={{ color: isCurrentPlan ? T.onInkMuted : "var(--muted-foreground)" }}>
+              <span
+                style={{
+                  color: isCurrentPlan
+                    ? T.onInkMuted
+                    : "var(--muted-foreground)",
+                }}
+              >
                 <Truck size={13} className="inline mr-1.5" />
                 {t("limits.shipping")}
               </span>
-              <span className="font-semibold" style={{ color: isCurrentPlan ? T.onInk : "var(--foreground)" }}>
-                {plan.shippingCompaniesLimit === null ? t("limits.unlimited") : plan.shippingCompaniesLimit}
+              <span
+                className="font-semibold"
+                style={{ color: isCurrentPlan ? T.onInk : "var(--foreground)" }}
+              >
+                {plan.shippingCompaniesLimit === null
+                  ? t("limits.unlimited")
+                  : plan.shippingCompaniesLimit}
               </span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
-              <span style={{ color: isCurrentPlan ? T.onInkMuted : "var(--muted-foreground)" }}>
+              <span
+                style={{
+                  color: isCurrentPlan
+                    ? T.onInkMuted
+                    : "var(--muted-foreground)",
+                }}
+              >
                 <Package size={13} className="inline mr-1.5" />
                 {t("limits.orders")}
               </span>
-              <span className="font-semibold" style={{ color: isCurrentPlan ? T.onInk : "var(--foreground)" }}>
-                {plan.includedOrders === null ? t("limits.unlimited") : plan.includedOrders}
+              <span
+                className="font-semibold"
+                style={{ color: isCurrentPlan ? T.onInk : "var(--foreground)" }}
+              >
+                {plan.includedOrders === null
+                  ? t("limits.unlimited")
+                  : plan.includedOrders}
               </span>
             </div>
 
             {plan.extraOrderFee !== null && (
               <div className="flex items-center justify-between text-sm">
-                <span style={{ color: isCurrentPlan ? T.onInkMuted : "var(--muted-foreground)" }}>
+                <span
+                  style={{
+                    color: isCurrentPlan
+                      ? T.onInkMuted
+                      : "var(--muted-foreground)",
+                  }}
+                >
                   {t("limits.extraFee")}
                 </span>
-                <span className="font-semibold" style={{ color: isCurrentPlan ? T.onInk : "var(--foreground)" }}>
+                <span
+                  className="font-semibold"
+                  style={{
+                    color: isCurrentPlan ? T.onInk : "var(--foreground)",
+                  }}
+                >
                   {plan.extraOrderFee} {t("card.currency")}
                 </span>
               </div>
@@ -459,7 +556,13 @@ function PlanCard({
 
             {plan.extraOrderFee === null && (
               <div className="flex items-center justify-between text-sm">
-                <span style={{ color: isCurrentPlan ? T.onInkMuted : "var(--muted-foreground)" }}>
+                <span
+                  style={{
+                    color: isCurrentPlan
+                      ? T.onInkMuted
+                      : "var(--muted-foreground)",
+                  }}
+                >
                   {t("limits.extraFee")}
                 </span>
                 <span className="text-xs font-medium text-red-500 dark:text-red-400">
@@ -470,11 +573,22 @@ function PlanCard({
 
             {plan.bulkUploadPerMonth > 0 && (
               <div className="flex items-center justify-between text-sm">
-                <span style={{ color: isCurrentPlan ? T.onInkMuted : "var(--muted-foreground)" }}>
+                <span
+                  style={{
+                    color: isCurrentPlan
+                      ? T.onInkMuted
+                      : "var(--muted-foreground)",
+                  }}
+                >
                   <Upload size={13} className="inline mr-1.5" />
                   {t("limits.bulkUpload")}
                 </span>
-                <span className="font-semibold" style={{ color: isCurrentPlan ? T.onInk : "var(--foreground)" }}>
+                <span
+                  className="font-semibold"
+                  style={{
+                    color: isCurrentPlan ? T.onInk : "var(--foreground)",
+                  }}
+                >
                   {plan.bulkUploadPerMonth}
                 </span>
               </div>
@@ -512,12 +626,18 @@ function PlanCard({
                           : "color-mix(in oklab, var(--primary) 12%, transparent)",
                       }}
                     >
-                      <Check size={11} strokeWidth={3} style={{ color: isCurrentPlan ? T.onInk : T.accent }} />
+                      <Check
+                        size={11}
+                        strokeWidth={3}
+                        style={{ color: isCurrentPlan ? T.onInk : T.accent }}
+                      />
                     </div>
                     <span
                       className="text-[13.5px] leading-[1.5] tracking-[-0.005em]"
                       style={{
-                        color: isCurrentPlan ? T.onInkSoft : "var(--foreground)",
+                        color: isCurrentPlan
+                          ? T.onInkSoft
+                          : "var(--foreground)",
                         fontWeight: 500,
                       }}
                     >
@@ -538,7 +658,7 @@ function PlanCard({
                 className={cn(
                   "group relative w-full h-11 rounded-xl font-semibold text-sm tracking-wide",
                   "transition-all duration-200 overflow-hidden",
-                  "border border-white/20 hover:border-red-400/40"
+                  "border border-white/20 hover:border-red-400/40",
                 )}
                 style={{
                   background: "rgba(255,255,255,0.08)",
@@ -552,23 +672,25 @@ function PlanCard({
                 <div
                   className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                   style={{
-                    background: "linear-gradient(135deg, rgba(239,68,68,0.15), rgba(220,38,38,0.15))",
+                    background:
+                      "linear-gradient(135deg, rgba(239,68,68,0.15), rgba(220,38,38,0.15))",
                   }}
                 />
               </button>
             ) : plan.type === "negotiated" ? (
               // ── زر الواتساب (لخطط التفاوض) ──────────────────────────────
               <a
-                /* استبدل NEXT_PUBLIC_WHATSAPP_NUMBER بمتغير البيئة الخاص بك (مثل VITE_WHATSAPP_NUMBER إذا كنت تستخدم Vite) */
-                href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent(
-                  t("messages.whatsappInterested", { planName: plan.name }) || `مرحباً، أنا مهتم بخطة ${plan.name}`
+                href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(
+                  t("messages.whatsappInterested", { planName: plan.name }) ||
+                    `مرحباً، أنا مهتم بخطة ${plan.name}`,
                 )}`}
+                disabled={isSettingsLoading}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
                   "group relative flex items-center justify-center w-full h-11 rounded-xl font-semibold text-sm tracking-wide",
                   "transition-all duration-200 overflow-hidden",
-                  "hover:scale-[1.02] active:scale-[0.98]"
+                  "hover:scale-[1.02] active:scale-[0.98]",
                 )}
                 style={{
                   background: "#25D366", // لون واتساب الرسمي
@@ -592,11 +714,15 @@ function PlanCard({
                   "transition-all duration-200 overflow-hidden",
                   isSubscribeDisabled
                     ? "cursor-not-allowed opacity-50"
-                    : "hover:scale-[1.02] active:scale-[0.98]"
+                    : "hover:scale-[1.02] active:scale-[0.98]",
                 )}
                 style={{
-                  background: isSubscribeDisabled ? "var(--muted)" : T.accentGrad,
-                  color: isSubscribeDisabled ? "var(--muted-foreground)" : "white",
+                  background: isSubscribeDisabled
+                    ? "var(--muted)"
+                    : T.accentGrad,
+                  color: isSubscribeDisabled
+                    ? "var(--muted-foreground)"
+                    : "white",
                 }}
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
@@ -613,7 +739,11 @@ function PlanCard({
                   ) : (
                     <>
                       {t("actions.subscribe")}
-                      {isDisabled ? <Loader2 className="animate-spin" /> : <ArrowRight size={16} />}
+                      {isDisabled ? (
+                        <Loader2 className="animate-spin" />
+                      ) : (
+                        <ArrowRight size={16} />
+                      )}
                     </>
                   )}
                 </span>
@@ -636,7 +766,10 @@ function PlanCard({
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                <AlertCircle size={24} className="text-red-600 dark:text-red-400" />
+                <AlertCircle
+                  size={24}
+                  className="text-red-600 dark:text-red-400"
+                />
               </div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                 {t("cancel.title")}
@@ -654,7 +787,7 @@ function PlanCard({
               </button>
               <button
                 onClick={() => {
-                  handleCancel(activeSubscription.id)
+                  handleCancel(activeSubscription.id);
                 }}
                 className="flex-1 px-4 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl font-semibold hover:opacity-90 transition-opacity"
               >
@@ -685,7 +818,7 @@ export default function SubscriptionsPage() {
     activeSubscription,
     user,
     subscribe,
-    cancelSubscription
+    cancelSubscription,
   } = useSubscriptionsApi();
 
   const tabs = [
@@ -701,7 +834,8 @@ export default function SubscriptionsPage() {
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  const currentPlanId = activeSubscription?.plan?.id || activeSubscription?.planId;
+  const currentPlanId =
+    activeSubscription?.plan?.id || activeSubscription?.planId;
   const hasActiveSubscription = !!activeSubscription;
 
   return (
@@ -715,7 +849,6 @@ export default function SubscriptionsPage() {
         active={activeTab}
         setActive={handleTabChange}
       />
-
 
       {/* Tab Content */}
       <AnimatePresence mode="wait">
@@ -735,7 +868,10 @@ export default function SubscriptionsPage() {
                 className="mb-6 p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-xl flex items-start gap-3"
               >
                 <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                  <Check size={20} className="text-blue-600 dark:text-blue-400" />
+                  <Check
+                    size={20}
+                    className="text-blue-600 dark:text-blue-400"
+                  />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-bold text-blue-900 dark:text-blue-100 mb-1">

@@ -361,6 +361,7 @@
     "accounts": "Accounts",
     "reports": "Reports",
     "shippingCompanies": "Shipping Company Integration",
+    "platformSettings": "Platform Settings",
     "storeIntegration": "Online Store Integration",
     "settings": "Settings",
     "order-replacement": "Replacement Orders",
@@ -826,7 +827,10 @@
       "resetAndShow": "Reset and Show Password",
       "sendWhatsapp": "Send via WhatsApp",
       "openWhatsapp": "Open WhatsApp",
-      "manageSubscription": "Manage Subscription"
+      "manageSubscription": "Manage Subscription",
+      "addSubscription": "Add New Subscription",
+      "manageFeatures": "Manage Features",
+      "manageWallet": "Manage Wallet"
     },
     "loading": "Loading...",
     "empty": "No users found",
@@ -981,309 +985,6 @@
     "loading": "Loading...",
     "empty": "No roles found"
   },
-  "settings": {
-    "header": {
-      "title": "Settings",
-      "subtitle": "Manage your account and preferences"
-    },
-    "quickStats": {
-      "title": "Quick Stats",
-      "totalCategories": "Total Categories",
-      "activeStores": "Active Stores",
-      "warehouses": "Warehouses"
-    },
-    "tabs": {
-      "categories": {
-        "label": "Categories",
-        "description": "Manage product categories"
-      },
-      "stores": {
-        "label": "Stores",
-        "description": "Manage store locations"
-      },
-      "warehouses": {
-        "label": "Warehouses",
-        "description": "Manage warehouses"
-      },
-      "account": {
-        "label": "Account",
-        "description": "Account settings"
-      },
-      "notifications": {
-        "label": "Notifications",
-        "description": "Notification preferences"
-      },
-      "security": {
-        "label": "Security",
-        "description": "Security and privacy"
-      },
-      "appearance": {
-        "label": "Appearance",
-        "description": "Theme and display"
-      }
-    },
-    "categories": {
-      "toast": {
-        "creating": "Creating category...",
-        "created": "Category created successfully",
-        "updating": "Updating category...",
-        "updated": "Category updated successfully",
-        "deleting": "Deleting category...",
-        "deleted": "Category deleted successfully",
-        "toggling": "Changing status...",
-        "toggled": "Status changed",
-        "duplicating": "Duplicating...",
-        "duplicated": "Category duplicated successfully",
-        "archiving": "Archiving...",
-        "archived": "Category archived successfully"
-      },
-      "delete": {
-        "confirm": "Do you want to delete this category?"
-      },
-      "title": "Category Management",
-      "subtitle": "Organize your products into categories",
-      "addButton": "Add Category",
-      "searchPlaceholder": "Search categories...",
-      "loading": "Loading...",
-      "dialogs": {
-        "delete": {
-          "title": "Confirm Deletion",
-          "description": "Are you sure you want to delete the category \"{name}\"?",
-          "warning": "This action cannot be undone!"
-        }
-      },
-      "addForm": {
-        "title": "Add New Category"
-      },
-      "editForm": {
-        "title": "Edit Category"
-      },
-      "form": {
-        "currentImage": "There is a current image (you can upload a new one)",
-        "name": "Category Name",
-        "namePlaceholder": "Example: Electronics",
-        "slug": "Slug",
-        "slugPlaceholder": "Example: electronics",
-        "image": "Category Image",
-        "uploadImage": "Upload Image",
-        "noFileChosen": "No file chosen",
-        "active": "Active",
-        "save": "Save Category",
-        "cancel": "Cancel"
-      },
-      "list": {
-        "toggle": "Change Status",
-        "products": "Products",
-        "active": "Active",
-        "inactive": "Inactive",
-        "edit": "Edit",
-        "delete": "Delete",
-        "view": "View Details",
-        "duplicate": "Duplicate",
-        "archive": "Archive",
-        "activate": "Activate",
-        "deactivate": "Deactivate",
-        "toggleStatus": "Change Status",
-        "moreActions": "More Actions",
-        "actions": "Actions"
-      },
-      "common": {
-        "loading": "Loading...",
-        "saving": "Saving...",
-        "deleting": "Deleting...",
-        "cancel": "Cancel",
-        "delete": "Delete",
-        "save": "Save",
-        "edit": "Edit",
-        "view": "View",
-        "search": "Search"
-      },
-      "global": {
-        "lockedHint": "Global items cannot be edited or deleted",
-        "lockedToast": "Global items cannot be edited or deleted",
-        "globalItem": "Global Item",
-        "badge": "Global"
-      }
-    },
-    "stores": {
-      "title": "Store Management",
-      "subtitle": "Manage your store locations",
-      "addButton": "Add Store",
-      "addForm": {
-        "title": "Add New Store"
-      },
-      "form": {
-        "name": "Store Name",
-        "namePlaceholder": "Example: Main Branch",
-        "code": "Store Code",
-        "codePlaceholder": "Example: MB-001",
-        "location": "Location",
-        "locationPlaceholder": "Example: Downtown",
-        "phone": "Phone",
-        "phonePlaceholder": "+1234567890",
-        "address": "Address",
-        "addressPlaceholder": "Full address",
-        "active": "Active",
-        "save": "Save Store",
-        "cancel": "Cancel"
-      },
-      "list": {
-        "active": "Active",
-        "inactive": "Inactive",
-        "edit": "Edit",
-        "delete": "Delete"
-      }
-    },
-    "account": {
-      "title": "Account Settings",
-      "subtitle": "Manage your account information",
-      "loading": "Loading account data...",
-      "toast": {
-        "saving": "Saving changes...",
-        "saved": "Changes saved successfully",
-        "uploadingAvatar": "Uploading image...",
-        "avatarUpdated": "Image updated successfully"
-      },
-      "errors": {
-        "missingMeEndpoint": "No /users/me endpoint found — add it or save userId in localStorage",
-        "missingAvatarEndpoint": "No /users/me/avatar endpoint found — add it to upload the account image"
-      },
-      "profile": {
-        "role": "Role",
-        "plan": "Plan",
-        "active": "Active",
-        "inactive": "Inactive",
-        "employeeType": "Employee Type",
-        "employeeTypePlaceholder": "Example: sales / support / manager",
-        "isActive": "Activate Account",
-        "userId": "User ID",
-        "adminId": "Admin ID",
-        "createdAt": "Created At",
-        "updatedAt": "Last Updated",
-        "changePhoto": "Change Photo",
-        "fullName": "Full Name",
-        "email": "Email",
-        "phone": "Phone",
-        "company": "Company",
-        "saveChanges": "Save Changes"
-      },
-      "password": {
-        "title": "Password",
-        "subtitle": "Update your password",
-        "change": "Change Password",
-        "cancel": "Cancel",
-        "current": "Current Password",
-        "new": "New Password",
-        "confirm": "Confirm New Password",
-        "update": "Update Password"
-      },
-      "phone": {
-        "label": "Mobile Number",
-        "countryPlaceholder": "Select country",
-        "invalid": "Invalid mobile number"
-      }
-    },
-    "notifications": {
-      "title": "Notification Preferences",
-      "subtitle": "Manage how you receive notifications",
-      "items": {
-        "orderUpdates": {
-          "title": "Order Updates",
-          "description": "Receive notifications about order status changes"
-        },
-        "newProducts": {
-          "title": "New Products",
-          "description": "Notifications when new products are added"
-        },
-        "lowStock": {
-          "title": "Low Stock Alerts",
-          "description": "Get alerts when products are low in stock"
-        },
-        "marketing": {
-          "title": "Marketing Messages",
-          "description": "Receive promotional and marketing emails"
-        }
-      }
-    },
-    "security": {
-      "title": "Security Settings",
-      "subtitle": "Manage your account security",
-      "twoFactor": {
-        "title": "Two-Factor Authentication",
-        "description": "Add an extra layer of security to your account",
-        "enable": "Enable Two-Factor Authentication"
-      },
-      "sessions": {
-        "title": "Active Sessions",
-        "current": "Current Session",
-        "details": "Chrome on Windows • Active now",
-        "active": "Active",
-        "subtitle": "Devices and sessions signed in to your account",
-        "refresh": "Refresh",
-        "loading": "Loading sessions...",
-        "empty": "No sessions available to display at the moment",
-        "deviceUnknown": "Unknown Device",
-        "locationUnknown": "Unknown Location",
-        "other": "Other Session",
-        "lastSeen": "Last Active",
-        "ip": "IP"
-      },
-      "danger": {
-        "title": "Danger Zone",
-        "description": "Permanently delete your account and all data",
-        "delete": "Delete Account"
-      }
-    },
-    "appearance": {
-      "title": "Appearance Settings",
-      "subtitle": "Customize the look of the app",
-      "theme": {
-        "title": "Theme",
-        "light": "Light",
-        "dark": "Dark",
-        "system": "System"
-      },
-      "language": {
-        "title": "Language",
-        "current": "Arabic",
-        "ar": "Arabic",
-        "en": "English",
-        "label": "Language"
-      },
-      "mode": {
-        "title": "Display Mode",
-        "light": "Light",
-        "dark": "Dark",
-        "system": "System"
-      },
-      "palette": {
-        "title": "Interface Colors (6 Palettes)",
-        "note": "These palettes are for display now — they will be used later to fully apply system colors."
-      },
-      "palettes": {
-        "royal": "Royal",
-        "emerald": "Emerald",
-        "sunset": "Sunset",
-        "rose": "Rose",
-        "cyan": "Cyan",
-        "mono": "Mono"
-      },
-      "language2": {
-        "title": "Default Language",
-        "label": "Choose language",
-        "ar": "Arabic",
-        "en": "English",
-        "note": "The selection will be saved in the browser for now — and can later be linked to user settings."
-      },
-      "layout": {
-        "title": "Layout Settings",
-        "sidebar": "Expand Sidebar",
-        "sidebarDesc": "Show the sidebar in expanded or compact form",
-        "compact": "Compact Mode",
-        "compactDesc": "Reduce spacing in the interface (for smaller screens / higher density)"
-      }
-    }
-  },
   "mediaLibrary": {
     "title": "Media Library",
     "description": "Upload your files and select an image/file to use inside the form.",
@@ -1354,65 +1055,74 @@
     },
     "toolbar": {
       "addRole": "Add Role",
-      "searchPlaceholder": "Search for a role..."
-    },
-    "stats": {
-      "totalRoles": "Total Roles",
-      "globalRoles": "Global Roles",
-      "customRoles": "Custom Roles"
-    },
-    "table": {
-      "roleName": "Role Name",
-      "description": "Description",
-      "type": "Type",
-      "permissions": "Permissions",
-      "options": "Options",
-      "global": "Global",
-      "custom": "Custom",
-      "allPermissions": "All Permissions",
-      "permissionsCount": "Permission(s)"
-    },
-    "actions": {
-      "locked": "This role cannot be edited",
-      "edit": "Edit",
-      "protected": "This role cannot be deleted",
-      "delete": "Delete",
-      "preview": "Preview"
-    },
-    "dialog": {
-      "addRole": "Add Role",
-      "editRole": "Edit Role",
-      "roleDescription": "Create a role and define the allowed permissions.",
-      "roleName": "Role Name",
-      "roleNamePlaceholder": "Example: Manager, Employee...",
-      "roleDescriptionLabel": "Role Description",
-      "roleDescriptionPlaceholder": "Write a short description for this role...",
-      "globalRoleNotice": "This is a protected global role and cannot be edited.",
-      "save": "Save"
-    },
-    "preview": {
-      "permissions": "Permissions",
-      "noDescription": "No description",
-      "noPermissions": "This role has no permissions",
-      "close": "Close"
-    },
-    "deleteDialog": {
-      "title": "Delete Role",
-      "description": "Are you sure you want to delete the role",
-      "cancel": "Cancel",
-      "confirm": "Delete"
-    },
-    "permissions": {
-      "title": "Permissions",
-      "filterPlaceholder": "Filter permissions...",
-      "noMatch": "No permissions match your search.",
-      "selectedOutOf": "{checked} / {total} selected"
-    },
-    "common": {
-      "cancel": "Cancel"
-    },
-    "empty": "No roles found",
-    "emptySubtitle": "No matching roles were found. Try changing the search or add a new role."
+      "searchPlaceholder": "Search for a role...",
+      "filter": "Filter",
+      "filters": {
+        "name": "Name",
+        "namePlaceholder": "Role name",
+        "type": "Type",
+        "typePlaceholder": "Global / Custom",
+        "apply": "Apply",
+        "datePlaceholder": "Select date"
+      },
+      "stats": {
+        "totalRoles": "Total Roles",
+        "globalRoles": "Global Roles",
+        "customRoles": "Custom Roles"
+      },
+      "table": {
+        "roleName": "Role Name",
+        "description": "Description",
+        "type": "Type",
+        "permissions": "Permissions",
+        "options": "Options",
+        "global": "Global",
+        "custom": "Custom",
+        "allPermissions": "All Permissions",
+        "permissionsCount": "Permission(s)"
+      },
+      "actions": {
+        "locked": "This role cannot be edited",
+        "edit": "Edit",
+        "protected": "This role cannot be deleted",
+        "delete": "Delete",
+        "preview": "Preview"
+      },
+      "dialog": {
+        "addRole": "Add Role",
+        "editRole": "Edit Role",
+        "roleDescription": "Create a role and define the allowed permissions.",
+        "roleName": "Role Name",
+        "roleNamePlaceholder": "Example: Manager, Employee...",
+        "roleDescriptionLabel": "Role Description",
+        "roleDescriptionPlaceholder": "Write a short description for this role...",
+        "globalRoleNotice": "This is a protected global role and cannot be edited.",
+        "save": "Save"
+      },
+      "preview": {
+        "permissions": "Permissions",
+        "noDescription": "No description",
+        "noPermissions": "This role has no permissions",
+        "close": "Close"
+      },
+      "deleteDialog": {
+        "title": "Delete Role",
+        "description": "Are you sure you want to delete the role",
+        "cancel": "Cancel",
+        "confirm": "Delete"
+      },
+      "permissions": {
+        "title": "Permissions",
+        "filterPlaceholder": "Filter permissions...",
+        "noMatch": "No permissions match your search.",
+        "selectedOutOf": "{checked} / {total} selected"
+      },
+      "common": {
+        "cancel": "Cancel"
+      },
+      "empty": "No roles found",
+      "emptySubtitle": "No matching roles were found. Try changing the search or add a new role."
+    }
   },
   "permissions": {
     "selectAll": "Select All",
@@ -1516,12 +1226,6 @@
         "orders": "Order Management",
         "distribution": "Distribute Orders to Shipping Companies"
       },
-      "messages": {
-        "errorFetchingStatuses": "Failed to load available statuses",
-        "shipmentCreated": "Shipment for order {{orderNumber}} created successfully",
-        "shipmentFailed": "Failed to create shipment for order {{orderNumber}}",
-        "errorFetchingOrders": "An error occurred while loading orders"
-      },
       "header": {
         "howItWorks": "How it works?"
       },
@@ -1535,48 +1239,51 @@
         "withCarrier": "With Shipping Company",
         "readyToPrint": "Ready to Print"
       },
+      "messages": {
+        "errorFetchingStatuses": "Failed to load available statuses",
+        "shipmentCreated": "Shipment for order {{orderNumber}} created successfully",
+        "shipmentFailed": "Failed to create shipment for order {{orderNumber}}",
+        "errorFetchingOrders": "An error occurred while loading orders"
+      },
+      "modal": {
+        "orderDetailsTitle": "Order Details — {code}",
+        "assignCarrierSubtitle": "Order Distribution",
+        "assignCarrierTitle": "Assign to Shipping Company",
+        "rejectOrdersTitle": "Reject Order",
+        "assignSuccess": "Shipping company assigned successfully",
+        "bulkAssignStarted": "Orders added to queue for distribution. This may take some time.",
+        "assignFailed": "Failed to assign shipping company"
+      },
       "field": {
-        "orderCode": "Order Code",
-        "customer": "Customer",
-        "phone": "Phone",
+        "returnOrder": "Return Order Receipt",
+        "customerName": "Customer Name",
+        "phoneNumber": "Phone Number",
         "city": "City",
         "area": "Area",
         "store": "Store",
-        "total": "Total",
-        "payment": "Payment",
-        "orderDate": "Order Date",
         "carrier": "Shipping Company",
         "trackingCode": "Tracking Code",
-        "distributedAt": "Distribution Date",
-        "actions": "Actions",
-        "customerName": "Customer Name",
-        "phoneNumber": "Phone Number",
         "paymentType": "Payment Method",
+        "total": "Total",
         "shippingCost": "Shipping Cost",
         "allowOpenPackage": "Allow Opening",
         "allowReturn": "Allow Return",
-        "date": "Date"
+        "customer": "Customer",
+        "phone": "Phone",
+        "payment": "Payment",
+        "orderDate": "Order Date",
+        "actions": "Actions",
+        "orderCode": "Order Code",
+        "region": "Region",
+        "productName": "Product Name",
+        "date": "Date",
+        "distributedAt": "Distribution Date"
       },
       "section": {
         "products": "Products",
         "notes": "Notes",
         "productName": "Product Name",
         "productNamePlaceholder": "Search by product name..."
-      },
-      "common": {
-        "notSpecified": "Not Specified",
-        "none": "—",
-        "close": "Close",
-        "cancel": "Cancel",
-        "export": "Export",
-        "filter": "Filter",
-        "apply": "Apply",
-        "total": "Total",
-        "limit": "Results per page",
-        "allStores": "All Stores",
-        "allCarriers": "All Shipping Companies",
-        "all": "All",
-        "selectedCount": "{count} selected"
       },
       "payment": {
         "cod": "Cash on Delivery",
@@ -1586,21 +1293,8 @@
         "allowed": "Allowed",
         "notAllowed": "Not Allowed"
       },
-      "table": {
-        "searchUnassigned": "Search unassigned orders...",
-        "searchAssigned": "Search assigned orders...",
-        "emptyUnassignedTitle": "No unassigned orders",
-        "emptyAssignedTitle": "No assigned orders"
-      },
-      "action": {
-        "assignSelected": "Assign Selected ({count})"
-      },
-      "modal": {
-        "orderDetailsTitle": "Order Details — {code}",
-        "assignCarrierTitle": "Assign to Shipping Company",
-        "rejectOrdersTitle": "Reject Order"
-      },
       "assign": {
+        "ordersSelected": "Orders Selected",
         "requiredCarrier": "Required Shipping Company",
         "selectedOrders": "Selected Orders",
         "noOrders": "No orders",
@@ -1608,19 +1302,54 @@
         "assign": "Assign"
       },
       "reject": {
+        "subtitle": "Order Management",
         "enterOrScan": "Enter or scan the order number",
-        "scanTitle": "Scan Barcode",
         "recognized": "Order recognized: {code}",
         "reason": "Rejection Reason",
         "reasonPlaceholder": "Write the rejection reason...",
         "rejecting": "Rejecting...",
-        "confirm": "Confirm Rejection"
+        "confirm": "Confirm Rejection",
+        "scanTitle": "Scan Barcode"
       },
       "tooltip": {
         "details": "Details",
-        "assign": "Assign to Shipping Company",
         "changeAssign": "Change Shipping Company",
-        "reject": "Reject Order"
+        "assign": "Assign to Shipping Company",
+        "reject": "Reject Order",
+        "assigning": "Assigning..."
+      },
+      "table": {
+        "searchUnassigned": "Search unassigned orders...",
+        "emptyUnassignedTitle": "No unassigned orders",
+        "searchAssigned": "Search assigned orders...",
+        "emptyAssignedTitle": "No assigned orders"
+      },
+      "action": {
+        "assignSelected": "Assign Selected ({count})"
+      },
+      "carrier": {
+        "aramex": "Aramex",
+        "smsa": "SMSA",
+        "dhl": "DHL",
+        "bosta": "Bosta"
+      },
+      "common": {
+        "notSpecified": "Not Specified",
+        "none": "—",
+        "items": "Items",
+        "close": "Close",
+        "cancel": "Cancel",
+        "selectedCount": "{count} selected",
+        "filter": "Filter",
+        "apply": "Apply",
+        "total": "Total",
+        "limit": "Results per page",
+        "export": "Export",
+        "allStores": "All Stores",
+        "all": "All",
+        "allRegions": "All Regions",
+        "allProducts": "All Products",
+        "allCarriers": "All Shipping Companies"
       }
     },
     "print": {
@@ -1629,12 +1358,14 @@
         "warehouse": "Warehouse Management",
         "printLabels": "Print Labels"
       },
-      "header": {
-        "howItWorks": "How it works?"
-      },
+      "howItWorks": "How it works?",
       "tabs": {
         "notPrinted": "Not Printed",
         "printed": "Printed"
+      },
+      "payment": {
+        "cod": "Cash on Delivery",
+        "paid": "Paid"
       },
       "stats": {
         "totalDistributed": "Total Distributed",
@@ -1656,56 +1387,35 @@
         "status": "Status",
         "actions": "Actions"
       },
-      "filter": {
-        "carrier": "Shipping Company",
-        "allCarriers": "All Companies",
+      "modal": {
+        "orderDetailsLabel": "Order Details",
+        "customerName": "Customer Name",
+        "phone": "Phone Number",
+        "city": "City",
+        "area": "Area",
         "store": "Store",
-        "allStores": "All Stores",
-        "date": "Order Date",
-        "printDate": "Print Date",
-        "productName": "Product Name",
-        "productNamePlaceholder": "Search by product name...",
-        "status": "Status",
-        "allStatuses": "All Statuses"
-      },
-      "common": {
-        "details": "Details",
-        "printLabel": "Print Label",
-        "reprint": "Reprint",
-        "openPreparation": "Open Preparation",
-        "close": "Close",
-        "export": "Export",
-        "filter": "Filter",
-        "apply": "Apply",
+        "carrier": "Carrier",
+        "notSpecified": "Not Specified",
+        "trackingCode": "Tracking Number",
+        "paymentType": "Payment Method",
+        "cod": "Cash on Delivery",
+        "paid": "Prepaid",
         "total": "Total",
-        "limit": "Results per page",
-        "none": "—"
-      },
-      "notPrinted": {
-        "search": "Search unprinted orders...",
-        "empty": "No unprinted orders",
-        "printSelected": "Print Selected ({count})",
-        "printSelectedDefault": "Print Selected",
-        "prepareSelected": "Prepare Selected ({count})",
-        "prepareSelectedDefault": "Prepare Selected"
-      },
-      "printed": {
-        "search": "Search printed orders...",
-        "empty": "No printed orders",
-        "printSelected": "Reprint ({count})",
-        "printSelectedDefault": "Reprint Selected",
-        "prepareSelected": "Prepare Selected ({count})",
-        "prepareSelectedDefault": "Prepare Selected",
-        "statusPrinting": "Printing Label",
-        "statusPreparing": "In Preparation",
-        "statusReady": "Ready to Ship"
+        "shippingCost": "Shipping Cost",
+        "products": "Products",
+        "items": "Items",
+        "notes": "Notes",
+        "printed": "Printed",
+        "orderDetails": "Order Details — {code}"
       },
       "printPreview": {
+        "subtitle": "Label Preview",
         "title": "Print Preview — {count} Label(s)",
+        "labels": "Labels",
+        "orderCode": "Order Code",
+        "customerInfo": "Customer Information",
+        "shippingInfo": "Shipping Information",
         "printNow": "Print Now ({count})"
-      },
-      "modal": {
-        "orderDetails": "Order Details — {code}"
       },
       "labelFields": {
         "customer": "Customer",
@@ -1720,15 +1430,65 @@
         "cod": "Cash on Delivery",
         "paid": "Paid"
       },
-      "howItWorks": "How it works?"
+      "notPrinted": {
+        "search": "Search unprinted orders...",
+        "empty": "No unprinted orders",
+        "printSelected": "Print Selected ({count})",
+        "printSelectedDefault": "Print Selected",
+        "prepareSelected": "Prepare Selected ({count})",
+        "prepareSelectedDefault": "Prepare Selected"
+      },
+      "printed": {
+        "search": "Search printed orders...",
+        "empty": "No printed orders",
+        "printSelected": "Reprint ({count})",
+        "printSelectedDefault": "Reprint Selected",
+        "statusPrinting": "Printing Label",
+        "statusPreparing": "In Preparation",
+        "statusReady": "Ready to Ship",
+        "prepareSelected": "Prepare Selected ({count})",
+        "prepareSelectedDefault": "Prepare Selected"
+      },
+      "filter": {
+        "carrier": "Shipping Company",
+        "allCarriers": "All Companies",
+        "store": "Store",
+        "allStores": "All Stores",
+        "date": "Order Date",
+        "printDate": "Print Date",
+        "productName": "Product Name",
+        "productNamePlaceholder": "Search by product name...",
+        "status": "Status",
+        "allStatuses": "All Statuses"
+      },
+      "common": {
+        "close": "Close",
+        "cancel": "Cancel",
+        "filter": "Filter",
+        "apply": "Apply",
+        "total": "Total",
+        "limit": "Results per page",
+        "none": "—",
+        "export": "Export",
+        "details": "Details",
+        "printLabel": "Print Label",
+        "reprint": "Reprint",
+        "openPreparation": "Open Preparation"
+      },
+      "messages": {
+        "printSuccess": "Labels marked as printed successfully",
+        "reprintSuccess": "Labels reprinted successfully"
+      },
+      "header": {
+        "howItWorks": "How it works?"
+      }
     },
     "preparation": {
       "pdf": {
         "wrongLog": {
           "title": "Preparation Error Log",
           "printDate": "Print Date",
-          "scanner": "Scanner",
-          "userName": "User",
+          "employee": "Employee",
           "totalAttempts": "Total Attempts",
           "carrier": "Shipping Company",
           "date": "Date",
@@ -1741,7 +1501,9 @@
           "orderInfo": "Order Information",
           "customer": "Customer",
           "city": "City",
-          "phone": "Phone"
+          "phone": "Phone",
+          "scanner": "Scanner",
+          "userName": "User"
         }
       },
       "breadcrumbs": {
@@ -1749,11 +1511,9 @@
         "warehouse": "Warehouse Management",
         "preparation": "Order Preparation"
       },
-      "tabs": {
-        "inProgress": "In Preparation",
-        "prepared": "Prepared"
-      },
+      "howItWorks": "How it works?",
       "subtabs": {
+        "scanning": "Processing",
         "inProgress": "In Preparation",
         "prepared": "Prepared"
       },
@@ -1766,59 +1526,154 @@
         "notStarted": "Not Started",
         "total": "Total Orders"
       },
+      "common": {
+        "copied": "Copied",
+        "filter": "Filter",
+        "apply": "Apply",
+        "total": "Total",
+        "limit": "Results per page"
+      },
       "scan": {
+        "retry": "Retry",
+        "errorScanning": "Error occurred during scanning",
+        "step1of2": "Step 1 of 2",
+        "orderLabel": "Order",
+        "scanOrderTitle": "Scan Order Barcode",
+        "scanOrderPlaceholder": "Scan order barcode or tracking number...",
+        "scanItemsTitle": "Scan Product Barcodes",
+        "scanItemsPlaceholder": "Scan product barcodes for order {code}...",
+        "scanBtn": "Scan",
+        "ordersBtn": "Orders",
+        "cancelBtn": "Cancel",
+        "soundOn": "Sound On",
+        "soundOff": "Sound Off",
+        "readyTitle": "Ready to Scan",
+        "readySubtitle": "Scan order barcode to start preparing products",
+        "orderFound": "✓ Order {code} found",
+        "orderNotFound": "Order not found — check the barcode",
+        "barcodeNotFound": "Barcode \"{val}\" not found in this order",
+        "alreadyScanned": "Required quantity for \"{name}\" already scanned",
+        "itemScanned": "✓ \"{name}\" scanned successfully",
+        "orderComplete": "✅ Order {code} fully prepared!",
+        "orderPreparedLog": "Order fully prepared",
+        "correct": "Correct",
+        "wrong": "Wrong",
+        "items": "Items",
         "sku": "SKU",
         "scannedOrders": "Scanned Orders",
         "failedScans": "Failed Scans",
         "successCount": "Success Count",
-        "errorCount": "Error Count"
+        "errorCount": "Error Count",
+        "done": "Completed",
+        "scanned": "Scanned",
+        "waiting": "Waiting for Scan",
+        "stats": {
+          "waiting": "Orders awaiting preparation",
+          "totalItems": "Total Items",
+          "prepared": "Prepared Items"
+        }
+      },
+      "panel": {
+        "subtitle": "Processing",
+        "title": "Selected Orders",
+        "orders": "Order(s)",
+        "done": "Completed",
+        "empty": "No orders available"
+      },
+      "reject": {
+        "date": "Date",
+        "subtitle": "Confirm Rejection",
+        "title": "Reject Order",
+        "presetsLabel": "Common Reasons",
+        "customLabel": "Custom Reason",
+        "placeholder": "Type rejection reason here...",
+        "warning": "Once confirmed, the order status will be changed to Rejected. This action cannot be undone.",
+        "cancel": "Cancel",
+        "confirm": "Confirm Rejection",
+        "preset1": "Damaged or broken product",
+        "preset2": "Out of stock",
+        "preset3": "Order data error",
+        "preset4": "Duplicate order"
+      },
+      "modal": {
+        "orderLabel": "Order Details",
+        "customer": "Customer Name",
+        "phone": "Phone Number",
+        "city": "City",
+        "area": "Area",
+        "store": "Store",
+        "carrier": "Carrier",
+        "notSpecified": "Not Specified",
+        "trackingCode": "Tracking Number",
+        "total": "Total",
+        "cod": "Cash on Delivery",
+        "paid": "Prepaid",
+        "products": "Products",
+        "items": "Items",
+        "notes": "Notes",
+        "close": "Close"
       },
       "table": {
+        "date": "Date",
         "orderNumber": "Order Number",
         "customer": "Customer",
         "phone": "Phone",
         "city": "City",
         "carrier": "Shipping Company",
         "products": "Products",
+        "productName": "Product Name",
+        "shelf": "Shelf",
+        "qty": "Qty",
+        "status": "Status",
+        "price": "Price",
+        "total": "Total",
         "scanProgress": "Scan Progress",
         "employee": "Employee",
-        "actions": "Actions",
-        "preparedAt": "Preparation Date"
+        "preparedAt": "Preparation Date",
+        "actions": "Actions"
+      },
+      "actions": {
+        "details": "View Details",
+        "continuePrepare": "Continue Preparation",
+        "reject": "Reject",
+        "distribute": "Assign to Shipping Company",
+        "continuePreparing": "Continue Preparing"
       },
       "filters": {
         "carrier": "Shipping Company",
         "allCarriers": "All Companies"
       },
-      "actions": {
-        "continuePreparing": "Continue Preparing",
-        "distribute": "Assign to Shipping Company",
-        "reject": "Reject"
+      "messages": {
+        "orderRejected": "Order rejected successfully",
+        "errorRejectingOrder": "Error occurred while rejecting the order",
+        "errorFetchingOrders": "Error occurred while fetching orders",
+        "exportStarted": "Export started...",
+        "exportSuccess": "Exported successfully",
+        "exportFailed": "Export failed",
+        "errorDownloadingLogs": "Error occurred while downloading scan logs"
       },
-      "inProgress": {
-        "emptyTitle": "No orders in preparation"
-      },
-      "prepared": {
-        "emptyTitle": "No ready orders"
-      },
-      "common": {
-        "filter": "Filter",
-        "apply": "Apply",
-        "total": "Total",
-        "limit": "Results per page"
-      },
-      "unspecified": "Not Specified",
-      "product": "Product",
       "searchPlaceholder": "Search orders...",
       "filter": "Filter",
       "apply": "Apply",
       "total": "Total",
       "limit": "Results per page",
       "export": "Export",
-      "rejectReason": "Rejected from preparation page",
-      "rejectDetails": "Rejected from preparation page",
       "prepareSelected": "Prepare Selected",
       "prepareSelectedCount": "Prepare Selected ({count})",
-      "howItWorks": "How it works?"
+      "unspecified": "Not Specified",
+      "product": "Product",
+      "rejectReason": "Rejected from preparation page",
+      "rejectDetails": "Rejected from preparation page",
+      "inProgress": {
+        "emptyTitle": "No orders in preparation"
+      },
+      "prepared": {
+        "emptyTitle": "No ready orders"
+      },
+      "tabs": {
+        "inProgress": "In Preparation",
+        "prepared": "Prepared"
+      }
     },
     "outgoing": {
       "breadcrumbs": {
@@ -1839,6 +1694,16 @@
         "totalShipped": "Total Shipments",
         "deliveryFiles": "Delivery Files"
       },
+      "common": {
+        "filter": "Filter",
+        "apply": "Apply",
+        "total": "Total",
+        "limit": "Results per page",
+        "carrier": "Shipping Company",
+        "allCarriers": "All Companies",
+        "currency": "EGP",
+        "all": "All"
+      },
       "messages": {
         "errorDownloadingManifest": "Error downloading manifest",
         "errorDownloadingLogs": "Error downloading scan logs",
@@ -1853,6 +1718,11 @@
         "cancelBtn": "Cancel",
         "selectCarrier": "Select Shipping Company",
         "toggleSound": "Toggle Sound",
+        "scanBtn": "Scan",
+        "scanDone": "Done",
+        "retry": "Retry",
+        "scannedOrders": "Scanned Orders",
+        "failedScans": "Failed Attempts",
         "placeholder": "Scan order code to register for outgoing",
         "scanItemsPlaceholder": "Scan items for order {code}",
         "readyOrders": "{count} order(s) ready",
@@ -1870,16 +1740,24 @@
           "orders": "Orders",
           "items": "Items"
         },
+        "messages": {
+          "manifestCreated": "Manifest created successfully",
+          "manifestUpdated": "Manifest updated",
+          "printSuccess": "Printing process started",
+          "errorOccurred": "An unexpected error occurred"
+        },
         "table": {
+          "products": "Products",
+          "sku": "SKU",
           "order": "Order",
           "customer": "Customer",
           "city": "City",
-          "products": "Products",
           "total": "Total",
           "product": "Product",
           "qty": "Qty",
           "price": "Price",
-          "lineTotal": "Total"
+          "lineTotal": "Total",
+          "status": "Status"
         },
         "success": {
           "addedOrder": "Order {code} added",
@@ -1902,6 +1780,13 @@
         "searchPlaceholder": "Search delivery files...",
         "emptyTitle": "No delivery files",
         "download": "Download PDF",
+        "wrongLog": "Error Log",
+        "downloadWrongLog": "Download Error Log",
+        "summary": {
+          "title": "File Summary",
+          "orders": "Orders",
+          "items": "Items"
+        },
         "th": {
           "fileNumber": "File Number",
           "carrier": "Shipping Company",
@@ -1916,13 +1801,40 @@
           "notPrinted": "Not Printed"
         }
       },
-      "common": {
-        "filter": "Filter",
-        "apply": "Apply",
-        "total": "Total",
-        "limit": "Results per page",
-        "carrier": "Shipping Company",
-        "allCarriers": "All Companies"
+      "pdf": {
+        "outgoing": {
+          "title": "Outgoing Orders Dispatch File",
+          "printDate": "Print Date",
+          "employee": "Employee",
+          "totalOrders": "Total Orders",
+          "carrier": "Shipping Carrier",
+          "shipDate": "Shipment Date",
+          "orderUnit": "Order",
+          "sku": "SKU",
+          "product": "Product",
+          "qty": "Qty",
+          "trackingCode": "Tracking Code",
+          "receiptConfirmation": "Receipt Confirmation",
+          "courierName": "Shipping Agent Name",
+          "signature": "Signature",
+          "dateTime": "Date & Time"
+        },
+        "wrongLog": {
+          "title": "Failed Scan Attempts Log",
+          "printDate": "Print Date",
+          "orderNumber": "Order Number",
+          "employee": "Employee",
+          "scanner": "Scanner",
+          "userName": "User Name",
+          "totalAttempts": "Total Attempts",
+          "carrier": "Shipping Carrier",
+          "date": "Date",
+          "totalFailedAttempts": "Total Failed Attempts",
+          "attemptUnit": "Attempt",
+          "scannedCode": "Scanned Code",
+          "failReason": "Failure Reason",
+          "time": "Time"
+        }
       },
       "currency": "SAR"
     },
@@ -1945,7 +1857,71 @@
         "returnedToday": "Today's Returns",
         "totalReturns": "Total Returns"
       },
+      "common": {
+        "all": "All",
+        "filter": "Filter",
+        "apply": "Apply",
+        "total": "Total",
+        "limit": "Results per page",
+        "carrier": "Shipping Company",
+        "allCarriers": "All Companies",
+        "currency": "SAR",
+        "unspecified": "Not Specified"
+      },
       "scan": {
+        "header": {
+          "subtitleReady": "Scan Return Order",
+          "orderLabel": "Order",
+          "title": "Returns Receipt",
+          "titleActive": "Return Details"
+        },
+        "placeholders": {
+          "scanOrder": "Scan order or tracking number...",
+          "scanAnother": "Scan another order..."
+        },
+        "status": {
+          "done": "Done",
+          "retry": "Retry",
+          "scanBtn": "Scan",
+          "toggleSound": "Toggle Sound On/Off"
+        },
+        "counters": {
+          "scannedReturns": "Scanned Returns",
+          "failedScans": "Failed Scan Attempts"
+        },
+        "messages": {
+          "notFound": "Order {code} not found or not shipped",
+          "notFoundReason": "Order not found or not shipped",
+          "alreadyReturned": "Order {code} has already been returned",
+          "alreadyReturnedReason": "Order already returned",
+          "found": "Order {code} found",
+          "selectAtLeastOne": "You must select at least one product to complete the return",
+          "returnProcessedLog": "Return received — {count} item(s)",
+          "returnSuccess": "Return process completed successfully for order {code}"
+        },
+        "actions": {
+          "selectAll": "Select All",
+          "unselectAll": "Unselect All",
+          "condition": "Return Condition",
+          "cancel": "Cancel",
+          "confirmReturn": "Confirm Return"
+        },
+        "table": {
+          "orderNumber": "Order Number",
+          "trackingCode": "Tracking Number",
+          "customer": "Customer",
+          "productName": "Product Name",
+          "qty": "Qty",
+          "price": "Price",
+          "return": "Return",
+          "selected": "Selected",
+          "notSelected": "Not Selected",
+          "city": "City"
+        },
+        "empty": {
+          "title": "Ready to Scan Return Order",
+          "subtitle": "Scan order or tracking number to show details immediately"
+        },
         "selectCarrierFirst": "Select the shipping company and receiving warehouse",
         "carrier": "Shipping Company",
         "selectCarrierPlaceholder": "Select shipping company",
@@ -1976,26 +1952,73 @@
       "files": {
         "searchPlaceholder": "Search return files...",
         "emptyTitle": "No return files",
-        "download": "Download PDF",
-        "warehouseFilter": "Warehouse",
-        "allWarehouses": "All Warehouses",
         "th": {
           "fileNumber": "File Number",
           "carrier": "Shipping Company",
-          "warehouse": "Warehouse",
           "returnedOrders": "Returned Orders",
           "createdAt": "Receipt Date",
           "createdBy": "By",
-          "actions": "Actions"
-        }
+          "actions": "Actions",
+          "warehouse": "Warehouse"
+        },
+        "tooltip": {
+          "details": "Details",
+          "downloadFile": "Download Return File",
+          "downloadWrongLog": "Download Error Log"
+        },
+        "download": "Download PDF",
+        "warehouseFilter": "Warehouse",
+        "allWarehouses": "All Warehouses"
       },
-      "common": {
-        "filter": "Filter",
-        "apply": "Apply",
+      "detail": {
+        "orderLabel": "Order Number",
+        "customer": "Customer",
+        "phone": "Phone",
+        "city": "City",
+        "area": "Area",
+        "carrier": "Carrier",
+        "trackingCode": "Tracking Number",
         "total": "Total",
-        "limit": "Results per page",
-        "carrier": "Shipping Company",
-        "allCarriers": "All Companies"
+        "returnCondition": "Return Condition",
+        "returnedAt": "Return Date",
+        "products": "Products",
+        "items": "Items",
+        "close": "Close"
+      },
+      "pdf": {
+        "title": "Returns Receipt File",
+        "refPrefix": "RET",
+        "carrier": "Carrier",
+        "returnDate": "Receipt Date",
+        "employee": "Employee",
+        "totalOrders": "Total Orders",
+        "orderUnit": "Order",
+        "ordersDetail": "Order Details",
+        "sku": "SKU",
+        "product": "Product",
+        "qty": "Qty",
+        "trackingCode": "Tracking Number",
+        "condition": "Condition",
+        "total": "Total",
+        "receiptConfirmation": "Receipt Confirmation",
+        "courierName": "Courier Name",
+        "signature": "Signature",
+        "dateTime": "Date & Time",
+        "system": "Warehouse Management System (WMS)"
+      },
+      "wrongPdf": {
+        "title": "Failed Scan Attempts Log",
+        "carrier": "Carrier",
+        "employee": "Employee",
+        "date": "Date",
+        "totalFailedAttempts": "Total Failed Attempts",
+        "attemptUnit": "Attempt",
+        "printAlertText": "This document contains failed scan attempts — please review and verify barcodes before shipping",
+        "totalAttempts": "Total Attempts",
+        "scannedCode": "Scanned Code",
+        "failReason": "Failure Reason",
+        "time": "Time",
+        "system": "Warehouse Management System (WMS)"
       },
       "filters": {
         "carrier": "Shipping Company",
@@ -2019,6 +2042,15 @@
         "thisWeek": "This Week",
         "totalItems": "Total Items"
       },
+      "searchPlaceholder": "Search rejected orders...",
+      "filter": "Filter",
+      "apply": "Apply",
+      "total": "Total",
+      "limit": "Results per page",
+      "emptyTitle": "No rejected orders",
+      "export": "Export",
+      "retryOpDetails": "The order was returned to confirmed",
+      "close": "Close",
       "table": {
         "orderNumber": "Order Number",
         "customer": "Customer",
@@ -2029,28 +2061,11 @@
         "employee": "Responsible Employee",
         "actions": "Actions"
       },
-      "reasonModal": {
-        "title": "Rejection Reason",
-        "reasonLabel": "Reason",
-        "unspecified": "Not Specified",
-        "customer": "Customer",
-        "rejectedAt": "Rejection Date",
-        "city": "City",
-        "employee": "Responsible Employee"
-      },
       "actions": {
-        "viewReason": "View Reason",
-        "retryToConfirmed": "Return to Confirmed"
+        "viewDetails": "View Details",
+        "retryToConfirmed": "Return to Confirmed",
+        "viewReason": "View Reason"
       },
-      "close": "Close",
-      "searchPlaceholder": "Search rejected orders...",
-      "filter": "Filter",
-      "apply": "Apply",
-      "total": "Total",
-      "limit": "Results per page",
-      "export": "Export",
-      "emptyTitle": "No rejected orders",
-      "retryOpDetails": "The order was returned to confirmed",
       "detail": {
         "orderLabel": "Order Number",
         "rejected": "Rejected",
@@ -2069,6 +2084,15 @@
       "messages": {
         "retrySuccess": "Order re-confirmed successfully",
         "retryError": "Error re-confirming order"
+      },
+      "reasonModal": {
+        "title": "Rejection Reason",
+        "reasonLabel": "Reason",
+        "unspecified": "Not Specified",
+        "customer": "Customer",
+        "rejectedAt": "Rejection Date",
+        "city": "City",
+        "employee": "Responsible Employee"
       }
     },
     "logs": {
@@ -2083,6 +2107,19 @@
         "failed": "Failed",
         "successRate": "Success Rate"
       },
+      "searchPlaceholder": "Search operation log...",
+      "filter": "Filter",
+      "apply": "Apply",
+      "total": "Total",
+      "limit": "Results per page",
+      "emptyTitle": "No operations recorded",
+      "export": "Export",
+      "close": "Close",
+      "popupBlocked": "Please allow pop-ups to download the PDF file",
+      "common": {
+        "currency": "SAR",
+        "unspecified": "Unspecified"
+      },
       "table": {
         "opNumber": "Operation Number",
         "opType": "Operation Type",
@@ -2092,7 +2129,22 @@
         "result": "Result",
         "details": "Details",
         "datetime": "Date & Time",
+        "actions": "Actions",
         "orderFile": "Order File"
+      },
+      "filters": {
+        "allTypes": "All Types",
+        "allResults": "All Results",
+        "allCarriers": "All Carriers"
+      },
+      "result": {
+        "success": "Success",
+        "failed": "Failed"
+      },
+      "actions": {
+        "viewOrderFile": "View Order File",
+        "viewSessionFile": "View Session File ({{count}} orders)",
+        "viewOperationLog": "View Operation Log"
       },
       "opTypes": {
         "orderPrepared": "Prepare Order",
@@ -2102,23 +2154,118 @@
         "assignCarrier": "Assign Shipping Company",
         "printLabel": "Print Label",
         "shipOrder": "Ship Order",
+        "return": "Order Return",
         "returnOrder": "Receive Return",
         "retryOrder": "Reactivate Order",
         "bulkReject": "Bulk Reject",
+        "printManifest": "Print Manifest",
+        "reprintManifest": "Reprint Manifest",
         "reprintLabel": "Reprint Label",
         "unknown": "Unknown Operation"
       },
-      "result": {
-        "success": "Success",
-        "failed": "Failed"
+      "genericModal": {
+        "operationLabel": "Operation Log",
+        "opType": "Operation Type",
+        "orderNumber": "Order Number",
+        "carrier": "Carrier",
+        "employee": "Employee",
+        "datetime": "Date",
+        "details": "Details",
+        "result": "Result",
+        "orderInfo": "Order Information",
+        "customer": "Customer",
+        "city": "City",
+        "total": "Total",
+        "status": "Status",
+        "downloadPdf": "Download Operation Log PDF"
       },
-      "searchPlaceholder": "Search operation log...",
-      "filter": "Filter",
-      "apply": "Apply",
-      "total": "Total",
-      "limit": "Results per page",
-      "export": "Export",
-      "emptyTitle": "No operations recorded"
+      "genericPdf": {
+        "title": "Operation Log",
+        "printedAt": "Printed At",
+        "opNumber": "Operation Number",
+        "opType": "Operation Type",
+        "orderNumber": "Order Number",
+        "carrier": "Carrier",
+        "employee": "Employee",
+        "result": "Result",
+        "datetime": "Date & Time",
+        "details": "Details",
+        "orderInfo": "Order Information",
+        "customer": "Customer",
+        "city": "City",
+        "total": "Total",
+        "status": "Status"
+      },
+      "orderLogModal": {
+        "fileLabel": "Order File",
+        "customer": "Customer",
+        "city": "City",
+        "carrier": "Carrier",
+        "preparedAt": "Preparation Time",
+        "correctPdf": "Correct Scan PDF",
+        "errorsPdf": "Scan Errors PDF ({{count}})",
+        "noErrors": "No errors in this order",
+        "products": "Products",
+        "sku": "SKU",
+        "name": "Name",
+        "requested": "Requested",
+        "scanned": "Scanned",
+        "status": "Status",
+        "completed": "Completed",
+        "incomplete": "Incomplete",
+        "scanErrors": "Scan Errors ({{count}})",
+        "correctScans": "Correct Scans ({{count}})",
+        "signatureSection": "Receipt Confirmation — Shipping Agent",
+        "signatureText": "I hereby acknowledge that I have received all prepared orders listed in this file in full.",
+        "signerName": "Employee Name",
+        "signerPlaceholder": "Shipping agent name",
+        "confirmSignature": "Confirm Signature",
+        "signedBy": "Signed by: {{name}}"
+      },
+      "sessionModal": {
+        "sessionLabel": "Preparation Session",
+        "title": "Preparation Session Files",
+        "ordersCount": "{{count}} Orders",
+        "preparedOrders": "Prepared Orders",
+        "correctScans": "Correct Scans",
+        "errorScans": "Error Scans",
+        "errorsBadge": "{{count}} Errors",
+        "completed": "Completed",
+        "incomplete": "Incomplete",
+        "correctPdfTitle": "Correct Scan PDF",
+        "correctPdfDesc": "All orders and products + Signature form",
+        "errorsPdfTitle": "Scan Errors PDF ({{count}})",
+        "errorsPdfDesc": "All invalid codes and rejection reasons",
+        "noErrors": "No errors in this session"
+      },
+      "correctPdf": {
+        "title": "Preparation File — Correct Scans",
+        "printedAt": "Printed At",
+        "ordersCount": "Order Count",
+        "carrier": "Carrier",
+        "productName": "Product Name",
+        "requested": "Requested",
+        "scanned": "Scanned",
+        "status": "Status",
+        "completed": "Completed",
+        "incomplete": "Incomplete",
+        "correctScans": "Correct Scans",
+        "signatureTitle": "Receipt Confirmation — Shipping Agent",
+        "signatureText": "I, the undersigned, acknowledge that I have received all prepared orders listed in this file in full.",
+        "signerName": "Shipping Agent Name",
+        "signature": "Signature",
+        "date": "Date"
+      },
+      "errorsPdf": {
+        "title": "Preparation File — Scan Errors",
+        "printedAt": "Printed At",
+        "ordersCount": "Order Count",
+        "description": "This file illustrates all incorrect scans that occurred during order preparation, sorted by order and time.",
+        "errorUnit": "Error",
+        "error": "Error",
+        "reason": "Reason",
+        "time": "Time"
+      }
     },
     "flow": {
       "title": "Warehouse",
@@ -2921,11 +3068,11 @@
       "exportFailed": "Failed to export file"
     },
     "common": {
-      "productName": "Product Name",
       "allProducts": "All Products",
       "searchProducts": "Search for a product...",
       "loading": "Loading...",
       "noProductsFound": "No products found.",
+      "productName": "Product Name",
       "na": "—",
       "id": "ID",
       "sku": "SKU",
@@ -3638,6 +3785,7 @@
       "orderNotFound": "Order not found"
     },
     "details": {
+      "statusUpdated": "Status updated successfully",
       "customerInfo": "Customer Information",
       "orderItems": "Order Products",
       "paymentInfo": "Payment Information",
@@ -3757,7 +3905,7 @@
       "descriptionPlaceholder": "Optional description for the status...",
       "color": "Color",
       "sortOrder": "Display Order",
-      "sortOrderHelp": "Used to ترتيب البطاقات in the user interface",
+      "sortOrderHelp": "Used to sort cards in the user interface",
       "create": "Create Status",
       "update": "Update Status",
       "cancel": "Cancel",
@@ -3792,6 +3940,7 @@
     },
     "filters": {
       "all": "All",
+      "none": "None",
       "status": "Order Status",
       "statusPlaceholder": "Select status",
       "paymentStatus": "Payment Status",
@@ -4025,7 +4174,8 @@
       "shippingCompany": "Shipping Company",
       "trackingNumber": "Tracking Number",
       "storeName": "Store Name",
-      "storeAddress": "Store Address"
+      "storeAddress": "Store Address",
+      "orderNumber": "Order Number"
     },
     "myOrders": {
       "title": "My Assigned Orders",
@@ -4176,7 +4326,9 @@
       "discount": "Discount",
       "deposit": "Deposit",
       "notes": "Internal Notes",
-      "customerNotes": "Customer Notes"
+      "customerNotes": "Customer Notes",
+      "allowOpenPackage": "Open package",
+      "secondPhoneNumber": "Second phone number (optional)"
     },
     "placeholders": {
       "store": "Select Store",
@@ -4191,7 +4343,13 @@
       "landmark": "Example: Next to Al Noor Mosque",
       "shippingCompany": "Select shipping company",
       "notes": "Add internal notes to the order...",
-      "customerNotes": "Add notes from the customer..."
+      "customerNotes": "Add notes from the customer...",
+      "selectOption": "Select an option...",
+      "selectPayment": "Select payment method..."
+    },
+    "allowOpenOptions": {
+      "yes": "Allowed",
+      "no": "Not allowed"
     },
     "paymentMethods": {
       "cash": "Cash",
@@ -4596,6 +4754,48 @@
     }
   },
   "orderCollection": {
+    "breadcrumb": {
+      "title": "Order collection",
+      "home": "Home",
+      "notCollected": "Uncollected Orders",
+      "fullyCollected": "Fully Collected Orders"
+    },
+    "tabs": {
+      "notCollected": "Not Collected",
+      "collected": "Collected"
+    },
+    "table": {
+      "actions": "Actions"
+    },
+    "actions": {
+      "collectOrder": "Collect order",
+      "collect": "Collect",
+      "export": "Export",
+      "howToUse": "How to Use"
+    },
+    "stats": {
+      "notCollected": "Not Collected",
+      "partialCollected": "Partially Collected",
+      "fullyCollected": "Fully Collected"
+    },
+    "columns": {
+      "orderNumber": "Order Number",
+      "shippingCompany": "Shipping Company",
+      "collectedAmount": "Collected Amount",
+      "remainingBalance": "Remaining Balance",
+      "shippingCost": "Shipping Cost",
+      "collectionMethod": "Collection Method",
+      "deliveredAt": "Delivery Date",
+      "collectionStatus": "Collection Status",
+      "delayDays": "Number of delay days",
+      "lastCollectionDate": "Last Collection Date",
+      "totalAmount": "Total Amount"
+    },
+    "collectionStatus": {
+      "pending": "Pending",
+      "partial": "Partially Collected",
+      "fullyCollected": "Fully Collected"
+    },
     "collectionMethods": {
       "visa": "Visa",
       "bank": "Bank Transfer",
@@ -4616,73 +4816,36 @@
       "shipping_company": "Shipping Company",
       "office_pickup": "Office Pickup"
     },
-    "tabs": {
-      "notCollected": "Not Collected",
-      "collected": "Collected"
-    },
-    "breadcrumb": {
-      "home": "Home",
-      "notCollected": "Uncollected Orders",
-      "fullyCollected": "Fully Collected Orders"
-    },
-    "columns": {
-      "orderNumber": "Order Number",
-      "shippingCompany": "Shipping Company",
-      "collectedAmount": "Collected Amount",
-      "remainingBalance": "Remaining Balance",
-      "shippingCost": "Shipping Cost",
-      "collectionMethod": "Collection Method",
-      "deliveredAt": "Delivery Date",
-      "collectionStatus": "Collection Status",
-      "lastCollectionDate": "Last Collection Date",
-      "totalAmount": "Total Amount"
-    },
-    "collectionStatus": {
-      "pending": "Pending",
-      "partial": "Partially Collected",
-      "fullyCollected": "Fully Collected"
-    },
-    "stats": {
-      "notCollected": "Not Collected",
-      "partialCollected": "Partially Collected",
-      "fullyCollected": "Fully Collected"
-    },
-    "actions": {
-      "collect": "Collect",
-      "howToUse": "How to Use"
-    },
-    "toolbar": {
-      "export": "Export",
-      "filter": "Filter"
-    },
     "filters": {
       "shippingCompany": "Shipping Company",
       "shippingCompanyPlaceholder": "All Shipping Companies",
       "date": "Date Range",
       "datePlaceholder": "Select date range",
-      "all": "All",
-      "apply": "Apply"
+      "apply": "Apply",
+      "all": "All"
     },
-    "searchPlaceholder": "Search by order number or customer name...",
+    "toolbar": {
+      "filter": "Filter",
+      "export": "Export"
+    },
     "pagination": {
       "total": "Total",
       "limit": "Per Page"
-    },
-    "empty": {
-      "title": "No Orders",
-      "subtitle": "No orders found matching the search criteria"
     },
     "messages": {
       "exportStarted": "Exporting data...",
       "exportSuccess": "Data exported successfully",
       "exportFailed": "Failed to export data"
     },
+    "searchPlaceholder": "Search by order number or customer name...",
+    "days": "day",
+    "empty": {
+      "title": "No Orders",
+      "subtitle": "No orders found matching the search criteria"
+    },
     "errors": {
       "fetchFailed": "Failed to load orders",
       "fetchStatsFailed": "Failed to load statistics"
-    },
-    "table": {
-      "actions": "Actions"
     }
   },
   "collectOrder": {
@@ -4771,6 +4934,9 @@
         "subscriptionForm": "Subscription Information"
       },
       "fields": {
+        "endDate": "End date",
+        "usedOrders": "Orders used",
+        "extraFeePlaceholder": "Empty value = exceeding the limit is not allowed",
         "userName": "User Name",
         "userEmail": "Email",
         "userPhone": "Phone Number",
@@ -4780,20 +4946,40 @@
         "price": "Price",
         "payed": "Paid",
         "paymentMethod": "Payment Method",
+        "duration": "Duration type",
+        "customDays": "Duration in days",
+        "includedOrders": "Included orders count",
+        "extraOrderFee": "Extra order fee",
         "usersLimit": "Users Limit",
+        "storesLimit": "Stores limit",
         "shippingLimit": "Shipping Companies Limit",
+        "bulkUpload": "Bulk upload per month",
+        "unlimited": "Unlimited",
+        "customOverride": "Custom values",
+        "notAllowed": "Not allowed",
+        "noExceed": "Exceeding the limit has been disabled",
         "bulkUploadLimit": "Monthly Upload Limit"
       },
+      "tooltips": {
+        "unlimited": "Set as unlimited",
+        "setUnlimited": "Set as unlimited",
+        "setDisabled": "Disable exceeding the limit"
+      },
+      "hints": {
+        "customOverride": "Enable this option to set custom limits for this subscription instead of the plan defaults.",
+        "priceOverride": "Leave empty to use the default plan price",
+        "payed": "Enable if payment has already been made"
+      },
       "placeholders": {
+        "enterDays": "Example: 30",
+        "enterLimit": "Enter limit value",
         "plan": "Select plan",
         "price": "Enter price (optional)",
         "paymentMethod": "Select payment method"
       },
-      "hints": {
-        "priceOverride": "Leave empty to use the default plan price",
-        "payed": "Enable if payment has already been made"
-      },
       "messages": {
+        "planSelected": "Plan settings applied",
+        "saveSuccess": "Subscription data saved successfully",
         "createSuccess": "Subscription created successfully",
         "updateSuccess": "Subscription updated successfully"
       },
@@ -4805,25 +4991,43 @@
         "userNotFound": "User not found"
       }
     },
+    "durations": {
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "lifetime": "Lifetime",
+      "quarterly": "Quarterly",
+      "semi_annual": "Semi-annual",
+      "custom": "Custom (days)"
+    },
     "tabs": {
       "plans": "Manage Plans",
       "transactions": "All Transactions",
-      "subscriptions": "Subscriptions"
+      "subscriptions": "Subscriptions",
+      "features": "Features list",
+      "userFeatures": "Feature subscriptions"
     },
     "breadcrumb": {
       "home": "Home",
       "subscriptions": "Subscription Management"
     },
     "columns": {
+      "purpose": "Transaction purpose",
       "transactionId": "Transaction ID",
       "user": "User",
-      "subscription": "Subscription",
       "amount": "Amount",
       "status": "Status",
       "paymentMethod": "Payment Method",
       "paymentProof": "Payment Proof",
       "createdAt": "Created At",
-      "lastUpdate": "Last Update"
+      "lastUpdate": "Last Update",
+      "feature": "Purchased feature",
+      "subscription": "Subscription"
+    },
+    "purposes": {
+      "wallet_top_up": "Wallet top-up",
+      "subscription_payment": "Subscription payment",
+      "feature_purchase": "Feature purchase",
+      "wallet_withdrawal": "Wallet withdrawal"
     },
     "actions": {
       "addSubscription": "Add Subscription",
@@ -4856,13 +5060,20 @@
       "date": "Date",
       "datePlaceholder": "Select period",
       "all": "All",
-      "apply": "Apply"
+      "apply": "Apply",
+      "purpose": "Payment purpose",
+      "purposePlaceholder": "Select purpose",
+      "cancel": "Cancel"
     },
     "statuses": {
+      "success": "Successful",
+      "pending": "Pending",
+      "failed": "Failed",
+      "cancelled": "Cancelled",
+      "refunded": "Refunded",
       "active": "Active",
       "processing": "Processing",
-      "completed": "Completed",
-      "cancelled": "Cancelled"
+      "completed": "Completed"
     },
     "toolbar": {
       "export": "Export",
@@ -4952,6 +5163,84 @@
       "title": "Delete Plan",
       "confirmText": "Are you sure you want to delete this plan? This action cannot be undone.",
       "deleting": "Deleting..."
+    },
+    "paymentMethods": {
+      "card": "Credit card",
+      "wallet": "E-wallet",
+      "manual_adjustment": "Manual (admin)",
+      "cash": "Cash",
+      "visa": "Credit card (Visa/Mastercard)",
+      "bank": "Bank transfer",
+      "other": "Other method",
+      "vodafone_cash": "Vodafone Cash",
+      "orange_cash": "Orange Cash",
+      "etisalat_cash": "Etisalat Cash",
+      "we_pay": "WE Pay",
+      "insta": "InstaPay",
+      "fawry": "Fawry",
+      "aman": "Aman",
+      "meeza": "Meeza",
+      "valu": "valU",
+      "sympl": "Sympl",
+      "tabby": "Tabby",
+      "tamara": "Tamara"
+    }
+  },
+  "extraFeatures": {
+    "assignModal": {
+      "title": "Manage user features",
+      "userHas": "Currently active features",
+      "selectFeature": "Select a new feature",
+      "alreadyOwned": "Already has this feature",
+      "noFeatures": "No active features right now",
+      "assign": "Assign feature",
+      "price": "Assignment price",
+      "paymentMethod": "Payment method"
+    },
+    "columns": {
+      "featureName": "Feature name",
+      "featureType": "Feature type",
+      "paidPrice": "Price paid",
+      "price": "Price",
+      "isActive": "Active?",
+      "purchaseDate": "Purchase date",
+      "actions": "Actions",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Active",
+      "notSubscribed": "Not subscribed"
+    },
+    "filters": {
+      "feature": "Feature",
+      "featurePlaceholder": "Select feature",
+      "cancel": "Cancel"
+    },
+    "tooltips": {
+      "purchaseNow": "Complete purchase and subscription"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Search for a feature..."
+    },
+    "actions": {
+      "editFeature": "Edit feature",
+      "purchase": "Buy now"
+    },
+    "modal": {
+      "editTitle": "Edit feature details",
+      "name": "Name",
+      "price": "Price",
+      "isActive": "Enable feature",
+      "save": "Save changes",
+      "cancel": "Cancel"
+    },
+    "messages": {
+      "updateSuccess": "Feature updated successfully",
+      "updateFailed": "An error occurred while updating the feature",
+      "fetchFailed": "Failed to load features",
+      "redirecting": "Redirecting you to the payment page...",
+      "alreadyOwned": "Already purchased",
+      "noFeaturesFound": "No features available at the moment"
     }
   },
   "subscriptions": {
@@ -4959,14 +5248,63 @@
       "home": "Home",
       "subscriptions": "Subscriptions"
     },
-    "tabs": {
-      "plans": "Plans",
-      "transactions": "Transactions"
+    "limits": {
+      "users": "Users",
+      "stores": "Stores",
+      "shipping": "Shipping companies",
+      "orders": "Included orders",
+      "extraFee": "Extra order fee",
+      "bulkUpload": "Order uploads / month",
+      "unlimited": "Unlimited",
+      "notAllowed": "Not allowed"
     },
     "duration": {
       "monthly": "Monthly",
       "yearly": "Yearly",
-      "lifetime": "Lifetime"
+      "lifetime": "Lifetime",
+      "days": "day"
+    },
+    "activeAlert": {
+      "title": "You have an active subscription",
+      "message": "You cannot subscribe to another plan while you have an active subscription. Please cancel your current subscription first."
+    },
+    "cancel": {
+      "title": "Cancel subscription?",
+      "message": "Are you sure you want to cancel your current subscription? This action cannot be undone.",
+      "yes": "Yes, cancel",
+      "no": "No, keep it"
+    },
+    "success": {
+      "subscribed": "Subscribed to the plan successfully!",
+      "cancelled": "Subscription cancelled successfully"
+    },
+    "dialogs": {
+      "cancelSubTitle": "Confirm subscription cancellation",
+      "cancelSubDesc": "Are you sure you want to cancel the active subscription for",
+      "inPlan": "on plan",
+      "cancelWarning": "Note: features included in this plan will be disabled immediately."
+    },
+    "actions": {
+      "cancelSubscription": "Cancel subscription",
+      "confirmCancel": "Yes, cancel",
+      "subscribe": "Subscribe now",
+      "cancel": "Cancel subscription",
+      "hasActive": "You have an active subscription",
+      "trialNotAllowed": "Trial not available",
+      "contactToSubscribe": "Contact to subscribe"
+    },
+    "tabs": {
+      "plans": "Plans",
+      "transactions": "Transactions",
+      "features": "Features list",
+      "subscriptionsHistory": "Subscription history",
+      "history": "Subscription log"
+    },
+    "durations": {
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "lifetime": "Lifetime",
+      "custom": "Custom"
     },
     "card": {
       "currency": "EGP",
@@ -4975,7 +5313,9 @@
       "popular": "Most Popular",
       "active": "Active",
       "subscribe": "Subscribe Now",
-      "cancelPlan": "Cancel Plan"
+      "cancelPlan": "Cancel Plan",
+      "negotiated": "As agreed",
+      "trial": "Trial"
     },
     "banner": {
       "currentPlan": "Your Current Plan",
@@ -4986,7 +5326,78 @@
       "subtitle": "Plans will be added soon, please check back later."
     },
     "errors": {
-      "fetchPlans": "Unable to load plans, please try again."
+      "fetchPlans": "Unable to load plans, please try again.",
+      "fetchUserFailed": "Failed to load user information",
+      "fetchPlansFailed": "Failed to load plans",
+      "subscribeFailed": "Failed to subscribe to the plan",
+      "cancelFailed": "Failed to cancel subscription"
+    },
+    "title": "Subscription management",
+    "emptyTitle": "No subscriptions",
+    "emptySubtitle": "No subscription data matched your search criteria.",
+    "columns": {
+      "user": "User",
+      "plan": "Plan",
+      "usage": "Order usage",
+      "limits": "Available limits",
+      "price": "Cost",
+      "status": "Status",
+      "duration": "Subscription period",
+      "actions": "Actions"
+    },
+    "status_labels": {
+      "deleted_plan": "Deleted plan",
+      "unlimited_access": "Unlimited usage",
+      "excess_not_allowed": "Plan excess not allowed",
+      "per_extra_order": "Per extra order",
+      "free_excess": "Free excess"
+    },
+    "units": {
+      "orders": "order",
+      "day": "day",
+      "days": "{count, plural, one {# day} other {# days}}"
+    },
+    "labels": {
+      "from": "From",
+      "to": "To"
+    },
+    "statuses": {
+      "active": "Active",
+      "pending": "Pending",
+      "expired": "Expired",
+      "cancelled": "Cancelled"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Search by user, email, or plan...",
+      "filter": "Filter",
+      "export": "Export data"
+    },
+    "filters": {
+      "users": "Users",
+      "stores": "Stores",
+      "shipping": "Shipping companies",
+      "bulk": "Bulk upload",
+      "status": "Subscription status",
+      "statusPlaceholder": "Select status",
+      "all": "All statuses",
+      "date": "Date range",
+      "datePlaceholder": "Select date range",
+      "apply": "Apply filters"
+    },
+    "pagination": {
+      "total": "Total records",
+      "limit": "Show"
+    },
+    "messages": {
+      "errorFetching": "An error occurred while loading subscriptions.",
+      "filtersApplied": "Filters applied successfully",
+      "exportStarted": "Export started, please wait...",
+      "exportSuccess": "Subscriptions file exported successfully",
+      "exportFailed": "Export failed, please try again",
+      "cancelSuccess": "Subscription cancelled successfully",
+      "cancelError": "An error occurred while cancelling the subscription, please try again later",
+      "error": "An unexpected error occurred",
+      "whatsappInterested": "Hello, I am interested in the {planName} plan and would like more details."
     }
   },
   "pagination": {
@@ -5270,7 +5681,7 @@
         "text": "The platform helped us bring all operations into one place, from orders to inventory and shipping. It saved us a lot of time and effort, and also reduced daily errors."
       },
       "r5": {
-        "name": "Nourhan سعيد",
+        "name": "Nourhan Saeed",
         "role": "Customer Service Manager",
         "text": "A very smooth experience, tracking orders and shipping has become clear and easy. Technical support is always cooperative, and we felt our daily work became more organized."
       },
@@ -5586,19 +5997,50 @@
       "Connect Store",
       "Shipping Company"
     ],
-    "plan": {
-      "title": "Choose the right plan for you",
-      "sub": "You can change the plan at any time",
-      "popular": "Most Popular",
+    "plans": {
+      "title": "Choose your plan",
+      "subtitle": "Pick the plan that best fits your business. You can always upgrade or change later.",
+      "loading": "Loading plans...",
+      "popular": "Popular",
+      "active": "Active",
+      "trial": "Trial",
+      "negotiated": "As agreed",
       "currency": "EGP",
-      "per_month": "/ month",
-      "per_year": "/ year",
-      "lifetime": "Lifetime",
-      "users": "User",
-      "shipping": "Shipping Company",
-      "subscribe": "Choose This Plan",
-      "current": "Your Current Plan",
-      "loading": "Loading plans…"
+      "whatsappMessage": "Hello, I am interested in the {planName} plan",
+      "duration": {
+        "monthly": "Monthly",
+        "yearly": "Yearly",
+        "lifetime": "Lifetime",
+        "days": "day"
+      },
+      "limits": {
+        "users": "Users",
+        "stores": "Stores",
+        "shipping": "Shipping companies",
+        "orders": "Included orders",
+        "extraFee": "Extra order fee",
+        "bulkUpload": "Order uploads / month",
+        "unlimited": "Unlimited"
+      },
+      "actions": {
+        "subscribe": "Choose this plan",
+        "cancel": "Cancel subscription",
+        "contactUs": "Contact us on WhatsApp",
+        "hasActive": "You have an active subscription",
+        "trialNotAllowed": "Trial not available",
+        "skip": "Skip for now",
+        "continue": "Continue"
+      },
+      "activeAlert": {
+        "title": "You have an active subscription",
+        "message": "You are currently subscribed to a plan. You can continue to the next step or cancel your current subscription if you want to choose a different plan."
+      },
+      "cancel": {
+        "title": "Cancel subscription?",
+        "message": "Are you sure you want to cancel your current subscription? This action cannot be undone.",
+        "yes": "Yes, cancel",
+        "no": "No, keep it"
+      }
     },
     "company": {
       "title": "Your Company Information",
@@ -5660,18 +6102,73 @@
       "title": "Setup Complete! 🚀",
       "sub": "Your system is ready, let’s get started!",
       "go": "Go to Dashboard"
+    },
+    "plan": {
+      "title": "Choose the right plan for you",
+      "sub": "You can change the plan at any time",
+      "popular": "Most Popular",
+      "currency": "EGP",
+      "per_month": "/ month",
+      "per_year": "/ year",
+      "lifetime": "Lifetime",
+      "users": "User",
+      "shipping": "Shipping Company",
+      "subscribe": "Choose This Plan",
+      "current": "Your Current Plan",
+      "loading": "Loading plans…"
     }
   },
   "wallet": {
+    "pageSubtitle": "Manage your wallet balance and transactions",
+    "loading": "Loading wallet data...",
+    "currency": "EGP",
+    "transactions": {
+      "title": "Transactions",
+      "subtitle": "Track all deposits and withdrawals"
+    },
+    "deposit": {
+      "title": "Deposit Balance",
+      "subtitle": "Add funds instantly to your wallet",
+      "amountLabel": "Amount (Egyptian Pound)",
+      "amountPlaceholder": "Enter amount",
+      "quickAmounts": "Quick amounts",
+      "info": "You will be redirected to the payment page to complete your deposit securely",
+      "cta": "Deposit Now"
+    },
+    "errors": {
+      "fetchWalletFailed": "Failed to load wallet data",
+      "depositFailed": "Failed to start deposit",
+      "noCheckoutUrl": "No payment link was provided",
+      "withdrawFailed": "Withdrawal failed"
+    },
+    "messages": {
+      "depositSuccess": "Deposit started successfully",
+      "withdrawSuccess": "Withdrawal request submitted successfully",
+      "redirecting": "Redirecting to the payment page..."
+    },
     "pageTitle": "Wallet",
     "breadcrumb": {
-      "dashboard": "Home",
-      "wallet": "Wallet"
+      "home": "Home",
+      "wallet": "Wallet",
+      "dashboard": "Home"
+    },
+    "controlModal": {
+      "title": "Manage user wallet",
+      "currentBalance": "Current balance",
+      "totalCharged": "Total charged",
+      "totalWithdrawn": "Total withdrawn",
+      "adjustTitle": "Adjust balance",
+      "amountLabel": "Amount (positive to add / negative to deduct)",
+      "noteLabel": "Adjustment notes",
+      "submit": "Update balance",
+      "success": "Wallet updated successfully"
     },
     "stats": {
       "walletBalance": "Wallet Balance",
       "available": "Available Balance",
       "pendingCOD": "Pending Cash on Delivery",
+      "currentBalance": "Current balance",
+      "totalCharged": "Total top-ups",
       "totalWithdrawn": "Total Withdrawn"
     },
     "tabs": {
@@ -5683,19 +6180,16 @@
     "actions": {
       "deposit": "Deposit",
       "withdraw": "Withdraw",
-      "export": "Export"
+      "export": "Export",
+      "cancel": "Cancel",
+      "topUp": "Top up wallet",
+      "processing": "Processing..."
     },
     "methods": {
       "vodafoneCash": "Vodafone Cash",
       "instapay": "InstaPay",
       "bankTransfer": "Bank Transfer",
       "walletMethod": "Wallet"
-    },
-    "deposit": {
-      "title": "Deposit Balance",
-      "subtitle": "Add funds instantly to your wallet",
-      "amountLabel": "Amount (Egyptian Pound)",
-      "cta": "Deposit Now"
     },
     "withdraw": {
       "title": "Withdraw Balance",
@@ -5754,48 +6248,73 @@
   },
   "orders-work": {
     "orderNumber": "Order Number",
+    "replacement": "Replacement",
     "customer": "Customer",
     "phone": "Phone",
-    "finalTotal": "Final Total",
-    "profit": "Profit",
-    "addressDetails": "Address Details",
-    "paymentShipping": "Payment and Shipping",
+    "email": "Email",
+    "secondPhone": "Additional phone number",
+    "city": "City",
+    "area": "Area",
+    "address": "Address",
+    "customerName": "Customer name",
+    "mainProducts": "Main products",
+    "additionalProducts": "Additional products",
     "items": "Products",
-    "pieces": "Piece",
+    "productName": "Product",
+    "sku": "SKU",
+    "attributes": "Attributes",
+    "quantity": "Quantity",
     "stock": "Stock",
+    "unitPrice": "Unit Price",
+    "lineTotal": "Line total",
     "productsTotal": "Products Total",
-    "shippingCost": "Shipping Cost",
-    "discount": "Discount",
-    "deposit": "Deposit",
-    "collected": "Collected",
+    "noItems": "No products",
+    "addAdditionalProduct": "Add additional product",
+    "addProduct": "Add Product",
+    "productAdded": "Product added successfully",
+    "upsell": "Additional suggestions",
+    "upselling": "Suggest to Customer",
     "notes": "Notes",
     "customerNotes": "Customer Note",
     "internalNotes": "Internal Notes",
     "statusHistory": "Status History",
-    "upselling": "Suggest to Customer",
-    "replacement": "Replacement",
-    "currentStatus": "Current Status",
-    "clickToSet": "Click to set",
+    "editCustomerInfo": "Edit customer details",
+    "editFinancials": "Edit financial details",
+    "financials": "Financial details",
+    "finalTotal": "Final Total",
+    "profit": "Profit",
+    "deposit": "Deposit",
+    "shippingCost": "Shipping Cost",
+    "remaining": "Remaining",
+    "addressDetails": "Address Details",
+    "paymentShipping": "Payment and Shipping",
+    "unsavedChanges": "You have unsaved changes",
+    "unsavedChangesDesc": "Please save or discard changes before continuing",
+    "cancel": "Cancel",
+    "saveChanges": "Save changes",
     "retry": "Retry",
-    "product": "Product",
-    "attrs": "Specifications",
-    "qty": "Quantity",
-    "unitPrice": "Unit Price",
-    "total": "Total",
-    "addProduct": "Add Product",
     "paymentStatus": {
+      "pending": "Pending",
       "paid": "Paid",
-      "unpaid": "Unpaid",
       "partial": "Partially Paid",
-      "refunded": "Refunded",
-      "pending": "Pending"
+      "unpaid": "Unpaid",
+      "refunded": "Refunded"
+    },
+    "messages": {
+      "errorFetchingOrder": "An error occurred while fetching the order",
+      "updateSuccess": "Order updated successfully",
+      "statusUpdated": "Order status updated successfully",
+      "errorUpdatingStatus": "An error occurred while updating the status",
+      "errorFetchingStatuses": "An error occurred while fetching statuses"
+    },
+    "validation": {
+      "customerNameRequired": "Customer name is required",
+      "phoneRequired": "Phone number is required",
+      "cityRequired": "City is required",
+      "addressRequired": "Address is required",
+      "paymentMethodRequired": "Payment method is required"
     },
     "statuses": {
-      "pending": "Pending",
-      "processing": "Processing",
-      "failed": "Failed",
-      "on_hold": "On Hold",
-      "out_for_delivery": "Out for Delivery",
       "new": "New",
       "confirmed": "Confirmed",
       "pendingConfirmation": "Pending Confirmation",
@@ -5820,33 +6339,428 @@
       "shipped": "Shipped",
       "returned": "Returned",
       "no_answer": "No Answer",
-      "out_of_area": "Out of Delivery Area"
+      "out_of_area": "Out of Delivery Area",
+      "pending": "Pending",
+      "processing": "Processing",
+      "failed": "Failed",
+      "on_hold": "On Hold",
+      "out_for_delivery": "Out for Delivery"
     },
     "workPage": {
       "changeStatus": "Update Order Status",
-      "selectStatus": "Select the appropriate status for the order",
-      "nextOrder": "Next Order",
       "notes": "Order Note",
       "notesPlaceholder": "Add a note to this order...",
-      "lockedMessage": "The order is temporarily locked, wait until the lock timer ends",
+      "selectStatus": "Select the appropriate status for the order",
+      "updating": "Updating...",
       "orderLocked": "Order Locked",
-      "statusChanged": "Status updated successfully",
-      "orderUpdated": "Order data updated successfully",
-      "updatingOrder": "Updating order...",
-      "pleaseWait": "Please wait...",
-      "clickNext": "Next",
-      "retriesExhausted": "Retries Exhausted",
-      "retriesExhaustedMessage": "You have reached the maximum number of retry attempts for this order",
+      "lockedMessage": "The order is temporarily locked, wait until the lock timer ends",
       "noOrders": "No Orders",
       "noOrdersDescription": "There are no pending orders in your list right now. You can try again or return to My Orders.",
       "backToMyOrders": "Back to My Orders",
-      "selectFromBottom": "Select the status from the bar at the bottom of the screen"
+      "updatingOrder": "Updating order...",
+      "pleaseWait": "Please wait...",
+      "statusChanged": "Status updated successfully",
+      "orderUpdated": "Order data updated successfully",
+      "clickNext": "Next",
+      "selectFromBottom": "Select the status from the bar at the bottom of the screen",
+      "nextOrder": "Next Order",
+      "retriesExhausted": "Retries Exhausted",
+      "retriesExhaustedMessage": "You have reached the maximum number of retry attempts for this order"
     },
-    "messages": {
-      "statusUpdated": "Order status updated successfully",
-      "errorFetchingOrder": "An error occurred while fetching the order",
-      "errorFetchingStatuses": "An error occurred while fetching statuses",
-      "errorUpdatingStatus": "An error occurred while updating the status"
+    "pieces": "Piece",
+    "discount": "Discount",
+    "collected": "Collected",
+    "currentStatus": "Current Status",
+    "clickToSet": "Click to set",
+    "product": "Product",
+    "attrs": "Specifications",
+    "qty": "Quantity",
+    "total": "Total"
+  },
+  "settings": {
+    "breadcrumb": {
+      "home": "Home"
+    },
+    "header": {
+      "title": "Settings",
+      "refresh": "Refresh",
+      "subtitle": "Manage your account and preferences"
+    },
+    "common": {
+      "saveChanges": "Save changes",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleting": "Deleting...",
+      "error": "Something went wrong, please try again"
+    },
+    "tabs": {
+      "company": {
+        "label": "Company",
+        "description": "Your company profile and business details"
+      },
+      "configuration": {
+        "label": "Configuration",
+        "description": "System, automation, and shipping settings"
+      },
+      "categories": {
+        "label": "Categories",
+        "description": "Manage product categories"
+      },
+      "account": {
+        "label": "Account",
+        "description": "Account settings"
+      },
+      "security": {
+        "label": "Security",
+        "description": "Security and privacy"
+      },
+      "notifications": {
+        "label": "Notifications",
+        "description": "Notification preferences"
+      },
+      "stores": {
+        "label": "Stores",
+        "description": "Manage store locations"
+      },
+      "warehouses": {
+        "label": "Warehouses",
+        "description": "Manage warehouses"
+      },
+      "appearance": {
+        "label": "Appearance",
+        "description": "Theme and display"
+      }
+    },
+    "company": {
+      "saveSuccess": "Company details saved successfully",
+      "placeholderName": "Your company name",
+      "noCountry": "Country",
+      "validation": {
+        "countryRequired": "Country is required",
+        "currencyRequired": "Currency is required",
+        "nameRequired": "Company name is required",
+        "businessRequired": "Business type is required",
+        "invalidUrl": "URL must start with http:// or https://"
+      },
+      "form": {
+        "companyName": "Company name",
+        "companyNamePlaceholder": "Enter your company name",
+        "country": "Country",
+        "selectCountry": "Select country",
+        "currency": "Currency",
+        "selectCurrency": "Select currency",
+        "phone": "Phone number",
+        "website": "Website",
+        "taxNumber": "Tax number",
+        "commercialRegister": "Commercial registration",
+        "address": "Address"
+      }
+    },
+    "categories": {
+      "title": "Category Management",
+      "subtitle": "Organize your products into categories",
+      "addButton": "Add Category",
+      "addForm": {
+        "title": "Add New Category"
+      },
+      "editForm": {
+        "title": "Edit Category"
+      },
+      "form": {
+        "name": "Category Name",
+        "namePlaceholder": "Example: Electronics",
+        "slug": "Slug",
+        "save": "Save Category",
+        "cancel": "Cancel",
+        "currentImage": "There is a current image (you can upload a new one)",
+        "slugPlaceholder": "Example: electronics",
+        "image": "Category Image",
+        "uploadImage": "Upload Image",
+        "noFileChosen": "No file chosen",
+        "active": "Active"
+      },
+      "global": {
+        "badge": "Global",
+        "lockedToast": "Global items cannot be edited or deleted",
+        "lockedHint": "Global items cannot be edited or deleted",
+        "globalItem": "Global Item"
+      },
+      "list": {
+        "edit": "Edit",
+        "delete": "Delete",
+        "toggleStatus": "Change Status",
+        "toggle": "Change Status",
+        "products": "Products",
+        "active": "Active",
+        "inactive": "Inactive",
+        "view": "View Details",
+        "duplicate": "Duplicate",
+        "archive": "Archive",
+        "activate": "Activate",
+        "deactivate": "Deactivate",
+        "moreActions": "More Actions",
+        "actions": "Actions"
+      },
+      "dialogs": {
+        "delete": {
+          "title": "Confirm Deletion",
+          "description": "Are you sure you want to delete the category \"{name}\"?",
+          "warning": "This action cannot be undone!"
+        }
+      },
+      "toast": {
+        "updating": "Updating category...",
+        "updated": "Category updated successfully",
+        "creating": "Creating category...",
+        "created": "Category created successfully",
+        "deleted": "Category deleted successfully",
+        "duplicating": "Duplicating...",
+        "duplicated": "Category duplicated successfully",
+        "deleting": "Deleting category...",
+        "toggling": "Changing status...",
+        "toggled": "Status changed",
+        "archiving": "Archiving...",
+        "archived": "Category archived successfully"
+      },
+      "common": {
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "deleting": "Deleting...",
+        "loading": "Loading...",
+        "saving": "Saving...",
+        "save": "Save",
+        "edit": "Edit",
+        "view": "View",
+        "search": "Search"
+      },
+      "delete": {
+        "confirm": "Do you want to delete this category?"
+      },
+      "searchPlaceholder": "Search categories...",
+      "loading": "Loading..."
+    },
+    "account": {
+      "title": "Account Settings",
+      "subtitle": "Manage your account information",
+      "profile": {
+        "fullName": "Full Name",
+        "email": "Email",
+        "role": "Role",
+        "plan": "Plan",
+        "userId": "User ID",
+        "adminId": "Admin ID",
+        "employeeType": "Employee Type",
+        "saveChanges": "Save Changes",
+        "changePhoto": "Change Photo",
+        "active": "Active",
+        "inactive": "Inactive",
+        "employeeTypePlaceholder": "Example: sales / support / manager",
+        "isActive": "Activate Account",
+        "createdAt": "Created At",
+        "updatedAt": "Last Updated",
+        "phone": "Phone",
+        "company": "Company"
+      },
+      "phone": {
+        "label": "Mobile Number",
+        "countryPlaceholder": "Select country",
+        "invalid": "Invalid mobile number"
+      },
+      "toast": {
+        "saving": "Saving changes...",
+        "saved": "Changes saved successfully",
+        "uploadingAvatar": "Uploading image...",
+        "avatarUpdated": "Image updated successfully"
+      },
+      "errors": {
+        "missingMeEndpoint": "No /users/me endpoint found — add it or save userId in localStorage",
+        "missingAvatarEndpoint": "No /users/me/avatar endpoint found — add it to upload the account image"
+      },
+      "loading": "Loading account data...",
+      "password": {
+        "title": "Password",
+        "subtitle": "Update your password",
+        "change": "Change Password",
+        "cancel": "Cancel",
+        "current": "Current Password",
+        "new": "New Password",
+        "confirm": "Confirm New Password",
+        "update": "Update Password"
+      }
+    },
+    "security": {
+      "title": "Security Settings",
+      "subtitle": "Manage your account security",
+      "tabs": {
+        "password": {
+          "label": "Password"
+        },
+        "email": {
+          "label": "Email"
+        }
+      },
+      "form": {
+        "old_password": "Current password",
+        "new_password": "New password",
+        "confirm_password": "Confirm password",
+        "update_password": "Update password",
+        "new_email": "New email",
+        "send_otp": "Send verification code"
+      },
+      "errors": {
+        "mismatch": "Passwords do not match",
+        "failed": "Failed to update password",
+        "pw_weak": "Password is too weak",
+        "failedSendEmailOTP": "Failed to send verification code"
+      },
+      "password_success": "Password updated successfully",
+      "email_otp_sent": "Verification code sent to your new email",
+      "email_success": "Email updated successfully",
+      "otp_title": "Verify your email",
+      "otp_sub": "Enter the verification code sent to",
+      "otp_wrong": "Invalid verification code",
+      "otp_timer": "Expires in",
+      "otp_expired": "Code has expired",
+      "otp_resend": "Resend code",
+      "otp_verify": "Verify",
+      "loading": "Loading...",
+      "signup": {
+        "resending": "Resending...",
+        "resend_success": "Verification code resent",
+        "resend_error": "Failed to resend",
+        "otp_wrong": "Invalid verification code"
+      },
+      "twoFactor": {
+        "title": "Two-Factor Authentication",
+        "description": "Add an extra layer of security to your account",
+        "enable": "Enable Two-Factor Authentication"
+      },
+      "sessions": {
+        "title": "Active Sessions",
+        "current": "Current Session",
+        "details": "Chrome on Windows • Active now",
+        "active": "Active",
+        "subtitle": "Devices and sessions signed in to your account",
+        "refresh": "Refresh",
+        "loading": "Loading sessions...",
+        "empty": "No sessions available to display at the moment",
+        "deviceUnknown": "Unknown Device",
+        "locationUnknown": "Unknown Location",
+        "other": "Other Session",
+        "lastSeen": "Last Active",
+        "ip": "IP"
+      },
+      "danger": {
+        "title": "Danger Zone",
+        "description": "Permanently delete your account and all data",
+        "delete": "Delete Account"
+      }
+    },
+    "notifications": {
+      "title": "Notification Preferences",
+      "subtitle": "Manage how you receive notifications",
+      "items": {
+        "orderUpdates": {
+          "title": "Order Updates",
+          "description": "Receive notifications about order status changes"
+        },
+        "newProducts": {
+          "title": "New Products",
+          "description": "Notifications when new products are added"
+        },
+        "lowStock": {
+          "title": "Low Stock Alerts",
+          "description": "Get alerts when products are low in stock"
+        },
+        "marketing": {
+          "title": "Marketing Messages",
+          "description": "Receive promotional and marketing emails"
+        }
+      }
+    },
+    "quickStats": {
+      "title": "Quick Stats",
+      "totalCategories": "Total Categories",
+      "activeStores": "Active Stores",
+      "warehouses": "Warehouses"
+    },
+    "stores": {
+      "title": "Store Management",
+      "subtitle": "Manage your store locations",
+      "addButton": "Add Store",
+      "addForm": {
+        "title": "Add New Store"
+      },
+      "form": {
+        "name": "Store Name",
+        "namePlaceholder": "Example: Main Branch",
+        "code": "Store Code",
+        "codePlaceholder": "Example: MB-001",
+        "location": "Location",
+        "locationPlaceholder": "Example: Downtown",
+        "phone": "Phone",
+        "phonePlaceholder": "+1234567890",
+        "address": "Address",
+        "addressPlaceholder": "Full address",
+        "active": "Active",
+        "save": "Save Store",
+        "cancel": "Cancel"
+      },
+      "list": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "edit": "Edit",
+        "delete": "Delete"
+      }
+    },
+    "appearance": {
+      "title": "Appearance Settings",
+      "subtitle": "Customize the look of the app",
+      "theme": {
+        "title": "Theme",
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System"
+      },
+      "language": {
+        "title": "Language",
+        "current": "Arabic",
+        "ar": "Arabic",
+        "en": "English",
+        "label": "Language"
+      },
+      "mode": {
+        "title": "Display Mode",
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System"
+      },
+      "palette": {
+        "title": "Interface Colors (6 Palettes)",
+        "note": "These palettes are for display now — they will be used later to fully apply system colors."
+      },
+      "palettes": {
+        "royal": "Royal",
+        "emerald": "Emerald",
+        "sunset": "Sunset",
+        "rose": "Rose",
+        "cyan": "Cyan",
+        "mono": "Mono"
+      },
+      "language2": {
+        "title": "Default Language",
+        "label": "Choose language",
+        "ar": "Arabic",
+        "en": "English",
+        "note": "The selection will be saved in the browser for now — and can later be linked to user settings."
+      },
+      "layout": {
+        "title": "Layout Settings",
+        "sidebar": "Expand Sidebar",
+        "sidebarDesc": "Show the sidebar in expanded or compact form",
+        "compact": "Compact Mode",
+        "compactDesc": "Reduce spacing in the interface (for smaller screens / higher density)"
+      }
     }
   },
   "paymentSuccess": {
@@ -5885,7 +6799,8 @@
       "goToWallet": "Go to Wallet",
       "goToSubscriptions": "View My Subscription",
       "goToFeatures": "View My Features",
-      "backToHome": "Back to Home"
+      "backToHome": "Back to Home",
+      "completeOnboarding": "Complete Onboarding Now"
     },
     "errors": {
       "title": "Unable to Load Payment Details",
@@ -5947,6 +6862,53 @@
       "title": "Unable to Load Payment Details",
       "noSessionId": "No payment session ID provided",
       "fetchFailed": "Failed to load payment information"
+    }
+  },
+  "export": {
+    "started": "Export started...",
+    "success": "Exported successfully",
+    "failed": "Export failed"
+  },
+  "superAdminSettings": {
+    "breadcrumb": {
+      "home": "Dashboard"
+    },
+    "header": {
+      "title": "Platform Settings",
+      "refresh": "Refresh"
+    },
+    "tabs": {
+      "contacts": "Contacts & Socials"
+    },
+    "contacts": {
+      "primaryTitle": "Primary Contact Information",
+      "primarySubtitle": "This information will be displayed to tenants for support.",
+      "emailLabel": "Support Email Address",
+      "whatsappLabel": "WhatsApp Support Number",
+      "socialTitle": "Social Media Links",
+      "socialSubtitle": "Manage the platform's official social media presence."
+    },
+    "socials": {
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "x": "X (Twitter)",
+      "linkedin": "LinkedIn",
+      "github": "GitHub",
+      "youtube": "YouTube"
+    },
+    "common": {
+      "saveChanges": "Save Changes"
+    },
+    "validation": {
+      "invalidEmail": "Please enter a valid email address.",
+      "emailRequired": "Support email is required.",
+      "whatsappRequired": "WhatsApp number is required.",
+      "invalidUrl": "Please enter a valid URL (e.g., https://...)"
+    },
+    "toast": {
+      "saveSuccess": "Settings updated successfully.",
+      "saveError": "Failed to update settings.",
+      "loadError": "Failed to load settings data."
     }
   }
 }

@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import {
 	Settings2, Layers, User, Bell, Shield,
 	Plus, Edit2, Trash2, Save, X,
-	CheckCircle2, XCircle, Upload, Loader2,
+	 XCircle, Upload, Loader2,
 	Camera, Globe, Monitor, Moon, Sun,
 	MapPin, Warehouse, Store,
 	Building2, Hash, FileText, Phone,

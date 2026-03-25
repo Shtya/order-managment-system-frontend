@@ -80,10 +80,10 @@ function canonicalKey(attrs) {
 }
 
 const ATTRIBUTE_TEMPLATES = [
-	{ id: 'size', icon: Ruler, name: 'الحجم', nameEn: 'Size', values: ['صغير', 'متوسط'], valuesEn: ['Small', 'Medium'] },
-	{ id: 'color', icon: Palette, name: 'اللون', nameEn: 'Color', values: ['أحمر', 'أزرق', 'أخضر'], valuesEn: ['Red', 'Blue', 'Green'] },
-	{ id: 'material', icon: Shirt, name: 'المادة', nameEn: 'Material', values: ['قطن', 'بوليستر', 'صوف'], valuesEn: ['Cotton', 'Polyester', 'Wool'] },
-	{ id: 'weight', icon: Package, name: 'الوزن', nameEn: 'Weight', values: ['خفيف', 'متوسط', 'ثقيل'], valuesEn: ['Light', 'Medium', 'Heavy'] },
+	{ id: 'size', icon: Ruler, nameKey: 'size', valuesKey: 'sizeValues' },
+	{ id: 'color', icon: Palette, nameKey: 'color', valuesKey: 'colorValues' },
+	{ id: 'material', icon: Shirt, nameKey: 'material', valuesKey: 'materialValues' },
+	{ id: 'weight', icon: Package, nameKey: 'weight', valuesKey: 'weightValues' },
 ];
 
 function buildCombinationsFromAttributes(attributes, productName = '', defaultPrice = '') {
@@ -287,8 +287,10 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	}, [mainFiles, otherFiles]);
 
 	const addQuickTemplate = (template) => {
-		appendAttribute({ id: makeId(), name: template.nameEn, values: template.valuesEn });
-		toast.success(`تمت إضافة ${template.name}`);
+		const name = t(`attributes.templates.${template.nameKey}`);
+		const values = t.raw(`attributes.templates.${template.valuesKey}`);
+		appendAttribute({ id: makeId(), name, values });
+		toast.success(t('messages.templateAdded', { name }));
 	};
 
 	const validateImages = (files, type) => {
@@ -590,6 +592,8 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 									<div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
 										{ATTRIBUTE_TEMPLATES.map((template) => {
 											const Icon = template.icon;
+											const name = t(`attributes.templates.${template.nameKey}`);
+											const values = t.raw(`attributes.templates.${template.valuesKey}`);
 											return (
 												<button
 													key={template.id}
@@ -601,8 +605,8 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 														<Icon className="h-3.5 w-3.5 text-primary" />
 													</div>
 													<div>
-														<div className="text-[13px] font-semibold text-slate-700 dark:text-slate-200 leading-tight">{template.name}</div>
-														<div className="text-[11px] text-slate-400 mt-0.5">{template.values.length} {t('attributes.values')}</div>
+														<div className="text-[13px] font-semibold text-slate-700 dark:text-slate-200 leading-tight">{name}</div>
+														<div className="text-[11px] text-slate-400 mt-0.5">{values.length} {t('attributes.values')}</div>
 													</div>
 												</button>
 											);

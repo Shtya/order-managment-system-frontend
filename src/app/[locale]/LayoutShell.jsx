@@ -74,10 +74,10 @@ function DashboardLayout({ children }) {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("ui_sidebar") === "expanded";
   });
-  const { hasActiveSubscription, isSuperAdmin,  isLoading} = useAuth();
+  const { hasActiveSubscription, isSuperAdmin, isLoading, user } = useAuth();
   const isExcluded = excludedSubcriptionPaths.some(path => pathname.startsWith(path));
 
-  const isLocked = !isSuperAdmin && !hasActiveSubscription && !isExcluded && !isLoading;
+  const isLocked = !isSuperAdmin && !hasActiveSubscription && !isExcluded && !isLoading && user;
   useEffect(() => {
     localStorage.setItem(
       "ui_sidebar",
@@ -100,7 +100,7 @@ function DashboardLayout({ children }) {
   }, []);
 
   const isAuthRoute = isPublicOrSpecialRoute(AllPathname);
-   const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
 
   useEffect(() => {

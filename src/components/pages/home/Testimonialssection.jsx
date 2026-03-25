@@ -195,17 +195,17 @@ export default function TestimonialsSection() {
 	const col1 = [
 		{
 			id: 'r1', name: t('reviews.r1.name'), role: t('reviews.r1.role'),
-			logoText: 'زين\nZAiN', logoBg: '#7c3aed', logoColor: '#fff',
+			logoText: t('logos.zain'), logoBg: '#7c3aed', logoColor: '#fff',
 			stars: 5, text: t('reviews.r1.text'),
 		},
 		{
 			id: 'r2', name: t('reviews.r2.name'), role: t('reviews.r2.role'),
-			logoText: 'ALiZE', logoBg: '#e0e7ff', logoColor: '#4338ca',
+			logoText: t('logos.alize'), logoBg: '#e0e7ff', logoColor: '#4338ca',
 			stars: 5, text: t('reviews.r2.text'),
 		},
 		{
 			id: 'r3', name: t('reviews.r3.name'), role: t('reviews.r3.role'),
-			logoText: 'ALiZE', logoBg: '#e0e7ff', logoColor: '#4338ca',
+			logoText: t('logos.alize'), logoBg: '#e0e7ff', logoColor: '#4338ca',
 			stars: 5, text: t('reviews.r3.text'),
 		},
 	];
@@ -213,7 +213,7 @@ export default function TestimonialsSection() {
 	const col2 = [
 		{
 			id: 'r4', name: t('reviews.r4.name'), role: t('reviews.r4.role'),
-			logoText: 'زين\nZAiN', logoBg: '#7c3aed', logoColor: '#fff',
+			logoText: t('logos.zain'), logoBg: '#7c3aed', logoColor: '#fff',
 			stars: 5, text: t('reviews.r4.text'),
 		},
 		{
@@ -223,7 +223,7 @@ export default function TestimonialsSection() {
 		},
 		{
 			id: 'r6', name: t('reviews.r6.name'), role: t('reviews.r6.role'),
-			logoText: 'ALiZE', logoBg: '#e0e7ff', logoColor: '#4338ca',
+			logoText: t('logos.alize'), logoBg: '#e0e7ff', logoColor: '#4338ca',
 			stars: 5, text: t('reviews.r6.text'),
 		},
 	];
@@ -231,7 +231,7 @@ export default function TestimonialsSection() {
 	const col3 = [
 		{
 			id: 'r7', name: t('reviews.r7.name'), role: t('reviews.r7.role'),
-			logoText: 'نظام\nواحد', logoBg: '#f1f5f9', logoColor: '#475569',
+			logoText: t('logos.oneSystem'), logoBg: '#f1f5f9', logoColor: '#475569',
 			stars: 5, text: t('reviews.r7.text'),
 		},
 		{

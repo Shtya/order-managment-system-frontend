@@ -16,6 +16,8 @@ import {
 	ToggleLeft,
 	ToggleRight,
 	Loader2,
+	Info,
+	Download,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -63,12 +65,12 @@ import { ActionButtons } from "@/components/atoms/Actions";
 /** =========================
  * Helpers
  * ========================= */
-function getApiMsg(err, fallback = "Request failed") {
+function getApiMsg(err, t) {
 	const msg =
 		err?.response?.data?.message ||
 		err?.response?.data?.error ||
 		err?.message ||
-		fallback;
+		t("api.error");
 	return Array.isArray(msg) ? msg.join(", ") : msg;
 }
 
@@ -86,231 +88,6 @@ function downloadBlob(blob, filename) {
  * - Search (server)
  * - Export (server)
  * ========================= */
-function EmployeesTableToolbar({
-	t,
-	searchValue,
-	onSearchChange,
-	onExport,
-	exportLoading,
-}) {
-	return (
-		<div className="flex items-center justify-between gap-4 flex-wrap">
-			<div className="relative w-[300px] focus-within:w-[350px] transition-all duration-300">
-				<svg
-					className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-					width="18"
-					height="18"
-					viewBox="0 0 18 18"
-					fill="none"
-					xmlns="http://www.w3.org/2000/svg"
-				>
-					<path d="M15 4.3125H10.5C10.1925 4.3125 9.9375 4.0575 9.9375 3.75C9.9375 3.4425 10.1925 3.1875 10.5 3.1875H15C15.3075 3.1875 15.5625 3.4425 15.5625 3.75C15.5625 4.0575 15.3075 4.3125 15 4.3125Z" fill="#A6ACBD" />
-					<path d="M12.75 6.5625H10.5C10.1925 6.5625 9.9375 6.3075 9.9375 6C9.9375 5.6925 10.1925 5.4375 10.5 5.4375H12.75C13.0575 5.4375 13.3125 5.6925 13.3125 6C13.3125 6.3075 13.0575 6.5625 12.75 6.5625Z" fill="#A6ACBD" />
-					<path d="M8.625 16.3125C4.3875 16.3125 0.9375 12.8625 0.9375 8.625C0.9375 4.3875 4.3875 0.9375 8.625 0.9375C8.9325 0.9375 9.1875 1.1925 9.1875 1.5C9.1875 1.8075 8.9325 2.0625 8.625 2.0625C5.0025 2.0625 2.0625 5.01 2.0625 8.625C2.0625 12.24 5.0025 15.1875 8.625 15.1875C12.2475 15.1875 15.1875 12.24 15.1875 8.625C15.1875 8.3175 15.4425 8.0625 15.75 8.0625C16.0575 8.0625 16.3125 8.3175 16.3125 8.625C16.3125 12.8625 12.8625 16.3125 8.625 16.3125Z" fill="#A6ACBD" />
-					<path d="M16.5001 17.0626C16.3576 17.0626 16.2151 17.0101 16.1026 16.8976L14.6026 15.3976C14.3851 15.1801 14.3851 14.8201 14.6026 14.6026C14.8201 14.3851 15.1801 14.3851 15.3976 14.6026L16.8976 16.1026C17.1151 16.3201 17.1151 16.6801 16.8976 16.8976C16.7851 17.0101 16.6426 17.0626 16.5001 17.0626Z" fill="#A6ACBD" />
-				</svg>
-
-				<Input
-					value={searchValue}
-					onChange={(e) => onSearchChange?.(e.target.value)}
-					placeholder={t("toolbar.searchPlaceholder")}
-					className="rtl:pr-10 h-[40px] ltr:pl-10 rounded-full bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 placeholder:text-gray-400 dark:placeholder:text-slate-400 text-gray-700 dark:text-slate-100"
-				/>
-			</div>
-
-			<div className="flex items-center gap-2">
-				<Button
-					variant="outline"
-					className="bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-100 flex items-center gap-2 !px-4 rounded-full hover:bg-gray-50 dark:hover:bg-slate-800"
-					onClick={onExport}
-					disabled={exportLoading}
-				>
-					{exportLoading ? <Loader2 className="animate-spin" size={18} /> : null}
-					{t("toolbar.export")}
-				</Button>
-			</div>
-		</div>
-	);
-}
-
-/** =========================
- * Modals
- * ========================= */
-function ViewEmployeeDialog({ t, open, onOpenChange, data, loading }) {
-	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-2xl rounded-xl">
-				<DialogHeader className="text-right">
-					<DialogTitle>{t("view.title") || t("actions.view")}</DialogTitle>
-					<DialogDescription>
-						{loading ? t("loading") : data ? `#${data.id}` : ""}
-					</DialogDescription>
-				</DialogHeader>
-
-				{loading ? (
-					<div className="py-10 flex items-center justify-center gap-2 text-gray-500">
-						<Loader2 className="animate-spin" size={18} />
-						{t("loading")}
-					</div>
-				) : !data ? (
-					<div className="py-10 text-center text-gray-500">{t("empty")}</div>
-				) : (
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-						<div className="rounded-xl border border-gray-200 dark:border-slate-800 p-4 bg-gray-50 dark:bg-slate-800/40">
-							<div className="text-xs text-gray-500">{t("table.name")}</div>
-							<div className="mt-1 font-semibold text-gray-900 dark:text-white">
-								{data.name || "-"}
-							</div>
-						</div>
-
-						<div className="rounded-xl border border-gray-200 dark:border-slate-800 p-4 bg-gray-50 dark:bg-slate-800/40">
-							<div className="text-xs text-gray-500">{t("table.email")}</div>
-							<div className="mt-1 font-en text-gray-900 dark:text-white" dir="ltr">
-								{data.email || "-"}
-							</div>
-						</div>
-
-						<div className="rounded-xl border border-gray-200 dark:border-slate-800 p-4 bg-gray-50 dark:bg-slate-800/40">
-							<div className="text-xs text-gray-500">{t("table.phone")}</div>
-							<div className="mt-1 font-en text-gray-900 dark:text-white" dir="ltr">
-								{data.phone || "-"}
-							</div>
-						</div>
-
-						<div className="rounded-xl border border-gray-200 dark:border-slate-800 p-4 bg-gray-50 dark:bg-slate-800/40">
-							<div className="text-xs text-gray-500">{t("table.role")}</div>
-							<div className="mt-1 text-gray-900 dark:text-white">
-								{data.employeeType || data.type || "-"}
-							</div>
-						</div>
-
-						<div className="rounded-xl border border-gray-200 dark:border-slate-800 p-4 bg-gray-50 dark:bg-slate-800/40 md:col-span-2">
-							<div className="text-xs text-gray-500">{t("table.status") || "Status"}</div>
-							<div className="mt-1">
-								{data.isActive ? (
-									<Badge className="rounded-xl bg-[#F0FDF4] text-[#22C55E] hover:bg-[#F0FDF4] dark:bg-green-950/30 dark:text-green-400">
-										Active
-									</Badge>
-								) : (
-									<Badge className="rounded-xl bg-[#FEF2F2] text-[#EF4444] hover:bg-[#FEF2F2] dark:bg-red-950/30 dark:text-red-400">
-										Inactive
-									</Badge>
-								)}
-							</div>
-						</div>
-					</div>
-				)}
-			</DialogContent>
-		</Dialog>
-	);
-}
-
-function EditEmployeeDialog({ t, open, onOpenChange, initial, onSave, saving }) {
-	const [form, setForm] = useState({ name: "", email: "", phone: "" });
-
-	useEffect(() => {
-		if (open && initial) {
-			setForm({
-				name: initial.name || "",
-				email: initial.email || "",
-				phone: initial.phone || "",
-			});
-		}
-		if (!open) setForm({ name: "", email: "", phone: "" });
-	}, [open, initial]);
-
-	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-2xl rounded-xl">
-				<DialogHeader className="text-right">
-					<DialogTitle>{t("edit.title") || t("actions.edit")}</DialogTitle>
-					<DialogDescription>{initial ? `#${initial.id}` : ""}</DialogDescription>
-				</DialogHeader>
-
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<div>
-						<Label className="text-xs text-gray-500 dark:text-slate-400">{t("table.name")}</Label>
-						<Input
-							value={form.name}
-							onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-							className="rounded-full h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 mt-1"
-						/>
-					</div>
-
-					<div>
-						<Label className="text-xs text-gray-500 dark:text-slate-400">{t("table.email")}</Label>
-						<Input
-							value={form.email}
-							onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-							className="rounded-full h-[42px] font-en bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 mt-1"
-							dir="ltr"
-						/>
-					</div>
-
-					<div className="md:col-span-2">
-						<Label className="text-xs text-gray-500 dark:text-slate-400">{t("table.phone")}</Label>
-						<Input
-							value={form.phone}
-							onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
-							className="rounded-full h-[42px] font-en bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 mt-1"
-							dir="ltr"
-						/>
-					</div>
-				</div>
-
-				<div className="mt-4 flex items-center justify-end gap-2">
-					<Button variant="outline" className="rounded-full" onClick={() => onOpenChange(false)} disabled={saving}>
-						{t("actions.cancel") || "Cancel"}
-					</Button>
-					<Button
-						className="rounded-full btn-primary1"
-						onClick={() => onSave?.({ ...form })}
-						disabled={saving || !form.name.trim() || !form.email.trim()}
-					>
-						<span className="flex items-center gap-2">
-							{saving ? <Loader2 className="animate-spin" size={18} /> : <Edit2 size={18} />}
-							{t("actions.save") || "Save"}
-						</span>
-					</Button>
-				</div>
-			</DialogContent>
-		</Dialog>
-	);
-}
-
-function ConfirmDeleteDialog({ t, open, onOpenChange, employee, onConfirm, loading }) {
-	return (
-		<AlertDialog open={open} onOpenChange={onOpenChange}>
-			<AlertDialogContent className="rounded-xl">
-				<AlertDialogHeader className="text-right">
-					<AlertDialogTitle>{t("delete.title") || t("actions.delete")}</AlertDialogTitle>
-					<AlertDialogDescription>
-						{employee ? `${employee.name} — ${employee.email}` : ""}
-						<div className="mt-2 text-sm">
-							{t("delete.desc") || "This will delete the employee permanently."}
-						</div>
-					</AlertDialogDescription>
-				</AlertDialogHeader>
-
-				<div className="mt-4 flex items-center justify-end gap-2">
-					<AlertDialogCancel className="rounded-full" disabled={loading}>
-						{t("actions.cancel") || "Cancel"}
-					</AlertDialogCancel>
-					<AlertDialogAction
-						className="rounded-full bg-red-600 hover:bg-red-700 text-white"
-						onClick={onConfirm}
-						disabled={loading}
-					>
-						<span className="flex items-center gap-2">
-							{loading ? <Loader2 className="animate-spin" size={18} /> : <Trash2 size={18} />}
-							{t("actions.delete") || "Delete"}
-						</span>
-					</AlertDialogAction>
-				</div>
-			</AlertDialogContent>
-		</AlertDialog>
-	);
-}
 
 /** =========================
  * Page
@@ -453,7 +230,7 @@ export default function EmployeesPage() {
 			// If you want counts to ignore search, remove this and call only once on mount.
 			await fetchTypesStats();
 		} catch (e) {
-			setError(getApiMsg(e, "Failed to load employees"));
+			setError(getApiMsg(e, t));
 		} finally {
 			setIsLoading(false);
 		}
@@ -501,7 +278,7 @@ export default function EmployeesPage() {
 			});
 			downloadBlob(res.data, "employees.csv");
 		} catch (e) {
-			setError(getApiMsg(e, "Failed to export"));
+			setError(getApiMsg(e, t));
 		} finally {
 			setExportLoading(false);
 		}
@@ -522,7 +299,7 @@ export default function EmployeesPage() {
 			const res = await api.get(`/users/${row.id}`);
 			setViewData(res?.data || null);
 		} catch (e) {
-			setError(getApiMsg(e, "Failed to load employee details"));
+			setError(getApiMsg(e, t));
 		} finally {
 			setViewLoading(false);
 			setRowActionLoading(row.id, "view", false);
@@ -560,7 +337,7 @@ export default function EmployeesPage() {
 				q: search,
 			});
 		} catch (e) {
-			setError(getApiMsg(e, "Failed to update"));
+			setError(getApiMsg(e, t));
 		} finally {
 			setEditSaving(false);
 			setRowActionLoading(selected.id, "edit", false);
@@ -590,9 +367,9 @@ export default function EmployeesPage() {
 			// refresh counts quickly
 			await fetchTypesStats();
 
-			setApiMsg(t("messages.statusUpdated") || "Status updated");
+			setApiMsg(t("messages.statusUpdated"));
 		} catch (e) {
-			setError(getApiMsg(e, "Failed to toggle status"));
+			setError(getApiMsg(e, t));
 		} finally {
 			setRowActionLoading(row.id, "toggle", false);
 		}
@@ -626,7 +403,7 @@ export default function EmployeesPage() {
 			});
 			await fetchTypesStats();
 		} catch (e) {
-			setError(getApiMsg(e, "Failed to delete"));
+			setError(getApiMsg(e, t));
 		} finally {
 			setRowActionLoading(selected.id, "del", false);
 		}
@@ -748,11 +525,11 @@ export default function EmployeesPage() {
 				cell: (row) =>
 					row.isActive ? (
 						<Badge className="rounded-xl bg-[#F0FDF4] text-[#22C55E] hover:bg-[#F0FDF4] dark:bg-green-950/30 dark:text-green-400">
-							Active
+							{t("table.active")}
 						</Badge>
 					) : (
 						<Badge className="rounded-xl bg-[#FEF2F2] text-[#EF4444] hover:bg-[#FEF2F2] dark:bg-red-950/30 dark:text-red-400">
-							Inactive
+							{t("table.inactive")}
 						</Badge>
 					),
 			},
@@ -916,5 +693,231 @@ export default function EmployeesPage() {
 				loading={!!(selected?.id && rowLoading[selected.id]?.del)}
 			/>
 		</div>
+	);
+}
+
+function EmployeesTableToolbar({
+	t,
+	searchValue,
+	onSearchChange,
+	onExport,
+	exportLoading,
+}) {
+	return (
+		<div className="flex items-center justify-between gap-4 flex-wrap">
+			<div className="relative w-[300px] focus-within:w-[350px] transition-all duration-300">
+				<svg
+					className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+					width="18"
+					height="18"
+					viewBox="0 0 18 18"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<path d="M15 4.3125H10.5C10.1925 4.3125 9.9375 4.0575 9.9375 3.75C9.9375 3.4425 10.1925 3.1875 10.5 3.1875H15C15.3075 3.1875 15.5625 3.4425 15.5625 3.75C15.5625 4.0575 15.3075 4.3125 15 4.3125Z" fill="#A6ACBD" />
+					<path d="M12.75 6.5625H10.5C10.1925 6.5625 9.9375 6.3075 9.9375 6C9.9375 5.6925 10.1925 5.4375 10.5 5.4375H12.75C13.0575 5.4375 13.3125 5.6925 13.3125 6C13.3125 6.3075 13.0575 6.5625 12.75 6.5625Z" fill="#A6ACBD" />
+					<path d="M8.625 16.3125C4.3875 16.3125 0.9375 12.8625 0.9375 8.625C0.9375 4.3875 4.3875 0.9375 8.625 0.9375C8.9325 0.9375 9.1875 1.1925 9.1875 1.5C9.1875 1.8075 8.9325 2.0625 8.625 2.0625C5.0025 2.0625 2.0625 5.01 2.0625 8.625C2.0625 12.24 5.0025 15.1875 8.625 15.1875C12.2475 15.1875 15.1875 12.24 15.1875 8.625C15.1875 8.3175 15.4425 8.0625 15.75 8.0625C16.0575 8.0625 16.3125 8.3175 16.3125 8.625C16.3125 12.8625 12.8625 16.3125 8.625 16.3125Z" fill="#A6ACBD" />
+					<path d="M16.5001 17.0626C16.3576 17.0626 16.2151 17.0101 16.1026 16.8976L14.6026 15.3976C14.3851 15.1801 14.3851 14.8201 14.6026 14.6026C14.8201 14.3851 15.1801 14.3851 15.3976 14.6026L16.8976 16.1026C17.1151 16.3201 17.1151 16.6801 16.8976 16.8976C16.7851 17.0101 16.6426 17.0626 16.5001 17.0626Z" fill="#A6ACBD" />
+				</svg>
+
+				<Input
+					value={searchValue}
+					onChange={(e) => onSearchChange?.(e.target.value)}
+					placeholder={t("toolbar.searchPlaceholder")}
+					className="rtl:pr-10 h-[40px] ltr:pl-10 rounded-full bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 placeholder:text-gray-400 dark:placeholder:text-slate-400 text-gray-700 dark:text-slate-100"
+				/>
+			</div>
+
+			<div className="flex items-center gap-2">
+				<Button
+					variant="outline"
+					className="bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-100 flex items-center gap-2 !px-4 rounded-full hover:bg-gray-50 dark:hover:bg-slate-800"
+					onClick={onExport}
+					disabled={exportLoading}
+				>
+					{exportLoading ? <Loader2 className="animate-spin" size={18} /> : null}
+					{t("toolbar.export")}
+				</Button>
+			</div>
+		</div>
+	);
+}
+
+/** =========================
+ * Modals
+ * ========================= */
+function ViewEmployeeDialog({ t, open, onOpenChange, data, loading }) {
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent className="sm:max-w-2xl rounded-xl">
+				<DialogHeader className="text-right">
+					<DialogTitle>{t("view.title") || t("actions.view")}</DialogTitle>
+					<DialogDescription>
+						{loading ? t("loading") : data ? `#${data.id}` : ""}
+					</DialogDescription>
+				</DialogHeader>
+
+				{loading ? (
+					<div className="py-10 flex items-center justify-center gap-2 text-gray-500">
+						<Loader2 className="animate-spin" size={18} />
+						{t("loading")}
+					</div>
+				) : !data ? (
+					<div className="py-10 text-center text-gray-500">{t("empty")}</div>
+				) : (
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div className="rounded-xl border border-gray-200 dark:border-slate-800 p-4 bg-gray-50 dark:bg-slate-800/40">
+							<div className="text-xs text-gray-500">{t("table.name")}</div>
+							<div className="mt-1 font-semibold text-gray-900 dark:text-white">
+								{data.name || "-"}
+							</div>
+						</div>
+
+						<div className="rounded-xl border border-gray-200 dark:border-slate-800 p-4 bg-gray-50 dark:bg-slate-800/40">
+							<div className="text-xs text-gray-500">{t("table.email")}</div>
+							<div className="mt-1 font-en text-gray-900 dark:text-white" dir="ltr">
+								{data.email || "-"}
+							</div>
+						</div>
+
+						<div className="rounded-xl border border-gray-200 dark:border-slate-800 p-4 bg-gray-50 dark:bg-slate-800/40">
+							<div className="text-xs text-gray-500">{t("table.phone")}</div>
+							<div className="mt-1 font-en text-gray-900 dark:text-white" dir="ltr">
+								{data.phone || "-"}
+							</div>
+						</div>
+
+						<div className="rounded-xl border border-gray-200 dark:border-slate-800 p-4 bg-gray-50 dark:bg-slate-800/40">
+							<div className="text-xs text-gray-500">{t("table.role")}</div>
+							<div className="mt-1 text-gray-900 dark:text-white">
+								{data.employeeType || data.type || "-"}
+							</div>
+						</div>
+
+						<div className="rounded-xl border border-gray-200 dark:border-slate-800 p-4 bg-gray-50 dark:bg-slate-800/40 md:col-span-2">
+							<div className="text-xs text-gray-500">{t("table.status") || "Status"}</div>
+							<div className="mt-1">
+								{data.isActive ? (
+									<Badge className="rounded-xl bg-[#F0FDF4] text-[#22C55E] hover:bg-[#F0FDF4] dark:bg-green-950/30 dark:text-green-400">
+										{t("table.active")}
+									</Badge>
+								) : (
+									<Badge className="rounded-xl bg-[#FEF2F2] text-[#EF4444] hover:bg-[#FEF2F2] dark:bg-red-950/30 dark:text-red-400">
+										{t("table.inactive")}
+									</Badge>
+								)}
+							</div>
+						</div>
+					</div>
+				)}
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+function EditEmployeeDialog({ t, open, onOpenChange, initial, onSave, saving }) {
+	const [form, setForm] = useState({ name: "", email: "", phone: "" });
+
+	useEffect(() => {
+		if (open && initial) {
+			setForm({
+				name: initial.name || "",
+				email: initial.email || "",
+				phone: initial.phone || "",
+			});
+		}
+		if (!open) setForm({ name: "", email: "", phone: "" });
+	}, [open, initial]);
+
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent className="sm:max-w-2xl rounded-xl">
+				<DialogHeader className="text-right">
+					<DialogTitle>{t("edit.title") || t("actions.edit")}</DialogTitle>
+					<DialogDescription>{initial ? `#${initial.id}` : ""}</DialogDescription>
+				</DialogHeader>
+
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div>
+						<Label className="text-xs text-gray-500 dark:text-slate-400">{t("table.name")}</Label>
+						<Input
+							value={form.name}
+							onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+							className="rounded-full h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 mt-1"
+						/>
+					</div>
+
+					<div>
+						<Label className="text-xs text-gray-500 dark:text-slate-400">{t("table.email")}</Label>
+						<Input
+							value={form.email}
+							onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+							className="rounded-full h-[42px] font-en bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 mt-1"
+							dir="ltr"
+						/>
+					</div>
+
+					<div className="md:col-span-2">
+						<Label className="text-xs text-gray-500 dark:text-slate-400">{t("table.phone")}</Label>
+						<Input
+							value={form.phone}
+							onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
+							className="rounded-full h-[42px] font-en bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 mt-1"
+							dir="ltr"
+						/>
+					</div>
+				</div>
+
+				<div className="mt-4 flex items-center justify-end gap-2">
+					<Button variant="outline" className="rounded-full" onClick={() => onOpenChange(false)} disabled={saving}>
+						{t("actions.cancel") || "Cancel"}
+					</Button>
+					<Button
+						className="rounded-full btn-primary1"
+						onClick={() => onSave?.({ ...form })}
+						disabled={saving || !form.name.trim() || !form.email.trim()}
+					>
+						<span className="flex items-center gap-2">
+							{saving ? <Loader2 className="animate-spin" size={18} /> : <Edit2 size={18} />}
+							{t("actions.save") || "Save"}
+						</span>
+					</Button>
+				</div>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+function ConfirmDeleteDialog({ t, open, onOpenChange, employee, onConfirm, loading }) {
+	return (
+		<AlertDialog open={open} onOpenChange={onOpenChange}>
+			<AlertDialogContent className="rounded-xl">
+				<AlertDialogHeader className="text-right">
+					<AlertDialogTitle>{t("delete.title") || t("actions.delete")}</AlertDialogTitle>
+					<AlertDialogDescription>
+						{employee ? `${employee.name} — ${employee.email}` : ""}
+						<div className="mt-2 text-sm">
+							{t("delete.desc") || "This will delete the employee permanently."}
+						</div>
+					</AlertDialogDescription>
+				</AlertDialogHeader>
+
+				<div className="mt-4 flex items-center justify-end gap-2">
+					<AlertDialogCancel className="rounded-full" disabled={loading}>
+						{t("actions.cancel") || "Cancel"}
+					</AlertDialogCancel>
+					<AlertDialogAction
+						className="rounded-full bg-red-600 hover:bg-red-700 text-white"
+						onClick={onConfirm}
+						disabled={loading}
+					>
+						<span className="flex items-center gap-2">
+							{loading ? <Loader2 className="animate-spin" size={18} /> : <Trash2 size={18} />}
+							{t("actions.delete") || "Delete"}
+						</span>
+					</AlertDialogAction>
+				</div>
+			</AlertDialogContent>
+		</AlertDialog>
 	);
 }

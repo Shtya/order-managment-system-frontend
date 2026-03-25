@@ -285,7 +285,7 @@ export default function Header({ toggleSidebar, isSidebarOpen }) {
                       className="mx-auto mb-2 text-muted-foreground/40"
                     />
                     <p className="text-xs text-muted-foreground">
-                      لا توجد إشعارات
+                      {t("noNotifications")}
                     </p>
                   </div>
                 ) : (

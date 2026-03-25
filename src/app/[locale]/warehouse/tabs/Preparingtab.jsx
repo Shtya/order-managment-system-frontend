@@ -12,7 +12,7 @@ import {
   CheckCircle2,
   XCircle,
 } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
 import DataTable from "@/components/atoms/DataTable";
 import { Button } from "@/components/ui/button";
@@ -49,6 +49,7 @@ function ScanProgress({ products }) {
 
 export default function PreparingTab({ orders, updateOrder, pushOp, onPrepareOrder }) {
   const locale = useLocale();
+  const t = useTranslations("warehouse");
 
   const preparingOrders = useMemo(
     () => orders.filter((o) => o.status === STATUS.PREPARING),
@@ -78,69 +79,69 @@ export default function PreparingTab({ orders, updateOrder, pushOp, onPrepareOrd
   const remainingItems = totalItems - scannedItems;
 
   const stats = [
-    { title: "قيد التحضير", value: preparingOrders.length, icon: Clock, cls: "from-blue-500 to-indigo-600" },
-    { title: "إجمالي القطع", value: totalItems, icon: Package, cls: "from-amber-500 to-orange-500" },
-    { title: "ممسوحة", value: scannedItems, icon: CheckCircle2, cls: "from-emerald-500 to-teal-600" },
-    { title: "متبقية", value: remainingItems, icon: XCircle, cls: "from-red-500 to-rose-600" },
+    { title: t("preparingTab.stats.preparing"), value: preparingOrders.length, icon: Clock, cls: "from-blue-500 to-indigo-600" },
+    { title: t("preparingTab.stats.totalItems"), value: totalItems, icon: Package, cls: "from-amber-500 to-orange-500" },
+    { title: t("preparingTab.stats.scanned"), value: scannedItems, icon: CheckCircle2, cls: "from-emerald-500 to-teal-600" },
+    { title: t("preparingTab.stats.remaining"), value: remainingItems, icon: XCircle, cls: "from-red-500 to-rose-600" },
   ];
 
   const columns = useMemo(
     () => [
       {
         key: "code",
-        header: "رقم الطلب",
+        header: t("preparingTab.columns.orderNumber"),
         className: "font-semibold text-primary min-w-[120px] font-mono",
       },
       {
         key: "customer",
-        header: "العميل",
+        header: t("prepareView.fields.customer"),
         className: "min-w-[160px] font-medium",
       },
       {
         key: "phone",
-        header: "الهاتف",
+        header: t("prepareView.fields.phone"),
         className: "min-w-[140px] font-mono text-slate-500",
       },
       {
         key: "city",
-        header: "المدينة",
+        header: t("prepareView.fields.city"),
         className: "min-w-[100px]",
       },
       {
         key: "products",
-        header: "المنتجات",
+        header: t("preparingTab.columns.products"),
         className: "min-w-[80px] text-center",
         cell: (row) => (
           <span className="bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full text-sm font-semibold">
-            {row.products.length} منتج
+            {t("preparingTab.productsCount", { count: row.products.length })}
           </span>
         ),
       },
       {
         key: "progress",
-        header: "تقدم المسح",
+        header: t("preparingTab.columns.scanProgress"),
         className: "min-w-[160px]",
         cell: (row) => <ScanProgress products={row.products} />,
       },
       {
         key: "carrier",
-        header: "شركة الشحن",
+        header: t("prepareView.fields.carrier"),
         className: "min-w-[100px]",
         cell: (row) =>
           row.carrier ? (
             <span className="font-semibold text-sm">{row.carrier}</span>
           ) : (
-            <span className="text-slate-400 italic text-sm">غير محدد</span>
+            <span className="text-slate-400 italic text-sm">{t("prepareView.fields.notSpecified")}</span>
           ),
       },
       {
         key: "assignedEmployee",
-        header: "الموظف",
+        header: t("preparingTab.columns.employee"),
         className: "min-w-[120px]",
       },
       {
         key: "actions",
-        header: "الإجراءات",
+        header: t("preparingTab.columns.actions"),
         className: "w-fit",
         cell: (row) => (
           <div className="flex items-center gap-2">
@@ -151,7 +152,7 @@ export default function PreparingTab({ orders, updateOrder, pushOp, onPrepareOrd
               onClick={() => onPrepareOrder(row)}
             >
               <ScanLine size={14} />
-              متابعة التحضير
+              {t("preparingTab.actions.continue")}
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.04 }}
@@ -162,19 +163,19 @@ export default function PreparingTab({ orders, updateOrder, pushOp, onPrepareOrd
                 pushOp &&
                   updateOrder(row.code, {
                     status: STATUS.REJECTED,
-                    rejectReason: "رفض من تبويب التحضير",
+                    rejectReason: t("preparingTab.rejectReason"),
                     rejectedAt: new Date().toISOString().slice(0, 16).replace("T", " "),
                   });
               }}
             >
               <Ban size={14} />
-              رفض
+              {t("preparingTab.actions.reject")}
             </motion.button>
           </div>
         ),
       },
     ],
-    [onPrepareOrder, updateOrder, pushOp]
+    [onPrepareOrder, updateOrder, pushOp, t]
   );
 
   return (
@@ -216,7 +217,7 @@ export default function PreparingTab({ orders, updateOrder, pushOp, onPrepareOrd
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="بحث..."
+            placeholder={t("preparingTab.toolbar.search")}
             className={cn(
               "h-[40px] rounded-full bg-gray-50 dark:bg-slate-800",
               locale === "ar" ? "pr-10" : "pl-10"
@@ -226,10 +227,10 @@ export default function PreparingTab({ orders, updateOrder, pushOp, onPrepareOrd
         <Button
           variant="outline"
           className="rounded-full h-[40px] flex items-center gap-2"
-          onClick={() => alert("تصدير قريباً")}
+          onClick={() => alert(t("preparingTab.toolbar.exportSoon"))}
         >
           <FileDown size={16} className="text-slate-500" />
-          تصدير
+          {t("preparingTab.toolbar.export")}
         </Button>
       </div>
 
@@ -240,7 +241,7 @@ export default function PreparingTab({ orders, updateOrder, pushOp, onPrepareOrd
             <div className="p-4 rounded-full bg-slate-100 dark:bg-slate-800">
               <Clock className="w-8 h-8 text-slate-400" />
             </div>
-            <p className="font-semibold text-slate-500">لا توجد طلبات قيد التحضير</p>
+            <p className="font-semibold text-slate-500">{t("preparingTab.empty.noOrders")}</p>
           </div>
         ) : (
           <DataTable
@@ -253,7 +254,7 @@ export default function PreparingTab({ orders, updateOrder, pushOp, onPrepareOrd
               per_page: filtered.length,
             }}
             onPageChange={() => {}}
-            emptyState="لا توجد طلبات"
+            emptyState={t("preparingTab.empty.table")}
           />
         )}
       </div>

@@ -173,7 +173,7 @@ function usePlans() {
 			setPlans(transformedPlans);
 			return transformedPlans;
 		} catch (error) {
-			const message = error?.response?.data?.message || "فشل في تحميل الباقات";
+			const message = error?.response?.data?.message || t("messages.fetchPlansFailed");
 			toast.error(message);
 			throw error;
 		} finally {
@@ -209,7 +209,7 @@ function usePlans() {
 			};
 
 			const { data } = await api.post("/plans", payload);
-			toast.success("تم إنشاء الباقة بنجاح");
+			toast.success(t("messages.createPlanSuccess"));
 
 			// Normalize the return data so the UI state stays in sync
 			return {
@@ -228,7 +228,7 @@ function usePlans() {
 			};
 		} catch (error) {
 			// Handle validation errors or generic failures
-			const message = error?.response?.data?.message || "فشل في إنشاء الباقة";
+			const message = error?.response?.data?.message || t("messages.createPlanFailed");
 			toast.error(Array.isArray(message) ? message[0] : message);
 			throw error;
 		} finally {
@@ -266,7 +266,7 @@ function usePlans() {
 			};
 
 			const { data } = await api.patch(`/plans/${id}`, payload);
-			toast.success("تم تحديث الباقة بنجاح");
+			toast.success(t("messages.updatePlanSuccess"));
 
 			// Normalize the return data for the state
 			return {
@@ -283,7 +283,7 @@ function usePlans() {
 				extraFeeNotAllowed: data.extraOrderFee !== null
 			};
 		} catch (error) {
-			const message = error?.response?.data?.message || "فشل في تحديث الباقة";
+			const message = error?.response?.data?.message || t("messages.updatePlanFailed");
 			toast.error(message);
 			throw error;
 		} finally {
@@ -296,11 +296,11 @@ function usePlans() {
 		try {
 			setLoading(true);
 			await api.delete(`/plans/${id}`);
-			toast.success("تم حذف الباقة بنجاح");
+			toast.success(t("messages.deletePlanSuccess"));
 		} catch (error) {
-			const message = error?.response?.data?.message || "فشل في حذف الباقة";
+			const message = error?.response?.data?.message || t("messages.deletePlanFailed");
 			if (String(message).includes("active transactions")) {
-				toast.error("لا يمكن حذف باقة تحتوي على اشتراكات نشطة. قم بتعطيلها بدلاً من ذلك.");
+				toast.error(t("messages.deletePlanHasActiveSubscriptions"));
 			} else {
 				toast.error(message);
 			}
@@ -335,6 +335,7 @@ function EditablePlanCard({
 	isSaving,
 	isBusyGlobal,
 }) {
+	const t = useTranslations("plans");
 	const [formData, setFormData] = useState({
 		name: plan.name || "",
 		price: plan.price || "",
@@ -448,12 +449,12 @@ function EditablePlanCard({
 	};
 
 	const colorOptions = [
-		{ value: "from-blue-500 to-blue-600", label: "أزرق", preview: "bg-gradient-to-r from-blue-500 to-blue-600" },
-		{ value: "from-purple-500 to-purple-600", label: "بنفسجي", preview: "bg-gradient-to-r from-purple-500 to-purple-600" },
-		{ value: "from-orange-500 to-orange-600", label: "برتقالي", preview: "bg-gradient-to-r from-orange-500 to-orange-600" },
-		{ value: "from-green-500 to-green-600", label: "أخضر", preview: "bg-gradient-to-r from-green-500 to-green-600" },
-		{ value: "from-pink-500 to-pink-600", label: "وردي", preview: "bg-gradient-to-r from-pink-500 to-pink-600" },
-		{ value: "from-cyan-500 to-cyan-600", label: "سماوي", preview: "bg-gradient-to-r from-cyan-500 to-cyan-600" },
+		{ value: "from-blue-500 to-blue-600", label: t("planCard.colors.blue"), preview: "bg-gradient-to-r from-blue-500 to-blue-600" },
+		{ value: "from-purple-500 to-purple-600", label: t("planCard.colors.purple"), preview: "bg-gradient-to-r from-purple-500 to-purple-600" },
+		{ value: "from-orange-500 to-orange-600", label: t("planCard.colors.orange"), preview: "bg-gradient-to-r from-orange-500 to-orange-600" },
+		{ value: "from-green-500 to-green-600", label: t("planCard.colors.green"), preview: "bg-gradient-to-r from-green-500 to-green-600" },
+		{ value: "from-pink-500 to-pink-600", label: t("planCard.colors.pink"), preview: "bg-gradient-to-r from-pink-500 to-pink-600" },
+		{ value: "from-cyan-500 to-cyan-600", label: t("planCard.colors.cyan"), preview: "bg-gradient-to-r from-cyan-500 to-cyan-600" },
 	];
 
 	const getIcon = () => {
@@ -469,10 +470,10 @@ function EditablePlanCard({
 	const ordersOptions = [50, 100, 200, 500, 1000, 2000, 5000, 10000];
 
 	const getDurationLabel = () => {
-		if (plan.duration === "monthly") return "شهرياً";
-		if (plan.duration === "yearly") return "سنوياً";
-		if (plan.duration === "lifetime") return "مدى الحياة";
-		if (plan.duration === "custom") return `${plan.durationIndays || 0} يوم`;
+		if (plan.duration === "monthly") return t("planCard.duration.monthly");
+		if (plan.duration === "yearly") return t("planCard.duration.yearly");
+		if (plan.duration === "lifetime") return t("planCard.duration.lifetime");
+		if (plan.duration === "custom") return `${plan.durationIndays || 0} ${t("durations.custom")}`;
 		return "";
 	};
 
@@ -511,7 +512,7 @@ function EditablePlanCard({
 										{isSaving ? <Spinner className="w-4 h-4 text-white" /> : <Save size={16} />}
 									</motion.button>
 								</TooltipTrigger>
-								<TooltipContent>{isSaving ? "جاري الحفظ..." : "حفظ"}</TooltipContent>
+								<TooltipContent>{isSaving ? t("planCard.saving") : t("planCard.save")}</TooltipContent>
 							</Tooltip>
 						</TooltipProvider>
 
@@ -531,7 +532,7 @@ function EditablePlanCard({
 										<X size={16} />
 									</motion.button>
 								</TooltipTrigger>
-								<TooltipContent>إلغاء</TooltipContent>
+								<TooltipContent>{t("planCard.cancel")}</TooltipContent>
 							</Tooltip>
 						</TooltipProvider>
 					</>
@@ -553,7 +554,7 @@ function EditablePlanCard({
 										<Edit size={16} />
 									</motion.button>
 								</TooltipTrigger>
-								<TooltipContent>تعديل</TooltipContent>
+								<TooltipContent>{t("planCard.edit")}</TooltipContent>
 							</Tooltip>
 						</TooltipProvider>
 
@@ -573,7 +574,7 @@ function EditablePlanCard({
 										<Trash2 size={16} />
 									</motion.button>
 								</TooltipTrigger>
-								<TooltipContent>حذف</TooltipContent>
+								<TooltipContent>{t("planCard.delete")}</TooltipContent>
 							</Tooltip>
 						</TooltipProvider>
 					</>
@@ -587,7 +588,7 @@ function EditablePlanCard({
 						{/* Popular Toggle */}
 						<div className="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-full shadow-lg border border-gray-200 dark:border-slate-700">
 							<span className="text-xs text-gray-600 dark:text-slate-400">
-								{formData.isPopular ? "شائعة" : "عادية"}
+								{formData.isPopular ? t("planCard.popular") : t("planCard.standard")}
 							</span>
 							<Switch
 								checked={formData.isPopular}
@@ -599,18 +600,18 @@ function EditablePlanCard({
 				) : (
 					<div className="flex flex-col items-end gap-2">
 						<Badge className="bg-[#F0FDF4] text-[#22C55E] hover:bg-[#F0FDF4] dark:bg-green-950/30 dark:text-green-300 rounded-xl">
-							نشطة
+							{t("planCard.active")}
 						</Badge>
 
 						{plan.isPopular && (
 							<Badge className="bg-gradient-to-r from-primary via-primary/90 to-primary text-white rounded-xl">
-								شائعة
+								{t("planCard.popular")}
 							</Badge>
 						)}
 
 						{plan.type === 'negotiated' && (
 							<Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl">
-								حسب الاتفاق
+								{t("planCard.negotiated")}
 							</Badge>
 						)}
 					</div>
@@ -666,7 +667,7 @@ function EditablePlanCard({
 							{/* 1. Plan Type Selection */}
 							<div className="flex flex-col gap-2">
 								<label className="text-sm font-medium text-gray-700 dark:text-slate-300">
-									نوع الخظة
+									{t("planCard.planType")}
 								</label>
 								<Select
 									value={formData.type}
@@ -681,12 +682,12 @@ function EditablePlanCard({
 									disabled={isSaving}
 								>
 									<SelectTrigger className="w-full h-12 rounded-xl border-orange-200 bg-orange-50/50 dark:bg-orange-950/20">
-										<SelectValue placeholder="إختر نوع الخطة" />
+										<SelectValue placeholder={t("planCard.selectPlanType")} />
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem value="trial">تجريبية (Trial)</SelectItem>
-										<SelectItem value="standard">إعتيادية (Standard)</SelectItem>
-										<SelectItem value="negotiated">بالتفاوض (Negotiated)</SelectItem>
+										<SelectItem value="trial">{t("planCard.trial")}</SelectItem>
+										<SelectItem value="standard">{t("planCard.standard")}</SelectItem>
+										<SelectItem value="negotiated">{t("planCard.negotiated_type")}</SelectItem>
 									</SelectContent>
 								</Select>
 							</div>
@@ -695,7 +696,7 @@ function EditablePlanCard({
 							<div className="flex flex-col items-center justify-center p-4">
 								{formData.type === 'negotiated' ? (
 									<div className="text-2xl font-black text-orange-600 dark:text-orange-400 py-2">
-										السعر بالتفاوض
+										{t("planCard.negotiatedPrice")}
 									</div>
 								) : (
 									<div className="flex items-center justify-center gap-2">
@@ -707,13 +708,13 @@ function EditablePlanCard({
 											placeholder="0"
 											disabled={isSaving}
 										/>
-										<span className="text-2xl font-bold text-gray-500 dark:text-slate-400">ج.م</span>
+										<span className="text-2xl font-bold text-gray-500 dark:text-slate-400">{t("planCard.currency")}</span>
 									</div>
 								)}
 
 								{formData.type === 'trial' && (
 									<span className="text-xs text-blue-600 mt-2 italic font-medium">
-										* يمكنك تحديد سعر رمزي أو 0 للفترة التجريبية
+										{t("planCard.trialHint")}
 									</span>
 								)}
 							</div>
@@ -723,7 +724,7 @@ function EditablePlanCard({
 							value={formData.name}
 							onChange={(e) => setFormData({ ...formData, name: e.target.value })}
 							className="text-center font-bold text-lg rounded-xl"
-							placeholder="اسم الباقة"
+							placeholder={t("planCard.planNamePlaceholder")}
 							disabled={isSaving}
 						/>
 
@@ -732,16 +733,16 @@ function EditablePlanCard({
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="monthly">شهرياً</SelectItem>
-								<SelectItem value="yearly">سنوياً</SelectItem>
-								<SelectItem value="lifetime">مدى الحياة</SelectItem>
-								<SelectItem value="custom">مخصص</SelectItem>
+								<SelectItem value="monthly">{t("planCard.duration.monthly")}</SelectItem>
+								<SelectItem value="yearly">{t("planCard.duration.yearly")}</SelectItem>
+								<SelectItem value="lifetime">{t("planCard.duration.lifetime")}</SelectItem>
+								<SelectItem value="custom">{t("planCard.duration.custom")}</SelectItem>
 							</SelectContent>
 						</Select>
 
 						{formData.duration === 'custom' && (
 							<div className="space-y-1">
-								<Label className="text-xs text-gray-500 dark:text-slate-400">عدد الأيام</Label>
+								<Label className="text-xs text-gray-500 dark:text-slate-400">{t("planCard.daysLabel")}</Label>
 								<Input
 									type="number"
 									value={formData.durationIndays}
@@ -758,7 +759,7 @@ function EditablePlanCard({
 							value={formData.description}
 							onChange={(e) => setFormData({ ...formData, description: e.target.value })}
 							className="rounded-xl text-sm "
-							placeholder="وصف الباقة..."
+							placeholder={t("planCard.planDescriptionPlaceholder")}
 							rows={2}
 							disabled={isSaving}
 						/>
@@ -768,7 +769,7 @@ function EditablePlanCard({
 						<>
 							{plan.type === 'negotiated' ? (
 								<div className="text-4xl font-black text-orange-600 dark:text-orange-400">
-									حسب الاتفاق
+									{t("planCard.negotiated")}
 								</div>
 							) : (
 								<div className="flex items-baseline justify-center gap-2">
@@ -776,7 +777,7 @@ function EditablePlanCard({
 										{plan.price}
 									</span>
 									{Number(plan.price) !== 0 && (
-										<span className="text-2xl text-gray-500 dark:text-slate-400">ج.م</span>
+										<span className="text-2xl text-gray-500 dark:text-slate-400">{t("planCard.currency")}</span>
 									)}
 								</div>
 							)}
@@ -786,7 +787,7 @@ function EditablePlanCard({
 									{plan.name}
 									{plan.type === 'trial' && (
 										<span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
-											تجريبي
+											{t("planCard.trial")}
 										</span>
 									)}
 								</p>
@@ -809,8 +810,8 @@ function EditablePlanCard({
 			{/* Features */}
 			<div className="space-y-3 mb-6">
 				<div className="flex items-center justify-between">
-					<span className="text-xs font-semibold text-gray-500 dark:text-slate-400">الميزات:</span>
-					{isEditing && <span className="text-xs text-gray-400">{(formData.features || []).length} ميزة</span>}
+					<span className="text-xs font-semibold text-gray-500 dark:text-slate-400">{t("planCard.featuresLabel")}</span>
+					{isEditing && <span className="text-xs text-gray-400">{(formData.features || []).length} {t("planCard.featureCount")}</span>}
 				</div>
 
 				{isEditing ? (
@@ -819,7 +820,7 @@ function EditablePlanCard({
 						<div className="space-y-3">
 							{/* Users Limit */}
 							<div className="space-y-1">
-								<Label className="text-xs text-gray-500 dark:text-slate-400">عدد المستخدمين المسموح</Label>
+								<Label className="text-xs text-gray-500 dark:text-slate-400">{t("planCard.userLimitLabel")}</Label>
 								<div className="flex items-center gap-2">
 									<Select
 										value={String(formData.usersLimit ?? 1)}
@@ -827,7 +828,7 @@ function EditablePlanCard({
 										disabled={isSaving || formData.usersUnlimited}
 									>
 										<SelectTrigger className="rounded-xl !w-full !h-9 text-sm">
-											<SelectValue placeholder="اختر العدد" />
+											<SelectValue placeholder={tc("select_count") || "Select..."} />
 										</SelectTrigger>
 										<SelectContent>
 											{userOptions.map((n) => (
@@ -845,7 +846,7 @@ function EditablePlanCard({
 											disabled={isSaving}
 										/>
 										<Label htmlFor="users-unlimited" className="text-xs text-gray-600 dark:text-slate-400 cursor-pointer">
-											غير محدود
+											{t("planCard.unlimited")}
 										</Label>
 									</div>
 								</div>
@@ -853,7 +854,7 @@ function EditablePlanCard({
 
 							{/* Stores Limit */}
 							<div className="space-y-1">
-								<Label className="text-xs text-gray-500 dark:text-slate-400">عدد المتاجر المسموح</Label>
+								<Label className="text-xs text-gray-500 dark:text-slate-400">{t("planCard.storeLimitLabel")}</Label>
 								<div className="flex items-center gap-2">
 									<Select
 										value={String(formData.storesLimit ?? 1)}
@@ -861,7 +862,7 @@ function EditablePlanCard({
 										disabled={isSaving || formData.storesUnlimited}
 									>
 										<SelectTrigger className="rounded-xl !w-full !h-9 text-sm">
-											<SelectValue placeholder="اختر العدد" />
+											<SelectValue placeholder={tc("select_count") || "Select..."} />
 										</SelectTrigger>
 										<SelectContent>
 											{storesOptions.map((n) => (
@@ -879,7 +880,7 @@ function EditablePlanCard({
 											disabled={isSaving}
 										/>
 										<Label htmlFor="stores-unlimited" className="text-xs text-gray-600 dark:text-slate-400 cursor-pointer">
-											غير محدود
+											{t("planCard.unlimited")}
 										</Label>
 									</div>
 								</div>
@@ -887,7 +888,7 @@ function EditablePlanCard({
 
 							{/* Shipping Companies Limit */}
 							<div className="space-y-1">
-								<Label className="text-xs text-gray-500 dark:text-slate-400">عدد شركات الشحن المسموح</Label>
+								<Label className="text-xs text-gray-500 dark:text-slate-400">{t("planCard.shippingLimitLabel")}</Label>
 								<div className="flex items-center gap-2">
 									<Select
 										value={String(formData.shippingCompaniesLimit ?? 0)}
@@ -895,7 +896,7 @@ function EditablePlanCard({
 										disabled={isSaving || formData.shippingUnlimited}
 									>
 										<SelectTrigger className="rounded-xl !w-full !h-9 text-sm">
-											<SelectValue placeholder="اختر العدد" />
+											<SelectValue placeholder={tc("select_count") || "Select..."} />
 										</SelectTrigger>
 										<SelectContent>
 											{shippingOptions.map((n) => (
@@ -913,7 +914,7 @@ function EditablePlanCard({
 											disabled={isSaving}
 										/>
 										<Label htmlFor="shipping-unlimited" className="text-xs text-gray-600 dark:text-slate-400 cursor-pointer">
-											غير محدود
+											{t("planCard.unlimited")}
 										</Label>
 									</div>
 								</div>
@@ -921,7 +922,7 @@ function EditablePlanCard({
 
 							{/* Included Orders */}
 							<div className="space-y-1">
-								<Label className="text-xs text-gray-500 dark:text-slate-400">عدد الطلبات المتضمنة</Label>
+								<Label className="text-xs text-gray-500 dark:text-slate-400">{t("planCard.orderLimitLabel")}</Label>
 								<div className="flex items-center gap-2">
 									<Input
 										type="number"
@@ -946,7 +947,7 @@ function EditablePlanCard({
 											disabled={isSaving}
 										/>
 										<Label htmlFor="orders-unlimited" className="text-xs text-gray-600 dark:text-slate-400 cursor-pointer">
-											غير محدود
+											{t("planCard.unlimited")}
 										</Label>
 									</div>
 								</div>
@@ -956,7 +957,7 @@ function EditablePlanCard({
 							{/* Extra Order Fee */}
 							<div className="space-y-1">
 								<Label className="text-xs text-gray-500 dark:text-slate-400">
-									رسوم الطلب الإضافي (بعد تجاوز الحد)
+									{t("planCard.extraFeeLabel")}
 								</Label>
 								<div className="flex items-center gap-2">
 									<Input
@@ -987,7 +988,7 @@ function EditablePlanCard({
 											htmlFor="extra-fee-not-allowed"
 											className="text-xs text-gray-600 dark:text-slate-400 cursor-pointer"
 										>
-											غير مسموح
+											{t("planCard.notAllowed")}
 										</Label>
 									</div>
 								</div>
@@ -995,7 +996,7 @@ function EditablePlanCard({
 
 							{/* Bulk Upload Per Month */}
 							<div className="space-y-1">
-								<Label className="text-xs text-gray-500 dark:text-slate-400">عدد الطلبات المسموح رفعها في الشهر</Label>
+								<Label className="text-xs text-gray-500 dark:text-slate-400">{t("planCard.bulkUploadLabel")}</Label>
 								<Input
 									type="number"
 									value={formData.bulkUploadPerMonth}
@@ -1036,7 +1037,7 @@ function EditablePlanCard({
 									value={newFeature}
 									onChange={(e) => setNewFeature(e.target.value)}
 									onKeyDown={(e) => e.key === "Enter" && handleAddFeature()}
-									placeholder="إضافة ميزة جديدة..."
+									placeholder={t("planCard.addNewFeaturePlaceholder")}
 									className="flex-1 h-9 text-sm rounded-xl"
 									disabled={isSaving}
 								/>
@@ -1058,44 +1059,44 @@ function EditablePlanCard({
 						{/* Show limits in view mode */}
 						<div className="space-y-2 mb-3">
 							<div className="flex items-center justify-between text-sm">
-								<span className="text-gray-500 dark:text-slate-400">المستخدمين</span>
+								<span className="text-gray-500 dark:text-slate-400">{t("planCard.userLimitLabel")}</span>
 								<span className="font-semibold text-gray-800 dark:text-slate-200">
-									{plan.usersLimit === null ? "غير محدود" : plan.usersLimit}
+									{plan.usersLimit === null ? t("planCard.unlimited") : plan.usersLimit}
 								</span>
 							</div>
 							<div className="flex items-center justify-between text-sm">
-								<span className="text-gray-500 dark:text-slate-400">المتاجر</span>
+								<span className="text-gray-500 dark:text-slate-400">{t("planCard.storeLimitLabel")}</span>
 								<span className="font-semibold text-gray-800 dark:text-slate-200">
-									{plan.storesLimit === null ? "غير محدود" : plan.storesLimit}
+									{plan.storesLimit === null ? t("planCard.unlimited") : plan.storesLimit}
 								</span>
 							</div>
 							<div className="flex items-center justify-between text-sm">
-								<span className="text-gray-500 dark:text-slate-400">شركات الشحن</span>
+								<span className="text-gray-500 dark:text-slate-400">{t("planCard.shippingLimitLabel")}</span>
 								<span className="font-semibold text-gray-800 dark:text-slate-200">
-									{plan.shippingCompaniesLimit === null ? "غير محدود" : plan.shippingCompaniesLimit}
+									{plan.shippingCompaniesLimit === null ? t("planCard.unlimited") : plan.shippingCompaniesLimit}
 								</span>
 							</div>
 							<div className="flex items-center justify-between text-sm">
-								<span className="text-gray-500 dark:text-slate-400">الطلبات المتضمنة</span>
+								<span className="text-gray-500 dark:text-slate-400">{t("planCard.orderLimitLabel")}</span>
 								<span className="font-semibold text-gray-800 dark:text-slate-200">
-									{plan.includedOrders === null ? "غير محدود" : plan.includedOrders}
+									{plan.includedOrders === null ? t("planCard.unlimited") : plan.includedOrders}
 								</span>
 							</div>
 							<div className="flex items-center justify-between text-sm">
-								<span className="text-gray-500 dark:text-slate-400">رسوم الطلب الإضافي</span>
+								<span className="text-gray-500 dark:text-slate-400">{t("planCard.extraFeeLabel")}</span>
 								<span className="font-semibold text-gray-800 dark:text-slate-200">
 									{plan.extraOrderFee === null ? (
 										<span className="text-red-500 dark:text-red-400 text-xs font-medium">
-											غير مسموح بتجاوز الحد
+											{t("manageSubscription.fields.notAllowed")}
 										</span>
 									) : (
-										`${plan.extraOrderFee} ج.م`
+										`${plan.extraOrderFee} ${t("planCard.currency")}`
 									)}
 								</span>
 							</div>
 							{plan.bulkUploadPerMonth > 0 && (
 								<div className="flex items-center justify-between text-sm">
-									<span className="text-gray-500 dark:text-slate-400">رفع الطلبات شهرياً</span>
+									<span className="text-gray-500 dark:text-slate-400">{t("planCard.bulkUploadLabel")}</span>
 									<span className="font-semibold text-gray-800 dark:text-slate-200">
 										{plan.bulkUploadPerMonth}
 									</span>
@@ -1128,6 +1129,7 @@ function EditablePlanCard({
  * New Plan Card
  * ========================= */
 function NewPlanCard({ onClick, isCreating }) {
+	const t = useTranslations("plans.planPage");
 	return (
 		<motion.button
 			whileHover={{ scale: isCreating ? 1 : 1.02 }}
@@ -1147,10 +1149,10 @@ function NewPlanCard({ onClick, isCreating }) {
 			</div>
 			<div className="text-center">
 				<p className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-					{isCreating ? "جاري إنشاء باقة..." : "إضافة باقة جديدة"}
+					{isCreating ? t("newPlanCreatingTitle") : t("newPlanTitle")}
 				</p>
 				<p className="text-sm text-gray-500 dark:text-slate-400">
-					{isCreating ? "يرجى الانتظار" : "انقر لإنشاء باقة اشتراك جديدة"}
+					{isCreating ? t("newPlanCreatingHint") : t("newPlanHint")}
 				</p>
 			</div>
 
@@ -1165,52 +1167,53 @@ function NewPlanCard({ onClick, isCreating }) {
  * Transaction Details Dialog
  * ========================= */
 function TransactionDetailsDialog({ open, onClose, transaction }) {
+	const t = useTranslations("plans.transactionDetails");
 	if (!transaction) return null;
 
 	return (
 		<Dialog open={open} onOpenChange={onClose}>
 			<DialogContent className="!max-w-2xl">
 				<DialogHeader>
-					<DialogTitle>تفاصيل المعاملة</DialogTitle>
-					<DialogDescription>معلومات كاملة عن المعاملة #{transaction.id}</DialogDescription>
+					<DialogTitle>{t("title")}</DialogTitle>
+					<DialogDescription>{t("description", { id: transaction.id })}</DialogDescription>
 				</DialogHeader>
 
 				<div className="space-y-6">
 					<div className="grid grid-cols-2 gap-6">
 						<div className="space-y-2">
-							<Label className="text-xs text-gray-500 dark:text-slate-400">رقم المعاملة</Label>
+							<Label className="text-xs text-gray-500 dark:text-slate-400">{t("id")}</Label>
 							<p className="font-bold text-gray-900 dark:text-slate-100">{transaction.id}</p>
 						</div>
 
 						<div className="space-y-2">
-							<Label className="text-xs text-gray-500 dark:text-slate-400">اسم العميل</Label>
-							<p className="font-bold text-gray-900 dark:text-slate-100">{transaction.userName || "غير متوفر"}</p>
+							<Label className="text-xs text-gray-500 dark:text-slate-400">{t("userName")}</Label>
+							<p className="font-bold text-gray-900 dark:text-slate-100">{transaction.userName || t("notAvailable")}</p>
 						</div>
 
 						<div className="space-y-2">
-							<Label className="text-xs text-gray-500 dark:text-slate-400">اسم الباقة</Label>
+							<Label className="text-xs text-gray-500 dark:text-slate-400">{t("planName")}</Label>
 							<p className="font-bold text-gray-900 dark:text-slate-100">{transaction.planName}</p>
 						</div>
 
 						<div className="space-y-2">
-							<Label className="text-xs text-gray-500 dark:text-slate-400">المبلغ</Label>
-							<p className="font-bold text-green-600 dark:text-green-400 text-lg">{transaction.amount} ج.م</p>
+							<Label className="text-xs text-gray-500 dark:text-slate-400">{t("amount")}</Label>
+							<p className="font-bold text-green-600 dark:text-green-400 text-lg">{transaction.amount} {useTranslations("plans.planCard")("currency")}</p>
 						</div>
 
 						<div className="space-y-2">
-							<Label className="text-xs text-gray-500 dark:text-slate-400">تاريخ الاشتراك</Label>
+							<Label className="text-xs text-gray-500 dark:text-slate-400">{t("date")}</Label>
 							<p className="font-bold text-gray-900 dark:text-slate-100">{transaction.date}</p>
 						</div>
 
 						<div className="space-y-2">
-							<Label className="text-xs text-gray-500 dark:text-slate-400">الحالة</Label>
+							<Label className="text-xs text-gray-500 dark:text-slate-400">{t("status")}</Label>
 							<Badge className="rounded-xl">{transaction.status}</Badge>
 						</div>
 					</div>
 
 					<div className="flex justify-end pt-4">
 						<Button onClick={onClose} className="bg-primary text-white rounded-xl px-6">
-							إغلاق
+							{t("close")}
 						</Button>
 					</div>
 				</div>
@@ -1285,11 +1288,11 @@ export default function AdminSubscriptionsPage() {
 		const today = new Date();
 
 		const newPlan = {
-			name: `باقة جديدة ${today.getTime()}`,
+			name: `${t("planPage.defaultPlanName")} ${today.getTime()}`,
 			price: 50,
 			duration: "monthly",
 			description: "",
-			features: ["ميزة 1", "ميزة 2", "ميزة 3"],
+			features: [`${t("planPage.defaultFeature")} 1`, `${t("planPage.defaultFeature")} 2`, `${t("planPage.defaultFeature")} 3`],
 			isActive: true,
 			color: "from-blue-500 to-blue-600",
 			includedOrders: 30,
@@ -1437,15 +1440,15 @@ export default function AdminSubscriptionsPage() {
 			>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>حذف الباقة</AlertDialogTitle>
+						<AlertDialogTitle>{t("deleteDialog.title")}</AlertDialogTitle>
 						<AlertDialogDescription>
 							{planToDelete ? `${planToDelete.name} - #${planToDelete.id}` : ""}
-							<div className="mt-2 text-sm">هل أنت متأكد من حذف هذه الباقة؟ لا يمكن التراجع.</div>
+							<div className="mt-2 text-sm">{t("deleteDialog.desc")}</div>
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 
 					<AlertDialogFooter>
-						<AlertDialogCancel disabled={!!deletingPlanId}>إلغاء</AlertDialogCancel>
+						<AlertDialogCancel disabled={!!deletingPlanId}>{t("deleteDialog.cancel")}</AlertDialogCancel>
 
 						<AlertDialogAction
 							onClick={handleConfirmDelete}
@@ -1455,10 +1458,10 @@ export default function AdminSubscriptionsPage() {
 							{deletingPlanId ? (
 								<span className="inline-flex items-center gap-2">
 									<Spinner className="w-4 h-4 text-white" />
-									جاري الحذف...
+									{t("deleteDialog.deleting")}
 								</span>
 							) : (
-								"حذف"
+								t("deleteDialog.confirm")
 							)}
 						</AlertDialogAction>
 					</AlertDialogFooter>

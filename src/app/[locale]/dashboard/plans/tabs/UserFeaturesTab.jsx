@@ -60,7 +60,7 @@ export default function UserFeaturesTab() {
                 records: Array.isArray(data.records) ? data.records : [],
             });
         } catch (error) {
-            toast.error(error?.response?.data?.message || "Error fetching data");
+            toast.error(error?.response?.data?.message || tf("messages.fetchFailed"));
         } finally {
             setLoading(false);
         }

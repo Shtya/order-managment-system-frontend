@@ -30,6 +30,7 @@ import { useSocket } from "@/context/SocketContext";
 import { toast } from "react-hot-toast";
 import { OrderDetailModal } from "./DistributionTab";
 import BarcodeCell from "@/components/atoms/BarcodeCell";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 function CarrierPill({ carrier }) {
   const s = CARRIER_STYLES[carrier?.toUpperCase()] || CARRIER_STYLES.NONE;
@@ -110,8 +111,10 @@ export default function PrintLabelsTab({ subtab, setSubtab, resetToken }) {
 
 // ── Print Preview Modal — Enhanced ────────────────────────────────────────────
 function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
+  const tCommon = useTranslations("common");
   const t = useTranslations("warehouse.print");
   const printRef = useRef(null);
+const {formatCurrency} = usePlatformSettings()
 
   const handlePrint = () => {
     const printContent = printRef.current?.innerHTML;
@@ -120,7 +123,7 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
     w.document.write(`
   <html dir="rtl" class="light">
     <head>
-      <title>طباعة البوالص</title>
+      <title>${t("printPreview.tabTitle")}</title>
       <script src="https://cdn.tailwindcss.com"></script>
       <script>
         tailwind.config = { darkMode: 'class' }
@@ -266,7 +269,7 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
                         {[
                           [t("labelFields.store"), order.store?.name],
                           [t("labelFields.trackingCode"), order.trackingNumber || "—"],
-                          [t("labelFields.shippingCost"), `${order.shippingCost || 0} ر.س`],
+                          [t("labelFields.shippingCost"), `${formatCurrency(order.shippingCost || 0)}`],
                           [t("labelFields.paymentType"), order.paymentStatus === "paid" ? t("payment.paid") : order.paymentMethod === "cod" ? t("payment.cod") : order.paymentMethod],
                         ].map(([k, v]) => (
                           <div key={k} className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2.5">
@@ -297,14 +300,14 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
                     <div className="label-carrier">{order.shippingCompany?.name}</div>
                   </div>
                   <div className="section">
-                    <div className="section-title">معلومات العميل</div>
+                    <div className="section-title">{t("printPreview.customerInfo")}</div>
                     {[[t("labelFields.customer"), order.customerName], [t("labelFields.phone"), order.phoneNumber], [t("labelFields.city"), order.city], [t("labelFields.area"), order.area || "—"], [t("labelFields.address"), order.address || "—"]].map(([k, v]) => (
                       <div className="row" key={k}><span className="key">{k}</span><span className="val">{v}</span></div>
                     ))}
                   </div>
                   <div className="section">
-                    <div className="section-title">معلومات الشحن</div>
-                    {[[t("labelFields.store"), order.store?.name], [t("labelFields.trackingCode"), order.trackingNumber || "—"], [t("labelFields.shippingCost"), `${order.shippingCost || 0} ر.س`]].map(([k, v]) => (
+                    <div className="section-title">{t("printPreview.shippingInfo")}</div>
+                    {[[t("labelFields.store"), order.store?.name], [t("labelFields.trackingCode"), order.trackingNumber || "—"], [t("labelFields.shippingCost"), `${formatCurrency(order.shippingCost || 0)}`]].map(([k, v]) => (
                       <div className="row" key={k}><span className="key">{k}</span><span className="val">{v}</span></div>
                     ))}
                     <div className="row">
@@ -344,8 +347,9 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
 
 // ── NOT-PRINTED SUBTAB ────────────────────────────────────────────────────────
 function NotPrintedSubtab({ onPrinted, resetToken, fetchStats }) {
+  const {formatCurrency} = usePlatformSettings()
+  const tCommon = useTranslations("common");
   const t = useTranslations("warehouse.print");
-
   const [search, setSearch] = useState("");
   const { debouncedValue: debouncedSearch } = useDebounce({ value: search, delay: 350 })
   const [filters, setFilters] = useState({ carrier: "all", store: "all", date: "", productId: "all" });
@@ -458,7 +462,7 @@ function NotPrintedSubtab({ onPrinted, resetToken, fetchStats }) {
         ? <span className="font-mono text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">{row.trackingNumber}</span>
         : <span className="text-slate-400">{t("common.none")}</span>,
     },
-    { key: "total", header: t("field.total"), cell: (row) => <span className="font-bold text-emerald-700 dark:text-emerald-400">{row.finalTotal} ر.س</span> },
+    { key: "total", header: t("field.total"), cell: (row) => <span className="font-bold text-emerald-700 dark:text-emerald-400">{formatCurrency(row.finalTotal)}</span> },
     { key: "orderDate", header: t("field.orderDate"), cell: (row) => <span className="text-sm text-slate-500">{new Date(row.created_at).toLocaleDateString("en-US")}</span> },
     {
       key: "actions", header: t("field.actions"),
@@ -506,8 +510,9 @@ function NotPrintedSubtab({ onPrinted, resetToken, fetchStats }) {
 
 // ── PRINTED SUBTAB ────────────────────────────────────────────────────────────
 function PrintedSubtab({ resetToken, fetchStats }) {
+  const tCommon = useTranslations("common");
   const t = useTranslations("warehouse.print");
-
+const {formatCurrency} = usePlatformSettings()
   const [search, setSearch] = useState("");
   const { debouncedValue: debouncedSearch } = useDebounce({ value: search, delay: 350 })
   const [filters, setFilters] = useState({ carrier: "all", store: "all", date: "", productId: "all" });
@@ -612,7 +617,7 @@ function PrintedSubtab({ resetToken, fetchStats }) {
     { key: "city", header: t("field.city") },
     { key: "carrier", header: t("field.carrier"), cell: (row) => <CarrierPill carrier={row.shippingCompany?.name} /> },
     { key: "printedAt", header: t("field.printedAt"), cell: (row) => <span className="text-sm text-slate-500">{row.labelPrinted ? new Date(row.labelPrinted).toLocaleString() : "—"}</span> },
-    { key: "total", header: t("field.total"), cell: (row) => <span className="font-bold text-emerald-700 dark:text-emerald-400">{row.finalTotal} ر.س</span> },
+    { key: "total", header: t("field.total"), cell: (row) => <span className="font-bold text-emerald-700 dark:text-emerald-400">{formatCurrency(row.finalTotal)}</span> },
     {
       key: "actions", header: t("field.actions"),
       cell: (row) => (

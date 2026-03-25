@@ -25,7 +25,7 @@ function normalizeAxiosError(err) {
 export default function useBundlesTab({ t, searchDebounced, filters, onAskDelete, onOpenView, onExportRequest, activetab }) {
   const router = useRouter();
   const requestIdRef = useRef(0);
-  const { formatCurrency } = usePlatformSettings();
+
 
   const [loading, setLoading] = useState(false);
   const [pager, setPager] = useState({
@@ -163,21 +163,21 @@ export default function useBundlesTab({ t, searchDebounced, filters, onAskDelete
               {
                 icon: <Trash2 />,
                 tooltip: t("actions.delete"),
-                onClick: (r) => onAskDelete?.(r.id, "idle"),
+                onClick: (r) => onAskDelete?.(r.id, "bundles"),
                 variant: "red",
                 permission: "products.delete",
               },
               {
                 icon: <Edit2 />,
                 tooltip: t("actions.edit"),
-                onClick: (r) => router.push(`/products/edit/${r.id}`),
+                onClick: (r) => router.push(`/bundles/edit/${r.id}`),
                 variant: "blue",
                 permission: "products.update",
               },
               {
                 icon: <Eye />,
                 tooltip: t("actions.view"),
-                onClick: (r) => onOpenView?.(r.id, "idle"),
+                onClick: (r) => onOpenView?.(r.id, "bundles"),
                 variant: "purple",
                 permission: "products.read",
               },
@@ -215,7 +215,7 @@ export function BundleViewModal({ open, onOpenChange, bundle, viewLoading }) {
   const na = t("common.na");
 
   const items = bundle?.items ?? [];
-
+  const { formatCurrency } = usePlatformSettings();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="!max-w-3xl">

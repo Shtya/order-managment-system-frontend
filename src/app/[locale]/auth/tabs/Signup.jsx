@@ -113,16 +113,16 @@ const BackBtn = ({ onClick }) => (
 );
 
 const PHONE_CODES = [
-  { code: "+20", flag: "🇪🇬", name: "مصر" },
-  { code: "+966", flag: "🇸🇦", name: "السعودية" },
-  { code: "+971", flag: "🇦🇪", name: "الإمارات" },
-  { code: "+965", flag: "🇰🇼", name: "الكويت" },
-  { code: "+974", flag: "🇶🇦", name: "قطر" },
-  { code: "+973", flag: "🇧🇭", name: "البحرين" },
-  { code: "+968", flag: "🇴🇲", name: "عمان" },
-  { code: "+962", flag: "🇯🇴", name: "الأردن" },
-  { code: "+961", flag: "🇱🇧", name: "لبنان" },
-  { code: "+1", flag: "🇺🇸", name: "USA" },
+  { code: "+20", flag: "🇪🇬", key: "EG" },
+  { code: "+966", flag: "🇸🇦", key: "SA" },
+  { code: "+971", flag: "🇦🇪", key: "AE" },
+  { code: "+965", flag: "🇰🇼", key: "KW" },
+  { code: "+974", flag: "🇶🇦", key: "QA" },
+  { code: "+973", flag: "🇧🇭", key: "BH" },
+  { code: "+968", flag: "🇴🇲", key: "OM" },
+  { code: "+962", flag: "🇯🇴", key: "JO" },
+  { code: "+961", flag: "🇱🇧", key: "LB" },
+  { code: "+1", flag: "🇺🇸", key: "US" },
 ];
 
 /* ── Main ── */
@@ -133,8 +133,8 @@ export default function SignUp({ t: tProp, onSwitchMode }) {
   const initialEmail = searchParams.get("email") ?? "";
 
   const tLocal = useTranslations("auth");
+  const tCountries = useTranslations("countries");
   const t = tProp ?? tLocal;
-
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({ email: initialEmail });
   const merge = (d) => setFormData((p) => ({ ...p, ...d }));
@@ -204,6 +204,7 @@ export default function SignUp({ t: tProp, onSwitchMode }) {
             onChange={merge}
             onNext={() => setStep(1)}
             t={t}
+            tCountries={tCountries}
           />
         )}
         {step === 1 && (
@@ -284,7 +285,7 @@ export const BIZ_TYPES_KEYS = [
 ];
 
 /* ── Step 1 ── */
-function Step1({ data, onChange, onNext, t }) {
+function Step1({ data, onChange, onNext, t, tCountries }) {
   const [touched, setTouched] = useState({});
   const [dial, setDial] = useState("+20");
   const touch = (k) => setTouched((p) => ({ ...p, [k]: true }));
@@ -421,7 +422,7 @@ function Step1({ data, onChange, onNext, t }) {
             >
               {PHONE_CODES.map((c) => (
                 <option key={c.code} value={c.code}>
-                  {c.flag} {c.code}
+                  {c.flag} {tCountries(c.key)} ({c.code})
                 </option>
               ))}
             </select>

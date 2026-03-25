@@ -16,10 +16,9 @@ import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 
 export default function FeaturesTab() {
-    const t = useTranslations("plans");
-    const tf = useTranslations("extraFeatures");
-
-    const [features, setFeatures] = useState([]);
+	const tf = useTranslations("plans.extraFeatures");
+	const t = useTranslations("plans");
+	const [features, setFeatures] = useState([]);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
 
@@ -35,7 +34,7 @@ export default function FeaturesTab() {
             const { data } = await api.get("/extra-features/features");
             setFeatures(data);
         } catch (error) {
-            toast.error("Error fetching features");
+            toast.error(tf("messages.fetchFailed"));
         } finally {
             setLoading(false);
         }

@@ -101,6 +101,7 @@ function SectionCard({ title, badge, children, delay = 0 }) {
 // Reusable Select with loading state
 // ─────────────────────────────────────────────────────────────────────────────
 function GeoSelect({ label, required, value, onValueChange, items, isLoading, placeholder, disabled, hint, nameKey = "nameEn" }) {
+	const t = useTranslations("createOrder");
 	return (
 		<div className="space-y-2">
 			<div className="flex items-center gap-2">
@@ -117,7 +118,7 @@ function GeoSelect({ label, required, value, onValueChange, items, isLoading, pl
 					{isLoading ? (
 						<span className="flex items-center gap-2 text-muted-foreground text-sm">
 							<Loader2 size={14} className="animate-spin" />
-							جارٍ التحميل...
+							{t("bosta.loading")}
 						</span>
 					) : (
 						<SelectValue placeholder={placeholder} />
@@ -1243,7 +1244,7 @@ export default function CreateOrderPageComplete({
 												{providerLoading.locations ? (
 													<span className="flex items-center gap-2 text-muted-foreground text-sm">
 														<Loader2 size={14} className="animate-spin" />
-														جارٍ التحميل...
+														{t("bosta.loading")}
 													</span>
 												) : (
 													<SelectValue placeholder={t("bosta.selectPickupLocation")} />

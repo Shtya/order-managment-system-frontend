@@ -80,20 +80,14 @@ function StepArrow({ label, side, delay, inView }) {
 	 SHARED: StepCard wrapper
 	 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-function SignupCard({ inView, ref }) {
+function SignupCard({ inView, ref, step, t }) {
   // const [ref, inView] = useInView();
 
-  const step = {
-    stepLabel: "الخطوة الأولى",
-    title: "إنشاء حسابك وربط متجرك",
-    desc: "سجل في المنصة بسهولة، وأربط متجرك الإلكتروني في دقائق لبدء مزامنة الطلبات تلقائياً.",
-  };
-
   const fields = [
-    { icon: User, placeholder: "اسم بالكامل" },
-    { icon: Mail, placeholder: "البريد الالكتروني" },
-    { icon: Link2, placeholder: "رابط متجرك" },
-    { icon: Lock, placeholder: "كلمة المرور" },
+    { icon: User, placeholder: t("fields.name") },
+    { icon: Mail, placeholder: t("fields.email") },
+    { icon: Link2, placeholder: t("fields.store") },
+    { icon: Lock, placeholder: t("fields.password") },
   ];
 
   return (
@@ -208,7 +202,7 @@ function SignupCard({ inView, ref }) {
                     letterSpacing: 0.3,
                   }}
                 >
-                  إنشاء حساب
+                  {t("signupBtn")}
                 </span>
               </motion.div>
             </Link>
@@ -250,7 +244,7 @@ function SignupCard({ inView, ref }) {
   );
 }
 
-function AnalyticsCard({ ref, inView }) {
+function AnalyticsCard({ ref, inView, step }) {
   return (
     <div
       ref={ref}
@@ -296,7 +290,7 @@ function AnalyticsCard({ ref, inView }) {
               lineHeight: 1.45,
             }}
           >
-            تابع منتجاتك وطلباتك وتقاريرك بدقة
+            {step.title}
           </h2>
           <p
             style={{
@@ -307,8 +301,7 @@ function AnalyticsCard({ ref, inView }) {
               fontWeight: 400,
             }}
           >
-            راقب كل منتج، كل طلب، واحصل على تقارير ذكية تساعدك على إدارة تجارتك
-            بسرعة وذكاء.
+            {step.desc}
           </p>
         </motion.div>
       </div>
@@ -465,7 +458,7 @@ function ConnectingLines({ inView }) {
   );
 }
 
-function ShippingCard({ ref, inView }) {
+function ShippingCard({ ref, inView, step }) {
   return (
     <div
       ref={ref}
@@ -669,7 +662,7 @@ function ShippingCard({ ref, inView }) {
               lineHeight: 1.45,
             }}
           >
-            فعّل شركات الشحن بسهولة
+            {step.title}
           </h2>
           <p
             style={{
@@ -680,8 +673,7 @@ function ShippingCard({ ref, inView }) {
               fontWeight: 400,
             }}
           >
-            اربط شركات الشحن التي تتعامل معاها، حدّد مناطق التغطية، أسعار الشحن،
-            وحالات التسليم
+            {step.desc}
           </p>
         </motion.div>
       </div>
@@ -776,7 +768,7 @@ export default function HowItWorksSection() {
         {/* ── 3-column grid ── */}
         <div className="grid mt-[150px] mb-[100px] md:grid-cols-3 gap-5 items-start">
           {/* RIGHT column — Step 1 */}
-          <SignupCard step={steps[0]} inView={inView} />
+          <SignupCard step={steps[0]} inView={inView} t={t} />
 
           {/* CENTER column — Step 2 */}
           <AnalyticsCard step={steps[1]} inView={inView} />

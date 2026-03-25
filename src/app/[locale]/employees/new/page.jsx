@@ -28,6 +28,7 @@ import toast, { Toaster } from "react-hot-toast";
 import api from "@/utils/api";
 import { COUNTRIES } from "../../dashboard/users/page";
 import PageHeader from "@/components/atoms/Pageheader";
+import { validatePhone } from "@/components/atoms/InputPhone";
 
 
 
@@ -35,38 +36,22 @@ function digitsOnly(v) {
 	return (v || "").replace(/\D/g, "");
 }
 
-function validatePhone(rawDigits, country) {
-	const value = digitsOnly(rawDigits);
-	if (!value) return "يرجى إدخال رقم جوال صحيح";
-
-	if (value.length < country.phone.min || value.length > country.phone.max) {
-		if (country.phone.min === country.phone.max) return `رقم الجوال يجب أن يكون ${country.phone.min} رقمًا`;
-		return `رقم الجوال يجب أن يكون بين ${country.phone.min} و ${country.phone.max} رقمًا`;
-	}
-
-	if (value.length === country.phone.max && country.phone.regex && !country.phone.regex.test(value)) {
-		return "يرجى إدخال رقم جوال صحيح حسب الدولة المختارة";
-	}
-
-	return "";
-}
-
-function copyToClipboard(text) {
-	try {
-		navigator.clipboard.writeText(text);
-		toast.success("Copied");
-	} catch {
-		toast.error("Copy failed");
-	}
-}
-
-function getApiMsg(err, fallback = "Request failed") {
+function getApiMsg(err, t) {
 	const msg =
 		err?.response?.data?.message ||
 		err?.response?.data?.error ||
 		err?.message ||
-		fallback;
+		t("api.error");
 	return Array.isArray(msg) ? msg.join(", ") : msg;
+}
+
+function copyToClipboard(text, t) {
+	try {
+		navigator.clipboard.writeText(text);
+		toast.success(t("copy.success"));
+	} catch {
+		toast.error(t("copy.failed"));
+	}
 }
 
 
@@ -74,8 +59,11 @@ export default function AddEmployeePage() {
 	const navigate = useRouter();
 	const locale = useLocale();
 	const isRTL = locale === "ar";
+	const tCommon = useTranslations("common");
+	const tPhone = useTranslations("inputPhone");
+	const tCountries = useTranslations("countries");
 	const t = useTranslations("addEmployee");
-
+	
 	// avatar state: preview + file
 	const [profileImage, setProfileImage] = useState(null);
 	const [avatarFile, setAvatarFile] = useState(null);
@@ -97,7 +85,7 @@ export default function AddEmployeePage() {
 				.test("valid-phone", t("validation.phoneInvalid"), function (value) {
 					const { phoneCountry } = this.parent;
 					const country = COUNTRIES.find((c) => c.key === phoneCountry) || COUNTRIES[0];
-					return !validatePhone(value, country); // validatePhone يرجّع "" لو valid
+					return !validatePhone(value, country, tPhone); // validatePhone يرجّع "" لو valid
 				}),
 
 			roleId: yup
@@ -254,7 +242,7 @@ export default function AddEmployeePage() {
 			setValue("employeeType", "", { shouldValidate: false });
 			setValue("customType", "", { shouldValidate: false });
 		} catch (e) {
-			const msg = getApiMsg(e, t("toasts.createFailed"));
+			const msg = getApiMsg(e, tCommon);
 
 			// limit reached message from backend
 			if (String(msg).toLowerCase().includes("users limit")) {
@@ -477,12 +465,12 @@ export default function AddEmployeePage() {
 											render={({ field }) => (
 												<Select value={field.value} onValueChange={field.onChange}>
 													<SelectTrigger className="!w-full !h-[45px] rounded-full bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 font-bold text-[rgb(var(--primary))]">
-														<SelectValue placeholder={t("placeholders.selectCountry") || "اختر الدولة"} />
+														<SelectValue placeholder={tPhone("placeholders.selectCountry")} />
 													</SelectTrigger>
 													<SelectContent className="max-h-72">
 														{COUNTRIES.map((c) => (
 															<SelectItem key={c.key} value={c.key}>
-																{c.dialCode} — {c.nameAr}
+																{c.dialCode} — {tCountries(c.key)}
 															</SelectItem>
 														))}
 													</SelectContent>
@@ -720,6 +708,8 @@ function ProfileImageUpload({ image, onImageChange, onRemove, t, isRTL }) {
 
 
 function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
+	const tPhone = useTranslations("inputPhone");
+	const tCountries = useTranslations("countries");
 	const [countryKey, setCountryKey] = useState("EG");
 	const [phoneNumber, setPhoneNumber] = useState("");
 	const [error, setError] = useState("");
@@ -752,7 +742,7 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 		return lines.join("\n");
 	}, [user, email, password, includePassword]);
 
-	const isValidPhone = useMemo(() => !validatePhone(phoneNumber, selectedCountry), [phoneNumber, selectedCountry]);
+	const isValidPhone = useMemo(() => !validatePhone(phoneNumber, selectedCountry, tPhone), [phoneNumber, selectedCountry, tPhone]);
 
 	const waLink = useMemo(() => {
 		const dial = digitsOnly(selectedCountry.dialCode);
@@ -765,14 +755,14 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 	const handleCountryChange = (newKey) => {
 		setCountryKey(newKey);
 		const newCountry = COUNTRIES.find((c) => c.key === newKey) || COUNTRIES[0];
-		const msg = validatePhone(phoneNumber, newCountry);
+		const msg = validatePhone(phoneNumber, newCountry, tPhone);
 		setError(phoneNumber.length > 0 ? msg : "");
 	};
 
 	const handlePhoneChange = (e) => {
 		const value = digitsOnly(e.target.value);
 		setPhoneNumber(value);
-		const msg = validatePhone(value, selectedCountry);
+		const msg = validatePhone(value, selectedCountry, tPhone);
 		setError(value.length > 0 ? msg : "");
 	};
 
@@ -796,12 +786,12 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 							<div className="w-44">
 								<Select value={countryKey} onValueChange={handleCountryChange}>
 									<SelectTrigger className="!w-full !h-[42px] rounded-full bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 font-bold text-[rgb(var(--primary))]">
-										<SelectValue placeholder="اختر الدولة" />
+										<SelectValue placeholder={tPhone("placeholders.selectCountry")} />
 									</SelectTrigger>
 									<SelectContent className="max-h-72">
 										{COUNTRIES.map((c) => (
 											<SelectItem key={c.key} value={c.key}>
-												{c.dialCode} — {c.nameAr}
+												{c.dialCode} — {tCountries(c.key)}
 											</SelectItem>
 										))}
 									</SelectContent>

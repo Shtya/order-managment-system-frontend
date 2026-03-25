@@ -24,6 +24,7 @@ import {
   Layers,
   ArchiveRestore,
   Truck,
+  DownloadCloud,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/utils/cn";
@@ -45,14 +46,14 @@ import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import { useDebounce } from "@/hook/useDebounce";
 import api from "@/utils/api";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
-const RETURN_CONDITIONS = [
-  "سليم",           // Intact / Brand New / Sellable
-  "مفتوح الغلاف",   // Opened Box / Unsealed (but item is fine)
-  "مستخدم",         // Used (shows signs of wear)
-  "تالف",           // Damaged (broken during shipping or by customer)
-  "معيب مصنعياً",   // Defective (Manufacturer defect, e.g., won't turn on)
-  "مفقود جزء",      // Missing parts or accessories
-  "أخرى"            // Other
+const RETURN_CONDITIONS_KEYS = [
+  "intact",
+  "opened",
+  "used",
+  "damaged",
+  "defective",
+  "missingParts",
+  "other"
 ];
 
 // ─────────────────────────────────────────────────────────────
@@ -287,8 +288,8 @@ function HeaderIconBtn({ onClick, children }) {
   );
 }
 
-function formatTimeForLogs() {
-  return new Date().toLocaleTimeString("ar-SA", {
+function formatTimeForLogs(locale = "en") {
+  return new Date().toLocaleTimeString(locale === "ar" ? "ar-SA" : "en-US", {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
@@ -611,13 +612,13 @@ function buildReturnPDF(orders, carrier, employee, now, labels) {
               <th>${labels.sku}</th>
               <th>${labels.product}</th>
               <th class="center">${labels.qty}</th>
-              <th>${labels.trackingCode || "رقم التتبع"}</th>
+              <th>${labels.trackingCode}</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
         </table>
         <div style="padding:10px 16px;border-top:1px solid #eceae4;background:#faf9f7;display:flex;justify-content:space-between;align-items:center;">
-          <span class="condition-badge">${labels.condition || "الحالة"}: ${o.lastReturn?.reason || "سليم"}</span>
+          <span class="condition-badge">${labels.condition}: ${o.lastReturn?.reason || labels.conditions?.intact || "Intact"}</span>
         
         </div>
       </div>`;
@@ -649,7 +650,7 @@ function buildReturnPDF(orders, carrier, employee, now, labels) {
         </div>
       </div>
       <div class="header-ref">
-        <div class="ref-badge">${labels.refPrefix || "RET"}-${now.replace(/\D/g, "").slice(0, 8)}</div>
+        <div class="ref-badge">${labels.refPrefix}-${now.replace(/\D/g, "").slice(0, 8)}</div>
         <div class="ref-date">${now}</div>
         <div class="ref-employee">${employee}</div>
       </div>
@@ -661,7 +662,7 @@ function buildReturnPDF(orders, carrier, employee, now, labels) {
         <div class="meta-value">${carrier}</div>
       </div>
       <div class="meta-cell">
-        <div class="meta-label">${labels.returnDate || "تاريخ الإرجاع"}</div>
+        <div class="meta-label">${labels.returnDate}</div>
         <div class="meta-value mono">${now}</div>
       </div>
       <div class="meta-cell">
@@ -677,7 +678,7 @@ function buildReturnPDF(orders, carrier, employee, now, labels) {
 
   <div class="orders-wrap">
     <div class="section-label">
-      <span class="section-label-text">${labels.ordersDetail || "تفاصيل المرتجعات"}</span>
+      <span class="section-label-text">${labels.ordersDetail}</span>
       <div class="section-label-line"></div>
     </div>
     ${ordersHTML}
@@ -686,19 +687,19 @@ function buildReturnPDF(orders, carrier, employee, now, labels) {
   <div class="sig-wrap">
     <div class="sig-head">
       <div class="sig-head-dot"></div>
-      <span class="sig-head-text">${labels.receiptConfirmation || "تأكيد الاستلام"}</span>
+      <span class="sig-head-text">${labels.receiptConfirmation}</span>
     </div>
     <div class="sig-fields">
       <div class="sig-field">
-        <div class="sig-field-label">${labels.courierName || "اسم المندوب"}</div>
+        <div class="sig-field-label">${labels.courierName}</div>
         <div class="sig-line"></div>
       </div>
       <div class="sig-field">
-        <div class="sig-field-label">${labels.signature || "التوقيع"}</div>
+        <div class="sig-field-label">${labels.signature}</div>
         <div class="sig-line"></div>
       </div>
       <div class="sig-field">
-        <div class="sig-field-label">${labels.dateTime || "التاريخ والوقت"}</div>
+        <div class="sig-field-label">${labels.dateTime}</div>
         <div class="sig-line"></div>
       </div>
     </div>
@@ -711,7 +712,7 @@ function buildReturnPDF(orders, carrier, employee, now, labels) {
       </div>
       <span class="footer-text">${labels.title}</span>
       <div class="footer-divider"></div>
-      <span class="footer-text">${labels.system || "نظام إدارة المستودعات"}</span>
+      <span class="footer-text">${labels.system}</span>
     </div>
     <span class="footer-text">${now}</span>
   </div>
@@ -1083,7 +1084,7 @@ function buildWrongScanLogPDF(logs, carrier, employee, now, labels) {
     <div class="print-alert-inner">
       <div class="print-alert-icon">!</div>
       <div class="print-alert-text">
-        ${labels.printAlertText || "هذا المستند يحتوي على محاولات مسح فاشلة — يُرجى المراجعة والتحقق من الباركود قبل الاستلام"}
+        ${labels.printAlertText}
       </div>
     </div>
   </div>
@@ -1122,7 +1123,7 @@ function buildWrongScanLogPDF(logs, carrier, employee, now, labels) {
       </div>
       <span class="footer-text">${labels.title}</span>
       <div class="footer-divider"></div>
-      <span class="footer-text">${labels.system || "نظام إدارة المستودعات"}</span>
+      <span class="footer-text">${labels.system}</span>
     </div>
     <span class="footer-text">${now}</span>
   </div>
@@ -1154,7 +1155,6 @@ export default function ReturnsTab({
   resetToken,
 }) {
   const t = useTranslations("warehouse.returns");
-  const { formatCurrency } = usePlatformSettings();
 
   const [statsData, setStatsData] = useState({
     withCarrier: 0,
@@ -1598,7 +1598,7 @@ function OrdersList({
 }) {
   const t = useTranslations("warehouse.returns");
   const [expanded, setExpanded] = useState({});
-
+  const { formatCurrency } = usePlatformSettings();
   const toggle = (code) => setExpanded((p) => ({ ...p, [code]: !p[code] }));
 
   if (orders.length === 0) {
@@ -1621,9 +1621,9 @@ function OrdersList({
         <span />
         <span>{t("scan.table.orderNumber")}</span>
         <span>{t("scan.table.customer")}</span>
-        <span>{t("scan.table.city") || "المدينة"}</span>
-        <span className="text-center">{t("scan.table.productName") || "المنتجات"}</span>
-        <span className="text-center">{t("scan.table.price") || "الإجمالي"}</span>
+        <span>{t("scan.table.city")}</span>
+        <span className="text-center">{t("scan.table.products")}</span>
+        <span className="text-center">{t("scan.table.total")}</span>
         <span />
       </div>
 
@@ -1766,7 +1766,7 @@ function OrdersList({
                         <span className="text-center">SKU</span>
                         <span className="text-center">{t("scan.table.qty")}</span>
                         <span className="text-center">{t("scan.table.price")}</span>
-                        <span className="text-center">{"الإجمالي"}</span>
+                        <span className="text-center">{t("scan.table.total")}</span>
                       </div>
 
                       <div className="divide-y divide-slate-100/60">
@@ -1834,7 +1834,7 @@ function OrdersList({
 
                       <div className="flex items-center justify-between px-5 py-2.5 border-t border-slate-100 text-[11px] font-semibold text-slate-500 bg-slate-50">
                         <span>
-                          {prodCount} {"منتجات"}
+                          {prodCount} {t("scan.table.productUnit")}
                         </span>
                         {order.totalPrice && (
                           <span className="font-black text-[13px] text-slate-700">
@@ -1856,7 +1856,7 @@ function OrdersList({
 
 function ScannedOrderTable({ order, localProducts, onToggleItem, onQuantityChange, onSelectAll, onUnselectAll, selectedItems, returnReason, onReasonChange, onSave, isSaving }) {
   const t = useTranslations("warehouse.returns");
-
+  const { formatCurrency } = usePlatformSettings();
   const totalQty = localProducts.reduce((s, p) => s + (p.quantity || 0), 0);
   const selectedQty = localProducts.reduce((s, p) => (selectedItems[p.sku] ? s + (selectedItems[p.sku].quantity || 0) : s), 0);
   const pct = totalQty === 0 ? 0 : Math.round((selectedQty / totalQty) * 100);
@@ -1938,15 +1938,15 @@ function ScannedOrderTable({ order, localProducts, onToggleItem, onQuantityChang
         </div>
 
         <div className="flex items-center gap-3 flex-1 max-w-md">
-          <span className="text-xs font-bold text-slate-500 whitespace-nowrap">{t("scan.actions.condition") || "سبب الإرجاع"}</span>
+          <span className="text-xs font-bold text-slate-500 whitespace-nowrap">{t("scan.actions.returnReason")}</span>
           <Select value={returnReason} onValueChange={onReasonChange}>
             <SelectTrigger className={cn("flex-1 h-9 px-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:border-primary outline-none transition-all", DS.radiusSm)}>
-              <SelectValue placeholder="اختر سبب الإرجاع..." />
+              <SelectValue placeholder={t("scan.actions.selectReason")} />
             </SelectTrigger>
             <SelectContent>
-              {RETURN_CONDITIONS.map((c) => (
-                <SelectItem key={c} value={c}>
-                  {c}
+              {RETURN_CONDITIONS_KEYS.map((key) => (
+                <SelectItem key={key} value={t(`conditions.${key}`)}>
+                  {t(`conditions.${key}`)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -1962,7 +1962,7 @@ function ScannedOrderTable({ order, localProducts, onToggleItem, onQuantityChang
           label={
             <div className="flex items-center gap-2">
               {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-              <span>{"حفظ المرتجع"}</span>
+              <span>{t("scan.actions.saveReturn")}</span>
             </div>
           }
           permission="return-request.create"
@@ -2197,7 +2197,7 @@ function ReturnsOrdersSlidePanel({ open, onClose, selectedCarrier, onManifestCre
     const isMismatch = selectedOrders.some(o => o.shippingCompanyId !== firstCarrierId);
 
     if (isMismatch) {
-      toast.error("لا يمكن إنشاء ملف لطلبات تتبع شركات شحن مختلفة");
+      toast.error(t("scan.messages.carrierMismatchError"));
       return;
     }
 
@@ -2212,7 +2212,7 @@ function ReturnsOrdersSlidePanel({ open, onClose, selectedCarrier, onManifestCre
       onClose();
     } catch (error) {
       console.error("Failed to create return manifest", error);
-      toast.error(error.response?.data?.message || "Failed to create return manifest");
+      toast.error(error.response?.data?.message || t("scan.messages.manifestCreated"));
     } finally {
       setCreatingManifest(false);
     }
@@ -2230,7 +2230,7 @@ function ReturnsOrdersSlidePanel({ open, onClose, selectedCarrier, onManifestCre
             exit={{ x: isRtl ? "-100%" : "100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 300 }}
             className="fixed top-0 ltr:right-0 rtl:left-0 h-full w-96 bg-white dark:bg-slate-900 shadow-2xl z-[1000000] flex flex-col"
-            dir="rtl"
+            dir={isRtl ? "rtl" : "ltr"}
           >
             <PanelHeader
               icon={Layers}
@@ -2238,14 +2238,14 @@ function ReturnsOrdersSlidePanel({ open, onClose, selectedCarrier, onManifestCre
               title={t("scan.actions.confirmReturn")}
               right={<HeaderIconBtn onClick={onClose}><X size={13} className="text-white" /></HeaderIconBtn>}
             >
-              <HeaderBadge><Package size={11} />{orders.length} {"طلب مع شركة الشحن"}</HeaderBadge>
+              <HeaderBadge><Package size={11} />{t("scan.labels.ordersWithCarrier", { count: orders.length })}</HeaderBadge>
             </PanelHeader>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {loading ? (
                 <div className="flex flex-col items-center justify-center py-12 space-y-3">
                   <Loader2 className="animate-spin text-primary" size={24} />
-                  <p className="text-xs text-slate-400 font-medium tracking-wide">جاري التحميل...</p>
+                  <p className="text-xs text-slate-400 font-medium tracking-wide">{t("scan.labels.loading")}</p>
                 </div>
               ) : (
                 orders.map((order) => {
@@ -2273,13 +2273,13 @@ function ReturnsOrdersSlidePanel({ open, onClose, selectedCarrier, onManifestCre
                         {/* التعديل هنا: إضافة اسم شركة الشحن بجانب المدينة */}
                         <div className="flex items-center gap-1.5 mt-1">
                           <p className="text-[10px] text-slate-400 truncate">
-                            {order.city} · {order.items?.length} {"منتجات"}
+                            {order.city} · {order.items?.length} {t("scan.labels.products")}
                           </p>
 
                           <>
                             <span className="text-[10px] text-slate-300">•</span>
                             <span className="text-[10px] font-bold text-primary/80 bg-primary/5 px-1.5 rounded-sm">
-                              {order.shippingCompany?.name || "None"}
+                              {order.shippingCompany?.name || t("common.unspecified")}
                             </span>
                           </>
 
@@ -2294,7 +2294,7 @@ function ReturnsOrdersSlidePanel({ open, onClose, selectedCarrier, onManifestCre
                   <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center mx-auto mb-4 border border-slate-100 dark:border-slate-700/50">
                     <Package size={32} className="text-slate-300 dark:text-slate-600" />
                   </div>
-                  <p className="text-slate-400 text-sm font-medium">{"لا توجد طلبات مشحونة"}</p>
+                  <p className="text-slate-400 text-sm font-medium">{t("scan.messages.noShippedOrders")}</p>
                 </div>
               )}
             </div>
@@ -2544,7 +2544,7 @@ export function ScanReturnsSubtab({
               <HeaderIconBtn onClick={() => setSoundEnabled(v => !v)}>
                 {soundEnabled ? <Volume2 size={13} className="text-white" /> : <VolumeX size={13} className="text-white/60" />}
               </HeaderIconBtn>
-              <HeaderBadge onClick={() => setPanelOpen(true)}><Layers size={12} />{"طلبات المرتجعات"}</HeaderBadge>
+              <HeaderBadge onClick={() => setPanelOpen(true)}><Layers size={12} />{t("scan.labels.returnOrders")}</HeaderBadge>
               {isItemsMode && <HeaderBadge onClick={resetCurrentOrder}><X size={12} />{t("scan.actions.cancel")}</HeaderBadge>}
             </>
           }
@@ -2553,11 +2553,11 @@ export function ScanReturnsSubtab({
           <div className="flex items-center gap-2 flex-wrap">
             <HeaderBadge>
               <ClipboardList size={11} />
-              {"الطلبات المتاحة"}: {availableForCarrier.length}
+              {t("scan.labels.availableOrders")}: {availableForCarrier.length}
             </HeaderBadge>
             <HeaderBadge>
               <Boxes size={11} />
-              {"إجمالي القطع"}: {availableItemsCount}
+              {t("scan.labels.totalItems")}: {availableItemsCount}
             </HeaderBadge>
           </div>
         </PanelHeader>
@@ -2641,7 +2641,7 @@ export function ScanReturnsSubtab({
 
               <div className="min-w-0">
                 <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">
-                  {"الطلبات"}
+                  {t("scan.labels.orders")}
                 </p>
                 <p className="font-mono font-black text-sm" style={{ color: DS.primary }}>
                   {availableForCarrier.length}
@@ -2650,7 +2650,7 @@ export function ScanReturnsSubtab({
 
               <div className="min-w-0">
                 <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">
-                  {"القطع"}
+                  {t("scan.labels.items")}
                 </p>
                 <p className="font-mono font-black text-sm text-slate-700 dark:text-slate-200">
                   {availableItemsCount}
@@ -2662,7 +2662,7 @@ export function ScanReturnsSubtab({
           {loadingOrders ? (
             <div className="flex flex-col items-center justify-center py-20 space-y-4">
               <Loader2 className="animate-spin text-primary" size={32} />
-              <p className="text-sm font-bold text-slate-400 tracking-wide animate-pulse">جاري تحميل الطلبات المشحونة...</p>
+              <p className="text-sm font-bold text-slate-400 tracking-wide animate-pulse">{t("scan.labels.loadingShippedOrders")}</p>
             </div>
           ) : isItemsMode ? (
             <ScannedOrderTable
@@ -2718,7 +2718,7 @@ function FileSummaryCell({ row }) {
     <div className="flex items-center gap-2">
       <div className="flex items-center gap-1">
         <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">
-          {"طلبات"}
+          {t("scan.labels.ordersCount")}
         </span>
         <span
           className="text-xs font-black px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800"
@@ -2732,7 +2732,7 @@ function FileSummaryCell({ row }) {
 
       <div className="flex items-center gap-1">
         <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">
-          {"قطع"}
+          {t("scan.labels.itemsCount")}
         </span>
         <span className="text-xs font-black px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
           {totalItems}
@@ -2797,41 +2797,48 @@ function ReturnsFilesSubtab({
 
 
   const returnPdfLabels = {
-    title: "إيصال استلام مرتجعات",
-    printDate: "تاريخ الطباعة",
-    employee: "الموظف",
-    totalOrders: "إجمالي الطلبات",
-    carrier: "شركة الشحن",
-    returnDate: "تاريخ الإرجاع",
-    orderUnit: "طلب",
-    sku: "SKU",
-    product: "المنتج",
-    qty: "الكمية",
-    trackingCode: "رقم التتبع",
-    receiptConfirmation: "تأكيد الاستلام",
-    courierName: "اسم المندوب",
-    signature: "التوقيع",
-    dateTime: "التاريخ والوقت",
+    title: t("pdf.title"),
+    printDate: t("pdf.returnDate"),
+    employee: t("pdf.employee"),
+    totalOrders: t("pdf.totalOrders"),
+    carrier: t("pdf.carrier"),
+    returnDate: t("pdf.returnDate"),
+    orderUnit: t("pdf.orderUnit"),
+    sku: t("pdf.sku"),
+    product: t("pdf.product"),
+    qty: t("pdf.qty"),
+    trackingCode: t("pdf.trackingCode"),
+    receiptConfirmation: t("pdf.receiptConfirmation"),
+    courierName: t("pdf.courierName"),
+    signature: t("pdf.signature"),
+    dateTime: t("pdf.dateTime"),
+    system: t("pdf.system"),
+    conditions: {
+      intact: t("conditions.intact"),
+    },
+    condition: t("pdf.condition"),
   };
 
   const wrongLogLabels = {
-    title: "سجل الأخطاء في مسح المرتجعات",
-    printDate: "تاريخ الطباعة",
-    employee: "الموظف",
-    totalAttempts: "إجمالي المحاولات",
-    carrier: "شركة الشحن",
-    date: "التاريخ",
-    totalFailedAttempts: "محاولات فاشلة",
-    attemptUnit: "محاولة",
-    scannedCode: "الكود الممسوح",
-    orderNumber: "رقم الطلب",
-    failReason: "سبب الفشل",
-    time: "الوقت",
+    title: t("wrongPdf.title"),
+    printDate: t("wrongPdf.date"),
+    employee: t("wrongPdf.employee"),
+    totalAttempts: t("wrongPdf.totalAttempts"),
+    carrier: t("wrongPdf.carrier"),
+    date: t("wrongPdf.date"),
+    totalFailedAttempts: t("wrongPdf.totalFailedAttempts"),
+    attemptUnit: t("wrongPdf.attemptUnit"),
+    scannedCode: t("wrongPdf.scannedCode"),
+    orderNumber: t("wrongPdf.orderNumber"),
+    failReason: t("wrongPdf.failReason"),
+    time: t("wrongPdf.time"),
+    printAlertText: t("wrongPdf.printAlertText"),
+    system: t("wrongPdf.system"),
     reasons: {
-      SKU_NOT_IN_ORDER: "المنتج ليس في الطلب",
-      ALREADY_FULLY_SCANNED: "تم المسح بالكامل مسبقاً",
-      INVALID_STATUS: "حالة الطلب غير صالحة",
-      OTHER: "سبب آخر",
+      SKU_NOT_IN_ORDER: t("scan.reasons.SKU_NOT_IN_ORDER"),
+      ALREADY_FULLY_SCANNED: t("scan.reasons.ALREADY_FULLY_SCANNED"),
+      INVALID_STATUS: t("scan.reasons.INVALID_STATUS"),
+      OTHER: t("scan.reasons.OTHER"),
     }
   };
 
@@ -2876,7 +2883,7 @@ function ReturnsFilesSubtab({
       fetchManifests();
     } catch (error) {
       console.error("Error downloading return manifest", error);
-      toast.error("حدث خطأ أثناء تحميل الملف");
+      toast.error(t("scan.messages.errorLoadingFile"));
     } finally {
       setDownloading((p) => ({ ...p, [row.id]: false }));
     }
@@ -2906,7 +2913,7 @@ function ReturnsFilesSubtab({
       );
     } catch (error) {
       console.error("Error downloading return wrong log", error);
-      toast.error("حدث خطأ أثناء تحميل سجل الأخطاء");
+      toast.error(t("scan.messages.errorLoadingLogs"));
     } finally {
       setDownloadingWrongLog((p) => ({ ...p, [row.id]: false }));
     }
@@ -2931,16 +2938,16 @@ function ReturnsFilesSubtab({
       },
       {
         key: "isPrinted",
-        header: "حالة الطباعة",
+        header: t("files.th.printStatus"),
         cell: (row) => (
           <div className="flex items-center justify-center">
             {row.lastPrintedAt ? (
               <span className="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase tracking-wider">
-                {"تمت الطباعة"}
+                {t("files.status.printed")}
               </span>
             ) : (
               <span className="px-2 py-1 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
-                {"لم تتم الطباعة"}
+                {t("files.status.notPrinted")}
               </span>
             )}
           </div>
@@ -2980,9 +2987,9 @@ function ReturnsFilesSubtab({
                 icon: downloading[row.id] ? (
                   <Loader2 size={13} className="animate-spin" />
                 ) : (
-                  <Download size={13} />
+                  <DownloadCloud size={13} />
                 ),
-                tooltip: "تحميل الإيصال",
+                tooltip: t("files.tooltip.downloadReceipt"),
                 onClick: (r) => handleDownload(r),
                 variant: "blue",
                 disabled: !!downloading[row.id],
@@ -2994,7 +3001,7 @@ function ReturnsFilesSubtab({
               //   ) : (
               //     <FileText size={13} />
               //   ),
-              //   tooltip: "تحميل سجل الأخطاء",
+              //   tooltip: t("files.tooltip.downloadWrongLog"),
               //   onClick: (r) => handleDownloadWrongLog(r),
               //   variant: "red",
               //   disabled: !!downloadingWrongLog[row.id],
@@ -3038,15 +3045,15 @@ function ReturnsFilesSubtab({
         filters={
           <>
             <ShippingCompanyFilter value={filterCarrier} onChange={setFilterCarrier} />
-            <FilterField label="حالة الطباعة">
+            <FilterField label={t("files.th.printStatus")}>
               <Select value={filterIsPrinted} onValueChange={setFilterIsPrinted}>
                 <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm focus:border-[var(--primary)] transition-all">
-                  <SelectValue placeholder="حالة الطباعة" />
+                  <SelectValue placeholder={t("files.th.printStatus")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("common.all") || "الكل"}</SelectItem>
-                  <SelectItem value="true">{"تمت الطباعة"}</SelectItem>
-                  <SelectItem value="false">{"لم تتم الطباعة"}</SelectItem>
+                  <SelectItem value="all">{t("common.all")}</SelectItem>
+                  <SelectItem value="true">{t("files.status.printed")}</SelectItem>
+                  <SelectItem value="false">{t("files.status.notPrinted")}</SelectItem>
                 </SelectContent>
               </Select>
             </FilterField>

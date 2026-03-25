@@ -302,20 +302,20 @@ function digitsOnly(v) {
   return (v || "").replace(/\D/g, "");
 }
 
-function validatePhone(raw, country) {
+function validatePhone(raw, country, t) {
   const v = digitsOnly(raw);
-  if (!v) return "يرجى إدخال رقم جوال صحيح";
+  if (!v) return t("phone.required");
   if (v.length < country.phone.min || v.length > country.phone.max) {
     return country.phone.min === country.phone.max
-      ? `رقم الجوال يجب أن يكون ${country.phone.min} رقمًا`
-      : `رقم الجوال يجب أن يكون بين ${country.phone.min} و ${country.phone.max} رقمًا`;
+      ? t("phone.lengthExact", { min: country.phone.min })
+      : t("phone.lengthRange", { min: country.phone.min, max: country.phone.max });
   }
   if (
     v.length === country.phone.max &&
     country.phone.regex &&
     !country.phone.regex.test(v)
   )
-    return "يرجى إدخال رقم جوال صحيح حسب الدولة المختارة";
+    return t("phone.invalidForCountry");
   return "";
 }
 
@@ -348,30 +348,30 @@ function makeId() {
 /* ═══════════════════════════════════════════════════════════════
    SCHEMAS
 ═══════════════════════════════════════════════════════════════ */
-const categorySchema = yup.object({
+const createCategorySchema = (t) => yup.object({
   name: yup
     .string()
     .trim()
-    .max(160, "Name cannot exceed 160 characters") // الحد الأقصى للاسم
-    .required("Name is required"),
+    .max(160, t("categories.validation.nameMax", { max: 160 }))
+    .required(t("categories.validation.nameRequired")),
 
   slug: yup
     .string()
     .trim()
-    .max(200, "Slug cannot exceed 200 characters") // الحد الأقصى للـ slug
-    .required("Slug is required")
+    .max(200, t("categories.validation.slugMax", { max: 200 }))
+    .required(t("categories.validation.slugRequired"))
     .matches(
       /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-      "Slug must be lowercase, numbers, and single hyphens only (e.g., 'my-category-1')"
+      t("categories.validation.slugInvalid")
     ),
 });
-const accountSchema = yup.object({
-  name: yup.string().trim().required("Name is required"),
+const createAccountSchema = (t) => yup.object({
+  name: yup.string().trim().required(t("account.validation.nameRequired")),
   email: yup
     .string()
     .trim()
-    .email("Invalid email")
-    .required("Email is required"),
+    .email(t("account.validation.emailInvalid"))
+    .required(t("account.validation.emailRequired")),
   employeeType: yup.string().trim().nullable(),
 });
 
@@ -427,9 +427,9 @@ const SECURITY_TABS = [
    MAIN PAGE
 ═══════════════════════════════════════════════════════════════ */
 export default function SettingsPage() {
-  const t = useTranslations("settings");
   const tOrders = useTranslations("orders");
   const [activeTab, setActiveTab] = useState("company");
+  const t = useTranslations("settings");
 
   const TABS = [
     { id: "company", label: t("tabs.company.label"), icon: Building2 },
@@ -938,7 +938,7 @@ function CategoriesTab() {
     setValue,
     watch,
   } = useForm({
-    resolver: yupResolver(categorySchema),
+    resolver: yupResolver(createCategorySchema(t)),
     defaultValues: { name: "", slug: "" },
     mode: "onTouched",
   });
@@ -1410,7 +1410,7 @@ function AccountTab() {
     reset,
     formState: { errors },
   } = useForm({
-    resolver: yupResolver(accountSchema),
+    resolver: yupResolver(createAccountSchema(t)),
     defaultValues: { name: "", email: "", employeeType: "" },
     mode: "onTouched",
   });
@@ -1443,6 +1443,7 @@ function AccountTab() {
             parsed.localDigits,
             COUNTRIES.find((c) => c.key === parsed.countryKey) ||
             COUNTRIES[0],
+            t,
           )
           : "",
       );
@@ -1467,11 +1468,11 @@ function AccountTab() {
   async function onSave(values) {
     if (!me?.id) return;
     const phoneMsg = phoneDigits
-      ? validatePhone(phoneDigits, selectedCountry)
+      ? validatePhone(phoneDigits, selectedCountry, t)
       : "";
     setPhoneError(phoneMsg);
     if (phoneMsg) {
-      toast.error(t("phone.invalid"));
+      toast.error(t("account.phone.invalid"));
       return;
     }
     setSaving(true);

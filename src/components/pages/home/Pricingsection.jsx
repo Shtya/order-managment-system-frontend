@@ -147,7 +147,7 @@ function PricingCard({ plan, t, index, onAction }) {
             letterSpacing: "-1px",
           }}
         >
-          {t("types.negotiated")}
+          {t("negotiated")}
         </span>
       );
     }

@@ -5582,7 +5582,7 @@
       "active": "Active",
       "subscribe": "Subscribe Now",
       "cancelPlan": "Cancel Plan",
-      "negotiated": "As agreed",
+      "negotiated": "Negotiated",
       "trial": "Trial"
     },
     "banner": {
@@ -6009,6 +6009,7 @@
     }
   },
   "pricing": {
+    "negotiated": "Negotiated",
     "heading": {
       "prefix": "Plans designed to meet",
       "highlight": "your needs"

@@ -6009,6 +6009,7 @@
     }
   },
   "pricing": {
+    "negotiated" : "حسب الاتفاق",
     "heading": {
       "prefix": "باقات مصممة لتلبية",
       "highlight": "احتياجاتك"

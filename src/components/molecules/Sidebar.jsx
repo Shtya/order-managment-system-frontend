@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 
-import { getUser } from "@/hook/getUser";
+
 import {
   Tooltip,
   TooltipContent,
@@ -53,13 +53,15 @@ import {
   Menu,
   X,
   Globe,
+  Lock,
 } from "lucide-react";
 import { FaUserTie } from "react-icons/fa6";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "../ui/button";
+import { useAuth } from "@/context/AuthContext";
 
 /* ══════════════════════════════════════════════════════════════
-	 MENU DEFINITION
+   MENU DEFINITION
 ══════════════════════════════════════════════════════════════ */
 const menuItems = [
   {
@@ -67,12 +69,14 @@ const menuItems = [
     labelKey: "dashboard",
     href: "/dashboard",
     roles: ["ADMIN"],
+    permission: "dashboard.read",
   },
   {
     icon: ShoppingCart,
     labelKey: "orders",
     href: "/orders",
     roles: ["ADMIN"],
+    permission: "orders.read",
     children: [
       { icon: Package, labelKey: "orders", href: "/orders?tab=orders" },
       {
@@ -92,12 +96,14 @@ const menuItems = [
     labelKey: "orders-assign-to-you",
     href: "/orders/employee-orders",
     roles: ["NEW ROLE"],
+    permission: "orders.read",
   },
   {
     icon: Wallet,
     labelKey: "accounts",
     href: "/collections",
     roles: ["ADMIN"],
+    permission: "orders-collect.read",
     children: [
       {
         icon: CheckCircle2,
@@ -116,6 +122,7 @@ const menuItems = [
     labelKey: "manageWarehouse",
     href: "/warehouse",
     roles: ["ADMIN"],
+    permission: "warehouses.read",
     children: [
       {
         icon: Truck,
@@ -159,6 +166,7 @@ const menuItems = [
     labelKey: "products",
     href: "/products",
     roles: ["ADMIN"],
+    permission: "products.read",
     children: [
       { icon: Package, labelKey: "products", href: "/products" },
       { icon: PackagePlus, labelKey: "newProduct", href: "/products/new" },
@@ -171,16 +179,18 @@ const menuItems = [
     labelKey: "purchases",
     href: "/purchases",
     roles: ["ADMIN"],
-    children: [
-      { icon: FileText, labelKey: "purchases", href: "/purchases" },
-      { icon: Undo2, labelKey: "purchasesReturn", href: "/purchases/return" },
-    ],
+    permission: "purchases.read",
+    // children: [
+    //   { icon: FileText, labelKey: "purchases", href: "/purchases" },
+    //   // { icon: Undo2, labelKey: "purchasesReturn", href: "/purchases/return" },
+    // ],
   },
   {
     icon: Factory,
     labelKey: "suppliers",
     href: "/suppliers",
     roles: ["ADMIN"],
+    permission: "suppliers.read",
     children: [
       { icon: Factory, labelKey: "suppliers", href: "/suppliers" },
       {
@@ -195,6 +205,7 @@ const menuItems = [
     labelKey: "employees",
     href: "/employees",
     roles: ["ADMIN"],
+    permission: "users.read",
   },
 
   {
@@ -202,6 +213,7 @@ const menuItems = [
     labelKey: "reports",
     href: "/reports",
     roles: ["ADMIN"],
+    permission: "dashboard.read",
     children: [
       {
         icon: PieChart,
@@ -220,17 +232,19 @@ const menuItems = [
     labelKey: "shippingCompanies",
     href: "/shipping-companies",
     roles: ["ADMIN"],
+    permission: "shipping-companies.read",
   },
   {
     icon: Plug,
     labelKey: "storeIntegration",
     href: "/store-integration",
     roles: ["ADMIN"],
+    permission: "stores.read",
   },
-  { icon: Wallet, labelKey: "wallet", href: "/wallet", roles: ["ADMIN"] },
-  { icon: CreditCard, labelKey: "plans", href: "/plans", roles: ["ADMIN"] },
-  { icon: Shield, labelKey: "roles", href: "/roles", roles: ["ADMIN"] },
-  { icon: Settings, labelKey: "settings", href: "/settings", roles: ["ADMIN"] },
+  { icon: Wallet, labelKey: "wallet", href: "/wallet", roles: ["ADMIN"], permission: "wallet.read" },
+  { icon: CreditCard, labelKey: "plans", href: "/plans", roles: ["ADMIN"], permission: "plans.read" },
+  { icon: Shield, labelKey: "roles", href: "/roles", roles: ["ADMIN"], permission: "roles.read" },
+  { icon: Settings, labelKey: "settings", href: "/settings", roles: ["ADMIN"], permission: "admin-settings.read" },
   {
     icon: Users,
     labelKey: "users",
@@ -261,12 +275,13 @@ const menuItems = [
     href: "/orders",
     badge: "12",
     roles: ["USER"],
+    permission: "orders.read",
     children: [{ icon: Package, labelKey: "employeeOrders", href: "/orders" }],
   },
 ];
 
 /* ══════════════════════════════════════════════════════════════
-	 RIPPLE HOOK
+   RIPPLE HOOK
 ══════════════════════════════════════════════════════════════ */
 function useRipple() {
   const [ripples, setRipples] = useState([]);
@@ -302,26 +317,25 @@ function useRipple() {
 }
 
 /* ══════════════════════════════════════════════════════════════
-	 ICON BOX — compact 32×32 collapsed / 30×30 expanded
+   ICON BOX — compact 32×32 collapsed / 30×30 expanded
 ══════════════════════════════════════════════════════════════ */
-function IconBox({ Icon, active, collapsed }) {
+function IconBox({ Icon, active, collapsed, isLocked }) {
   return (
     <div
       data-iconbox
-      className={`relative shrink-0 flex items-center justify-center rounded-xl transition-all duration-300 ${
-        collapsed ? "w-[34px] h-[34px]" : "w-[30px] h-[30px]"
-      }`}
+      className={`relative shrink-0 flex items-center justify-center rounded-xl transition-all duration-300 ${collapsed ? "w-[34px] h-[34px]" : "w-[30px] h-[30px]"
+        }`}
       style={
         active
           ? {
-              background:
-                "linear-gradient(135deg, var(--primary), var(--third))",
-              boxShadow:
-                "0 3px 14px color-mix(in oklab, var(--primary) 40%, transparent)",
-            }
+            background:
+              "linear-gradient(135deg, var(--primary), var(--third))",
+            boxShadow:
+              "0 3px 14px color-mix(in oklab, var(--primary) 40%, transparent)",
+          }
           : {
-              background: "color-mix(in oklab, var(--muted) 80%, transparent)",
-            }
+            background: "color-mix(in oklab, var(--muted) 80%, transparent)",
+          }
       }
     >
       {active && (
@@ -345,12 +359,17 @@ function IconBox({ Icon, active, collapsed }) {
         size={14}
         strokeWidth={active ? 2.4 : 1.9}
       />
+      {isLocked && (
+        <div className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5 border border-white dark:border-slate-900 z-20">
+          <Lock size={8} className="text-white" />
+        </div>
+      )}
     </div>
   );
 }
 
 /* ══════════════════════════════════════════════════════════════
-	 MENU ITEM
+   MENU ITEM
 ══════════════════════════════════════════════════════════════ */
 function MenuItem({
   item,
@@ -373,8 +392,9 @@ function MenuItem({
   const sharedClass = `
     w-full group relative flex items-center overflow-hidden
     ${isOpen ? "gap-2.5 px-2 py-[6px]" : "py-[5px] justify-center"}
-    rounded-xl cursor-pointer select-none
+    rounded-xl select-none
     transition-colors duration-150
+    ${item.isLocked ? "opacity-60 cursor-not-allowed grayscale pointer-events-none" : "cursor-pointer"}
   `;
 
   const activeStyle = {
@@ -404,7 +424,7 @@ function MenuItem({
         )}
       </AnimatePresence>
 
-      <IconBox Icon={Icon} active={active} collapsed={!isOpen} />
+      <IconBox Icon={Icon} active={active} collapsed={!isOpen} isLocked={item.isLocked} />
 
       <AnimatePresence>
         {isOpen && (
@@ -456,20 +476,36 @@ function MenuItem({
   );
 
   const wrappedInTooltip = (trigger) => {
-    if (isOpen) return trigger;
+    const labelToDisplay = item.isLocked ? `${label} (${t("locked")})` : label;
+    if (isOpen) {
+      if (item.isLocked) {
+        return (
+          <Tooltip delayDuration={80}>
+            <TooltipTrigger asChild>{trigger}</TooltipTrigger>
+            <TooltipContent
+              side={isRTL ? "left" : "right"}
+              className="text-[12px] font-semibold px-2.5 py-1.5 rounded-xl text-white border-none bg-red-500 shadow-lg shadow-red-500/20"
+            >
+              {t("subscription_required")}
+            </TooltipContent>
+          </Tooltip>
+        );
+      }
+      return trigger;
+    }
     return (
       <Tooltip delayDuration={80}>
         <TooltipTrigger asChild>{trigger}</TooltipTrigger>
         <TooltipContent
           side={isRTL ? "left" : "right"}
-          className="text-[12px] font-semibold px-2.5 py-1.5 rounded-xl text-white border-none"
-          style={{
+          className={`text-[12px] font-semibold px-2.5 py-1.5 rounded-xl text-white border-none ${item.isLocked ? 'bg-red-500 shadow-lg shadow-red-500/20' : ''}`}
+          style={!item.isLocked ? {
             background: "linear-gradient(135deg, var(--primary), var(--third))",
             boxShadow:
               "0 4px 16px color-mix(in oklab, var(--primary) 30%, transparent)",
-          }}
+          } : {}}
         >
-          {label}
+          {item.isLocked ? t("subscription_required") : label}
         </TooltipContent>
       </Tooltip>
     );
@@ -528,7 +564,7 @@ function MenuItem({
 }
 
 /* ══════════════════════════════════════════════════════════════
-	 SUB ITEM — compact
+   SUB ITEM — compact
 ══════════════════════════════════════════════════════════════ */
 function SubItem({ child, isActive, isRTL, index }) {
   const t = useTranslations("sidebar");
@@ -552,11 +588,11 @@ function SubItem({ child, isActive, isRTL, index }) {
         style={
           active
             ? {
-                background:
-                  "color-mix(in oklab, var(--primary) 7%, var(--card))",
-                color: "var(--primary)",
-                fontWeight: 600,
-              }
+              background:
+                "color-mix(in oklab, var(--primary) 7%, var(--card))",
+              color: "var(--primary)",
+              fontWeight: 600,
+            }
             : { color: "var(--muted-foreground)" }
         }
         onMouseEnter={(e) => {
@@ -582,15 +618,15 @@ function SubItem({ child, isActive, isRTL, index }) {
           style={
             active
               ? {
-                  background:
-                    "linear-gradient(135deg, var(--primary), var(--third))",
-                  boxShadow:
-                    "0 2px 8px color-mix(in oklab, var(--primary) 30%, transparent)",
-                }
+                background:
+                  "linear-gradient(135deg, var(--primary), var(--third))",
+                boxShadow:
+                  "0 2px 8px color-mix(in oklab, var(--primary) 30%, transparent)",
+              }
               : {
-                  background:
-                    "color-mix(in oklab, var(--muted) 75%, transparent)",
-                }
+                background:
+                  "color-mix(in oklab, var(--muted) 75%, transparent)",
+              }
           }
         >
           <Icon
@@ -619,7 +655,7 @@ function SubItem({ child, isActive, isRTL, index }) {
     </motion.div>
   );
 }
-
+export const excludedSubcriptionPaths = ["/plans", "/wallet"];
 const Sidebar = ({ isOpen, isRTL, onOpenSidebar }) => {
   const pathname = usePathname();
   const [expandedItems, setExpandedItems] = useState(new Set());
@@ -651,10 +687,9 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar }) => {
   }, []);
 
   const router = useRouter();
-  const user = getUser();
-  const userRole = user?.role?.toUpperCase();
+  const { user, isSuperAdmin, hasActiveSubscription, hasPermission } = useAuth();
+  const userRole = user?.role?.name?.toUpperCase();
 
-  console.log(userRole);
 
   const isActive = useCallback(
     (href) => {
@@ -687,11 +722,33 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar }) => {
   }, [pathname, currentSearch, isActive]);
 
   const filteredItems = useMemo(() => {
-    if (!userRole) return [];
-    return menuItems.filter(
-      (item) => !item.roles?.length || item.roles.includes(userRole),
-    );
-  }, [userRole]);
+    if (!user) return [];
+
+    const userRole = user.role?.name;
+
+    return menuItems.filter((item) => {
+      // 1. Check Roles
+      const hasRole = !item.roles?.length || item.roles.includes(userRole?.toUpperCase());
+      if (!hasRole) return false;
+
+      // 2. Check Permissions
+      if (!hasPermission(item.permission)) {
+        return false;
+      }
+
+      return true;
+    }).map(item => {
+      // 3. Handle Subscription Locking
+      // Wallet and Plans are always unlocked. Super Admin is always unlocked.
+      const isExempt = excludedSubcriptionPaths.some(path => item.href.startsWith(path));
+      const isLocked = !isSuperAdmin && !hasActiveSubscription && !isExempt;
+
+      return {
+        ...item,
+        isLocked
+      };
+    });
+  }, [user]);
 
   const toggleExpanded = (href) =>
     setExpandedItems((prev) => {
@@ -699,6 +756,8 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar }) => {
       next.has(href) ? next.delete(href) : next.add(href);
       return next;
     });
+
+ 
 
   if (!userRole) {
     return (
@@ -731,7 +790,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar }) => {
         transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
         className={`
           fixed top-0 ${isRTL ? "right-0" : "left-0"}
-          h-screen flex flex-col overflow-hidden z-10
+          h-screen flex flex-col overflow-hidden z-[100]
           ${isRTL ? "border-l" : "border-r"} border-border
         `}
         style={{

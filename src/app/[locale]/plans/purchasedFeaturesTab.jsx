@@ -21,16 +21,12 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-
-function formatCurrency(amount) {
-    if (amount === undefined || amount === null) return "—";
-    // تنسيق الرقم مع إضافة "ج.م"
-    return Number(amount).toLocaleString("ar-EG") + " ج.م";
-}
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 export default function PurchasedFeaturesTab() {
     const tf = useTranslations("extraFeatures");
     const t = useTranslations("plans");
+    const { formatCurrency } = usePlatformSettings();
 
     const [features, setFeatures] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -98,8 +94,8 @@ export default function PurchasedFeaturesTab() {
             header: tf("columns.price").trim(),
             cell: (row) => (
                 <div className="flex items-center gap-1 font-semibold text-blue-600 dark:text-blue-400">
-                    {/* تم استبدال USD بـ ج.م من خلال function التنسيق */}
-                    <span className="font-mono">{formatCurrency(row.price)}</span>
+                    <CreditCard size={12} />
+                    {formatCurrency(row.price)}
                 </div>
             ),
         },
@@ -167,7 +163,7 @@ export default function PurchasedFeaturesTab() {
                 </div>
             ),
         }
-    ], [tf, purchasingId]);
+    ], [tf, purchasingId, formatCurrency]);
 
     return (
         <div className="space-y-4">

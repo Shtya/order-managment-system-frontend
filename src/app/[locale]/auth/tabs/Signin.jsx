@@ -82,7 +82,7 @@ export default function SignIn({ t: tProp, onSwitchMode, onForgotPassword }) {
       });
 
       toast.success(t('signin.success'), { id: tid });
-      const role = String(data?.user?.role || '');
+      const role = String(data?.user?.role?.name || '');
       const isOnboarded = data.user?.onboardingStatus === 'completed' || role !== 'admin'; // Matches our Enum
 
       setTimeout(() => { window.location.href = role === 'super_admin' ? '/dashboard/users' : !isOnboarded ? "/onboarding" : role === 'admin' ? '/orders' : '/orders/employee-orders'; }, 900);

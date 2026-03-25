@@ -36,6 +36,8 @@ import toast from "react-hot-toast";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
 import { useSearchParams } from "next/navigation";
+import { ActionButtons } from "@/components/atoms/Actions";
+import { useAuth } from "@/context/AuthContext";
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -412,63 +414,32 @@ export default function SupplierCategoriesPage() {
 				header: t("table.options"),
 				className: "w-[140px] sticky left-0 bg-white dark:bg-slate-900",
 				cell: (row) => (
-					<TooltipProvider>
-						<div className="flex items-center gap-2">
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.1 }}
-										whileTap={{ scale: 0.95 }}
-										className={cn(
-											"group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
-											"border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:border-red-600 hover:text-white hover:shadow-xl hover:shadow-red-500/40",
-											"dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300 dark:hover:bg-red-600 dark:hover:border-red-600 dark:hover:text-white dark:hover:shadow-red-500/30"
-										)}
-										onClick={() => setDeleteState({ open: true, id: row.id })}
-									>
-										<Trash2 size={16} className="transition-transform group-hover:scale-110 group-hover:rotate-12" />
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>{t("actions.delete")}</TooltipContent>
-							</Tooltip>
-
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.1 }}
-										whileTap={{ scale: 0.95 }}
-										className={cn(
-											"group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
-											"border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:border-blue-600 hover:text-white hover:shadow-xl hover:shadow-blue-500/40",
-											"dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-300 dark:hover:bg-blue-600 dark:hover:border-blue-600 dark:hover:text-white dark:hover:shadow-blue-500/30"
-										)}
-										onClick={() => openEdit(row)}
-									>
-										<Edit2 size={16} className="transition-transform group-hover:scale-110 group-hover:-rotate-12" />
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>{t("actions.edit")}</TooltipContent>
-							</Tooltip>
-
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.1 }}
-										whileTap={{ scale: 0.95 }}
-										className={cn(
-											"group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
-											"border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:border-purple-600 hover:text-white hover:shadow-xl hover:shadow-purple-500/40",
-											"dark:border-purple-900/50 dark:bg-purple-950/30 dark:text-purple-300 dark:hover:bg-purple-600 dark:hover:border-purple-600 dark:hover:text-white dark:hover:shadow-purple-500/30"
-										)}
-										onClick={() => openView(row)}
-									>
-										<Eye size={16} className="transition-transform group-hover:scale-110" />
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>{t("actions.view")}</TooltipContent>
-							</Tooltip>
-						</div>
-					</TooltipProvider>
+					<ActionButtons
+						row={row}
+						actions={[
+							{
+								icon: <Trash2 />,
+								tooltip: t("actions.delete"),
+								onClick: (r) => setDeleteState({ open: true, id: r.id }),
+								variant: "red",
+								permission: "categories.delete",
+							},
+							{
+								icon: <Edit2 />,
+								tooltip: t("actions.edit"),
+								onClick: (r) => openEdit(r),
+								variant: "blue",
+								permission: "categories.update",
+							},
+							{
+								icon: <Eye />,
+								tooltip: t("actions.view"),
+								onClick: (r) => openView(r),
+								variant: "purple",
+								permission: "categories.read",
+							},
+						]}
+					/>
 				),
 			},
 		],
@@ -486,7 +457,7 @@ export default function SupplierCategoriesPage() {
 				]}
 				buttons={
 					<>
-						<Button_ size="sm" onClick={openCreate} label={t("actions.add")} variant="solid" icon={<Plus size={18} />} />
+						<Button_ size="sm" onClick={openCreate} label={t("actions.add")} variant="solid" icon={<Plus size={18} />} permission="categories.create" />
 					</>
 				}
 			/>

@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { useTranslations } from "next-intl";
 import { Bone } from "@/components/atoms/BannerSkeleton";
 import ActionButtons from "@/components/atoms/Actions";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 function normalizeAxiosError(err) {
   const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -24,6 +25,7 @@ function normalizeAxiosError(err) {
 export default function useBundlesTab({ t, searchDebounced, filters, onAskDelete, onOpenView, onExportRequest, activetab }) {
   const router = useRouter();
   const requestIdRef = useRef(0);
+  const { formatCurrency } = usePlatformSettings();
 
   const [loading, setLoading] = useState(false);
   const [pager, setPager] = useState({
@@ -151,35 +153,38 @@ export default function useBundlesTab({ t, searchDebounced, filters, onAskDelete
         )
       },
       {
-  key: "actions",
-  header: t("table.options"),
-  className: "bg-white dark:bg-slate-900",
-  cell: (row) => (
-    <ActionButtons
-      row={row}
-      actions={[
-        {
-          icon: <Trash2 />,
-          tooltip: t("actions.delete"),
-          onClick: (r) => onAskDelete?.(r.id, "idle"),
-          variant: "red",
-        },
-        {
-          icon: <Edit2 />,
-          tooltip: t("actions.edit"),
-          onClick: (r) => router.push(`/products/edit/${r.id}`),
-          variant: "blue",
-        },
-        {
-          icon: <Eye />,
-          tooltip: t("actions.view"),
-          onClick: (r) => onOpenView?.(r.id, "idle"),
-          variant: "purple",
-        },
-      ]}
-    />
-  )
-}
+        key: "actions",
+        header: t("table.options"),
+        className: "bg-white dark:bg-slate-900",
+        cell: (row) => (
+          <ActionButtons
+            row={row}
+            actions={[
+              {
+                icon: <Trash2 />,
+                tooltip: t("actions.delete"),
+                onClick: (r) => onAskDelete?.(r.id, "idle"),
+                variant: "red",
+                permission: "products.delete",
+              },
+              {
+                icon: <Edit2 />,
+                tooltip: t("actions.edit"),
+                onClick: (r) => router.push(`/products/edit/${r.id}`),
+                variant: "blue",
+                permission: "products.update",
+              },
+              {
+                icon: <Eye />,
+                tooltip: t("actions.view"),
+                onClick: (r) => onOpenView?.(r.id, "idle"),
+                variant: "purple",
+                permission: "products.read",
+              },
+            ]}
+          />
+        )
+      }
     ];
   }, [router, t, onAskDelete, onOpenView]);
 
@@ -203,12 +208,7 @@ function formatDate(d, na) {
   }
 }
 
-function money(v, na) {
-  if (v === null || v === undefined || v === "") return na;
-  const n = Number(v);
-  if (Number.isFinite(n)) return n.toLocaleString("en-US");
-  return String(v);
-}
+
 
 export function BundleViewModal({ open, onOpenChange, bundle, viewLoading }) {
   const t = useTranslations("products");
@@ -249,7 +249,7 @@ export function BundleViewModal({ open, onOpenChange, bundle, viewLoading }) {
                     </Badge>
 
                     <Badge className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200">
-                      {t("common.price")}: {money(bundle.price, na)}
+                      {t("common.price")}: {formatCurrency(bundle.price, na)}
                     </Badge>
                     {bundle.description && (
                       <div className="mt-4 p-3 rounded-lg bg-muted/30 border border-border/40">

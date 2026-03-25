@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva } from "class-variance-authority";
+import { useAuth } from "@/context/AuthContext";
 
 import { cn } from "@/utils/cn"
 
@@ -43,9 +44,15 @@ function Button({
   variant = "default",
   size = "default",
   asChild = false,
+  permission,
   ...props
 }) {
+  const { hasPermission } = useAuth();
   const Comp = asChild ? Slot : "button"
+
+  if (permission && !hasPermission(permission)) {
+    return null;
+  }
 
   return (
     <Comp

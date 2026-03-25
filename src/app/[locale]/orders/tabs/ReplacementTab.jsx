@@ -2,7 +2,6 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion as m, AnimatePresence } from "framer-motion";
-import { motion } from "framer-motion";
 
 import {
 	Download, Eye, Phone, ArrowLeftRight, Loader2, Filter,
@@ -33,6 +32,7 @@ import {
 import PageHeader from "@/components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
 import ActionButtons from "@/components/atoms/Actions";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 
 function hexToBg(hex) {
@@ -47,11 +47,6 @@ function formatDate(dateStr) {
 	return new Date(dateStr).toLocaleDateString("en-US", {
 		year: "numeric", month: "short", day: "numeric",
 	});
-}
-
-function formatCurrency(amount) {
-	if (amount === undefined || amount === null) return "—";
-	return Number(amount).toLocaleString("en-US");
 }
 
 
@@ -95,7 +90,7 @@ function ReplacedProductsList({ items }) {
 }
 
 
-function CostDiffCell({ row, t }) {
+function CostDiffCell({ row, t, formatCurrency }) {
 	const diff =
 		row.replacementOrder.finalTotal -
 		(row.originalOrder.finalTotal - row.originalOrder.shippingCost);
@@ -184,8 +179,10 @@ const REPLACEMENT_STATS = [
 export function ReplacementTab({ statuses }) {
 	const t = useTranslations("orders");
 	const router = useRouter();
+	const { formatCurrency } = usePlatformSettings();
 
 	const [loading, setLoading] = useState(false);
+	const [stats, setStats] = useState(null);
 	const [exportLoading, setExportLoading] = useState(false);
 	const [search, setSearch] = useState("");
 	const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -362,7 +359,7 @@ export function ReplacementTab({ statuses }) {
 		{
 			key: "costDiff",
 			header: t("replacement.columns.costDiff"),
-			cell: (row) => <CostDiffCell row={row} t={t} />,
+			cell: (row) => <CostDiffCell row={row} t={t} formatCurrency={formatCurrency} />,
 		},
 		{
 			key: "updated_at",
@@ -394,12 +391,13 @@ export function ReplacementTab({ statuses }) {
 							tooltip: t("actions.view"),
 							onClick: (r) => router.push(`/orders/details/${r.replacementOrderId}`),
 							variant: "purple",
+							permission: "orders.readReplace",
 						},
 					]}
 				/>
 			),
 		},
-	], [t, router]);
+	], [t, router, formatCurrency]);
 
 	/* ── Render ── */
 	return (<>
@@ -416,6 +414,7 @@ export function ReplacementTab({ statuses }) {
 				label={t("actions.createReplacement")}
 				variant="solid"
 				icon={<Plus size={18} />}
+				permission="orders.replace"
 			/>}
 			statsCount={6}
 			stats={REPLACEMENT_STATS.map((s) => ({

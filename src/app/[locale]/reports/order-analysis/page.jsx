@@ -3,11 +3,27 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ChevronLeft, Download, TrendingUp, MapPin, Package,
-  CheckCircle, XCircle, Truck, RefreshCw, BarChart3,
-  Calendar, Store, Loader2, ArrowUpRight, ArrowDownRight,
-  ShoppingCart, PieChart as PieIcon,
-  Search, Filter, PieChart, Info,
+  ChevronLeft,
+  Download,
+  TrendingUp,
+  MapPin,
+  Package,
+  CheckCircle,
+  XCircle,
+  Truck,
+  RefreshCw,
+  BarChart3,
+  Calendar,
+  Store,
+  Loader2,
+  ArrowUpRight,
+  ArrowDownRight,
+  ShoppingCart,
+  PieChart as PieIcon,
+  Search,
+  Filter,
+  PieChart,
+  Info,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
@@ -15,11 +31,22 @@ import api from "@/utils/api";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/material_blue.css";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
-  Chart as ChartJS, CategoryScale, LinearScale, PointElement,
-  LineElement, ArcElement, Tooltip as ChTooltip, Legend, Filler,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Tooltip as ChTooltip,
+  Legend,
+  Filler,
 } from "chart.js";
 import { Line, Doughnut } from "react-chartjs-2";
 import PageHeader, { StatsGrid } from "@/components/atoms/Pageheader";
@@ -31,17 +58,23 @@ import { generateBgColors, getIconForStatus } from "../../orders/page";
 import { useDebounce } from "@/hook/useDebounce";
 
 ChartJS.register(
-  CategoryScale, LinearScale, PointElement, LineElement,
-  ArcElement, ChTooltip, Legend, Filler,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  ArcElement,
+  ChTooltip,
+  Legend,
+  Filler,
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const PRIMARY   = "#ff8b00";
+export const PRIMARY = "#ff8b00";
 export const SECONDARY = "#ffb703";
-export const THIRD     = "#ff5c2b";
+export const THIRD = "#ff5c2b";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -61,33 +94,55 @@ export const hex = (h, a = 0.12) => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const Skel = ({ cls }) => (
-  <div className={cn("animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800/60", cls)} />
+  <div
+    className={cn(
+      "animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800/60",
+      cls,
+    )}
+  />
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Card — elevated container with accent left-bar + icon
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function Card({ title, icon: Icon, color = PRIMARY, action, children, className }) {
+export function Card({
+  title,
+  icon: Icon,
+  color = PRIMARY,
+  action,
+  children,
+  className,
+}) {
   return (
-    <div className={cn(
-      "rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900",
-      "shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden",
-      className
-    )}>
+    <div
+      className={cn(
+        "rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900",
+        "shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden",
+        className,
+      )}
+    >
       {/* Top accent stripe */}
-      <div className="h-[3px] w-full" style={{ background: `linear-gradient(90deg, ${color}cc, ${color}33)` }} />
+      <div
+        className="h-[3px] w-full"
+        style={{ background: `linear-gradient(90deg, ${color}cc, ${color}33)` }}
+      />
 
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4">
         <div className="flex items-center gap-3">
           <div
             className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-            style={{ background: hex(color, 0.1), border: `1.5px solid ${hex(color, 0.25)}` }}
+            style={{
+              background: hex(color, 0.1),
+              border: `1.5px solid ${hex(color, 0.25)}`,
+            }}
           >
             <Icon size={15} style={{ color }} />
           </div>
-          <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 tracking-tight">{title}</h3>
+          <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 tracking-tight">
+            {title}
+          </h3>
         </div>
         {action && <div className="shrink-0">{action}</div>}
       </div>
@@ -120,13 +175,14 @@ export function ExportBtn({ onClick, loading }) {
         "hover:bg-blue-600 hover:text-white hover:border-blue-600",
         "dark:hover:bg-blue-600 dark:hover:text-white",
         "disabled:opacity-50 disabled:cursor-not-allowed",
-        "transition-all duration-200 shadow-sm"
+        "transition-all duration-200 shadow-sm",
       )}
     >
-      {loading
-        ? <Loader2 size={12} className="animate-spin" />
-        : <Download size={12} />
-      }
+      {loading ? (
+        <Loader2 size={12} className="animate-spin" />
+      ) : (
+        <Download size={12} />
+      )}
       {t("common.export")}
     </motion.button>
   );
@@ -140,13 +196,13 @@ export function RangeTabs({ value, onChange }) {
   const t = useTranslations("orderAnalysis");
 
   const QUICK_RANGES = [
-    { key: "today",      label: t("ranges.today") },
-    { key: "yesterday",  label: t("ranges.yesterday") },
-    { key: "this_week",  label: t("ranges.this_week") },
-    { key: "last_week",  label: t("ranges.last_week") },
+    { key: "today", label: t("ranges.today") },
+    { key: "yesterday", label: t("ranges.yesterday") },
+    { key: "this_week", label: t("ranges.this_week") },
+    { key: "last_week", label: t("ranges.last_week") },
     { key: "this_month", label: t("ranges.this_month") },
     { key: "last_month", label: t("ranges.last_month") },
-    { key: "this_year",  label: t("ranges.this_year") },
+    { key: "this_year", label: t("ranges.this_year") },
   ];
 
   return (
@@ -162,12 +218,16 @@ export function RangeTabs({ value, onChange }) {
               "relative px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-250 whitespace-nowrap overflow-hidden",
               isActive
                 ? "text-white shadow-md"
-                : "text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:border-slate-300 hover:text-slate-700 dark:hover:text-slate-200"
+                : "text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:border-slate-300 hover:text-slate-700 dark:hover:text-slate-200",
             )}
-            style={isActive ? {
-              background: `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))`,
-              boxShadow: `0 4px 14px rgb(var(--primary-shadow))`,
-            } : {}}
+            style={
+              isActive
+                ? {
+                    background: `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))`,
+                    boxShadow: `0 4px 14px rgb(var(--primary-shadow))`,
+                  }
+                : {}
+            }
           >
             {isActive && (
               <motion.span
@@ -192,50 +252,67 @@ export function RangeTabs({ value, onChange }) {
 export function StatusDonut({
   data,
   loading,
-  config = { key: "count", imageKey: "image", label: "label" },
+  config = {
+    key: "count",
+    imageKey: "image",
+    label: "label",
+    hasPercentage: false,
+  },
   allowImage = false,
 }) {
   const t = useTranslations("dashboard");
   const BRAND_COLORS = [PRIMARY, SECONDARY, THIRD, "#feb144", "#ff7b54"];
   const hasData = data && data.length > 0;
-  const total = hasData ? data.reduce((s, d) => s + (Number(d[config.key]) ?? 0), 0) : 0;
+  const total = hasData
+    ? data.reduce((s, d) => s + (Number(d[config.key]) ?? 0), 0)
+    : 0;
 
-  if (loading) return (
-    <div className="flex flex-col items-center gap-6 animate-pulse w-full">
-      <div className="w-44 h-44 rounded-full border-[18px] border-slate-100 dark:border-slate-800" />
-      <div className="w-full space-y-3">
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 shrink-0" />
-            <div className="flex-1 space-y-1.5">
-              <div className="h-3 w-3/4 bg-slate-100 dark:bg-slate-800 rounded-lg" />
-              <div className="h-2 w-1/3 bg-slate-50 dark:bg-slate-900 rounded-lg" />
+  if (loading)
+    return (
+      <div className="flex flex-col items-center gap-6 animate-pulse w-full">
+        <div className="w-44 h-44 rounded-full border-[18px] border-slate-100 dark:border-slate-800" />
+        <div className="w-full space-y-3">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 shrink-0" />
+              <div className="flex-1 space-y-1.5">
+                <div className="h-3 w-3/4 bg-slate-100 dark:bg-slate-800 rounded-lg" />
+                <div className="h-2 w-1/3 bg-slate-50 dark:bg-slate-900 rounded-lg" />
+              </div>
+              <div className="h-4 w-10 bg-slate-100 dark:bg-slate-800 rounded-lg" />
             </div>
-            <div className="h-4 w-10 bg-slate-100 dark:bg-slate-800 rounded-lg" />
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
 
-  if (!hasData || total === 0) return (
-    <div className="flex flex-col items-center justify-center h-60 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/20">
-      <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
-        <PieChart size={22} className="text-slate-400" />
+  if (!hasData || total === 0)
+    return (
+      <div className="flex flex-col items-center justify-center h-60 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/20">
+        <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
+          <PieChart size={22} className="text-slate-400" />
+        </div>
+        <p className="text-xs font-semibold text-slate-400">
+          {t("common.noData")}
+        </p>
       </div>
-      <p className="text-xs font-semibold text-slate-400">{t("common.noData")}</p>
-    </div>
-  );
+    );
 
   const chartData = {
-    labels: data.map(d => d[config.label]),
-    datasets: [{
-      data: data.map(d => d[config.key]),
-      backgroundColor: data.map((d, i) => hex(d.color || BRAND_COLORS[i % BRAND_COLORS.length], 0.88)),
-      borderColor:     data.map((d, i) => d.color || BRAND_COLORS[i % BRAND_COLORS.length]),
-      borderWidth: 2.5,
-      hoverOffset: 14,
-    }],
+    labels: data.map((d) => d[config.label]),
+    datasets: [
+      {
+        data: data.map((d) => d[config.key]),
+        backgroundColor: data.map((d, i) =>
+          hex(d.color || BRAND_COLORS[i % BRAND_COLORS.length], 0.88),
+        ),
+        borderColor: data.map(
+          (d, i) => d.color || BRAND_COLORS[i % BRAND_COLORS.length],
+        ),
+        borderWidth: 2.5,
+        hoverOffset: 14,
+      },
+    ],
   };
 
   const options = {
@@ -254,7 +331,8 @@ export function StatusDonut({
         padding: 12,
         cornerRadius: 12,
         callbacks: {
-          label: (ctx) => ` ${ctx.label}: ${ctx.raw} (${((ctx.raw / total) * 100).toFixed(1)}%)`,
+          label: (ctx) =>
+            ` ${ctx.label}: ${ctx.raw} (${((ctx.raw / total) * 100).toFixed(1)}%)`,
         },
       },
     },
@@ -266,16 +344,22 @@ export function StatusDonut({
       <div className="relative h-48 w-full">
         <Doughnut data={chartData} options={options} />
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="text-2xl font-black text-slate-800 dark:text-white leading-none">{total}</span>
-          <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest mt-1">الإجمالي</span>
+          <span className="text-2xl font-black text-slate-800 dark:text-white leading-none">
+            {total}
+          </span>
+          <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest mt-1">
+            الإجمالي
+          </span>
         </div>
       </div>
 
       {/* Legend */}
       <div className="w-full space-y-1.5">
         {data.map((item, i) => {
-          const color      = item.color || BRAND_COLORS[i % BRAND_COLORS.length];
-          const percentage = ((item[config.key] / total) * 100).toFixed(0);
+          const color = item.color || BRAND_COLORS[i % BRAND_COLORS.length];
+          const percentage = config.hasPercentage
+            ? item.percentage
+            : ((item[config.key] / total) * 100).toFixed(0);
 
           return (
             <motion.div
@@ -296,14 +380,19 @@ export function StatusDonut({
                 ) : (
                   <div
                     className="w-3 h-3 rounded-full shrink-0"
-                    style={{ background: color, boxShadow: `0 0 0 3px ${hex(color, 0.2)}` }}
+                    style={{
+                      background: color,
+                      boxShadow: `0 0 0 3px ${hex(color, 0.2)}`,
+                    }}
                   />
                 )}
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate max-w-[130px]">
                     {item[config.label]}
                   </p>
-                  <p className="text-[10px] text-slate-400">{item[config.key]} طلب</p>
+                  <p className="text-[10px] text-slate-400">
+                    {item[config.key]} طلب
+                  </p>
                 </div>
               </div>
 
@@ -315,7 +404,10 @@ export function StatusDonut({
                     style={{ width: `${percentage}%`, background: color }}
                   />
                 </div>
-                <span className="text-xs font-bold w-8 text-right" style={{ color }}>
+                <span
+                  className="text-xs font-bold w-8 text-right"
+                  style={{ color }}
+                >
                   {percentage}%
                 </span>
               </div>
@@ -335,34 +427,44 @@ export function TrendChart({ data, loading, configs = [] }) {
   const t = useTranslations("dashboard");
   const hasData = data && data.length > 0;
 
-  if (loading) return (
-    <div className="w-full h-64 flex flex-col justify-between animate-pulse px-2 py-4">
-      <div className="flex-1 flex flex-col justify-between mb-6 gap-3">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="w-full h-px bg-slate-100 dark:bg-slate-800 rounded-full" />
-        ))}
+  if (loading)
+    return (
+      <div className="w-full h-64 flex flex-col justify-between animate-pulse px-2 py-4">
+        <div className="flex-1 flex flex-col justify-between mb-6 gap-3">
+          {[...Array(5)].map((_, i) => (
+            <div
+              key={i}
+              className="w-full h-px bg-slate-100 dark:bg-slate-800 rounded-full"
+            />
+          ))}
+        </div>
+        <div className="h-px w-full bg-slate-200 dark:bg-slate-700 rounded-full mb-4" />
+        <div className="flex justify-between px-2">
+          {[...Array(7)].map((_, i) => (
+            <div
+              key={i}
+              className="h-2 w-8 bg-slate-100 dark:bg-slate-800 rounded-full"
+            />
+          ))}
+        </div>
       </div>
-      <div className="h-px w-full bg-slate-200 dark:bg-slate-700 rounded-full mb-4" />
-      <div className="flex justify-between px-2">
-        {[...Array(7)].map((_, i) => (
-          <div key={i} className="h-2 w-8 bg-slate-100 dark:bg-slate-800 rounded-full" />
-        ))}
-      </div>
-    </div>
-  );
+    );
 
-  if (!hasData) return (
-    <div className="flex flex-col items-center justify-center h-64 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/20">
-      <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
-        <TrendingUp size={22} className="text-slate-400" />
+  if (!hasData)
+    return (
+      <div className="flex flex-col items-center justify-center h-64 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/20">
+        <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
+          <TrendingUp size={22} className="text-slate-400" />
+        </div>
+        <p className="text-xs font-semibold text-slate-400">
+          {t("common.noOperations")}
+        </p>
       </div>
-      <p className="text-xs font-semibold text-slate-400">{t("common.noOperations")}</p>
-    </div>
-  );
+    );
 
-  const datasets = configs.map(cfg => ({
+  const datasets = configs.map((cfg) => ({
     label: cfg.label,
-    data: data.map(d => d[cfg.key] ?? 0),
+    data: data.map((d) => d[cfg.key] ?? 0),
     borderColor: cfg.color,
     backgroundColor: hex(cfg.color, cfg.fillOpacity || 0.07),
     fill: cfg.fill ?? true,
@@ -375,7 +477,7 @@ export function TrendChart({ data, loading, configs = [] }) {
   }));
 
   const chartData = {
-    labels: data.map(d => d.label),
+    labels: data.map((d) => d.label),
     datasets,
   };
 
@@ -419,7 +521,7 @@ export function TrendChart({ data, loading, configs = [] }) {
         border: { display: false },
         beginAtZero: true,
       },
-      ...(configs.some(c => c.yAxisID === "y1") && {
+      ...(configs.some((c) => c.yAxisID === "y1") && {
         y1: {
           position: "right",
           grid: { display: false },
@@ -430,7 +532,11 @@ export function TrendChart({ data, loading, configs = [] }) {
     },
   };
 
-  return <div style={{ height: 264 }}><Line data={chartData} options={options} /></div>;
+  return (
+    <div style={{ height: 264 }}>
+      <Line data={chartData} options={options} />
+    </div>
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -469,7 +575,7 @@ export function MiniTable({ columns, data, loading }) {
       <table className="w-full text-sm">
         <thead>
           <tr className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
-            {columns.map(c => (
+            {columns.map((c) => (
               <th
                 key={c.key}
                 className="px-4 py-3 text-right text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider whitespace-nowrap"
@@ -480,48 +586,52 @@ export function MiniTable({ columns, data, loading }) {
           </tr>
         </thead>
         <tbody>
-          {loading
-            ? Array.from({ length: 5 }).map((_, i) => (
-              <tr key={i} className="border-b border-slate-100/60 dark:border-slate-800/60 last:border-0">
-                {columns.map(c => (
+          {loading ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <tr
+                key={i}
+                className="border-b border-slate-100/60 dark:border-slate-800/60 last:border-0"
+              >
+                {columns.map((c) => (
                   <td key={c.key} className="px-4 py-3.5">
                     <Skel cls="h-4 w-full" />
                   </td>
                 ))}
               </tr>
             ))
-            : !data?.length
-              ? (
-                <tr>
-                  <td colSpan={columns.length} className="px-4 py-14 text-center">
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                        <Package size={18} className="text-slate-400" />
-                      </div>
-                      <p className="text-xs font-semibold text-slate-400">{t("common.noData")}</p>
-                    </div>
+          ) : !data?.length ? (
+            <tr>
+              <td colSpan={columns.length} className="px-4 py-14 text-center">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                    <Package size={18} className="text-slate-400" />
+                  </div>
+                  <p className="text-xs font-semibold text-slate-400">
+                    {t("common.noData")}
+                  </p>
+                </div>
+              </td>
+            </tr>
+          ) : (
+            data.map((row, i) => (
+              <motion.tr
+                key={i}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.035 }}
+                className={cn(
+                  "border-b border-slate-100/60 dark:border-slate-800/60 last:border-0",
+                  "hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors",
+                )}
+              >
+                {columns.map((c) => (
+                  <td key={c.key} className="px-4 py-3.5 whitespace-nowrap">
+                    {c.cell ? c.cell(row) : (row[c.key] ?? "—")}
                   </td>
-                </tr>
-              )
-              : data.map((row, i) => (
-                <motion.tr
-                  key={i}
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.035 }}
-                  className={cn(
-                    "border-b border-slate-100/60 dark:border-slate-800/60 last:border-0",
-                    "hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors"
-                  )}
-                >
-                  {columns.map(c => (
-                    <td key={c.key} className="px-4 py-3.5 whitespace-nowrap">
-                      {c.cell ? c.cell(row) : (row[c.key] ?? "—")}
-                    </td>
-                  ))}
-                </motion.tr>
-              ))
-          }
+                ))}
+              </motion.tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>
@@ -549,7 +659,9 @@ export const TableFilters = memo(function TableFilters({
         <div className="w-6 h-6 rounded-lg bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900/30 flex items-center justify-center">
           <Filter size={12} className="text-orange-500" />
         </div>
-        <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">الفلاتر</span>
+        <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+          الفلاتر
+        </span>
       </div>
 
       {/* Fields */}
@@ -568,7 +680,7 @@ export const TableFilters = memo(function TableFilters({
                 "border border-slate-200 dark:border-slate-700",
                 "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300",
                 "hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800",
-                "transition-all flex items-center gap-1.5 shadow-sm"
+                "transition-all flex items-center gap-1.5 shadow-sm",
               )}
             >
               <RefreshCw size={12} />
@@ -623,7 +735,11 @@ export default function OrdersStatisticsPage() {
   const t = useTranslations("orderAnalysis");
 
   const [quickRange, setQuickRange] = useState("this_month");
-  const [filters, setFilters] = useState({ startDate: null, endDate: null, storeId: "all" });
+  const [filters, setFilters] = useState({
+    startDate: null,
+    endDate: null,
+    storeId: "all",
+  });
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [exAreas, setExAreas] = useState(false);
@@ -633,13 +749,17 @@ export default function OrdersStatisticsPage() {
   const [areasData, setAreasData] = useState([]);
   const [searchValue, setSearchValue] = useState("");
 
-  const { debouncedValue: debouncedSearch } = useDebounce({ value: searchValue, delay: 300 });
+  const { debouncedValue: debouncedSearch } = useDebounce({
+    value: searchValue,
+    delay: 300,
+  });
 
   const buildParams = useCallback(() => {
     const p = { range: quickRange };
     if (filters.startDate) p.startDate = filters.startDate;
-    if (filters.endDate)   p.endDate   = filters.endDate;
-    if (filters.storeId && filters.storeId !== "all") p.storeId = filters.storeId;
+    if (filters.endDate) p.endDate = filters.endDate;
+    if (filters.storeId && filters.storeId !== "all")
+      p.storeId = filters.storeId;
     return p;
   }, [quickRange, filters]);
 
@@ -648,12 +768,21 @@ export default function OrdersStatisticsPage() {
     setLoading(true);
     try {
       const [sum, trd, sts, ars] = await Promise.all([
-        api.get("/dashboard/top-products",  { params: p }).catch(() => ({ data: null })),
-        api.get("/dashboard/orders/trend",  { params: p }).catch(() => ({ data: [] })),
-        api.get("/dashboard/orders/stats",  { params: p }).catch(() => ({ data: [] })),
-        api.get("/dashboard/orders/top-areas", { params: p }).catch(() => ({ data: [] })),
+        api
+          .get("/dashboard/top-products", { params: p })
+          .catch(() => ({ data: null })),
+        api
+          .get("/dashboard/orders/trend", { params: p })
+          .catch(() => ({ data: [] })),
+        api
+          .get("/dashboard/orders/stats", { params: p })
+          .catch(() => ({ data: [] })),
+        api
+          .get("/dashboard/orders/top-areas", { params: p })
+          .catch(() => ({ data: [] })),
       ]);
-      const getData = (r) => Array.isArray(r.data) ? r.data : r.data?.records ?? [];
+      const getData = (r) =>
+        Array.isArray(r.data) ? r.data : (r.data?.records ?? []);
       setSummary(sum.data);
       setTrendData(getData(trd));
       setStatusData(getData(sts));
@@ -666,26 +795,83 @@ export default function OrdersStatisticsPage() {
   }, [buildParams]);
 
   useEffect(() => {
-    api.get("/lookups/stores", { params: { limit: 200, isActive: true } })
-      .then(({ data }) => setStores(Array.isArray(data) ? data : data?.records ?? []))
-      .catch(err => console.error("Failed to fetch stores:", err));
+    api
+      .get("/lookups/stores", { params: { limit: 200, isActive: true } })
+      .then(({ data }) =>
+        setStores(Array.isArray(data) ? data : (data?.records ?? [])),
+      )
+      .catch((err) => console.error("Failed to fetch stores:", err));
   }, []);
 
-  useEffect(() => { fetchAll(); }, [quickRange, debouncedSearch]);
+  useEffect(() => {
+    fetchAll();
+  }, [quickRange, debouncedSearch]);
 
   // ── KPI config ────────────────────────────────────────────────────────────
 
   const KPI = [
-    { key: "totalOrders",        title: t("kpi.totalOrders"),        icon: ShoppingCart, color: "#6366f1" },
-    { key: "confirmedOrders",    title: t("kpi.confirmedOrders"),    icon: CheckCircle,  color: "#3b82f6" },
-    { key: "deliveredOrders",    title: t("kpi.deliveredOrders"),    icon: Truck,        color: "#10b981" },
-    { key: "cancelledOrders",    title: t("kpi.cancelledOrders"),    icon: XCircle,      color: "#ef4444" },
-    { key: "deliveryRate",       title: t("kpi.deliveryRate"),       icon: TrendingUp,   color: "#8b5cf6", pct: true },
-    { key: "deliveryFromConf",   title: t("kpi.deliveryFromConf"),   icon: BarChart3,    color: "#f59e0b", pct: true },
-    { key: "inDelivery",         title: t("kpi.inDelivery"),         icon: Truck,        color: "#06b6d4" },
-    { key: "totalSales",         title: t("kpi.totalSales"),         icon: TrendingUp,   color: "#10b981" },
-    { key: "totalWithShipping",  title: t("kpi.totalWithShipping"),  icon: TrendingUp,   color: "#6366f1" },
-    { key: "totalSalesBosta",    title: t("kpi.totalSalesBosta"),    icon: Store,        color: "#f97316" },
+    {
+      key: "totalOrders",
+      title: t("kpi.totalOrders"),
+      icon: ShoppingCart,
+      color: "#6366f1",
+    },
+    {
+      key: "confirmedOrders",
+      title: t("kpi.confirmedOrders"),
+      icon: CheckCircle,
+      color: "#3b82f6",
+    },
+    {
+      key: "deliveredOrders",
+      title: t("kpi.deliveredOrders"),
+      icon: Truck,
+      color: "#10b981",
+    },
+    {
+      key: "cancelledOrders",
+      title: t("kpi.cancelledOrders"),
+      icon: XCircle,
+      color: "#ef4444",
+    },
+    {
+      key: "deliveryRate",
+      title: t("kpi.deliveryRate"),
+      icon: TrendingUp,
+      color: "#8b5cf6",
+      pct: true,
+    },
+    {
+      key: "deliveryFromConf",
+      title: t("kpi.deliveryFromConf"),
+      icon: BarChart3,
+      color: "#f59e0b",
+      pct: true,
+    },
+    {
+      key: "inDelivery",
+      title: t("kpi.inDelivery"),
+      icon: Truck,
+      color: "#06b6d4",
+    },
+    {
+      key: "totalSales",
+      title: t("kpi.totalSales"),
+      icon: TrendingUp,
+      color: "#10b981",
+    },
+    {
+      key: "totalWithShipping",
+      title: t("kpi.totalWithShipping"),
+      icon: TrendingUp,
+      color: "#6366f1",
+    },
+    {
+      key: "totalSalesBosta",
+      title: t("kpi.totalSalesBosta"),
+      icon: Store,
+      color: "#f97316",
+    },
   ];
 
   // ── Areas table columns ───────────────────────────────────────────────────
@@ -694,54 +880,69 @@ export default function OrdersStatisticsPage() {
     {
       key: "label",
       header: t("areas.columns.cityArea"),
-      cell: r => (
+      cell: (r) => (
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center shrink-0">
             <MapPin size={11} className="text-emerald-500" />
           </div>
-          <span className="font-semibold text-sm text-slate-700 dark:text-slate-200">{r.city ?? "—"}</span>
+          <span className="font-semibold text-sm text-slate-700 dark:text-slate-200">
+            {r.city ?? "—"}
+          </span>
         </div>
       ),
     },
     {
       key: "totalOrders",
       header: t("areas.columns.totalOrders"),
-      cell: r => (
-        <span className="font-bold tabular-nums text-sm" style={{ color: PRIMARY }}>{fmt(r.totalOrders)}</span>
+      cell: (r) => (
+        <span
+          className="font-bold tabular-nums text-sm"
+          style={{ color: PRIMARY }}
+        >
+          {fmt(r.totalOrders)}
+        </span>
       ),
     },
     {
       key: "confirmedOrders",
       header: t("areas.columns.confirmed"),
-      cell: r => (
-        <span className="font-semibold text-blue-500 dark:text-blue-400 tabular-nums text-sm">{fmt(r.confirmedOrders)}</span>
+      cell: (r) => (
+        <span className="font-semibold text-blue-500 dark:text-blue-400 tabular-nums text-sm">
+          {fmt(r.confirmedOrders)}
+        </span>
       ),
     },
     {
       key: "shippedOrders",
       header: t("areas.columns.inDelivery"),
-      cell: r => (
-        <span className="font-semibold text-cyan-500 dark:text-cyan-400 tabular-nums text-sm">{fmt(r.shippedOrders)}</span>
+      cell: (r) => (
+        <span className="font-semibold text-cyan-500 dark:text-cyan-400 tabular-nums text-sm">
+          {fmt(r.shippedOrders)}
+        </span>
       ),
     },
     {
       key: "deliveredOrders",
       header: t("areas.columns.delivered"),
-      cell: r => (
-        <span className="font-semibold text-emerald-500 dark:text-emerald-400 tabular-nums text-sm">{fmt(r.deliveredOrders)}</span>
+      cell: (r) => (
+        <span className="font-semibold text-emerald-500 dark:text-emerald-400 tabular-nums text-sm">
+          {fmt(r.deliveredOrders)}
+        </span>
       ),
     },
     {
       key: "sales",
       header: t("areas.columns.netSales"),
-      cell: r => (
-        <span className="font-bold text-slate-700 dark:text-slate-200 tabular-nums text-sm">{fmt(r.sales)}</span>
+      cell: (r) => (
+        <span className="font-bold text-slate-700 dark:text-slate-200 tabular-nums text-sm">
+          {fmt(r.sales)}
+        </span>
       ),
     },
     {
       key: "deliveryRate",
       header: t("areas.columns.successRate"),
-      cell: r => {
+      cell: (r) => {
         const good = r.deliveryRate >= 80;
         return (
           <div className="flex items-center gap-2">
@@ -759,7 +960,7 @@ export default function OrdersStatisticsPage() {
                 "text-xs font-bold px-2 py-0.5 rounded-full",
                 good
                   ? "text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/30"
-                  : "text-orange-700 bg-orange-50 dark:text-orange-400 dark:bg-orange-950/30"
+                  : "text-orange-700 bg-orange-50 dark:text-orange-400 dark:bg-orange-950/30",
               )}
             >
               {r.deliveryRate}%
@@ -772,31 +973,47 @@ export default function OrdersStatisticsPage() {
 
   // ── Derived stats ─────────────────────────────────────────────────────────
 
-  const statsData = useMemo(() => KPI.map((card, i) => {
-    const raw = summary?.[card.key];
-    const val = raw == null ? "0" : card.pct ? pct(raw) : fmt(raw);
-    return {
-      id: card.key, name: card.title, value: val,
-      icon: card.icon, color: card.color, sortOrder: i,
-      onClick: () => {},
-    };
-  }), [summary, KPI]);
+  const statsData = useMemo(
+    () =>
+      KPI.map((card, i) => {
+        const raw = summary?.[card.key];
+        const val = raw == null ? "0" : card.pct ? pct(raw) : fmt(raw);
+        return {
+          id: card.key,
+          name: card.title,
+          value: val,
+          icon: card.icon,
+          color: card.color,
+          sortOrder: i,
+          onClick: () => {},
+        };
+      }),
+    [summary, KPI],
+  );
 
   const statsCards = useMemo(() => {
     if (!statusData.length) return [];
     return statusData
       .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map(stat => {
+      .map((stat) => {
         const Icon = getIconForStatus(stat.code);
         const bgColors = generateBgColors(stat.color);
         return {
-          id: stat.id, name: stat.system ? tOrders(`statuses.${stat.code}`) : stat.name,
-          value: String(stat.count || 0), icon: Icon,
+          id: stat.id,
+          name: stat.system ? tOrders(`statuses.${stat.code}`) : stat.name,
+          value: String(stat.count || 0),
+          icon: Icon,
           bg: `bg-[${bgColors.light}] dark:bg-[${bgColors.dark}]`,
-          bgInlineLight: bgColors.light, bgInlineDark: bgColors.dark,
-          iconColor: `text-[${stat.color}]`, color: stat.color,
-          iconBorder: `border-[${stat.color}]`, iconBorderInline: stat.color,
-          code: stat.code, editable: false, sortOrder: stat.sortOrder, fullData: stat,
+          bgInlineLight: bgColors.light,
+          bgInlineDark: bgColors.dark,
+          iconColor: `text-[${stat.color}]`,
+          color: stat.color,
+          iconBorder: `border-[${stat.color}]`,
+          iconBorderInline: stat.color,
+          code: stat.code,
+          editable: false,
+          sortOrder: stat.sortOrder,
+          fullData: stat,
         };
       });
   }, [statusData]);
@@ -807,12 +1024,18 @@ export default function OrdersStatisticsPage() {
     setL(true);
     const id = toast.loading(t("export.exporting"));
     try {
-      const res = await api.get(endpoint, { params: buildParams(), responseType: "blob" });
+      const res = await api.get(endpoint, {
+        params: buildParams(),
+        responseType: "blob",
+      });
       const url = URL.createObjectURL(new Blob([res.data]));
       const a = Object.assign(document.createElement("a"), {
-        href: url, download: `${name}_${Date.now()}.xlsx`,
+        href: url,
+        download: `${name}_${Date.now()}.xlsx`,
       });
-      document.body.appendChild(a); a.click(); a.remove();
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
       URL.revokeObjectURL(url);
       toast.success(t("export.success"), { id });
     } catch (err) {
@@ -823,25 +1046,36 @@ export default function OrdersStatisticsPage() {
   };
 
   const orderConfigs = [
-    { key: "newOrders",       label: t("chart.newOrders"),       color: SECONDARY,  fillOpacity: 0.1, tension: 0.44 },
-    { key: "deliveredOrders", label: t("chart.deliveredOrders"), color: "#10b981",  fillOpacity: 0.06, tension: 0.44 },
+    {
+      key: "newOrders",
+      label: t("chart.newOrders"),
+      color: SECONDARY,
+      fillOpacity: 0.1,
+      tension: 0.44,
+    },
+    {
+      key: "deliveredOrders",
+      label: t("chart.deliveredOrders"),
+      color: "#10b981",
+      fillOpacity: 0.06,
+      tension: 0.44,
+    },
   ];
 
   const QUICK_RANGES = [
-    { id: "today",      label: t("ranges.today") },
-    { id: "yesterday",  label: t("ranges.yesterday") },
-    { id: "this_week",  label: t("ranges.this_week") },
-    { id: "last_week",  label: t("ranges.last_week") },
+    { id: "today", label: t("ranges.today") },
+    { id: "yesterday", label: t("ranges.yesterday") },
+    { id: "this_week", label: t("ranges.this_week") },
+    { id: "last_week", label: t("ranges.last_week") },
     { id: "this_month", label: t("ranges.this_month") },
     { id: "last_month", label: t("ranges.last_month") },
-    { id: "this_year",  label: t("ranges.this_year") },
+    { id: "this_year", label: t("ranges.this_year") },
   ];
 
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen p-5 space-y-5">
-
       {/* Page header */}
       <PageHeader
         breadcrumbs={[
@@ -882,13 +1116,15 @@ export default function OrdersStatisticsPage() {
           <Flatpickr
             value={[
               filters.startDate ? new Date(filters.startDate) : null,
-              filters.endDate   ? new Date(filters.endDate)   : null,
+              filters.endDate ? new Date(filters.endDate) : null,
             ]}
-            onChange={([s, e]) => setFilters(f => ({
-              ...f,
-              startDate: s ? s.toISOString().split("T")[0] : null,
-              endDate:   e ? e.toISOString().split("T")[0] : null,
-            }))}
+            onChange={([s, e]) =>
+              setFilters((f) => ({
+                ...f,
+                startDate: s ? s.toISOString().split("T")[0] : null,
+                endDate: e ? e.toISOString().split("T")[0] : null,
+              }))
+            }
             options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
             placeholder={t("filters.dateRangePlaceholder")}
             className={cn(
@@ -899,7 +1135,7 @@ export default function OrdersStatisticsPage() {
               "hover:border-orange-300 dark:hover:border-orange-700",
               "focus:border-orange-400 focus:outline-none",
               "focus:shadow-[0_0_0_3px_rgb(var(--primary-shadow))]",
-              "transition-all duration-200"
+              "transition-all duration-200",
             )}
           />
         </FilterField>
@@ -907,15 +1143,17 @@ export default function OrdersStatisticsPage() {
         <FilterField label={t("filters.store")} icon={Store}>
           <Select
             value={filters.storeId}
-            onValueChange={v => setFilters(f => ({ ...f, storeId: v }))}
+            onValueChange={(v) => setFilters((f) => ({ ...f, storeId: v }))}
           >
             <SelectTrigger className="h-10 rounded-xl border-slate-200 dark:border-slate-700 text-sm">
               <SelectValue placeholder={t("filters.allStores")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("filters.allStores")}</SelectItem>
-              {stores.map(s => (
-                <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
+              {stores.map((s) => (
+                <SelectItem key={s.id} value={String(s.id)}>
+                  {s.name}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -930,8 +1168,16 @@ export default function OrdersStatisticsPage() {
           transition={{ delay: 0.15 }}
           className="lg:col-span-2"
         >
-          <Card title={t("charts.generalReports")} icon={TrendingUp} color={PRIMARY}>
-            <TrendChart data={trendData} loading={loading} configs={orderConfigs} />
+          <Card
+            title={t("charts.generalReports")}
+            icon={TrendingUp}
+            color={PRIMARY}
+          >
+            <TrendChart
+              data={trendData}
+              loading={loading}
+              configs={orderConfigs}
+            />
           </Card>
         </motion.div>
 
@@ -964,14 +1210,19 @@ export default function OrdersStatisticsPage() {
           action={
             <ExportBtn
               loading={exAreas}
-              onClick={() => doExport("/dashboard/orders/top-areas/export", setExAreas, "top_areas")}
+              onClick={() =>
+                doExport(
+                  "/dashboard/orders/top-areas/export",
+                  setExAreas,
+                  "top_areas",
+                )
+              }
             />
           }
         >
           <MiniTable columns={areasCols} data={areasData} loading={loading} />
         </Card>
       </motion.div>
-
     </div>
   );
 }

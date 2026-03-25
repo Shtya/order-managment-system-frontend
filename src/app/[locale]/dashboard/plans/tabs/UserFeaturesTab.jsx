@@ -11,11 +11,10 @@ import api from "@/utils/api";
 import { useDebounce } from "@/hook/useDebounce";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/utils/cn";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { platformCurrency } from "@/utils/healpers";
 
-function formatCurrency(amount) {
-    if (amount === undefined || amount === null) return "—";
-    return Number(amount).toLocaleString("en-US");
-}
+
 
 function formatDate(dateStr) {
     if (!dateStr) return "—";
@@ -96,7 +95,7 @@ export default function UserFeaturesTab() {
             setExportLoading(false);
         }
     };
-
+    const { formatCurrency } = usePlatformSettings();
     const columns = useMemo(() => [
         {
             key: "user",
@@ -146,11 +145,11 @@ export default function UserFeaturesTab() {
             header: tf("columns.purchaseDate"),
             cell: (row) => (
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <Calendar size={12} /> {formatDate(row.startDate)}
+                    <Calendar size={12} /> {formatDate(row.startDate, platformCurrency)}
                 </div>
             ),
         }
-    ], [t, tf]);
+    ], [t, tf, formatCurrency]);
 
     return (
         <Table

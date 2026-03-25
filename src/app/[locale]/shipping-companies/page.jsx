@@ -552,6 +552,7 @@ function SkeletonCard() {
 // ─────────────────────────────────────────────────────────────────────────────
 function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) {
 	const t = useTranslations("shipping");
+	const { hasPermission } = useAuth();
 	const {
 		meta,
 		isActive,
@@ -622,43 +623,45 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 						</div>
 
 						{/* Toggle */}
-						<div className="flex flex-col items-end gap-1 flex-shrink-0">
-							<button
-								onClick={isConfigured ? () => handleToggle() : () => setOpenModal("settings")}
-								disabled={toggling}
-								title={!isConfigured ? t("card.configureFirst") : isActive ? t("card.disable") : t("card.enable")}
-								className="relative rounded-full transition-all duration-300 focus:outline-none"
-								style={{
-									width: 40, height: 22,
-									background: isActive && isConfigured ? accent : "rgba(0,0,0,0.13)",
-									border: "none",
-									opacity: toggling ? 0.7 : 1,
-									cursor: toggling ? "not-allowed" : "pointer",
-								}}
-							>
-								<span
-									className="absolute rounded-full bg-white transition-all duration-300 flex items-center justify-center"
+						{hasPermission("shipping-companies.update") && (
+							<div className="flex flex-col items-end gap-1 flex-shrink-0">
+								<button
+									onClick={isConfigured ? () => handleToggle() : () => setOpenModal("settings")}
+									disabled={toggling}
+									title={!isConfigured ? t("card.configureFirst") : isActive ? t("card.disable") : t("card.enable")}
+									className="relative rounded-full transition-all duration-300 focus:outline-none"
 									style={{
-										top: 3, width: 16, height: 16,
-										left: isActive && isConfigured ? "calc(100% - 19px)" : 3,
-										boxShadow: "0 1px 4px rgba(0,0,0,0.18)",
+										width: 40, height: 22,
+										background: isActive && isConfigured ? accent : "rgba(0,0,0,0.13)",
+										border: "none",
+										opacity: toggling ? 0.7 : 1,
+										cursor: toggling ? "not-allowed" : "pointer",
 									}}
 								>
-									{toggling && (
-										<svg className="animate-spin h-2.5 w-2.5" viewBox="0 0 24 24" style={{ color: accent }}>
-											<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-											<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-										</svg>
-									)}
+									<span
+										className="absolute rounded-full bg-white transition-all duration-300 flex items-center justify-center"
+										style={{
+											top: 3, width: 16, height: 16,
+											left: isActive && isConfigured ? "calc(100% - 19px)" : 3,
+											boxShadow: "0 1px 4px rgba(0,0,0,0.18)",
+										}}
+									>
+										{toggling && (
+											<svg className="animate-spin h-2.5 w-2.5" viewBox="0 0 24 24" style={{ color: accent }}>
+												<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+												<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+											</svg>
+										)}
+									</span>
+								</button>
+								<span
+									className="font-semibold uppercase tracking-wide transition-colors duration-300"
+									style={{ fontSize: 9, color: isActive && isConfigured ? accent : "rgba(0,0,0,0.3)" }}
+								>
+									{toggling ? t("card.updating") : (isActive && isConfigured ? t("card.active") : t("card.inactive"))}
 								</span>
-							</button>
-							<span
-								className="font-semibold uppercase tracking-wide transition-colors duration-300"
-								style={{ fontSize: 9, color: isActive && isConfigured ? accent : "rgba(0,0,0,0.3)" }}
-							>
-								{toggling ? t("card.updating") : (isActive && isConfigured ? t("card.active") : t("card.inactive"))}
-							</span>
-						</div>
+							</div>
+						)}
 					</div>
 
 					{/* Description */}
@@ -693,72 +696,62 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 					}}
 				>
 					{/* Settings */}
+					{hasPermission("shipping-companies.update") && (
+						<button
+							onClick={() => setOpenModal("settings")}
+							title={t("card.settingsTitle")}
+							className={fbCls}
+							onMouseEnter={onEnter}
+							onMouseLeave={onLeave}
+						>
+							<Settings2 size={12} />
+							{t("card.settings")}
+						</button>
+					)}
+
+					{/* Guide — internal steps or external docs */}
 					<button
-						onClick={() => setOpenModal("settings")}
-						title={t("card.settingsTitle")}
-						className={fbCls}
+						onClick={() => isConfigured && setOpenModal("guide")}
+						title={t("card.guideTitle")}
+						className={`cursor-pointer ${fbCls}`}
 						onMouseEnter={onEnter}
 						onMouseLeave={onLeave}
 					>
-						<Settings2 size={12} />
-						{t("card.settings")}
+						<HelpCircle size={12} />
+						{t("card.guide")}
 					</button>
-
-					{/* Guide — internal steps or external docs */}
-					{meta?.guide?.showSteps ? (
-						<button
-							onClick={() => isConfigured && setOpenModal("guide")}
-							title={t("card.guideTitle")}
-							className={`cursor-pointer ${fbCls}`}
-							onMouseEnter={onEnter}
-							onMouseLeave={onLeave}
-						>
-							<HelpCircle size={12} />
-							{t("card.guide")}
-						</button>
-					) : (
-						<a
-							href={meta.guide.docsUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							title={t("card.guideTitle")}
-							className={fbCls}
-							style={{ textDecoration: "none" }}
-							onMouseEnter={onEnter}
-							onMouseLeave={onLeave}
-						>
-							<HelpCircle size={12} />
-							{t("card.guide")}
-						</a>
-					)}
 
 					{/* Webhook */}
-					<button
-						onClick={() => isConfigured && setOpenModal("webhook")}
-						disabled={!isConfigured}
-						title={isConfigured ? "Webhook" : t("card.configureFirst")}
-						className={`font-en ${fbCls}`}
-						style={{ opacity: !isConfigured ? 0.35 : 1, cursor: !isConfigured ? "not-allowed" : "pointer" }}
-						onMouseEnter={(e) => { if (isConfigured) onEnter(e); }}
-						onMouseLeave={(e) => { if (isConfigured) onLeave(e); }}
-					>
-						<Webhook size={12} />
-						Webhook
-					</button>
+					{hasPermission("shipping-companies.read") && (
+						<button
+							onClick={() => isConfigured && setOpenModal("webhook")}
+							disabled={!isConfigured}
+							title={isConfigured ? "Webhook" : t("card.configureFirst")}
+							className={`font-en ${fbCls}`}
+							style={{ opacity: !isConfigured ? 0.35 : 1, cursor: !isConfigured ? "not-allowed" : "pointer" }}
+							onMouseEnter={(e) => { if (isConfigured) onEnter(e); }}
+							onMouseLeave={(e) => { if (isConfigured) onLeave(e); }}
+						>
+							<Webhook size={12} />
+							Webhook
+						</button>
+					)}
 
 					{/* Usage — pushed to end */}
-					<button
-						onClick={() => isConfigured && setOpenModal("usage")}
-						disabled={!isConfigured}
-						title={isConfigured ? t("card.usageTitle") : t("card.configureFirst")}
-						className={`${fbCls} ml-auto`}
-						style={{ opacity: !isConfigured ? 0.35 : 1, cursor: !isConfigured ? "not-allowed" : "pointer" }}
-						onMouseEnter={(e) => { if (isConfigured) onEnter(e); }}
-						onMouseLeave={(e) => { if (isConfigured) onLeave(e); }}
-					>
-						<BarChart3 size={12} />
-						{t("card.usage")}
-					</button>
+					{hasPermission("shipping-companies.read") && (
+						<button
+							onClick={() => isConfigured && setOpenModal("usage")}
+							disabled={!isConfigured}
+							title={isConfigured ? t("card.usageTitle") : t("card.configureFirst")}
+							className={`${fbCls} ml-auto`}
+							style={{ opacity: !isConfigured ? 0.35 : 1, cursor: !isConfigured ? "not-allowed" : "pointer" }}
+							onMouseEnter={(e) => { if (isConfigured) onEnter(e); }}
+							onMouseLeave={(e) => { if (isConfigured) onLeave(e); }}
+						>
+							<BarChart3 size={12} />
+							{t("card.usage")}
+						</button>
+					)}
 				</div>
 			</motion.div>
 

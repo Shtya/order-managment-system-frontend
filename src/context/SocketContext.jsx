@@ -1,8 +1,15 @@
-import { getUser } from "@/hook/getUser";
-import api from "@/utils/api";
-import { createContext, useContext, useRef, useEffect, useState, useCallback } from "react";
-import io from "socket.io-client";
 
+import api from "@/utils/api";
+import {
+  createContext,
+  useContext,
+  useRef,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
+import io from "socket.io-client";
+import { useAuth } from "./AuthContext";
 
 // ------------------------------
 // Socket Context
@@ -10,210 +17,211 @@ import io from "socket.io-client";
 const SocketContext = createContext();
 
 export const SocketProvider = ({ children }) => {
-    const user = getUser()
+  const { user } = useAuth();
 
-    const socketRef = useRef(null);
-    const subscribers = useRef(new Map());
+  const socketRef = useRef(null);
+  const subscribers = useRef(new Map());
 
-    const [isConnected, setIsConnected] = useState(false);
-    const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
+  const [isConnected, setIsConnected] = useState(false);
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
 
-    // ------------------------------
-    // Pub/Sub
-    // ------------------------------
-    const publish = useCallback(({ type, payload }) => {
-        // We create the standardized action object
-        const action = {
-            type: type,
-            payload: payload
-        };
+  // ------------------------------
+  // Pub/Sub
+  // ------------------------------
+  const publish = useCallback(({ type, payload }) => {
+    const typeGroup = subscribers.current.get(type);
+    if (typeGroup) {
+      typeGroup.forEach((callback) => {
+        callback(payload);
+      });
+    }
+  }, []); // Empty deps because subscribers.current (Ref) doesn't change
 
-        // We iterate through every registered callback in the Map
-        subscribers.current.forEach((callback) => {
-            if (typeof callback === "function") {
-                callback(action);
-            }
-        });
-    }, []); // Empty deps because subscribers.current (Ref) doesn't change
+  /**
+   * Subscribes a callback to a specific action name.
+   */
+  const subscribe = useCallback((actionType, cb) => {
+    if (!actionType || typeof cb !== "function") return;
 
-    /**
-     * Subscribes a callback to a specific action name.
-     */
-    const subscribe = useCallback((actionName, cb) => {
-        if (!actionName || typeof cb !== "function") return;
+    const id = crypto.randomUUID();
 
-        // Set the new callback (overwrites if actionName exists)
-        subscribers.current.set(actionName, cb);
+    if (!subscribers.current.has(actionType)) {
+      subscribers.current.set(actionType, new Map());
+    }
 
-        // Return unsubscribe function
-        return () => {
-            subscribers.current.delete(actionName);
-        };
-    }, []); //
+    subscribers.current.get(actionType).set(id, cb);
 
-
-    // ------------------------------
-    // External Controls
-    // ------------------------------
-    const incrementUnread = () =>
-        setUnreadNotificationsCount((prev) => prev + 1);
-
-    const decrementUnread = () =>
-        setUnreadNotificationsCount((prev) => Math.min(prev - 1, 0));
-
-    const resetUnread = () => setUnreadNotificationsCount(0);
-
-    // ------------------------------
-    // Fetch Initial Count
-    // ------------------------------
-    const fetchUnreadNotificationsCount = async () => {
-        if (typeof window === "undefined") return; // ⛔ Prevent SSR cras
-
-        try {
-
-            const { data } = await api.get("/notifications/unread-count");
-            setUnreadNotificationsCount(data?.unreadCount || 0);
-        } catch {
-            setUnreadNotificationsCount(0);
+    return () => {
+      const typeGroup = subscribers.current.get(actionType);
+      if (typeGroup) {
+        typeGroup.delete(id);
+        if (typeGroup.size === 0) {
+          subscribers.current.delete(actionType);
         }
+      }
     };
+  }, []);
 
-    // ------------------------------
-    // Initialize Socket
-    // ------------------------------
-    useEffect(() => {
-        const token = localStorage.getItem("accessToken");
+  // ------------------------------
+  // External Controls
+  // ------------------------------
+  const incrementUnread = () => setUnreadNotificationsCount((prev) => prev + 1);
 
-        if (!user?.id || !token) return;
+  const decrementUnread = () =>
+    setUnreadNotificationsCount((prev) => Math.min(prev - 1, 0));
 
-        // Disconnect if token changes
-        if (socketRef.current) {
-            const oldToken = socketRef.current.auth?.token;
-            if (oldToken !== token) {
-                socketRef.current.disconnect();
-                socketRef.current = null;
-            }
-        }
+  const resetUnread = () => {
+    const prev = unreadNotificationsCount;
+    setUnreadNotificationsCount(0);
+    return prev;
+  };
 
-        // Create socket instance
-        if (!socketRef.current) {
-            socketRef.current = io(process.env.NEXT_PUBLIC_BASE_URL, {
-                auth: { token },
-                transports: ["websocket", 'polling'],
-                reconnection: true,
-                reconnectionDelay: 1000,
-                reconnectionDelayMax: 5000,
-                reconnectionAttempts: Infinity,
-            });
-        }
+  // ------------------------------
+  // Fetch Initial Count
+  // ------------------------------
+  const fetchUnreadNotificationsCount = async () => {
+    if (typeof window === "undefined") return; // ⛔ Prevent SSR cras
 
-        const socket = socketRef.current;
+    try {
+      const { data } = await api.get("/notifications/unread-count");
+      setUnreadNotificationsCount(data?.unreadCount || 0);
+    } catch {
+      setUnreadNotificationsCount(0);
+    }
+  };
 
-        // ------------------ HANDLERS ------------------
+  // ------------------------------
+  // Initialize Socket
+  // ------------------------------
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
 
-        socket.on("connect", () => {
-            setIsConnected(true);
-        });
+    if (!user?.id || !token) return;
 
-        socket.on("disconnect", () => {
-            setIsConnected(false);
-        });
+    // Disconnect if token changes
+    if (socketRef.current) {
+      const oldToken = socketRef.current.auth?.token;
+      if (oldToken !== token) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    }
 
-        socket.on("reconnect", () => {
-            // Refresh token on reconnect
-            socket.auth = { token };
-        });
+    // Create socket instance
+    if (!socketRef.current) {
+      socketRef.current = io(process.env.NEXT_PUBLIC_BASE_URL, {
+        auth: { token },
+        transports: ["websocket", "polling"],
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        reconnectionAttempts: Infinity,
+      });
+    }
 
-        socket.on("reconnect_error", (err) => {
-            console.error("Reconnect error:", err);
-        });
+    const socket = socketRef.current;
 
-        // ------------------ NEW MESSAGE ------------------
+    // ------------------ HANDLERS ------------------
 
-        socket.on("new_notification", (notification) => {
+    socket.on("connect", () => {
+      setIsConnected(true);
+    });
 
-            publish({
-                type: "NEW_NOTIFICATION",
-                payload: notification,
-            });
-            incrementUnread();
-        })
+    socket.on("disconnect", () => {
+      setIsConnected(false);
+    });
 
-        socket.on("store:sync-status", (payload) => {
-            publish({
-                type: "STORE_SYNC_STATUS",
-                payload,
-            });
-        });
-        socket.on("failed-order:update", (payload) => {
-            publish({
-                type: "FAILED_ORDER_UPDATE",
-                payload,
-            });
-        });
+    socket.on("reconnect", () => {
+      // Refresh token on reconnect
+      socket.auth = { token };
+    });
 
-        socket.on("shipment:status", (payload) => {
+    socket.on("reconnect_error", (err) => {
+      console.error("Reconnect error:", err);
+    });
 
-            publish({
-                type: "SHIPMENT_STATUS",
-                payload,
-            });
-        });
+    // ------------------ NEW MESSAGE ------------------
 
-        // Cleanup listeners
-        return () => {
-            socket.off("connect");
-            socket.off("disconnect");
-            socket.off("reconnect");
-            socket.off("reconnect_error");
-            socket.off("new_notification");
-            socket.off("store:sync-status");
-            socket.off("failed-order:update");
-            socket.off("shipment:status");
-        };
-    }, [user?.id, user?.accessToken]);
+    socket.on("new_notification", (notification) => {
+      publish({
+        type: "NEW_NOTIFICATION",
+        payload: notification,
+      });
+      incrementUnread();
+    });
 
+    socket.on("store:sync-status", (payload) => {
+      publish({
+        type: "STORE_SYNC_STATUS",
+        payload,
+      });
+    });
+    socket.on("failed-order:update", (payload) => {
+      publish({
+        type: "FAILED_ORDER_UPDATE",
+        payload,
+      });
+    });
 
+    socket.on("shipment:status", (payload) => {
+      publish({
+        type: "SHIPMENT_STATUS",
+        payload,
+      });
+    });
 
-    // Fetch unread counts on mount and when user changes
-    useEffect(() => {
-        if (user?.id) {
-            fetchUnreadNotificationsCount();
-        } else {
-            setUnreadNotificationsCount(0);
-        }
-    }, [user?.id]);
+    // Cleanup listeners
+    return () => {
+      socket.off("connect");
+      socket.off("disconnect");
+      socket.off("reconnect");
+      socket.off("reconnect_error");
+      socket.off("new_notification");
+      socket.off("store:sync-status");
+      socket.off("failed-order:update");
+      socket.off("shipment:status");
+    };
+  }, [user?.id]);
 
-    // Disconnect on unmount
-    useEffect(() => {
-        return () => {
-            if (socketRef.current) {
-                socketRef.current.disconnect();
-                socketRef.current = null;
-            }
-        };
-    }, []);
+  // Fetch unread counts on mount and when user changes
+  useEffect(() => {
+    if (user?.id) {
+      fetchUnreadNotificationsCount();
+    } else {
+      setUnreadNotificationsCount(0);
+    }
+  }, [user?.id]);
 
-    return (
-        <SocketContext.Provider
-            value={{
-                isConnected,
-                unreadNotificationsCount,
-                setUnreadNotificationsCount,
+  // Disconnect on unmount
+  useEffect(() => {
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
+  }, []);
 
-                // Publisher/Subscriber
-                subscribe,
-                socket: socketRef.current,
-                // External controls
-                incrementUnread,
-                decrementUnread,
-                resetUnread,
-                fetchUnreadNotificationsCount,
-            }}
-        >
-            {children}
-        </SocketContext.Provider>
-    );
+  return (
+    <SocketContext.Provider
+      value={{
+        isConnected,
+        unreadNotificationsCount,
+        setUnreadNotificationsCount,
+
+        // Publisher/Subscriber
+        subscribe,
+        socket: socketRef.current,
+        // External controls
+        incrementUnread,
+        decrementUnread,
+        resetUnread,
+        fetchUnreadNotificationsCount,
+      }}
+    >
+      {children}
+    </SocketContext.Provider>
+  );
 };
 
 export const useSocket = () => useContext(SocketContext);

@@ -31,6 +31,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import api from "@/utils/api";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { ActionButtons } from "@/components/atoms/Actions";
 
 function SalesTableToolbar({
 	t,
@@ -170,6 +172,7 @@ function FilterField({ label, children }) {
 
 export default function SalesInvoicesPage() {
 	const t = useTranslations("salesInvoices");
+	const { formatCurrency } = usePlatformSettings();
 
 	const [search, setSearch] = useState("");
 	const [filtersOpen, setFiltersOpen] = useState(false);
@@ -205,21 +208,21 @@ export default function SalesInvoicesPage() {
 			},
 			{
 				name: t("stats.totalSales"),
-				value: `${stats.totalSales ?? 0} ${t("currency")}`,
+				value: formatCurrency(stats.totalSales ?? 0),
 				icon: DollarSign,
 				color: "#22C55E",
 				sortOrder: 1,
 			},
 			{
 				name: t("stats.totalPaid"),
-				value: `${stats.totalPaid ?? 0} ${t("currency")}`,
+				value: formatCurrency(stats.totalPaid ?? 0),
 				icon: DollarSign,
 				color: "#F59E0B",
 				sortOrder: 2,
 			},
 			{
 				name: t("stats.totalRemaining"),
-				value: `${stats.totalRemaining ?? 0} ${t("currency")}`,
+				value: formatCurrency(stats.totalRemaining ?? 0),
 				icon: Clock,
 				color: "#EF4444",
 				sortOrder: 3,
@@ -339,7 +342,7 @@ export default function SalesInvoicesPage() {
 				header: t("table.total"),
 				cell: (row) => (
 					<span className="text-gray-600 dark:text-slate-200 font-semibold">
-						{row.total || 0} {t("currency")}
+						{formatCurrency(row.total || 0)}
 					</span>
 				),
 			},
@@ -347,8 +350,8 @@ export default function SalesInvoicesPage() {
 				key: "paidAmount",
 				header: t("table.paidAmount"),
 				cell: (row) => (
-					<span className="text-gray-600 dark:text-slate-200">
-						{row.paidAmount || 0} {t("currency")}
+					<span className="text-green-600 dark:text-green-400 font-semibold">
+						{formatCurrency(row.paidAmount || 0)}
 					</span>
 				),
 			},
@@ -356,8 +359,8 @@ export default function SalesInvoicesPage() {
 				key: "remainingAmount",
 				header: t("table.remainingAmount"),
 				cell: (row) => (
-					<span className="text-gray-500 dark:text-slate-300">
-						{row.remainingAmount || 0} {t("currency")}
+					<span className="text-red-600 dark:text-red-400 font-semibold">
+						{formatCurrency(row.remainingAmount || 0)}
 					</span>
 				),
 			},
@@ -391,29 +394,22 @@ export default function SalesInvoicesPage() {
 				header: t("table.options"),
 				className: "w-[80px]",
 				cell: (row) => (
-					<TooltipProvider>
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<motion.button
-									whileHover={{ scale: 1.1 }}
-									whileTap={{ scale: 0.95 }}
-									className={cn(
-										"group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
-										"border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:border-purple-600 hover:text-white hover:shadow-xl hover:shadow-purple-500/40",
-										"dark:border-purple-900/50 dark:bg-purple-950/30 dark:text-purple-300 dark:hover:bg-purple-600 dark:hover:border-purple-600 dark:hover:text-white dark:hover:shadow-purple-500/30"
-									)}
-									onClick={() => console.log("view", row.id)}
-								>
-									<Eye size={16} className="transition-transform group-hover:scale-110" />
-								</motion.button>
-							</TooltipTrigger>
-							<TooltipContent>{t("actions.view")}</TooltipContent>
-						</Tooltip>
-					</TooltipProvider>
+					<ActionButtons
+						row={row}
+						actions={[
+							{
+								icon: <Eye />,
+								tooltip: t("actions.view"),
+								onClick: (r) => console.log("view", r.id),
+								variant: "purple",
+								permission: "sales_invoice.read",
+							},
+						]}
+					/>
 				),
 			},
 		];
-	}, [t]);
+	}, [t, formatCurrency]);
 
 	return (
 		<div className="min-h-screen p-5">
@@ -431,6 +427,7 @@ export default function SalesInvoicesPage() {
 							label={t("actions.createInvoice")}
 							tone="primary"
 							variant="solid"
+							permission="sales_invoice.create"
 						/>
 
 						<Button_ size="sm" label={t("actions.howToUse")} tone="white" variant="ghost" icon={<Info size={18} />} />
@@ -461,6 +458,7 @@ export default function SalesInvoicesPage() {
 						icon: <FileDown size={14} />,
 						color: "blue",
 						onClick: () => console.log("export"),
+						permission: "sales_invoice.read",
 					},
 				]}
 				hasActiveFilters={hasActiveFilters}

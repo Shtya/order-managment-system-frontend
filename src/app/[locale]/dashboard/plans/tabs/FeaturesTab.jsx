@@ -11,11 +11,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
-function formatCurrency(amount) {
-    if (amount === undefined || amount === null) return "—";
-    return Number(amount).toLocaleString("en-US");
-}
+
 
 export default function FeaturesTab() {
     const t = useTranslations("plans");
@@ -77,6 +75,7 @@ export default function FeaturesTab() {
             setSaving(false);
         }
     };
+    const { formatCurrency } = usePlatformSettings();
 
     const columns = useMemo(() => [
         {
@@ -128,7 +127,7 @@ export default function FeaturesTab() {
                 </div>
             ),
         }
-    ], [t, tf]);
+    ], [t, tf, formatCurrency]);
 
     return (
         <>

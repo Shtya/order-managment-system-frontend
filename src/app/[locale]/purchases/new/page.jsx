@@ -19,6 +19,7 @@ import toast from "react-hot-toast";
 
 import { ProductSkuSearchPopover } from "../../../../components/molecules/ProductSkuSearchPopover";
 import PageHeader from "@/components/atoms/Pageheader";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 
 export default function CreatePurchaseInvoicePage() {
@@ -27,6 +28,7 @@ export default function CreatePurchaseInvoicePage() {
 	const isRTL = locale === "ar";
 	const tValidation = useTranslations("validation");
 	const t = useTranslations("purchaseInvoice");
+	const { formatCurrency, currency } = usePlatformSettings();
 
 	const [receiptImage, setReceiptImage] = useState(null);
 	const [suppliers, setSuppliers] = useState([]);
@@ -502,7 +504,7 @@ export default function CreatePurchaseInvoicePage() {
 																	{/* Current Price Display */}
 																	<div className="flex items-center gap-1 text-sm text-gray-600">
 																		<Tag size={14} className="text-green-600" />
-																		<span className="font-medium">{product.price}</span>
+																		<span className="font-medium">{formatCurrency(product.price)}</span>
 																		<span className="text-xs text-gray-400">({t("current_price")})</span>
 																	</div>
 
@@ -521,7 +523,7 @@ export default function CreatePurchaseInvoicePage() {
 																/>
 															</td>
 															<td className="p-3 text-sm font-semibold text-green-600 dark:text-green-400">
-																{invoiceTotal.toFixed(2)} {t("currency")}
+																{formatCurrency(invoiceTotal)}
 															</td>
 															<td className="p-3 text-center">
 																<motion.button
@@ -541,7 +543,7 @@ export default function CreatePurchaseInvoicePage() {
 															</span>
 														)}
 													</>
-
+	
 												);
 											})}
 										</tbody>
@@ -562,12 +564,13 @@ export default function CreatePurchaseInvoicePage() {
 						/>
 						<InvoiceSummary
 							errors={errors}
-							t={t}
 							summary={summary}
+							t={t}
 							total={total}
 							paidAmount={paidAmount}
 							remainingAmount={remainingAmount}
 							control={control}
+							formatCurrency={formatCurrency}
 						/>
 					</div>
 				</div>
@@ -693,7 +696,7 @@ function ReceiptImageUpload({ image, onImageChange, onRemove, t, isRTL }) {
 	);
 }
 
-function InvoiceSummary({ errors, summary, t, total, paidAmount, remainingAmount, control }) {
+function InvoiceSummary({ errors, summary, t, total, paidAmount, remainingAmount, control, formatCurrency }) {
 	return (
 		<motion.div
 			initial={{ opacity: 0, x: 20 }}
@@ -716,7 +719,7 @@ function InvoiceSummary({ errors, summary, t, total, paidAmount, remainingAmount
 				<div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-slate-800/50">
 					<span className="text-sm text-gray-600 dark:text-slate-300">{t("summary.subtotal")}</span>
 					<span className="text-base font-semibold text-gray-700 dark:text-slate-200">
-						{summary.subtotal.toFixed(2)} {t("currency")}
+						{formatCurrency(summary.subtotal)}
 					</span>
 				</div>
 
@@ -747,7 +750,7 @@ function InvoiceSummary({ errors, summary, t, total, paidAmount, remainingAmount
 				<div className="flex items-center justify-between p-3 rounded-xl bg-green-50 dark:bg-green-950/20">
 					<span className="text-sm text-gray-600 dark:text-slate-300">{t("summary.invoiceTotal")}</span>
 					<span className="text-base font-semibold text-green-600 dark:text-green-400">
-						{total.toFixed(2)} {t("currency")}
+						{formatCurrency(total)}
 					</span>
 				</div>
 
@@ -756,7 +759,7 @@ function InvoiceSummary({ errors, summary, t, total, paidAmount, remainingAmount
 						{t("summary.remainingAmount")}
 					</span>
 					<span className="text-xl font-bold text-primary">
-						{remainingAmount.toFixed(2)} {t("currency")}
+						{formatCurrency(remainingAmount)}
 					</span>
 				</div>
 			</div>

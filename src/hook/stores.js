@@ -622,7 +622,6 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
     const t = useTranslations("storeIntegrations");
     const config = PROVIDER_CONFIG[provider];
     const isEdit = !!existingStore;
-    const user = getUser();
 
     const [fetchingStore, setFetchingStore] = useState(false);
     const [regeneratingSecrets, setRegeneratingSecrets] = useState(false);

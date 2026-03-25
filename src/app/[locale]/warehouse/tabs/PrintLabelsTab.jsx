@@ -81,7 +81,7 @@ export default function PrintLabelsTab({ subtab, setSubtab, resetToken }) {
           { name: t("breadcrumbs.printLabels") },
         ]}
         buttons={
-          <Button_ size="sm" label={t("howItWorks")} variant="ghost" onClick={() => { }} icon={<Info size={18} />} />
+          <Button_ size="sm" label={t("howItWorks")} variant="ghost" onClick={() => { }} icon={<Info size={18} />} permission="orders.read" />
         }
         statsLoading={loading}
         stats={stats}
@@ -466,8 +466,8 @@ function NotPrintedSubtab({ onPrinted, resetToken, fetchStats }) {
         <ActionButtons
           row={row}
           actions={[
-            { icon: <Info />, tooltip: t("common.details"), onClick: (r) => setDetailModal(r), variant: "purple" },
-            { icon: <Printer />, tooltip: t("common.printLabel"), onClick: (r) => setPrintPreview({ open: true, orders: [r] }), variant: "blue" },
+            { icon: <Info />, tooltip: t("common.details"), onClick: (r) => setDetailModal(r), variant: "purple", permission: "orders.read" },
+            { icon: <Printer />, tooltip: t("common.printLabel"), onClick: (r) => setPrintPreview({ open: true, orders: [r] }), variant: "blue", permission: "orders.update" },
           ]}
         />
       ),
@@ -480,8 +480,8 @@ function NotPrintedSubtab({ onPrinted, resetToken, fetchStats }) {
         searchValue={search} onSearchChange={setSearch} onSearch={applyFilters}
         labels={{ searchPlaceholder: t("notPrinted.search"), filter: t("common.filter"), apply: t("common.apply"), total: t("common.total"), limit: t("common.limit"), emptyTitle: t("notPrinted.empty"), emptySubtitle: "" }}
         actions={[
-          { key: "printSelected", label: selectedOrders.length > 0 ? t("notPrinted.printSelected", { count: selectedOrders.length }) : t("notPrinted.printSelectedDefault"), icon: <Printer size={14} />, color: "emerald", onClick: () => selectedOrders.length > 0 && setPrintPreview({ open: true, orders: pager.records.filter((o) => selectedOrders.includes(o.orderNumber)) }), disabled: selectedOrders.length === 0 },
-          { key: "export", label: t("common.export"), icon: exportLoading ? <Loader2 className="animate-spin" size={14} /> : <FileDown size={14} />, color: "blue", onClick: onExport, disabled: exportLoading },
+          { key: "printSelected", label: selectedOrders.length > 0 ? t("notPrinted.printSelected", { count: selectedOrders.length }) : t("notPrinted.printSelectedDefault"), icon: <Printer size={14} />, color: "emerald", onClick: () => selectedOrders.length > 0 && setPrintPreview({ open: true, orders: pager.records.filter((o) => selectedOrders.includes(o.orderNumber)) }), disabled: selectedOrders.length === 0, permission: "orders.update" },
+          { key: "export", label: t("common.export"), icon: exportLoading ? <Loader2 className="animate-spin" size={14} /> : <FileDown size={14} />, color: "blue", onClick: onExport, disabled: exportLoading, permission: "orders.read" },
         ]}
         hasActiveFilters={hasActiveFilters} onApplyFilters={applyFilters}
         filters={
@@ -619,8 +619,8 @@ function PrintedSubtab({ resetToken, fetchStats }) {
         <ActionButtons
           row={row}
           actions={[
-            { icon: <Info />, tooltip: t("common.details"), onClick: (r) => setDetailModal(r), variant: "purple" },
-            { icon: <Printer />, tooltip: t("common.reprint"), onClick: (r) => setPrintPreview({ open: true, orders: [r] }), variant: "blue" },
+            { icon: <Info />, tooltip: t("common.details"), onClick: (r) => setDetailModal(r), variant: "purple", permission: "orders.read" },
+            { icon: <Printer />, tooltip: t("common.reprint"), onClick: (r) => setPrintPreview({ open: true, orders: [r] }), variant: "blue", permission: "orders.update" },
           ]}
         />
       ),
@@ -633,8 +633,8 @@ function PrintedSubtab({ resetToken, fetchStats }) {
         searchValue={search} onSearchChange={setSearch} onSearch={applyFilters}
         labels={{ searchPlaceholder: t("printed.search"), filter: t("common.filter"), apply: t("common.apply"), total: t("common.total"), limit: t("common.limit"), emptyTitle: t("printed.empty"), emptySubtitle: "" }}
         actions={[
-          { key: "reprintSelected", label: selectedOrders.length > 0 ? t("printed.printSelected", { count: selectedOrders.length }) : t("printed.printSelectedDefault"), icon: <Printer size={14} />, color: "emerald", onClick: () => selectedOrders.length > 0 && setPrintPreview({ open: true, orders: pager.records.filter((o) => selectedOrders.includes(o.orderNumber)) }), disabled: selectedOrders.length === 0 },
-          { key: "export", label: t("common.export"), icon: exportLoading ? <Loader2 className="animate-spin" size={14} /> : <FileDown size={14} />, color: "blue", onClick: onExport, disabled: exportLoading },
+          { key: "reprintSelected", label: selectedOrders.length > 0 ? t("printed.printSelected", { count: selectedOrders.length }) : t("printed.printSelectedDefault"), icon: <Printer size={14} />, color: "emerald", onClick: () => selectedOrders.length > 0 && setPrintPreview({ open: true, orders: pager.records.filter((o) => selectedOrders.includes(o.orderNumber)) }), disabled: selectedOrders.length === 0, permission: "orders.update" },
+          { key: "export", label: t("common.export"), icon: exportLoading ? <Loader2 className="animate-spin" size={14} /> : <FileDown size={14} />, color: "blue", onClick: onExport, disabled: exportLoading, permission: "orders.read" },
         ]}
         hasActiveFilters={hasActiveFilters} onApplyFilters={applyFilters}
         filters={

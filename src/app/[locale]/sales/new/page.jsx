@@ -18,6 +18,7 @@ import { useLocale, useTranslations } from "next-intl";
 import api from "@/utils/api";
 import { ProductSkuSearchPopover } from "@/components/molecules/ProductSkuSearchPopover";
 import PageHeader from "@/components/atoms/Pageheader";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 const schema = yup.object({
 	invoiceNumber: yup.string().required("Invoice number is required"),
@@ -49,6 +50,7 @@ export default function CreateSalesInvoicePage() {
 	const locale = useLocale();
 	const isRTL = locale === "ar";
 	const t = useTranslations("salesInvoice");
+	const { formatCurrency, currency } = usePlatformSettings();
 
 	const [loading, setLoading] = useState(false);
 
@@ -425,6 +427,7 @@ export default function CreateSalesInvoicePage() {
 							remainingAmount={remainingAmount}
 							shippingCost={shippingCost}
 							control={control}
+							formatCurrency={formatCurrency}
 						/>
 					</div>
 				</div>
@@ -433,7 +436,7 @@ export default function CreateSalesInvoicePage() {
 	);
 }
 
-function InvoiceSummary({ summary, t, total, paidAmount, remainingAmount, shippingCost, control }) {
+function InvoiceSummary({ summary, t, total, paidAmount, remainingAmount, shippingCost, control, formatCurrency }) {
 	return (
 		<motion.div
 			initial={{ opacity: 0, x: 20 }}
@@ -454,14 +457,14 @@ function InvoiceSummary({ summary, t, total, paidAmount, remainingAmount, shippi
 				<div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-slate-800/50">
 					<span className="text-sm text-gray-600 dark:text-slate-300">{t("summary.subtotal")}</span>
 					<span className="text-base font-semibold text-gray-700 dark:text-slate-200">
-						{summary.subtotal.toFixed(2)} {t("currency")}
+						{formatCurrency(summary.subtotal)}
 					</span>
 				</div>
 
 				<div className="flex items-center justify-between p-3 rounded-xl bg-orange-50 dark:bg-orange-950/20">
 					<span className="text-sm text-gray-600 dark:text-slate-300">{t("summary.taxTotal")}</span>
 					<span className="text-base font-semibold text-orange-600 dark:text-orange-400">
-						{summary.taxTotal.toFixed(2)} {t("currency")}
+						{formatCurrency(summary.taxTotal)}
 					</span>
 				</div>
 
@@ -490,16 +493,14 @@ function InvoiceSummary({ summary, t, total, paidAmount, remainingAmount, shippi
 				<div className="flex items-center justify-between p-3 rounded-xl bg-green-50 dark:bg-green-950/20">
 					<span className="text-sm text-gray-600 dark:text-slate-300">{t("summary.total")}</span>
 					<span className="text-base font-semibold text-green-600 dark:text-green-400">
-						{total.toFixed(2)} {t("currency")}
+						{formatCurrency(total)}
 					</span>
 				</div>
 
 				<div className="flex items-center justify-between p-4 rounded-xl bg-primary/10  border-2 border-primary/20 ">
-					<span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
-						{t("summary.remainingAmount")}
-					</span>
+					<span className="text-base font-bold text-primary">{t("summary.remainingAmount")}</span>
 					<span className="text-xl font-bold text-primary">
-						{remainingAmount.toFixed(2)} {t("currency")}
+						{formatCurrency(remainingAmount)}
 					</span>
 				</div>
 			</div>

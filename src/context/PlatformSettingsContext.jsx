@@ -1,55 +1,90 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import api from "@/utils/api";
 
-// 1. Create the Context
 const PlatformSettingsContext = createContext();
 
-// 2. Create the Provider Component
 export function PlatformSettingsProvider({ children }) {
   const [settings, setSettings] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [company, setCompany] = useState(null);
+  const [isSettingsLoading, setIsSettingsLoading] = useState(true);
+  const [isCompanyLoading, setIsCompanyLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const res = await api.get("/admin-settings");
-        setSettings(res.data);
-      } catch (error) {
-        console.error("Failed to fetch platform settings:", error);
-        // Optionally set fallback defaults here if the API fails
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchSettings();
-  }, []);
-
-  // Expose a refresh function in case you need to re-fetch after a Super Admin updates them
-  const refreshSettings = async () => {
-    setIsLoading(true);
+  // 1. جلب إعدادات المنصة بشكل مستقل
+  const fetchSettings = useCallback(async () => {
+    setIsSettingsLoading(true);
     try {
       const res = await api.get("/admin-settings");
       setSettings(res.data);
     } catch (error) {
-      console.error("Failed to refresh platform settings:", error);
+      console.error("Failed to fetch platform settings:", error);
     } finally {
-      setIsLoading(false);
+      setIsSettingsLoading(false);
     }
+  }, []);
+
+  // 2. جلب بيانات الشركة بشكل مستقل
+  const fetchCompany = useCallback(async () => {
+    setIsCompanyLoading(true);
+    try {
+      const res = await api.get("/users/company");
+      setCompany(res.data);
+    } catch (error) {
+      console.error("Failed to fetch company data:", error);
+    } finally {
+      setIsCompanyLoading(false);
+    }
+  }, []);
+
+  // تنفيذ الجلب عند التحميل الأولي
+  useEffect(() => {
+    fetchSettings();
+    fetchCompany();
+  }, [fetchSettings, fetchCompany]);
+
+  // دالة لتحديث الكل
+  const refreshAll = () => {
+    fetchSettings();
+    fetchCompany();
   };
+  const currency = useMemo(() => {
+    if (isCompanyLoading) return "";
+    return company?.currency || "EGP";
+  }, [company, isCompanyLoading]);
+
+  const formatCurrency = useCallback((amount, defaultCurrency) => {
+    if (amount === undefined || amount === null) return "—";
+
+    const formatted = Number(amount).toLocaleString("en-US", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    });
+
+    // استخدام التريم (Trim) لضمان نظافة المخرجات
+    return `${formatted} ${defaultCurrency || currency.trim()}`;
+  }, [currency]);
 
   return (
     <PlatformSettingsContext.Provider
-      value={{ settings, isLoading, refreshSettings }}
+      value={{
+        settings,
+        company,
+        currency,
+        isSettingsLoading,
+        formatCurrency,
+        isCompanyLoading,
+        isLoading: isSettingsLoading || isCompanyLoading, // حالة عامة إذا أردت
+        refreshSettings: fetchSettings,
+        refreshCompany: fetchCompany,
+        refreshAll
+      }}
     >
       {children}
     </PlatformSettingsContext.Provider>
   );
 }
 
-// 3. Create a Custom Hook for easy access
 export const usePlatformSettings = () => {
   const context = useContext(PlatformSettingsContext);
   if (context === undefined) {

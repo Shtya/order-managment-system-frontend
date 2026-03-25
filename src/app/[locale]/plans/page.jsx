@@ -29,6 +29,7 @@ import { useSearchParams } from "next/navigation";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import SubscriptionsTab from "../dashboard/plans/tabs/subscriptionsTab";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { useAuth } from "@/context/AuthContext";
 
 /* ─────────────────────────────────────────────────────────
    DESIGN TOKENS
@@ -52,20 +53,8 @@ export function useSubscriptionsApi() {
   const [isLoading, setIsLoading] = useState(true);
   const [plans, setPlans] = useState([]);
   const [activeSubscription, setActiveSubscription] = useState(null);
-  const [user, setUser] = useState(null);
+  const { user, refreshUser } = useAuth();
 
-  // Fetch user data
-  const fetchUser = useCallback(async () => {
-    try {
-      const { data } = await api.get("/users/me");
-      setUser(data);
-      return data;
-    } catch (error) {
-      console.error("Failed to fetch user:", error);
-      toast.error(t("errors.fetchUserFailed"));
-      return null;
-    }
-  }, [t]);
 
   // Fetch active subscription
   const fetchActiveSubscription = useCallback(async () => {
@@ -93,7 +82,6 @@ export function useSubscriptionsApi() {
       return data;
     } catch (error) {
       console.error("Failed to fetch plans:", error);
-      toast.error(t("errors.fetchPlansFailed"));
       return [];
     } finally {
       setIsLoading(false);
@@ -103,7 +91,7 @@ export function useSubscriptionsApi() {
   // Subscribe to a plan
   const subscribe = useCallback(
     async (planId) => {
-      setLoading(true);
+      setLoading(planId);
       try {
         const { data } = await api.post("/subscriptions/subscribe", { planId });
 
@@ -121,7 +109,7 @@ export function useSubscriptionsApi() {
 
         return data;
       } catch (error) {
-        console.log(error);
+        console.error(error);
         const message =
           error?.response?.data?.message || t("errors.subscribeFailed");
         toast.error(Array.isArray(message) ? message[0] : message);
@@ -136,13 +124,14 @@ export function useSubscriptionsApi() {
   // Cancel subscription
   const cancelSubscription = useCallback(
     async (subscriptionId) => {
-      setLoading(true);
+      setLoading(subscriptionId);
       try {
         await api.post(`/subscriptions/cancel/${subscriptionId}`);
         toast.success(t("success.cancelled"));
 
         // Refresh active subscription
         await fetchActiveSubscription();
+        await refreshUser()
       } catch (error) {
         const message =
           error?.response?.data?.message || t("errors.cancelFailed");
@@ -158,10 +147,10 @@ export function useSubscriptionsApi() {
   // Initial data fetch
   useEffect(() => {
     const init = async () => {
-      await Promise.all([fetchUser(), fetchActiveSubscription(), fetchPlans()]);
+      await Promise.all([fetchActiveSubscription(), fetchPlans()]);
     };
     init();
-  }, [fetchUser, fetchActiveSubscription, fetchPlans]);
+  }, [fetchActiveSubscription, fetchPlans]);
 
   return {
     loading,
@@ -173,7 +162,6 @@ export function useSubscriptionsApi() {
     cancelSubscription,
     fetchPlans,
     fetchActiveSubscription,
-    fetchUser,
   };
 }
 
@@ -224,6 +212,7 @@ function PlanCard({
   activeSubscription,
   user,
   isDisabled,
+  isLoading,
   idx = 0,
 }) {
   const { settings, isLoading: isSettingsLoading } = usePlatformSettings();
@@ -682,7 +671,7 @@ function PlanCard({
               <a
                 href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(
                   t("messages.whatsappInterested", { planName: plan.name }) ||
-                    `مرحباً، أنا مهتم بخطة ${plan.name}`,
+                  `مرحباً، أنا مهتم بخطة ${plan.name}`,
                 )}`}
                 disabled={isSettingsLoading}
                 target="_blank"
@@ -739,7 +728,7 @@ function PlanCard({
                   ) : (
                     <>
                       {t("actions.subscribe")}
-                      {isDisabled ? (
+                      {isLoading ? (
                         <Loader2 className="animate-spin" />
                       ) : (
                         <ArrowRight size={16} />
@@ -904,6 +893,7 @@ export default function SubscriptionsPage() {
                     activeSubscription={activeSubscription}
                     user={user}
                     isDisabled={loading}
+                    isLoading={loading === plan.id}
                     idx={idx}
                   />
                 ))}

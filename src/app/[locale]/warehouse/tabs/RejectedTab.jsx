@@ -387,6 +387,7 @@ export function RejectedTab({ resetToken }) {
                 tooltip: t("actions.viewDetails"),
                 onClick: (r) => setDetailModal(r),
                 variant: "purple",
+                permission: "orders.read",
               },
               {
                 icon: retrying[row.id] ? <Loader2 className="animate-spin" /> : <RefreshCw />,
@@ -394,6 +395,7 @@ export function RejectedTab({ resetToken }) {
                 onClick: (r) => handleRetry(r),
                 variant: "orange",
                 disabled: !!retrying[row.id],
+                permission: "order.update",
               },
             ]}
           />
@@ -404,14 +406,15 @@ export function RejectedTab({ resetToken }) {
   );
   return (
     <div className="space-y-4">
-      <PageHeader
-        breadcrumbs={[
-          { name: t("breadcrumbs.home"), href: "/" },
-          { name: t("breadcrumbs.warehouse"), href: "/warehouse" },
-          { name: t("breadcrumbs.rejected") },
-        ]}
-        stats={stats}
-      />
+			<PageHeader
+				breadcrumbs={[
+					{ name: t("breadcrumbs.home"), href: "/" },
+					{ name: t("breadcrumbs.warehouse"), href: "/warehouse" },
+					{ name: t("breadcrumbs.rejected") },
+				]}
+				buttons={<Button_ size="sm" label={t("howItWorks")} variant="ghost" onClick={() => { }} icon={<Info size={18} />} permission="orders.read" />}
+				stats={stats}
+			/>
 
       <Table
         searchValue={search}
@@ -434,6 +437,7 @@ export function RejectedTab({ resetToken }) {
             color: "blue",
             onClick: onExport,
             disabled: exportLoading,
+            permission: "orders.read",
           },
         ]}
         hasActiveFilters={false}

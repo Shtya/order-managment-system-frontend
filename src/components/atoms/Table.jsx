@@ -20,6 +20,8 @@ import {
 import { baseImg } from "@/utils/axios";
 import { useTranslations } from "next-intl";
 
+import { useAuth } from "@/context/AuthContext";
+
 const ACTION_KEYS = new Set(["actions", "options"]);
 const DEFAULT_PER_PAGE_OPTIONS = [6, 12, 24, 48];
 
@@ -115,9 +117,17 @@ export const TableToolbar = memo(function TableToolbar({
   filterLabel = "Filters",
   actions = [],
 }) {
+  const { hasPermission } = useAuth();
   const handleKeyDown = (e) => {
     if (e.key === "Enter") { e.preventDefault(); onSearch?.(); }
   };
+
+  const filteredActions = useMemo(() => {
+    return actions.filter((action) => {
+      if (!action.permission) return true;
+      return hasPermission(action.permission);
+    });
+  }, [actions, hasPermission]);
 
   return (
     <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -164,7 +174,7 @@ export const TableToolbar = memo(function TableToolbar({
           </motion.button>
         )}
 
-        {actions.map((action) => (
+        {filteredActions.map((action) => (
           <motion.button
             key={action.key}
             whileHover={{ scale: 1.02, y: -1 }}

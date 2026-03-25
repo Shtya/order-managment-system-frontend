@@ -22,6 +22,7 @@ import {
 	Boxes,
 	ClipboardList,
 	Layers,
+	Ban,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/utils/cn";
@@ -42,6 +43,7 @@ import { toast } from "react-hot-toast";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import { useDebounce } from "@/hook/useDebounce";
 import api from "@/utils/api";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 // ─────────────────────────────────────────────
 // ─────────────────────────────────────────────────────────────
 // DESIGN TOKENS
@@ -158,7 +160,10 @@ function ArcRing({
 }
 
 function CarrierPill({ carrier }) {
-	const s = CARRIER_STYLES[carrier] || {};
+	const cKey = carrier?.toUpperCase() || "NONE";
+	const s = CARRIER_STYLES[cKey] || CARRIER_STYLES.NONE;
+	const t = useTranslations("warehouse.outgoing");
+
 	return (
 		<span
 			className={cn(
@@ -170,8 +175,8 @@ function CarrierPill({ carrier }) {
 				s.text
 			)}
 		>
-			<Truck size={11} />
-			{carrier}
+			{<Truck size={11} />}
+			{cKey === "NONE" ? "None" : carrier}
 		</span>
 	);
 }
@@ -1605,10 +1610,7 @@ function OrdersList({
 
 								<div className="flex justify-center">
 									<span className="text-[12px] font-black text-slate-800 tabular-nums">
-										{order.totalPrice}
-										<span className="text-[9px] text-slate-400 font-normal ms-0.5">
-											{t("common.currency")}
-										</span>
+										{formatCurrency(order.totalPrice)}
 									</span>
 								</div>
 
@@ -1692,22 +1694,14 @@ function OrdersList({
 
 														<div className="text-center">
 															<span className="text-[12px] font-bold text-slate-600 tabular-nums">
-																{p.price ? `${p.price}` : "—"}
+																{p.price ? formatCurrency(p.price) : "—"}
 															</span>
-															{p.price && (
-																<span className="text-[9px] text-slate-400 ms-0.5">
-																	{t("common.currency")}
-																</span>
-															)}
 														</div>
 
 														<div className="text-center">
 															{p.price && p.quantity ? (
 																<span className="text-[12px] font-black text-slate-800 tabular-nums">
-																	{(p.price * p.quantity).toFixed(2)}
-																	<span className="text-[9px] text-slate-400 font-normal ms-0.5">
-																		{t("common.currency")}
-																	</span>
+																	{formatCurrency(p.price * p.quantity)}
 																</span>
 															) : (
 																<span className="text-slate-300 text-xs">—</span>
@@ -1723,7 +1717,7 @@ function OrdersList({
 												</span>
 												{order.totalPrice && (
 													<span className="font-black text-[13px] text-slate-700">
-														{order.totalPrice} {t("common.currency")}
+														{formatCurrency(order.totalPrice)}
 													</span>
 												)}
 											</div>
@@ -1882,7 +1876,7 @@ function OutgoingOrdersSlidePanel({ open, onClose, selectedCarrier, onManifestCr
 			const res = await api.get('/orders', {
 				params: {
 					status: 'packed',
-					shippingCompanyId: selectedCarrier,
+					// shippingCompanyId: selectedCarrier,
 					limit: 100
 				}
 			});
@@ -1907,12 +1901,22 @@ function OutgoingOrdersSlidePanel({ open, onClose, selectedCarrier, onManifestCr
 
 	const handleCreateManifest = async () => {
 		if (selectedOrderIds.length === 0) return;
+
+		const selectedOrders = orders.filter(o => selectedOrderIds.includes(o.id));
+
+		const firstCarrierId = selectedOrders[0]?.shippingCompanyId;
+		const isMismatch = selectedOrders.some(o => o.shippingCompanyId !== firstCarrierId);
+
+		if (isMismatch) {
+			toast.error("لا يمكن إنشاء ملف لطلبات تتبع شركات شحن مختلفة");
+			return;
+		}
+
 		try {
 			setCreatingManifest(true);
 			await api.post('/orders/manifests', {
-				shippingCompanyId: Number(selectedCarrier),
-				orderIds: selectedOrderIds,
-				type: "SHIPPING"
+				shippingCompanyId: firstCarrierId ? Number(firstCarrierId) : null,
+				orderIds: selectedOrderIds
 			});
 			toast.success(t("scan.messages.manifestCreated") || "Manifest created successfully");
 			onManifestCreated();
@@ -1997,6 +2001,7 @@ function OutgoingOrdersSlidePanel({ open, onClose, selectedCarrier, onManifestCr
 									onClick={handleCreateManifest}
 									disabled={selectedOrderIds.length === 0 || creatingManifest}
 									className="w-full h-11 rounded-xl bg-primary text-white font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50 transition-all active:scale-95"
+									permission="orders.create"
 								>
 									{creatingManifest ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
 									{t("scan.confirmOutgoing")} ({selectedOrderIds.length})
@@ -2283,73 +2288,71 @@ export function ScanOutgoingSubtab({
 				</div>
 			</Panel>
 
-			{selectedCarrier !== "all" && (
-				<>
-					<Panel>
-						<div
-							className="relative overflow-hidden px-4 py-3 border-b border-slate-100 dark:border-slate-700/60"
-							style={{ background: DS.cardGradient, ...DS.scanline }}
-						>
-							<div className="relative flex flex-wrap items-center gap-x-4 gap-y-2">
-								<div className="min-w-0">
-									<p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">
-										{t("scan.ordersCard.carrier")}
-									</p>
-									<div className="flex items-center gap-2">
-										<div
-											className={cn("w-7 h-7 rounded-lg flex items-center justify-center")}
-											style={{ background: meta?.color + "15" }}
-										>
-											<Truck size={13} style={{ color: meta?.color || DS.primary }} />
-										</div>
-										<p className="text-sm font-black text-slate-800 dark:text-slate-100">
-											{selectedCarrier}
-										</p>
+			<>
+				<Panel>
+					<div
+						className="relative overflow-hidden px-4 py-3 border-b border-slate-100 dark:border-slate-700/60"
+						style={{ background: DS.cardGradient, ...DS.scanline }}
+					>
+						<div className="relative flex flex-wrap items-center gap-x-4 gap-y-2">
+							<div className="min-w-0">
+								<p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">
+									{t("scan.ordersCard.carrier")}
+								</p>
+								<div className="flex items-center gap-2">
+									<div
+										className={cn("w-7 h-7 rounded-lg flex items-center justify-center")}
+										style={{ background: meta?.color + "15" }}
+									>
+										<Truck size={13} style={{ color: meta?.color || DS.primary }} />
 									</div>
+									<p className="text-sm font-black text-slate-800 dark:text-slate-100">
+										{selectedCarrier}
+									</p>
 								</div>
+							</div>
 
-								<div className="min-w-0">
-									<p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">
-										{t("scan.ordersCard.orders")}
-									</p>
-									<p className="font-mono font-black text-sm" style={{ color: DS.primary }}>
-										{availableForCarrier.length}
-									</p>
-								</div>
+							<div className="min-w-0">
+								<p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">
+									{t("scan.ordersCard.orders")}
+								</p>
+								<p className="font-mono font-black text-sm" style={{ color: DS.primary }}>
+									{availableForCarrier.length}
+								</p>
+							</div>
 
-								<div className="min-w-0">
-									<p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">
-										{t("scan.ordersCard.items")}
-									</p>
-									<p className="font-mono font-black text-sm text-slate-700 dark:text-slate-200">
-										{availableItemsCount}
-									</p>
-								</div>
+							<div className="min-w-0">
+								<p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">
+									{t("scan.ordersCard.items")}
+								</p>
+								<p className="font-mono font-black text-sm text-slate-700 dark:text-slate-200">
+									{availableItemsCount}
+								</p>
 							</div>
 						</div>
+					</div>
 
-						{loadingOrders ? (
-							<div className="flex flex-col items-center justify-center py-20 space-y-4">
-								<Loader2 className="animate-spin text-primary" size={32} />
-								<p className="text-sm font-bold text-slate-400 tracking-wide animate-pulse">جاري تحميل الطلبات الجاهزة...</p>
-							</div>
-						) : isItemsMode && activeOrder ? (
-							<ScannedOrderTable
-								order={activeOrder}
-								localProducts={localProducts}
-								justScanned={lastHighlight?.ok ? lastHighlight.code : null}
-							/>
-						) : (
-							<OrdersList
-								orders={availableForCarrier}
-								scannedOrders={[]}
-								lastHighlight={lastHighlight}
-								onSelectOrder={(order) => fetchActiveOrder(order.orderNumber)}
-							/>
-						)}
-					</Panel>
-				</>
-			)}
+					{loadingOrders ? (
+						<div className="flex flex-col items-center justify-center py-20 space-y-4">
+							<Loader2 className="animate-spin text-primary" size={32} />
+							<p className="text-sm font-bold text-slate-400 tracking-wide animate-pulse">جاري تحميل الطلبات الجاهزة...</p>
+						</div>
+					) : isItemsMode && activeOrder ? (
+						<ScannedOrderTable
+							order={activeOrder}
+							localProducts={localProducts}
+							justScanned={lastHighlight?.ok ? lastHighlight.code : null}
+						/>
+					) : (
+						<OrdersList
+							orders={availableForCarrier}
+							scannedOrders={[]}
+							lastHighlight={lastHighlight}
+							onSelectOrder={(order) => fetchActiveOrder(order.orderNumber)}
+						/>
+					)}
+				</Panel>
+			</>
 
 			<OutgoingOrdersSlidePanel
 				open={panelOpen}
@@ -2415,7 +2418,7 @@ function OutgoingFilesSubtab({
 	const [search, setSearch] = useState("");
 	const { debouncedValue: debouncedSearch } = useDebounce({ value: search, delay: 350 })
 	const [filterCarrier, setFilterCarrier] = useState("all");
-	const [filterIsPrinted, setFilterIsPrinted] = useState("false");
+	const [filterIsPrinted, setFilterIsPrinted] = useState("all");
 	const [downloading, setDownloading] = useState({});
 	const [downloadingWrongLog, setDownloadingWrongLog] = useState({});
 
@@ -2436,6 +2439,7 @@ function OutgoingFilesSubtab({
 				search: debouncedSearch,
 				shippingCompanyId: filterCarrier === "all" ? undefined : filterCarrier,
 				isPrinted: filterIsPrinted === "all" ? undefined : filterIsPrinted,
+				type: "SHIPPING"
 			};
 			const res = await api.get('/orders/manifests', { params });
 			setPager({
@@ -2571,7 +2575,19 @@ function OutgoingFilesSubtab({
 			setDownloadingWrongLog((p) => ({ ...p, [row.id]: false }));
 		}
 	};
+	const manifestScanStatus = useMemo(() => {
+		const statusMap = {};
 
+		pager.records.forEach((manifest) => {
+			const hasIncompleteScans = manifest.orders?.some(
+				(order) => (order.failedScanCounts?.shipping ?? 0) === 0
+			);
+
+			statusMap[manifest.id] = hasIncompleteScans;
+		});
+
+		return statusMap;
+	}, [pager.records]); // سيعاد الحساب فقط عند تغير البيانات القادمة من السيرفر
 	const columns = useMemo(
 		() => [
 			{
@@ -2629,36 +2645,45 @@ function OutgoingFilesSubtab({
 			{
 				key: "actions",
 				header: t("files.th.actions"),
-				cell: (row) => (
-					<ActionButtons
-						row={row}
-						actions={[
-							{
-								icon: downloading[row.id] ? (
-									<Loader2 size={13} className="animate-spin" />
-								) : (
-									<Download size={13} />
-								),
-								tooltip: t("files.download"),
-								onClick: (r) => handleDownload(r),
-								variant: "blue",
-								disabled: !!downloading[row.id],
-							},
-							{
-								icon: downloadingWrongLog[row.id] ? (
-									<Loader2 size={13} className="animate-spin" />
-								) : (
-									<FileText size={13} />
-								),
-								tooltip: t("files.downloadWrongLog"),
-								onClick: (r) => handleDownloadWrongLog(r),
-								variant: "red",
-								disabled: !!downloadingWrongLog[row.id],
-							},
-						]}
-					/>
-				),
-			},
+				cell: (row) => {
+					const hasFailedScans = manifestScanStatus[row.id];
+
+					const actionList = [
+						{
+							icon: downloading[row.id] ? (
+								<Loader2 size={13} className="animate-spin" />
+							) : (
+								<Download size={13} />
+							),
+							tooltip: t("files.download"),
+							onClick: (r) => handleDownload(r),
+							variant: "blue",
+							disabled: !!downloading[row.id],
+							permission: "orders.read",
+						}
+					];
+
+					actionList.push({
+						icon: downloadingWrongLog[row.id] ? (
+							<Loader2 size={13} className="animate-spin" />
+						) : (
+							<FileText size={13} />
+						),
+						tooltip: t("files.downloadWrongLog"),
+						onClick: (r) => handleDownloadWrongLog(r),
+						variant: "red",
+						disabled: !!downloadingWrongLog[row.id] || !hasFailedScans,
+						permission: "orders.read",
+					});
+
+					return (
+						<ActionButtons
+							row={row}
+							actions={actionList}
+						/>
+					);
+				},
+			}
 		],
 		[downloading, downloadingWrongLog, t]
 	);
@@ -2726,6 +2751,7 @@ export default function OutgoingTab({
 	resetToken,
 }) {
 	const t = useTranslations("warehouse.outgoing");
+	const { formatCurrency } = usePlatformSettings();
 
 	const [statsData, setStatsData] = useState({
 		readyForShipment: 0,
@@ -2767,6 +2793,7 @@ export default function OutgoingTab({
 						variant="ghost"
 						onClick={() => { }}
 						icon={<Info size={18} />}
+						permission="orders.read"
 					/>
 				}
 				statsLoading={statsLoading}

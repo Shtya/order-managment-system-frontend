@@ -8,3 +8,6 @@ export function tenantId(me) {
 
     return me.adminId;
 }
+
+
+export const platformCurrency = `${process.env.NEXT_PUBLIC_PLATFOMR_CURRENCY}`;

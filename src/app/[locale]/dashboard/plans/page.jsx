@@ -116,7 +116,7 @@ function PlanCardSkeleton() {
 /** =========================
  * Custom Hook for API
  * ========================= */
-export function useSubscriptionsApi() {
+function usePlans() {
 	const t = useTranslations("plans")
 	const [loading, setLoading] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
@@ -1250,7 +1250,7 @@ export default function AdminSubscriptionsPage() {
 		createPlan,
 		updatePlan,
 		deletePlan,
-	} = useSubscriptionsApi();
+	} = usePlans();
 
 	useEffect(() => {
 		if (activeTab === "plans") fetchPlans();

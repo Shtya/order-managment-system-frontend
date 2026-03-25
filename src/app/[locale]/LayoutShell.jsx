@@ -4,22 +4,29 @@
 import React, { useEffect, useState } from "react";
 import { useLocale } from "next-intl";
 import Header from "@/components/molecules/Header";
-import Sidebar from "@/components/molecules/Sidebar";
+import Sidebar, { excludedSubcriptionPaths } from "@/components/molecules/Sidebar";
 import { usePathname } from "next/navigation";
 import { Toaster } from "react-hot-toast";
 import { SocketProvider } from "../../context/SocketContext";
 import { ThemeProvider } from "next-themes";
 import { isPublicOrSpecialRoute } from "@/utils/route-utils";
 import { PlatformSettingsProvider } from "@/context/PlatformSettingsContext";
+import { NotificationProvider } from "@/context/NotificationContext";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
+import SubscriptionLock from "@/components/atoms/SubscriptionLock";
 
 export default function LayoutShell({ children }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-      <SocketProvider>
-        <PlatformSettingsProvider>
-          <DashboardLayout>{children}</DashboardLayout>
-        </PlatformSettingsProvider>
-      </SocketProvider>
+      <AuthProvider>
+        <SocketProvider>
+          <NotificationProvider>
+            <PlatformSettingsProvider>
+              <DashboardLayout>{children}</DashboardLayout>
+            </PlatformSettingsProvider>
+          </NotificationProvider>
+        </SocketProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 }
@@ -67,7 +74,10 @@ function DashboardLayout({ children }) {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("ui_sidebar") === "expanded";
   });
+  const { hasActiveSubscription, isSuperAdmin,  isLoading} = useAuth();
+  const isExcluded = excludedSubcriptionPaths.some(path => pathname.startsWith(path));
 
+  const isLocked = !isSuperAdmin && !hasActiveSubscription && !isExcluded && !isLoading;
   useEffect(() => {
     localStorage.setItem(
       "ui_sidebar",
@@ -90,7 +100,15 @@ function DashboardLayout({ children }) {
   }, []);
 
   const isAuthRoute = isPublicOrSpecialRoute(AllPathname);
+   const [mounted, setMounted] = useState(false);
 
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  const sidebarW = isSidebarOpen ? 260 : 68;
+
+  const effectiveMargin = mounted ? sidebarW : 68;
   if (isAuthRoute || pathname === "") {
     return (
       <div>
@@ -100,7 +118,6 @@ function DashboardLayout({ children }) {
     );
   }
 
-  const sidebarW = isSidebarOpen ? 260 : 68;
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -112,10 +129,12 @@ function DashboardLayout({ children }) {
       />
 
       <div
-        className=" relative  flex flex-col flex-1 overflow-hidden transition-all duration-300"
+        className="relative flex flex-col flex-1 overflow-hidden"
         style={{
-          marginRight: isRTL ? sidebarW : 0,
-          marginLeft: isRTL ? 0 : sidebarW,
+          marginRight: isRTL ? effectiveMargin : 0,
+          marginLeft: isRTL ? 0 : effectiveMargin,
+          // 4. تعطيل الحركة (transition) في التحميل الأول لتجنب "القفزة"
+          transition: mounted ? "margin 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)" : "none",
         }}
       >
         <Header
@@ -140,7 +159,7 @@ function DashboardLayout({ children }) {
             />
           </div>
           <div className="relative" style={{ zIndex: 1 }}>
-            {children}
+            {isLocked ? <SubscriptionLock /> : children}
           </div>
         </main>
       </div>

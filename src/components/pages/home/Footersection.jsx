@@ -124,7 +124,7 @@ function Logo({ t }) {
 }
 
 /* ─── Nav link ─── */
-function NavLink({ label, index }) {
+function NavLink({ label, index, id }) {
   const [hovered, setHovered] = useState(false);
   const [visible, setVisible] = useState(false);
 
@@ -135,7 +135,7 @@ function NavLink({ label, index }) {
 
   return (
     <a
-      href="#"
+      href={id ? `#${id}` : "#"}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -229,7 +229,13 @@ export default function FooterSection() {
     href: settings.socials[s.id], // Assign the real URL
   }));
 
-  const navLinks = ["home", "services", "pricing", "about", "contact"];
+  const navLinks = [
+    { key: "home", id: "home" },
+    { key: "services", id: "services" },
+    { key: "about", id: "how-it-works" },
+    { key: "pricing", id: "pricing" },
+    { key: "contact", id: "contact" },
+  ];
 
   return (
     <>
@@ -318,9 +324,16 @@ export default function FooterSection() {
               direction: "rtl",
             }}
           >
-            {navLinks.map((key, i) => (
-              <NavLink key={key} label={t(`nav.${key}`)} index={i} />
-            ))}
+            {navLinks.map((nav, i) => {
+              return (
+                <NavLink
+                  key={nav.key}
+                  label={t(`nav.${nav.key}`)}
+                  index={i}
+                  id={nav.id}
+                />
+              );
+            })}
           </nav>
         </div>
 

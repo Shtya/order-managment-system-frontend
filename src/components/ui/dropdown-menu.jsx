@@ -3,6 +3,7 @@
 import * as React from "react"
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react"
+import { useAuth } from "@/context/AuthContext"
 
 import { cn } from "@/utils/cn"
 
@@ -53,8 +54,13 @@ function DropdownMenuItem({
   className,
   inset,
   variant = "default",
+  permission,
   ...props
 }) {
+  const { hasPermission } = useAuth();
+  if (permission && !hasPermission(permission)) {
+    return null;
+  }
   return (
     <DropdownMenuPrimitive.Item
       data-slot="dropdown-menu-item"

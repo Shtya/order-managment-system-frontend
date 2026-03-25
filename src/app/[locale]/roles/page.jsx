@@ -29,9 +29,10 @@ import {
 
 import api from "@/utils/api";
 import toast from "react-hot-toast";
-import { getUser } from "@/hook/getUser";
+
 import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
+import { useAuth } from "@/context/AuthContext";
 
 /* ═══════════════════════════════════════════════════════════════
 	 DATA HOOK — unchanged logic, same API
@@ -165,7 +166,8 @@ function PermCountBadge({ permissionNames, t }) {
 }
 
 /** Row action button — icon only, consistent sizing */
-function ActionBtn({ onClick, disabled, locked, icon: Icon, color, tooltip }) {
+function ActionBtn({ onClick, disabled, locked, icon: Icon, color, tooltip, permission }) {
+	const { hasPermission } = useAuth();
 	const COLORS = {
 		primary: {
 			base: "color-mix(in oklab, var(--primary) 9%, var(--card))",
@@ -186,6 +188,11 @@ function ActionBtn({ onClick, disabled, locked, icon: Icon, color, tooltip }) {
 			hover: null,
 		},
 	};
+
+	if (permission && !hasPermission(permission)) {
+		return null;
+	}
+
 	const c = COLORS[color] ?? COLORS.primary;
 
 	const btn = locked ? (
@@ -659,7 +666,7 @@ function DeleteDialog({ t, open, onOpenChange, roleName, onConfirm, loading }) {
 ═══════════════════════════════════════════════════════════════ */
 export default function RolesPermissionsPage() {
 	const t = useTranslations("roles-client");
-	const user = getUser();
+	const { user } = useAuth();
 
 	const [search, setSearch] = useState("");
 	const [dialogOpen, setDialogOpen] = useState(false);
@@ -764,6 +771,7 @@ export default function RolesPermissionsPage() {
 						icon={row.isGlobal ? Lock : Edit}
 						color={row.isGlobal ? "muted" : "primary"}
 						tooltip={row.isGlobal ? t("actions.locked") : t("actions.edit")}
+						permission="roles.update"
 					/>
 					{/* Delete */}
 					<ActionBtn
@@ -772,6 +780,7 @@ export default function RolesPermissionsPage() {
 						icon={row.isGlobal ? Shield : Trash2}
 						color={row.isGlobal ? "muted" : "destructive"}
 						tooltip={row.isGlobal ? t("actions.protected") : t("actions.delete")}
+						permission="roles.delete"
 					/>
 					{/* Preview */}
 					<ActionBtn
@@ -779,6 +788,7 @@ export default function RolesPermissionsPage() {
 						icon={Eye}
 						color="primary"
 						tooltip={t("actions.preview")}
+						permission="roles.read"
 					/>
 				</div>
 			),
@@ -802,6 +812,7 @@ export default function RolesPermissionsPage() {
 						label={t("toolbar.addRole")}
 						variant="solid"
 						icon={<Plus size={15} />}
+						permission="roles.create"
 					/>
 				}
 				stats={stats}

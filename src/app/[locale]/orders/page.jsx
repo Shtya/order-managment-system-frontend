@@ -32,16 +32,18 @@ import {
 import toast from "react-hot-toast";
 import api from "@/utils/api";
 
- 
+
 
 import OrdersTab from "./tabs/OrderTab";
 import ReplacementTab from "./tabs/ReplacementTab";
 import FailedOrdersTab from "./tabs/Failedorderstab";
+import { useAuth } from "@/context/AuthContext";
 // import ReturnsTab from "./ReturnsTab";
 
 export default function Orders() {
 	const [stats, setStats] = useState([]);
 	const [statsLoading, setStatsLoading] = useState(true);
+
 
 	const [retrySettingsOpen, setRetrySettingsOpen] = useState(false);
 

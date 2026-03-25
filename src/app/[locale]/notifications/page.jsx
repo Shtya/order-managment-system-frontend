@@ -19,21 +19,74 @@ import { useRouter } from "@/i18n/navigation";
 import toast from "react-hot-toast";
 import { cn } from "@/utils/cn";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import api from "@/utils/api";
-import { useSocket } from "@/context/SocketContext";
+import { useNotification } from "@/context/NotificationContext";
+
+
+
+export const NotificationType = Object.freeze({
+    ORDER_STATUS_UPDATE: 'order_status_update',
+    SUBSCRIPTION_ACTIVATED: 'subscription_activated',
+    SUBSCRIPTION_CANCELLED: 'subscription_cancelled',
+    FEATURE_ACTIVATED: 'feature_activated',
+    WALLET_TOP_UP: 'wallet_top_up',
+    WALLET_CREDIT: 'wallet_credit',
+    SYSTEM_ALERT: 'system_alert',
+    PAYMENT_FAILED: 'payment_failed',
+    SHIPPING_AUTO_SENT: 'shipping_auto_sent',
+    SHIPPING_AUTO_FAILED: 'shipping_auto_failed',
+    ORDER_UPDATED: 'order_updated',
+    ORDER_REJECTED: 'order_rejected',
+    ORDER_RECONFIRMED: 'order_reconfirmed',
+    ORDER_DELETED: 'order_deleted',
+    ORDER_STATUS_CREATED: 'order_status_created',
+    ORDER_STATUS_SETTINGS_UPDATED: 'order_status_settings_updated',
+    BULK_ORDERS_CREATED: 'bulk_orders_created',
+    COLLECTION_CREATED: 'collection_created',
+    REPLACEMENT_CREATED: 'replacement_created',
+    RETURN_REQUEST_CREATED: 'return_request_created',
+    EXTRA_FEATURE_ASSIGNED: 'extra_feature_assigned',
+    PRODUCT_CREATED: 'product_created',
+    SHIPMENT_CREATED: 'shipment_created',
+    SHIPMENT_CANCELLED: 'shipment_cancelled',
+    SUBSCRIPTION_CREATED: 'subscription_created',
+    SUBSCRIPTION_STATUS_UPDATED: 'subscription_status_updated',
+    SUBSCRIPTION_UPDATED: 'subscription_updated',
+    ORDER_USAGE_FAILED: 'order_usage_failed',
+    LOW_STOCK_ALERT: 'low_stock_alert',
+    MARKETING_MESSAGE: 'marketing_message',
+});
 
 // ─────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────
-export function getNotificationLink(type, id) {
-  if (!type || !id) return "#";
-  const map = {
-    order: `/orders/${id}`,
-    user: `/users/${id}`,
-    product: `/products/${id}`,
-  };
-  return map[type?.toLowerCase()] ?? "#";
+export function getNotificationLink(entity, id, type) {
+    if (
+        type === NotificationType.FEATURE_ACTIVATED || 
+        type === NotificationType.EXTRA_FEATURE_ASSIGNED
+    ) {
+        return "/plans?tab=features";
+    }
+
+    if (entity === "subscription" || (type && type.startsWith("subscription"))) {
+        return "/plans?tab=subscriptions";
+    }
+
+    const isOrderRelated = ["order", "shipment", "replacement", "return"].includes(entity) || 
+                          (type && (type.includes("order") || type.includes("shipment")));
+
+    if (isOrderRelated) {
+        return id ? `/orders/details/${id}` : "/orders";
+    }
+
+    if (entity === "payment" || (type && type.startsWith("wallet")) || type === NotificationType.PAYMENT_FAILED) {
+        return "/wallet";
+    }
+
+    if (entity === "product" || type === NotificationType.PRODUCT_CREATED || type === NotificationType.LOW_STOCK_ALERT) {
+        return id ? `/products?id=${id}` : "/products";
+    }
+
+    return null;
 }
 
 function getNotificationIcon(type) {
@@ -44,6 +97,7 @@ function getNotificationIcon(type) {
     system: "⚙️",
     payment: "💳",
     alert: "⚠️",
+    subscription: "🔔",
   };
   return icons[type?.toLowerCase()] ?? "🔔";
 }
@@ -88,7 +142,7 @@ function NotificationRow({ n, idx, onRead, t }) {
 
   const handleClick = async () => {
     if (!n.isRead) await onRead(n.id);
-    const link = getNotificationLink(n.relatedEntityType, n.relatedEntityId);
+    const link = getNotificationLink(n.relatedEntityType, n.relatedEntityId, n.type);
     if (link !== "#") router.push(link);
   };
 
@@ -102,7 +156,7 @@ function NotificationRow({ n, idx, onRead, t }) {
         "group relative flex items-start gap-4 px-5 py-4",
         "border-b border-border/40 last:border-0",
         "hover:bg-[var(--secondary)] transition-colors duration-150 cursor-pointer",
-        !n.isRead && "bg-[color-mix(in_oklab,var(--primary)_3%,transparent)]"
+        !n.isRead && "bg-[color-mix(in_oklab,var(--primary)_3%,transparent)]",
       )}
     >
       {/* Unread bar */}
@@ -111,22 +165,28 @@ function NotificationRow({ n, idx, onRead, t }) {
       )}
 
       {/* Icon bubble */}
-      <div className={cn(
-        "w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0",
-        "border border-border/60",
-        n.isRead
-          ? "bg-[var(--secondary)]"
-          : "bg-[color-mix(in_oklab,var(--primary)_10%,transparent)] border-[color-mix(in_oklab,var(--primary)_20%,transparent)]"
-      )}>
+      <div
+        className={cn(
+          "w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0",
+          "border border-border/60",
+          n.isRead
+            ? "bg-[var(--secondary)]"
+            : "bg-[color-mix(in_oklab,var(--primary)_10%,transparent)] border-[color-mix(in_oklab,var(--primary)_20%,transparent)]",
+        )}
+      >
         {getNotificationIcon(n.relatedEntityType)}
       </div>
 
       {/* Content */}
       <div className="flex-1 min-w-0 space-y-0.5">
-        <p className={cn(
-          "text-sm leading-snug",
-          n.isRead ? "font-medium text-foreground" : "font-bold text-foreground"
-        )}>
+        <p
+          className={cn(
+            "text-sm leading-snug",
+            n.isRead
+              ? "font-medium text-foreground"
+              : "font-bold text-foreground",
+          )}
+        >
           {n.title}
         </p>
         <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
@@ -158,7 +218,7 @@ function FilterPill({ active, onClick, children }) {
         "px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150",
         active
           ? "bg-[color-mix(in_oklab,var(--primary)_12%,transparent)] text-[var(--primary)] border border-[color-mix(in_oklab,var(--primary)_25%,transparent)]"
-          : "bg-[var(--secondary)] text-muted-foreground border border-border/60 hover:border-border"
+          : "bg-[var(--secondary)] text-muted-foreground border border-border/60 hover:border-border",
       )}
     >
       {children}
@@ -174,19 +234,25 @@ export default function NotificationsPage() {
   const router = useRouter();
 
   // ── State ──
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [markingAll, setMarkingAll] = useState(false);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filter, setFilter] = useState("all"); // "all" | "unread" | "read"
-  const { unreadNotificationsCount, incrementUnread, decrementUnread, resetUnread, subscribe } = useSocket()
 
-  const LIMIT = 10;
-  const hasMore = notifications.length < total;
+  const {
+    notifications,
+    total,
+    loading,
+    loadingMore,
+    hasMore,
+    page,
+    setPage,
+    fetchNotifications,
+    handleMarkAsRead,
+    handleMarkAllRead: contextHandleMarkAllRead,
+    unreadCount: unreadNotificationsCount,
+  } = useNotification();
+
   const searchTimer = useRef(null);
 
   // ── Debounce search ──
@@ -196,113 +262,46 @@ export default function NotificationsPage() {
     return () => clearTimeout(searchTimer.current);
   }, [search]);
 
-  useEffect(() => {
-    const unsubscribe = subscribe("NEW_NOTIFICATION_PAGE", (action) => {
-      if (action.type === "NEW_NOTIFICATION") {
-        const newNotification = action.payload;
-
-        setNotifications((prev) => {
-          // لو الإشعار موجود بالفعل (احتياط)
-          if (prev.some((n) => n.id === newNotification.id)) {
-            return prev;
-          }
-
-          return [newNotification, ...prev]; // 🔥 أهم سطر
-        });
-
-        setTotal((prev) => prev + 1);
-      }
-    });
-
-    return unsubscribe;
-  }, [subscribe]);
-
-
   // ── Fetch on filter / search change ──
+  const params = {
+    ...(debouncedSearch && { search: debouncedSearch }),
+    ...(filter === "unread" && { isRead: false }),
+    ...(filter === "read" && { isRead: true }),
+  };
   useEffect(() => {
     setPage(1);
-    setNotifications([]);
-    fetchNotifications(1, true);
+
+    fetchNotifications(1, true, params);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter, debouncedSearch]);
 
-  // ── API: fetch ──
-  const fetchNotifications = useCallback(async (pageNum = 1, reset = false) => {
-    try {
-      reset ? setLoading(true) : setLoadingMore(true);
-
-      const params = {
-        page: pageNum,
-        limit: LIMIT,
-        ...(debouncedSearch && { search: debouncedSearch }),
-        ...(filter === "unread" && { isRead: false }),
-        ...(filter === "read" && { isRead: true }),
-      };
-
-      const res = await api.get("/notifications", { params });
-      const records = res.data.records ?? [];
-      const totalRecords = res.data.total_records ?? 0;
-
-      setTotal(totalRecords);
-      setNotifications((prev) => (reset ? records : [...prev, ...records]));
-    } catch (err) {
-      console.error(err);
-      toast.error(tN("errors.fetchFailed"));
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }, [debouncedSearch, filter, tN]);
-
-  // ── API: mark one as read ──
-  const handleMarkAsRead = useCallback(async (id) => {
-    try {
-      incrementUnread()
-      await api.patch(`/notifications/${id}/read`);
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-      );
-
-    } catch (e) {
-      decrementUnread()
-      console.error(e);
-    }
-  }, []);
-
   // ── API: mark all read ──
-  const handleMarkAllRead = useCallback(async () => {
+  const handleMarkAllRead = async () => {
     try {
       setMarkingAll(true);
-      resetUnread()
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      await api.post("/notifications/read-all");
+      await contextHandleMarkAllRead();
       toast.success(tN("allMarkedRead"));
     } catch (e) {
-
     } finally {
       setMarkingAll(false);
     }
-  }, [tN]);
+  };
 
   // ── Load more ──
   const handleLoadMore = () => {
     const next = page + 1;
     setPage(next);
-    fetchNotifications(next, false);
+    fetchNotifications(next, false, params);
   };
 
   // ── Refresh ──
   const handleRefresh = () => {
     setPage(1);
-    setNotifications([]);
-    fetchNotifications(1, true);
+    fetchNotifications(1, true, params);
   };
-
-  const unreadInList = notifications.filter((n) => !n.isRead).length;
 
   return (
     <div className="min-h-screen p-5">
-
       {/* ── Breadcrumb ── */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
         <span
@@ -337,10 +336,12 @@ export default function NotificationsPage() {
           </div>
           {/* Live unread count badge — fed by socket later */}
           {unreadNotificationsCount > 0 && (
-            <Badge className="rounded-xl px-2.5 py-1 text-xs font-bold
+            <Badge
+              className="rounded-xl px-2.5 py-1 text-xs font-bold
               bg-[color-mix(in_oklab,var(--primary)_12%,transparent)]
               text-[var(--primary)]
-              border border-[color-mix(in_oklab,var(--primary)_25%,transparent)]">
+              border border-[color-mix(in_oklab,var(--primary)_25%,transparent)]"
+            >
               {unreadNotificationsCount} {tN("unread")}
             </Badge>
           )}
@@ -359,7 +360,7 @@ export default function NotificationsPage() {
             {tN("refresh")}
           </button>
 
-          {unreadInList > 0 && (
+          {unreadNotificationsCount > 0 && (
             <button
               onClick={handleMarkAllRead}
               disabled={markingAll}
@@ -369,10 +370,11 @@ export default function NotificationsPage() {
                 border border-[color-mix(in_oklab,var(--primary)_22%,transparent)]
                 hover:opacity-80 transition"
             >
-              {markingAll
-                ? <Loader2 size={14} className="animate-spin" />
-                : <CheckCheck size={14} />
-              }
+              {markingAll ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                <CheckCheck size={14} />
+              )}
               {tN("markAllRead")}
             </button>
           )}
@@ -386,12 +388,14 @@ export default function NotificationsPage() {
         transition={{ delay: 0.05 }}
         className="bg-card rounded-xl border border-border/60 shadow-sm overflow-hidden"
       >
-
         {/* ── Toolbar: search + filters ── */}
         <div className="flex items-center gap-3 flex-wrap px-5 py-4 border-b border-border/40">
           {/* Search */}
           <div className="relative flex-1 min-w-[200px]">
-            <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <Search
+              size={14}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+            />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -412,13 +416,22 @@ export default function NotificationsPage() {
 
           {/* Filter pills */}
           <div className="flex items-center gap-2">
-            <FilterPill active={filter === "all"} onClick={() => setFilter("all")}>
+            <FilterPill
+              active={filter === "all"}
+              onClick={() => setFilter("all")}
+            >
               {tN("filters.all")}
             </FilterPill>
-            <FilterPill active={filter === "unread"} onClick={() => setFilter("unread")}>
+            <FilterPill
+              active={filter === "unread"}
+              onClick={() => setFilter("unread")}
+            >
               {tN("filters.unread")}
             </FilterPill>
-            <FilterPill active={filter === "read"} onClick={() => setFilter("read")}>
+            <FilterPill
+              active={filter === "read"}
+              onClick={() => setFilter("read")}
+            >
               {tN("filters.read")}
             </FilterPill>
           </div>
@@ -427,10 +440,14 @@ export default function NotificationsPage() {
         {/* ── List ── */}
         <div className="divide-y divide-border/30">
           <AnimatePresence mode="wait">
-
             {/* Loading skeleton */}
             {loading && (
-              <motion.div key="skeleton" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <motion.div
+                key="skeleton"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
                 {Array.from({ length: 6 }).map((_, i) => (
                   <NotificationSkeleton key={i} />
                 ))}
@@ -447,14 +464,17 @@ export default function NotificationsPage() {
                 className="flex flex-col items-center justify-center py-20 gap-4 text-center"
               >
                 <div className="w-16 h-16 rounded-xl bg-[var(--secondary)] border border-border/60 flex items-center justify-center">
-                  {filter === "unread"
-                    ? <BellOff size={28} className="text-muted-foreground" />
-                    : <Inbox size={28} className="text-muted-foreground" />
-                  }
+                  {filter === "unread" ? (
+                    <BellOff size={28} className="text-muted-foreground" />
+                  ) : (
+                    <Inbox size={28} className="text-muted-foreground" />
+                  )}
                 </div>
                 <div>
                   <p className="text-sm font-bold text-foreground mb-1">
-                    {filter === "unread" ? tN("empty.noUnread") : tN("empty.noNotifications")}
+                    {filter === "unread"
+                      ? tN("empty.noUnread")
+                      : tN("empty.noNotifications")}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {tN("empty.description")}
@@ -473,7 +493,12 @@ export default function NotificationsPage() {
 
             {/* Notification rows */}
             {!loading && notifications.length > 0 && (
-              <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <motion.div
+                key="list"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
                 {notifications.map((n, idx) => (
                   <NotificationRow
                     key={n.id}
@@ -485,7 +510,6 @@ export default function NotificationsPage() {
                 ))}
               </motion.div>
             )}
-
           </AnimatePresence>
         </div>
 
@@ -506,18 +530,20 @@ export default function NotificationsPage() {
                   border border-[color-mix(in_oklab,var(--primary)_22%,transparent)]
                   hover:opacity-80 transition"
               >
-                {loadingMore
-                  ? <Loader2 size={14} className="animate-spin" />
-                  : <Filter size={14} />
-                }
+                {loadingMore ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <Filter size={14} />
+                )}
                 {tN("loadMore")}
               </button>
             ) : (
-              <span className="text-xs text-muted-foreground">{tN("allLoaded")}</span>
+              <span className="text-xs text-muted-foreground">
+                {tN("allLoaded")}
+              </span>
             )}
           </div>
         )}
-
       </motion.div>
     </div>
   );

@@ -375,7 +375,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	useEffect(() => {
 		if (!isEditMode || !existingProduct) return;
 		const extractedAttributes = extractAttributesFromSkus(existingProduct.skus || []);
-		const combinations = (existingProduct.skus || []).map((sku) => ({ key: sku.key, sku: sku.sku || '', attributes: sku.attributes || {}, stockOnHand: sku.stockOnHand || 0, price: sku.price?.toString() || existingProduct.wholesalePrice?.toString() || '' }));
+		const combinations = (existingProduct.skus || []).map((sku) => ({ key: sku.key, sku: sku.sku || '', attributes: sku.attributes || {}, stockOnHand: sku.stockOnHand || 0, reserved: sku.reserved || 0, price: sku.price?.toString() || existingProduct.wholesalePrice?.toString() || '' }));
 		reset({ name: existingProduct.name || '', slug: existingProduct.slug || '', wholesalePrice: existingProduct.wholesalePrice?.toString() || '', lowestPrice: existingProduct.lowestPrice?.toString() || '', storageRack: existingProduct.storageRack || '', categoryId: existingProduct.categoryId ? String(existingProduct.categoryId) : 'none', storeId: existingProduct.storeId ? String(existingProduct.storeId) : 'none', warehouseId: existingProduct.warehouseId ? String(existingProduct.warehouseId) : 'none', description: existingProduct.description || '', callCenterProductDescription: existingProduct.callCenterProductDescription || '', upsellingEnabled: existingProduct.upsellingEnabled || false, upsellingProducts: existingProduct.upsellingProducts || [], attributes: extractedAttributes, combinations: combinations });
 		if (existingProduct.mainImage) { setMainFiles([{ id: makeId(), file: null, previewUrl: existingProduct.mainImage, isFromLibrary: false, isExisting: true, url: existingProduct.mainImage }]); }
 		if (existingProduct.images && existingProduct.images.length) { setOtherFiles(existingProduct.images.map((img) => ({ id: makeId(), file: null, previewUrl: img.url, isFromLibrary: false, isExisting: true, url: img.url }))); }
@@ -658,6 +658,9 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 													<tr className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
 														<th className="text-right px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">{t('combinations.combinationName')}</th>
 														<th className="text-right px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 font-[Inter]">SKU</th>
+														<th className="text-center px-2 py-3 font-semibold text-slate-500 dark:text-slate-400 w-[80px]">{t('combinations.onHand')}</th>
+														<th className="text-center px-2 py-3 font-semibold text-slate-500 dark:text-slate-400 w-[80px]">{t('combinations.reserved')}</th>
+														<th className="text-center px-2 py-3 font-semibold text-slate-500 dark:text-slate-400 w-[80px]">{t('combinations.available')}</th>
 														<th className="text-right px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 w-[130px]">
 															{t('combinations.price')} <span className="text-red-400">*</span>
 														</th>
@@ -668,6 +671,11 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 														const cErr = errors?.combinations?.[idx];
 														const current = combinationsWatch?.[idx];
 														const attrs = current?.attributes || {};
+
+														// حساب المتوفر: الكمية الفعلية - المحجوز
+														const onHand = current?.stockOnHand || 0;
+														const reserved = current?.reserved || 0;
+														const available = Math.max(0, onHand - reserved);
 														return (
 															<tr key={c.fieldId} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition-colors">
 																<td className="px-4 py-3">
@@ -688,6 +696,20 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 																		disabled
 																		className="h-[38px] rounded-lg font-[Inter] text-[12px] bg-slate-100 dark:bg-slate-900 border-transparent text-slate-400 cursor-not-allowed"
 																	/>
+																</td>
+																<td className="px-2 py-3 text-center">
+																	<span className="font-medium text-slate-700 dark:text-slate-300">{onHand}</span>
+																</td>
+																<td className="px-2 py-3 text-center">
+																	<span className="text-amber-600 dark:text-amber-400 font-medium">{reserved}</span>
+																</td>
+																<td className="px-2 py-3 text-center">
+																	<span className={cn(
+																		"px-2 py-1 rounded-md font-bold",
+																		available <= 5 ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"
+																	)}>
+																		{available}
+																	</span>
 																</td>
 																<td className="px-4 py-3">
 																	<Input

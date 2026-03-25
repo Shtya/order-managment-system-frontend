@@ -14,9 +14,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CARRIERS, PRODUCT_CONDITIONS, STATUS, getDocumentSummary, getOrderItemCount, returnInventoryFromCarrier } from "./data";
 import ScanBar from "../atoms/ScanBar";
-import { buildOrderOverviewCards, buildOrderSummarySection, formatCurrency, openPdfDocument } from "../utils/pdf";
+import { buildOrderOverviewCards, buildOrderSummarySection, openPdfDocument } from "../utils/pdf";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
-function buildReturnDocumentBody({ orders, createdAt, employee, title }) {
+function buildReturnDocumentBody({ orders, createdAt, employee, title, formatCurrency }) {
   const summary = getDocumentSummary(orders);
   const orderSections = orders.map((order) => {
     const productRows = (order.products || []).map((product) => `
@@ -25,7 +26,7 @@ function buildReturnDocumentBody({ orders, createdAt, employee, title }) {
         <td>${product.name}</td>
         <td>${product.requestedQty}</td>
         <td>${product.condition || "سليم"}</td>
-        <td>${formatCurrency((Number(product.price) || 0) * (Number(product.requestedQty) || 0))}</td>
+        <td>${formatCurrency ? formatCurrency((Number(product.price) || 0) * (Number(product.requestedQty) || 0)) : `${(Number(product.price) || 0) * (Number(product.requestedQty) || 0)} ر.س`}</td>
       </tr>
     `).join("");
 
@@ -39,7 +40,7 @@ function buildReturnDocumentBody({ orders, createdAt, employee, title }) {
           <span class="badge badge-warning">${order.carrier || "بدون شركة"}</span>
         </div>
         <div style="padding: 16px; display: flex; flex-direction: column; gap: 16px;">
-          ${buildOrderOverviewCards(order, { customer: "العميل", city: "المدينة", orderValue: "قيمة الطلب", orderSummary: "ملخص الطلب", itemsWord: "قطعة" })}
+          ${buildOrderOverviewCards(order, { customer: "العميل", city: "المدينة", orderValue: "قيمة الطلب", orderSummary: "ملخص الطلب", itemsWord: "قطعة" }, formatCurrency)}
           <div class="table-wrap">
             <table>
               <thead>
@@ -70,12 +71,12 @@ function buildReturnDocumentBody({ orders, createdAt, employee, title }) {
         <div class="summary-box"><span>إجمالي الطلبات</span><b>${orders.length}</b></div>
         <div class="summary-box"><span>إجمالي عدد الـ SKU</span><b>${summary.totalSkus}</b></div>
         <div class="summary-box"><span>إجمالي الكميات</span><b>${summary.totalItems}</b></div>
-        <div class="summary-box"><span>القيمة الإجمالية</span><b>${formatCurrency(summary.totalValue)}</b></div>
+        <div class="summary-box"><span>القيمة الإجمالية</span><b>${formatCurrency ? formatCurrency(summary.totalValue) : `${summary.totalValue} ر.س`}</b></div>
       </div>
     </section>
 
     ${orderSections}
-    ${buildOrderSummarySection(orders, { title: "الملخص النهائي", totalOrders: "إجمالي الطلبات", totalSkus: "إجمالي عدد الـ SKU", totalItems: "إجمالي الكميات", totalValue: "القيمة الإجمالية" })}
+    ${buildOrderSummarySection(orders, { title: "الملخص النهائي", totalOrders: "إجمالي الطلبات", totalSkus: "إجمالي عدد الـ SKU", totalItems: "إجمالي الكميات", totalValue: "القيمة الإجمالية" }, formatCurrency)}
   `;
 }
 
@@ -159,6 +160,7 @@ function ReturnItemRow({ item, selection, onToggle, onQtyChange, onConditionChan
 }
 
 function ReturnFilesSubtab({ returnFiles, orders, t }) {
+  const { formatCurrency } = usePlatformSettings();
   const [carrier, setCarrier] = useState("all");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState({ current_page: 1, per_page: 12 });
@@ -177,7 +179,7 @@ function ReturnFilesSubtab({ returnFiles, orders, t }) {
     openPdfDocument({
       title: t("files.returnPdfTitle"),
       filename: file.filename,
-      body: buildReturnDocumentBody({ orders: snapshot, createdAt: file.createdAt, employee: file.createdBy, title: t("files.returnPdfTitle") }),
+      body: buildReturnDocumentBody({ orders: snapshot, createdAt: file.createdAt, employee: file.createdBy, title: t("files.returnPdfTitle"), formatCurrency }),
     });
   };
 
@@ -270,6 +272,7 @@ function ReturnFilesSubtab({ returnFiles, orders, t }) {
 }
 
 function ScanReturnSubtab({ orders, updateOrder, pushOp, inventory, updateInventory, addReturnFile, t }) {
+  const { formatCurrency } = usePlatformSettings();
   const candidateOrders = useMemo(() => orders.filter((order) => [STATUS.SHIPPED, STATUS.PARTIALLY_RETURNED].includes(order.status)), [orders]);
   const [scanInput, setScanInput] = useState("");
   const [currentOrderCode, setCurrentOrderCode] = useState("");
@@ -452,7 +455,7 @@ function ScanReturnSubtab({ orders, updateOrder, pushOp, inventory, updateInvent
                 [t("fields.customer"), currentOrder.customer],
                 [t("fields.phone"), currentOrder.phone],
                 [t("fields.orderSummary"), `${currentOrder.products.length} SKU / ${getOrderItemCount(currentOrder)} ${t("common.itemsWord")}`],
-                [t("fields.total"), `${currentOrder.total} ${t("common.currency")}`],
+                [t("fields.total"), formatCurrency(currentOrder.total)],
               ].map(([label, value]) => (
                 <div key={label} className="rounded-2xl border border-border bg-card p-4">
                   <p className="mb-1 text-xs font-bold text-muted-foreground">{label}</p>

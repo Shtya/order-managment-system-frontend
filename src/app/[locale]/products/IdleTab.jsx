@@ -181,18 +181,21 @@ export default function useIdleTab({ t, searchDebounced, filters, idleFromDate, 
           tooltip: t("actions.delete"),
           onClick: (r) => onAskDelete?.(r.id, "bundles"),
           variant: "red",
+          permission: "products.delete",
         },
         {
           icon: <Edit2 />,
           tooltip: t("actions.edit"),
           onClick: (r) => router.push(`/bundles/edit/${r.id}`),
           variant: "blue",
+          permission: "products.update",
         },
         {
           icon: <Eye />,
           tooltip: t("actions.view"),
           onClick: (r) => onOpenView?.(r, "bundles"),
           variant: "purple",
+          permission: "products.read",
         },
       ]}
     />

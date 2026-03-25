@@ -748,6 +748,8 @@ export default function PreparationTab({
 		setJumpToOrder(order); setSubtab("scanning");
 	}, [setSubtab]);
 
+	const applyFilters = () => { };
+
 	useEffect(() => { if (subtab !== "scanning") setJumpToOrder(null); }, [subtab]);
 
 	const stats = [
@@ -764,7 +766,7 @@ export default function PreparationTab({
 					{ name: t("breadcrumbs.warehouse"), href: "/warehouse" },
 					{ name: t("breadcrumbs.preparation") },
 				]}
-				buttons={<Button_ size="sm" label={t("howItWorks")} variant="ghost" onClick={() => { }} icon={<Info size={18} />} />}
+				buttons={<Button_ size="sm" label={t("howItWorks")} variant="ghost" onClick={() => { }} icon={<Info size={18} />} permission="orders.read" />}
 				statsLoading={loading}
 				stats={stats}
 				items={[
@@ -1920,8 +1922,8 @@ function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fet
 			key: "actions", header: t("table.actions"),
 			cell: (row) => (
 				<ActionButtons row={row} actions={[
-					{ icon: <Info />, tooltip: t("actions.details"), onClick: (r) => setDetailModal(r), variant: "purple" },
-					{ icon: <ScanLine />, tooltip: t("actions.continuePrepare"), onClick: (r) => onPrepareOrder?.(r), variant: "blue" },
+					{ icon: <Info />, tooltip: t("actions.details"), onClick: (r) => setDetailModal(r), variant: "purple", permission: "orders.read" },
+					{ icon: <ScanLine />, tooltip: t("actions.continuePrepare"), onClick: (r) => onPrepareOrder?.(r), variant: "blue", permission: "warehouses.scan-preparation" },
 					{
 						icon: downloadingWrongLog[row.id] ? (
 							<Loader2 size={13} className="animate-spin" />
@@ -1931,9 +1933,10 @@ function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fet
 						tooltip: t("pdf.wrongLog.title"),
 						onClick: (r) => handleDownloadWrongLog(r),
 						variant: "red",
-						disabled: !!downloadingWrongLog[row.id],
+						disabled: !!downloadingWrongLog[row.id] || !row?.failedScanCounts?.preparation,
+						permission: "orders.read",
 					},
-					{ icon: <Ban />, tooltip: t("actions.reject"), onClick: (r) => setRejectModal(r), variant: "red" },
+					{ icon: <Ban />, tooltip: t("actions.reject"), onClick: (r) => setRejectModal(r), variant: "red", permission: "order.update" },
 				]} />
 			),
 		},
@@ -1946,7 +1949,7 @@ function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fet
 			<Table
 				searchValue={search} onSearchChange={setSearch} onSearch={applyFilters}
 				labels={{ searchPlaceholder: t("searchPlaceholder"), filter: t("filter"), apply: t("apply"), total: t("total"), limit: t("limit"), emptyTitle: t("inProgress.emptyTitle"), emptySubtitle: "" }}
-				actions={[{ key: "export", label: t("export"), icon: exportLoading ? <Loader2 size={14} className="animate-spin" /> : <FileDown size={14} />, color: "blue", onClick: onExport, disabled: exportLoading }]}
+				actions={[{ key: "export", label: t("export"), icon: exportLoading ? <Loader2 size={14} className="animate-spin" /> : <FileDown size={14} />, color: "blue", onClick: onExport, disabled: exportLoading, permission: "orders.read" }]}
 				hasActiveFilters={hasActiveFilters} onApplyFilters={applyFilters}
 				filters={
 					<>

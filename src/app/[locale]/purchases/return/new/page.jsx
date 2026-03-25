@@ -19,6 +19,7 @@ import { useLocale, useTranslations } from "next-intl";
 import api from "@/utils/api";
 import { ProductSkuSearchPopover } from "@/components/molecules/ProductSkuSearchPopover";
 import PageHeader from "@/components/atoms/Pageheader";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 // Validation schema
 const schema = yup.object({
@@ -50,6 +51,7 @@ export default function CreateReturnInvoicePage() {
 	const locale = useLocale();
 	const isRTL = locale === "ar";
 	const t = useTranslations("returnInvoice");
+	const { formatCurrency } = usePlatformSettings();
 
 	const [suppliers, setSuppliers] = useState([]);
 	const [loading, setLoading] = useState(false);
@@ -554,7 +556,7 @@ export default function CreateReturnInvoicePage() {
 
 					{/* Right Column - Summary */}
 					<div className="w-full max-w-[350px]">
-						<ReturnSummary t={t} summary={summary} totalReturn={totalReturn} control={control} />
+						<ReturnSummary t={t} summary={summary} totalReturn={totalReturn} control={control} formatCurrency={formatCurrency} />
 					</div>
 				</div>
 			</form>
@@ -562,7 +564,7 @@ export default function CreateReturnInvoicePage() {
 	);
 }
 
-function ReturnSummary({ summary, t, totalReturn, control }) {
+function ReturnSummary({ summary, t, totalReturn, control, formatCurrency }) {
 	return (
 		<motion.div
 			initial={{ opacity: 0, x: 20 }}
@@ -585,14 +587,14 @@ function ReturnSummary({ summary, t, totalReturn, control }) {
 				<div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-slate-800/50">
 					<span className="text-sm text-gray-600 dark:text-slate-300">{t("summary.subtotal")}</span>
 					<span className="text-base font-semibold text-gray-700 dark:text-slate-200">
-						{summary.subtotal.toFixed(2)} {t("currency")}
+						{formatCurrency(summary.subtotal)}
 					</span>
 				</div>
 
 				<div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-slate-800/50">
 					<span className="text-sm text-gray-600 dark:text-slate-300">{t("summary.taxTotal")}</span>
 					<span className="text-base font-semibold text-gray-700 dark:text-slate-200">
-						{summary.taxTotal.toFixed(2)} {t("currency")}
+						{formatCurrency(summary.taxTotal)}
 					</span>
 				</div>
 
@@ -601,7 +603,7 @@ function ReturnSummary({ summary, t, totalReturn, control }) {
 						{t("summary.totalReturn")}
 					</span>
 					<span className="text-xl font-bold text-primary">
-						{totalReturn.toFixed(2)} {t("currency")}
+						{formatCurrency(totalReturn)}
 					</span>
 				</div>
 			</div>

@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useLayoutEffect, useCallback } from
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/utils/cn";
+import { useAuth } from "@/context/AuthContext";
 
 // ─────────────────────────────────────────────────────────────
 // COLOR VARIANTS
@@ -263,7 +264,12 @@ export function ActionButton({
 // ACTION BUTTONS GROUP
 // ─────────────────────────────────────────────────────────────
 export function ActionButtons({ row, actions = [], gap = "gap-1.5" }) {
-	const visible = actions.filter((a) => !a.hidden);
+	const { hasPermission } = useAuth();
+	const visible = actions.filter((a) => {
+		if (a.hidden) return false;
+		if (a.permission && !hasPermission(a.permission)) return false;
+		return true;
+	});
 
 	return (
 		<div className={cn("flex items-center", gap)}>

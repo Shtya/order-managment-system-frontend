@@ -8,6 +8,7 @@ import Button_ from "@/components/atoms/Button";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { Loader2, Plus } from "lucide-react";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import TransactionTab from "../dashboard/plans/tabs/transactionTab";
 
 // ─── Payment Purpose Enum ─────────────────────────────────────────────────────
@@ -15,13 +16,6 @@ const PaymentPurposeEnum = {
   WALLET_TOP_UP: "wallet_top_up",
   WALLET_WITHDRAWAL: "wallet_withdrawal",
 };
-// ─── Helper Functions ─────────────────────────────────────────────────────────
-function formatCurrency(n) {
-  return Number(n || 0).toLocaleString("ar-EG", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
 
 // ─── Deposit Modal ────────────────────────────────────────────────────────────
 
@@ -55,6 +49,7 @@ const ArrowUpIcon = ({ size = 16 }) => (
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function WalletPage() {
   const t = useTranslations("wallet");
+  const { formatCurrency, currency } = usePlatformSettings();
   const [wallet, setWallet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showDepositModal, setShowDepositModal] = useState(false);
@@ -104,21 +99,21 @@ export default function WalletPage() {
     {
       id: "currentBalance",
       name: t("stats.currentBalance"),
-      value: wallet?.currentBalance || 0,
+      value: formatCurrency(wallet?.currentBalance || 0),
       icon: WalletIcon,
       color: "#8b5cf6",
     },
     {
       id: "totalCharged",
       name: t("stats.totalCharged"),
-      value: wallet?.totalCharged || 0,
+      value: formatCurrency(wallet?.totalCharged || 0),
       icon: TrendingUpIcon,
       color: "#10b981",
     },
     {
       id: "totalWithdrawn",
       name: t("stats.totalWithdrawn"),
-      value: wallet?.totalWithdrawn || 0,
+      value: formatCurrency(wallet?.totalWithdrawn || 0),
       icon: TrendingDownIcon,
       color: "#ef4444",
     },
@@ -191,6 +186,7 @@ export default function WalletPage() {
             onClose={() => setShowDepositModal(false)}
             onDeposit={handleDeposit}
             t={t}
+            currency={currency}
           />
         )}
       </AnimatePresence>
@@ -198,7 +194,7 @@ export default function WalletPage() {
   );
 }
 
-function DepositModal({ onClose, onDeposit, t }) {
+function DepositModal({ onClose, onDeposit, t, currency }) {
   const [amount, setAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState("");
@@ -284,7 +280,7 @@ function DepositModal({ onClose, onDeposit, t }) {
                 disabled={submitting}
               />
               <span className="absolute end-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-gray-500 dark:text-gray-400">
-                {t("currency")}
+                {currency}
               </span>
             </div>
             {err && (

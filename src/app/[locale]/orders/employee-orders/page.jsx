@@ -25,6 +25,7 @@ import InfoCard from "@/components/atoms/InfoCard";
 import PageHeader from "@/components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
 import Table from "@/components/atoms/Table";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 
 const getRemainingTime = (targetDate) => {
@@ -177,9 +178,7 @@ export default function MyAssignedOrdersPage() {
 		});
 	};
 
-	const formatCurrency = (amount) => {
-		return `${amount?.toLocaleString() || 0} ${t("currency")}`;
-	};
+
 
 	const getRemainingTime = (lockedUntil) => {
 		if (!lockedUntil) return null;
@@ -212,7 +211,7 @@ export default function MyAssignedOrdersPage() {
 		console.log("Exporting data...");
 	};
 
-
+	const { formatCurrency } = usePlatformSettings();
 	const columns = useMemo(() => {
 		return [
 			{
@@ -330,7 +329,7 @@ export default function MyAssignedOrdersPage() {
 				),
 			},
 		];
-	}, [t, currentTime]);
+	}, [t, currentTime, formatCurrency]);
 
 	return (
 		<div className="min-h-screen p-5 bg-[#f3f6fa] dark:bg-[#19243950] transition-all duration-300">
@@ -386,7 +385,7 @@ export default function MyAssignedOrdersPage() {
 
 				searchValue={searchTerm}
 				onSearchChange={setSearchTerm}
-				onSearch={handleSearch} 
+				onSearch={handleSearch}
 				actions={[
 					{
 						key: 'export',
@@ -401,7 +400,7 @@ export default function MyAssignedOrdersPage() {
 				striped={false}
 			/>
 
- 
+
 		</div>
 	);
 }

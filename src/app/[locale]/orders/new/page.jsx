@@ -27,6 +27,7 @@ import api from "@/utils/api";
 import { ProductSkuSearchPopover } from "@/components/molecules/ProductSkuSearchPopover";
 import PageHeader from "@/components/atoms/Pageheader";
 import { cn } from "@/utils/cn";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -437,6 +438,7 @@ export default function CreateOrderPageComplete({
 	existingOrder = null,
 	orderId = null,
 }) {
+	const { formatCurrency } = usePlatformSettings();
 	const navigate = useRouter();
 	const locale = useLocale();
 	const isRTL = locale === "ar";
@@ -1408,7 +1410,7 @@ export default function CreateOrderPageComplete({
 															</div>
 														</td>
 														<td className="p-3 text-sm font-semibold text-green-600 dark:text-green-400">
-															{(unitPrice * quantity).toFixed(2)} {t("currency")}
+															{formatCurrency((unitPrice * quantity).toFixed(2))}
 														</td>
 														<td className="p-3 text-center">
 															<motion.button
@@ -1493,136 +1495,137 @@ export default function CreateOrderPageComplete({
 // Order Summary sidebar
 // ─────────────────────────────────────────────────────────────────────────────
 function OrderSummary({ t, summary }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 0.2, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      className="sticky top-6"
-    >
-      {/* ── Card shell ─────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-2xl border border-[var(--primary)]/20 bg-card">
-  
-        {/* ── Header ───────────────────────────────────────────────────── */}
-        <div className="px-5 pt-5 pb-4 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-foreground tracking-tight">
-            {t("sections.orderSummary")}
-          </h3>
-          {/* Product count pill */}
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg
+	const { formatCurrency } = usePlatformSettings();
+	return (
+		<motion.div
+			initial={{ opacity: 0, x: 20 }}
+			animate={{ opacity: 1, x: 0 }}
+			transition={{ delay: 0.2, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+			className="sticky top-6"
+		>
+			{/* ── Card shell ─────────────────────────────────────────────────── */}
+			<div className="relative overflow-hidden rounded-2xl border border-[var(--primary)]/20 bg-card">
+
+				{/* ── Header ───────────────────────────────────────────────────── */}
+				<div className="px-5 pt-5 pb-4 flex items-center justify-between">
+					<h3 className="text-sm font-semibold text-foreground tracking-tight">
+						{t("sections.orderSummary")}
+					</h3>
+					{/* Product count pill */}
+					<span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg
             bg-[var(--primary)]/10 border border-[var(--primary)]/20
             text-[11px] font-bold text-[var(--primary)] tabular-nums leading-none">
-            <Package className="w-3 h-3" />
-            {summary.productCount}
-          </span>
-        </div>
+						<Package className="w-3 h-3" />
+						{summary.productCount}
+					</span>
+				</div>
 
-        {/* Divider */}
-        <div className="mx-5 h-px bg-gradient-to-r from-transparent via-border/70 to-transparent" />
+				{/* Divider */}
+				<div className="mx-5 h-px bg-gradient-to-r from-transparent via-border/70 to-transparent" />
 
-        {/* ── Line items ───────────────────────────────────────────────── */}
-        <div className="px-5 py-4 space-y-1">
+				{/* ── Line items ───────────────────────────────────────────────── */}
+				<div className="px-5 py-4 space-y-1">
 
-          {/* Products subtotal */}
-          <SummaryRow
-            label={t("summary.productsTotal")}
-            value={`${summary.productsTotal.toFixed(2)} ${t("currency")}`}
-          />
+					{/* Products subtotal */}
+					<SummaryRow
+						label={t("summary.productsTotal")}
+						value={formatCurrency(summary.productsTotal)}
+					/>
 
-          {/* Shipping */}
-          <SummaryRow
-            label={t("summary.shippingCost")}
-            value={`${summary.shippingCost.toFixed(2)} ${t("currency")}`}
-          />
+					{/* Shipping */}
+					<SummaryRow
+						label={t("summary.shippingCost")}
+						value={formatCurrency(summary.shippingCost)}
+					/>
 
-          {/* Discount */}
-          {summary.discount > 0 && (
-            <SummaryRow
-              label={t("summary.discount")}
-              value={`-${summary.discount.toFixed(2)} ${t("currency")}`}
-              valueClassName="text-destructive"
-            />
-          )}
+					{/* Discount */}
+					{summary.discount > 0 && (
+						<SummaryRow
+							label={t("summary.discount")}
+							value={`-${formatCurrency(summary.discount)}`}
+							valueClassName="text-destructive"
+						/>
+					)}
 
-        </div>
+				</div>
 
-        {/* ── Grand total ──────────────────────────────────────────────── */}
-        <div className=" pb-5">
-          <TotalRow
-            label={t("summary.finalTotal")}
-            value={`${summary.finalTotal.toFixed(2)} ${t("currency")}`}
-            accentFrom="var(--primary)"
-            accentTo="var(--secondary,#ffb703)"
-            textColor="text-[var(--primary)]"
-            borderColor="border-[var(--primary)]/30"
-          />
-        </div>
+				{/* ── Grand total ──────────────────────────────────────────────── */}
+				<div className=" pb-5">
+					<TotalRow
+						label={t("summary.finalTotal")}
+						value={formatCurrency(summary.finalTotal)}
+						accentFrom="var(--primary)"
+						accentTo="var(--secondary,#ffb703)"
+						textColor="text-[var(--primary)]"
+						borderColor="border-[var(--primary)]/30"
+					/>
+				</div>
 
-        {/* ── Deposit / Remaining (conditional) ───────────────────────── */}
-        {summary.deposit > 0 && (
-          <>
-            {/* Thin section divider */}
-            <div className="mx-5 h-px bg-gradient-to-r from-transparent via-border/70 to-transparent" />
+				{/* ── Deposit / Remaining (conditional) ───────────────────────── */}
+				{summary.deposit > 0 && (
+					<>
+						{/* Thin section divider */}
+						<div className="mx-5 h-px bg-gradient-to-r from-transparent via-border/70 to-transparent" />
 
-            <div className="px-5 py-4 space-y-1">
-              <SummaryRow
-                label={t("summary.deposit")}
-                value={`${summary.deposit.toFixed(2)} ${t("currency")}`}
-                valueClassName="text-[var(--secondary,#ffb703)]"
-              />
-            </div>
+						<div className="px-5 py-4 space-y-1">
+							<SummaryRow
+								label={t("summary.deposit")}
+								value={formatCurrency(summary.deposit)}
+								valueClassName="text-[var(--secondary,#ffb703)]"
+							/>
+						</div>
 
-            <div className=" pb-5">
-              <TotalRow
-                label={t("summary.remaining")}
-                value={`${summary.remaining.toFixed(2)} ${t("currency")}`}
-                accentFrom="var(--third,#ff5c2b)"
-                accentTo="var(--primary)"
-                textColor="text-[var(--third,#ff5c2b)]"
-                borderColor="border-[var(--third,#ff5c2b)]/30"
-              />
-            </div>
-          </>
-        )}
+						<div className=" pb-5">
+							<TotalRow
+								label={t("summary.remaining")}
+								value={formatCurrency(summary.remaining)}
+								accentFrom="var(--third,#ff5c2b)"
+								accentTo="var(--primary)"
+								textColor="text-[var(--third,#ff5c2b)]"
+								borderColor="border-[var(--third,#ff5c2b)]/30"
+							/>
+						</div>
+					</>
+				)}
 
-      </div>
-    </motion.div>
-  )
+			</div>
+		</motion.div>
+	)
 }
 function SummaryRow({ label, value, valueClassName }) {
-  return (
-    <div className="flex items-center justify-between py-2.5">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <span className={cn("text-sm font-semibold text-foreground tabular-nums", valueClassName)}>
-        {value}
-      </span>
-    </div>
-  )
+	return (
+		<div className="flex items-center justify-between py-2.5">
+			<span className="text-sm text-muted-foreground">{label}</span>
+			<span className={cn("text-sm font-semibold text-foreground tabular-nums", valueClassName)}>
+				{value}
+			</span>
+		</div>
+	)
 }
 
 function TotalRow({ label, value, accentFrom, accentTo, textColor, borderColor }) {
-  return (
-    <div className={cn(
-      "relative flex items-center justify-between px-4 py-3.5 rounded-md overflow-hidden",
-      "border-1", borderColor
-    )}>
-      {/* Gradient fill */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.07]"
-        style={{
-          background: `linear-gradient(135deg, ${accentFrom}, ${accentTo})`
-        }}
-      />
-      {/* Top sheen */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-1/2
+	return (
+		<div className={cn(
+			"relative flex items-center justify-between px-4 py-3.5 rounded-md overflow-hidden",
+			"border-1", borderColor
+		)}>
+			{/* Gradient fill */}
+			<span
+				aria-hidden
+				className="pointer-events-none absolute inset-0 opacity-[0.07]"
+				style={{
+					background: `linear-gradient(135deg, ${accentFrom}, ${accentTo})`
+				}}
+			/>
+			{/* Top sheen */}
+			<span
+				aria-hidden
+				className="pointer-events-none absolute inset-x-0 top-0 h-1/2
           bg-gradient-to-b from-white/[0.08] to-transparent dark:from-white/[0.04]"
-      />
+			/>
 
-      <span className="relative text-sm font-semibold text-foreground">{label}</span>
-      <span className={cn("relative text-xl font-bold tabular-nums", textColor)}>{value}</span>
-    </div>
-  )
+			<span className="relative text-sm font-semibold text-foreground">{label}</span>
+			<span className={cn("relative text-xl font-bold tabular-nums", textColor)}>{value}</span>
+		</div>
+	)
 }

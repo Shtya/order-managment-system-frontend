@@ -5,41 +5,53 @@ import { useAutoTranslate } from '@/utils/autoTranslate';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
-export default function SlugInput({ register, name, slug, errors, slugStatus, setValue, className, labelClassName }) {
-    const t = useTranslations('addProduct');
+export function useSlugify() {
     const { translate } = useAutoTranslate();
-
     const [isTranslating, setIsTranslating] = useState(false);
 
-    useEffect(() => {
-        // 1. تأكد من عمل Trim للاسم ومنع الترجمة إذا كان قصيراً جداً
-        const nameToTranslate = name?.trim();
-        if (!nameToTranslate || nameToTranslate.length < 3) {
-            setValue("slug", "");
-            return;
-        }
+    const generateSlug = async (text) => {
+        if (!text || text.trim().length < 3) return "";
 
-        // 2. تقنية الـ Debounce: ننتظر 800 مللي ثانية بعد آخر حرف يكتبه المستخدم
-        const delayDebounceFn = setTimeout(async () => {
-            setIsTranslating(true);
-            try {
-                const result = await translate(nameToTranslate, 'en');
-                const slug = result
-                    .toLowerCase()
-                    .trim()
-                    .replace(/[^a-z0-9\s-]/g, '')
-                    .replace(/\s+/g, '-')
-                    .replace(/-+/g, '-');
-                setValue("slug", slug);
-            } catch (error) {
-                console.error("Translation failed", error);
-            } finally {
-                setIsTranslating(false);
+        const nameToTranslate = text.trim();
+        setIsTranslating(true);
+
+        try {
+            const isArabic = /[\u0600-\u06FF]/.test(nameToTranslate);
+            let result = nameToTranslate;
+
+            if (isArabic) {
+                result = await translate(nameToTranslate, 'en');
             }
+
+            return result
+                .toLowerCase()
+                .trim()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-');
+        } catch (error) {
+            console.error("Slug generation failed", error);
+            return "";
+        } finally {
+            setIsTranslating(false);
+        }
+    };
+
+    return { generateSlug, isTranslating };
+}
+
+export default function SlugInput({ register, name, slug, errors, slugStatus, setValue, className, labelClassName }) {
+    const t = useTranslations('addProduct');
+    const { generateSlug, isTranslating } = useSlugify();
+
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(async () => {
+            const slug = await generateSlug(name);
+            setValue("slug", slug);
         }, 800);
 
         return () => clearTimeout(delayDebounceFn);
-    }, [name]);
+    }, [name, generateSlug, setValue]);
 
 
     return (

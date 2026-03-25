@@ -58,6 +58,7 @@ import {
 import api from "@/utils/api";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
+import { ActionButtons } from "@/components/atoms/Actions";
 
 /** =========================
  * Helpers
@@ -762,111 +763,43 @@ export default function EmployeesPage() {
 				cell: (row) => {
 					const busy = rowLoading[row.id] || {};
 					return (
-						<TooltipProvider>
-							<div className="flex items-center gap-2">
-								{/* Toggle active */}
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<motion.button
-											whileHover={{ scale: 1.1 }}
-											whileTap={{ scale: 0.95 }}
-											className={cn(
-												"group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
-												row.isActive
-													? "border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-600 hover:border-amber-600 hover:text-white"
-													: "border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white",
-												"disabled:opacity-60 disabled:cursor-not-allowed"
-											)}
-											disabled={!!busy.toggle}
-											onClick={() => handleToggleActive(row)}
-										>
-											{busy.toggle ? (
-												<Loader2 size={16} className="animate-spin" />
-											) : row.isActive ? (
-												<ToggleLeft size={16} className="transition-transform group-hover:scale-110" />
-											) : (
-												<ToggleRight size={16} className="transition-transform group-hover:scale-110" />
-											)}
-										</motion.button>
-									</TooltipTrigger>
-									<TooltipContent>
-										{row.isActive ? (t("actions.deactivate") || "Deactivate") : (t("actions.activate") || "Activate")}
-									</TooltipContent>
-								</Tooltip>
-
-								{/* Delete */}
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<motion.button
-											whileHover={{ scale: 1.1 }}
-											whileTap={{ scale: 0.95 }}
-											className={cn(
-												"group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
-												"border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:border-red-600 hover:text-white",
-												"disabled:opacity-60 disabled:cursor-not-allowed"
-											)}
-											disabled={!!busy.del}
-											onClick={() => openDelete(row)}
-										>
-											{busy.del ? (
-												<Loader2 size={16} className="animate-spin" />
-											) : (
-												<Trash2 size={16} className="transition-transform group-hover:scale-110 group-hover:rotate-12" />
-											)}
-										</motion.button>
-									</TooltipTrigger>
-									<TooltipContent>{t("actions.delete")}</TooltipContent>
-								</Tooltip>
-
-								{/* Edit */}
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<motion.button
-											whileHover={{ scale: 1.1 }}
-											whileTap={{ scale: 0.95 }}
-											className={cn(
-												"group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
-												"border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:border-blue-600 hover:text-white",
-												"disabled:opacity-60 disabled:cursor-not-allowed"
-											)}
-											disabled={!!busy.edit}
-											onClick={() => openEdit(row)}
-										>
-											{busy.edit ? (
-												<Loader2 size={16} className="animate-spin" />
-											) : (
-												<Edit2 size={16} className="transition-transform group-hover:scale-110 group-hover:-rotate-12" />
-											)}
-										</motion.button>
-									</TooltipTrigger>
-									<TooltipContent>{t("actions.edit")}</TooltipContent>
-								</Tooltip>
-
-								{/* View */}
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<motion.button
-											whileHover={{ scale: 1.1 }}
-											whileTap={{ scale: 0.95 }}
-											className={cn(
-												"group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
-												"border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:border-purple-600 hover:text-white",
-												"disabled:opacity-60 disabled:cursor-not-allowed"
-											)}
-											disabled={!!busy.view}
-											onClick={() => handleView(row)}
-										>
-											{busy.view ? (
-												<Loader2 size={16} className="animate-spin" />
-											) : (
-												<Eye size={16} className="transition-transform group-hover:scale-110" />
-											)}
-										</motion.button>
-									</TooltipTrigger>
-									<TooltipContent>{t("actions.view")}</TooltipContent>
-								</Tooltip>
-							</div>
-						</TooltipProvider>
+						<ActionButtons
+							row={row}
+							actions={[
+								{
+									icon: busy.toggle ? <Loader2 size={16} className="animate-spin" /> : (row.isActive ? <ToggleLeft size={16} /> : <ToggleRight size={16} />),
+									tooltip: row.isActive ? (t("actions.deactivate") || "Deactivate") : (t("actions.activate") || "Activate"),
+									onClick: (r) => handleToggleActive(r),
+									variant: row.isActive ? "amber" : "emerald",
+									disabled: !!busy.toggle,
+									permission: "users.deactivate",
+								},
+								{
+									icon: busy.del ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />,
+									tooltip: t("actions.delete"),
+									onClick: (r) => openDelete(r),
+									variant: "red",
+									disabled: !!busy.del,
+									permission: "users.deactivate", // Use deactivate as proxy if delete not available
+								},
+								{
+									icon: busy.edit ? <Loader2 size={16} className="animate-spin" /> : <Edit2 size={16} />,
+									tooltip: t("actions.edit"),
+									onClick: (r) => openEdit(r),
+									variant: "blue",
+									disabled: !!busy.edit,
+									permission: "users.update",
+								},
+								{
+									icon: busy.view ? <Loader2 size={16} className="animate-spin" /> : <Eye size={16} />,
+									tooltip: t("actions.view"),
+									onClick: (r) => handleView(r),
+									variant: "purple",
+									disabled: !!busy.view,
+									permission: "users.read",
+								},
+							]}
+						/>
 					);
 				},
 			},
@@ -882,22 +815,26 @@ export default function EmployeesPage() {
 					{ name: t("breadcrumb.employees") }
 				]}
 				buttons={
-					<Button_
-						href="/employees/new"
-						size="sm"
-						label={t("actions.addEmployee")}
-						variant="solid"
-						icon={
-							<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-								<path
-									fillRule="evenodd"
-									clipRule="evenodd"
-									d="M6.12078 3.34752C8.69901 3.06206 11.3009 3.06206 13.8791 3.34752C15.3066 3.50752 16.4583 4.63169 16.6258 6.06419C16.9313 8.67918 16.9313 11.3209 16.6258 13.9359C16.4583 15.3684 15.3066 16.4925 13.8791 16.6525C11.3009 16.938 8.69901 16.938 6.12078 16.6525C4.69328 16.4925 3.54161 15.3684 3.37411 13.9359C3.06866 11.3211 3.06866 8.67974 3.37411 6.06502C3.45883 5.36908 3.77609 4.72214 4.27447 4.22906C4.77285 3.73597 5.42314 3.42564 6.11994 3.34835M9.99994 5.83919C10.1657 5.83919 10.3247 5.90503 10.4419 6.02224C10.5591 6.13945 10.6249 6.29842 10.6249 6.46419V9.37502H13.5358C13.7015 9.37502 13.8605 9.44087 13.9777 9.55808C14.0949 9.67529 14.1608 9.83426 14.1608 10C14.1608 10.1658 14.0949 10.3247 13.9777 10.442C13.8605 10.5592 13.7015 10.625 13.5358 10.625H10.6249V13.5359C10.6249 13.7016 10.5591 13.8606 10.4419 13.9778C10.3247 14.095 10.1657 14.1609 9.99994 14.1609C9.83418 14.1609 9.67521 14.095 9.558 13.9778C9.44079 13.8606 9.37494 13.7016 9.37494 13.5359V10.625H6.46411C6.29835 10.625 6.13938 10.5592 6.02217 10.442C5.90496 10.3247 5.83911 10.1658 5.83911 10C5.83911 9.83426 5.90496 9.67529 6.02217 9.55808C6.13938 9.44087 6.29835 9.37502 6.46411 9.37502H9.37494V6.46419C9.37494 6.29842 9.44079 6.13945 9.558 6.02224C9.67521 5.90503 9.83418 5.83919 9.99994 5.83919Z"
-									fill="white"
-								/>
-							</svg>
-						}
-					/>
+					<>
+						<Button_
+							href="/employees/new"
+							size="sm"
+							label={t("actions.addEmployee")}
+							variant="solid"
+							icon={
+								<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+									<path
+										fillRule="evenodd"
+										clipRule="evenodd"
+										d="M6.12078 3.34752C8.69901 3.06206 11.3009 3.06206 13.8791 3.34752C15.3066 3.50752 16.4583 4.63169 16.6258 6.06419C16.9313 8.67918 16.9313 11.3209 16.6258 13.9359C16.4583 15.3684 15.3066 16.4925 13.8791 16.6525C11.3009 16.938 8.69901 16.938 6.12078 16.6525C4.69328 16.4925 3.54161 15.3684 3.37411 13.9359C3.06866 11.3211 3.06866 8.67974 3.37411 6.06502C3.45883 5.36908 3.77609 4.72214 4.27447 4.22906C4.77285 3.73597 5.42314 3.42564 6.11994 3.34835M9.99994 5.83919C10.1657 5.83919 10.3247 5.90503 10.4419 6.02224C10.5591 6.13945 10.6249 6.29842 10.6249 6.46419V9.37502H13.5358C13.7015 9.37502 13.8605 9.44087 13.9777 9.55808C14.0949 9.67529 14.1608 9.83426 14.1608 10C14.1608 10.1658 14.0949 10.3247 13.9777 10.442C13.8605 10.5592 13.7015 10.625 13.5358 10.625H10.6249V13.5359C10.6249 13.7016 10.5591 13.8606 10.4419 13.9778C10.3247 14.095 10.1657 14.1609 9.99994 14.1609C9.83418 14.1609 9.67521 14.095 9.558 13.9778C9.44079 13.8606 9.37494 13.7016 9.37494 13.5359V10.625H6.46411C6.29835 10.625 6.13938 10.5592 6.02217 10.442C5.90496 10.3247 5.83911 10.1658 5.83911 10C5.83911 9.83426 5.90496 9.67529 6.02217 9.55808C6.13938 9.44087 6.29835 9.37502 6.46411 9.37502H9.37494V6.46419C9.37494 6.29842 9.44079 6.13945 9.558 6.02224C9.67521 5.90503 9.83418 5.83919 9.99994 5.83919Z"
+										fill="white"
+									/>
+								</svg>
+							}
+							permission="users.create"
+						/>
+						<Button_ size="sm" label={t("actions.howToUse")} tone="outline" variant="ghost" icon={<Info size={15} />} permission="users.read" />
+					</>
 				}
 				stats={statCards}
 				items={switchItems}
@@ -924,8 +861,21 @@ export default function EmployeesPage() {
 				t={t}
 				searchValue={search}
 				onSearchChange={setSearch}
-				onExport={handleExport}
-				exportLoading={exportLoading}
+				actions={[
+					{
+						key: "export",
+						label: t("toolbar.export"),
+						icon: exportLoading ? (
+							<Loader2 size={14} className="animate-spin" />
+						) : (
+							<Download size={14} />
+						),
+						color: "blue",
+						onClick: handleExport,
+						disabled: exportLoading,
+						permission: "users.read",
+					},
+				]}
 				columns={columns}
 				data={records}
 				isLoading={isLoading}

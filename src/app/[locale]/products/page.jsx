@@ -5,7 +5,7 @@ import React, { useEffect, useMemo, useState, useRef, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion";
 import { Box, ChevronLeft, FileDown, Filter, Layers, Package, RefreshCw, Loader2, Info, Plus, Truck, CheckCircle, Boxes, PackageSearch, Download } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 
 import InfoCard from "@/components/atoms/InfoCard";
 import SwitcherTabs from "@/components/atoms/SwitcherTabs";
@@ -28,6 +28,7 @@ import useBundlesTab, { BundleViewModal } from "./BundlesTab";
 import useIdleTab from "./IdleTab";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
+import { useSearchParams } from "next/navigation";
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -213,7 +214,9 @@ function FilterField({ label, children }) {
 export default function ProductsPage() {
 	const t = useTranslations("products");
 	const router = useRouter();
-
+	const searchParams = useSearchParams();
+	const pathname = usePathname();
+	const viewId = searchParams.get("id");
 	const [active, setActive] = useState("products");
 	const [search, setSearch] = useState("");
 	const [searchDebounced, setSearchDebounced] = useState("");
@@ -262,6 +265,24 @@ export default function ProductsPage() {
 		],
 		[t]
 	);
+
+	useEffect(() => {
+		const handleUrlState = async () => {
+			if (!viewId) return;
+
+			const targetScope = active === "bundles" ? "bundles" : "products";
+
+			await openView(viewId, targetScope);
+
+			const params = new URLSearchParams(searchParams.toString());
+			params.delete("id");
+
+			const cleanPath = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+			router.replace(cleanPath, { scroll: false });
+		};
+
+		handleUrlState();
+	}, [viewId, active, pathname, router, searchParams]);
 
 	const [summary, setSummary] = useState(null);
 	const [loadingSummary, setLoadingSummary] = useState(true);
@@ -373,6 +394,7 @@ export default function ProductsPage() {
 	};
 
 	const closeView = () => {
+
 		setViewOpen(false);
 		setViewProduct(null);
 		setViewScope(null);
@@ -497,7 +519,7 @@ export default function ProductsPage() {
 
 	return (
 		<div className="min-h-screen p-5">
- 
+
 			<PageHeader
 				breadcrumbs={[
 					{ name: t("breadcrumb.home"), href: "/" },
@@ -512,8 +534,9 @@ export default function ProductsPage() {
 							tone="primary"
 							variant="solid"
 							icon={<Plus size={15} />}
+							permission={active === "bundles" ? "products.create" : "products.create"}
 						/>
-						<Button_ size="sm" label={t("actions.howToUse")} tone="outline" variant="ghost" icon={<Info size={15} />} />
+						<Button_ size="sm" label={t("actions.howToUse")} tone="outline" variant="ghost" icon={<Info size={15} />} permission="products.read" />
 					</>
 				}
 				stats={stats}
@@ -546,6 +569,7 @@ export default function ProductsPage() {
 						color: "blue",
 						disabled: exportLoading,
 						onClick: onExport,
+						permission: "products.read",
 					}
 				]}
 				hasActiveFilters={hasActiveFilters}

@@ -49,9 +49,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import PermissionsSelector from "@/components/atoms/PermissionsSelector";
-import { getUser } from "@/hook/getUser";
+
 import PageHeader from "@/components/atoms/Pageheader";
 import Table, { FilterField } from "@/components/atoms/Table";
+import { useAuth } from "@/context/AuthContext";
 
 /** ✅ Main Page Component */
 export default function RolesPermissionsPage() {
@@ -75,7 +76,7 @@ export default function RolesPermissionsPage() {
 	};
 
 	const { isLoading, roles, permissions, loading, fetchRoles, fetchPermissions, createRole, updateRole, deleteRole } = useRolesApi();
-	const user = getUser()
+	const { user } = useAuth();
 
 	useEffect(() => {
 		fetchRoles();

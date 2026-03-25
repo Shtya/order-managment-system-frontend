@@ -11,8 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { buildOrderOverviewCards, buildOrderSummarySection, formatCurrency, openPdfDocument } from "../utils/pdf";
+import { buildOrderOverviewCards, buildOrderSummarySection, openPdfDocument } from "../utils/pdf";
 import { getOrderItemCount, getOrderValue } from "./data";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 const OPERATION_TYPE_KEYS = {
   ORDER_PREPARED: "orderPrepared",
@@ -24,7 +25,7 @@ const OPERATION_TYPE_KEYS = {
   RETRY_ORDER: "retryOrder",
 };
 
-function buildPreparedOrderBody(op, t) {
+function buildPreparedOrderBody(op, t, formatCurrency) {
   const order = op.orderSnapshot || { code: op.orderCode, products: op.productsSnapshot || [] };
   const successLogs = (op.scanLogs || []).filter((log) => log.success);
   const errorLogs = (op.scanLogs || []).filter((log) => !log.success);
@@ -34,7 +35,7 @@ function buildPreparedOrderBody(op, t) {
       <td>${product.name}</td>
       <td>${product.requestedQty}</td>
       <td>${product.scannedQty || 0}</td>
-      <td>${formatCurrency((Number(product.price) || 0) * (Number(product.requestedQty) || 0))}</td>
+      <td>${formatCurrency ? formatCurrency((Number(product.price) || 0) * (Number(product.requestedQty) || 0)) : `${(Number(product.price) || 0) * (Number(product.requestedQty) || 0)} ر.س`}</td>
     </tr>
   `).join("");
 
@@ -79,7 +80,7 @@ function buildPreparedOrderBody(op, t) {
         orderValue: t("pdf.orderValue"),
         orderSummary: t("pdf.orderSummary"),
         itemsWord: t("common.itemsWord"),
-      })}
+      }, formatCurrency)}
     </section>
 
     <section class="surface">
@@ -87,7 +88,7 @@ function buildPreparedOrderBody(op, t) {
         <div class="summary-box"><span>${t("pdf.successScans")}</span><b>${successLogs.length}</b></div>
         <div class="summary-box"><span>${t("pdf.errorCount")}</span><b>${errorLogs.length}</b></div>
         <div class="summary-box"><span>${t("pdf.totalItems")}</span><b>${getOrderItemCount(order)}</b></div>
-        <div class="summary-box"><span>${t("pdf.orderPrice")}</span><b>${formatCurrency(order.total || getOrderValue(order))}</b></div>
+        <div class="summary-box"><span>${t("pdf.orderPrice")}</span><b>${formatCurrency ? formatCurrency(order.total || getOrderValue(order)) : `${order.total || getOrderValue(order)} ر.س`}</b></div>
       </div>
     </section>
 
@@ -110,13 +111,13 @@ function buildPreparedOrderBody(op, t) {
     </section>
 
     ${errorsSection}
-    ${buildOrderSummarySection([order], { title: t("pdf.finalSummary"), totalOrders: t("pdf.totalOrders"), totalSkus: t("pdf.totalSkus"), totalItems: t("pdf.totalItems"), totalValue: t("pdf.totalValue") })}
+    ${buildOrderSummarySection([order], { title: t("pdf.finalSummary"), totalOrders: t("pdf.totalOrders"), totalSkus: t("pdf.totalSkus"), totalItems: t("pdf.totalItems"), totalValue: t("pdf.totalValue") }, formatCurrency)}
   `;
 }
 
-function buildPreparedSessionBody(sessionOps, t) {
+function buildPreparedSessionBody(sessionOps, t, formatCurrency) {
   const orders = sessionOps.map((operation) => operation.orderSnapshot || { code: operation.orderCode, products: operation.productsSnapshot || [] });
-  const orderBlocks = sessionOps.map((operation) => buildPreparedOrderBody(operation, t)).join("");
+  const orderBlocks = sessionOps.map((operation) => buildPreparedOrderBody(operation, t, formatCurrency)).join("");
 
   return `
     <section class="hero">
@@ -124,11 +125,11 @@ function buildPreparedSessionBody(sessionOps, t) {
       <p>${t("pdf.ordersCount", { count: sessionOps.length })}</p>
     </section>
     ${orderBlocks}
-    ${buildOrderSummarySection(orders, { title: t("pdf.finalSummary"), totalOrders: t("pdf.totalOrders"), totalSkus: t("pdf.totalSkus"), totalItems: t("pdf.totalItems"), totalValue: t("pdf.totalValue") })}
+    ${buildOrderSummarySection(orders, { title: t("pdf.finalSummary"), totalOrders: t("pdf.totalOrders"), totalSkus: t("pdf.totalSkus"), totalItems: t("pdf.totalItems"), totalValue: t("pdf.totalValue") }, formatCurrency)}
   `;
 }
 
-function buildGenericBody(op, order, t) {
+function buildGenericBody(op, order, t, formatCurrency) {
   return `
     <section class="hero hero-info">
       <h1>${t("pdf.operationTitle")}</h1>
@@ -148,14 +149,15 @@ function buildGenericBody(op, order, t) {
 
     ${order ? `
       <section class="surface">
-        ${buildOrderOverviewCards(order, { customer: t("pdf.customer"), city: t("pdf.city"), orderValue: t("pdf.orderValue"), orderSummary: t("pdf.orderSummary"), itemsWord: t("common.itemsWord") })}
+        ${buildOrderOverviewCards(order, { customer: t("pdf.customer"), city: t("pdf.city"), orderValue: t("pdf.orderValue"), orderSummary: t("pdf.orderSummary"), itemsWord: t("common.itemsWord") }, formatCurrency)}
       </section>
-      ${buildOrderSummarySection([order], { title: t("pdf.finalSummary"), totalOrders: t("pdf.totalOrders"), totalSkus: t("pdf.totalSkus"), totalItems: t("pdf.totalItems"), totalValue: t("pdf.totalValue") })}
+      ${buildOrderSummarySection([order], { title: t("pdf.finalSummary"), totalOrders: t("pdf.totalOrders"), totalSkus: t("pdf.totalSkus"), totalItems: t("pdf.totalItems"), totalValue: t("pdf.totalValue") }, formatCurrency)}
     ` : ""}
   `;
 }
 
 function LogDetailsDialog({ log, sessionLogs, open, onClose, orders, t }) {
+  const { formatCurrency } = usePlatformSettings();
   if (!log) return null;
   const relatedOrder = orders.find((order) => order.code === log.orderCode);
   const isPreparedLog = log.operationType === "ORDER_PREPARED";
@@ -195,11 +197,11 @@ function LogDetailsDialog({ log, sessionLogs, open, onClose, orders, t }) {
           <div className="flex flex-wrap items-center justify-end gap-2">
             {isPreparedLog ? (
               <>
-                <Button onClick={() => openPdfDocument({ title: t("pdf.preparedTitle"), filename: `${log.orderCode}_prepared.pdf`, body: buildPreparedOrderBody(log, t) })}>{t("actions.openOrderPdf")}</Button>
-                {sessionLogs.length > 1 ? <Button variant="outline" onClick={() => openPdfDocument({ title: t("pdf.sessionTitle"), filename: `prepared_session_${log.createdAt?.slice(0, 10) || "session"}.pdf`, body: buildPreparedSessionBody(sessionLogs, t) })}>{t("actions.openSessionPdf")}</Button> : null}
+                <Button onClick={() => openPdfDocument({ title: t("pdf.preparedTitle"), filename: `${log.orderCode}_prepared.pdf`, body: buildPreparedOrderBody(log, t, formatCurrency) })}>{t("actions.openOrderPdf")}</Button>
+                {sessionLogs.length > 1 ? <Button variant="outline" onClick={() => openPdfDocument({ title: t("pdf.sessionTitle"), filename: `prepared_session_${log.createdAt?.slice(0, 10) || "session"}.pdf`, body: buildPreparedSessionBody(sessionLogs, t, formatCurrency) })}>{t("actions.openSessionPdf")}</Button> : null}
               </>
             ) : (
-              <Button onClick={() => openPdfDocument({ title: t("pdf.operationTitle"), filename: `${log.id}.pdf`, body: buildGenericBody(log, relatedOrder, t) })}>{t("actions.openPdf")}</Button>
+              <Button onClick={() => openPdfDocument({ title: t("pdf.operationTitle"), filename: `${log.id}.pdf`, body: buildGenericBody(log, relatedOrder, t, formatCurrency) })}>{t("actions.openPdf")}</Button>
             )}
             <Button variant="outline" onClick={onClose}>{t("common.close")}</Button>
           </div>

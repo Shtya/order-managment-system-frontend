@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
 import { ArrowLeft, ArrowRight, Package, Truck, BarChart3 } from "lucide-react";
+import Link from "next/link";
 
 const BRAND = "#6763AF";
 const ease = [0.22, 1, 0.36, 1];
@@ -155,6 +156,7 @@ function ServiceCard({ item, index, inView, isRtl, img }) {
 				</motion.p>
 
 				{/* CTA */}
+				<Link href="/auth?mode=signup" passHref legacyBehavior>
 				<motion.button
 					initial={{ opacity: 0, y: 10 }}
 					animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -179,6 +181,7 @@ function ServiceCard({ item, index, inView, isRtl, img }) {
 					<span className="relative z-10">{item.cta}</span>
 					<Arrow size={16} className="relative z-10" />
 				</motion.button>
+					</Link>
 			</div>
 
 			{/* ── IMAGE SIDE ── */}

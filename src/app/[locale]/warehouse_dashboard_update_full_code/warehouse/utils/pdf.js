@@ -9,10 +9,6 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
-export function formatCurrency(value) {
-  return `${Number(value || 0).toLocaleString("en-US")} ر.س`;
-}
-
 export function getPdfBaseStyles() {
   return `
     <style>
@@ -284,7 +280,7 @@ export function getPdfBaseStyles() {
   `;
 }
 
-export function buildOrderSummarySection(orders = [], labels = {}) {
+export function buildOrderSummarySection(orders = [], labels = {}, formatCurrency) {
   const summary = getDocumentSummary(orders);
 
   return `
@@ -305,14 +301,14 @@ export function buildOrderSummarySection(orders = [], labels = {}) {
         </div>
         <div class="summary-box">
           <span>${escapeHtml(labels.totalValue || "القيمة الإجمالية")}</span>
-          <b>${escapeHtml(formatCurrency(summary.totalValue))}</b>
+          <b>${escapeHtml(formatCurrency ? formatCurrency(summary.totalValue) : `${summary.totalValue} ر.س`)}</b>
         </div>
       </div>
     </section>
   `;
 }
 
-export function buildOrderOverviewCards(order, labels = {}) {
+export function buildOrderOverviewCards(order, labels = {}, formatCurrency) {
   return `
     <div class="grid cols-4">
       <div class="meta-card">
@@ -325,7 +321,7 @@ export function buildOrderOverviewCards(order, labels = {}) {
       </div>
       <div class="meta-card">
         <span class="meta-label">${escapeHtml(labels.orderValue || "قيمة الطلب")}</span>
-        <div class="meta-value">${escapeHtml(formatCurrency(order.total || getOrderValue(order)))}</div>
+        <div class="meta-value">${escapeHtml(formatCurrency ? formatCurrency(order.total || getOrderValue(order)) : `${order.total || getOrderValue(order)} ر.س`)}</div>
       </div>
       <div class="meta-card">
         <span class="meta-label">${escapeHtml(labels.orderSummary || "ملخص الطلب")}</span>

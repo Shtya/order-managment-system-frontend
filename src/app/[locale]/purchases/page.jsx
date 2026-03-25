@@ -71,6 +71,7 @@ import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
 import { Bone } from "@/components/atoms/BannerSkeleton";
 import { avatarSrc } from "@/components/atoms/UserSelect";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 const isImagePath = (p) => !!p && /\.(png|jpg|jpeg|webp|gif)$/i.test(p);
 const isPdfPath = (p) => !!p && /\.pdf$/i.test(p);
@@ -831,7 +832,7 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 	);
 }
 
-function DetailsModal({ isOpen, onClose, invoice, isLoading }) {
+function DetailsModal({ isOpen, onClose, invoice, isLoading, formatCurrency }) {
 	const t = useTranslations("purchases");
 	const receipt = invoice?.receiptAsset || null;
 
@@ -910,9 +911,9 @@ function DetailsModal({ isOpen, onClose, invoice, isLoading }) {
 												<tr key={idx} className="border-t hover:bg-primary/5 transition-colors">
 													<td className="p-4">{item.variant?.sku || "-"}</td>
 													<td className="p-4 font-medium">{item.variant?.product?.name || "-"}</td>
-													<td className="p-4">{item.purchaseCost} {t("currency")}</td>
+													<td className="p-4">{formatCurrency(item.purchaseCost)}</td>
 													<td className="p-4 text-center font-semibold">{item.quantity}</td>
-													<td className="p-4 font-bold text-primary">{item.lineTotal} {t("currency")}</td>
+													<td className="p-4 font-bold text-primary">{formatCurrency(item.lineTotal)}</td>
 												</tr>
 											))}
 										</tbody>
@@ -925,15 +926,15 @@ function DetailsModal({ isOpen, onClose, invoice, isLoading }) {
 								<div className="space-y-3">
 									<div className="flex justify-between text-sm">
 										<span className="font-semibold text-gray-700 dark:text-slate-300">{t("summary.subtotal")}</span>
-										<span className="font-bold text-gray-900 dark:text-white">{invoice.subtotal} {t("currency")}</span>
+										<span className="font-bold text-gray-900 dark:text-white">{formatCurrency(invoice.subtotal)}</span>
 									</div>
 									<div className="flex justify-between text-sm">
 										<span className="font-semibold text-gray-700 dark:text-slate-300">{t("summary.paidAmount")}</span>
-										<span className="font-bold text-green-600">{invoice.paidAmount} {t("currency")}</span>
+										<span className="font-bold text-green-600">{formatCurrency(invoice.paidAmount)}</span>
 									</div>
 									<div className="flex justify-between text-lg font-bold border-t-2 border-primary/30 pt-3">
 										<span className="text-gray-900 dark:text-white">{t("summary.remainingAmount")}</span>
-										<span className="text-primary text-xl">{invoice.remainingAmount} {t("currency")}</span>
+										<span className="text-primary text-xl">{formatCurrency(invoice.remainingAmount)}</span>
 									</div>
 								</div>
 							</div>
@@ -1135,7 +1136,7 @@ function EditPaidAmountModal({ isOpen, onClose, invoice, t, onSave }) {
 							"text-2xl font-bold",
 							remaining > 0 ? "text-orange-600 dark:text-orange-400" : "text-green-600 dark:text-green-400"
 						)}>
-							{remaining} {t("currency")}
+							{formatCurrency(remaining)}
 						</div>
 					</div>
 				</div>
@@ -1169,6 +1170,7 @@ function FilterField({ label, children }) {
 }
 export default function PurchasesPage() {
 	const t = useTranslations("purchases");
+	const { formatCurrency } = usePlatformSettings();
 	const router = useRouter();
 
 	const [search, setSearch] = useState("");
@@ -1380,7 +1382,7 @@ export default function PurchasesPage() {
 				header: t("table.subtotal"),
 				cell: (row) => (
 					<span className="text-gray-600 dark:text-slate-200">
-						{row.subtotal || 0} {t("currency")}
+						{formatCurrency(row.subtotal || 0)}
 					</span>
 				),
 			},
@@ -1389,7 +1391,7 @@ export default function PurchasesPage() {
 				header: t("table.paidAmount"),
 				cell: (row) => (
 					<span className="text-green-600 dark:text-green-400 font-medium">
-						{row.paidAmount || 0} {t("currency")}
+						{formatCurrency(row.paidAmount || 0)}
 					</span>
 				),
 			},
@@ -1401,7 +1403,7 @@ export default function PurchasesPage() {
 						"font-medium",
 						row.remainingAmount > 0 ? "text-orange-600 dark:text-orange-400" : "text-gray-500 dark:text-slate-400"
 					)}>
-						{row.remainingAmount || 0} {t("currency")}
+						{formatCurrency(row.remainingAmount || 0)}
 					</span>
 				),
 			},
@@ -1474,17 +1476,17 @@ export default function PurchasesPage() {
 						</DropdownMenuTrigger>
 
 						<DropdownMenuContent align="start" className="w-56">
-							<DropdownMenuItem onClick={() => handleViewDetails(row)} className="flex items-center gap-2 cursor-pointer">
+							<DropdownMenuItem onClick={() => handleViewDetails(row)} className="flex items-center gap-2 cursor-pointer" permission="purchases.read">
 								<Eye size={16} className="text-blue-600" />
 								<span>{t("actions.view")}</span>
 							</DropdownMenuItem>
 
-							<DropdownMenuItem onClick={() => setLogsModal({ isOpen: true, invoiceId: row.id })} className="flex items-center gap-2 cursor-pointer">
+							<DropdownMenuItem onClick={() => setLogsModal({ isOpen: true, invoiceId: row.id })} className="flex items-center gap-2 cursor-pointer" permission="purchases.read">
 								<ScrollText size={16} className="text-purple-600" />
 								<span>{t("actions.logs")}</span>
 							</DropdownMenuItem>
 
-							<DropdownMenuItem onClick={() => setEditModal({ isOpen: true, invoice: row })} className="flex items-center gap-2 cursor-pointer">
+							<DropdownMenuItem onClick={() => setEditModal({ isOpen: true, invoice: row })} className="flex items-center gap-2 cursor-pointer" permission="purchases.update">
 								<Edit size={16} className="text-gray-600" />
 								<span>{t("actions.editPaidAmount")}</span>
 							</DropdownMenuItem>
@@ -1499,6 +1501,7 @@ export default function PurchasesPage() {
 								onClick={() => handleAcceptClick(row)}
 								className="flex items-center gap-2 cursor-pointer"
 								disabled={row.status === "accepted"}
+								permission="purchases.update"
 							>
 								<Check size={16} className="text-green-600" />
 								<span>{t("actions.accept")}</span>
@@ -1508,6 +1511,7 @@ export default function PurchasesPage() {
 								onClick={() => handleStatusChange(row.id, "pending")}
 								className="flex items-center gap-2 cursor-pointer"
 								disabled={row.status === "pending"}
+								permission="purchases.update"
 							>
 								<Pause size={16} className="text-yellow-600" />
 								<span>{t("actions.suspend")}</span>
@@ -1517,6 +1521,7 @@ export default function PurchasesPage() {
 								onClick={() => handleStatusChange(row.id, "rejected")}
 								className="flex items-center gap-2 cursor-pointer"
 								disabled={row.status === "rejected"}
+								permission="purchases.update"
 							>
 								<X size={16} className="text-red-600" />
 								<span>{t("actions.reject")}</span>
@@ -1538,8 +1543,15 @@ export default function PurchasesPage() {
 				]}
 				buttons={
 					<>
-						<Button_ href="/purchases/new" size="sm" label={t("actions.createInvoice")} icon={<Plus size={18} />} variant="solid" />
-						<Button_ size="sm" label={t("actions.howToUse")} tone="ghost" icon={<Info size={18} />} />
+						<Button_
+							href="/purchases/new"
+							size="sm"
+							label={t("actions.createInvoice")}
+							icon={<Plus size={18} />}
+							variant="solid"
+							permission="purchases.create"
+						/>
+						<Button_ size="sm" label={t("actions.howToUse")} tone="ghost" icon={<Info size={18} />} permission="purchases.read" />
 					</>
 				}
 				stats={statsCards}
@@ -1651,6 +1663,7 @@ export default function PurchasesPage() {
 				onClose={() => setDetailsModal({ isOpen: false, invoice: null })}
 				invoice={detailsModal.invoice}
 				isLoading={detailsModal.isLoading}
+				formatCurrency={formatCurrency}
 			// t={t}
 			/>
 
@@ -1667,6 +1680,7 @@ export default function PurchasesPage() {
 				invoice={editModal.invoice}
 				t={t}
 				onSave={handleUpdatePaidAmount}
+				formatCurrency={formatCurrency}
 			/>
 
 			<AcceptPreviewModal

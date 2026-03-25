@@ -7,7 +7,7 @@ import api from "@/utils/api";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { getUser } from "@/hook/getUser";
+
 import {
   AlertCircle,
   ArrowRight,
@@ -43,6 +43,7 @@ import { PrimaryBtn } from "@/components/atoms/Button";
 import { useSubscriptionsApi } from "../plans/page";
 import { cn } from "@/utils/cn";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { useAuth } from "@/context/AuthContext";
 /* ─── CSS ─────────────────────────────────────────────────── */
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
@@ -1196,7 +1197,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
     subscribe,
     cancelSubscription,
   } = useSubscriptionsApi();
-  console.log(loading);
+
   const currentPlanId =
     activeSubscription?.plan?.id || activeSubscription?.planId;
   const hasActiveSubscription = !!activeSubscription;
@@ -1426,20 +1427,20 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                   duration: 0.35,
                   ease: [0.34, 1.56, 0.64, 1],
                 }}
-                onClick={() =>
-                  !isTrialDisabled &&
-                  !hasActiveSubscription &&
-                  setSelected(p.id)
-                }
+                // onClick={() =>
+                //   !isTrialDisabled &&
+                //   !hasActiveSubscription &&
+                //   setSelected(p.id)
+                // }
                 style={{
                   position: "relative",
                   borderRadius: 20,
                   padding: isFeatured ? "28px 20px" : "24px 18px",
                   direction: "rtl",
-                  cursor:
-                    isTrialDisabled || hasActiveSubscription
-                      ? "not-allowed"
-                      : "pointer",
+                  // cursor:
+                  //   isTrialDisabled || hasActiveSubscription
+                  //     ? "not-allowed"
+                  //     : "pointer",
                   background: isFeatured ? "#1b1945" : "var(--surface)",
                   border: isFeatured
                     ? `2px solid ${isSelected ? "#BAEB33" : "transparent"}`
@@ -1771,6 +1772,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                       }}
                       onClick={(e) => {
                         e.stopPropagation();
+                        console.log(p, p.id);
                         if (
                           !isTrialDisabled &&
                           !hasActiveSubscription &&
@@ -1788,7 +1790,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                         <>
                           <AlertCircle size={14} /> لديك اشتراك نشط
                         </>
-                      ) : loading ? (
+                      ) : loading === p.id ? (
                         <Loader2 className="animate-spin" />
                       ) : (
                         "ابدأ الآن"
@@ -1835,14 +1837,11 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
       <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
         <BtnGhost onClick={onBack}>رجوع</BtnGhost>
         <BtnPrimary
-          onClick={go}
+          onClick={() => go()}
           disabled={
-            !(selected || hasActiveSubscription) ||
-            isLoading ||
-            nextLoading ||
-            loading
+            !hasActiveSubscription || isLoading || nextLoading || loading
           }
-          loading={nextLoading || loading}
+          loading={nextLoading}
         >
           متابعة <IcArrow dir="right" />
         </BtnPrimary>
@@ -2313,7 +2312,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
   const [connected, setConnected] = useState({});
   const [listLoading, setListLoading] = useState(true);
 
-  const user = getUser();
+  const { user } = useAuth();
   const provider = STORE_PROVIDERS.find((p) => p.key === active);
   const existingStore = active ? stores[active] : null;
 

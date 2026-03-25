@@ -183,6 +183,7 @@ export default function DistributionTab({ subtab, setSubtab }) {
               variant="ghost"
               onClick={() => {}}
               icon={<Info size={18} />}
+              permission="orders.read"
             />
           </>
         }
@@ -568,7 +569,9 @@ function AssignCarrierDialog({
           {},
         );
         toast.success(
-          t("modal.assignSuccess") || "Carrier assigned successfully",
+          provider === "none"
+            ? t("modal.manualAssignSuccess") || "Assigned for manual shipping"
+            : t("modal.assignSuccess") || "Carrier assigned successfully",
         );
       } else {
         // Bulk assignment
@@ -581,7 +584,9 @@ function AssignCarrierDialog({
           },
         );
         toast.success(
-          t("modal.bulkAssignStarted") || "Orders added to assignment queue",
+          provider === "none"
+            ? t("modal.manualAssignSuccess") || "Orders assigned manually"
+            : t("modal.bulkAssignStarted") || "Orders added to assignment queue",
         );
       }
 
@@ -688,6 +693,34 @@ function AssignCarrierDialog({
             </Label>
 
             <div className="grid grid-cols-4 gap-2">
+              {/* Manual / None option */}
+              <motion.button
+                type="button"
+                onClick={() => setCarrier("NONE")}
+                whileTap={{ scale: 0.96 }}
+                className={cn(
+                  "relative flex flex-col items-center gap-2 py-3.5 rounded-2xl border-2 transition-all duration-200",
+                  carrier === "NONE"
+                    ? "border-transparent bg-slate-500/10 border-slate-500/60"
+                    : "border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-slate-200 dark:hover:border-slate-600",
+                )}
+                style={
+                  carrier === "NONE"
+                    ? {
+                        backgroundColor: "#64748b12",
+                        borderColor: "#64748b60",
+                      }
+                    : {}
+                }
+              >
+                <span
+                  className="text-[10px] font-black tracking-wide"
+                  style={{ color: carrier === "NONE" ? "#64748b" : "#64748b" }}
+                >
+                  {t("modal.manualAssign") || "توزيع يدوي"}
+                </span>
+              </motion.button>
+
               {activeCarriers.map((integration) => {
                 const providerCode =
                   integration.provider?.toUpperCase() || "DEFAULT";
@@ -918,9 +951,8 @@ function UnassignedOrdersSubtab({ t, fetchStats, updateStatsAfterAssign }) {
   const { subscribe } = useSocket();
 
   useEffect(() => {
-    const unsubscribe = subscribe("SHIPMENT_STATUS_UNASSIGNED", (action) => {
-      if (action.type !== "SHIPMENT_STATUS") return;
-      const { orderNumber, status, message } = action.payload;
+    const unsubscribe = subscribe("SHIPMENT_STATUS", (payload) => {
+      const { orderNumber, status, message } = payload;
 
       if (status === "success") {
         toast.success(t("messages.shipmentCreated", { orderNumber }));
@@ -1205,6 +1237,7 @@ function UnassignedOrdersSubtab({ t, fetchStats, updateStatsAfterAssign }) {
                 tooltip: t("tooltip.details"),
                 onClick: (r) => setDetailModal(r),
                 variant: "purple",
+                permission: "orders.read",
               },
               {
                 icon: <Truck />,
@@ -1215,6 +1248,7 @@ function UnassignedOrdersSubtab({ t, fetchStats, updateStatsAfterAssign }) {
                   setAssignDialog({ open: true, codes: [r.orderNumber] }),
                 variant: "orange",
                 disabled: row.isAssigning,
+                permission: "order.assign",
               },
               {
                 icon: <Ban />,
@@ -1222,6 +1256,7 @@ function UnassignedOrdersSubtab({ t, fetchStats, updateStatsAfterAssign }) {
                 onClick: (r) => setCancelModal({ open: true, order: r }),
                 variant: "red",
                 disabled: row.isAssigning,
+                permission: "order.update",
               },
             ]}
           />
@@ -1263,6 +1298,7 @@ function UnassignedOrdersSubtab({ t, fetchStats, updateStatsAfterAssign }) {
               selectedOrders.length > 0 &&
               setAssignDialog({ open: true, codes: selectedOrders }),
             disabled: selectedOrders.length === 0,
+            permission: "order.assign",
           },
           {
             key: "export",
@@ -1275,6 +1311,7 @@ function UnassignedOrdersSubtab({ t, fetchStats, updateStatsAfterAssign }) {
             color: "blue",
             onClick: onExport,
             disabled: exportLoading,
+            permission: "orders.read",
           },
         ]}
         hasActiveFilters={hasActiveFilters}
@@ -1665,6 +1702,7 @@ function AssignedOrdersSubtab({
                 tooltip: t("tooltip.details"),
                 onClick: (r) => setDetailModal(r),
                 variant: "purple",
+                permission: "orders.read",
               },
               {
                 icon: <Truck />,
@@ -1675,6 +1713,7 @@ function AssignedOrdersSubtab({
                   setAssignDialog({ open: true, codes: [r.orderNumber] }),
                 variant: "orange",
                 disabled: row.isAssigning,
+                permission: "order.assign",
               },
               {
                 icon: <Ban />,
@@ -1682,6 +1721,7 @@ function AssignedOrdersSubtab({
                 onClick: (r) => setCancelModal({ open: true, order: r }),
                 variant: "red",
                 disabled: row.isAssigning,
+                permission: "order.update",
               },
             ]}
           />
@@ -1760,6 +1800,7 @@ function AssignedOrdersSubtab({
             color: "blue",
             onClick: onExport,
             disabled: exportLoading,
+            permission: "orders.read",
           },
         ]}
         hasActiveFilters={hasActiveFilters}

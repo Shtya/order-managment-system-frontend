@@ -41,10 +41,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Link, useRouter } from "@/i18n/navigation";
-import { getUser } from "@/hook/getUser";
+
 
 // ✅ Firebase logout
 import { getAuth, signOut } from "firebase/auth";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Sidebar({ isOpen, isRTL }) {
   const pathnameRouter = usePathname();
@@ -57,8 +58,8 @@ export default function Sidebar({ isOpen, isRTL }) {
   const pathname = pathnameRouter?.slice(3, 1000);
   const t = useTranslations("sidebar");
 
-  const user = getUser();
-  const role = user?.role?.toUpperCase();
+  const { user } = useAuth();
+  const role = user?.role?.name?.toUpperCase();
   const router = useRouter();
 
   // ✅ Control open/close of sub menus

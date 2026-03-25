@@ -3,11 +3,24 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Settings, Save, Loader2, Bell, Zap,
-  RefreshCw, X, Truck, Shield,
-  AlertCircle, ChevronDown, RotateCcw, CheckCheck,
+  Settings,
+  Save,
+  Loader2,
+  Bell,
+  Zap,
+  RefreshCw,
+  X,
+  Truck,
+  Shield,
+  AlertCircle,
+  ChevronDown,
+  RotateCcw,
+  CheckCheck,
   Warehouse,
   Info,
+  Layers,
+  Archive,
+  Mail,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
@@ -21,10 +34,16 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import {
-  Select, SelectContent, SelectItem,
-  SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import useOrdersSettings from "@/hook/useOrdersSettings";
+import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
+import { P_08, P_04, P_12, P_20, P_25 } from "../../settings/page";
+import { MdNotificationAdd } from "react-icons/md";
 
 /* ══════════════════════════════════════════════════════════════
    HELPERS
@@ -42,9 +61,223 @@ const TABS = [
   { key: "general", icon: Settings, labelKey: "retrySettings.tabs.general" },
   { key: "automation", icon: Zap, labelKey: "retrySettings.tabs.automation" },
   { key: "shipping", icon: Truck, labelKey: "retrySettings.tabs.shipping" },
-  { key: "warehouse", icon: Warehouse, labelKey: "retrySettings.tabs.warehouse" }, // Added
-  { key: "notifications", icon: Bell, labelKey: "retrySettings.tabs.notifications" },
+  // {
+  //   key: "warehouse",
+  //   icon: Warehouse,
+  //   labelKey: "retrySettings.tabs.warehouse",
+  // }, // Added
+  {
+    key: "notifications",
+    icon: Bell,
+    labelKey: "retrySettings.tabs.notifications",
+  },
 ];
+
+export default function GlobalRetrySettingsModal({
+  isOpen,
+  onClose,
+  statuses = [],
+}) {
+  const t = useTranslations("orders");
+  const [activeTab, setActiveTab] = useState("general");
+  const {
+    settings,
+    loading,
+    saving,
+    patch,
+    patchShipping,
+    handleSave,
+    toggleCode,
+  } = useOrdersSettings({ isOpen, onClose });
+
+  /* ═══════════════════════════════════════════════════════════
+     RENDER
+  ═══════════════════════════════════════════════════════════ */
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent
+        showCloseButton={false}
+        className="!max-w-2xl p-0 overflow-hidden rounded-xl border border-border bg-background shadow-2xl gap-0 flex flex-col max-h-[90vh]"
+      >
+        {/* ────────────────── HEADER ────────────────── */}
+        <div className="relative overflow-hidden shrink-0">
+          {/* background tint */}
+          <div
+            className="absolute inset-0 pointer-events-none opacity-[0.06]
+            bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]
+            dark:from-[#5b4bff] dark:to-[#3be7ff]"
+          />
+          {/* bottom accent bar */}
+          <div
+            className="absolute inset-x-0 bottom-0 h-[2px]
+            bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)]
+            dark:from-[#5b4bff] dark:via-[#8b7cff] dark:to-[#3be7ff] opacity-60"
+          />
+
+          <div className="relative flex items-center gap-4 px-6 py-5">
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0
+              bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]
+              dark:from-[#5b4bff] dark:to-[#3be7ff]
+              shadow-[0_6px_20px_rgba(var(--primary-shadow))]"
+            >
+              <Settings size={22} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg font-black tracking-tight text-foreground">
+                {t("retrySettings.globalTitle")}
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {t("retrySettings.globalDescription")}
+              </p>
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.1, rotate: 90 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={onClose}
+              className="w-8 h-8 rounded-xl flex items-center justify-center
+                bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800
+                text-red-500 hover:bg-red-100 transition-all shrink-0"
+            >
+              <X size={14} />
+            </motion.button>
+          </div>
+
+          {/* Tab bar */}
+          <div className="relative flex gap-1 px-5 pb-0">
+            {TABS.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={cn(
+                    "relative flex items-center gap-1.5 px-3.5 py-2.5 rounded-t-xl text-xs font-bold transition-all duration-200",
+                    isActive
+                      ? "text-[var(--primary)] dark:text-[#8b7cff] bg-background"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40",
+                  )}
+                >
+                  <Icon size={13} />
+                  {t(tab.labelKey)}
+                  {isActive && (
+                    <motion.div
+                      layoutId="tab-indicator"
+                      className="absolute inset-x-3 -bottom-px h-[2px] rounded-full
+                        bg-gradient-to-r from-[var(--primary)] to-[var(--third,#ff5c2b)]
+                        dark:from-[#5b4bff] dark:to-[#3be7ff]"
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+              <div
+                className="w-14 h-14 rounded-xl bg-gradient-to-br from-[var(--primary)]/10 to-[var(--primary)]/5
+                flex items-center justify-center"
+              >
+                <Loader2
+                  size={24}
+                  className="animate-spin text-[var(--primary)] dark:text-[#5b4bff]"
+                />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {t("common.loading")}
+              </p>
+            </div>
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.18 }}
+                className="p-6 space-y-5"
+              >
+                {activeTab === "general" && (
+                  <GeneralTab settings={settings} patch={patch} t={t} />
+                )}
+
+                {activeTab === "automation" && (
+                  <AutomationTab
+                    settings={settings}
+                    statuses={statuses}
+                    patch={patch}
+                    toggleCode={toggleCode}
+                    t={t}
+                  />
+                )}
+
+                {activeTab === "shipping" && (
+                  <ShippingTab
+                    settings={settings}
+                    statuses={statuses}
+                    patchShipping={patchShipping}
+                    patch={patch}
+                    t={t}
+                  />
+                )}
+
+                {activeTab === "warehouse" && (
+                  <WarehouseTab settings={settings} patch={patch} t={t} />
+                )}
+
+                {activeTab === "notifications" && (
+                  <NotificationsSettingsTab settings={settings} patch={patch} t={t} />
+                )}
+              </motion.div>
+            </AnimatePresence>
+          )}
+        </div>
+
+        {/* ────────────────── FOOTER ────────────────── */}
+        {!loading && (
+          <div className="shrink-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-border bg-muted/20">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="rounded-xl h-10 px-5 text-sm font-semibold"
+            >
+              {t("common.cancel")}
+            </Button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={handleSave}
+              disabled={saving}
+              className="h-10 px-6 rounded-xl text-sm font-bold text-white flex items-center gap-2
+                bg-gradient-to-r from-[var(--primary)] to-[var(--third,#ff5c2b)]
+                dark:from-[#5b4bff] dark:to-[#3be7ff]
+                shadow-[0_4px_16px_rgba(var(--primary-shadow))]
+                hover:shadow-[0_6px_24px_rgba(var(--primary-shadow))]
+                hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed
+                transition-all duration-200"
+            >
+              {saving ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  {t("actions.saving")}
+                </>
+              ) : (
+                <>
+                  <Save size={14} />
+                  {t("common.save")}
+                </>
+              )}
+            </motion.button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 /* ══════════════════════════════════════════════════════════════
    STATUS MULTI-SELECT DROPDOWN
@@ -53,9 +286,9 @@ const TABS = [
 ══════════════════════════════════════════════════════════════ */
 function StatusMultiSelect({
   statuses,
-  selected,          // string[] of codes
-  onToggle,          // (code: string) => void
-  onClear,           // () => void
+  selected, // string[] of codes
+  onToggle, // (code: string) => void
+  onClear, // () => void
   placeholder,
   t,
 }) {
@@ -67,9 +300,12 @@ function StatusMultiSelect({
   useEffect(() => {
     const handler = (e) => {
       if (
-        triggerRef.current && !triggerRef.current.contains(e.target) &&
-        dropdownRef.current && !dropdownRef.current.contains(e.target)
-      ) setOpen(false);
+        triggerRef.current &&
+        !triggerRef.current.contains(e.target) &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target)
+      )
+        setOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -77,25 +313,25 @@ function StatusMultiSelect({
 
   const selectedObjects = useMemo(() => {
     const set = new Set(selected);
-    return statuses.filter(s => set.has(s.code || String(s.id)));
+    return statuses.filter((s) => set.has(s.code || String(s.id)));
   }, [statuses, selected]);
 
   const count = selected.length;
 
   return (
     <div className="space-y-2">
-
       {/* ── Trigger button ─────────────────────────────────────── */}
       <div className="relative">
         <button
           ref={triggerRef}
           type="button"
-          onClick={() => setOpen(v => !v)}
+          onClick={() => setOpen((v) => !v)}
           className={cn(
             "w-full flex items-center justify-between gap-2 h-11 px-4 rounded-xl",
             "border border-border bg-background text-sm transition-all duration-200",
             "hover:border-[var(--primary)] hover:shadow-[0_0_0_3px_rgba(255,139,0,0.08)]",
-            open && "border-[var(--primary)] shadow-[0_0_0_3px_rgba(255,139,0,0.1)]",
+            open &&
+            "border-[var(--primary)] shadow-[0_0_0_3px_rgba(255,139,0,0.1)]",
           )}
         >
           <span className="flex items-center gap-2 min-w-0 flex-1">
@@ -103,7 +339,7 @@ function StatusMultiSelect({
               <>
                 {/* color dot preview */}
                 <span className="flex -space-x-1 shrink-0">
-                  {selectedObjects.slice(0, 4).map(s => (
+                  {selectedObjects.slice(0, 4).map((s) => (
                     <span
                       key={s.id ?? s.code}
                       className="w-3 h-3 rounded-full border-2 border-background shrink-0"
@@ -122,7 +358,10 @@ function StatusMultiSelect({
           <motion.span
             animate={{ rotate: open ? 180 : 0 }}
             transition={{ duration: 0.2 }}
-            className={cn("shrink-0 transition-colors", open ? "text-[var(--primary)]" : "text-muted-foreground")}
+            className={cn(
+              "shrink-0 transition-colors",
+              open ? "text-[var(--primary)]" : "text-muted-foreground",
+            )}
           >
             <ChevronDown size={15} />
           </motion.span>
@@ -141,8 +380,10 @@ function StatusMultiSelect({
                 shadow-[0_8px_32px_rgba(0,0,0,0.12)] max-h-[232px] overflow-hidden"
             >
               {/* gradient strip */}
-              <div className="h-[2px] w-full rounded-t-2xl bg-gradient-to-r
-                from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)] opacity-70" />
+              <div
+                className="h-[2px] w-full rounded-t-2xl bg-gradient-to-r
+                from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)] opacity-70"
+              />
 
               <div className="overflow-y-auto max-h-[230px] p-1.5 space-y-0.5">
                 {statuses.length === 0 ? (
@@ -150,59 +391,84 @@ function StatusMultiSelect({
                     <Loader2 size={14} className="animate-spin" />
                     {t("messages.loading")}
                   </div>
-                ) : statuses.map(s => {
-                  const code = s.code || String(s.id);
-                  const isChecked = selected.includes(code);
-                  const c = s.color || "#6366f1";
-                  const label = s.system ? t(`statuses.${s.code}`) : (s.name || s.code);
+                ) : (
+                  statuses.map((s) => {
+                    const code = s.code || String(s.id);
+                    const isChecked = selected.includes(code);
+                    const c = s.color || "#6366f1";
+                    const label = s.system
+                      ? t(`statuses.${s.code}`)
+                      : s.name || s.code;
 
-                  return (
-                    <button
-                      key={code}
-                      type="button"
-                      onClick={() => onToggle(code)}
-                      style={{ backgroundColor: isChecked ? rgba(c, 0.1) : undefined }}
-                      className={cn(
-                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-start transition-all duration-150",
-                        !isChecked && "hover:bg-muted/60",
-                      )}
-                    >
-                      {/* custom checkbox */}
-                      <span
-                        className="shrink-0 w-[18px] h-[18px] rounded-xl flex items-center justify-center transition-all duration-150"
+                    return (
+                      <button
+                        key={code}
+                        type="button"
+                        onClick={() => onToggle(code)}
                         style={{
-                          border: `2px solid ${isChecked ? c : "var(--border)"}`,
-                          backgroundColor: isChecked ? c : "transparent",
+                          backgroundColor: isChecked ? rgba(c, 0.1) : undefined,
                         }}
-                      >
-                        {isChecked && (
-                          <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                            <path d="M1 4L3.8 7L9 1" stroke="white" strokeWidth="1.8"
-                              strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
+                        className={cn(
+                          "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-start transition-all duration-150",
+                          !isChecked && "hover:bg-muted/60",
                         )}
-                      </span>
-                      {/* color dot */}
-                      <span className="w-2.5 h-2.5 rounded-full shrink-0"
-                        style={{ backgroundColor: c, boxShadow: `0 0 0 2px ${rgba(c, 0.2)}` }} />
-                      <span
-                        className="flex-1 truncate font-medium transition-colors"
-                        style={{ color: isChecked ? c : undefined, fontWeight: isChecked ? 600 : 400 }}
                       >
-                        {label}
-                      </span>
-                      {isChecked && (
-                        <motion.span
-                          initial={{ scale: 0 }} animate={{ scale: 1 }}
-                          className="text-[10px] font-bold shrink-0"
-                          style={{ color: rgba(c, 0.7) }}
+                        {/* custom checkbox */}
+                        <span
+                          className="shrink-0 w-[18px] h-[18px] rounded-xl flex items-center justify-center transition-all duration-150"
+                          style={{
+                            border: `2px solid ${isChecked ? c : "var(--border)"}`,
+                            backgroundColor: isChecked ? c : "transparent",
+                          }}
                         >
-                          ✓
-                        </motion.span>
-                      )}
-                    </button>
-                  );
-                })}
+                          {isChecked && (
+                            <svg
+                              width="10"
+                              height="8"
+                              viewBox="0 0 10 8"
+                              fill="none"
+                            >
+                              <path
+                                d="M1 4L3.8 7L9 1"
+                                stroke="white"
+                                strokeWidth="1.8"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          )}
+                        </span>
+                        {/* color dot */}
+                        <span
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{
+                            backgroundColor: c,
+                            boxShadow: `0 0 0 2px ${rgba(c, 0.2)}`,
+                          }}
+                        />
+                        <span
+                          className="flex-1 truncate font-medium transition-colors"
+                          style={{
+                            color: isChecked ? c : undefined,
+                            fontWeight: isChecked ? 600 : 400,
+                          }}
+                        >
+                          {label}
+                        </span>
+                        {isChecked && (
+                          <motion.span
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="text-[10px] font-bold shrink-0"
+                            style={{ color: rgba(c, 0.7) }}
+                          >
+                            ✓
+                          </motion.span>
+                        )}
+                      </button>
+                    );
+                  })
+                )}
               </div>
             </motion.div>
           )}
@@ -218,19 +484,30 @@ function StatusMultiSelect({
             exit={{ opacity: 0, height: 0 }}
             className="flex flex-wrap gap-1.5 overflow-hidden pt-0.5"
           >
-            {selectedObjects.map(s => {
+            {selectedObjects.map((s) => {
               const code = s.code || String(s.id);
               const c = s.color || "#6366f1";
-              const label = s.system ? t(`statuses.${s.code}`) : (s.name || s.code);
+              const label = s.system
+                ? t(`statuses.${s.code}`)
+                : s.name || s.code;
               return (
                 <motion.span
                   key={code}
-                  initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
                   transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   className="inline-flex items-center gap-1.5 ps-2.5 pe-1.5 py-1 rounded-xl text-xs font-bold border"
-                  style={{ backgroundColor: rgba(c, 0.1), borderColor: rgba(c, 0.3), color: c }}
+                  style={{
+                    backgroundColor: rgba(c, 0.1),
+                    borderColor: rgba(c, 0.3),
+                    color: c,
+                  }}
                 >
-                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: c }} />
+                  <span
+                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{ backgroundColor: c }}
+                  />
                   {label}
                   <button
                     type="button"
@@ -239,7 +516,12 @@ function StatusMultiSelect({
                     style={{ color: c }}
                   >
                     <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-                      <path d="M1.5 1.5l5 5M6.5 1.5l-5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                      <path
+                        d="M1.5 1.5l5 5M6.5 1.5l-5 5"
+                        stroke="currentColor"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                      />
                     </svg>
                   </button>
                 </motion.span>
@@ -247,7 +529,8 @@ function StatusMultiSelect({
             })}
             {selectedObjects.length > 1 && (
               <motion.button
-                initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
                 type="button"
                 onClick={onClear}
                 className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold
@@ -256,7 +539,12 @@ function StatusMultiSelect({
                   transition-all duration-150"
               >
                 <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
-                  <path d="M1.5 1.5l6 6M7.5 1.5l-6 6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                  <path
+                    d="M1.5 1.5l6 6M7.5 1.5l-6 6"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                  />
                 </svg>
                 {t("retrySettings.clearAll")}
               </motion.button>
@@ -288,11 +576,17 @@ function ToggleRow({ label, description, checked, onCheckedChange }) {
       <div className="min-w-0 flex-1">
         <p className="text-sm font-bold text-foreground">{label}</p>
         {description && (
-          <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{description}</p>
+          <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+            {description}
+          </p>
         )}
       </div>
       {/* ms-auto pushes to end in both LTR and RTL */}
-      <Switch checked={checked} onCheckedChange={onCheckedChange} className="shrink-0 ms-auto" />
+      <Switch
+        checked={checked}
+        onCheckedChange={onCheckedChange}
+        className="shrink-0 ms-auto"
+      />
     </div>
   );
 }
@@ -305,9 +599,17 @@ function InlineToggle({ label, description, checked, onCheckedChange }) {
     <div className="flex items-center gap-3 py-0.5">
       <div className="min-w-0 flex-1">
         <p className="text-sm font-bold text-foreground">{label}</p>
-        {description && <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{description}</p>}
+        {description && (
+          <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+            {description}
+          </p>
+        )}
       </div>
-      <Switch checked={checked} onCheckedChange={onCheckedChange} className="shrink-0 ms-auto" />
+      <Switch
+        checked={checked}
+        onCheckedChange={onCheckedChange}
+        className="shrink-0 ms-auto"
+      />
     </div>
   );
 }
@@ -315,18 +617,40 @@ function InlineToggle({ label, description, checked, onCheckedChange }) {
 /* ══════════════════════════════════════════════════════════════
    NUMBER FIELD
 ══════════════════════════════════════════════════════════════ */
-function NumberField({ label, description, value, onChange, min, max, suffix }) {
+function NumberField({
+  label,
+  description,
+  value,
+  onChange,
+  min,
+  max,
+  suffix,
+}) {
   return (
     <div className="space-y-1.5">
       <Label className="text-xs font-black uppercase tracking-wider text-muted-foreground/70">
         {label}
       </Label>
       <div className="flex items-center gap-2 relative">
-        <Input endIcon={suffix && <span className=" text-sm text-muted-foreground shrink-0">{suffix}</span>} type="number" min={min} max={max} value={value} onChange={onChange}
-          className="rounded-xl h-10 flex-1" />
-
+        <Input
+          endIcon={
+            suffix && (
+              <span className=" text-sm text-muted-foreground shrink-0">
+                {suffix}
+              </span>
+            )
+          }
+          type="number"
+          min={min}
+          max={max}
+          value={value}
+          onChange={onChange}
+          className="rounded-xl h-10 flex-1"
+        />
       </div>
-      {description && <p className="text-[11px] text-muted-foreground">{description}</p>}
+      {description && (
+        <p className="text-[11px] text-muted-foreground">{description}</p>
+      )}
     </div>
   );
 }
@@ -334,19 +658,33 @@ function NumberField({ label, description, value, onChange, min, max, suffix }) 
 /* ══════════════════════════════════════════════════════════════
    SECTION CARD (used in Automation + Shipping tabs)
 ══════════════════════════════════════════════════════════════ */
-function SectionCard({ icon: Icon, iconColor, title, subtitle, badge, children }) {
+function SectionCard({
+  icon: Icon,
+  iconColor,
+  title,
+  subtitle,
+  badge,
+  children,
+}) {
   return (
     <div className="rounded-xl border border-border bg-card !p-0 ">
       <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-muted/30">
         <div
           className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0"
-          style={{ backgroundColor: rgba(iconColor, 0.12), border: `1px solid ${rgba(iconColor, 0.25)}` }}
+          style={{
+            backgroundColor: rgba(iconColor, 0.12),
+            border: `1px solid ${rgba(iconColor, 0.25)}`,
+          }}
         >
           <Icon size={13} style={{ color: iconColor }} />
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-xs font-black text-foreground">{title}</p>
-          {subtitle && <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{subtitle}</p>}
+          {subtitle && (
+            <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">
+              {subtitle}
+            </p>
+          )}
         </div>
         {badge != null && badge > 0 && (
           <span
@@ -393,7 +731,9 @@ export function GeneralTab({ settings, patch, t }) {
             label={t("retrySettings.maxRetries")}
             description={t("retrySettings.maxRetriesDesc")}
             value={settings.maxRetries}
-            onChange={(e) => patch({ maxRetries: parseInt(e.target.value) || 1 })}
+            onChange={(e) =>
+              patch({ maxRetries: parseInt(e.target.value) || 1 })
+            }
             min={1}
             max={10}
           />
@@ -401,7 +741,9 @@ export function GeneralTab({ settings, patch, t }) {
             label={t("retrySettings.retryInterval")}
             description={t("retrySettings.retryIntervalDesc")}
             value={settings.retryInterval}
-            onChange={(e) => patch({ retryInterval: parseInt(e.target.value) || 5 })}
+            onChange={(e) =>
+              patch({ retryInterval: parseInt(e.target.value) || 5 })
+            }
             min={5}
             max={1440}
             suffix={t("retrySettings.minutes")}
@@ -410,7 +752,7 @@ export function GeneralTab({ settings, patch, t }) {
       </SectionCard>
 
       {/* Working hours */}
-      <div className="space-y-3">
+      {/* <div className="space-y-3">
         <ToggleRow
           label={t("retrySettings.workingHours")}
           description={t("retrySettings.workingHoursDesc")}
@@ -452,7 +794,7 @@ export function GeneralTab({ settings, patch, t }) {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </div> */}
     </div>
   );
 }
@@ -545,43 +887,89 @@ export function AutomationTab({ settings, statuses, patch, toggleCode, t }) {
 // ────────────────────────────────────────────────────────────────────────────
 // SHIPPING TAB
 // ────────────────────────────────────────────────────────────────────────────
-export function ShippingTab({ settings, statuses, shippingCompanies, patchShipping, t }) {
+export function ShippingTab({ settings, statuses, patchShipping, patch, t }) {
+  const isShipment = settings?.orderFlowPath === "shipping";
+  console.log(patch)
   return (
     <div className="space-y-4">
       {/* Master toggle */}
       <div
         className={cn(
           "relative overflow-hidden rounded-xl border-2 transition-all duration-300",
-          settings.shipping.autoSendToShipping
+          isShipment
             ? "border-[var(--primary)]/40 dark:border-[#5b4bff]/40"
-            : "border-border"
+            : "border-border",
         )}
       >
-        {settings.shipping.autoSendToShipping && (
+        {isShipment && (
           <div
             className="absolute inset-x-0 top-0 h-[2.5px]
               bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)]
               dark:from-[#5b4bff] dark:via-[#8b7cff] dark:to-[#3be7ff]"
           />
         )}
-        <div
+        <SectionCard
+          icon={Warehouse}
+          iconColor="#8b5cf6"
+          title={t("retrySettings.warehouse.flowTitle")}
+          subtitle={t("retrySettings.warehouse.flowSubtitle")}
+        >
+          <div className="space-y-3">
+            <FieldSubLabel>
+              {t("retrySettings.warehouse.flowLabel")}
+            </FieldSubLabel>
+
+            <Select
+              value={settings.orderFlowPath}
+              onValueChange={(v) => patch({ orderFlowPath: v })}
+            >
+              <SelectTrigger className="h-12 rounded-xl text-sm border-2">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="warehouse">
+                  <div className="flex flex-col py-1">
+                    <span>{t("retrySettings.warehouse.afterConfirmation")}</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="shipping">
+                  <div className="flex flex-col py-1">
+                    <span>{t("retrySettings.warehouse.directToShipping")}</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
+            <div className="flex gap-2 items-start mt-2 bg-muted/30 p-3 rounded-lg">
+              <Info size={14} className="mt-0.5 text-muted-foreground shrink-0" />
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                {t("retrySettings.warehouse.flowHint")}
+              </p>
+            </div>
+          </div>
+        </SectionCard>
+        {/* <div
           className="p-4 flex items-center gap-4"
           style={
-            settings.shipping.autoSendToShipping ? { background: rgba("#ff8b00", 0.03) } : {}
+            isShipment
+              ? { background: rgba("#ff8b00", 0.03) }
+              : {}
           }
         >
           <div
             className={cn(
               "w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
-              settings.shipping.autoSendToShipping
+              isShipment
                 ? "bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)] dark:from-[#5b4bff] dark:to-[#3be7ff] shadow-[0_4px_12px_rgba(var(--primary-shadow))]"
-                : "bg-muted border border-border"
+                : "bg-muted border border-border",
             )}
           >
             <Truck
               size={18}
               className={
-                settings.shipping.autoSendToShipping ? "text-white" : "text-muted-foreground"
+                isShipment
+                  ? "text-white"
+                  : "text-muted-foreground"
               }
             />
           </div>
@@ -594,16 +982,16 @@ export function ShippingTab({ settings, statuses, shippingCompanies, patchShippi
             </p>
           </div>
           <Switch
-            checked={settings.shipping.autoSendToShipping}
+            checked={isShipment}
             onCheckedChange={(v) => patchShipping({ autoSendToShipping: v })}
             className="shrink-0 ms-auto"
           />
-        </div>
+        </div> */}
       </div>
 
       {/* Expanded shipping config */}
       <AnimatePresence>
-        {settings.shipping.autoSendToShipping && (
+        {isShipment && (
           <motion.div
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
@@ -620,44 +1008,36 @@ export function ShippingTab({ settings, statuses, shippingCompanies, patchShippi
             >
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <FieldSubLabel>{t("retrySettings.shipping.company")}</FieldSubLabel>
-                  <Select
-                    value={settings.shipping.shippingCompanyId}
-                    onValueChange={(v) => patchShipping({ shippingCompanyId: v })}
-                  >
-                    <SelectTrigger className="h-10 rounded-xl text-sm">
-                      <SelectValue placeholder={t("retrySettings.shipping.selectCompany")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {shippingCompanies.length === 0 ? (
-                        <div className="py-4 text-center text-sm text-muted-foreground">
-                          {t("retrySettings.shipping.noCompanies")}
-                        </div>
-                      ) : (
-                        shippingCompanies.map((c) => (
-                          <SelectItem
-                            key={c.providerId ?? c.id}
-                            value={String(c.providerId ?? c.id)}
-                          >
-                            {c.name}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
+                  <FieldSubLabel>
+                    {t("retrySettings.shipping.company")}
+                  </FieldSubLabel>
+                  <ShippingCompanyFilter
+                    value={String(settings.shipping.shippingCompanyId)}
+                    onChange={(v) => patchShipping({ shippingCompanyId: v })}
+                    showAll={false}
+                    showNone={false}
+                    hideLabel
+                  />
                 </div>
                 <div className="space-y-1.5">
-                  <FieldSubLabel>{t("retrySettings.shipping.triggerStatus")}</FieldSubLabel>
+                  <FieldSubLabel>
+                    {t("retrySettings.shipping.triggerStatus")}
+                  </FieldSubLabel>
                   <Select
                     value={settings.shipping.triggerStatus}
                     onValueChange={(v) => patchShipping({ triggerStatus: v })}
                   >
                     <SelectTrigger className="h-10 rounded-xl text-sm">
-                      <SelectValue placeholder={t("retrySettings.shipping.selectTrigger")} />
+                      <SelectValue
+                        placeholder={t("retrySettings.shipping.selectTrigger")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {statuses.map((s) => (
-                        <SelectItem key={s.code || s.id} value={s.code || String(s.id)}>
+                        <SelectItem
+                          key={s.code || s.id}
+                          value={s.code || String(s.id)}
+                        >
                           <span className="flex items-center gap-2">
                             <span
                               className="w-2 h-2 rounded-full shrink-0"
@@ -687,7 +1067,9 @@ export function ShippingTab({ settings, statuses, shippingCompanies, patchShippi
                 label={t("retrySettings.shipping.requireFullPayment")}
                 description={t("retrySettings.shipping.requireFullPaymentDesc")}
                 checked={settings.shipping.requireFullPayment}
-                onCheckedChange={(v) => patchShipping({ requireFullPayment: v })}
+                onCheckedChange={(v) =>
+                  patchShipping({ requireFullPayment: v })
+                }
               />
 
               <AnimatePresence>
@@ -709,16 +1091,20 @@ export function ShippingTab({ settings, statuses, shippingCompanies, patchShippi
                             <Input
                               type="number"
                               min={0}
+                              max={100}
                               value={settings.shipping.partialPaymentThreshold}
-                              onChange={(e) =>
+                              onChange={(e) => {
+                                let val = parseInt(e.target.value) || 0;
+                                if (val > 100) val = 100;
+                                if (val < 0) val = 0;
                                 patchShipping({
-                                  partialPaymentThreshold: parseInt(e.target.value) || 0,
-                                })
-                              }
+                                  partialPaymentThreshold: val,
+                                });
+                              }}
                               className="h-10 rounded-xl flex-1 text-sm"
                             />
                             <span className="text-xs text-muted-foreground shrink-0 font-semibold">
-                              {t("currency") ?? "EGP"}
+                              %
                             </span>
                           </div>
                         </div>
@@ -729,7 +1115,7 @@ export function ShippingTab({ settings, statuses, shippingCompanies, patchShippi
                           <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-400">
                             {settings.shipping.partialPaymentThreshold === 0
                               ? t("retrySettings.shipping.anyDeposit")
-                              : `≥ ${settings.shipping.partialPaymentThreshold}`}
+                              : `${settings.shipping.partialPaymentThreshold}%`}
                           </p>
                         </div>
                       </div>
@@ -743,12 +1129,51 @@ export function ShippingTab({ settings, statuses, shippingCompanies, patchShippi
 
               <div className="h-px bg-border/60" />
 
-              <InlineToggle
+              {/* <InlineToggle
                 label={t("retrySettings.shipping.requirePaymentConfirm")}
-                description={t("retrySettings.shipping.requirePaymentConfirmDesc")}
+                description={t(
+                  "retrySettings.shipping.requirePaymentConfirmDesc",
+                )}
                 checked={settings.shipping.requirePaymentConfirm}
-                onCheckedChange={(v) => patchShipping({ requirePaymentConfirm: v })}
-              />
+                onCheckedChange={(v) =>
+                  patchShipping({ requirePaymentConfirm: v })
+                }
+              /> */}
+            </SectionCard>
+
+            {/* Card: Stock Management */}
+            <SectionCard
+              icon={Archive}
+              iconColor="#10b981"
+              title={t("retrySettings.stock.title")}
+              subtitle={t("retrySettings.stock.subtitle")}
+            >
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-foreground">
+                    {t("retrySettings.stock.deductionStrategy")}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {t("retrySettings.stock.deductionStrategyDesc")}
+                  </p>
+                </div>
+                <Select
+                  value={settings.stockDeductionStrategy}
+                  onValueChange={(v) => patch({ stockDeductionStrategy: v })}
+                >
+                  <SelectTrigger className="w-44 h-10 rounded-xl text-xs border-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="on_confirmation">
+                      {t("retrySettings.stock.onConfirmation")}
+                    </SelectItem>
+                    <SelectItem value="on_shipment">
+                      {t("retrySettings.stock.onShipment")}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </SectionCard>
 
             {/* Card: Automation Options */}
@@ -764,16 +1189,16 @@ export function ShippingTab({ settings, statuses, shippingCompanies, patchShippi
                   labelKey: "retrySettings.shipping.autoLabel",
                   descKey: "retrySettings.shipping.autoLabelDesc",
                 },
-                {
-                  key: "notifyOnShipment",
-                  labelKey: "retrySettings.shipping.notifyOnShipment",
-                  descKey: "retrySettings.shipping.notifyOnShipmentDesc",
-                },
-                {
-                  key: "allowReturnCreation",
-                  labelKey: "retrySettings.shipping.allowReturn",
-                  descKey: "retrySettings.shipping.allowReturnDesc",
-                },
+                // {
+                //   key: "notifyOnShipment",
+                //   labelKey: "retrySettings.shipping.notifyOnShipment",
+                //   descKey: "retrySettings.shipping.notifyOnShipmentDesc",
+                // },
+                // {
+                //   key: "allowReturnCreation",
+                //   labelKey: "retrySettings.shipping.allowReturn",
+                //   descKey: "retrySettings.shipping.allowReturnDesc",
+                // },
               ].map((opt, i, arr) => (
                 <div key={opt.key}>
                   <InlineToggle
@@ -782,7 +1207,9 @@ export function ShippingTab({ settings, statuses, shippingCompanies, patchShippi
                     checked={settings.shipping[opt.key]}
                     onCheckedChange={(v) => patchShipping({ [opt.key]: v })}
                   />
-                  {i < arr.length - 1 && <div className="h-px bg-border/60 mt-3" />}
+                  {i < arr.length - 1 && (
+                    <div className="h-px bg-border/60 mt-3" />
+                  )}
                 </div>
               ))}
             </SectionCard>
@@ -791,7 +1218,7 @@ export function ShippingTab({ settings, statuses, shippingCompanies, patchShippi
       </AnimatePresence>
 
       {/* Disabled hint */}
-      {!settings.shipping.autoSendToShipping && (
+      {!isShipment && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -827,7 +1254,9 @@ export function WarehouseTab({ settings, patch, t }) {
         subtitle={t("retrySettings.warehouse.flowSubtitle")}
       >
         <div className="space-y-3">
-          <FieldSubLabel>{t("retrySettings.warehouse.flowLabel")}</FieldSubLabel>
+          <FieldSubLabel>
+            {t("retrySettings.warehouse.flowLabel")}
+          </FieldSubLabel>
 
           <Select
             value={settings.orderFlowPath}
@@ -865,7 +1294,8 @@ export function WarehouseTab({ settings, patch, t }) {
 // ────────────────────────────────────────────────────────────────────────────
 // NOTIFICATIONS TAB
 // ────────────────────────────────────────────────────────────────────────────
-export function NotificationsTab({ settings, patch, t }) {
+
+export function NotificationsSettingsTab({ settings, patch, t }) {
   return (
     <>
       <ToggleRow
@@ -876,7 +1306,7 @@ export function NotificationsTab({ settings, patch, t }) {
       />
 
       {/* Preview card */}
-      <div className="relative overflow-hidden rounded-xl border border-[var(--primary)]/20 dark:border-[#5b4bff]/25 p-5">
+      <div className="relative overflow-hidden rounded-xl border border-[var(--primary)]/20 dark:border-[#5b4bff]/25 p-5 mt-4">
         <div
           className="absolute inset-0 pointer-events-none
             bg-gradient-to-br from-[var(--primary)]/5 to-transparent dark:from-[#5b4bff]/8"
@@ -884,7 +1314,7 @@ export function NotificationsTab({ settings, patch, t }) {
         <div
           className="absolute inset-x-0 top-0 h-[2px] opacity-60
             bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)]
-            dark:from-[#5b4bff] dark:via-[#8b7cff] dark:to-[#3be7ff]"
+            dark:from-[rgb(91,75,255)] dark:via-[#8b7cff] dark:to-[#3be7ff]"
         />
         <div className="relative flex items-start gap-3">
           <div
@@ -907,7 +1337,6 @@ export function NotificationsTab({ settings, patch, t }) {
     </>
   );
 }
-
 // ═══════════════════════════════════════════════════════════════════════════
 // TAB CONFIGURATION
 // ═══════════════════════════════════════════════════════════════════════════
@@ -918,202 +1347,4 @@ export function NotificationsTab({ settings, patch, t }) {
 /* ══════════════════════════════════════════════════════════════
    MAIN COMPONENT
 ══════════════════════════════════════════════════════════════ */
-export default function GlobalRetrySettingsModal({ isOpen, onClose, statuses = [] }) {
 
-  const t = useTranslations("orders");
-  const [activeTab, setActiveTab] = useState("general");
-  const {
-    settings,
-    loading,
-    saving,
-    shippingCompanies,
-    patch,
-    patchShipping,
-    handleSave,
-    toggleCode,
-  } = useOrdersSettings({ isOpen, onClose });
-
-  /* ═══════════════════════════════════════════════════════════
-     RENDER
-  ═══════════════════════════════════════════════════════════ */
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent
-        showCloseButton={false}
-        className="!max-w-2xl p-0 overflow-hidden rounded-xl border border-border bg-background shadow-2xl gap-0 flex flex-col max-h-[90vh]"
-      >
-
-        {/* ────────────────── HEADER ────────────────── */}
-        <div className="relative overflow-hidden shrink-0">
-          {/* background tint */}
-          <div
-            className="absolute inset-0 pointer-events-none opacity-[0.06]
-            bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]
-            dark:from-[#5b4bff] dark:to-[#3be7ff]"
-          />
-          {/* bottom accent bar */}
-          <div
-            className="absolute inset-x-0 bottom-0 h-[2px]
-            bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)]
-            dark:from-[#5b4bff] dark:via-[#8b7cff] dark:to-[#3be7ff] opacity-60"
-          />
-
-          <div className="relative flex items-center gap-4 px-6 py-5">
-            <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0
-              bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]
-              dark:from-[#5b4bff] dark:to-[#3be7ff]
-              shadow-[0_6px_20px_rgba(var(--primary-shadow))]"
-            >
-              <Settings size={22} className="text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h2 className="text-lg font-black tracking-tight text-foreground">
-                {t("retrySettings.globalTitle")}
-              </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {t("retrySettings.globalDescription")}
-              </p>
-            </div>
-            <motion.button
-              whileHover={{ scale: 1.1, rotate: 90 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={onClose}
-              className="w-8 h-8 rounded-xl flex items-center justify-center
-                bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800
-                text-red-500 hover:bg-red-100 transition-all shrink-0"
-            >
-              <X size={14} />
-            </motion.button>
-          </div>
-
-          {/* Tab bar */}
-          <div className="relative flex gap-1 px-5 pb-0">
-            {TABS.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.key;
-              return (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={cn(
-                    "relative flex items-center gap-1.5 px-3.5 py-2.5 rounded-t-xl text-xs font-bold transition-all duration-200",
-                    isActive
-                      ? "text-[var(--primary)] dark:text-[#8b7cff] bg-background"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                  )}
-                >
-                  <Icon size={13} />
-                  {t(tab.labelKey)}
-                  {isActive && (
-                    <motion.div
-                      layoutId="tab-indicator"
-                      className="absolute inset-x-3 -bottom-px h-[2px] rounded-full
-                        bg-gradient-to-r from-[var(--primary)] to-[var(--third,#ff5c2b)]
-                        dark:from-[#5b4bff] dark:to-[#3be7ff]"
-                    />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <div
-                className="w-14 h-14 rounded-xl bg-gradient-to-br from-[var(--primary)]/10 to-[var(--primary)]/5
-                flex items-center justify-center"
-              >
-                <Loader2
-                  size={24}
-                  className="animate-spin text-[var(--primary)] dark:text-[#5b4bff]"
-                />
-              </div>
-              <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
-            </div>
-          ) : (
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.18 }}
-                className="p-6 space-y-5"
-              >
-                {activeTab === "general" && <GeneralTab settings={settings} patch={patch} t={t} />}
-
-                {activeTab === "automation" && (
-                  <AutomationTab
-                    settings={settings}
-                    statuses={statuses}
-                    patch={patch}
-                    toggleCode={toggleCode}
-                    t={t}
-                  />
-                )}
-
-                {activeTab === "shipping" && (
-                  <ShippingTab
-                    settings={settings}
-                    statuses={statuses}
-                    shippingCompanies={shippingCompanies}
-                    patchShipping={patchShipping}
-                    t={t}
-                  />
-                )}
-
-                {activeTab === "warehouse" && <WarehouseTab settings={settings} patch={patch} t={t} />}
-
-                {activeTab === "notifications" && (
-                  <NotificationsTab settings={settings} patch={patch} t={t} />
-                )}
-              </motion.div>
-            </AnimatePresence>
-          )}
-        </div>
-
-        {/* ────────────────── FOOTER ────────────────── */}
-        {!loading && (
-          <div className="shrink-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-border bg-muted/20">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="rounded-xl h-10 px-5 text-sm font-semibold"
-            >
-              {t("common.cancel")}
-            </Button>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={handleSave}
-              disabled={saving}
-              className="h-10 px-6 rounded-xl text-sm font-bold text-white flex items-center gap-2
-                bg-gradient-to-r from-[var(--primary)] to-[var(--third,#ff5c2b)]
-                dark:from-[#5b4bff] dark:to-[#3be7ff]
-                shadow-[0_4px_16px_rgba(var(--primary-shadow))]
-                hover:shadow-[0_6px_24px_rgba(var(--primary-shadow))]
-                hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed
-                transition-all duration-200"
-            >
-              {saving ? (
-                <>
-                  <Loader2 size={14} className="animate-spin" />
-                  {t("actions.saving")}
-                </>
-              ) : (
-                <>
-                  <Save size={14} />
-                  {t("common.save")}
-                </>
-              )}
-            </motion.button>
-          </div>
-        )}
-
-      </DialogContent>
-    </Dialog>
-  );
-}

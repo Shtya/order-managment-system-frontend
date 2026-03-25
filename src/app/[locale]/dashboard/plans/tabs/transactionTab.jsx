@@ -19,11 +19,10 @@ import api from "@/utils/api";
 import { useDebounce } from "@/hook/useDebounce";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/utils/cn";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { platformCurrency } from "@/utils/healpers";
 
-function formatCurrency(amount) {
-    if (amount === undefined || amount === null) return "—";
-    return Number(amount).toLocaleString("en-US");
-}
+
 
 function formatDate(dateStr) {
     if (!dateStr) return "—";
@@ -159,7 +158,7 @@ export default function TransactionTab({ defaultPurpose, allowedPurposes }) {
             setExportLoading(false);
         }
     };
-
+    const { formatCurrency } = usePlatformSettings();
 
     const columns = useMemo(() => {
         return [{
@@ -230,7 +229,7 @@ export default function TransactionTab({ defaultPurpose, allowedPurposes }) {
             header: t("columns.amount"),
             cell: (row) => (
                 <span className="font-semibold text-blue-600 dark:text-blue-400 tabular-nums">
-                    {formatCurrency(row.amount)}
+                    {formatCurrency(row.amount, platformCurrency)}
                 </span>
             ),
         },
@@ -303,7 +302,7 @@ export default function TransactionTab({ defaultPurpose, allowedPurposes }) {
             ),
         }
         ];
-    }, [t, router]);
+    }, [t, router, formatCurrency]);
 
     return (
         <Table

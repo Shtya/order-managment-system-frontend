@@ -871,60 +871,32 @@ export default function SuppliersPage() {
 				header: t("table.options"),
 				className: " ",
 				cell: (row) => (
-					<TooltipProvider>
-						<div className="flex items-center gap-2">
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.1 }}
-										whileTap={{ scale: 0.95 }}
-										className={cn(
-											"group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
-											"border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white"
-										)}
-										onClick={() => setDeleteState({ open: true, id: row.id })}
-									>
-										<Trash2 size={16} />
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>{t("actions.delete")}</TooltipContent>
-							</Tooltip>
-
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.1 }}
-										whileTap={{ scale: 0.95 }}
-										className={cn(
-											"group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
-											"border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white"
-										)}
-										onClick={() => openEdit(row)}
-									>
-										<Edit2 size={16} />
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>{t("actions.edit")}</TooltipContent>
-							</Tooltip>
-
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.1 }}
-										whileTap={{ scale: 0.95 }}
-										className={cn(
-											"group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
-											"border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white"
-										)}
-										onClick={() => openView(row)}
-									>
-										<Eye size={16} />
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>{t("actions.view")}</TooltipContent>
-							</Tooltip>
-						</div>
-					</TooltipProvider>
+					<ActionButtons
+						row={row}
+						actions={[
+							{
+								icon: <Trash2 />,
+								tooltip: t("actions.delete"),
+								onClick: (r) => setDeleteState({ open: true, id: r.id }),
+								variant: "red",
+								permission: "suppliers.delete",
+							},
+							{
+								icon: <Edit2 />,
+								tooltip: t("actions.edit"),
+								onClick: (r) => openEdit(r),
+								variant: "blue",
+								permission: "suppliers.update",
+							},
+							{
+								icon: <Eye />,
+								tooltip: t("actions.view"),
+								onClick: (r) => openView(r),
+								variant: "purple",
+								permission: "suppliers.read",
+							},
+						]}
+					/>
 				),
 			},
 		],
@@ -954,6 +926,7 @@ export default function SuppliersPage() {
 							tone="white"
 							variant="outline"
 							icon={<Tag size={18} />}
+							permission="categories.read"
 						/>
 
 						<Button_
@@ -962,7 +935,9 @@ export default function SuppliersPage() {
 							label={t("actions.addSupplier")}
 							variant="solid"
 							icon={<Plus size={18} />}
+							permission="suppliers.create"
 						/>
+						<Button_ size="sm" label={t("actions.howToUse")} tone="outline" variant="ghost" icon={<Info size={15} />} permission="suppliers.read" />
 					</>
 				}
 
@@ -990,6 +965,7 @@ export default function SuppliersPage() {
 						icon: <FileDown size={14} />,
 						color: "blue",
 						onClick: onExport,
+						permission: "suppliers.read",
 					},
 				]}
 				hasActiveFilters={hasActiveFilters}

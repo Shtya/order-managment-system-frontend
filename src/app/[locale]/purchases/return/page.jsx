@@ -31,6 +31,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import api from "@/utils/api";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { ActionButtons } from "@/components/atoms/Actions";
 
 function ReturnsTableToolbar({
 	t,
@@ -167,8 +169,9 @@ function FilterField({ label, children }) {
 		</div>
 	);
 }
-export default function PurchaseReturnsPage() {
-	const t = useTranslations("returns");
+export default function PurchasesReturnPage() {
+	const t = useTranslations("purchasesReturn");
+	const { formatCurrency } = usePlatformSettings();
 
 	const [search, setSearch] = useState("");
 	const [filtersOpen, setFiltersOpen] = useState(false);
@@ -199,9 +202,9 @@ export default function PurchaseReturnsPage() {
 			},
 			{
 				name: t("stats.totalReturnValue"),
-				value: `${stats.totalReturnValue ?? 0} ${t("currency")}`,
+				value: formatCurrency(stats.totalReturnValue ?? 0),
 				icon: TrendingDown,
-				color: "#F59E0B", // amber
+				color: "#EF4444",
 				sortOrder: 1,
 			},
 		],
@@ -370,7 +373,7 @@ export default function PurchaseReturnsPage() {
 				header: t("table.subtotal"),
 				cell: (row) => (
 					<span className="text-gray-600 dark:text-slate-200">
-						{row.subtotal || 0} {t("currency")}
+						{formatCurrency(row.subtotal || 0)}
 					</span>
 				),
 			},
@@ -379,16 +382,16 @@ export default function PurchaseReturnsPage() {
 				header: t("table.tax"),
 				cell: (row) => (
 					<span className="text-gray-600 dark:text-slate-200">
-						{row.taxTotal || 0} {t("currency")}
+						{formatCurrency(row.taxTotal || 0)}
 					</span>
 				),
 			},
 			{
 				key: "totalReturn",
-				header: t("table.total"),
+				header: t("table.totalReturn"),
 				cell: (row) => (
-					<span className="text-gray-600 dark:text-slate-200">
-						{row.totalReturn || 0} {t("currency")}
+					<span className="text-red-600 dark:text-red-400 font-bold">
+						{formatCurrency(row.totalReturn || 0)}
 					</span>
 				),
 			},
@@ -397,29 +400,22 @@ export default function PurchaseReturnsPage() {
 				header: t("table.options"),
 				className: "w-[80px]",
 				cell: (row) => (
-					<TooltipProvider>
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<motion.button
-									whileHover={{ scale: 1.1 }}
-									whileTap={{ scale: 0.95 }}
-									className={cn(
-										"group relative w-9 h-9 rounded-full border transition-all duration-200 flex items-center justify-center shadow-sm",
-										"border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:border-purple-600 hover:text-white hover:shadow-xl hover:shadow-purple-500/40",
-										"dark:border-purple-900/50 dark:bg-purple-950/30 dark:text-purple-300 dark:hover:bg-purple-600 dark:hover:border-purple-600 dark:hover:text-white dark:hover:shadow-purple-500/30"
-									)}
-									onClick={() => console.log("view", row.id)}
-								>
-									<Eye size={16} className="transition-transform group-hover:scale-110" />
-								</motion.button>
-							</TooltipTrigger>
-							<TooltipContent>{t("actions.view")}</TooltipContent>
-						</Tooltip>
-					</TooltipProvider>
+					<ActionButtons
+						row={row}
+						actions={[
+							{
+								icon: <Eye />,
+								tooltip: t("actions.view"),
+								onClick: (r) => console.log("view", r.id),
+								variant: "purple",
+								permission: "purchase_returns.read",
+							},
+						]}
+					/>
 				),
 			},
 		];
-	}, [t]);
+	}, [t, formatCurrency]);
 
 	return (
 		<div className="min-h-screen p-5">
@@ -437,6 +433,7 @@ export default function PurchaseReturnsPage() {
 							label={t("actions.createReturn")}
 							variant="solid"
 							icon={<Save size={18} />}
+							permission="purchase_returns.create"
 						/>						<Button_ size="sm" label={t("actions.howToUse")} tone="ghost" icon={<Info size={18} />} />
 					</>
 				}
@@ -463,6 +460,7 @@ export default function PurchaseReturnsPage() {
 						icon: <FileDown size={14} />,
 						color: "blue",
 						onClick: () => console.log("export"),
+						permission: "purchase_returns.read",
 					},
 				]}
 				hasActiveFilters={hasActiveFilters}

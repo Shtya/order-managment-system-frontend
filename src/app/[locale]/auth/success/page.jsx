@@ -34,9 +34,9 @@ export default function SuccessPage() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ accessToken: accessTokenFromUrl, user }),
                 });
-                const isOnboarded = user?.onboardingStatus === 'completed' || user?.role !== 'admin';
+                const isOnboarded = user?.onboardingStatus === 'completed' || user?.role?.name !== 'admin';
 
-                const redirect = user?.role === 'super_admin' ? '/dashboard/users' : !isOnboarded ? "/onboarding" : user?.role === 'admin' ? '/orders' : '/orders/employee-orders';
+                const redirect = user?.role?.name === 'super_admin' ? '/dashboard/users' : !isOnboarded ? "/onboarding" : user?.role?.name === 'admin' ? '/orders' : '/orders/employee-orders';
                 router.push(redirect);
             } catch (e) {
                 console.error('OAuth finalize failed', e);

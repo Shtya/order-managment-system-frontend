@@ -2,6 +2,7 @@
 
 import { Loader2 } from "lucide-react";
 import React from "react";
+import { useAuth } from "@/context/AuthContext";
 
 
 export default function Button_({
@@ -15,7 +16,14 @@ export default function Button_({
 	disabled,
 	className = "",
 	type = "button",
+	permission,
 }) {
+	const { hasPermission } = useAuth();
+	
+	if (permission && !hasPermission(permission)) {
+		return null;
+	}
+
 	const isLink = !!href;
 	const Tag = isLink ? "a" : "button";
 	const extra = isLink ? { href } : { onClick, disabled, type };
@@ -47,8 +55,15 @@ export function PrimaryBtn({
 	disabled,
 	loading,
 	className = "",
+	permission,
 	...props
 }) {
+	const { hasPermission } = useAuth();
+	
+	if (permission && !hasPermission(permission)) {
+		return null;
+	}
+
 	return (
 		<button
 			onClick={onClick}
@@ -62,7 +77,13 @@ export function PrimaryBtn({
 	);
 }
 
-export function GhostBtn({ children, onClick, className = "" }) {
+export function GhostBtn({ children, onClick, className = "", permission }) {
+	const { hasPermission } = useAuth();
+	
+	if (permission && !hasPermission(permission)) {
+		return null;
+	}
+
 	return (
 		<button
 			onClick={onClick}

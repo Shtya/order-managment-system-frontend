@@ -33,12 +33,10 @@ import { Badge } from "@/components/ui/badge";
 import { useSearchParams } from "next/navigation";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ActionButtons from "@/components/atoms/Actions";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function formatCurrency(amount) {
-	if (amount === undefined || amount === null) return "—";
-	return Number(amount).toLocaleString("en-US");
-}
+
 
 function formatDate(dateStr) {
 	if (!dateStr) return "—";
@@ -305,7 +303,7 @@ export default function OrderCollectionPage() {
 			setExportLoading(false);
 		}
 	}, [buildParams, t]);
-
+	const { formatCurrency } = usePlatformSettings();
 	// ── Apply Filters ─────────────────────────────────────────────────────────
 	const applyFilters = useCallback(() => {
 		fetchOrders(1, pager.per_page);
@@ -455,13 +453,14 @@ export default function OrderCollectionPage() {
 								tooltip: t("actions.collect"),
 								onClick: (r) => router.push(`/orders/collections/collect/${r.orderId}`),
 								variant: "emerald",
+								permission: "orders-collect.create",
 							},
 						]}
 					/>
 				),
 			},
 		],
-		[t]
+		[t, formatCurrency]
 	);
 
 	// ── Table Columns: Collected ──────────────────────────────────────────────
@@ -535,7 +534,7 @@ export default function OrderCollectionPage() {
 				cell: (row) => getCollectionStatusBadge("fully_collected", t),
 			},
 		],
-		[t]
+		[t, formatCurrency]
 	);
 
 	// ── Current Columns ───────────────────────────────────────────────────────
@@ -582,6 +581,7 @@ export default function OrderCollectionPage() {
 						color: "blue",
 						onClick: handleExport,
 						disabled: exportLoading,
+						permission: "orders-collect.read",
 					},
 				]}
 

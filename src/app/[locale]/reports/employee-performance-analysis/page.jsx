@@ -26,11 +26,7 @@ import "flatpickr/dist/flatpickr.min.css";
 import Table, { FilterField } from "@/components/atoms/Table";
 import PageHeader from "@/components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
-
-function formatCurrency(amount) {
-    if (amount === undefined || amount === null) return "—";
-    return Number(amount).toLocaleString("en-US");
-}
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 function formatPercent(value) {
     if (value === undefined || value === null || isNaN(value)) return "—";
@@ -81,6 +77,7 @@ export const EMPLOYEE_STATS = [
 export function EmployeeStatisticsPage() {
     const t = useTranslations("orders");
     const router = useRouter();
+    const { formatCurrency } = usePlatformSettings();
 
     const [loading, setLoading] = useState(false);
     const [exportLoading, setExportLoading] = useState(false);

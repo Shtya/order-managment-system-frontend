@@ -44,6 +44,7 @@ import { useExport } from "@/hook/useExport";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import StoreFilter from "@/components/atoms/StoreFilter";
 import ProductFilter from "@/components/atoms/ProductFilter";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 const DS = {
   radius: "rounded-lg",
@@ -165,6 +166,7 @@ const PDF_STYLE = `
 // ─────────────────────────────────────────────────────────────
 export function LogsTab({ orders = [] }) {
   const t = useTranslations("warehouse.logs");
+  const { formatCurrency } = usePlatformSettings();
 
   const [search, setSearch] = useState("");
   const { debouncedValue: debouncedSearch } = useDebounce({
@@ -416,6 +418,7 @@ export function LogsTab({ orders = [] }) {
                 tooltip: t("actions.viewOperationLog"),
                 onClick: (r) => openGenericLog(r),
                 variant: "purple",
+                permission: "orders.read",
               },
             ]}
           />
@@ -461,6 +464,7 @@ export function LogsTab({ orders = [] }) {
             color: "blue",
             onClick: onExport,
             disabled: exportLoading,
+            permission: "orders.read",
           },
         ]}
         hasActiveFilters={hasActiveFilters}
@@ -547,6 +551,7 @@ export function LogsTab({ orders = [] }) {
         op={genericOpModal}
         orders={orders}
         t={t}
+        formatCurrency={formatCurrency}
       />
 
       <PrepSessionModal
@@ -669,18 +674,18 @@ function buildErrorsPDF(prepOps, labels) {
   return `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>${labels.title}</title>${PDF_STYLE}</head><body><div class="header-bar err-bar"><div style="font-size:18px;font-weight:700;margin-bottom:4px;">${labels.title}</div><div style="font-size:12px;opacity:.85;">${labels.printedAt}: ${now} | ${labels.ordersCount}: ${prepOps.length}</div></div><p style="font-size:13px;color:#64748b;margin-bottom:20px;">${labels.description}</p>${ordersHTML}</body></html>`;
 }
 
-function buildGenericOpPDF(op, order, labels) {
+function buildGenericOpPDF(op, order, labels, formatCurrency) {
   const now = new Date().toLocaleString("en-US");
   const resultColor = op.result === "SUCCESS" ? "#16a34a" : "#dc2626";
   const resultLabel = op.result === "SUCCESS" ? labels.success : labels.failed;
 
-  return `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>${labels.title} ${op.id}</title>${PDF_STYLE}</head><body><div class="header-bar info-bar"><div style="font-size:18px;font-weight:700;margin-bottom:4px;">${labels.title} — ${labels.opTypeLabel}</div><div style="font-size:12px;opacity:.85;">${labels.printedAt}: ${now} | ${labels.opNumber}: ${op.id}</div></div><div class="info-grid"><div class="info-card"><div class="info-label">${labels.opNumber}</div><div class="info-value" style="font-family:monospace">${op.id}</div></div><div class="info-card"><div class="info-label">${labels.opType}</div><div class="info-value">${labels.opTypeLabel}</div></div><div class="info-card"><div class="info-label">${labels.orderNumber}</div><div class="info-value" style="font-family:monospace">${op.orderCode || "—"}</div></div><div class="info-card"><div class="info-label">${labels.carrier}</div><div class="info-value">${op.carrier || "—"}</div></div><div class="info-card"><div class="info-label">${labels.employee}</div><div class="info-value">${op.employee || "—"}</div></div><div class="info-card"><div class="info-label">${labels.result}</div><div class="info-value" style="color:${resultColor}">${resultLabel}</div></div><div class="info-card"><div class="info-label">${labels.datetime}</div><div class="info-value" style="font-family:monospace;font-size:12px">${op.createdAt || "—"}</div></div><div class="info-card"><div class="info-label">${labels.details}</div><div class="info-value">${op.details || "—"}</div></div></div>${order ? `<h2>${labels.orderInfo}</h2><div class="info-grid"><div class="info-card"><div class="info-label">${labels.customer}</div><div class="info-value">${order.customer || "—"}</div></div><div class="info-card"><div class="info-label">${labels.city}</div><div class="info-value">${order.city || "—"}</div></div><div class="info-card"><div class="info-label">${labels.total}</div><div class="info-value">${order.finalTotal ? order.finalTotal + " " + labels.currency : "—"}</div></div><div class="info-card"><div class="info-label">${labels.status}</div><div class="info-value">${order.status || "—"}</div></div></div>` : ""}</body></html>`;
+  return `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>${labels.title} ${op.id}</title>${PDF_STYLE}</head><body><div class="header-bar info-bar"><div style="font-size:18px;font-weight:700;margin-bottom:4px;">${labels.title} — ${labels.opTypeLabel}</div><div style="font-size:12px;opacity:.85;">${labels.printedAt}: ${now} | ${labels.opNumber}: ${op.id}</div></div><div class="info-grid"><div class="info-card"><div class="info-label">${labels.opNumber}</div><div class="info-value" style="font-family:monospace">${op.id}</div></div><div class="info-card"><div class="info-label">${labels.opType}</div><div class="info-value">${labels.opTypeLabel}</div></div><div class="info-card"><div class="info-label">${labels.orderNumber}</div><div class="info-value" style="font-family:monospace">${op.orderCode || "—"}</div></div><div class="info-card"><div class="info-label">${labels.carrier}</div><div class="info-value">${op.carrier || "—"}</div></div><div class="info-card"><div class="info-label">${labels.employee}</div><div class="info-value">${op.employee || "—"}</div></div><div class="info-card"><div class="info-label">${labels.result}</div><div class="info-value" style="color:${resultColor}">${resultLabel}</div></div><div class="info-card"><div class="info-label">${labels.datetime}</div><div class="info-value" style="font-family:monospace;font-size:12px">${op.createdAt || "—"}</div></div><div class="info-card"><div class="info-label">${labels.details}</div><div class="info-value">${op.details || "—"}</div></div></div>${order ? `<h2>${labels.orderInfo}</h2><div class="info-grid"><div class="info-card"><div class="info-label">${labels.customer}</div><div class="info-value">${order.customer || "—"}</div></div><div class="info-card"><div class="info-label">${labels.city}</div><div class="info-value">${order.city || "—"}</div></div><div class="info-card"><div class="info-label">${labels.total}</div><div class="info-value">${order.finalTotal ? formatCurrency(order.finalTotal) : "—"}</div></div><div class="info-card"><div class="info-label">${labels.status}</div><div class="info-value">${order.status || "—"}</div></div></div>` : ""}</body></html>`;
 }
 
 // ─────────────────────────────────────────────────────────────
 // GENERIC OP MODAL
 // ─────────────────────────────────────────────────────────────
-function GenericOpModal({ open, onClose, op, t }) {
+function GenericOpModal({ open, onClose, op, t, formatCurrency }) {
   if (!op) return null;
 
   const order = op.order;
@@ -842,7 +847,7 @@ function GenericOpModal({ open, onClose, op, t }) {
                   {
                     label: t("genericModal.total"),
                     value: order.finalTotal
-                      ? `${order.finalTotal} ${t("common.currency")}`
+                      ? formatCurrency(order.finalTotal)
                       : "—",
                   },
                   {
@@ -902,6 +907,7 @@ function GenericOpModal({ open, onClose, op, t }) {
                     success: t("result.success"),
                     failed: t("result.failed"),
                   },
+                  formatCurrency,
                 ),
                 t("popupBlocked"),
               )

@@ -7,7 +7,13 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import {
   Package, Clock, CheckCircle2, XCircle, Truck,
   ClipboardList, ArrowLeft, ScanLine, Loader2, Save, RefreshCw,
+  Lock,
+  ArrowLeftRight,
+  Settings,
+  X,
+  ArrowRight,
 } from "lucide-react";
+import SubscriptionLock from "@/components/atoms/SubscriptionLock";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
 
@@ -31,6 +37,10 @@ import {
   initialReturnFiles, initialInventory,
   STATUS, CARRIERS,
 } from "./tabs/data";
+import useOrdersSettings from "@/hook/useOrdersSettings";
+
+import { Switch } from "@/components/ui/switch";
+import { useAuth } from "@/context/AuthContext";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // localStorage key — must match MultiPrepareView
@@ -150,12 +160,14 @@ function DistributionDialog({ open, onClose, orders, selectedOrderCodes, updateO
             }
           </div>
           <div className="flex justify-end gap-2">
-            <Button_ label="إلغاء" tone="gray" variant="outline" onClick={onClose} disabled={loading} />
+            <Button_ label="إلغاء" tone="gray" variant="outline" onClick={onClose} disabled={loading} permission="orders.read" />
             <Button_
               label={loading ? "جاري التوزيع..." : "تأكيد التوزيع"}
               tone="primary" variant="solid"
               onClick={handleDistribute}
-              disabled={loading || !carrier || selectedOrders.length === 0} />
+              disabled={loading || !carrier || selectedOrders.length === 0}
+              permission="orders.update"
+            />
           </div>
         </div>
       </DialogContent>
@@ -195,6 +207,7 @@ const isValidSubtab = (tab, subtab) => {
 // MAIN PAGE
 // ─────────────────────────────────────────────────────────────────────────────
 export default function WarehouseFlowPage() {
+  const { user, hasPermission, isSuperAdmin, hasActiveSubscription } = useAuth();
   const locale = useLocale();
   const dir = locale === "ar" ? "rtl" : "ltr";
   const router = useRouter();
@@ -282,6 +295,9 @@ export default function WarehouseFlowPage() {
     try { localStorage.removeItem(LS_PREPARE_KEY); } catch (_) { }
   }, []);
 
+  const { settings, patch, saving, saveSetting } = useOrdersSettings({ isOpen: true, onClose: () => { } });
+
+
   // ── Prepare view override ──────────────────────────────────────────────────
   if (preparingOrders && preparingOrders.length > 0) {
     return (
@@ -298,6 +314,88 @@ export default function WarehouseFlowPage() {
     );
   }
 
+
+
+  if (settings?.orderFlowPath === "shipping") {
+    return (
+      // نضع z-index أقل من الـ Sidebar (عادة 40 أو 30) ونستخدم التموضع النسبي للأب
+      <div className="fixed inset-0 z-[40] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm lg:mr-[280px]">
+        {/* ملحوظة: lg:mr-[280px] تعتمد على عرض الـ Sidebar لديك لضمان توسيط التنبيه في المساحة البيضاء فقط */}
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 dark:border-slate-800"
+          dir="rtl"
+        >
+          {/* Header المحاكي للـ Dialog */}
+          <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+            <div className="flex items-center gap-2 font-bold text-lg">
+              <Lock className="text-red-500" size={22} />
+              <span>تنبيه: مسار الشحن المباشر مفعل</span>
+            </div>
+            {/* زر إغلاق يدوي يوجه للطلبات */}
+            <button
+              onClick={() => router.push("/orders")}
+              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          <div className="p-6 space-y-6">
+            <div className="rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30 p-4">
+              <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+                النظام موجه حالياً لشحن الطلبات مباشرة.
+              </p>
+              <p className="text-xs text-amber-600 mt-1">
+                هذه الصفحة (المستودع) معطلة. يمكنك تفعيلها أو العودة للطلبات.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Button_
+                className="w-full h-11"
+                tone="primary"
+                variant="solid"
+                onClick={() => saveSetting({ ...settings, orderFlowPath: "warehouse" })}
+                disabled={saving}
+                label={
+                  <div className="flex items-center gap-2">
+                    {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                    <span>تفعيل المستودع</span>
+                  </div>
+                }
+                permission="order.updateSettings"
+              />
+
+              <Button_
+                className="w-full h-11"
+                tone="gray"
+                variant="outline"
+                onClick={() => router.push("/settings")}
+                label={
+                  <div className="flex items-center gap-2">
+                    <Settings size={16} />
+                    <span>الإعدادات المتقدمة</span>
+                  </div>
+                }
+                permission="order.readSettings"
+              />
+
+              <button
+                onClick={() => router.back()} // سيقوم بالعودة للصحفة السابقة في السجل (History)
+                className="text-xs text-slate-400 hover:text-primary transition-colors mt-2 underline flex items-center justify-center gap-1 mx-auto"
+              >
+                <ArrowRight size={12} /> {/* إضافة سهم اختياري لتعزيز الشكل البصري */}
+                <span>العودة للخلف</span>
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
   // ── Main tabbed layout ─────────────────────────────────────────────────────
   return (
     <div

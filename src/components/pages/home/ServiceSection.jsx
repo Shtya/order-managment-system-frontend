@@ -226,40 +226,6 @@ function ServiceCard({ item, index, inView, isRtl, img }) {
 /* ════════ ROOT EXPORT ════════ */
 
 
-const BADGES = [
-	{
-		emoji: "landing/icon-1.png",
-		text: "تابع الطلبات من أول التأكيد لحد التسليم",
-		// bottom-right area
-		position: { bottom: "8%", right: "2%" },
-		delay: 0.2,
-		floatY: [-4, 4],
-		floatDur: 3.8,
-		accent: "#fbbf24",
-	},
-	{
-		emoji: "landing/icon-2.png",
-		text: "شوف كل المنتجات والكميات لحظة بلحظة",
-		// top-center, overlapping image bottom
-		position: { bottom: "28%", left: "40%", transform: "translateX(-50%)" },
-		delay: 0.45,
-		floatY: [-5, 3],
-		floatDur: 4.2,
-		accent: "#a78bfa",
-	},
-	{
-		emoji: "landing/icon-3.png",
-		text: "احصل على تقارير دقيقة لاتخاذ قرارات أسرع",
-		// bottom-left area
-		position: { bottom: "8%", left: "2%" },
-		delay: 0.65,
-		floatY: [-3, 5],
-		floatDur: 3.5,
-		accent: "#34d399",
-	},
-];
-
-
 function FloatingBadge({ badge, inView }) {
 	return (
 		<motion.div
@@ -324,7 +290,38 @@ export default function ServicesSection() {
 	const inView = useInView(ref, { once: true, margin: "-60px" });
 
 	const cards = t.raw("services.cards");
+	const badges = t.raw("badges");
 	const cardsImg = ["landing/box-1.png", "landing/box-2.png", "landing/box-3.png"]
+
+	const BADGES_DATA = [
+		{
+			emoji: "landing/icon-1.png",
+			text: badges[0],
+			position: { bottom: "8%", right: "2%" },
+			delay: 0.2,
+			floatY: [-4, 4],
+			floatDur: 3.8,
+			accent: "#fbbf24",
+		},
+		{
+			emoji: "landing/icon-2.png",
+			text: badges[1],
+			position: { bottom: "28%", left: "40%", transform: "translateX(-50%)" },
+			delay: 0.45,
+			floatY: [-5, 3],
+			floatDur: 4.2,
+			accent: "#a78bfa",
+		},
+		{
+			emoji: "landing/icon-3.png",
+			text: badges[2],
+			position: { bottom: "8%", left: "2%" },
+			delay: 0.65,
+			floatY: [-3, 5],
+			floatDur: 3.5,
+			accent: "#34d399",
+		},
+	];
 
 	return (
 		<section
@@ -375,7 +372,7 @@ export default function ServicesSection() {
 						/>
 					</motion.div>
 
-					{BADGES.map((badge, i) => (
+					{BADGES_DATA.map((badge, i) => (
 						<FloatingBadge key={i} badge={badge} inView={inView} />
 					))}
 

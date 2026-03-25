@@ -259,7 +259,7 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 											{(file.size / 1024).toFixed(1)} KB
 										</p>
 										<span className="text-[10px] font-bold uppercase tracking-wider text-[var(--primary)] dark:text-[#8b7cff]">
-											Click to change file
+											{t("bulkUpload.clickToChangeFile")}
 										</span>
 									</motion.div>
 								) : (

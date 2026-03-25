@@ -26,7 +26,7 @@ export default function AssignFeatureModal({ isOpen, onClose, user, onRefresh })
         paymentMethod: "cash"
     });
 
-    // جلب البيانات عند فتح النافذة
+    // Fetch data when modal opens
     useEffect(() => {
         if (isOpen && user?.id) {
             fetchInitialData();
@@ -40,17 +40,16 @@ export default function AssignFeatureModal({ isOpen, onClose, user, onRefresh })
                 api.get("/extra-features/features"),
                 api.get(`/extra-features?userId=${user.id}&status=active`)
             ]);
-            console.log(allRes.data)
             setAllFeatures(allRes.data);
             setUserFeatures(userRes.data.records || []);
         } catch (error) {
-            toast.error("Error loading features data");
+            toast.error(tf("messages.fetchFailed"));
         } finally {
             setLoadingData(false);
         }
     };
 
-    // تحديد الميزة المختارة لتحديث السعر الافتراضي تلقائياً
+    // Update default price when feature is selected
     const handleFeatureChange = (id) => {
         const feature = allFeatures.find(f => String(f.id) === id);
         setForm(p => ({
@@ -73,13 +72,13 @@ export default function AssignFeatureModal({ isOpen, onClose, user, onRefresh })
             onRefresh?.();
             onClose();
         } catch (error) {
-            toast.error(error?.response?.data?.message || "Error assigning feature");
+            toast.error(error?.response?.data?.message || tf("messages.assignFailed"));
         } finally {
             setSaving(false);
         }
     };
 
-    // مصفوفة المعرفات التي يمتلكها المستخدم لمنع اختيارها
+    // Owned feature IDs to prevent re-selection
     const ownedFeatureIds = useMemo(() =>
         userFeatures.map(uf => String(uf.featureId)),
         [userFeatures]);
@@ -180,7 +179,7 @@ export default function AssignFeatureModal({ isOpen, onClose, user, onRefresh })
                     onClick={onClose}
                     className="px-8 py-3 text-sm font-bold rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 transition-all active:scale-95"
                 >
-                    {t("filters.cancel") || "Cancel"}
+                    {t("filters.cancel")}
                 </button>
                 <button
                     onClick={handleAssign}

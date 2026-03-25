@@ -69,6 +69,8 @@ function getSavedPrepareOrders() {
 // DISTRIBUTION DIALOG
 // ─────────────────────────────────────────────────────────────────────────────
 function DistributionDialog({ open, onClose, orders, selectedOrderCodes, updateOrder, pushOp }) {
+  const tCommon = useTranslations("common");
+  const t = useTranslations("warehouse.distributionDialog");
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [carrier, setCarrier] = useState("");
   const [loading, setLoading] = useState(false);
@@ -108,23 +110,23 @@ function DistributionDialog({ open, onClose, orders, selectedOrderCodes, updateO
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="!max-w-2xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto" dir="rtl">
+      <DialogContent className="!max-w-2xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
           <DialogTitle className="text-lg font-bold flex items-center gap-2">
             <Truck className="text-[#ff8b00] dark:text-[#5b4bff]" size={22} />
-            توزيع الطلبات على شركة الشحن
+            {t("title")}
           </DialogTitle>
         </DialogHeader>
         <div className="p-6 space-y-5">
           <div className="rounded-xl bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/30 p-4">
-            <p className="text-sm font-semibold text-blue-800 dark:text-blue-200">اختر شركة الشحن والطلبات المراد توزيعها</p>
-            <p className="text-xs text-blue-500 mt-1">تم تحديد {selectedOrders.length} طلب</p>
+            <p className="text-sm font-semibold text-blue-800 dark:text-blue-200">{t("hint")}</p>
+            <p className="text-xs text-blue-500 mt-1">{t("selectedCount", { count: selectedOrders.length })}</p>
           </div>
           <div className="space-y-2">
-            <Label>اختر شركة الشحن <span className="text-red-500">*</span></Label>
+            <Label>{t("carrierLabel")} <span className="text-red-500">*</span></Label>
             <Select value={carrier} onValueChange={setCarrier}>
               <SelectTrigger className="rounded-xl">
-                <SelectValue placeholder="اختر شركة الشحن" />
+                <SelectValue placeholder={t("carrierPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {CARRIERS.map((c) => (
@@ -137,7 +139,7 @@ function DistributionDialog({ open, onClose, orders, selectedOrderCodes, updateO
           </div>
           <div className="max-h-[300px] overflow-y-auto space-y-2 bg-gray-50 dark:bg-slate-800 rounded-xl p-4">
             {availableOrders.length === 0
-              ? <p className="text-center py-8 text-slate-500 text-sm">لا توجد طلبات جاهزة للتوزيع</p>
+              ? <p className="text-center py-8 text-slate-500 text-sm">{t("empty")}</p>
               : availableOrders.map((order) => (
                 <motion.div key={order.code} whileHover={{ scale: 1.005 }}
                   className={cn(
@@ -160,9 +162,9 @@ function DistributionDialog({ open, onClose, orders, selectedOrderCodes, updateO
             }
           </div>
           <div className="flex justify-end gap-2">
-            <Button_ label="إلغاء" tone="gray" variant="outline" onClick={onClose} disabled={loading} permission="orders.read" />
+            <Button_ label={useTranslations("onboarding.plans")("back_btn")} tone="gray" variant="outline" onClick={onClose} disabled={loading} permission="orders.read" />
             <Button_
-              label={loading ? "جاري التوزيع..." : "تأكيد التوزيع"}
+              label={loading ? t("distributing") : t("confirm")}
               tone="primary" variant="solid"
               onClick={handleDistribute}
               disabled={loading || !carrier || selectedOrders.length === 0}
@@ -317,6 +319,7 @@ export default function WarehouseFlowPage() {
 
 
   if (settings?.orderFlowPath === "shipping") {
+    const tWarning = useTranslations("warehouse.directShippingWarning");
     return (
       // نضع z-index أقل من الـ Sidebar (عادة 40 أو 30) ونستخدم التموضع النسبي للأب
       <div className="fixed inset-0 z-[40] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm lg:mr-[280px]">
@@ -326,13 +329,12 @@ export default function WarehouseFlowPage() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 dark:border-slate-800"
-          dir="rtl"
         >
           {/* Header المحاكي للـ Dialog */}
           <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
             <div className="flex items-center gap-2 font-bold text-lg">
               <Lock className="text-red-500" size={22} />
-              <span>تنبيه: مسار الشحن المباشر مفعل</span>
+              <span>{tWarning("title")}</span>
             </div>
             {/* زر إغلاق يدوي يوجه للطلبات */}
             <button
@@ -346,10 +348,10 @@ export default function WarehouseFlowPage() {
           <div className="p-6 space-y-6">
             <div className="rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30 p-4">
               <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
-                النظام موجه حالياً لشحن الطلبات مباشرة.
+                {tWarning("subtitle")}
               </p>
               <p className="text-xs text-amber-600 mt-1">
-                هذه الصفحة (المستودع) معطلة. يمكنك تفعيلها أو العودة للطلبات.
+                {tWarning("description")}
               </p>
             </div>
 
@@ -363,7 +365,7 @@ export default function WarehouseFlowPage() {
                 label={
                   <div className="flex items-center gap-2">
                     {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                    <span>تفعيل المستودع</span>
+                    <span>{tWarning("enableWarehouse")}</span>
                   </div>
                 }
                 permission="order.updateSettings"
@@ -377,7 +379,7 @@ export default function WarehouseFlowPage() {
                 label={
                   <div className="flex items-center gap-2">
                     <Settings size={16} />
-                    <span>الإعدادات المتقدمة</span>
+                    <span>{tWarning("advancedSettings")}</span>
                   </div>
                 }
                 permission="order.readSettings"
@@ -388,7 +390,7 @@ export default function WarehouseFlowPage() {
                 className="text-xs text-slate-400 hover:text-primary transition-colors mt-2 underline flex items-center justify-center gap-1 mx-auto"
               >
                 <ArrowRight size={12} /> {/* إضافة سهم اختياري لتعزيز الشكل البصري */}
-                <span>العودة للخلف</span>
+                <span>{tWarning("goBack")}</span>
               </button>
             </div>
           </div>

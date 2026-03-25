@@ -37,6 +37,7 @@ import { ModalHeader, ModalShell } from "@/components/ui/modalShell";
 import { GhostBtn, PrimaryBtn } from "@/components/atoms/Button";
 import PageHeader from "@/components/atoms/Pageheader";
 import { PROVIDER_META, useShippingIntegration, useShippingSettings, useShippingUsage, useShippingWebhook } from "@/hook/shipping";
+import { useAuth } from "@/context/AuthContext";
 
 
 function pick(bilingualObj, locale) {

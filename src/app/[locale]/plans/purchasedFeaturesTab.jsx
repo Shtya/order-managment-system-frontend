@@ -56,14 +56,14 @@ export default function PurchasedFeaturesTab() {
             const { data } = await api.post("/extra-features/purchase-addon", { featureId });
 
             if (data.checkoutUrl) {
-                toast.success(tf("messages.redirecting") || "Redirecting to payment...");
+                toast.success(t("purchasedFeaturesTab.messages.redirecting"));
                 // فتح رابط الدفع في نافذة جديدة
                 window.location.href = data.checkoutUrl;
             } else {
-                toast.error("Checkout URL not found");
+                toast.error(t("purchasedFeaturesTab.messages.checkoutUrlNotFound"));
             }
         } catch (error) {
-            toast.error(error?.response?.data?.message || "Purchase failed");
+            toast.error(error?.response?.data?.message || t("purchasedFeaturesTab.messages.purchaseFailed"));
         } finally {
             setPurchasingId(null);
         }

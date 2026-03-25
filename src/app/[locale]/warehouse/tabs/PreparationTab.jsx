@@ -391,20 +391,20 @@ function buildWrongScanLogPDF(logs, carrier, employee, now, labels, orderInfo = 
 		orderHeader = `
     <div style="padding: 20px 32px; border-bottom: 1px solid var(--rule); background: var(--cream-warm);">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h3 style="margin: 0; font-size: 16px; color: var(--charcoal);">${labels.orderInfo || "بيانات الطلب"}</h3>
+        <h3 style="margin: 0; font-size: 16px; color: var(--charcoal);">${labels.orderInfo}</h3>
         <span style="font-family: var(--mono); font-weight: 700; color: var(--primary);">${orderInfo.orderNumber}</span>
       </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
         <div>
-          <div style="font-size: 10px; color: var(--charcoal-muted); margin-bottom: 4px;">${labels.customer || "العميل"}</div>
+          <div style="font-size: 10px; color: var(--charcoal-muted); margin-bottom: 4px;">${labels.customer}</div>
           <div style="font-weight: 600; font-size: 13px;">${orderInfo.customerName}</div>
         </div>
         <div>
-          <div style="font-size: 10px; color: var(--charcoal-muted); margin-bottom: 4px;">${labels.city || "المدينة"}</div>
+          <div style="font-size: 10px; color: var(--charcoal-muted); margin-bottom: 4px;">${labels.city}</div>
           <div style="font-weight: 600; font-size: 13px;">${orderInfo.city}</div>
         </div>
         <div>
-          <div style="font-size: 10px; color: var(--charcoal-muted); margin-bottom: 4px;">${labels.phone || "الهاتف"}</div>
+          <div style="font-size: 10px; color: var(--charcoal-muted); margin-bottom: 4px;">${labels.phone}</div>
           <div style="font-weight: 600; font-size: 13px; font-family: var(--mono);">${orderInfo.phoneNumber}</div>
         </div>
       </div>
@@ -467,7 +467,7 @@ function buildWrongScanLogPDF(logs, carrier, employee, now, labels, orderInfo = 
     <div class="print-alert-inner">
       <div class="print-alert-icon">!</div>
       <div class="print-alert-text">
-        ${labels.printAlertText || "هذا المستند يحتوي على محاولات مسح فاشلة — يُرجى المراجعة والتحقق من الباركود"}
+        ${labels.printAlertText}
       </div>
     </div>
   </div>
@@ -507,7 +507,7 @@ function buildWrongScanLogPDF(logs, carrier, employee, now, labels, orderInfo = 
       </div>
       <span class="footer-text">${labels.title}</span>
       <div class="footer-divider"></div>
-      <span class="footer-text">${labels.system || "نظام إدارة المستودعات"}</span>
+      <span class="footer-text">${labels.system}</span>
     </div>
     <span class="footer-text">${now}</span>
   </div>
@@ -813,14 +813,14 @@ export function RejectOrderModal({ open, onClose, order, onConfirm }) {
 			const res = await api.patch(`/orders/${order.id}/reject`, { notes: reason });
 			console.log(res);
 			if (res.status === 200 || res.status === 201) {
-				toast.success(t("messages.orderRejected") || "Order rejected successfully");
+				toast.success(t("messages.orderRejected"));
 				onConfirm(order.code, { status: "rejected", rejectReason: reason, notes: reason });
 				setReason("");
 				onClose();
 			}
 		} catch (error) {
 			console.error("Error rejecting order", error);
-			toast.error(error.response?.data?.message || t("messages.errorRejectingOrder") || "Error rejecting order");
+			toast.error(error.response?.data?.message || t("messages.errorRejectingOrder"));
 		} finally {
 			setLoading(false);
 		}
@@ -958,7 +958,7 @@ function OrdersSlidePanel({ open, onClose, activeOrderCode, onSelectOrder }) {
 							{loading ? (
 								<div className="flex flex-col items-center justify-center py-12 space-y-3">
 									<Loader2 className="animate-spin text-primary" size={24} />
-									<p className="text-xs text-slate-400 font-medium tracking-wide">جاري التحميل...</p>
+									<p className="text-xs text-slate-400 font-medium tracking-wide">{t("panel.loading")}</p>
 								</div>
 							) : (
 								orders.map((order) => {
@@ -1795,6 +1795,12 @@ function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fet
 		userName: t("pdf.wrongLog.employee"),
 		failReason: t("pdf.wrongLog.failReason"),
 		time: t("pdf.wrongLog.time"),
+		orderInfo: t("pdf.wrongLog.orderInfo"),
+		customer: t("pdf.wrongLog.customer"),
+		city: t("pdf.wrongLog.city"),
+		phone: t("pdf.wrongLog.phone"),
+		printAlertText: t("pdf.wrongLog.printAlertText"),
+		system: t("pdf.wrongLog.system"),
 		reasons: {
 			SKU_NOT_IN_ORDER: tongoining("scan.reasons.SKU_NOT_IN_ORDER"),
 			ALREADY_FULLY_SCANNED: tongoining("scan.reasons.ALREADY_FULLY_SCANNED"),

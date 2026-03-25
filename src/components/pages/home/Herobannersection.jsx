@@ -128,7 +128,7 @@ export default function HeroBannerSection() {
         >
           <img
             src="landing/multiScreen.png"
-            alt="لوحة تحكم المنصة"
+            alt={t("dashboardAlt")}
             className="w-[450px]"
             fill
             style={{ objectFit: "contain" }}

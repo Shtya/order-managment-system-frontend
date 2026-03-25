@@ -195,13 +195,13 @@ export default function SubscriptionsTab() {
     try {
       await api.post(`/subscriptions/cancel/${selectedSub.id}`);
 
-      toast.success(t("messages.cancelSuccess") || "تم إلغاء الاشتراك بنجاح");
+      toast.success(t("messages.cancelSuccess"));
       setCancelOpen(false);
       setSelectedSub(null);
 
       fetchSubscriptions();
     } catch (error) {
-      toast.error(t("messages.error") || "حدث خطأ أثناء الإلغاء");
+      toast.error(t("messages.error"));
     } finally {
       setIsCancelling(false);
     }
@@ -442,7 +442,7 @@ export default function SubscriptionsTab() {
 
       {
         key: "actions",
-        header: t("columns.actions") || "الإجراءات",
+        header: t("columns.actions"),
         cell: (row) => (
           <div className="flex items-center justify-center gap-2">
             {/* إظهار زر الإلغاء فقط إذا كان الاشتراك نشطاً */}
@@ -463,7 +463,7 @@ export default function SubscriptionsTab() {
                     </motion.button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {t("actions.cancelSubscription") || "إلغاء الاشتراك"}
+                    {t("actions.cancelSubscription")}
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>

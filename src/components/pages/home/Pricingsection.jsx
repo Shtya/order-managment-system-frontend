@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { useRouter } from "@/i18n/navigation";
 import { useSubscriptionsApi } from "../../../app/[locale]/plans/page";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 /* ─── Check icon ─── */
 function Check({ color = "#6d28d9" }) {
@@ -146,7 +147,7 @@ function PricingCard({ plan, t, index, onAction }) {
             letterSpacing: "-1px",
           }}
         >
-          {"حسب الاتفاق"}
+          {t("types.negotiated")}
         </span>
       );
     }
@@ -178,7 +179,7 @@ function PricingCard({ plan, t, index, onAction }) {
               width: "fit-content",
             }}
           >
-            {"Trial"}
+            {t("types.trial")}
           </span>
         </div>
       );
@@ -344,7 +345,7 @@ function PricingCard({ plan, t, index, onAction }) {
 export default function PricingSection() {
   const t = useTranslations("pricing");
   const router = useRouter();
-
+const {formatCurrency} = usePlatformSettings()
   const {
     isLoading,
     plans: rawPlans,
@@ -364,35 +365,35 @@ export default function PricingSection() {
 
       // Add limit details (translated or English as per user's preference)
       if (plan.usersLimit !== null) {
-        features.push(`${plan.usersLimit} Users`);
+        features.push(t("limits.users", { count: plan.usersLimit }));
       } else {
-        features.push("Unlimited Users");
+        features.push(t("limits.unlimitedUsers"));
       }
 
       if (plan.storesLimit !== null) {
-        features.push(`${plan.storesLimit} Stores`);
+        features.push(t("limits.stores", { count: plan.storesLimit }));
       } else {
-        features.push("Unlimited Stores");
+        features.push(t("limits.unlimitedStores"));
       }
 
       if (plan.shippingCompaniesLimit !== null) {
-        features.push(`${plan.shippingCompaniesLimit} Shipping Companies`);
+        features.push(t("limits.shipping", { count: plan.shippingCompaniesLimit }));
       } else {
-        features.push("Unlimited Shipping Companies");
+        features.push(t("limits.unlimitedShipping"));
       }
 
       if (plan.includedOrders !== null) {
-        features.push(`${plan.includedOrders} Included Orders`);
+        features.push(t("limits.orders", { count: plan.includedOrders }));
       } else {
-        features.push("Unlimited Orders");
+        features.push(t("limits.unlimitedOrders"));
       }
 
       if (plan.extraOrderFee !== null && plan.extraOrderFee > 0) {
-        features.push(`${plan.extraOrderFee} EGP Extra Order Fee`);
+        features.push(t("limits.extraFee", { fee: formatCurrency(plan.extraOrderFee), currency: t("currency") || "EGP" }));
       }
 
       if (plan.bulkUploadPerMonth > 0) {
-        features.push(`${plan.bulkUploadPerMonth} Bulk Uploads/Month`);
+        features.push(t("limits.bulkUpload", { count: plan.bulkUploadPerMonth }));
       }
 
       return {
@@ -406,17 +407,17 @@ export default function PricingSection() {
           (index === 0 ? "#4ade80" : index === 1 ? "#818cf8" : "#a855f7"),
         tier:
           plan.duration === "monthly"
-            ? "Monthly"
+            ? t("types.monthly")
             : plan.duration === "yearly"
-              ? "Yearly"
-              : "Plan",
+              ? t("types.yearly")
+              : t("types.plan"),
         features: features.map((f) =>
           typeof f === "string" ? { label: f, isNew: false } : f,
         ),
         subtitle: plan.description || "",
       };
     });
-  }, [rawPlans]);
+  }, [rawPlans, t]);
   // Arrange plans: popular in center (if 3 or more)
   const arranged = useMemo(() => {
     const result = [...plans];

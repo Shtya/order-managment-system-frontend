@@ -277,8 +277,8 @@ function HeaderIconBtn({ onClick, children }) {
 	);
 }
 
-function formatTimeForLogs() {
-	return new Date().toLocaleTimeString("ar-SA", {
+function formatTimeForLogs(locale = "en") {
+	return new Date().toLocaleTimeString(locale === "ar" ? "ar-SA" : "en-US", {
 		hour: "2-digit",
 		minute: "2-digit",
 		second: "2-digit",
@@ -1908,7 +1908,7 @@ function OutgoingOrdersSlidePanel({ open, onClose, selectedCarrier, onManifestCr
 		const isMismatch = selectedOrders.some(o => o.shippingCompanyId !== firstCarrierId);
 
 		if (isMismatch) {
-			toast.error("لا يمكن إنشاء ملف لطلبات تتبع شركات شحن مختلفة");
+			toast.error(t("scan.messages.carrierMismatch"));
 			return;
 		}
 
@@ -1923,7 +1923,7 @@ function OutgoingOrdersSlidePanel({ open, onClose, selectedCarrier, onManifestCr
 			onClose();
 		} catch (error) {
 			console.error("Failed to create manifest", error);
-			toast.error(error.response?.data?.message || "Failed to create manifest");
+			toast.error(error.response?.data?.message || t("scan.messages.errorOccurred"));
 		} finally {
 			setCreatingManifest(false);
 		}
@@ -1956,7 +1956,7 @@ function OutgoingOrdersSlidePanel({ open, onClose, selectedCarrier, onManifestCr
 							{loading ? (
 								<div className="flex flex-col items-center justify-center py-12 space-y-3">
 									<Loader2 className="animate-spin text-primary" size={24} />
-									<p className="text-xs text-slate-400 font-medium tracking-wide">جاري التحميل...</p>
+									<p className="text-xs text-slate-400 font-medium tracking-wide">{t("scan.loading")}</p>
 								</div>
 							) : (
 								orders.map((order) => {
@@ -2335,7 +2335,7 @@ export function ScanOutgoingSubtab({
 					{loadingOrders ? (
 						<div className="flex flex-col items-center justify-center py-20 space-y-4">
 							<Loader2 className="animate-spin text-primary" size={32} />
-							<p className="text-sm font-bold text-slate-400 tracking-wide animate-pulse">جاري تحميل الطلبات الجاهزة...</p>
+							<p className="text-sm font-bold text-slate-400 tracking-wide animate-pulse">{t("scan.loadingOrders")}</p>
 						</div>
 					) : isItemsMode && activeOrder ? (
 						<ScannedOrderTable
@@ -2482,6 +2482,7 @@ function OutgoingFilesSubtab({
 		courierName: t("pdf.outgoing.courierName"),
 		signature: t("pdf.outgoing.signature"),
 		dateTime: t("pdf.outgoing.dateTime"),
+		system: t("pdf.outgoing.system"),
 	};
 
 	const wrongLogLabels = {
@@ -2497,6 +2498,8 @@ function OutgoingFilesSubtab({
 		orderNumber: t("pdf.wrongLog.orderNumber"),
 		failReason: t("pdf.wrongLog.failReason"),
 		time: t("pdf.wrongLog.time"),
+		printAlertText: t("pdf.wrongLog.printAlertText"),
+		system: t("pdf.wrongLog.system"),
 		reasons: {
 			SKU_NOT_IN_ORDER: t("scan.reasons.SKU_NOT_IN_ORDER"),
 			ALREADY_FULLY_SCANNED: t("scan.reasons.ALREADY_FULLY_SCANNED"),

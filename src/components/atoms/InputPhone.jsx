@@ -17,17 +17,19 @@ export function digitsOnly(v) {
 	return (v || "").replace(/\D/g, "");
 }
 
-export function validatePhone(rawDigits, country) {
+export function validatePhone(rawDigits, country, t) {
 	const value = digitsOnly(rawDigits);
-	if (!value) return "يرجى إدخال رقم جوال صحيح";
+	if (!value) return t("validation.required");
 
 	if (value.length < country.phone.min || value.length > country.phone.max) {
-		if (country.phone.min === country.phone.max) return `رقم الجوال يجب أن يكون ${country.phone.min} رقمًا`;
-		return `رقم الجوال يجب أن يكون بين ${country.phone.min} و ${country.phone.max} رقمًا`;
+		if (country.phone.min === country.phone.max) {
+			return t("validation.exact", { min: country.phone.min });
+		}
+		return t("validation.range", { min: country.phone.min, max: country.phone.max });
 	}
 
 	if (value.length === country.phone.max && country.phone.regex && !country.phone.regex.test(value)) {
-		return "يرجى إدخال رقم جوال صحيح حسب الدولة المختارة";
+		return t("validation.invalid");
 	}
 
 	return "";
@@ -57,8 +59,9 @@ export default function InputPhone({
 }) {
 
 
-	const translation  = useTranslations("inputPhone")
-	const countries = COUNTRIES 
+	const translation = useTranslations("inputPhone");
+	const tCountries = useTranslations("countries");
+	const countries = COUNTRIES;
 	const controlledCountry = valueCountry ?? (countries?.[0]?.key || "EG");
 	const controlledNumber = valueNumber ?? "";
 
@@ -77,13 +80,13 @@ export default function InputPhone({
 					triggerClassName
 				)}
 			>
-				<SelectValue placeholder={(translation("placeholders.selectCountry"))} />
+				<SelectValue placeholder={translation("placeholders.selectCountry")} />
 			</SelectTrigger>
 
 			<SelectContent className="max-h-72">
 				{countries.map((c) => (
 					<SelectItem key={c.key} value={c.key}>
-						{c.dialCode} — {c.nameAr}
+						{c.dialCode} — {tCountries(c.key)}
 					</SelectItem>
 				))}
 			</SelectContent>
@@ -156,7 +159,7 @@ export default function InputPhone({
 							<SelectContent className="max-h-72">
 								{countries.map((c) => (
 									<SelectItem key={c.key} value={c.key}>
-										{c.dialCode} — {c.nameAr}
+										{c.dialCode} — {tCountries(c.key)}
 									</SelectItem>
 								))}
 							</SelectContent>

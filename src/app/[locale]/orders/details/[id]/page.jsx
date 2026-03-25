@@ -240,7 +240,7 @@ export default function OrderDetailsPageWrapper() {
   if (!orderId)
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground text-sm">Invalid order ID</p>
+        <p className="text-muted-foreground text-sm">{t("invalidOrderId")}</p>
       </div>
     );
 

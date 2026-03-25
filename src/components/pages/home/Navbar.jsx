@@ -33,10 +33,10 @@ function getDashboardRoute(role) {
   return "/orders/employee-orders";
 }
 
-function getRoleLabel(role) {
-  if (role === "super_admin") return "مدير عام";
-  if (role === "admin") return "مدير";
-  return "مستخدم";
+function getRoleLabel(role, t) {
+  if (role === "super_admin") return t("roles.super_admin");
+  if (role === "admin") return t("roles.admin");
+  return t("roles.user");
 }
 
 function getRoleBadgeStyle(role) {
@@ -196,7 +196,7 @@ function AvatarPopover({ user, t }) {
             className="text-[9.5px] font-semibold uppercase tracking-wide"
             style={{ color: BRAND }}
           >
-            {getRoleLabel(user.role?.name)}
+            {getRoleLabel(user.role?.name, t)}
           </span>
         </div>
         <motion.div
@@ -281,7 +281,7 @@ function AvatarPopover({ user, t }) {
                     style={roleStyle}
                   >
                     <Crown size={8} />
-                    {getRoleLabel(user.role?.name)}
+                    {getRoleLabel(user.role?.name, t)}
                   </span>
                 </div>
               </div>
@@ -310,7 +310,7 @@ function AvatarPopover({ user, t }) {
                 {
                   icon: <LogOut size={13} style={{ color: "#ef4444" }} />,
                   iconBg: "#fff1f2",
-                  label: "تسجيل الخروج",
+                  label: t("logout"),
                   hoverBg: "#fff1f2",
                   hoverColor: "#ef4444",
                   onClick: logout,
@@ -659,7 +659,7 @@ export default function Navbar({ t, locale, switchLocale, user }) {
                     className="text-[10px] font-bold px-2.5 py-1 rounded-xl"
                     style={{ background: `${BRAND}14`, color: BRAND }}
                   >
-                    {getRoleLabel(user.role?.name)}
+                    {getRoleLabel(user.role?.name, t)}
                   </span>
                 </motion.div>
               )}

@@ -68,12 +68,15 @@ import api from "@/utils/api";
 // CARRIER BRAND STYLES
 // ─────────────────────────────────────────────
 import { CARRIER_STYLES, CARRIERS, CARRIER_META } from "./data";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 // ─────────────────────────────────────────────
 // MAIN TAB
 // ─────────────────────────────────────────────
 export default function DistributionTab({ subtab, setSubtab }) {
   const t = useTranslations("warehouse.distribution");
+  const tCommon = useTranslations("common");
+  const tStats = useTranslations("warehouse.distribution.stats");
 
   const [statsData, setStatsData] = useState({
     lifecycle: { confirmed: 0, distributed: 0, distributedNotPrinted: 0 },
@@ -250,7 +253,7 @@ export default function DistributionTab({ subtab, setSubtab }) {
 // ─────────────────────────────────────────────
 export function OrderDetailModal({ open, onClose, order, hideNotes }) {
   const t = useTranslations("warehouse.distribution");
-
+const {formatCurrency} = usePlatformSettings()
   if (!order) return null;
   const infoRows = [
     {
@@ -308,13 +311,13 @@ export function OrderDetailModal({ open, onClose, order, hideNotes }) {
     },
     {
       label: t("field.total"),
-      value: `${order.finalTotal} ر.س`,
+      value: `${formatCurrency(order.finalTotal)}`,
       icon: TrendingUp,
       accent: "#10b981",
     },
     {
       label: t("field.shippingCost"),
-      value: `${order.shippingCost} ر.س`,
+      value: `${formatCurrency(order.shippingCost)}`,
       icon: Truck,
       accent: "#ff6a1e",
     },
@@ -436,7 +439,7 @@ export function OrderDetailModal({ open, onClose, order, hideNotes }) {
                 {t("section.products")}
               </span>
               <span className="ml-auto text-xs font-semibold text-slate-400">
-                {order.items?.length || 0} {t("common.items") || "عنصر"}
+                {order.items?.length || 0} {tCommon("items")}
               </span>
             </div>
             <div className="divide-y divide-slate-100 dark:divide-slate-700/60">
@@ -470,7 +473,9 @@ export function OrderDetailModal({ open, onClose, order, hideNotes }) {
                     className="font-bold text-sm"
                     style={{ color: "#ff6a1e" }}
                   >
-                    {(Number(p.unitPrice) || 0) * (Number(p.quantity) || 0)} ر.س
+                    { formatCurrency((Number(p.unitPrice) || 0) * (Number(p.quantity) || 0))} 
+
+
                   </span>
                 </motion.div>
               ))}
@@ -521,10 +526,11 @@ function AssignCarrierDialog({
   selectedOrderCodes,
   onConfirm,
 }) {
+  const tCommon = useTranslations("common");
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [carrier, setCarrier] = useState("");
   const [loading, setLoading] = useState(false);
-
+const {formatCurrency} = usePlatformSettings()
   const availableOrders = useMemo(() => {
     return orders.filter((o) => selectedOrderCodes.includes(o.orderNumber));
   }, [orders, selectedOrderCodes]);
@@ -833,7 +839,7 @@ function AssignCarrierDialog({
 
                     <div className="text-left flex-shrink-0">
                       <p className="font-bold text-sm text-emerald-600">
-                        {order.finalTotal} ر.س
+                        {formatCurrency(order.finalTotal)}
                       </p>
                       {order.shippingCompany?.name && (
                         <span

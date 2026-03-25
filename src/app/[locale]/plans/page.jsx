@@ -670,8 +670,7 @@ function PlanCard({
               // ── زر الواتساب (لخطط التفاوض) ──────────────────────────────
               <a
                 href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(
-                  t("messages.whatsappInterested", { planName: plan.name }) ||
-                  `مرحباً، أنا مهتم بخطة ${plan.name}`,
+                  t("messages.whatsappInterested", { planName: plan.name })
                 )}`}
                 disabled={isSettingsLoading}
                 target="_blank"
@@ -689,7 +688,7 @@ function PlanCard({
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   {/* يمكنك استخدام أيقونة واتساب إذا كانت متوفرة لديك، أو MessageCircle من lucide-react */}
                   <MessageCircle size={16} />
-                  {t("actions.contactToSubscribe") || "تواصل للاشتراك"}
+                  {t("actions.contactToSubscribe")}
                 </span>
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/10" />
               </a>

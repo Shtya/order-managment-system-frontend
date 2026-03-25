@@ -66,6 +66,186 @@ const PROVIDERS = ["easyorder", "shopify", "woocommerce"];
 // ★ ONLY the JSX returned here was changed.
 //   handleToggle, props, and all logic are identical to the original.
 
+export default function StoresIntegrationPage() {
+  const t = useTranslations("storeIntegrations");
+  const router = useRouter();
+
+  const [stores, setStores] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [currentProvider, setCurrentProvider] = useState(null);
+  const [currentStore, setCurrentStore] = useState(null);
+  const [modalStore, setModalStore] = useState(null);
+  const [webhookModalProvider, setWebhookModalProvider] = useState(null);
+  const [guideProvider, setGuideProvider] = useState(null);
+
+  const { subscribe } = useSocket();
+  useEffect(() => {
+    const unsubscribe = subscribe("STORE_SYNC_STATUS", (payload) => {
+      console.log("Received socket event:", payload);
+      if (payload) {
+        const { storeId, status } = payload;
+
+        setStores((prev) =>
+          prev.map((store) =>
+            store.id === storeId ? { ...store, syncStatus: status } : store,
+          ),
+        );
+      }
+    });
+
+    return unsubscribe;
+  }, [subscribe]);
+
+  useEffect(() => {
+    fetchStores();
+  }, []);
+
+  const fetchStores = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get("/stores");
+      setStores(res.data?.records || []);
+    } catch (e) {
+      // toast.error(normalizeAxiosError(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfigure = (provider, store) => {
+    setCurrentProvider(provider);
+    setCurrentStore(store);
+    setDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setCurrentProvider(null);
+    setCurrentStore(null);
+  };
+
+  const handleOpenWebhook = (provider, store) => {
+    setWebhookModalProvider(provider);
+    setModalStore(store);
+  };
+
+  const handleCloseWebhookModal = () => {
+    setWebhookModalProvider(null);
+    setModalStore(null);
+  };
+
+  const handleOpenGuide = (provider, store) => {
+    setGuideProvider(provider);
+    setModalStore(store);
+  };
+
+  const handleCloseGuide = () => {
+    setGuideProvider(null);
+    setModalStore(null);
+  };
+
+  const handleSync = async (storeId) => {
+    try {
+      await api.post(`/stores/${storeId}/sync`);
+      toast.success(t("messages.syncStarted"));
+      await fetchStores();
+    } catch (e) {
+      toast.error(normalizeAxiosError(e));
+    }
+  };
+
+  return (
+    <div className="min-h-screen p-5 ">
+      {/* Header */}
+
+      <PageHeader
+        breadcrumbs={[
+          { name: t("breadcrumb.home"), href: "/" },
+          { name: t("breadcrumb.stores") },
+        ]}
+      />
+
+      {/* Store Cards Grid */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key="stores"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          className="bg-card min-h-[500px] "
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {loading
+              ? PROVIDERS.map((provider, i) => (
+                  <SkeletonCard key={provider || i} />
+                ))
+              : PROVIDERS.map((provider, index) => {
+                  const store = stores.find((s) => s.provider === provider);
+
+                  return (
+                    <motion.div
+                      key={provider}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <StoreCard
+                        provider={provider}
+                        store={store}
+                        t={t}
+                        onConfigure={handleConfigure}
+                        onSync={handleSync}
+                        onOpenWebhook={handleOpenWebhook}
+                        onOpenGuide={handleOpenGuide}
+                        fetchStores={fetchStores}
+                        index={index}
+                      />
+                    </motion.div>
+                  );
+                })}
+          </div>
+        </motion.div>
+      </AnimatePresence>
+      {/* Configuration Dialog */}
+      {dialogOpen && currentProvider && (
+        <StoreConfigDialog
+          open={dialogOpen}
+          onClose={handleCloseDialog}
+          provider={currentProvider}
+          existingStore={currentStore}
+          fetchStores={fetchStores}
+          t={t}
+          onCreated={(provider, id) =>
+            handleOpenWebhook(provider, { id, provider })
+          }
+        />
+      )}
+
+      {/* Guide Modal */}
+      {guideProvider && (
+        <StoreGuideModal
+          provider={{ code: guideProvider }}
+          onClose={handleCloseGuide}
+        />
+      )}
+
+      {/* Webhook Modal */}
+      {webhookModalProvider && modalStore && (
+        <StoreWebhookModal
+          provider={webhookModalProvider}
+          store={modalStore}
+          onClose={handleCloseWebhookModal}
+          fetchStores={fetchStores}
+          t={t}
+        />
+      )}
+    </div>
+  );
+}
+
+
 function StoreCard({
   provider,
   store,
@@ -1380,182 +1560,3 @@ export function StoreGuideModal({ provider, onClose }) {
 }
 
 // ─── Main Page Component ─────────────────────────────────────────────────────
-
-export default function StoresIntegrationPage() {
-  const t = useTranslations("storeIntegrations");
-  const router = useRouter();
-
-  const [stores, setStores] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [currentProvider, setCurrentProvider] = useState(null);
-  const [currentStore, setCurrentStore] = useState(null);
-  const [modalStore, setModalStore] = useState(null);
-  const [webhookModalProvider, setWebhookModalProvider] = useState(null);
-  const [guideProvider, setGuideProvider] = useState(null);
-
-  const { subscribe } = useSocket();
-  useEffect(() => {
-    const unsubscribe = subscribe("STORE_SYNC_STATUS", (payload) => {
-      console.log("Received socket event:", payload);
-      if (payload) {
-        const { storeId, status } = payload;
-
-        setStores((prev) =>
-          prev.map((store) =>
-            store.id === storeId ? { ...store, syncStatus: status } : store,
-          ),
-        );
-      }
-    });
-
-    return unsubscribe;
-  }, [subscribe]);
-
-  useEffect(() => {
-    fetchStores();
-  }, []);
-
-  const fetchStores = async () => {
-    try {
-      setLoading(true);
-      const res = await api.get("/stores");
-      setStores(res.data?.records || []);
-    } catch (e) {
-      // toast.error(normalizeAxiosError(e));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleConfigure = (provider, store) => {
-    setCurrentProvider(provider);
-    setCurrentStore(store);
-    setDialogOpen(true);
-  };
-
-  const handleCloseDialog = () => {
-    setDialogOpen(false);
-    setCurrentProvider(null);
-    setCurrentStore(null);
-  };
-
-  const handleOpenWebhook = (provider, store) => {
-    setWebhookModalProvider(provider);
-    setModalStore(store);
-  };
-
-  const handleCloseWebhookModal = () => {
-    setWebhookModalProvider(null);
-    setModalStore(null);
-  };
-
-  const handleOpenGuide = (provider, store) => {
-    setGuideProvider(provider);
-    setModalStore(store);
-  };
-
-  const handleCloseGuide = () => {
-    setGuideProvider(null);
-    setModalStore(null);
-  };
-
-  const handleSync = async (storeId) => {
-    try {
-      await api.post(`/stores/${storeId}/sync`);
-      toast.success(t("messages.syncStarted"));
-      await fetchStores();
-    } catch (e) {
-      toast.error(normalizeAxiosError(e));
-    }
-  };
-
-  return (
-    <div className="min-h-screen p-5 ">
-      {/* Header */}
-
-      <PageHeader
-        breadcrumbs={[
-          { name: t("breadcrumb.home"), href: "/" },
-          { name: t("breadcrumb.stores") },
-        ]}
-      />
-
-      {/* Store Cards Grid */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key="stores"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
-          className="bg-card min-h-[500px] "
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {loading
-              ? PROVIDERS.map((provider, i) => (
-                  <SkeletonCard key={provider || i} />
-                ))
-              : PROVIDERS.map((provider, index) => {
-                  const store = stores.find((s) => s.provider === provider);
-
-                  return (
-                    <motion.div
-                      key={provider}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                    >
-                      <StoreCard
-                        provider={provider}
-                        store={store}
-                        t={t}
-                        onConfigure={handleConfigure}
-                        onSync={handleSync}
-                        onOpenWebhook={handleOpenWebhook}
-                        onOpenGuide={handleOpenGuide}
-                        fetchStores={fetchStores}
-                        index={index}
-                      />
-                    </motion.div>
-                  );
-                })}
-          </div>
-        </motion.div>
-      </AnimatePresence>
-      {/* Configuration Dialog */}
-      {dialogOpen && currentProvider && (
-        <StoreConfigDialog
-          open={dialogOpen}
-          onClose={handleCloseDialog}
-          provider={currentProvider}
-          existingStore={currentStore}
-          fetchStores={fetchStores}
-          t={t}
-          onCreated={(provider, id) =>
-            handleOpenWebhook(provider, { id, provider })
-          }
-        />
-      )}
-
-      {/* Guide Modal */}
-      {guideProvider && (
-        <StoreGuideModal
-          provider={{ code: guideProvider }}
-          onClose={handleCloseGuide}
-        />
-      )}
-
-      {/* Webhook Modal */}
-      {webhookModalProvider && modalStore && (
-        <StoreWebhookModal
-          provider={webhookModalProvider}
-          store={modalStore}
-          onClose={handleCloseWebhookModal}
-          fetchStores={fetchStores}
-          t={t}
-        />
-      )}
-    </div>
-  );
-}

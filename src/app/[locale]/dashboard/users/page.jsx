@@ -87,52 +87,45 @@ import ManageWalletModal from "./ManageWalletModal";
 export const COUNTRIES = [
 	{
 		key: "SA",
-		nameAr: "السعودية",
 		dialCode: "+966",
 		phone: { min: 9, max: 9, regex: /^5\d{8}$/ },
-		placeholder: "5xxxxxxxx (مثال: 5XXXXXXXX)",
+		placeholder: "5xxxxxxxx",
 	},
 	{
 		key: "EG",
-		nameAr: "مصر",
 		dialCode: "+20",
 		phone: { min: 10, max: 10, regex: /^(10|11|12|15)\d{8}$/ },
-		placeholder: "10xxxxxxxx (مثال: 1101727657)",
+		placeholder: "10xxxxxxxx",
 	},
 	{
 		key: "AE",
-		nameAr: "الإمارات",
 		dialCode: "+971",
 		phone: { min: 9, max: 9, regex: /^5\d{8}$/ },
-		placeholder: "5xxxxxxxx (مثال: 5XXXXXXXX)",
+		placeholder: "5xxxxxxxx",
 	},
 	{
 		key: "KW",
-		nameAr: "الكويت",
 		dialCode: "+965",
 		phone: { min: 8, max: 8, regex: /^\d{8}$/ },
-		placeholder: "xxxxxxxx (8 أرقام)",
+		placeholder: "xxxxxxxx",
 	},
 	{
 		key: "QA",
-		nameAr: "قطر",
 		dialCode: "+974",
 		phone: { min: 8, max: 8, regex: /^\d{8}$/ },
-		placeholder: "xxxxxxxx (8 أرقام)",
+		placeholder: "xxxxxxxx",
 	},
 	{
 		key: "BH",
-		nameAr: "البحرين",
 		dialCode: "+973",
 		phone: { min: 8, max: 8, regex: /^\d{8}$/ },
-		placeholder: "xxxxxxxx (8 أرقام)",
+		placeholder: "xxxxxxxx",
 	},
 	{
 		key: "JO",
-		nameAr: "الأردن",
 		dialCode: "+962",
 		phone: { min: 9, max: 9, regex: /^7\d{8}$/ },
-		placeholder: "7xxxxxxxx (9 أرقام)",
+		placeholder: "7xxxxxxxx",
 	},
 ];
 
@@ -140,41 +133,16 @@ function digitsOnly(v) {
 	return (v || "").replace(/\D/g, "");
 }
 
-function validatePhone(rawDigits, country) {
-	const value = digitsOnly(rawDigits);
-	if (!value) return "يرجى إدخال رقم جوال صحيح";
 
-	if (value.length < country.phone.min || value.length > country.phone.max) {
-		if (country.phone.min === country.phone.max) {
-			return `رقم الجوال يجب أن يكون ${country.phone.min} رقمًا`;
-		}
-		return `رقم الجوال يجب أن يكون بين ${country.phone.min} و ${country.phone.max} رقمًا`;
-	}
 
-	if (
-		value.length === country.phone.max &&
-		country.phone.regex &&
-		!country.phone.regex.test(value)
-	) {
-		return "يرجى إدخال رقم جوال صحيح حسب الدولة المختارة";
-	}
 
-	return "";
-}
-
-function getApiMsg(err, fallback = "Request failed") {
-	const msg =
-		err?.response?.data?.message ||
-		err?.response?.data?.error ||
-		err?.message ||
-		fallback;
-	return Array.isArray(msg) ? msg.join(", ") : msg;
-}
-
-function copyToClipboard(text) {
+function copyToClipboard(text, t) {
 	try {
 		navigator.clipboard.writeText(text);
-	} catch { }
+		// toast.success(t("copy.success"));
+	} catch {
+		// toast.error(t("copy.failed"));
+	}
 }
 
 function downloadBlob(blob, filename) {
@@ -186,15 +154,811 @@ function downloadBlob(blob, filename) {
 	URL.revokeObjectURL(url);
 }
 
-function statusBadge(isActive) {
+function statusBadge(isActive, t) {
 	return isActive ? (
 		<Badge className="rounded-xl bg-[#F0FDF4] text-[#22C55E] hover:bg-[#F0FDF4] dark:bg-green-950/30 dark:text-green-400">
-			Active
+			{t("statusCodes.active")}
 		</Badge>
 	) : (
 		<Badge className="rounded-xl bg-[#FEF2F2] text-[#EF4444] hover:bg-[#FEF2F2] dark:bg-red-950/30 dark:text-red-400">
-			Inactive
+			{t("statusCodes.inactive")}
 		</Badge>
+	);
+}
+
+export default function SuperAdminUsersPage() {
+	const tCommon = useTranslations("common");
+	const t = useTranslations("users");
+	const router = useRouter()
+	const [activeTab, setActiveTab] = useState("all"); // all|active|inactive
+	const [search, setSearch] = useState("");
+	const [filtersOpen, setFiltersOpen] = useState(false);
+	const [filters, setFilters] = useState({ role: "", active: "all", adminId: "" });
+
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState("");
+	const [apiMsg, setApiMsg] = useState("");
+
+	const [users, setUsers] = useState([]);
+
+	const [rolesLoading, setRolesLoading] = useState(false);
+	const [roles, setRoles] = useState([]);
+
+	// ✅ NEW: Plans
+	const [plansLoading, setPlansLoading] = useState(false);
+	const [plans, setPlans] = useState([]);
+
+	// ✅ server pagination
+	const [pagination, setPagination] = useState({
+		total_records: 0,
+		current_page: 1,
+		per_page: 10,
+	});
+
+	// ✅ server stats
+	const [serverStats, setServerStats] = useState({ total: 0, active: 0, inactive: 0 });
+
+	// Modals state
+	const [createOpen, setCreateOpen] = useState(false);
+	const [editOpen, setEditOpen] = useState(false);
+	const [deactivateOpen, setDeactivateOpen] = useState(false);
+	const [credOpen, setCredOpen] = useState(false);
+	const [subscriptionId, setSubscriptionId] = useState(false);
+	const [subOpen, setSubOpen] = useState(false);
+	const [waOpen, setWaOpen] = useState(false);
+
+	const [selectedUser, setSelectedUser] = useState(null);
+	const [credentials, setCredentials] = useState(null); // {userId,email,password}
+
+	const tabs = useMemo(() => {
+		const allLabel = t("tabs.all");
+		const activeLabel = t("tabs.active");
+		const inactiveLabel = t("tabs.inactive");
+		return [
+			{ id: "all", label: allLabel },
+			{ id: "active", label: activeLabel },
+			{ id: "inactive", label: inactiveLabel },
+		];
+	}, [t]);
+
+	async function fetchUsers({ page, per_page } = {}) {
+		setLoading(true);
+		setError("");
+		setApiMsg("");
+
+		const params = {
+			page: page ?? pagination.current_page,
+			limit: per_page ?? pagination.per_page,
+			tab: activeTab,
+			search,
+			role: filters.role,
+			active: filters.active,
+			adminId: filters.adminId,
+		};
+
+		try {
+			const res = await api.get("/users/super-admin/list", { params });
+			const data = res?.data || {};
+
+
+			setUsers(Array.isArray(data.records) ? data.records : []);
+			setPagination({
+				total_records: Number(data.total_records ?? 0),
+				current_page: Number(data.current_page ?? params.page ?? 1),
+				per_page: Number(data.per_page ?? params.limit ?? 10),
+			});
+
+			setServerStats(data.stats || { total: 0, active: 0, inactive: 0 });
+		} catch (e) {
+			setError(getApiMsg(e, tCommon));
+		} finally {
+			setLoading(false);
+		}
+	}
+
+	async function fetchRoles() {
+		setRolesLoading(true);
+		try {
+			const res = await api.get("/lookups/roles");
+			const raw = res?.data || [];
+			const normalized = raw
+				.map((r) => ({
+					id: r?.id ?? r?.value ?? r?._id,
+					name: r?.name ?? r?.label ?? r?.title ?? String(r?.id ?? ""),
+				}))
+				.filter((r) => r.id != null);
+
+			setRoles(normalized);
+		} catch (e) {
+			console.warn("Failed to load roles", e);
+		} finally {
+			setRolesLoading(false);
+		}
+	}
+
+	async function fetchPlans() {
+		setPlansLoading(true);
+		try {
+			const res = await api.get("/plans");
+			const raw = res?.data || [];
+			const normalized = raw
+				.map((p) => ({
+					id: p?.id ?? p?.value ?? p?._id,
+					name: p?.name ?? p?.label ?? p?.title ?? String(p?.id ?? ""),
+					duration: p?.duration,
+					price: p?.price,
+				}))
+				.filter((p) => p.id != null);
+
+			setPlans(normalized);
+		} catch (e) {
+			console.warn("Failed to load plans", e);
+		} finally {
+			setPlansLoading(false);
+		}
+	}
+
+	useEffect(() => {
+		fetchUsers({ page: 1, per_page: pagination.per_page });
+		fetchRoles();
+		fetchPlans();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	// debounce search
+	useEffect(() => {
+		const h = setTimeout(() => {
+			fetchUsers({ page: 1, per_page: pagination.per_page });
+		}, 400);
+		return () => clearTimeout(h);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [search]);
+
+	// tab change
+	useEffect(() => {
+		fetchUsers({ page: 1, per_page: pagination.per_page });
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [activeTab]);
+
+	function applyFilters() {
+		fetchUsers({ page: 1, per_page: pagination.per_page });
+	}
+
+	function handlePageChange({ page, per_page }) {
+		fetchUsers({ page, per_page });
+	}
+
+	const stats = useMemo(() => {
+		const total = Number(serverStats?.total ?? 0);
+		const active = Number(serverStats?.active ?? 0);
+		const inactive = Number(serverStats?.inactive ?? 0);
+
+		return [
+			{
+				name: t("stats.total"),
+				value: String(total),
+				icon: ShieldAlert,
+				color: "#6B7CFF", // blue
+				sortOrder: 0,
+			},
+			{
+				name: t("stats.active"),
+				value: String(active),
+				icon: CheckCircle2,
+				color: "#22C55E", // green
+				sortOrder: 1,
+			},
+			{
+				name: t("stats.inactive"),
+				value: String(inactive),
+				icon: Trash2,
+				color: "#EF4444", // red
+				sortOrder: 2,
+			},
+		];
+	}, [serverStats, t]);
+
+	async function handleExport() {
+		setError("");
+		try {
+			const res = await api.get("/users/super-admin/export/csv", {
+				params: {
+					tab: activeTab,
+					search,
+					role: filters.role,
+					active: filters.active,
+					adminId: filters.adminId,
+				},
+				responseType: "blob",
+			});
+			downloadBlob(res.data, "users.csv");
+		} catch (e) {
+			setError(getApiMsg(e, tCommon));
+		}
+	}
+	const [assignOpen, setAssignOpen] = useState(false);
+	const [walletOpen, setWalletOpen] = useState(false);
+
+
+	const columns = useMemo(() => {
+		return [
+			{
+				key: "id",
+				header: t("table.id"),
+				className: "text-gray-700 dark:text-slate-200 font-semibold",
+			},
+			{
+				key: "name",
+				header: t("table.name"),
+				className: "text-gray-700 dark:text-slate-200 font-semibold",
+			},
+			{
+				key: "email",
+				header: t("table.email"),
+				className: "text-gray-600 dark:text-slate-200",
+				cell: (row) => <span dir="ltr" className="font-en">{row.email}</span>,
+			},
+			{
+				key: "role",
+				header: t("table.role"),
+				cell: (row) => (
+					<Badge className="rounded-xl bg-[#F0F9FF] text-[#0EA5E9] hover:bg-[#F0F9FF] dark:bg-cyan-950/30 dark:text-cyan-400">
+						{row.role?.name || "-"}
+					</Badge>
+				),
+			},
+			{
+				key: "plan",
+				header: t("table.plan"),
+				cell: (row) => (
+					<Badge className="rounded-xl bg-[#FFF7ED] text-[#F97316] hover:bg-[#FFF7ED] dark:bg-orange-950/30 dark:text-orange-400">
+						{row?.subscription?.plan?.name || "-"}
+					</Badge>
+				),
+			},
+
+			// ✅ NEW: Admin owner info (super admin needs it)
+			{
+				key: "admin",
+				header: t("table.ownerAdmin"),
+				cell: (row) => {
+					if (!row.admin) return <span className="text-gray-500">-</span>;
+					return (
+						<div className="text-sm">
+							<div className="font-semibold text-gray-800 dark:text-slate-100">
+								{row.admin.name || `#${row.admin.id}`}
+							</div>
+							<div dir="ltr" className="font-en text-xs text-gray-500 dark:text-slate-400">
+								{row.admin.email || ""}
+							</div>
+						</div>
+					);
+				},
+			},
+
+			// createdAt if exists
+			{
+				key: "createdAt",
+				header: t("table.createdAt"),
+				cell: (row) => {
+					if (!row.createdAt) return <span className="text-gray-500">-</span>;
+					const d = new Date(row.createdAt);
+					return (
+						<span className="text-gray-600 dark:text-slate-200" dir="ltr">
+							{isNaN(d.getTime()) ? "-" : d.toLocaleDateString()}
+						</span>
+					);
+				},
+			},
+
+			{
+				key: "isActive",
+				header: t("table.status"),
+				cell: (row) => statusBadge(row.isActive, tCommon),
+			},
+			{
+				key: "credentials",
+				header: t("table.credentials"),
+				cell: (row) => (
+					<div className="flex items-center gap-2">
+						<TooltipProvider>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<motion.button
+										whileHover={{ scale: 1.06 }}
+										whileTap={{ scale: 0.95 }}
+										onClick={async () => {
+											setLoading(true);
+											setError("");
+											setApiMsg("");
+											try {
+												const res = await api.post(`/users/${row.id}/reset-password`, {});
+												setCredentials({
+													userId: res.data.userId,
+													email: res.data.email,
+													password: res.data.password,
+												});
+												setSelectedUser(row);
+												setCredOpen(true);
+											} catch (e) {
+												setError(getApiMsg(e, tCommon));
+											} finally {
+												setLoading(false);
+											}
+										}}
+										className="w-9 h-9 rounded-full border border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-700 hover:text-white transition-all flex items-center justify-center dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700"
+										title="Reset & show password"
+									>
+										<KeyRound size={16} />
+									</motion.button>
+								</TooltipTrigger>
+								<TooltipContent>
+									{t("actions.resetAndShow")}
+								</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>
+
+						<TooltipProvider>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<motion.button
+										whileHover={{ scale: 1.06 }}
+										whileTap={{ scale: 0.95 }}
+										onClick={() => {
+											setSelectedUser(row);
+											setWaOpen(true);
+										}}
+										className="w-9 h-9 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center dark:bg-emerald-950/30 dark:hover:bg-emerald-600"
+									>
+										<Send size={16} />
+									</motion.button>
+								</TooltipTrigger>
+								<TooltipContent>
+									{t("actions.sendWhatsapp")}
+								</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>
+					</div>
+				),
+			},
+			{
+				key: "options",
+				header: t("table.options"),
+				cell: (row) => {
+					const isAdmin = row.role?.name === "admin";
+					// التحقق من وجود اشتراك حالي
+					const hasSubscription = !!row.subscription?.id;
+
+					return (<div className="flex items-center gap-2">
+						{isAdmin && (
+							<TooltipProvider>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<motion.button
+											whileHover={{ scale: 1.06 }}
+											whileTap={{ scale: 0.95 }}
+											onClick={() => {
+												setSelectedUser(row);
+												setSubscriptionId(null); // نضع القيمة null لفتح وضع "إضافة"
+												setSubOpen(true);
+											}}
+											className="w-9 h-9 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center dark:bg-emerald-950/30 dark:hover:bg-emerald-600"
+										>
+											<Plus size={16} />
+										</motion.button>
+									</TooltipTrigger>
+									<TooltipContent>
+										{t("actions.addSubscription")}
+									</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
+						)}
+
+
+						{hasSubscription && isAdmin && (
+							<TooltipProvider>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<motion.button
+											whileHover={{ scale: 1.06 }}
+											whileTap={{ scale: 0.95 }}
+											onClick={() => {
+												setSelectedUser(row);
+												// نمرر الـ id للاشتراك الموجود
+												setSubscriptionId(row.subscription.id);
+												setSubOpen(true);
+											}}
+											className="w-9 h-9 rounded-full border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center dark:bg-blue-950/30 dark:hover:bg-blue-600"
+										>
+											<CreditCard size={16} />
+										</motion.button>
+									</TooltipTrigger>
+									<TooltipContent>
+										{t("actions.manageSubscription")}
+									</TooltipContent>
+								</Tooltip>
+
+							</TooltipProvider>
+						)}
+
+						{isAdmin && <TooltipProvider>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<motion.button
+										whileHover={{ scale: 1.06 }}
+										whileTap={{ scale: 0.95 }}
+										onClick={() => {
+											console.log(row)
+											setSelectedUser(row); // نضع بيانات المستخدم بالكامل
+											setAssignOpen(true);  // نفتح نافذة تخصيص الميزات
+										}}
+										className="w-9 h-9 rounded-full border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center dark:bg-blue-950/30 dark:hover:bg-blue-600"
+									>
+										<Sparkles size={16} />
+									</motion.button>
+								</TooltipTrigger>
+								<TooltipContent>
+									{t("actions.manageFeatures")}
+								</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>}
+
+
+						{isAdmin && <TooltipProvider>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<motion.button
+										whileHover={{ scale: 1.06 }}
+										whileTap={{ scale: 0.95 }}
+										onClick={() => {
+											setSelectedUser(row);
+											setWalletOpen(true); // افتح نافذة المحفظة
+										}}
+										className="w-9 h-9 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center dark:bg-emerald-950/30 dark:hover:bg-emerald-600"
+									>
+										<Wallet size={16} />
+									</motion.button>
+								</TooltipTrigger>
+								<TooltipContent>
+									{t("actions.manageWallet")}
+								</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>}
+
+						<TooltipProvider>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<motion.button
+										whileHover={{ scale: 1.06 }}
+										whileTap={{ scale: 0.95 }}
+										onClick={() => {
+											setSelectedUser(row);
+											setEditOpen(true);
+										}}
+										className="w-9 h-9 rounded-full border border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all flex items-center justify-center dark:bg-blue-950/30 dark:hover:bg-blue-600"
+									>
+										<Pencil size={16} />
+									</motion.button>
+								</TooltipTrigger>
+								<TooltipContent>{t("actions.edit")}</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>
+
+						<TooltipProvider>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<motion.button
+										whileHover={{ scale: 1.06 }}
+										whileTap={{ scale: 0.95 }}
+										onClick={() => {
+											setSelectedUser(row);
+											setDeactivateOpen(true);
+										}}
+										className="w-9 h-9 rounded-full border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all flex items-center justify-center dark:bg-red-950/30 dark:hover:bg-red-600"
+									>
+										<Trash2 size={16} />
+									</motion.button>
+								</TooltipTrigger>
+								<TooltipContent>
+									{t("actions.deactivate")}
+								</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>
+					</div>)
+				}
+				,
+			},
+		];
+	}, [t]);
+
+	return (
+		<div className="min-h-screen p-5">
+			{/* Header */}
+			<PageHeader
+				breadcrumbs={[
+					{ name: t("breadcrumb.home"), href: "/dashboard" },
+					{ name: t("breadcrumb.users") },
+				]}
+				buttons={
+					<>
+						<Button_
+							size="sm"
+							label={t("actions.refresh")}
+							tone="ghost"
+							variant="cancel"
+							icon={<RefreshCw size={15} />}
+							onClick={() => fetchUsers({ page: 1, per_page: pagination.per_page })}
+						/>
+
+						<Button_
+							size="sm"
+							label={t("actions.createUser")}
+							variant="solid"
+							icon={<UserPlus size={15} className="text-white" />}
+							onClick={() => setCreateOpen(true)}
+						/>
+					</>
+				}
+				stats={stats}
+				items={tabs}
+				active={activeTab}
+				setActive={setActiveTab}
+			/>
+
+
+			{/* Messages */}
+			{error && (
+				<div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 text-right">
+					{error}
+				</div>
+			)}
+			{apiMsg && (
+				<div className="mb-4 rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-700 text-right">
+					{apiMsg}
+				</div>
+			)}
+
+			<Table
+				// search
+				searchValue={search}
+				onSearchChange={setSearch}
+				onSearch={() => fetchUsers({ page: 1, per_page: pagination.per_page })} // optional (Enter triggers it)
+
+				// header labels (optional)
+				labels={{
+					searchPlaceholder: t("toolbar.searchPlaceholder"),
+					filter: t("toolbar.filter"),
+					apply: t("filters.apply"),
+					emptyTitle: t("empty"),
+				}}
+
+				// actions buttons on the right of the toolbar
+				actions={[
+
+					{
+						key: "export",
+						label: t("toolbar.export"),
+						color: "blue",
+						onClick: handleExport,
+					},
+				]}
+
+				// filters UI (this replaces your FiltersPanel)
+				filters={
+					<>
+						<FilterField label={t("filters.role")}>
+							<Input
+								value={filters.role || ""}
+								onChange={(e) => setFilters((p) => ({ ...p, role: e.target.value }))}
+								className="!h-[42px]"
+								placeholder={t("filters.rolePlaceholder")}
+							/>
+						</FilterField>
+
+						<FilterField label={t("filters.status")}>
+							<Input
+								value={filters.active || ""}
+								onChange={(e) => setFilters((p) => ({ ...p, active: e.target.value }))}
+								className="!h-[42px]"
+								placeholder={t("filters.activePlaceholder")}
+							/>
+						</FilterField>
+
+						<FilterField label={t("filters.adminId")}>
+							<Input
+								value={filters.adminId || ""}
+								onChange={(e) => setFilters((p) => ({ ...p, adminId: e.target.value }))}
+								className="!h-[42px]"
+								placeholder={t("filters.adminIdPlaceholder")}
+							/>
+						</FilterField>
+					</>
+				}
+				hasActiveFilters={
+					!!filters.role || (filters.active && filters.active !== "all") || !!filters.adminId
+				}
+				onApplyFilters={() => fetchUsers({ page: 1, per_page: pagination.per_page })}
+
+				// table
+				columns={columns}
+				data={users}
+				isLoading={loading}
+
+				// pagination
+				pagination={{
+					total_records: pagination.total_records,
+					current_page: pagination.current_page,
+					per_page: pagination.per_page,
+				}}
+				onPageChange={({ page, per_page }) => fetchUsers({ page, per_page })}
+
+				emptyState={loading ? t("loading") : t("empty")}
+			/>
+
+			{/* ✅ Dialogs (unchanged logic) */}
+			<CreateUserDialog
+				t={t}
+				open={createOpen}
+				onOpenChange={setCreateOpen}
+				roles={roles}
+				rolesLoading={rolesLoading}
+				plans={plans}
+				plansLoading={plansLoading}
+				onCreated={async (payload) => {
+					setLoading(true);
+					setError("");
+					setApiMsg("");
+					try {
+						const res = await api.post("/users/admin-create", payload);
+						setApiMsg(t("messages.userCreated"));
+						setCredentials({
+							userId: res.data?.user?.id,
+							email: res.data?.credentials?.email,
+							password: res.data?.credentials?.password,
+						});
+						setSelectedUser(res.data?.user || null);
+						setCredOpen(true);
+						setCreateOpen(false);
+						await fetchUsers({ page: 1, per_page: pagination.per_page });
+					} catch (e) {
+						setError(getApiMsg(e, tCommon));
+					} finally {
+						setLoading(false);
+					}
+				}}
+			/>
+
+
+			<Dialog open={subOpen} onOpenChange={setSubOpen}>
+				<DialogContent className="sm:max-w-2xl rounded-xl">
+					<DialogHeader className="text-right">
+						<DialogTitle>
+							{t("subscription.title")}
+						</DialogTitle>
+						<DialogDescription>
+							{selectedUser && selectedUser.subscription
+								? `#${selectedUser.id} — ${selectedUser.email} — ${selectedUser.subscription.plan?.name || ""}`
+								: ""}
+						</DialogDescription>
+					</DialogHeader>
+					<ManageSubscription userId={selectedUser?.id} subscriptionId={subscriptionId} onSaved={async () => {
+						setSubOpen(false)
+						await fetchUsers({ page: 1, per_page: pagination.per_page });
+
+					}} />
+				</DialogContent>
+			</Dialog>
+			<Dialog open={assignOpen} onOpenChange={setAssignOpen}>
+
+				<DialogContent className="sm:max-w-2xl rounded-xl">
+					<DialogTitle>
+						{t("actions.manageFeatures").trim()}
+					</DialogTitle>
+
+					<AssignFeatureModal
+						isOpen={assignOpen}
+						onClose={() => setAssignOpen(false)}
+						user={selectedUser}
+						onSaved={async () => {
+							setAssignOpen(false)
+							await fetchData({ page: 1, per_page: pagination.per_page });
+
+						}}
+					/>
+				</DialogContent>
+			</Dialog>
+			<Dialog open={walletOpen} onOpenChange={setWalletOpen}>
+
+				<DialogContent className="sm:max-w-2xl rounded-xl">
+					<DialogTitle>
+						{t("actions.manageWallet").trim()}
+					</DialogTitle>
+
+					<ManageWalletModal
+						isOpen={walletOpen}
+						onClose={() => setWalletOpen(false)}
+						user={selectedUser}
+						onSaved={async () => {
+							setWalletOpen(false)
+							await fetchData({ page: 1, per_page: pagination.per_page });
+
+						}}
+					/>
+				</DialogContent>
+			</Dialog>
+
+
+
+			<EditUserDialog
+				t={t}
+				open={editOpen}
+				onOpenChange={setEditOpen}
+				user={selectedUser}
+				roles={roles}
+				rolesLoading={rolesLoading}
+				plans={plans}
+				plansLoading={plansLoading}
+				onSaved={async (patch) => {
+					if (!selectedUser?.id) return;
+					setLoading(true);
+					setError("");
+					setApiMsg("");
+					try {
+						await api.patch(`/users/${selectedUser.id}`, patch);
+						setApiMsg(t.has("messages.userUpdated") ? t("messages.userUpdated") : "User updated successfully");
+						setEditOpen(false);
+						await fetchUsers({ page: pagination.current_page, per_page: pagination.per_page });
+					} catch (e) {
+						setError(getApiMsg(e, tCommon));
+					} finally {
+						setLoading(false);
+					}
+				}}
+			/>
+
+			<DeactivateAlertDialog
+				t={t}
+				open={deactivateOpen}
+				onOpenChange={setDeactivateOpen}
+				user={selectedUser}
+				onConfirm={async () => {
+					if (!selectedUser?.id) return;
+					setLoading(true);
+					setError("");
+					setApiMsg("");
+					try {
+						await api.post(`/users/${selectedUser.id}/deactivate`);
+						setApiMsg(t.has("messages.userDeactivated") ? t("messages.userDeactivated") : "User deactivated");
+						setDeactivateOpen(false);
+						await fetchUsers({ page: pagination.current_page, per_page: pagination.per_page });
+					} catch (e) {
+						setError(getApiMsg(e, tCommon));
+					} finally {
+						setLoading(false);
+					}
+				}}
+			/>
+
+			<CredentialsDialog
+				t={t}
+				open={credOpen}
+				onOpenChange={setCredOpen}
+				user={selectedUser}
+				credentials={credentials}
+				onSendWhatsapp={() => {
+					setCredOpen(false);
+					setWaOpen(true);
+				}}
+			/>
+
+			<WhatsappDialog
+				t={t}
+				open={waOpen}
+				onOpenChange={setWaOpen}
+				user={selectedUser}
+				credentials={credentials}
+			/>
+		</div>
 	);
 }
 
@@ -378,804 +1142,7 @@ function FiltersPanel({ t, value, onChange, onApply }) {
 /** =========================
  * Page
  * ========================= */
-export default function SuperAdminUsersPage() {
-	const t = useTranslations("users");
-	const router = useRouter()
-	const [activeTab, setActiveTab] = useState("all"); // all|active|inactive
-	const [search, setSearch] = useState("");
-	const [filtersOpen, setFiltersOpen] = useState(false);
-	const [filters, setFilters] = useState({ role: "", active: "all", adminId: "" });
 
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState("");
-	const [apiMsg, setApiMsg] = useState("");
-
-	const [users, setUsers] = useState([]);
-
-	const [rolesLoading, setRolesLoading] = useState(false);
-	const [roles, setRoles] = useState([]);
-
-	// ✅ NEW: Plans
-	const [plansLoading, setPlansLoading] = useState(false);
-	const [plans, setPlans] = useState([]);
-
-	// ✅ server pagination
-	const [pagination, setPagination] = useState({
-		total_records: 0,
-		current_page: 1,
-		per_page: 10,
-	});
-
-	// ✅ server stats
-	const [serverStats, setServerStats] = useState({ total: 0, active: 0, inactive: 0 });
-
-	// Modals state
-	const [createOpen, setCreateOpen] = useState(false);
-	const [editOpen, setEditOpen] = useState(false);
-	const [deactivateOpen, setDeactivateOpen] = useState(false);
-	const [credOpen, setCredOpen] = useState(false);
-	const [subscriptionId, setSubscriptionId] = useState(false);
-	const [subOpen, setSubOpen] = useState(false);
-	const [waOpen, setWaOpen] = useState(false);
-
-	const [selectedUser, setSelectedUser] = useState(null);
-	const [credentials, setCredentials] = useState(null); // {userId,email,password}
-
-	const tabs = useMemo(() => {
-		const allLabel = t.has("tabs.all") ? t("tabs.all") : "All";
-		const activeLabel = t.has("tabs.active") ? t("tabs.active") : "Active";
-		const inactiveLabel = t.has("tabs.inactive") ? t("tabs.inactive") : "Inactive";
-		return [
-			{ id: "all", label: allLabel },
-			{ id: "active", label: activeLabel },
-			{ id: "inactive", label: inactiveLabel },
-		];
-	}, [t]);
-
-	async function fetchUsers({ page, per_page } = {}) {
-		setLoading(true);
-		setError("");
-		setApiMsg("");
-
-		const params = {
-			page: page ?? pagination.current_page,
-			limit: per_page ?? pagination.per_page,
-			tab: activeTab,
-			search,
-			role: filters.role,
-			active: filters.active,
-			adminId: filters.adminId,
-		};
-
-		try {
-			const res = await api.get("/users/super-admin/list", { params });
-			const data = res?.data || {};
-
-
-			setUsers(Array.isArray(data.records) ? data.records : []);
-			setPagination({
-				total_records: Number(data.total_records ?? 0),
-				current_page: Number(data.current_page ?? params.page ?? 1),
-				per_page: Number(data.per_page ?? params.limit ?? 10),
-			});
-
-			setServerStats(data.stats || { total: 0, active: 0, inactive: 0 });
-		} catch (e) {
-			setError(getApiMsg(e, "Failed to load users"));
-		} finally {
-			setLoading(false);
-		}
-	}
-
-	async function fetchRoles() {
-		setRolesLoading(true);
-		try {
-			const res = await api.get("/lookups/roles");
-			const raw = res?.data || [];
-			const normalized = raw
-				.map((r) => ({
-					id: r?.id ?? r?.value ?? r?._id,
-					name: r?.name ?? r?.label ?? r?.title ?? String(r?.id ?? ""),
-				}))
-				.filter((r) => r.id != null);
-
-			setRoles(normalized);
-		} catch (e) {
-			console.warn("Failed to load roles", e);
-		} finally {
-			setRolesLoading(false);
-		}
-	}
-
-	async function fetchPlans() {
-		setPlansLoading(true);
-		try {
-			const res = await api.get("/plans");
-			const raw = res?.data || [];
-			const normalized = raw
-				.map((p) => ({
-					id: p?.id ?? p?.value ?? p?._id,
-					name: p?.name ?? p?.label ?? p?.title ?? String(p?.id ?? ""),
-					duration: p?.duration,
-					price: p?.price,
-				}))
-				.filter((p) => p.id != null);
-
-			setPlans(normalized);
-		} catch (e) {
-			console.warn("Failed to load plans", e);
-		} finally {
-			setPlansLoading(false);
-		}
-	}
-
-	useEffect(() => {
-		fetchUsers({ page: 1, per_page: pagination.per_page });
-		fetchRoles();
-		fetchPlans();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
-
-	// debounce search
-	useEffect(() => {
-		const h = setTimeout(() => {
-			fetchUsers({ page: 1, per_page: pagination.per_page });
-		}, 400);
-		return () => clearTimeout(h);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [search]);
-
-	// tab change
-	useEffect(() => {
-		fetchUsers({ page: 1, per_page: pagination.per_page });
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [activeTab]);
-
-	function applyFilters() {
-		fetchUsers({ page: 1, per_page: pagination.per_page });
-	}
-
-	function handlePageChange({ page, per_page }) {
-		fetchUsers({ page, per_page });
-	}
-
-	const stats = useMemo(() => {
-		const total = Number(serverStats?.total ?? 0);
-		const active = Number(serverStats?.active ?? 0);
-		const inactive = Number(serverStats?.inactive ?? 0);
-
-		return [
-			{
-				name: t.has("stats.total") ? t("stats.total") : "Total users",
-				value: String(total),
-				icon: ShieldAlert,
-				color: "#6B7CFF", // blue
-				sortOrder: 0,
-			},
-			{
-				name: t.has("stats.active") ? t("stats.active") : "Active",
-				value: String(active),
-				icon: CheckCircle2,
-				color: "#22C55E", // green
-				sortOrder: 1,
-			},
-			{
-				name: t.has("stats.inactive") ? t("stats.inactive") : "Inactive",
-				value: String(inactive),
-				icon: Trash2,
-				color: "#EF4444", // red
-				sortOrder: 2,
-			},
-		];
-	}, [serverStats, t]);
-
-	async function handleExport() {
-		setError("");
-		try {
-			const res = await api.get("/users/super-admin/export/csv", {
-				params: {
-					tab: activeTab,
-					search,
-					role: filters.role,
-					active: filters.active,
-					adminId: filters.adminId,
-				},
-				responseType: "blob",
-			});
-			downloadBlob(res.data, "users.csv");
-		} catch (e) {
-			setError(getApiMsg(e, "Failed to export"));
-		}
-	}
-	const [assignOpen, setAssignOpen] = useState(false);
-	const [walletOpen, setWalletOpen] = useState(false);
-
-
-	const columns = useMemo(() => {
-		return [
-			{
-				key: "id",
-				header: t.has("table.id") ? t("table.id") : "ID",
-				className: "text-gray-700 dark:text-slate-200 font-semibold",
-			},
-			{
-				key: "name",
-				header: t.has("table.name") ? t("table.name") : "Name",
-				className: "text-gray-700 dark:text-slate-200 font-semibold",
-			},
-			{
-				key: "email",
-				header: t.has("table.email") ? t("table.email") : "Email",
-				className: "text-gray-600 dark:text-slate-200",
-				cell: (row) => <span dir="ltr" className="font-en">{row.email}</span>,
-			},
-			{
-				key: "role",
-				header: t.has("table.role") ? t("table.role") : "Role",
-				cell: (row) => (
-					<Badge className="rounded-xl bg-[#F0F9FF] text-[#0EA5E9] hover:bg-[#F0F9FF] dark:bg-cyan-950/30 dark:text-cyan-400">
-						{row.role?.name || "-"}
-					</Badge>
-				),
-			},
-			{
-				key: "plan",
-				header: t.has("table.plan") ? t("table.plan") : "Plan",
-				cell: (row) => (
-					<Badge className="rounded-xl bg-[#FFF7ED] text-[#F97316] hover:bg-[#FFF7ED] dark:bg-orange-950/30 dark:text-orange-400">
-						{row?.subscription?.plan?.name || "-"}
-					</Badge>
-				),
-			},
-
-			// ✅ NEW: Admin owner info (super admin needs it)
-			{
-				key: "admin",
-				header: t.has("table.ownerAdmin") ? t("table.ownerAdmin") : "Owner Admin",
-				cell: (row) => {
-					if (!row.admin) return <span className="text-gray-500">-</span>;
-					return (
-						<div className="text-sm">
-							<div className="font-semibold text-gray-800 dark:text-slate-100">
-								{row.admin.name || `#${row.admin.id}`}
-							</div>
-							<div dir="ltr" className="font-en text-xs text-gray-500 dark:text-slate-400">
-								{row.admin.email || ""}
-							</div>
-						</div>
-					);
-				},
-			},
-
-			// createdAt if exists
-			{
-				key: "createdAt",
-				header: t.has("table.createdAt") ? t("table.createdAt") : "Created",
-				cell: (row) => {
-					if (!row.createdAt) return <span className="text-gray-500">-</span>;
-					const d = new Date(row.createdAt);
-					return (
-						<span className="text-gray-600 dark:text-slate-200" dir="ltr">
-							{isNaN(d.getTime()) ? "-" : d.toLocaleDateString()}
-						</span>
-					);
-				},
-			},
-
-			{
-				key: "isActive",
-				header: t.has("table.status") ? t("table.status") : "Status",
-				cell: (row) => statusBadge(row.isActive),
-			},
-			{
-				key: "credentials",
-				header: t.has("table.credentials") ? t("table.credentials") : "Credentials",
-				cell: (row) => (
-					<div className="flex items-center gap-2">
-						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.06 }}
-										whileTap={{ scale: 0.95 }}
-										onClick={async () => {
-											setLoading(true);
-											setError("");
-											setApiMsg("");
-											try {
-												const res = await api.post(`/users/${row.id}/reset-password`, {});
-												setCredentials({
-													userId: res.data.userId,
-													email: res.data.email,
-													password: res.data.password,
-												});
-												setSelectedUser(row);
-												setCredOpen(true);
-											} catch (e) {
-												setError(getApiMsg(e, "Failed to get password"));
-											} finally {
-												setLoading(false);
-											}
-										}}
-										className="w-9 h-9 rounded-full border border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-700 hover:text-white transition-all flex items-center justify-center dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700"
-										title="Reset & show password"
-									>
-										<KeyRound size={16} />
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>
-									{t.has("actions.resetAndShow") ? t("actions.resetAndShow") : "Reset & show password"}
-								</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
-
-						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.06 }}
-										whileTap={{ scale: 0.95 }}
-										onClick={() => {
-											setSelectedUser(row);
-											setWaOpen(true);
-										}}
-										className="w-9 h-9 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center dark:bg-emerald-950/30 dark:hover:bg-emerald-600"
-									>
-										<Send size={16} />
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>
-									{t.has("actions.sendWhatsapp") ? t("actions.sendWhatsapp") : "Send via WhatsApp"}
-								</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
-					</div>
-				),
-			},
-			{
-				key: "options",
-				header: t.has("table.options") ? t("table.options") : "Options",
-				cell: (row) => {
-					const isAdmin = row.role?.name === "admin";
-					// التحقق من وجود اشتراك حالي
-					const hasSubscription = !!row.subscription?.id;
-
-					return (<div className="flex items-center gap-2">
-						{isAdmin && (
-							<TooltipProvider>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<motion.button
-											whileHover={{ scale: 1.06 }}
-											whileTap={{ scale: 0.95 }}
-											onClick={() => {
-												setSelectedUser(row);
-												setSubscriptionId(null); // نضع القيمة null لفتح وضع "إضافة"
-												setSubOpen(true);
-											}}
-											className="w-9 h-9 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center dark:bg-emerald-950/30 dark:hover:bg-emerald-600"
-										>
-											<Plus size={16} />
-										</motion.button>
-									</TooltipTrigger>
-									<TooltipContent>
-										{t.has("actions.addSubscription") ? t("actions.addSubscription").trim() : "إضافة اشتراك جديد"}
-									</TooltipContent>
-								</Tooltip>
-							</TooltipProvider>
-						)}
-
-
-						{hasSubscription && isAdmin && (
-							<TooltipProvider>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<motion.button
-											whileHover={{ scale: 1.06 }}
-											whileTap={{ scale: 0.95 }}
-											onClick={() => {
-												setSelectedUser(row);
-												// نمرر الـ id للاشتراك الموجود
-												setSubscriptionId(row.subscription.id);
-												setSubOpen(true);
-											}}
-											className="w-9 h-9 rounded-full border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center dark:bg-blue-950/30 dark:hover:bg-blue-600"
-										>
-											<CreditCard size={16} />
-										</motion.button>
-									</TooltipTrigger>
-									<TooltipContent>
-										{t.has("actions.manageSubscription") ? t("actions.manageSubscription").trim() : "إدارة الاشتراك"}
-									</TooltipContent>
-								</Tooltip>
-
-							</TooltipProvider>
-						)}
-
-						{isAdmin && <TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.06 }}
-										whileTap={{ scale: 0.95 }}
-										onClick={() => {
-											console.log(row)
-											setSelectedUser(row); // نضع بيانات المستخدم بالكامل
-											setAssignOpen(true);  // نفتح نافذة تخصيص الميزات
-										}}
-										className="w-9 h-9 rounded-full border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center dark:bg-blue-950/30 dark:hover:bg-blue-600"
-									>
-										<Sparkles size={16} />
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>
-									{t.has("actions.manageFeatures")
-										? t("actions.manageFeatures").trim()
-										: "إدارة المميزات"}
-								</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>}
-
-
-						{isAdmin && <TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.06 }}
-										whileTap={{ scale: 0.95 }}
-										onClick={() => {
-											setSelectedUser(row);
-											setWalletOpen(true); // افتح نافذة المحفظة
-										}}
-										className="w-9 h-9 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center dark:bg-emerald-950/30 dark:hover:bg-emerald-600"
-									>
-										<Wallet size={16} />
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>
-									{t.has("actions.manageWallet") ? t("actions.manageWallet").trim() : "إدارة المحفظة"}
-								</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>}
-
-						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.06 }}
-										whileTap={{ scale: 0.95 }}
-										onClick={() => {
-											setSelectedUser(row);
-											setEditOpen(true);
-										}}
-										className="w-9 h-9 rounded-full border border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all flex items-center justify-center dark:bg-purple-950/30 dark:hover:bg-purple-600"
-									>
-										<Pencil size={16} />
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>{t.has("actions.edit") ? t("actions.edit") : "Edit"}</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
-
-						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.06 }}
-										whileTap={{ scale: 0.95 }}
-										onClick={() => {
-											setSelectedUser(row);
-											setDeactivateOpen(true);
-										}}
-										className="w-9 h-9 rounded-full border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all flex items-center justify-center dark:bg-red-950/30 dark:hover:bg-red-600"
-									>
-										<Trash2 size={16} />
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>
-									{t.has("actions.deactivate") ? t("actions.deactivate") : "Deactivate"}
-								</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
-					</div>)
-				}
-				,
-			},
-		];
-	}, [t]);
-
-	return (
-		<div className="min-h-screen p-5">
-			{/* Header */}
-			<PageHeader
-				breadcrumbs={[
-					{ name: t("breadcrumb.home"), href: "/dashboard" },
-					{ name: t("breadcrumb.users") },
-				]}
-				buttons={
-					<>
-						<Button_
-							size="sm"
-							label={t("actions.refresh")}
-							tone="ghost"
-							variant="cancel"
-							icon={<RefreshCw size={15} />}
-							onClick={() => fetchUsers({ page: 1, per_page: pagination.per_page })}
-						/>
-
-						<Button_
-							size="sm"
-							label={t("actions.createUser")}
-							variant="solid"
-							icon={<UserPlus size={15} className="text-white" />}
-							onClick={() => setCreateOpen(true)}
-						/>
-					</>
-				}
-				stats={stats}
-				items={tabs}
-				active={activeTab}
-				setActive={setActiveTab}
-			/>
-
-
-			{/* Messages */}
-			{error && (
-				<div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 text-right">
-					{error}
-				</div>
-			)}
-			{apiMsg && (
-				<div className="mb-4 rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-700 text-right">
-					{apiMsg}
-				</div>
-			)}
-
-			<Table
-				// search
-				searchValue={search}
-				onSearchChange={setSearch}
-				onSearch={() => fetchUsers({ page: 1, per_page: pagination.per_page })} // optional (Enter triggers it)
-
-				// header labels (optional)
-				labels={{
-					searchPlaceholder: t.has("toolbar.searchPlaceholder")
-						? t("toolbar.searchPlaceholder")
-						: "Search by name / email",
-					filter: t.has("toolbar.filter") ? t("toolbar.filter") : "Filter",
-					apply: t.has("filters.apply") ? t("filters.apply") : "Apply",
-					emptyTitle: t.has("empty") ? t("empty") : "No users",
-				}}
-
-				// actions buttons on the right of the toolbar
-				actions={[
-
-					{
-						key: "export",
-						label: t.has("toolbar.export") ? t("toolbar.export") : "Export",
-						color: "blue",
-						onClick: handleExport,
-					},
-				]}
-
-				// filters UI (this replaces your FiltersPanel)
-				filters={
-					<>
-						<FilterField label={t.has("filters.role") ? t("filters.role") : "Role contains"}>
-							<Input
-								value={filters.role || ""}
-								onChange={(e) => setFilters((p) => ({ ...p, role: e.target.value }))}
-								className="!h-[42px]"
-								placeholder={t.has("filters.rolePlaceholder") ? t("filters.rolePlaceholder") : "ADMIN / USER / SUPER_ADMIN"}
-							/>
-						</FilterField>
-
-						<FilterField label={t.has("filters.status") ? t("filters.status") : "Active"}>
-							<Input
-								value={filters.active || ""}
-								onChange={(e) => setFilters((p) => ({ ...p, active: e.target.value }))}
-								className="!h-[42px]"
-								placeholder={t.has("filters.activePlaceholder") ? t("filters.activePlaceholder") : "all / true / false"}
-							/>
-						</FilterField>
-
-						<FilterField label={t.has("filters.adminId") ? t("filters.adminId") : "Admin ID"}>
-							<Input
-								value={filters.adminId || ""}
-								onChange={(e) => setFilters((p) => ({ ...p, adminId: e.target.value }))}
-								className="!h-[42px]"
-								placeholder={t.has("filters.adminIdPlaceholder") ? t("filters.adminIdPlaceholder") : "adminId (optional)"}
-							/>
-						</FilterField>
-					</>
-				}
-				hasActiveFilters={
-					!!filters.role || (filters.active && filters.active !== "all") || !!filters.adminId
-				}
-				onApplyFilters={() => fetchUsers({ page: 1, per_page: pagination.per_page })}
-
-				// table
-				columns={columns}
-				data={users}
-				isLoading={loading}
-
-				// pagination
-				pagination={{
-					total_records: pagination.total_records,
-					current_page: pagination.current_page,
-					per_page: pagination.per_page,
-				}}
-				onPageChange={({ page, per_page }) => fetchUsers({ page, per_page })}
-
-				emptyState={loading ? (t.has("loading") ? t("loading") : "Loading...") : (t.has("empty") ? t("empty") : "No users")}
-			/>
-
-			{/* ✅ Dialogs (unchanged logic) */}
-			<CreateUserDialog
-				t={t}
-				open={createOpen}
-				onOpenChange={setCreateOpen}
-				roles={roles}
-				rolesLoading={rolesLoading}
-				plans={plans}
-				plansLoading={plansLoading}
-				onCreated={async (payload) => {
-					setLoading(true);
-					setError("");
-					setApiMsg("");
-					try {
-						const res = await api.post("/users/admin-create", payload);
-						setApiMsg(t.has("messages.userCreated") ? t("messages.userCreated") : "User created successfully");
-						setCredentials({
-							userId: res.data?.user?.id,
-							email: res.data?.credentials?.email,
-							password: res.data?.credentials?.password,
-						});
-						setSelectedUser(res.data?.user || null);
-						setCredOpen(true);
-						setCreateOpen(false);
-						await fetchUsers({ page: 1, per_page: pagination.per_page });
-					} catch (e) {
-						setError(getApiMsg(e, "Failed to create user"));
-					} finally {
-						setLoading(false);
-					}
-				}}
-			/>
-
-
-			<Dialog open={subOpen} onOpenChange={setSubOpen}>
-				<DialogContent className="sm:max-w-2xl rounded-xl">
-					<DialogHeader className="text-right">
-						<DialogTitle>
-							{t("subscription.title")}
-						</DialogTitle>
-						<DialogDescription>
-							{selectedUser && selectedUser.subscription
-								? `#${selectedUser.id} — ${selectedUser.email} — ${selectedUser.subscription.plan?.name || ""}`
-								: ""}
-						</DialogDescription>
-					</DialogHeader>
-					<ManageSubscription userId={selectedUser?.id} subscriptionId={subscriptionId} onSaved={async () => {
-						setSubOpen(false)
-						await fetchUsers({ page: 1, per_page: pagination.per_page });
-
-					}} />
-				</DialogContent>
-			</Dialog>
-			<Dialog open={assignOpen} onOpenChange={setAssignOpen}>
-
-				<DialogContent className="sm:max-w-2xl rounded-xl">
-					<DialogTitle>
-						{t("actions.manageFeatures").trim()}
-					</DialogTitle>
-
-					<AssignFeatureModal
-						isOpen={assignOpen}
-						onClose={() => setAssignOpen(false)}
-						user={selectedUser}
-						onSaved={async () => {
-							setAssignOpen(false)
-							await fetchData({ page: 1, per_page: pagination.per_page });
-
-						}}
-					/>
-				</DialogContent>
-			</Dialog>
-			<Dialog open={walletOpen} onOpenChange={setWalletOpen}>
-
-				<DialogContent className="sm:max-w-2xl rounded-xl">
-					<DialogTitle>
-						{t("actions.manageWallet").trim()}
-					</DialogTitle>
-
-					<ManageWalletModal
-						isOpen={walletOpen}
-						onClose={() => setWalletOpen(false)}
-						user={selectedUser}
-						onSaved={async () => {
-							setWalletOpen(false)
-							await fetchData({ page: 1, per_page: pagination.per_page });
-
-						}}
-					/>
-				</DialogContent>
-			</Dialog>
-
-
-
-			<EditUserDialog
-				t={t}
-				open={editOpen}
-				onOpenChange={setEditOpen}
-				user={selectedUser}
-				roles={roles}
-				rolesLoading={rolesLoading}
-				plans={plans}
-				plansLoading={plansLoading}
-				onSaved={async (patch) => {
-					if (!selectedUser?.id) return;
-					setLoading(true);
-					setError("");
-					setApiMsg("");
-					try {
-						await api.patch(`/users/${selectedUser.id}`, patch);
-						setApiMsg(t.has("messages.userUpdated") ? t("messages.userUpdated") : "User updated successfully");
-						setEditOpen(false);
-						await fetchUsers({ page: pagination.current_page, per_page: pagination.per_page });
-					} catch (e) {
-						setError(getApiMsg(e, "Failed to update user"));
-					} finally {
-						setLoading(false);
-					}
-				}}
-			/>
-
-			<DeactivateAlertDialog
-				t={t}
-				open={deactivateOpen}
-				onOpenChange={setDeactivateOpen}
-				user={selectedUser}
-				onConfirm={async () => {
-					if (!selectedUser?.id) return;
-					setLoading(true);
-					setError("");
-					setApiMsg("");
-					try {
-						await api.post(`/users/${selectedUser.id}/deactivate`);
-						setApiMsg(t.has("messages.userDeactivated") ? t("messages.userDeactivated") : "User deactivated");
-						setDeactivateOpen(false);
-						await fetchUsers({ page: pagination.current_page, per_page: pagination.per_page });
-					} catch (e) {
-						setError(getApiMsg(e, "Failed to deactivate user"));
-					} finally {
-						setLoading(false);
-					}
-				}}
-			/>
-
-			<CredentialsDialog
-				t={t}
-				open={credOpen}
-				onOpenChange={setCredOpen}
-				user={selectedUser}
-				credentials={credentials}
-				onSendWhatsapp={() => {
-					setCredOpen(false);
-					setWaOpen(true);
-				}}
-			/>
-
-			<WhatsappDialog
-				t={t}
-				open={waOpen}
-				onOpenChange={setWaOpen}
-				user={selectedUser}
-				credentials={credentials}
-			/>
-		</div>
-	);
-}
 
 /** =========================
  * Dialogs (same as your file)
@@ -1257,7 +1224,7 @@ function CreateUserDialog({
 								disabled={rolesLoading}
 							>
 								<SelectTrigger className="rounded-full !w-full !h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700">
-									<SelectValue placeholder={rolesLoading ? "Loading roles..." : "Select role"} />
+									<SelectValue placeholder={rolesLoading ? t("loading") : t("placeholders.role")} />
 								</SelectTrigger>
 								<SelectContent className="max-h-72">
 									{roleOptions.map((r) => (
@@ -1431,7 +1398,7 @@ function EditUserDialog({
 								disabled={rolesLoading}
 							>
 								<SelectTrigger className="rounded-full !w-full !h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700">
-									<SelectValue placeholder={rolesLoading ? "Loading roles..." : "Select role"} />
+									<SelectValue placeholder={rolesLoading ? t("loading") : t("placeholders.role")} />
 								</SelectTrigger>
 								<SelectContent className="max-h-72">
 									{roleOptions.map((r) => (
@@ -1569,8 +1536,8 @@ function CredentialsDialog({ t, open, onOpenChange, user, credentials, onSendWha
 				<div className="space-y-4">
 					<div className="rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/40 p-4">
 						<div className="flex items-center justify-between gap-2">
-							<div className="text-xs text-gray-500 dark:text-slate-400">Email</div>
-							<Button variant="outline" className="rounded-full" onClick={() => copyToClipboard(email)} disabled={!email}>
+							<div className="text-xs text-gray-500 dark:text-slate-400">{t("fields.email")}</div>
+							<Button variant="outline" className="rounded-full" onClick={() => copyToClipboard(email, tCommon)} disabled={!email}>
 								<Copy size={16} />
 							</Button>
 						</div>
@@ -1582,7 +1549,7 @@ function CredentialsDialog({ t, open, onOpenChange, user, credentials, onSendWha
 					<div className="rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/40 p-4">
 						<div className="flex items-center justify-between gap-2">
 							<div className="text-xs text-gray-500 dark:text-slate-400">
-								{t.has("credentials.password") ? t("credentials.password") : "Password"}
+								{t("credentials.password")}
 							</div>
 							<div className="flex items-center gap-2">
 								<Button variant="outline" className="rounded-full" onClick={() => setShow((v) => !v)} disabled={!password}>
@@ -1591,7 +1558,7 @@ function CredentialsDialog({ t, open, onOpenChange, user, credentials, onSendWha
 								<Button
 									variant="outline"
 									className="rounded-full"
-									onClick={() => copyToClipboard(password)}
+									onClick={() => copyToClipboard(password, tCommon)}
 									disabled={!password}
 								>
 									<Copy size={16} />
@@ -1604,20 +1571,18 @@ function CredentialsDialog({ t, open, onOpenChange, user, credentials, onSendWha
 						</div>
 
 						<div className="mt-2 text-[11px] text-gray-500 dark:text-slate-400 text-right">
-							{t.has("credentials.note")
-								? t("credentials.note")
-								: "Note: your backend returns password only at creation/reset. There is no way to read the old password."}
+							{t("credentials.note")}
 						</div>
 					</div>
 
 					<div className="flex items-center justify-end gap-2">
 						<Button variant="outline" className="rounded-full" onClick={() => onOpenChange(false)}>
-							{t.has("actions.close") ? t("actions.close") : "Close"}
+							{t("actions.close")}
 						</Button>
 						<Button className="rounded-full btn-primary1" onClick={onSendWhatsapp} disabled={!email || !password}>
 							<span className="flex items-center gap-2">
 								<Send size={18} />
-								{t.has("actions.sendWhatsapp") ? t("actions.sendWhatsapp") : "Send via WhatsApp"}
+								{t("actions.sendWhatsapp")}
 							</span>
 						</Button>
 					</div>
@@ -1644,27 +1609,28 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 
 
 
+	const tPhone = useTranslations("inputPhone");
+	const tCountries = useTranslations("countries");
 	const selectedCountry = useMemo(() => {
 		return COUNTRIES.find((c) => c.key === countryKey) || COUNTRIES[0];
 	}, [countryKey]);
 
 	const email = credentials?.email || user?.email || "";
 	const password = credentials?.password || "";
-
 	const message = useMemo(() => {
 		const lines = [];
-		lines.push("Account details:");
-		if (user?.name) lines.push(`Name: ${user.name}`);
-		if (email) lines.push(`Email: ${email}`);
-		if (includePassword && password) lines.push(`Password: ${password}`);
+		lines.push(t("whatsapp.messageAccountDetails"));
+		if (user?.name) lines.push(`${t("whatsapp.messageName")} ${user.name}`);
+		if (email) lines.push(`${t("whatsapp.messageEmail")} ${email}`);
+		if (includePassword && password) lines.push(`${t("whatsapp.messagePassword")} ${password}`);
 		lines.push("");
-		lines.push("Please login and change your password after first login.");
+		lines.push(t("whatsapp.messageLoginInstruction"));
 		return lines.join("\n");
-	}, [user, email, password, includePassword]);
+	}, [user, email, password, includePassword, t]);
 
 	const isValidPhone = useMemo(
-		() => !validatePhone(phoneNumber, selectedCountry),
-		[phoneNumber, selectedCountry]
+		() => !validatePhone(phoneNumber, selectedCountry, tPhone),
+		[phoneNumber, selectedCountry, tPhone]
 	);
 
 	const waLink = useMemo(() => {
@@ -1678,7 +1644,7 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 	const handleCountryChange = (newKey) => {
 		setCountryKey(newKey);
 		const newCountry = COUNTRIES.find((c) => c.key === newKey) || COUNTRIES[0];
-		const msg = validatePhone(phoneNumber, newCountry);
+		const msg = validatePhone(phoneNumber, newCountry, tPhone);
 		if (phoneNumber.length > 0) setError(msg);
 		else setError("");
 	};
@@ -1686,7 +1652,7 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 	const handlePhoneChange = (e) => {
 		const value = digitsOnly(e.target.value);
 		setPhoneNumber(value);
-		const msg = validatePhone(value, selectedCountry);
+		const msg = validatePhone(value, selectedCountry, tPhone);
 		if (value.length > 0) setError(msg);
 		else setError("");
 	};
@@ -1695,24 +1661,26 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="sm:max-w-xl rounded-xl">
 				<DialogHeader className="text-right">
-					<DialogTitle>{t("whatsapp.title") || "Send via WhatsApp"}</DialogTitle>
-					<DialogDescription>{t("whatsapp.subtitle") || "اختر الدولة وأدخل رقم الواتساب"}</DialogDescription>
+					<DialogTitle>{t("whatsapp.title")}</DialogTitle>
+					<DialogHeader className="text-right">
+						<DialogDescription>{t("whatsapp.subtitle")}</DialogDescription>
+					</DialogHeader>
 				</DialogHeader>
 
 				<div className="space-y-4">
 					<div className="space-y-2">
-						<Label className="text-xs text-gray-500 dark:text-slate-400">{t("whatsapp.phone") || "Phone"}</Label>
+						<Label className="text-xs text-gray-500 dark:text-slate-400">{t("whatsapp.phone")}</Label>
 
 						<div className="flex gap-2">
 							<div className="w-44">
 								<Select value={countryKey} onValueChange={handleCountryChange}>
 									<SelectTrigger className="!w-full !h-[42px] rounded-full bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 font-bold text-[rgb(var(--primary))]">
-										<SelectValue placeholder="اختر الدولة" />
+										<SelectValue placeholder={tPhone("placeholders.selectCountry")} />
 									</SelectTrigger>
 									<SelectContent className="max-h-72">
 										{COUNTRIES.map((c) => (
 											<SelectItem key={c.key} value={c.key}>
-												{c.dialCode} — {c.nameAr}
+												{c.dialCode} — {tCountries(c.key)}
 											</SelectItem>
 										))}
 									</SelectContent>
@@ -1741,7 +1709,7 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 
 					<div className="flex items-center justify-between rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/40 p-4">
 						<div className="text-sm text-gray-700 dark:text-slate-200 text-right">
-							{t("whatsapp.includePassword") || "Include password in message"}
+							{t("whatsapp.includePassword")}
 						</div>
 						<button
 							onClick={() => setIncludePassword((v) => !v)}
@@ -1762,7 +1730,7 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 
 					<div className="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
 						<div className="text-xs text-gray-500 dark:text-slate-400 mb-2">
-							{t("whatsapp.preview") || "Message preview"}
+							{t("whatsapp.preview")}
 						</div>
 						<pre className="text-sm whitespace-pre-wrap text-gray-800 dark:text-slate-100 font-en" dir="ltr">
 							{message}
@@ -1771,7 +1739,7 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 
 					<div className="flex items-center justify-end gap-2">
 						<Button variant="outline" className="rounded-full" onClick={() => onOpenChange(false)}>
-							{t("actions.close") || "Close"}
+							{t("actions.close")}
 						</Button>
 						<Button
 							className="rounded-full btn-primary1"
@@ -1780,17 +1748,48 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 						>
 							<span className="flex items-center gap-2">
 								<Send size={18} />
-								{t("actions.openWhatsapp") || "Open WhatsApp"}
+								{t("actions.openWhatsapp")}
 							</span>
 						</Button>
 					</div>
 
 					<div className="text-[11px] text-gray-500 dark:text-slate-400 text-right">
-						{t("whatsapp.note") ||
-							"Tip: password is available only if you generated it (Create user / Reset password). If you didn’t, click the key icon in the table first."}
+						{t("whatsapp.note")}
 					</div>
 				</div>
 			</DialogContent>
 		</Dialog>
 	);
+}
+
+
+function validatePhone(rawDigits, country, t) {
+	const value = digitsOnly(rawDigits);
+	if (!value) return t("validation.required");
+
+	if (value.length < country.phone.min || value.length > country.phone.max) {
+		if (country.phone.min === country.phone.max) {
+			return t("validation.exact", { min: country.phone.min });
+		}
+		return t("validation.range", { min: country.phone.min, max: country.phone.max });
+	}
+
+	if (
+		value.length === country.phone.max &&
+		country.phone.regex &&
+		!country.phone.regex.test(value)
+	) {
+		return t("validation.invalid");
+	}
+
+	return "";
+}
+
+function getApiMsg(err, t) {
+	const msg =
+		err?.response?.data?.message ||
+		err?.response?.data?.error ||
+		err?.message ||
+		t("api.error");
+	return Array.isArray(msg) ? msg.join(", ") : msg;
 }

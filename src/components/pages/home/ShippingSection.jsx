@@ -556,7 +556,7 @@ export default function ShippingSection() {
                 fill="#ddd6fe"
                 fontFamily="'Cairo','Tajawal',sans-serif"
                 letterSpacing="0.3">
-                طلباتي تك
+                {t('centerLabel')}
               </text>
             </g>
           )}

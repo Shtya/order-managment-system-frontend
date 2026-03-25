@@ -1027,6 +1027,7 @@ function isValidHex(color) {
 }
 
 const ColorPicker = ({ value, onChange, disabled }) => {
+  const t = useTranslations("orders");
   const [showPicker, setShowPicker] = useState(false);
   const wrapperRef = useRef(null);
 
@@ -1048,6 +1049,7 @@ const ColorPicker = ({ value, onChange, disabled }) => {
 
     return () => clearTimeout(handler);
   }, [inputValue]);
+
   const presetColors = [
     "#F44336",
     "#E91E63",
@@ -1116,7 +1118,7 @@ const ColorPicker = ({ value, onChange, disabled }) => {
           {/* Native Color Picker (Any Hex) */}
           <div>
             <label className="text-sm font-medium mb-2 block">
-              Custom Color
+              {t("customColor")}
             </label>
             <input
               type="color"
@@ -1131,7 +1133,7 @@ const ColorPicker = ({ value, onChange, disabled }) => {
           {/* Preset Colors */}
           <div>
             <label className="text-sm font-medium mb-2 block">
-              Preset Colors
+              {t("presetColors")}
             </label>
             <div className="grid grid-cols-6 gap-2">
               {presetColors.map((color) => (

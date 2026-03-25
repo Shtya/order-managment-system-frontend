@@ -470,16 +470,304 @@ function ObSelect({ icon, value, onChange, onBlur, children, error, style }) {
   );
 }
 
-/* ─── Sidebar ─────────────────────────────────────────────── */
-const STEPS_META = [
-  { icon: <IcUser />, label: "مرحباً", sub: "نقطة البداية" },
-  { icon: <IcStar />, label: "الخطة", sub: "اختر باقتك" },
-  { icon: <IcBuild />, label: "شركتك", sub: "بيانات العمل" },
-  { icon: <IcLink />, label: "المتجر", sub: "ربط المنصة" },
-  { icon: <IcShip />, label: "الشحن", sub: "شركة التوصيل" },
-];
+export default function OnboardingPage() {
+  const tp = useTranslations("onboarding.plans");
+  const t = useTranslations("onboarding.toasts");
+  const [step, setStep] = useState(0); // Start null to show a loader
+  const [dbStep, setDbStep] = useState(null); // Furthest step reached
+  const [user, setUser] = useState(null); // Furthest step reached
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const stepMap = {
+    welcome: 0,
+    plan: 1,
+    company: 2,
+    store: 3,
+    shipping: 4,
+    finished: 5,
+  };
+  const revStepMap = [
+    "welcome",
+    "plan",
+    "company",
+    "store",
+    "shipping",
+    "finished",
+  ];
 
+  // PROBLEM 2 FIX: Resume from last time
+  useEffect(() => {
+    async function init() {
+      try {
+        const { data } = await api.get("/users/me"); // Create this simple GET endpoint
+        const user = data?.user || data;
+        if (!user) {
+          toast.error(t("login_required"));
+          setStep(-2); // e.g., -2 = unauthorized
+          setTimeout(() => {
+            router.replace("/auth?mode=signin");
+          }, 1200);
+        }
+        // Only admins can access onboarding
+        if (user.role.name !== "admin") {
+          toast.error(t("admin_only"));
+          setStep(-2); // e.g., -2 = unauthorized
+          setTimeout(() => {
+            router.replace("/");
+          }, 1200);
+          return;
+        }
+
+        if (user.onboardingStatus === "completed") {
+          toast.success(t("onboarding_completed"));
+          const redirect =
+            user.role.name === "super_admin" ? "/dashboard/users" : "/orders";
+          setStep(5);
+          setTimeout(() => {
+            router.replace(redirect);
+          }, 1200);
+          return;
+        }
+
+        setUser(user);
+        const current = stepMap[user.currentOnboardingStep] || 0;
+        if (current === undefined) {
+          setStep(-1);
+          return;
+        }
+        setStep(current);
+        setDbStep(current);
+      } catch (error) {
+        const status = error?.response?.status;
+
+        if (status === 401) {
+          toast.error(t("session_expired"));
+        } else if (status === 403) {
+          toast.error(t("admin_only_page"));
+        } else {
+          toast.error(t("unexpected_error"));
+        }
+        setStep(-2); // e.g., -2 = unauthorized
+        setTimeout(() => {
+          router.push("/auth?mode=signin");
+        }, 1200);
+      } finally {
+        setLoading(false);
+      }
+    }
+    init();
+  }, []);
+
+  const [nextLoading, setNextLoading] = useState(false);
+
+  const next = async () => {
+    // If current step is less than the max saved step, just increment locally
+    if (step < dbStep) {
+      setStep((s) => s + 1);
+      return;
+    }
+
+    setNextLoading(true); // start loading
+    try {
+      const { data } = await api.post("/users/onboarding/next");
+      const nextIndex = stepMap[data.nextStep];
+
+      setStep(() => nextIndex);
+      setDbStep(() => nextIndex);
+    } catch (err) {
+      const msg = err.response?.data?.message || t("unexpected_error");
+      toast.error(msg);
+    } finally {
+      setNextLoading(false); // stop loading
+    }
+  };
+
+  const back = () => setStep((s) => Math.max(s - 1, 0));
+  const finish = async () => {
+    const tid = toast.loading(t("finishing"));
+    try {
+      // 1️⃣ Call the same endpoint to move currentOnboardingStep to 'finished' or 'completed'
+      await api.post("/users/onboarding/next");
+      const { data } = await api.get("/auth/sign");
+      if (data?.accessToken) {
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+      await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          accessToken: data.accessToken,
+          user: data.user,
+        }),
+      });
+      // 2️⃣ Show success and redirect
+      toast.success(t("finish_success"), { id: tid });
+
+      setTimeout(() => {
+        window.location.href =
+          user?.role.name === "admin" ? "/orders" : "/orders/employee-orders";
+      }, 1200);
+    } catch (err) {
+      const msg = err.response?.data?.message || t("finish_error");
+      toast.error(msg, { id: tid });
+    }
+  };
+  if (loading) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background:
+            "linear-gradient(145deg, #eeeef8 0%, #e8e7f4 50%, #f3f3fb 100%)",
+          padding: 24,
+        }}
+      >
+        <OnboardingSkeleton />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
+
+      <div
+        style={{
+          minHeight: "100vh",
+          background:
+            "linear-gradient(145deg, #eeeef8 0%, #e8e7f4 50%, #f3f3fb 100%)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 24,
+          position: "relative",
+        }}
+      >
+        {/* bg dot grid */}
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            pointerEvents: "none",
+            zIndex: 0,
+            backgroundImage:
+              "radial-gradient(circle, rgba(103,99,175,.09) 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+          }}
+        />
+        {/* ambient orb */}
+        <motion.div
+          style={{
+            position: "fixed",
+            bottom: "-8%",
+            right: "5%",
+            width: 400,
+            height: 400,
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle, rgba(103,99,175,.1), transparent 70%)",
+            filter: "blur(60px)",
+            pointerEvents: "none",
+            zIndex: 0,
+          }}
+          animate={{ scale: [1, 1.1, 1], y: [0, -20, 0] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        />
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          style={{
+            display: "flex",
+            borderRadius: "var(--radius-xl)",
+            boxShadow:
+              "0 28px 80px rgba(103,99,175,.18), 0 4px 16px rgba(0,0,0,.06)",
+            border: "1px solid rgba(255,255,255,.85)",
+            overflow: "hidden",
+            width: "100%",
+            maxWidth:
+              step === 0 ? 1000 : step === 1 ? 1160 : step === 2 ? 960 : 900,
+            minHeight: 580,
+            position: "relative",
+            zIndex: 1,
+            transition: "max-width .35s ease",
+          }}
+        >
+          <Sidebar step={step} />
+
+          {/* Content pane */}
+          <div
+            style={{
+              flex: 1,
+              background: "var(--surface)",
+              padding: "44px 40px",
+              overflowY: "auto",
+              maxHeight: "88vh",
+            }}
+          >
+            <AnimatePresence mode="wait">
+              <WelcomeStep
+                key="w"
+                onNext={next}
+                loading={loading}
+                open={step === 0}
+                nextLoading={nextLoading}
+              />
+              <PlanStep
+                key="p"
+                onNext={next}
+                onBack={back}
+                selectedId={user?.subscription?.planId}
+                open={step === 1}
+                nextLoading={nextLoading}
+              />
+              <CompanyStep
+                key="c"
+                onNext={next}
+                onBack={back}
+                open={step === 2}
+                nextLoading={nextLoading}
+              />
+              <StoreStep
+                key="s"
+                onNext={next}
+                onBack={back}
+                open={step === 3}
+                nextLoading={nextLoading}
+              />
+              <ShippingStep
+                key="sh"
+                onNext={finish}
+                onBack={back}
+                open={step === 4}
+                nextLoading={nextLoading}
+              />
+              <FinishedStep key="f" open={step === 5} />
+              {step === -1 && <NoStepFound />}
+              {step === -2 && <UnauthorizedUser />}
+            </AnimatePresence>
+          </div>
+        </motion.div>
+      </div>
+    </>
+  );
+}
+
+/* ─── Sidebar ─────────────────────────────────────────────── */
 function Sidebar({ step }) {
+  const t = useTranslations("onboarding");
+  const STEPS_META = [
+    { icon: <IcUser />, label: t("steps.welcome.label"), sub: t("steps.welcome.sub") },
+    { icon: <IcStar />, label: t("steps.plan.label"), sub: t("steps.plan.sub") },
+    { icon: <IcBuild />, label: t("steps.company.label"), sub: t("steps.company.sub") },
+    { icon: <IcLink />, label: t("steps.store.label"), sub: t("steps.store.sub") },
+    { icon: <IcShip />, label: t("steps.shipping.label"), sub: t("steps.shipping.sub") },
+  ];
   return (
     <div
       style={{
@@ -570,7 +858,7 @@ function Sidebar({ step }) {
               letterSpacing: "-0.3px",
             }}
           >
-            طلباتي تك
+            {t("brand")}
           </div>
         </div>
       </div>
@@ -698,7 +986,7 @@ function Sidebar({ step }) {
               fontWeight: 600,
             }}
           >
-            التقدم
+            {t("progress")}
           </span>
           <span
             style={{
@@ -735,15 +1023,28 @@ function Sidebar({ step }) {
 
 /* ─── Step 0: Welcome ─────────────────────────────────────── */
 function WelcomeStep({ onNext, open, nextLoading }) {
+  const t = useTranslations("onboarding.welcome");
   const tiles = [
     {
       emoji: "📦",
-      title: "إدارة الطلبات",
-      desc: "استقبل وتابع طلباتك لحظةً بلحظة",
+      title: t("features.order_management.title"),
+      desc: t("features.order_management.desc"),
     },
-    { emoji: "🚚", title: "تتبع الشحنات", desc: "ربط مباشر مع شركات التوصيل" },
-    { emoji: "📊", title: "تقارير ذكية", desc: "تحليلات مفصّلة لنمو متجرك" },
-    { emoji: "🔗", title: "تكامل المنصات", desc: "Shopify وWooCommerce وأكثر" },
+    {
+      emoji: "🚚",
+      title: t("features.shipping_tracking.title"),
+      desc: t("features.shipping_tracking.desc"),
+    },
+    {
+      emoji: "📊",
+      title: t("features.smart_reports.title"),
+      desc: t("features.smart_reports.desc"),
+    },
+    {
+      emoji: "🔗",
+      title: t("features.platform_integration.title"),
+      desc: t("features.platform_integration.desc"),
+    },
   ];
 
   if (!open) return null;
@@ -789,9 +1090,9 @@ function WelcomeStep({ onNext, open, nextLoading }) {
             marginBottom: 10,
           }}
         >
-          أهلاً وسهلاً بك!
+          {t("hero.title_welcome")}
           <br />
-          <span style={{ color: "var(--p)" }}>لنبدأ الإعداد معاً</span>
+          <span style={{ color: "var(--p)" }}>{t("hero.title_start")}</span>
         </motion.h1>
         <motion.p
           initial={{ opacity: 0 }}
@@ -804,7 +1105,7 @@ function WelcomeStep({ onNext, open, nextLoading }) {
             maxWidth: 400,
           }}
         >
-          سيستغرق الإعداد دقيقتين فقط — بعدها ستكون جاهزاً لاستقبال أول طلب.
+          {t("hero.desc")}
         </motion.p>
       </div>
 
@@ -877,7 +1178,7 @@ function WelcomeStep({ onNext, open, nextLoading }) {
       >
         <span style={{ fontSize: 18 }}>💡</span>
         <p style={{ fontSize: 12.5, color: "var(--p-dark)", lineHeight: 1.6 }}>
-          يمكنك تخطي أي خطوة اختيارية والعودة إليها لاحقاً من الإعدادات.
+          {t("hint")}
         </p>
       </div>
 
@@ -887,7 +1188,7 @@ function WelcomeStep({ onNext, open, nextLoading }) {
         disabled={nextLoading}
         style={{ width: "100%" }}
       >
-        لنبدأ الإعداد <IcArrow dir="right" />
+        {t("start_btn")} <IcArrow dir="right" />
       </BtnPrimary>
     </motion.div>
   );
@@ -1182,6 +1483,7 @@ function BtnPrimary({ children, onClick, disabled, loading }) {
    MAIN PLAN STEP COMPONENT
 ───────────────────────────────────────────────────────── */
 function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
+  const t = useTranslations("onboarding.plans");
   const { settings, isLoading: isSettingsLoading } = usePlatformSettings();
   const whatsapp = settings?.whatsapp;
   const [selected, setSelected] = useState(selectedId || null);
@@ -1216,35 +1518,35 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
 
     // Add limit details
     if (plan.usersLimit !== null) {
-      features.push(`${plan.usersLimit} مستخدمين`);
+      features.push(`${plan.usersLimit} ${t("features.users")}`);
     } else {
-      features.push("مستخدمين غير محدود");
+      features.push(t("features.unlimited_users"));
     }
 
     if (plan.storesLimit !== null) {
-      features.push(`${plan.storesLimit} متاجر`);
+      features.push(`${plan.storesLimit} ${t("features.stores")}`);
     } else {
-      features.push("متاجر غير محدودة");
+      features.push(t("features.unlimited_stores"));
     }
 
     if (plan.shippingCompaniesLimit !== null) {
-      features.push(`${plan.shippingCompaniesLimit} شركات شحن`);
+      features.push(`${plan.shippingCompaniesLimit} ${t("features.shipping_companies")}`);
     } else {
-      features.push("شركات شحن غير محدودة");
+      features.push(t("features.unlimited_shipping_companies"));
     }
 
     if (plan.includedOrders !== null) {
-      features.push(`${plan.includedOrders} طلب متضمن`);
+      features.push(`${plan.includedOrders} ${t("features.included_orders")}`);
     } else {
-      features.push("طلبات غير محدودة");
+      features.push(t("features.unlimited_orders"));
     }
 
     if (plan.extraOrderFee !== null && plan.extraOrderFee > 0) {
-      features.push(`${plan.extraOrderFee} ج.م رسوم طلب إضافي`);
+      features.push(`${plan.extraOrderFee} ${t("features.extra_order_fee")}`);
     }
 
     if (plan.bulkUploadPerMonth > 0) {
-      features.push(`${plan.bulkUploadPerMonth} رفع جماعي/شهر`);
+      features.push(`${plan.bulkUploadPerMonth} ${t("features.bulk_upload")}`);
     }
 
     return {
@@ -1253,18 +1555,18 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
       type: plan.type, // 'standard', 'trial', 'negotiated'
       priceMonthly: price,
       priceYearly: Math.round(price * 0.8),
-      badge: plan.isPopular ? "الأكثر شيوعاً" : null,
+      badge: plan.isPopular ? t("popular_badge") : null,
       dotColor:
         plan.color ||
         (index === 0 ? "#8B88C1" : index === 1 ? "#BAEB33" : "#FF5C2B"),
       tier:
         plan.duration === "monthly"
-          ? "شهرية"
+          ? t("duration.monthly")
           : plan.duration === "yearly"
-            ? "سنوية"
+            ? t("duration.yearly")
             : plan.duration === "lifetime"
-              ? "مدى الحياة"
-              : "باقة",
+              ? t("duration.lifetime")
+              : t("duration.package"),
       isPopular: !!plan.isPopular,
       features,
     };
@@ -1355,10 +1657,10 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
             marginBottom: 6,
           }}
         >
-          اختر خطتك
+          {t("title")}
         </h2>
         <p style={{ fontSize: 13.5, color: "var(--text-3)" }}>
-          يمكنك الترقية أو التخفيض في أي وقت
+          {t("subtitle")}
         </p>
       </div>
 
@@ -1387,11 +1689,10 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                 marginBottom: 3,
               }}
             >
-              لديك اشتراك نشط
+              {t("active_alert.title")}
             </div>
             <div style={{ fontSize: 12, color: "#3b82f6" }}>
-              أنت مشترك حالياً في باقة. يمكنك إلغاء اشتراكك الحالي إذا كنت ترغب
-              في اختيار باقة مختلفة.
+              {t("active_alert.desc")}
             </div>
           </div>
         </div>
@@ -1503,7 +1804,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                         animation: "pulse 2s infinite",
                       }}
                     />
-                    نشطة
+                    {t("status.active")}
                   </div>
                 )}
 
@@ -1585,7 +1886,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                           fontWeight: 700,
                         }}
                       >
-                        تجريبي
+                        {t("status.trial")}
                       </span>
                     )}
                   </div>
@@ -1600,7 +1901,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                           color: isFeatured ? "#BAEB33" : "#FF5C2B",
                         }}
                       >
-                        حسب الاتفاق
+                        {t("status.negotiated")}
                       </span>
                     </div>
                   ) : (
@@ -1635,7 +1936,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                             fontWeight: 500,
                           }}
                         >
-                          ج.م / شهر
+                          {t("price_per_month")}
                         </span>
                       </div>
                     </>
@@ -1677,7 +1978,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                         e.currentTarget.style.transform = "none";
                       }}
                     >
-                      <X size={14} /> إلغاء الاشتراك
+                      <X size={14} /> {t("cancel_btn")}
                     </button>
                   ) : p.type === "negotiated" ? (
                     <a
@@ -1718,7 +2019,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                         e.currentTarget.style.transform = "none";
                       }}
                     >
-                      <MessageCircle size={14} /> تواصل معنا
+                      <MessageCircle size={14} /> {t("contact_us")}
                     </a>
                   ) : (
                     <button
@@ -1784,16 +2085,16 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                     >
                       {isTrialDisabled ? (
                         <>
-                          <AlertCircle size={14} /> غير متاح
+                          <AlertCircle size={14} /> {t("unavailable")}
                         </>
                       ) : hasActiveSubscription ? (
                         <>
-                          <AlertCircle size={14} /> لديك اشتراك نشط
+                          <AlertCircle size={14} /> {t("active_already")}
                         </>
                       ) : loading === p.id ? (
                         <Loader2 className="animate-spin" />
                       ) : (
-                        "ابدأ الآن"
+                        t("start_now")
                       )}
                     </button>
                   )}
@@ -1835,7 +2136,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
 
       {/* Buttons */}
       <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-        <BtnGhost onClick={onBack}>رجوع</BtnGhost>
+        <BtnGhost onClick={onBack}>{t("back_btn")}</BtnGhost>
         <BtnPrimary
           onClick={() => go()}
           disabled={
@@ -1843,7 +2144,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
           }
           loading={nextLoading}
         >
-          متابعة <IcArrow dir="right" />
+          {t("continue_btn")} <IcArrow dir="right" />
         </BtnPrimary>
       </div>
 
@@ -1900,7 +2201,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
               <h3
                 style={{ fontSize: 18, fontWeight: 800, color: "var(--text)" }}
               >
-                إلغاء الاشتراك؟
+                {t("cancel_confirm.title")}
               </h3>
             </div>
             <p
@@ -1911,8 +2212,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                 lineHeight: 1.6,
               }}
             >
-              هل أنت متأكد من رغبتك في إلغاء اشتراكك الحالي؟ لا يمكن التراجع عن
-              هذا الإجراء.
+              {t("cancel_confirm.desc")}
             </p>
             <div style={{ display: "flex", gap: 10 }}>
               <button
@@ -1929,7 +2229,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                   cursor: "pointer",
                 }}
               >
-                لا، الإبقاء عليه
+                {t("cancel_confirm.keep")}
               </button>
               <button
                 onClick={handleCancel}
@@ -1947,7 +2247,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                   opacity: loading ? 0.7 : 1,
                 }}
               >
-                {loading ? "جاري الإلغاء..." : "نعم، إلغاء"}
+                {loading ? t("cancel_confirm.canceling") : t("cancel_confirm.confirm")}
               </button>
             </div>
           </motion.div>
@@ -1958,45 +2258,49 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
 }
 
 /* ─── Step 2: Company ─────────────────────────────────────── */
-const COUNTRIES = [
-  "مصر",
-  "السعودية",
-  "الإمارات",
-  "الكويت",
-  "قطر",
-  "البحرين",
-  "عمان",
-  "الأردن",
-  "لبنان",
-];
-const CURRENCIES = [
-  { code: "EGP", label: "جنيه مصري (EGP)" },
-  { code: "SAR", label: "ريال سعودي (SAR)" },
-  { code: "AED", label: "درهم إماراتي (AED)" },
-  { code: "USD", label: "دولار أمريكي (USD)" },
-];
-
-const schema = yup.object({
-  country: yup.string().required("الدولة مطلوبة"),
-  currency: yup.string().required("العملة مطلوبة"),
-  name: yup.string().trim().required("العملة مطلوبة"),
-  tax: yup.string().trim(),
-  commercial: yup.string().trim(),
-  phone: yup.string().trim(),
-  website: yup
-    .string()
-    .trim()
-    .notRequired()
-    .nullable()
-    .test(
-      "is-url-or-empty",
-      "رابط غير صالح",
-      (v) => !v || /^(https?:\/\/)/.test(v),
-    ),
-  address: yup.string().trim(),
-});
-
 function CompanyStep({ onNext, onBack, open, nextLoading }) {
+  const tp = useTranslations("onboarding.plans");
+  const t = useTranslations("onboarding.company");
+
+  const COUNTRIES_LIST = [
+    { value: "egypt", label: t("countries.egypt") },
+    { value: "saudi", label: t("countries.saudi") },
+    { value: "uae", label: t("countries.uae") },
+    { value: "kuwait", label: t("countries.kuwait") },
+    { value: "qatar", label: t("countries.qatar") },
+    { value: "bahrain", label: t("countries.bahrain") },
+    { value: "oman", label: t("countries.oman") },
+    { value: "jordan", label: t("countries.jordan") },
+    { value: "lebanon", label: t("countries.lebanon") },
+  ];
+
+  const CURRENCIES_LIST = [
+    { code: "EGP", label: t("currencies.egp") },
+    { code: "SAR", label: t("currencies.sar") },
+    { code: "AED", label: t("currencies.aed") },
+    { code: "USD", label: t("currencies.usd") },
+  ];
+
+  const schema = yup.object({
+    country: yup.string().required(t("validation.country_required")),
+    currency: yup.string().required(t("validation.currency_required")),
+    name: yup.string().trim().required(t("validation.name_required")),
+    tax: yup.string().trim(),
+    commercial: yup.string().trim(),
+    phone: yup.string().trim(),
+    website: yup
+      .string()
+      .trim()
+      .notRequired()
+      .nullable()
+      .test(
+        "is-url-or-empty",
+        t("validation.invalid_url"),
+        (v) => !v || /^(https?:\/\/)/.test(v),
+      ),
+    address: yup.string().trim(),
+  });
+
   const {
     control,
     register,
@@ -2015,7 +2319,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
       website: "",
       address: "",
     },
-    mode: "onTouched", // validate on touch so errors show after interaction
+    mode: "onTouched",
   });
 
   useEffect(() => {
@@ -2047,18 +2351,15 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
   const onSubmit = async (data) => {
     try {
       await api.post("/users/company", data);
-      toast.success("تم حفظ بيانات الشركة بنجاح ✓");
+      toast.success(t("toasts.save_success"));
       onNext();
     } catch (err) {
-      const msg = err.response?.data?.message || "حدث خطأ أثناء حفظ البيانات";
+      const msg = err.response?.data?.message || t("toasts.save_error");
       toast.error(Array.isArray(msg) ? msg[0] : msg);
     }
   };
 
-  const onInvalid = (errs) => {
-    // mark all required fields as touched is handled by RHF; show toast like original
-    // toast.error('يرجى ملء البيانات المطلوبة');
-  };
+  const onInvalid = (errs) => { };
 
   if (!open) return null;
 
@@ -2080,11 +2381,11 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
             marginBottom: 6,
           }}
         >
-          بيانات شركتك
+          {t("title")}
         </h2>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <p style={{ fontSize: 13.5, color: "var(--text-3)" }}>
-            تظهر في الفواتير والتقارير الرسمية
+            {t("subtitle")}
           </p>
           <span
             style={{
@@ -2097,7 +2398,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
               flexShrink: 0,
             }}
           >
-            * الدولة والعملة إلزاميتان
+            {t("required_hint")}
           </span>
         </div>
       </div>
@@ -2105,7 +2406,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
       {/* Row 1: country + currency */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
         <Field
-          label="الدولة"
+          label={t("fields.country")}
           required
           error={errors.country ? errors.country?.message : null}
         >
@@ -2114,10 +2415,10 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
             name="country"
             render={({ field }) => (
               <ObSelect {...field} onBlur={() => field.onBlur()} icon="🌍">
-                <option value="">اختر الدولة</option>
-                {COUNTRIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
+                <option value="">{t("placeholders.select_country")}</option>
+                {COUNTRIES_LIST.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
                   </option>
                 ))}
               </ObSelect>
@@ -2126,7 +2427,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
         </Field>
 
         <Field
-          label="العملة"
+          label={t("fields.currency")}
           required
           error={errors.currency ? errors.currency?.message : null}
         >
@@ -2135,8 +2436,8 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
             name="currency"
             render={({ field }) => (
               <ObSelect {...field} onBlur={() => field.onBlur()} icon="💵">
-                <option value="">اختر العملة</option>
-                {CURRENCIES.map((c) => (
+                <option value="">{t("placeholders.select_currency")}</option>
+                {CURRENCIES_LIST.map((c) => (
                   <option key={c.code} value={c.code}>
                     {c.label}
                   </option>
@@ -2149,13 +2450,13 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
 
       {/* Company name - full width */}
       <Field
-        label="اسم الشركة / المتجر *"
+        label={t("fields.name")}
         error={errors.name ? errors.name?.message : null}
       >
         <InputWrap icon={<IcBuild />}>
           <input
             className="ob-input"
-            placeholder="مثال: شركة طلباتي تك"
+            placeholder={t("placeholders.name")}
             {...register("name")}
           />
         </InputWrap>
@@ -2163,31 +2464,31 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
 
       {/* Row 2 */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-        <Field label="الرقم الضريبي">
+        <Field label={t("fields.tax")}>
           <InputWrap
             icon={<span style={{ fontSize: 13, fontWeight: 700 }}>%</span>}
           >
             <input
               className="ob-input"
-              placeholder="اختياري"
+              placeholder={t("placeholders.optional")}
               {...register("tax")}
               style={{ direction: "ltr", textAlign: "right" }}
             />
           </InputWrap>
         </Field>
 
-        <Field label="السجل التجاري">
+        <Field label={t("fields.commercial")}>
           <InputWrap icon="📋">
             <input
               className="ob-input"
-              placeholder="اختياري"
+              placeholder={t("placeholders.optional")}
               {...register("commercial")}
               style={{ direction: "ltr", textAlign: "right" }}
             />
           </InputWrap>
         </Field>
 
-        <Field label="الهاتف">
+        <Field label={t("fields.phone")}>
           <InputWrap icon={<IcPhone />}>
             <input
               className="ob-input"
@@ -2198,7 +2499,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
           </InputWrap>
         </Field>
 
-        <Field label="الموقع الإلكتروني">
+        <Field label={t("fields.website")}>
           <InputWrap icon={<IcGlobe />}>
             <input
               className="ob-input"
@@ -2211,7 +2512,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
       </div>
 
       {/* Address */}
-      <Field label="العنوان">
+      <Field label={t("fields.address")}>
         <div style={{ position: "relative" }}>
           <span
             style={{
@@ -2228,7 +2529,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
           <textarea
             className="ob-textarea"
             rows={2}
-            placeholder="العنوان بالتفصيل (اختياري)"
+            placeholder={t("placeholders.address")}
             {...register("address")}
           />
         </div>
@@ -2242,13 +2543,13 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
           marginTop: 4,
         }}
       >
-        <BtnGhost onClick={onBack}>رجوع</BtnGhost>
+        <BtnGhost onClick={onBack}>{tp("back_btn")}</BtnGhost>
         <BtnPrimary
           onClick={handleSubmit(onSubmit, onInvalid)}
           loading={isSubmitting || nextLoading}
           disabled={nextLoading}
         >
-          حفظ ومتابعة <IcArrow dir="right" />
+          {tp("continue_btn")} <IcArrow dir="right" />
         </BtnPrimary>
       </div>
     </motion.div>
@@ -2305,6 +2606,8 @@ const CopyableCode = ({ text }) => {
 };
 
 function StoreStep({ onNext, onBack, open, nextLoading }) {
+  const ts = useTranslations("onboarding.store");
+  const tp = useTranslations("onboarding.plans");
   const t = useTranslations("storeIntegrations");
   const [active, setActive] = useState(null);
   const [showWebhooks, setShowWebhooks] = useState(false);
@@ -2413,10 +2716,10 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
             marginBottom: 6,
           }}
         >
-          اربط متجرك
+          {ts("title")}
         </h2>
         <p style={{ fontSize: 13.5, color: "var(--text-3)" }}>
-          أضف متجرك لاستقبال الطلبات تلقائياً — يمكن إضافة أكثر من متجر
+          {ts("subtitle")}
         </p>
       </div>
 
@@ -2540,7 +2843,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                           flexShrink: 0,
                         }}
                       >
-                        <IcCheck /> متصل
+                        <IcCheck /> {ts("status.connected")}
                       </motion.div>
                     ) : (
                       <div
@@ -2563,7 +2866,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                           e.currentTarget.style.color = "var(--p)";
                         }}
                       >
-                        ربط
+                        {ts("status.connect_btn")}
                       </div>
                     )}
                   </div>
@@ -2573,13 +2876,13 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
               <div
                 style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}
               >
-                <BtnGhost onClick={onBack}>رجوع</BtnGhost>
+                <BtnGhost onClick={onBack}>{tp("back_btn")}</BtnGhost>
                 {connectedCount === 0 && (
-                  <BtnGhost onClick={onNext}>تخطي الآن</BtnGhost>
+                  <BtnGhost onClick={onNext}>{ts("actions.skip")}</BtnGhost>
                 )}
                 {connectedCount > 0 && (
                   <BtnPrimary onClick={onNext}>
-                    متابعة <IcArrow dir="right" />
+                    {tp("continue_btn")} <IcArrow dir="right" />
                   </BtnPrimary>
                 )}
               </div>
@@ -2637,16 +2940,16 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                   </div>
                   <div style={{ fontSize: 12, color: "var(--text-3)" }}>
                     {connected[provider.key]
-                      ? "تحديث بيانات الربط"
-                      : "أدخل بيانات الربط"}
+                      ? t("editTitle")
+                      : t("addTitle")}
                   </div>
                 </div>
               </div>
 
               {/* Show webhook info if just saved WooCommerce */}
               {showWebhooks &&
-              provider.code === "woocommerce" &&
-              systemSecrets.webhookCreateOrderSecret ? (
+                provider.code === "woocommerce" &&
+                systemSecrets.webhookCreateOrderSecret ? (
                 <div
                   style={{
                     background: "#fffbeb",
@@ -2664,7 +2967,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                       marginBottom: 8,
                     }}
                   >
-                    🔑 أسرار Webhook الخاصة بك
+                    {ts("webhooks.title")}
                   </p>
                   <p
                     style={{
@@ -2674,7 +2977,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                       lineHeight: 1.5,
                     }}
                   >
-                    انسخ هذه الأسرار والصقها في إعدادات WooCommerce
+                    {ts("webhooks.desc")}
                   </p>
 
                   <div style={{ marginBottom: 8 }}>
@@ -2714,14 +3017,14 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                   <div className="grid grid-cols-2 gap-2">
                     {/* Store Name - Updated to use register */}
                     <Field
-                      label="اسم المتجر"
+                      label={t("form.name")}
                       required
                       error={errors?.name?.message}
                     >
                       <InputWrap icon={<span>🏪</span>}>
                         <input
                           className="ob-input"
-                          placeholder="متجري الإلكتروني"
+                          placeholder={t("form.namePlaceholder")}
                           {...register("name")}
                           style={{
                             paddingLeft: 36,
@@ -2740,7 +3043,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
 
                     {/* Store URL - Updated to use register */}
                     <Field
-                      label="رابط المتجر"
+                      label={t("form.storeUrl")}
                       required
                       error={errors?.storeUrl?.message}
                     >
@@ -2931,7 +3234,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                     // Note: Fields and Secrets are now managed by hooks' internal state/onClose
                   }}
                 >
-                  {showWebhooks ? "إغلاق" : "إلغاء"}
+                  {showWebhooks ? ts("actions.close") : ts("actions.cancel")}
                 </BtnGhost>
 
                 {!showWebhooks && (
@@ -2942,8 +3245,8 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                     style={{ flex: 1 }}
                   >
                     {connected[provider.key]
-                      ? "تحديث المتجر"
-                      : "حفظ وربط المتجر"}
+                      ? ts("actions.update_store")
+                      : ts("actions.save_store")}
                   </BtnPrimary>
                 )}
               </div>
@@ -3040,7 +3343,7 @@ const CopyableField = ({ label, value }) => {
       await navigator.clipboard.writeText(String(value || ""));
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
-    } catch (_) {}
+    } catch (_) { }
   };
 
   return (
@@ -3174,6 +3477,9 @@ const WebhookSkeleton = () => (
 
 function ShippingStep({ onNext, onBack, open, nextLoading }) {
   const t = useTranslations("shipping");
+  const ts = useTranslations("onboarding.shipping");
+  const tp = useTranslations("onboarding.plans");
+  const tstore = useTranslations("onboarding.store");
 
   const [active, setActive] = useState(null); // The provider code
   const [showWebhook, setShowWebhook] = useState(false);
@@ -3253,10 +3559,10 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
             marginBottom: 6,
           }}
         >
-          اربط شركة الشحن
+          {ts("title")}
         </h2>
         <p style={{ fontSize: 13.5, color: "var(--text-3)" }}>
-          أرسل الطلبات لشركة الشحن تلقائياً بضغطة واحدة
+          {ts("subtitle")}
         </p>
       </div>
 
@@ -3413,7 +3719,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                             flexShrink: 0,
                           }}
                         >
-                          <IcCheck /> متصل
+                          <IcCheck /> {tstore("status.connected")}
                         </motion.div>
                       ) : (
                         <div
@@ -3437,7 +3743,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                             e.currentTarget.style.color = "var(--p)";
                           }}
                         >
-                          ربط
+                          {tstore("status.connect_btn")}
                         </div>
                       )}
                     </div>
@@ -3448,11 +3754,11 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
               <div
                 style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}
               >
-                <BtnGhost onClick={onBack}>رجوع</BtnGhost>
+                <BtnGhost onClick={onBack}>{tp("back_btn")}</BtnGhost>
                 <BtnPrimary onClick={onNext}>
                   {Object.keys(connected).length > 0
-                    ? "إنهاء الإعداد"
-                    : "تخطي وإنهاء"}{" "}
+                    ? ts("actions.finish")
+                    : ts("actions.skip_finish")}{" "}
                   <IcArrow dir="right" />
                 </BtnPrimary>
               </div>
@@ -3506,10 +3812,10 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                       color: "var(--text)",
                     }}
                   >
-                    إعدادات Webhook - {provider.label}
+                    {ts("webhook.title", { name: provider.label })}
                   </div>
                   <div style={{ fontSize: 12, color: "var(--text-3)" }}>
-                    انسخ هذه البيانات إلى لوحة تحكم {provider.label}
+                    {ts("webhook.subtitle", { name: provider.label })}
                   </div>
                 </div>
               </div>
@@ -3532,7 +3838,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                     marginBottom: 4,
                   }}
                 >
-                  📡 متى يتم تشغيل Webhook؟
+                  {ts("webhook.info_title")}
                 </p>
                 <p
                   style={{
@@ -3541,8 +3847,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                     lineHeight: 1.5,
                   }}
                 >
-                  يتم إرسال إشعار تلقائي عند تغيير حالة الشحنة (تم التسليم، قيد
-                  التوصيل، إلخ)
+                  {ts("webhook.info_desc")}
                 </p>
               </div>
 
@@ -3553,7 +3858,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                   {/* Webhook URL */}
                   {!webhookHiddenFields.includes("webhookUrl") && (
                     <CopyableField
-                      label="رابط Webhook"
+                      label={t("webhookFields.webhookUrl")}
                       value={webhookData.webhookUrl}
                     />
                   )}
@@ -3561,7 +3866,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                   {/* Header Name */}
                   {!webhookHiddenFields.includes("headerName") && (
                     <CopyableField
-                      label="اسم الهيدر (Header Name)"
+                      label={t("webhookFields.headerName")}
                       value={webhookData.headerName}
                     />
                   )}
@@ -3569,7 +3874,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                   {/* Header Value (Secret) */}
                   {!webhookHiddenFields.includes("headerValue") && (
                     <CopyableField
-                      label="قيمة الهيدر (Secret)"
+                      label={t("webhookFields.headerValue")}
                       value={webhookData.headerValue}
                     />
                   )}
@@ -3596,7 +3901,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                         flex: 1,
                       }}
                     >
-                      لتحسين الأمان، يمكنك تجديد السر (Secret) في أي وقت
+                      {ts("webhook.security_hint")}
                     </p>
                     <button
                       onClick={rotateSecret}
@@ -3617,7 +3922,16 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                         transition: "all .2s",
                       }}
                     >
-                      <RefreshCw /> {rotatingSecret ? "جارٍ..." : "تجديد"}
+                      {rotatingSecret ? (
+                        <>
+                          <Loader2 size={12} className="animate-spin" />
+                          {ts("webhook.renewing")}
+                        </>
+                      ) : (
+                        <>
+                          <RotateCcw size={12} /> {ts("webhook.renew_btn")}
+                        </>
+                      )}
                     </button>
                   </div>
                 </>
@@ -3631,7 +3945,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                     setActive(null);
                   }}
                 >
-                  إغلاق
+                  {tstore("actions.close")}
                 </BtnGhost>
               </div>
             </motion.div>
@@ -3689,8 +4003,8 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                   </div>
                   <div style={{ fontSize: 12, color: "var(--text-3)" }}>
                     {connected[provider.key]
-                      ? "تحديث بيانات الربط"
-                      : "أدخل بيانات الربط"}
+                      ? t("editTitle")
+                      : t("addTitle")}
                   </div>
                 </div>
               </div>
@@ -3739,7 +4053,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                     setActive(null);
                   }}
                 >
-                  إلغاء
+                  {tstore("actions.cancel")}
                 </BtnGhost>
                 <BtnPrimary
                   onClick={save}
@@ -3748,8 +4062,8 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                   style={{ flex: 1 }}
                 >
                   {connected[provider.key]
-                    ? "تحديث البيانات"
-                    : "حفظ وربط الشحن"}
+                    ? ts("actions.update_data")
+                    : ts("actions.save_connect")}
                 </BtnPrimary>
               </div>
             </motion.div>
@@ -3796,23 +4110,25 @@ const OnboardingSkeleton = () => (
 
 /* ─── Step 5: Finished ─────────────────────────────────────── */
 function FinishedStep({ open }) {
+  const t = useTranslations("onboarding.finished");
+  const { locale } = useParams();
   if (!open) return null;
 
   const highlights = [
     {
       emoji: "📦",
-      title: "الطلبات جاهزة",
-      desc: "يمكنك الآن استقبال وإدارة الطلبات بسهولة.",
+      title: t("highlights.orders.title"),
+      desc: t("highlights.orders.desc"),
     },
     {
       emoji: "🚚",
-      title: "الشحن متكامل",
-      desc: "اربط شركات الشحن وابدأ إرسال الطلبات فوراً.",
+      title: t("highlights.shipping.title"),
+      desc: t("highlights.shipping.desc"),
     },
     {
       emoji: "📊",
-      title: "تقارير الأداء",
-      desc: "تابع نمو متجرك من خلال التقارير الذكية.",
+      title: t("highlights.reports.title"),
+      desc: t("highlights.reports.desc"),
     },
   ];
 
@@ -3853,7 +4169,7 @@ function FinishedStep({ open }) {
             marginBottom: 10,
           }}
         >
-          تم الإعداد بنجاح!
+          {t("title")}
         </h1>
 
         <p
@@ -3865,8 +4181,7 @@ function FinishedStep({ open }) {
             margin: "0 auto",
           }}
         >
-          رائع! أصبح متجرك الآن جاهزاً للعمل. ابدأ باستقبال الطلبات وإدارة
-          عملياتك بكل سهولة.
+          {t("desc")}
         </p>
       </div>
 
@@ -3925,17 +4240,18 @@ function FinishedStep({ open }) {
       </div>
 
       {/* Go to dashboard */}
-      {/* <BtnPrimary
-				onClick={() => window.location.href = "/orders"}
-				style={{ width: "100%" }}
-			>
-				الذهاب إلى لوحة الطلبات 🚀
-			</BtnPrimary> */}
+      <BtnPrimary
+        onClick={() => (window.location.href = `/${locale}/dashboard`)}
+        style={{ width: "100%" }}
+      >
+        {t("goBtn")} 🚀
+      </BtnPrimary>
     </motion.div>
   );
 }
 
 function NoStepFound() {
+  const t = useTranslations("onboarding.errors");
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -3973,7 +4289,7 @@ function NoStepFound() {
           textAlign: "center",
         }}
       >
-        تعذر تحديد خطوة الإعداد
+        {t("no_step_title")}
       </h2>
 
       <p
@@ -3985,8 +4301,7 @@ function NoStepFound() {
           textAlign: "center",
         }}
       >
-        يبدو أن هناك مشكلة في حالة الإعداد الخاصة بحسابك. يمكنك إعادة بدء عملية
-        الإعداد أو الانتقال إلى لوحة التحكم.
+        {t("no_step_desc")}
       </p>
 
       <div
@@ -3997,20 +4312,15 @@ function NoStepFound() {
         }}
       >
         <BtnPrimary onClick={() => window.location.reload()}>
-          إعادة المحاولة
+          {t("retry_btn")}
         </BtnPrimary>
-
-        {/* <BtnGhost
-					onClick={() => window.location.href = "/orders"}
-				>
-					الذهاب إلى الطلبات
-				</BtnGhost> */}
       </div>
     </motion.div>
   );
 }
 
 function UnauthorizedUser() {
+  const t = useTranslations("onboarding.errors");
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -4049,7 +4359,7 @@ function UnauthorizedUser() {
           textAlign: "center",
         }}
       >
-        غير مصرح لك بالوصول
+        {t("unauthorized_title")}
       </h2>
 
       {/* Description */}
@@ -4062,318 +4372,11 @@ function UnauthorizedUser() {
           textAlign: "center",
         }}
       >
-        هذه الصفحة مخصصة للمشرفين فقط. يرجى تسجيل الدخول بحساب مدير النظام
-        لإكمال عملية الإعداد.
+        {t("unauthorized_desc")}
       </p>
-
-      {/* Action buttons */}
-      {/* <div style={{
-				display: "flex",
-				gap: 12,
-				justifyContent: "center",
-				flexWrap: "wrap",
-			}}>
-				<BtnPrimary
-					onClick={() => window.location.href = "/auth?mode=signin"}
-				>
-					تسجيل الدخول بحساب مشرف
-				</BtnPrimary>
-
-				<BtnGhost
-					onClick={() => window.location.href = "/orders"}
-				>
-					العودة إلى لوحة الطلبات
-				</BtnGhost>
-			</div> */}
     </motion.div>
   );
 }
 
 /* ─── Main ────────────────────────────────────────────────── */
-export default function OnboardingPage() {
-  const [step, setStep] = useState(0); // Start null to show a loader
-  const [dbStep, setDbStep] = useState(null); // Furthest step reached
-  const [user, setUser] = useState(null); // Furthest step reached
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
-  const stepMap = {
-    welcome: 0,
-    plan: 1,
-    company: 2,
-    store: 3,
-    shipping: 4,
-    finished: 5,
-  };
-  const revStepMap = [
-    "welcome",
-    "plan",
-    "company",
-    "store",
-    "shipping",
-    "finished",
-  ];
 
-  // PROBLEM 2 FIX: Resume from last time
-  useEffect(() => {
-    async function init() {
-      try {
-        const { data } = await api.get("/users/me"); // Create this simple GET endpoint
-        const user = data?.user || data;
-        if (!user) {
-          toast.error("يجب تسجيل الدخول أولاً");
-          setStep(-2); // e.g., -2 = unauthorized
-          setTimeout(() => {
-            router.replace("/auth?mode=signin");
-          }, 1200);
-        }
-        // Only admins can access onboarding
-        if (user.role.name !== "admin") {
-          toast.error("غير مصرح لك بالوصول إلى صفحة الإعداد");
-          setStep(-2); // e.g., -2 = unauthorized
-          setTimeout(() => {
-            router.replace("/");
-          }, 1200);
-          return;
-        }
-
-        if (user.onboardingStatus === "completed") {
-          toast.success("تم إكمال خطوات الإعداد مسبقاً");
-          const redirect =
-            user.role.name === "super_admin" ? "/dashboard/users" : "/orders";
-          setStep(5);
-          setTimeout(() => {
-            router.replace(redirect);
-          }, 1200);
-          return;
-        }
-
-        setUser(user);
-        const current = stepMap[user.currentOnboardingStep] || 0;
-        if (current === undefined) {
-          setStep(-1);
-          return;
-        }
-        setStep(current);
-        setDbStep(current);
-      } catch (error) {
-        const status = error?.response?.status;
-
-        if (status === 401) {
-          toast.error("انتهت الجلسة، يرجى تسجيل الدخول مرة أخرى");
-        } else if (status === 403) {
-          toast.error(
-            "هذه الصفحة مخصصة للمشرفين فقط. يرجى تسجيل الدخول بحساب مشرف.",
-          );
-        } else {
-          toast.error("حدث خطأ غير متوقع");
-        }
-        setStep(-2); // e.g., -2 = unauthorized
-        setTimeout(() => {
-          router.push("/auth?mode=signin");
-        }, 1200);
-      } finally {
-        setLoading(false);
-      }
-    }
-    init();
-  }, []);
-
-  const [nextLoading, setNextLoading] = useState(false);
-
-  const next = async () => {
-    // If current step is less than the max saved step, just increment locally
-    if (step < dbStep) {
-      setStep((s) => s + 1);
-      return;
-    }
-
-    setNextLoading(true); // start loading
-    try {
-      const { data } = await api.post("/users/onboarding/next");
-      const nextIndex = stepMap[data.nextStep];
-
-      setStep(() => nextIndex);
-      setDbStep(() => nextIndex);
-    } catch (err) {
-      const msg = err.response?.data?.message || "حدث خطأ أثناء التقدم";
-      toast.error(msg);
-    } finally {
-      setNextLoading(false); // stop loading
-    }
-  };
-
-  const back = () => setStep((s) => Math.max(s - 1, 0));
-  const finish = async () => {
-    const tid = toast.loading("جاري إنهاء الإعداد...");
-    try {
-      // 1️⃣ Call the same endpoint to move currentOnboardingStep to 'finished' or 'completed'
-      await api.post("/users/onboarding/next");
-      const { data } = await api.get("/auth/sign");
-      if (data?.accessToken) {
-        localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("user", JSON.stringify(data.user));
-      }
-      await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          accessToken: data.accessToken,
-          user: data.user,
-        }),
-      });
-      // 2️⃣ Show success and redirect
-      toast.success("اكتمل الإعداد! مرحباً بك 🎉", { id: tid });
-
-      setTimeout(() => {
-        window.location.href =
-          user?.role.name === "admin" ? "/orders" : "/orders/employee-orders";
-      }, 1200);
-    } catch (err) {
-      const msg = err.response?.data?.message || "حدث خطأ أثناء إنهاء الإعداد";
-      toast.error(msg, { id: tid });
-    }
-  };
-  if (loading) {
-    return (
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background:
-            "linear-gradient(145deg, #eeeef8 0%, #e8e7f4 50%, #f3f3fb 100%)",
-          padding: 24,
-        }}
-      >
-        <OnboardingSkeleton />
-      </div>
-    );
-  }
-
-  return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: CSS }} />
-
-      <div
-        style={{
-          minHeight: "100vh",
-          background:
-            "linear-gradient(145deg, #eeeef8 0%, #e8e7f4 50%, #f3f3fb 100%)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 24,
-          position: "relative",
-        }}
-      >
-        {/* bg dot grid */}
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            pointerEvents: "none",
-            zIndex: 0,
-            backgroundImage:
-              "radial-gradient(circle, rgba(103,99,175,.09) 1px, transparent 1px)",
-            backgroundSize: "28px 28px",
-          }}
-        />
-        {/* ambient orb */}
-        <motion.div
-          style={{
-            position: "fixed",
-            bottom: "-8%",
-            right: "5%",
-            width: 400,
-            height: 400,
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(103,99,175,.1), transparent 70%)",
-            filter: "blur(60px)",
-            pointerEvents: "none",
-            zIndex: 0,
-          }}
-          animate={{ scale: [1, 1.1, 1], y: [0, -20, 0] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-        />
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.97, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          style={{
-            display: "flex",
-            borderRadius: "var(--radius-xl)",
-            boxShadow:
-              "0 28px 80px rgba(103,99,175,.18), 0 4px 16px rgba(0,0,0,.06)",
-            border: "1px solid rgba(255,255,255,.85)",
-            overflow: "hidden",
-            width: "100%",
-            maxWidth:
-              step === 0 ? 1000 : step === 1 ? 1160 : step === 2 ? 960 : 900,
-            minHeight: 580,
-            position: "relative",
-            zIndex: 1,
-            transition: "max-width .35s ease",
-          }}
-        >
-          <Sidebar step={step} />
-
-          {/* Content pane */}
-          <div
-            style={{
-              flex: 1,
-              background: "var(--surface)",
-              padding: "44px 40px",
-              overflowY: "auto",
-              maxHeight: "88vh",
-            }}
-          >
-            <AnimatePresence mode="wait">
-              <WelcomeStep
-                key="w"
-                onNext={next}
-                loading={loading}
-                open={step === 0}
-                nextLoading={nextLoading}
-              />
-              <PlanStep
-                key="p"
-                onNext={next}
-                onBack={back}
-                selectedId={user?.subscription?.planId}
-                open={step === 1}
-                nextLoading={nextLoading}
-              />
-              <CompanyStep
-                key="c"
-                onNext={next}
-                onBack={back}
-                open={step === 2}
-                nextLoading={nextLoading}
-              />
-              <StoreStep
-                key="s"
-                onNext={next}
-                onBack={back}
-                open={step === 3}
-                nextLoading={nextLoading}
-              />
-              <ShippingStep
-                key="sh"
-                onNext={finish}
-                onBack={back}
-                open={step === 4}
-                nextLoading={nextLoading}
-              />
-              <FinishedStep key="f" open={step === 5} />
-              {step === -1 && <NoStepFound />}
-              {step === -2 && <UnauthorizedUser />}
-            </AnimatePresence>
-          </div>
-        </motion.div>
-      </div>
-    </>
-  );
-}

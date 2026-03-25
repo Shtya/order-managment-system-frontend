@@ -263,20 +263,20 @@
     "emptyDescription": "لم يتم العثور على أي طلبات استبدال. ابدأ بإنشاء طلب استبدال جديد"
   },
   "orderDetails": {
-    "title": "تفاصيل طلب رقم",
     "breadcrumb": {
-      "home": "الرئيسية",
-      "current": "تفاصيل طلب"
+      "current": "تفاصيل طلب",
+      "home": "الرئيسية"
     },
     "currency": "د.أ",
     "customer": {
       "details": "بيانات العميل",
-      "orders": "طلب",
-      "name": "اسم العميل",
       "email": "البريد الإلكتروني",
+      "name": "اسم العميل",
+      "orders": "طلب",
       "phone": "رقم الهاتف",
       "phone2": "رقم هاتف آخر"
     },
+    "invalidOrderId": "معرف طلب غير صالح",
     "order": {
       "trackingCode": "كود تتبع",
       "type": "الاسم",
@@ -466,6 +466,8 @@
       "phone": "رقم الهاتف",
       "role": "النوع",
       "status": "الحالة",
+      "active": "نشط",
+      "inactive": "غير نشط",
       "options": "الإجراءات"
     },
     "actions": {
@@ -476,7 +478,8 @@
       "cancel": "إلغاء",
       "save": "حفظ",
       "activate": "تفعيل",
-      "deactivate": "إيقاف"
+      "deactivate": "إيقاف",
+      "howToUse": "كيفية الإستخدام"
     },
     "view": {
       "title": "تفاصيل الموظف"
@@ -494,7 +497,73 @@
       "statusUpdated": "تم تحديث الحالة بنجاح"
     },
     "loading": "جارٍ التحميل...",
-    "empty": "لا توجد بيانات"
+    "empty": "لا توجد بيانات",
+    "errors": {
+      "loadFailed": "فشل تحميل بيانات الموظفين",
+      "exportFailed": "فشل تصدير البيانات",
+      "loadDetailsFailed": "فشل تحميل تفاصيل الموظف"
+    }
+  },
+  "extraFeatures": {
+    "assignModal": {
+      "title": "إدارة مميزات المستخدم",
+      "userHas": "المميزات النشطة حالياً",
+      "selectFeature": "اختر ميزة جديدة",
+      "alreadyOwned": "يمتلك هذه الميزة بالفعل",
+      "noFeatures": "لا توجد مميزات نشطة حالياً",
+      "assign": "تخصيص الميزة",
+      "price": "سعر التخصيص",
+      "paymentMethod": "طريقة الدفع"
+    },
+    "columns": {
+      "featureName": "اسم الميزة",
+      "featureType": "نوع الميزة",
+      "paidPrice": "السعر المدفوع",
+      "price": "السعر",
+      "isActive": "نشط؟",
+      "purchaseDate": "تاريخ الشراء",
+      "actions": "إجراءات",
+      "status": "الحالة"
+    },
+    "status": {
+      "active": "نشط",
+      "notSubscribed": "غير مشترك"
+    },
+    "filters": {
+      "feature": "الميزة",
+      "featurePlaceholder": "اختر الميزة",
+      "cancel": "إلغاء"
+    },
+    "tooltips": {
+      "purchaseNow": "إتمام عملية الشراء والاشتراك"
+    },
+    "toolbar": {
+      "searchPlaceholder": "بحث عن ميزة..."
+    },
+    "actions": {
+      "editFeature": "تعديل الميزة",
+      "purchase": "شراء الآن"
+    },
+    "modal": {
+      "editTitle": "تعديل بيانات الميزة",
+      "name": "الاسم",
+      "price": "السعر",
+      "isActive": "تفعيل الميزة",
+      "save": "حفظ التغييرات",
+      "cancel": "إلغاء"
+    },
+    "messages": {
+      "updateSuccess": "تم تحديث الميزة بنجاح",
+      "updateFailed": "حدث خطأ أثناء تحديث الميزة",
+      "fetchFailed": "فشل في جلب الميزات",
+      "redirecting": "جاري توجيهك لصفحة الدفع...",
+      "alreadyOwned": "تم الشراء بالفعل",
+      "noFeaturesFound": "لا توجد ميزات متاحة حالياً",
+      "assignFailed": "حدث خطأ أثناء تخصيص الميزة"
+    }
+  },
+  "api": {
+    "error": "فشل الطلب"
   },
   "addEmployee": {
     "breadcrumb": {
@@ -894,7 +963,12 @@
       "phonePlaceholder": "أدخل رقم الهاتف",
       "includePassword": "تضمين كلمة المرور في الرسالة",
       "preview": "معاينة الرسالة",
-      "note": "تنبيه: كلمة المرور متاحة فقط إذا تم إنشاؤها أو إعادة تعيينها."
+      "note": "تنبيه: كلمة المرور متاحة فقط إذا تم إنشاؤها أو إعادة تعيينها.",
+      "messageAccountDetails": "تفاصيل الحساب:",
+      "messageName": "الاسم:",
+      "messageEmail": "البريد الإلكتروني:",
+      "messagePassword": "كلمة المرور:",
+      "messageLoginInstruction": "يرجى تسجيل الدخول وتغيير كلمة المرور الخاصة بك بعد تسجيل الدخول الأول."
     }
   },
   "roles": {
@@ -1056,6 +1130,18 @@
       "deleting": "جاري الحذف..."
     }
   },
+  "countries": {
+    "SA": "السعودية",
+    "EG": "مصر",
+    "AE": "الإمارات",
+    "KW": "الكويت",
+    "QA": "قطر",
+    "BH": "البحرين",
+    "JO": "الأردن",
+    "OM": "عمان",
+    "LB": "لبنان",
+    "US": "الولايات المتحدة"
+  },
   "roles-client": {
     "breadcrumb": {
       "home": "الرئيسية",
@@ -1180,6 +1266,58 @@
     }
   },
   "warehouse": {
+    "preparingTab": {
+      "stats": {
+        "preparing": "قيد التحضير",
+        "totalItems": "إجمالي القطع",
+        "scanned": "ممسوحة",
+        "remaining": "متبقية"
+      },
+      "columns": {
+        "orderNumber": "رقم الطلب",
+        "customer": "العميل",
+        "phone": "الهاتف",
+        "city": "المدينة",
+        "products": "المنتجات",
+        "scanProgress": "تقدم المسح",
+        "carrier": "شركة الشحن",
+        "employee": "الموظف",
+        "actions": "الإجراءات"
+      },
+      "productsCount": "{count} منتج",
+      "actions": {
+        "continue": "متابعة التحضير",
+        "reject": "رفض"
+      },
+      "rejectReason": "رفض من تبويب التحضير",
+      "toolbar": {
+        "search": "بحث...",
+        "exportSoon": "تصدير قريباً",
+        "export": "تصدير"
+      },
+      "empty": {
+        "noOrders": "لا توجد طلبات قيد التحضير",
+        "table": "لا توجد طلبات"
+      }
+    },
+    "distributionDialog": {
+      "title": "توزيع الطلبات على شركة الشحن",
+      "hint": "اختر شركة الشحن والطلبات المراد توزيعها",
+      "selectedCount": "تم تحديد {count} طلب",
+      "carrierLabel": "اختر شركة الشحن",
+      "carrierPlaceholder": "اختر شركة الشحن",
+      "empty": "لا توجد طلبات جاهزة للتوزيع",
+      "distributing": "جاري التوزيع...",
+      "confirm": "تأكيد التوزيع"
+    },
+    "directShippingWarning": {
+      "title": "تنبيه: مسار الشحن المباشر مفعل",
+      "subtitle": "النظام موجه حالياً لشحن الطلبات مباشرة.",
+      "description": "هذه الصفحة (المستودع) معطلة. يمكنك تفعيلها أو العودة للطلبات.",
+      "enableWarehouse": "تفعيل المستودع",
+      "advancedSettings": "الإعدادات المتقدمة",
+      "goBack": "العودة للخلف"
+    },
     "prepareView": {
       "back": "رجوع",
       "title": "تحضير الطلب",
@@ -1421,6 +1559,7 @@
       "printPreview": {
         "subtitle": "معاينة البوالص",
         "title": "طباعة {count} بوليصة",
+        "tabTitle": "طباعة البوالص",
         "labels": "بوليصة",
         "orderCode": "رقم الطلب",
         "customerInfo": "معلومات العميل",
@@ -1513,7 +1652,9 @@
           "city": "المدينة",
           "phone": "الهاتف",
           "scanner": "الماسح",
-          "userName": "المستخدم"
+          "userName": "المستخدم",
+          "printAlertText": "هذا المستند يحتوي على محاولات مسح فاشلة — يُرجى المراجعة والتحقق من الباركود",
+          "system": "نظام إدارة المستودعات"
         }
       },
       "breadcrumbs": {
@@ -1588,7 +1729,8 @@
         "title": "الطلبات المحددة",
         "orders": "طلب",
         "done": "مكتمل",
-        "empty": "لا توجد طلبات"
+        "empty": "لا توجد طلبات",
+        "loading": "جاري التحميل..."
       },
       "reject": {
         "date": "التاريخ",
@@ -1741,6 +1883,8 @@
         "confirmOutgoing": "تأكيد الخروج",
         "saveNote": "سيتم تحديث حالة الطلبات إلى \"مشحون\" وحفظ ملف التسليم عند الضغط على تأكيد الخروج.",
         "emptyOrders": "لا توجد طلبات جاهزة",
+        "loading": "جاري التحميل...",
+        "loadingOrders": "جاري تحميل الطلبات الجاهزة...",
         "scannedBadge": "ممسوح",
         "totalProducts": "منتج إجمالاً",
         "shippedVia": "شحن عبر {carrier}",
@@ -1754,7 +1898,8 @@
           "manifestCreated": "تم إنشاء بيان الشحن بنجاح",
           "manifestUpdated": "تم تحديث بيان الشحن",
           "printSuccess": "بدأت عملية الطباعة",
-          "errorOccurred": "حدث خطأ غير متوقع"
+          "errorOccurred": "حدث خطأ غير متوقع",
+          "carrierMismatch": "لا يمكن إنشاء ملف لطلبات تتبع شركات شحن مختلفة"
         },
         "table": {
           "products": "المنتجات",
@@ -1827,7 +1972,8 @@
           "receiptConfirmation": "تأكيد الاستلام",
           "courierName": "اسم مندوب شركة الشحن",
           "signature": "التوقيع",
-          "dateTime": "التاريخ والوقت"
+          "dateTime": "التاريخ والوقت",
+          "system": "نظام إدارة المستودعات"
         },
         "wrongLog": {
           "title": "سجل محاولات المسح الفاشلة",
@@ -1843,7 +1989,9 @@
           "attemptUnit": "محاولة",
           "scannedCode": "الكود الممسوح",
           "failReason": "سبب الفشل",
-          "time": "الوقت"
+          "time": "الوقت",
+          "printAlertText": "هذا المستند يحتوي على محاولات مسح فاشلة — يُرجى المراجعة والتحقق من الباركود قبل الشحن",
+          "system": "نظام إدارة المستودعات"
         }
       },
       "currency": "SAR"
@@ -1866,6 +2014,15 @@
         "returnFiles": "ملفات المرتجعات",
         "returnedToday": "مرتجع اليوم",
         "totalReturns": "إجمالي المرتجعات"
+      },
+      "conditions": {
+        "intact": "سليم",
+        "opened": "مفتوح الغلاف",
+        "used": "مستخدم",
+        "damaged": "تالف",
+        "defective": "معيب مصنعياً",
+        "missingParts": "مفقود جزء",
+        "other": "أخرى"
       },
       "common": {
         "all": "الكل",
@@ -1907,14 +2064,34 @@
           "found": "تم العثور على الطلب {code}",
           "selectAtLeastOne": "يجب اختيار منتج واحد على الأقل لإتمام الإرجاع",
           "returnProcessedLog": "تم استلام مرتجع - {count} قطعة",
-          "returnSuccess": "تمت عملية الإرجاع بنجاح للطلب {code}"
+          "returnSuccess": "تمت عملية الإرجاع بنجاح للطلب {code}",
+          "carrierMismatchError": "لا يمكن إنشاء ملف لطلبات تتبع شركات شحن مختلفة",
+          "noShippedOrders": "لا توجد طلبات مشحونة",
+          "errorLoadingFile": "حدث خطأ أثناء تحميل الملف",
+          "errorLoadingLogs": "حدث خطأ أثناء تحميل سجل الأخطاء"
+        },
+        "labels": {
+          "ordersWithCarrier": "{count} طلب مع شركة الشحن",
+          "loading": "جاري التحميل...",
+          "products": "منتجات",
+          "returnOrders": "طلبات المرتجعات",
+          "availableOrders": "الطلبات المتاحة",
+          "totalItems": "إجمالي القطع",
+          "orders": "الطلبات",
+          "items": "القطع",
+          "loadingShippedOrders": "جاري تحميل الطلبات المشحونة...",
+          "ordersCount": "طلبات",
+          "itemsCount": "قطع"
         },
         "actions": {
           "selectAll": "تحديد الكل",
           "unselectAll": "إلغاء تحديد الكل",
           "condition": "حالة المرتجع",
           "cancel": "إلغاء",
-          "confirmReturn": "تأكيد الإرجاع"
+          "confirmReturn": "تأكيد الإرجاع",
+          "returnReason": "سبب الإرجاع",
+          "selectReason": "اختر سبب الإرجاع...",
+          "saveReturn": "حفظ المرتجع"
         },
         "table": {
           "orderNumber": "رقم الطلب",
@@ -1926,7 +2103,10 @@
           "return": "الإرجاع",
           "selected": "محدد",
           "notSelected": "غير محدد",
-          "city": "المدينة"
+          "city": "المدينة",
+          "products": "المنتجات",
+          "total": "الإجمالي",
+          "productUnit": "منتج"
         },
         "empty": {
           "title": "جاهز لمسح الطلب المرتجع",
@@ -1957,6 +2137,12 @@
           "total": "الإجمالي",
           "condition": "حالة المنتج",
           "remove": "إزالة"
+        },
+        "reasons": {
+          "SKU_NOT_IN_ORDER": "المنتج ليس في الطلب",
+          "ALREADY_FULLY_SCANNED": "تم مسح جميع القطع بالفعل",
+          "INVALID_STATUS": "حالة الطلب غير صالحة",
+          "OTHER": "أخرى"
         }
       },
       "files": {
@@ -1969,12 +2155,18 @@
           "createdAt": "تاريخ الإنشاء",
           "createdBy": "تم الإنشاء بواسطة",
           "actions": "الإجراءات",
-          "warehouse": "المستودع"
+          "warehouse": "المستودع",
+          "printStatus": "حالة الطباعة"
+        },
+        "status": {
+          "printed": "تمت الطباعة",
+          "notPrinted": "لم تتم الطباعة"
         },
         "tooltip": {
           "details": "التفاصيل",
           "downloadFile": "تحميل ملف المرتجع",
-          "downloadWrongLog": "تحميل سجل الأخطاء"
+          "downloadWrongLog": "تحميل سجل الأخطاء",
+          "downloadReceipt": "تحميل الإيصال"
         },
         "download": "تحميل PDF",
         "warehouseFilter": "المستودع",
@@ -2026,6 +2218,7 @@
         "printAlertText": "هذا المستند يحتوي على محاولات مسح فاشلة — يُرجى المراجعة والتحقق من الباركود قبل الشحن",
         "totalAttempts": "إجمالي المحاولات",
         "scannedCode": "الكود الممسوح",
+        "orderNumber": "رقم الطلب",
         "failReason": "سبب الفشل",
         "time": "الوقت",
         "system": "نظام إدارة المستودعات"
@@ -2457,6 +2650,12 @@
   "inputPhone": {
     "placeholders": {
       "selectCountry": "اختر الدولة"
+    },
+    "validation": {
+      "required": "يرجى إدخال رقم جوال صحيح",
+      "exact": "رقم الجوال يجب أن يكون {min} رقمًا",
+      "range": "رقم الجوال يجب أن يكون بين {min} و {max} رقمًا",
+      "invalid": "يرجى إدخال رقم جوال صحيح حسب الدولة المختارة"
     }
   },
   "mapPicker": {
@@ -2490,7 +2689,8 @@
       "manageCategories": "إدارة الفئات",
       "delete": "حذف",
       "edit": "تعديل",
-      "view": "عرض"
+      "view": "عرض",
+      "howToUse": "كيفية الإستخدام"
     },
     "toolbar": {
       "searchPlaceholder": "ابحث عن مورد...",
@@ -2901,7 +3101,8 @@
   },
   "editProduct": {
     "loading": {
-      "message": "جاري التحميل..."
+      "message": "جاري التحميل...",
+      "notFound": "المنتج غير موجود"
     }
   },
   "addProduct": {
@@ -3002,7 +3203,32 @@
       "empty": "لا توجد خصائص",
       "attribute": "الخاصية",
       "deleteAttribute": "حذف الخاصية",
-      "name": "اسم الخاصية",
+      "name": "الاسم",
+      "templates": {
+        "size": "الحجم",
+        "sizeValues": [
+          "صغير",
+          "متوسط"
+        ],
+        "color": "اللون",
+        "colorValues": [
+          "أحمر",
+          "أزرق",
+          "أخضر"
+        ],
+        "material": "المادة",
+        "materialValues": [
+          "قطن",
+          "بوليستر",
+          "صوف"
+        ],
+        "weight": "الوزن",
+        "weightValues": [
+          "خفيف",
+          "متوسط",
+          "ثقيل"
+        ]
+      },
       "placeholders": {
         "name": "مثال: اللون، الحجم",
         "value": "أدخل القيمة واضغط Enter"
@@ -3010,8 +3236,8 @@
     },
     "combinations": {
       "onHand": "المخزون",
-    "reserved": "محجوز",
-    "available": "المتفر",
+      "reserved": "محجوز",
+      "available": "المتفر",
       "title": "المتغيرات",
       "count": "العدد",
       "empty": "لا توجد متغيرات",
@@ -3063,7 +3289,8 @@
     "messages": {
       "saving": "جاري الحفظ...",
       "created": "تم إنشاء المنتج بنجاح",
-      "updated": "تم تحديث المنتج بنجاح"
+      "updated": "تم تحديث المنتج بنجاح",
+      "templateAdded": "تمت إضافة {name}"
     },
     "errors": {
       "mainImageRequired": "الصورة الرئيسية مطلوبة",
@@ -3541,6 +3768,20 @@
     }
   },
   "common": {
+    "api": {
+      "error": "فشل الطلب"
+    },
+    "copy": {
+      "success": "تم النسخ",
+      "failed": "فشل النسخ"
+    },
+    "statusCodes": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "notSpecified": "غير محدد",
+    "none": "لا يوجد",
+    "items": "عنصر",
     "save": "حفظ",
     "cancel": "إلغاء",
     "close": "إغلاق",
@@ -3570,18 +3811,48 @@
     "loadMore": "تحميل المزيد"
   },
   "orders": {
-    "emptySubtitle": "جرّب تغيير معايير البحث أو الفلترة",
-    "tabs": {
-      "orders": "الطلبات",
-      "failedOrders": "الطلبات الفاشلة",
-      "distribution": "توزيع الطلبات",
-      "returns": "طلبات الاسترجاع",
-      "replacement": "طلبات الاستبدال",
-      "distributionComingSoon": "توزيع الطلبات",
-      "returnsComingSoon": "طلبات الاسترجاع",
-      "replacementComingSoon": "طلبات الاستبدال",
-      "comingSoonDesc": "هذا القسم قيد التطوير، سيكون متاحاً قريباً."
+    "invalidOrderId": "معرّف الطلب غير صحيح",
+    "actions": {
+      "addStatus": "إضافة حالة",
+      "apply": "تطبيق",
+      "backToOrders": "العودة إلى الطلبات",
+      "bulkUpload": "رفع جماعي",
+      "createOrder": "إنشاء طلب",
+      "createReplacement": "إضافة طلب استبدال",
+      "createReturn": "إضافة طلب استرجاع",
+      "delete": "حذف",
+      "distribute": "توزيع",
+      "edit": "تعديل",
+      "export": "تصدير",
+      "filter": "تصفية",
+      "preview": "معاينة",
+      "print": "طباعة",
+      "refresh": "تحديث",
+      "saving": "جاري الحفظ...",
+      "view": "عرض",
+      "settings": "الإعدادات"
     },
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "orders": "الطلبات"
+    },
+    "customColor": "لون مخصص",
+    "emptySubtitle": "جرّب تغيير معايير البحث أو الفلترة",
+    "myOrders": {
+      "title": "طلباتي المسندة",
+      "subtitle": "عرض جميع الطلبات المسندة إليك",
+      "statistics": "الإحصائيات",
+      "startWork": "ابدأ العمل",
+      "noAssignedOrders": "لا توجد طلبات مسندة",
+      "noOrders": "لا توجد طلبات حاليًا",
+      "noOrdersDescription": "ليس لديك أي طلبات مسندة في الوقت الحالي",
+      "locked": "مؤجل",
+      "total": "الإجمالي",
+      "retries": "المحاولات",
+      "orders": "طلب",
+      "assignedOrders": "الطلبات المستنده"
+    },
+    "presetColors": "ألوان مسبقة الضبط",
     "replacement": {
       "cardTitle": "طلب استبدال",
       "cardSubtitle": "هذا الطلب تم إنشاؤه كاستبدال لطلب آخر",
@@ -3620,7 +3891,8 @@
       },
       "empty": {
         "title": "لا توجد طلبات استبدال",
-        "desc": "ستظهر هنا طلبات الاستبدال عند إنشائها"
+        "desc": "ستظهر هنا طلبات الاستبدال عند إنشائها",
+        "subtitle": "لم يتم العثور على أي طلبات استبدال. ابدأ بإنشاء طلب استبدال جديد"
       },
       "errors": {
         "fetchFailed": "فشل تحميل طلبات الاستبدال"
@@ -3653,6 +3925,20 @@
         "newPrice": "السعر الجديد",
         "diff": "الفرق"
       }
+    },
+    "search": {
+      "placeholder": "ابحث عن طلب..."
+    },
+    "tabs": {
+      "orders": "الطلبات",
+      "failedOrders": "الطلبات الفاشلة",
+      "distribution": "توزيع الطلبات",
+      "returns": "طلبات الاسترجاع",
+      "replacement": "طلبات الاستبدال",
+      "distributionComingSoon": "توزيع الطلبات",
+      "returnsComingSoon": "الاسترجاع",
+      "replacementComingSoon": "الاستبدال",
+      "comingSoonDesc": "هذا القسم قيد التطوير، سيكون متاحاً قريباً."
     },
     "image": {
       "preview": "معاينة"
@@ -3748,34 +4034,11 @@
       "errorMismatch": "اسم الحالة غير متطابق"
     },
     "currency": "جنيه",
-    "breadcrumb": {
-      "home": "الرئيسية",
-      "orders": "الطلبات"
-    },
     "common": {
       "cancel": "إلغاء",
       "back": "رجوع",
       "save": "حفظ",
       "loading": "جاري التحميل..."
-    },
-    "actions": {
-       "saving": "جاري الحفظ...",
-      "saving": "جاري الحفظ...",
-      "createReturn": "إضافة طلب استرجاع",
-      "createReplacement": "إضافة طلب استبدال",
-      "view": "عرض",
-      "edit": "تعديل",
-      "delete": "حذف",
-      "createOrder": "إنشاء طلب",
-      "settings": "الإعدادات",
-      "addStatus": "إضافة حالة",
-      "export": "تصدير",
-      "filter": "تصفية",
-      "bulkUpload": "رفع جماعي",
-      "distribute": "توزيع",
-      "backToOrders": "العودة إلى الطلبات",
-      "print": "طباعة",
-      "refresh": "تحديث"
     },
     "empty": "لا توجد بيانات للعرض",
     "messages": {
@@ -4014,6 +4277,7 @@
       "actions": "الإجراءات"
     },
     "bulkUpload": {
+      "clickToChangeFile": "اضغط لتغيير الملف",
       "title": "رفع طلبات جماعي",
       "description": "يمكنك رفع عدد كبير من الطلبات دفعة واحدة باستخدام ملف Excel (نموذج يتوافق مع إنشاء الطلب، بدون معرفات)",
       "step1Title": "تحميل النموذج",
@@ -4201,29 +4465,12 @@
       "storeAddress": "عنوان المتجر",
       "orderNumber": "رقم الطلب"
     },
-    "myOrders": {
-      "title": "طلباتي المسندة",
-      "subtitle": "عرض جميع الطلبات المسندة إليك",
-      "statistics": "الإحصائيات",
-      "startWork": "ابدأ العمل",
-      "noAssignedOrders": "لا توجد طلبات مسندة",
-      "noOrders": "لا توجد طلبات حاليًا",
-      "noOrdersDescription": "ليس لديك أي طلبات مسندة في الوقت الحالي",
-      "locked": "مؤجل",
-      "total": "الإجمالي",
-      "retries": "المحاولات",
-      "orders": "طلب",
-      "assignedOrders": "الطلبات المستنده"
-    },
     "retry": {
       "locked": "مقفل"
     },
     "pagination": {
       "limit": "عدد النتائج",
       "total": "إجمالي النتائج"
-    },
-    "search": {
-      "placeholder": "ابحث عن طلب..."
     }
   },
   "callCenter": {
@@ -4946,6 +5193,13 @@
     }
   },
   "plans": {
+    "purchasedFeaturesTab": {
+      "messages": {
+        "redirecting": "جاري التحويل للدفع...",
+        "checkoutUrlNotFound": "لم يتم العثور على رابط الدفع",
+        "purchaseFailed": "فشلت عملية الشراء"
+      }
+    },
     "manageSubscription": {
       "breadcrumb": {
         "users": "المستخدمين",
@@ -5021,7 +5275,28 @@
       "lifetime": "مدى الحياة",
       "quarterly": "ربع سنوي",
       "semi_annual": "نصف سنوي",
-      "custom": "مخصص (بالأيام)"
+      "custom": "مخصص (أيام)"
+    },
+    "paymentMethods": {
+      "card": "بطاقة ائتمان",
+      "wallet": "محفظة إلكترونية",
+      "manual_adjustment": "يدوي من الأدمن",
+      "cash": "نقدي (كاش)",
+      "visa": "بطاقة ائتمان (فيزا/ماستركارد)",
+      "bank": "تحويل بنكي",
+      "other": "وسيلة أخرى",
+      "vodafone_cash": "فودافون كاش",
+      "orange_cash": "أورانج كاش",
+      "etisalat_cash": "اتصالات كاش",
+      "we_pay": "وي باي (WE Pay)",
+      "insta": "إنستا باي (InstaPay)",
+      "fawry": "فوري",
+      "aman": "أمان",
+      "meeza": "ميزة",
+      "valu": "فالو (valU)",
+      "sympl": "سيمبل (Sympl)",
+      "tabby": "تابي (Tabby)",
+      "tamara": "تمارا (Tamara)"
     },
     "tabs": {
       "plans": "إدارة الباقات",
@@ -5126,13 +5401,16 @@
       "updatePlanFailed": "فشل في تحديث الباقة",
       "deletePlanSuccess": "تم حذف الباقة بنجاح",
       "deletePlanFailed": "فشل في حذف الباقة",
-      "deletePlanHasActiveSubscriptions": "لا يمكن حذف باقة تحتوي على اشتراكات نشطة. قم بتعطيلها بدلاً من ذلك."
+      "deletePlanHasActiveSubscriptions": "لا يمكن حذف باقة تحتوي على اشتراكات نشطة. قم بتعطيلها بدلاً من ذلك.",
+      "fetchFailed": "فشل في تحميل الباقات"
     },
     "planPage": {
       "newPlanCreatingTitle": "جاري إنشاء باقة...",
       "newPlanCreatingHint": "يرجى الانتظار",
       "newPlanTitle": "إضافة باقة جديدة",
-      "newPlanHint": "انقر لإنشاء باقة اشتراك جديدة"
+      "newPlanHint": "انقر لإنشاء باقة اشتراك جديدة",
+      "defaultPlanName": "باقة جديدة",
+      "defaultFeature": "ميزة"
     },
     "planCard": {
       "featuresLabel": "الميزات:",
@@ -5144,8 +5422,49 @@
       "duration": {
         "monthly": "شهرياً",
         "yearly": "سنوياً",
-        "lifetime": "مدى الحياة"
+        "lifetime": "مدى الحياة",
+        "custom": "مخصص"
+      },
+      "popular": "شائعة",
+      "standard": "عادية",
+      "active": "نشطة",
+      "negotiated": "حسب الاتفاق",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "save": "حفظ",
+      "saving": "جاري الحفظ...",
+      "cancel": "إلغاء",
+      "planType": "نوع الخطة",
+      "selectPlanType": "اختر نوع الخطة",
+      "trial": "تجريبية",
+      "negotiated_type": "بالتفاوض",
+      "negotiatedPrice": "السعر بالتفاوض",
+      "trialHint": "* يمكنك تحديد سعر رمزي أو 0 للفترة التجريبية",
+      "daysLabel": "عدد الأيام",
+      "unlimited": "غير محدود",
+      "notAllowed": "غير مسموح",
+      "userLimitLabel": "عدد المستخدمين المسموح",
+      "storeLimitLabel": "عدد المتاجر المسموح",
+      "shippingLimitLabel": "عدد شركات الشحن المسموح",
+      "orderLimitLabel": "عدد الطلبات المضمنة",
+      "extraFeeLabel": "رسوم الطلب الإضافي (بعد تجاوز الحد)",
+      "bulkUploadLabel": "عدد الرفع الجماعي للطلبات شهرياً",
+      "currency": "ج.م",
+      "colors": {
+        "blue": "أزرق",
+        "purple": "بنفسجي",
+        "orange": "برتقالي",
+        "green": "أخضر",
+        "pink": "وردي",
+        "cyan": "سماوي"
       }
+    },
+    "deleteDialog": {
+      "title": "حذف الباقة",
+      "desc": "هل أنت متأكد من حذف هذه الباقة؟ لا يمكن التراجع.",
+      "confirm": "حذف",
+      "cancel": "إلغاء",
+      "deleting": "جاري الحذف..."
     },
     "limitsUi": {
       "usersLimitLabel": "عدد المستخدمين المسموح",
@@ -5172,6 +5491,9 @@
       "delete": "حذف"
     },
     "transactionDetails": {
+      "id": "رقم المعاملة",
+      "userName": "اسم العميل",
+      "date": "تاريخ الاشتراك",
       "title": "تفاصيل المعاملة",
       "description": "معلومات كاملة عن المعاملة #{id}",
       "transactionNumber": "رقم المعاملة",
@@ -5187,84 +5509,6 @@
       "title": "حذف الباقة",
       "confirmText": "هل أنت متأكد من حذف هذه الباقة؟ لا يمكن التراجع.",
       "deleting": "جاري الحذف..."
-    },
-    "paymentMethods": {
-      "card": "بطاقة ائتمان",
-      "wallet": "محفظة إلكترونية",
-      "manual_adjustment": "يدوي من الأدمن",
-      "cash": "نقدي (كاش)",
-      "visa": "بطاقة ائتمان (فيزا/ماستركارد)",
-      "bank": "تحويل بنكي",
-      "other": "وسيلة أخرى",
-      "vodafone_cash": "فودافون كاش",
-      "orange_cash": "أورانج كاش",
-      "etisalat_cash": "اتصالات كاش",
-      "we_pay": "وي باي (WE Pay)",
-      "insta": "إنستا باي (InstaPay)",
-      "fawry": "فوري",
-      "aman": "أمان",
-      "meeza": "ميزة",
-      "valu": "فالو (valU)",
-      "sympl": "سيمبل (Sympl)",
-      "tabby": "تابي (Tabby)",
-      "tamara": "تمارا (Tamara)"
-    }
-  },
-  "extraFeatures": {
-    "assignModal": {
-      "title": "إدارة مميزات المستخدم",
-      "userHas": "المميزات النشطة حالياً",
-      "selectFeature": "اختر ميزة جديدة",
-      "alreadyOwned": "يمتلك هذه الميزة بالفعل",
-      "noFeatures": "لا توجد مميزات نشطة حالياً",
-      "assign": "تخصيص الميزة",
-      "price": "سعر التخصيص",
-      "paymentMethod": "طريقة الدفع"
-    },
-    "columns": {
-      "featureName": "اسم الميزة",
-      "featureType": "نوع الميزة",
-      "paidPrice": "السعر المدفوع",
-      "price": "السعر",
-      "isActive": "نشط؟",
-      "purchaseDate": "تاريخ الشراء",
-      "actions": "إجراءات",
-      "status": "الحالة"
-    },
-    "status": {
-      "active": "نشط",
-      "notSubscribed": "غير مشترك"
-    },
-    "filters": {
-      "feature": "الميزة",
-      "featurePlaceholder": "اختر الميزة",
-      "cancel": "إلغاء"
-    },
-    "tooltips": {
-      "purchaseNow": "إتمام عملية الشراء والاشتراك"
-    },
-    "toolbar": {
-      "searchPlaceholder": "بحث عن ميزة..."
-    },
-    "actions": {
-      "editFeature": "تعديل الميزة",
-      "purchase": "شراء الآن"
-    },
-    "modal": {
-      "editTitle": "تعديل بيانات الميزة",
-      "name": "الاسم",
-      "price": "السعر",
-      "isActive": "تفعيل الميزة",
-      "save": "حفظ التغييرات",
-      "cancel": "إلغاء"
-    },
-    "messages": {
-      "updateSuccess": "تم تحديث الميزة بنجاح",
-      "updateFailed": "حدث خطأ أثناء تحديث الميزة",
-      "fetchFailed": "فشل في جلب الميزات",
-      "redirecting": "جاري توجيهك لصفحة الدفع...",
-      "alreadyOwned": "تم الشراء مسبقاً",
-      "noFeaturesFound": "لا توجد ميزات متاحة حالياً"
     }
   },
   "subscriptions": {
@@ -5437,6 +5681,15 @@
     "lastPage": "الصفحة الأخيرة"
   },
   "landing": {
+    "roles": {
+      "super_admin": "مدير عام",
+      "admin": "مدير",
+      "user": "مستخدم"
+    },
+    "logout": "تسجيل الخروج",
+    "dashboard": "لوحة التحكم",
+    "signup": "ابدأ الآن",
+    "signin": "تسجيل الدخول",
     "brand": {
       "name": "طلباتي",
       "suffix": "تك"
@@ -5591,7 +5844,12 @@
         "احصل على تقارير دقيقة لاتخاذ قرارات أسرع",
         "تابع الطلبات من أول التأكيد لحد التسليم"
       ]
-    }
+    },
+    "badges": [
+      "تابع الطلبات من أول التأكيد لحد التسليم",
+      "شوف كل المنتجات والكميات لحظة بلحظة",
+      "احصل على تقارير دقيقة لاتخاذ قرارات أسرع"
+    ]
   },
   "marquee": {
     "lines": [
@@ -5657,7 +5915,14 @@
         "title": "فعّل شركات الشحن بسهولة",
         "desc": "اربط شركات الشحن التي تتعامل معها، حدد مناطق التغطية، أسعار الشحن، وحالات التسليم."
       }
-    ]
+    ],
+    "fields": {
+      "name": "الاسم بالكامل",
+      "email": "البريد الإلكتروني",
+      "store": "رابط متجرك",
+      "password": "كلمة المرور"
+    },
+    "signupBtn": "إنشاء حساب"
   },
   "shippingNetwork": {
     "heading": {
@@ -5685,6 +5950,11 @@
       "highlight": "مع منصتنا"
     },
     "subheading": "شوفوا نجاحات العملاء اللي استخدموا منصتنا",
+    "logos": {
+      "zain": "زين\nZAiN",
+      "alize": "ALiZE",
+      "oneSystem": "نظام\nواحد"
+    },
     "reviews": {
       "r1": {
         "name": "أحمد سامي",
@@ -5824,7 +6094,8 @@
     },
     "subheading": "نظم طلباتك، مخزونك، الشحن، والتحصيل في منصة واحدة ذكية مصممة لتسهيل شغلك اليومي ودعم نمو تجارتك.",
     "ctaPrimary": "ابدأ تجربتك الآن",
-    "ctaSecondary": "تواصل معنا"
+    "ctaSecondary": "تواصل معنا",
+    "dashboardAlt": "لوحة تحكم المنصة"
   },
   "footer": {
     "logo": "طلباتي تك",
@@ -6013,17 +6284,144 @@
     }
   },
   "onboarding": {
+    "brand": "طلباتي تك",
+    "progress": "التقدم",
+    "steps": {
+      "welcome": {
+        "label": "مرحباً",
+        "sub": "نقطة البداية"
+      },
+      "plan": {
+        "label": "الخطة",
+        "sub": "اختر باقتك"
+      },
+      "company": {
+        "label": "شركتك",
+        "sub": "بيانات العمل"
+      },
+      "store": {
+        "label": "المتجر",
+        "sub": "ربط المنصة"
+      },
+      "shipping": {
+        "label": "الشحن",
+        "sub": "شركة التوصيل"
+      }
+    },
+    "welcome": {
+      "hero": {
+        "title_welcome": "أهلاً وسهلاً بك!",
+        "title_start": "لنبدأ الإعداد معاً",
+        "desc": "سيستغرق الإعداد دقيقتين فقط — بعدها ستكون جاهزاً لاستقبال أول طلب."
+      },
+      "pricing": {
+        "heading": {
+          "prefix": "خطط أسعار",
+          "highlight": "بسيطة وشفافة"
+        },
+        "subheading": "اختر الخطة التي تناسب حجم واحتياجات عملك.",
+        "perMonth": "شهر",
+        "cta": "ابدأ الآن",
+        "badge": "جديد",
+        "currency": "جنيه",
+        "types": {
+          "negotiated": "حسب الاتفاق",
+          "trial": "تجريبي",
+          "monthly": "شهري",
+          "yearly": "سنوي",
+          "plan": "خطة"
+        },
+        "limits": {
+          "users": "{count} مستخدمين",
+          "unlimitedUsers": "مستخدمين غير محدودين",
+          "stores": "{count} متاجر",
+          "unlimitedStores": "متاجر غير محدودة",
+          "shipping": "{count} شركات شحن",
+          "unlimitedShipping": "شركات شحن غير محدودة",
+          "orders": "{count} طلب متضمن",
+          "unlimitedOrders": "طلبات غير محدودة",
+          "extraFee": "{fee} {currency} رسوم إضافية للطلب",
+          "bulkUpload": "{count} رفع جماعي/شهر"
+        }
+      },
+      "features": {
+        "order_management": {
+          "title": "إدارة الطلبات",
+          "desc": "استقبل وتابع طلباتك لحظةً بلحظة"
+        },
+        "shipping_tracking": {
+          "title": "تتبع الشحنات",
+          "desc": "ربط مباشر مع شركات التوصيل"
+        },
+        "smart_reports": {
+          "title": "تقارير ذكية",
+          "desc": "تحليلات مفصّلة لنمو متجرك"
+        },
+        "platform_integration": {
+          "title": "تكامل المنصات",
+          "desc": "Shopify وWooCommerce وأكثر"
+        }
+      },
+      "hint": "يمكنك تخطي أي خطوة اختيارية والعودة إليها لاحقاً من الإعدادات.",
+      "start_btn": "لنبدأ الإعداد"
+    },
+    "toasts": {
+      "login_required": "يجب تسجيل الدخول أولاً",
+      "admin_only": "غير مصرح لك بالوصول إلى صفحة الإعداد",
+      "onboarding_completed": "تم إكمال خطوات الإعداد مسبقاً",
+      "session_expired": "انتهت الجلسة، يرجى تسجيل الدخول مرة أخرى",
+      "admin_only_page": "هذه الصفحة مخصصة للمشرفين فقط. يرجى تسجيل الدخول بحساب مشرف.",
+      "unexpected_error": "حدث خطأ غير متوقع",
+      "finishing": "جاري إنهاء الإعداد...",
+      "finish_success": "اكتمل الإعداد! مرحباً بك 🎉",
+      "finish_error": "حدث خطأ أثناء إنهاء الإعداد"
+    },
     "welcome_title": "مرحباً بك في طلباتي تك! 🎉",
     "welcome_sub": "سنأخذ منك دقائق قليلة لإعداد نظامك",
     "welcome_desc": "سنساعدك في اختيار الخطة المناسبة، وإضافة بيانات شركتك، وربط متجرك وشركة الشحن لتبدأ الاستقبال فوراً.",
     "welcome_btn": "لنبدأ الإعداد",
-    "steps": [
-      "اختر خطتك",
-      "بيانات الشركة",
-      "ربط المتجر",
-      "شركة الشحن"
-    ],
     "plans": {
+      "active_alert": {
+        "title": "لديك اشتراك نشط",
+        "desc": "أنت مشترك حالياً في باقة. يمكنك إلغاء اشتراكك الحالي إذا كنت ترغب في اختيار باقة مختلفة."
+      },
+      "status": {
+        "active": "نشطة",
+        "trial": "تجريبي",
+        "negotiated": "حسب الاتفاق"
+      },
+      "price_per_month": "ج.م / شهر",
+      "cancel_btn": "إلغاء الاشتراك",
+      "contact_us": "تواصل معنا",
+      "start_now": "ابدأ الآن",
+      "unavailable": "غير متاح",
+      "active_already": "لديك اشتراك نشط",
+      "back_btn": "رجوع",
+      "continue_btn": "متابعة",
+      "popular_badge": "الأكثر شيوعاً",
+      "features": {
+        "users": "مستخدمين",
+        "unlimited_users": "مستخدمين غير محدود",
+        "stores": "متاجر",
+        "unlimited_stores": "متاجر غير محدودة",
+        "shipping_companies": "شركات شحن",
+        "unlimited_shipping_companies": "شركات شحن غير محدودة",
+        "included_orders": "طلب متضمن",
+        "unlimited_orders": "طلبات غير محدودة",
+        "extra_order_fee": "ج.م رسوم طلب إضافي",
+        "bulk_upload": "رفع جماعي/شهر"
+      },
+      "toasts": {
+        "select_plan_error": "يرجى اختيار خطة",
+        "trial_not_available": "النسخة التجريبية غير متاحة بعد إكمال التسجيل"
+      },
+      "cancel_confirm": {
+        "title": "إلغاء الاشتراك؟",
+        "desc": "هل أنت متأكد من رغبتك في إلغاء اشتراكك الحالي؟ لا يمكن التراجع عن هذا الإجراء.",
+        "keep": "لا، الإبقاء عليه",
+        "confirm": "نعم، إلغاء",
+        "canceling": "جاري الإلغاء..."
+      },
       "title": "اختر باقتك",
       "subtitle": "اختر الباقة التي تناسب احتياجات عملك بشكل أفضل. يمكنك دائماً الترقية أو التغيير لاحقاً.",
       "loading": "جارٍ تحميل الباقات...",
@@ -6069,6 +6467,52 @@
       }
     },
     "company": {
+      "subtitle": "تظهر في الفواتير والتقارير الرسمية",
+      "required_hint": "* الدولة والعملة إلزاميتان",
+      "fields": {
+        "country": "الدولة",
+        "currency": "العملة",
+        "name": "اسم الشركة / المتجر *",
+        "tax": "الرقم الضريبي",
+        "commercial": "السجل التجاري",
+        "phone": "الهاتف",
+        "website": "الموقع الإلكتروني",
+        "address": "العنوان"
+      },
+      "placeholders": {
+        "select_country": "اختر الدولة",
+        "select_currency": "اختر العملة",
+        "name": "مثال: شركة طلباتي تك",
+        "optional": "اختياري",
+        "address": "العنوان بالتفصيل (اختياري)"
+      },
+      "toasts": {
+        "save_success": "تم حفظ بيانات الشركة بنجاح ✓",
+        "save_error": "حدث خطأ أثناء حفظ البيانات"
+      },
+      "validation": {
+        "country_required": "الدولة مطلوبة",
+        "currency_required": "العملة مطلوبة",
+        "name_required": "الاسم مطلوب",
+        "invalid_url": "رابط غير صالح"
+      },
+      "countries": {
+        "egypt": "مصر",
+        "saudi": "السعودية",
+        "uae": "الإمارات",
+        "kuwait": "الكويت",
+        "qatar": "قطر",
+        "bahrain": "البحرين",
+        "oman": "عمان",
+        "jordan": "الأردن",
+        "lebanon": "لبنان"
+      },
+      "currencies": {
+        "egp": "جنيه مصري (EGP)",
+        "sar": "ريال سعودي (SAR)",
+        "aed": "درهم إماراتي (AED)",
+        "usd": "دولار أمريكي (USD)"
+      },
       "title": "بيانات شركتك",
       "sub": "هذه المعلومات ستظهر في فواتيرك وتقاريرك",
       "name": "اسم الشركة",
@@ -6091,6 +6535,22 @@
       "required_note": "* الدولة والعملة مطلوبان"
     },
     "store": {
+      "subtitle": "أضف متجرك لاستقبال الطلبات تلقائياً — يمكن إضافة أكثر من متجر",
+      "status": {
+        "connected": "متصل",
+        "connect_btn": "ربط"
+      },
+      "actions": {
+        "skip": "تخطي الآن",
+        "close": "إغلاق",
+        "cancel": "إلغاء",
+        "update_store": "تحديث المتجر",
+        "save_store": "حفظ وربط المتجر"
+      },
+      "webhooks": {
+        "title": "🔑 أسرار Webhook الخاصة بك",
+        "desc": "انسخ هذه الأسرار والصقها في إعدادات WooCommerce"
+      },
       "title": "اربط متجرك",
       "sub": "أضف متجرك لاستقبال الطلبات تلقائياً",
       "skip": "تخطي الآن",
@@ -6107,6 +6567,22 @@
       "cancel": "إلغاء"
     },
     "shipping": {
+      "subtitle": "أرسل الطلبات لشركة الشحن تلقائياً بضغطة واحدة",
+      "webhook": {
+        "title": "إعدادات Webhook - {name}",
+        "subtitle": "انسخ هذه البيانات إلى لوحة تحكم {name}",
+        "info_title": "📡 متى يتم تشغيل Webhook؟",
+        "info_desc": "يتم إرسال إشعار تلقائي عند تغيير حالة الشحنة (تم التسليم، قيد التوصيل، إلخ)",
+        "security_hint": "لتحسين الأمان، يمكنك تجديد السر (Secret) في أي وقت",
+        "renew_btn": "تجديد",
+        "renewing": "جارٍ..."
+      },
+      "actions": {
+        "finish": "إنهاء الإعداد",
+        "skip_finish": "تخطي وإنهاء",
+        "update_data": "تحديث البيانات",
+        "save_connect": "حفظ وربط الشحن"
+      },
       "title": "اربط شركة الشحن",
       "sub": "أضف شركة شحن لإرسال الطلبات تلقائياً",
       "skip": "تخطي وإنهاء الإعداد",
@@ -6124,10 +6600,34 @@
       "finish": "إنهاء الإعداد",
       "skip": "تخطي"
     },
-    "complete": {
+    "finished": {
       "title": "اكتمل الإعداد! 🚀",
-      "sub": "نظامك جاهز، لنبدأ!",
-      "go": "الذهاب للوحة التحكم"
+      "desc": "نظامك الآن جاهز تماماً لاستقبال الطلبات، تتبع الشحنات، وإدارة عملك بكفاءة عالية.",
+      "goBtn": "الذهاب للوحة التحكم",
+      "highlights": {
+        "orders": {
+          "title": "استقبال الطلبات",
+          "desc": "متجرك متصل وجاهز لاستقبال الطلبات تلقائياً."
+        },
+        "shipping": {
+          "title": "الشحن جاهز",
+          "desc": "أرسل طلباتك لشركة الشحن بضغطة زر واحدة."
+        },
+        "reports": {
+          "title": "تقارير ذكية",
+          "desc": "راقب مبيعاتك وأداء عملك من خلال تحليلات مفصلة."
+        }
+      }
+    },
+    "errors": {
+      "noStepTitle": "حدث خطأ ما",
+      "noStepDesc": "لم نتمكن من تحديد خطوة الإعداد التالية. يرجى محاولة تحديث الصفحة.",
+      "retryBtn": "إعادة المحاولة الآن",
+      "unauthorized_title": "غير مصرح لك بالوصول",
+      "unauthorized_desc": "هذه الصفحة مخصصة للمشرفين فقط. يرجى تسجيل الدخول بحساب مدير النظام لإكمال عملية الإعداد.",
+      "no_step_title": "تعذر تحديد خطوة الإعداد",
+      "no_step_desc": "يبدو أن هناك مشكلة في حالة الإعداد الخاصة بحسابك. يمكنك إعادة بدء عملية الإعداد أو الانتقال إلى لوحة التحكم.",
+      "retry_btn": "إعادة المحاولة"
     },
     "plan": {
       "title": "اختر الخطة المناسبة لك",
@@ -6590,7 +7090,16 @@
       "phone": {
         "label": "رقم الجوال",
         "countryPlaceholder": "الدولة",
-        "invalid": "رقم الجوال غير صحيح"
+        "invalid": "رقم الجوال غير صحيح",
+        "required": "يرجى إدخال رقم جوال صحيح",
+        "lengthExact": "رقم الجوال يجب أن يكون {min} رقمًا",
+        "lengthRange": "رقم الجوال يجب أن يكون بين {min} و {max} رقمًا",
+        "invalidForCountry": "يرجى إدخال رقم جوال صحيح حسب الدولة المختارة"
+      },
+      "validation": {
+        "nameRequired": "الاسم مطلوب",
+        "emailInvalid": "البريد الإلكتروني غير صحيح",
+        "emailRequired": "البريد الإلكتروني مطلوب"
       },
       "toast": {
         "saving": "جارٍ الحفظ...",

@@ -110,9 +110,9 @@ const SOCIALS = [
 ];
 
 const STATS = [
-  { val: "+١٢k", key: "brand.stat_merchants" },
-  { val: "+٣M", key: "brand.stat_orders" },
-  { val: "٩٩.٩٪", key: "brand.stat_uptime" },
+  { valKey: "brand.stat_val_merchants", key: "brand.stat_merchants" },
+  { valKey: "brand.stat_val_orders", key: "brand.stat_orders" },
+  { valKey: "brand.stat_val_uptime", key: "brand.stat_uptime" },
 ];
 
 const FEATURES = [
@@ -805,7 +805,7 @@ export default function AuthBrandSide({ mode, t: tProp }) {
           {STATS.map((s, i) => (
             <StatCard
               key={s.key}
-              val={s.val}
+              val={t(s.valKey)}
               labelKey={s.key}
               t={t}
               delay={0.28 + i * 0.08}

@@ -229,6 +229,7 @@ export default function ProductsPage() {
 
 	const [categories, setCategories] = useState([]);
 	const [stores, setStores] = useState([]);
+	const [storeProviders, setStoreProviders] = useState([]);
 	const [warehouses, setWarehouses] = useState([]);
 
 	const [deleteState, setDeleteState] = useState({ open: false, id: null, scope: null });
@@ -302,6 +303,14 @@ export default function ProductsPage() {
 		fetchStats();
 	}, []);
 
+	const filteredStores = useMemo(() => {
+		return stores.filter((s) => {
+			if (active !== "bundles") return true;
+			const provider = storeProviders.find((p) => p.code === s.provider);
+			return provider?.supportBundle;
+		});
+	}, [stores, active, storeProviders]);
+
 	const stats = useMemo(() => {
 		if (!summary) return [];
 
@@ -345,14 +354,16 @@ export default function ProductsPage() {
 	}, [search]);
 
 	async function loadLookups() {
-		const [cats, sts, whs] = await Promise.all([
+		const [cats, sts, whs, providers] = await Promise.all([
 			api.get("/lookups/categories", { params: { limit: 200 } }),
 			api.get("/lookups/stores", { params: { limit: 200 } }),
-			api.get("/lookups/warehouses", { params: { limit: 200 } })
+			api.get("/lookups/warehouses", { params: { limit: 200 } }),
+			api.get("/stores/providers", { params: { limit: 200 } })
 		]);
 		setCategories(cats.data ?? []);
 		setStores(sts.data ?? []);
 		setWarehouses(whs.data ?? []);
+		setStoreProviders(providers.data?.providers ?? []);
 	}
 
 	useEffect(() => {
@@ -611,7 +622,6 @@ export default function ProductsPage() {
 						)}
 
 						{/* Store */}
-						{active !== "bundles" && (
 							<FilterField label={t("filters.store")}>
 								<Select
 									value={filters.storeId || "none"}
@@ -622,7 +632,7 @@ export default function ProductsPage() {
 									</SelectTrigger>
 									<SelectContent>
 										<SelectItem value="none">{t("filters.any")}</SelectItem>
-										{stores.map((s) => (
+										{filteredStores.map((s) => (
 											<SelectItem key={s.id} value={String(s.id)}>
 												{s.label ?? s.name ?? `#${s.id}`}
 											</SelectItem>
@@ -630,7 +640,6 @@ export default function ProductsPage() {
 									</SelectContent>
 								</Select>
 							</FilterField>
-						)}
 
 						{/* Warehouse */}
 						{active !== "bundles" && (

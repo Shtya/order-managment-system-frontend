@@ -18,7 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Button_ from '@/components/atoms/Button';
 import { useRouter } from '@/i18n/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Textarea } from '@/components/ui/textarea';
 import { ProductSkuSearchPopover } from '@/components/molecules/ProductSkuSearchPopover';
 import PageHeader from '@/components/atoms/Pageheader';
@@ -48,6 +48,9 @@ const makeSchema = (t) =>
 			.required(t('bundles.totalPriceRequired'))
 			.min(1, t('validation.priceMin', { min: 1 })), // Native min check
 		description: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
+		storeId: yup.string().nullable(),
+		variantId: yup.number().required(t('validation.mainVariantRequired')),
+		variant: yup.mixed().nullable(),
 		bundleItems: yup
 			.array()
 			.of(
@@ -58,6 +61,16 @@ const makeSchema = (t) =>
 				})
 			)
 			.min(1, t('bundles.atLeastOne'))
+			.test('unique-items', t('validation.duplicateItems'), (items) => {
+				if (!items) return true;
+				const ids = items.map((it) => it.variantId).filter(Boolean);
+				return new Set(ids).size === ids.length;
+			})
+			.test('no-main-variant', t('validation.mainVariantInItems'), function (items) {
+				const mainVariantId = this.parent.variantId;
+				if (!items || !mainVariantId) return true;
+				return !items.some((it) => it.variantId === mainVariantId);
+			})
 			.default([]),
 	});
 
@@ -66,6 +79,9 @@ function defaultValues() {
 		name: '',
 		wholesalePrice: '',
 		description: '',
+		storeId: 'none',
+		variantId: '',
+		variant: null,
 		bundleItems: [],
 	};
 }
@@ -73,6 +89,10 @@ function defaultValues() {
 export default function AddBundlePage({ isEditMode = false, existingBundle = null, bundleId = null }) {
 	const t = useTranslations('addProduct');
 	const navigate = useRouter();
+	const locale = useLocale();
+
+	const [stores, setStores] = useState([]);
+	const [storeProviders, setStoreProviders] = useState([]);
 
 	const schema = React.useMemo(() => makeSchema(t), [t]);
 
@@ -81,6 +101,8 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 		register,
 		handleSubmit,
 		reset,
+		setValue,
+		watch,
 		formState: { errors, isSubmitting },
 	} = useForm({
 		defaultValues: defaultValues(),
@@ -88,11 +110,36 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 		mode: 'onTouched',
 	});
 
+	const mainVariant = watch('variant');
+
 	const { fields: bundleFields, append: appendBundleItem, remove: removeBundleItem } = useFieldArray({
 		control,
 		name: 'bundleItems',
 		keyName: 'fieldId',
 	});
+
+	useEffect(() => {
+		async function loadLookups() {
+			try {
+				const [sts, providers] = await Promise.all([
+					api.get("/lookups/stores", { params: { limit: 200 } }),
+					api.get("/stores/providers", { params: { limit: 200 } })
+				]);
+				setStores(sts.data ?? []);
+				setStoreProviders(providers.data?.providers ?? []);
+			} catch (err) {
+				console.error("Failed to load stores", err);
+			}
+		}
+		loadLookups();
+	}, []);
+
+	const filteredStores = React.useMemo(() => {
+		return stores.filter((s) => {
+			const provider = storeProviders.find((p) => p.code === s.provider);
+			return provider?.supportBundle;
+		});
+	}, [stores, storeProviders]);
 
 
 	useEffect(() => {
@@ -101,6 +148,9 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 			name: existingBundle.name || '',
 			wholesalePrice: existingBundle.price || 0,
 			description: existingBundle.description || '',
+			storeId: existingBundle.storeId ? String(existingBundle.storeId) : 'none',
+			variantId: existingBundle.variantId || '',
+			variant: existingBundle.variant || null,
 			bundleItems:
 				existingBundle.items?.map((item) => ({
 					variant: item.variant,
@@ -108,7 +158,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 					qty: item.qty,
 				})) || [],
 		});
-	}, [isEditMode, existingBundle, reset]);
+	}, [isEditMode, existingBundle, reset, stores]);
 
 	const onSubmit = async (data) => {
 		try {
@@ -117,6 +167,8 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 				price: data.wholesalePrice,
 				description: data.description,
 				sku: `BUNDLE-${slugifyKey(data.name).substring(0, 10).toUpperCase()}-${Date.now()}`,
+				variantId: Number(data.variantId),
+				storeId: data.storeId === 'none' ? null : Number(data.storeId),
 				items: data.bundleItems.map((item) => ({
 					variantId: Number(item.variantId),
 					qty: Number(item.qty),
@@ -203,6 +255,58 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 							{errors?.wholesalePrice?.message && <div className="text-xs text-red-600">{errors.wholesalePrice.message}</div>}
 						</div>
 
+						<div className="space-y-2">
+							<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('fields.store')}</Label>
+							<Controller
+								control={control}
+								name="storeId"
+								render={({ field }) => (
+									<Select value={field.value} onValueChange={field.onChange}>
+										<SelectTrigger className="rounded-xl h-[50px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700">
+											<SelectValue placeholder={t('placeholders.store')} />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="none">{t('common.none')}</SelectItem>
+											{filteredStores.map((s) => (
+												<SelectItem key={s.id} value={String(s.id)}>
+													{s.label ?? s.name ?? `#${s.id}`}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								)}
+							/>
+						</div>
+
+						<div className="space-y-2">
+							<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">
+								{t('fields.mainVariant')} <span className="text-red-500">*</span>
+							</Label>
+							<Controller
+								control={control}
+								name="variantId"
+								render={({ field }) => {
+									return (
+										<div className="space-y-2">
+											<ProductSkuSearchPopover
+												selectedSkus={field.value ? [{ id: Number(field.value) }] : []}
+												handleSelectSku={(sku) => {
+													field.onChange(Number(sku.id));
+													setValue('variant', sku);
+												}}
+											/>
+											{mainVariant && (
+												<div className="text-xs text-muted-foreground">
+													Selected SKU: <span className="font-[Inter]">{mainVariant.sku}</span>
+												</div>
+											)}
+										</div>
+									);
+								}}
+							/>
+							{errors?.variantId?.message && <div className="text-xs text-red-600">{errors.variantId.message}</div>}
+						</div>
+
 						<div className="space-y-2 col-span-full">
 							<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300">{t('fields.description')}</Label>
 							<Textarea
@@ -227,7 +331,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 						</Button>
 					</div>
 
-					{errors?.bundleItems?.message && <div className="text-sm text-red-600 mb-4">{errors.bundleItems.message}</div>}
+					{(errors?.bundleItems?.message || errors.bundleItems?.root?.message) && <div className="text-sm text-red-600 mb-4">{errors.bundleItems?.root?.message || errors.bundleItems?.message}</div>}
 
 					{bundleFields.length === 0 ? (
 						<div className="text-center py-12 text-gray-400">
@@ -252,11 +356,10 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 															<ProductSkuSearchPopover
 																selectedSkus={itemValue.variantId ? [{ id: Number(itemValue.variantId) }] : []}
 																handleSelectSku={(sku) => {
-																	console.log(sku);
-																	field.onChange({
+																	setValue(`bundleItems.${index}`, {
 																		...itemValue,
-																		variantId: Number(sku.id), // ✅ store number
-																		variant: sku,              // ✅ store object for UI
+																		variantId: Number(sku.id),
+																		variant: sku,
 																	});
 																}}
 															/>

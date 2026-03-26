@@ -3,7 +3,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { CalendarDays, Edit2, Eye, QrCode, Trash2, Package, Tag, Hash } from "lucide-react";
+import { CalendarDays, Edit2, Eye, QrCode, Trash2, Package, Tag, Hash, Store, AlignLeft, Image as ImageIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/utils/cn";
@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Separator } from "@/components/ui/separator";
 import { useTranslations } from "next-intl";
 import { Bone } from "@/components/atoms/BannerSkeleton";
+import { avatarSrc } from "@/components/atoms/UserSelect";
 import ActionButtons from "@/components/atoms/Actions";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
@@ -44,6 +45,9 @@ export default function useBundlesTab({ t, searchDebounced, filters, onAskDelete
 
     if (filters.priceFrom !== "") params.set("wholesalePrice.gte", String(filters.priceFrom));
     if (filters.priceTo !== "") params.set("wholesalePrice.lte", String(filters.priceTo));
+
+    if (filters.storeId && filters.storeId !== "none") params.set("storeId", String(filters.storeId));
+    if (filters.categoryId && filters.categoryId !== "none") params.set("categoryId", String(filters.categoryId));
 
     params.set("sortBy", "created_at");
     params.set("sortOrder", "DESC");
@@ -113,7 +117,49 @@ export default function useBundlesTab({ t, searchDebounced, filters, onAskDelete
         cell: (row) => (
           <div className="flex items-center gap-2">
             <QrCode size={16} className="text-primary" />
-            <span className="font-[Inter] text-gray-600 dark:text-slate-200 text-sm">{row.sku || na}</span>
+            <span className="font-[Inter] text-gray-700 dark:text-slate-200 text-sm font-semibold">{row.sku || na}</span>
+          </div>
+        )
+      },
+      {
+        key: "mainVariant",
+        header: t("common.variant"),
+        className: "min-w-[200px]",
+        cell: (row) => {
+          const v = row.variant;
+          if (!v) return <span className="text-slate-400">{na}</span>;
+          return (
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-border/50 shrink-0">
+                {v.mainImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={avatarSrc(v.mainImage)} alt={v.sku} className="w-full h-full object-cover" />
+                ) : (
+                  <ImageIcon size={16} className="text-slate-400" />
+                )}
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">
+                  {v.product?.name || na}
+                </span>
+                <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
+                  {v.sku}
+                </span>
+              </div>
+            </div>
+          );
+        }
+      },
+      {
+        key: "store",
+        header: t("common.store"),
+        className: "min-w-[150px]",
+        cell: (row) => (
+          <div className="flex items-center gap-2">
+            <Store size={14} className="text-slate-400" />
+            <span className="text-sm text-slate-600 dark:text-slate-300">
+              {row.store?.name || na}
+            </span>
           </div>
         )
       },
@@ -251,6 +297,43 @@ export function BundleViewModal({ open, onOpenChange, bundle, viewLoading }) {
                     <Badge className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200">
                       {t("common.price")}: {formatCurrency(bundle.price, na)}
                     </Badge>
+
+                    {bundle.store && (
+                      <Badge className="rounded-full bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-200">
+                        <Store size={14} className="mr-1" />
+                        {t("bundleModal.store")}: {bundle.store.name}
+                      </Badge>
+                    )}
+
+                    {bundle.variant && (
+                      <div className="w-full mt-4 flex items-center gap-4 p-4 rounded-xl bg-purple-50/50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-900/20">
+                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-white dark:bg-slate-800 flex items-center justify-center border border-purple-200 dark:border-purple-800 shrink-0 shadow-sm">
+                          {bundle.variant.mainImage ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={avatarSrc(bundle.variant.mainImage)} alt={bundle.variant.sku} className="w-full h-full object-cover" />
+                          ) : (
+                            <ImageIcon size={24} className="text-purple-300" />
+                          )}
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <div className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider mb-1">
+                            {t("bundleModal.variant")}
+                          </div>
+                          <div className="text-base font-semibold text-slate-900 dark:text-slate-100 truncate">
+                            {bundle.variant.product?.name || na}
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="outline" className="font-mono text-[10px] py-0 h-5 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300">
+                              {bundle.variant.sku}
+                            </Badge>
+                            <span className="text-[10px] text-slate-400">
+                              ID: {bundle.variant.id}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {bundle.description && (
                       <div className="mt-4 p-3 rounded-lg bg-muted/30 border border-border/40">
                         <div className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center gap-1">
@@ -366,10 +449,24 @@ function BundleModalSkeleton() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-3 flex-1">
             <Bone className="h-6 w-1/2" /> {/* Name */}
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Bone className="h-5 w-24 rounded-full" /> {/* ID */}
               <Bone className="h-5 w-20 rounded-full" /> {/* SKU */}
               <Bone className="h-5 w-28 rounded-full" /> {/* Price */}
+              <Bone className="h-5 w-32 rounded-full" /> {/* Store */}
+            </div>
+
+            {/* Variant Section Skeleton */}
+            <div className="w-full mt-4 flex items-center gap-4 p-4 rounded-xl border border-border/20">
+              <Bone className="w-16 h-16 rounded-lg shrink-0" /> {/* Variant Image */}
+              <div className="flex-1 space-y-2">
+                <Bone className="h-3 w-20" /> {/* Variant Label */}
+                <Bone className="h-5 w-1/2" /> {/* Variant Name */}
+                <div className="flex gap-2">
+                  <Bone className="h-5 w-24 rounded-full" /> {/* Variant SKU */}
+                  <Bone className="h-4 w-16" /> {/* Variant ID */}
+                </div>
+              </div>
             </div>
           </div>
           <Bone className="h-4 w-32" /> {/* Date */}

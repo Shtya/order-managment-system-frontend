@@ -3145,7 +3145,8 @@
       "store": "المتجر",
       "warehouse": "المستودع",
       "description": "الوصف",
-      "totalPrice": "السعر الإجمالي"
+      "totalPrice": "السعر الإجمالي",
+      "mainVariant": "المتغير الأساسي"
     },
     "placeholders": {
       "productName": "أدخل اسم المنتج",
@@ -3160,7 +3161,8 @@
       "description": "أدخل الوصف",
       "callCenterDesc": "أدخل وصف المنتج لمركز الاتصال",
       "totalPrice": "السعر الإجمالي للباقة",
-      "bundleDescription": "وصف الباقة"
+      "bundleDescription": "وصف الباقة",
+      "mainVariant": "ابحث عن المتغير الأساسي..."
     },
     "common": {
       "none": "بدون"
@@ -3193,7 +3195,10 @@
       "productRequired": "المنتج مطلوب",
       "quantityMinOne": "الكمية يجب أن تكون 1 على الأقل",
       "quantityRequired": "الكمية مطلوبة",
-      "noNegative": "القيمة يجب أن تكون 0 أو أكثر"
+      "noNegative": "القيمة يجب أن تكون 0 أو أكثر",
+      "mainVariantRequired": "المتغير الأساسي مطلوب",
+      "mainVariantInItems": "المتغير الأساسي لا يمكن أن يكون ضمن عناصر الباندل",
+      "duplicateItems": "الباندل لا يمكن أن يحتوي على عناصر مكررة"
     },
     "attributes": {
       "title": "الخصائص والمتغيرات",
@@ -3318,6 +3323,7 @@
       "sku": "SKU",
       "price": "السعر",
       "variant": "المتغير",
+      "store": "المتجر",
       "qty": "الكمية",
       "stock": "المخزون",
       "attributes": "الخصائص",
@@ -3346,7 +3352,9 @@
       "title": "تفاصيل الباندل",
       "noData": "لا توجد بيانات.",
       "contents": "محتويات الباندل",
-      "noItems": "لا يوجد عناصر."
+      "noItems": "لا يوجد عناصر.",
+      "store": "المتجر",
+      "variant": "المتغير"
     },
     "productModal": {
       "title": "تفاصيل المنتج",

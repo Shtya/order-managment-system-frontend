@@ -687,7 +687,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar }) => {
   }, []);
 
   const router = useRouter();
-  const { user, isSuperAdmin, hasActiveSubscription, hasPermission } = useAuth();
+  const { user, isLoading: isLoadingUser, isSuperAdmin, hasActiveSubscription, hasPermission } = useAuth();
   const userRole = user?.role?.name?.toUpperCase();
 
 
@@ -757,9 +757,9 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar }) => {
       return next;
     });
 
- 
 
-  if (!userRole) {
+
+  if (isLoadingUser) {
     return (
       <motion.aside
         initial={false}

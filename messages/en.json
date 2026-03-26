@@ -3145,7 +3145,8 @@
       "store": "Store",
       "warehouse": "Warehouse",
       "description": "Description",
-      "totalPrice": "Total Price"
+      "totalPrice": "Total Price",
+      "mainVariant": "Main Variant"
     },
     "placeholders": {
       "productName": "Enter product name",
@@ -3160,7 +3161,8 @@
       "description": "Enter description",
       "callCenterDesc": "Enter product description for call center",
       "totalPrice": "Bundle total price",
-      "bundleDescription": "Bundle description"
+      "bundleDescription": "Bundle description",
+      "mainVariant": "Search for main variant..."
     },
     "common": {
       "none": "None"
@@ -3193,7 +3195,10 @@
       "productRequired": "Product is required",
       "quantityMinOne": "Quantity must be at least 1",
       "quantityRequired": "Quantity is required",
-      "noNegative": "Value must be 0 or more"
+      "noNegative": "Value must be 0 or more",
+      "mainVariantRequired": "Main variant is required",
+      "mainVariantInItems": "Main variant cannot be part of the bundle items",
+      "duplicateItems": "Bundle cannot contain duplicate items"
     },
     "attributes": {
       "title": "Attributes and Variants",
@@ -3318,6 +3323,7 @@
       "sku": "SKU",
       "price": "Price",
       "variant": "Variant",
+      "store": "Store",
       "qty": "Quantity",
       "stock": "Stock",
       "attributes": "Attributes",
@@ -3346,7 +3352,9 @@
       "title": "Bundle Details",
       "noData": "No data available.",
       "contents": "Bundle Contents",
-      "noItems": "No items found."
+      "noItems": "No items found.",
+      "store": "Store",
+      "variant": "Variant"
     },
     "productModal": {
       "title": "Product Details",

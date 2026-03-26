@@ -51,7 +51,7 @@ export default function SlugInput({ register, name, slug, errors, slugStatus, se
         }, 800);
 
         return () => clearTimeout(delayDebounceFn);
-    }, [name, generateSlug, setValue]);
+    }, [name, setValue]);
 
 
     return (

@@ -14,21 +14,29 @@ import { PlatformSettingsProvider } from "@/context/PlatformSettingsContext";
 import { NotificationProvider } from "@/context/NotificationContext";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import SubscriptionLock from "@/components/atoms/SubscriptionLock";
+import { useAuthInterceptor } from "@/hook/useAuthInterceptor";
 
 export default function LayoutShell({ children }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
       <AuthProvider>
-        <SocketProvider>
-          <NotificationProvider>
-            <PlatformSettingsProvider>
-              <DashboardLayout>{children}</DashboardLayout>
-            </PlatformSettingsProvider>
-          </NotificationProvider>
-        </SocketProvider>
+        <AuthInterceptorWrapper>
+          <SocketProvider>
+            <NotificationProvider>
+              <PlatformSettingsProvider>
+                <DashboardLayout>{children}</DashboardLayout>
+              </PlatformSettingsProvider>
+            </NotificationProvider>
+          </SocketProvider>
+        </AuthInterceptorWrapper>
       </AuthProvider>
     </ThemeProvider>
   );
+}
+
+function AuthInterceptorWrapper({ children }) {
+  useAuthInterceptor(); // ✅ now inside AuthProvider
+  return children;
 }
 
 const toastOptions = (isRTL) => ({

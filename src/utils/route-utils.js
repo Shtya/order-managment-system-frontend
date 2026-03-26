@@ -1,8 +1,11 @@
 // src/lib/route-utils.js
 
 export const isPublicOrSpecialRoute = (pathname) => {
-  const pathWithoutLocale = pathname.replace(/^\/(en|ar)(\/|$)/, "/");
+  let pathWithoutLocale = pathname.replace(/^\/(en|ar)(\/|$)/, "/");
 
+  if (pathWithoutLocale.length > 1 && pathWithoutLocale.endsWith("/")) {
+    pathWithoutLocale = pathWithoutLocale.slice(0, -1);
+  }
   const excludedPaths = [
     { path: "/", strict: true },
     { path: "/auth", strict: false },
@@ -14,7 +17,6 @@ export const isPublicOrSpecialRoute = (pathname) => {
     { path: "/terms", strict: false },
     { path: "/privacy", strict: false },
   ];
-
   return excludedPaths.some(({ path, strict }) => {
     if (strict) {
       return pathWithoutLocale === path;

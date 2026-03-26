@@ -259,8 +259,8 @@ export const PROVIDER_CONFIG = {
                             url: (me) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/shopify/init`,
                             image: "/guide/shopify/step4.png",
                             tip: {
-                                en: "Click 'Add scopes' and include the required permissions (read_all_orders,write_locations,read_locations,read_orders,write_orders,read_products,write_products).",
-                                ar: "اضغط على 'Add scopes' وأضف الصلاحيات المطلوبة  read_all_orders,write_locations, read_locations,read_orders,write_orders,read_products,write_products."
+                                en: "Click 'Add scopes' and include the required permissions (read_all_orders,write_locations,read_locations,read_orders,write_orders,read_products,write_products,read_publications,write_publications).",
+                                ar: "اضغط على 'Add scopes' وأضف الصلاحيات المطلوبة  (read_all_orders,write_locations,read_locations,read_orders,write_orders,read_products,write_products,read_publications,write_publications)."
                             }
                         },
                         {

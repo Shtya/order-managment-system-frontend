@@ -5,7 +5,7 @@
  */
 export const getActiveSubscription = (user: any): any | null => {
     // 1. Check for the flat mapped property first
-    if (user?.subscription?.status === 'active') {
+    if (user?.subscriptions?.[0]?.status === 'active') {
         return user.subscription;
     }
 

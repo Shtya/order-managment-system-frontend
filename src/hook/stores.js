@@ -15,26 +15,26 @@ export const STORE_PROVIDERS = [
     {
         key: 'easyorder',
         code: 'easyorder',
-        label: 'إيزي أوردر',
+        label: { ar: 'إيزي أوردر', en: 'EasyOrder' },
         img: "/integrate/easyorder.png",
         emoji: '🛒',
-        desc: 'ربط مباشر مع منصة إيزي أوردر',
+        desc: { ar: 'ربط مباشر مع منصة إيزي أوردر', en: 'Direct integration with EasyOrder platform' },
     },
     {
         key: 'shopify',
         code: 'shopify',
-        label: 'Shopify',
+        label: { ar: 'Shopify', en: 'Shopify' },
         img: "/integrate/shopify.png",
         emoji: '🟢',
-        desc: 'ربط متجر Shopify الخاص بك',
+        desc: { ar: 'ربط متجر Shopify الخاص بك', en: 'Connect your Shopify store' },
     },
     {
         key: 'woocommerce',
         code: 'woocommerce',
-        label: 'WooCommerce',
+        label: { ar: 'WooCommerce', en: 'WooCommerce' },
         img: "/integrate/WooCommerce.png",
         emoji: '🛍️',
-        desc: 'ربط متجر WooCommerce',
+        desc: { ar: 'ربط متجر WooCommerce', en: 'Connect your WooCommerce store' },
     },
 ];
 
@@ -580,10 +580,11 @@ export function useStoreWebhook({ store, provider, onClose }) {
 
     // --- Action: Rotate WooCommerce Secrets ---
     const rotateWooCommerce = async () => {
+        if(!store?.id) return;
         setRotating(true);
         setError(null);
         try {
-            await api.post(`/stores/${store.id}/regenerate-secrets`);
+            await api.post(`/stores/${store?.id}/regenerate-secrets`);
             const res = await api.get(`/stores/${store.id}`);
             setStoreData(res.data);
             toast.success(t("messages.secretsRegenerated"));

@@ -1,6 +1,6 @@
 import api from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -8,26 +8,26 @@ export const SHIP_PROVIDERS = [
     {
         key: 'bosta',
         code: 'bosta',
-        label: 'بوسطة',
+        label: { ar: 'بوسطة', en: 'Bosta' },
         img: "/integrate/bosta.png",
         emoji: '📦',
-        desc: 'أسرع شركات التوصيل في مصر',
+        desc: { ar: 'أسرع شركات التوصيل في مصر', en: 'Fastest delivery companies in Egypt' },
     },
     {
         key: 'jt',
         code: 'jt',
-        label: 'J&T Express',
+        label: { ar: 'J&T Express', en: 'J&T Express' },
         img: "/integrate/5.png",
         emoji: '🚚',
-        desc: 'تغطية واسعة في المنطقة العربية',
+        desc: { ar: 'تغطية واسعة في المنطقة العربية', en: 'Wide coverage in the Arab region' },
     },
     {
         key: 'turbo',
         code: 'turbo',
-        label: 'تيربو',
+        label: { ar: 'تيربو', en: 'Turbo' },
         img: "/integrate/4.png",
         emoji: '⚡',
-        desc: 'توصيل سريع داخل المدن',
+        desc: { ar: 'توصيل سريع داخل المدن', en: 'Fast delivery within cities' },
     },
 ];
 
@@ -219,6 +219,7 @@ export function useShippingIntegration(company, integrationStatus, onRefreshStat
 export function useShippingSettings(companyCode, callbacks = {}) {
     const { onSaved, onFirstSetup, onClose } = callbacks;
     const t = useTranslations("shipping");
+    const locale = useLocale();
 
     const meta = PROVIDER_META[companyCode];
     const fields = meta?.configFields || [
@@ -304,12 +305,12 @@ export function useShippingSettings(companyCode, callbacks = {}) {
         const hasAtLeastOneValue = fields.some(f => values[f.key]?.trim());
 
         if (!isEditMode && missingRequired.length) {
-            toast.error('يرجى ملء الحقول المطلوبة');
+            toast.error(t("settings.errorRequired"));
             return;
         }
 
         if (isEditMode && !hasAtLeastOneValue) {
-            toast.error('يرجى إدخال قيمة واحدة على الأقل');
+            toast.error(t("settings.errorAtLeastOne"));
             return;
         }
 
@@ -326,7 +327,11 @@ export function useShippingSettings(companyCode, callbacks = {}) {
             setSuccess(true);
             onSaved?.(isEditMode);
             fetchSetup()
-            toast.success(`تم ${isEditMode ? 'تحديث' : 'ربط'} ${provider.label} بنجاح ✓`);
+            const providerLabel = provider?.label[locale] || provider?.label.en;
+            const successMsg = isEditMode 
+                ? t("settings.toastUpdateSuccess", { provider: providerLabel }) 
+                : t("settings.toastConnectSuccess", { provider: providerLabel });
+            toast.success(successMsg || `Successfully ${isEditMode ? 'updated' : 'connected'} ${providerLabel} ✓`);
 
             const nextStep = integrationData?.credentialsConfigured ? onClose : onFirstSetup;
             setTimeout(() => nextStep?.(), 900);

@@ -27,12 +27,6 @@ const stagger = (i) => ({
   },
 });
 
-function getDashboardRoute(role) {
-  if (role === "admin") return "/orders";
-  if (role === "super_admin") return "/dashboard/users";
-  return "/orders/employee-orders";
-}
-
 function getRoleLabel(role, t) {
   if (role === "super_admin") return t("roles.super_admin");
   if (role === "admin") return t("roles.admin");
@@ -144,10 +138,10 @@ function LanguageToggle({
 function AvatarPopover({ user, t }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const { logout, getDashboardRoute } = useAuth();
   const initials = getInitials(user.name);
   const roleStyle = getRoleBadgeStyle(user.role?.name);
-  const dashRoute = getDashboardRoute(user.role?.name);
-  const { logout } = useAuth();
+  const dashRoute = getDashboardRoute(user);
 
   useEffect(() => {
     const h = (e) => {
@@ -215,7 +209,7 @@ function AvatarPopover({ user, t }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.95 }}
             transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute top-[calc(100%+10px)] left-0 z-[200] w-[264px]"
+            className="absolute top-[calc(100%+10px)] end-0! z-[200] min-w-[264px]"
             style={{
               background: "rgba(255,255,255,0.99)",
               borderRadius: 20,
@@ -379,7 +373,7 @@ function AvatarPopover({ user, t }) {
 export default function Navbar({ t, locale, switchLocale, user }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { logout } = useAuth();
+  const { logout, getDashboardRoute } = useAuth();
 
   // Plain window scroll — works in all contexts
   useEffect(() => {
@@ -396,13 +390,6 @@ export default function Navbar({ t, locale, switchLocale, user }) {
     window.addEventListener("resize", h);
     return () => window.removeEventListener("resize", h);
   }, []);
-
-  useEffect(() => {
-    document.body.style.overflow = mobileOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [mobileOpen]);
 
   const navLinks = [
     { key: "home", id: "home" },
@@ -619,11 +606,11 @@ export default function Navbar({ t, locale, switchLocale, user }) {
                 : { height: 0, opacity: 0 }
             }
             transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden lg:hidden border-t"
+            className="lg:hidden border-t overflow-y-auto max-h-[calc(100vh-64px)]"
             style={{ borderColor: mobileOpen ? `${BRAND}18` : "transparent" }}
           >
             <div
-              className="container mx-auto px-6 py-4 flex flex-col gap-1"
+              className="container mx-auto px-6 pt-4! flex flex-col gap-1"
               dir={locale === "ar" ? "rtl" : "ltr"}
             >
               {/* Mobile user card */}
@@ -690,7 +677,7 @@ export default function Navbar({ t, locale, switchLocale, user }) {
                 {user ? (
                   <>
                     <Link
-                      href={getDashboardRoute(user.role?.name)}
+                      href={getDashboardRoute(user)}
                       onClick={() => setMobileOpen(false)}
                       className="flex-1 text-center text-sm font-bold py-2.5 rounded-xl text-white"
                       style={{

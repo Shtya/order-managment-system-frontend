@@ -473,6 +473,7 @@ function ObSelect({ icon, value, onChange, onBlur, children, error, style }) {
 export default function OnboardingPage() {
   const tp = useTranslations("onboarding.plans");
   const t = useTranslations("onboarding.toasts");
+  const { getDashboardRoute } = useAuth();
   const [step, setStep] = useState(0); // Start null to show a loader
   const [dbStep, setDbStep] = useState(null); // Furthest step reached
   const [user, setUser] = useState(null); // Furthest step reached
@@ -519,8 +520,7 @@ export default function OnboardingPage() {
         }
 
         if (user.onboardingStatus === "completed") {
-          const redirect =
-            user.role.name === "super_admin" ? "/dashboard/users" : "/orders";
+          const redirect = getDashboardRoute(user);
           setStep(5);
           setTimeout(() => {
             router.replace(redirect);

@@ -151,8 +151,7 @@ function CTAInput({ t }) {
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         placeholder={t("cta.placeholder")}
-        className="flex-1 h-[45px] sm:h-[55px] bg-transparent !outline-none text-sm sm:text-base px-3 sm:px-4 text-gray-500 placeholder-gray-400"
-        dir="rtl"
+        className="flex-1 h-[45px] sm:h-[55px]  bg-transparent !outline-none text-sm sm:text-base px-3 sm:px-4 text-gray-500 placeholder-gray-400"
       />
     </motion.div>
   );
@@ -184,7 +183,7 @@ function Hero({ t, heroImage, locale, switchLocale, user }) {
       <FloatingOrbs />
 
       <div className="container mx-auto px-6 relative z-10 grid lg:grid-cols-2 gap-10 items-center py-[140px] md:py-[200px]">
-        <div className="text-right">
+        <div className="">
           <motion.h1
             {...fadeUp(0.1)}
             className="text-4xl md:text-[3rem] font-extrabold text-[#111928] leading-[1.25] mb-5"
@@ -245,7 +244,7 @@ export default function TalbatiLanding({ heroImage }) {
   const locale = useLocale();
   const pathname = usePathname();
   const router = useRouter();
-  const {user} = useAuth();
+  const { user } = useAuth();
 
   const switchLocale = (next) => router.replace(pathname, { locale: next });
 

@@ -362,7 +362,7 @@ export default function FooterSection() {
           }}
         >
           {/* Social icons */}
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
             {activeSocials.map((s, i) => (
               <SocialBtn
                 key={s.id}

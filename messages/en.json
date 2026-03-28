@@ -6610,6 +6610,8 @@
       "skip": "Skip"
     },
     "finished": {
+      "loading": "Finalizing setup...",
+      "success": "Setup completed successfully! Welcome to Talabaty Tech 🎉",
       "title": "Setup completed! 🚀",
       "desc": "Your system is now fully ready to receive orders, track shipments, and manage your business efficiently.",
       "goBtn": "Go to dashboard",

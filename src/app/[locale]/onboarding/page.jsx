@@ -519,7 +519,6 @@ export default function OnboardingPage() {
         }
 
         if (user.onboardingStatus === "completed") {
-          toast.success(t("onboarding_completed"));
           const redirect =
             user.role.name === "super_admin" ? "/dashboard/users" : "/orders";
           setStep(5);
@@ -583,36 +582,7 @@ export default function OnboardingPage() {
   };
 
   const back = () => setStep((s) => Math.max(s - 1, 0));
-  const finish = async () => {
-    const tid = toast.loading(t("finishing"));
-    try {
-      // 1️⃣ Call the same endpoint to move currentOnboardingStep to 'finished' or 'completed'
-      await api.post("/users/onboarding/next");
-      const { data } = await api.get("/auth/sign");
-      if (data?.accessToken) {
-        localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("user", JSON.stringify(data.user));
-      }
-      await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          accessToken: data.accessToken,
-          user: data.user,
-        }),
-      });
-      // 2️⃣ Show success and redirect
-      toast.success(t("finish_success"), { id: tid });
 
-      setTimeout(() => {
-        window.location.href =
-          user?.role.name === "admin" ? "/orders" : "/orders/employee-orders";
-      }, 1200);
-    } catch (err) {
-      const msg = err.response?.data?.message || t("finish_error");
-      toast.error(msg, { id: tid });
-    }
-  };
   if (loading) {
     return (
       <div
@@ -742,7 +712,7 @@ export default function OnboardingPage() {
               />
               <ShippingStep
                 key="sh"
-                onNext={finish}
+                onNext={next}
                 onBack={back}
                 open={step === 4}
                 nextLoading={nextLoading}
@@ -4110,8 +4080,12 @@ const OnboardingSkeleton = () => (
 
 /* ─── Step 5: Finished ─────────────────────────────────────── */
 function FinishedStep({ open }) {
+  const tLocal = useTranslations('auth');
   const t = useTranslations("onboarding.finished");
-  const { locale } = useParams();
+  const [loading, setLoading] = useState(false);
+  const locale = useLocale();
+  const router = useRouter();
+  const { handleAuthSuccess } = useAuth();
   if (!open) return null;
 
   const highlights = [
@@ -4131,6 +4105,35 @@ function FinishedStep({ open }) {
       desc: t("highlights.reports.desc"),
     },
   ];
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    const tid = toast.loading(t('loading'));
+
+    try {
+      const { data: authData } = await api.get(`/auth/sign`);
+      await handleAuthSuccess(authData);
+      toast.success(t('success'), { id: tid });
+    } catch (error) {
+      // 7. Detailed Error Handling
+      const status = error?.response?.status || error?.status;
+
+      if (status === 401) {
+        toast.error(tLocal("signin.session_expired"), { id: tid });
+      } else if (status === 403) {
+        toast.error(tLocal("signin.no_permission"), { id: tid });
+      } else {
+        toast.error(tLocal("signin.invalid_credentials"), { id: tid });
+      }
+
+      setTimeout(() => {
+        router.push("/auth?mode=signin");
+      }, 300);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <motion.div
@@ -4241,7 +4244,8 @@ function FinishedStep({ open }) {
 
       {/* Go to dashboard */}
       <BtnPrimary
-        onClick={() => (window.location.href = `/${locale}/dashboard`)}
+        onClick={handleSubmit}
+        disabled={loading}
         style={{ width: "100%" }}
       >
         {t("goBtn")} 🚀

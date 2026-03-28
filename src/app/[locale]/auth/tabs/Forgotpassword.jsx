@@ -18,7 +18,7 @@ const LockIcon = () => (
 );
 
 const IconBadge = ({ icon }) => (
-  <div style={{ width: 50, height: 50, borderRadius: 13, background: 'var(--p-xlight)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--p)', flexShrink: 0 }}>
+  <div style={{ width: "clamp(44px, 12vw, 50px)", height: "clamp(44px, 12vw, 50px)", borderRadius: 13, background: 'var(--p-xlight)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--p)', flexShrink: 0 }}>
     {icon}
   </div>
 );
@@ -113,11 +113,11 @@ export default function ForgotPassword({ t: tProp, onBack }) {
         {/* ── Step 0: email ── */}
         {step === 0 && (
           <motion.div key="f0" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: .25 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: "clamp(16px, 5vw, 22px)" }}>
               <IconBadge icon={<MailIcon />} />
               <div>
-                <h2 style={{ fontSize: 19, fontWeight: 800, color: 'var(--text)', marginBottom: 3 }}>{t('forgot.title')}</h2>
-                <p style={{ fontSize: 13, color: 'var(--text-3)' }}>{t('forgot.sub')}</p>
+                <h2 style={{ fontSize: "clamp(17px, 5vw, 19px)", fontWeight: 800, color: 'var(--text)', marginBottom: 3 }}>{t('forgot.title')}</h2>
+                <p style={{ fontSize: "clamp(12px, 3.5vw, 13px)", color: 'var(--text-3)' }}>{t('forgot.sub')}</p>
               </div>
             </div>
             <Field label={t('forgot.email')} error={touched.email && emailErr}>
@@ -125,7 +125,7 @@ export default function ForgotPassword({ t: tProp, onBack }) {
                 value={email} onChange={e => setEmail(e.target.value)}
                 onBlur={() => setTouched(p => ({ ...p, email: true }))}
                 error={touched.email && emailErr} icon={<MailIcon />}
-                style={{ direction: 'ltr', textAlign: 'right' }}
+                style={{  textAlign: 'right' }}
               />
             </Field>
             <BtnPrimary loading={loading} type="button" onClick={sendOtp}>
@@ -140,14 +140,14 @@ export default function ForgotPassword({ t: tProp, onBack }) {
         {/* ── Step 1: OTP ── */}
         {step === 1 && (
           <motion.div key="f1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: .25 }}>
-            <div style={{ textAlign: 'center', marginBottom: 22 }}>
-              <div style={{ width: 60, height: 60, borderRadius: 16, margin: '0 auto 12px', background: 'var(--p-xlight)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: 28 }}>🔐</span>
+            <div style={{ textAlign: 'center', marginBottom: "clamp(16px, 5vw, 22px)" }}>
+              <div style={{ width: "clamp(50px, 14vw, 60px)", height: "clamp(50px, 14vw, 60px)", borderRadius: 16, margin: '0 auto 12px', background: 'var(--p-xlight)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: "clamp(24px, 6vw, 28px)" }}>🔐</span>
               </div>
-              <h2 style={{ fontSize: 19, fontWeight: 800, color: 'var(--text)', marginBottom: 5 }}>{t('forgot.otp_title')}</h2>
-              <p style={{ fontSize: 13, color: 'var(--text-3)' }}>
+              <h2 style={{ fontSize: "clamp(17px, 5vw, 19px)", fontWeight: 800, color: 'var(--text)', marginBottom: 5 }}>{t('forgot.otp_title')}</h2>
+              <p style={{ fontSize: "clamp(12px, 3.5vw, 13px)", color: 'var(--text-3)' }}>
                 {t('forgot.otp_sub')}{' '}
-                <span style={{ fontWeight: 700, color: 'var(--text)', direction: 'ltr', display: 'inline-block' }}>{email}</span>
+                <span style={{ fontWeight: 700, color: 'var(--text)', display: 'inline-block' }}>{email}</span>
               </p>
             </div>
 
@@ -177,11 +177,11 @@ export default function ForgotPassword({ t: tProp, onBack }) {
         {/* ── Step 2: reset ── */}
         {step === 2 && (
           <motion.div key="f2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: .25 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: "clamp(16px, 5vw, 22px)" }}>
               <IconBadge icon={<LockIcon />} />
               <div>
-                <h2 style={{ fontSize: 19, fontWeight: 800, color: 'var(--text)', marginBottom: 3 }}>{t('forgot.reset_title')}</h2>
-                <p style={{ fontSize: 13, color: 'var(--text-3)' }}>{t('forgot.reset_sub')}</p>
+                <h2 style={{ fontSize: "clamp(17px, 5vw, 19px)", fontWeight: 800, color: 'var(--text)', marginBottom: 3 }}>{t('forgot.reset_title')}</h2>
+                <p style={{ fontSize: "clamp(12px, 3.5vw, 13px)", color: 'var(--text-3)' }}>{t('forgot.reset_sub')}</p>
               </div>
             </div>
             <PasswordInput label={t('forgot.new_password')} placeholder={t('signup.password_placeholder')}

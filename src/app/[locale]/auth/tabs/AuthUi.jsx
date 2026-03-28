@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 /* ── Icons ─────────────────────────────────────────────────── */
 export const IconEye = () => (
@@ -23,12 +23,13 @@ export const IconCheck = ({ size = 13 }) => (
 		<polyline points="20 6 9 17 4 12" />
 	</svg>
 );
-export const IconArrow = ({ dir = 'left' }) => (
-	<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-		style={{ transform: dir === 'right' ? 'scaleX(-1)' : 'none' }}>
+export const IconArrow = () => {
+	const locale  = useLocale()
+	return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+		style={{ transform: locale === 'ar' ? 'scaleX(-1)' : 'none' }}>
 		<path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-	</svg>
-);
+	</svg>)
+};
 export const IconGoogle = () => (
 	<svg width="18" height="18" viewBox="0 0 24 24">
 		<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -41,9 +42,9 @@ export const IconGoogle = () => (
 /* ── Field wrapper ─────────────────────────────────────────── */
 export function Field({ label, error, children, style }) {
 	return (
-		<div style={{ marginBottom: 15, ...style }}>
+		<div style={{ marginBottom: "clamp(12px, 4vw, 15px)", ...style }}>
 			{label && (
-				<label style={{ display: 'block', fontSize: 12.5, fontWeight: 600, color: 'var(--text-2)', marginBottom: 6 }}>
+				<label style={{ display: 'block', fontSize: "clamp(11.5px, 3vw, 12.5px)", fontWeight: 600, color: 'var(--text-2)', marginBottom: 6 }}>
 					{label}
 				</label>
 			)}
@@ -54,7 +55,7 @@ export function Field({ label, error, children, style }) {
 						initial={{ opacity: 0, height: 0, marginTop: 0 }}
 						animate={{ opacity: 1, height: 'auto', marginTop: 5 }}
 						exit={{ opacity: 0, height: 0, marginTop: 0 }}
-						style={{ fontSize: 11.5, color: '#ef4444', display: 'flex', alignItems: 'center', gap: 4 }}
+						style={{ fontSize: "clamp(10.5px, 2.8vw, 11.5px)", color: '#ef4444', display: 'flex', alignItems: 'center', gap: 4 }}
 					>
 						⚠ {error}
 					</motion.p>
@@ -69,15 +70,15 @@ export function AuthInput({ icon, error, style, font, ...props }) {
 	return (
 		<div style={{ position: 'relative' }} >
 			{icon && (
-				<span style={{
-					position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
+				<span className='start-3.5' style={{
+					position: 'absolute',  top: '50%', transform: 'translateY(-50%)',
 					color: 'var(--text-3)', display: 'flex', pointerEvents: 'none',
 				}}>
 					{icon}
 				</span>
 			)}
 			<input
-				className={`auth-input${error ? ' error' : ''} ${font}`}
+				className={`auth-input ${error ? ' error' : ''} ${font}`}
 				style={{ paddingRight: icon ? 44 : 14, ...style }}
 				{...props}
 			/>
@@ -102,14 +103,14 @@ export function PasswordInput({ label, icon, error, placeholder, value, onChange
 					value={value}
 					onChange={onChange}
 					onBlur={onBlur}
-					className={`auth-input${error ? ' error' : ''}`}
+					className={`auth-input ${error ? ' error' : ''}`}
 					style={{ paddingRight: icon ? 44 : 14, paddingLeft: 44 }}
 				/>
 				<button type="button" onClick={() => setShow(s => !s)}
 					style={{
-						position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
+						position: 'absolute', left: 6, top: '50%', transform: 'translateY(-50%)',
 						background: 'none', border: 'none', cursor: 'pointer',
-						color: 'var(--text-3)', display: 'flex', padding: 4, borderRadius: 6,
+						color: 'var(--text-3)', display: 'flex',alignItems: 'center', justifyContent: 'center', padding: 4, borderRadius: 6,
 						transition: 'color .15s',
 					}}
 					onMouseOver={e => e.currentTarget.style.color = 'var(--p)'}
@@ -208,10 +209,10 @@ export function BtnPrimary({ children, loading, style, ...props }) {
 	return (
 		<button type="submit"
 			style={{
-				width: '100%', height: 50,
+				width: '100%', height: "clamp(44px, 12vw, 50px)",
 				background: 'var(--p)', color: '#fff',
 				border: 'none', borderRadius: 'var(--radius-sm)',
-				fontFamily: 'var(--font)', fontSize: 15, fontWeight: 700,
+				fontFamily: 'var(--font)', fontSize: "clamp(13.5px, 4vw, 15px)", fontWeight: 700,
 				cursor: props.disabled || loading ? 'not-allowed' : 'pointer',
 				display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
 				boxShadow: '0 6px 20px rgba(103,99,175,.34)',
@@ -233,10 +234,10 @@ export function BtnGhost({ children, style, ...props }) {
 	return (
 		<button type="button"
 			style={{
-				width: '100%', height: 48,
+				width: '100%', height: "clamp(42px, 11vw, 48px)",
 				background: 'transparent', color: 'var(--text-2)',
 				border: '1.5px solid var(--border)', borderRadius: 'var(--radius-sm)',
-				fontFamily: 'var(--font)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+				fontFamily: 'var(--font)', fontSize: "clamp(12.5px, 3.5vw, 14px)", fontWeight: 600, cursor: 'pointer',
 				display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
 				transition: 'border-color .18s, color .18s, background .18s',
 				...style,
@@ -274,14 +275,14 @@ export function BtnLink({ children, style, ...props }) {
 /* ── Step indicator bar ───────────────────────────────────── */
 export function StepBar({ steps, current }) {
 	return (
-		<div style={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}>
+		<div style={{ display: 'flex', alignItems: 'center', marginBottom: "clamp(18px, 5vw, 24px)", overflowX: 'auto', paddingBottom: 8, scrollbarWidth: 'none' }}>
 			{steps.map((label, i) => (
-				<div key={i} style={{ display: 'flex', alignItems: 'center', flex: i < steps.length - 1 ? 1 : 0 }}>
+				<div key={i} style={{ display: 'flex', alignItems: 'center', flex: i < steps.length - 1 ? 1 : 0, minWidth: i === steps.length - 1 ? 'auto' : 'clamp(60px, 15vw, 120px)' }}>
 					<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
 						<div style={{
-							width: 28, height: 28, borderRadius: '50%',
+							width: "clamp(24px, 6vw, 28px)", height: "clamp(24px, 6vw, 28px)", borderRadius: '50%',
 							display: 'flex', alignItems: 'center', justifyContent: 'center',
-							fontSize: 11.5, fontWeight: 700, flexShrink: 0,
+							fontSize: "clamp(10px, 3vw, 11.5px)", fontWeight: 700, flexShrink: 0,
 							background: i < current ? 'var(--p)' : i === current ? 'var(--p-xlight)' : 'var(--surface2)',
 							color: i < current ? '#fff' : i === current ? 'var(--p)' : 'var(--text-3)',
 							border: `2px solid ${i < current ? 'var(--p)' : i === current ? 'var(--p)' : 'var(--border)'}`,
@@ -290,13 +291,13 @@ export function StepBar({ steps, current }) {
 						}}>
 							{i < current ? <IconCheck size={11} /> : i + 1}
 						</div>
-						<span style={{ fontSize: 9.5, fontWeight: 600, color: i === current ? 'var(--p)' : 'var(--text-3)', whiteSpace: 'nowrap' }}>
+						<span style={{ fontSize: "clamp(8.5px, 2.5vw, 9.5px)", fontWeight: 600, color: i === current ? 'var(--p)' : 'var(--text-3)', whiteSpace: 'nowrap' }}>
 							{label}
 						</span>
 					</div>
 					{i < steps.length - 1 && (
 						<div style={{
-							flex: 1, height: 2, borderRadius: 99, margin: '0 5px', marginBottom: 18,
+							flex: 1, height: 2, borderRadius: 99, margin: '0 clamp(4px, 1vw, 8px)', marginBottom: "clamp(14px, 4vw, 18px)",
 							background: i < current ? 'var(--p)' : 'var(--border)',
 							transition: 'background .4s',
 						}} />
@@ -334,7 +335,7 @@ export function OtpInput({ value, onChange, hasError }) {
 	};
 
 	return (
-		<div style={{ display: 'flex', gap: 8, justifyContent: 'center', direction: 'ltr' }}>
+		<div style={{ display: 'flex', flexWrap: 'wrap', gap: "clamp(4px, 2vw, 8px)", justifyContent: 'center', direction: 'ltr' }}>
 			{Array(6).fill('').map((_, i) => (
 				<input
 					key={i} id={`otp-${i}`}

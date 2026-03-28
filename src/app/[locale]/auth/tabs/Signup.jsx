@@ -86,8 +86,8 @@ const BackBtn = ({ onClick }) => (
     type="button"
     onClick={onClick}
     style={{
-      width: 48,
-      height: 48,
+      width: "clamp(44px, 12vw, 48px)",
+      height: "clamp(44px, 12vw, 48px)",
       flexShrink: 0,
       background: "var(--surface2)",
       border: "1.5px solid var(--border)",
@@ -315,10 +315,10 @@ function Step1({ data, onChange, onNext, t, tCountries }) {
       exit={{ opacity: 0, x: -30 }}
       transition={{ duration: 0.25 }}
     >
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ marginBottom: "clamp(16px, 5vw, 20px)" }}>
         <h2
           style={{
-            fontSize: 19,
+            fontSize: "clamp(17px, 5vw, 19px)",
             fontWeight: 800,
             color: "var(--text)",
             marginBottom: 3,
@@ -326,7 +326,7 @@ function Step1({ data, onChange, onNext, t, tCountries }) {
         >
           {t("signup.step1_title")}
         </h2>
-        <p style={{ fontSize: 13, color: "var(--text-3)" }}>
+        <p style={{ fontSize: "clamp(12px, 3.5vw, 13px)", color: "var(--text-3)" }}>
           {t("signup.step1_sub")}
         </p>
       </div>
@@ -370,8 +370,8 @@ function Step1({ data, onChange, onNext, t, tCountries }) {
       </Field>
 
       <Field label={t("signup.phone")} error={touched.phone && errs.phone}>
-        <div style={{ display: "flex", gap: 8 }}>
-          <div style={{ position: "relative", flexShrink: 0, minWidth: 90 }}>
+        <div style={{ display: "flex", gap: "clamp(6px, 1.5vw, 10px)", flexWrap: "wrap" }}>
+          <div style={{ position: "relative", flex: "1 1 100px", minWidth: 90 }}>
             <span
               style={{
                 position: "absolute",
@@ -405,18 +405,17 @@ function Step1({ data, onChange, onNext, t, tCountries }) {
               value={dial}
               onChange={(e) => setDial(e.target.value)}
               style={{
-                height: 48,
+                height: "clamp(44px, 12vw, 48px)",
                 background: "var(--surface2)",
                 border: "1.5px solid var(--border)",
                 borderRadius: "var(--radius-sm)",
                 fontFamily: "var(--font)",
-                fontSize: 13,
+                fontSize: "clamp(12px, 3.5vw, 13px)",
                 color: "var(--text)",
                 padding: "0 10px 0 32px",
                 cursor: "pointer",
                 outline: "none",
                 width: "100%",
-                direction: "ltr",
                 appearance: "none",
               }}
             >
@@ -436,9 +435,9 @@ function Step1({ data, onChange, onNext, t, tCountries }) {
             onBlur={() => touch("phone")}
             className={`auth-input${touched.phone && errs.phone ? " error" : ""}`}
             style={{
-              flex: 1,
+              flex: "2 1 180px",
+              height: "clamp(44px, 12vw, 48px)",
               paddingRight: 14,
-              direction: "ltr",
               textAlign: "left",
             }}
           />
@@ -471,10 +470,10 @@ function Step2({ data, onChange, onNext, onBack, t }) {
       exit={{ opacity: 0, x: -30 }}
       transition={{ duration: 0.25 }}
     >
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ marginBottom: "clamp(16px, 5vw, 20px)" }}>
         <h2
           style={{
-            fontSize: 19,
+            fontSize: "clamp(17px, 5vw, 19px)",
             fontWeight: 800,
             color: "var(--text)",
             marginBottom: 3,
@@ -482,7 +481,7 @@ function Step2({ data, onChange, onNext, onBack, t }) {
         >
           {t("signup.step2_title")}
         </h2>
-        <p style={{ fontSize: 13, color: "var(--text-3)" }}>
+        <p style={{ fontSize: "clamp(12px, 3.5vw, 13px)", color: "var(--text-3)" }}>
           {t("signup.step2_sub")}
         </p>
       </div>
@@ -570,10 +569,10 @@ function Step3({ onNext, onBack, t }) {
       exit={{ opacity: 0, x: -30 }}
       transition={{ duration: 0.25 }}
     >
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ marginBottom: "clamp(16px, 5vw, 20px)" }}>
         <h2
           style={{
-            fontSize: 19,
+            fontSize: "clamp(17px, 5vw, 19px)",
             fontWeight: 800,
             color: "var(--text)",
             marginBottom: 3,
@@ -581,7 +580,7 @@ function Step3({ onNext, onBack, t }) {
         >
           {t("signup.step3_title")}
         </h2>
-        <p style={{ fontSize: 13, color: "var(--text-3)" }}>
+        <p style={{ fontSize: "clamp(12px, 3.5vw, 13px)", color: "var(--text-3)" }}>
           {t("signup.step3_sub")}
         </p>
       </div>
@@ -718,11 +717,11 @@ function Step4({ email, onVerified, t }) {
       exit={{ opacity: 0, x: -30 }}
       transition={{ duration: 0.25 }}
     >
-      <div style={{ textAlign: "center", marginBottom: 22 }}>
+      <div style={{ textAlign: "center", marginBottom: "clamp(16px, 5vw, 22px)" }}>
         <div
           style={{
-            width: 60,
-            height: 60,
+            width: "clamp(50px, 14vw, 60px)",
+            height: "clamp(50px, 14vw, 60px)",
             borderRadius: 16,
             margin: "0 auto 12px",
             background: "var(--p-xlight)",
@@ -731,11 +730,11 @@ function Step4({ email, onVerified, t }) {
             justifyContent: "center",
           }}
         >
-          <span style={{ fontSize: 28 }}>📧</span>
+          <span style={{ fontSize: "clamp(24px, 6vw, 28px)" }}>📧</span>
         </div>
         <h2
           style={{
-            fontSize: 19,
+            fontSize: "clamp(17px, 5vw, 19px)",
             fontWeight: 800,
             color: "var(--text)",
             marginBottom: 5,
@@ -743,13 +742,12 @@ function Step4({ email, onVerified, t }) {
         >
           {t("signup.otp_title")}
         </h2>
-        <p style={{ fontSize: 13, color: "var(--text-3)", lineHeight: 1.6 }}>
+        <p style={{ fontSize: "clamp(12px, 3.5vw, 13px)", color: "var(--text-3)", lineHeight: 1.6 }}>
           {t("signup.otp_sub")}{" "}
           <span
             style={{
               fontWeight: 700,
               color: "var(--text)",
-              direction: "ltr",
               display: "inline-block",
             }}
           >

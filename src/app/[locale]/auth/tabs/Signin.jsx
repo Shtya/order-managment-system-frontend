@@ -121,11 +121,11 @@ export default function SignIn({ t: tProp, onSwitchMode, onForgotPassword }) {
 
   return (
     <motion.div key="signin" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={{ duration: .28 }}>
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 21, fontWeight: 800, color: 'var(--text)', letterSpacing: '-.4px', marginBottom: 4 }}>
+      <div style={{ marginBottom: "clamp(16px, 5vw, 24px)" }}>
+        <h2 style={{ fontSize: "clamp(18px, 5vw, 21px)", fontWeight: 800, color: 'var(--text)', letterSpacing: '-.4px', marginBottom: 4 }}>
           {t('signin.title')}
         </h2>
-        <p style={{ fontSize: 13, color: 'var(--text-3)' }}>{t('signin.subtitle')}</p>
+        <p style={{ fontSize: "clamp(12px, 3.5vw, 13px)", color: 'var(--text-3)' }}>{t('signin.subtitle')}</p>
       </div>
 
       <form onSubmit={handleSubmit} noValidate>
@@ -134,7 +134,7 @@ export default function SignIn({ t: tProp, onSwitchMode, onForgotPassword }) {
             value={email} onChange={e => setEmail(e.target.value)} onBlur={() => touch('email')}
             error={touched.email && errors.email} icon={<MailIcon />}
             font="font-en"
-            style={{ direction: 'ltr', textAlign: 'right' }}
+            style={{ textAlign: 'right', height: "clamp(44px, 12vw, 48px)" }}
           />
         </Field>
 
@@ -149,7 +149,7 @@ export default function SignIn({ t: tProp, onSwitchMode, onForgotPassword }) {
         </div>
 
         <BtnPrimary loading={loading} disabled={loading}>
-          {t('signin.submit')} <IconArrow dir="right" />
+          {t('signin.submit')} <IconArrow  />
         </BtnPrimary>
 
         <Divider label={t('signin.or')} />

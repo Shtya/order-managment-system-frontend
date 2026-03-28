@@ -43,7 +43,6 @@ const GLOBAL_CSS = `
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { direction: rtl; }
   body {
     font-family: var(--font);
     background: var(--bg);
@@ -57,12 +56,12 @@ const GLOBAL_CSS = `
   /* ── Inputs ── */
   .auth-input {
     width: 100%; height: 48px;
-    padding: 0 44px 0 14px;
+    padding-inline-start: 44px;
+    padding-inline-end: 14px;
     background: var(--surface2);
     border: 1.5px solid var(--border);
     border-radius: var(--radius-sm);
     font-family: var(--font); font-size: 14px; color: var(--text);
-    direction: ltr; text-align: right;
     outline: none;
     transition: border-color .18s, box-shadow .18s, background .18s;
   }
@@ -124,10 +123,27 @@ const GLOBAL_CSS = `
     66%       { transform: translate(-8px, 10px) scale(0.97); }
   }
 
-  @media (max-width: 820px) {
+  @media (max-width: 1024px) {
+    body { overflow-y: auto !important; height: auto !important; }
+    .auth-main-wrapper { height: auto !important; overflow: visible !important; display: block !important; }
     .brand-col  { display: none !important; }
-    .form-col   { width: 100vw !important; justify-content: center !important; padding: 32px 20px !important; }
-    .card-outer { margin-right: 0 !important; }
+    .form-col   { 
+      width: 100vw !important; 
+      height: auto !important;
+      min-height: 100vh !important;
+      justify-content: center !important; 
+      align-items: flex-start !important; 
+      padding: clamp(24px, 5vw, 48px) clamp(16px, 4vw, 24px) !important; 
+    }
+    .card-outer { margin-right: 0 !important; padding: 0 !important; max-width: 100% !important; margin-top: auto; margin-bottom: auto; }
+  }
+
+  @media (max-width: 640px) {
+    body { overflow-y: auto !important; height: auto !important; min-height: 100vh !important; }
+    .form-col { padding: 16px 10px !important; height: auto !important; min-height: 100vh !important; align-items: flex-start !important; }
+    .auth-card-body { padding: clamp(16px, 5vw, 24px) clamp(12px, 4vw, 20px) clamp(20px, 6vw, 28px) !important; }
+    .otp-cell { width: clamp(40px, 12vw, 50px); height: clamp(48px, 14vw, 56px); font-size: 18px; }
+    
   }
 `;
 
@@ -144,7 +160,7 @@ function FormSideBackground() {
           top: 0,
           bottom: 0,
           right: 0,
-          width: "50vw",
+          width: "clamp(300px, 50vw, 50vw)",
           backgroundImage:
             "radial-gradient(circle, rgba(103,99,175,0.10) 1.2px, transparent 1.2px)",
           backgroundSize: "24px 24px",
@@ -153,8 +169,9 @@ function FormSideBackground() {
         }}
       />
 
-      {/* Top-right corner arc */}
+      {/* Top-right corner arc - hidden on mobile */}
       <div
+        className="hidden sm:block"
         style={{
           position: "fixed",
           top: -80,
@@ -168,6 +185,7 @@ function FormSideBackground() {
         }}
       />
       <div
+        className="hidden sm:block"
         style={{
           position: "fixed",
           top: -130,
@@ -187,8 +205,8 @@ function FormSideBackground() {
           position: "fixed",
           bottom: "-10%",
           right: "4%",
-          width: 360,
-          height: 360,
+          width: "clamp(200px, 30vw, 360px)",
+          height: "clamp(200px, 30vw, 360px)",
           borderRadius: "50%",
           background:
             "radial-gradient(circle, rgba(103,99,175,.09), transparent 70%)",
@@ -247,16 +265,16 @@ function ModeToggle({ mode, onChange, t }) {
         display: "flex",
         background: "rgba(103,99,175,0.06)",
         borderBottom: "1px solid var(--border)",
-        padding: 4,
-        gap: 3,
+        padding: "clamp(3px, 1vw, 5px)",
+        gap: "clamp(2px, 0.5vw, 4px)",
       }}
     >
       {/* Sliding pill */}
       <motion.div
         style={{
           position: "absolute",
-          top: 4,
-          bottom: 4,
+          top: "clamp(3px, 1vw, 5px)",
+          bottom: "clamp(3px, 1vw, 5px)",
           borderRadius: 10,
           background: "linear-gradient(135deg, var(--p), var(--p2))",
           boxShadow:
@@ -277,12 +295,12 @@ function ModeToggle({ mode, onChange, t }) {
           onClick={() => onChange(btn.id)}
           style={{
             flex: 1,
-            padding: "10px 16px",
+            padding: "clamp(8px, 2vw, 12px) clamp(10px, 3vw, 14px)",
             border: "none",
             background: "transparent",
             borderRadius: 8,
             fontFamily: "var(--font)",
-            fontSize: 13.5,
+            fontSize: "clamp(12px, 3.5vw, 14px)",
             fontWeight: 700,
             cursor: "pointer",
             color: mode === btn.id ? "#fff" : "var(--text-3)",
@@ -290,6 +308,7 @@ function ModeToggle({ mode, onChange, t }) {
             zIndex: 1,
             transition: "color .22s",
             letterSpacing: "-0.1px",
+            whiteSpace: "nowrap",
           }}
         >
           {btn.label}
@@ -348,12 +367,12 @@ function ForgotBackBar({ onClick, t }) {
           alignItems: "center",
           gap: 8,
           width: "100%",
-          padding: "12px 22px",
+          padding: "clamp(10px, 3vw, 12px) clamp(16px, 4vw, 22px)",
           background: hov ? "rgba(103,99,175,0.1)" : "var(--p-xlight)",
           borderBottom: "1px solid rgba(103,99,175,.12)",
           border: "none",
           fontFamily: "var(--font)",
-          fontSize: 13,
+          fontSize: "clamp(12px, 3.5vw, 13px)",
           fontWeight: 700,
           color: "var(--p)",
           cursor: "pointer",
@@ -423,6 +442,7 @@ export default function AuthPage() {
       <Toaster position="top-center" />
 
       <div
+        className="auth-main-wrapper"
         style={{
           display: "flex",
           width: "100vw",
@@ -454,7 +474,7 @@ export default function AuthPage() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            padding: "32px 40px 32px 48px",
+            padding: "32px 48px",
             position: "relative",
             zIndex: 2,
             background: "var(--bg)",
@@ -466,7 +486,6 @@ export default function AuthPage() {
           <motion.div
             className="card-outer"
             style={{
-              marginLeft: -52,
               width: "100%",
               maxWidth: 560,
               position: "relative",
@@ -540,7 +559,7 @@ export default function AuthPage() {
               </AnimatePresence>
 
               {/* Form body */}
-              <div style={{ padding: "28px 32px 32px" }}>
+              <div className="auth-card-body" style={{ padding: "28px 32px 32px" }}>
                 <AnimatePresence mode="wait">
                   {showForgot ? (
                     <motion.div

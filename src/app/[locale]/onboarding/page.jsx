@@ -1569,8 +1569,8 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
 
   // Handle subscribe with new logic
   const go = async (newSelected) => {
-    const finalSelected = newSelected ? newSelected : selected;
-    if (currentPlanId === finalSelected || (!finalSelected && currentPlanId)) {
+    const finalSelected = newSelected;
+    if (currentPlanId) {
       onNext();
       return;
     }
@@ -1587,8 +1587,6 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
 
     try {
       await subscribe(finalSelected);
-      // If subscribe doesn't redirect (free/trial plan), call onNext
-      // Otherwise, the subscribe function will redirect to checkout
     } catch (err) {
       // Error already handled in hook
     }
@@ -2108,7 +2106,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
       <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
         <BtnGhost onClick={onBack}>{t("back_btn")}</BtnGhost>
         <BtnPrimary
-          onClick={() => go()}
+          onClick={() => onNext()}
           disabled={
             !hasActiveSubscription || isLoading || nextLoading || loading
           }

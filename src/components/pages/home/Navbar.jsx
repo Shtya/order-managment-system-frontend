@@ -95,7 +95,7 @@ function LanguageToggle({
       whileTap={{ scale: 0.93 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="relative flex items-center gap-1.5 h-9 px-3 rounded-xl overflow-hidden border transition-all duration-300"
+      className="relative flex items-center gap-1.5 h-9 min-h-9! px-3 rounded-xl overflow-hidden border transition-all duration-300"
       style={{
         borderColor: hovered ? `${BRAND}40` : "#e5e7eb",
         background: hovered ? `${BRAND}08` : "rgba(255,255,255,0.8)",
@@ -490,7 +490,7 @@ export default function Navbar({ t, locale, switchLocale, user }) {
               </motion.div>
 
               {/* Desktop links */}
-              <div className="hidden md:flex items-center gap-0.5">
+              <div className="hidden lg:flex items-center gap-0.5">
                 {navLinks.map((nav, i) => (
                   <motion.a
                     key={nav.key}
@@ -507,7 +507,7 @@ export default function Navbar({ t, locale, switchLocale, user }) {
               </div>
 
               {/* Desktop right */}
-              <div className="hidden md:flex items-center gap-2">
+              <div className="hidden lg:flex items-center gap-2">
                 <LanguageToggle
                   currentLang={locale}
                   languages={{ ar: "AR", en: "EN" }}
@@ -557,7 +557,7 @@ export default function Navbar({ t, locale, switchLocale, user }) {
               </div>
 
               {/* Mobile right */}
-              <div className="md:hidden flex items-center gap-2">
+              <div className="lg:hidden flex items-center gap-2">
                 <LanguageToggle
                   currentLang={locale}
                   languages={{ ar: "AR", en: "EN" }}
@@ -619,7 +619,7 @@ export default function Navbar({ t, locale, switchLocale, user }) {
                 : { height: 0, opacity: 0 }
             }
             transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden md:hidden border-t"
+            className="overflow-hidden lg:hidden border-t"
             style={{ borderColor: mobileOpen ? `${BRAND}18` : "transparent" }}
           >
             <div
@@ -665,15 +665,9 @@ export default function Navbar({ t, locale, switchLocale, user }) {
               )}
 
               {navLinks.map((nav, i) => (
-                <motion.a
+                <Link
                   key={nav.key}
                   href={`#${nav.id}`}
-                  initial={false}
-                  animate={
-                    mobileOpen
-                      ? { opacity: 1, x: 0 }
-                      : { opacity: 0, x: locale === "ar" ? 16 : -16 }
-                  }
                   transition={{
                     delay: mobileOpen ? i * 0.055 : 0,
                     duration: 0.3,
@@ -686,7 +680,7 @@ export default function Navbar({ t, locale, switchLocale, user }) {
                   }}
                 >
                   {t(`nav.${nav.key}`)}
-                </motion.a>
+                </Link>
               ))}
 
               <div

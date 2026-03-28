@@ -154,16 +154,16 @@ export default function FeatureSection() {
       `}</style>
 			<div className="container mx-auto px-4">
 				{/* ── ONE ROW: 3 panels ── */}
-				<div className="flex flex-row items-stretch gap-3" style={{ minHeight: 200 }}>
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:flex flex-row items-stretch gap-3" style={{ minHeight: 200 }}>
 
 					{/* ── PANEL 1: Headline ── */}
 					<motion.div
 						initial={{ opacity: 0, x: isRtl ? 50 : -50 }}
 						animate={inView ? { opacity: 1, x: 0 } : {}}
 						transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-						className="relative rounded-xl overflow-hidden flex items-center justify-end p-7"
+						className="relative rounded-xl overflow-hidden flex items-center justify-end p-7 lg:w-87.5 min-h-62.5"
 						style={{
-							flex: "0 0 350px",
+							
 							minWidth: 300,
 							background: "linear-gradient(145deg,#1a1140 0%,#2d1f6e 55%,#0f0a2e 100%)",
  						}}
@@ -316,9 +316,9 @@ export default function FeatureSection() {
 						initial={{ opacity: 0, y: 30 }}
 						animate={inView ? { opacity: 1, y: 0 } : {}}
 						transition={{ duration: 0.7, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-						className="relative rounded-xl overflow-hidden p-5 flex flex-col justify-center"
+						className="relative rounded-xl overflow-hidden p-5 flex flex-col justify-center lg:w-87.5 min-h-62.5"
 						style={{
-							flex: "0 0 350px",
+							
 							minWidth: 300,
 							background: "linear-gradient(145deg,#18103a 0%,#231558 60%,#0f0a2e 100%)",
  						}}
@@ -360,7 +360,7 @@ export default function FeatureSection() {
 						initial={{ opacity: 0, x: isRtl ? -40 : 40 }}
 						animate={inView ? { opacity: 1, x: 0 } : {}}
 						transition={{ duration: 0.7, delay: 0.14, ease: [0.22, 1, 0.36, 1] }}
-						className="flex flex-row backdrop-blur-2xl items-center rounded-xl overflow-hidden flex-1"
+						className="max-md:col-span-1 max-lg:col-span-2 grid grid-cols-2 xl:grid-cols-4 gap-4 backdrop-blur-2xl items-center rounded-xl overflow-hidden flex-1"
 						style={{
 							background: "#ffffff95",
 							border: "1px solid rgba(103,99,175,0.10)",

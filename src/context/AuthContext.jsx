@@ -12,15 +12,71 @@ export function AuthProvider({ children }) {
 
     const fetchUser = useCallback(async () => {
         try {
-
             const res = await api.get("/users/me");
             setUser(res.data);
+            return res.data;
         } catch (error) {
             console.error("Auth initialization failed:", error);
+            return null;
         } finally {
             setIsLoading(false);
         }
     }, []);
+
+    const handleAuthSuccess = useCallback(async (data) => {
+        if (data?.accessToken) {
+            localStorage.setItem('accessToken', data.accessToken);
+        }
+        if (data?.user) {
+            localStorage.setItem('user', JSON.stringify(data.user));
+            setUser(data.user);
+        }
+
+        // Call local API for session management
+        await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                accessToken: data.accessToken,
+                user: data.user
+            }),
+        });
+
+        // Navigation Logic
+        const role = String(data.user?.role?.name || '');
+        const isOnboarded = data.user?.onboardingStatus === 'completed' || role !== 'admin';
+
+        let targetPath = '';
+        if (role === 'super_admin') {
+            targetPath = '/dashboard/users';
+        } else if (!isOnboarded) {
+            targetPath = '/onboarding';
+        } else if (role === 'admin') {
+            targetPath = '/orders';
+        } else {
+            targetPath = '/orders/employee-orders';
+        }
+        
+        if (typeof window !== "undefined") {
+            setTimeout(() => {
+                window.location.href = targetPath;
+            }, 500);
+        }
+    }, []);
+
+    const login = useCallback(async (email, password) => {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw data;
+
+        await handleAuthSuccess(data);
+        return data;
+    }, [handleAuthSuccess]);
 
     useEffect(() => {
         fetchUser();
@@ -82,6 +138,8 @@ export function AuthProvider({ children }) {
                 isLoading,
                 refreshUser: fetchUser,
                 logout,
+                login,
+                handleAuthSuccess,
                 ...helpers
             }}
         >

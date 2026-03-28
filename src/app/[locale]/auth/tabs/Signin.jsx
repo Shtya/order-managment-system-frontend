@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { Field, AuthInput, PasswordInput, BtnPrimary, BtnGhost, BtnLink, Divider, IconGoogle, IconArrow } from './AuthUi';
 import { useSearchParams } from 'next/navigation';
 import { usePathname, useRouter } from '@/i18n/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 const MailIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -58,50 +59,35 @@ export default function SignIn({ t: tProp, onSwitchMode, onForgotPassword }) {
   };
   const touch = k => setTouched(p => ({ ...p, [k]: true }));
 
+  const { login } = useAuth();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setTouched({ email: true, password: true });
     if (errors.email || errors.password) return;
     setLoading(true);
     const tid = toast.loading(t('signin.loading'));
+
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/login`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw data;
-      if (data?.accessToken) {
-        localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('user', JSON.stringify(data.user));
-      }
-      await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken: data.accessToken, user: data.user }),
-      });
-
+      await login(email, password);
       toast.success(t('signin.success'), { id: tid });
-      const role = String(data?.user?.role?.name || '');
-      const isOnboarded = data.user?.onboardingStatus === 'completed' || role !== 'admin'; // Matches our Enum
-
-      setTimeout(() => { window.location.href = role === 'super_admin' ? '/dashboard/users' : !isOnboarded ? "/onboarding" : role === 'admin' ? '/orders' : '/orders/employee-orders'; }, 900);
     } catch (error) {
-      const status = error?.response?.status;
+      const status = error?.response?.status || error?.status;
 
       if (status === 401) {
         toast.error(t("signin.session_expired"), { id: tid });
       } else if (status === 403) {
         toast.error(t("signin.no_permission"), { id: tid });
       } else {
-        // This usually handles 400 or 401 (invalid login)
         toast.error(t("signin.invalid_credentials"), { id: tid });
       }
 
       setTimeout(() => {
         router.push("/auth?mode=signin");
       }, 1200);
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
 

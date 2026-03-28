@@ -15,6 +15,7 @@ import { NotificationProvider } from "@/context/NotificationContext";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import SubscriptionLock from "@/components/atoms/SubscriptionLock";
 import { useAuthInterceptor } from "@/hook/useAuthInterceptor";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function LayoutShell({ children }) {
   return (
@@ -82,22 +83,44 @@ function DashboardLayout({ children }) {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("ui_sidebar") === "expanded";
   });
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Auto-close sidebar on route change on mobile
+  useEffect(() => {
+    if (isMobile && isSidebarOpen) {
+      setIsSidebarOpen(false);
+    }
+  }, [AllPathname, isMobile]);
+
   const { hasActiveSubscription, isSuperAdmin, isLoading, user } = useAuth();
   const isExcluded = excludedSubcriptionPaths.some(path => pathname.startsWith(path));
 
   const isLocked = !isSuperAdmin && !hasActiveSubscription && !isExcluded && !isLoading && user;
   useEffect(() => {
-    localStorage.setItem(
-      "ui_sidebar",
-      isSidebarOpen ? "expanded" : "collapsed",
-    );
+    if (!isMobile) {
+      localStorage.setItem(
+        "ui_sidebar",
+        isSidebarOpen ? "expanded" : "collapsed",
+      );
+    }
     window.dispatchEvent(new Event("sidebarChangeBack"));
-  }, [isSidebarOpen]);
+  }, [isSidebarOpen, isMobile]);
 
   useEffect(() => {
     const handler = () => {
       const value = localStorage.getItem("ui_sidebar");
-      setIsSidebarOpen(value === "expanded");
+      if (!isMobile) {
+        setIsSidebarOpen(value === "expanded");
+      }
     };
 
     window.addEventListener("sidebarChange", handler);
@@ -105,7 +128,7 @@ function DashboardLayout({ children }) {
     return () => {
       window.removeEventListener("sidebarChange", handler);
     };
-  }, []);
+  }, [isMobile]);
 
   const isAuthRoute = isPublicOrSpecialRoute(AllPathname);
   const [mounted, setMounted] = useState(false);
@@ -116,7 +139,7 @@ function DashboardLayout({ children }) {
   }, []);
   const sidebarW = isSidebarOpen ? 260 : 68;
 
-  const effectiveMargin = mounted ? sidebarW : 68;
+  const effectiveMargin = mounted ? (isMobile ? 0 : sidebarW) : (isMobile ? 0 : 68);
   if (isAuthRoute || pathname === "") {
     return (
       <div>
@@ -129,11 +152,25 @@ function DashboardLayout({ children }) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
+      {/* Backdrop for mobile */}
+      <AnimatePresence>
+        {isMobile && isSidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed inset-0 bg-black/40 z-[100] backdrop-blur-[2px]"
+          />
+        )}
+      </AnimatePresence>
+
       {/* ── Sidebar — full height, z-above header ── */}
       <Sidebar
         isRTL={isRTL}
         onOpenSidebar={() => setIsSidebarOpen((v) => !v)}
         isOpen={isSidebarOpen}
+        isMobile={isMobile}
       />
 
       <div
@@ -148,6 +185,7 @@ function DashboardLayout({ children }) {
         <Header
           toggleSidebar={() => setIsSidebarOpen((v) => !v)}
           isSidebarOpen={isSidebarOpen}
+          isMobile={isMobile}
         />
 
         {/* Scrollable page content */}

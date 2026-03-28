@@ -656,7 +656,8 @@ function SubItem({ child, isActive, isRTL, index }) {
   );
 }
 export const excludedSubcriptionPaths = ["/plans", "/wallet"];
-const Sidebar = ({ isOpen, isRTL, onOpenSidebar }) => {
+const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
+
   const pathname = usePathname();
   const [expandedItems, setExpandedItems] = useState(new Set());
   const [currentSearch, setCurrentSearch] = useState(() =>
@@ -757,40 +758,31 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar }) => {
       return next;
     });
 
+  const sidebarWidth = 260;
+  const collapsedWidth = 68;
 
+  const variants = {
+    mobile: {
+      open: { x: 0, opacity: 1 },
+      closed: { x: isRTL ? "100%" : "-100%", opacity: 0 },
+    },
+    desktop: {
+      open: { width: sidebarWidth, opacity: 1, x: 0 },
+      closed: { width: collapsedWidth, opacity: 1, x: 0 },
+    },
+  };
 
-  if (isLoadingUser) {
-    return (
-      <motion.aside
-        initial={false}
-        animate={{ width: isOpen ? 260 : 68 }}
-        transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className={`fixed top-0 ${isRTL ? "right-0" : "left-0"} h-screen
-          ${isRTL ? "border-l" : "border-r"} border-border z-50 flex items-center justify-center`}
-        style={{ background: "var(--sidebar)" }}
-      >
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
-          className="w-5 h-5 rounded-full border-2"
-          style={{
-            borderColor: "color-mix(in oklab, var(--primary) 18%, transparent)",
-            borderTopColor: "var(--primary)",
-          }}
-        />
-      </motion.aside>
-    );
-  }
 
   return (
     <TooltipProvider>
       <motion.aside
         initial={false}
-        animate={{ width: isOpen ? 260 : 68 }}
+        animate={isMobile ? (isOpen ? "open" : "closed") : (isOpen ? "open" : "closed")}
+        variants={isMobile ? variants.mobile : variants.desktop}
         transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
         className={`
           fixed top-0 ${isRTL ? "right-0" : "left-0"}
-          h-screen flex flex-col overflow-hidden z-[100]
+          h-screen flex flex-col overflow-hidden z-[100002]
           ${isRTL ? "border-l" : "border-r"} border-border
         `}
         style={{
@@ -798,69 +790,84 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar }) => {
           boxShadow: isOpen
             ? "rgba(50,50,93,.14) 0px 20px 60px -12px, rgba(0,0,0,.14) 0px 14px 36px -24px"
             : "rgba(50,50,93,.08) 0px 10px 30px -6px",
+          width: isMobile ? sidebarWidth : undefined
         }}
       >
         {/* Logo block — same height as header (56px = h-14) */}
         {/* <SidebarLogo isOpen={isOpen} /> */}
         <motion.div
-          className={`${!isOpen ? "mx-auto pe-[7px] " : "ps-4 flex items-center gap-3 "} my-[11.6px] `}
+          className={`${(!isOpen && !isMobile) ? "mx-auto pe-[7px] " : "px-4 flex items-center justify-between gap-3 "} my-[11.6px] `}
           whileTap={{ scale: 0.92 }}
         >
-          <Button
-            onClick={onOpenSidebar}
-            className="h-8 w-8 p-0 rounded-xl border overflow-hidden
+          <div className="flex items-center gap-3">
+            {!isMobile && (
+              <Button
+                onClick={onOpenSidebar}
+                className="h-8 w-8 p-0 rounded-xl border overflow-hidden
 												bg-card/80 backdrop-blur-sm border-border
 												hover:border-primary/35 text-muted-foreground hover:text-foreground
 												transition-all duration-200"
-          >
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={isOpen ? "close" : "open"}
-                initial={{ rotate: -90, opacity: 0 }}
-                animate={{ rotate: 0, opacity: 1 }}
-                exit={{ rotate: 90, opacity: 0 }}
-                transition={{ duration: 0.18 }}
-                className="flex items-center justify-center"
               >
-                {isOpen ? <X size={15} /> : <Menu size={15} />}
-              </motion.span>
-            </AnimatePresence>
-          </Button>
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={isOpen ? "close" : "open"}
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.18 }}
+                    className="flex items-center justify-center w-full h-full"
+                  >
+                    {isOpen ? <X size={15} /> : <Menu size={15} />}
+                  </motion.span>
+                </AnimatePresence>
+              </Button>
+            )}
 
-          {isOpen && (
-            <div className={`flex items-center gap-2.5 `}>
-              <motion.div
-                initial={{ opacity: 0, x: -12 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.12, duration: 0.35 }}
-                className="flex items-center gap-1"
-              >
-                <div className="relative w-8 h-8 rounded-full overflow-hidden shadow-md shadow-primary/20 flex-shrink-0">
-                  <div className="absolute inset-0 bg-primary" />
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/28 to-transparent skew-x-12"
-                    animate={{ x: ["-150%", "250%"] }}
-                    transition={{
-                      duration: 3.5,
-                      repeat: Infinity,
-                      repeatDelay: 2.5,
-                      ease: "easeInOut",
-                    }}
-                  />
-                  <div className="relative flex items-center justify-center h-full">
-                    <Package className="text-white" size={14} />
-                  </div>
-                </div>
-
-                <span
-                  className="text-[15px] font-bold tracking-tight
-												bg-gradient-to-r from-foreground to-muted-foreground
-												bg-clip-text text-transparent hidden sm:block"
+            {(isOpen || isMobile) && (
+              <div className={`flex items-center gap-2.5 `}>
+                <motion.div
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.12, duration: 0.35 }}
+                  className="flex items-center gap-1"
                 >
-                  {t("brand")}
-                </span>
-              </motion.div>
-            </div>
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden shadow-md shadow-primary/20 flex-shrink-0">
+                    <div className="absolute inset-0 bg-primary" />
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/28 to-transparent skew-x-12"
+                      animate={{ x: ["-150%", "250%"] }}
+                      transition={{
+                        duration: 3.5,
+                        repeat: Infinity,
+                        repeatDelay: 2.5,
+                        ease: "easeInOut",
+                      }}
+                    />
+                    <div className="relative flex items-center justify-center h-full">
+                      <Package className="text-white" size={14} />
+                    </div>
+                  </div>
+
+                  <span
+                    className="text-[15px] font-bold tracking-tight
+												bg-gradient-to-r from-foreground to-muted-foreground
+												bg-clip-text text-transparent"
+                  >
+                    {t("brand")}
+                  </span>
+                </motion.div>
+              </div>
+            )}
+          </div>
+
+          {isMobile && (
+            <Button
+              onClick={onOpenSidebar}
+              variant="ghost"
+              className="h-8 w-8 p-0 rounded-xl text-muted-foreground hover:text-foreground lg:hidden"
+            >
+              <X size={18} />
+            </Button>
           )}
         </motion.div>
 

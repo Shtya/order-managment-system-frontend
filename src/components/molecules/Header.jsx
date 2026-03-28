@@ -106,7 +106,7 @@ function PulseDot() {
 }
 
 // ─── Header ───────────────────────────────────────────────────────────────────
-export default function Header({ toggleSidebar, isSidebarOpen }) {
+export default function Header({ toggleSidebar, isSidebarOpen, isMobile }) {
   const t = useTranslations("header");
   const locale = useLocale();
   const pathname = usePathname();
@@ -136,14 +136,28 @@ export default function Header({ toggleSidebar, isSidebarOpen }) {
       transition={{ duration: 0.42, ease: [0.25, 0.46, 0.45, 0.94] }}
       className="h-14  flex-shrink-0 bg-white z-[10]  overflow-hidden relative"
     >
+       <style>
+      {`
+      @media (max-width: 768px) {
+        button {
+          min-width: auto;
+          min-height: auto;
+      } }`}
+    </style>
       {/* Glass background */}
       <div className="absolute inset-0 bg-[var(--sidebar)]  backdrop-blur-md border-b border-border/60" />
 
       <div className="relative h-full px-4 flex items-center justify-between gap-3">
         {/* ── LEFT: Toggle + Brand ── */}
         <div
-          className={`flex items-center gap-2.5 ${isSidebarOpen && "opacity-0"} duration-300`}
+          className={`flex items-center gap-2.5 ${(isSidebarOpen && !isMobile) && "opacity-0"} duration-300`}
         >
+          {isMobile && (
+            <IconBtn onClick={toggleSidebar} label={t("toggleSidebar")}>
+              <Menu size={16} />
+            </IconBtn>
+          )}
+
           <motion.div
             initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
@@ -358,6 +372,8 @@ export default function Header({ toggleSidebar, isSidebarOpen }) {
         </div>
       </div>
     </motion.header>
+   
+
   );
 }
 

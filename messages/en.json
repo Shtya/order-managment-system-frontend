@@ -10,6 +10,8 @@
       "home": "Home",
       "shipping": "Shipping Companies"
     },
+    "editTitle": "Edit Settings",
+    "addTitle": "Add Shipping Provider",
     "integrated": {
       "description": "Connect your store to this provider to manage and track shipments automatically and easily."
     },
@@ -34,7 +36,12 @@
       "docs": "Bosta Guide",
       "close": "Close",
       "errorFetch": "Failed to load webhook settings",
-      "errorRotate": "Failed to rotate the secret value"
+      "errorRotate": "Failed to rotate the secret value",
+      "rotateSuccess": "Secret value changed successfully"
+    },
+    "copy": {
+      "success": "Copied successfully",
+      "error": "Failed to copy"
     },
     "card": {
       "active": "Active",
@@ -53,6 +60,10 @@
       "configureFirst": "Please configure credentials first"
     },
     "settings": {
+      "toastUpdateSuccess": "{provider} updated successfully ✓",
+      "toastConnectSuccess": "{provider} connected successfully ✓",
+      "errorRequired": "Please fill in the required fields",
+      "errorAtLeastOne": "Please enter at least one value",
       "errorFetch": "Failed to load settings",
       "title": "{name} Settings",
       "subtitle": "Configure your API credentials",
@@ -740,6 +751,8 @@
       "home": "Home",
       "stores": "Stores"
     },
+      "editTitle": "Edit Settings",
+    "addTitle": "Add Store",
     "guide": {
       "title": "How to Integrate with {name}",
       "subtitle": "Step-by-step guide for {name}",
@@ -795,6 +808,8 @@
       "storeCode": "Store Code",
       "storeCodePlaceholder": "store-code",
       "storeUrl": "Store URL",
+      "name": "Name",
+      "namePlaceholder": "Enter store name",
       "activeStore": "Active Store",
       "autoSync": "Auto Sync",
       "apiKeysSection": "API Keys",
@@ -6404,7 +6419,7 @@
       "contact_us": "Contact us",
       "start_now": "Start now",
       "unavailable": "Unavailable",
-      "active_already": "You already have an active subscription",
+      "active_already": "Already subscribed",
       "back_btn": "Back",
       "continue_btn": "Continue",
       "popular_badge": "Most popular",

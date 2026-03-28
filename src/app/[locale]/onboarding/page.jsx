@@ -73,7 +73,6 @@ const CSS = `
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { direction: rtl; }
   body {
     font-family: var(--font);
     background: var(--bg);
@@ -173,8 +172,10 @@ const CSS = `
 `;
 
 /* ─── Icons ───────────────────────────────────────────────── */
-const IcArrow = ({ dir = "left" }) => (
-  <svg
+const IcArrow = () => {
+  const locale = useLocale();
+  const isRTL = locale === "ar";
+  return (<svg
     width="15"
     height="15"
     viewBox="0 0 24 24"
@@ -183,146 +184,191 @@ const IcArrow = ({ dir = "left" }) => (
     strokeWidth="2.2"
     strokeLinecap="round"
     strokeLinejoin="round"
-    style={{ transform: dir === "right" ? "scaleX(-1)" : "none" }}
+    style={{ transform: isRTL ? "scaleX(-1)" : "none" }}
   >
     <path d="M5 12h14" />
     <path d="m12 5 7 7-7 7" />
-  </svg>
-);
-const IcCheck = ({ size = 13 }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="20 6 9 17 4 12" />
-  </svg>
-);
-const IcUser = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="8" r="5" />
-    <path d="M20 21a8 8 0 1 0-16 0" />
-  </svg>
-);
-const IcBuild = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect x="3" y="3" width="18" height="18" rx="3" />
-    <path d="M3 9h18M9 21V9" />
-  </svg>
-);
-const IcLink = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-  </svg>
-);
-const IcShip = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-3" />
-    <circle cx="9" cy="19" r="2" />
-    <circle cx="17" cy="19" r="2" />
-  </svg>
-);
-const IcStar = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-  </svg>
-);
-const IcGlobe = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="10" />
-    <line x1="2" y1="12" x2="22" y2="12" />
-    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-  </svg>
-);
-const IcPhone = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.58 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.56a16 16 0 0 0 6.29 6.29l.87-.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
-  </svg>
-);
-const IcLock = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect x="3" y="11" width="18" height="11" rx="2" />
-    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-  </svg>
-);
+  </svg>)
+};
+const IcCheck = ({ style, size = 13 }) => {
+  const locale = useLocale();
+  const isRTL = locale === "ar";
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ transform: isRTL ? "scaleX(-1)" : "none", ...style }}
+    >
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  )
+};
+const IcUser = () => {
+  const locale = useLocale();
+  const isRTL = locale === "ar";
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ transform: isRTL ? "scaleX(-1)" : "none" }}
+    >
+      <circle cx="12" cy="8" r="5" />
+      <path d="M20 21a8 8 0 1 0-16 0" />
+    </svg>
+  )
+};
+const IcBuild = () => {
+  const locale = useLocale();
+  const isRTL = locale === "ar";
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ transform: isRTL ? "scaleX(-1)" : "none" }}
+    >
+      <rect x="3" y="3" width="18" height="18" rx="3" />
+      <path d="M3 9h18M9 21V9" />
+    </svg>
+  )
+};
+const IcLink = () => {
+  const locale = useLocale();
+  const isRTL = locale === "ar";
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ transform: isRTL ? "scaleX(-1)" : "none" }}
+    >
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </svg>
+  )
+};
+const IcShip = () => {
+  const locale = useLocale();
+  const isRTL = locale === "ar";
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ transform: isRTL ? "scaleX(-1)" : "none" }}
+    >
+      <path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-3" />
+      <circle cx="9" cy="19" r="2" />
+      <circle cx="17" cy="19" r="2" />
+    </svg>
+  )
+};
+const IcStar = () => {
+  const locale = useLocale();
+  const isRTL = locale === "ar";
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ transform: isRTL ? "scaleX(-1)" : "none" }}
+    >
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  )
+};
+const IcGlobe = () => {
+  const locale = useLocale();
+  const isRTL = locale === "ar";
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ transform: isRTL ? "scaleX(-1)" : "none" }}
+    >
+      <circle cx="12" cy="12" r="10" />
+      <line x1="2" y1="12" x2="22" y2="12" />
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+    </svg>
+  )
+};
+const IcPhone = () => {
+  const locale = useLocale();
+  const isRTL = locale === "ar";
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ transform: isRTL ? "scaleX(-1)" : "none" }}
+    >
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.58 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.56a16 16 0 0 0 6.29 6.29l.87-.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+    </svg>
+  )
+};
+const IcLock = () => {
+  const locale = useLocale();
+  const isRTL = locale === "ar";
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ transform: isRTL ? "scaleX(-1)" : "none" }}
+    >
+      <rect x="3" y="11" width="18" height="11" rx="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  )
+};
 
 function Field({ label, required, children, error, style }) {
   return (
@@ -476,7 +522,7 @@ export default function OnboardingPage() {
   const { getDashboardRoute } = useAuth();
   const [step, setStep] = useState(0); // Start null to show a loader
   const [dbStep, setDbStep] = useState(null); // Furthest step reached
-  const [user, setUser] = useState(null); // Furthest step reached
+  const { user, isLoading: loadingUser } = useAuth(); // Furthest step reached
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const stepMap = {
@@ -487,27 +533,20 @@ export default function OnboardingPage() {
     shipping: 4,
     finished: 5,
   };
-  const revStepMap = [
-    "welcome",
-    "plan",
-    "company",
-    "store",
-    "shipping",
-    "finished",
-  ];
 
   // PROBLEM 2 FIX: Resume from last time
   useEffect(() => {
     async function init() {
       try {
-        const { data } = await api.get("/users/me"); // Create this simple GET endpoint
-        const user = data?.user || data;
-        if (!user) {
+        if (!user && !loadingUser) {
           toast.error(t("login_required"));
           setStep(-2); // e.g., -2 = unauthorized
           setTimeout(() => {
             router.replace("/auth?mode=signin");
           }, 1200);
+        }
+        if (!user) {
+          return;
         }
         // Only admins can access onboarding
         if (user.role.name !== "admin") {
@@ -528,7 +567,6 @@ export default function OnboardingPage() {
           return;
         }
 
-        setUser(user);
         const current = stepMap[user.currentOnboardingStep] || 0;
         if (current === undefined) {
           setStep(-1);
@@ -537,6 +575,7 @@ export default function OnboardingPage() {
         setStep(current);
         setDbStep(current);
       } catch (error) {
+        console.error("Error during onboarding initialization:", error);
         const status = error?.response?.status;
 
         if (status === 401) {
@@ -555,7 +594,7 @@ export default function OnboardingPage() {
       }
     }
     init();
-  }, []);
+  }, [user, loadingUser]);
 
   const [nextLoading, setNextLoading] = useState(false);
 
@@ -692,7 +731,7 @@ export default function OnboardingPage() {
                 key="p"
                 onNext={next}
                 onBack={back}
-                selectedId={user?.subscription?.planId}
+                selectedId={user?.subscriptions?.[0]?.planId}
                 open={step === 1}
                 nextLoading={nextLoading}
               />
@@ -864,7 +903,7 @@ function Sidebar({ step }) {
               borderRadius: 99,
               transformOrigin: "top",
             }}
-            animate={{ height: `${(step / (STEPS_META.length - 1)) * 100}%` }}
+            animate={{ height: `${Math.min(100, step / (STEPS_META.length - 1)) * 100}%` }}
             transition={{ duration: 0.5, ease: "easeOut" }}
           />
         </div>
@@ -965,7 +1004,7 @@ function Sidebar({ step }) {
               fontWeight: 700,
             }}
           >
-            {Math.round((step / (STEPS_META.length - 1)) * 100)}٪
+            {Math.round(Math.min(100, (step / (STEPS_META.length - 1)) * 100))}٪
           </span>
         </div>
         <div
@@ -982,7 +1021,7 @@ function Sidebar({ step }) {
                 "linear-gradient(90deg, rgba(255,255,255,.6), rgba(255,255,255,.35))",
               borderRadius: 99,
             }}
-            animate={{ width: `${(step / (STEPS_META.length - 1)) * 100}%` }}
+            animate={{ width: `${Math.min(100, (step / (STEPS_META.length - 1)) * 100)}%` }}
             transition={{ duration: 0.5, ease: "easeOut" }}
           />
         </div>
@@ -1247,7 +1286,6 @@ function PlanSkeleton() {
                   alignItems: "center",
                   gap: 6,
                   marginBottom: 10,
-                  direction: "rtl",
                 }}
               >
                 <div
@@ -1361,7 +1399,6 @@ function PlanFeature({ label, featured }) {
         display: "flex",
         alignItems: "flex-start",
         gap: 6,
-        direction: "rtl",
         marginBottom: 6,
       }}
     >
@@ -1454,12 +1491,10 @@ function BtnPrimary({ children, onClick, disabled, loading }) {
 ───────────────────────────────────────────────────────── */
 function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
   const t = useTranslations("onboarding.plans");
+  const locale = useLocale();
   const { settings, isLoading: isSettingsLoading } = usePlatformSettings();
   const whatsapp = settings?.whatsapp;
-  const [selected, setSelected] = useState(selectedId || null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
-
-  // Use the shared hook for all subscription logic
   const {
     loading,
     isLoading,
@@ -1474,10 +1509,6 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
     activeSubscription?.plan?.id || activeSubscription?.planId;
   const hasActiveSubscription = !!activeSubscription;
 
-  // Update selected when selectedId prop changes
-  useEffect(() => {
-    setSelected(selectedId);
-  }, [selectedId]);
 
   // Format plans for display (matching old structure)
   const plans = rawPlans.map((plan, index) => {
@@ -1529,19 +1560,11 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
       dotColor:
         plan.color ||
         (index === 0 ? "#8B88C1" : index === 1 ? "#BAEB33" : "#FF5C2B"),
-      tier:
-        plan.duration === "monthly"
-          ? t("duration.monthly")
-          : plan.duration === "yearly"
-            ? t("duration.yearly")
-            : plan.duration === "lifetime"
-              ? t("duration.lifetime")
-              : t("duration.package"),
+
       isPopular: !!plan.isPopular,
       features,
     };
   });
-
   // Arrange plans: popular in center
   const arranged = [...plans];
   const popularIndex = arranged.findIndex((p) => p.isPopular);
@@ -1551,15 +1574,15 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
   }
 
   // Set default selection
-  useEffect(() => {
-    if (arranged.length > 0 && !selected) {
-      const defaultIndex =
-        arranged.findIndex((p) => p.isPopular) !== -1
-          ? arranged.findIndex((p) => p.isPopular)
-          : Math.min(1, arranged.length - 1);
-      setSelected(selectedId || arranged[defaultIndex]?.id || arranged[0].id);
-    }
-  }, [arranged.length, selectedId]);
+  // useEffect(() => {
+  //   if (arranged.length > 0 && !selected) {
+  //     const defaultIndex =
+  //       arranged.findIndex((p) => p.isPopular) !== -1
+  //         ? arranged.findIndex((p) => p.isPopular)
+  //         : Math.min(1, arranged.length - 1);
+  //     setSelected(selectedId || arranged[defaultIndex]?.id || arranged[0].id);
+  //   }
+  // }, [arranged.length, selectedId]);
 
   // Check if trial plan and user completed onboarding
   const cannotSubscribeToTrial = (planId) => {
@@ -1575,13 +1598,13 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
       return;
     }
     if (!finalSelected) {
-      toast.error("يرجى اختيار خطة");
+      toast.error(t("toasts.select_plan_error"));
       return;
     }
 
     // Check if trying to subscribe to trial when not allowed
     if (cannotSubscribeToTrial(finalSelected)) {
-      toast.error("النسخة التجريبية غير متاحة بعد إكمال التسجيل");
+      toast.error(t("toasts.trial_not_available"));
       return;
     }
 
@@ -1644,10 +1667,9 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
             display: "flex",
             alignItems: "start",
             gap: 10,
-            direction: "rtl",
           }}
         >
-          <IcCheck size={18} style={{ color: "#3b82f6", marginTop: 2 }} />
+          <IcCheck  size={18} style={{ color: "#3b82f6", marginTop: 2 }} />
           <div style={{ flex: 1 }}>
             <div
               style={{
@@ -1681,7 +1703,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
         >
           {arranged.map((p, index) => {
             const price = p.priceMonthly;
-            const isSelected = selected === p.id;
+            const isSelected = selectedId === p.id;
             const isFeatured = index === 1;
             const isCurrentPlan = p.id === currentPlanId;
             const isTrialDisabled = cannotSubscribeToTrial(p.id);
@@ -1705,7 +1727,6 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                   position: "relative",
                   borderRadius: 20,
                   padding: isFeatured ? "28px 20px" : "24px 18px",
-                  direction: "rtl",
                   // cursor:
                   //   isTrialDisabled || hasActiveSubscription
                   //     ? "not-allowed"
@@ -1750,8 +1771,8 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                   <div
                     style={{
                       position: "absolute",
-                      top: p.badge ? 30 : 12,
-                      right: 12,
+                      top: p.badge ? 30 : 6,
+                      right: 6,
                       background: "#10b981",
                       color: "#fff",
                       fontSize: 9,
@@ -1810,7 +1831,6 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                       alignItems: "center",
                       gap: 6,
                       marginBottom: 10,
-                      direction: "rtl",
                     }}
                   >
                     <span
@@ -1823,7 +1843,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                         boxShadow: `0 0 6px ${p.dotColor}`,
                       }}
                     />
-                    <span
+                    {/* <span
                       style={{
                         fontSize: 11,
                         color: isFeatured
@@ -1833,7 +1853,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                       }}
                     >
                       {p.tier}
-                    </span>
+                    </span> */}
                     <span
                       style={{
                         fontSize: 14,
@@ -1880,7 +1900,6 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                           alignItems: "baseline",
                           gap: 4,
                           marginBottom: 4,
-                          direction: "rtl",
                         }}
                       >
                         <span
@@ -2440,7 +2459,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
               className="ob-input"
               placeholder={t("placeholders.optional")}
               {...register("tax")}
-              style={{ direction: "ltr", textAlign: "right" }}
+              style={{ textAlign: "right" }}
             />
           </InputWrap>
         </Field>
@@ -2451,7 +2470,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
               className="ob-input"
               placeholder={t("placeholders.optional")}
               {...register("commercial")}
-              style={{ direction: "ltr", textAlign: "right" }}
+              style={{ textAlign: "right" }}
             />
           </InputWrap>
         </Field>
@@ -2462,7 +2481,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
               className="ob-input"
               placeholder="+20 xxx xxxx"
               {...register("phone")}
-              style={{ direction: "ltr", textAlign: "right" }}
+              style={{ textAlign: "right" }}
             />
           </InputWrap>
         </Field>
@@ -2473,7 +2492,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
               className="ob-input"
               placeholder="https://mystore.com"
               {...register("website")}
-              style={{ direction: "ltr", textAlign: "left" }}
+              style={{ textAlign: "left" }}
             />
           </InputWrap>
         </Field>
@@ -2517,7 +2536,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
           loading={isSubmitting || nextLoading}
           disabled={nextLoading}
         >
-          {tp("continue_btn")} <IcArrow dir="right" />
+          {tp("continue_btn")} <IcArrow />
         </BtnPrimary>
       </div>
     </motion.div>
@@ -2577,6 +2596,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
   const ts = useTranslations("onboarding.store");
   const tp = useTranslations("onboarding.plans");
   const t = useTranslations("storeIntegrations");
+  const locale = useLocale();
   const [active, setActive] = useState(null);
   const [showWebhooks, setShowWebhooks] = useState(false);
   const [stores, setStores] = useState({});
@@ -2713,6 +2733,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                 {STORE_PROVIDERS.map((p) => (
                   <div
                     key={p.key}
+                    onClick={() => setActive(p.key)}
                     className={`prov-card${connected[p.key] ? " connected" : ""}`}
                     style={{
                       cursor: "pointer",
@@ -2727,7 +2748,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                     }}
                   >
                     <div
-                      onClick={() => setActive(p.key)}
+
                       style={{
                         display: "flex",
                         alignItems: "center",
@@ -2755,7 +2776,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                       >
                         <img
                           src={p.img}
-                          alt={p.label}
+                          alt={p.label[locale] || p.label.en}
                           style={{
                             width: 28,
                             height: 28,
@@ -2777,7 +2798,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                             color: "var(--text)",
                           }}
                         >
-                          {p.label}
+                          {p.label[locale] || p.label.en}
                         </div>
                         <div
                           style={{
@@ -2787,7 +2808,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                             lineHeight: 1.4,
                           }}
                         >
-                          {p.desc}
+                          {p.desc[locale] || p.desc.en}
                         </div>
                       </div>
                     </div>
@@ -2887,7 +2908,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                 >
                   <img
                     src={provider.img}
-                    alt={provider.label}
+                    alt={provider.label[locale] || provider.label.en}
                     style={{ width: 28, height: 28, objectFit: "contain" }}
                     onError={(e) => {
                       e.currentTarget.style.display = "none";
@@ -2904,7 +2925,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                       color: "var(--text)",
                     }}
                   >
-                    {provider.label}
+                    {provider.label[locale] || provider.label.en}
                   </div>
                   <div style={{ fontSize: 12, color: "var(--text-3)" }}>
                     {connected[provider.key]
@@ -3021,7 +3042,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                           placeholder="https://mystore.example.com"
                           {...register("storeUrl")}
                           style={{
-                            direction: "ltr",
+
                             textAlign: "left",
                             paddingLeft: 36,
                             width: "100%",
@@ -3150,7 +3171,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                                 markTouched(fieldKey);
                               }}
                               style={{
-                                direction: "ltr",
+
                                 textAlign: "left",
                                 paddingLeft: 36,
                                 width: "100%",
@@ -3448,6 +3469,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
   const ts = useTranslations("onboarding.shipping");
   const tp = useTranslations("onboarding.plans");
   const tstore = useTranslations("onboarding.store");
+  const locale = useLocale();
 
   const [active, setActive] = useState(null); // The provider code
   const [showWebhook, setShowWebhook] = useState(false);
@@ -3556,6 +3578,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                 {SHIP_PROVIDERS.map((p) => (
                   <div
                     key={p.key}
+                    onClick={() => setActive(p.key)}
                     className={`prov-card${connected[p.key] ? " connected" : ""}`}
                     style={{
                       cursor: "pointer",
@@ -3570,7 +3593,6 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                     }}
                   >
                     <div
-                      onClick={() => setActive(p.key)}
                       style={{
                         display: "flex",
                         alignItems: "center",
@@ -3597,7 +3619,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                       >
                         <img
                           src={p.img}
-                          alt={p.label}
+                          alt={p.label[locale] || p.label.en}
                           style={{
                             width: 28,
                             height: 28,
@@ -3618,7 +3640,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                             color: "var(--text)",
                           }}
                         >
-                          {p.label}
+                          {p.label[locale] || p.label.en}
                         </div>
                         <div
                           style={{
@@ -3627,7 +3649,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                             marginTop: 2,
                           }}
                         >
-                          {p.desc}
+                          {p.desc[locale] || p.desc.en}
                         </div>
                       </div>
                     </div>
@@ -3763,7 +3785,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                 >
                   <img
                     src={provider.img}
-                    alt={provider.label}
+                    alt={provider.label[locale] || provider.label.en}
                     style={{ width: 28, height: 28, objectFit: "contain" }}
                     onError={(e) => {
                       e.currentTarget.style.display = "none";
@@ -3780,10 +3802,10 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                       color: "var(--text)",
                     }}
                   >
-                    {ts("webhook.title", { name: provider.label })}
+                    {ts("webhook.title", { name: provider.label[locale] || provider.label.en })}
                   </div>
                   <div style={{ fontSize: 12, color: "var(--text-3)" }}>
-                    {ts("webhook.subtitle", { name: provider.label })}
+                    {ts("webhook.subtitle", { name: provider.label[locale] || provider.label.en })}
                   </div>
                 </div>
               </div>
@@ -3826,7 +3848,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                   {/* Webhook URL */}
                   {!webhookHiddenFields.includes("webhookUrl") && (
                     <CopyableField
-                      label={t("webhookFields.webhookUrl")}
+                      label={t("webhook.urlLabel")}
                       value={webhookData.webhookUrl}
                     />
                   )}
@@ -3834,7 +3856,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                   {/* Header Name */}
                   {!webhookHiddenFields.includes("headerName") && (
                     <CopyableField
-                      label={t("webhookFields.headerName")}
+                      label={t("webhook.headerName")}
                       value={webhookData.headerName}
                     />
                   )}
@@ -3842,7 +3864,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                   {/* Header Value (Secret) */}
                   {!webhookHiddenFields.includes("headerValue") && (
                     <CopyableField
-                      label={t("webhookFields.headerValue")}
+                      label={t("webhook.headerValue")}
                       value={webhookData.headerValue}
                     />
                   )}
@@ -3950,7 +3972,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                 >
                   <img
                     src={provider.img}
-                    alt={provider.label}
+                    alt={provider.label[locale] || provider.label.en}
                     style={{ width: 28, height: 28, objectFit: "contain" }}
                     onError={(e) => {
                       e.currentTarget.style.display = "none";
@@ -3967,7 +3989,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                       color: "var(--text)",
                     }}
                   >
-                    {provider.label}
+                    {provider.label[locale] || provider.label.en}
                   </div>
                   <div style={{ fontSize: 12, color: "var(--text-3)" }}>
                     {connected[provider.key]
@@ -3997,7 +4019,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
                         value={fd[f.key] || ""}
                         onChange={(e) => setFd(f.key, e.target.value)}
                         style={{
-                          direction: "ltr",
+
                           textAlign: "left",
                           paddingLeft: 36,
                           width: "100%",

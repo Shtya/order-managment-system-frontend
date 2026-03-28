@@ -10,6 +10,8 @@
       "home": "الرئيسية",
       "shipping": "شركات الشحن"
     },
+    "editTitle": "تعديل الإعدادات",
+    "addTitle": "إضافة شركة شحن",
     "integrated": {
       "description": "ربط متجرك بهذا المزود لإدارة الشحنات وتتبعها تلقائيًا وبكل سهولة."
     },
@@ -34,7 +36,12 @@
       "docs": "دليل بوسطة",
       "close": "إغلاق",
       "errorFetch": "فشل تحميل إعدادات الـ Webhook",
-      "errorRotate": "فشل تغيير القيمة السرية"
+      "errorRotate": "فشل تغيير القيمة السرية",
+      "rotateSuccess": "تم تغيير القيمة السرية بنجاح"
+    },
+    "copy": {
+      "success": "تم النسخ بنجاح",
+      "error": "فشل النسخ"
     },
     "card": {
       "active": "مفعّل",
@@ -53,6 +60,10 @@
       "configureFirst": "يرجى ضبط بيانات الاعتماد أولًا"
     },
     "settings": {
+      "toastUpdateSuccess": "تم تحديث {provider} بنجاح ✓",
+      "toastConnectSuccess": "تم ربط {provider} بنجاح ✓",
+      "errorRequired": "يرجى ملء الحقول المطلوبة",
+      "errorAtLeastOne": "يرجى إدخال قيمة واحدة على الأقل",
       "errorFetch": "فشل تحميل الإعدادات",
       "title": "إعدادات {name}",
       "subtitle": "ضبط بيانات اعتماد API الخاصة بك",
@@ -740,6 +751,8 @@
       "home": "الرئيسية",
       "stores": "المتاجر"
     },
+     "editTitle": "تعديل الإعدادات",
+    "addTitle": "إضافة متجر",
     "guide": {
       "title": "كيفية التكامل مع {name}",
       "subtitle": "دليل خطوة بخطوة لـ {name}",
@@ -795,6 +808,8 @@
       "storeCode": "كود المتجر",
       "storeCodePlaceholder": "كود-المتجر",
       "storeUrl": "رابط المتجر",
+      "name": "الاسم",
+      "namePlaceholder": "أدخل اسم المتجر",
       "activeStore": "متجر نشط",
       "autoSync": "مزامنة تلقائية",
       "apiKeysSection": "مفاتيح API",

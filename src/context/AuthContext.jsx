@@ -23,6 +23,24 @@ export function AuthProvider({ children }) {
         }
     }, []);
 
+    const getDashboardRoute = useCallback((userData) => {
+        const targetUser = userData || user;
+        if (!targetUser) return '/auth?mode=signin';
+        
+        const role = String(targetUser?.role?.name || '');
+        const isOnboarded = targetUser?.onboardingStatus === 'completed' || role !== 'admin';
+
+        if (role === 'super_admin') {
+            return '/dashboard/users';
+        } else if (!isOnboarded) {
+            return '/onboarding';
+        } else if (role === 'admin') {
+            return '/orders';
+        } else {
+            return '/orders/employee-orders';
+        }
+    }, [user]);
+
     const handleAuthSuccess = useCallback(async (data) => {
         if (data?.accessToken) {
             localStorage.setItem('accessToken', data.accessToken);
@@ -43,26 +61,14 @@ export function AuthProvider({ children }) {
         });
 
         // Navigation Logic
-        const role = String(data.user?.role?.name || '');
-        const isOnboarded = data.user?.onboardingStatus === 'completed' || role !== 'admin';
-
-        let targetPath = '';
-        if (role === 'super_admin') {
-            targetPath = '/dashboard/users';
-        } else if (!isOnboarded) {
-            targetPath = '/onboarding';
-        } else if (role === 'admin') {
-            targetPath = '/orders';
-        } else {
-            targetPath = '/orders/employee-orders';
-        }
+        const targetPath = getDashboardRoute(data.user);
         
         if (typeof window !== "undefined") {
             setTimeout(() => {
                 window.location.href = targetPath;
             }, 500);
         }
-    }, []);
+    }, [getDashboardRoute]);
 
     const login = useCallback(async (email, password) => {
         const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/login`, {
@@ -140,6 +146,7 @@ export function AuthProvider({ children }) {
                 logout,
                 login,
                 handleAuthSuccess,
+                getDashboardRoute,
                 ...helpers
             }}
         >

@@ -135,6 +135,7 @@ function Feature({ label, isNew, featured, t }) {
 
 /* ─── Pricing Card ─── */
 function PricingCard({ plan, t, index, onAction }) {
+  const tWel = useTranslations("onboarding.welcome.pricing");
   const featured = plan.featured;
   const getPriceDisplay = () => {
     if (plan.type === "negotiated") {
@@ -179,7 +180,7 @@ function PricingCard({ plan, t, index, onAction }) {
               width: "fit-content",
             }}
           >
-            {t("types.trial")}
+            {tWel("types.trial")}
           </span>
         </div>
       );
@@ -239,7 +240,7 @@ function PricingCard({ plan, t, index, onAction }) {
         transform: featured ? "scale(1.03)" : "scale(1)",
         zIndex: featured ? 2 : 1,
         transition: "box-shadow 0.3s, transform 0.3s",
-        opacity: 0,
+        // opacity: 0,
         animation: `cardIn 0.5s cubic-bezier(.34,1.56,.64,1) forwards`,
         animationDelay: `${index * 0.1}s`,
       }}
@@ -343,9 +344,10 @@ function PricingCard({ plan, t, index, onAction }) {
 
 /* ─── Main ─── */
 export default function PricingSection() {
+  const tWel = useTranslations("onboarding.welcome.pricing");
   const t = useTranslations("pricing");
   const router = useRouter();
-const {formatCurrency} = usePlatformSettings()
+  const { formatCurrency } = usePlatformSettings()
   const {
     isLoading,
     plans: rawPlans,
@@ -365,35 +367,35 @@ const {formatCurrency} = usePlatformSettings()
 
       // Add limit details (translated or English as per user's preference)
       if (plan.usersLimit !== null) {
-        features.push(t("limits.users", { count: plan.usersLimit }));
+        features.push(tWel("limits.users", { count: plan.usersLimit }));
       } else {
-        features.push(t("limits.unlimitedUsers"));
+        features.push(tWel("limits.unlimitedUsers"));
       }
 
       if (plan.storesLimit !== null) {
-        features.push(t("limits.stores", { count: plan.storesLimit }));
+        features.push(tWel("limits.stores", { count: plan.storesLimit }));
       } else {
-        features.push(t("limits.unlimitedStores"));
+        features.push(tWel("limits.unlimitedStores"));
       }
 
       if (plan.shippingCompaniesLimit !== null) {
-        features.push(t("limits.shipping", { count: plan.shippingCompaniesLimit }));
+        features.push(tWel("limits.shipping", { count: plan.shippingCompaniesLimit }));
       } else {
-        features.push(t("limits.unlimitedShipping"));
+        features.push(tWel("limits.unlimitedShipping"));
       }
 
       if (plan.includedOrders !== null) {
-        features.push(t("limits.orders", { count: plan.includedOrders }));
+        features.push(tWel("limits.orders", { count: plan.includedOrders }));
       } else {
-        features.push(t("limits.unlimitedOrders"));
+        features.push(tWel("limits.unlimitedOrders"));
       }
 
       if (plan.extraOrderFee !== null && plan.extraOrderFee > 0) {
-        features.push(t("limits.extraFee", { fee: formatCurrency(plan.extraOrderFee), currency: t("currency") || "EGP" }));
+        features.push(tWel("limits.extraFee", { fee: formatCurrency(plan.extraOrderFee), currency: tWel("currency") || "EGP" }));
       }
 
       if (plan.bulkUploadPerMonth > 0) {
-        features.push(t("limits.bulkUpload", { count: plan.bulkUploadPerMonth }));
+        features.push(tWel("limits.bulkUpload", { count: plan.bulkUploadPerMonth }));
       }
 
       return {
@@ -453,13 +455,13 @@ const {formatCurrency} = usePlatformSettings()
       `}</style>
 
       <section
-        dir="rtl"
+        className="text-center"
         style={{
           background: "var(--background,#f9fafb)",
           padding: "72px 24px 80px",
         }}
       >
-        <div style={{ textAlign: "center", marginBottom: 8 }}>
+        <div className="mb-[50px] " style={{ textAlign: "center" }}>
           <motion.h2 className="text-3xl md:text-[2.1rem] font-extrabold text-gray-900 leading-snug">
             {t("heading.prefix")}{" "}
             <motion.span
@@ -476,7 +478,7 @@ const {formatCurrency} = usePlatformSettings()
         </div>
 
         {/* Cards */}
-        <div
+        <div className="max-lg:justify-center"
           style={{
             display: "flex",
             gap: 16,

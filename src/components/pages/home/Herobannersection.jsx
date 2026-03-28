@@ -106,22 +106,16 @@ export default function HeroBannerSection() {
       `}</style>
 
       <section
-        className=""
+        className="flex flex-col-reverse lg:flex-row items-center justify-center gap-10 lg:gap-[50px] overflow-hidden relative"
         style={{
           background:
             "linear-gradient(145deg, #0c041e 0%, #17093c 45%, #090218 100%)",
           minHeight: "440px",
           padding: "clamp(40px,6vw,72px) clamp(20px,5vw,60px)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 50,
-          overflow: "hidden",
-          position: "relative",
         }}
       >
         <div
-          className="flex-none"
+          className="flex-none w-full max-w-[320px] lg:max-w-[450px]"
           style={{
             position: "relative",
           }}
@@ -129,16 +123,14 @@ export default function HeroBannerSection() {
           <img
             src="landing/multiScreen.png"
             alt={t("dashboardAlt")}
-            className="w-[450px]"
-            fill
+            className="w-full"
             style={{ objectFit: "contain" }}
-            priority
           />
         </div>
 
         {/* ── LEFT: Copy ── */}
         <div
-          className=" max-w-[600px] w-full"
+          className="max-w-[600px] w-full text-center lg:text-right"
           style={{
             animation: mounted
               ? "heroTextIn 0.75s cubic-bezier(.34,1.2,.64,1) forwards"
@@ -146,7 +138,7 @@ export default function HeroBannerSection() {
           }}
         >
           <h1
-            className="text-3xl"
+            className="text-2xl sm:text-3xl lg:text-4xl"
             style={{
               fontWeight: 900,
               color: "#ffffff",
@@ -168,7 +160,7 @@ export default function HeroBannerSection() {
           </h1>
 
           <p
-            className="text-xl "
+            className="text-base sm:text-lg lg:text-xl"
             style={{
               lineHeight: 1.9,
               color: "rgba(255,255,255,0.62)",
@@ -182,11 +174,11 @@ export default function HeroBannerSection() {
 
           {/* Buttons */}
           <div
+            className="justify-center lg:justify-start"
             style={{
               display: "flex",
               gap: 12,
               flexWrap: "wrap",
-              justifyContent: "flex-start",
               opacity: mounted ? 1 : 0,
               animation: mounted ? "heroBtnIn 0.65s ease 0.22s both" : "none",
             }}

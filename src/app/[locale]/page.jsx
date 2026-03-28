@@ -112,7 +112,7 @@ function CTAInput({ t }) {
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
-            className="absolute ltr:right-[10px] rtl:left-[10px] whitespace-nowrap text-white font-bold text-sm px-6 py-3 rounded-full flex-shrink-0"
+            className="absolute ltr:right-[10px] rtl:left-[10px] whitespace-nowrap text-white font-bold text-xs sm:text-sm px-4 py-2 sm:px-6 sm:py-3 rounded-full flex-shrink-0"
             style={{ background: "#22c55e" }}
           >
             ✓ {t("cta.sent")}
@@ -127,7 +127,7 @@ function CTAInput({ t }) {
             whileHover={{ scale: 1.03, boxShadow: `0 6px 24px ${BRAND}55` }}
             whileTap={{ scale: 0.97 }}
             onClick={handleSubmit}
-            className="absolute ltr:right-[10px] rtl:left-[10px] whitespace-nowrap text-white font-bold text-sm px-6 py-3 rounded-full flex-shrink-0 transition-all overflow-hidden"
+            className="absolute ltr:right-[10px] rtl:left-[10px] whitespace-nowrap text-white font-bold text-xs sm:text-sm px-4 py-2 sm:px-6 sm:py-3 rounded-full flex-shrink-0 transition-all overflow-hidden"
             style={{ background: BRAND }}
           >
             <motion.div
@@ -151,7 +151,7 @@ function CTAInput({ t }) {
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         placeholder={t("cta.placeholder")}
-        className="flex-1 h-[55px] bg-transparent !outline-none text-base px-4 text-gray-500 placeholder-gray-400"
+        className="flex-1 h-[45px] sm:h-[55px] bg-transparent !outline-none text-sm sm:text-base px-3 sm:px-4 text-gray-500 placeholder-gray-400"
         dir="rtl"
       />
     </motion.div>

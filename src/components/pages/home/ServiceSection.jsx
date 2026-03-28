@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
 import { ArrowLeft, ArrowRight, Package, Truck, BarChart3 } from "lucide-react";
@@ -98,7 +98,7 @@ function ServiceCard({ item, index, inView, isRtl, img }) {
 			animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
 			transition={{ duration: 0.7, delay: 0.15 + index * 0.18, ease }}
 			whileHover={{ y: -6, boxShadow: `0 32px 70px ${accent}18, 0 8px 24px ${accent}0e` }}
-			className="relative rounded-xl p-5 overflow-hidden flex flex-row items-stretch transition-shadow duration-500 max-w-[1200px] mx-auto w-full"
+			className="relative rounded-xl p-4 sm:p-6 overflow-hidden flex flex-col lg:flex-row items-center lg:items-stretch transition-all duration-500 max-w-[1200px] mx-auto w-full"
 			style={{
 				minHeight: 270,
 				background: box.background,
@@ -131,7 +131,7 @@ function ServiceCard({ item, index, inView, isRtl, img }) {
 
 			{/* ── TEXT SIDE ── */}
 			<div
-				className="flex flex-col justify-center p-8 flex-1 relative z-10"
+				className="flex flex-col justify-center p-4 sm:p-8 flex-1 relative z-10"
 				style={{ textAlign: isRtl ? "right" : "left" }}
 			>
 
@@ -141,7 +141,7 @@ function ServiceCard({ item, index, inView, isRtl, img }) {
 					initial={{ opacity: 0, x: isRtl ? -20 : 20 }}
 					animate={inView ? { opacity: 1, x: 0 } : {}}
 					transition={{ delay: 0.3 + index * 0.18, duration: 0.55, ease }}
-					className="font-extrabold text-gray-800 leading-snug mb-3 text-3xl"
+					className="font-extrabold text-gray-800 leading-snug mb-3 text-2xl sm:text-3xl lg:text-3xl"
 					dangerouslySetInnerHTML={{ __html: item.title }}
 				/>
 
@@ -150,38 +150,38 @@ function ServiceCard({ item, index, inView, isRtl, img }) {
 					initial={{ opacity: 0, y: 8 }}
 					animate={inView ? { opacity: 1, y: 0 } : {}}
 					transition={{ delay: 0.4 + index * 0.18 }}
-					className="text-gray-500 leading-relaxed mb-6 text-lg max-w-sm"
+					className="text-gray-500 leading-relaxed mb-6 text-base sm:text-lg max-w-sm"
 				>
 					{item.desc}
 				</motion.p>
 
 				{/* CTA */}
 				<Link href="/auth?mode=signup" passHref legacyBehavior>
-				<motion.button
-					initial={{ opacity: 0, y: 10 }}
-					animate={inView ? { opacity: 1, y: 0 } : {}}
-					transition={{ delay: 0.5 + index * 0.18 }}
-					whileHover={{ scale: 1.04, x: isRtl ? -4 : 4 }}
-					whileTap={{ scale: 0.97 }}
-					className="inline-flex items-center gap-2 text-white font-bold rounded-xl relative overflow-hidden w-fit"
-					style={{
-						padding: "10px 22px",
-						fontSize: 13,
-						background: `linear-gradient(135deg, ${accent}, ${accent}cc)`,
-						boxShadow: `0 4px 20px ${accent}35`,
-					}}
-				>
-					{/* shimmer sweep */}
-					<motion.div
-						className="absolute inset-0"
-						animate={{ x: ["-100%", "220%"] }}
-						transition={{ duration: 2.6, repeat: Infinity, repeatDelay: 2.2 }}
-						style={{ background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.32),transparent)", width: "55%" }}
-					/>
-					<span className="relative z-10">{item.cta}</span>
-					<Arrow size={16} className="relative z-10" />
-				</motion.button>
-					</Link>
+					<motion.button
+						initial={{ opacity: 0, y: 10 }}
+						animate={inView ? { opacity: 1, y: 0 } : {}}
+						transition={{ delay: 0.5 + index * 0.18 }}
+						whileHover={{ scale: 1.04, x: isRtl ? -4 : 4 }}
+						whileTap={{ scale: 0.97 }}
+						className="inline-flex items-center gap-2 text-white font-bold rounded-xl relative overflow-hidden w-fit"
+						style={{
+							padding: "10px 22px",
+							fontSize: 13,
+							background: `linear-gradient(135deg, ${accent}, ${accent}cc)`,
+							boxShadow: `0 4px 20px ${accent}35`,
+						}}
+					>
+						{/* shimmer sweep */}
+						<motion.div
+							className="absolute inset-0"
+							animate={{ x: ["-100%", "220%"] }}
+							transition={{ duration: 2.6, repeat: Infinity, repeatDelay: 2.2 }}
+							style={{ background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.32),transparent)", width: "55%" }}
+						/>
+						<span className="relative z-10">{item.cta}</span>
+						<Arrow size={16} className="relative z-10" />
+					</motion.button>
+				</Link>
 			</div>
 
 			{/* ── IMAGE SIDE ── */}
@@ -189,7 +189,7 @@ function ServiceCard({ item, index, inView, isRtl, img }) {
 				initial={{ opacity: 0, x: isRtl ? 30 : -30 }}
 				animate={inView ? { opacity: 1, x: 0 } : {}}
 				transition={{ duration: 0.65, delay: 0.22 + index * 0.18, ease }}
-				className="relative max-w-[360px] w-full overflow-hidden"
+				className="relative max-w-[300px] sm:max-w-[360px] w-full overflow-hidden mt-6 lg:mt-0"
 
 			>
 				{/* image */}
@@ -225,49 +225,83 @@ function ServiceCard({ item, index, inView, isRtl, img }) {
 
 /* ════════ ROOT EXPORT ════════ */
 
+function useIsMobile() {
+	const [isMobile, setIsMobile] = useState(false);
 
-function FloatingBadge({ badge, inView }) {
+
+	useEffect(() => {
+		const check = () => setIsMobile(window.innerWidth < 768);
+		check();
+		window.addEventListener("resize", check);
+		return () => window.removeEventListener("resize", check);
+	}, []);
+
+	return isMobile;
+}
+
+function FloatingBadge({ badge, inView, isMobile }) {
+	const shouldAnimate = !isMobile;
+
 	return (
 		<motion.div
-			initial={{ opacity: 0, scale: 0.5, y: 20 }}
+			initial={{ opacity: 0, scale: 0.6, y: 20 }}
 			animate={inView ? { opacity: 1, scale: 1, y: 0 } : {}}
 			transition={{
 				delay: badge.delay,
-				duration: 0.6,
+				duration: 0.5,
 				type: "spring",
-				stiffness: 180,
-				damping: 16,
+				stiffness: 160,
+				damping: 18,
 			}}
-			style={{ position: "absolute", ...badge.position, zIndex: 10 }}
+			style={{
+				position: isMobile ? "relative" : "absolute",
+				...(isMobile ? {} : badge.position),
+				zIndex: 10,
+				width: isMobile ? "100%" : "auto",
+			}}
 		>
-			{/* continuous float */}
 			<motion.div
-				animate={{ y: badge.floatY }}
-				transition={{
-					duration: badge.floatDur,
-					repeat: Infinity,
-					repeatType: "mirror",
-					ease: "easeInOut",
-				}}
-				className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl"
+				animate={shouldAnimate ? { y: badge.floatY } : { y: 0 }}
+				transition={
+					shouldAnimate
+						? {
+							duration: badge.floatDur,
+							repeat: Infinity,
+							repeatType: "mirror",
+							ease: "easeInOut",
+						}
+						: {}
+				}
+				className="flex items-center gap-2 md:gap-2.5 px-3 py-2 md:px-4 md:py-2.5 rounded-xl"
 				style={{
-					backdropFilter: "blur(16px)",
-					border: `1px solid rgba(255,255,255,0.9)`,
-					boxShadow: `0 8px 32px rgba(0,0,0,0.10), 0 0 0 1px rgba(${badge.accent === "#fbbf24" ? "251,191,36" : badge.accent === "#a78bfa" ? "167,139,250" : "52,211,153"},0.2), 0 2px 8px rgba(0,0,0,0.06)`,
+					backdropFilter: "blur(12px)",
+					background: "rgba(255,255,255,0.85)",
+					border: "1px solid rgba(255,255,255,0.9)",
+					boxShadow:
+						"0 6px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
 					direction: "rtl",
-					whiteSpace: "nowrap",
-					maxWidth: 500,
+					whiteSpace: isMobile ? "normal" : "nowrap",
+					maxWidth: isMobile ? "100%" : 420,
 				}}
 			>
-				<div className="relative flex-shrink-0" style={{ width: 38, height: 38 }}>
-
-					<img className="absolute scale-[3] origin-bottom-left ltr:m-[0_0_15px_15px] rtl:m-[15px_15px_0_0]  " src={badge.emoji} />
+				{/* icon */}
+				<div
+					className="flex-shrink-0"
+					style={{
+						width: isMobile ? 26 : 36,
+						height: isMobile ? 26 : 36,
+					}}
+				>
+					<img
+						src={badge.emoji}
+						className="w-full h-full object-contain"
+					/>
 				</div>
 
 				{/* text */}
 				<span
 					style={{
-						fontSize: 13,
+						fontSize: isMobile ? 12 : 13,
 						fontWeight: 700,
 						color: "#1e1b4b",
 						fontFamily: "'Cairo','Tajawal',sans-serif",
@@ -280,19 +314,12 @@ function FloatingBadge({ badge, inView }) {
 		</motion.div>
 	);
 }
-
 export default function ServicesSection() {
 	const t = useTranslations("servicesSection");
 	const locale = useLocale();
 	const isRtl = locale === "ar";
-
-	const ref = useRef(null);
-	const inView = useInView(ref, { once: true, margin: "-60px" });
-
-	const cards = t.raw("services.cards");
+	const isMobile = useIsMobile();
 	const badges = t.raw("badges");
-	const cardsImg = ["landing/box-1.png", "landing/box-2.png", "landing/box-3.png"]
-
 	const BADGES_DATA = [
 		{
 			emoji: "landing/icon-1.png",
@@ -322,6 +349,16 @@ export default function ServicesSection() {
 			accent: "#34d399",
 		},
 	];
+	const visibleBadges = isMobile
+		? BADGES_DATA.slice(0, 2)
+		: BADGES_DATA;
+	const ref = useRef(null);
+	const inView = useInView(ref, { once: true, margin: "-60px" });
+
+	const cards = t.raw("services.cards");
+	const cardsImg = ["landing/box-1.png", "landing/box-2.png", "landing/box-3.png"]
+
+
 
 	return (
 		<section
@@ -372,9 +409,29 @@ export default function ServicesSection() {
 						/>
 					</motion.div>
 
-					{BADGES_DATA.map((badge, i) => (
-						<FloatingBadge key={i} badge={badge} inView={inView} />
-					))}
+					{!isMobile &&
+						visibleBadges.map((badge, i) => (
+							<FloatingBadge
+								key={i}
+								badge={badge}
+								inView={inView}
+								isMobile={false}
+							/>
+						))}
+
+					{/* Mobile List */}
+					{isMobile && (
+						<div className="mt-4 flex flex-col gap-2 px-2">
+							{visibleBadges.map((badge, i) => (
+								<FloatingBadge
+									key={i}
+									badge={badge}
+									inView={inView}
+									isMobile={true}
+								/>
+							))}
+						</div>
+					)}
 
 				</div>
 

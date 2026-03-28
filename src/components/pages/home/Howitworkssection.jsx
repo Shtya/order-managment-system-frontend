@@ -766,7 +766,7 @@ export default function HowItWorksSection() {
         </div>
 
         {/* ── 3-column grid ── */}
-        <div className="grid mt-[150px] mb-[100px] md:grid-cols-3 gap-5 items-start">
+        <div className="grid mt-[150px] mb-[100px] md:grid-cols-2 lg:grid-cols-3 gap-5 lg:items-start">
           {/* RIGHT column — Step 1 */}
           <SignupCard step={steps[0]} inView={inView} t={t} />
 

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { isPublicOrSpecialRoute } from '@/utils/route-utils';
+import { isPublicRoute } from '@/utils/route-utils';
 import { usePathname } from '@/i18n/navigation';
 import api from '@/utils/api';
 
@@ -18,7 +18,7 @@ export const useAuthInterceptor = () => {
 
                         localStorage.removeItem('user');
 
-                        if (!isPublicOrSpecialRoute(pathname)) {
+                        if (!isPublicRoute(pathname)) {
                             logout();
 
                         }

@@ -9,7 +9,7 @@ import { usePathname } from "next/navigation";
 import { Toaster } from "react-hot-toast";
 import { SocketProvider } from "../../context/SocketContext";
 import { ThemeProvider } from "next-themes";
-import { isPublicOrSpecialRoute } from "@/utils/route-utils";
+import { isPublicRoute } from "@/utils/route-utils";
 import { PlatformSettingsProvider } from "@/context/PlatformSettingsContext";
 import { NotificationProvider } from "@/context/NotificationContext";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
@@ -130,7 +130,7 @@ function DashboardLayout({ children }) {
     };
   }, [isMobile]);
 
-  const isAuthRoute = isPublicOrSpecialRoute(AllPathname);
+  const isAuthRoute = isPublicRoute(AllPathname);
   const [mounted, setMounted] = useState(false);
 
 

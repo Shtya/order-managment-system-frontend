@@ -255,12 +255,19 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				]);
 				if (!mounted) return;
 				setCategories(Array.isArray(catsRes.data) ? catsRes.data : []);
-				setStores(Array.isArray(storesRes.data) ? storesRes.data : []);
+				
+				const storesData = Array.isArray(storesRes.data) ? storesRes.data : [];
+				setStores(storesData);
+				// Auto-select store if only one exists and not in edit mode
+				if (storesData.length === 1 && !isEditMode) {
+					setValue('storeId', String(storesData[0].id ?? storesData[0].value));
+				}
+
 				setWarehouses(Array.isArray(whRes.data) ? whRes.data : []);
 			} catch (e) { toast.error(normalizeAxiosError(e)); }
 		})();
 		return () => { mounted = false; };
-	}, []);
+	}, [isEditMode, setValue]);
 
 	const lastCombSigRef = useRef('');
 	useEffect(() => {

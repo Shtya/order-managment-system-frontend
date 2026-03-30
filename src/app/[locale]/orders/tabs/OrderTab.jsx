@@ -513,8 +513,10 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
         cell: (row) => (
           <div className="text-sm">
             {row.items.map((p, i) => (
-              <div key={i}>
-                {p.variant.product.name} (x{p.quantity})
+              <div key={i} className="flex gap-2">
+                <span>{p.variant.product.name}</span> -
+                <span>{p.variant.sku}</span> -
+                <span> (x{p.quantity})</span>
               </div>
             ))}
           </div>

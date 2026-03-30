@@ -84,6 +84,30 @@ export function AuthProvider({ children }) {
         return data;
     }, [handleAuthSuccess]);
 
+    const handleGoogleLogin = useCallback(async (redirectUrl = null) => {
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+        const targetUrl = new URL("auth/google", baseUrl);
+
+        if (redirectUrl) {
+            targetUrl.searchParams.append('redirect', redirectUrl);
+        }
+
+        try {
+            const res = await fetch(targetUrl.toString());
+            const data = await res.json();
+            if (!res.ok) throw data;
+
+            if (data.redirectUrl) {
+                window.location.href = data.redirectUrl;
+            } else {
+                throw new Error("No redirect URL returned");
+            }
+        } catch (error) {
+            console.error("Google Login Error:", error);
+            throw error;
+        }
+    }, []);
+
     useEffect(() => {
         fetchUser();
     }, [fetchUser]);
@@ -145,6 +169,7 @@ export function AuthProvider({ children }) {
                 refreshUser: fetchUser,
                 logout,
                 login,
+                handleGoogleLogin,
                 handleAuthSuccess,
                 getDashboardRoute,
                 ...helpers

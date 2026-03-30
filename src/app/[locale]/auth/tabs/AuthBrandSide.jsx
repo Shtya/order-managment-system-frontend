@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { Link } from "@/i18n/navigation";
 
 /* ══════════════════════════════════════════════════════════════
    PALETTE — same purple universe, richer depth
@@ -664,60 +665,70 @@ export default function AuthBrandSide({ mode, t: tProp }) {
         }}
       >
         {/* ── Logo row ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.06, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+        <Link
+          href="/"
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            marginBottom: "clamp(24px, 3.8vh, 42px)",
+            textDecoration: "none",
+            display: "inline-flex",
+            width: "fit-content",
           }}
         >
-          {/* Logo tile */}
-          <div
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.06, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
             style={{
-              width: 44,
-              height: 44,
-              borderRadius: 13,
-              background: "rgba(255,255,255,0.12)",
-              backdropFilter: "blur(12px)",
-              border: `1px solid ${P.borderHi}`,
-              boxShadow: `0 4px 22px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.18), 0 0 0 1px ${P.border}`,
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
+              gap: 12,
+              marginBottom: "clamp(24px, 3.8vh, 42px)",
+              cursor: "pointer",
             }}
           >
-            <Logo />
-          </div>
-          <div>
+            {/* Logo tile */}
             <div
               style={{
-                fontSize: 18,
-                fontWeight: 800,
-                color: "#fff",
-                letterSpacing: "-0.5px",
-                lineHeight: 1.1,
+                width: 44,
+                height: 44,
+                borderRadius: 13,
+                background: "rgba(255,255,255,0.12)",
+                backdropFilter: "blur(12px)",
+                border: `1px solid ${P.borderHi}`,
+                boxShadow: `0 4px 22px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.18), 0 0 0 1px ${P.border}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
               }}
             >
-              {t("brand.name")}
+              <Logo />
             </div>
-            <div
-              style={{
-                fontSize: 8.5,
-                color: P.textLow,
-                letterSpacing: "2.2px",
-                textTransform: "uppercase",
-                marginTop: 3,
-              }}
-            >
-              {t("brand.tagline")}
+            <div>
+              <div
+                style={{
+                  fontSize: 18,
+                  fontWeight: 800,
+                  color: "#fff",
+                  letterSpacing: "-0.5px",
+                  lineHeight: 1.1,
+                }}
+              >
+                {t("brand.name")}
+              </div>
+              <div
+                style={{
+                  fontSize: 8.5,
+                  color: P.textLow,
+                  letterSpacing: "2.2px",
+                  textTransform: "uppercase",
+                  marginTop: 3,
+                }}
+              >
+                {t("brand.tagline")}
+              </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </Link>
 
         {/* ── Headline — switches with mode ── */}
         <AnimatePresence mode="wait">

@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { FilterField } from "./Table";
 import api from "@/utils/api";
 
-export default function StoreFilter({ value, onChange }) {
+export default function StoreFilter({ value, onChange, autoSelectIfSingle = false }) {
     const t = useTranslations("orders");
     const [list, setList] = useState([]);
 
@@ -21,6 +21,16 @@ export default function StoreFilter({ value, onChange }) {
 
         getStores();
     }, []);
+
+    useEffect(() => {
+        if (autoSelectIfSingle && list.length === 1) {
+            const singleValue = String(list[0].id ?? list[0].value);
+            if (value !== singleValue) {
+                onChange(singleValue);
+            }
+        }
+    }, [list, autoSelectIfSingle, onChange, value]);
+
     return (
         <FilterField label={t("filters.store")}>
             <Select value={value} onValueChange={onChange}>

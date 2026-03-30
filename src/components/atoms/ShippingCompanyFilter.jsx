@@ -16,6 +16,7 @@ export default function ShippingCompanyFilter({
   hideLabel = false,
   showAll = true,
   showNone = true,
+  autoSelectIfSingle = false,
 }) {
   const tShipping = useTranslations("shipping");
   const t = useTranslations("orders");
@@ -41,6 +42,15 @@ export default function ShippingCompanyFilter({
 
     getShippingCompanies();
   }, []);
+
+  useEffect(() => {
+    if (autoSelectIfSingle && list.length === 1) {
+      const singleValue = String(list[0].providerId);
+      if (value !== singleValue) {
+        onChange(singleValue);
+      }
+    }
+  }, [list, autoSelectIfSingle, onChange, value]);
 
   const select = (
     <Select value={value} onValueChange={onChange}>

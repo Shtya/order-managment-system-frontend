@@ -141,6 +141,12 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 		});
 	}, [stores, storeProviders]);
 
+	useEffect(() => {
+		if (filteredStores.length === 1 && !isEditMode) {
+			setValue('storeId', String(filteredStores[0].id));
+		}
+	}, [filteredStores, isEditMode, setValue]);
+
 
 	useEffect(() => {
 		if (!isEditMode || !existingBundle) return;

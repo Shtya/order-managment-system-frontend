@@ -462,20 +462,32 @@ export default function CollectOrderPage() {
       router.push("/orders/collections");
       return;
     }
+
     (async () => {
       try {
         setInitialLoading(true);
+
         const orderRes = await api.get(`/orders/${orderId}`);
-        setOrder(orderRes.data);
-        if (orderRes.data.shippingCompany?.id)
-          setValue("shippingCompanyId", orderRes.data.shippingCompany.id);
-        const res = await api.get("/shipping/integrations/active");
-        setShippingCompanies(
-          Array.isArray(res.data?.integrations)
-            ? res.data.integrations
-            : (res.data?.records ?? []),
-        );
-      } catch {
+        const orderData = orderRes.data;
+        setOrder(orderData);
+
+        const res = await api.get("/shipping/integrations/active", {
+          params: { limit: 200, isActive: true }
+        });
+
+        const shippingData = Array.isArray(res.data?.integrations)
+          ? res.data.integrations
+          : (res.data?.records ?? []);
+
+        setShippingCompanies(shippingData);
+
+        if (orderData.shippingCompany?.id) {
+          setValue("shippingCompanyId", orderData.shippingCompany.id);
+        } else if (shippingData.length === 1) {
+          setValue("shippingCompanyId", String(shippingData[0].providerId || shippingData[0].id));
+        }
+
+      } catch (error) {
         toast.error(t("errors.fetchFailed"));
         router.push("/orders/collections");
       } finally {

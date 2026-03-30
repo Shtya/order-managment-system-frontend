@@ -5768,6 +5768,10 @@
     "lang": {
       "ar": "AR",
       "en": "EN"
+    },
+    "google_auth": {
+      "or": "أو",
+      "continue": "المتابعة باستخدام جوجل"
     }
   },
   "features": {

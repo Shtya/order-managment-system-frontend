@@ -604,23 +604,41 @@ export default function CreateOrderPageComplete({
 
 	// ── Fetch shipping companies ──────────────────────────────────────────────
 	useEffect(() => {
-		api
-			.get("/shipping/integrations/active", { params: { limit: 200, isActive: true } })
-			.then((res) =>
-				setShippingCompanies(Array.isArray(res.data.integrations) ? res.data.integrations : [])
-			)
-			.catch((e) => console.error(`Shipping: ${normalizeAxiosError(e)}`));
-	}, []);
+		const getShippingCompanies = async () => {
+			try {
+				const res = await api.get("/shipping/integrations/active", { params: { limit: 200, isActive: true } });
+				const data = Array.isArray(res.data.integrations) ? res.data.integrations : [];
+				setShippingCompanies(data);
+
+				// Auto-select if only one option exists
+				if (data.length === 1 && !isEditMode) {
+					setValue("shippingCompanyId", String(data[0].providerId));
+				}
+			} catch (e) {
+				console.error(`Shipping: ${normalizeAxiosError(e)}`);
+			}
+		};
+		getShippingCompanies();
+	}, [isEditMode, setValue]);
 
 	// ── Fetch stores ─────────────────────────────────────────────────────────
 	useEffect(() => {
-		api
-			.get("/stores", { params: { limit: 200, isActive: true } })
-			.then((res) =>
-				setStores(Array.isArray(res.data.records) ? res.data.records : [])
-			)
-			.catch((e) => console.error(`Stores: ${normalizeAxiosError(e)}`));
-	}, []);
+		const getStores = async () => {
+			try {
+				const res = await api.get("/stores", { params: { limit: 200, isActive: true } });
+				const data = Array.isArray(res.data.records) ? res.data.records : [];
+				setStores(data);
+
+				// Auto-select if only one option exists
+				if (data.length === 1 && !isEditMode) {
+					setValue("storeId", String(data[0].id));
+				}
+			} catch (e) {
+				console.error(`Stores: ${normalizeAxiosError(e)}`);
+			}
+		};
+		getStores();
+	}, [isEditMode, setValue]);
 
 	useEffect(() => {
 		const initBosta = async () => {

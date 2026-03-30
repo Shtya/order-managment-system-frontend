@@ -59,7 +59,7 @@ export default function SignIn({ t: tProp, onSwitchMode, onForgotPassword }) {
   };
   const touch = k => setTouched(p => ({ ...p, [k]: true }));
 
-  const { login } = useAuth();
+  const { login, handleGoogleLogin } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -91,29 +91,10 @@ export default function SignIn({ t: tProp, onSwitchMode, onForgotPassword }) {
   };
 
 
-  const handleGoogleLogin = async () => {
-    // Use URL constructor to prevent double slashes or formatting errors
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-    const targetUrl = new URL("auth/google", baseUrl);
-
-    if (redirectUrl) {
-      targetUrl.searchParams.append('redirect', redirectUrl);
-    }
-
+  const handleGoogleLoginWrapper = async () => {
     try {
-      const res = await fetch(targetUrl.toString());
-
-      const data = await res.json();
-      if (!res.ok) throw data;
-
-      // Ensure the backend actually returns a field named redirectUrl
-      if (data.redirectUrl) {
-        window.location.href = data.redirectUrl;
-      } else {
-        toast.error(t('signin.googleLoginFailed'));
-      }
+      await handleGoogleLogin(redirectUrl);
     } catch (error) {
-      console.error("Google Login Error:", error);
       toast.error(t('signin.googleLoginFailed'));
     }
   };
@@ -134,7 +115,7 @@ export default function SignIn({ t: tProp, onSwitchMode, onForgotPassword }) {
             value={email} onChange={e => setEmail(e.target.value)} onBlur={() => touch('email')}
             error={touched.email && errors.email} icon={<MailIcon />}
             font="font-en"
-            style={{ textAlign: 'right', height: "clamp(44px, 12vw, 48px)" }}
+            style={{  height: "clamp(44px, 12vw, 48px)" }}
           />
         </Field>
 
@@ -154,7 +135,7 @@ export default function SignIn({ t: tProp, onSwitchMode, onForgotPassword }) {
 
         <Divider label={t('signin.or')} />
 
-        <BtnGhost onClick={handleGoogleLogin}>
+        <BtnGhost onClick={handleGoogleLoginWrapper}>
           <IconGoogle /> {t('signin.google')}
         </BtnGhost>
       </form>

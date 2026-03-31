@@ -140,7 +140,7 @@ const FIELD_CLS =
 function PaymentSourcePicker({ value, onChange, tCollect }) {
   const sources = ["cash", "visa", "bank", "other"];
   return (
-    <div className="grid grid-cols-4 gap-2">
+    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
       {sources.map((src) => {
         const meta = PaymentSourceMeta[src] || {
           icon: Wallet,
@@ -353,7 +353,7 @@ function OrderHeroCard({ order, t }) {
       </div>
 
       {/* Customer grid */}
-      <div className="grid grid-cols-2 gap-2.5 mb-4">
+      <div className="grid sm:grid-cols-2 gap-2.5 mb-4">
         {infoItems.map(({ icon: Icon, labelKey, value }) => (
           <div
             key={labelKey}
@@ -414,7 +414,7 @@ export default function CollectOrderPage() {
   const router = useRouter();
   const params = useParams();
   const orderId = params?.orderId;
-  const { formatCurrency } = usePlatformSettings();
+  const { formatCurrency, currency } = usePlatformSettings();
 
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -428,7 +428,7 @@ export default function CollectOrderPage() {
       .required(t("validation.shippingCompanyRequired")),
     collectionDate: yup.date().required(t("validation.collectionDateRequired")),
     source: yup.string().required(t("validation.sourceRequired")),
-    currency: yup.string().required(t("validation.currencyRequired")),
+    // currency: yup.string().required(t("validation.currencyRequired")),
     amount: yup
       .number()
       .required(t("validation.amountRequired"))
@@ -448,7 +448,7 @@ export default function CollectOrderPage() {
       shippingCompanyId: "",
       collectionDate: new Date(),
       source: "",
-      currency: "EGP",
+      // currency: "EGP",
       amount: 0,
       notes: "",
     },
@@ -503,7 +503,7 @@ export default function CollectOrderPage() {
         orderId: Number(orderId),
         shippingCompanyId: Number(data.shippingCompanyId),
         source: data.source,
-        currency: data.currency,
+        // currency: data.currency,
         amount: Number(data.amount),
         notes: data.notes || undefined,
       });
@@ -744,8 +744,8 @@ export default function CollectOrderPage() {
                 </FieldGroup>
 
                 {/* Currency + Amount */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="col-span-1">
+                <div className="grid grid-cols-1 gap-3">
+                  {/* <div className="col-span-1">
                     <FieldGroup
                       label={t("fields.currency")}
                       required
@@ -773,7 +773,7 @@ export default function CollectOrderPage() {
                         )}
                       />
                     </FieldGroup>
-                  </div>
+                  </div> */}
                   <div className="col-span-1">
                     <FieldGroup
                       label={t("fields.amount")}
@@ -800,7 +800,7 @@ export default function CollectOrderPage() {
                                   border: "1px solid #ff8b0022",
                                 }}
                               >
-                                {watch("currency")}
+                                {currency}
                               </span>
                             }
                           />

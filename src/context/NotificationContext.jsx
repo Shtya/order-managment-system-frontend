@@ -71,7 +71,7 @@ export function NotificationProvider({ children }) {
     async (id) => {
       const originalNotifications = [...notifications];
       setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)),
+        prev.map((n) => (n.id == id ? { ...n, isRead: true } : n)),
       );
       decrementUnread();
 

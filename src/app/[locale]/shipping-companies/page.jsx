@@ -38,6 +38,7 @@ import { GhostBtn, PrimaryBtn } from "@/components/atoms/Button";
 import PageHeader from "@/components/atoms/Pageheader";
 import { PROVIDER_META, useShippingIntegration, useShippingSettings, useShippingUsage, useShippingWebhook } from "@/hook/shipping";
 import { useAuth } from "@/context/AuthContext";
+import { cn } from "@/utils/cn";
 
 
 function pick(bilingualObj, locale) {
@@ -568,7 +569,7 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 	const accentBg = company.accentBg;
 
 	// shared footer ghost-button; hover tints border+text to accent
-	const fbCls = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 bg-white/80 dark:bg-white/10 border border-white/60 dark:border-white/10 text-gray-600 dark:text-gray-300 shadow-sm";
+	const fbCls = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 bg-white/80 dark:bg-[var(--muted)] border border-white/60 dark:border-[var(--border)] text-gray-600 dark:text-gray-300 shadow-sm";
 	const onEnter = (e) => { e.currentTarget.style.borderColor = accent; e.currentTarget.style.color = accent; };
 	const onLeave = (e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.color = ""; };
 
@@ -577,8 +578,12 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 			<motion.div
 				whileHover={{ y: -3, boxShadow: "0 20px 48px 0 rgba(0,0,0,0.11)" }}
 				transition={{ type: "spring", stiffness: 300, damping: 22 }}
-				className="relative rounded-2xl overflow-hidden border border-[var(--border)] shadow-sm flex flex-col"
-				style={{ background: company.bg }}
+				className={cn(
+					"relative rounded-2xl overflow-hidden border border-[var(--border)] shadow-sm flex flex-col",
+					company.bg,
+					"dark:bg-none",
+					"dark:bg-[var(--muted)]/80!"
+				)}
 			>
 				{/* per-provider accent strip at top */}
 				<span
@@ -689,12 +694,7 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 
 				{/* Footer */}
 				<div
-					className="px-4 py-3 flex items-center gap-1.5 flex-wrap"
-					style={{
-						background: "rgba(255,255,255,0.55)",
-						backdropFilter: "blur(6px)",
-						borderTop: "1px solid rgba(255,255,255,0.5)",
-					}}
+					className="px-4 py-3 flex items-center gap-1.5 flex-wrap border-t border-white/50 dark:border-[var(--border)] bg-white/55 dark:bg-[var(--muted)]/80 backdrop-blur-md"
 				>
 					{/* Settings */}
 					{hasPermission("shipping-companies.update") && (
@@ -792,7 +792,7 @@ export default function ShippingCompaniesPage() {
 				name: "Bosta",
 				logo: "/integrate/bosta.png",
 				website: "bosta.co",
-				bg: "linear-gradient(300.09deg, #FAFAFA 74.95%, #B5CBE9 129.29%)",
+				bg: "bg-[linear-gradient(300.09deg,#FAFAFA_74.95%,#B5CBE9_129.29%)]",
 				accent: "#2563a8",
 				accentBg: "#dbeafe",
 				strip: "linear-gradient(90deg,#2563a8,#60a5fa)",
@@ -804,7 +804,7 @@ export default function ShippingCompaniesPage() {
 				name: "J&T Express",
 				logo: "/integrate/5.png",
 				website: "jtexpress.com",
-				bg: "linear-gradient(300.09deg, #FAFAFA 74.95%, #B5CBE9 129.29%)",
+				bg: "bg-[linear-gradient(300.09deg,#FAFAFA_74.95%,#B5CBE9_129.29%)]",
 				accent: "#c8290a",
 				accentBg: "#fee2dc",
 				strip: "linear-gradient(90deg,#c8290a,#f87060)",
@@ -816,7 +816,7 @@ export default function ShippingCompaniesPage() {
 				name: "Turbo",
 				logo: "/integrate/4.png",
 				website: "turbo.com",
-				bg: "linear-gradient(300.09deg, #FAFAFA 74.95%, #CCB5E9 129.29%)",
+				bg: "bg-[linear-gradient(300.09deg,#FAFAFA_74.95%,#CCB5E9_129.29%)]",
 				accent: "#5c3d8f",
 				accentBg: "#e0d4f5",
 				strip: "linear-gradient(90deg,#5c3d8f,#8b6abf)",

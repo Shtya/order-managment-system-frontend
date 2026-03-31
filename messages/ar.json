@@ -448,7 +448,8 @@
       "role": "مدير النظام",
       "guest": "زائر",
       "noEmail": "لا يوجد بريد"
-    }
+    },
+    "toggleSidebar": "تبديل القائمة الجانبية"
   },
   "employees": {
     "breadcrumb": {
@@ -751,7 +752,7 @@
       "home": "الرئيسية",
       "stores": "المتاجر"
     },
-     "editTitle": "تعديل الإعدادات",
+    "editTitle": "تعديل الإعدادات",
     "addTitle": "إضافة متجر",
     "guide": {
       "title": "كيفية التكامل مع {name}",
@@ -2246,7 +2247,8 @@
       "apply": "تطبيق",
       "total": "الإجمالي",
       "limit": "عدد النتائج في الصفحة",
-      "currency": "SAR"
+      "currency": "SAR",
+      "howItWorks": "كيف تعمل"
     },
     "rejected": {
       "breadcrumbs": {
@@ -2311,7 +2313,8 @@
         "rejectedAt": "تاريخ الرفض",
         "city": "المدينة",
         "employee": "الموظف المسؤول"
-      }
+      },
+      "howItWorks": "كيف تعمل الصفحة"
     },
     "logs": {
       "breadcrumbs": {
@@ -5480,7 +5483,9 @@
         "green": "أخضر",
         "pink": "وردي",
         "cyan": "سماوي"
-      }
+      },
+      "date": "التاريخ",
+      "status": "الحالة"
     },
     "deleteDialog": {
       "title": "حذف الباقة",
@@ -5532,7 +5537,8 @@
       "title": "حذف الباقة",
       "confirmText": "هل أنت متأكد من حذف هذه الباقة؟ لا يمكن التراجع.",
       "deleting": "جاري الحذف..."
-    }
+    },
+    "select_count": "اختر ..."
   },
   "subscriptions": {
     "breadcrumb": {
@@ -6036,7 +6042,7 @@
     }
   },
   "pricing": {
-    "negotiated" : "حسب الاتفاق",
+    "negotiated": "حسب الاتفاق",
     "heading": {
       "prefix": "باقات مصممة لتلبية",
       "highlight": "احتياجاتك"

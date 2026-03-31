@@ -96,7 +96,7 @@ function BrokenPlaceholder({ className }) {
 				'flex flex-col items-center justify-center gap-1 ',
 				'bg-[color-mix(in_oklab,var(--muted)_80%,transparent)]',
 				'border border-dashed border-border/60',
-				'text-muted-foreground/50 select-none',
+				'text-muted-foreground/80select-none',
 				className,
 			)}
 		>

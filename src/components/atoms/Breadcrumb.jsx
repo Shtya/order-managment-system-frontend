@@ -13,7 +13,7 @@ const ChevronIcon = () => (
 	</svg>
 );
 
-export function BreadcrumbBar({ breadcrumbs = [], buttons, activeTab  }) {
+export function BreadcrumbBar({ breadcrumbs = [], buttons, activeTab }) {
 	return (
 		<div className={` relative overflow-hidden bg-card border border-border/60 rounded-xl shadow-sm mb-5 px-5 py-3.5`}>
 			{/* Gradient top-border using your CSS vars */}
@@ -38,7 +38,7 @@ export function BreadcrumbBar({ breadcrumbs = [], buttons, activeTab  }) {
 							return (
 								<li key={i} className="flex items-center gap-2">
 									{i > 0 && (
-										<span className="  rtl:scale-x-[-1] text-muted-foreground/40 flex items-center">
+										<span className="  rtl:scale-x-[-1] text-muted-foreground/80flex items-center">
 											<ChevronIcon />
 										</span>
 									)}
@@ -94,7 +94,7 @@ export function BreadcrumbBar({ breadcrumbs = [], buttons, activeTab  }) {
 					</motion.div>
 				</AnimatePresence>
 
-			</div> 
+			</div>
 		</div>
 	);
 }

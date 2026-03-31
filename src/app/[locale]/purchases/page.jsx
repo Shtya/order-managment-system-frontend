@@ -510,59 +510,59 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
-			<DialogContent className="!max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
-				<DialogHeader className="px-6 pt-5 pb-4 border-b-2 border-primary/20">
-					<div className="flex items-center justify-between">
+			<DialogContent className="sm:max-w-5xl w-[96vw] max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col p-0 sm:p-6">
+				<DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b-2 border-primary/20">
+					<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
 						<div>
-							<DialogTitle className="text-2xl font-bold text-primary flex items-center gap-3">
-								<div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-									<Package className="w-5 h-5 text-primary" />
+							<DialogTitle className="text-xl sm:text-2xl font-bold text-primary flex items-center gap-2 sm:gap-3">
+								<div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+									<Package className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
 								</div>
-								{t("acceptPreview.title")}
+								<span className="truncate">{t("acceptPreview.title")}</span>
 							</DialogTitle>
-							<DialogDescription className="text-sm text-gray-600 dark:text-slate-400 mt-2">
+							<DialogDescription className="text-xs sm:text-sm text-gray-600 dark:text-slate-400 mt-1 sm:mt-2">
 								{t("acceptPreview.receiptNumber")}: <span className="font-bold text-primary">{preview?.receiptNumber || invoiceId}</span>
 							</DialogDescription>
 						</div>
 						{preview && !loading && (
 							<span className={cn(
-								"px-4 py-2 rounded-full text-sm font-bold border-2 flex items-center gap-2",
+								"self-start sm:self-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold border-2 flex items-center gap-2",
 								preview.currentStatus === "pending" && "bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-300"
 							)}>
-								<Clock className="w-4 h-4" />
+								<Clock className="w-3.5 h-3.5 sm:w-4 h-4" />
 								{preview.currentStatus}
 							</span>
 						)}
 					</div>
 				</DialogHeader>
 
-				<div className="flex-1 overflow-y-auto px-6 py-4">
+				<div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
 					{loading ? (
 						<LoadingSpinner text={t("acceptPreview.loading")} />
 					) : !preview ? (
-						<div className="flex flex-col items-center justify-center py-16">
-							<div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-4">
-								<XCircle className="w-10 h-10 text-gray-400 dark:text-slate-600" />
+						<div className="flex flex-col items-center justify-center py-10 sm:py-16 text-center">
+							<div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+								<XCircle className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400 dark:text-slate-600" />
 							</div>
 							<p className="text-base font-semibold text-gray-700 dark:text-slate-300 mb-2">{t("acceptPreview.empty")}</p>
 							<p className="text-sm text-gray-500 dark:text-slate-400">{t("acceptPreview.emptyDescription")}</p>
 						</div>
 					) : (
-						<div className="space-y-5">
+						<div className="space-y-4 sm:space-y-5">
 							{/* Stats Cards */}
-							<div className="grid grid-cols-3 gap-4">
+							<div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
 								<motion.div
 									initial={{ opacity: 0, y: 20 }}
 									animate={{ opacity: 1, y: 0 }}
-									className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-4 border-2 border-primary/20"
+									className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-3 sm:p-4 border-2 border-primary/20"
 								>
 									<div className="flex items-center gap-3">
-										<div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
-											<Package className="w-6 h-6 text-primary" />
+										<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+											<Package className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
 										</div>
 										<div>
-											<div className="text-3xl font-bold text-primary">{rows.length}</div>
-											<div className="text-xs text-gray-600 dark:text-slate-400 font-semibold">{t("acceptPreview.totalItems")}</div>
+											<div className="text-2xl sm:text-3xl font-bold text-primary">{rows.length}</div>
+											<div className="text-[10px] sm:text-xs text-gray-600 dark:text-slate-400 font-semibold">{t("acceptPreview.totalItems")}</div>
 										</div>
 									</div>
 								</motion.div>
@@ -571,17 +571,17 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 									initial={{ opacity: 0, y: 20 }}
 									animate={{ opacity: 1, y: 0 }}
 									transition={{ delay: 0.1 }}
-									className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-xl p-4 border-2 border-green-200 dark:border-green-800"
+									className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-xl p-3 sm:p-4 border-2 border-green-200 dark:border-green-800"
 								>
 									<div className="flex items-center gap-3">
-										<div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/50 flex items-center justify-center flex-shrink-0">
-											<TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
+										<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-green-100 dark:bg-green-900/50 flex items-center justify-center flex-shrink-0">
+											<TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 dark:text-green-400" />
 										</div>
 										<div>
-											<div className="text-3xl font-bold text-green-600 dark:text-green-400">
+											<div className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400">
 												+{rows.reduce((sum, r) => sum + (r.addQty || 0), 0)}
 											</div>
-											<div className="text-xs text-gray-600 dark:text-slate-400 font-semibold">{t("acceptPreview.totalQuantity")}</div>
+											<div className="text-[10px] sm:text-xs text-gray-600 dark:text-slate-400 font-semibold">{t("acceptPreview.totalQuantity")}</div>
 										</div>
 									</div>
 								</motion.div>
@@ -590,17 +590,17 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 									initial={{ opacity: 0, y: 20 }}
 									animate={{ opacity: 1, y: 0 }}
 									transition={{ delay: 0.2 }}
-									className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 rounded-xl p-4 border-2 border-orange-200 dark:border-orange-800"
+									className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 rounded-xl p-3 sm:p-4 border-2 border-orange-200 dark:border-orange-800"
 								>
 									<div className="flex items-center gap-3">
-										<div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-900/50 flex items-center justify-center flex-shrink-0">
-											<DollarSign className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+										<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-orange-100 dark:bg-orange-900/50 flex items-center justify-center flex-shrink-0">
+											<DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 dark:text-orange-400" />
 										</div>
 										<div>
-											<div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
+											<div className="text-2xl sm:text-3xl font-bold text-orange-600 dark:text-orange-400">
 												{rows.filter(r => r.priceWillChange).length}
 											</div>
-											<div className="text-xs text-gray-600 dark:text-slate-400 font-semibold">{t("acceptPreview.priceUpdates")}</div>
+											<div className="text-[10px] sm:text-xs text-gray-600 dark:text-slate-400 font-semibold">{t("acceptPreview.priceUpdates")}</div>
 										</div>
 									</div>
 								</motion.div>
@@ -613,45 +613,45 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 									animate={{ opacity: 1, y: 0 }}
 									className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/8 to-blue-50/50 dark:from-primary/15 dark:to-blue-950/30 border-2 border-primary/30 shadow-lg"
 								>
-									<div className="relative p-6">
-										<div className="flex items-start gap-4">
-											<div className="relative">
-												<div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center flex-shrink-0 shadow-xl">
-													<svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<div className="relative p-4 sm:p-6">
+										<div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
+											<div className="relative self-center sm:self-start">
+												<div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center flex-shrink-0 shadow-xl">
+													<svg className="w-6 h-6 sm:w-7 sm:h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
 													</svg>
 												</div>
-												<div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center shadow-md">
-													<Check className="w-3 h-3 text-white" strokeWidth={3} />
+												<div className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-green-500 rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center shadow-md">
+													<Check className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" strokeWidth={3} />
 												</div>
 											</div>
 
-											<div className="flex-1 space-y-3">
-												<h4 className="text-base font-bold text-primary uppercase tracking-wide">
+											<div className="flex-1 space-y-2 sm:space-y-3 w-full text-center sm:text-start">
+												<h4 className="text-sm sm:text-base font-bold text-primary uppercase tracking-wide">
 													{t("acceptPreview.calculationFormula")}
 												</h4>
 
-												<p className="text-sm text-gray-600 dark:text-slate-400 leading-relaxed">
+												<p className="text-xs sm:text-sm text-gray-600 dark:text-slate-400 leading-relaxed">
 													{t("acceptPreview.formulaDescription")}
 												</p>
 
 												<div className="relative group">
 													<div className="relative bg-white dark:bg-slate-900 rounded-xl overflow-hidden border-2 border-primary/30 shadow-sm">
-														<div className="text-sm text-gray-800 dark:text-slate-200 bg-gray-50 dark:bg-slate-800/50 px-5 py-4">
-															<div className="flex flex-wrap items-center gap-2 justify-center text-center">
-																<span className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-xl font-bold">
+														<div className="text-[10px] sm:text-sm text-gray-800 dark:text-slate-200 bg-gray-50 dark:bg-slate-800/50 px-3 sm:px-5 py-3 sm:py-4">
+															<div className="flex flex-wrap items-center gap-1 sm:gap-2 justify-center text-center">
+																<span className="px-2 sm:px-3 py-1 sm:py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg sm:rounded-xl font-bold">
 																	({t("acceptPreview.oldPrice")} × {t("acceptPreview.oldStock")})
 																</span>
-																<span className="text-primary font-bold text-lg">+</span>
-																<span className="px-3 py-1.5 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-xl font-bold">
+																<span className="text-primary font-bold text-base sm:text-lg">+</span>
+																<span className="px-2 sm:px-3 py-1 sm:py-1.5 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg sm:rounded-xl font-bold">
 																	({t("acceptPreview.incomingAvg")} × {t("acceptPreview.incomingQty")})
 																</span>
 															</div>
-															<div className="text-center my-3">
-																<div className="inline-block w-full max-w-md h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent"></div>
+															<div className="text-center my-2 sm:my-3">
+																<div className="inline-block w-full max-w-[200px] sm:max-w-md h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent"></div>
 															</div>
 															<div className="flex items-center justify-center gap-2">
-																<span className="px-3 py-1.5 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-xl font-bold">
+																<span className="px-2 sm:px-3 py-1 sm:py-1.5 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-lg sm:rounded-xl font-bold">
 																	{t("acceptPreview.newStock")}
 																</span>
 															</div>
@@ -671,28 +671,28 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 								className="border-2 border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-md"
 							>
 								<div className="overflow-x-auto">
-									<table className="w-full">
+									<table className="w-full min-w-[800px] sm:min-w-full">
 										<thead>
-											<tr className="bg-gradient-to-r from-gray-50 via-gray-100 to-gray-50 dark:from-slate-800 dark:via-slate-750 dark:to-slate-800">
-												<th className="text-right p-4 text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
+											<tr className="bg-gradient-to-r from-gray-50 via-gray-100 to-gray-50 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800">
+												<th className="text-right p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
 													{t("acceptPreview.sku")}
 												</th>
-												<th className="text-center p-4 text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
+												<th className="text-center p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
 													{t("acceptPreview.stockBefore")}
 												</th>
-												<th className="text-center p-4 text-xs font-bold text-green-600 dark:text-green-400 uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
+												<th className="text-center p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-green-600 dark:text-green-400 uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
 													{t("acceptPreview.addQty")}
 												</th>
-												<th className="text-center p-4 text-xs font-bold text-primary uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
+												<th className="text-center p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-primary uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
 													{t("acceptPreview.stockAfter")}
 												</th>
-												<th className="text-center p-4 text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
+												<th className="text-center p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
 													{t("acceptPreview.oldPrice")}
 												</th>
-												<th className="text-center p-4 text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
+												<th className="text-center p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
 													{t("acceptPreview.incomingAvg")}
 												</th>
-												<th className="text-center p-4 text-xs font-bold text-primary uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
+												<th className="text-center p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-primary uppercase tracking-wider border-b-2 border-gray-200 dark:border-slate-700">
 													{t("acceptPreview.newPrice")}
 												</th>
 											</tr>
@@ -711,52 +711,52 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 															: "hover:bg-primary/5 dark:hover:bg-primary/10"
 													)}
 												>
-													<td className="p-4">
-														<div className="flex items-center gap-2">
-															<span className="text-sm font-bold text-gray-800 dark:text-slate-200">
+													<td className="p-3 sm:p-4">
+														<div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+															<span className="text-xs sm:text-sm font-bold text-gray-800 dark:text-slate-200 truncate max-w-[100px] sm:max-w-none">
 																{r.sku || `#${r.variantId}`}
 															</span>
 															{r.priceWillChange && (
-																<span className="text-[9px] px-2 py-1 rounded-full bg-primary/10 text-primary font-bold uppercase">
+																<span className="w-fit text-[8px] sm:text-[9px] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-primary/10 text-primary font-bold uppercase">
 																	{t("acceptPreview.updated")}
 																</span>
 															)}
 														</div>
 														{r.error && (
 															<div className="flex items-start gap-1 mt-1">
-																<XCircle className="w-3 h-3 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-																<p className="text-[10px] text-red-700 dark:text-red-300 font-medium">{r.error}</p>
+																<XCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+																<p className="text-[9px] sm:text-[10px] text-red-700 dark:text-red-300 font-medium">{r.error}</p>
 															</div>
 														)}
 													</td>
-													<td className="p-4 text-center">
-														<span className="text-base font-semibold text-gray-500 dark:text-slate-400">
+													<td className="p-3 sm:p-4 text-center">
+														<span className="text-sm sm:text-base font-semibold text-gray-500 dark:text-slate-400">
 															{r.oldStock ?? 0}
 														</span>
 													</td>
-													<td className="p-4 text-center">
-														<span className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-sm font-bold">
+													<td className="p-3 sm:p-4 text-center">
+														<span className="inline-flex items-center px-2 sm:px-3 py-0.5 sm:py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs sm:text-sm font-bold">
 															+{r.addQty || 0}
 														</span>
 													</td>
-													<td className="p-4 text-center">
-														<span className="text-lg font-bold text-primary">
+													<td className="p-3 sm:p-4 text-center">
+														<span className="text-base sm:text-lg font-bold text-primary">
 															{r.newStock ?? 0}
 														</span>
 													</td>
-													<td className="p-4 text-center">
-														<span className="text-base font-semibold text-gray-500 dark:text-slate-400">
+													<td className="p-3 sm:p-4 text-center">
+														<span className="text-sm sm:text-base font-semibold text-gray-500 dark:text-slate-400">
 															{r.oldPrice ?? 0}
 														</span>
 													</td>
-													<td className="p-4 text-center">
-														<span className="text-base font-bold text-blue-600 dark:text-blue-400">
+													<td className="p-3 sm:p-4 text-center">
+														<span className="text-sm sm:text-base font-bold text-blue-600 dark:text-blue-400">
 															{r.incomingAvgCost ?? 0}
 														</span>
 													</td>
-													<td className="p-4 text-center">
+													<td className="p-3 sm:p-4 text-center">
 														<span className={cn(
-															"text-lg font-bold",
+															"text-base sm:text-lg font-bold",
 															r.priceWillChange
 																? "text-primary"
 																: "text-gray-600 dark:text-slate-400"
@@ -776,16 +776,16 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 								<motion.div
 									initial={{ opacity: 0, scale: 0.95 }}
 									animate={{ opacity: 1, scale: 1 }}
-									className="bg-red-50 dark:bg-red-950/30 border-2 border-red-300 dark:border-red-800 rounded-xl p-5 flex items-start gap-4"
+									className="bg-red-50 dark:bg-red-950/30 border-2 border-red-300 dark:border-red-800 rounded-xl p-4 sm:p-5 flex items-start gap-3 sm:gap-4"
 								>
-									<div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/50 flex items-center justify-center flex-shrink-0">
-										<XCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+									<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-red-100 dark:bg-red-900/50 flex items-center justify-center flex-shrink-0">
+										<XCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 dark:text-red-400" />
 									</div>
 									<div>
-										<p className="text-base font-bold text-red-900 dark:text-red-200 mb-1">
+										<p className="text-sm sm:text-base font-bold text-red-900 dark:text-red-200 mb-0.5 sm:mb-1">
 											{t("acceptPreview.hasErrors")}
 										</p>
-										<p className="text-sm text-red-700 dark:text-red-300">
+										<p className="text-xs sm:text-sm text-red-700 dark:text-red-300">
 											{t("acceptPreview.hasErrorsDescription")}
 										</p>
 									</div>
@@ -795,21 +795,21 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 					)}
 				</div>
 
-				<DialogFooter className="px-6 py-4 border-t-2 border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50">
-					<div className="flex items-center justify-between w-full">
-						<div className="text-xs text-gray-500 dark:text-slate-400">
+				<DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t-2 border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50">
+					<div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4 sm:gap-0">
+						<div className="text-[10px] sm:text-xs text-gray-500 dark:text-slate-400 order-2 sm:order-1">
 							{!loading && preview && !hasErrors && (
 								<span className="flex items-center gap-2">
-									<div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+									<div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-green-500 animate-pulse"></div>
 									<span className="font-semibold">{t("acceptPreview.previewReady")}</span>
 								</span>
 							)}
 						</div>
-						<div className="flex items-center gap-3">
+						<div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto order-1 sm:order-2">
 							<Button
 								variant="outline"
 								onClick={onClose}
-								className="px-8 py-2.5 rounded-xl font-semibold border-2"
+								className="flex-1 sm:flex-none px-4 sm:px-8 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold border-2"
 							>
 								{t("actions.cancel")}
 							</Button>
@@ -817,11 +817,11 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 								onClick={() => onApply?.()}
 								disabled={loading || !preview || hasErrors || !preview?.canApply}
 								className={cn(
-									"px-10 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/30 transition-all transform hover:scale-105",
+									"flex-1 sm:flex-none px-4 sm:px-10 py-2 sm:py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs sm:text-sm font-bold shadow-lg shadow-primary/30 transition-all transform hover:scale-105 active:scale-95",
 									(loading || !preview || hasErrors || !preview?.canApply) && "opacity-50 cursor-not-allowed hover:scale-100"
 								)}
 							>
-								<Check className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
+								<Check className="w-4 h-4 sm:w-5 sm:h-5 ltr:mr-1.5 sm:ltr:mr-2 rtl:ml-1.5 sm:rtl:ml-2" />
 								{t("acceptPreview.apply")}
 							</Button>
 						</div>
@@ -860,23 +860,23 @@ function DetailsModal({ isOpen, onClose, invoice, isLoading, formatCurrency }) {
 						<div className="space-y-6 px-2">
 							{/* Info Grid */}
 							<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-								<div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-750 border border-gray-200 dark:border-slate-700">
+								<div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-800 border border-gray-200 dark:border-slate-700">
 									<Label className="text-xs text-gray-500 dark:text-slate-400 mb-1">{t("details.supplier")}</Label>
 									<p className="text-sm font-bold text-gray-900 dark:text-white">
 										{invoice.supplierId ? invoice.supplier?.name : t("details.noSupplier")}
 									</p>
 								</div>
-								<div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-750 border border-gray-200 dark:border-slate-700">
+								<div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-800 border border-gray-200 dark:border-slate-700">
 									<Label className="text-xs text-gray-500 dark:text-slate-400 mb-1">{t("details.safe")}</Label>
 									<p className="text-sm font-bold text-gray-900 dark:text-white">{invoice.safeId ? String(invoice.safeId) : "-"}</p>
 								</div>
-								<div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-750 border border-gray-200 dark:border-slate-700">
+								<div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-800 border border-gray-200 dark:border-slate-700">
 									<Label className="text-xs text-gray-500 dark:text-slate-400 mb-1">{t("details.date")}</Label>
 									<p className="text-sm font-bold text-gray-900 dark:text-white">
 										{invoice.created_at ? new Date(invoice.created_at).toLocaleDateString() : "-"}
 									</p>
 								</div>
-								<div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-750 border border-gray-200 dark:border-slate-700">
+								<div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-800 border border-gray-200 dark:border-slate-700">
 									<Label className="text-xs text-gray-500 dark:text-slate-400 mb-1">{t("details.status")}</Label>
 									<span className={cn(
 										"inline-flex items-center px-3 py-1 rounded-full text-xs font-bold",
@@ -895,9 +895,9 @@ function DetailsModal({ isOpen, onClose, invoice, isLoading, formatCurrency }) {
 									<Package className="w-5 h-5 text-primary" />
 									{t("details.items")}
 								</h3>
-								<div className="border-2 border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden">
+								<div className="border-2 border-gray-200 dark:border-slate-700 rounded-xl overflow-y-auto">
 									<table className="w-full text-sm">
-										<thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-750">
+										<thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-800">
 											<tr>
 												<th className="text-right p-4 font-bold">{t("table.sku")}</th>
 												<th className="text-right p-4 font-bold">{t("table.name")}</th>
@@ -1081,7 +1081,7 @@ function DetailsModalSkeleton() {
 function EditPaidAmountModal({ isOpen, onClose, invoice, t, onSave }) {
 	const [paidAmount, setPaidAmount] = useState(0);
 	const [loading, setLoading] = useState(false);
-
+	const { formatCurrency } = usePlatformSettings();
 	useEffect(() => {
 		if (invoice) setPaidAmount(invoice.paidAmount || 0);
 	}, [invoice]);

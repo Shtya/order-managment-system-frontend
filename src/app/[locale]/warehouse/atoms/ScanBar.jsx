@@ -96,11 +96,12 @@ function CarrierSelect({ CARRIERS, preparedOrders, value, onChange }) {
 						<CountBadge count={count} color={meta.color} />
 					</span>
 				) : (
-					<span className="relative flex items-center gap-1.5 text-muted-foreground/60">
+					<span className="relative flex items-center gap-1.5 text-muted-foreground/80">
 						<Truck size={12} />
 						<span className="text-xs font-semibold">شركة الشحن</span>
 					</span>
-				)}
+				)
+				}
 
 				<motion.div
 					animate={{ rotate: open ? 180 : 0 }}
@@ -112,14 +113,14 @@ function CarrierSelect({ CARRIERS, preparedOrders, value, onChange }) {
 						strokeWidth={2.5}
 						className={cn(
 							"transition-colors duration-200",
-							open ? "text-[var(--primary)]" : "text-muted-foreground/60"
+							open ? "text-[var(--primary)]" : "text-muted-foreground/80"
 						)}
 					/>
 				</motion.div>
-			</button>
+			</button >
 
 			{/* ── Dropdown panel — matches SelectContent ── */}
-			<AnimatePresence>
+			< AnimatePresence >
 				{open && (
 					<motion.div
 						initial={{ opacity: 0, y: 6, scale: 0.97 }}
@@ -153,7 +154,7 @@ function CarrierSelect({ CARRIERS, preparedOrders, value, onChange }) {
 
 						{/* header label */}
 						<div className="px-3 pt-3 pb-2 flex items-center gap-1.5
-              text-[9px] font-black uppercase tracking-widest text-muted-foreground/60
+              text-[9px] font-black uppercase tracking-widest text-muted-foreground/80
               border-b border-border/40">
 							<Truck size={9} className="text-[var(--primary)]" />
 							اختر شركة الشحن
@@ -238,14 +239,14 @@ function CarrierSelect({ CARRIERS, preparedOrders, value, onChange }) {
 
 						{/* footer */}
 						<div className="px-3 py-2 border-t border-border/40 flex items-center gap-1.5
-              text-[10px] text-muted-foreground/60 font-semibold">
+              text-[10px] text-muted-foreground/80font-semibold">
 							<Package size={10} />
 							{preparedOrders.length} طلب إجمالاً
 						</div>
 					</motion.div>
 				)}
-			</AnimatePresence>
-		</div>
+			</AnimatePresence >
+		</div >
 	);
 }
 
@@ -274,7 +275,7 @@ export default function ScanBar({
 			{/* label */}
 			<div className={cn("flex items-center gap-1.5", cnLabel)}>
 				<ScanLine size={11} className="text-[var(--primary)]" />
-				<span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+				<span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">
 					مسح الباركود
 				</span>
 			</div>
@@ -339,7 +340,7 @@ export default function ScanBar({
 					className={cn(
 						"flex-1 h-full bg-transparent border-none !outline-none focus:ring-0",
 						"text-sm font-semibold text-foreground",
-						"placeholder:text-muted-foreground/50",
+						"placeholder:text-muted-foreground/80",
 						"px-2",
 					)}
 				/>

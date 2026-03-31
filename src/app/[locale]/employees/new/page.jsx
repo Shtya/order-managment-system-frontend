@@ -281,7 +281,7 @@ export default function AddEmployeePage() {
 
 
 			{/* Form Content - Two Columns */}
-			<div className="flex gap-6">
+			<div className="flex max-md:flex-col gap-6">
 				<div className="flex-1 space-y-6">
 					<motion.div
 						className="bg-card"

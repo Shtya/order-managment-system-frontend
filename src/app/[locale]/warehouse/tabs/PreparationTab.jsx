@@ -412,7 +412,7 @@ function buildWrongScanLogPDF(logs, carrier, employee, now, labels, orderInfo = 
 	}
 
 	return `<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" >
 <head>
   <meta charset="UTF-8">
   <title>${labels.title}</title>
@@ -811,7 +811,7 @@ export function RejectOrderModal({ open, onClose, order, onConfirm }) {
 		try {
 			// Hit the new reject endpoint
 			const res = await api.patch(`/orders/${order.id}/reject`, { notes: reason });
-			console.log(res);
+
 			if (res.status === 200 || res.status === 201) {
 				toast.success(t("messages.orderRejected"));
 				onConfirm(order.code, { status: "rejected", rejectReason: reason, notes: reason });
@@ -830,7 +830,7 @@ export function RejectOrderModal({ open, onClose, order, onConfirm }) {
 
 	return (
 		<Dialog open={open} onOpenChange={handleClose}>
-			<DialogContent className="!max-w-lg bg-white dark:bg-slate-900 rounded-xl p-0 border-0 shadow-2xl" dir="rtl">
+			<DialogContent className="!max-w-lg bg-white dark:bg-slate-900 rounded-xl p-0 border-0 shadow-2xl" >
 				{/* Header */}
 				<div className="relative px-6 pt-6 pb-5 rounded-t-xl overflow-hidden" style={{ background: DS.dangerGradient }}>
 					<div className="absolute -top-4 -left-4 w-20 h-20 rounded-full bg-white/10 pointer-events-none" />
@@ -877,7 +877,7 @@ export function RejectOrderModal({ open, onClose, order, onConfirm }) {
 							onChange={(e) => setReason(e.target.value)}
 							placeholder={t("reject.placeholder")}
 							className={cn("border-slate-200 dark:border-slate-700 resize-none text-sm min-h-[80px] focus:border-red-400 focus:ring-red-400/20", DS.radius)}
-							dir="rtl"
+
 						/>
 					</div>
 					<div className={cn("flex items-start gap-3 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800", DS.radius)}>
@@ -943,7 +943,7 @@ function OrdersSlidePanel({ open, onClose, activeOrderCode, onSelectOrder }) {
 						exit={{ x: isRtl ? "-100%" : "100%" }}
 						transition={{ type: "spring", damping: 28, stiffness: 300 }}
 						className="fixed top-0 ltr:right-0 rtl:left-0 h-full w-80 bg-white dark:bg-slate-900 shadow-2xl z-[1000000] flex flex-col"
-						dir="rtl"
+
 					>
 						<PanelHeader
 							icon={Layers}
@@ -1123,7 +1123,7 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
 
 			{/* Products table */}
 			<div className="overflow-x-auto">
-				<table className="w-full text-sm" dir="rtl">
+				<table className="w-full text-sm">
 					<thead>
 						<tr className="border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/60 dark:bg-slate-800/30">
 							{["#", t("table.productName"), "SKU", t("table.shelf"), t("table.qty"), t("table.status")].map((h, i) => (
@@ -1284,7 +1284,7 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
 								className="absolute inset-0 pointer-events-none"
 								style={{ background: "linear-gradient(90deg, transparent, rgba(52,211,153,0.15), transparent)" }} />
 							<CheckCircle2 size={14} className="text-emerald-500 relative z-10" />
-							<span className="text-sm font-black text-emerald-700 dark:text-emerald-400 relative z-10" dir="rtl">
+							<span className="text-sm font-black text-emerald-700 dark:text-emerald-400 relative z-10" >
 								{t("scan.orderComplete", { code: order.orderNumber })}
 							</span>
 						</div>
@@ -1375,7 +1375,7 @@ export function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSu
 
 				<div className="ps-3 flex-shrink-0 z-10">
 					<ScanLine size={15} className={cn("transition-colors duration-200",
-						isSuccess ? "text-emerald-500" : isError ? "text-red-500" : isFocused ? "text-primary" : "text-muted-foreground/30")} />
+						isSuccess ? "text-emerald-500" : isError ? "text-red-500" : isFocused ? "text-primary" : "text-muted-foreground/80")} />
 				</div>
 				<div className="relative flex-shrink-0 mx-2.5 z-10">
 					<div className="w-px h-4 bg-border/40" />
@@ -1393,9 +1393,9 @@ export function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSu
 					ref={inputRef} value={value} onChange={onChange}
 					onKeyDown={e => { if (e.key === "Enter") handleScan(); }}
 					onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)}
-					placeholder={placeholder} autoFocus disabled={disabled} dir="rtl"
+					placeholder={placeholder} autoFocus disabled={disabled}
 					autoComplete="off" autoCorrect="off" spellCheck={false}
-					className="relative z-10 flex-1 h-full bg-transparent border-none !outline-none focus:ring-0 text-sm font-semibold text-foreground placeholder:text-muted-foreground/35 px-1"
+					className="relative z-10 flex-1 h-full bg-transparent border-none !outline-none focus:ring-0 text-sm font-semibold text-foreground placeholder:text-muted-foreground/80px-1"
 				/>
 
 				<AnimatePresence>
@@ -1464,7 +1464,7 @@ export function ScanLogBoxes({ successCount, errorCount }) {
 							<CheckCircle2 size={16} className="text-emerald-600" />
 						</div>
 					</div>
-					<div className="flex-1 min-w-0" dir="rtl">
+					<div className="flex-1 min-w-0" >
 						<p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-emerald-600/60 mb-1 leading-none">{t("scan.scannedOrders")}</p>
 						<AnimatePresence mode="wait">
 							<motion.span key={successCount} initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }}
@@ -1502,7 +1502,7 @@ export function ScanLogBoxes({ successCount, errorCount }) {
 							<Ban size={16} className={errorCount > 0 ? "text-red-600" : "text-slate-300"} />
 						</div>
 					</div>
-					<div className="flex-1 min-w-0" dir="rtl">
+					<div className="flex-1 min-w-0" >
 						<p className={cn("text-[10px] font-extrabold uppercase tracking-[0.1em] mb-1 leading-none transition-colors duration-300",
 							errorCount > 0 ? "text-red-600/60" : "text-slate-400/65")}>{t("scan.failedScans")}</p>
 						<AnimatePresence mode="wait">
@@ -1614,7 +1614,7 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 			try {
 				const res = await api.post(`/orders/${activeOrder.id}/scan-preparation/${val}`);
 				const { scanned, success, message, total, isOrderComplete } = res.data;
-				console.log(res.data)
+
 				if (!success) {
 					if (soundEnabled) playBeep("error");
 					setErrorCount((c) => c + 1);
@@ -1679,7 +1679,7 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 	const isItemsMode = scanStep === "items";
 
 	return (
-		<div className="space-y-4" dir="rtl">
+		<div className="space-y-4" >
 			<Panel >
 				{/* Header */}
 				<PanelHeader

@@ -114,14 +114,14 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
   const tCommon = useTranslations("common");
   const t = useTranslations("warehouse.print");
   const printRef = useRef(null);
-const {formatCurrency} = usePlatformSettings()
+  const { formatCurrency } = usePlatformSettings()
 
   const handlePrint = () => {
     const printContent = printRef.current?.innerHTML;
     if (!printContent) return;
     const w = window.open("", "_blank");
     w.document.write(`
-  <html dir="rtl" class="light">
+  <html  class="light">
     <head>
       <title>${t("printPreview.tabTitle")}</title>
       <script src="https://cdn.tailwindcss.com"></script>
@@ -196,7 +196,7 @@ const {formatCurrency} = usePlatformSettings()
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="!max-w-3xl bg-white dark:bg-slate-900 rounded-2xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl" dir="rtl">
+      <DialogContent className="!max-w-3xl bg-white dark:bg-slate-900 rounded-2xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl" >
         {/* Header */}
         <div className="relative px-6 pt-6 pb-5 rounded-t-2xl overflow-hidden"
           style={{ background: "linear-gradient(135deg, #ff8b00 0%, #ff5c2b 55%, #ffb703 100%)" }}>
@@ -347,7 +347,7 @@ const {formatCurrency} = usePlatformSettings()
 
 // ── NOT-PRINTED SUBTAB ────────────────────────────────────────────────────────
 function NotPrintedSubtab({ onPrinted, resetToken, fetchStats }) {
-  const {formatCurrency} = usePlatformSettings()
+  const { formatCurrency } = usePlatformSettings()
   const tCommon = useTranslations("common");
   const t = useTranslations("warehouse.print");
   const [search, setSearch] = useState("");
@@ -512,7 +512,7 @@ function NotPrintedSubtab({ onPrinted, resetToken, fetchStats }) {
 function PrintedSubtab({ resetToken, fetchStats }) {
   const tCommon = useTranslations("common");
   const t = useTranslations("warehouse.print");
-const {formatCurrency} = usePlatformSettings()
+  const { formatCurrency } = usePlatformSettings()
   const [search, setSearch] = useState("");
   const { debouncedValue: debouncedSearch } = useDebounce({ value: search, delay: 350 })
   const [filters, setFilters] = useState({ carrier: "all", store: "all", date: "", productId: "all" });

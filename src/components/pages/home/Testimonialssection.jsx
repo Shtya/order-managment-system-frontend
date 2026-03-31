@@ -124,7 +124,7 @@ function ReviewCard({ review }) {
 					<LogoBadge text={review.logoText} bg={review.logoBg} color={review.logoColor} />
 					<div className='w-full' >
 						<div className='flex items-center justify-between w-full ' >
-							<span style={{ fontWeight: 700, fontSize: 14, color: 'var(--foreground, #111)', textAlign: 'right' }}>
+							<span style={{ fontWeight: 700, fontSize: 14, color: '#111', textAlign: 'right' }}>
 								{review.name}
 							</span>
 							<div className='scale-[.6] origin-left' > <Stars count={review.stars} /> </div>
@@ -278,7 +278,7 @@ export default function TestimonialsSection() {
 			<section
 				dir="rtl"
 				style={{
-					background: 'var(--background, #f9fafb)',
+					background: "#faf9ff",
 					padding: '72px 32px 80px',
 					overflow: 'hidden',
 				}}

@@ -347,8 +347,14 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 					) : (
 						<div className="space-y-4">
 							{bundleFields.map((field, index) => (
-								<div key={field.fieldId} className="flex items-start gap-4 p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50">
-									<div className="flex-1 grid grid-cols-2 gap-4">
+								<div
+									key={field.fieldId}
+									className="flex flex-col sm:flex-row items-stretch sm:items-start gap-4 p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 relative"
+								>
+									{/* الحاوية الأساسية للمدخلات */}
+									<div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+										{/* اختيار الـ SKU */}
 										<div className="space-y-2">
 											<Label>{t('bundles.selectSku')}</Label>
 											<Controller
@@ -356,7 +362,6 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 												name={`bundleItems.${index}`}
 												render={({ field }) => {
 													const itemValue = field.value || { variantId: '', variant: null, qty: 1 };
-
 													return (
 														<div className="space-y-2">
 															<ProductSkuSearchPopover
@@ -369,34 +374,41 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 																	});
 																}}
 															/>
-
-															{itemValue.variant ? (
-																<div className="text-xs text-muted-foreground">
-																	Selected SKU: <span className="font-[Inter]">{itemValue.variant.sku}</span>
+															{itemValue.variant && (
+																<div className="text-xs text-muted-foreground bg-slate-50 dark:bg-slate-900/50 p-2 rounded-lg border border-dashed">
+																	Selected SKU: <span className="font-[Inter] font-medium text-primary">{itemValue.variant.sku}</span>
 																</div>
-															) : null}
+															)}
 														</div>
 													);
 												}}
 											/>
-
-
-											{errors?.bundleItems?.[index]?.variantId && <div className="text-xs text-red-600">{errors.bundleItems[index].variantId.message}</div>}
+											{errors?.bundleItems?.[index]?.variantId && (
+												<div className="text-xs text-red-600">{errors.bundleItems[index].variantId.message}</div>
+											)}
 										</div>
 
+										{/* حقل الكمية */}
 										<div className="space-y-2">
 											<Label>{t('bundles.quantity')}</Label>
-											<Input
-												type="number"
-												{...register(`bundleItems.${index}.qty`)}
-												min="1"
-												placeholder={t('bundles.quantityPlaceholder')}
-												className="rounded-xl h-[50px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
-											/>
-											{errors?.bundleItems?.[index]?.qty && <div className="text-xs text-red-600">{errors.bundleItems[index].qty.message}</div>}
+											<div className="flex gap-2">
+												<Input
+													type="number"
+													{...register(`bundleItems.${index}.qty`)}
+													min="1"
+													placeholder={t('bundles.quantityPlaceholder')}
+													className="rounded-xl h-[50px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 flex-1"
+												/>
+												{/* زر الحذف يظهر بجانب الكمية فقط في الجوال الصغير جداً إذا أردت، 
+                            لكننا سنضعه في الأسفل أو الجانب بشكل أفضل */}
+											</div>
+											{errors?.bundleItems?.[index]?.qty && (
+												<div className="text-xs text-red-600">{errors.bundleItems[index].qty.message}</div>
+											)}
 										</div>
 									</div>
 
+									{/* زر الحذف */}
 									<Button type="button" variant="ghost" onClick={() => removeBundleItem(index)} className="rounded-xl border-1 border-red-500 cursor-pointer text-red-600 hover:text-white hover:bg-red-500 transition-all mt-7">
 										<Trash2 className="h-4 w-4" />
 									</Button>

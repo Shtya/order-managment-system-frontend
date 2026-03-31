@@ -68,7 +68,7 @@ export const SocketProvider = ({ children }) => {
   const incrementUnread = () => setUnreadNotificationsCount((prev) => prev + 1);
 
   const decrementUnread = () =>
-    setUnreadNotificationsCount((prev) => Math.min(prev - 1, 0));
+    setUnreadNotificationsCount((prev) => Math.max(prev - 1, 0));
 
   const resetUnread = () => {
     const prev = unreadNotificationsCount;

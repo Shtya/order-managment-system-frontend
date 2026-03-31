@@ -619,7 +619,7 @@ function buildCorrectPDF(prepOps, labels) {
     })
     .join("");
 
-  return `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>${labels.title}</title>${PDF_STYLE}</head><body><div class="header-bar"><div style="font-size:18px;font-weight:700;margin-bottom:4px;">${labels.title}</div><div style="font-size:12px;opacity:.85;">${labels.printedAt}: ${now} | ${labels.ordersCount}: ${prepOps.length}</div></div>${ordersHTML}<div class="sig-box"><div class="sig-title">${labels.signatureTitle}</div><p style="font-size:12px;color:#64748b;margin-bottom:12px;">${labels.signatureText}</p><div class="sig-row"><div class="sig-field"><div class="sig-field-label">${labels.signerName}</div></div><div class="sig-field"><div class="sig-field-label">${labels.signature}</div></div><div class="sig-field"><div class="sig-field-label">${labels.date}</div></div></div></div></body></html>`;
+  return `<!DOCTYPE html><html lang="ar" ><head><meta charset="UTF-8"><title>${labels.title}</title>${PDF_STYLE}</head><body><div class="header-bar"><div style="font-size:18px;font-weight:700;margin-bottom:4px;">${labels.title}</div><div style="font-size:12px;opacity:.85;">${labels.printedAt}: ${now} | ${labels.ordersCount}: ${prepOps.length}</div></div>${ordersHTML}<div class="sig-box"><div class="sig-title">${labels.signatureTitle}</div><p style="font-size:12px;color:#64748b;margin-bottom:12px;">${labels.signatureText}</p><div class="sig-row"><div class="sig-field"><div class="sig-field-label">${labels.signerName}</div></div><div class="sig-field"><div class="sig-field-label">${labels.signature}</div></div><div class="sig-field"><div class="sig-field-label">${labels.date}</div></div></div></div></body></html>`;
 }
 
 function buildErrorsPDF(prepOps, labels) {
@@ -671,7 +671,7 @@ function buildErrorsPDF(prepOps, labels) {
     })
     .join("");
 
-  return `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>${labels.title}</title>${PDF_STYLE}</head><body><div class="header-bar err-bar"><div style="font-size:18px;font-weight:700;margin-bottom:4px;">${labels.title}</div><div style="font-size:12px;opacity:.85;">${labels.printedAt}: ${now} | ${labels.ordersCount}: ${prepOps.length}</div></div><p style="font-size:13px;color:#64748b;margin-bottom:20px;">${labels.description}</p>${ordersHTML}</body></html>`;
+  return `<!DOCTYPE html><html lang="ar" ><head><meta charset="UTF-8"><title>${labels.title}</title>${PDF_STYLE}</head><body><div class="header-bar err-bar"><div style="font-size:18px;font-weight:700;margin-bottom:4px;">${labels.title}</div><div style="font-size:12px;opacity:.85;">${labels.printedAt}: ${now} | ${labels.ordersCount}: ${prepOps.length}</div></div><p style="font-size:13px;color:#64748b;margin-bottom:20px;">${labels.description}</p>${ordersHTML}</body></html>`;
 }
 
 function buildGenericOpPDF(op, order, labels, formatCurrency) {
@@ -679,7 +679,7 @@ function buildGenericOpPDF(op, order, labels, formatCurrency) {
   const resultColor = op.result === "SUCCESS" ? "#16a34a" : "#dc2626";
   const resultLabel = op.result === "SUCCESS" ? labels.success : labels.failed;
 
-  return `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>${labels.title} ${op.id}</title>${PDF_STYLE}</head><body><div class="header-bar info-bar"><div style="font-size:18px;font-weight:700;margin-bottom:4px;">${labels.title} — ${labels.opTypeLabel}</div><div style="font-size:12px;opacity:.85;">${labels.printedAt}: ${now} | ${labels.opNumber}: ${op.id}</div></div><div class="info-grid"><div class="info-card"><div class="info-label">${labels.opNumber}</div><div class="info-value" style="font-family:monospace">${op.id}</div></div><div class="info-card"><div class="info-label">${labels.opType}</div><div class="info-value">${labels.opTypeLabel}</div></div><div class="info-card"><div class="info-label">${labels.orderNumber}</div><div class="info-value" style="font-family:monospace">${op.orderCode || "—"}</div></div><div class="info-card"><div class="info-label">${labels.carrier}</div><div class="info-value">${op.carrier || "—"}</div></div><div class="info-card"><div class="info-label">${labels.employee}</div><div class="info-value">${op.employee || "—"}</div></div><div class="info-card"><div class="info-label">${labels.result}</div><div class="info-value" style="color:${resultColor}">${resultLabel}</div></div><div class="info-card"><div class="info-label">${labels.datetime}</div><div class="info-value" style="font-family:monospace;font-size:12px">${op.createdAt || "—"}</div></div><div class="info-card"><div class="info-label">${labels.details}</div><div class="info-value">${op.details || "—"}</div></div></div>${order ? `<h2>${labels.orderInfo}</h2><div class="info-grid"><div class="info-card"><div class="info-label">${labels.customer}</div><div class="info-value">${order.customer || "—"}</div></div><div class="info-card"><div class="info-label">${labels.city}</div><div class="info-value">${order.city || "—"}</div></div><div class="info-card"><div class="info-label">${labels.total}</div><div class="info-value">${order.finalTotal ? formatCurrency(order.finalTotal) : "—"}</div></div><div class="info-card"><div class="info-label">${labels.status}</div><div class="info-value">${order.status || "—"}</div></div></div>` : ""}</body></html>`;
+  return `<!DOCTYPE html><html lang="ar" ><head><meta charset="UTF-8"><title>${labels.title} ${op.id}</title>${PDF_STYLE}</head><body><div class="header-bar info-bar"><div style="font-size:18px;font-weight:700;margin-bottom:4px;">${labels.title} — ${labels.opTypeLabel}</div><div style="font-size:12px;opacity:.85;">${labels.printedAt}: ${now} | ${labels.opNumber}: ${op.id}</div></div><div class="info-grid"><div class="info-card"><div class="info-label">${labels.opNumber}</div><div class="info-value" style="font-family:monospace">${op.id}</div></div><div class="info-card"><div class="info-label">${labels.opType}</div><div class="info-value">${labels.opTypeLabel}</div></div><div class="info-card"><div class="info-label">${labels.orderNumber}</div><div class="info-value" style="font-family:monospace">${op.orderCode || "—"}</div></div><div class="info-card"><div class="info-label">${labels.carrier}</div><div class="info-value">${op.carrier || "—"}</div></div><div class="info-card"><div class="info-label">${labels.employee}</div><div class="info-value">${op.employee || "—"}</div></div><div class="info-card"><div class="info-label">${labels.result}</div><div class="info-value" style="color:${resultColor}">${resultLabel}</div></div><div class="info-card"><div class="info-label">${labels.datetime}</div><div class="info-value" style="font-family:monospace;font-size:12px">${op.createdAt || "—"}</div></div><div class="info-card"><div class="info-label">${labels.details}</div><div class="info-value">${op.details || "—"}</div></div></div>${order ? `<h2>${labels.orderInfo}</h2><div class="info-grid"><div class="info-card"><div class="info-label">${labels.customer}</div><div class="info-value">${order.customer || "—"}</div></div><div class="info-card"><div class="info-label">${labels.city}</div><div class="info-value">${order.city || "—"}</div></div><div class="info-card"><div class="info-label">${labels.total}</div><div class="info-value">${order.finalTotal ? formatCurrency(order.finalTotal) : "—"}</div></div><div class="info-card"><div class="info-label">${labels.status}</div><div class="info-value">${order.status || "—"}</div></div></div>` : ""}</body></html>`;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -697,7 +697,7 @@ function GenericOpModal({ open, onClose, op, t, formatCurrency }) {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
         className="!max-w-2xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl"
-        dir="rtl"
+
       >
         <div
           className="relative px-6 pt-6 pb-5 rounded-t-xl overflow-hidden"
@@ -957,7 +957,7 @@ function OrderLogModal({ open, onClose, op, t }) {
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
         className="!max-w-2xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl"
-        dir="rtl"
+
       >
         <div
           className="relative px-6 pt-6 pb-5 rounded-t-xl overflow-hidden"
@@ -1275,7 +1275,7 @@ function PrepSessionModal({ open, onClose, sessionOps, t }) {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
         className="!max-w-xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl"
-        dir="rtl"
+
       >
         <div
           className="relative px-6 pt-6 pb-5 rounded-t-xl overflow-hidden"

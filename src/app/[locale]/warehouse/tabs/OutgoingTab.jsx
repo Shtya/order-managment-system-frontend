@@ -601,7 +601,7 @@ function buildOutgoingPDF(orders, carrier, employee, now, labels) {
 	}).join("");
 
 	return `<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" >
 <head>
   <meta charset="UTF-8">
   <title>${labels.title}</title>
@@ -1035,7 +1035,7 @@ function buildWrongScanLogPDF(logs, carrier, employee, now, labels) {
 	).join("");
 
 	return `<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" >
 <head>
   <meta charset="UTF-8">
   <title>${labels.title}</title>
@@ -1202,7 +1202,7 @@ function OutgoingScanInputBar({
 			animate={errorFlash ? { x: [0, -5, 6, -4, 2, 0] } : { x: 0 }}
 			transition={{ duration: 0.35 }}
 			className="relative"
-			dir="rtl"
+
 		>
 			{[
 				"absolute -top-[3px] -left-[3px]",
@@ -1235,7 +1235,7 @@ function OutgoingScanInputBar({
 
 			<div
 				className={cn(
-					"relative flex items-center border transition-all duration-200 overflow-hidden",
+					"relative flex flex-col md:flex-row md:items-center border transition-all duration-200 overflow-hidden",
 					DS.radius,
 					disabled && "opacity-50 pointer-events-none",
 					isSuccess &&
@@ -1301,161 +1301,163 @@ function OutgoingScanInputBar({
 					)}
 				</AnimatePresence>
 
-				<div className="px-2.5 flex-shrink-0 z-10 border-l border-slate-100 dark:border-slate-700 min-w-[200px]">
+				<div className="px-2.5 py-2 md:py-0 flex-shrink-0 z-10 border-b md:border-b-0 md:border-l border-slate-100 dark:border-slate-700 w-full md:w-auto md:min-w-[200px]">
 					<ShippingCompanyFilter value={selectedCarrier} onChange={onCarrierChange} hideLabel={true} />
 				</div>
 
-				<div className="ps-3 flex-shrink-0 z-10">
-					<ScanLine
-						size={15}
-						className={cn(
-							"transition-colors duration-200",
-							isSuccess
-								? "text-emerald-500"
-								: isError
-									? "text-red-500"
-									: isFocused
-										? "text-primary"
-										: "text-muted-foreground/30"
-						)}
-					/>
-				</div>
-
-				<div className="relative flex-shrink-0 mx-2.5 z-10">
-					<div className="w-px h-4 bg-border/40" />
-					<motion.div
-						animate={
-							isSuccess
-								? {
-									backgroundColor: DS.success,
-									scale: [1, 1.3, 1],
-									opacity: [1, 0.6, 1],
-								}
-								: isError
-									? { backgroundColor: DS.danger, scale: [1, 1.3, 1] }
-									: isFocused
-										? { backgroundColor: DS.primary, opacity: [1, 0.4, 1] }
-										: { backgroundColor: "#94a3b8" }
-						}
-						transition={
-							isSuccess || isFocused
-								? { duration: 1.5, repeat: Infinity }
-								: { duration: 0.3 }
-						}
-						className="absolute -top-[8px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
-					/>
-				</div>
-
-				<input
-					ref={inputRef}
-					value={value}
-					onChange={onChange}
-					onKeyDown={(e) => {
-						if (e.key === "Enter") handleScan();
-					}}
-					onFocus={() => setIsFocused(true)}
-					onBlur={() => setIsFocused(false)}
-					placeholder={placeholder}
-					autoFocus
-					disabled={disabled}
-					dir="rtl"
-					autoComplete="off"
-					autoCorrect="off"
-					spellCheck={false}
-					className="relative z-10 flex-1 h-full bg-transparent border-none !outline-none focus:ring-0 text-sm font-semibold text-foreground placeholder:text-muted-foreground/35 px-1"
-				/>
-
-				<AnimatePresence>
-					{value && (
-						<motion.button
-							key="clear"
-							initial={{ opacity: 0, scale: 0.7 }}
-							animate={{ opacity: 1, scale: 1 }}
-							exit={{ opacity: 0, scale: 0.7 }}
-							transition={{ duration: 0.15 }}
-							type="button"
-							onClick={() => {
-								onChange({ target: { value: "" } });
-								inputRef?.current?.focus();
-							}}
-							className="relative z-10 flex-shrink-0 mx-1.5 w-[18px] h-[18px] rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
-						>
-							<X size={9} className="text-slate-500" />
-						</motion.button>
-					)}
-				</AnimatePresence>
-
-				<div className="pe-1 flex-shrink-0 z-10">
-					<button
-						type="button"
-						onClick={onToggleSound}
-						className="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center"
-						title={t("scan.toggleSound")}
-					>
-						{soundEnabled ? (
-							<Volume2 size={14} className="text-slate-500" />
-						) : (
-							<VolumeX size={14} className="text-slate-400" />
-						)}
-					</button>
-				</div>
-
-				<div className="pe-2 flex-shrink-0 z-10">
-					<motion.button
-						type="button"
-						onClick={handleScan}
-						disabled={disabled}
-						whileHover={!disabled ? { scale: 1.03 } : {}}
-						whileTap={!disabled ? { scale: 0.95 } : {}}
-						className={cn(
-							"relative h-8 px-3.5 text-white text-xs font-black flex items-center gap-1.5 overflow-hidden disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200",
-							DS.radius
-						)}
-						style={{
-							background: isSuccess
-								? DS.successGradient
-								: isError
-									? DS.dangerGradient
-									: DS.headerGradient,
-							boxShadow: `0 2px 10px -2px ${isSuccess
-								? "rgba(16,185,129,0.45)"
-								: isError
-									? "rgba(239,68,68,0.45)"
-									: "rgba(255,139,0,0.35)"
-								}`,
-						}}
-					>
-						<span
-							aria-hidden
-							className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-t-lg pointer-events-none"
-						/>
-						<motion.span
-							key={isSuccess ? "check" : isError ? "x" : "scan"}
-							initial={{ opacity: 0, scale: 0.6 }}
-							animate={{ opacity: 1, scale: 1 }}
-							className="flex"
-						>
-							{isSuccess ? (
-								<CheckCircle2 size={11} strokeWidth={2.5} />
-							) : isError ? (
-								<X size={11} strokeWidth={2.5} />
-							) : (
-								<ScanLine size={11} strokeWidth={2.5} />
+				<div className="flex flex-1 items-center min-w-0">
+					<div className="ps-3 flex-shrink-0 z-10">
+						<ScanLine
+							size={15}
+							className={cn(
+								"transition-colors duration-200",
+								isSuccess
+									? "text-emerald-500"
+									: isError
+										? "text-red-500"
+										: isFocused
+											? "text-primary"
+											: "text-muted-foreground/80"
 							)}
-						</motion.span>
-						<motion.span
-							key={isSuccess ? "done" : isError ? "err" : "lbl"}
-							initial={{ opacity: 0, x: 3 }}
-							animate={{ opacity: 1, x: 0 }}
-							className="text-[11px]"
+						/>
+					</div>
+
+					<div className="relative flex-shrink-0 mx-2 z-10">
+						<div className="w-px h-4 bg-border/40" />
+						<motion.div
+							animate={
+								isSuccess
+									? {
+										backgroundColor: DS.success,
+										scale: [1, 1.3, 1],
+										opacity: [1, 0.6, 1],
+									}
+									: isError
+										? { backgroundColor: DS.danger, scale: [1, 1.3, 1] }
+										: isFocused
+											? { backgroundColor: DS.primary, opacity: [1, 0.4, 1] }
+											: { backgroundColor: "#94a3b8" }
+							}
+							transition={
+								isSuccess || isFocused
+									? { duration: 1.5, repeat: Infinity }
+									: { duration: 0.3 }
+							}
+							className="absolute -top-[8px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
+						/>
+					</div>
+
+					<input
+						ref={inputRef}
+						value={value}
+						onChange={onChange}
+						onKeyDown={(e) => {
+							if (e.key === "Enter") handleScan();
+						}}
+						onFocus={() => setIsFocused(true)}
+						onBlur={() => setIsFocused(false)}
+						placeholder={placeholder}
+						autoFocus
+						disabled={disabled}
+
+						autoComplete="off"
+						autoCorrect="off"
+						spellCheck={false}
+						className="relative z-10 flex-1 h-full min-h-[56px] bg-transparent border-none !outline-none focus:ring-0 text-sm font-semibold text-foreground placeholder:text-muted-foreground/80 px-2"
+					/>
+
+					<AnimatePresence>
+						{value && (
+							<motion.button
+								key="clear"
+								initial={{ opacity: 0, scale: 0.7 }}
+								animate={{ opacity: 1, scale: 1 }}
+								exit={{ opacity: 0, scale: 0.7 }}
+								transition={{ duration: 0.15 }}
+								type="button"
+								onClick={() => {
+									onChange({ target: { value: "" } });
+									inputRef?.current?.focus();
+								}}
+								className="relative z-10 flex-shrink-0 mx-1 w-[18px] h-[18px] rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+							>
+								<X size={9} className="text-slate-500" />
+							</motion.button>
+						)}
+					</AnimatePresence>
+
+					<div className="pe-1 flex-shrink-0 z-10">
+						<button
+							type="button"
+							onClick={onToggleSound}
+							className="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center"
+							title={t("scan.toggleSound")}
 						>
-							{isSuccess
-								? t("scan.scanDone")
-								: isError
-									? t("scan.retry")
-									: t("scan.scanBtn")}
-						</motion.span>
-					</motion.button>
+							{soundEnabled ? (
+								<Volume2 size={14} className="text-slate-500" />
+							) : (
+								<VolumeX size={14} className="text-slate-400" />
+							)}
+						</button>
+					</div>
+
+					<div className="pe-2 flex-shrink-0 z-10">
+						<motion.button
+							type="button"
+							onClick={handleScan}
+							disabled={disabled}
+							whileHover={!disabled ? { scale: 1.03 } : {}}
+							whileTap={!disabled ? { scale: 0.95 } : {}}
+							className={cn(
+								"relative h-8 px-2 sm:px-3.5 text-white text-[10px] sm:text-xs font-black flex items-center gap-1 sm:gap-1.5 overflow-hidden disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200",
+								DS.radius
+							)}
+							style={{
+								background: isSuccess
+									? DS.successGradient
+									: isError
+										? DS.dangerGradient
+										: DS.headerGradient,
+								boxShadow: `0 2px 10px -2px ${isSuccess
+									? "rgba(16,185,129,0.45)"
+									: isError
+										? "rgba(239,68,68,0.45)"
+										: "rgba(255,139,0,0.35)"
+									}`,
+							}}
+						>
+							<span
+								aria-hidden
+								className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-t-lg pointer-events-none"
+							/>
+							<motion.span
+								key={isSuccess ? "check" : isError ? "x" : "scan"}
+								initial={{ opacity: 0, scale: 0.6 }}
+								animate={{ opacity: 1, scale: 1 }}
+								className="flex"
+							>
+								{isSuccess ? (
+									<CheckCircle2 size={11} strokeWidth={2.5} />
+								) : isError ? (
+									<X size={11} strokeWidth={2.5} />
+								) : (
+									<ScanLine size={11} strokeWidth={2.5} />
+								)}
+							</motion.span>
+							<motion.span
+								key={isSuccess ? "done" : isError ? "err" : "lbl"}
+								initial={{ opacity: 0, x: 3 }}
+								animate={{ opacity: 1, x: 0 }}
+								className="hidden sm:inline"
+							>
+								{isSuccess
+									? t("scan.scanDone")
+									: isError
+										? t("scan.retry")
+										: t("scan.scanBtn")}
+							</motion.span>
+						</motion.button>
+					</div>
 				</div>
 			</div>
 		</motion.div>
@@ -1477,7 +1479,7 @@ function OrdersList({
 }) {
 	const t = useTranslations("warehouse.outgoing");
 	const [expanded, setExpanded] = useState({});
-
+	const { formatCurrency } = usePlatformSettings();
 	const toggle = (code) => setExpanded((p) => ({ ...p, [code]: !p[code] }));
 
 	if (orders.length === 0) {
@@ -1492,242 +1494,248 @@ function OrdersList({
 	}
 
 	return (
-		<div className="overflow-hidden">
-			<div
-				className="grid text-[10px] font-bold uppercase tracking-widest text-slate-400 px-5 py-2.5 border-b border-slate-100 bg-slate-50/60"
-				style={{ gridTemplateColumns: "32px 1fr 120px 90px 80px 110px 48px" }}
-			>
-				<span />
-				<span>{t("scan.table.order")}</span>
-				<span>{t("scan.table.customer")}</span>
-				<span>{t("scan.table.city")}</span>
-				<span className="text-center">{t("scan.table.products")}</span>
-				<span className="text-center">{t("scan.table.total")}</span>
-				<span />
-			</div>
+		<div className="overflow-x-auto scrollbar-none">
+			<div className="min-w-[800px]">
+				<div
+					className="grid text-[10px] font-extrabold uppercase tracking-[0.07em] text-slate-400 px-5 py-2.5 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/60 dark:bg-slate-800/30"
+					style={{ gridTemplateColumns: "32px 1fr 120px 90px 80px 110px 48px" }}
+				>
+					<span />
+					<span>{t("scan.table.order")}</span>
+					<span>{t("scan.table.customer")}</span>
+					<span>{t("scan.table.city")}</span>
+					<span className="text-center">{t("scan.table.products")}</span>
+					<span className="text-center">{t("scan.table.total")}</span>
+					<span />
+				</div>
 
-			<div className="divide-y divide-slate-100/80">
-				{orders.map((order, idx) => {
-					const code = order.orderNumber;
-					const isScanned = scannedOrders.some((o) => o.code === code);
-					const isFlash = lastHighlight?.code === code;
-					const isOpen = !!expanded[code];
-					const prodCount = order.items?.length ?? 0;
+				<div className="divide-y divide-slate-100/80 dark:divide-slate-700/20">
+					{orders.map((order, idx) => {
+						const code = order.orderNumber;
+						const isScanned = scannedOrders.some((o) => o.code === code);
+						const isFlash = lastHighlight?.code === code;
+						const isOpen = !!expanded[code];
+						const prodCount = order.items?.length ?? 0;
 
-					return (
-						<motion.div
-							key={code}
-							layout
-							initial={{ opacity: 0, y: 6 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: idx * 0.025, duration: 0.18 }}
-						>
-							<div
-								className={cn(
-									"relative grid items-center px-5 py-3 transition-all duration-200 cursor-pointer select-none",
-									isScanned ? "bg-emerald-50/60" : "hover:bg-slate-50/70"
-								)}
-								style={{ gridTemplateColumns: "32px 1fr 120px 90px 80px 110px 48px" }}
-								onClick={() => prodCount > 0 && toggle(code)}
+						return (
+							<motion.div
+								key={code}
+								layout
+								initial={{ opacity: 0, y: 6 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ delay: idx * 0.025, duration: 0.18 }}
 							>
-								<AnimatePresence>
-									{isFlash && (
-										<motion.div
-											initial={{ opacity: 0.45 }}
-											animate={{ opacity: 0 }}
-											transition={{ duration: 0.9 }}
-											className={cn(
-												"absolute inset-0 pointer-events-none",
-												lastHighlight?.ok ? "bg-emerald-400/20" : "bg-red-400/20"
-											)}
-										/>
+								<div
+									className={cn(
+										"relative grid items-center px-5 py-3 transition-all duration-200 cursor-pointer select-none",
+										isScanned
+											? "bg-emerald-50/60 dark:bg-emerald-950/10"
+											: "hover:bg-slate-50/70 dark:hover:bg-slate-800/30"
 									)}
-								</AnimatePresence>
-
-								{isScanned && (
-									<div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400 to-teal-500" />
-								)}
-
-								<div className="flex items-center justify-center">
-									<div
-										className={cn(
-											"w-7 h-7 rounded-xl flex items-center justify-center transition-all duration-200",
-											isScanned
-												? "bg-emerald-500 text-white shadow-[0_2px_8px_-2px_#10b98160]"
-												: "bg-slate-100"
+									style={{ gridTemplateColumns: "32px 1fr 120px 90px 80px 110px 48px" }}
+									onClick={() => prodCount > 0 && toggle(code)}
+								>
+									<AnimatePresence>
+										{isFlash && (
+											<motion.div
+												initial={{ opacity: 0.45 }}
+												animate={{ opacity: 0 }}
+												transition={{ duration: 0.9 }}
+												className={cn(
+													"absolute inset-0 pointer-events-none",
+													lastHighlight?.ok ? "bg-emerald-400/20" : "bg-red-400/20"
+												)}
+											/>
 										)}
-									>
-										{isScanned ? (
-											<CheckCircle2 size={14} className="text-white" />
-										) : (
-											<span className="text-[10px] font-bold text-slate-300 tabular-nums">
-												{idx + 1}
-											</span>
-										)}
-									</div>
-								</div>
+									</AnimatePresence>
 
-								<div className="flex items-center gap-2 min-w-0">
-									<span
-										className={cn(
-											"font-black font-mono text-[13px] transition-colors",
-											isScanned ? "text-emerald-800" : "text-slate-800"
-										)}
-									>
-										{code}
-									</span>
 									{isScanned && (
-										<motion.span
-											initial={{ scale: 0.7, opacity: 0 }}
-											animate={{ scale: 1, opacity: 1 }}
-											className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200/60"
-										>
-											✓ {t("scan.scannedBadge")}
-										</motion.span>
+										<div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400 to-teal-500" />
 									)}
-								</div>
 
-								<div className="min-w-0">
-									<div className="text-[12px] font-semibold text-slate-700 truncate">
-										{order.customerName || "—"}
+									<div className="flex items-center justify-center">
+										<div
+											className={cn(
+												"w-7 h-7 rounded-xl flex items-center justify-center transition-all duration-200",
+												isScanned
+													? "bg-emerald-500 text-white shadow-[0_2px_8px_-2px_#10b98160]"
+													: "bg-slate-100 dark:bg-slate-800"
+											)}
+										>
+											{isScanned ? (
+												<CheckCircle2 size={14} className="text-white" />
+											) : (
+												<span className="text-[10px] font-bold text-slate-300 dark:text-slate-600 tabular-nums">
+													{idx + 1}
+												</span>
+											)}
+										</div>
 									</div>
-									<div className="text-[10px] text-slate-400 font-medium tabular-nums">
-										{order.phoneNumber || "—"}
-									</div>
-								</div>
 
-								<div className="text-[11px] font-bold text-slate-500 uppercase tracking-tight">
-									{order.city || "—"}
-								</div>
-
-								<div className="flex justify-center">
-									<span
-										className="inline-flex items-center justify-center px-2 py-1 rounded-xl bg-slate-100 text-[11px] font-black text-slate-600 min-w-[32px]"
-									>
-										{prodCount}
-									</span>
-								</div>
-
-								<div className="flex justify-center">
-									<span className="text-[12px] font-black text-slate-800 tabular-nums">
-										{formatCurrency(order.totalPrice)}
-									</span>
-								</div>
-
-								<div className="flex items-center justify-end">
-									<button
-										onClick={(e) => {
-											e.stopPropagation();
-											onSelectOrder?.(order);
-										}}
-										className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all active:scale-95"
-									>
-										<ScanLine size={16} />
-									</button>
-								</div>
-							</div>
-
-							<AnimatePresence initial={false}>
-								{isOpen && prodCount > 0 && (
-									<motion.div
-										initial={{ height: 0, opacity: 0 }}
-										animate={{ height: "auto", opacity: 1 }}
-										exit={{ height: 0, opacity: 0 }}
-										transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-										style={{ overflow: "hidden" }}
-									>
-										<div className="border-t border-slate-100 bg-slate-50/50">
-											<div
-												className="grid text-[9px] font-bold uppercase tracking-widest px-5 py-2.5 border-b text-slate-400 border-slate-100"
-												style={{ gridTemplateColumns: "2fr 90px 70px 80px 80px" }}
+									<div className="flex items-center gap-2 min-w-0">
+										<span
+											className={cn(
+												"font-black font-mono text-[13px] transition-colors",
+												isScanned
+													? "text-emerald-800 dark:text-emerald-300"
+													: "text-slate-800 dark:text-slate-100"
+											)}
+										>
+											{code}
+										</span>
+										{isScanned && (
+											<motion.span
+												initial={{ scale: 0.7, opacity: 0 }}
+												animate={{ scale: 1, opacity: 1 }}
+												className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/50"
 											>
-												<span>{t("scan.table.product")}</span>
-												<span className="text-center">SKU</span>
-												<span className="text-center">{t("scan.table.qty")}</span>
-												<span className="text-center">{t("scan.table.price")}</span>
-												<span className="text-center">{t("scan.table.lineTotal")}</span>
-											</div>
+												✓ {t("scan.scannedBadge")}
+											</motion.span>
+										)}
+									</div>
 
-											<div className="divide-y divide-slate-100/60">
-												{order.items.map((p, pi) => (
-													<motion.div
-														key={p.sku || pi}
-														initial={{ opacity: 0, x: -4 }}
-														animate={{ opacity: 1, x: 0 }}
-														transition={{ delay: pi * 0.04 }}
-														className="grid items-center px-5 py-3 hover:bg-white/70 transition-colors"
-														style={{ gridTemplateColumns: "2fr 90px 70px 80px 80px" }}
-													>
-														<div className="flex items-center gap-2.5 min-w-0">
-															<div
-																className="w-6 h-6 rounded-xl flex items-center justify-center flex-shrink-0"
-																style={{ background: "#ff8b0012" }}
-															>
-																<Package size={11} style={{ color: "#ff8b00" }} />
-															</div>
-															<div className="min-w-0">
-																<p className="text-[12px] font-semibold text-slate-700 truncate">
-																	{p.variant?.product?.name || p.name}
-																</p>
-																{p.variant?.sku && (
-																	<p className="text-[10px] text-slate-400 truncate">
-																		{p.variant.sku}
+									<div className="min-w-0">
+										<div className="text-[12px] font-semibold text-slate-700 dark:text-slate-200 truncate">
+											{order.customerName || "—"}
+										</div>
+										<div className="text-[10px] text-slate-400 dark:text-slate-500 font-medium tabular-nums">
+											{order.phoneNumber || "—"}
+										</div>
+									</div>
+
+									<div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight">
+										{order.city || "—"}
+									</div>
+
+									<div className="flex justify-center">
+										<span
+											className="inline-flex items-center justify-center px-2 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-[11px] font-black text-slate-600 dark:text-slate-300 min-w-[32px]"
+										>
+											{prodCount}
+										</span>
+									</div>
+
+									<div className="flex justify-center">
+										<span className="text-[12px] font-black text-slate-800 dark:text-slate-100 tabular-nums">
+											{formatCurrency(order.totalPrice)}
+										</span>
+									</div>
+
+									<div className="flex items-center justify-end">
+										<button
+											onClick={(e) => {
+												e.stopPropagation();
+												onSelectOrder?.(order);
+											}}
+											className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all active:scale-95"
+										>
+											<ScanLine size={16} />
+										</button>
+									</div>
+								</div>
+
+								<AnimatePresence initial={false}>
+									{isOpen && prodCount > 0 && (
+										<motion.div
+											initial={{ height: 0, opacity: 0 }}
+											animate={{ height: "auto", opacity: 1 }}
+											exit={{ height: 0, opacity: 0 }}
+											transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+											style={{ overflow: "hidden" }}
+										>
+											<div className="border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20">
+												<div
+													className="grid text-[9px] font-extrabold uppercase tracking-[0.07em] px-5 py-2.5 border-b text-slate-400 border-slate-100 dark:border-slate-800"
+													style={{ gridTemplateColumns: "2fr 90px 70px 80px 80px" }}
+												>
+													<span>{t("scan.table.product")}</span>
+													<span className="text-center">SKU</span>
+													<span className="text-center">{t("scan.table.qty")}</span>
+													<span className="text-center">{t("scan.table.price")}</span>
+													<span className="text-center">{t("scan.table.lineTotal")}</span>
+												</div>
+
+												<div className="divide-y divide-slate-100/60 dark:divide-slate-800/40">
+													{order.items.map((p, pi) => (
+														<motion.div
+															key={p.sku || pi}
+															initial={{ opacity: 0, x: -4 }}
+															animate={{ opacity: 1, x: 0 }}
+															transition={{ delay: pi * 0.04 }}
+															className="grid items-center px-5 py-3 hover:bg-white/70 dark:hover:bg-slate-800/40 transition-colors"
+															style={{ gridTemplateColumns: "2fr 90px 70px 80px 80px" }}
+														>
+															<div className="flex items-center gap-2.5 min-w-0">
+																<div
+																	className="w-6 h-6 rounded-xl flex items-center justify-center flex-shrink-0"
+																	style={{ background: "#ff8b0012" }}
+																>
+																	<Package size={11} style={{ color: "#ff8b00" }} />
+																</div>
+																<div className="min-w-0">
+																	<p className="text-[12px] font-semibold text-slate-700 dark:text-slate-200 truncate">
+																		{p.variant?.product?.name || p.name}
 																	</p>
+																	{p.variant?.sku && (
+																		<p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">
+																			{p.variant.sku}
+																		</p>
+																	)}
+																</div>
+															</div>
+
+															<div className="text-center">
+																<code className="text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-100 dark:border-slate-700">
+																	{p.sku || p.variant?.sku || "—"}
+																</code>
+															</div>
+
+															<div className="flex justify-center">
+																<span
+																	className="inline-flex items-center justify-center w-7 h-7 rounded-xl text-[11px] font-black"
+																	style={{ background: "#ff8b0015", color: "#ff8b00" }}
+																>
+																	{p.quantity}
+																</span>
+															</div>
+
+															<div className="text-center">
+																<span className="text-[12px] font-bold text-slate-600 dark:text-slate-300 tabular-nums">
+																	{p.price ? formatCurrency(p.price) : "—"}
+																</span>
+															</div>
+
+															<div className="text-center">
+																{p.price && p.quantity ? (
+																	<span className="text-[12px] font-black text-slate-800 dark:text-slate-100 tabular-nums">
+																		{formatCurrency(p.price * p.quantity)}
+																	</span>
+																) : (
+																	<span className="text-slate-300 dark:text-slate-600 text-xs">—</span>
 																)}
 															</div>
-														</div>
+														</motion.div>
+													))}
+												</div>
 
-														<div className="text-center">
-															<code className="text-[10px] font-mono text-slate-500 bg-white px-1.5 py-0.5 rounded border border-slate-100">
-																{p.sku || p.variant?.sku || "—"}
-															</code>
-														</div>
-
-														<div className="flex justify-center">
-															<span
-																className="inline-flex items-center justify-center w-7 h-7 rounded-xl text-[11px] font-black"
-																style={{ background: "#ff8b0015", color: "#ff8b00" }}
-															>
-																{p.quantity}
-															</span>
-														</div>
-
-														<div className="text-center">
-															<span className="text-[12px] font-bold text-slate-600 tabular-nums">
-																{p.price ? formatCurrency(p.price) : "—"}
-															</span>
-														</div>
-
-														<div className="text-center">
-															{p.price && p.quantity ? (
-																<span className="text-[12px] font-black text-slate-800 tabular-nums">
-																	{formatCurrency(p.price * p.quantity)}
-																</span>
-															) : (
-																<span className="text-slate-300 text-xs">—</span>
-															)}
-														</div>
-													</motion.div>
-												))}
-											</div>
-
-											<div className="flex items-center justify-between px-5 py-2.5 border-t border-slate-100 text-[11px] font-semibold text-slate-500 bg-slate-50">
-												<span>
-													{prodCount} {t("scan.totalProducts")}
-												</span>
-												{order.totalPrice && (
-													<span className="font-black text-[13px] text-slate-700">
-														{formatCurrency(order.totalPrice)}
+												<div className="flex items-center justify-between px-5 py-2.5 border-t border-slate-100 dark:border-slate-800 text-[11px] font-semibold text-slate-500 bg-slate-50 dark:bg-slate-900/40">
+													<span>
+														{prodCount} {t("scan.totalProducts")}
 													</span>
-												)}
+													{order.totalPrice && (
+														<span className="font-black text-[13px] text-slate-700 dark:text-slate-200">
+															{formatCurrency(order.totalPrice)}
+														</span>
+													)}
+												</div>
 											</div>
-										</div>
-									</motion.div>
-								)}
-							</AnimatePresence>
-						</motion.div>
-					);
-				})}
+										</motion.div>
+									)}
+								</AnimatePresence>
+							</motion.div>
+						);
+					})}
+				</div>
 			</div>
 		</div>
 	);
@@ -1941,7 +1949,7 @@ function OutgoingOrdersSlidePanel({ open, onClose, selectedCarrier, onManifestCr
 						exit={{ x: isRtl ? "-100%" : "100%" }}
 						transition={{ type: "spring", damping: 28, stiffness: 300 }}
 						className="fixed top-0 ltr:right-0 rtl:left-0 h-full w-96 bg-white dark:bg-slate-900 shadow-2xl z-[1000000] flex flex-col"
-						dir="rtl"
+
 					>
 						<PanelHeader
 							icon={Layers}
@@ -2208,7 +2216,7 @@ export function ScanOutgoingSubtab({
 	const meta = selectedCarrier !== "all" ? getCarrierMeta(selectedCarrier) : null;
 
 	return (
-		<div className="space-y-4" dir="rtl">
+		<div className="space-y-4" >
 			<Panel>
 				<PanelHeader
 					icon={ScanLine}
@@ -2782,7 +2790,7 @@ export default function OutgoingTab({
 	}, [fetchStats, resetToken]);
 
 	return (
-		<div className="space-y-4" dir="rtl">
+		<div className="space-y-4" >
 			<PageHeader
 				breadcrumbs={[
 					{ name: t("breadcrumbs.home"), href: "/" },

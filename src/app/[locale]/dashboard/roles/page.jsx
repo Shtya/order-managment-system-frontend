@@ -540,7 +540,7 @@ function RoleFormDialog({ t, open, onClose, role, permissions, onSubmit, loading
 				</DialogHeader>
 
 				<form onSubmit={handleSubmit} className="space-y-6">
-					<div className="grid grid-cols-2 gap-4 " >
+					<div className="grid sm:grid-cols-2 gap-4 " >
 						<div className="space-y-2" >
 							<Label>{t("dialog.roleName")}</Label>
 							<Input

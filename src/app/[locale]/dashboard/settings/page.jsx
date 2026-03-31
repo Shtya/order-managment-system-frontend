@@ -118,7 +118,7 @@ function FormSkeleton({ rows = 4 }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-	 SCHEMAS & DATA
+   SCHEMAS & DATA
 ═══════════════════════════════════════════════════════════════ */
 const createContactsSchema = (t) =>
   yup.object({
@@ -165,7 +165,7 @@ const SOCIAL_PLATFORMS = [
 ];
 
 /* ═══════════════════════════════════════════════════════════════
-	 MAIN PAGE
+   MAIN PAGE
 ═══════════════════════════════════════════════════════════════ */
 export default function SuperAdminSettingsPage() {
   const t = useTranslations("superAdminSettings");
@@ -223,7 +223,7 @@ export default function SuperAdminSettingsPage() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-	 CONTACTS TAB
+   CONTACTS TAB
 ═══════════════════════════════════════════════════════════════ */
 function ContactsTab({ t }) {
   const [loading, setLoading] = useState(true);
@@ -322,7 +322,7 @@ function ContactsTab({ t }) {
             <div className="relative">
               <Mail
                 size={16}
-                className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none"
+                className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/80pointer-events-none"
               />
               <Input
                 {...register("email")}
@@ -341,7 +341,7 @@ function ContactsTab({ t }) {
             <div className="relative">
               <Phone
                 size={16}
-                className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none"
+                className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/80pointer-events-none"
               />
               <Input
                 {...register("whatsapp")}
@@ -390,7 +390,7 @@ function ContactsTab({ t }) {
                 <div className="relative mt-1">
                   <LinkIcon
                     size={14}
-                    className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none"
+                    className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground/80pointer-events-none"
                   />
                   <Input
                     {...register(platform.id)}
@@ -398,7 +398,7 @@ function ContactsTab({ t }) {
                     className={cn(
                       "h-10 ps-8 text-xs bg-card",
                       fieldError &&
-                        "border-destructive focus-visible:ring-destructive",
+                      "border-destructive focus-visible:ring-destructive",
                     )}
                     placeholder={`https://${platform.id}.com/...`}
                     dir="ltr"

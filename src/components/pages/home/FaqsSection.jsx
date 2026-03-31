@@ -10,7 +10,7 @@ function FaqItem({ question, answer, isOpen, onToggle, index }) {
 	return (
 		<div
 			style={{
-				borderBottom: '1px solid var(--border, #e5e7eb)',
+				borderBottom: '1px solid e5e7eb',
 				overflow: 'hidden',
 				transition: 'background 0.2s',
 				background: isOpen ? 'rgba(139,92,246,0.03)' : 'transparent',
@@ -44,7 +44,7 @@ function FaqItem({ question, answer, isOpen, onToggle, index }) {
 
 					<span style={{
 						fontSize: 14, fontWeight: 600, textAlign: 'right',
-						color: 'var(--foreground, #111)',
+						color: '#111',
 						flex: 1,
 					}}>
 						{question}
@@ -54,11 +54,11 @@ function FaqItem({ question, answer, isOpen, onToggle, index }) {
 				{/* +/× toggle */}
 				<div style={{
 					width: 28, height: 28, borderRadius: 6,
-					border: '1.5px solid var(--border, #e5e7eb)',
+					border: '1.5px solid #e5e7eb',
 					display: 'flex', alignItems: 'center', justifyContent: 'center',
 					flexShrink: 0, fontSize: 18, lineHeight: 1,
-					color: isOpen ? '#7c3aed' : 'var(--muted-foreground, #9ca3af)',
-					borderColor: isOpen ? 'rgba(139,92,246,0.4)' : 'var(--border, #e5e7eb)',
+					color: isOpen ? '#7c3aed' : '#9ca3af',
+					borderColor: isOpen ? 'rgba(139,92,246,0.4)' : '#e5e7eb',
 					transition: 'color 0.2s, border-color 0.2s, transform 0.3s',
 					transform: isOpen ? 'rotate(45deg)' : 'rotate(0deg)',
 					background: isOpen ? 'rgba(139,92,246,0.07)' : 'transparent',
@@ -76,7 +76,7 @@ function FaqItem({ question, answer, isOpen, onToggle, index }) {
 				<p style={{
 					padding: '0 24px 20px 24px',
 					fontSize: 13,
-					color: 'var(--muted-foreground, #6b7280)',
+					color: '#6b7280',
 					lineHeight: 1.8,
 					textAlign: 'right',
 					direction: 'rtl',
@@ -110,7 +110,7 @@ export default function FaqSection() {
 			<section
 				dir="rtl"
 				style={{
-					background: 'var(--background, #f9fafb)',
+					background: '#f9fafb',
 					padding: '72px 24px 80px',
 				}}
 			>

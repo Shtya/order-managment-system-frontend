@@ -42,7 +42,7 @@ function SelectTrigger({ className, size = "default", children, ...props }) {
 			data-slot="select-trigger"
 			data-size={size}
 			className={cn(
- 				...fieldBase,
+				...fieldBase,
 				"group relative rtl:flex-row-reverse inline-flex items-center justify-between gap-2",
 				"data-[size=sm]:h-9  data-[size=sm]:text-xs  data-[size=sm]:px-3",
 				"data-[size=default]:h-10 data-[size=default]:text-sm data-[size=default]:px-3.5",
@@ -51,7 +51,7 @@ function SelectTrigger({ className, size = "default", children, ...props }) {
 				"data-[state=open]:shadow-[0_0_0_3px_rgb(var(--primary-shadow))]",
 				"data-[state=open]:bg-background",
 				// placeholder
-				"data-[placeholder]:text-muted-foreground/50",
+				"data-[placeholder]:text-muted-foreground/80",
 				// inner helpers
 				"*:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2",
 				"[&_svg]:pointer-events-none [&_svg]:shrink-0",
@@ -65,14 +65,14 @@ function SelectTrigger({ className, size = "default", children, ...props }) {
 				className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-xl
           bg-gradient-to-b from-white/20 to-transparent dark:from-white/[0.06]"
 			/>
- 
+
 			<span className="relative z-10 flex">{children}</span>
 
 			<SelectPrimitive.Icon asChild>
 				<ChevronDownIcon
 					className={cn(
 						"relative z-10 size-4 shrink-0 transition-all duration-300",
-						"text-muted-foreground/60",
+						"text-muted-foreground/80",
 						"group-data-[state=open]:text-[var(--primary)] group-data-[state=open]:rotate-180",
 					)}
 				/>
@@ -171,7 +171,7 @@ function SelectLabel({ className, ...props }) {
 		<SelectPrimitive.Label
 			data-slot="select-label"
 			className={cn(
-				"px-3 pt-2 pb-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60",
+				"px-3 pt-2 pb-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground/80",
 				className,
 			)}
 			{...props}

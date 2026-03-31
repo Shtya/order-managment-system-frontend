@@ -75,8 +75,8 @@ function StockPill({ available, stockOnHand, t }) {
           isOut
             ? "bg-red-50 dark:bg-red-950/25 border-red-200 dark:border-red-800/60 text-red-600 dark:text-red-400"
             : isLow
-            ? "bg-amber-50 dark:bg-amber-950/25 border-amber-200 dark:border-amber-800/60 text-amber-600 dark:text-amber-400"
-            : "bg-emerald-50 dark:bg-emerald-950/25 border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400"
+              ? "bg-amber-50 dark:bg-amber-950/25 border-amber-200 dark:border-amber-800/60 text-amber-600 dark:text-amber-400"
+              : "bg-emerald-50 dark:bg-emerald-950/25 border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400"
         )}
       >
         {isOut ? (
@@ -154,10 +154,10 @@ function SkuRow({ sku, idx, isSelected, debounced, onSelect, t }) {
           isSelected
             ? "border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/60 dark:bg-emerald-950/15 cursor-not-allowed"
             : [
-                "border-border/60 bg-background/60 hover:bg-[var(--primary)]/[0.03]",
-                "hover:border-[var(--primary)]/40",
-                "hover:shadow-[0_2px_12px_rgba(0,0,0,0.06)]",
-              ]
+              "border-border/60 bg-background/60 hover:bg-[var(--primary)]/[0.03]",
+              "hover:border-[var(--primary)]/40",
+              "hover:shadow-[0_2px_12px_rgba(0,0,0,0.06)]",
+            ]
         )}
       >
         {/* Left: icon */}
@@ -184,7 +184,7 @@ function SkuRow({ sku, idx, isSelected, debounced, onSelect, t }) {
             {highlight(sku?.label || sku?.sku || "—", debounced)}
           </p>
           {sku?.sku && sku?.label && (
-            <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5 font-mono">
+            <p className="text-[11px] text-muted-foreground/80truncate mt-0.5 font-mono">
               {sku.sku}
             </p>
           )}
@@ -340,9 +340,9 @@ export function ProductSkuSearchPopover({
   }
 
   /* ── Derived UI state ─────────────────────────────────────────────── */
-  const showResults  = !isSearching && searchResults.length > 0;
-  const showEmpty    = !isSearching && searchResults.length === 0 && debounced.length >= 2;
-  const showIdle     = !isSearching && debounced.length < 2;
+  const showResults = !isSearching && searchResults.length > 0;
+  const showEmpty = !isSearching && searchResults.length === 0 && debounced.length >= 2;
+  const showIdle = !isSearching && debounced.length < 2;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -366,13 +366,13 @@ export function ProductSkuSearchPopover({
               "transition-all duration-200 text-sm font-normal"
             )}
           >
-            <span className="flex items-center gap-2.5 text-muted-foreground/60">
+            <span className="flex items-center gap-2.5 text-muted-foreground/80">
               <Search className="w-4 h-4 shrink-0" />
               {t("triggerPlaceholder")}
             </span>
             <ChevronDown
               className={cn(
-                "w-4 h-4 shrink-0 text-muted-foreground/50 transition-transform duration-250",
+                "w-4 h-4 shrink-0 text-muted-foreground/80transition-transform duration-250",
                 open && "rotate-180 text-[var(--primary)]"
               )}
             />
@@ -416,7 +416,7 @@ export function ProductSkuSearchPopover({
 
             {/* Input */}
             <div className="relative flex-1">
-              <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 pointer-events-none" />
+              <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/80pointer-events-none" />
               <input
                 ref={inputRef}
                 type="text"
@@ -426,7 +426,7 @@ export function ProductSkuSearchPopover({
                 className={cn(
                   "w-full h-10 ps-10 pe-4 rounded-md text-sm",
                   "border border-border/70 bg-background/60",
-                  "placeholder:text-muted-foreground/45",
+                  "placeholder:text-muted-foreground/80",
                   "hover:border-[var(--primary)]/40 hover:bg-background",
                   "focus:border-[var(--primary)] focus:bg-background",
                   "focus:shadow-[0_0_0_3px_rgb(var(--primary-shadow))]",
@@ -526,6 +526,6 @@ export function ProductSkuSearchPopover({
           />
         </motion.div>
       </PopoverContent>
-    </Popover>
+    </Popover >
   );
 }

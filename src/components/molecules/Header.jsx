@@ -134,16 +134,16 @@ export default function Header({ toggleSidebar, isSidebarOpen, isMobile }) {
       initial={{ y: -60, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.42, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="h-14  flex-shrink-0 bg-white z-[10]  overflow-hidden relative"
+      className="h-14 flex-shrink-0 bg-white z-[50] overflow-hidden relative"
     >
-       <style>
-      {`
+      <style>
+        {`
       @media (max-width: 768px) {
         button {
           min-width: auto;
           min-height: auto;
       } }`}
-    </style>
+      </style>
       {/* Glass background */}
       <div className="absolute inset-0 bg-[var(--sidebar)]  backdrop-blur-md border-b border-border/60" />
 
@@ -296,7 +296,7 @@ export default function Header({ toggleSidebar, isSidebarOpen, isMobile }) {
                   <div className="py-8 text-center">
                     <Bell
                       size={22}
-                      className="mx-auto mb-2 text-muted-foreground/40"
+                      className="mx-auto mb-2 text-muted-foreground/80"
                     />
                     <p className="text-xs text-muted-foreground">
                       {t("noNotifications")}
@@ -371,8 +371,8 @@ export default function Header({ toggleSidebar, isSidebarOpen, isMobile }) {
           <LogoutButton />
         </div>
       </div>
-    </motion.header>
-   
+    </motion.header >
+
 
   );
 }

@@ -268,7 +268,7 @@ export default function SubscriptionsTab() {
                 </span>
                 <span>
                   {isUnlimited ? (
-                    <Infinity size={14} className="text-muted-foreground/70" />
+                    <Infinity size={14} className="text-muted-foreground/80" />
                   ) : (
                     total
                   )}
@@ -301,7 +301,7 @@ export default function SubscriptionsTab() {
               </span>
               <span className="font-medium">
                 {!row.usersLimit && row.usersLimit !== 0 ? (
-                  <Infinity size={14} className="text-muted-foreground/70" />
+                  <Infinity size={14} className="text-muted-foreground/80" />
                 ) : (
                   row.usersLimit
                 )}
@@ -313,7 +313,7 @@ export default function SubscriptionsTab() {
               </span>
               <span className="font-medium">
                 {!row.storesLimit && row.storesLimit !== 0 ? (
-                  <Infinity size={14} className="text-muted-foreground/70" />
+                  <Infinity size={14} className="text-muted-foreground/80" />
                 ) : (
                   row.storesLimit
                 )}
@@ -326,7 +326,7 @@ export default function SubscriptionsTab() {
               <span className="font-medium">
                 {!row.shippingCompaniesLimit &&
                   row.shippingCompaniesLimit !== 0 ? (
-                  <Infinity size={14} className="text-muted-foreground/70" />
+                  <Infinity size={14} className="text-muted-foreground/80" />
                 ) : (
                   row.shippingCompaniesLimit
                 )}
@@ -424,7 +424,7 @@ export default function SubscriptionsTab() {
         header: t("columns.startDate"),
         cell: (row) => (
           <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-            <Calendar size={12} className="text-muted-foreground/70" />
+            <Calendar size={12} className="text-muted-foreground/80" />
             {formatDate(row.startDate)}
           </div>
         ),
@@ -434,7 +434,7 @@ export default function SubscriptionsTab() {
         header: t("columns.endDate"),
         cell: (row) => (
           <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-            <Calendar size={12} className="text-muted-foreground/70" />
+            <Calendar size={12} className="text-muted-foreground/80" />
             {row.endDate ? formatDate(row.endDate) : "—"}
           </div>
         ),

@@ -83,7 +83,7 @@ function StatCard({ label, value, color, icon: Icon, note }) {
         {/* text */}
         <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
           <div className="text-[11px] font-semibold text-foreground/70 truncate text-end">{label}</div>
-          {note && <div className="text-[10px] text-muted-foreground/60 truncate text-end">{note}</div>}
+          {note && <div className="text-[10px] text-muted-foreground/80truncate text-end">{note}</div>}
         </div>
         {/* value */}
         <AnimatePresence mode="wait">
@@ -143,7 +143,7 @@ function ProductRow({ p, index }) {
           />
         </div>
         <span className={cn("font-black tabular-nums text-[11px] min-w-[32px] text-end",
-          p.completed ? "text-[oklch(0.55_0.18_145)]" : p.scannedQty > 0 ? "text-primary" : "text-muted-foreground/50"
+          p.completed ? "text-[oklch(0.55_0.18_145)]" : p.scannedQty > 0 ? "text-primary" : "text-muted-foreground/80"
         )}>
           {p.scannedQty}/{p.requestedQty}
         </span>
@@ -215,7 +215,7 @@ function OrderCard({ state, order, isActive, index }) {
               : isActive ? "bg-primary/10 text-primary"
                 : "bg-muted text-muted-foreground"
           )}>{done}/{total}</span>
-          <span className="text-muted-foreground/40">
+          <span className="text-muted-foreground/80">
             {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </span>
         </div>
@@ -262,7 +262,7 @@ function ScanLogEntry({ log, index }) {
         <p className="font-semibold leading-snug">{log.message}</p>
         {log.reason && <p className="text-[10px] opacity-60 mt-0.5">{log.reason}</p>}
       </div>
-      <span className="text-[10px] font-mono text-muted-foreground/40 flex-shrink-0 mt-0.5">
+      <span className="text-[10px] font-mono text-muted-foreground/80flex-shrink-0 mt-0.5">
         {log.timestamp?.slice(11, 16)}
       </span>
     </motion.div>
@@ -310,9 +310,9 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
 
   // Calculate statistics
   const totalOrders = ordersToPrep.length;
-  const totalItems = ordersToPrep.reduce((sum, order) => 
+  const totalItems = ordersToPrep.reduce((sum, order) =>
     sum + order.products.reduce((itemSum, p) => itemSum + p.requestedQty, 0), 0);
-  const preparedItems = states.reduce((sum, state) => 
+  const preparedItems = states.reduce((sum, state) =>
     sum + state.products.reduce((itemSum, p) => itemSum + (p.scannedQty || 0), 0), 0);
 
   const handleScan = useCallback(() => {
@@ -325,9 +325,9 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
 
     // Check if this is an order scan
     if (code === order.code) {
-      patch(activeIdx, { 
-        orderScanned: true, 
-        scanLogs: [{ success: true, type: "order", message: `✓ تم مسح الطلب: ${order.code}`, timestamp: ts }, ...st.scanLogs] 
+      patch(activeIdx, {
+        orderScanned: true,
+        scanLogs: [{ success: true, type: "order", message: `✓ تم مسح الطلب: ${order.code}`, timestamp: ts }, ...st.scanLogs]
       });
       setSuccessCount(prev => prev + 1);
       playSuccessSound();
@@ -342,8 +342,8 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
     // Check if this is a product scan
     const pIdx = st.products.findIndex(p => p.sku === code);
     if (pIdx === -1) {
-      patch(activeIdx, { 
-        scanLogs: [{ success: false, message: `SKU غير موجود: ${code}`, reason: "الكود ليس ضمن منتجات الطلب", timestamp: ts }, ...st.scanLogs] 
+      patch(activeIdx, {
+        scanLogs: [{ success: false, message: `SKU غير موجود: ${code}`, reason: "الكود ليس ضمن منتجات الطلب", timestamp: ts }, ...st.scanLogs]
       });
       setWrongCount(prev => prev + 1);
       playErrorSound();
@@ -352,8 +352,8 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
 
     const prod = st.products[pIdx];
     if (prod.scannedQty >= prod.requestedQty) {
-      patch(activeIdx, { 
-        scanLogs: [{ success: false, message: `SKU مكتمل: ${code}`, reason: "تم مسح الكمية المطلوبة مسبقاً", timestamp: ts }, ...st.scanLogs] 
+      patch(activeIdx, {
+        scanLogs: [{ success: false, message: `SKU مكتمل: ${code}`, reason: "تم مسح الكمية المطلوبة مسبقاً", timestamp: ts }, ...st.scanLogs]
       });
       setWrongCount(prev => prev + 1);
       playErrorSound();
@@ -372,7 +372,7 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
     // Check if order is complete
     const updatedProducts = st.products.map((p, i) => i === pIdx ? { ...p, scannedQty: newQty, completed: newQty >= p.requestedQty } : p);
     const allCompleted = updatedProducts.every(p => p.completed);
-    
+
     if (allCompleted) {
       setTimeout(() => {
         setScanInput("");
@@ -392,19 +392,19 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
       states.forEach((st, i) => {
         const order = ordersToPrep[i];
         updateOrder?.(order.code, { status: STATUS.PREPARED, products: st.products, preparedAt: now });
-        pushOp?.({ 
-          id: `OP-${Date.now()}-${i}`, 
-          operationType: "ORDER_PREPARED", 
-          orderCode: order.code, 
-          carrier: order.carrier || "-", 
-          employee: employee || "System", 
-          notes, 
-          result: "SUCCESS", 
-          details: "تم تحضير الطلب بنجاح", 
-          createdAt: now, 
-          scanLogs: st.scanLogs, 
-          productsSnapshot: st.products, 
-          orderSnapshot: order 
+        pushOp?.({
+          id: `OP-${Date.now()}-${i}`,
+          operationType: "ORDER_PREPARED",
+          orderCode: order.code,
+          carrier: order.carrier || "-",
+          employee: employee || "System",
+          notes,
+          result: "SUCCESS",
+          details: "تم تحضير الطلب بنجاح",
+          createdAt: now,
+          scanLogs: st.scanLogs,
+          productsSnapshot: st.products,
+          orderSnapshot: order
         });
       });
       clearSession();
@@ -482,7 +482,7 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
             <Package className="w-8 h-8 text-blue-500 opacity-50" />
           </div>
         </div>
-        
+
         <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -492,7 +492,7 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
             <Package className="w-8 h-8 text-amber-500 opacity-50" />
           </div>
         </div>
-        
+
         <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -508,24 +508,24 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
       <div className="bg-card">
         <div className="flex flex-wrap gap-3">
           <div className="flex-1 min-w-[160px] space-y-1.5">
-            <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
+            <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
               <User size={10} className="text-primary" /> الموظف المسئول
             </label>
             <input value={employee} onChange={e => setEmployee(e.target.value)} placeholder="اسم الموظف…"
               className="w-full h-9 px-3 rounded-xl text-sm font-semibold
                 border border-border bg-background/60 text-foreground
-                placeholder:text-muted-foreground/50
+                placeholder:text-muted-foreground/80
                 hover:border-primary/50 focus:border-primary
                 focus:bg-background !outline-none transition-all duration-200" />
           </div>
           <div className="flex-[2] min-w-[200px] space-y-1.5">
-            <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
+            <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
               <FileText size={10} className="text-primary" /> ملاحظات
             </label>
             <input value={notes} onChange={e => setNotes(e.target.value)} placeholder="ملاحظات إضافية…"
               className="w-full h-9 px-3 rounded-xl text-sm font-semibold
                 border border-border bg-background/60 text-foreground
-                placeholder:text-muted-foreground/50
+                placeholder:text-muted-foreground/80
                 hover:border-primary/50 focus:border-primary
                 focus:bg-background !outline-none transition-all duration-200" />
           </div>
@@ -553,10 +553,10 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </div >
 
       {/* Scan counters */}
-      <div className="flex items-center gap-3 p-3 bg-card rounded-xl">
+      < div className="flex items-center gap-3 p-3 bg-card rounded-xl" >
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
             <CheckCircle2 size={16} className="text-emerald-600" />
@@ -580,20 +580,20 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
             </motion.p>
           </div>
         </div>
-      </div>
+      </div >
 
- 
+
       <div className="relative bg-card">
         <div className="relative space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <ScanLine size={11} className="text-primary" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">
                 ماسح الباركود
               </span>
             </div>
             {!allComplete && (
-              <span className="text-[11px] text-muted-foreground/60">
+              <span className="text-[11px] text-muted-foreground/80">
                 نشط:{" "}
                 <span className="font-mono font-bold text-primary ms-0.5">
                   {ordersToPrep[activeIdx]?.code}
@@ -641,7 +641,7 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
               <ScanLine size={15}
                 className={cn(
                   "transition-colors duration-200",
-                  isSuccess ? "text-[oklch(0.6_0.2_145)]" : isError ? "text-destructive" : "text-muted-foreground/40"
+                  isSuccess ? "text-[oklch(0.6_0.2_145)]" : isError ? "text-destructive" : "text-muted-foreground/80"
                 )}
               />
             </div>
@@ -661,7 +661,7 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
               className={cn(
                 "flex-1 h-full bg-transparent border-none !outline-none focus:ring-0",
                 "text-sm font-semibold text-foreground",
-                "placeholder:text-muted-foreground/50 disabled:cursor-not-allowed",
+                "placeholder:text-muted-foreground/80disabled:cursor-not-allowed",
                 "px-2",
               )}
             />
@@ -738,7 +738,7 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
               <ClipboardList size={13} className="text-primary" />
               <span className="text-[13px] font-bold text-foreground">سجل المسح</span>
               <code className="text-[11px] text-primary font-mono ms-1">{ordersToPrep[activeIdx]?.code}</code>
-              <span className="ms-auto text-[11px] text-muted-foreground/60 tabular-nums">
+              <span className="ms-auto text-[11px] text-muted-foreground/80tabular-nums">
                 {states[activeIdx].scanLogs.length} عملية
               </span>
             </div>
@@ -778,6 +778,6 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </div >
   );
 }

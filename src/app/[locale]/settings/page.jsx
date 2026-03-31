@@ -727,7 +727,7 @@ function CompanyTab() {
               <div className="relative">
                 <MapPin
                   size={14}
-                  className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none"
+                  className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/80pointer-events-none"
                 />
                 <Input {...register("address")} className="h-11 ps-9" />
               </div>
@@ -1229,7 +1229,7 @@ function CategoriesTab() {
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground/60 font-mono mt-0.5 truncate">
+                  <p className="text-xs text-muted-foreground/80font-mono mt-0.5 truncate">
                     /{cat.slug}
                   </p>
                 </div>
@@ -1694,7 +1694,7 @@ function AccountTab() {
               { label: t("profile.employeeType"), value: me?.employeeType },
             ].map(({ label, value }) => (
               <div key={label} className="space-y-1">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
                   {label}
                 </p>
                 <p className="text-xs font-semibold text-foreground font-mono">
@@ -1704,8 +1704,9 @@ function AccountTab() {
             ))}
           </div>
         </SettingCard>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 }
 

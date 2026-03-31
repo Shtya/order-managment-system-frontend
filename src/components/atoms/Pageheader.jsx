@@ -232,16 +232,19 @@ function InfoCard({
 ══════════════════════════════════════════════════════════════ */
 function SwitcherTabs({ items, activeId, onChange, variant = "default" }) {
 
-	/* ── INLINE variant ── pill-style tabs, no underline rule */
+	// ستايل مشترك لإخفاء شريط التمرير
+	const scrollbarHideStyle = {
+		msOverflowStyle: 'none',
+		WebkitOverflowScrolling: 'touch',
+	};
+
+	/* ── INLINE variant ── */
 	if (variant === "inline") {
 		return (
-			<div style={{
-				display: "flex", alignItems: "center", gap: 3,
-				padding: "3px",
-				borderRadius: 999,
-				background: "var(--muted)",
-				border: "1px solid var(--border)",
-			}}>
+			<div
+				className="flex items-center gap-1 p-1 rounded-full bg-muted border border-border w-full md:w-auto overflow-x-auto "
+				style={{ ...scrollbarHideStyle, maxWidth: "100%" }}
+			>
 				{items.map((item) => {
 					const Icon = item.icon;
 					const isActive = item.id === activeId;
@@ -250,45 +253,21 @@ function SwitcherTabs({ items, activeId, onChange, variant = "default" }) {
 							key={item.id}
 							type="button"
 							onClick={() => onChange?.(item.id)}
+							className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 rounded-full text-[11px] md:text-[12.5px] font-semibold transition-all outline-none"
 							style={{
-								position: "relative",
-								display: "flex", alignItems: "center", gap: 6,
-								padding: "5px 14px",
-								borderRadius: 999,
-								border: "none",
 								background: isActive ? "var(--card)" : "transparent",
 								color: isActive ? "var(--primary)" : "var(--muted-foreground)",
-								fontSize: 12.5,
-								fontWeight: 600,
-								cursor: "pointer",
-								whiteSpace: "nowrap",
-								transition: "all .18s",
-								outline: "none",
-								boxShadow: isActive
-									? "0 1px 4px rgba(0,0,0,0.08), 0 0 0 1px color-mix(in oklab, var(--primary) 18%, transparent)"
-									: "none",
-							}}
-							onMouseEnter={e => {
-								if (!isActive) e.currentTarget.style.color = "var(--card-foreground)";
-							}}
-							onMouseLeave={e => {
-								if (!isActive) e.currentTarget.style.color = "var(--muted-foreground)";
+								boxShadow: isActive ? "0 1px 4px rgba(0,0,0,0.08), 0 0 0 1px color-mix(in oklab, var(--primary) 18%, transparent)" : "none",
 							}}
 						>
-							{Icon && <Icon size={12} />}
-							<span>{item.label}</span>
+							{Icon && <Icon size={12} className="shrink-0" />}
+							<span className="whitespace-nowrap">{item.label}</span>
 							{item.count !== undefined && (
-								<span style={{
-									display: "inline-flex", alignItems: "center", justifyContent: "center",
-									minWidth: 18, height: 18, padding: "0 5px",
-									borderRadius: 999,
-									background: isActive
-										? "color-mix(in oklab, var(--primary) 14%, transparent)"
-										: "color-mix(in oklab, var(--muted-foreground) 15%, transparent)",
-									color: isActive ? "var(--primary)" : "var(--muted-foreground)",
-									fontSize: 9.5, fontWeight: 700,
-									transition: "all .18s",
-								}}>
+								<span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[9px] font-bold"
+									style={{
+										background: isActive ? "color-mix(in oklab, var(--primary) 14%, transparent)" : "color-mix(in oklab, var(--muted-foreground) 15%, transparent)",
+										color: isActive ? "var(--primary)" : "var(--muted-foreground)",
+									}}>
 									{item.count}
 								</span>
 							)}
@@ -299,9 +278,12 @@ function SwitcherTabs({ items, activeId, onChange, variant = "default" }) {
 		);
 	}
 
-	/* ── DEFAULT variant ── original full-width underline tabs ── */
+	/* ── DEFAULT variant ── */
 	return (
-		<div style={{ borderTop: "1px solid var(--border)", display: "flex", alignItems: "stretch", width: "100%" }}>
+		<div
+			className="border-t border-border flex items-stretch w-full overflow-x-auto overflow-y-hidden"
+			style={{ ...scrollbarHideStyle }}
+		>
 			{items.map((item) => {
 				const Icon = item.icon;
 				const isActive = item.id === activeId;
@@ -310,48 +292,33 @@ function SwitcherTabs({ items, activeId, onChange, variant = "default" }) {
 						key={item.id}
 						type="button"
 						onClick={() => onChange?.(item.id)}
-						style={{
-							position: "relative",
-							display: "flex", alignItems: "center", gap: 8,
-							padding: "10px 20px",
-							fontSize: 13, fontWeight: 600,
-							color: isActive ? "var(--primary)" : "var(--muted-foreground)",
-							background: "none", border: "none", cursor: "pointer",
-							whiteSpace: "nowrap",
-							transition: "color .2s",
-							outline: "none",
-						}}
+						className="relative shrink-0 flex items-center gap-2 px-4 py-3 md:px-5 md:py-3.5 text-[12px] md:text-[13px] font-semibold bg-transparent border-none cursor-pointer outline-none transition-colors"
+						style={{ color: isActive ? "var(--primary)" : "var(--muted-foreground)" }}
 					>
-						{Icon && <Icon size={14} style={{ color: isActive ? "var(--primary)" : "var(--muted-foreground)", transition: "color .2s" }} />}
-						<span>{item.label}</span>
+						{Icon && <Icon size={14} className="shrink-0" />}
+						<span className="whitespace-nowrap">{item.label}</span>
 						{item.count !== undefined && (
-							<span style={{
-								display: "inline-flex", alignItems: "center", justifyContent: "center",
-								minWidth: 20, height: 20, padding: "0 6px",
-								borderRadius: 999,
-								background: isActive ? "color-mix(in oklab, var(--primary) 14%, var(--card))" : "var(--muted)",
-								color: isActive ? "var(--primary)" : "var(--muted-foreground)",
-								fontSize: 10, fontWeight: 700,
-								transition: "all .2s",
-							}}>
+							<span className="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 rounded-full text-[10px] font-bold transition-all"
+								style={{
+									background: isActive ? "color-mix(in oklab, var(--primary) 14%, var(--card))" : "var(--muted)",
+									color: isActive ? "var(--primary)" : "var(--muted-foreground)",
+								}}>
 								{item.count}
 							</span>
 						)}
 						{isActive && (
 							<motion.span
 								layoutId="tab-underline"
-								style={{
-									position: "absolute", bottom: -1, left: 0, right: 0, height: 2.5,
-									borderRadius: "3px 3px 0 0",
-									background: "linear-gradient(90deg, var(--primary), var(--secondary))",
-								}}
+								className="absolute bottom-[-1px] left-0 right-0 h-[2.5px] rounded-t-full"
+								style={{ background: "linear-gradient(90deg, var(--primary), var(--secondary))" }}
 								transition={{ type: "spring", stiffness: 500, damping: 38, mass: 0.5 }}
 							/>
 						)}
 					</button>
 				);
 			})}
-			<div style={{ flex: 1 }} />
+			{/* spacer لإبقاء التبويبات بجهة اليسار */}
+			<div className="flex-1" />
 		</div>
 	);
 }
@@ -523,7 +490,7 @@ export function PageHeader({
 												style={{ display: "flex", alignItems: "center", gap: 8 }}
 											>
 												<span style={{
- 													fontSize: 20, fontWeight: 400,
+													fontSize: 20, fontWeight: 400,
 													letterSpacing: "-0.022em",
 													color: "var(--card-foreground)",
 													lineHeight: 1,
@@ -621,7 +588,7 @@ export function PageHeader({
 												className="flex items-center gap-2.5"
 											>
 												<span style={{
- 													fontSize: 18, fontWeight: 400,
+													fontSize: 18, fontWeight: 400,
 													letterSpacing: "-0.025em",
 													color: "var(--card-foreground)",
 												}} className=" ">

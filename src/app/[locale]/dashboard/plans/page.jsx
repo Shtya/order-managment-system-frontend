@@ -484,7 +484,7 @@ function EditablePlanCard({
 			animate={{ opacity: 1, scale: 1 }}
 			exit={{ opacity: 0, scale: 0.95 }}
 			className={cn(
-				"relative rounded-xl p-6 border-2 transition-all duration-300",
+				"relative rounded-xl p-4 sm:p-6 border-2 transition-all duration-300",
 				"bg-gradient-to-br from-white via-gray-50/50 to-white",
 				"dark:from-slate-900 dark:via-slate-800/50 dark:to-slate-900",
 				isEditing
@@ -493,7 +493,7 @@ function EditablePlanCard({
 			)}
 		>
 			{/* Actions Header */}
-			<div className="absolute top-4 left-4 flex items-center gap-2 z-10">
+			<div className="absolute top-3 left-3 sm:top-4 sm:left-4 flex items-center gap-2 z-10">
 				{isEditing ? (
 					<>
 						<TooltipProvider>
@@ -505,11 +505,11 @@ function EditablePlanCard({
 										onClick={handleSave}
 										disabled={isSaving}
 										className={cn(
-											"w-9 h-9 rounded-full text-white transition-all flex items-center justify-center shadow-lg",
+											"w-8 h-8 sm:w-9 sm:h-9 rounded-full text-white transition-all flex items-center justify-center shadow-lg",
 											isSaving ? "bg-green-600/70 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"
 										)}
 									>
-										{isSaving ? <Spinner className="w-4 h-4 text-white" /> : <Save size={16} />}
+										{isSaving ? <Spinner className="w-3 h-3 sm:w-4 sm:h-4 text-white" /> : <Save size={14} className="sm:size-[16px]" />}
 									</motion.button>
 								</TooltipTrigger>
 								<TooltipContent>{isSaving ? t("planCard.saving") : t("planCard.save")}</TooltipContent>
@@ -525,11 +525,11 @@ function EditablePlanCard({
 										onClick={() => onToggleEdit(null)}
 										disabled={isSaving}
 										className={cn(
-											"w-9 h-9 rounded-full text-white transition-all flex items-center justify-center shadow-lg",
+											"w-8 h-8 sm:w-9 sm:h-9 rounded-full text-white transition-all flex items-center justify-center shadow-lg",
 											isSaving ? "bg-gray-500/70 cursor-not-allowed" : "bg-gray-500 hover:bg-gray-600"
 										)}
 									>
-										<X size={16} />
+										<X size={14} className="sm:size-[16px]" />
 									</motion.button>
 								</TooltipTrigger>
 								<TooltipContent>{t("planCard.cancel")}</TooltipContent>
@@ -547,11 +547,11 @@ function EditablePlanCard({
 										onClick={() => onToggleEdit(plan.id)}
 										disabled={isBusyGlobal}
 										className={cn(
-											"w-9 h-9 rounded-full border border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all flex items-center justify-center dark:bg-purple-950/30 dark:hover:bg-purple-600",
+											"w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all flex items-center justify-center dark:bg-purple-950/30 dark:hover:bg-purple-600",
 											isBusyGlobal && "opacity-60 cursor-not-allowed"
 										)}
 									>
-										<Edit size={16} />
+										<Edit size={14} className="sm:size-[16px]" />
 									</motion.button>
 								</TooltipTrigger>
 								<TooltipContent>{t("planCard.edit")}</TooltipContent>
@@ -567,11 +567,11 @@ function EditablePlanCard({
 										onClick={() => onDelete(plan)}
 										disabled={isBusyGlobal}
 										className={cn(
-											"w-9 h-9 rounded-full border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all flex items-center justify-center dark:bg-red-950/30 dark:hover:bg-red-600",
+											"w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all flex items-center justify-center dark:bg-red-950/30 dark:hover:bg-red-600",
 											isBusyGlobal && "opacity-60 cursor-not-allowed"
 										)}
 									>
-										<Trash2 size={16} />
+										<Trash2 size={14} className="sm:size-[16px]" />
 									</motion.button>
 								</TooltipTrigger>
 								<TooltipContent>{t("planCard.delete")}</TooltipContent>
@@ -582,35 +582,36 @@ function EditablePlanCard({
 			</div>
 
 			{/* Status Badges & Popular Toggle */}
-			<div className="absolute top-4 right-4 z-10">
+			<div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10">
 				{isEditing ? (
 					<div className="flex flex-col items-end gap-2">
 						{/* Popular Toggle */}
-						<div className="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-full shadow-lg border border-gray-200 dark:border-slate-700">
-							<span className="text-xs text-gray-600 dark:text-slate-400">
+						<div className="flex items-center gap-2 bg-white dark:bg-slate-800 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full shadow-lg border border-gray-200 dark:border-slate-700">
+							<span className="text-[10px] sm:text-xs text-gray-600 dark:text-slate-400">
 								{formData.isPopular ? t("planCard.popular") : t("planCard.standard")}
 							</span>
 							<Switch
 								checked={formData.isPopular}
 								onCheckedChange={(checked) => setFormData({ ...formData, isPopular: checked })}
 								disabled={isSaving}
+								className="scale-75 sm:scale-100"
 							/>
 						</div>
 					</div>
 				) : (
-					<div className="flex flex-col items-end gap-2">
-						<Badge className="bg-[#F0FDF4] text-[#22C55E] hover:bg-[#F0FDF4] dark:bg-green-950/30 dark:text-green-300 rounded-xl">
+					<div className="flex flex-col items-end gap-1.5 sm:gap-2">
+						<Badge className="bg-[#F0FDF4] text-[#22C55E] hover:bg-[#F0FDF4] dark:bg-green-950/30 dark:text-green-300 rounded-xl text-[10px] sm:text-xs">
 							{t("planCard.active")}
 						</Badge>
 
 						{plan.isPopular && (
-							<Badge className="bg-gradient-to-r from-primary via-primary/90 to-primary text-white rounded-xl">
+							<Badge className="bg-gradient-to-r from-primary via-primary/90 to-primary text-white rounded-xl text-[10px] sm:text-xs">
 								{t("planCard.popular")}
 							</Badge>
 						)}
 
 						{plan.type === 'negotiated' && (
-							<Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl">
+							<Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl text-[10px] sm:text-xs">
 								{t("planCard.negotiated")}
 							</Badge>
 						)}
@@ -693,9 +694,9 @@ function EditablePlanCard({
 							</div>
 
 							{/* 2. Price Display Logic */}
-							<div className="flex flex-col items-center justify-center p-4">
+							<div className="flex flex-col items-center justify-center p-2 sm:p-4">
 								{formData.type === 'negotiated' ? (
-									<div className="text-2xl font-black text-orange-600 dark:text-orange-400 py-2">
+									<div className="text-xl sm:text-2xl font-black text-orange-600 dark:text-orange-400 py-2">
 										{t("planCard.negotiatedPrice")}
 									</div>
 								) : (
@@ -704,16 +705,16 @@ function EditablePlanCard({
 											type="number"
 											value={formData.price}
 											onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-											className="w-32 h-12 text-center text-3xl font-black rounded-xl border-2 focus:border-orange-500"
+											className="w-24 sm:w-32 h-10 sm:h-12 text-center text-2xl sm:text-3xl font-black rounded-xl border-2 focus:border-orange-500"
 											placeholder="0"
 											disabled={isSaving}
 										/>
-										<span className="text-2xl font-bold text-gray-500 dark:text-slate-400">{t("planCard.currency")}</span>
+										<span className="text-xl sm:text-2xl font-bold text-gray-500 dark:text-slate-400">{t("planCard.currency")}</span>
 									</div>
 								)}
 
 								{formData.type === 'trial' && (
-									<span className="text-xs text-blue-600 mt-2 italic font-medium">
+									<span className="text-[10px] sm:text-xs text-blue-600 mt-2 italic font-medium">
 										{t("planCard.trialHint")}
 									</span>
 								)}
@@ -723,13 +724,13 @@ function EditablePlanCard({
 						<Input
 							value={formData.name}
 							onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-							className="text-center font-bold text-lg rounded-xl"
+							className="text-center font-bold text-base sm:text-lg rounded-xl"
 							placeholder={t("planCard.planNamePlaceholder")}
 							disabled={isSaving}
 						/>
 
 						<Select value={formData.duration} onValueChange={(v) => setFormData({ ...formData, duration: v })}>
-							<SelectTrigger className="rounded-xl !w-full !h-9" disabled={isSaving}>
+							<SelectTrigger className="rounded-xl !w-full !h-8 sm:!h-9 text-xs sm:text-sm" disabled={isSaving}>
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
@@ -742,12 +743,12 @@ function EditablePlanCard({
 
 						{formData.duration === 'custom' && (
 							<div className="space-y-1">
-								<Label className="text-xs text-gray-500 dark:text-slate-400">{t("planCard.daysLabel")}</Label>
+								<Label className="text-[10px] sm:text-xs text-gray-500 dark:text-slate-400">{t("planCard.daysLabel")}</Label>
 								<Input
 									type="number"
 									value={formData.durationIndays}
 									onChange={(e) => setFormData({ ...formData, durationIndays: Number(e.target.value) || 30 })}
-									className="text-center rounded-xl"
+									className="text-center rounded-xl h-8 sm:h-9 text-xs sm:text-sm"
 									placeholder="30"
 									min="1"
 									disabled={isSaving}
@@ -758,7 +759,7 @@ function EditablePlanCard({
 						<Textarea
 							value={formData.description}
 							onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-							className="rounded-xl text-sm "
+							className="rounded-xl text-xs sm:text-sm"
 							placeholder={t("planCard.planDescriptionPlaceholder")}
 							rows={2}
 							disabled={isSaving}
@@ -768,36 +769,36 @@ function EditablePlanCard({
 					<>
 						<>
 							{plan.type === 'negotiated' ? (
-								<div className="text-4xl font-black text-orange-600 dark:text-orange-400">
+								<div className="text-3xl sm:text-4xl font-black text-orange-600 dark:text-orange-400">
 									{t("planCard.negotiated")}
 								</div>
 							) : (
 								<div className="flex items-baseline justify-center gap-2">
-									<span className="text-5xl font-black text-gray-900 dark:text-white">
+									<span className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white">
 										{plan.price}
 									</span>
 									{Number(plan.price) !== 0 && (
-										<span className="text-2xl text-gray-500 dark:text-slate-400">{t("planCard.currency")}</span>
+										<span className="text-xl sm:text-2xl text-gray-500 dark:text-slate-400">{t("planCard.currency")}</span>
 									)}
 								</div>
 							)}
 
 							<div className="mt-4 text-center">
-								<p className="text-lg font-bold text-gray-700 dark:text-slate-300">
+								<div className="text-base sm:text-lg font-bold text-gray-700 dark:text-slate-300 flex items-center justify-center flex-wrap gap-2">
 									{plan.name}
 									{plan.type === 'trial' && (
-										<span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+										<span className="text-[10px] sm:text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full whitespace-nowrap">
 											{t("planCard.trial")}
 										</span>
 									)}
-								</p>
+								</div>
 
-								<p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
+								<p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400 mt-1">
 									{getDurationLabel()}
 								</p>
 
 								{!!plan.description && (
-									<p className="text-xs text-gray-500 dark:text-slate-400 mt-2 px-4 italic">
+									<p className="text-[10px] sm:text-xs text-gray-500 dark:text-slate-400 mt-2 px-2 sm:px-4 italic">
 										{plan.description}
 									</p>
 								)}
@@ -821,14 +822,14 @@ function EditablePlanCard({
 							{/* Users Limit */}
 							<div className="space-y-1">
 								<Label className="text-xs text-gray-500 dark:text-slate-400">{t("planCard.userLimitLabel")}</Label>
-								<div className="flex items-center gap-2">
+								<div className="flex flex-col sm:flex-row sm:items-center gap-2">
 									<Select
 										value={String(formData.usersLimit ?? 1)}
 										onValueChange={(v) => setFormData({ ...formData, usersLimit: Number(v) })}
 										disabled={isSaving || formData.usersUnlimited}
 									>
 										<SelectTrigger className="rounded-xl !w-full !h-9 text-sm">
-											<SelectValue placeholder={tc("select_count") || "Select..."} />
+											<SelectValue placeholder={t("select_count") || "Select..."} />
 										</SelectTrigger>
 										<SelectContent>
 											{userOptions.map((n) => (
@@ -838,7 +839,7 @@ function EditablePlanCard({
 											))}
 										</SelectContent>
 									</Select>
-									<div className="flex items-center gap-1.5 whitespace-nowrap">
+									<div className="flex items-center gap-1.5 whitespace-nowrap px-1 sm:px-0">
 										<Checkbox
 											id="users-unlimited"
 											checked={formData.usersUnlimited}
@@ -855,14 +856,14 @@ function EditablePlanCard({
 							{/* Stores Limit */}
 							<div className="space-y-1">
 								<Label className="text-xs text-gray-500 dark:text-slate-400">{t("planCard.storeLimitLabel")}</Label>
-								<div className="flex items-center gap-2">
+								<div className="flex flex-col sm:flex-row sm:items-center gap-2">
 									<Select
 										value={String(formData.storesLimit ?? 1)}
 										onValueChange={(v) => setFormData({ ...formData, storesLimit: Number(v) })}
 										disabled={isSaving || formData.storesUnlimited}
 									>
 										<SelectTrigger className="rounded-xl !w-full !h-9 text-sm">
-											<SelectValue placeholder={tc("select_count") || "Select..."} />
+											<SelectValue placeholder={t} />
 										</SelectTrigger>
 										<SelectContent>
 											{storesOptions.map((n) => (
@@ -872,7 +873,7 @@ function EditablePlanCard({
 											))}
 										</SelectContent>
 									</Select>
-									<div className="flex items-center gap-1.5 whitespace-nowrap">
+									<div className="flex items-center gap-1.5 whitespace-nowrap px-1 sm:px-0">
 										<Checkbox
 											id="stores-unlimited"
 											checked={formData.storesUnlimited}
@@ -889,14 +890,14 @@ function EditablePlanCard({
 							{/* Shipping Companies Limit */}
 							<div className="space-y-1">
 								<Label className="text-xs text-gray-500 dark:text-slate-400">{t("planCard.shippingLimitLabel")}</Label>
-								<div className="flex items-center gap-2">
+								<div className="flex flex-col sm:flex-row sm:items-center gap-2">
 									<Select
 										value={String(formData.shippingCompaniesLimit ?? 0)}
 										onValueChange={(v) => setFormData({ ...formData, shippingCompaniesLimit: Number(v) })}
 										disabled={isSaving || formData.shippingUnlimited}
 									>
 										<SelectTrigger className="rounded-xl !w-full !h-9 text-sm">
-											<SelectValue placeholder={tc("select_count") || "Select..."} />
+											<SelectValue placeholder={t("select_count") || "Select..."} />
 										</SelectTrigger>
 										<SelectContent>
 											{shippingOptions.map((n) => (
@@ -906,7 +907,7 @@ function EditablePlanCard({
 											))}
 										</SelectContent>
 									</Select>
-									<div className="flex items-center gap-1.5 whitespace-nowrap">
+									<div className="flex items-center gap-1.5 whitespace-nowrap px-1 sm:px-0">
 										<Checkbox
 											id="shipping-unlimited"
 											checked={formData.shippingUnlimited}
@@ -923,7 +924,7 @@ function EditablePlanCard({
 							{/* Included Orders */}
 							<div className="space-y-1">
 								<Label className="text-xs text-gray-500 dark:text-slate-400">{t("planCard.orderLimitLabel")}</Label>
-								<div className="flex items-center gap-2">
+								<div className="flex flex-col sm:flex-row sm:items-center gap-2">
 									<Input
 										type="number"
 										// Use an empty string if value is null to avoid React warnings
@@ -939,7 +940,7 @@ function EditablePlanCard({
 										step="1" // Orders are usually whole numbers
 										disabled={isSaving || formData.ordersUnlimited}
 									/>
-									<div className="flex items-center gap-1.5 whitespace-nowrap">
+									<div className="flex items-center gap-1.5 whitespace-nowrap px-1 sm:px-0">
 										<Checkbox
 											id="orders-unlimited"
 											checked={formData.ordersUnlimited}
@@ -954,12 +955,11 @@ function EditablePlanCard({
 							</div>
 
 							{/* Extra Order Fee */}
-							{/* Extra Order Fee */}
 							<div className="space-y-1">
 								<Label className="text-xs text-gray-500 dark:text-slate-400">
 									{t("planCard.extraFeeLabel")}
 								</Label>
-								<div className="flex items-center gap-2">
+								<div className="flex flex-col sm:flex-row sm:items-center gap-2">
 									<Input
 										type="number"
 										// نستخدم قيمة فارغة إذا كانت القيمة null لتجنب أخطاء React
@@ -975,7 +975,7 @@ function EditablePlanCard({
 										// يتم تعطيل الحقل إذا كان الحفظ جارياً أو إذا تم اختيار "غير مسموح"
 										disabled={isSaving || formData.extraFeeNotAllowed}
 									/>
-									<div className="flex items-center gap-1.5 whitespace-nowrap">
+									<div className="flex items-center gap-1.5 whitespace-nowrap px-1 sm:px-0">
 										<Checkbox
 											id="extra-fee-not-allowed"
 											checked={formData.extraFeeNotAllowed}
@@ -1057,36 +1057,36 @@ function EditablePlanCard({
 				) : (
 					<>
 						{/* Show limits in view mode */}
-						<div className="space-y-2 mb-3">
-							<div className="flex items-center justify-between text-sm">
+						<div className="space-y-1.5 sm:space-y-2 mb-4">
+							<div className="flex items-center justify-between text-xs sm:text-sm">
 								<span className="text-gray-500 dark:text-slate-400">{t("planCard.userLimitLabel")}</span>
 								<span className="font-semibold text-gray-800 dark:text-slate-200">
 									{plan.usersLimit === null ? t("planCard.unlimited") : plan.usersLimit}
 								</span>
 							</div>
-							<div className="flex items-center justify-between text-sm">
+							<div className="flex items-center justify-between text-xs sm:text-sm">
 								<span className="text-gray-500 dark:text-slate-400">{t("planCard.storeLimitLabel")}</span>
 								<span className="font-semibold text-gray-800 dark:text-slate-200">
 									{plan.storesLimit === null ? t("planCard.unlimited") : plan.storesLimit}
 								</span>
 							</div>
-							<div className="flex items-center justify-between text-sm">
+							<div className="flex items-center justify-between text-xs sm:text-sm">
 								<span className="text-gray-500 dark:text-slate-400">{t("planCard.shippingLimitLabel")}</span>
 								<span className="font-semibold text-gray-800 dark:text-slate-200">
 									{plan.shippingCompaniesLimit === null ? t("planCard.unlimited") : plan.shippingCompaniesLimit}
 								</span>
 							</div>
-							<div className="flex items-center justify-between text-sm">
+							<div className="flex items-center justify-between text-xs sm:text-sm">
 								<span className="text-gray-500 dark:text-slate-400">{t("planCard.orderLimitLabel")}</span>
 								<span className="font-semibold text-gray-800 dark:text-slate-200">
 									{plan.includedOrders === null ? t("planCard.unlimited") : plan.includedOrders}
 								</span>
 							</div>
-							<div className="flex items-center justify-between text-sm">
+							<div className="flex items-center justify-between text-xs sm:text-sm">
 								<span className="text-gray-500 dark:text-slate-400">{t("planCard.extraFeeLabel")}</span>
 								<span className="font-semibold text-gray-800 dark:text-slate-200">
 									{plan.extraOrderFee === null ? (
-										<span className="text-red-500 dark:text-red-400 text-xs font-medium">
+										<span className="text-red-500 dark:text-red-400 text-[10px] sm:text-xs font-medium">
 											{t("manageSubscription.fields.notAllowed")}
 										</span>
 									) : (
@@ -1095,7 +1095,7 @@ function EditablePlanCard({
 								</span>
 							</div>
 							{plan.bulkUploadPerMonth > 0 && (
-								<div className="flex items-center justify-between text-sm">
+								<div className="flex items-center justify-between text-xs sm:text-sm">
 									<span className="text-gray-500 dark:text-slate-400">{t("planCard.bulkUploadLabel")}</span>
 									<span className="font-semibold text-gray-800 dark:text-slate-200">
 										{plan.bulkUploadPerMonth}
@@ -1104,20 +1104,22 @@ function EditablePlanCard({
 							)}
 						</div>
 
-						{(plan.features || []).map((feature, index) => (
-							<motion.div
-								key={index}
-								initial={{ opacity: 0, x: -10 }}
-								animate={{ opacity: 1, x: 0 }}
-								transition={{ delay: index * 0.05 }}
-								className="flex items-start gap-3"
-							>
-								<div className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
-									<Check size={12} className="text-primary" />
-								</div>
-								<span className="text-sm text-gray-700 dark:text-slate-300 leading-relaxed">{feature}</span>
-							</motion.div>
-						))}
+						<div className="space-y-2">
+							{(plan.features || []).map((feature, index) => (
+								<motion.div
+									key={index}
+									initial={{ opacity: 0, x: -10 }}
+									animate={{ opacity: 1, x: 0 }}
+									transition={{ delay: index * 0.05 }}
+									className="flex items-start gap-2 sm:gap-3"
+								>
+									<div className="flex-shrink-0 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
+										<Check size={10} className="text-primary sm:size-[12px]" />
+									</div>
+									<span className="text-xs sm:text-sm text-gray-700 dark:text-slate-300 leading-relaxed">{feature}</span>
+								</motion.div>
+							))}
+						</div>
 					</>
 				)}
 			</div>
@@ -1137,21 +1139,21 @@ function NewPlanCard({ onClick, isCreating }) {
 			onClick={onClick}
 			disabled={isCreating}
 			className={cn(
-				"relative rounded-xl p-6 border-2 border-dashed transition-all duration-300 h-full min-h-[500px]",
+				"relative rounded-xl p-4 sm:p-6 border-2 border-dashed transition-all duration-300 h-full min-h-[400px] sm:min-h-[500px]",
 				"border-primary/40 bg-primary/5 hover:bg-primary/10 hover:border-primary",
 				"dark:border-primary/30 dark:bg-primary/5 dark:hover:bg-primary/10",
 				"flex flex-col items-center justify-center gap-4",
 				isCreating && "opacity-80 cursor-not-allowed"
 			)}
 		>
-			<div className="w-20 h-20 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
-				{isCreating ? <Spinner className="w-10 h-10 text-white" /> : <Plus size={40} className="text-white" />}
+			<div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
+				{isCreating ? <Spinner className="w-8 h-8 sm:w-10 sm:h-10 text-white" /> : <Plus size={32} className="text-white sm:size-[40px]" />}
 			</div>
 			<div className="text-center">
-				<p className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+				<p className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2">
 					{isCreating ? t("newPlanCreatingTitle") : t("newPlanTitle")}
 				</p>
-				<p className="text-sm text-gray-500 dark:text-slate-400">
+				<p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400">
 					{isCreating ? t("newPlanCreatingHint") : t("newPlanHint")}
 				</p>
 			</div>

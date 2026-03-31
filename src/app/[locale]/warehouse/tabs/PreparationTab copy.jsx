@@ -27,9 +27,9 @@ import { STATUS, CARRIERS } from "./data";
 // ─────────────────────────────────────────────────────────────
 const CARRIER_STYLES = {
   ARAMEX: { bg: "bg-red-50 dark:bg-red-950/20", border: "border-red-200 dark:border-red-800", text: "text-red-700 dark:text-red-400" },
-  SMSA:   { bg: "bg-blue-50 dark:bg-blue-950/20", border: "border-blue-200 dark:border-blue-800", text: "text-blue-700 dark:text-blue-400" },
-  DHL:    { bg: "bg-yellow-50 dark:bg-yellow-950/20", border: "border-yellow-200 dark:border-yellow-800", text: "text-yellow-700 dark:text-yellow-400" },
-  BOSTA:  { bg: "bg-orange-50 dark:bg-orange-950/20", border: "border-orange-200 dark:border-orange-800", text: "text-orange-700 dark:text-orange-400" },
+  SMSA: { bg: "bg-blue-50 dark:bg-blue-950/20", border: "border-blue-200 dark:border-blue-800", text: "text-blue-700 dark:text-blue-400" },
+  DHL: { bg: "bg-yellow-50 dark:bg-yellow-950/20", border: "border-yellow-200 dark:border-yellow-800", text: "text-yellow-700 dark:text-yellow-400" },
+  BOSTA: { bg: "bg-orange-50 dark:bg-orange-950/20", border: "border-orange-200 dark:border-orange-800", text: "text-orange-700 dark:text-orange-400" },
 };
 
 function CarrierPill({ carrier }) {
@@ -66,14 +66,14 @@ function playBeep(type = "success") {
       osc.start(ctx.currentTime);
       osc.stop(ctx.currentTime + 0.35);
     }
-  } catch (_) {}
+  } catch (_) { }
 }
 
 // ─────────────────────────────────────────────────────────────
 // SCAN PROGRESS BAR (for tables)
 // ─────────────────────────────────────────────────────────────
 function ScanProgress({ products }) {
-  const total   = products.reduce((s, p) => s + p.requestedQty, 0);
+  const total = products.reduce((s, p) => s + p.requestedQty, 0);
   const scanned = products.reduce((s, p) => s + (p.scannedQty || 0), 0);
   const pct = total === 0 ? 0 : Math.round((scanned / total) * 100);
   return (
@@ -97,14 +97,14 @@ function OrderDetailModal({ open, onClose, order }) {
   if (!order) return null;
 
   const infoRows = [
-    { label: t("modal.customer"),     value: order.customer,                            icon: User,       accent: "#ff8b00" },
-    { label: t("modal.phone"),        value: order.phone,                               icon: Hash,       accent: "#6763af" },
-    { label: t("modal.city"),         value: order.city,                                icon: MapPin,     accent: "#ff8b00" },
-    { label: t("modal.area"),         value: order.area || "—",                         icon: MapPin,     accent: "#ffb703" },
-    { label: t("modal.store"),        value: order.store,                               icon: Store,      accent: "#6763af" },
-    { label: t("modal.carrier"),      value: order.carrier || t("modal.notSpecified"),  icon: Truck,      accent: "#ff5c2b" },
-    { label: t("modal.trackingCode"), value: order.trackingCode || "—",                 icon: Hash,       accent: "#6763af" },
-    { label: t("modal.total"),        value: `${order.total} ر.س`,                     icon: TrendingUp, accent: "#10b981" },
+    { label: t("modal.customer"), value: order.customer, icon: User, accent: "#ff8b00" },
+    { label: t("modal.phone"), value: order.phone, icon: Hash, accent: "#6763af" },
+    { label: t("modal.city"), value: order.city, icon: MapPin, accent: "#ff8b00" },
+    { label: t("modal.area"), value: order.area || "—", icon: MapPin, accent: "#ffb703" },
+    { label: t("modal.store"), value: order.store, icon: Store, accent: "#6763af" },
+    { label: t("modal.carrier"), value: order.carrier || t("modal.notSpecified"), icon: Truck, accent: "#ff5c2b" },
+    { label: t("modal.trackingCode"), value: order.trackingCode || "—", icon: Hash, accent: "#6763af" },
+    { label: t("modal.total"), value: `${order.total} ر.س`, icon: TrendingUp, accent: "#10b981" },
   ];
 
   return (
@@ -296,7 +296,7 @@ function RejectOrderModal({ open, onClose, order, onConfirm }) {
 // ─────────────────────────────────────────────────────────────
 function OrdersSlidePanel({ open, onClose, orders, activeOrderCode, onSelectOrder }) {
   const t = useTranslations("warehouse.preparation");
-	const locale = useLocale() 
+  const locale = useLocale()
   return (
     <AnimatePresence>
       {open && (
@@ -332,9 +332,9 @@ function OrdersSlidePanel({ open, onClose, orders, activeOrderCode, onSelectOrde
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {orders.map((order) => {
-                const total   = order.products.reduce((s, p) => s + p.requestedQty, 0);
+                const total = order.products.reduce((s, p) => s + p.requestedQty, 0);
                 const scanned = order.products.reduce((s, p) => s + (p.scannedQty || 0), 0);
-                const pct     = total === 0 ? 0 : Math.round((scanned / total) * 100);
+                const pct = total === 0 ? 0 : Math.round((scanned / total) * 100);
                 const isActive = activeOrderCode === order.code;
                 return (
                   <motion.div key={order.code} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
@@ -432,16 +432,16 @@ function CompletionBurst() {
   );
 }
 
- 
+
 
 // ── Main component ────────────────────────────────────────────
 function ScannedOrderTable({ order, localProducts, justScanned }) {
   const t = useTranslations("warehouse.preparation");
 
   const totalScanned = localProducts.reduce((s, p) => s + (p.scannedQty || 0), 0);
-  const totalQty     = localProducts.reduce((s, p) => s + p.requestedQty, 0);
-  const pct          = totalQty === 0 ? 0 : Math.round((totalScanned / totalQty) * 100);
-  const isAllDone    = pct === 100 && totalQty > 0;
+  const totalQty = localProducts.reduce((s, p) => s + p.requestedQty, 0);
+  const pct = totalQty === 0 ? 0 : Math.round((totalScanned / totalQty) * 100);
+  const isAllDone = pct === 100 && totalQty > 0;
 
   // Track when we just hit 100%
   const [showBurst, setShowBurst] = React.useState(false);
@@ -457,7 +457,7 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
   // SKU copy feedback
   const [copiedSku, setCopiedSku] = React.useState(null);
   const handleCopySku = (sku) => {
-    navigator.clipboard?.writeText(sku).catch(() => {});
+    navigator.clipboard?.writeText(sku).catch(() => { });
     setCopiedSku(sku);
     setTimeout(() => setCopiedSku(null), 1400);
   };
@@ -603,10 +603,10 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
           <tbody>
             {localProducts.map((p, i) => {
               const scanned = p.scannedQty || 0;
-              const total   = p.requestedQty;
-              const done    = scanned >= total;
-              const isJust  = justScanned === p.sku;
-              const pct2    = total === 0 ? 0 : Math.round((scanned / total) * 100);
+              const total = p.requestedQty;
+              const done = scanned >= total;
+              const isJust = justScanned === p.sku;
+              const pct2 = total === 0 ? 0 : Math.round((scanned / total) * 100);
               const isCopied = copiedSku === p.sku;
 
               return (
@@ -655,8 +655,8 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
                           done
                             ? "border-emerald-200 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/30"
                             : isJust
-                            ? "border-[#ff8b00]/40 bg-[#ff8b00]/5"
-                            : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
+                              ? "border-[#ff8b00]/40 bg-[#ff8b00]/5"
+                              : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
                         )}>
                           {p.image
                             ? <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
@@ -846,7 +846,7 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
   );
 }
 
- 
+
 export function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSuccess, isError, placeholder }) {
   const t = useTranslations("warehouse.preparation");
   const [isFocused, setIsFocused] = React.useState(false);
@@ -1048,8 +1048,8 @@ export function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSu
                 "transition-colors duration-200",
                 isSuccess ? "text-emerald-500"
                   : isError ? "text-red-500"
-                  : isFocused ? "text-[#ff8b00]"
-                  : "text-muted-foreground/35"
+                    : isFocused ? "text-[#ff8b00]"
+                      : "text-muted-foreground/80"
               )}
             />
           </motion.div>
@@ -1062,14 +1062,14 @@ export function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSu
           <motion.div
             animate={
               isSuccess ? { backgroundColor: "#10b981", scale: [1, 1.4, 1], opacity: [1, 0.6, 1] } :
-              isError   ? { backgroundColor: "#ef4444", scale: [1, 1.4, 1] } :
-              isFocused  ? { backgroundColor: "#ff8b00", scale: [1, 1.2, 1], opacity: [1, 0.5, 1] } :
-                          { backgroundColor: "#94a3b8", scale: 1 }
+                isError ? { backgroundColor: "#ef4444", scale: [1, 1.4, 1] } :
+                  isFocused ? { backgroundColor: "#ff8b00", scale: [1, 1.2, 1], opacity: [1, 0.5, 1] } :
+                    { backgroundColor: "#94a3b8", scale: 1 }
             }
             transition={
               isSuccess ? { duration: 1.2, repeat: Infinity } :
-              isFocused  ? { duration: 1.8, repeat: Infinity } :
-                          { duration: 0.3 }
+                isFocused ? { duration: 1.8, repeat: Infinity } :
+                  { duration: 0.3 }
             }
             className="absolute -top-[9px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
           />
@@ -1093,7 +1093,7 @@ export function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSu
           className={cn(
             "relative z-10 flex-1 h-full bg-transparent border-none !outline-none focus:ring-0",
             "text-sm font-semibold text-foreground",
-            "placeholder:text-muted-foreground/40 disabled:cursor-not-allowed",
+            "placeholder:text-muted-foreground/80disabled:cursor-not-allowed",
             "px-1",
           )}
         />
@@ -1126,8 +1126,8 @@ export function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSu
             whileTap={!disabled ? { scale: 0.93 } : {}}
             animate={
               isSuccess ? { scale: [1, 1.06, 1] } :
-              isError   ? { scale: [1, 0.94, 1] } :
-              isScanning ? { scale: [1, 0.9, 1.05, 1] } : {}
+                isError ? { scale: [1, 0.94, 1] } :
+                  isScanning ? { scale: [1, 0.9, 1.05, 1] } : {}
             }
             transition={{ duration: 0.3 }}
             className={cn(
@@ -1140,13 +1140,13 @@ export function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSu
               background: isSuccess
                 ? "linear-gradient(135deg, #059669 0%, #10b981 100%)"
                 : isError
-                ? "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)"
-                : "linear-gradient(135deg, var(--primary, #ff8b00) 0%, #ff5c2b 100%)",
+                  ? "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)"
+                  : "linear-gradient(135deg, var(--primary, #ff8b00) 0%, #ff5c2b 100%)",
               boxShadow: isSuccess
                 ? "0 2px 10px -2px rgba(16,185,129,0.55), inset 0 1px 0 rgba(255,255,255,0.2)"
                 : isError
-                ? "0 2px 10px -2px rgba(239,68,68,0.55), inset 0 1px 0 rgba(255,255,255,0.2)"
-                : "0 2px 10px -2px rgba(255,139,0,0.45), inset 0 1px 0 rgba(255,255,255,0.22)",
+                  ? "0 2px 10px -2px rgba(239,68,68,0.55), inset 0 1px 0 rgba(255,255,255,0.2)"
+                  : "0 2px 10px -2px rgba(255,139,0,0.45), inset 0 1px 0 rgba(255,255,255,0.22)",
             }}
           >
             {/* Barcode stripe texture on button */}
@@ -1188,8 +1188,8 @@ export function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSu
               {isSuccess
                 ? t("scan.done")
                 : isError
-                ? t("scan.retry")
-                : t("scan.scanBtn")}
+                  ? t("scan.retry")
+                  : t("scan.scanBtn")}
             </motion.span>
           </motion.button>
         </div>
@@ -1199,7 +1199,7 @@ export function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSu
   );
 }
 
- 
+
 function ArcRing({ progress, size = 52, stroke = 3.5, color, trackColor }) {
   const r = (size - stroke) / 2;
   const circ = 2 * Math.PI * r;
@@ -1488,18 +1488,18 @@ export function ScanLogBoxes({ successCount, errorCount }) {
 function ScanWorkflowPanel({ orders, updateOrder, pushOp, onOpenPanel, jumpToOrder }) {
   const t = useTranslations("warehouse.preparation");
 
-  const [scanStep, setScanStep]         = useState("order");
-  const [scanValue, setScanValue]       = useState("");
-  const [activeOrder, setActiveOrder]   = useState(null);
+  const [scanStep, setScanStep] = useState("order");
+  const [scanValue, setScanValue] = useState("");
+  const [activeOrder, setActiveOrder] = useState(null);
   const [localProducts, setLocalProducts] = useState([]);
-  const [feedback, setFeedback]         = useState(null);
-  const [scanState, setScanState]       = useState("idle"); // idle | success | error
+  const [feedback, setFeedback] = useState(null);
+  const [scanState, setScanState] = useState("idle"); // idle | success | error
 
   // ── Persistent across orders — NOT reset when a new order is loaded ──
   const [successCount, setSuccessCount] = useState(0);
-  const [errorCount, setErrorCount]     = useState(0);
+  const [errorCount, setErrorCount] = useState(0);
 
-  const [justScanned, setJustScanned]   = useState(null);
+  const [justScanned, setJustScanned] = useState(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const scanInputRef = useRef(null);
 
@@ -1601,7 +1601,7 @@ function ScanWorkflowPanel({ orders, updateOrder, pushOp, onOpenPanel, jumpToOrd
   }, [scanValue, scanStep, orders, localProducts, activeOrder, soundEnabled, updateOrder, pushOp, showFeedback, resetCurrentOrder, t]);
 
   const isItemsMode = scanStep === "items";
-  const accuracy    = (successCount + errorCount) > 0
+  const accuracy = (successCount + errorCount) > 0
     ? Math.round((successCount / (successCount + errorCount)) * 100)
     : null;
 
@@ -1664,7 +1664,7 @@ function ScanWorkflowPanel({ orders, updateOrder, pushOp, onOpenPanel, jumpToOrd
           <div className="relative">
             <div className={cn(
               "absolute inset-0 rounded-md transition-all duration-300 pointer-events-none z-10",
-              scanState === "success" ? "ring-2 ring-emerald-400/40" :  scanState === "error"   ? "ring-2 ring-red-400/40"     : ""
+              scanState === "success" ? "ring-2 ring-emerald-400/40" : scanState === "error" ? "ring-2 ring-red-400/40" : ""
             )} />
             <ScanInputBar
               inputRef={scanInputRef}
@@ -1703,8 +1703,8 @@ function ScanWorkflowPanel({ orders, updateOrder, pushOp, onOpenPanel, jumpToOrd
           </AnimatePresence>
 
           {/* Persistent scan log boxes */}
-          {  <ScanLogBoxes successCount={successCount} errorCount={errorCount} />}
- 
+          {<ScanLogBoxes successCount={successCount} errorCount={errorCount} />}
+
 
           {/* Items table */}
           {isItemsMode && activeOrder && (
@@ -1742,11 +1742,11 @@ function InProgressSubtab({ orders, updateOrder, pushOp, onPrepareOrder, onPrepa
   const preparing = useMemo(() => orders.filter((o) => o.status === STATUS.PREPARING), [orders]);
 
   const [selectedOrders, setSelectedOrders] = useState([]);
-  const [search, setSearch]                 = useState("");
-  const [filters, setFilters]               = useState({ carrier: "all" });
-  const [detailModal, setDetailModal]       = useState(null);
-  const [rejectModal, setRejectModal]       = useState(null);
-  const [page, setPage]                     = useState({ current_page: 1, per_page: 12 });
+  const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState({ carrier: "all" });
+  const [detailModal, setDetailModal] = useState(null);
+  const [rejectModal, setRejectModal] = useState(null);
+  const [page, setPage] = useState({ current_page: 1, per_page: 12 });
 
   React.useEffect(() => {
     setSearch(""); setFilters({ carrier: "all" }); setSelectedOrders([]);
@@ -1763,7 +1763,7 @@ function InProgressSubtab({ orders, updateOrder, pushOp, onPrepareOrder, onPrepa
   }, [preparing, search, filters]);
 
   const toggleOrder = (code) => setSelectedOrders((prev) => prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]);
-  const selectAll   = () => setSelectedOrders(selectedOrders.length === filtered.length ? [] : filtered.map((o) => o.code));
+  const selectAll = () => setSelectedOrders(selectedOrders.length === filtered.length ? [] : filtered.map((o) => o.code));
 
   const handleConfirmReject = useCallback((row, reason) => {
     const now = new Date().toISOString().slice(0, 16).replace("T", " ");
@@ -1778,22 +1778,22 @@ function InProgressSubtab({ orders, updateOrder, pushOp, onPrepareOrder, onPrepa
       className: "w-[48px]",
       cell: (row) => (<div className="flex items-center justify-center"><Checkbox checked={selectedOrders.includes(row.code)} onCheckedChange={() => toggleOrder(row.code)} /></div>),
     },
-    { key: "code",     header: t("table.orderNumber"), cell: (row) => <span className="font-mono font-bold text-[#ff8b00]">{row.code}</span> },
-    { key: "customer", header: t("table.customer"),    cell: (row) => <span className="font-semibold">{row.customer}</span> },
-    { key: "phone",    header: t("table.phone"),       cell: (row) => <span className="font-mono text-slate-500 text-sm">{row.phone}</span> },
-    { key: "city",     header: t("table.city") },
-    { key: "carrier",  header: t("table.carrier"),     cell: (row) => row.carrier ? <CarrierPill carrier={row.carrier} /> : <span className="text-slate-400 text-sm italic">{t("unspecified")}</span> },
-    { key: "products", header: t("table.products"),    cell: (row) => <span className="bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full text-sm font-semibold">{row.products.length} {t("product")}</span> },
+    { key: "code", header: t("table.orderNumber"), cell: (row) => <span className="font-mono font-bold text-[#ff8b00]">{row.code}</span> },
+    { key: "customer", header: t("table.customer"), cell: (row) => <span className="font-semibold">{row.customer}</span> },
+    { key: "phone", header: t("table.phone"), cell: (row) => <span className="font-mono text-slate-500 text-sm">{row.phone}</span> },
+    { key: "city", header: t("table.city") },
+    { key: "carrier", header: t("table.carrier"), cell: (row) => row.carrier ? <CarrierPill carrier={row.carrier} /> : <span className="text-slate-400 text-sm italic">{t("unspecified")}</span> },
+    { key: "products", header: t("table.products"), cell: (row) => <span className="bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full text-sm font-semibold">{row.products.length} {t("product")}</span> },
     { key: "progress", header: t("table.scanProgress"), cell: (row) => <ScanProgress products={row.products} /> },
     { key: "assignedEmployee", header: t("table.employee") },
     {
       key: "actions", header: t("table.actions"),
       cell: (row) => (
         <ActionButtons row={row} actions={[
-          { icon: <Info />,    tooltip: t("actions.details"),         onClick: (r) => setDetailModal(r),   variant: "purple" },
+          { icon: <Info />, tooltip: t("actions.details"), onClick: (r) => setDetailModal(r), variant: "purple" },
           // ← clicking this goes to scanning subtab and auto-loads the order
           { icon: <ScanLine />, tooltip: t("actions.continuePrepare"), onClick: (r) => onPrepareOrder?.(r), variant: "blue" },
-          { icon: <Ban />,     tooltip: t("actions.reject"),           onClick: (r) => setRejectModal(r),   variant: "red" },
+          { icon: <Ban />, tooltip: t("actions.reject"), onClick: (r) => setRejectModal(r), variant: "red" },
         ]} />
       ),
     },
@@ -1802,10 +1802,10 @@ function InProgressSubtab({ orders, updateOrder, pushOp, onPrepareOrder, onPrepa
   return (
     <div className="space-y-4">
       <Table
-        searchValue={search} onSearchChange={setSearch} onSearch={() => {}}
+        searchValue={search} onSearchChange={setSearch} onSearch={() => { }}
         labels={{ searchPlaceholder: t("searchPlaceholder"), filter: t("filter"), apply: t("apply"), total: t("total"), limit: t("limit"), emptyTitle: t("inProgress.emptyTitle"), emptySubtitle: "" }}
-        actions={[{ key: "export", label: t("export"), icon: <FileDown size={14} />, color: "blue", onClick: () => {} }]}
-        hasActiveFilters={filters.carrier !== "all"} onApplyFilters={() => {}}
+        actions={[{ key: "export", label: t("export"), icon: <FileDown size={14} />, color: "blue", onClick: () => { } }]}
+        hasActiveFilters={filters.carrier !== "all"} onApplyFilters={() => { }}
         filters={
           <FilterField label={t("filters.carrier")}>
             <Select value={filters.carrier} onValueChange={(v) => setFilters((f) => ({ ...f, carrier: v }))}>
@@ -1834,10 +1834,10 @@ function PreparedSubtab({ orders, setDistributionDialog, setSelectedOrdersGlobal
   const t = useTranslations("warehouse.preparation");
   const prepared = useMemo(() => orders.filter((o) => o.status === STATUS.PREPARED), [orders]);
 
-  const [search, setSearch]           = useState("");
-  const [filters, setFilters]         = useState({ carrier: "all" });
+  const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState({ carrier: "all" });
   const [detailModal, setDetailModal] = useState(null);
-  const [page, setPage]               = useState({ current_page: 1, per_page: 12 });
+  const [page, setPage] = useState({ current_page: 1, per_page: 12 });
 
   React.useEffect(() => {
     setSearch(""); setFilters({ carrier: "all" }); setDetailModal(null);
@@ -1853,11 +1853,11 @@ function PreparedSubtab({ orders, setDistributionDialog, setSelectedOrdersGlobal
   }, [prepared, search, filters]);
 
   const columns = useMemo(() => [
-    { key: "code",     header: t("table.orderNumber"), cell: (row) => <span className="font-mono font-bold text-[#ff8b00]">{row.code}</span> },
-    { key: "customer", header: t("table.customer"),    cell: (row) => <span className="font-semibold">{row.customer}</span> },
-    { key: "phone",    header: t("table.phone"),       cell: (row) => <span className="font-mono text-slate-500 text-sm">{row.phone}</span> },
-    { key: "city",     header: t("table.city") },
-    { key: "carrier",  header: t("table.carrier"),     cell: (row) => row.carrier ? <CarrierPill carrier={row.carrier} /> : <span className="text-slate-400 text-sm italic">{t("unspecified")}</span> },
+    { key: "code", header: t("table.orderNumber"), cell: (row) => <span className="font-mono font-bold text-[#ff8b00]">{row.code}</span> },
+    { key: "customer", header: t("table.customer"), cell: (row) => <span className="font-semibold">{row.customer}</span> },
+    { key: "phone", header: t("table.phone"), cell: (row) => <span className="font-mono text-slate-500 text-sm">{row.phone}</span> },
+    { key: "city", header: t("table.city") },
+    { key: "carrier", header: t("table.carrier"), cell: (row) => row.carrier ? <CarrierPill carrier={row.carrier} /> : <span className="text-slate-400 text-sm italic">{t("unspecified")}</span> },
     {
       key: "products", header: t("table.products"),
       cell: (row) => (
@@ -1870,14 +1870,14 @@ function PreparedSubtab({ orders, setDistributionDialog, setSelectedOrdersGlobal
         </div>
       ),
     },
-    { key: "preparedAt",       header: t("table.preparedAt"),  cell: (row) => <span className="text-sm text-slate-500">{row.preparedAt || "—"}</span> },
+    { key: "preparedAt", header: t("table.preparedAt"), cell: (row) => <span className="text-sm text-slate-500">{row.preparedAt || "—"}</span> },
     { key: "assignedEmployee", header: t("table.employee") },
     {
       key: "actions", header: t("table.actions"),
       cell: (row) => (
         <ActionButtons row={row} actions={[
-          { icon: <Info />,  tooltip: t("actions.details"),    onClick: (r) => setDetailModal(r),                                                             variant: "purple" },
-          { icon: <Truck />, tooltip: t("actions.distribute"), onClick: (r) => { setSelectedOrdersGlobal?.([r.code]); setDistributionDialog?.(true); },       variant: "emerald" },
+          { icon: <Info />, tooltip: t("actions.details"), onClick: (r) => setDetailModal(r), variant: "purple" },
+          { icon: <Truck />, tooltip: t("actions.distribute"), onClick: (r) => { setSelectedOrdersGlobal?.([r.code]); setDistributionDialog?.(true); }, variant: "emerald" },
         ]} />
       ),
     },
@@ -1886,10 +1886,10 @@ function PreparedSubtab({ orders, setDistributionDialog, setSelectedOrdersGlobal
   return (
     <div className="space-y-4">
       <Table
-        searchValue={search} onSearchChange={setSearch} onSearch={() => {}}
+        searchValue={search} onSearchChange={setSearch} onSearch={() => { }}
         labels={{ searchPlaceholder: t("searchPlaceholder"), filter: t("filter"), apply: t("apply"), total: t("total"), limit: t("limit"), emptyTitle: t("prepared.emptyTitle"), emptySubtitle: "" }}
-        actions={[{ key: "export", label: t("export"), icon: <FileDown size={14} />, color: "blue", onClick: () => {} }]}
-        hasActiveFilters={filters.carrier !== "all"} onApplyFilters={() => {}}
+        actions={[{ key: "export", label: t("export"), icon: <FileDown size={14} />, color: "blue", onClick: () => { } }]}
+        hasActiveFilters={filters.carrier !== "all"} onApplyFilters={() => { }}
         filters={
           <FilterField label={t("filters.carrier")}>
             <Select value={filters.carrier} onValueChange={(v) => setFilters((f) => ({ ...f, carrier: v }))}>
@@ -1919,12 +1919,12 @@ export default function PreparationTab({
 }) {
   const t = useTranslations("warehouse.preparation");
 
-  const preparing    = orders.filter((o) => o.status === STATUS.PREPARING);
-  const prepared     = orders.filter((o) => o.status === STATUS.PREPARED);
-  const totalItems   = preparing.reduce((s, o) => s + o.products.reduce((ps, p) => ps + p.requestedQty, 0), 0);
+  const preparing = orders.filter((o) => o.status === STATUS.PREPARING);
+  const prepared = orders.filter((o) => o.status === STATUS.PREPARED);
+  const totalItems = preparing.reduce((s, o) => s + o.products.reduce((ps, p) => ps + p.requestedQty, 0), 0);
   const scannedItems = preparing.reduce((s, o) => s + o.products.reduce((ps, p) => ps + (p.scannedQty || 0), 0), 0);
 
-  const [panelOpen, setPanelOpen]     = useState(false);
+  const [panelOpen, setPanelOpen] = useState(false);
   // The order to auto-load when jumping from InProgressSubtab
   const [jumpToOrder, setJumpToOrder] = useState(null);
 
@@ -1940,26 +1940,26 @@ export default function PreparationTab({
   }, [subtab]);
 
   const stats = [
-    { id: "in-progress", name: t("stats.inProgress"),  value: preparing.length, icon: Clock,        color: "#6763af", sortOrder: 0 },
-    { id: "total-items", name: t("stats.totalItems"),   value: totalItems,        icon: Package,      color: "#ffb703", sortOrder: 1 },
-    { id: "scanned",     name: t("stats.scanned"),      value: scannedItems,      icon: CheckCircle2, color: "#10b981", sortOrder: 2 },
-    { id: "prepared",    name: t("stats.prepared"),     value: prepared.length,   icon: CheckCircle2, color: "#ff8b00", sortOrder: 3 },
+    { id: "in-progress", name: t("stats.inProgress"), value: preparing.length, icon: Clock, color: "#6763af", sortOrder: 0 },
+    { id: "total-items", name: t("stats.totalItems"), value: totalItems, icon: Package, color: "#ffb703", sortOrder: 1 },
+    { id: "scanned", name: t("stats.scanned"), value: scannedItems, icon: CheckCircle2, color: "#10b981", sortOrder: 2 },
+    { id: "prepared", name: t("stats.prepared"), value: prepared.length, icon: CheckCircle2, color: "#ff8b00", sortOrder: 3 },
   ];
 
   return (
     <div className="space-y-4">
       <PageHeader
         breadcrumbs={[
-          { name: t("breadcrumbs.home"),        href: "/" },
-          { name: t("breadcrumbs.warehouse"),   href: "/warehouse" },
+          { name: t("breadcrumbs.home"), href: "/" },
+          { name: t("breadcrumbs.warehouse"), href: "/warehouse" },
           { name: t("breadcrumbs.preparation") },
         ]}
-        buttons={<Button_ size="sm" label={t("howItWorks")} variant="ghost" onClick={() => {}} icon={<Info size={18} />} />}
+        buttons={<Button_ size="sm" label={t("howItWorks")} variant="ghost" onClick={() => { }} icon={<Info size={18} />} />}
         stats={stats}
         items={[
-          { id: "scanning",  label: t("subtabs.scanning"),   count: preparing.length, icon: ScanLine },
+          { id: "scanning", label: t("subtabs.scanning"), count: preparing.length, icon: ScanLine },
           { id: "preparing", label: t("subtabs.inProgress"), count: preparing.length, icon: Clock },
-          { id: "prepared",  label: t("subtabs.prepared"),   count: prepared.length,  icon: CheckCircle2 },
+          { id: "prepared", label: t("subtabs.prepared"), count: prepared.length, icon: CheckCircle2 },
         ]}
         active={subtab}
         setActive={setSubtab}

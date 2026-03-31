@@ -155,20 +155,20 @@ export default function DistributionTab({ subtab, setSubtab }) {
   // 2. Carrier Stats: Dynamic from the second endpoint
   const carrierStats = statsData?.companies
     ? statsData.companies.map((c) => {
-        // Fallback meta if company name doesn't match CARRIER_META keys
-        const meta = CARRIER_META[c.code?.toUpperCase()] || {
-          icon: Truck,
-          color: "#64748b",
-        };
-        return {
-          id: `carrier-${c.companyId}`,
-          name: c.companyName,
-          icon: meta.icon,
-          color: meta.color,
-          bgColor: meta.color + "15",
-          value: c.count,
-        };
-      })
+      // Fallback meta if company name doesn't match CARRIER_META keys
+      const meta = CARRIER_META[c.code?.toUpperCase()] || {
+        icon: Truck,
+        color: "#64748b",
+      };
+      return {
+        id: `carrier-${c.companyId}`,
+        name: c.companyName,
+        icon: meta.icon,
+        color: meta.color,
+        bgColor: meta.color + "15",
+        value: c.count,
+      };
+    })
     : [];
   return (
     <div className="space-y-4">
@@ -184,7 +184,7 @@ export default function DistributionTab({ subtab, setSubtab }) {
               size="sm"
               label={t("header.howItWorks")}
               variant="ghost"
-              onClick={() => {}}
+              onClick={() => { }}
               icon={<Info size={18} />}
               permission="orders.read"
             />
@@ -252,8 +252,9 @@ export default function DistributionTab({ subtab, setSubtab }) {
 // ORDER DETAIL MODAL — REDESIGNED
 // ─────────────────────────────────────────────
 export function OrderDetailModal({ open, onClose, order, hideNotes }) {
+  const tCommon = useTranslations("common");
   const t = useTranslations("warehouse.distribution");
-const {formatCurrency} = usePlatformSettings()
+  const { formatCurrency } = usePlatformSettings()
   if (!order) return null;
   const infoRows = [
     {
@@ -343,7 +344,7 @@ const {formatCurrency} = usePlatformSettings()
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
         className="!max-w-2xl bg-white dark:bg-slate-900 rounded-2xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl"
-        dir="rtl"
+
       >
         {/* Header with gradient */}
         <div className="relative px-6 pt-6 pb-5 rounded-t-2xl overflow-hidden bg-primary ">
@@ -473,7 +474,7 @@ const {formatCurrency} = usePlatformSettings()
                     className="font-bold text-sm"
                     style={{ color: "#ff6a1e" }}
                   >
-                    { formatCurrency((Number(p.unitPrice) || 0) * (Number(p.quantity) || 0))} 
+                    {formatCurrency((Number(p.unitPrice) || 0) * (Number(p.quantity) || 0))}
 
 
                   </span>
@@ -530,7 +531,7 @@ function AssignCarrierDialog({
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [carrier, setCarrier] = useState("");
   const [loading, setLoading] = useState(false);
-const {formatCurrency} = usePlatformSettings()
+  const { formatCurrency } = usePlatformSettings()
   const availableOrders = useMemo(() => {
     return orders.filter((o) => selectedOrderCodes.includes(o.orderNumber));
   }, [orders, selectedOrderCodes]);
@@ -602,8 +603,8 @@ const {formatCurrency} = usePlatformSettings()
       console.error("Assignment failed", error);
       toast.error(
         error.response?.data?.message ||
-          t("modal.assignFailed") ||
-          "Assignment failed",
+        t("modal.assignFailed") ||
+        "Assignment failed",
       );
     } finally {
       setLoading(false);
@@ -637,7 +638,7 @@ const {formatCurrency} = usePlatformSettings()
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
         className="!max-w-2xl bg-white dark:bg-slate-900 rounded-2xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl"
-        dir="rtl"
+
       >
         {/* Header */}
         <div className="relative px-6 pt-6 pb-5 rounded-t-2xl overflow-hidden bg-primary">
@@ -698,7 +699,7 @@ const {formatCurrency} = usePlatformSettings()
               <span className="text-red-500">*</span>
             </Label>
 
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {/* Manual / None option */}
               <motion.button
                 type="button"
@@ -713,9 +714,9 @@ const {formatCurrency} = usePlatformSettings()
                 style={
                   carrier === "NONE"
                     ? {
-                        backgroundColor: "#64748b12",
-                        borderColor: "#64748b60",
-                      }
+                      backgroundColor: "#64748b12",
+                      borderColor: "#64748b60",
+                    }
                     : {}
                 }
               >
@@ -757,9 +758,9 @@ const {formatCurrency} = usePlatformSettings()
                     style={
                       isSelected
                         ? {
-                            backgroundColor: color + "12",
-                            borderColor: color + "60",
-                          }
+                          backgroundColor: color + "12",
+                          borderColor: color + "60",
+                        }
                         : {}
                     }
                   >
@@ -899,9 +900,9 @@ const {formatCurrency} = usePlatformSettings()
               style={
                 !loading && carrier && selectedOrders.length > 0
                   ? {
-                      background:
-                        "linear-gradient(135deg, #ff6a1e 0%, #ff5c2b 100%)",
-                    }
+                    background:
+                      "linear-gradient(135deg, #ff6a1e 0%, #ff5c2b 100%)",
+                  }
                   : {}
               }
             >

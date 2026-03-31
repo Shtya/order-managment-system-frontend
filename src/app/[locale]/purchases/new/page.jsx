@@ -302,7 +302,7 @@ export default function CreatePurchaseInvoicePage() {
 			/>
 
 			<form onSubmit={handleSubmit(onSubmit)}>
-				<div className="flex gap-6">
+				<div className="flex max-md:flex-col gap-6">
 					<div className="flex-1 space-y-6">
 						{/* Form Fields */}
 						<motion.div
@@ -311,7 +311,7 @@ export default function CreatePurchaseInvoicePage() {
 							animate={{ opacity: 1, x: 0 }}
 							transition={{ delay: 0.2 }}
 						>
-							<div className="grid grid-cols-[repeat(auto-fit,minmax(350px,1fr))] gap-2">
+							<div className="grid md:grid-cols-[repeat(auto-fit,minmax(350px,1fr))] gap-2">
 								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
 										{t("fields.supplierName")}
@@ -554,7 +554,7 @@ export default function CreatePurchaseInvoicePage() {
 					</div>
 
 					{/* Right Column - Summary */}
-					<div className="w-full space-y-4 max-w-[350px]">
+					<div className="w-full space-y-4 md:max-w-[350px]">
 						<ReceiptImageUpload
 							t={t}
 							isRTL={isRTL}

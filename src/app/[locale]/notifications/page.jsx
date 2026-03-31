@@ -189,7 +189,7 @@ function NotificationRow({ n, idx, onRead, t }) {
         >
           {n.title}
         </p>
-        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed break-words">
           {n.message}
         </p>
       </div>
@@ -215,7 +215,7 @@ function FilterPill({ active, onClick, children }) {
     <button
       onClick={onClick}
       className={cn(
-        "px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150",
+        "px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 ",
         active
           ? "bg-[color-mix(in_oklab,var(--primary)_12%,transparent)] text-[var(--primary)] border border-[color-mix(in_oklab,var(--primary)_25%,transparent)]"
           : "bg-[var(--secondary)] text-muted-foreground border border-border/60 hover:border-border",

@@ -448,7 +448,8 @@
       "role": "System Manager",
       "guest": "Guest",
       "noEmail": "No email"
-    }
+    },
+    "toggleSidebar": "Toggle Sidebar"
   },
   "employees": {
     "breadcrumb": {
@@ -751,7 +752,7 @@
       "home": "Home",
       "stores": "Stores"
     },
-      "editTitle": "Edit Settings",
+    "editTitle": "Edit Settings",
     "addTitle": "Add Store",
     "guide": {
       "title": "How to Integrate with {name}",
@@ -1158,81 +1159,81 @@
     "US": "USA"
   },
   "roles-client": {
-  "breadcrumb": {
-    "home": "Home",
-    "roles": "Roles & Permissions"
+    "breadcrumb": {
+      "home": "Home",
+      "roles": "Roles & Permissions"
+    },
+    "toolbar": {
+      "addRole": "Add Role",
+      "searchPlaceholder": "Search for a role...",
+      "filter": "Filters"
+    },
+    "filters": {
+      "name": "Name",
+      "namePlaceholder": "Role Name",
+      "type": "Type",
+      "typePlaceholder": "Global / Custom",
+      "apply": "Apply",
+      "datePlaceholder": "Select Date"
+    },
+    "stats": {
+      "totalRoles": "Total Roles",
+      "globalRoles": "Global Roles",
+      "customRoles": "Custom Roles"
+    },
+    "table": {
+      "roleName": "Role Name",
+      "description": "Description",
+      "type": "Type",
+      "permissions": "Permissions",
+      "options": "Options",
+      "global": "Global",
+      "custom": "Custom",
+      "allPermissions": "All Permissions",
+      "permissionsCount": "Permissions"
+    },
+    "actions": {
+      "locked": "This role cannot be edited",
+      "edit": "Edit",
+      "protected": "This role cannot be deleted",
+      "delete": "Delete",
+      "preview": "Preview"
+    },
+    "dialog": {
+      "addRole": "Add Role",
+      "editRole": "Edit Role",
+      "roleDescription": "Create a role and define the allowed permissions.",
+      "roleName": "Role Name",
+      "roleNamePlaceholder": "e.g., Manager, Employee...",
+      "roleDescriptionLabel": "Role Description",
+      "roleDescriptionPlaceholder": "Write a brief description for this role...",
+      "globalRoleNotice": "This is a global protected role and cannot be modified.",
+      "save": "Save"
+    },
+    "preview": {
+      "permissions": "Permissions",
+      "noDescription": "No description available",
+      "noPermissions": "No permissions assigned to this role",
+      "close": "Close"
+    },
+    "deleteDialog": {
+      "title": "Delete Role",
+      "description": "Are you sure you want to delete the role",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "permissions": {
+      "title": "Permissions",
+      "filterPlaceholder": "Filter permissions...",
+      "noMatch": "No permissions match your search.",
+      "selectedOutOf": "{checked} / {total} selected"
+    },
+    "common": {
+      "cancel": "Cancel"
+    },
+    "empty": "No roles found",
+    "emptySubtitle": "No matching roles found. Try changing your search or add a new role."
   },
-  "toolbar": {
-    "addRole": "Add Role",
-    "searchPlaceholder": "Search for a role...",
-    "filter": "Filters"
-  },
-  "filters": {
-    "name": "Name",
-    "namePlaceholder": "Role Name",
-    "type": "Type",
-    "typePlaceholder": "Global / Custom",
-    "apply": "Apply",
-    "datePlaceholder": "Select Date"
-  },
-  "stats": {
-    "totalRoles": "Total Roles",
-    "globalRoles": "Global Roles",
-    "customRoles": "Custom Roles"
-  },
-  "table": {
-    "roleName": "Role Name",
-    "description": "Description",
-    "type": "Type",
-    "permissions": "Permissions",
-    "options": "Options",
-    "global": "Global",
-    "custom": "Custom",
-    "allPermissions": "All Permissions",
-    "permissionsCount": "Permissions"
-  },
-  "actions": {
-    "locked": "This role cannot be edited",
-    "edit": "Edit",
-    "protected": "This role cannot be deleted",
-    "delete": "Delete",
-    "preview": "Preview"
-  },
-  "dialog": {
-    "addRole": "Add Role",
-    "editRole": "Edit Role",
-    "roleDescription": "Create a role and define the allowed permissions.",
-    "roleName": "Role Name",
-    "roleNamePlaceholder": "e.g., Manager, Employee...",
-    "roleDescriptionLabel": "Role Description",
-    "roleDescriptionPlaceholder": "Write a brief description for this role...",
-    "globalRoleNotice": "This is a global protected role and cannot be modified.",
-    "save": "Save"
-  },
-  "preview": {
-    "permissions": "Permissions",
-    "noDescription": "No description available",
-    "noPermissions": "No permissions assigned to this role",
-    "close": "Close"
-  },
-  "deleteDialog": {
-    "title": "Delete Role",
-    "description": "Are you sure you want to delete the role",
-    "cancel": "Cancel",
-    "confirm": "Delete"
-  },
-  "permissions": {
-    "title": "Permissions",
-    "filterPlaceholder": "Filter permissions...",
-    "noMatch": "No permissions match your search.",
-    "selectedOutOf": "{checked} / {total} selected"
-  },
-  "common": {
-    "cancel": "Cancel"
-  },
-  "empty": "No roles found",
-  "emptySubtitle": "No matching roles found. Try changing your search or add a new role."
-},
   "permissions": {
     "selectAll": "Select All",
     "unselectAll": "Unselect All",
@@ -2246,7 +2247,8 @@
       "apply": "Apply",
       "total": "Total",
       "limit": "Results per page",
-      "currency": "SAR"
+      "currency": "SAR",
+      "howItWorks": "How it works"
     },
     "rejected": {
       "breadcrumbs": {
@@ -2311,7 +2313,8 @@
         "rejectedAt": "Rejection Date",
         "city": "City",
         "employee": "Responsible Employee"
-      }
+      },
+      "howItWorks": "How it works?"
     },
     "logs": {
       "breadcrumbs": {
@@ -5480,7 +5483,9 @@
         "green": "Green",
         "pink": "Pink",
         "cyan": "Cyan"
-      }
+      },
+      "date": "Date",
+      "status": "Status"
     },
     "deleteDialog": {
       "title": "Delete Plan",
@@ -5532,7 +5537,8 @@
       "title": "Delete Plan",
       "confirmText": "Are you sure you want to delete this plan? This action cannot be undone.",
       "deleting": "Deleting..."
-    }
+    },
+    "select_count": "Select..."
   },
   "subscriptions": {
     "breadcrumb": {

@@ -199,8 +199,8 @@ function MetaCell({ label, icon, children, hero, className }) {
     >
       {hero && <AccentBar className="absolute inset-x-0 top-0 h-[2px]" />}
 
-      <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest leading-none text-muted-foreground/45">
-        <span className="transition-colors duration-200 group-hover:text-[var(--primary)]/60 text-muted-foreground/30">
+      <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest leading-none text-muted-foreground/80">
+        <span className="transition-colors duration-200 group-hover:text-[var(--primary)]/60 text-muted-foreground/80">
           {icon}
         </span>
         {label}
@@ -326,7 +326,7 @@ export function OrderDetailsPage({ order, loading }) {
             {/* ── Order header ──────────────────────────────────────── */}
             <div className="px-6 pt-5 pb-5 flex items-start justify-between gap-4">
               <div className="space-y-1">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/80">
                   {t("fields.orderNumber")}
                 </p>
                 <p
@@ -553,7 +553,7 @@ export function OrderDetailsPage({ order, loading }) {
                               {item.variant.name}
                             </span>
                           ) : (
-                            <span className="text-xs text-muted-foreground/35">
+                            <span className="text-xs text-muted-foreground/80">
                               —
                             </span>
                           )}
@@ -920,7 +920,7 @@ export function OrderDetailsPage({ order, loading }) {
                               ? t(`statuses.${history.toStatus.code}`)
                               : history.toStatus?.name}
                           </p>
-                          <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
+                          <div className="flex items-center gap-1 text-[10px] text-muted-foreground/80">
                             <Clock size={9} />
                             {formatDate(history.created_at)}
                           </div>
@@ -999,7 +999,7 @@ function ReplacementInfoCard({
         )}
       </div>
 
-      <div className="p-5 space-y-5">
+      <div className="pt-5 space-y-5">
         {/* Original order */}
         {originalOrder && (
           <div className="rounded-2xl border border-border/35 bg-muted/20 p-4 space-y-4">
@@ -1009,7 +1009,7 @@ function ReplacementInfoCard({
             >
               {t("replacement.originalOrder")}
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
               {[
                 {
                   icon: Hash,
@@ -1077,7 +1077,7 @@ function ReplacementInfoCard({
                 </span>
               </div>
 
-              <ChevronRight size={12} className="text-muted-foreground/40" />
+              <ChevronRight size={12} className="text-muted-foreground/80" />
 
               <div
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border"
@@ -1324,7 +1324,7 @@ function ReplacementInfoCard({
           </div>
         )}
       </div>
-    </motion.div>
+    </motion.div >
   );
 }
 

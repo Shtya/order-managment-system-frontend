@@ -19,25 +19,7 @@ export default function SubscriptionLock({
 }) {
     const router = useRouter();
     const t = useTranslations("subscription_lock");
-    const [isSidebarExpanded, setIsSidebarExpanded] = useState(() => {
-        if (typeof window === "undefined") return false;
-        return localStorage.getItem("ui_sidebar") === "expanded";
-    });
-
-    useEffect(() => {
-        const handler = () => {
-            const value = localStorage.getItem("ui_sidebar");
-            setIsSidebarExpanded(value === "expanded");
-        };
-
-        // الاستماع للتغييرات التي تحدث في الـ Sidebar
-        window.addEventListener("sidebarChangeBack", handler);
-        return () => window.removeEventListener("sidebarChangeBack", handler);
-    }, []);
-
-    const sidebarWidth = isSidebarExpanded ? 260 : 68;
     if (!isVisible) return null;
-    console.log(isSidebarExpanded, sidebarWidth)
     return (
         <AnimatePresence>
             <motion.div
@@ -45,14 +27,13 @@ export default function SubscriptionLock({
                 animate={{
                     opacity: 1,
                     // تحريك الهامش باستخدام framer-motion بدلاً من الـ transition اليدوي
-                    marginInlineStart: showSidebarOffset ? sidebarWidth : 0
                 }}
                 exit={{ opacity: 0 }}
                 transition={{
                     marginInlineStart: { type: "spring", damping: 25, stiffness: 200 },
                     opacity: { duration: 0.3 }
                 }}
-                className="fixed inset-0 z-[40] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md"
+                className="absolute inset-0 z-[40] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md"
             >  <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}

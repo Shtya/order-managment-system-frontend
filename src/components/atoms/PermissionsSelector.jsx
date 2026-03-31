@@ -138,18 +138,19 @@ export default function PermissionsSelector({
 				<div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-shimmer" />
 
 				<div className="relative p-5">
-					<div className="flex items-center justify-between mb-4">
-						<div className="flex items-center gap-3">
-							<div className="relative">
+					<div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
+						{/* القسم الأول: الأيقونة والعنوان */}
+						<div className="flex items-center gap-4">
+							<div className="relative shrink-0">
 								<div className="absolute inset-0 bg-primary blur-xl opacity-30 animate-pulse" />
 								<div className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/20">
 									<Shield className="text-white" size={24} />
 								</div>
 							</div>
 							<div>
-								<h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+								<h3 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
 									{t("modules.permissions")}
-									<Sparkles className="text-primary" size={18} />
+									<Sparkles className="text-primary shrink-0" size={18} />
 								</h3>
 								<p className="text-sm text-gray-600 dark:text-slate-400">
 									{t("permissionsCount")}: {permissions.length}
@@ -157,53 +158,58 @@ export default function PermissionsSelector({
 							</div>
 						</div>
 
-						<div className="flex items-center gap-4">
-							{/* Progress Circle */}
-							<div className="relative w-16 h-16">
-								<svg className="transform -rotate-90 w-16 h-16">
-									<circle
-										cx="32"
-										cy="32"
-										r="28"
-										stroke="currentColor"
-										strokeWidth="4"
-										fill="none"
-										className="text-gray-200 dark:text-slate-700"
-									/>
-									<circle
-										cx="32"
-										cy="32"
-										r="28"
-										stroke="rgb(var(--primary))"
-										strokeWidth="4"
-										fill="none"
-										strokeDasharray={`${2 * Math.PI * 28}`}
-										strokeDashoffset={`${2 * Math.PI * 28 * (1 - selectionPercentage / 100)}`}
-										className="transition-all duration-500 drop-shadow-lg"
-									/>
-								</svg>
-								<div className="absolute inset-0 flex items-center justify-center">
-									<span className="text-sm font-bold text-primary">
-										{selectionPercentage}%
-									</span>
-								</div>
-							</div>
+						{/* القسم الثاني: الإحصائيات وزر التحكم */}
+						<div className="flex flex-wrap items-center justify-between md:justify-end gap-4 md:gap-8 bg-slate-50/50 dark:bg-slate-800/30 p-4 md:p-0 rounded-2xl md:bg-transparent">
 
-							{/* Stats */}
-							<div className="text-right">
-								<div className="flex items-baseline gap-1.5">
-									<span className="text-3xl font-black bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-										{selected.length}
-									</span>
-									<span className="text-lg text-gray-400 dark:text-slate-500 font-medium">
-										/ {permissions.length}
-									</span>
+							{/* Progress & Stats Group */}
+							<div className="flex items-center gap-4">
+								{/* Progress Circle */}
+								<div className="relative w-14 h-14 md:w-16 md:h-16 shrink-0">
+									<svg className="transform -rotate-90 w-16 h-16">
+										<circle
+											cx="32"
+											cy="32"
+											r="28"
+											stroke="currentColor"
+											strokeWidth="4"
+											fill="none"
+											className="text-gray-200 dark:text-slate-700"
+										/>
+										<circle
+											cx="32"
+											cy="32"
+											r="28"
+											stroke="rgb(var(--primary))"
+											strokeWidth="4"
+											fill="none"
+											strokeDasharray={`${2 * Math.PI * 28}`}
+											strokeDashoffset={`${2 * Math.PI * 28 * (1 - selectionPercentage / 100)}`}
+											className="transition-all duration-500 drop-shadow-lg"
+										/>
+									</svg>
+									<div className="absolute inset-0 flex items-center justify-center">
+										<span className="text-[10px] md:text-sm font-bold text-primary">
+											{selectionPercentage}%
+										</span>
+									</div>
 								</div>
-								<p className="text-xs text-gray-500 dark:text-slate-400 font-medium">
-									{selected.length === 0 && t("unselectAll")}
-									{selected.length > 0 && selected.length < permissions.length && "محدد جزئياً"}
-									{selected.length === permissions.length && "محدد بالكامل"}
-								</p>
+
+								{/* Stats Text */}
+								<div className="text-left md:text-right">
+									<div className="flex items-baseline gap-1.5">
+										<span className="text-2xl md:text-3xl font-black bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+											{selected.length}
+										</span>
+										<span className="text-sm md:text-lg text-gray-400 dark:text-slate-500 font-medium">
+											/ {permissions.length}
+										</span>
+									</div>
+									<p className="text-[10px] md:text-xs text-gray-500 dark:text-slate-400 font-medium uppercase tracking-wider">
+										{selected.length === 0 && t("unselectAll")}
+										{selected.length > 0 && selected.length < permissions.length && "محدد جزئياً"}
+										{selected.length === permissions.length && "محدد بالكامل"}
+									</p>
+								</div>
 							</div>
 
 							{/* Action Button */}
@@ -212,14 +218,13 @@ export default function PermissionsSelector({
 								onClick={handleSelectAll}
 								disabled={disabled}
 								className={cn(
-									"relative px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 focus:outline-none overflow-hidden group",
-									"shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95",
+									"relative w-full md:w-auto px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 overflow-hidden group shadow-lg hover:shadow-xl transform active:scale-95",
 									selected.length === permissions.length
-										? "bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700"
-										: "bg-gradient-to-r from-primary to-primary/90 text-white hover:from-primary/90 hover:to-primary"
+										? "bg-gradient-to-r from-red-500 to-red-600 text-white"
+										: "bg-gradient-to-r from-primary to-primary/90 text-white"
 								)}
 							>
-								<span className="relative z-10 flex items-center gap-2">
+								<span className="relative z-10 flex items-center justify-center gap-2">
 									{selected.length === permissions.length ? (
 										<>
 											<X className="w-4 h-4" />

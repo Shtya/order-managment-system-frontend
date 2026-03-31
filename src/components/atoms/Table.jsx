@@ -94,7 +94,7 @@ export function FilterField({ label, children, className }) {
   return (
     <div className={cn("space-y-1.5", className)}>
       {label && (
-        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/55 block">
+        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80block">
           {label}
         </label>
       )}
@@ -212,7 +212,7 @@ export const TableFilters = memo(function TableFilters({
     >
       <div className="overflow-hidden !shadow-none mt-3 rounded-2xl border border-border/60 overflow-hidden bg-card !p-0 backdrop-blur-sm">
         {/* <AccentBar /> */}
-        <div className="p-4 flex items-end gap-6">
+        <div className="p-4 flex max-sm:flex-col items-end gap-6">
           <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {children}
           </div>
@@ -310,7 +310,7 @@ export const TablePagination = memo(function TablePagination({
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-5 py-4">
 
       {/* Record range */}
-      <p className="text-xs text-muted-foreground/70 flex-shrink-0">
+      <p className="text-xs text-muted-foreground/80flex-shrink-0">
         {t("showing")}{" "}
         <span className="font-bold text-foreground tabular-nums">{from}–{to}</span>
         {" "}{t("of")}{" "}
@@ -339,7 +339,7 @@ export const TablePagination = memo(function TablePagination({
         <div className="flex items-center gap-1 mx-1">
           {pageItems.map((p, idx) =>
             p === "…" ? (
-              <span key={`d-${idx}`} className="w-7 text-center text-muted-foreground/35 text-xs select-none">···</span>
+              <span key={`d-${idx}`} className="w-7 text-center text-muted-foreground/80text-xs select-none">···</span>
             ) : (
               <motion.button
                 key={p}
@@ -383,7 +383,7 @@ export const TablePagination = memo(function TablePagination({
 
       {/* Per-page selector */}
       <div className="flex items-center gap-2 flex-shrink-0">
-        <span className="text-xs text-muted-foreground/60 hidden sm:block">{t("perPage")}</span>
+        <span className="text-xs text-muted-foreground/80hidden sm:block">{t("perPage")}</span>
         <div className="flex items-center gap-0.5 p-1 rounded-xl border border-border/60 bg-background/60">
           {perPageOptions.map((lim) => (
             <button
@@ -442,7 +442,7 @@ const TableSkeleton = memo(function TableSkeleton({ columns, rows = 6, compact }
 ══════════════════════════════════════════════════════════════ */
 const ImgCell = memo(function ImgCell({ src, alt, onOpen }) {
   const fullSrc = toFullSrc(src);
-  if (!fullSrc) return <span className="text-muted-foreground/40 text-sm">—</span>;
+  if (!fullSrc) return <span className="text-muted-foreground/80text-sm">—</span>;
   return (
     <motion.button
       whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.95 }}
@@ -462,7 +462,7 @@ const ImgCell = memo(function ImgCell({ src, alt, onOpen }) {
 });
 
 const ImgsCell = memo(function ImgsCell({ images, onOpen }) {
-  if (!images.length) return <span className="text-muted-foreground/40 text-sm">—</span>;
+  if (!images.length) return <span className="text-muted-foreground/80text-sm">—</span>;
   return (
     <div className="flex items-center">
       {images.map((img, idx) => {
@@ -634,7 +634,7 @@ export default function Table({
                       "!px-5 whitespace-nowrap ltr:text-left rtl:text-right",
                       compact ? "py-3" : "py-3.5",
                       col.headClassName,
-                      ACTION_KEYS.has(col.key) && cn("sticky z-30", stickyEnd, stickyShadow),
+                      ACTION_KEYS.has(col.key) && cn("md:sticky md:z-30", stickyEnd, stickyShadow),
                     )}
                     style={ACTION_KEYS.has(col.key) ? {
                       background: "color-mix(in oklab, var(--muted) 50%, var(--card))",
@@ -644,7 +644,7 @@ export default function Table({
                       initial={{ opacity: 0, y: -4 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.035 }}
-                      className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/60"
+                      className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/80"
                     >
                       {col.header}
                     </motion.span>
@@ -685,7 +685,7 @@ export default function Table({
                           <p className="text-sm font-bold text-foreground">
                             {emptyState ?? labels.emptyTitle ?? "No results found"}
                           </p>
-                          <p className="text-xs text-muted-foreground/70">
+                          <p className="text-xs text-muted-foreground/80">
                             {labels.emptySubtitle ?? "Try adjusting your search or filters"}
                           </p>
                         </div>
@@ -730,7 +730,7 @@ export default function Table({
                               "!px-5 text-sm whitespace-nowrap ltr:text-left rtl:text-right",
                               compact ? "py-2.5" : "py-3.5",
                               col.className,
-                              ACTION_KEYS.has(col.key) && cn("sticky z-20", stickyEnd, stickyShadow),
+                              ACTION_KEYS.has(col.key) && cn("md:sticky md:z-20", stickyEnd, stickyShadow),
                             )}
                             style={ACTION_KEYS.has(col.key) ? {
                               background: "color-mix(in oklab, var(--card) 97%, transparent)",
@@ -792,46 +792,44 @@ function FloatingSearchInput({ searchValue, onSearchChange, onKeyDown, searchPla
       style={{ transition: "max-width .35s cubic-bezier(.16,1,.3,1)" }}
       onClick={() => inputRef.current?.focus()}
     >
-      {/* Border container with gap for floating label */}
       <div
         className={cn(
-          "relative h-[38px] rounded-xl border  cursor-text",
+          "relative h-[38px] rounded-xl border cursor-text min-w-[200px]",
           "transition-all duration-200",
           focused
             ? "border-[var(--primary)] shadow-[0_0_0_3px_color-mix(in_srgb,var(--primary)_12%,transparent)]"
             : "border-border hover:border-[var(--primary)]/40"
         )}
       >
-        {/* Floating label — sits on the border when active */}
         <label
           className={cn(
             "absolute right-9 pointer-events-none select-none",
             "font-medium text-sm origin-right",
             "transition-all duration-200 ease-out",
+            // التعديل هنا: منع نزول النص لسطر جديد وإضافة ... مع تحديد أقصى عرض
+            "truncate max-w-[calc(100%-3rem)]",
             isFloating
               ? [
                 "top-0 -translate-y-1/2 text-[10px] px-1.5 py-0 leading-none",
                 "bg-white dark:bg-[#182337] rounded",
-                focused ? "text-[var(--primary)]" : "text-muted-foreground/70",
+                focused ? "text-[var(--primary)]" : "text-muted-foreground/80",
               ]
-              : "top-1/2 -translate-y-1/2 text-muted-foreground/50"
+              : "top-1/2 -translate-y-1/2 text-muted-foreground/80"
           )}
         >
           {searchPlaceholder}
         </label>
 
-        {/* Search icon */}
         <div
           className={cn(
             "absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none",
             "transition-colors duration-200",
-            focused ? "text-[var(--primary)]" : "text-muted-foreground/40"
+            focused ? "text-[var(--primary)]" : "text-muted-foreground/80"
           )}
         >
           <Search size={15} />
         </div>
 
-        {/* Actual input — no native placeholder since we use floating label */}
         <input
           ref={inputRef}
           value={searchValue}
@@ -844,7 +842,6 @@ function FloatingSearchInput({ searchValue, onSearchChange, onKeyDown, searchPla
             "absolute inset-0 w-full h-full bg-transparent !outline-none",
             "text-sm pr-9 pl-4 pt-0.5",
             "rounded-xl text-foreground",
-            // hide browser autofill styling
             "[&:-webkit-autofill]:bg-transparent"
           )}
         />

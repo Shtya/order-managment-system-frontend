@@ -114,64 +114,71 @@ export default function GlobalRetrySettingsModal({
             dark:from-[#5b4bff] dark:via-[#8b7cff] dark:to-[#3be7ff] opacity-60"
           />
 
-          <div className="relative flex items-center gap-4 px-6 py-5">
+          <div className="relative flex items-center gap-3 sm:gap-4 px-4 py-4 sm:px-6 sm:py-5">
+            {/* Icon Container */}
             <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0
-              bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]
-              dark:from-[#5b4bff] dark:to-[#3be7ff]
-              shadow-[0_6px_20px_rgba(var(--primary-shadow))]"
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0
+    bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]
+    dark:from-[#5b4bff] dark:to-[#3be7ff]
+    shadow-[0_6px_20px_rgba(var(--primary-shadow))]"
             >
-              <Settings size={22} className="text-white" />
+              {/* تصغير الأيقونة قليلاً في الموبايل */}
+              <Settings className="text-white w-5 h-5 sm:w-[22px] sm:h-[22px]" />
             </div>
+
+            {/* Text Content */}
             <div className="flex-1 min-w-0">
-              <h2 className="text-lg font-black tracking-tight text-foreground">
+              <h2 className="text-base sm:text-lg font-black tracking-tight text-foreground truncate">
                 {t("retrySettings.globalTitle")}
               </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 line-clamp-1 sm:line-clamp-none">
                 {t("retrySettings.globalDescription")}
               </p>
             </div>
+
+            {/* Close Button */}
             <motion.button
               whileHover={{ scale: 1.1, rotate: 90 }}
               whileTap={{ scale: 0.9 }}
               onClick={onClose}
-              className="w-8 h-8 rounded-xl flex items-center justify-center
-                bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800
-                text-red-500 hover:bg-red-100 transition-all shrink-0"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-red-500 hover:bg-red-100 transition-all shrink-0"
             >
-              <X size={14} />
+              <X size={14} className="sm:size-4" />
             </motion.button>
           </div>
-
           {/* Tab bar */}
-          <div className="relative flex gap-1 px-5 pb-0">
-            {TABS.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.key;
-              return (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={cn(
-                    "relative flex items-center gap-1.5 px-3.5 py-2.5 rounded-t-xl text-xs font-bold transition-all duration-200",
-                    isActive
-                      ? "text-[var(--primary)] dark:text-[#8b7cff] bg-background"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40",
-                  )}
-                >
-                  <Icon size={13} />
-                  {t(tab.labelKey)}
-                  {isActive && (
-                    <motion.div
-                      layoutId="tab-indicator"
-                      className="absolute inset-x-3 -bottom-px h-[2px] rounded-full
-                        bg-gradient-to-r from-[var(--primary)] to-[var(--third,#ff5c2b)]
-                        dark:from-[#5b4bff] dark:to-[#3be7ff]"
-                    />
-                  )}
-                </button>
-              );
-            })}
+          <div className="relative w-full overflow-x-auto overflow-y-hidden">
+            <div className="flex gap-1 px-3 sm:px-5">
+              {TABS.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.key;
+
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={cn(
+                      "relative flex items-center gap-1.5 px-3 py-2.5 rounded-t-xl text-xs font-bold transition-all duration-200 whitespace-nowrap shrink-0",
+                      isActive
+                        ? "text-[var(--primary)] dark:text-[#8b7cff] bg-background"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                    )}
+                  >
+                    <Icon size={13} />
+                    {t(tab.labelKey)}
+
+                    {isActive && (
+                      <motion.div
+                        layoutId="tab-indicator"
+                        className="absolute inset-x-2 -bottom-px h-[2px] rounded-full
+              bg-gradient-to-r from-[var(--primary)] to-[var(--third,#ff5c2b)]
+              dark:from-[#5b4bff] dark:to-[#3be7ff]"
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
@@ -628,7 +635,7 @@ function NumberField({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs font-black uppercase tracking-wider text-muted-foreground/70">
+      <Label className="text-xs font-black uppercase tracking-wider text-muted-foreground/80">
         {label}
       </Label>
       <div className="flex items-center gap-2 relative">
@@ -648,10 +655,12 @@ function NumberField({
           className="rounded-xl h-10 flex-1"
         />
       </div>
-      {description && (
-        <p className="text-[11px] text-muted-foreground">{description}</p>
-      )}
-    </div>
+      {
+        description && (
+          <p className="text-[11px] text-muted-foreground">{description}</p>
+        )
+      }
+    </div >
   );
 }
 
@@ -702,7 +711,7 @@ function SectionCard({
 
 function FieldSubLabel({ children }) {
   return (
-    <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/60">
+    <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/80">
       {children}
     </p>
   );
@@ -726,7 +735,7 @@ export function GeneralTab({ settings, patch, t }) {
         title={t("retrySettings.retryLimitsTitle")}
         subtitle={t("retrySettings.retryLimitsSubtitle")}
       >
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 gap-4">
           <NumberField
             label={t("retrySettings.maxRetries")}
             description={t("retrySettings.maxRetriesDesc")}
@@ -775,7 +784,7 @@ export function GeneralTab({ settings, patch, t }) {
                   { key: "end", labelKey: "retrySettings.workingEnd", def: "18:00" },
                 ].map((f) => (
                   <div key={f.key} className="space-y-1.5">
-                    <Label className="text-xs font-black uppercase tracking-wider text-muted-foreground/70">
+                    <Label className="text-xs font-black uppercase tracking-wider text-muted-foreground/80">
                       {t(f.labelKey)}
                     </Label>
                     <Input
@@ -795,7 +804,7 @@ export function GeneralTab({ settings, patch, t }) {
           )}
         </AnimatePresence>
       </div> */}
-    </div>
+    </div >
   );
 }
 
@@ -1225,7 +1234,7 @@ export function ShippingTab({ settings, statuses, patchShipping, patch, t }) {
           className="flex items-start gap-3 p-4 rounded-xl bg-muted/30 border border-border/50"
         >
           <div className="w-8 h-8 rounded-xl bg-muted border border-border flex items-center justify-center shrink-0">
-            <AlertCircle size={14} className="text-muted-foreground/60" />
+            <AlertCircle size={14} className="text-muted-foreground/80" />
           </div>
           <div>
             <p className="text-xs font-bold text-foreground mb-0.5">
@@ -1236,8 +1245,9 @@ export function ShippingTab({ settings, statuses, patchShipping, patch, t }) {
             </p>
           </div>
         </motion.div>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 }
 

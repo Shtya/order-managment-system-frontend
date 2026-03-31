@@ -38,6 +38,7 @@ import UserSelect, { avatarSrc } from "@/components/atoms/UserSelect";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import api from "@/utils/api";
+import { OrderStatus } from "../tabs/OrderTab";
 
 
 
@@ -65,6 +66,7 @@ export const StatusSelect = ({
 	statuses,
 	setSelectedStatuses,
 }) => {
+	console.log(selectedStatuses)
 	const t = useTranslations("orders");
 	const triggerRef = useRef(null);
 	const dropdownRef = useRef(null);
@@ -566,6 +568,12 @@ function SectionLabel({ children }) {
 export default function DistributionModal({ isOpen, onClose, statuses = [], onSuccess }) {
 	const t = useTranslations("orders");
 
+	const newStatusId = useMemo(() => {
+
+		const status = statuses?.find(s => s.code?.toLowerCase() === OrderStatus.NEW);
+		return status ? status.id : null;
+	}, [statuses]);
+
 	const [seletOpen, setSelectOpen] = useState(false);
 	const [distributionType, setDistributionType] = useState(null);
 	const [dateRange, setDateRange] = useState({
@@ -574,6 +582,12 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 	});
 	const [selectedStatuses, setSelectedStatuses] = useState([]);
 
+
+	useEffect(() => {
+		if (newStatusId && selectedStatuses.length === 0) {
+			setSelectedStatuses([newStatusId.toString()]);
+		}
+	}, [newStatusId, selectedStatuses.length]);
 	const [assignmentBlocks, setAssignmentBlocks] = useState([
 		{ id: crypto.randomUUID(), employee: null, orderIds: [] },
 	]);
@@ -654,7 +668,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 
 	const handleClose = () => {
 		setDistributionType(null);
-		setSelectedStatuses([]);
+		setSelectedStatuses([newStatusId?.toString()]);
 		setAssignmentBlocks([{ id: crypto.randomUUID(), employee: null, orderIds: [] }]);
 		setFreeOrders([]);
 		setAutoAssignResult(null);
@@ -792,7 +806,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 								initial={{ opacity: 0, y: 12 }}
 								animate={{ opacity: 1, y: 0 }}
 								exit={{ opacity: 0, y: -12 }}
-								className="   grid grid-cols-2 gap-4"
+								className="   grid sm:grid-cols-2 gap-4"
 							>
 								{[
 									{
@@ -1181,7 +1195,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 													</div>
 												) : !autoAssignResult?.assignments?.length ? (
 													<div className="py-10 text-center">
-														<Zap size={24} className="mx-auto mb-2 text-muted-foreground/40" />
+														<Zap size={24} className="mx-auto mb-2 text-muted-foreground/80" />
 														<p className="text-xs text-muted-foreground">
 															{selectedStatuses.length === 0
 																? t("distribution.selectStatusToSeePreview")
@@ -1269,7 +1283,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 					</div>
 				)}
 			</DialogContent>
-		</Dialog>
+		</Dialog >
 	);
 }
 

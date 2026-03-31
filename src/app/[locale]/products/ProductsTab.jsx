@@ -276,7 +276,7 @@ export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 							<div className="rounded-xl border bg-white dark:bg-slate-900 p-4 shadow-sm">
 								<div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
 									<div className="flex gap-4">
-										<div className="w-20 h-20 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border">
+										<div className="w-20 h-20 shrink-0 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border">
 											{mainImage ? (
 												// eslint-disable-next-line @next/next/no-img-element
 												<img src={avatarSrc(mainImage)} alt={product.name || "product"} className="w-full h-full object-cover" />
@@ -423,55 +423,67 @@ export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 								{skus.length === 0 ? (
 									<div className="text-slate-500">{t("productModal.skusEmpty")}</div>
 								) : (
-									<div className="overflow-hidden rounded-xl border">
-										<div className="grid grid-cols-12 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-200 px-4 py-3">
-											<div className="col-span-5">{t("common.sku")}</div>
-											<div className="col-span-3 text-center">{t("common.attributes")}</div>
-											<div className="col-span-4 text-center">{t("common.stock")}</div>
-										</div>
+									<div className="overflow-x-auto rounded-xl border">
+										{/* 1. هذا الـ div هو الحل: يجبر المحتوى أن يكون عرضه 800px على الأقل */}
+										<div className="min-w-[800px]">
 
-										<div className="divide-y">
-											{skus.map((s) => {
-												const attrs = s?.attributes ? Object.entries(s.attributes) : [];
-												const avail = s?.available ?? Math.max(0, (s?.stockOnHand ?? 0) - (s?.reserved ?? 0));
-												return (
-													<div key={s.id} className="grid grid-cols-12 px-4 py-3 text-sm bg-white dark:bg-slate-900">
-														<div className="col-span-5">
-															<div className="font-semibold text-slate-900 dark:text-slate-50">{s.sku ?? `#${s.id}`}</div>
-															<div className="text-xs text-slate-500">
-																{t("common.key")}: {s.key ?? na}
+											{/* Header */}
+											<div className="grid grid-cols-12 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-200 px-4 py-3">
+												<div className="col-span-5">{t("common.sku")}</div>
+												<div className="col-span-3 text-center">{t("common.attributes")}</div>
+												<div className="col-span-4 text-center">{t("common.stock")}</div>
+											</div>
+
+											{/* Body */}
+											<div className="divide-y">
+												{skus.map((s) => {
+													const attrs = s?.attributes ? Object.entries(s.attributes) : [];
+													const avail = s?.available ?? Math.max(0, (s?.stockOnHand ?? 0) - (s?.reserved ?? 0));
+													return (
+														<div key={s.id} className="grid grid-cols-12 px-4 py-3 text-sm bg-white dark:bg-slate-900 items-center">
+
+															{/* SKU Info */}
+															<div className="col-span-5 overflow-hidden">
+																<div className="font-semibold text-slate-900 dark:text-slate-50 truncate">{s.sku ?? `#${s.id}`}</div>
+																<div className="text-xs text-slate-500 truncate">
+																	{t("common.key")}: {s.key ?? na}
+																</div>
 															</div>
-														</div>
 
-														<div className="col-span-3 flex flex-wrap items-center justify-center gap-2">
-															{attrs.length === 0 ? (
-																<span className="text-slate-400">{na}</span>
-															) : (
-																attrs.slice(0, 3).map(([k, v]) => (
-																	<Badge key={k} className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-																		{k}: {String(v)}
-																	</Badge>
-																))
-															)}
-															{attrs.length > 3 && (
-																<Badge className="rounded-full bg-slate-100 text-slate-600">+{attrs.length - 3}</Badge>
-															)}
-														</div>
+															{/* Attributes */}
+															<div className="col-span-3 flex flex-wrap items-center justify-center gap-1.5">
+																{attrs.length === 0 ? (
+																	<span className="text-slate-400">{na}</span>
+																) : (
+																	attrs.slice(0, 3).map(([k, v]) => (
+																		< Badge key={k} className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap" >
+																			{k}: {String(v)}
+																		</Badge>
+																	))
+																)}
+																{attrs.length > 3 && (
+																	<Badge className="rounded-full bg-slate-100 text-slate-600 whitespace-nowrap">+{attrs.length - 3}</Badge>
+																)}
+															</div>
 
-														<div className="col-span-4 flex items-center justify-center gap-2">
-															<Badge className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-																{t("common.onHand")}: {s.stockOnHand ?? 0}
-															</Badge>
-															<Badge className="rounded-full bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-200">
-																{t("common.reserved")}: {s.reserved ?? 0}
-															</Badge>
-															<Badge className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200">
-																{t("common.available")}: {avail}
-															</Badge>
+															{/* Stock info */}
+															{/* 3. تغيير flex-wrap إلى flex-nowrap لضمان بقائها في سطر واحد */}
+															<div className="col-span-4 flex items-center justify-center gap-2 flex-nowrap">
+																<Badge className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap shrink-0">
+																	{t("common.onHand")}: {s.stockOnHand ?? 0}
+																</Badge>
+																<Badge className="rounded-full bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-200 whitespace-nowrap shrink-0">
+																	{t("common.reserved")}: {s.reserved ?? 0}
+																</Badge>
+																<Badge className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200 whitespace-nowrap shrink-0">
+																	{t("common.available")}: {avail}
+																</Badge>
+															</div>
+
 														</div>
-													</div>
-												);
-											})}
+													);
+												})}
+											</div>
 										</div>
 									</div>
 								)}
@@ -507,7 +519,7 @@ export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 					)}
 				</div>
 			</DialogContent>
-		</Dialog>
+		</Dialog >
 	);
 }
 

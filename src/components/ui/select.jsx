@@ -28,7 +28,7 @@ function useUnlockBodyScrollWhileMounted(enabled) {
 /* ─────────────────────────────────────────────────────────────────────────
    Root / Group / Value  (pass-through wrappers)
 ───────────────────────────────────────────────────────────────────────── */
-function Select(props)      { return <SelectPrimitive.Root  data-slot="select"       {...props} /> }
+function Select(props) { return <SelectPrimitive.Root data-slot="select"       {...props} /> }
 function SelectGroup(props) { return <SelectPrimitive.Group data-slot="select-group" {...props} /> }
 function SelectValue(props) { return <SelectPrimitive.Value data-slot="select-value" {...props} /> }
 
@@ -53,8 +53,8 @@ function SelectTrigger({ className, size = "default", children, ...props }) {
         // open state — same glow so the panel looks connected
         "data-[state=open]:border-[var(--primary)]",
         "data-[state=open]:shadow-[0_0_0_3px_rgb(var(--primary-shadow))]",
-        "data-[state=open]:bg-background", 
-        "data-[placeholder]:text-muted-foreground/50",
+        "data-[state=open]:bg-background",
+        "data-[placeholder]:text-muted-foreground/80",
         // inner helpers
         "*:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2",
         "[&_svg]:pointer-events-none [&_svg]:shrink-0",
@@ -83,7 +83,7 @@ function SelectTrigger({ className, size = "default", children, ...props }) {
         <ChevronDownIcon
           className={cn(
             "relative z-10 size-4 shrink-0 transition-all duration-300",
-            "text-muted-foreground/60",
+            "text-muted-foreground/80",
             "group-data-[state=open]:text-[var(--primary)] group-data-[state=open]:rotate-180",
           )}
         />
@@ -122,8 +122,8 @@ function SelectContent({ className, children, position = "popper", align = "star
         }}
         className={cn(
           "relative  z-50 overflow-hidden !rounded-md",
-           "border border-[var(--primary)]/20",
-           "bg-popover/95 backdrop-blur-sm text-popover-foreground",
+          "border border-[var(--primary)]/20",
+          "bg-popover/95 backdrop-blur-sm text-popover-foreground",
           // shadow
           "shadow-[0_8px_32px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.08)]",
           "dark:shadow-[0_8px_32px_rgba(0,0,0,0.5),0_2px_8px_rgba(0,0,0,0.3)]",
@@ -138,7 +138,7 @@ function SelectContent({ className, children, position = "popper", align = "star
         )}
         {...props}
       >
-         
+
 
         {/* Inner top sheen */}
         <div
@@ -174,7 +174,7 @@ function SelectLabel({ className, ...props }) {
     <SelectPrimitive.Label
       data-slot="select-label"
       className={cn(
-        "px-3 pt-2 pb-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60",
+        "px-3 pt-2 pb-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground/80",
         className,
       )}
       {...props}

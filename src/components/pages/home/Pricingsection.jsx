@@ -122,7 +122,7 @@ function Feature({ label, isNew, featured, t }) {
           fontSize: 12,
           color: featured
             ? "rgba(255,255,255,0.82)"
-            : "var(--muted-foreground,#6b7280)",
+            : "#6b7280",
           textAlign: "right",
         }}
       >
@@ -164,7 +164,7 @@ function PricingCard({ plan, t, index, onAction }) {
               lineHeight: 1,
               letterSpacing: "-0.04em",
               fontWeight: 400,
-              color: featured ? "#ffffff" : "var(--foreground,#111)",
+              color: featured ? "#ffffff" : "#111",
             }}
           >
             {plan.price || 0}
@@ -204,7 +204,7 @@ function PricingCard({ plan, t, index, onAction }) {
             lineHeight: 1,
             letterSpacing: "-0.04em",
             fontWeight: 400,
-            color: featured ? "#ffffff" : "var(--foreground,#111)",
+            color: featured ? "#ffffff" : "#111",
           }}
         >
           {plan.price}
@@ -214,7 +214,7 @@ function PricingCard({ plan, t, index, onAction }) {
             fontSize: 13,
             color: featured
               ? "rgba(255,255,255,0.7)"
-              : "var(--muted-foreground,#6b7280)",
+              : "#6b7280",
           }}
         >
           / {t("perMonth")}
@@ -232,7 +232,7 @@ function PricingCard({ plan, t, index, onAction }) {
         padding: featured ? "32px 28px" : "28px 24px",
         direction: "rtl",
         position: "relative",
-        background: featured ? "#1b1945" : "var(--card,#fff)",
+        background: featured ? "#1b1945" : "#fff",
         border: featured ? "" : "4px solid #6763AF0F",
         boxShadow: featured
           ? "0px 30px 50px 0px #00000014;"
@@ -262,7 +262,7 @@ function PricingCard({ plan, t, index, onAction }) {
           style={{
             fontWeight: 700,
             fontSize: 14,
-            color: featured ? "#ffffff" : "var(--foreground,#111)",
+            color: featured ? "#ffffff" : "#111",
           }}
         >
           {plan.name || "Plans"}
@@ -277,7 +277,7 @@ function PricingCard({ plan, t, index, onAction }) {
           marginBottom: 20,
           color: featured
             ? "rgba(255,255,255,0.55)"
-            : "var(--muted-foreground,#9ca3af)",
+            : "#9ca3af",
           lineHeight: 1.6,
         }}
       >
@@ -318,7 +318,7 @@ function PricingCard({ plan, t, index, onAction }) {
           height: 1,
           background: featured
             ? "rgba(255,255,255,0.1)"
-            : "var(--border,#e5e7eb)",
+            : "#e5e7eb",
           marginBottom: 16,
         }}
       />
@@ -457,7 +457,7 @@ export default function PricingSection() {
       <section
         className="text-center"
         style={{
-          background: "var(--background,#f9fafb)",
+          background: "#faf9ff",
           padding: "72px 24px 80px",
         }}
       >

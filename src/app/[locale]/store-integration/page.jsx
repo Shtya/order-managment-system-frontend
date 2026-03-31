@@ -179,32 +179,32 @@ export default function StoresIntegrationPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {loading
               ? PROVIDERS.map((provider, i) => (
-                  <SkeletonCard key={provider || i} />
-                ))
+                <SkeletonCard key={provider || i} />
+              ))
               : PROVIDERS.map((provider, index) => {
-                  const store = stores.find((s) => s.provider === provider);
+                const store = stores.find((s) => s.provider === provider);
 
-                  return (
-                    <motion.div
-                      key={provider}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                    >
-                      <StoreCard
-                        provider={provider}
-                        store={store}
-                        t={t}
-                        onConfigure={handleConfigure}
-                        onSync={handleSync}
-                        onOpenWebhook={handleOpenWebhook}
-                        onOpenGuide={handleOpenGuide}
-                        fetchStores={fetchStores}
-                        index={index}
-                      />
-                    </motion.div>
-                  );
-                })}
+                return (
+                  <motion.div
+                    key={provider}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <StoreCard
+                      provider={provider}
+                      store={store}
+                      t={t}
+                      onConfigure={handleConfigure}
+                      onSync={handleSync}
+                      onOpenWebhook={handleOpenWebhook}
+                      onOpenGuide={handleOpenGuide}
+                      fetchStores={fetchStores}
+                      index={index}
+                    />
+                  </motion.div>
+                );
+              })}
           </div>
         </motion.div>
       </AnimatePresence>
@@ -291,7 +291,7 @@ function StoreCard({
 
   // shared footer ghost-button base classes; hover tints border+text to accent
   const fbCls =
-    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 bg-white/80 dark:bg-white/10 border border-white/60 dark:border-white/10 text-gray-600 dark:text-gray-300 shadow-sm";
+    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 bg-white/80 dark:bg-[var(--muted)] border border-white/60 dark:border-[var(--border)] text-gray-600 dark:text-gray-300 shadow-sm";
   const onEnter = (e) => {
     e.currentTarget.style.borderColor = accent;
     e.currentTarget.style.color = accent;
@@ -305,8 +305,12 @@ function StoreCard({
     <motion.div
       whileHover={{ y: -3, boxShadow: "0 20px 48px 0 rgba(0,0,0,0.11)" }}
       transition={{ type: "spring", stiffness: 300, damping: 22 }}
-      className="relative rounded-2xl overflow-hidden border border-[var(--border)] shadow-sm flex flex-col"
-      style={{ background: config.bg }}
+      className={cn(
+        "relative rounded-2xl overflow-hidden border border-[var(--border)] shadow-sm flex flex-col",
+        config.bg,
+        "dark:bg-none",
+        "dark:bg-[var(--muted)]/80!"
+      )}
     >
       {/* per-provider accent strip at top */}
       <span
@@ -348,7 +352,7 @@ function StoreCard({
                 href={`https://${config.website}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-0.5 mt-0.5 transition-opacity hover:opacity-60"
+                className="flex items-center gap-0.5 mt-0.5 transition-opacity dark:text-white! hover:opacity-60"
                 style={{
                   fontSize: 11,
                   color: "rgba(0,0,0,0.35)",
@@ -458,12 +462,7 @@ function StoreCard({
 
       {/* Footer */}
       <div
-        className="px-4 py-3 flex items-center gap-1.5 flex-wrap"
-        style={{
-          background: "rgba(255,255,255,0.55)",
-          backdropFilter: "blur(6px)",
-          borderTop: "1px solid rgba(255,255,255,0.5)",
-        }}
+        className="px-4 py-3 flex items-center gap-1.5 flex-wrap border-t border-white/50 dark:border-[var(--border)] bg-white/55 dark:bg-[var(--muted)]/80 backdrop-blur-md"
       >
         {hasPermission(hasStore ? "stores.update" : "stores.create") && (
           <button
@@ -603,7 +602,7 @@ function StoreConfigDialog({
         subtitle={t("dialog.subtitle")}
         onClose={onClose}
       />
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto  p-3">
+      <div className="rounded-xl  max-h-[90vh] overflow-y-auto  p-3">
         {fetchingStore ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 size={28} className="animate-spin text-primary" />
@@ -715,7 +714,7 @@ function StoreConfigDialog({
                           className={cn(
                             inputCls,
                             masks?.apiKey &&
-                              "placeholder:text-gray-950 dark:placeholder:text-gray-100",
+                            "placeholder:text-gray-950 dark:placeholder:text-gray-100",
                           )}
                         />
                         {fieldErrors.apiKey && (
@@ -736,7 +735,7 @@ function StoreConfigDialog({
                           placeholder={
                             isEdit
                               ? masks.clientSecret ||
-                                t("form.maskedPlaceholder")
+                              t("form.maskedPlaceholder")
                               : t("form.secretPlaceholder")
                           }
                           onChange={(e) => {
@@ -749,7 +748,7 @@ function StoreConfigDialog({
                           className={cn(
                             inputCls,
                             masks?.clientSecret &&
-                              "placeholder:text-gray-950 dark:placeholder:text-gray-100",
+                            "placeholder:text-gray-950 dark:placeholder:text-gray-100",
                           )}
                         />
                         {fieldErrors.clientSecret && (
@@ -797,7 +796,7 @@ function StoreConfigDialog({
                               navigator.clipboard.writeText(
                                 String(
                                   config.webhookEndpoints.create(user?.id) ||
-                                    "",
+                                  "",
                                 ),
                               )
                             }
@@ -825,7 +824,7 @@ function StoreConfigDialog({
                               navigator.clipboard.writeText(
                                 String(
                                   config.webhookEndpoints.update(user?.id) ||
-                                    "",
+                                  "",
                                 ),
                               )
                             }
@@ -855,7 +854,7 @@ function StoreConfigDialog({
                           placeholder={
                             isEdit
                               ? masks.webhookSecret ||
-                                t("form.maskedPlaceholder")
+                              t("form.maskedPlaceholder")
                               : t("form.secretPlaceholder")
                           }
                           onChange={(e) => {
@@ -868,7 +867,7 @@ function StoreConfigDialog({
                           className={cn(
                             inputCls,
                             masks?.webhookSecret &&
-                              "placeholder:text-gray-950 dark:placeholder:text-gray-100",
+                            "placeholder:text-gray-950 dark:placeholder:text-gray-100",
                           )}
                         />
                         {fieldErrors.webhookSecret && (
@@ -891,7 +890,7 @@ function StoreConfigDialog({
                           placeholder={
                             isEdit
                               ? masks.webhookCreateOrderSecret ||
-                                t("form.maskedPlaceholder")
+                              t("form.maskedPlaceholder")
                               : t("form.secretPlaceholder")
                           }
                           onChange={(e) => {
@@ -904,7 +903,7 @@ function StoreConfigDialog({
                           className={cn(
                             inputCls,
                             masks?.webhookCreateOrderSecret &&
-                              "placeholder:text-gray-950 dark:placeholder:text-gray-100",
+                            "placeholder:text-gray-950 dark:placeholder:text-gray-100",
                           )}
                         />
                         {fieldErrors.webhookCreateOrderSecret && (
@@ -923,7 +922,7 @@ function StoreConfigDialog({
                           placeholder={
                             isEdit
                               ? masks.webhookUpdateStatusSecret ||
-                                t("form.maskedPlaceholder")
+                              t("form.maskedPlaceholder")
                               : t("form.secretPlaceholder")
                           }
                           onChange={(e) => {
@@ -936,7 +935,7 @@ function StoreConfigDialog({
                           className={cn(
                             inputCls,
                             masks?.webhookUpdateStatusSecret &&
-                              "placeholder:text-gray-950 dark:placeholder:text-gray-100",
+                            "placeholder:text-gray-950 dark:placeholder:text-gray-100",
                           )}
                         />
                         {fieldErrors.webhookUpdateStatusSecret && (
@@ -1370,11 +1369,10 @@ export function StoreGuideModal({ provider, onClose }) {
               setActiveTab(i);
               setActiveStep(0);
             }}
-            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-lg whitespace-nowrap border-b-2 transition-all ${
-              activeTab === i
-                ? "border-[var(--primary)] text-[var(--primary)] bg-[var(--primary)]/5"
-                : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]"
-            }`}
+            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-lg whitespace-nowrap border-b-2 transition-all ${activeTab === i
+              ? "border-[var(--primary)] text-[var(--primary)] bg-[var(--primary)]/5"
+              : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]"
+              }`}
           >
             {p(tab.label)}
           </button>

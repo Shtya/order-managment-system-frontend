@@ -178,7 +178,6 @@ function DashboardLayout({ children }) {
         style={{
           marginRight: isRTL ? effectiveMargin : 0,
           marginLeft: isRTL ? 0 : effectiveMargin,
-          // 4. تعطيل الحركة (transition) في التحميل الأول لتجنب "القفزة"
           transition: mounted ? "margin 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)" : "none",
         }}
       >
@@ -204,7 +203,7 @@ function DashboardLayout({ children }) {
               }}
             />
           </div>
-          <div className="relative" style={{ zIndex: 1 }}>
+          <div className="relative min-h-full flex flex-col" style={{ zIndex: 1 }}>
             {isLocked ? <SubscriptionLock /> : children}
           </div>
         </main>

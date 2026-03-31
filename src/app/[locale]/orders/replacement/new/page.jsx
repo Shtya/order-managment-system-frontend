@@ -573,7 +573,7 @@ function OrderSearchSection({
                 style={{ flex: 1, height: 1, background: "var(--border)" }}
               />
             </div>
-            <SelectedOrderDetails order={selectedOrder} />
+            <SelectedOrderDetails order={selectedOrder} formatCurrency={formatCurrency} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -609,7 +609,7 @@ function OrderSearchSection({
 // ─────────────────────────────────────────────
 // Selected order details panel
 // ─────────────────────────────────────────────
-function SelectedOrderDetails({ order }) {
+function SelectedOrderDetails({ order, formatCurrency }) {
   const tOrder = useTranslations("orders");
   const t = useTranslations("CreateReplacement");
   const status = order.status;
@@ -637,7 +637,7 @@ function SelectedOrderDetails({ order }) {
   return (
     <div className="space-y-4">
       {/* ── Info pills ─────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+      <div className="grid md:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
         {pills.map(({ icon: Icon, label, value }) => (
           <div
             key={label}
@@ -749,16 +749,19 @@ function SelectedOrderDetails({ order }) {
                     </td>
 
                     {/* Product name + SKU */}
-                    <td className=" flex items-center gap-2 px-4 py-3">
-                      <p className="text-sm font-semibold text-foreground leading-snug">
-                        {product?.name || "—"}
-                      </p>
-                      {variant?.sku && (
-                        <span className="inline-flex items-center gap-1 mt-1 text-[10px] text-muted-foreground font-mono bg-muted border border-border/50 rounded-xl px-1.5 py-0.5">
-                          <Hash size={9} />
-                          {variant.sku}
-                        </span>
-                      )}
+                    <td className=" px-4 py-3">
+                      <div className="flex items-center gap-2 ">
+
+                        <p className="text-sm font-semibold text-foreground text-nowrap leading-snug">
+                          {product?.name || "—"}
+                        </p>
+                        {variant?.sku && (
+                          <span className="inline-flex items-center text-nowrap gap-1 mt-1 text-[10px] text-muted-foreground font-mono bg-muted border border-border/50 rounded-xl px-1.5 py-0.5">
+                            <Hash size={9} />
+                            {variant.sku}
+                          </span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Qty */}
@@ -769,14 +772,14 @@ function SelectedOrderDetails({ order }) {
                     </td>
 
                     <td className="px-4 py-3 text-right">
-                      <span className="text-sm font-bold font-ar text-muted-foreground font-mono">
+                      <span className="text-sm font-bold font-ar text-nowrap text-muted-foreground font-mono">
                         {formatCurrency(item.unitPrice)}
                       </span>
                     </td>
 
                     {/* Line total */}
                     <td className="px-4 py-3 text-right">
-                      <span className=" text-sm font-ar font-bold text-primary font-mono">
+                      <span className=" text-sm font-ar text-nowrap font-bold text-primary font-mono">
                         {formatCurrency(lineTotal)}
                       </span>
                     </td>
@@ -890,7 +893,7 @@ function ReplacementInfoSection({ form, setForm, errors }) {
 // ─────────────────────────────────────────────
 // Multi-Select Dropdown
 // ─────────────────────────────────────────────
-function ItemMultiSelect({ orderItems, replacementItems, onAdd, onRemove, t, formatCurrency }) {
+function ItemMultiSelect({ orderItems, replacementItems, onAdd, onRemove, t }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -1873,9 +1876,9 @@ export default function CreateReplacementPage({
         Array.isArray(msg)
           ? msg.join(", ")
           : msg ||
-              (isEditMode
-                ? t("messages.updateFailed")
-                : t("messages.createFailed")),
+          (isEditMode
+            ? t("messages.updateFailed")
+            : t("messages.createFailed")),
       );
     } finally {
       setSubmitting(false);

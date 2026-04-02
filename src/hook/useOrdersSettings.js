@@ -34,6 +34,8 @@ export default function useOrdersSettings({ isOpen = true, onClose } = {}) {
       autoGenerateLabel: false,
       partialPaymentThreshold: 0,
       requireFullPayment: false,
+      autoShipAfterWarehouse: false,
+      warehouseDefaultShippingCompanyId: "",
       //   allowReturnCreation: true,
     },
   });
@@ -99,6 +101,12 @@ export default function useOrdersSettings({ isOpen = true, onClose } = {}) {
                 requireFullPayment:
                   data.shipping?.requireFullPayment ??
                   prev.shipping.requireFullPayment,
+                autoShipAfterWarehouse:
+                  data.shipping?.autoShipAfterWarehouse ??
+                  prev.shipping.autoShipAfterWarehouse,
+                warehouseDefaultShippingCompanyId:
+                  data.shipping?.warehouseDefaultShippingCompanyId ??
+                  prev.shipping.warehouseDefaultShippingCompanyId,
                 //   allowReturnCreation:
                 //     data.shipping?.allowReturnCreation ??
                 //     prev.shipping.allowReturnCreation,
@@ -157,6 +165,20 @@ export default function useOrdersSettings({ isOpen = true, onClose } = {}) {
           );
         } else {
           payload.shipping.shippingCompanyId = null;
+        }
+
+        if (
+          payload.shipping.warehouseDefaultShippingCompanyId !== undefined &&
+          payload.shipping.warehouseDefaultShippingCompanyId !== "" &&
+          payload.shipping.warehouseDefaultShippingCompanyId !== null &&
+          payload.shipping.warehouseDefaultShippingCompanyId !== "all" &&
+          payload.shipping.warehouseDefaultShippingCompanyId !== "none"
+        ) {
+          payload.shipping.warehouseDefaultShippingCompanyId = Number(
+            payload.shipping.warehouseDefaultShippingCompanyId,
+          );
+        } else {
+          payload.shipping.warehouseDefaultShippingCompanyId = null;
         }
       }
 

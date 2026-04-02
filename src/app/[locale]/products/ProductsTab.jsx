@@ -53,6 +53,9 @@ export default function useProductsTab({ t, searchDebounced, filters, filtersOpe
 		if (filters.priceFrom !== "") params.set("wholesalePrice.gte", String(filters.priceFrom));
 		if (filters.priceTo !== "") params.set("wholesalePrice.lte", String(filters.priceTo));
 
+		if (filters.salePriceFrom !== "") params.set("salePrice.gte", String(filters.salePriceFrom));
+		if (filters.salePriceTo !== "") params.set("salePrice.lte", String(filters.salePriceTo));
+
 		params.set("sortBy", "created_at");
 		params.set("sortOrder", "DESC");
 		return params;
@@ -139,12 +142,22 @@ export default function useProductsTab({ t, searchDebounced, filters, filtersOpe
 			{ key: "warehouse", header: t("table.warehouse"), className: "min-w-[120px]", cell: (row) => row?.warehouse?.name ?? na },
 			{ key: "storageRack", header: t("table.storageRack"), className: "min-w-[100px]", cell: (row) => row.storageRack ?? na },
 			{
+				key: "salePrice",
+				header: t("table.salePrice"),
+				className: "min-w-[100px]",
+				cell: (row) => (
+					<div className="flex items-center gap-1 text-green-600 dark:text-green-400 font-semibold">
+						{formatCurrency(row.salePrice || 0)}
+					</div>
+				)
+			},
+			{
 				key: "wholesalePrice",
 				header: t("table.wholesalePrice"),
 				className: "min-w-[100px]",
 				cell: (row) => (
 					<div className="flex items-center gap-1 text-green-600 dark:text-green-400 font-semibold">
-						{formatCurrency(row.wholesalePrice || 0, na)}
+						{formatCurrency(row.wholesalePrice || 0)}
 					</div>
 				)
 			},
@@ -154,7 +167,7 @@ export default function useProductsTab({ t, searchDebounced, filters, filtersOpe
 				className: "min-w-[100px]",
 				cell: (row) => (
 					<div className="flex items-center gap-1 text-orange-600 dark:text-orange-400 font-semibold">
-						{formatCurrency(row.lowestPrice || 0, na)}
+						{formatCurrency(row.lowestPrice || 0)}
 					</div>
 				)
 			},
@@ -312,10 +325,14 @@ export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 
 											<div className="mt-3 flex flex-wrap gap-2">
 												<Badge className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200">
-													{t("productModal.wholesale")}: {formatCurrency(product.wholesalePrice || 0, na)}
+													{t("productModal.wholesale")}: {formatCurrency(product.wholesalePrice || 0)}
+												</Badge>
+
+												<Badge className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200">
+													{t("productModal.salePrice")}: {formatCurrency(product.salePrice || 0)}
 												</Badge>
 												<Badge className="rounded-full bg-orange-50 text-orange-700 border border-orange-200 dark:bg-orange-900/20 dark:text-orange-200">
-													{t("productModal.lowestPrice")}: {formatCurrency(product.lowestPrice || 0, na)}
+													{t("productModal.lowestPrice")}: {formatCurrency(product.lowestPrice || 0)}
 												</Badge>
 
 												<Badge className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
@@ -337,7 +354,7 @@ export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 
 									<div className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
 										<CalendarDays size={14} />
-										{formatDate(product.created_at, na)}
+										{formatDate(product.created_at)}
 									</div>
 								</div>
 

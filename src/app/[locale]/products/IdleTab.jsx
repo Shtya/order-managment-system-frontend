@@ -1,5 +1,5 @@
 // --- File: IdleTab.jsx ---
-"use client"; 
+"use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { CalendarDays, DollarSign, Edit2, Eye, QrCode, Tag, Trash2 } from "lucide-react";
@@ -11,6 +11,7 @@ import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { useRouter } from "@/i18n/navigation";
 import ActionButtons from "@/components/atoms/Actions";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 function normalizeAxiosError(err) {
   const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -20,7 +21,7 @@ function normalizeAxiosError(err) {
 export default function useIdleTab({ t, searchDebounced, filters, idleFromDate, onAskDelete, onOpenView, onExportRequest, activetab }) {
   const router = useRouter();
   const requestIdRef = useRef(0);
-
+  const { formatCurrency } = usePlatformSettings();
   const [loading, setLoading] = useState(false);
   const [pager, setPager] = useState({
     total_records: 0,
@@ -44,6 +45,9 @@ export default function useIdleTab({ t, searchDebounced, filters, idleFromDate, 
 
     if (filters.priceFrom !== "") params.set("wholesalePrice.gte", String(filters.priceFrom));
     if (filters.priceTo !== "") params.set("wholesalePrice.lte", String(filters.priceTo));
+
+    if (filters.salePriceFrom !== "") params.set("salePrice.gte", String(filters.salePriceFrom));
+    if (filters.salePriceTo !== "") params.set("salePrice.lte", String(filters.salePriceTo));
 
     if (idleFromDate) params.set("created_at.lte", `${idleFromDate}T23:59:59.999Z`);
 
@@ -116,13 +120,22 @@ export default function useIdleTab({ t, searchDebounced, filters, idleFromDate, 
       { key: "warehouse", header: t("table.warehouse"), className: "min-w-[120px]", cell: (row) => row?.warehouse?.name ?? na },
       { key: "storageRack", header: t("table.storageRack"), className: "min-w-[100px]", cell: (row) => row.storageRack ?? na },
       {
+        key: "salePrice",
+        header: t("table.salePrice"),
+        className: "min-w-[100px]",
+        cell: (row) => (
+          <div className="flex items-center gap-1 text-green-600 dark:text-green-400 font-semibold">
+            {formatCurrency(row.salePrice || 0)}
+          </div>
+        )
+      },
+      {
         key: "wholesalePrice",
         header: t("table.wholesalePrice"),
         className: "min-w-[100px]",
         cell: (row) => (
           <div className="flex items-center gap-1 text-green-600 dark:text-green-400 font-semibold">
-            <DollarSign size={14} />
-            {row.wholesalePrice ?? na}
+            {formatCurrency(row.wholesalePrice || 0)}
           </div>
         )
       },
@@ -169,38 +182,38 @@ export default function useIdleTab({ t, searchDebounced, filters, idleFromDate, 
         )
       },
       {
-  key: "actions",
-  header: t("table.options"),
-  className: "bg-white dark:bg-slate-900",
-  cell: (row) => (
-    <ActionButtons
-      row={row}
-      actions={[
-        {
-          icon: <Trash2 />,
-          tooltip: t("actions.delete"),
-          onClick: (r) => onAskDelete?.(r.id, "bundles"),
-          variant: "red",
-          permission: "products.delete",
-        },
-        {
-          icon: <Edit2 />,
-          tooltip: t("actions.edit"),
-          onClick: (r) => router.push(`/bundles/edit/${r.id}`),
-          variant: "blue",
-          permission: "products.update",
-        },
-        {
-          icon: <Eye />,
-          tooltip: t("actions.view"),
-          onClick: (r) => onOpenView?.(r, "bundles"),
-          variant: "purple",
-          permission: "products.read",
-        },
-      ]}
-    />
-  )
-}
+        key: "actions",
+        header: t("table.options"),
+        className: "",
+        cell: (row) => (
+          <ActionButtons
+            row={row}
+            actions={[
+              {
+                icon: <Trash2 />,
+                tooltip: t("actions.delete"),
+                onClick: (r) => onAskDelete?.(r.id, "products"),
+                variant: "red",
+                permission: "products.delete",
+              },
+              {
+                icon: <Edit2 />,
+                tooltip: t("actions.edit"),
+                onClick: (r) => router.push(`/products/edit/${r.id}`),
+                variant: "blue",
+                permission: "products.update",
+              },
+              {
+                icon: <Eye />,
+                tooltip: t("actions.view"),
+                onClick: (r) => onOpenView?.(r.id, "products"),
+                variant: "purple",
+                permission: "products.read",
+              },
+            ]}
+          />
+        )
+      }
     ];
   }, [router, t, onAskDelete, onOpenView]);
 

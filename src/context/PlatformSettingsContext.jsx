@@ -8,10 +8,13 @@ const PlatformSettingsContext = createContext();
 export function PlatformSettingsProvider({ children }) {
   const [settings, setSettings] = useState(null);
   const [company, setCompany] = useState(null);
+  const [shippingCompanies, setShippingCompanies] = useState([]);
+
   const [isSettingsLoading, setIsSettingsLoading] = useState(true);
   const [isCompanyLoading, setIsCompanyLoading] = useState(true);
+  const [isShippingLoading, setIsShippingLoading] = useState(true);
 
-  // 1. جلب إعدادات المنصة بشكل مستقل
+
   const fetchSettings = useCallback(async () => {
     setIsSettingsLoading(true);
     try {
@@ -24,7 +27,7 @@ export function PlatformSettingsProvider({ children }) {
     }
   }, []);
 
-  // 2. جلب بيانات الشركة بشكل مستقل
+
   const fetchCompany = useCallback(async () => {
     setIsCompanyLoading(true);
     try {
@@ -37,21 +40,47 @@ export function PlatformSettingsProvider({ children }) {
     }
   }, []);
 
-  // تنفيذ الجلب عند التحميل الأولي
+
+  const fetchShippingCompanies = useCallback(async () => {
+    setIsShippingLoading(true);
+    try {
+      const res = await api.get("/shipping/integrations/active");
+
+
+      const integrations = Array.isArray(res.data.integrations)
+        ? res.data.integrations
+        : Array.isArray(res.data)
+          ? res.data
+          : [];
+
+      setShippingCompanies(integrations);
+    } catch (error) {
+      console.error("Shipping Lookup Error:", error);
+    } finally {
+      setIsShippingLoading(false);
+    }
+  }, []);
+
+
   useEffect(() => {
     fetchSettings();
     fetchCompany();
-  }, [fetchSettings, fetchCompany]);
+    fetchShippingCompanies();
+  }, [fetchSettings, fetchCompany, fetchShippingCompanies]);
 
-  // دالة لتحديث الكل
-  const refreshAll = () => {
+
+  const refreshAll = useCallback(() => {
     fetchSettings();
     fetchCompany();
-  };
+    fetchShippingCompanies();
+  }, [fetchSettings, fetchCompany, fetchShippingCompanies]);
+
+
   const currency = useMemo(() => {
     if (isCompanyLoading) return "";
-    return company?.currency || "EGP";
+    return (company?.currency || "SAR").trim();
   }, [company, isCompanyLoading]);
+
 
   const formatCurrency = useCallback((amount, defaultCurrency) => {
     if (amount === undefined || amount === null) return "—";
@@ -61,8 +90,7 @@ export function PlatformSettingsProvider({ children }) {
       maximumFractionDigits: 2,
     });
 
-    // استخدام التريم (Trim) لضمان نظافة المخرجات
-    return `${formatted} ${defaultCurrency || currency.trim()}`;
+    return `${formatted} ${(defaultCurrency || currency).trim()}`;
   }, [currency]);
 
   return (
@@ -70,13 +98,16 @@ export function PlatformSettingsProvider({ children }) {
       value={{
         settings,
         company,
+        shippingCompanies,
         currency,
         isSettingsLoading,
-        formatCurrency,
         isCompanyLoading,
-        isLoading: isSettingsLoading || isCompanyLoading, // حالة عامة إذا أردت
+        isShippingLoading,
+        isLoading: isSettingsLoading || isCompanyLoading || isShippingLoading,
+        formatCurrency,
         refreshSettings: fetchSettings,
         refreshCompany: fetchCompany,
+        refreshShipping: fetchShippingCompanies,
         refreshAll
       }}
     >

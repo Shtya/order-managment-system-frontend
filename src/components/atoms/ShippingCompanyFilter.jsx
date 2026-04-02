@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/select";
 import { useTranslations } from "next-intl";
 import { FilterField } from "./Table";
-import api from "@/utils/api";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 export default function ShippingCompanyFilter({
   value,
@@ -20,37 +20,17 @@ export default function ShippingCompanyFilter({
 }) {
   const tShipping = useTranslations("shipping");
   const t = useTranslations("orders");
-  const [list, setList] = useState([]);
+
+  const { shippingCompanies } = usePlatformSettings()
 
   useEffect(() => {
-    const getShippingCompanies = async () => {
-      try {
-        const res = await api.get("/shipping/integrations/active");
-
-        // Handle different possible response structures
-        const integrations = Array.isArray(res.data.integrations)
-          ? res.data.integrations
-          : Array.isArray(res.data)
-            ? res.data
-            : [];
-
-        setList(integrations);
-      } catch (err) {
-        console.error("Shipping Lookup Error", err);
-      }
-    };
-
-    getShippingCompanies();
-  }, []);
-
-  useEffect(() => {
-    if (autoSelectIfSingle && list.length === 1) {
-      const singleValue = String(list[0].providerId);
+    if (autoSelectIfSingle && shippingCompanies.length === 1) {
+      const singleValue = String(shippingCompanies[0].providerId);
       if (value !== singleValue) {
         onChange(singleValue);
       }
     }
-  }, [list, autoSelectIfSingle, onChange, value]);
+  }, [shippingCompanies, autoSelectIfSingle, onChange, value]);
 
   const select = (
     <Select value={value} onValueChange={onChange}>
@@ -60,13 +40,13 @@ export default function ShippingCompanyFilter({
       <SelectContent>
         {showAll && <SelectItem value="all">{t("filters.all")}</SelectItem>}
         {showNone && <SelectItem value="none">{t("filters.none")}</SelectItem>}
-        {list.map((c) => (
+        {shippingCompanies.map((c) => (
           <SelectItem key={c.providerId} value={String(c.providerId)}>
             {/* Handles your specific translation logic for providers */}
             {tShipping
               ? tShipping(`providers.${c.provider.toLowerCase()}`, {
-                  defaultValue: c.name,
-                })
+                defaultValue: c.name,
+              })
               : c.name}
           </SelectItem>
         ))}

@@ -38,7 +38,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import Button_ from '@/components/atoms/Button';
 import { useRouter } from '@/i18n/navigation';
 import { cn } from '@/utils/cn';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Textarea } from '../../../../components/ui/textarea';
 import { TagInput } from '@/components/atoms/TagInput';
 import LANG from '@/components/atoms/LANG';
@@ -80,10 +80,10 @@ function canonicalKey(attrs) {
 }
 
 const ATTRIBUTE_TEMPLATES = [
-	{ id: 'size', icon: Ruler, nameKey: 'size', valuesKey: 'sizeValues' },
-	{ id: 'color', icon: Palette, nameKey: 'color', valuesKey: 'colorValues' },
-	{ id: 'material', icon: Shirt, nameKey: 'material', valuesKey: 'materialValues' },
-	{ id: 'weight', icon: Package, nameKey: 'weight', valuesKey: 'weightValues' },
+	{ id: 'size', icon: Ruler, name: 'الحجم', nameEn: 'Size', values: ['صغير', 'متوسط'], valuesEn: ['Small', 'Medium'] },
+	{ id: 'color', icon: Palette, name: 'اللون', nameEn: 'Color', values: ['أحمر', 'أزرق', 'أخضر'], valuesEn: ['Red', 'Blue', 'Green'] },
+	{ id: 'material', icon: Shirt, name: 'المادة', nameEn: 'Material', values: ['قطن', 'بوليستر', 'صوف'], valuesEn: ['Cotton', 'Polyester', 'Wool'] },
+	{ id: 'weight', icon: Package, name: 'الوزن', nameEn: 'Weight', values: ['خفيف', 'متوسط', 'ثقيل'], valuesEn: ['Light', 'Medium', 'Heavy'] },
 ];
 
 function buildCombinationsFromAttributes(attributes, productName = '', defaultPrice = '') {
@@ -93,10 +93,10 @@ function buildCombinationsFromAttributes(attributes, productName = '', defaultPr
 			const values = (attr?.values || [])
 				.map((v) => ({ value: slugifyKey(v), label: (v || '').trim() }))
 				.filter((v) => v.value);
+
 			return { key, name: (attr?.name || '').trim(), values };
 		})
 		.filter((attr) => attr.key && attr.values.length > 0);
-
 	if (!usable.length) return [];
 
 	let acc = [{ attrs: {} }];
@@ -124,6 +124,7 @@ const makeSchema = (t) =>
 		name: yup.string().trim().required(t('validation.nameRequired')).max(200, t('validation.nameTooLong', { max: 200 })),
 		slug: yup.string().trim().required(t('validation.slugRequired')).matches(/^[a-z0-9-]+$/, t('validation.slugInvalid')),
 		wholesalePrice: yup.number().transform((value, originalValue) => originalValue === "" ? null : value).nullable().typeError(t('validation.invalidNumber')).min(0, t('validation.noNegative')),
+		salePrice: yup.number().transform((value, originalValue) => originalValue === "" ? null : value).nullable().typeError(t('validation.invalidNumber')).min(0, t('validation.noNegative')),
 		lowestPrice: yup.number().transform((value, originalValue) => originalValue === "" ? null : value).nullable().typeError(t('validation.invalidNumber')).min(0, t('validation.noNegative')),
 		storageRack: yup.string().nullable(),
 		categoryId: yup.string().nullable(),
@@ -143,7 +144,7 @@ function defaultAttribute() {
 
 function defaultValues() {
 	return {
-		name: '', slug: '', wholesalePrice: '', lowestPrice: '', storageRack: '',
+		name: '', slug: '', wholesalePrice: '', salePrice: '', lowestPrice: '', storageRack: '',
 		categoryId: '', storeId: '', warehouseId: '', description: '',
 		callCenterProductDescription: '', upsellingEnabled: false,
 		upsellingProducts: [], attributes: [], combinations: [],
@@ -213,6 +214,7 @@ const inputClass = "h-[46px] rounded-xl bg-slate-50 dark:bg-slate-800/60 border-
 
 export default function AddProductPage({ isEditMode = false, existingProduct = null, productId = null }) {
 	const t = useTranslations('addProduct');
+	const locale = useLocale();
 	const [imageErrors, setImageErrors] = useState({
 		main: { general: '', specific: {} },
 		other: { general: '', specific: {} }
@@ -238,6 +240,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	}, [upsellingEnabled, setValue]);
 
 	const wholesalePrice = watch('wholesalePrice');
+	const salePrice = watch('salePrice');
 	const attributesWatch = useWatch({ control, name: 'attributes' });
 	const combinationsWatch = useWatch({ control, name: 'combinations' });
 
@@ -255,7 +258,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				]);
 				if (!mounted) return;
 				setCategories(Array.isArray(catsRes.data) ? catsRes.data : []);
-				
+
 				const storesData = Array.isArray(storesRes.data) ? storesRes.data : [];
 				setStores(storesData);
 				// Auto-select store if only one exists and not in edit mode
@@ -273,11 +276,12 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	useEffect(() => {
 		const attributes = attributesWatch || [];
 		const currentName = productName || '';
-		const currentPrice = wholesalePrice || '';
-		const sig = JSON.stringify({ attributes: (attributes || []).map((a) => ({ name: a?.name, values: a?.values || [] })), productName: currentName, wholesalePrice: currentPrice });
+		const currentPrice = salePrice || '';
+		const sig = JSON.stringify({ attributes: (attributes || []).map((a) => ({ name: a?.name, values: a?.values || [] })), productName: currentName, salePrice: currentPrice });
 		if (lastCombSigRef.current === sig) return;
 		lastCombSigRef.current = sig;
 		const currentCombos = watch('combinations') || [];
+		console.log('data', attributes, currentName, currentPrice);
 		const generated = buildCombinationsFromAttributes(attributes, currentName, currentPrice);
 		const byKey = new Map(currentCombos.map((c) => [c.key, c]));
 		const next = generated.map((g) => {
@@ -285,7 +289,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			return { ...g, sku: g.sku, stockOnHand: old?.stockOnHand ?? g.stockOnHand ?? 0, price: old?.price && old.price !== '' ? old.price : g.price };
 		});
 		setValue('combinations', next, { shouldDirty: true, shouldValidate: false });
-	}, [attributesWatch, productName, wholesalePrice]);
+	}, [attributesWatch, productName, salePrice]);
 
 	useEffect(() => {
 		return () => {
@@ -294,9 +298,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	}, [mainFiles, otherFiles]);
 
 	const addQuickTemplate = (template) => {
-		const name = t(`attributes.templates.${template.nameKey}`);
-		const values = t.raw(`attributes.templates.${template.valuesKey}`);
-		appendAttribute({ id: makeId(), name, values });
+		appendAttribute({ id: makeId(), name: template.nameEn, values: template.valuesEn });
 		toast.success(t('messages.templateAdded', { name }));
 	};
 
@@ -318,10 +320,17 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		return !generalError && Object.keys(specificErrors).length === 0;
 	};
 
-	const handleWholesalePriceBlur = () => {
-		const currentPrice = wholesalePrice || '';
+	const handleSalePriceBlur = () => {
+		const currentPrice = salePrice || '';
 		const currentCombos = watch('combinations') || [];
-		const updated = currentCombos.map((combo) => ({ ...combo, price: combo.price && combo.price !== '' ? combo.price : currentPrice }));
+		const updated = currentCombos.map((combo) => {
+			const hasPrice = combo.price && Number(combo.price) !== 0 && combo.price !== '';
+
+			return {
+				...combo,
+				price: hasPrice ? combo.price : currentPrice
+			};
+		});
 		setValue('combinations', updated, { shouldDirty: true, shouldValidate: false });
 	};
 
@@ -339,8 +348,13 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			const fd = new FormData();
 			fd.append('name', data.name.trim());
 			fd.append('type', 'PRODUCT');
+
 			const wp = safeNumberString(data.wholesalePrice);
 			if (wp !== '') fd.append('wholesalePrice', wp);
+
+			const sp = safeNumberString(data.salePrice);
+			if (sp !== '') fd.append('salePrice', wp);
+
 			const lp = safeNumberString(data.lowestPrice);
 			if (lp !== '') fd.append('lowestPrice', lp);
 			if ((data.storageRack ?? '').trim()) fd.append('storageRack', data.storageRack.trim());
@@ -384,8 +398,8 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	useEffect(() => {
 		if (!isEditMode || !existingProduct) return;
 		const extractedAttributes = extractAttributesFromSkus(existingProduct.skus || []);
-		const combinations = (existingProduct.skus || []).map((sku) => ({ key: sku.key, sku: sku.sku || '', attributes: sku.attributes || {}, stockOnHand: sku.stockOnHand || 0, reserved: sku.reserved || 0, price: sku.price?.toString() || existingProduct.wholesalePrice?.toString() || '' }));
-		reset({ name: existingProduct.name || '', slug: existingProduct.slug || '', wholesalePrice: existingProduct.wholesalePrice?.toString() || '', lowestPrice: existingProduct.lowestPrice?.toString() || '', storageRack: existingProduct.storageRack || '', categoryId: existingProduct.categoryId ? String(existingProduct.categoryId) : 'none', storeId: existingProduct.storeId ? String(existingProduct.storeId) : 'none', warehouseId: existingProduct.warehouseId ? String(existingProduct.warehouseId) : 'none', description: existingProduct.description || '', callCenterProductDescription: existingProduct.callCenterProductDescription || '', upsellingEnabled: existingProduct.upsellingEnabled || false, upsellingProducts: existingProduct.upsellingProducts || [], attributes: extractedAttributes, combinations: combinations });
+		const combinations = (existingProduct.skus || []).map((sku) => ({ key: sku.key, sku: sku.sku || '', attributes: sku.attributes || {}, stockOnHand: sku.stockOnHand || 0, reserved: sku.reserved || 0, price: sku.price?.toString() || existingProduct.salePrice?.toString() || '' }));
+		reset({ name: existingProduct.name || '', slug: existingProduct.slug || '', wholesalePrice: existingProduct.wholesalePrice?.toString() || '', salePrice: existingProduct.salePrice?.toString() || '', lowestPrice: existingProduct.lowestPrice?.toString() || '', storageRack: existingProduct.storageRack || '', categoryId: existingProduct.categoryId ? String(existingProduct.categoryId) : 'none', storeId: existingProduct.storeId ? String(existingProduct.storeId) : 'none', warehouseId: existingProduct.warehouseId ? String(existingProduct.warehouseId) : 'none', description: existingProduct.description || '', callCenterProductDescription: existingProduct.callCenterProductDescription || '', upsellingEnabled: existingProduct.upsellingEnabled || false, upsellingProducts: existingProduct.upsellingProducts || [], attributes: extractedAttributes, combinations: combinations });
 		if (existingProduct.mainImage) { setMainFiles([{ id: makeId(), file: null, previewUrl: existingProduct.mainImage, isFromLibrary: false, isExisting: true, url: existingProduct.mainImage }]); }
 		if (existingProduct.images && existingProduct.images.length) { setOtherFiles(existingProduct.images.map((img) => ({ id: makeId(), file: null, previewUrl: img.url, isFromLibrary: false, isExisting: true, url: img.url }))); }
 	}, [isEditMode, existingProduct, reset]);
@@ -473,6 +487,8 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 									<SlugInput
 										errors={errors}
 										register={register}
+										mainName={existingProduct?.name}
+										mainSlug={existingProduct?.slug}
 										name={productName}
 										slugStatus={slugStatus}
 										slug={watchSlug}
@@ -486,8 +502,18 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 											type="number"
 											step="0.01"
 											{...register('wholesalePrice')}
-											onBlur={handleWholesalePriceBlur}
 											placeholder={t('placeholders.wholesalePrice')}
+											className={inputClass}
+										/>
+									</Field>
+
+									<Field label={t('fields.salePrice')} error={errors?.salePrice?.message}>
+										<Input
+											type="number"
+											step="0.01"
+											{...register('salePrice')}
+											onBlur={handleSalePriceBlur}
+											placeholder={t('placeholders.salePrice')}
 											className={inputClass}
 										/>
 									</Field>
@@ -598,9 +624,8 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 									</div>
 									<div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
 										{ATTRIBUTE_TEMPLATES.map((template) => {
+
 											const Icon = template.icon;
-											const name = t(`attributes.templates.${template.nameKey}`);
-											const values = t.raw(`attributes.templates.${template.valuesKey}`);
 											return (
 												<button
 													key={template.id}
@@ -612,8 +637,8 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 														<Icon className="h-3.5 w-3.5 text-primary" />
 													</div>
 													<div>
-														<div className="text-[13px] font-semibold text-slate-700 dark:text-slate-200 leading-tight">{name}</div>
-														<div className="text-[11px] text-slate-400 mt-0.5">{values.length} {t('attributes.values')}</div>
+														<div className="text-[13px] font-semibold text-slate-700 dark:text-slate-200 leading-tight">{locale === 'ar' ? template.name : template.nameEn}</div>
+														<div className="text-[11px] text-slate-400 mt-0.5">{template.values.length} {t('attributes.values')}</div>
 													</div>
 												</button>
 											);

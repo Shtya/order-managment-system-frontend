@@ -151,23 +151,23 @@ function FiltersPanel({ t, value, onChange, onApply, onReset, categories, stores
 					)}
 
 					<div className="space-y-2">
-						<Label>{t("filters.priceFrom")}</Label>
+						<Label>{currentTab !== "bundles" ? t("filters.wholesalePriceFrom") : t("filters.priceFrom")}</Label>
 						<Input
 							type="number"
 							value={value.priceFrom ?? ""}
 							onChange={(e) => onChange({ ...value, priceFrom: e.target.value })}
-							placeholder={t("filters.priceFromPlaceholder")}
+							placeholder={currentTab !== "bundles" ? t("filters.wholesalePriceFromPlaceholder") : t("filters.priceFromPlaceholder")}
 							className="rounded-full h-[45px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
 						/>
 					</div>
 
 					<div className="space-y-2">
-						<Label>{t("filters.priceTo")}</Label>
+						<Label>{currentTab !== "bundles" ? t("filters.wholesalePriceTo") : t("filters.priceTo")}</Label>
 						<Input
 							type="number"
 							value={value.priceTo ?? ""}
 							onChange={(e) => onChange({ ...value, priceTo: e.target.value })}
-							placeholder={t("filters.priceToPlaceholder")}
+							placeholder={currentTab !== "bundles" ? t("filters.wholesalePriceToPlaceholder") : t("filters.priceToPlaceholder")}
 							className="rounded-full h-[45px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
 						/>
 					</div>
@@ -222,7 +222,7 @@ export default function ProductsPage() {
 	const [searchDebounced, setSearchDebounced] = useState("");
 
 	const [filtersOpen, setFiltersOpen] = useState(false);
-	const defaultFilters = useMemo(() => ({ storageRack: "", categoryId: "", storeId: "", warehouseId: "", priceFrom: "", priceTo: "" }), []);
+	const defaultFilters = useMemo(() => ({ storageRack: "", categoryId: "", storeId: "", warehouseId: "", priceFrom: "", priceTo: "", salePriceFrom: "", salePriceTo: "" }), []);
 	const [filters, setFilters] = useState(defaultFilters);
 
 	const [idleFromDate, setIdleFromDate] = useState(() => toISODateOnly(subMonths(new Date(), 2)));
@@ -622,24 +622,24 @@ export default function ProductsPage() {
 						)}
 
 						{/* Store */}
-							<FilterField label={t("filters.store")}>
-								<Select
-									value={filters.storeId || "none"}
-									onValueChange={(v) => setFilters((f) => ({ ...f, storeId: v }))}
-								>
-									<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
-										<SelectValue placeholder={t("filters.storePlaceholder")} />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="none">{t("filters.any")}</SelectItem>
-										{filteredStores.map((s) => (
-											<SelectItem key={s.id} value={String(s.id)}>
-												{s.label ?? s.name ?? `#${s.id}`}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</FilterField>
+						<FilterField label={t("filters.store")}>
+							<Select
+								value={filters.storeId || "none"}
+								onValueChange={(v) => setFilters((f) => ({ ...f, storeId: v }))}
+							>
+								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+									<SelectValue placeholder={t("filters.storePlaceholder")} />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="none">{t("filters.any")}</SelectItem>
+									{filteredStores.map((s) => (
+										<SelectItem key={s.id} value={String(s.id)}>
+											{s.label ?? s.name ?? `#${s.id}`}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</FilterField>
 
 						{/* Warehouse */}
 						{active !== "bundles" && (
@@ -664,26 +664,49 @@ export default function ProductsPage() {
 						)}
 
 						{/* Price From */}
-						<FilterField label={t("filters.priceFrom")}>
+						<FilterField label={active !== "bundles" ? t("filters.wholesalePriceFrom") : t("filters.priceFrom")}>
 							<Input
 								type="number"
 								value={filters.priceFrom ?? ""}
 								onChange={(e) => setFilters((f) => ({ ...f, priceFrom: e.target.value }))}
-								placeholder={t("filters.priceFromPlaceholder")}
+								placeholder={active !== "bundles" ? t("filters.wholesalePriceFromPlaceholder") : t("filters.priceFromPlaceholder")}
 								className="h-10 rounded-xl text-sm"
 							/>
 						</FilterField>
 
 						{/* Price To */}
-						<FilterField label={t("filters.priceTo")}>
+						<FilterField label={active !== "bundles" ? t("filters.wholesalePriceTo") : t("filters.priceTo")}>
 							<Input
 								type="number"
 								value={filters.priceTo ?? ""}
 								onChange={(e) => setFilters((f) => ({ ...f, priceTo: e.target.value }))}
-								placeholder={t("filters.priceToPlaceholder")}
+								placeholder={active !== "bundles" ? t("filters.wholesalePriceToPlaceholder") : t("filters.priceToPlaceholder")}
 								className="h-10 rounded-xl text-sm"
 							/>
 						</FilterField>
+
+						{active !== "bundles" && <>
+							<FilterField label={t("filters.salePriceFrom")}>
+								<Input
+									type="number"
+									value={filters.salePriceFrom ?? ""}
+									onChange={(e) => setFilters((f) => ({ ...f, salePriceFrom: e.target.value }))}
+									placeholder={t("filters.salePriceFromPlaceholder")}
+									className="h-10 rounded-xl text-sm"
+								/>
+							</FilterField>
+
+							{/* Sale Price To */}
+							<FilterField label={t("filters.salePriceTo")}>
+								<Input
+									type="number"
+									value={filters.salePriceTo ?? ""}
+									onChange={(e) => setFilters((f) => ({ ...f, salePriceTo: e.target.value }))}
+									placeholder={t("filters.salePriceToPlaceholder")}
+									className="h-10 rounded-xl text-sm"
+								/>
+							</FilterField>
+						</>}
 
 						{/* Idle tab extra filter example (optional) */}
 						{active === "idle" && (

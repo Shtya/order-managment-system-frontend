@@ -40,18 +40,19 @@ export function useSlugify() {
     return { generateSlug, isTranslating };
 }
 
-export default function SlugInput({ register, name, slug, errors, slugStatus, setValue, className, labelClassName }) {
+export default function SlugInput({ mainName, mainSlug, register, name, slug, errors, slugStatus, setValue, className, labelClassName }) {
     const t = useTranslations('addProduct');
     const { generateSlug, isTranslating } = useSlugify();
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(async () => {
+            if (mainName === name) return setValue("slug", mainSlug);
             const slug = await generateSlug(name);
             setValue("slug", slug);
         }, 800);
 
         return () => clearTimeout(delayDebounceFn);
-    }, [name, setValue]);
+    }, [name, setValue, mainName, mainSlug]);
 
 
     return (

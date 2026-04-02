@@ -663,7 +663,7 @@ export function OrderDetailsPage({ order, loading }) {
           </motion.div>
 
           {/* Replacement card */}
-          {order.replacementResult && (
+          {/* {order.replacementResult && (
             <ReplacementInfoCard
               replacement={order.replacementResult}
               replacementOrder={order}
@@ -671,7 +671,7 @@ export function OrderDetailsPage({ order, loading }) {
               formatDate={formatDate}
               router={router}
             />
-          )}
+          )} */}
         </div>
 
         {/* ═══════════════════ SIDEBAR — 3 cols ════════════════════════ */}

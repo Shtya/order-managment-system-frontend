@@ -710,6 +710,13 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
                 permission: "orders.read",
               },
               {
+                icon: <Copy />,
+                tooltip: t("actions.duplicate"),
+                onClick: (r) => router.push(`/orders/new?from=${r.id}`),
+                variant: "emerald",
+                permission: "orders.create",
+              },
+              {
                 icon: <Edit2 />,
                 tooltip: t("actions.edit"),
                 onClick: (r) => router.push(`/orders/edit/${r.id}`),

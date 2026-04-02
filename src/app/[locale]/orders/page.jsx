@@ -53,7 +53,7 @@ export default function Orders() {
 	const items = useMemo(
 		() => [
 			{ id: "orders", label: t("tabs.orders"), icon: ShoppingCart },
-			{ id: "replacement", label: t("tabs.replacement"), icon: ArrowLeftRight },
+			// { id: "replacement", label: t("tabs.replacement"), icon: ArrowLeftRight },
 			{ id: "failedOrders", label: t("tabs.failedOrders"), icon: XCircle },
 			{ id: "returns", label: t("tabs.returns"), icon: RefreshCcw },
 		],
@@ -109,15 +109,13 @@ export default function Orders() {
 
 					{/* {activeTab === "returns" && <ReturnsTab />} */}
 
-					{activeTab === "replacement" && <ReplacementTab statuses={stats} />}
+					{/* {activeTab === "replacement" && <ReplacementTab statuses={stats} />} */}
 					{activeTab === "failedOrders" && <FailedOrdersTab statuses={stats} />}
 				</motion.div>
 			</AnimatePresence>
 		</div>
 	);
 }
-
-
 
 
 

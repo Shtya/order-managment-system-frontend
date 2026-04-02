@@ -44,6 +44,7 @@ import useOrdersSettings from "@/hook/useOrdersSettings";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import { P_08, P_04, P_12, P_20, P_25 } from "../../settings/page";
 import { MdNotificationAdd } from "react-icons/md";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 /* ══════════════════════════════════════════════════════════════
    HELPERS
@@ -897,6 +898,8 @@ export function AutomationTab({ settings, statuses, patch, toggleCode, t }) {
 // SHIPPING TAB
 // ────────────────────────────────────────────────────────────────────────────
 export function ShippingTab({ settings, statuses, patchShipping, patch, t }) {
+  const { shippingCompanies } = usePlatformSettings();
+  const hasMoreCompanies = shippingCompanies.length > 0;
   const isShipment = settings?.orderFlowPath === "shipping";
   console.log(patch)
   return (
@@ -1025,7 +1028,8 @@ export function ShippingTab({ settings, statuses, patchShipping, patch, t }) {
                     onChange={(v) => patchShipping({ shippingCompanyId: v })}
                     showAll={false}
                     showNone={false}
-                    hideLabel
+                    hideLabel={true}
+                    autoSelectIfSingle={true}
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -1150,103 +1154,127 @@ export function ShippingTab({ settings, statuses, patchShipping, patch, t }) {
               /> */}
             </SectionCard>
 
-            {/* Card: Stock Management */}
-            <SectionCard
-              icon={Archive}
-              iconColor="#10b981"
-              title={t("retrySettings.stock.title")}
-              subtitle={t("retrySettings.stock.subtitle")}
-            >
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-foreground">
-                    {t("retrySettings.stock.deductionStrategy")}
-                  </p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    {t("retrySettings.stock.deductionStrategyDesc")}
-                  </p>
-                </div>
-                <Select
-                  value={settings.stockDeductionStrategy}
-                  onValueChange={(v) => patch({ stockDeductionStrategy: v })}
-                >
-                  <SelectTrigger className="w-44 h-10 rounded-xl text-xs border-2">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="on_confirmation">
-                      {t("retrySettings.stock.onConfirmation")}
-                    </SelectItem>
-                    <SelectItem value="on_shipment">
-                      {t("retrySettings.stock.onShipment")}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </SectionCard>
-
-            {/* Card: Automation Options */}
-            <SectionCard
-              icon={Zap}
-              iconColor="#f59e0b"
-              title={t("retrySettings.shipping.otherOptions")}
-              subtitle={t("retrySettings.shipping.otherOptionsDesc")}
-            >
-              {[
-                {
-                  key: "autoGenerateLabel",
-                  labelKey: "retrySettings.shipping.autoLabel",
-                  descKey: "retrySettings.shipping.autoLabelDesc",
-                },
-                // {
-                //   key: "notifyOnShipment",
-                //   labelKey: "retrySettings.shipping.notifyOnShipment",
-                //   descKey: "retrySettings.shipping.notifyOnShipmentDesc",
-                // },
-                // {
-                //   key: "allowReturnCreation",
-                //   labelKey: "retrySettings.shipping.allowReturn",
-                //   descKey: "retrySettings.shipping.allowReturnDesc",
-                // },
-              ].map((opt, i, arr) => (
-                <div key={opt.key}>
-                  <InlineToggle
-                    label={t(opt.labelKey)}
-                    description={t(opt.descKey)}
-                    checked={settings.shipping[opt.key]}
-                    onCheckedChange={(v) => patchShipping({ [opt.key]: v })}
-                  />
-                  {i < arr.length - 1 && (
-                    <div className="h-px bg-border/60 mt-3" />
-                  )}
-                </div>
-              ))}
-            </SectionCard>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Disabled hint */}
-      {!isShipment && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex items-start gap-3 p-4 rounded-xl bg-muted/30 border border-border/50"
+      {!isShipment && <>
+        {/* Card: Warehouse Automation */}
+        {hasMoreCompanies && <SectionCard
+          icon={Truck}
+          iconColor="#3b82f6"
+          title={t("retrySettings.shipping.autoShip")}
+        // subtitle={t("retrySettings.shipping.autoShipAfterWarehouseDesc")}
         >
-          <div className="w-8 h-8 rounded-xl bg-muted border border-border flex items-center justify-center shrink-0">
-            <AlertCircle size={14} className="text-muted-foreground/80" />
-          </div>
-          <div>
-            <p className="text-xs font-bold text-foreground mb-0.5">
-              {t("retrySettings.shipping.disabledTitle")}
+          <InlineToggle
+            label={t("retrySettings.shipping.autoShipAfterWarehouse")}
+            description={t("retrySettings.shipping.autoShipAfterWarehouseDesc")}
+            checked={settings.shipping.autoShipAfterWarehouse}
+            onCheckedChange={(v) => patchShipping({ autoShipAfterWarehouse: v })}
+          />
+
+          <AnimatePresence>
+            {settings.shipping.autoShipAfterWarehouse && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.18 }}
+                className="overflow-hidden"
+              >
+                <div className="mt-3 pt-3 border-t border-border/60">
+                  <div className="space-y-1.5">
+                    <FieldSubLabel>
+                      {t("retrySettings.shipping.warehouseDefaultCompany")}
+                    </FieldSubLabel>
+                    <ShippingCompanyFilter
+                      value={String(settings.shipping.warehouseDefaultShippingCompanyId)}
+                      onChange={(v) => patchShipping({ warehouseDefaultShippingCompanyId: v })}
+                      showAll={false}
+                      showNone={false}
+                      hideLabel={true}
+                      autoSelectIfSingle={true}
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </SectionCard>}
+
+        {/* Card: Automation Options */}
+        <SectionCard
+          icon={Zap}
+          iconColor="#f59e0b"
+          title={t("retrySettings.shipping.otherOptions")}
+          subtitle={t("retrySettings.shipping.otherOptionsDesc")}
+        >
+          {[
+            {
+              key: "autoGenerateLabel",
+              labelKey: "retrySettings.shipping.autoLabel",
+              descKey: "retrySettings.shipping.autoLabelDesc",
+            },
+            // {
+            //   key: "notifyOnShipment",
+            //   labelKey: "retrySettings.shipping.notifyOnShipment",
+            //   descKey: "retrySettings.shipping.notifyOnShipmentDesc",
+            // },
+            // {
+            //   key: "allowReturnCreation",
+            //   labelKey: "retrySettings.shipping.allowReturn",
+            //   descKey: "retrySettings.shipping.allowReturnDesc",
+            // },
+          ].map((opt, i, arr) => (
+            <div key={opt.key}>
+              <InlineToggle
+                label={t(opt.labelKey)}
+                description={t(opt.descKey)}
+                checked={settings.shipping[opt.key]}
+                onCheckedChange={(v) => patchShipping({ [opt.key]: v })}
+              />
+              {i < arr.length - 1 && (
+                <div className="h-px bg-border/60 mt-3" />
+              )}
+            </div>
+          ))}
+        </SectionCard>
+      </>}
+      {/* Card: Stock Management */}
+      <SectionCard
+        icon={Archive}
+        iconColor="#10b981"
+        title={t("retrySettings.stock.title")}
+        subtitle={t("retrySettings.stock.subtitle")}
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex-1">
+            <p className="text-sm font-bold text-foreground">
+              {t("retrySettings.stock.deductionStrategy")}
             </p>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {t("retrySettings.shipping.disabledHint")}
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              {t("retrySettings.stock.deductionStrategyDesc")}
             </p>
           </div>
-        </motion.div>
-      )
-      }
+          <Select
+            value={settings.stockDeductionStrategy}
+            onValueChange={(v) => patch({ stockDeductionStrategy: v })}
+          >
+            <SelectTrigger className="w-44 h-10 rounded-xl text-xs border-2">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="on_confirmation">
+                {t("retrySettings.stock.onConfirmation")}
+              </SelectItem>
+              <SelectItem value="on_shipment">
+                {t("retrySettings.stock.onShipment")}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </SectionCard>
+      {/* Disabled hint */}
+
     </div >
   );
 }

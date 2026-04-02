@@ -330,14 +330,14 @@ export function OrderDetailModal({ open, onClose, order, hideNotes }) {
       icon: Package,
       accent: order.allowOpenPackage ? "#10b981" : "#ef4444",
     },
-    {
-      label: t("field.returnOrder"),
-      value: order?.replacementResult?.originalOrder?.orderNumber || "-",
-      icon: BoxSelect,
-      accent: order.replacementResult?.originalOrder?.orderNumber
-        ? "#10b981"
-        : "#ef4444",
-    },
+    // {
+    //   label: t("field.returnOrder"),
+    //   value: order?.replacementResult?.originalOrder?.orderNumber || "-",
+    //   icon: BoxSelect,
+    //   accent: order.replacementResult?.originalOrder?.orderNumber
+    //     ? "#10b981"
+    //     : "#ef4444",
+    // },
   ];
 
   return (
@@ -531,7 +531,7 @@ function AssignCarrierDialog({
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [carrier, setCarrier] = useState("");
   const [loading, setLoading] = useState(false);
-  const { formatCurrency } = usePlatformSettings()
+  const { formatCurrency, shippingCompanies } = usePlatformSettings()
   const availableOrders = useMemo(() => {
     return orders.filter((o) => selectedOrderCodes.includes(o.orderNumber));
   }, [orders, selectedOrderCodes]);
@@ -610,29 +610,6 @@ function AssignCarrierDialog({
       setLoading(false);
     }
   };
-
-  const [activeCarriers, setActiveCarriers] = useState([]);
-
-  useEffect(() => {
-    const getShippingCompanies = async () => {
-      try {
-        const res = await api.get("/shipping/integrations/active");
-
-        // Handle different possible response structures safely
-        const integrations = Array.isArray(res.data?.integrations)
-          ? res.data.integrations
-          : Array.isArray(res.data)
-            ? res.data
-            : [];
-
-        setActiveCarriers(integrations);
-      } catch (err) {
-        console.error("Shipping Lookup Error", err);
-      }
-    };
-
-    getShippingCompanies();
-  }, []);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -728,7 +705,7 @@ function AssignCarrierDialog({
                 </span>
               </motion.button>
 
-              {activeCarriers.map((integration) => {
+              {shippingCompanies.map((integration) => {
                 const providerCode =
                   integration.provider?.toUpperCase() || "DEFAULT";
                 const CARRIER_COLORS = {

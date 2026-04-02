@@ -414,13 +414,11 @@ export default function CollectOrderPage() {
   const router = useRouter();
   const params = useParams();
   const orderId = params?.orderId;
-  const { formatCurrency, currency } = usePlatformSettings();
+  const { formatCurrency, shippingCompanies, isShippingLoading, currency } = usePlatformSettings();
 
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [order, setOrder] = useState(null);
-  const [shippingCompanies, setShippingCompanies] = useState([]);
-  const [currencies, setCurrencies] = useState(["EGP"]);
 
   const schema = yup.object({
     shippingCompanyId: yup
@@ -471,22 +469,6 @@ export default function CollectOrderPage() {
         const orderData = orderRes.data;
         setOrder(orderData);
 
-        const res = await api.get("/shipping/integrations/active", {
-          params: { limit: 200, isActive: true }
-        });
-
-        const shippingData = Array.isArray(res.data?.integrations)
-          ? res.data.integrations
-          : (res.data?.records ?? []);
-
-        setShippingCompanies(shippingData);
-
-        if (orderData.shippingCompany?.id) {
-          setValue("shippingCompanyId", orderData.shippingCompany.id);
-        } else if (shippingData.length === 1) {
-          setValue("shippingCompanyId", String(shippingData[0].providerId || shippingData[0].id));
-        }
-
       } catch (error) {
         toast.error(t("errors.fetchFailed"));
         router.push("/orders/collections");
@@ -495,6 +477,20 @@ export default function CollectOrderPage() {
       }
     })();
   }, [orderId, router, t, setValue]);
+
+
+  useEffect(() => {
+    if (!order || isShippingLoading || shippingCompanies.length === 0) return;
+
+    if (order.shippingCompany?.id) {
+
+      setValue("shippingCompanyId", String(order.shippingCompany.id));
+    } else if (shippingCompanies.length === 1) {
+
+      const defaultId = shippingCompanies[0].providerId || shippingCompanies[0].id;
+      setValue("shippingCompanyId", String(defaultId));
+    }
+  }, [order, shippingCompanies, isShippingLoading, setValue]);
 
   const onSubmit = async (data) => {
     try {

@@ -3164,7 +3164,8 @@
       "warehouse": "Warehouse",
       "description": "Description",
       "totalPrice": "Total Price",
-      "mainVariant": "Main Variant"
+      "mainVariant": "Main Variant",
+      "salePrice": "Sale Price"
     },
     "placeholders": {
       "productName": "Enter product name",
@@ -3180,7 +3181,8 @@
       "callCenterDesc": "Enter product description for call center",
       "totalPrice": "Bundle total price",
       "bundleDescription": "Bundle description",
-      "mainVariant": "Search for main variant..."
+      "mainVariant": "Search for main variant...",
+      "salePrice": "Enter Sale price"
     },
     "common": {
       "none": "None"
@@ -3386,7 +3388,8 @@
       "upsellDisabled": "Upsell Disabled",
       "imagesEmpty": "No additional images.",
       "skusEmpty": "No SKUs found.",
-      "upsellingEmpty": "No upselling products."
+      "upsellingEmpty": "No upselling products.",
+      "salePrice": "Sale Price"
     },
     "breadcrumb": {
       "home": "Home",
@@ -3434,9 +3437,17 @@
       "priceFromPlaceholder": "Enter minimum price",
       "priceTo": "Price To",
       "priceToPlaceholder": "Enter maximum price",
+      "wholesalePriceFrom": "Wholesale Price From",
+      "wholesalePriceTo": "Wholesale Price To",
+      "wholesalePriceFromPlaceholder": "Enter wholesale price from",
+      "wholesalePriceToPlaceholder": "Enter wholesale price to",
       "any": "Any",
       "apply": "Apply",
-      "reset": "Reset"
+      "reset": "Reset",
+      "salePriceFrom": "Sale price from",
+      "salePriceTo": "Sale price to",
+      "salePriceFromPlaceholder": "Enter sale price from",
+      "salePriceToPlaceholder": "Enter the selling price to"
     },
     "idle": {
       "label": "Show idle products since:",
@@ -3452,6 +3463,7 @@
       "category": "Category",
       "store": "Store",
       "warehouse": "Warehouse",
+      "salePrice": "Sale Price",
       "storageRack": "Storage Rack",
       "wholesalePrice": "Wholesale Price",
       "lowestPrice": "Lowest Price",
@@ -3478,6 +3490,7 @@
       "noData": "No data available",
       "close": "Close",
       "wholesalePrice": "Wholesale Price",
+      "salePrice": "Sale Price",
       "lowestPrice": "Lowest Price",
       "storageRack": "Storage Rack",
       "category": "Category",
@@ -3839,6 +3852,7 @@
   "orders": {
     "invalidOrderId": "Invalid order ID",
     "actions": {
+      "duplicate": "Duplicate Order",
       "addStatus": "Add Status",
       "apply": "Apply",
       "backToOrders": "Back to Orders",
@@ -3860,7 +3874,10 @@
     },
     "breadcrumb": {
       "home": "Home",
-      "orders": "Orders"
+      "orders": "Orders",
+      "createOrder": "Create New Order",
+      "editOrder": "Edit Order",
+      "duplicateOrder": "Duplicate Order"
     },
     "customColor": "Custom Color",
     "emptySubtitle": "Try changing the search or filter criteria",
@@ -4396,7 +4413,7 @@
         "flowLabel": "Next Step After Confirmation",
         "afterConfirmation": "Move to Warehouse (Packing & Preparation)",
         "directToShipping": "Direct to Shipping (Ready for Delivery)",
-        "flowHint": "If set to Warehouse, orders will require a packing step before labels are generated. If set to Shipping, confirmed orders will appear immediately in the shipping queue."
+        "flowHint": "Enabling Warehouse mode routes orders to the dedicated 'Warehouse' tab for operational management. Direct Shipping bypasses the warehouse flow and ships orders immediately."
       },
       "enableRetry": "Enable Retry System",
       "enableRetryDesc": "If the customer does not answer, the system automatically retries contacting them several times until the order is received or retries are exhausted",
@@ -4443,6 +4460,10 @@
         "paymentOptionsDesc": "Define the payment requirement the system should check before approving shipment",
         "requireFullPayment": "Require Full Payment",
         "requireFullPaymentDesc": "The order will not be shipped unless fully paid — disable this to allow partial payment",
+        "autoShip": "Automatic Shipping",
+        "autoShipAfterWarehouse": "Auto-ship after Warehouse confirmation",
+        "autoShipAfterWarehouseDesc": "If active, orders will be automatically assigned to the chosen shipping company once they reach the warehouse stage, hiding the manual shipment tab.",
+        "warehouseDefaultCompany": "Default Warehouse Shipping Company",
         "partialThreshold": "Minimum Paid Percentage",
         "partialThresholdDesc": "Enter the minimum percentage of the order total that must be paid upfront for it to be sent to shipping — leave at \"0\" to accept any amount",
         "anyDeposit": "Any Deposit",
@@ -4576,7 +4597,8 @@
       "home": "Home",
       "orders": "Orders",
       "createOrder": "Create New Order",
-      "editOrder": "Edit Order"
+      "editOrder": "Edit Order",
+      "duplicateOrder": "Create an order from another order"
     },
     "common": {
       "none": "None"
@@ -4711,7 +4733,8 @@
       "message": "Loading...",
       "notFound": "Order not found"
     },
-    "currency": "EGP"
+    "currency": "EGP",
+    "invalidOrderId": "Invalid order ID"
   },
   "CreateReplacement": {
     "title": "Create Replacement",

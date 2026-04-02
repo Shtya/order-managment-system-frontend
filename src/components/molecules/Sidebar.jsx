@@ -59,226 +59,12 @@ import { FaUserTie } from "react-icons/fa6";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "../ui/button";
 import { useAuth } from "@/context/AuthContext";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 /* ══════════════════════════════════════════════════════════════
    MENU DEFINITION
 ══════════════════════════════════════════════════════════════ */
-const menuItems = [
-  {
-    icon: LayoutDashboard,
-    labelKey: "dashboard",
-    href: "/dashboard",
-    roles: ["ADMIN"],
-    permission: "dashboard.read",
-  },
-  {
-    icon: ShoppingCart,
-    labelKey: "orders",
-    href: "/orders",
-    roles: ["ADMIN"],
-    permission: "orders.read",
-    children: [
-      { icon: Package, labelKey: "orders", href: "/orders?tab=orders" },
-      {
-        icon: Undo2,
-        labelKey: "orderReplacement",
-        href: "/orders?tab=replacement",
-      },
-      {
-        icon: XCircle,
-        labelKey: "failedOrders",
-        href: "/orders?tab=failedOrders",
-      },
-    ],
-  },
-  {
-    icon: ShoppingCart,
-    labelKey: "orders-assign-to-you",
-    href: "/orders/employee-orders",
-    roles: ["NEW ROLE"],
-    permission: "orders.read",
-  },
-  {
-    icon: Wallet,
-    labelKey: "accounts",
-    href: "/collections",
-    roles: ["ADMIN"],
-    permission: "orders-collect.read",
-    children: [
-      {
-        icon: CheckCircle2,
-        labelKey: "collectedOrders",
-        href: "/orders/collections?tab=collected",
-      },
-      {
-        icon: AlertCircle,
-        labelKey: "uncollectedOrders",
-        href: "/orders/collections?tab=not_collected",
-      },
-    ],
-  },
-  {
-    icon: Warehouse,
-    labelKey: "manageWarehouse",
-    href: "/warehouse",
-    roles: ["ADMIN"],
-    permission: "warehouses.read",
-    children: [
-      {
-        icon: Truck,
-        labelKey: "warehouseDistribution",
-        href: "/warehouse?tab=distribution",
-      },
-      {
-        icon: Printer,
-        labelKey: "warehousePrint",
-        href: "/warehouse?tab=print",
-      },
-      {
-        icon: Package,
-        labelKey: "warehousePreparation",
-        href: "/warehouse?tab=preparation",
-      },
-      {
-        icon: CheckCircle2,
-        labelKey: "warehouseOutgoing",
-        href: "/warehouse?tab=outgoing",
-      },
-      {
-        icon: RefreshCw,
-        labelKey: "warehouseReturns",
-        href: "/warehouse?tab=returns",
-      },
-      {
-        icon: XCircle,
-        labelKey: "warehouseRejected",
-        href: "/warehouse?tab=rejected",
-      },
-      {
-        icon: ClipboardList,
-        labelKey: "warehouseLogs",
-        href: "/warehouse?tab=logs",
-      },
-    ],
-  },
-  {
-    icon: Package,
-    labelKey: "products",
-    href: "/products",
-    roles: ["ADMIN"],
-    permission: "products.read",
-    children: [
-      { icon: Package, labelKey: "products", href: "/products" },
-      { icon: PackagePlus, labelKey: "newProduct", href: "/products/new" },
-      { icon: Layers, labelKey: "newBundle", href: "/bundles/new" },
-    ],
-  },
-  // { icon: TrendingUp, labelKey: 'sales', href: '/sales', roles: ['ADMIN'] },
-  {
-    icon: FileText,
-    labelKey: "purchases",
-    href: "/purchases",
-    roles: ["ADMIN"],
-    permission: "purchases.read",
-    // children: [
-    //   { icon: FileText, labelKey: "purchases", href: "/purchases" },
-    //   // { icon: Undo2, labelKey: "purchasesReturn", href: "/purchases/return" },
-    // ],
-  },
-  {
-    icon: Factory,
-    labelKey: "suppliers",
-    href: "/suppliers",
-    roles: ["ADMIN"],
-    permission: "suppliers.read",
-    children: [
-      { icon: Factory, labelKey: "suppliers", href: "/suppliers" },
-      {
-        icon: FolderTree,
-        labelKey: "categories",
-        href: "/suppliers/categories",
-      },
-    ],
-  },
-  {
-    icon: FaUserTie,
-    labelKey: "employees",
-    href: "/employees",
-    roles: ["ADMIN"],
-    permission: "users.read",
-  },
 
-  {
-    icon: BarChart3,
-    labelKey: "reports",
-    href: "/reports",
-    roles: ["ADMIN"],
-    permission: "dashboard.read",
-    children: [
-      {
-        icon: PieChart,
-        labelKey: "order-analysis",
-        href: "/reports/order-analysis",
-      },
-      {
-        icon: Activity,
-        labelKey: "employee-performance-analysis",
-        href: "/reports/employee-performance-analysis",
-      },
-    ],
-  },
-  {
-    icon: Truck,
-    labelKey: "shippingCompanies",
-    href: "/shipping-companies",
-    roles: ["ADMIN"],
-    permission: "shipping-companies.read",
-  },
-  {
-    icon: Plug,
-    labelKey: "storeIntegration",
-    href: "/store-integration",
-    roles: ["ADMIN"],
-    permission: "stores.read",
-  },
-  { icon: Wallet, labelKey: "wallet", href: "/wallet", roles: ["ADMIN"], permission: "wallet.read" },
-  { icon: CreditCard, labelKey: "plans", href: "/plans", roles: ["ADMIN"], permission: "plans.read" },
-  { icon: Shield, labelKey: "roles", href: "/roles", roles: ["ADMIN"], permission: "roles.read" },
-  { icon: Settings, labelKey: "settings", href: "/settings", roles: ["ADMIN"], permission: "admin-settings.read" },
-  {
-    icon: Users,
-    labelKey: "users",
-    href: "/dashboard/users",
-    roles: ["SUPER_ADMIN"],
-  },
-  {
-    icon: Shield,
-    labelKey: "roles",
-    href: "/dashboard/roles",
-    roles: ["SUPER_ADMIN"],
-  },
-  {
-    icon: CreditCard,
-    labelKey: "plans",
-    href: "/dashboard/plans",
-    roles: ["SUPER_ADMIN"],
-  },
-  {
-    icon: Globe,
-    labelKey: "platformSettings",
-    href: "/dashboard/settings",
-    roles: ["SUPER_ADMIN"],
-  },
-  {
-    icon: ShoppingCart,
-    labelKey: "orders",
-    href: "/orders",
-    badge: "12",
-    roles: ["USER"],
-    permission: "orders.read",
-    children: [{ icon: Package, labelKey: "employeeOrders", href: "/orders" }],
-  },
-];
 
 /* ══════════════════════════════════════════════════════════════
    RIPPLE HOOK
@@ -714,6 +500,223 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
         : isActive(item.href),
     [isActive],
   );
+  const { shippingCompanies } = usePlatformSettings();
+  const menuItems = useMemo(() => [
+    {
+      icon: LayoutDashboard,
+      labelKey: "dashboard",
+      href: "/dashboard",
+      roles: ["ADMIN"],
+      permission: "dashboard.read",
+    },
+    {
+      icon: ShoppingCart,
+      labelKey: "orders",
+      href: "/orders",
+      roles: ["ADMIN"],
+      permission: "orders.read",
+      children: [
+        { icon: Package, labelKey: "orders", href: "/orders?tab=orders" },
+        // {
+        //   icon: Undo2,
+        //   labelKey: "orderReplacement",
+        //   href: "/orders?tab=replacement",
+        // },
+        {
+          icon: XCircle,
+          labelKey: "failedOrders",
+          href: "/orders?tab=failedOrders",
+        },
+      ],
+    },
+    {
+      icon: ShoppingCart,
+      labelKey: "orders-assign-to-you",
+      href: "/orders/employee-orders",
+      roles: ["NEW ROLE"],
+      permission: "orders.read",
+    },
+    {
+      icon: Wallet,
+      labelKey: "accounts",
+      href: "/collections",
+      roles: ["ADMIN"],
+      permission: "orders-collect.read",
+      children: [
+        {
+          icon: CheckCircle2,
+          labelKey: "collectedOrders",
+          href: "/orders/collections?tab=collected",
+        },
+        {
+          icon: AlertCircle,
+          labelKey: "uncollectedOrders",
+          href: "/orders/collections?tab=not_collected",
+        },
+      ],
+    },
+    {
+      icon: Warehouse,
+      labelKey: "manageWarehouse",
+      href: "/warehouse",
+      roles: ["ADMIN"],
+      permission: "warehouses.read",
+      children: [
+        ...(shippingCompanies?.length > 1 ? [{
+          icon: Truck,
+          labelKey: "warehouseDistribution",
+          href: "/warehouse?tab=distribution",
+        }] : []),
+        {
+          icon: Printer,
+          labelKey: "warehousePrint",
+          href: "/warehouse?tab=print",
+        },
+        {
+          icon: Package,
+          labelKey: "warehousePreparation",
+          href: "/warehouse?tab=preparation",
+        },
+        {
+          icon: CheckCircle2,
+          labelKey: "warehouseOutgoing",
+          href: "/warehouse?tab=outgoing",
+        },
+        {
+          icon: RefreshCw,
+          labelKey: "warehouseReturns",
+          href: "/warehouse?tab=returns",
+        },
+        {
+          icon: XCircle,
+          labelKey: "warehouseRejected",
+          href: "/warehouse?tab=rejected",
+        },
+        {
+          icon: ClipboardList,
+          labelKey: "warehouseLogs",
+          href: "/warehouse?tab=logs",
+        },
+      ],
+    },
+    {
+      icon: Package,
+      labelKey: "products",
+      href: "/products",
+      roles: ["ADMIN"],
+      permission: "products.read",
+      children: [
+        { icon: Package, labelKey: "products", href: "/products" },
+        { icon: PackagePlus, labelKey: "newProduct", href: "/products/new" },
+        { icon: Layers, labelKey: "newBundle", href: "/bundles/new" },
+      ],
+    },
+    // { icon: TrendingUp, labelKey: 'sales', href: '/sales', roles: ['ADMIN'] },
+    {
+      icon: FileText,
+      labelKey: "purchases",
+      href: "/purchases",
+      roles: ["ADMIN"],
+      permission: "purchases.read",
+      // children: [
+      //   { icon: FileText, labelKey: "purchases", href: "/purchases" },
+      //   // { icon: Undo2, labelKey: "purchasesReturn", href: "/purchases/return" },
+      // ],
+    },
+    {
+      icon: Factory,
+      labelKey: "suppliers",
+      href: "/suppliers",
+      roles: ["ADMIN"],
+      permission: "suppliers.read",
+      children: [
+        { icon: Factory, labelKey: "suppliers", href: "/suppliers" },
+        {
+          icon: FolderTree,
+          labelKey: "categories",
+          href: "/suppliers/categories",
+        },
+      ],
+    },
+    {
+      icon: FaUserTie,
+      labelKey: "employees",
+      href: "/employees",
+      roles: ["ADMIN"],
+      permission: "users.read",
+    },
+
+    {
+      icon: BarChart3,
+      labelKey: "reports",
+      href: "/reports",
+      roles: ["ADMIN"],
+      permission: "dashboard.read",
+      children: [
+        {
+          icon: PieChart,
+          labelKey: "order-analysis",
+          href: "/reports/order-analysis",
+        },
+        {
+          icon: Activity,
+          labelKey: "employee-performance-analysis",
+          href: "/reports/employee-performance-analysis",
+        },
+      ],
+    },
+    {
+      icon: Truck,
+      labelKey: "shippingCompanies",
+      href: "/shipping-companies",
+      roles: ["ADMIN"],
+      permission: "shipping-companies.read",
+    },
+    {
+      icon: Plug,
+      labelKey: "storeIntegration",
+      href: "/store-integration",
+      roles: ["ADMIN"],
+      permission: "stores.read",
+    },
+    { icon: Wallet, labelKey: "wallet", href: "/wallet", roles: ["ADMIN"], permission: "wallet.read" },
+    { icon: CreditCard, labelKey: "plans", href: "/plans", roles: ["ADMIN"], permission: "plans.read" },
+    { icon: Shield, labelKey: "roles", href: "/roles", roles: ["ADMIN"], permission: "roles.read" },
+    { icon: Settings, labelKey: "settings", href: "/settings", roles: ["ADMIN"], permission: "admin-settings.read" },
+    {
+      icon: Users,
+      labelKey: "users",
+      href: "/dashboard/users",
+      roles: ["SUPER_ADMIN"],
+    },
+    {
+      icon: Shield,
+      labelKey: "roles",
+      href: "/dashboard/roles",
+      roles: ["SUPER_ADMIN"],
+    },
+    {
+      icon: CreditCard,
+      labelKey: "plans",
+      href: "/dashboard/plans",
+      roles: ["SUPER_ADMIN"],
+    },
+    {
+      icon: Globe,
+      labelKey: "platformSettings",
+      href: "/dashboard/settings",
+      roles: ["SUPER_ADMIN"],
+    },
+    {
+      icon: ShoppingCart,
+      labelKey: "orders",
+      href: "/orders",
+      badge: "12",
+      roles: ["USER"],
+      permission: "orders.read",
+      children: [{ icon: Package, labelKey: "employeeOrders", href: "/orders" }],
+    },
+  ], [shippingCompanies?.length]);
 
   useEffect(() => {
     const active = menuItems.find((item) =>

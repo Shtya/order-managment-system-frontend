@@ -41,6 +41,7 @@ import useOrdersSettings from "@/hook/useOrdersSettings";
 
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/context/AuthContext";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // localStorage key — must match MultiPrepareView
@@ -69,7 +70,6 @@ function getSavedPrepareOrders() {
 // DISTRIBUTION DIALOG
 // ─────────────────────────────────────────────────────────────────────────────
 function DistributionDialog({ open, onClose, orders, selectedOrderCodes, updateOrder, pushOp }) {
-  const tCommon = useTranslations("common");
   const t = useTranslations("warehouse.distributionDialog");
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [carrier, setCarrier] = useState("");
@@ -162,7 +162,7 @@ function DistributionDialog({ open, onClose, orders, selectedOrderCodes, updateO
             }
           </div>
           <div className="flex justify-end gap-2">
-            <Button_ label={useTranslations("onboarding.plans")("back_btn")} tone="gray" variant="outline" onClick={onClose} disabled={loading} permission="orders.read" />
+            <Button_ label={"test"} tone="gray" variant="outline" onClick={onClose} disabled={loading} permission="orders.read" />
             <Button_
               label={loading ? t("distributing") : t("confirm")}
               tone="primary" variant="solid"
@@ -209,13 +209,14 @@ const isValidSubtab = (tab, subtab) => {
 // MAIN PAGE
 // ─────────────────────────────────────────────────────────────────────────────
 export default function WarehouseFlowPage() {
+  const { shippingCompanies, isShippingLoading } = usePlatformSettings();
   const { user, hasPermission, isSuperAdmin, hasActiveSubscription } = useAuth();
   const locale = useLocale();
   const dir = locale === "ar" ? "rtl" : "ltr";
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
+  const tWarning = useTranslations("warehouse.directShippingWarning");
   // ── Core data ──────────────────────────────────────────────────────────────
   const [orders, setOrders] = useState(initialOrders);
   const [opsLogs, setOpsLogs] = useState(initialOpsLogs);
@@ -282,6 +283,13 @@ export default function WarehouseFlowPage() {
     }
   }, [activeTab]);
 
+  useEffect(() => {
+    if (!isShippingLoading && shippingCompanies?.length === 1 && activeTab === "distribution") {
+
+      router.replace("/warehouse?tab=print");
+    }
+  }, [shippingCompanies, isShippingLoading, activeTab, router]);
+
   // ── Callbacks ──────────────────────────────────────────────────────────────
   const pushOp = useCallback((op) => setOpsLogs(prev => [op, ...prev]), []);
   const updateOrder = useCallback((code, p) => setOrders(prev => prev.map(o => o.code === code ? { ...o, ...p } : o)), []);
@@ -319,10 +327,9 @@ export default function WarehouseFlowPage() {
 
 
   if (settings?.orderFlowPath === "shipping") {
-    const tWarning = useTranslations("warehouse.directShippingWarning");
     return (
       // نضع z-index أقل من الـ Sidebar (عادة 40 أو 30) ونستخدم التموضع النسبي للأب
-      <div className="fixed inset-0 z-[40] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm lg:mr-[280px]">
+      <div className="absolute inset-0 z-[40] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
         {/* ملحوظة: lg:mr-[280px] تعتمد على عرض الـ Sidebar لديك لضمان توسيط التنبيه في المساحة البيضاء فقط */}
 
         <motion.div

@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/FloatingSelect";
 import Button_ from "@/components/atoms/Button";
 import { useRouter } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
 
 import { useLocale, useTranslations } from "next-intl";
 import api from "@/utils/api";
@@ -436,10 +437,16 @@ function AddressSection({
 // ─────────────────────────────────────────────────────────────────────────────
 export default function CreateOrderPageComplete({
 	isEditMode = false,
-	existingOrder = null,
+	existingOrder: propExistingOrder = null,
 	orderId = null,
 }) {
-	const { formatCurrency } = usePlatformSettings();
+	const searchParams = useSearchParams();
+	const fromId = searchParams.get("from");
+
+	const [existingOrder, setExistingOrder] = useState(propExistingOrder);
+	const [isDuplicating, setIsDuplicating] = useState(false);
+
+	const { formatCurrency, shippingCompanies, isShippingLoading } = usePlatformSettings();
 	const navigate = useRouter();
 	const locale = useLocale();
 	const isRTL = locale === "ar";
@@ -448,10 +455,30 @@ export default function CreateOrderPageComplete({
 
 	const [loading, setLoading] = useState(false);
 	const [selectedSkus, setSelectedSkus] = useState([]);
-	const [initialLoading] = useState(isEditMode && !existingOrder);
+	const [initialLoading, setInitialLoading] = useState((isEditMode && !propExistingOrder) || !!fromId);
+
+	// ── Fetch order for duplication ───────────────────────────────────────────
+	useEffect(() => {
+		const fetchFromOrder = async () => {
+			if (!fromId || isEditMode) return;
+			setIsDuplicating(true);
+			setInitialLoading(true);
+			try {
+				const res = await api.get(`/orders/${fromId}`);
+				setExistingOrder(res.data);
+			} catch (e) {
+				console.error(`Duplicate fetch: ${normalizeAxiosError(e)}`);
+				toast.error(t("invalidOrderId"));
+			} finally {
+				setIsDuplicating(false);
+				setInitialLoading(false);
+			}
+		};
+		fetchFromOrder();
+	}, [fromId, isEditMode, t]);
 
 	// ── Shipping companies & stores ─────────────────────────────────────────
-	const [shippingCompanies, setShippingCompanies] = useState([]);
+
 	const [stores, setStores] = useState([]);
 
 	// ── Bosta geo state ─────────────────────────────────────────────────────
@@ -480,7 +507,7 @@ export default function CreateOrderPageComplete({
 
 	// ── Default values ──────────────────────────────────────────────────────
 	const getDefaultValues = useCallback(() => {
-		if (isEditMode && existingOrder) {
+		if ((isEditMode || fromId) && existingOrder) {
 			return {
 				customerName: existingOrder.customerName || "",
 				phoneNumber: existingOrder.phoneNumber || "",
@@ -491,17 +518,17 @@ export default function CreateOrderPageComplete({
 				city: existingOrder.city || "",
 				area: existingOrder.area || "",
 				landmark: existingOrder.landmark || "",
-				paymentMethod: existingOrder.paymentMethod || "cod",
-				paymentStatus: existingOrder.paymentStatus || "pending",
+				paymentMethod: !fromId ?  existingOrder.paymentMethod || "cod" : "cod",
+				paymentStatus: !fromId ? existingOrder.paymentStatus || "pending" :  "pending",
 				shippingCompanyId: existingOrder.shippingCompany?.id
 					? String(existingOrder.shippingCompany.id)
 					: "",
 				storeId: existingOrder.storeId ? String(existingOrder.storeId) : "",
 				shippingCost: existingOrder.shippingCost || 0,
-				discount: existingOrder.discount || 0,
-				deposit: existingOrder.deposit || 0,
-				notes: existingOrder.notes || "",
-				customerNotes: existingOrder.customerNotes || "",
+				discount: !fromId ?  existingOrder.discount || 0: 0,
+				deposit: !fromId ?  existingOrder.deposit || 0: 0,
+				notes:  !fromId ? existingOrder.notes || "" : "",
+				customerNotes: !fromId ?  existingOrder.customerNotes || "" : "",
 				items:
 					existingOrder.items?.map((item) => ({
 						variantId: item.variant?.id || item.variantId,
@@ -535,7 +562,7 @@ export default function CreateOrderPageComplete({
 			items: [],
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [isEditMode, existingOrder]);
+	}, [isEditMode, fromId, existingOrder]);
 
 	// ── RHF ─────────────────────────────────────────────────────────────────
 	const {
@@ -573,9 +600,9 @@ export default function CreateOrderPageComplete({
 		[shippingProvider]
 	);
 
-	// ── Edit mode pre-fill ───────────────────────────────────────────────────
+	// ── Edit/Duplicate mode pre-fill ──────────────────────────────────────────
 	useEffect(() => {
-		if (isEditMode && existingOrder) {
+		if ((isEditMode || fromId) && existingOrder) {
 			reset(getDefaultValues());
 			if (existingOrder.items?.length > 0) {
 				setSelectedSkus(
@@ -600,26 +627,23 @@ export default function CreateOrderPageComplete({
 			}
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [isEditMode, existingOrder]);
+	}, [isEditMode, fromId, existingOrder]);
 
 	// ── Fetch shipping companies ──────────────────────────────────────────────
 	useEffect(() => {
-		const getShippingCompanies = async () => {
-			try {
-				const res = await api.get("/shipping/integrations/active", { params: { limit: 200, isActive: true } });
-				const data = Array.isArray(res.data.integrations) ? res.data.integrations : [];
-				setShippingCompanies(data);
 
-				// Auto-select if only one option exists
-				if (data.length === 1 && !isEditMode) {
-					setValue("shippingCompanyId", String(data[0].providerId));
-				}
-			} catch (e) {
-				console.error(`Shipping: ${normalizeAxiosError(e)}`);
+		if (isShippingLoading || isEditMode) return;
+
+
+		if (shippingCompanies && shippingCompanies.length === 1) {
+
+			const defaultId = shippingCompanies[0].providerId || shippingCompanies[0].id;
+
+			if (defaultId) {
+				setValue("shippingCompanyId", String(defaultId));
 			}
-		};
-		getShippingCompanies();
-	}, [isEditMode, setValue]);
+		}
+	}, [shippingCompanies, isShippingLoading, isEditMode, setValue]);
 
 	// ── Fetch stores ─────────────────────────────────────────────────────────
 	useEffect(() => {
@@ -925,7 +949,13 @@ export default function CreateOrderPageComplete({
 				breadcrumbs={[
 					{ name: t("breadcrumb.home"), href: "/" },
 					{ name: t("breadcrumb.orders"), href: "/orders" },
-					{ name: isEditMode ? t("breadcrumb.editOrder") : t("breadcrumb.createOrder") },
+					{
+						name: isEditMode
+							? t("breadcrumb.editOrder")
+							: fromId
+								? t("breadcrumb.duplicateOrder")
+								: t("breadcrumb.createOrder"),
+					},
 				]}
 				buttons={
 					<div className="flex items-center gap-4">

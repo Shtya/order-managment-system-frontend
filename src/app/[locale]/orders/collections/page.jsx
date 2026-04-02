@@ -117,7 +117,8 @@ export default function OrderCollectionPage() {
 	const [exportLoading, setExportLoading] = useState(false);
 	const [search, setSearch] = useState("");
 	const [debouncedSearch, setDebouncedSearch] = useState("");
-	const [shippingCompanies, setShippingCompanies] = useState([]);
+
+	const { formatCurrency, shippingCompanies } = usePlatformSettings();
 
 	const [statsData, setStatsData] = useState({
 		notCollectedCount: 0,
@@ -187,7 +188,6 @@ export default function OrderCollectionPage() {
 	// ── Initial Fetch ─────────────────────────────────────────────────────────
 	useEffect(() => {
 		fetchStats();
-		fetchShippingCompanies();
 	}, []);
 
 	// ── Build API Params ──────────────────────────────────────────────────────
@@ -230,14 +230,6 @@ export default function OrderCollectionPage() {
 	}, [t]);
 
 	// ── Fetch Shipping Companies ──────────────────────────────────────────────
-	const fetchShippingCompanies = useCallback(async () => {
-		try {
-			const res = await api.get("/shipping/integrations/active");
-			setShippingCompanies(Array.isArray(res.data?.integrations) ? res.data?.integrations : res.data?.records ?? []);
-		} catch (e) {
-			console.error(e);
-		}
-	}, []);
 
 	// ── Fetch Orders ──────────────────────────────────────────────────────────
 	const fetchOrders = useCallback(
@@ -303,7 +295,7 @@ export default function OrderCollectionPage() {
 			setExportLoading(false);
 		}
 	}, [buildParams, t]);
-	const { formatCurrency } = usePlatformSettings();
+
 	// ── Apply Filters ─────────────────────────────────────────────────────────
 	const applyFilters = useCallback(() => {
 		fetchOrders(1, pager.per_page);

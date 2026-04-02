@@ -3164,7 +3164,8 @@
       "warehouse": "المستودع",
       "description": "الوصف",
       "totalPrice": "السعر الإجمالي",
-      "mainVariant": "المتغير الأساسي"
+      "mainVariant": "المتغير الأساسي",
+      "salePrice": "سعر البيع"
     },
     "placeholders": {
       "productName": "أدخل اسم المنتج",
@@ -3180,7 +3181,8 @@
       "callCenterDesc": "أدخل وصف المنتج لمركز الاتصال",
       "totalPrice": "السعر الإجمالي للباقة",
       "bundleDescription": "وصف الباقة",
-      "mainVariant": "ابحث عن المتغير الأساسي..."
+      "mainVariant": "ابحث عن المتغير الأساسي...",
+      "salePrice": "أدخل سعر البيع"
     },
     "common": {
       "none": "بدون"
@@ -3380,6 +3382,7 @@
       "category": "الفئة",
       "store": "المتجر",
       "warehouse": "المخزن",
+      "salePrice": "سعر البيع",
       "wholesale": "جملة",
       "lowestPrice": "أقل سعر",
       "upsellEnabled": "Upsell مفعّل",
@@ -3434,9 +3437,17 @@
       "priceFromPlaceholder": "أدخل السعر من",
       "priceTo": "السعر إلى",
       "priceToPlaceholder": "أدخل السعر إلى",
+      "wholesalePriceFrom": "سعر الجملة من",
+      "wholesalePriceTo": "سعر الجملة إلى",
+      "wholesalePriceFromPlaceholder": "أدخل سعر الجملة من",
+      "wholesalePriceToPlaceholder": "أدخل سعر الجملة إلى",
       "any": "أي",
       "apply": "تطبيق",
-      "reset": "إعادة تعيين"
+      "reset": "إعادة تعيين",
+      "salePriceFrom": "سعر البيع من",
+      "salePriceTo": "سعر البيع إلى",
+      "salePriceFromPlaceholder": "أدخل سعر البيع من",
+      "salePriceToPlaceholder": "أدخل سعر البيع إلى"
     },
     "idle": {
       "label": "عرض المنتجات الراكدة من تاريخ:",
@@ -3452,6 +3463,7 @@
       "category": "الفئة",
       "store": "المتجر",
       "warehouse": "المستودع",
+      "salePrice": "سعر البيع",
       "storageRack": "رف التخزين",
       "wholesalePrice": "سعر الجملة",
       "lowestPrice": "أقل سعر",
@@ -3478,6 +3490,7 @@
       "noData": "لا توجد بيانات",
       "close": "إغلاق",
       "wholesalePrice": "سعر الجملة",
+      "salePrice": "سعر البيع",
       "lowestPrice": "أقل سعر",
       "storageRack": "رف التخزين",
       "category": "الفئة",
@@ -3839,6 +3852,7 @@
   "orders": {
     "invalidOrderId": "معرّف الطلب غير صحيح",
     "actions": {
+      "duplicate": "تكرار الطلب",
       "addStatus": "إضافة حالة",
       "apply": "تطبيق",
       "backToOrders": "العودة إلى الطلبات",
@@ -3860,7 +3874,10 @@
     },
     "breadcrumb": {
       "home": "الرئيسية",
-      "orders": "الطلبات"
+      "orders": "الطلبات",
+      "createOrder": "إنشاء طلب جديد",
+      "editOrder": "تعديل الطلب",
+      "duplicateOrder": "تكرار الطلب"
     },
     "customColor": "لون مخصص",
     "emptySubtitle": "جرّب تغيير معايير البحث أو الفلترة",
@@ -4396,7 +4413,7 @@
         "flowLabel": "الخطوة التالية بعد التأكيد",
         "afterConfirmation": "النقل إلى المستودع (التغليف والتجهيز)",
         "directToShipping": "التوجه للشحن مباشرة (جاهز للتوصيل)",
-        "flowHint": "إذا تم الاختيار للمستودع، ستتطلب الطلبات خطوة تغليف قبل إصدار بوالص الشحن. أما خيار الشحن المباشر فيجعل الطلبات تظهر فوراً في قائمة الشحن."
+        "flowHint": "تفعيل خيار المستودع ينقل الطلبات إلى 'تبويب المستودع' المخصص، حيث تتم إدارة الدورة التشغيلية . أما الشحن المباشر فيتجاوز تبويب المستودع و يشحن الطلب مياشرة."
       },
       "enableRetry": "تفعيل نظام إعادة المحاولة",
       "enableRetryDesc": "عند عدم رد العميل، يقوم النظام تلقائياً بإعادة الاتصال به عدة مرات حتى يُستلم الطلب أو تُستنفد المحاولات",
@@ -4443,6 +4460,10 @@
         "paymentOptionsDesc": "حدد ما الشرط المطلوب في الدفع حتى يُوافق النظام على إرسال الشحنة",
         "requireFullPayment": "اشتراط الدفع الكامل",
         "requireFullPaymentDesc": "الطلب لن يُشحن إلا إذا تم دفع كامل مبلغه — أوقف هذا الخيار لقبول الدفع الجزئي",
+        "autoShip": "الشحن التلقائي",
+        "autoShipAfterWarehouse": "شحن تلقائي بعد تأكيد المستودع",
+        "autoShipAfterWarehouseDesc": "عند التفعيل، سيتم إسناد الطلبات تلقائياً لشركة الشحن المختارة بمجرد وصلها مرحلة المستودع، وسيتم إخفاء تبويب الشحن اليدوي.",
+        "warehouseDefaultCompany": "شركة الشحن الافتراضية للمستودع",
         "partialThreshold": "النسبة المئوية الدنيا للمبلغ المدفوع",
         "partialThresholdDesc": "أدخل النسبة المئوية الدنيا المطلوب دفعها مسبقاً من إجمالي الطلب حتى يتم إرساله للشحن — اتركها «0» لقبول أي نسبة",
         "anyDeposit": "أي عربون",
@@ -4576,7 +4597,8 @@
       "home": "الرئيسية",
       "orders": "الطلبات",
       "createOrder": "إنشاء طلب جديد",
-      "editOrder": "تعديل الطلب"
+      "editOrder": "تعديل الطلب",
+      "duplicateOrder": "إنشاء طلب من طلب أخر"
     },
     "common": {
       "none": "بدون"
@@ -4711,7 +4733,8 @@
       "message": "جاري التحميل...",
       "notFound": "الطلب غير موجود"
     },
-    "currency": "جنيه"
+    "currency": "جنيه",
+    "invalidOrderId": "معرّف الطلب غير صحيح"
   },
   "CreateReplacement": {
     "title": "إنشاء استبدال",

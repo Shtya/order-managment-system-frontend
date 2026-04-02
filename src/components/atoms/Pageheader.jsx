@@ -369,40 +369,138 @@ export function PageHeaderStatsSkeleton({ count = 6 }) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-	 STATS GRID
+	 STATS GRID WITH COLLAPSE/EXPAND
 ══════════════════════════════════════════════════════════════ */
 export function StatsGrid({ stats }) {
+	const [isExpanded, setIsExpanded] = useState(false);
+
 	if (!stats) return null;
 	if (!Array.isArray(stats)) return <div>{stats}</div>;
 	if (!stats.length) return null;
 
 	const sorted = [...stats].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+
+	// Define max visible stats before collapse
+	const MAX_VISIBLE_ROWS = 2; // Show 1 row initially (typically 4-6 items)
+	const ITEMS_PER_ROW = 6; // Estimate based on grid layout
+	const MAX_VISIBLE = MAX_VISIBLE_ROWS * ITEMS_PER_ROW;
+
+	const hasMoreStats = sorted.length > MAX_VISIBLE;
+	const visibleStats = isExpanded ? sorted : sorted.slice(0, MAX_VISIBLE);
+	const hiddenCount = sorted.length - MAX_VISIBLE;
+
 	return (
-		<div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
-			{sorted.map((stat, i) => (
+		<div className="relative">
+			{/* Stats Grid with height limit */}
+			<div
+				className="relative"
+				style={{
+					maxHeight: isExpanded ? 'none' : `${MAX_VISIBLE_ROWS * 100}px`,
+					overflow: 'hidden',
+					transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+				}}
+			>
+				<div className="grid gap-3 py-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))" }}>
+					{visibleStats.map((stat, i) => (
+						<motion.div
+							key={stat.id ?? i}
+							style={{ order: stat.sortOrder ?? i }}
+							initial={{ opacity: 0, y: 10 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: i * 0.055, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+						>
+							{stat.isAddCard ? (
+								<InfoCard title={stat.name} icon={stat.icon} isAddCard onClick={stat.onClick} />
+							) : (
+								<InfoCard
+									title={stat.name}
+									value={String(stat.value ?? 0)}
+									icon={stat.icon}
+									editable={stat.editable ?? false}
+									onEdit={stat.onEdit}
+									onDelete={stat.onDelete}
+									onClick={stat.onClick}
+									customStyles={{ iconColor: stat.color }}
+								/>
+							)}
+						</motion.div>
+					))}
+				</div>
+
+				{/* Gradient Shadow when collapsed */}
+				{hasMoreStats && !isExpanded && (
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						transition={{ delay: 0.2 }}
+						style={{
+							position: 'absolute',
+							bottom: -20,
+							left: 0,
+							right: 0,
+							height: '80px',
+							background: 'linear-gradient(to bottom, transparent 0%, var(--card) 70%)',
+							pointerEvents: 'none',
+						}}
+					/>
+				)}
+			</div>
+
+			{/* Expand/Collapse Button */}
+			{hasMoreStats && (
 				<motion.div
-					key={stat.id ?? i}
-					style={{ order: stat.sortOrder ?? i }}
 					initial={{ opacity: 0, y: 10 }}
 					animate={{ opacity: 1, y: 0 }}
-					transition={{ delay: i * 0.055, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+					transition={{ delay: 0.3 }}
+					className="flex justify-center pt-3"
 				>
-					{stat.isAddCard ? (
-						<InfoCard title={stat.name} icon={stat.icon} isAddCard onClick={stat.onClick} />
-					) : (
-						<InfoCard
-							title={stat.name}
-							value={String(stat.value ?? 0)}
-							icon={stat.icon}
-							editable={stat.editable ?? false}
-							onEdit={stat.onEdit}
-							onDelete={stat.onDelete}
-							onClick={stat.onClick}
-							customStyles={{ iconColor: stat.color }}
-						/>
-					)}
+					<button
+						onClick={() => setIsExpanded(!isExpanded)}
+						className="group relative flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold transition-all outline-none"
+						style={{
+							background: 'var(--muted)',
+							border: '1px solid var(--border)',
+							color: 'var(--muted-foreground)',
+						}}
+						onMouseEnter={(e) => {
+							e.currentTarget.style.background = 'color-mix(in oklab, var(--primary) 10%, var(--muted))';
+							e.currentTarget.style.borderColor = 'color-mix(in oklab, var(--primary) 30%, var(--border))';
+							e.currentTarget.style.color = 'var(--primary)';
+						}}
+						onMouseLeave={(e) => {
+							e.currentTarget.style.background = 'var(--muted)';
+							e.currentTarget.style.borderColor = 'var(--border)';
+							e.currentTarget.style.color = 'var(--muted-foreground)';
+						}}
+					>
+						{/* Icon */}
+						<motion.svg
+							width="14"
+							height="14"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="2.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							animate={{ rotate: isExpanded ? 180 : 0 }}
+							transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+						>
+							<polyline points="6 9 12 15 18 9" />
+						</motion.svg>
+
+						{/* Text */}
+						<span>
+							{isExpanded
+								? 'إخفاء الإحصائيات'
+								: `عرض كل الإحصائيات`
+							}
+						</span>
+
+
+					</button>
 				</motion.div>
-			))}
+			)}
 		</div>
 	);
 }

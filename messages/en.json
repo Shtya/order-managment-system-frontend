@@ -2011,7 +2011,7 @@
           "system": "Warehouse Management System (WMS)"
         }
       },
-      "currency": "SAR"
+      "currency": "EGP"
     },
     "returns": {
       "breadcrumbs": {
@@ -2049,7 +2049,7 @@
         "limit": "Results per page",
         "carrier": "Shipping Company",
         "allCarriers": "All Companies",
-        "currency": "SAR",
+        "currency": "EGP",
         "unspecified": "Not Specified"
       },
       "scan": {
@@ -2248,7 +2248,7 @@
       "apply": "Apply",
       "total": "Total",
       "limit": "Results per page",
-      "currency": "SAR",
+      "currency": "EGP",
       "howItWorks": "How it works"
     },
     "rejected": {
@@ -2339,7 +2339,7 @@
       "close": "Close",
       "popupBlocked": "Please allow pop-ups to download the PDF file",
       "common": {
-        "currency": "SAR",
+        "currency": "EGP",
         "unspecified": "Unspecified"
       },
       "table": {
@@ -3680,7 +3680,7 @@
       "incomingAvg": "Incoming Price",
       "incomingQty": "Incoming Quantity",
       "newStock": "New Stock",
-      "formulaExample": "Example: If old stock is 60 at a price of 60 SAR, and incoming stock is 554 at a price of 100 SAR, then the new price = (60×60 + 100×554) ÷ 614 = 99 SAR",
+      "formulaExample": "Example: If old stock is 60 at a price of 60 EGP, and incoming stock is 554 at a price of 100 EGP, then the new price = (60×60 + 100×554) ÷ 614 = 99 EGP",
       "autoCalculated": "Calculated automatically",
       "sku": "Product Code",
       "stockBefore": "Stock Before",
@@ -3900,7 +3900,8 @@
       "total": "Total",
       "retries": "Retries",
       "orders": "Orders",
-      "assignedOrders": "Assigned Orders"
+      "assignedOrders": "Assigned Orders",
+      "tryAdjusting": "Try changing your search criteria or wait for new assigning"
     },
     "presetColors": "Preset Colors",
     "replacement": {

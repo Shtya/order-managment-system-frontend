@@ -78,7 +78,7 @@ export function PlatformSettingsProvider({ children }) {
 
   const currency = useMemo(() => {
     if (isCompanyLoading) return "";
-    return (company?.currency || "SAR").trim();
+    return (company?.currency || "EGP").trim();
   }, [company, isCompanyLoading]);
 
 

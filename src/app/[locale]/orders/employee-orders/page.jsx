@@ -116,7 +116,6 @@ export default function MyAssignedOrdersPage() {
 			setPager({
 				total_records: data.total_records || 0,
 				current_page: data.current_page || page,
-				per_page: data.per_page || per_page,
 				records: Array.isArray(data.records) ? data.records : [],
 			});
 		} catch (error) {

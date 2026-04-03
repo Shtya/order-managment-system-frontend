@@ -2011,7 +2011,7 @@
           "system": "نظام إدارة المستودعات"
         }
       },
-      "currency": "SAR"
+      "currency": "EGP"
     },
     "returns": {
       "breadcrumbs": {
@@ -2248,7 +2248,7 @@
       "apply": "تطبيق",
       "total": "الإجمالي",
       "limit": "عدد النتائج في الصفحة",
-      "currency": "SAR",
+      "currency": "EGP",
       "howItWorks": "كيف تعمل"
     },
     "rejected": {
@@ -3900,7 +3900,8 @@
       "total": "الإجمالي",
       "retries": "المحاولات",
       "orders": "طلب",
-      "assignedOrders": "الطلبات المستنده"
+      "assignedOrders": "الطلبات المستنده",
+      "tryAdjusting": "جرّب تغيير معايير البحث أو انتظر التعيينات الجديده"
     },
     "presetColors": "ألوان مسبقة الضبط",
     "replacement": {

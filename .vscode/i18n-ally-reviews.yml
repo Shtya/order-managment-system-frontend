@@ -45,3 +45,25 @@ reviews:
             suggestion: ''
             type: approve
             time: '2026-04-02T15:38:42.491Z'
+  orders.myOrders.tryAdjusting:
+    locales:
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: sYQQ8J0a_F2rcDfHtIbj3
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-03T16:11:38.760Z'
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: w5E76v3Vmk9IgwTuv1BTP
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-03T16:11:39.481Z'

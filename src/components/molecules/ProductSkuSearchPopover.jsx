@@ -275,7 +275,10 @@ export function ProductSkuSearchPopover({
   const debounced = useDebouncedValue(searchQuery, 350);
 
   const [isSearching, setIsSearching] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState(null);
 
   // Measure trigger width
   useEffect(() => {
@@ -302,24 +305,54 @@ export function ProductSkuSearchPopover({
     if (term.length < 2) {
       setSearchResults([]);
       setIsSearching(false);
+      setHasMore(false);
+      setNextCursor(null);
       return;
     }
     setIsSearching(true);
     try {
-      const res = await api.get(`/lookups/skus`, { params: { q: term, productId } });
-      setSearchResults(Array.isArray(res.data) ? res.data : []);
+      const res = await api.get(`/lookups/skus`, { params: { q: term, productId, limit: 20 } });
+      const { data, hasMore: more, nextCursor: cursor } = res.data;
+      setSearchResults(Array.isArray(data) ? data : []);
+      setHasMore(more);
+      setNextCursor(cursor);
     } catch (e) {
       console.error("Search error:", e);
       setSearchResults([]);
+      setHasMore(false);
+      setNextCursor(null);
     } finally {
       setIsSearching(false);
     }
   }
 
+  async function loadMore() {
+    if (isLoadingMore || !hasMore || !nextCursor) return;
+
+    setIsLoadingMore(true);
+    try {
+      const res = await api.get(`/lookups/skus`, {
+        params: { q: debounced, productId, limit: 20, cursor: nextCursor }
+      });
+      const { data, hasMore: more, nextCursor: cursor } = res.data;
+
+      setSearchResults(prev => [...prev, ...data]);
+      setHasMore(more);
+      setNextCursor(cursor);
+    } catch (e) {
+      console.error("Load more error:", e);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }
+
   function resetSearch() {
     setIsSearching(false);
+    setIsLoadingMore(false);
     setSearchResults([]);
     setSearchQuery("");
+    setHasMore(false);
+    setNextCursor(null);
   }
 
   useEffect(() => {
@@ -513,6 +546,42 @@ export function ProductSkuSearchPopover({
                       t={t}
                     />
                   ))}
+
+                  {/* ── Load More ─────────────────────────────────────────── */}
+                  {(hasMore || isLoadingMore) && (
+                    <div className="pt-2 pb-1 px-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={isLoadingMore}
+                        onClick={loadMore}
+                        className={cn(
+                          "w-full h-10 rounded-md border border-dashed border-border/60",
+                          "text-xs font-medium text-muted-foreground/80 hover:text-[var(--primary)]",
+                          "hover:bg-[var(--primary)]/[0.04] hover:border-[var(--primary)]/30",
+                          "transition-all duration-200 gap-2"
+                        )}
+                      >
+                        {isLoadingMore ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            {t("searching")}
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="w-3.5 h-3.5" />
+                            {t("loadMore")}
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+
+                  {!hasMore && searchResults.length > 0 && (
+                    <p className="text-[10px] text-center text-muted-foreground/50 py-3 italic">
+                      {t("noMoreResults")}
+                    </p>
+                  )}
                 </motion.div>
               ) : null}
             </AnimatePresence>

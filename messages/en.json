@@ -3116,7 +3116,9 @@
     "reserved": "Reserved",
     "outOfStock": "Out of Stock",
     "lowStock": "Low Stock",
-    "inStock": "In Stock"
+    "inStock": "In Stock",
+    "loadMore": "Load More",
+    "noMoreResults": "No more results"
   },
   "editProduct": {
     "loading": {

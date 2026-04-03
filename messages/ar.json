@@ -3116,7 +3116,9 @@
     "reserved": "محجوز",
     "outOfStock": "نفذ",
     "lowStock": "قليل",
-    "inStock": "متاح"
+    "inStock": "متاح",
+    "loadMore": "تحميل المزيد",
+    "noMoreResults": "لا توجد نتائج أخرى"
   },
   "editProduct": {
     "loading": {

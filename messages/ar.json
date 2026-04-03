@@ -367,7 +367,7 @@
     "newBundle": "حزمة جديدة",
     "warehouse": "المخزن",
     "wallet": "المحفظة",
-    "manageWarehouse": "إدارة الطلبات",
+    "manageWarehouse": "المخزن",
     "newWarehouse": "مستودع جديد",
     "suppliers": "الموردون",
     "categories": "الفئات",
@@ -378,13 +378,14 @@
     "sales": "المبيعات",
     "employees": "الموظفون",
     "accounts": "الحسابات",
+    "orderCollection": "تحصيل الطلبات",
     "reports": "التقارير",
     "shippingCompanies": "تكامل شركات الشحن",
     "platformSettings": "إعدادات المنصة",
-    "storeIntegration": "تكامل المتجر الألكترونية",
+    "storeIntegration": "تكامل المتاجر الألكترونية",
     "settings": "الإعدادات",
     "order-replacement": "طلبات الاستبدال",
-    "failedOrders": "الطلبات الفاشلة",
+    "failedOrders": "طلبات تحتاج مراجعة",
     "logout": "تسجيل الخروج",
     "collections": "التحصيلات",
     "collectedOrders": "الطلبات المحصلة",
@@ -394,7 +395,7 @@
     "warehousePreparation": "التحضير",
     "warehouseOutgoing": "خروج الطلبات",
     "warehouseReturns": "المرتجعات",
-    "warehouseRejected": "المرفوضة",
+    "warehouseRejected": "الطلبات المرفوضه",
     "warehouseLogs": "سجل العمليات",
     "orderReplacement": "استبدال الطلبات",
     "sections": "الأقسام",
@@ -3808,11 +3809,17 @@
   },
   "common": {
     "api": {
-      "error": "فشل الطلب"
+      "error": "فشل الطلب",
+      "exportStarted": "بدأ التصدير",
+      "exportSuccess": "تم التصدير بنجاح"
     },
     "copy": {
       "success": "تم النسخ",
       "failed": "فشل النسخ"
+    },
+    "stats": {
+      "hide": "إخفاء الإحصائيات",
+      "showAll": "عرض كل الإحصائيات"
     },
     "statusCodes": {
       "active": "نشط",
@@ -3974,7 +3981,7 @@
     },
     "tabs": {
       "orders": "الطلبات",
-      "failedOrders": "الطلبات الفاشلة",
+      "failedOrders": "طلبات تحتاج مراجعة",
       "distribution": "توزيع الطلبات",
       "returns": "طلبات الاسترجاع",
       "replacement": "طلبات الاستبدال",
@@ -3998,7 +4005,8 @@
       },
       "columns": {
         "employeeName": "اسم الموظف",
-        "receivedOrders": "عدد الطلبات المستلمة",
+        "activeAssignments": "الطلبات النشطة",
+        "receivedOrders": "عدد الطلبات المستلمة الكلي",
         "confirmedOrders": "الطلبات المؤكدة",
         "confirmationRate": "نسبة التأكيد",
         "deliveredOrders": "طلبات تم توصيلها",
@@ -4052,12 +4060,12 @@
         "alreadySuccess": "تمّ بنجاح"
       },
       "messages": {
-        "fetchFailed": "فشل تحميل الطلبات الفاشلة، يرجى المحاولة مجدداً",
+        "fetchFailed": "فشل تحميل الطلبات، يرجى المحاولة مجدداً",
         "retryStarted": "تمّ إرسال طلب إعادة المحاولة بنجاح",
         "retryFailed": "فشلت إعادة المحاولة، يرجى المحاولة لاحقاً"
       },
       "empty": {
-        "title": "لا توجد طلبات فاشلة",
+        "title": "لا توجد طلبات تحتاج مراجعة",
         "subtitle": "جميع الطلبات الواردة من المتاجر الخارجية تمّت معالجتها بنجاح"
       }
     },
@@ -4526,6 +4534,21 @@
       "callCenter": "مركز الاتصال"
     },
     "title": "مركز الاتصال",
+    "stats": {
+      "new": "الطلبات الجديدة",
+      "confirmed": "المؤكدة اليوم",
+      "cancelled": "الملغية اليوم"
+    },
+    "columns": {
+      "employeeName": "اسم الموظف",
+      "status": "الحالة",
+      "activeAssignments": "نشط",
+      "lockedAssignments": "مغلق",
+      "confirmedToday": "تم تأكيده اليوم"
+    },
+    "searchPlaceholder": "ابحث باسم الموظف...",
+    "emptyTitle": "لم يتم العثور على موظفين",
+    "emptySubtitle": "لا توجد سجلات تطابق بحثك",
     "tabs": {
       "createOrder": "إنشاء طلب",
       "ordersList": "قائمة الطلبات"

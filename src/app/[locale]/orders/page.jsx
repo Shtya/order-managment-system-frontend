@@ -111,6 +111,7 @@ export default function Orders() {
 
 					{/* {activeTab === "replacement" && <ReplacementTab statuses={stats} />} */}
 					{activeTab === "failedOrders" && <FailedOrdersTab statuses={stats} />}
+					{activeTab === "rejected" && <RejectedTab />}
 				</motion.div>
 			</AnimatePresence>
 		</div>

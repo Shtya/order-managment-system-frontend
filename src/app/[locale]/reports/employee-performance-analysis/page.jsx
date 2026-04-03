@@ -250,6 +250,15 @@ export function EmployeeStatisticsPage() {
                 ),
             },
             {
+                key: "activeAssignments",
+                header: t("employeeStats.columns.activeAssignments"),
+                cell: (row) => (
+                    <span className="font-bold text-sm tabular-nums text-primary">
+                        {row.activeAssignments ?? 0}
+                    </span>
+                ),
+            },
+            {
                 key: "receivedOrders",
                 header: t("employeeStats.columns.receivedOrders"),
                 cell: (row) => (

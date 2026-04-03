@@ -14,7 +14,6 @@ import Button_ from "@/components/atoms/Button";
 import PageHeader from "../../../../components/atoms/Pageheader";
 import ActionButtons from "@/components/atoms/Actions";
 import { Button } from "@/components/ui/button";
-import { STATUS } from "./data";
 import api from "@/utils/api";
 import { useDebounce } from "@/hook/useDebounce";
 import { useExport } from "@/hook/useExport";
@@ -214,7 +213,7 @@ function RejectedOrderDetailModal({ open, onClose, order }) {
 // ─────────────────────────────────────────────────────────────
 // MAIN REJECTED TAB
 // ─────────────────────────────────────────────────────────────
-export function RejectedTab({ resetToken }) {
+export default function RejectedTab({ resetToken }) {
   const t = useTranslations("warehouse.rejected");
 
   const [search, setSearch] = useState("");
@@ -409,7 +408,7 @@ export function RejectedTab({ resetToken }) {
       <PageHeader
         breadcrumbs={[
           { name: t("breadcrumbs.home"), href: "/" },
-          { name: t("breadcrumbs.warehouse"), href: "/warehouse" },
+          // { name: t("breadcrumbs.warehouse"), href: "/warehouse" },
           { name: t("breadcrumbs.rejected") },
         ]}
         buttons={<Button_ size="sm" label={t("howItWorks")} variant="ghost" onClick={() => { }} icon={<Info size={18} />} permission="orders.read" />}

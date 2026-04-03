@@ -367,7 +367,7 @@
     "newBundle": "New Bundle",
     "warehouse": "Warehouse",
     "wallet": "Wallet",
-    "manageWarehouse": "Order Management",
+    "manageWarehouse": "Warehouse",
     "newWarehouse": "New Warehouse",
     "suppliers": "Suppliers",
     "categories": "Categories",
@@ -378,13 +378,14 @@
     "sales": "Sales",
     "employees": "Employees",
     "accounts": "Accounts",
+    "orderCollection": "Order Collection",
     "reports": "Reports",
     "shippingCompanies": "Shipping Company Integration",
     "platformSettings": "Platform Settings",
     "storeIntegration": "Online Store Integration",
     "settings": "Settings",
     "order-replacement": "Replacement Orders",
-    "failedOrders": "Failed Orders",
+    "failedOrders": "Orders Requiring Review",
     "logout": "Log Out",
     "collections": "Collections",
     "collectedOrders": "Collected Orders",
@@ -394,7 +395,7 @@
     "warehousePreparation": "Preparation",
     "warehouseOutgoing": "Outgoing Orders",
     "warehouseReturns": "Returns",
-    "warehouseRejected": "Rejected",
+    "warehouseRejected": "Rejected Orders",
     "warehouseLogs": "Operations Log",
     "orderReplacement": "Order Replacement",
     "sections": "Sections",
@@ -3808,11 +3809,17 @@
   },
   "common": {
     "api": {
-      "error": "Request failed"
+      "error": "Request failed",
+      "exportStarted": "Export started",
+      "exportSuccess": "Exported successfully"
     },
     "copy": {
       "success": "Copied",
       "failed": "Copy failed"
+    },
+    "stats": {
+      "hide": "Hide Statistics",
+      "showAll": "Show All Statistics"
     },
     "statusCodes": {
       "active": "Active",
@@ -3974,7 +3981,7 @@
     },
     "tabs": {
       "orders": "Orders",
-      "failedOrders": "Failed Orders",
+      "failedOrders": "Orders Requiring Review",
       "distribution": "Order Distribution",
       "returns": "Return Requests",
       "replacement": "Replacement Requests",
@@ -3998,7 +4005,8 @@
       },
       "columns": {
         "employeeName": "Employee Name",
-        "receivedOrders": "Received Orders",
+        "activeAssignments": "Active Assignments",
+        "receivedOrders": "Total Received Orders",
         "confirmedOrders": "Confirmed Orders",
         "confirmationRate": "Confirmation Rate",
         "deliveredOrders": "Delivered Orders",
@@ -4052,12 +4060,12 @@
         "alreadySuccess": "Already successful"
       },
       "messages": {
-        "fetchFailed": "Failed to load failed orders, please try again",
+        "fetchFailed": "Failed to load orders, please try again",
         "retryStarted": "Retry request sent successfully",
         "retryFailed": "Retry failed, please try again later"
       },
       "empty": {
-        "title": "No failed orders",
+        "title": "No orders requiring review",
         "subtitle": "All incoming orders from external stores were processed successfully"
       }
     },
@@ -4526,6 +4534,21 @@
       "callCenter": "Call Center"
     },
     "title": "Call Center",
+    "stats": {
+      "new": "New Orders",
+      "confirmed": "Confirmed Today",
+      "cancelled": "Cancelled Today"
+    },
+    "columns": {
+      "employeeName": "Employee Name",
+      "status": "Status",
+      "activeAssignments": "Active",
+      "lockedAssignments": "Locked",
+      "confirmedToday": "Confirmed Today"
+    },
+    "searchPlaceholder": "Search employees...",
+    "emptyTitle": "No employees found",
+    "emptySubtitle": "No records match your search criteria",
     "tabs": {
       "createOrder": "Create Order",
       "ordersList": "Orders List"

@@ -137,7 +137,7 @@ function SettingCard({ children, className }) {
   return (
     <div
       className={cn(
-        "relative rounded-2xl border border-border/50 bg-card overflow-hidden",
+        "relative rounded-2xl border border-border/50 main-card overflow-hidden",
         "shadow-[0_1px_3px_rgba(0,0,0,0.05),0_4px_16px_rgba(0,0,0,0.04)]",
         className,
       )}
@@ -472,6 +472,7 @@ export default function SettingsPage() {
               tone="ghost"
               variant="cancel"
               icon={<RefreshCw size={14} />}
+              className="bg-white! dark:bg-slate-800! text-slate-600! dark:text-slate-300!"
               onClick={() => window.location.reload()}
             />
           }
@@ -481,7 +482,7 @@ export default function SettingsPage() {
         />
 
         {/* Content card */}
-        <div className="relative  bg-card rounded-2xl border border-border/50 overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.05),0_8px_32px_rgba(0,0,0,0.05)]">
+        <div className="relative  main-card rounded-2xl border border-border/50 overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.05),0_8px_32px_rgba(0,0,0,0.05)]">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}

@@ -73,7 +73,7 @@
 
   --background: #0f1117;
   --sidebar: #13161f;
-  --card: oklch(0.14 0.012 260);
+  --card: oklab(25.6% -0.00583 -0.04071);
   --border: oklch(1 0 0 / 9%);
   --input: oklch(1 0 0 / 12%);
   --ring: oklch(0.45 0 0);
@@ -89,6 +89,7 @@
   --muted-foreground: oklch(0.58 0.01 250);
   --accent: oklch(0.22 0.015 270);
   --accent-foreground: oklch(0.9 0.005 240);
+
   --destructive: oklch(0.65 0.22 25);
   --destructive-foreground: oklch(0.98 0 0);
 }
@@ -407,16 +408,20 @@
    6. CARD SURFACE
 ═══════════════════════════════════════════════════════════════ */
 
-.bg-card {
+.bg-icon {
+    background-color: color-mix(in oklab, var(--muted) 80%, transparent);
+}
+
+.main-card {
   @apply p-4 md:p-6 rounded-lg border transition-all duration-300 bg-card border-gray-300/70;
-  @apply dark:bg-[#182337]  dark:border-white/10 dark:hover:border-white/15;
+  @apply dark:bg-card  dark:border-white/10 dark:hover:border-white/15;
 
   transition:
     box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     border-color 0.3s ease;
 }
 
-.bg-card {
+.main-card {
   box-shadow:
     rgba(50, 50, 93, 0.04) 0px 2px 8px 0px,
     rgba(50, 50, 93, 0.06) 0px 8px 32px -4px,
@@ -424,7 +429,7 @@
     rgba(255, 255, 255, 0.9) 0px -1px 0px 0px inset !important;
 }
 
-.dark .bg-card {
+.dark .main-card {
   box-shadow:
     rgba(0, 0, 0, 0.12) 0px 2px 8px 0px,
     rgba(0, 0, 0, 0.18) 0px 8px 32px -4px,
@@ -434,7 +439,7 @@
 
 /* Card select (e.g. select dropdowns inside cards) */
 .bg-card-select {
-  @apply border bg-white/90 dark:bg-[#182337]/95;
+  @apply border bg-white/90 dark:bg-card/95;
   border-color: rgba(0, 0, 0, 0.08);
   transition: border-color 0.25s ease;
 }
@@ -734,6 +739,62 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   11. REUSABLE TABLE STYLES
+═══════════════════════════════════════════════════════════════ */
+
+@layer components {
+  .table-container {
+    @apply overflow-hidden rounded-2xl border border-border/40 bg-card;
+  }
+
+  .table-header {
+    @apply border-b border-border/40;
+    background: color-mix(in oklab, var(--muted) 50%, var(--card));
+  }
+
+  .table-header-cell {
+    @apply px-5 py-3.5 whitespace-nowrap font-black uppercase tracking-[0.1em] text-[10px] text-muted-foreground/80 ltr:text-left rtl:text-right;
+  }
+
+  .table-row {
+    @apply border-b border-border/40 last:border-0  transition-colors hover:hover:bg-[color-mix(in_oklab,var(--primary)_3%,transparent)];
+  }
+
+  .table-cell {
+    @apply px-5 py-4 align-middle whitespace-nowrap text-sm text-foreground;
+  }
+
+  .table-skeleton-bar {
+    @apply h-4 w-full animate-pulse rounded-xl bg-muted/60;
+  }
+
+  /* ── Unified Form Field Styling ── */
+  .theme-field {
+    /* Base Layout, Typography, and Disabled States */
+    @apply w-full min-w-0 !rounded-md border border-border bg-background/60 text-foreground 
+           placeholder:text-muted-foreground/80 transition-all duration-200 !outline-none 
+           disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50;
+
+    /* Sizing (Removed the stray 'data-' and the '!important' from h-10) */
+    @apply h-10 data-[size=sm]:text-xs data-[size=sm]:px-3 
+           data-[size=default]:text-sm data-[size=default]:px-3.5 
+           data-[size=lg]:text-sm data-[size=lg]:px-4;
+
+    /* Hover States */
+    @apply hover:border-[var(--primary)]/50 dark:hover:border-[var(--primary)]/50 hover:bg-background;
+  }
+
+  /* Focus, Active, and Open States */
+  .theme-field:focus,
+  .theme-field:focus-within,
+  .theme-field[data-state="open"] {
+    @apply border-[var(--primary)] dark:border-[#5b4bff] bg-background 
+           shadow-[0_0_0_3px_rgb(var(--primary-shadow))] 
+           dark:shadow-[0_0_0_3px_rgba(91,75,255,0.18)];
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
    12. SCROLLBAR
 ═══════════════════════════════════════════════════════════════ */
 
@@ -785,3 +846,141 @@ select:focus-visible {
     break-inside: avoid;
   }
 }
+/* ─────────────────────────────────────────────────────────────────────────
+   Flatpickr Master Theme - Unified with FloatingSelect.jsx
+───────────────────────────────────────────────────────────────────────── */
+
+/* الحاوية الرئيسية للتقويم */
+.flatpickr-calendar{ 
+  @apply !border !border-[var(--primary)]/20;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08) !important;
+}
+
+.flatpickr-calendar,
+.flatpickr-innerContainer {
+  @apply !bg-popover/95 !backdrop-blur-sm !rounded-xl !transition-all !duration-300;
+  @apply dark:!shadow-[0_8px_32_rgba(0,0,0,0.5),0_2px_8_rgba(0,0,0,0.3)];
+}
+
+/* سهم التقويم الصغير (Top Arrow) */
+.flatpickr-calendar.arrowTop:before, 
+.flatpickr-calendar.arrowTop:after {
+  @apply !border-b-popover/95;
+}
+
+/* شريط التدرج اللوني العلوي (مثل SelectContent) */
+.flatpickr-calendar::before {
+  content: "";
+  @apply absolute inset-x-0 top-0 h-[2px] z-20 opacity-70;
+  background: linear-gradient(to right, var(--primary), var(--secondary, #ffb703), var(--third, #ff5c2b));
+}
+
+/* الهيدر (الأشهر والسنوات) */
+.flatpickr-months {
+  @apply !items-center !px-2 !pt-3 !pb-1;
+}
+
+.flatpickr-month {
+  @apply !text-foreground;
+}
+
+/* أزرار التنقل (Prev/Next) */
+.flatpickr-prev-month, 
+.flatpickr-next-month {
+  @apply !text-muted-foreground/80 hover:!text-[var(--primary)] !transition-colors !p-2 !rounded-lg hover:!bg-[var(--primary)]/10;
+}
+
+.flatpickr-prev-month svg, 
+.flatpickr-next-month svg {
+  @apply !fill-current !size-4;
+}
+
+/* قائمة اختيار الشهر (Dropdown) */
+.flatpickr-monthDropdown-months {
+  @apply !bg-transparent !text-sm !font-semibold !text-foreground hover:!bg-[var(--primary)]/10 !rounded-md !px-1 !cursor-pointer;
+}
+
+.flatpickr-monthDropdown-month {
+  @apply !bg-popover !text-foreground;
+}
+
+/* مدخل السنة (Year Input) */
+.numInputWrapper {
+  @apply !rounded-md hover:!bg-[var(--primary)]/10 !transition-colors;
+}
+
+.numInputWrapper input.cur-year {
+  @apply !text-sm !font-semibold !text-foreground !bg-transparent;
+}
+
+.numInputWrapper span.arrowUp, 
+.numInputWrapper span.arrowDown {
+  @apply !border-none hover:!bg-[var(--primary)]/20;
+}
+
+/* أيام الأسبوع (Sun, Mon, ...) */
+.flatpickr-weekdays {
+  @apply !px-2;
+}
+
+.flatpickr-weekday {
+  @apply !text-[10px] !font-black !uppercase !tracking-widest !text-muted-foreground/60;
+}
+
+/* حاوية الأيام */
+.dayContainer {
+  @apply !p-2;
+}
+
+/* اليوم الفردي (Day Cell) */
+.flatpickr-day {
+  @apply !rounded-xl !text-sm !text-foreground/80 !transition-all !duration-150 !border-none;
+  @apply !flex !items-center !justify-center;
+  max-width: 38px !important;
+  height: 38px !important;
+  line-height: 38px !important;
+}
+
+/* تأثير الـ Hover على اليوم */
+.flatpickr-day:hover {
+  @apply !bg-[var(--primary)]/10 !text-foreground;
+}
+
+/* اليوم الحالي (Today) */
+.flatpickr-day.today {
+  @apply !text-[var(--primary)] !font-bold;
+  box-shadow: inset 0 0 0 1px rgb(var(--primary-shadow) / 30%) !important;
+}
+
+.flatpickr-day.today:hover {
+  @apply !bg-[var(--primary)]/20;
+}
+
+/* الأيام المختارة (Selected Range) */
+.flatpickr-day.selected, 
+.flatpickr-day.startRange, 
+.flatpickr-day.endRange {
+  @apply !bg-[var(--primary)] !text-white !font-semibold !shadow-lg;
+  box-shadow: 0 4px 12px rgb(var(--primary-shadow) / 40%) !important;
+}
+
+/* الأيام التي تقع داخل نطاق الاختيار (In Range) */
+.flatpickr-day.inRange, 
+.flatpickr-day.prevMonthDay.inRange, 
+.flatpickr-day.nextMonthDay.inRange {
+  @apply !bg-[var(--primary)]/10 !text-[var(--primary)] !rounded-none;
+}
+
+/* الأيام المعطلة أو من أشهر سابقة/لاحقة */
+.flatpickr-day.prevMonthDay, 
+.flatpickr-day.nextMonthDay, 
+.flatpickr-day.flatpickr-disabled {
+  @apply !text-muted-foreground/30 !opacity-50 !cursor-not-allowed;
+}
+
+/* حالة المنع التام */
+.flatpickr-day.flatpickr-disabled:hover {
+  @apply !bg-transparent !text-muted-foreground/30;
+}
+
+/* ───────────────────────────────────────────────────────────────────────── */

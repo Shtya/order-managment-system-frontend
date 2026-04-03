@@ -580,7 +580,7 @@ function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAddi
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .3 }}>
-      <div className="bg-card !p-0 ">
+      <div className="main-card !p-0 ">
 
         <ColHead open={open} onToggle={() => setOpen(p => !p)} icon={icon} color={color} eyebrow={eyebrow} title={title}
           right={
@@ -746,7 +746,7 @@ function UpsellSection({ order, items, onOpen, t, isRtl }) {
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .1 }}>
-      <div className="bg-card !p-0 overflow-hidden">
+      <div className="main-card !p-0 overflow-hidden">
         <CardHead icon={Star} color={HEX.violet} eyebrow={t("upsell") || "Upsell"} title={t("upselling")} right={<Tag color={HEX.violet} sm>{upItems.length}</Tag>} />
         <div style={{ padding: "12px 18px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
           {upItems.map((up, i) => {
@@ -786,7 +786,7 @@ function NotesSection({ order, t, isRtl }) {
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .15 }}>
-      <div className="bg-card !p-0 overflow-hidden">
+      <div className="main-card !p-0 overflow-hidden">
         <ColHead open={open} onToggle={() => setOpen(p => !p)} icon={StickyNote} color={HEX.sky}
           eyebrow={t("notes")} title={lbl}
           right={<Tag color={HEX.sky} sm>{[order.customerNotes, order.notes].filter(Boolean).length}</Tag>} />
@@ -831,7 +831,7 @@ function HistSection({ order, t, isRtl }) {
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .2 }}>
-      <div className="bg-card !p-0 overflow-hidden">
+      <div className="main-card !p-0 overflow-hidden">
         <ColHead open={open} onToggle={() => setOpen(p => !p)} icon={Activity} color={HEX.green}
           eyebrow={isRtl ? "سجل النشاط" : "Activity"} title={t("statusHistory")}
           right={
@@ -890,7 +890,7 @@ function CustomerSection({ control, errors, t, isRtl }) {
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-      <div className="bg-card !p-0 overflow-hidden">
+      <div className="main-card !p-0 overflow-hidden">
         <CardHead icon={User} color={HEX.violet} eyebrow={t("customer")} title={t("editCustomerInfo")} />
         <div style={{ padding: "16px 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 13 }}>
           <Fld name="customerName" label={t("customerName")} control={control} error={errors.customerName} />
@@ -913,7 +913,7 @@ function FinancialSection({ control, order, errors, t, isRtl }) {
   const { formatCurrency } = usePlatformSettings();
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-      <div className="bg-card !p-0 overflow-hidden">
+      <div className="main-card !p-0 overflow-hidden">
         <CardHead icon={Banknote} color={HEX.orange} eyebrow={t("financials") || "Financials"} title={t("editFinancials")} />
         <div style={{ padding: "16px 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 13 }}>
           <Fld name="productsTotal" label={t("finalTotal")} control={control} disabled />
@@ -974,7 +974,7 @@ function DecisionSection({ order, notes, setNotes, changingStatus, isLocked, dec
 
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .1 }}>
-      <div className="bg-card !p-0 overflow-hidden">
+      <div className="main-card !p-0 overflow-hidden">
 
         {/* Serif panel header */}
         <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)", background: rgba(HEX.orange, .025) }}>

@@ -105,7 +105,7 @@ function CategoryFormDialog({ open, onOpenChange, category, onSuccess, t }) {
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="max-w-2xl bg-white dark:bg-slate-900">
+			<DialogContent className="max-w-2xl ">
 				<DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
 					<DialogTitle className="text-xl font-bold flex items-center gap-2">
 						<Tag className="w-6 h-6 text-primary" />
@@ -171,7 +171,7 @@ function ViewCategoryDialog({ open, onOpenChange, category, t }) {
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="max-w-2xl bg-white dark:bg-slate-900">
+			<DialogContent className="max-w-2xl ">
 				<DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
 					<DialogTitle className="text-xl font-bold flex items-center gap-2">
 						<Eye className="w-6 h-6 text-primary" />
@@ -219,7 +219,7 @@ function ViewCategoryDialog({ open, onOpenChange, category, t }) {
 function ConfirmDialog({ open, onOpenChange, title, description, confirmText, cancelText, onConfirm, loading = false }) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="max-w-md bg-white dark:bg-slate-900 rounded-xl">
+			<DialogContent className="max-w-md rounded-xl">
 				<div className="space-y-4 ">
 					<h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">{title}</h3>
 					{description && <p className="text-sm text-gray-500 dark:text-slate-400">{description}</p>}

@@ -64,7 +64,7 @@ import {
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import Flatpickr from "react-flatpickr";
-import "flatpickr/dist/themes/material_blue.css";
+
 import { baseImg } from "@/utils/axios";
 import { Badge } from "@/components/ui/badge";
 import PageHeader from "@/components/atoms/Pageheader";
@@ -136,7 +136,7 @@ function FiltersPanel({ t, value, onChange, onApply, suppliers }) {
 			exit={{ height: 0, opacity: 0, y: -6 }}
 			transition={{ duration: 0.25 }}
 		>
-			<div className="bg-card !p-4 mt-4">
+			<div className="main-card !p-4 mt-4">
 				<div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
 					<div className="space-y-2">
 						<Label>{t("filters.supplier")}</Label>
@@ -185,7 +185,8 @@ function FiltersPanel({ t, value, onChange, onApply, suppliers }) {
 								});
 							}}
 							options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
-							className="w-full rounded-full h-[45px] px-4 bg-[#fafafa] dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700"
+							data-size="default"
+							className={"theme-field"}
 							placeholder={t("filters.selectDateRange")}
 						/>
 					</div>
@@ -1625,7 +1626,8 @@ export default function PurchasesPage() {
 									}));
 								}}
 								options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
-								className="w-full rounded-xl h-10 px-3 bg-background border border-border text-sm"
+								data-size="default"
+								className={"theme-field"}
 								placeholder={t("filters.selectDateRange")}
 							/>
 						</FilterField>

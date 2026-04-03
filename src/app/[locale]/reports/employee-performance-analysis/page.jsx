@@ -20,7 +20,7 @@ import toast from "react-hot-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import api from "@/utils/api";
 import Flatpickr from "react-flatpickr";
-import "flatpickr/dist/flatpickr.min.css";
+
 
 // ── Shared Table system ──────────────────────────────────────────────────────
 import Table, { FilterField } from "@/components/atoms/Table";
@@ -429,7 +429,8 @@ export function EmployeeStatisticsPage() {
                                     }))
                                 }
                                 options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
-                                className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:border-[var(--primary)] dark:focus:border-[#5b4bff] transition-all duration-200"
+                                data-size="default"
+                                className={"theme-field"}
                                 placeholder={t("filters.datePlaceholder")}
                             />
                         </FilterField>

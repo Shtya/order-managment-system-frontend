@@ -248,7 +248,7 @@ export default function CreateReturnInvoicePage() {
 					{/* Left Column - Return Information */}
 					<div className="w-full max-w-[400px] space-y-6">
 						<motion.div
-							className="bg-card"
+							className="main-card"
 							initial={{ opacity: 0, x: -20 }}
 							animate={{ opacity: 1, x: 0 }}
 							transition={{ delay: 0.2 }}
@@ -396,7 +396,7 @@ export default function CreateReturnInvoicePage() {
 					{/* Middle Column - Products */}
 					<div className="flex-1 space-y-6">
 						<motion.div
-							className="bg-card"
+							className="main-card"
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.25 }}
@@ -410,7 +410,7 @@ export default function CreateReturnInvoicePage() {
 						</motion.div>
 
 						<motion.div
-							className="bg-card"
+							className="main-card"
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.3 }}
@@ -532,7 +532,7 @@ export default function CreateReturnInvoicePage() {
 						</motion.div>
 
 						<motion.div
-							className="bg-card"
+							className="main-card"
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.35 }}
@@ -570,7 +570,7 @@ function ReturnSummary({ summary, t, totalReturn, control, formatCurrency }) {
 			initial={{ opacity: 0, x: 20 }}
 			animate={{ opacity: 1, x: 0 }}
 			transition={{ delay: 0.2 }}
-			className="bg-card sticky top-6"
+			className="main-card sticky top-6"
 		>
 			<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
 				{t("sections.summaryTitle")}

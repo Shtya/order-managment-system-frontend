@@ -45,7 +45,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Button_ from "@/components/atoms/Button";
 import Flatpickr from "react-flatpickr";
-import "flatpickr/dist/flatpickr.min.css";
+
 import PageHeader from "@/components/atoms/Pageheader";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
@@ -308,7 +308,7 @@ function OrderHeroCard({ order, t }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-      className="relative overflow-hidden bg-card"
+      className="relative overflow-hidden main-card"
     >
       {/* Order number */}
       <div
@@ -628,7 +628,7 @@ export default function CollectOrderPage() {
                 delay: 0.08,
                 ease: [0.23, 1, 0.32, 1],
               }}
-              className="lg:col-span-3 bg-card overflow-hidden"
+              className="lg:col-span-3 main-card overflow-hidden"
             >
               {/* Form header */}
               <div
@@ -708,10 +708,8 @@ export default function CollectOrderPage() {
                           value={field.value}
                           onChange={([date]) => field.onChange(date)}
                           options={{ dateFormat: "Y-m-d", maxDate: "today" }}
-                          className={cn(
-                            FIELD_CLS,
-                            "w-full px-4 border focus:outline-none",
-                          )}
+                          data-size="default"
+                          className={"theme-field"}
                           placeholder={t("placeholders.collectionDate")}
                         />
                       )}

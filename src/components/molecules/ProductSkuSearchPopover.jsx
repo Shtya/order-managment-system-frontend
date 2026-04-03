@@ -393,7 +393,7 @@ export function ProductSkuSearchPopover({
             aria-expanded={open}
             className={cn(
               "w-full justify-between h-11 px-3.5 rounded-md",
-              "border border-border/70 bg-background/60 text-foreground",
+              "border border-border/70 bg-background/60! text-foreground",
               "hover:border-[var(--primary)]/50 hover:bg-background",
               "data-[state=open]:border-[var(--primary)] data-[state=open]:shadow-[0_0_0_3px_rgb(var(--primary-shadow))]",
               "transition-all duration-200 text-sm font-normal"

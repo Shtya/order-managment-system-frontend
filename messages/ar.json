@@ -3991,7 +3991,8 @@
       "distributionComingSoon": "توزيع الطلبات",
       "returnsComingSoon": "الاسترجاع",
       "replacementComingSoon": "الاستبدال",
-      "comingSoonDesc": "هذا القسم قيد التطوير، سيكون متاحاً قريباً."
+      "comingSoonDesc": "هذا القسم قيد التطوير، سيكون متاحاً قريباً.",
+      "rejected": "الطلبات المرفوضة"
     },
     "image": {
       "preview": "معاينة"

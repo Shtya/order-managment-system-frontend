@@ -157,7 +157,7 @@ function SideCard({ title, icon: Icon, children, delay = 0, accent }) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      className="relative bg-card !p-0 rounded-2xl border border-border/40 overflow-hidden"
+      className="relative main-card !p-0 rounded-2xl border border-border/40 overflow-hidden"
       style={{
         boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)",
       }}
@@ -317,7 +317,7 @@ export function OrderDetailsPage({ order, loading }) {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="relative bg-card !p-0 rounded-2xl border border-border/40 overflow-hidden"
+            className="relative main-card !p-0 rounded-2xl border border-border/40 overflow-hidden"
             style={{
               boxShadow:
                 "0 1px 3px rgba(0,0,0,0.06), 0 8px 32px rgba(0,0,0,0.06)",
@@ -963,7 +963,7 @@ function ReplacementInfoCard({
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.12, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      className="relative bg-card rounded-2xl border overflow-hidden"
+      className="relative main-card rounded-2xl border overflow-hidden"
       style={{ borderColor: P_25, boxShadow: `0 4px 24px ${P_15}` }}
     >
       <AccentBar />
@@ -1398,7 +1398,7 @@ export function OrderDetailsPageSkeleton() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Main */}
         <div className="lg:col-span-9">
-          <div className="bg-card rounded-2xl border border-border/40 overflow-hidden">
+          <div className="main-card rounded-2xl border border-border/40 overflow-hidden">
             {/* Accent bar */}
             <div className="h-[2.5px] bg-muted/40 animate-pulse" />
             {/* Header */}
@@ -1456,7 +1456,7 @@ export function OrderDetailsPageSkeleton() {
           {[0, 1, 2].map((i) => (
             <div
               key={i}
-              className="bg-card rounded-2xl border border-border/40 overflow-hidden"
+              className="main-card rounded-2xl border border-border/40 overflow-hidden"
             >
               <div className="h-[2.5px] bg-muted/40 animate-pulse" />
               <div className="px-4 py-3 border-b border-border/25 flex items-center gap-2">
@@ -1470,7 +1470,7 @@ export function OrderDetailsPageSkeleton() {
               </div>
             </div>
           ))}
-          <div className="bg-card rounded-2xl border border-border/40 overflow-hidden">
+          <div className="main-card rounded-2xl border border-border/40 overflow-hidden">
             <div className="h-[2.5px] bg-muted/40 animate-pulse" />
             <div className="px-4 py-3 border-b border-border/25 flex items-center gap-2">
               <Bone className="w-7 h-7 rounded-xl" />

@@ -1,65 +1,43 @@
 "use client";
 
 import React, {
-  useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
-  ChevronLeft,
-  Filter,
+
   Download,
   Eye,
-  Edit,
+
   Trash2,
-  Package,
-  Clock,
-  CheckCircle,
-  XCircle,
-  TrendingUp,
+
   MapPin,
   Phone,
-  MoreVertical,
-  Users,
+
   AlertCircle,
-  RefreshCw,
+
   Copy,
-  Truck,
-  DollarSign,
-  Calendar,
-  X,
+
   Plus,
   Upload,
-  FileSpreadsheet,
   Settings,
-  Bell,
+
   Save,
   Edit2,
   Loader2,
-  RotateCcw,
+
   AlertTriangle,
-  ChevronDownIcon,
-  ChevronDown,
-  ShoppingCart,
-  RefreshCcw,
-  ArrowLeftRight,
+
 } from "lucide-react";
 
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import toast from "react-hot-toast";
 
-import InfoCard from "@/components/atoms/InfoCard";
-import DataTable from "@/components/atoms/DataTable";
 import Button_ from "@/components/atoms/Button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,31 +55,15 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
 import api, { BASE_URL } from "@/utils/api";
-import UserSelect, { avatarSrc } from "@/components/atoms/UserSelect";
-import { Checkbox } from "@/components/ui/checkbox";
+import UserSelect from "@/components/atoms/UserSelect";
 import Flatpickr from "react-flatpickr";
-import "flatpickr/dist/themes/material_blue.css";
-import { Tabs } from "@radix-ui/react-tabs";
-import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Switch } from "@/components/ui/switch";
-import BarcodeCell from "@/components/atoms/BarcodeCell";
+
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { normalizeAxiosError } from "@/utils/axios";
-import { useDebounce } from "@/hook/useDebounce";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import ReplacementTab from "./ReplacementTab";
-import SwitcherTabs from "@/components/atoms/SwitcherTabs";
 import { generateBgColors, getIconForStatus } from "../page";
 import DistributionModal from "../atoms/DistrubtionModal";
 import BulkUploadModal from "../atoms/BulkUploadModal";
@@ -928,9 +890,8 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
                   dateFormat: "Y-m-d",
                   maxDate: "today",
                 }}
-                className="w-full !h-10 px-3 rounded-md border border-border bg-background text-sm
-            text-foreground focus:outline-none focus:border-[var(--primary)]
-            dark:focus:border-[#5b4bff] transition-all"
+                data-size="default"
+                className={"theme-field"}
                 placeholder={t("filters.datePlaceholder")}
               />
             </FilterField>

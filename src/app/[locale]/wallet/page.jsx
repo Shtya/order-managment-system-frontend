@@ -157,7 +157,7 @@ export default function WalletPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.25 }}
-        className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 overflow-hidden"
+        className="bg-card rounded-2xl border border-gray-200 dark:border-slate-800 overflow-hidden"
       >
         <div className="border-b border-gray-200 dark:border-slate-800 px-6 py-4">
           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">

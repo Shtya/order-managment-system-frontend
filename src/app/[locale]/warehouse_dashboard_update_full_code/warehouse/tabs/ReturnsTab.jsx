@@ -238,7 +238,7 @@ function ReturnFilesSubtab({ returnFiles, orders, t }) {
     <Table
       searchValue={search}
       onSearchChange={setSearch}
-      onSearch={() => {}}
+      onSearch={() => { }}
       labels={{
         searchPlaceholder: t("files.search"),
         filter: t("common.filter"),
@@ -250,7 +250,7 @@ function ReturnFilesSubtab({ returnFiles, orders, t }) {
       }}
       actions={[]}
       hasActiveFilters={carrier !== "all"}
-      onApplyFilters={() => {}}
+      onApplyFilters={() => { }}
       filters={
         <FilterField label={t("fields.carrier")}>
           <Select value={carrier} onValueChange={setCarrier}>
@@ -423,7 +423,7 @@ function ScanReturnSubtab({ orders, updateOrder, pushOp, inventory, updateInvent
 
   return (
     <div className="space-y-4">
-      <div className="rounded-[28px] border border-border bg-card p-4 shadow-sm md:p-5">
+      <div className="rounded-[28px] border border-border main-card p-4 shadow-sm md:p-5">
         <ScanBar
           showCarrier={false}
           scanInput={scanInput}
@@ -437,7 +437,7 @@ function ScanReturnSubtab({ orders, updateOrder, pushOp, inventory, updateInvent
       </div>
 
       {currentOrder ? (
-        <div className="space-y-4 rounded-[28px] border border-border bg-card p-4 shadow-sm md:p-5">
+        <div className="space-y-4 rounded-[28px] border border-border main-card p-4 shadow-sm md:p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -457,7 +457,7 @@ function ScanReturnSubtab({ orders, updateOrder, pushOp, inventory, updateInvent
                 [t("fields.orderSummary"), `${currentOrder.products.length} SKU / ${getOrderItemCount(currentOrder)} ${t("common.itemsWord")}`],
                 [t("fields.total"), formatCurrency(currentOrder.total)],
               ].map(([label, value]) => (
-                <div key={label} className="rounded-2xl border border-border bg-card p-4">
+                <div key={label} className="rounded-2xl border border-border main-card p-4">
                   <p className="mb-1 text-xs font-bold text-muted-foreground">{label}</p>
                   <p className="text-sm font-black text-foreground">{value}</p>
                 </div>
@@ -488,7 +488,7 @@ function ScanReturnSubtab({ orders, updateOrder, pushOp, inventory, updateInvent
           </div>
         </div>
       ) : (
-        <div className="rounded-[28px] border border-dashed border-border bg-card px-4 py-10 text-center">
+        <div className="rounded-[28px] border border-dashed border-border main-card px-4 py-10 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/8 text-primary"><RefreshCw size={28} /></div>
           <h3 className="mt-4 text-lg font-black text-foreground">{t("scan.emptyTitle")}</h3>
           <p className="mt-2 text-sm text-muted-foreground">{t("scan.emptyDescription")}</p>
@@ -505,9 +505,9 @@ export default function ReturnsTab({ orders, updateOrder, pushOp, inventory, upd
 
   const stats = subtab === "files"
     ? [
-        { id: "files", name: t("stats.files"), value: returnFiles.length, icon: FileText, color: "#f59e0b", sortOrder: 0 },
-        { id: "today", name: t("stats.returnedToday"), value: orders.filter((order) => order.returnedAt?.startsWith(today)).length, icon: RefreshCw, color: "#10b981", sortOrder: 1 },
-      ]
+      { id: "files", name: t("stats.files"), value: returnFiles.length, icon: FileText, color: "#f59e0b", sortOrder: 0 },
+      { id: "today", name: t("stats.returnedToday"), value: orders.filter((order) => order.returnedAt?.startsWith(today)).length, icon: RefreshCw, color: "#10b981", sortOrder: 1 },
+    ]
     : [];
 
   return (
@@ -518,7 +518,7 @@ export default function ReturnsTab({ orders, updateOrder, pushOp, inventory, upd
           { name: t("breadcrumbs.warehouse"), href: "/warehouse" },
           { name: t("breadcrumbs.returns") },
         ]}
-        buttons={<Button_ size="sm" label={t("actions.help")} variant="ghost" onClick={() => {}} icon={<Info size={16} />} />}
+        buttons={<Button_ size="sm" label={t("actions.help")} variant="ghost" onClick={() => { }} icon={<Info size={16} />} />}
         stats={stats}
         items={[
           { id: "scan", label: t("tabs.scan"), count: shippedOrders.length, icon: ScanLine },

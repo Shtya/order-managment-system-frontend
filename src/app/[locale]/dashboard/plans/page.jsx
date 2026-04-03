@@ -1372,7 +1372,7 @@ export default function AdminSubscriptionsPage() {
 
 
 			{/* Content */}
-			<div className={`${activeTab === "plans" ? "bg-card" : ""}  `}>
+			<div className={`${activeTab === "plans" ? "main-card" : ""}  `}>
 				<div className=" ">
 
 					{/* ── Plans Tab ── */}

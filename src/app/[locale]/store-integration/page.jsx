@@ -174,7 +174,7 @@ export default function StoresIntegrationPage() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
-          className="bg-card min-h-[500px] "
+          className="main-card min-h-[500px] "
         >
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {loading
@@ -626,7 +626,7 @@ function StoreConfigDialog({
                   <Input
                     {...register("name")}
                     placeholder={t("form.storeNamePlaceholder")}
-                    className={inputCls}
+
                   />
                   {errors?.name && (
                     <div className="text-xs text-red-600">
@@ -642,7 +642,7 @@ function StoreConfigDialog({
                   <Input
                     {...register("storeUrl")}
                     placeholder="https://your-store.com"
-                    className={inputCls}
+
                   />
                   {errors?.storeUrl && (
                     <div className="text-xs text-red-600">
@@ -712,7 +712,6 @@ function StoreConfigDialog({
                             markTouched("apiKey");
                           }}
                           className={cn(
-                            inputCls,
                             masks?.apiKey &&
                             "placeholder:text-gray-950 dark:placeholder:text-gray-100",
                           )}
@@ -746,7 +745,7 @@ function StoreConfigDialog({
                             markTouched("clientSecret");
                           }}
                           className={cn(
-                            inputCls,
+
                             masks?.clientSecret &&
                             "placeholder:text-gray-950 dark:placeholder:text-gray-100",
                           )}
@@ -865,7 +864,7 @@ function StoreConfigDialog({
                             markTouched("webhookSecret");
                           }}
                           className={cn(
-                            inputCls,
+
                             masks?.webhookSecret &&
                             "placeholder:text-gray-950 dark:placeholder:text-gray-100",
                           )}
@@ -901,7 +900,7 @@ function StoreConfigDialog({
                             markTouched("webhookCreateOrderSecret");
                           }}
                           className={cn(
-                            inputCls,
+
                             masks?.webhookCreateOrderSecret &&
                             "placeholder:text-gray-950 dark:placeholder:text-gray-100",
                           )}
@@ -933,7 +932,7 @@ function StoreConfigDialog({
                             markTouched("webhookUpdateStatusSecret");
                           }}
                           className={cn(
-                            inputCls,
+
                             masks?.webhookUpdateStatusSecret &&
                             "placeholder:text-gray-950 dark:placeholder:text-gray-100",
                           )}
@@ -1083,7 +1082,7 @@ function StoreWebhookModal({ provider, store, onClose, fetchStores, t }) {
                 <input
                   readOnly
                   value={config.webhookEndpoints.create(user?.id)}
-                  className={inputCls}
+
                 />
                 <button
                   type="button"
@@ -1105,7 +1104,7 @@ function StoreWebhookModal({ provider, store, onClose, fetchStores, t }) {
                 <input
                   readOnly
                   value={config.webhookEndpoints.update(user?.id)}
-                  className={inputCls}
+
                 />
                 <button
                   type="button"
@@ -1145,7 +1144,7 @@ function StoreWebhookModal({ provider, store, onClose, fetchStores, t }) {
                             webhookCreateOrderSecret: e.target.value,
                           }))
                         }
-                        className={inputCls}
+
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -1165,7 +1164,7 @@ function StoreWebhookModal({ provider, store, onClose, fetchStores, t }) {
                             webhookUpdateStatusSecret: e.target.value,
                           }))
                         }
-                        className={inputCls}
+
                       />
                     </div>
                   </div>
@@ -1188,7 +1187,7 @@ function StoreWebhookModal({ provider, store, onClose, fetchStores, t }) {
                           webhookSecret: e.target.value,
                         }))
                       }
-                      className={inputCls}
+
                     />
                   </div>
                 )}
@@ -1216,7 +1215,7 @@ function StoreWebhookModal({ provider, store, onClose, fetchStores, t }) {
                         <input
                           readOnly
                           value={cred.webhookCreateOrderSecret}
-                          className={inputCls}
+
                         />
                         <button
                           type="button"
@@ -1240,7 +1239,7 @@ function StoreWebhookModal({ provider, store, onClose, fetchStores, t }) {
                         <input
                           readOnly
                           value={cred.webhookUpdateStatusSecret}
-                          className={inputCls}
+
                         />
                         <button
                           type="button"

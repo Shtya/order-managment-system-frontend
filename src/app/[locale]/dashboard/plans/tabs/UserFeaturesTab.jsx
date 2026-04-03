@@ -2,7 +2,7 @@ import Table, { FilterField } from "@/components/atoms/Table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, Download, Loader2, User } from "lucide-react";
 import Flatpickr from "react-flatpickr";
-import "flatpickr/dist/themes/material_blue.css";
+
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
@@ -211,8 +211,8 @@ export default function UserFeaturesTab() {
                                 endDate: end ? end.toISOString().split("T")[0] : null,
                             }))}
                             options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
-                            className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm"
-                            placeholder={t("filters.datePlaceholder")}
+                            data-size="default"
+                            className={"theme-field"} placeholder={t("filters.datePlaceholder")}
                         />
                     </FilterField>
                 </>

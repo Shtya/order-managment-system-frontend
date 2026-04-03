@@ -199,7 +199,7 @@ function Card({ children, className, ...props }) {
 	return (
 		<div
 			className={cn(
-				"bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 shadow-[0_1px_4px_rgba(0,0,0,0.06)]",
+				"bg-card rounded-2xl border border-slate-100 dark:border-slate-800 p-6 shadow-[0_1px_4px_rgba(0,0,0,0.06)]",
 				className
 			)}
 			{...props}
@@ -481,7 +481,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 								<SectionHeader title={t('sections.productInfo')} />
 								<div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-x-3">
 									<Field label={t('fields.productName')} error={errors?.name?.message} className=" ">
-										<Input {...register('name')} placeholder={t('placeholders.productName')} className={inputClass} />
+										<Input {...register('name')} placeholder={t('placeholders.productName')} />
 									</Field>
 
 									<SlugInput
@@ -494,7 +494,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 										slug={watchSlug}
 										setValue={setValue}
 										labelClassName="text-[13px] font-medium text-gray-500 dark:text-slate-400 tracking-wide"
-										className={inputClass}
+
 									/>
 
 									<Field label={t('fields.wholesalePrice')} error={errors?.wholesalePrice?.message}>
@@ -503,7 +503,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 											step="0.01"
 											{...register('wholesalePrice')}
 											placeholder={t('placeholders.wholesalePrice')}
-											className={inputClass}
+
 										/>
 									</Field>
 
@@ -514,16 +514,16 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 											{...register('salePrice')}
 											onBlur={handleSalePriceBlur}
 											placeholder={t('placeholders.salePrice')}
-											className={inputClass}
+
 										/>
 									</Field>
 
 									<Field label={t('fields.lowestPrice')} error={errors?.lowestPrice?.message}>
-										<Input type="number" step="0.01" {...register('lowestPrice')} placeholder={t('placeholders.lowestPrice')} className={inputClass} />
+										<Input type="number" step="0.01" {...register('lowestPrice')} placeholder={t('placeholders.lowestPrice')} />
 									</Field>
 
 									<Field label={t('fields.storageRack')}>
-										<Input {...register('storageRack')} placeholder={t('placeholders.storageRack')} className={inputClass} />
+										<Input {...register('storageRack')} placeholder={t('placeholders.storageRack')} />
 									</Field>
 
 									<Field label={t('fields.category')}>
@@ -532,7 +532,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 											name="categoryId"
 											render={({ field }) => (
 												<Select value={field.value || ''} onValueChange={field.onChange}>
-													<SelectTrigger className={cn(inputClass, "w-full")}>
+													<SelectTrigger >
 														<SelectValue placeholder={t('placeholders.category')} />
 													</SelectTrigger>
 													<SelectContent>
@@ -552,7 +552,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 											name="storeId"
 											render={({ field }) => (
 												<Select value={field.value || ''} onValueChange={field.onChange}>
-													<SelectTrigger className={cn(inputClass, "w-full")}>
+													<SelectTrigger >
 														<SelectValue placeholder={t('placeholders.store')} />
 													</SelectTrigger>
 													<SelectContent>
@@ -572,7 +572,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 											name="warehouseId"
 											render={({ field }) => (
 												<Select value={field.value || ''} onValueChange={field.onChange}>
-													<SelectTrigger className={cn(inputClass, "w-full")}>
+													<SelectTrigger >
 														<SelectValue placeholder={t('placeholders.warehouse')} />
 													</SelectTrigger>
 													<SelectContent>
@@ -777,7 +777,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 										<Input
 											{...register('callCenterProductDescription')}
 											placeholder={t('placeholders.callCenterDesc')}
-											className={inputClass}
+
 										/>
 									</Field>
 
@@ -888,7 +888,7 @@ function AttributeEditor({ t, control, register, errors, aIndex, onRemove, setVa
 					<Input
 						{...register(`attributes.${aIndex}.name`)}
 						placeholder={t('attributes.placeholders.name')}
-						className={inputClass}
+
 					/>
 				</Field>
 
@@ -942,7 +942,6 @@ function UpsellProductSelector({ t, value, onChange }) {
 						value={search}
 						onChange={(e) => setSearch(e.target.value)}
 						placeholder={t('upsell.searchProducts')}
-						className={cn(inputClass, "pl-9")}
 					/>
 
 					{search && (
@@ -1016,7 +1015,6 @@ function UpsellProductSelector({ t, value, onChange }) {
 								value={x.callCenterDescription || ''}
 								onChange={(e) => updateDesc(x.productId, e.target.value)}
 								placeholder={t('upsell.callCenterItemDescPlaceholder')}
-								className={cn(inputClass, "h-[38px] text-[13px]")}
 							/>
 						</div>
 					))}
@@ -1082,7 +1080,7 @@ export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple
 			animate={{ opacity: 1, x: 0 }}
 			transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
 			className={cn(
-				"bg-white dark:bg-slate-900 rounded-2xl border shadow-[0_1px_4px_rgba(0,0,0,0.06)] p-5",
+				"bg-card rounded-2xl border shadow-[0_1px_4px_rgba(0,0,0,0.06)] p-5",
 				hasError ? "border-red-200 dark:border-red-900/50" : "border-slate-100 dark:border-slate-800",
 				className
 			)}

@@ -105,7 +105,7 @@ function Section({ title, icon: Icon, children, className, delay = 0 }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
       className={cn(
-        "bg-card rounded-xl border border-border/60 shadow-sm",
+        "main-card rounded-xl border border-border/60 shadow-sm",
         className,
       )}
     >
@@ -641,7 +641,7 @@ function SelectedOrderDetails({ order, formatCurrency }) {
         {pills.map(({ icon: Icon, label, value }) => (
           <div
             key={label}
-            className="group flex items-start gap-2.5 rounded-xl bg-card !py-3 !px-4 border border-border/50 hover:border-primary/30 hover:bg-[color-mix(in_oklab,var(--primary)_4%,var(--secondary))] transition-all duration-200"
+            className="group flex items-start gap-2.5 rounded-xl main-card !py-3 !px-4 border border-border/50 hover:border-primary/30 hover:bg-[color-mix(in_oklab,var(--primary)_4%,var(--secondary))] transition-all duration-200"
           >
             <div className="w-10 h-10 rounded-xl bg-[color-mix(in_oklab,var(--primary)_12%,transparent)] flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-[color-mix(in_oklab,var(--primary)_20%,transparent)] transition-colors duration-200">
               <Icon size={25} className="text-primary" />
@@ -662,7 +662,7 @@ function SelectedOrderDetails({ order, formatCurrency }) {
 
         {/* Status pill */}
         {status && (
-          <div className="group flex items-start gap-2.5 rounded-xl bg-card !py-3 !px-4 border border-border/50 hover:border-primary/30 hover:bg-[color-mix(in_oklab,var(--primary)_4%,var(--secondary))] transition-all duration-200">
+          <div className="group flex items-start gap-2.5 rounded-xl main-card !py-3 !px-4 border border-border/50 hover:border-primary/30 hover:bg-[color-mix(in_oklab,var(--primary)_4%,var(--secondary))] transition-all duration-200">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 transition-all duration-200"
               style={{ background: `${status.color}18` }}
@@ -843,7 +843,7 @@ function ReplacementInfoSection({ form, setForm, errors }) {
             onChange={(e) => setForm((p) => ({ ...p, reason: e.target.value }))}
             placeholder={t("placeholders.reasonOfReplacement")}
             className={cn(
-              "rounded-[8px] border-[1.5px] bg-card transition-all duration-200",
+              "rounded-[8px] border-[1.5px] main-card transition-all duration-200",
               "focus:border-primary focus:shadow-[0_0_0_4px_color-mix(in_oklab,var(--primary)_10%,transparent)]",
               errors.reason ? "border-destructive" : "border-border",
             )}
@@ -862,7 +862,7 @@ function ReplacementInfoSection({ form, setForm, errors }) {
             }
             placeholder={t("placeholders.anotherReason")}
             className={cn(
-              "rounded-[8px] border-[1.5px] bg-card transition-all duration-200",
+              "rounded-[8px] border-[1.5px] main-card transition-all duration-200",
               "focus:border-primary focus:shadow-[0_0_0_4px_color-mix(in_oklab,var(--primary)_10%,transparent)]",
               errors.anotherReason ? "border-destructive" : "border-border",
             )}
@@ -1632,7 +1632,7 @@ function PriceSummaryCard({ replacementItems, form, selectedOrder, formatCurrenc
   ];
 
   return (
-    <div className="bg-card rounded-xl border border-border/60 shadow-sm overflow-hidden h-fit">
+    <div className="main-card rounded-xl border border-border/60 shadow-sm overflow-hidden h-fit">
       <div className="flex items-center gap-3 px-4 py-3 border-b border-border/40">
         <div className="w-13 h-13 rounded-xl bg-[color-mix(in_oklab,var(--primary)_10%,transparent)] border border-[color-mix(in_oklab,var(--primary)_20%,transparent)] flex items-center justify-center">
           <BarChart3 size={25} className="text-[var(--primary)]" />

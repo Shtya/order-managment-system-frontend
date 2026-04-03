@@ -550,7 +550,7 @@ function ProductModalSkeleton() {
 	return (
 		<div className="space-y-6">
 			{/* Top Banner Style Header */}
-			<div className="relative bg-card rounded-2xl border border-border/50 overflow-hidden p-5">
+			<div className="relative main-card rounded-2xl border border-border/50 overflow-hidden p-5">
 				<div className="h-[3px] rounded-full bg-muted/40 animate-pulse -mx-5 -mt-5 mb-5" />
 				<div className="flex gap-4 items-start">
 					<Bone className="w-20 h-20 rounded-xl shrink-0" />
@@ -569,7 +569,7 @@ function ProductModalSkeleton() {
 			<div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
 				{/* Left Side: Images and SKUs */}
 				<div className="lg:col-span-8 space-y-5">
-					<div className="bg-card rounded-2xl border border-border/50 p-5 space-y-4">
+					<div className="main-card rounded-2xl border border-border/50 p-5 space-y-4">
 						<Bone className="h-4 w-24 mb-2" />
 						<div className="grid grid-cols-4 gap-3">
 							{[0, 1, 2, 3].map(i => <Bone key={i} className="h-24 rounded-xl" />)}
@@ -598,7 +598,7 @@ function ProductModalSkeleton() {
 
 				{/* Right Side: Summary Cards */}
 				<div className="lg:col-span-4 space-y-4">
-					<div className="bg-card rounded-2xl border border-border/50 p-5 space-y-4">
+					<div className="main-card rounded-2xl border border-border/50 p-5 space-y-4">
 						<Bone className="h-4 w-32" />
 						<div className="space-y-3">
 							{[0, 1, 2].map(i => (

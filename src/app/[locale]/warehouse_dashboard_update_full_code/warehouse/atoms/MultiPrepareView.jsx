@@ -118,7 +118,7 @@ function ProductScanRow({ product }) {
   const completed = scannedQty >= requestedQty && requestedQty > 0;
 
   return (
-    <div className={cn("rounded-3xl border p-4 transition-colors", completed ? "border-emerald-200 bg-emerald-50" : scannedQty > 0 ? "border-primary/30 bg-primary/5" : "border-border bg-background") }>
+    <div className={cn("rounded-3xl border p-4 transition-colors", completed ? "border-emerald-200 bg-emerald-50" : scannedQty > 0 ? "border-primary/30 bg-primary/5" : "border-border bg-background")}>
       <div className="flex items-start gap-4">
         <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border border-border bg-white">
           <img src={product.image || meta.image} alt={product.name} className="h-full w-full object-cover" />
@@ -163,7 +163,7 @@ function RejectDialog({ open, onClose, orderCode, onConfirm, t }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg rounded-3xl bg-white p-0 dark:bg-slate-900" dir="rtl">
+      <DialogContent className="max-w-lg rounded-3xl  p-0" dir="rtl">
         <DialogHeader className="border-b border-border px-6 py-5">
           <DialogTitle className="flex items-center gap-2 text-lg font-black text-foreground">
             <ShieldX size={18} className="text-red-500" />
@@ -545,7 +545,7 @@ export default function MultiPrepareView({ orders, updateOrder, pushOp, rejectOr
             <StatCard label={t("stats.wrongScans")} value={session.counters.wrong} tone={session.counters.wrong > 0 ? "red" : "default"} />
           </div>
 
-          <div className="rounded-[28px] border border-border bg-card p-4 shadow-sm md:p-5">
+          <div className="rounded-[28px] border border-border main-card p-4 shadow-sm md:p-5">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <h3 className="text-lg font-black text-foreground">{t("scan.title")}</h3>
@@ -564,7 +564,7 @@ export default function MultiPrepareView({ orders, updateOrder, pushOp, rejectOr
             <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
               <div className="space-y-4">
                 <div className="flex flex-col gap-3 rounded-3xl border border-border bg-background p-3 md:flex-row md:items-center">
-                  <div className="flex flex-1 items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+                  <div className="flex flex-1 items-center gap-3 rounded-2xl border border-border main-card px-4 py-3 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
                     <ScanLine size={18} className={cn(feedback?.success ? "text-emerald-600" : feedback?.success === false ? "text-red-600" : "text-primary")} />
                     <input
                       ref={inputRef}
@@ -631,7 +631,7 @@ export default function MultiPrepareView({ orders, updateOrder, pushOp, rejectOr
                 </div>
 
                 {activeOrder && activeState ? (
-                  <div className="rounded-[28px] border border-border bg-card p-4 shadow-sm md:p-5">
+                  <div className="rounded-[28px] border border-border main-card p-4 shadow-sm md:p-5">
                     <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2">
@@ -653,7 +653,7 @@ export default function MultiPrepareView({ orders, updateOrder, pushOp, rejectOr
                     </div>
                   </div>
                 ) : (
-                  <div className="rounded-[28px] border border-dashed border-border bg-card p-8 text-center">
+                  <div className="rounded-[28px] border border-dashed border-border main-card p-8 text-center">
                     <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/8 text-primary">
                       <ScanLine size={28} />
                     </div>
@@ -663,7 +663,7 @@ export default function MultiPrepareView({ orders, updateOrder, pushOp, rejectOr
                 )}
 
                 {queueOrders.length > 0 ? (
-                  <div className="rounded-[28px] border border-border bg-card p-4 shadow-sm md:p-5">
+                  <div className="rounded-[28px] border border-border main-card p-4 shadow-sm md:p-5">
                     <div className="mb-4 flex items-center justify-between gap-3">
                       <div>
                         <h4 className="text-base font-black text-foreground">{t("queue.title")}</h4>
@@ -709,7 +709,7 @@ export default function MultiPrepareView({ orders, updateOrder, pushOp, rejectOr
                     initial={{ opacity: 0, x: 16 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 16 }}
-                    className="space-y-4 rounded-[28px] border border-border bg-card p-4 shadow-sm xl:block"
+                    className="space-y-4 rounded-[28px] border border-border main-card p-4 shadow-sm xl:block"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div>

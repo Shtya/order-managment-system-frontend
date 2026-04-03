@@ -614,7 +614,7 @@ function AssignCarrierDialog({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
-        className="!max-w-2xl bg-white dark:bg-slate-900 rounded-2xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl"
+        className="!max-w-2xl rounded-2xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl"
 
       >
         {/* Header */}

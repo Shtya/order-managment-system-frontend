@@ -174,7 +174,7 @@ function PlanCardSkeleton({ idx = 0 }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: idx * 0.07 }}
-      className="rounded-2xl border border-border bg-card overflow-hidden animate-pulse"
+      className="rounded-2xl border border-border main-card overflow-hidden animate-pulse"
     >
       <div className="p-7 space-y-6">
         <div className="space-y-2">

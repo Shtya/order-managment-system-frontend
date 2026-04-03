@@ -830,7 +830,7 @@ export function RejectOrderModal({ open, onClose, order, onConfirm }) {
 
 	return (
 		<Dialog open={open} onOpenChange={handleClose}>
-			<DialogContent className="!max-w-lg bg-white dark:bg-slate-900 rounded-xl p-0 border-0 shadow-2xl" >
+			<DialogContent className="!max-w-lg rounded-xl p-0 border-0 shadow-2xl" >
 				{/* Header */}
 				<div className="relative px-6 pt-6 pb-5 rounded-t-xl overflow-hidden" style={{ background: DS.dangerGradient }}>
 					<div className="absolute -top-4 -left-4 w-20 h-20 rounded-full bg-white/10 pointer-events-none" />

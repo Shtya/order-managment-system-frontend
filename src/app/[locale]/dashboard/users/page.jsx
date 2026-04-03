@@ -687,6 +687,7 @@ export default function SuperAdminUsersPage() {
 							tone="ghost"
 							variant="cancel"
 							icon={<RefreshCw size={15} />}
+							className="bg-white! dark:bg-slate-800! text-slate-600! dark:text-slate-300!"
 							onClick={() => fetchUsers({ page: 1, per_page: pagination.per_page })}
 						/>
 
@@ -1070,7 +1071,7 @@ function FiltersPanel({ t, value, onChange, onApply }) {
 			exit={{ height: 0, opacity: 0, y: -6 }}
 			transition={{ duration: 0.25 }}
 		>
-			<div className="bg-card !p-4 mt-4">
+			<div className="main-card !p-4 mt-4">
 				<div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
 					<div className="space-y-3">
 						<h4 className="text-sm font-semibold text-gray-700 dark:text-slate-200">

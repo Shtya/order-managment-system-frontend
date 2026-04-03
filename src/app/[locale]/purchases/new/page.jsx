@@ -306,7 +306,7 @@ export default function CreatePurchaseInvoicePage() {
 					<div className="flex-1 space-y-6">
 						{/* Form Fields */}
 						<motion.div
-							className="bg-card"
+							className="main-card"
 							initial={{ opacity: 0, x: -20 }}
 							animate={{ opacity: 1, x: 0 }}
 							transition={{ delay: 0.2 }}
@@ -350,7 +350,6 @@ export default function CreatePurchaseInvoicePage() {
 											<Input
 												{...field}
 												placeholder={t("placeholders.receiptNumber")}
-												className="rounded-xl h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
 											/>
 										)}
 									/>
@@ -397,7 +396,6 @@ export default function CreatePurchaseInvoicePage() {
 											<Input
 												{...field}
 												placeholder={t("placeholders.notes")}
-												className="rounded-xl h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
 											/>
 										)}
 									/>
@@ -407,7 +405,7 @@ export default function CreatePurchaseInvoicePage() {
 
 						{/* Add Products */}
 						<motion.div
-							className="bg-card"
+							className="main-card"
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.25 }}
@@ -425,7 +423,7 @@ export default function CreatePurchaseInvoicePage() {
 						{/* Products Table */}
 						{watchedItems.length > 0 && (
 							<motion.div
-								className="bg-card"
+								className="main-card"
 								initial={{ opacity: 0, y: 20 }}
 								animate={{ opacity: 1, y: 0 }}
 								transition={{ delay: 0.3 }}
@@ -543,7 +541,7 @@ export default function CreatePurchaseInvoicePage() {
 															</span>
 														)}
 													</>
-	
+
 												);
 											})}
 										</tbody>
@@ -608,7 +606,7 @@ function ReceiptImageUpload({ image, onImageChange, onRemove, t, isRTL }) {
 			initial={{ opacity: 0, x: -20 }}
 			animate={{ opacity: 1, x: 0 }}
 			transition={{ delay: 0.25 }}
-			className="bg-card"
+			className="main-card"
 		>
 			<div
 				onDragEnter={(e) => {
@@ -702,7 +700,7 @@ function InvoiceSummary({ errors, summary, t, total, paidAmount, remainingAmount
 			initial={{ opacity: 0, x: 20 }}
 			animate={{ opacity: 1, x: 0 }}
 			transition={{ delay: 0.2 }}
-			className="bg-card sticky top-6"
+			className="main-card sticky top-6"
 		>
 			<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
 				{t("sections.invoiceSummary")}

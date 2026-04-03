@@ -696,7 +696,7 @@ function GenericOpModal({ open, onClose, op, t, formatCurrency }) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
-        className="!max-w-2xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl"
+        className="!max-w-2xl rounded-xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl"
 
       >
         <div
@@ -956,7 +956,7 @@ function OrderLogModal({ open, onClose, op, t }) {
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
-        className="!max-w-2xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl"
+        className="!max-w-2xl rounded-xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl"
 
       >
         <div
@@ -1274,7 +1274,7 @@ function PrepSessionModal({ open, onClose, sessionOps, t }) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
-        className="!max-w-xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl"
+        className="!max-w-xl rounded-xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl"
 
       >
         <div

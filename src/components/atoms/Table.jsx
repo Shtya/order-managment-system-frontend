@@ -152,7 +152,7 @@ export const TableToolbar = memo(function TableToolbar({
           >
             <SlidersHorizontal size={13} />
             {filterLabel}
-            {hasActiveFilters && !isFiltersOpen && (
+            {/* {hasActiveFilters && !isFiltersOpen && (
               <span
                 className="absolute -top-1.5 -end-1.5 w-4 h-4 rounded-full flex items-center justify-center z-10 text-[8px] font-black"
                 style={{
@@ -163,7 +163,7 @@ export const TableToolbar = memo(function TableToolbar({
               >
                 ✦
               </span>
-            )}
+            )} */}
             <motion.span
               animate={{ rotate: isFiltersOpen ? 180 : 0 }}
               transition={{ duration: 0.22 }}
@@ -210,7 +210,7 @@ export const TableFilters = memo(function TableFilters({
       transition={{ duration: 0.22, ease: "easeInOut" }}
       className=""
     >
-      <div className="overflow-hidden !shadow-none mt-3 rounded-2xl border border-border/60 overflow-hidden bg-card !p-0 backdrop-blur-sm">
+      <div className="overflow-hidden !shadow-none mt-3 rounded-2xl border border-border/60 overflow-hidden main-card !p-0 backdrop-blur-sm">
         {/* <AccentBar /> */}
         <div className="p-4 flex max-sm:flex-col items-end gap-6">
           <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -503,7 +503,7 @@ const ImageModal = memo(function ImageModal({ src, alt, open, onClose, labels = 
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent
         showCloseButton={false}
-        className="max-w-4xl !p-0 overflow-hidden rounded-2xl border border-border/60 bg-card !p-0 shadow-2xl"
+        className="max-w-4xl !p-0 overflow-hidden rounded-2xl border border-border/60 main-card !p-0 shadow-2xl"
       >
         {/* Header */}
         <div className="relative flex items-center justify-between gap-4 px-5 py-4 border-b border-border/40 overflow-hidden">
@@ -591,7 +591,7 @@ export default function Table({
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className="relative bg-card !p-0 rounded-2xl border border-border/50 overflow-hidden"
+        className="relative main-card !p-0 rounded-2xl border border-border/50 overflow-hidden"
         style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05), 0 6px 24px rgba(0,0,0,0.05)" }}
       >
 
@@ -676,7 +676,7 @@ export default function Table({
                           <motion.div
                             animate={{ rotate: [0, -5, 5, 0] }}
                             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                            className="relative w-14 h-14 rounded-2xl border border-border/60 flex items-center justify-center bg-card shadow-sm"
+                            className="relative w-14 h-14 rounded-2xl border border-border/60 flex items-center justify-center main-card shadow-sm"
                           >
                             <Package size={22} style={{ color: "color-mix(in oklab, var(--muted-foreground) 40%, transparent)" }} />
                           </motion.div>
@@ -794,7 +794,7 @@ function FloatingSearchInput({ searchValue, onSearchChange, onKeyDown, searchPla
     >
       <div
         className={cn(
-          "relative h-[38px] rounded-xl border cursor-text min-w-[200px]",
+          "relative h-[38px] rounded-xl border cursor-text min-w-[200px] bg-white dark:bg-card/50",
           "transition-all duration-200",
           focused
             ? "border-[var(--primary)] shadow-[0_0_0_3px_color-mix(in_srgb,var(--primary)_12%,transparent)]"
@@ -811,7 +811,7 @@ function FloatingSearchInput({ searchValue, onSearchChange, onKeyDown, searchPla
             isFloating
               ? [
                 "top-0 -translate-y-1/2 text-[10px] px-1.5 py-0 leading-none",
-                "bg-white dark:bg-[#182337] rounded",
+                "bg-white dark:bg-card rounded",
                 focused ? "text-[var(--primary)]" : "text-muted-foreground/80",
               ]
               : "top-1/2 -translate-y-1/2 text-muted-foreground/80"

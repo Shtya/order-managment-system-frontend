@@ -230,7 +230,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 
 			<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 				{/* Bundle Info */}
-				<motion.div className="bg-card rounded-xl shadow-sm p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+				<motion.div className="main-card rounded-xl shadow-sm p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
 					<h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-6 flex items-center gap-2">
 						<div className="w-1 h-6 bg-primary rounded-full" />
 						{t('sections.bundleInfo')}
@@ -242,7 +242,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 							<Input
 								{...register('name')}
 								placeholder={t('placeholders.bundleName')}
-								className="rounded-xl h-[50px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20"
+
 							/>
 							{errors?.name?.message && <div className="text-xs text-red-600">{errors.name.message}</div>}
 						</div>
@@ -256,7 +256,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 								step="0.01"
 								{...register('wholesalePrice')}
 								placeholder={t('placeholders.totalPrice')}
-								className="rounded-xl h-[50px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20"
+
 							/>
 							{errors?.wholesalePrice?.message && <div className="text-xs text-red-600">{errors.wholesalePrice.message}</div>}
 						</div>
@@ -325,7 +325,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 				</motion.div>
 
 				{/* Bundle Items */}
-				<motion.div className="bg-card rounded-xl shadow-sm p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
+				<motion.div className="main-card rounded-xl shadow-sm p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
 					<div className="flex items-center justify-between mb-6">
 						<h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 flex items-center gap-2">
 							<div className="w-1 h-6 bg-primary rounded-full" />
@@ -397,7 +397,6 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 													{...register(`bundleItems.${index}.qty`)}
 													min="1"
 													placeholder={t('bundles.quantityPlaceholder')}
-													className="rounded-xl h-[50px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 flex-1"
 												/>
 												{/* زر الحذف يظهر بجانب الكمية فقط في الجوال الصغير جداً إذا أردت، 
                             لكننا سنضعه في الأسفل أو الجانب بشكل أفضل */}

@@ -515,7 +515,7 @@ function RolePreviewDialog({ t, open, onClose, role }) {
 
 	return (
 		<Dialog open={open} onOpenChange={onClose}>
-			<DialogContent className="!max-w-3xl max-h-[92vh] overflow-x-hidden overflow-y-auto p-0 gap-0 rounded-lg border border-border bg-card shadow-[0_24px_64px_rgba(0,0,0,0.14)]">
+			<DialogContent className="!max-w-3xl max-h-[92vh] overflow-x-hidden overflow-y-auto p-0 gap-0 rounded-lg border border-border shadow-[0_24px_64px_rgba(0,0,0,0.14)]">
 
 
 				<DialogHeader>
@@ -529,7 +529,7 @@ function RolePreviewDialog({ t, open, onClose, role }) {
 
 
 					<div className="flex items-center gap-3 shrink-0">
-						<TypeBadge isGlobal={role.isGlobal} t={t} /> 
+						<TypeBadge isGlobal={role.isGlobal} t={t} />
 						<div className="text-end">
 							<div
 								className="leading-none tabular-nums"
@@ -571,7 +571,7 @@ function RolePreviewDialog({ t, open, onClose, role }) {
 										{ps.map(p => (
 											<span
 												key={p}
-												className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-mono font-medium border border-border bg-card text-foreground/70"
+												className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-mono font-medium border border-border main-card text-foreground/70"
 											>
 												{p}
 											</span>
@@ -602,8 +602,8 @@ function RolePreviewDialog({ t, open, onClose, role }) {
 ═══════════════════════════════════════════════════════════════ */
 function DeleteDialog({ t, open, onOpenChange, roleName, onConfirm, loading }) {
 	return (
-		<AlertDialog open={open} onOpenChange={onOpenChange}>
-			<AlertDialogContent className="rounded-lg border border-border bg-card !p-0 gap-0 max-w-md overflow-hidden shadow-[0_20px_56px_rgba(0,0,0,0.14)]">
+		<AlertDialog open={open} onOpenChange={onOpenChange} className="">
+			<AlertDialogContent className="rounded-lg border border-border !p-0 gap-0 max-w-md overflow-hidden shadow-[0_20px_56px_rgba(0,0,0,0.14)]">
 
 
 				<div className="p-6 space-y-4">

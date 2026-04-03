@@ -149,7 +149,7 @@ function RejectDialog({ open, onClose, orderCode, onConfirm, t }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg rounded-3xl bg-white p-0 dark:bg-slate-900" dir="rtl">
+      <DialogContent className="max-w-lg rounded-3xl p-0 " dir="rtl">
         <DialogHeader className="border-b border-border px-6 py-5">
           <DialogTitle className="flex items-center gap-2 text-lg font-black text-foreground"><ShieldX size={18} className="text-red-500" />{t("reject.title")}</DialogTitle>
         </DialogHeader>
@@ -282,7 +282,7 @@ function ScanOutgoingSubtab({ orders, updateOrder, pushOp, rejectOrder, inventor
 
   return (
     <div className="space-y-4">
-      <div className="rounded-[28px] border border-border bg-card p-4 shadow-sm md:p-5">
+      <div className="rounded-[28px] border border-border main-card p-4 shadow-sm md:p-5">
         <ScanBar
           carriers={CARRIERS}
           ordersForCarrier={preparedOrders}
@@ -304,7 +304,7 @@ function ScanOutgoingSubtab({ orders, updateOrder, pushOp, rejectOrder, inventor
         </div>
       </div>
 
-      <div className="rounded-[28px] border border-border bg-card p-4 shadow-sm md:p-5">
+      <div className="rounded-[28px] border border-border main-card p-4 shadow-sm md:p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h3 className="text-lg font-black text-foreground">{t("scan.ordersTitle", { carrier: selectedCarrier })}</h3>
@@ -323,7 +323,7 @@ function ScanOutgoingSubtab({ orders, updateOrder, pushOp, rejectOrder, inventor
             availableOrders.map((order) => {
               const scanned = scannedOrders.some((item) => item.code === order.code);
               return (
-                <div key={order.code} className={cn("rounded-3xl border p-4", scanned ? "border-emerald-200 bg-emerald-50" : "border-border bg-background") }>
+                <div key={order.code} className={cn("rounded-3xl border p-4", scanned ? "border-emerald-200 bg-emerald-50" : "border-border bg-background")}>
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2">
@@ -433,7 +433,7 @@ function OutgoingFilesSubtab({ deliveryFiles, orders, t }) {
     <Table
       searchValue={search}
       onSearchChange={setSearch}
-      onSearch={() => {}}
+      onSearch={() => { }}
       labels={{
         searchPlaceholder: t("files.search"),
         filter: t("common.filter"),
@@ -445,7 +445,7 @@ function OutgoingFilesSubtab({ deliveryFiles, orders, t }) {
       }}
       actions={[]}
       hasActiveFilters={carrier !== "all"}
-      onApplyFilters={() => {}}
+      onApplyFilters={() => { }}
       filters={
         <FilterField label={t("fields.carrier")}>
           <Select value={carrier} onValueChange={setCarrier}>
@@ -493,7 +493,7 @@ export default function OutgoingTab({ orders, updateOrder, pushOp, rejectOrder, 
           { name: t("breadcrumbs.warehouse"), href: "/warehouse" },
           { name: t("breadcrumbs.outgoing") },
         ]}
-        buttons={<Button_ size="sm" label={t("actions.help")} variant="ghost" onClick={() => {}} icon={<Info size={16} />} />}
+        buttons={<Button_ size="sm" label={t("actions.help")} variant="ghost" onClick={() => { }} icon={<Info size={16} />} />}
         stats={stats}
         items={[
           { id: "scan", label: t("tabs.scan"), count: preparedOrders.length, icon: ScanLine },

@@ -74,7 +74,7 @@ function IconBtn({ children, onClick, label, className = "" }) {
         onMouseLeave={() => setHov(false)}
         className={cn(
           "relative h-8 w-8 p-0 rounded-xl border transition-all duration-200 overflow-hidden",
-          "bg-card/80 backdrop-blur-sm",
+          "bg-icon backdrop-blur-sm",
           "border-border hover:border-primary/35",
           "text-muted-foreground hover:text-foreground",
           className,
@@ -134,7 +134,7 @@ export default function Header({ toggleSidebar, isSidebarOpen, isMobile }) {
       initial={{ y: -60, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.42, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="h-14 flex-shrink-0 bg-white z-[50] overflow-hidden relative"
+      className="h-14 flex-shrink-0 bg-card z-[50] overflow-hidden relative"
     >
       <style>
         {`
@@ -145,7 +145,7 @@ export default function Header({ toggleSidebar, isSidebarOpen, isMobile }) {
       } }`}
       </style>
       {/* Glass background */}
-      <div className="absolute inset-0 bg-[var(--sidebar)]  backdrop-blur-md border-b border-border/60" />
+      <div className="absolute inset-0 bg-card  backdrop-blur-md border-b border-border/60" />
 
       <div className="relative h-full px-4 flex items-center justify-between gap-3">
         {/* ── LEFT: Toggle + Brand ── */}
@@ -246,7 +246,7 @@ export default function Header({ toggleSidebar, isSidebarOpen, isMobile }) {
               >
                 <Button
                   className="relative h-8 w-8 p-0 rounded-xl border overflow-hidden
-                    bg-card/80 backdrop-blur-sm border-border
+                    bg-icon backdrop-blur-sm border-border
                     hover:border-primary/35 text-muted-foreground hover:text-foreground
                     transition-all duration-200"
                   aria-label={t("notifications")}
@@ -389,7 +389,7 @@ function ProfileChip({ user, t }) {
       onMouseLeave={() => setHov(false)}
       className="relative  flex items-center  gap-2 w-fit px-3 py-1 rounded-md cursor-pointer
         border border-border hover:border-primary/30
-        bg-card/80 backdrop-blur-sm
+        bg-icon backdrop-blur-sm
         transition-all duration-200 overflow-hidden"
     >
       <AnimatePresence>
@@ -466,7 +466,7 @@ function LogoutButton() {
       disabled={isLoading}
       onClick={onLogoutClick}
       className="relative h-8 w-8 p-0 rounded-xl border overflow-hidden flex items-center justify-center
-        bg-card/80 backdrop-blur-sm transition-all duration-200"
+        bg-icon backdrop-blur-sm transition-all duration-200"
       style={{
         borderColor: hov
           ? "color-mix(in oklab, var(--destructive) 45%, var(--border))"
@@ -526,7 +526,7 @@ function LanguageToggle({
       onMouseLeave={() => setHov(false)}
       className="relative flex items-center gap-1.5 h-8 px-2.5 rounded-xl overflow-hidden
         border border-border hover:border-primary/35
-        bg-card/80 backdrop-blur-sm
+        bg-icon backdrop-blur-sm
         text-muted-foreground hover:text-foreground
         transition-all duration-200"
     >

@@ -56,6 +56,7 @@ import {
   Lock,
   PackageCheck,
   Headset,
+  RefreshCcw,
 } from "lucide-react";
 import { FaUserTie } from "react-icons/fa6";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -111,7 +112,7 @@ function IconBox({ Icon, active, collapsed, isLocked }) {
   return (
     <div
       data-iconbox
-      className={`relative shrink-0 flex items-center justify-center rounded-xl transition-all duration-300 ${collapsed ? "w-[34px] h-[34px]" : "w-[30px] h-[30px]"
+      className={`${!active && "bg-icon"} relative shrink-0 flex items-center justify-center rounded-xl transition-all duration-300 ${collapsed ? "w-[34px] h-[34px]" : "w-[30px] h-[30px]"
         }`}
       style={
         active
@@ -122,7 +123,7 @@ function IconBox({ Icon, active, collapsed, isLocked }) {
               "0 3px 14px color-mix(in oklab, var(--primary) 40%, transparent)",
           }
           : {
-            background: "color-mix(in oklab, var(--muted) 80%, transparent)",
+
           }
       }
     >
@@ -523,6 +524,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       labelKey: "orders-assign-to-you",
       href: "/orders/employee-orders",
       permission: "orders.read",
+      notRoles: ["ADMIN", "SUPER_ADMIN"],
     },
     {
       icon: ShoppingCart,
@@ -543,7 +545,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           href: "/orders?tab=rejected",
         },
         {
-          icon: XCircle,
+          icon: RefreshCcw,
           labelKey: "failedOrders",
           href: "/orders?tab=failedOrders",
         },
@@ -739,6 +741,10 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
 
     return menuItems.filter((item) => {
       // 1. Check Roles
+      if (item.notRoles?.length) {
+        return !item.notRoles.includes(userRole?.toUpperCase());
+      }
+
       const hasRole = !item.roles?.length || item.roles.includes(userRole?.toUpperCase());
       if (!hasRole) return false;
 
@@ -791,12 +797,11 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
         variants={isMobile ? variants.mobile : variants.desktop}
         transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
         className={`
-          fixed top-0 ${isRTL ? "right-0" : "left-0"}
+          fixed bg-card top-0 ${isRTL ? "right-0" : "left-0"}
           h-screen flex flex-col overflow-hidden z-[100002]
           ${isRTL ? "border-l" : "border-r"} border-border
         `}
         style={{
-          background: "var(--sidebar)",
           boxShadow: isOpen
             ? "rgba(50,50,93,.14) 0px 20px 60px -12px, rgba(0,0,0,.14) 0px 14px 36px -24px"
             : "rgba(50,50,93,.08) 0px 10px 30px -6px",
@@ -814,7 +819,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
               <Button
                 onClick={onOpenSidebar}
                 className="h-8 w-8 p-0 rounded-xl border overflow-hidden
-												bg-card/80 backdrop-blur-sm border-border
+												bg-icon backdrop-blur-sm border-border
 												hover:border-primary/35 text-muted-foreground hover:text-foreground
 												transition-all duration-200"
               >

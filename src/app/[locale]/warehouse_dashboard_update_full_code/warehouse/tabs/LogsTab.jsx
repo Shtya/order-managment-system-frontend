@@ -75,12 +75,12 @@ function buildPreparedOrderBody(op, t, formatCurrency) {
 
     <section class="surface">
       ${buildOrderOverviewCards(order, {
-        customer: t("pdf.customer"),
-        city: t("pdf.city"),
-        orderValue: t("pdf.orderValue"),
-        orderSummary: t("pdf.orderSummary"),
-        itemsWord: t("common.itemsWord"),
-      }, formatCurrency)}
+    customer: t("pdf.customer"),
+    city: t("pdf.city"),
+    orderValue: t("pdf.orderValue"),
+    orderSummary: t("pdf.orderSummary"),
+    itemsWord: t("common.itemsWord"),
+  }, formatCurrency)}
     </section>
 
     <section class="surface">
@@ -164,7 +164,7 @@ function LogDetailsDialog({ log, sessionLogs, open, onClose, orders, t }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto rounded-3xl bg-white p-0 dark:bg-slate-900" dir="rtl">
+      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto rounded-3xl  p-0" dir="rtl">
         <DialogHeader className="border-b border-border px-6 py-5">
           <DialogTitle className="flex items-center gap-2 text-lg font-black text-foreground">
             <ClipboardList size={20} className="text-primary" />
@@ -301,7 +301,7 @@ export function LogsTab({ opsLogs, orders = [] }) {
       <Table
         searchValue={search}
         onSearchChange={setSearch}
-        onSearch={() => {}}
+        onSearch={() => { }}
         labels={{
           searchPlaceholder: t("search"),
           filter: t("common.filter"),
@@ -312,10 +312,10 @@ export function LogsTab({ opsLogs, orders = [] }) {
           emptySubtitle: "",
         }}
         actions={[
-          { key: "export", label: t("actions.export"), icon: <FileDown size={14} />, color: "blue", onClick: () => {} },
+          { key: "export", label: t("actions.export"), icon: <FileDown size={14} />, color: "blue", onClick: () => { } },
         ]}
         hasActiveFilters={operationType !== "all" || result !== "all" || carrier !== "all"}
-        onApplyFilters={() => {}}
+        onApplyFilters={() => { }}
         filters={
           <>
             <FilterField label={t("fields.operationType")}>

@@ -38,6 +38,7 @@ import OrdersTab from "./tabs/OrderTab";
 import ReplacementTab from "./tabs/ReplacementTab";
 import FailedOrdersTab from "./tabs/Failedorderstab";
 import { useAuth } from "@/context/AuthContext";
+import RejectedTab from "./tabs/RejectedTab";
 // import ReturnsTab from "./ReturnsTab";
 
 export default function Orders() {
@@ -55,7 +56,7 @@ export default function Orders() {
 			{ id: "orders", label: t("tabs.orders"), icon: ShoppingCart },
 			// { id: "replacement", label: t("tabs.replacement"), icon: ArrowLeftRight },
 			{ id: "failedOrders", label: t("tabs.failedOrders"), icon: XCircle },
-			{ id: "returns", label: t("tabs.returns"), icon: RefreshCcw },
+			{ id: "rejected", label: t("tabs.rejected"), icon: XCircle },
 		],
 		[t]
 	);

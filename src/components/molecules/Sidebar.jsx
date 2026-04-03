@@ -739,7 +739,6 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
 
     return menuItems.filter((item) => {
       // 1. Check Roles
-      console.log("checking item:", item.labelKey, item.roles?.length, item.roles);
       const hasRole = !item.roles?.length || item.roles.includes(userRole?.toUpperCase());
       if (!hasRole) return false;
 

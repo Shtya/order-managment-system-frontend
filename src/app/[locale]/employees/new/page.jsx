@@ -63,7 +63,7 @@ export default function AddEmployeePage() {
 	const tPhone = useTranslations("inputPhone");
 	const tCountries = useTranslations("countries");
 	const t = useTranslations("addEmployee");
-	
+
 	// avatar state: preview + file
 	const [profileImage, setProfileImage] = useState(null);
 	const [avatarFile, setAvatarFile] = useState(null);
@@ -273,7 +273,7 @@ export default function AddEmployeePage() {
 						disabled={isSubmitting}
 						size="sm"
 						label={isSubmitting ? t("actions.saving") || t("actions.save") : t("actions.save")}
- 						variant="solid"
+						variant="solid"
 						icon={<Save size={18} />}
 					/>
 				}
@@ -284,7 +284,7 @@ export default function AddEmployeePage() {
 			<div className="flex max-md:flex-col gap-6">
 				<div className="flex-1 space-y-6">
 					<motion.div
-						className="bg-card"
+						className="main-card"
 						initial={{ opacity: 0, x: 20 }}
 						animate={{ opacity: 1, x: 0 }}
 						transition={{ delay: 0.2 }}
@@ -411,7 +411,7 @@ export default function AddEmployeePage() {
 
 					{/* Employee Information */}
 					<motion.div
-						className="bg-card"
+						className="main-card"
 						initial={{ opacity: 0, x: 20 }}
 						animate={{ opacity: 1, x: 0 }}
 						transition={{ delay: 0.3 }}
@@ -430,7 +430,6 @@ export default function AddEmployeePage() {
 								<Input
 									{...register("name")}
 									placeholder={t("placeholders.name")}
-									className="rounded-full h-[45px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
 								/>
 								{errors.name && <div className="text-xs text-red-500">{errors.name.message}</div>}
 							</div>
@@ -445,7 +444,6 @@ export default function AddEmployeePage() {
 									type="email"
 									{...register("email")}
 									placeholder={t("placeholders.email")}
-									className="rounded-full !font-[Inter] h-[45px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 font-en"
 								/>
 								{errors.email && <div className="text-xs text-red-500">{errors.email.message}</div>}
 							</div>
@@ -485,7 +483,7 @@ export default function AddEmployeePage() {
 										}
 										inputMode="numeric"
 										className={cn(
-											"flex-1 rounded-full font-en h-[45px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 font-en",
+											"flex-1 rounded-full font-en h-[45px]",
 											errors.phoneNumber ? "border-red-300 focus-visible:ring-red-300" : ""
 										)}
 										{...register("phoneNumber", {
@@ -552,7 +550,6 @@ export default function AddEmployeePage() {
 									type="password"
 									{...register("password")}
 									placeholder={t("placeholders.password")}
-									className="rounded-full h-[45px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
 								/>
 								{errors.password && <div className="text-xs text-red-500">{errors.password.message}</div>}
 							</div>
@@ -609,7 +606,7 @@ function ProfileImageUpload({ image, onImageChange, onRemove, t, isRTL }) {
 			initial={{ opacity: 0, x: -20 }}
 			animate={{ opacity: 1, x: 0 }}
 			transition={{ delay: 0.2 }}
-			className="bg-card rounded-xl p-6"
+			className="main-card rounded-xl p-6"
 		>
 			<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4 text-right">
 				{t("sections.employeeImage")}
@@ -803,7 +800,6 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 								value={phoneNumber}
 								onChange={handlePhoneChange}
 								className={cn(
-									"flex-1 !font-[Inter] rounded-full h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 font-en",
 									error ? "border-red-300 focus-visible:ring-red-300" : ""
 								)}
 								inputMode="numeric"

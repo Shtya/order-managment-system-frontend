@@ -97,7 +97,7 @@ function FiltersPanel({ t, value, onChange, onApply }) {
 			exit={{ height: 0, opacity: 0, y: -6 }}
 			transition={{ duration: 0.25 }}
 		>
-			<div className="bg-card !p-4 mt-4">
+			<div className="main-card !p-4 mt-4">
 				<div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
 					<div className="space-y-2">
 						<Label>{t("filters.paymentStatus")}</Label>

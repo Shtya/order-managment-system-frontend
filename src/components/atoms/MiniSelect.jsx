@@ -136,7 +136,7 @@ const MiniSelect = memo(function MiniSelect({
 			className={cn(
 				"fixed z-[9999] rounded-xl border shadow-lg overflow-hidden",
 				// ✅ Dark mode aware background + border
-				"bg-card border-border"
+				"main-card border-border"
 			)}
 			style={{
 				left: pos.left,

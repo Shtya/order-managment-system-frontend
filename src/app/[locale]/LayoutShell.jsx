@@ -16,6 +16,7 @@ import { AuthProvider, useAuth } from "@/context/AuthContext";
 import SubscriptionLock from "@/components/atoms/SubscriptionLock";
 import { useAuthInterceptor } from "@/hook/useAuthInterceptor";
 import { motion, AnimatePresence } from "framer-motion";
+import "flatpickr/dist/flatpickr.min.css";
 
 export default function LayoutShell({ children }) {
   return (

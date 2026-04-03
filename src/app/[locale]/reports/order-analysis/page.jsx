@@ -29,7 +29,7 @@ import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
 import api from "@/utils/api";
 import Flatpickr from "react-flatpickr";
-import "flatpickr/dist/themes/material_blue.css";
+
 import {
   Select,
   SelectContent,
@@ -90,19 +90,6 @@ export const hex = (h, a = 0.12) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Skeleton
-// ─────────────────────────────────────────────────────────────────────────────
-
-const Skel = ({ cls }) => (
-  <div
-    className={cn(
-      "animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800/60",
-      cls,
-    )}
-  />
-);
-
-// ─────────────────────────────────────────────────────────────────────────────
 // Card — elevated container with accent left-bar + icon
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -117,7 +104,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900",
+        "rounded-2xl border border-slate-100 dark:border-slate-800 bg-card",
         "shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden",
         className,
       )}
@@ -223,9 +210,9 @@ export function RangeTabs({ value, onChange }) {
             style={
               isActive
                 ? {
-                    background: `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))`,
-                    boxShadow: `0 4px 14px rgb(var(--primary-shadow))`,
-                  }
+                  background: `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))`,
+                  boxShadow: `0 4px 14px rgb(var(--primary-shadow))`,
+                }
                 : {}
             }
           >
@@ -571,16 +558,22 @@ export function MiniTable({ columns, data, loading }) {
   const t = useTranslations("dashboard");
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-slate-100 dark:border-slate-800">
+    <div className="table-container">
       <table className="w-full text-sm">
-        <thead>
-          <tr className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
-            {columns.map((c) => (
+        <thead className="table-header">
+          <tr>
+            {columns.map((c, idx) => (
               <th
                 key={c.key}
-                className="px-4 py-3 text-right text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider whitespace-nowrap"
+                className="table-header-cell"
               >
-                {c.header}
+                <motion.span
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.035 }}
+                >
+                  {c.header}
+                </motion.span>
               </th>
             ))}
           </tr>
@@ -590,11 +583,11 @@ export function MiniTable({ columns, data, loading }) {
             Array.from({ length: 5 }).map((_, i) => (
               <tr
                 key={i}
-                className="border-b border-slate-100/60 dark:border-slate-800/60 last:border-0"
+                className="table-row"
               >
                 {columns.map((c) => (
-                  <td key={c.key} className="px-4 py-3.5">
-                    <Skel cls="h-4 w-full" />
+                  <td key={c.key} className="table-cell">
+                    <div className="table-skeleton-bar" />
                   </td>
                 ))}
               </tr>
@@ -603,10 +596,10 @@ export function MiniTable({ columns, data, loading }) {
             <tr>
               <td colSpan={columns.length} className="px-4 py-14 text-center">
                 <div className="flex flex-col items-center gap-2">
-                  <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                    <Package size={18} className="text-slate-400" />
+                  <div className="w-10 h-10 rounded-xl bg-muted/60 flex items-center justify-center">
+                    <Package size={18} className="text-muted-foreground/60" />
                   </div>
-                  <p className="text-xs font-semibold text-slate-400">
+                  <p className="text-xs font-semibold text-muted-foreground/60">
                     {t("common.noData")}
                   </p>
                 </div>
@@ -619,13 +612,10 @@ export function MiniTable({ columns, data, loading }) {
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.035 }}
-                className={cn(
-                  "border-b border-slate-100/60 dark:border-slate-800/60 last:border-0",
-                  "hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors",
-                )}
+                className="table-row"
               >
                 {columns.map((c) => (
-                  <td key={c.key} className="px-4 py-3.5 whitespace-nowrap">
+                  <td key={c.key} className="table-cell">
                     {c.cell ? c.cell(row) : (row[c.key] ?? "—")}
                   </td>
                 ))}
@@ -652,7 +642,7 @@ export const TableFilters = memo(function TableFilters({
     <motion.div
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-card !p-0 overflow-hidden"
+      className="main-card !p-0 overflow-hidden"
     >
       {/* Header bar */}
       <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
@@ -985,7 +975,7 @@ export default function OrdersStatisticsPage() {
           icon: card.icon,
           color: card.color,
           sortOrder: i,
-          onClick: () => {},
+          onClick: () => { },
         };
       }),
     [summary, KPI],
@@ -1127,16 +1117,8 @@ export default function OrdersStatisticsPage() {
             }
             options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
             placeholder={t("filters.dateRangePlaceholder")}
-            className={cn(
-              "w-full h-10 rounded-xl text-sm",
-              "border border-slate-200 dark:border-slate-700",
-              "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200",
-              "px-3.5 placeholder:text-slate-400",
-              "hover:border-orange-300 dark:hover:border-orange-700",
-              "focus:border-orange-400 focus:outline-none",
-              "focus:shadow-[0_0_0_3px_rgb(var(--primary-shadow))]",
-              "transition-all duration-200",
-            )}
+            data-size="default"
+            className={"theme-field"}
           />
         </FilterField>
 

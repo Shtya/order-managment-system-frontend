@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import api from "@/utils/api";
 import Flatpickr from "react-flatpickr";
-import "flatpickr/dist/themes/material_blue.css";
+
 import {
   Select,
   SelectContent,
@@ -146,7 +146,7 @@ export default function DashboardPage() {
       .then(({ data }) =>
         setStores(Array.isArray(data) ? data : (data?.records ?? [])),
       )
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   useEffect(() => {
@@ -409,16 +409,8 @@ export default function DashboardPage() {
             }}
             options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
             placeholder={t("filters.dateRangePlaceholder")}
-            className={cn(
-              "w-full h-10 rounded-xl text-sm",
-              "border border-slate-200 dark:border-slate-700",
-              "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200",
-              "px-3.5 placeholder:text-slate-400",
-              "hover:border-orange-300 dark:hover:border-orange-700",
-              "focus:border-orange-400 focus:outline-none",
-              "focus:shadow-[0_0_0_3px_rgb(var(--primary-shadow))]",
-              "transition-all duration-200",
-            )}
+            data-size="default"
+            className={"theme-field"}
           />
         </FilterField>
 

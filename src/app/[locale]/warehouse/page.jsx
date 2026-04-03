@@ -109,7 +109,7 @@ function DistributionDialog({ open, onClose, orders, selectedOrderCodes, updateO
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="!max-w-2xl bg-white dark:bg-slate-900 rounded-xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="!max-w-2xl rounded-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
           <DialogTitle className="text-lg font-bold flex items-center gap-2">
             <Truck className="text-[#ff8b00] dark:text-[#5b4bff]" size={22} />
@@ -311,7 +311,7 @@ export default function WarehouseFlowPage() {
   if (preparingOrders && preparingOrders.length > 0) {
     return (
       <div
-        className="min-h-screen p-4 md:p-6 bg-gradient-to-br from-slate-50 via-orange-50/20 to-amber-50/20 dark:from-[#182337] dark:via-[#182337] dark:to-[#1a2744]"
+        className="min-h-screen p-4 md:p-6 bg-gradient-to-br from-slate-50 via-orange-50/20 to-amber-50/20 dark:from-card dark:via-card dark:to-[#1a2744]"
         dir={dir}>
         <MultiPrepareView
           ordersToPrep={preparingOrders}
@@ -407,7 +407,7 @@ export default function WarehouseFlowPage() {
   // ── Main tabbed layout ─────────────────────────────────────────────────────
   return (
     <div
-      className="min-h-screen !pb-0 p-4 md:p-6 bg-gradient-to-br from-slate-50 via-orange-50/20 to-amber-50/20 dark:from-[#182337] dark:via-[#182337] dark:to-[#1a2744]"
+      className="min-h-screen !pb-0 p-4 md:p-6 "
       dir={dir}>
       <AnimatePresence mode="wait">
         <motion.div key={activeTab}

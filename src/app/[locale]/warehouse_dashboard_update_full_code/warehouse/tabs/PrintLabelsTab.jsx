@@ -33,7 +33,7 @@ function OrderDetailsDialog({ order, open, onClose, t }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto rounded-3xl bg-white p-0 dark:bg-slate-900" dir="rtl">
+      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto rounded-3xl p-0 " dir="rtl">
         <DialogHeader className="border-b border-border px-6 py-5">
           <DialogTitle className="flex items-center gap-2 text-lg font-black text-foreground">
             <Package size={20} className="text-primary" />
@@ -128,7 +128,7 @@ function PrintPreviewModal({ open, onClose, orders, onConfirm, t }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto rounded-3xl bg-white p-0 dark:bg-slate-900" dir="rtl">
+      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto rounded-3xl p-0 " dir="rtl">
         <DialogHeader className="border-b border-border px-6 py-5">
           <DialogTitle className="flex items-center gap-2 text-lg font-black text-foreground">
             <Printer size={20} className="text-primary" />
@@ -292,7 +292,7 @@ function LabelsTable({ orders, filters, setFilters, selectedCodes, setSelectedCo
       <Table
         searchValue={search}
         onSearchChange={setSearch}
-        onSearch={() => {}}
+        onSearch={() => { }}
         labels={{
           searchPlaceholder: statusMode === "printed" ? t("printed.search") : t("notPrinted.search"),
           filter: t("common.filter"),
@@ -313,18 +313,18 @@ function LabelsTable({ orders, filters, setFilters, selectedCodes, setSelectedCo
           },
           ...(statusMode === "printed"
             ? [{
-                key: "prepare-selected",
-                label: t("actions.prepareSelected", { count: selectedCodes.length }),
-                icon: <Package size={14} />,
-                color: "blue",
-                onClick: () => onPrepareSelection(orders.filter((order) => selectedCodes.includes(order.code) && order.status !== STATUS.PREPARED)),
-                disabled: selectedCodes.length === 0,
-              }]
+              key: "prepare-selected",
+              label: t("actions.prepareSelected", { count: selectedCodes.length }),
+              icon: <Package size={14} />,
+              color: "blue",
+              onClick: () => onPrepareSelection(orders.filter((order) => selectedCodes.includes(order.code) && order.status !== STATUS.PREPARED)),
+              disabled: selectedCodes.length === 0,
+            }]
             : []),
-          { key: "export", label: t("actions.export"), icon: <FileDown size={14} />, color: "blue", onClick: () => {} },
+          { key: "export", label: t("actions.export"), icon: <FileDown size={14} />, color: "blue", onClick: () => { } },
         ]}
         hasActiveFilters={hasActiveFilters}
-        onApplyFilters={() => {}}
+        onApplyFilters={() => { }}
         filters={
           <>
             <FilterField label={t("fields.carrier")}>
@@ -468,7 +468,7 @@ export default function PrintLabelsTab({ orders, updateOrder, pushOp, subtab, se
           { name: t("breadcrumbs.warehouse"), href: "/warehouse" },
           { name: t("breadcrumbs.printLabels") },
         ]}
-        buttons={<Button_ size="sm" label={t("actions.help")} variant="ghost" onClick={() => {}} icon={<Info size={16} />} />}
+        buttons={<Button_ size="sm" label={t("actions.help")} variant="ghost" onClick={() => { }} icon={<Info size={16} />} />}
         stats={stats}
         items={[
           { id: "not_printed", label: t("tabs.notPrinted"), count: notPrintedOrders.length, icon: Printer },

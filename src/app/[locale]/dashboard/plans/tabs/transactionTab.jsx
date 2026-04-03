@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/select";
 import { Calendar, CreditCard, Download, Loader2, User } from "lucide-react";
 import Flatpickr from "react-flatpickr";
-import "flatpickr/dist/themes/material_blue.css";
+
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
@@ -399,8 +399,8 @@ export default function TransactionTab({ defaultPurpose, allowedPurposes }) {
                                 }))
                             }
                             options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
-                            className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm
-            text-foreground focus:outline-none focus:border-[var(--primary)] transition-all"
+                            data-size="default"
+                            className={"theme-field"}
                             placeholder={t("filters.datePlaceholder")}
                         />
                     </FilterField>

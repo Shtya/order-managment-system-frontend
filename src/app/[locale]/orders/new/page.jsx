@@ -84,7 +84,7 @@ const createSchema = (t) =>
 function SectionCard({ title, badge, children, delay = 0 }) {
 	return (
 		<motion.div
-			className="bg-card"
+			className="main-card"
 			initial={{ opacity: 0, x: -20 }}
 			animate={{ opacity: 1, x: 0 }}
 			transition={{ delay }}
@@ -518,17 +518,17 @@ export default function CreateOrderPageComplete({
 				city: existingOrder.city || "",
 				area: existingOrder.area || "",
 				landmark: existingOrder.landmark || "",
-				paymentMethod: !fromId ?  existingOrder.paymentMethod || "cod" : "cod",
-				paymentStatus: !fromId ? existingOrder.paymentStatus || "pending" :  "pending",
+				paymentMethod: !fromId ? existingOrder.paymentMethod || "cod" : "cod",
+				paymentStatus: !fromId ? existingOrder.paymentStatus || "pending" : "pending",
 				shippingCompanyId: existingOrder.shippingCompany?.id
 					? String(existingOrder.shippingCompany.id)
 					: "",
 				storeId: existingOrder.storeId ? String(existingOrder.storeId) : "",
 				shippingCost: existingOrder.shippingCost || 0,
-				discount: !fromId ?  existingOrder.discount || 0: 0,
-				deposit: !fromId ?  existingOrder.deposit || 0: 0,
-				notes:  !fromId ? existingOrder.notes || "" : "",
-				customerNotes: !fromId ?  existingOrder.customerNotes || "" : "",
+				discount: !fromId ? existingOrder.discount || 0 : 0,
+				deposit: !fromId ? existingOrder.deposit || 0 : 0,
+				notes: !fromId ? existingOrder.notes || "" : "",
+				customerNotes: !fromId ? existingOrder.customerNotes || "" : "",
 				items:
 					existingOrder.items?.map((item) => ({
 						variantId: item.variant?.id || item.variantId,
@@ -1341,7 +1341,7 @@ export default function CreateOrderPageComplete({
 						    CARD 4 — Add Products
 						═══════════════════════════════════════════════ */}
 						<motion.div
-							className="bg-card"
+							className="main-card"
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.35 }}
@@ -1364,7 +1364,7 @@ export default function CreateOrderPageComplete({
 						═══════════════════════════════════════════════ */}
 						{watchedItems.length > 0 && (
 							<motion.div
-								className="bg-card"
+								className="main-card"
 								initial={{ opacity: 0, y: 20 }}
 								animate={{ opacity: 1, y: 0 }}
 								transition={{ delay: 0.4 }}
@@ -1485,7 +1485,7 @@ export default function CreateOrderPageComplete({
 						    CARD 6 — Notes
 						═══════════════════════════════════════════════ */}
 						<motion.div
-							className="bg-card"
+							className="main-card"
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.45 }}
@@ -1553,7 +1553,7 @@ function OrderSummary({ t, summary }) {
 			className="sticky top-6"
 		>
 			{/* ── Card shell ─────────────────────────────────────────────────── */}
-			<div className="relative overflow-hidden rounded-2xl border border-[var(--primary)]/20 bg-card">
+			<div className="relative overflow-hidden rounded-2xl border border-[var(--primary)]/20 main-card">
 
 				{/* ── Header ───────────────────────────────────────────────────── */}
 				<div className="px-5 pt-5 pb-4 flex items-center justify-between">

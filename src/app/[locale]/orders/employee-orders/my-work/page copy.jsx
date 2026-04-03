@@ -649,7 +649,7 @@ function Pill({ children, color, size = "sm" }) {
 function Card({ children, className, accentColor, style }) {
 	return (
 		<div
-			className={cn("bg-card !p-1 rounded-[var(--radius)] border border-border overflow-hidden", className)}
+			className={cn("main-card !p-1 rounded-[var(--radius)] border border-border overflow-hidden", className)}
 			style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.055)", ...style }}
 		>
 
@@ -665,7 +665,7 @@ function CollapseTrigger({ open, onToggle, color, icon: Icon, eyebrow, title, su
 			type="button"
 			onClick={onToggle}
 			className={cn(
-				"w-full flex items-center justify-between px-[18px] py-[14px] bg-card cursor-pointer outline-none border-none",
+				"w-full flex items-center justify-between px-[18px] py-[14px] main-card cursor-pointer outline-none border-none",
 				open && "border-b border-border"
 			)}
 		>
@@ -1060,7 +1060,7 @@ function UpsellSearchModal({ isOpen, onClose, product, handleSelectSku, selected
 	if (!isOpen) return null;
 	return (
 		<div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-2" dir={isRtl ? "rtl" : "ltr"}>
-			<motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-card w-full max-w-lg rounded-2xl shadow-xl border border-border flex flex-col min-h-[200px] max-h-[80vh]">
+			<motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="main-card w-full max-w-lg rounded-2xl shadow-xl border border-border flex flex-col min-h-[200px] max-h-[80vh]">
 				<div className="px-5 py-4 border-b border-border flex items-center justify-between">
 					<h3 className="text-[16px] font-bold text-card-foreground">
 						{product ? product.label || product.name : t("addAdditionalProduct")}
@@ -1203,7 +1203,7 @@ function EditSaveBar({ onSave, onCancel, loading, t, isRtl }) {
 		<motion.div initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
 			<div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 0%, color-mix(in oklab, var(--background) 85%, transparent) 28%, var(--background) 100%)" }} />
 			<div className="relative px-5 pb-5 pt-3 pointer-events-auto">
-				<div className="max-w-5xl mx-auto rounded-2xl overflow-hidden bg-card border-2 border-primary shadow-2xl flex items-center justify-between px-6 py-4">
+				<div className="max-w-5xl mx-auto rounded-2xl overflow-hidden main-card border-2 border-primary shadow-2xl flex items-center justify-between px-6 py-4">
 					<div className="flex items-center gap-3">
 						<div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center"><Info size={20} className="text-primary" /></div>
 						<div>
@@ -1231,7 +1231,7 @@ function FloatingActionBar({ order, allowedStatuses, changingStatus, selectedSta
 		<motion.div initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3, duration: 0.44 }} className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
 			<div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 0%, color-mix(in oklab, var(--background) 85%, transparent) 28%, var(--background) 100%)" }} />
 			<div className="relative px-5 pb-5 pt-3 pointer-events-auto">
-				<div className="max-w-5xl mx-auto rounded-2xl overflow-hidden bg-card border border-border shadow-2xl">
+				<div className="max-w-5xl mx-auto rounded-2xl overflow-hidden main-card border border-border shadow-2xl">
 					<div className="h-[3px] w-full" style={{ background: statusDecided ? `linear-gradient(90deg, ${COLORS.profit}, #22c55e 60%, transparent)` : `linear-gradient(90deg, ${COLORS.primary}, transparent)` }} />
 					<div className="flex items-center gap-3 px-4 py-3">
 						<div className="flex-1 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
@@ -1279,7 +1279,7 @@ function MetricTile({ icon: Icon, label, value, color, delay = 0, plain = false 
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ delay, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
 			whileHover={{ y: -2 }}
-			className="relative overflow-hidden rounded-[var(--radius)] bg-card"
+			className="relative overflow-hidden rounded-[var(--radius)] main-card"
 			style={{
 				height: 84,
 				border: `1px solid ${hov ? alpha(color, 0.5) : "var(--border)"}`,
@@ -2424,7 +2424,7 @@ function ResultBanner({ refetchingOrder, showSuccessCard, newStatus, retriesExha
 					animate={{ opacity: 1, y: 0, scale: 1 }}
 					exit={{ opacity: 0, scale: 0.97 }}
 					transition={{ duration: 0.2 }}
-					className="rounded-[var(--radius)] overflow-hidden mb-4 border border-border !p-0 bg-card"
+					className="rounded-[var(--radius)] overflow-hidden mb-4 border border-border !p-0 main-card"
 					style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}
 				>
 					<div className="h-[3px]" style={{ background: accentGrad }} />

@@ -552,7 +552,7 @@ export function PageHeader({
 				initial={{ opacity: 0, y: -6 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-				className={["relative bg-card mb-6", className].join(" ")}
+				className={["relative main-card mb-6", className].join(" ")}
 				style={{
 					borderRadius: "var(--radius)",
 					border: "1px solid var(--border)",
@@ -659,7 +659,7 @@ export function PageHeader({
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
 			className={[
-				"relative overflow-hidden bg-card mb-6",
+				"relative overflow-hidden main-card mb-6",
 				hasTabs ? "!pb-[2px]" : "pb-5",
 				className,
 			].join(" ")}

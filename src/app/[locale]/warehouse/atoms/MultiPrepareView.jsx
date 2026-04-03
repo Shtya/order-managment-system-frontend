@@ -71,7 +71,7 @@ function Ring({ value = 0, size = 44, stroke = 3.5, color = "var(--primary)", ch
 ═══════════════════════════════════════════════════════════ */
 function StatCard({ label, value, color, icon: Icon, note }) {
   return (
-    <div className="relative rounded-xl border bg-card overflow-hidden h-[72px]"
+    <div className="relative rounded-xl border main-card overflow-hidden h-[72px]"
       style={{ borderColor: color + "25" }}>
       {/* right accent bar */}
       <div className="absolute end-0 inset-y-0 w-[3.5px] rounded-full" style={{ background: color }} />
@@ -171,7 +171,7 @@ function OrderCard({ state, order, isActive, index }) {
       initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.22, delay: index * 0.04 }}
       className={cn(
-        "relative overflow-hidden bg-card transition-all duration-300",
+        "relative overflow-hidden main-card transition-all duration-300",
         isDone && "border-[oklch(0.6_0.2_145/0.3)]",
         isActive && !isDone && "border-primary/30 shadow-[0_2px_20px_-4px_rgb(var(--primary-shadow))]",
         !isActive && !isDone && "border-border/60",
@@ -505,7 +505,7 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
       </div>
 
       {/* ── Session details ── */}
-      <div className="bg-card">
+      <div className="main-card">
         <div className="flex flex-wrap gap-3">
           <div className="flex-1 min-w-[160px] space-y-1.5">
             <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
@@ -556,7 +556,7 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
       </div >
 
       {/* Scan counters */}
-      < div className="flex items-center gap-3 p-3 bg-card rounded-xl" >
+      < div className="flex items-center gap-3 p-3 main-card rounded-xl" >
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
             <CheckCircle2 size={16} className="text-emerald-600" />
@@ -583,7 +583,7 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
       </div >
 
 
-      <div className="relative bg-card">
+      <div className="relative main-card">
         <div className="relative space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
@@ -731,7 +731,7 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
       <AnimatePresence>
         {states[activeIdx]?.scanLogs.length > 0 && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            className="bg-card">
+            className="main-card">
             {/* top accent */}
             <div className="h-[2px] bg-gradient-to-r from-primary/60 to-transparent" />
             <div className="flex items-center gap-2 px-4 py-3 border-b border-border/40">
@@ -759,7 +759,7 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              className="relative bg-card rounded-xl p-10 flex flex-col items-center gap-4
+              className="relative main-card rounded-xl p-10 flex flex-col items-center gap-4
                 border border-[oklch(0.6_0.2_145/0.25)] max-w-sm mx-4 overflow-hidden
                 shadow-[0_32px_80px_-16px_rgba(0,0,0,0.25)]"
             >

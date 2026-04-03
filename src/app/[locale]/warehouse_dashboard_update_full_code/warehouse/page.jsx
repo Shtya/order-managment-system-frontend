@@ -224,7 +224,7 @@ export default function WarehouseFlowPage() {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50/20 to-amber-50/20 p-4 md:p-6 dark:from-[#182337] dark:via-[#182337] dark:to-[#1a2744]"
+      className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50/20 to-amber-50/20 p-4 md:p-6 dark:from-card dark:via-card dark:to-[#1a2744]"
       dir={dir}
     >
       <AnimatePresence mode="wait">
@@ -355,7 +355,7 @@ function DistributionDialog({ open, onClose, orders, selectedOrderCodes, onConfi
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 px-4 backdrop-blur-sm">
-      <div className="w-full max-w-2xl rounded-3xl border border-border bg-card p-6 shadow-2xl">
+      <div className="w-full max-w-2xl rounded-3xl border border-border main-card p-6 shadow-2xl">
         <div className="mb-5 flex items-center justify-between gap-3">
           <div>
             <h3 className="text-lg font-black text-foreground">توزيع الطلبات على شركة الشحن</h3>
@@ -372,11 +372,10 @@ function DistributionDialog({ open, onClose, orders, selectedOrderCodes, onConfi
               key={carrierOption}
               type="button"
               onClick={() => setCarrier(carrierOption)}
-              className={`rounded-2xl border px-3 py-3 text-sm font-bold transition-colors ${
-                carrier === carrierOption
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-background text-foreground hover:bg-muted"
-              }`}
+              className={`rounded-2xl border px-3 py-3 text-sm font-bold transition-colors ${carrier === carrierOption
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-background text-foreground hover:bg-muted"
+                }`}
             >
               {carrierOption}
             </button>
@@ -391,9 +390,8 @@ function DistributionDialog({ open, onClose, orders, selectedOrderCodes, onConfi
                 key={order.code}
                 type="button"
                 onClick={() => toggleOrder(order.code)}
-                className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-start transition-colors ${
-                  selected ? "border-primary bg-primary/6" : "border-border bg-background hover:bg-muted"
-                }`}
+                className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-start transition-colors ${selected ? "border-primary bg-primary/6" : "border-border bg-background hover:bg-muted"
+                  }`}
               >
                 <div>
                   <p className="font-mono text-sm font-black text-foreground">{order.code}</p>

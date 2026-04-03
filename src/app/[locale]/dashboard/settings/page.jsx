@@ -54,7 +54,7 @@ function SettingCard({ children, className }) {
   return (
     <div
       className={cn(
-        "relative rounded-2xl border border-border/50 bg-card overflow-hidden p-6 mb-6",
+        "relative rounded-2xl border border-border/50 main-card overflow-hidden p-6 mb-6",
         "shadow-[0_1px_3px_rgba(0,0,0,0.05),0_4px_16px_rgba(0,0,0,0.04)]",
         className,
       )}
@@ -196,6 +196,7 @@ export default function SuperAdminSettingsPage() {
               tone="ghost"
               variant="cancel"
               icon={<RefreshCw size={14} />}
+              className="bg-white! dark:bg-slate-800! text-slate-600! dark:text-slate-300!"
               onClick={() => window.location.reload()}
             />
           }
@@ -204,7 +205,7 @@ export default function SuperAdminSettingsPage() {
           setActive={setActiveTab}
         />
 
-        <div className="relative  bg-card rounded-2xl border border-border/50 overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.05),0_8px_32px_rgba(0,0,0,0.05)]">
+        <div className="relative  main-card rounded-2xl border border-border/50 overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.05),0_8px_32px_rgba(0,0,0,0.05)]">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -308,12 +309,12 @@ function ContactsTab({ t }) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Primary Contacts */}
-      <SettingCard className="!p-0 border-0 bg-transparent shadow-none">
+      <SettingCard className=" border-0 bg-transparent shadow-none">
         <SectionHead
           title={t("contacts.primaryTitle")}
           subtitle={t("contacts.primarySubtitle")}
         />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-6 bg-card rounded-2xl border border-border/50 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-6 main-card rounded-2xl border border-border/50 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
           <Field
             label={t("contacts.emailLabel")}
             error={errors.email?.message}
@@ -355,7 +356,7 @@ function ContactsTab({ t }) {
       </SettingCard>
 
       {/* Social Media Cards */}
-      <SettingCard className="!p-0 border-0 bg-transparent shadow-none">
+      <SettingCard className=" border-0 bg-transparent shadow-none">
         <SectionHead
           title={t("contacts.socialTitle")}
           subtitle={t("contacts.socialSubtitle")}
@@ -396,7 +397,7 @@ function ContactsTab({ t }) {
                     {...register(platform.id)}
                     type="url"
                     className={cn(
-                      "h-10 ps-8 text-xs bg-card",
+                      "h-10 ps-8 text-xs main-card",
                       fieldError &&
                       "border-destructive focus-visible:ring-destructive",
                     )}

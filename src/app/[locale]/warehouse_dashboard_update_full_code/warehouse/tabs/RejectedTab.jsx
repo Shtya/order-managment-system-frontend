@@ -16,7 +16,7 @@ function ReasonDialog({ open, onClose, order, t }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg rounded-3xl bg-white p-0 dark:bg-slate-900" dir="rtl">
+      <DialogContent className="max-w-lg rounded-3xl p-0 " dir="rtl">
         <DialogHeader className="border-b border-border px-6 py-5">
           <DialogTitle className="flex items-center gap-2 text-lg font-black text-foreground">
             <AlertTriangle size={18} className="text-red-500" />
@@ -155,7 +155,7 @@ export function RejectedTab({ orders, updateOrder, pushOp }) {
       <Table
         searchValue={search}
         onSearchChange={setSearch}
-        onSearch={() => {}}
+        onSearch={() => { }}
         labels={{
           searchPlaceholder: t("search"),
           filter: t("common.filter"),
@@ -166,10 +166,10 @@ export function RejectedTab({ orders, updateOrder, pushOp }) {
           emptySubtitle: "",
         }}
         actions={[
-          { key: "export", label: t("actions.export"), icon: <FileDown size={14} />, color: "blue", onClick: () => {} },
+          { key: "export", label: t("actions.export"), icon: <FileDown size={14} />, color: "blue", onClick: () => { } },
         ]}
         hasActiveFilters={false}
-        onApplyFilters={() => {}}
+        onApplyFilters={() => { }}
         filters={null}
         columns={columns}
         data={filtered}

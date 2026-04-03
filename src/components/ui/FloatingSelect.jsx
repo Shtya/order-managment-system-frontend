@@ -62,7 +62,7 @@ function SelectTrigger({ className, size = "default", children, ...props }) {
 			{/* Subtle top sheen — same as before */}
 			<span
 				aria-hidden
-				className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-xl
+				className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-md
           bg-gradient-to-b from-white/20 to-transparent dark:from-white/[0.06]"
 			/>
 

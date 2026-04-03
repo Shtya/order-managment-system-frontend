@@ -109,7 +109,7 @@ function OrderDetailModal({ open, onClose, order }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="!max-w-2xl bg-white dark:bg-slate-900 rounded-md max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl" dir="rtl">
+      <DialogContent className="!max-w-2xl  rounded-md max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl" dir="rtl">
         <div className="relative px-6 pt-6 pb-5 rounded-t-2xl overflow-hidden bg-primary" >
           <div className="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white/10" />
           <div className="absolute -bottom-6 -right-2 w-32 h-32 rounded-full bg-white/10" />
@@ -219,7 +219,7 @@ function RejectOrderModal({ open, onClose, order, onConfirm }) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="!max-w-lg bg-white dark:bg-slate-900 rounded-md p-0 border-0 shadow-2xl" dir="rtl">
+      <DialogContent className="!max-w-lg rounded-md p-0 border-0 shadow-2xl" dir="rtl">
         <div className="relative px-6 pt-6 pb-5 rounded-t-2xl overflow-hidden"
           style={{ background: "linear-gradient(135deg, #dc2626 0%, #ef4444 60%, #f87171 100%)" }}>
           <div className="absolute -top-4 -left-4 w-20 h-20 rounded-full bg-white/10" />

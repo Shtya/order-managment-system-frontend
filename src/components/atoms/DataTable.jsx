@@ -254,7 +254,7 @@ export default function DataTable({
 	}
 
 
-	const ACTION_KEY = "actions" ;
+	const ACTION_KEY = "actions";
 	const isRTL = typeof document !== "undefined" && document?.dir === "rtl";
 
 	const stickyEnd = isRTL ? "left-0" : "right-0";
@@ -461,22 +461,22 @@ export default function DataTable({
 
 												return (
 													<TableCell
-															key={col.key}
-															className={cn(
-																"!px-6 ltr:text-left rtl:text-right text-sm text-gray-700 dark:text-slate-200 whitespace-nowrap",
-																compact ? "py-3" : "py-5",
-																"group-hover:text-gray-900 dark:group-hover:text-slate-50 transition-colors duration-300",
-																col.className,
+														key={col.key}
+														className={cn(
+															"!px-6 ltr:text-left rtl:text-right text-sm text-gray-700 dark:text-slate-200 whitespace-nowrap",
+															compact ? "py-3" : "py-5",
+															"group-hover:text-gray-900 dark:group-hover:text-slate-50 transition-colors duration-300",
+															col.className,
 
-																col.key === ACTION_KEY || col.key === "options" &&
-																cn(
-																	"sticky z-20",
-																	stickyEnd,
-																	"bg-white dark:bg-slate-900",
-																	stickyShadow
-																)
-															)}
-														>
+															col.key === ACTION_KEY || col.key === "options" &&
+															cn(
+																"sticky z-20",
+																stickyEnd,
+																"bg-white dark:bg-slate-900",
+																stickyShadow
+															)
+														)}
+													>
 														{typeof col.cell === "function" ? col.cell(row, i, helpers) : value}
 													</TableCell>
 												);
@@ -675,7 +675,7 @@ export default function DataTable({
 			<AnimatePresence>
 				{imgModal.open && (
 					<Dialog open={imgModal.open} onOpenChange={(open) => (!open ? closeImage() : null)}>
-						<DialogContent showCloseButton={false} className="max-w-6xl p-0 overflow-hidden bg-white dark:bg-slate-900 border-2 border-gray-300 dark:border-slate-700 shadow-2xl rounded-xl">
+						<DialogContent showCloseButton={false} className="max-w-6xl p-0 overflow-hidden border-2 border-gray-300 dark:border-slate-700 shadow-2xl rounded-xl">
 							{/* Header */}
 							<motion.div
 								initial={{ opacity: 0, y: -20 }}

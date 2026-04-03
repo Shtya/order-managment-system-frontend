@@ -21,7 +21,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import Flatpickr from "react-flatpickr";
-import "flatpickr/dist/flatpickr.min.css";
+
 
 import useProductsTab, { ProductViewModal } from "./ProductsTab";
 import useBundlesTab, { BundleViewModal } from "./BundlesTab";
@@ -83,7 +83,7 @@ function FiltersPanel({ t, value, onChange, onApply, onReset, categories, stores
 			exit={{ height: 0, opacity: 0, y: -6 }}
 			transition={{ duration: 0.25 }}
 		>
-			<div className="bg-card !p-4 mt-4">
+			<div className="main-card !p-4 mt-4">
 				<div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
 					{!isBundle && (
 						<>
@@ -757,7 +757,7 @@ export default function ProductsPage() {
 function ConfirmDialog({ open, onOpenChange, title, description, confirmText, cancelText, onConfirm, loading = false }) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="!max-w-md bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800">
+			<DialogContent className="!max-w-md  rounded-xl border">
 				<div className="space-y-2">
 					<h3 className="text-base font-semibold text-gray-900 dark:text-slate-100">{title}</h3>
 					{description ? <p className="text-sm text-gray-500 dark:text-slate-400">{description}</p> : null}

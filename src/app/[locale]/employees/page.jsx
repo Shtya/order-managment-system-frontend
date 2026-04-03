@@ -892,7 +892,7 @@ function ConfirmDeleteDialog({ t, open, onOpenChange, employee, onConfirm, loadi
 	return (
 		<AlertDialog open={open} onOpenChange={onOpenChange}>
 			<AlertDialogContent className="rounded-xl">
-				<AlertDialogHeader className="text-right">
+				<AlertDialogHeader>
 					<AlertDialogTitle>{t("delete.title") || t("actions.delete")}</AlertDialogTitle>
 					<AlertDialogDescription>
 						{employee ? `${employee.name} — ${employee.email}` : ""}

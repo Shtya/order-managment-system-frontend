@@ -3991,7 +3991,8 @@
       "distributionComingSoon": "Order Distribution",
       "returnsComingSoon": "Return Requests",
       "replacementComingSoon": "Replacement Requests",
-      "comingSoonDesc": "This section is under development and will be available soon."
+      "comingSoonDesc": "This section is under development and will be available soon.",
+      "rejected": "Rejected Orders"
     },
     "image": {
       "preview": "Preview"

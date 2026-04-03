@@ -677,7 +677,7 @@ function SectionCard({
   children,
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card !p-0 ">
+    <div className="rounded-xl border border-border main-card !p-0 ">
       <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-muted/30">
         <div
           className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0"

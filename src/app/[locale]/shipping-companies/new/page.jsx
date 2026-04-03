@@ -101,7 +101,7 @@ export default function AddShippingCompanyPage() {
 			className="min-h-screen p-5"
 		>
 			{/* Header */}
-			<div className="bg-card mb-6">
+			<div className="main-card mb-6">
 				<div className="flex items-center justify-between">
 					{/* Breadcrumb */}
 					<div className="flex items-center gap-2 text-lg font-semibold">
@@ -160,7 +160,7 @@ export default function AddShippingCompanyPage() {
 			<div className="max-w-4xl mx-auto space-y-6">
 				{/* Company Name & City Selection */}
 				<motion.div
-					className="bg-card"
+					className="main-card"
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ delay: 0.2 }}
@@ -224,7 +224,7 @@ export default function AddShippingCompanyPage() {
 								initial={{ opacity: 0, y: 20 }}
 								animate={{ opacity: 1, y: 0 }}
 								transition={{ delay: 0.3 + index * 0.1 }}
-								className="bg-card"
+								className="main-card"
 							>
 								<div className="flex items-center justify-between mb-4">
 									<div className="flex items-center gap-3">
@@ -304,7 +304,7 @@ export default function AddShippingCompanyPage() {
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						transition={{ delay: 0.3 }}
-						className="bg-card text-center py-12"
+						className="main-card text-center py-12"
 					>
 						<div className="text-gray-400 dark:text-slate-500 mb-2">
 							{t("form.noCitiesSelected")}

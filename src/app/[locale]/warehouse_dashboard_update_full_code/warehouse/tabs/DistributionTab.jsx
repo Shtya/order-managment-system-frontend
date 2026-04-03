@@ -1,5 +1,5 @@
 /* 
-	 i need form you take form this page the 
+   i need form you take form this page the 
 */
 
 "use client";
@@ -46,7 +46,7 @@ function OrderDetailsDialog({ order, open, onClose, t }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto rounded-3xl bg-white p-0 dark:bg-slate-900" dir="rtl">
+      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto rounded-3xl  p-0" dir="rtl">
         <DialogHeader className="border-b border-border px-6 py-5">
           <DialogTitle className="flex items-center gap-2 text-lg font-black text-foreground">
             <Package size={20} className="text-primary" />
@@ -152,7 +152,7 @@ function AssignCarrierDialog({ open, onClose, orders, selectedOrderCodes, update
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto rounded-3xl bg-white p-0 dark:bg-slate-900" dir="rtl">
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto rounded-3xl  p-0" dir="rtl">
         <DialogHeader className="border-b border-border px-6 py-5">
           <DialogTitle className="flex items-center gap-2 text-lg font-black text-foreground">
             <Truck size={20} className="text-primary" />
@@ -225,7 +225,7 @@ function RejectOrderDialog({ open, onClose, orderCode, rejectOrder, t }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg rounded-3xl bg-white p-0 dark:bg-slate-900" dir="rtl">
+      <DialogContent className="max-w-lg rounded-3xl  p-0" dir="rtl">
         <DialogHeader className="border-b border-border px-6 py-5">
           <DialogTitle className="flex items-center gap-2 text-lg font-black text-foreground">
             <Ban size={20} className="text-red-500" />
@@ -457,7 +457,7 @@ function DistributionOrdersTable({ type, orders, updateOrder, pushOp, rejectOrde
       <Table
         searchValue={search}
         onSearchChange={setSearch}
-        onSearch={() => {}}
+        onSearch={() => { }}
         labels={{
           searchPlaceholder: t(`search.${type}`),
           filter: t("common.filter"),
@@ -481,11 +481,11 @@ function DistributionOrdersTable({ type, orders, updateOrder, pushOp, rejectOrde
             label: t("actions.export"),
             icon: <FileDown size={14} />,
             color: "blue",
-            onClick: () => {},
+            onClick: () => { },
           },
         ]}
         hasActiveFilters={hasActiveFilters}
-        onApplyFilters={() => {}}
+        onApplyFilters={() => { }}
         filters={
           <>
             {isAssigned ? (
@@ -531,7 +531,7 @@ function DistributionOrdersTable({ type, orders, updateOrder, pushOp, rejectOrde
               </Select>
             </FilterField>
 
-            <FilterField label={t("fields.product") }>
+            <FilterField label={t("fields.product")}>
               <Select value={filters.product} onValueChange={(value) => setFilters((current) => ({ ...current, product: value }))}>
                 <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
                   <SelectValue placeholder={t("filters.allProducts")} />
@@ -619,7 +619,7 @@ export default function DistributionTab({ orders, updateOrder, pushOp, rejectOrd
           { name: t("breadcrumbs.orders"), href: "/orders" },
           { name: t("breadcrumbs.distribution") },
         ]}
-        buttons={<Button_ size="sm" label={t("actions.help")} variant="ghost" onClick={() => {}} icon={<Info size={16} />} />}
+        buttons={<Button_ size="sm" label={t("actions.help")} variant="ghost" onClick={() => { }} icon={<Info size={16} />} />}
         stats={stats}
         items={[
           { id: "unassigned", label: t("tabs.unassigned"), count: unassigned.length, icon: Ban },

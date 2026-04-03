@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import Flatpickr from "react-flatpickr";
-import "flatpickr/dist/themes/material_blue.css";
+
 import {
   User,
   Calendar,
@@ -556,7 +556,8 @@ export default function SubscriptionsTab() {
                   dateFormat: "Y-m-d",
                   maxDate: "today",
                 }}
-                className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:border-[var(--primary)] transition-all"
+                data-size="default"
+                className={"theme-field"}
                 placeholder={t("filters.datePlaceholder")}
               />
             </FilterField>

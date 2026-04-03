@@ -134,7 +134,7 @@ export default function SuppliersPage() {
 		})();
 	}, []);
 
-	const {formatCurrency} = usePlatformSettings()
+	const { formatCurrency } = usePlatformSettings()
 	const statsCards = useMemo(
 		() => [
 			{
@@ -644,7 +644,7 @@ function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess, t, countr
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="!max-w-3xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900">
+			<DialogContent className="!max-w-3xl max-h-[90vh] overflow-y-auto">
 				<DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
 					<DialogTitle className="text-xl font-bold flex items-center gap-2">
 						<User className="w-6 h-6 text-primary" />
@@ -828,10 +828,10 @@ function CopyButton({ text }) {
 function ViewSupplierDialog({ open, onOpenChange, supplier, t }) {
 	const tCommon = useTranslations("common");
 	if (!supplier) return null;
-const {formatCurrency} = usePlatformSettings()
+	const { formatCurrency } = usePlatformSettings()
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="!max-w-3xl bg-white dark:bg-slate-900 max-h-[90vh] overflow-y-auto">
+			<DialogContent className="!max-w-3xl  max-h-[90vh] overflow-y-auto">
 				<DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
 					<DialogTitle className="text-xl font-bold flex items-center gap-2">
 						<Eye className="w-6 h-6 text-primary" />
@@ -940,7 +940,7 @@ const {formatCurrency} = usePlatformSettings()
 function ConfirmDialog({ open, onOpenChange, title, description, confirmText, cancelText, onConfirm, loading = false }) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="!max-w-md bg-white dark:bg-slate-900 rounded-xl">
+			<DialogContent className="!max-w-md rounded-xl">
 				<div className="space-y-4 ">
 					<h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">{title}</h3>
 					{description && <p className="text-sm text-gray-500 dark:text-slate-400">{description}</p>}
@@ -993,7 +993,7 @@ function SuppliersTableToolbar({ t, searchValue, onSearchChange, onExport, isFil
 function FiltersPanel({ t, value, onChange, onApply, categories }) {
 	return (
 		<motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
-			<div className="bg-card !p-4 mt-4">
+			<div className="main-card !p-4 mt-4">
 				<div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
 					<div className="space-y-2">
 						<Label>{t("filters.supplierName")}</Label>

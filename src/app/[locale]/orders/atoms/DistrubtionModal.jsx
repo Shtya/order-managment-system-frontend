@@ -957,7 +957,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 														initial={{ opacity: 0, y: 10 }}
 														animate={{ opacity: 1, y: 0 }}
 														exit={{ opacity: 0, scale: 0.96 }}
-														className="rounded-xl border border-border !p-0 bg-card overflow-hidden shadow-sm"
+														className="rounded-xl border border-border !p-0 main-card overflow-hidden shadow-sm"
 													>
 														{/* Block header strip */}
 														<div className="flex items-center justify-between px-4 py-3
@@ -1184,7 +1184,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 												{autoEmployeesLoading ? (
 													<div className="p-3 space-y-2">
 														{[...Array(3)].map((_, i) => (
-															<div key={i} className="flex items-center justify-between !p-3 rounded-xl bg-card animate-pulse">
+															<div key={i} className="flex items-center justify-between !p-3 rounded-xl main-card animate-pulse">
 																<div className="space-y-1.5">
 																	<div className="h-3.5 w-28 bg-muted rounded" />
 																	<div className="h-2.5 w-20 bg-muted rounded" />
@@ -1214,7 +1214,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 																animate={{ opacity: 1, x: 0 }}
 																transition={{ delay: idx * 0.04 }}
 																className="flex items-center justify-between !px-3 !py-2.5 rounded-xl
-																	bg-card border border-transparent
+																	main-card border border-transparent
 																	hover:border-primary/20  /25
 																	transition-colors"
 															>

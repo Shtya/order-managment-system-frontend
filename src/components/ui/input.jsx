@@ -65,7 +65,7 @@ function Input({
 					<span
 						aria-hidden
 						className="pointer-events-none absolute inset-y-0 end-3.5 z-10 flex items-center
-                       text-muted-foreground/80group-focus-within:text-[var(--primary)]
+                       text-muted-foreground/80 group-focus-within:text-[var(--primary)]
                        dark:group-focus-within:text-[#5b4bff] transition-colors duration-200"
 					>
 						{endIcon}

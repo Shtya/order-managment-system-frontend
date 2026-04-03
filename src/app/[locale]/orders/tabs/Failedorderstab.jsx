@@ -35,7 +35,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import api from "@/utils/api";
 import Flatpickr from "react-flatpickr";
-import "flatpickr/dist/flatpickr.min.css";
+
 
 // ── Shared Table system ──────────────────────────────────────────────────────
 import Table, { FilterField } from "@/components/atoms/Table";
@@ -269,7 +269,7 @@ export function FailedOrdersTab() {
     try {
       const { data } = await api.get("/stores", { params: { limit: 200 } });
       setStores(Array.isArray(data.records) ? data.records : []);
-    } catch (_) {}
+    } catch (_) { }
   }, []);
 
   // ── Build query params ───────────────────────────────────────────────────
@@ -756,10 +756,8 @@ export function FailedOrdersTab() {
                   dateFormat: "Y-m-d",
                   maxDate: "today",
                 }}
-                className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm
-                  text-foreground focus:outline-none
-                  focus:border-[var(--primary)] dark:focus:border-[#5b4bff]
-                  transition-all duration-200"
+                data-size="default"
+                className={"theme-field"}
                 placeholder={t("filters.datePlaceholder")}
               />
             </FilterField>

@@ -863,7 +863,7 @@ export default function ShippingCompaniesPage() {
 					animate={{ opacity: 1, y: 0 }}
 					exit={{ opacity: 0, y: -20 }}
 					transition={{ duration: 0.3 }}
-					className="bg-card min-h-[600px] "
+					className="main-card min-h-[600px] "
 				>
 					<div className="grid grid-cols-1 md:grid-colls-2 lg:grid-cols-3 gap-6">
 						{statusLoading

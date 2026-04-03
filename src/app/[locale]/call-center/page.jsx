@@ -16,7 +16,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
 import api from "@/utils/api";
-import "flatpickr/dist/flatpickr.min.css";
+
 
 // ── Shared Table system ──────────────────────────────────────────────────────
 import Table from "@/components/atoms/Table";

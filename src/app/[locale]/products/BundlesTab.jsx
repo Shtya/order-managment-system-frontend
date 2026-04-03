@@ -444,7 +444,7 @@ function BundleModalSkeleton() {
   return (
     <div className="space-y-5 animate-pulse">
       {/* Bundle Header Card */}
-      <div className="relative bg-card rounded-2xl border border-border/50 overflow-hidden p-5">
+      <div className="relative main-card rounded-2xl border border-border/50 overflow-hidden p-5">
         <div className="h-[3px] rounded-full bg-muted/40 -mx-5 -mt-5 mb-5" />
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-3 flex-1">

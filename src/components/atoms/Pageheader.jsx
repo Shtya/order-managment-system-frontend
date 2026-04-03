@@ -372,6 +372,7 @@ export function PageHeaderStatsSkeleton({ count = 6 }) {
 	 STATS GRID WITH COLLAPSE/EXPAND
 ══════════════════════════════════════════════════════════════ */
 export function StatsGrid({ stats }) {
+	const t = useTranslations("common");
 	const [isExpanded, setIsExpanded] = useState(false);
 
 	if (!stats) return null;
@@ -492,8 +493,8 @@ export function StatsGrid({ stats }) {
 						{/* Text */}
 						<span>
 							{isExpanded
-								? 'إخفاء الإحصائيات'
-								: `عرض كل الإحصائيات`
+								? t("stats.hide")
+								: t("stats.showAll")
 							}
 						</span>
 

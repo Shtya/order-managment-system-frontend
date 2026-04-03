@@ -208,7 +208,6 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
 
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [filtersOpen, setFiltersOpen] = useState(false);
   const [distributionOpen, setDistributionOpen] = useState(false);
   const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
   const [filters, setFilters] = useState({
@@ -810,14 +809,6 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
           preview: t("image.preview"),
         }}
         actions={[
-          {
-            key: "distribute",
-            label: t("toolbar.distribute"),
-            icon: <Users size={15} />,
-            color: "emerald",
-            onClick: () => setDistributionOpen(true),
-            permission: "order.assign",
-          },
           {
             key: "export",
             label: t("toolbar.export"),

@@ -164,7 +164,7 @@ const PDF_STYLE = `
 // ─────────────────────────────────────────────────────────────
 // MAIN LOGS TAB
 // ─────────────────────────────────────────────────────────────
-export function LogsTab({ orders = [] }) {
+export default function LogsTab({ orders = [] }) {
   const t = useTranslations("warehouse.logs");
   const { formatCurrency } = usePlatformSettings();
 

@@ -54,6 +54,8 @@ import {
   X,
   Globe,
   Lock,
+  PackageCheck,
+  Headset,
 } from "lucide-react";
 import { FaUserTie } from "react-icons/fa6";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -510,6 +512,19 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       permission: "dashboard.read",
     },
     {
+      icon: Headset,
+      labelKey: "callCenter",
+      href: "/call-center",
+      roles: ["ADMIN"],
+      permission: "orders.read",
+    },
+    {
+      icon: PackageCheck,
+      labelKey: "orders-assign-to-you",
+      href: "/orders/employee-orders",
+      permission: "orders.read",
+    },
+    {
       icon: ShoppingCart,
       labelKey: "orders",
       href: "/orders",
@@ -524,37 +539,17 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
         // },
         {
           icon: XCircle,
+          labelKey: "warehouseRejected",
+          href: "/orders?tab=rejected",
+        },
+        {
+          icon: XCircle,
           labelKey: "failedOrders",
           href: "/orders?tab=failedOrders",
         },
       ],
     },
-    {
-      icon: ShoppingCart,
-      labelKey: "orders-assign-to-you",
-      href: "/orders/employee-orders",
-      roles: ["NEW ROLE"],
-      permission: "orders.read",
-    },
-    {
-      icon: Wallet,
-      labelKey: "accounts",
-      href: "/collections",
-      roles: ["ADMIN"],
-      permission: "orders-collect.read",
-      children: [
-        {
-          icon: CheckCircle2,
-          labelKey: "collectedOrders",
-          href: "/orders/collections?tab=collected",
-        },
-        {
-          icon: AlertCircle,
-          labelKey: "uncollectedOrders",
-          href: "/orders/collections?tab=not_collected",
-        },
-      ],
-    },
+
     {
       icon: Warehouse,
       labelKey: "manageWarehouse",
@@ -562,7 +557,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       roles: ["ADMIN"],
       permission: "warehouses.read",
       children: [
-        ...(shippingCompanies?.length > 1 ? [{
+        ...(shippingCompanies?.length > 1 || !shippingCompanies ? [{
           icon: Truck,
           labelKey: "warehouseDistribution",
           href: "/warehouse?tab=distribution",
@@ -587,11 +582,11 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           labelKey: "warehouseReturns",
           href: "/warehouse?tab=returns",
         },
-        {
-          icon: XCircle,
-          labelKey: "warehouseRejected",
-          href: "/warehouse?tab=rejected",
-        },
+        // {
+        //   icon: XCircle,
+        //   labelKey: "warehouseRejected",
+        //   href: "/warehouse?tab=rejected",
+        // },
         {
           icon: ClipboardList,
           labelKey: "warehouseLogs",
@@ -611,18 +606,6 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
         { icon: Layers, labelKey: "newBundle", href: "/bundles/new" },
       ],
     },
-    // { icon: TrendingUp, labelKey: 'sales', href: '/sales', roles: ['ADMIN'] },
-    {
-      icon: FileText,
-      labelKey: "purchases",
-      href: "/purchases",
-      roles: ["ADMIN"],
-      permission: "purchases.read",
-      // children: [
-      //   { icon: FileText, labelKey: "purchases", href: "/purchases" },
-      //   // { icon: Undo2, labelKey: "purchasesReturn", href: "/purchases/return" },
-      // ],
-    },
     {
       icon: Factory,
       labelKey: "suppliers",
@@ -639,13 +622,32 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       ],
     },
     {
-      icon: FaUserTie,
-      labelKey: "employees",
-      href: "/employees",
+      icon: FileText,
+      labelKey: "purchases",
+      href: "/purchases",
       roles: ["ADMIN"],
-      permission: "users.read",
+      permission: "purchases.read",
+      // children: [
+      //   { icon: FileText, labelKey: "purchases", href: "/purchases" },
+      //   // { icon: Undo2, labelKey: "purchasesReturn", href: "/purchases/return" },
+      // ],
     },
 
+    // { icon: TrendingUp, labelKey: 'sales', href: '/sales', roles: ['ADMIN'] },
+    {
+      icon: Truck,
+      labelKey: "shippingCompanies",
+      href: "/shipping-companies",
+      roles: ["ADMIN"],
+      permission: "shipping-companies.read",
+    },
+    {
+      icon: Plug,
+      labelKey: "storeIntegration",
+      href: "/store-integration",
+      roles: ["ADMIN"],
+      permission: "stores.read",
+    },
     {
       icon: BarChart3,
       labelKey: "reports",
@@ -665,22 +667,35 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
         },
       ],
     },
+
     {
-      icon: Truck,
-      labelKey: "shippingCompanies",
-      href: "/shipping-companies",
+      icon: Wallet,
+      labelKey: "accounts",
+      href: "/collections",
       roles: ["ADMIN"],
-      permission: "shipping-companies.read",
-    },
-    {
-      icon: Plug,
-      labelKey: "storeIntegration",
-      href: "/store-integration",
-      roles: ["ADMIN"],
-      permission: "stores.read",
+      permission: "orders-collect.read",
+      children: [
+        {
+          icon: CheckCircle2,
+          labelKey: "collectedOrders",
+          href: "/orders/collections?tab=collected",
+        },
+        {
+          icon: AlertCircle,
+          labelKey: "uncollectedOrders",
+          href: "/orders/collections?tab=not_collected",
+        },
+      ],
     },
     { icon: Wallet, labelKey: "wallet", href: "/wallet", roles: ["ADMIN"], permission: "wallet.read" },
     { icon: CreditCard, labelKey: "plans", href: "/plans", roles: ["ADMIN"], permission: "plans.read" },
+    {
+      icon: FaUserTie,
+      labelKey: "employees",
+      href: "/employees",
+      roles: ["ADMIN"],
+      permission: "users.read",
+    },
     { icon: Shield, labelKey: "roles", href: "/roles", roles: ["ADMIN"], permission: "roles.read" },
     { icon: Settings, labelKey: "settings", href: "/settings", roles: ["ADMIN"], permission: "admin-settings.read" },
     {
@@ -707,15 +722,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       href: "/dashboard/settings",
       roles: ["SUPER_ADMIN"],
     },
-    {
-      icon: ShoppingCart,
-      labelKey: "orders",
-      href: "/orders",
-      badge: "12",
-      roles: ["USER"],
-      permission: "orders.read",
-      children: [{ icon: Package, labelKey: "employeeOrders", href: "/orders" }],
-    },
+
   ], [shippingCompanies?.length]);
 
   useEffect(() => {
@@ -732,6 +739,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
 
     return menuItems.filter((item) => {
       // 1. Check Roles
+      console.log("checking item:", item.labelKey, item.roles?.length, item.roles);
       const hasRole = !item.roles?.length || item.roles.includes(userRole?.toUpperCase());
       if (!hasRole) return false;
 

@@ -28,8 +28,7 @@ import PrintLabelsTab from "./tabs/PrintLabelsTab";
 import PreparationTab from "./tabs/PreparationTab";
 import OutgoingTab from "./tabs/OutgoingTab";
 import ReturnsTab from "./tabs/ReturnsTab";
-import { RejectedTab } from "./tabs/RejectedTab";
-import { LogsTab } from "./tabs/LogsTab";
+import LogsTab from "./tabs/LogsTab";
 import MultiPrepareView from "./atoms/MultiPrepareView";
 
 import {
@@ -459,10 +458,6 @@ export default function WarehouseFlowPage() {
               returnFiles={returnFiles} addReturnFile={addReturnFile}
               subtab={activeSubtab} setSubtab={setActiveSubtab}
             />
-          )}
-
-          {activeTab === "rejected" && (
-            <RejectedTab />
           )}
 
           {activeTab === "logs" && (

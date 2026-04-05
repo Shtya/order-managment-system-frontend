@@ -59,7 +59,7 @@ export default function CallCenterPage() {
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [distributionOpen, setDistributionOpen] = useState(false);
     // Get today's date in YYYY-MM-DD format
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toLocaleDateString();
     const [stats, setStats] = useState([]);
     const [statsData, setStatsData] = useState({
         new: 0,

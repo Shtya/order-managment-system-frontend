@@ -57,6 +57,7 @@ import {
   PackageCheck,
   Headset,
   RefreshCcw,
+  Receipt,
 } from "lucide-react";
 import { FaUserTie } from "react-icons/fa6";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -677,6 +678,11 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       roles: ["ADMIN"],
       permission: "orders-collect.read",
       children: [
+        {
+          icon: Receipt,
+          labelKey: "accounts",
+          href: "/accounts?tab=overview",
+        },
         {
           icon: CheckCircle2,
           labelKey: "collectedOrders",

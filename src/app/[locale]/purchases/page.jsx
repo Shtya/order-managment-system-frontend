@@ -180,8 +180,8 @@ function FiltersPanel({ t, value, onChange, onApply, suppliers }) {
 							onChange={([start, end]) => {
 								onChange({
 									...value,
-									startDate: start ? start.toISOString().split("T")[0] : null,
-									endDate: end ? end.toISOString().split("T")[0] : null,
+									startDate: start ? start.toLocaleDateString() : null,
+									endDate: end ? end.toLocaleDateString() : null,
 								});
 							}}
 							options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
@@ -1621,8 +1621,8 @@ export default function PurchasesPage() {
 								onChange={([start, end]) => {
 									setFilters((f) => ({
 										...f,
-										startDate: start ? start.toISOString().split("T")[0] : null,
-										endDate: end ? end.toISOString().split("T")[0] : null,
+										startDate: start ? start.toLocaleDateString() : null,
+										endDate: end ? end.toLocaleDateString() : null,
 									}));
 								}}
 								options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}

@@ -402,8 +402,8 @@ export default function DashboardPage() {
             onChange={([s, e]) => {
               setFilters((f) => ({
                 ...f,
-                startDate: s ? s.toISOString().split("T")[0] : null,
-                endDate: e ? e.toISOString().split("T")[0] : null,
+                startDate: s ? s.toLocaleDateString() : null,
+                endDate: e ? e.toLocaleDateString() : null,
               }));
               setQuickRange(null);
             }}

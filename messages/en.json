@@ -2930,6 +2930,7 @@
       "invoiceNumber": "Invoice Number",
       "returnReason": "Return Reason",
       "returnType": "Return Type",
+      "paidAmount": "Refunded Amount",
       "safe": "Safe"
     },
     "placeholders": {
@@ -2958,7 +2959,8 @@
       "addProducts": "Add Products",
       "productsTable": "Products Table",
       "notes": "Notes",
-      "summaryTitle": "Return Summary"
+      "summaryTitle": "Return Summary",
+      "receiptImage": "Receipt Image"
     },
     "table": {
       "sku": "SKU",
@@ -2981,7 +2983,15 @@
     },
     "yes": "Yes",
     "no": "No",
-    "currency": "EGP"
+    "currency": "EGP",
+    "messages": {
+      "createSuccess": "Return invoice created successfully",
+      "createFailed": "Failed to create return invoice",
+      "creatingReturn": "Creating return invoice..."
+    },
+    "upload": {
+      "receiptAlt": "invoice"
+    }
   },
   "salesInvoices": {
     "breadcrumb": {
@@ -3590,7 +3600,10 @@
     "unitCostRequired": "Unit cost is required",
     "quantityMinimum": "Quantity must be at least 1",
     "quantityRequired": "Quantity is required",
-    "productRequired": "Product is required"
+    "productRequired": "Product is required",
+    "returnNumberRequired": "Return number is required",
+    "returnTypeRequired": "Return type is required",
+    "taxRateRange": "Tax rate must be between 0 and 100"
   },
   "purchases": {
     "breadcrumb": {
@@ -3744,6 +3757,180 @@
     },
     "empty": "No purchase invoices found",
     "currency": "EGP"
+  },
+  "purchasesReturn": {
+    "breadcrumb": {
+      "home": "Home",
+      "returns": "Purchase Returns"
+    },
+    "common": {
+      "total": "Total",
+      "limit": "Limit",
+      "save": "Save",
+      "notSpecified": "Not Specified"
+    },
+    "actions": {
+      "createReturn": "Create New Return",
+      "howToUse": "How to Use",
+      "view": "View Details",
+      "viewDesc": "View return details",
+      "logs": "Audit Logs",
+      "auditLogs": "Audit Logs",
+      "auditLogsDesc": "View return audit history",
+      "editPaidAmount": "Edit Refunded Amount",
+      "updatePaidAmount": "Update Refunded Amount",
+      "updatePaidAmountDesc": "Adjust the refunded amount",
+      "accept": "Accept Return",
+      "approve": "Approve",
+      "approveDesc": "Approve this return",
+      "suspend": "Suspend",
+      "reject": "Reject",
+      "rejectDesc": "Reject this return",
+      "changeStatus": "Change Status",
+      "makePending": "Move to Pending",
+      "makePendingDesc": "Send the return back to pending",
+      "cancel": "Cancel",
+      "save": "Save",
+      "close": "Close"
+    },
+    "stats": {
+      "returnInvoicesCount": "Return Invoices Count",
+      "totalReturnValue": "Total Return Value"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Search by return or invoice number...",
+      "filter": "Filter",
+      "export": "Export"
+    },
+    "filters": {
+      "status": "Status",
+      "statusPlaceholder": "Select Status",
+      "statusAll": "All Statuses",
+      "statusPending": "Pending",
+      "statusApproved": "Approved",
+      "statusRejected": "Rejected",
+      "returnType": "Return Type",
+      "returnTypePlaceholder": "Select Type",
+      "returnTypeAll": "All Types",
+      "returnTypeCash": "Cash Refund",
+      "returnTypeBank": "Bank Transfer",
+      "returnTypeDeduct": "Deduct from Supplier Balance",
+      "supplier": "Supplier",
+      "supplierPlaceholder": "Select Supplier",
+      "all": "All Suppliers",
+      "apply": "Apply"
+    },
+    "table": {
+      "lineTax": "Tax",
+      "yes": "Yes",
+      "no": "No",
+      "returnedQuantity": "Returned Quantity",
+      "unitCost": "Unit Cost",
+      "taxInclusive": "Tax Inclusive",
+      "taxRate": "Tax Rate",
+      "name": "Product Name",
+      "sku": "SKU",
+      "returnNumber": "Return Number",
+      "invoiceNumber": "Invoice Number",
+      "returnDate": "Return Date",
+      "status": "Status",
+      "createdBy": "Created By",
+      "supplierName": "Supplier Name",
+      "returnType": "Return Type",
+      "subtotal": "Subtotal",
+      "tax": "Tax",
+      "paidAmount": "Refunded Amount",
+      "quantityCount": "Quantity Count",
+      "totalReturn": "Total Return",
+      "receipt": "Receipt",
+      "options": "Options",
+      "noReceipt": "No Receipt",
+      "actions": "Actions",
+      "remainingAmount": "Remaining Amount"
+    },
+    "statuses": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "rejected": "Rejected"
+    },
+    "returnTypes": {
+      "cashRefund": "Cash Refund",
+      "bankTransfer": "Bank Transfer",
+      "supplierDeduction": "Supplier Deduction"
+    },
+    "logs": {
+      "title": "Audit Logs",
+      "description": "Audit trail for this return",
+      "empty": "No logs found",
+      "showDetails": "Show Details"
+    },
+    "acceptPreview": {
+      "title": "Acceptance Preview",
+      "returnNumber": "Return Number",
+      "loading": "Loading preview...",
+      "empty": "No preview available",
+      "emptyDescription": "No items were found for this return.",
+      "totalItems": "Total Items",
+      "totalQuantityToRemove": "Total Quantity to Remove",
+      "sku": "SKU",
+      "stockBefore": "Stock Before",
+      "removeQty": "Removed Quantity",
+      "stockAfter": "Stock After",
+      "hasErrors": "Errors found",
+      "hasErrorsDescription": "Fix item errors before accepting this return.",
+      "previewReady": "Preview ready",
+      "apply": "Apply Acceptance"
+    },
+    "details": {
+      "title": "Return Details",
+      "returnNumber": "Return Number",
+      "supplier": "Supplier",
+      "noSupplier": "No supplier",
+      "safe": "Safe",
+      "date": "Date",
+      "status": "Status",
+      "items": "Items",
+      "receiptAsset": "Receipt",
+      "receiptAlt": "Receipt",
+      "openPdf": "Open PDF",
+      "openAsset": "Open Asset",
+      "notes": "Notes"
+    },
+    "updatePaidAmount": {
+      "title": "Update Refunded Amount",
+      "description": "Enter the new refunded amount for this return.",
+      "paidAmount": "Refunded Amount"
+    },
+    "summary": {
+      "subtotal": "Subtotal",
+      "paidAmount": "Refunded Amount",
+      "remainingAmount": "Remaining Amount",
+      "totalReturn": "Total Return",
+      "tax": "Tax"
+    },
+    "empty": "No purchase returns found",
+    "messages": {
+      "statsError": "Failed to load statistics",
+      "returnsError": "Failed to load returns data",
+      "statusUpdated": "Return status updated successfully",
+      "statusFailed": "Failed to update return status",
+      "statusUpdateFailed": "Failed to update return status",
+      "paidAmountUpdated": "Refunded amount updated successfully",
+      "paidAmountFailed": "Failed to update refunded amount",
+      "updatePaidAmountSuccess": "Refunded amount updated successfully",
+      "updatePaidAmountFailed": "Failed to update refunded amount",
+      "fetchDetailsFailed": "Failed to load return details",
+      "detailsFailed": "Failed to load return details",
+      "previewFailed": "Failed to load accept preview",
+      "logsFailed": "Failed to load audit logs",
+      "updatingStatus": "Updating status...",
+      "acceptTitle": "Accept Return",
+      "acceptWarning": "This will deduct stock for all items in this return. Are you sure?",
+      "rejectTitle": "Reject Return",
+      "rejectWarning": "Are you sure you want to reject this return?",
+      "suspendTitle": "Suspend Return",
+      "suspendWarning": "This will move the return back to pending status. Are you sure?"
+    }
   },
   "purchaseInvoice": {
     "current_price": "Current Price",

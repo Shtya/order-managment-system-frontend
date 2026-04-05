@@ -630,10 +630,10 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       href: "/purchases",
       roles: ["ADMIN"],
       permission: "purchases.read",
-      // children: [
-      //   { icon: FileText, labelKey: "purchases", href: "/purchases" },
-      //   // { icon: Undo2, labelKey: "purchasesReturn", href: "/purchases/return" },
-      // ],
+      children: [
+        { icon: FileText, labelKey: "purchases", href: "/purchases" },
+        { icon: Undo2, labelKey: "purchasesReturn", href: "/purchases/return" },
+      ],
     },
 
     // { icon: TrendingUp, labelKey: 'sales', href: '/sales', roles: ['ADMIN'] },

@@ -483,8 +483,6 @@ function LogsModalSkeleton() {
 
 
 
-
-
 function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 	const [loading, setLoading] = useState(false);
 	const [preview, setPreview] = useState(null);

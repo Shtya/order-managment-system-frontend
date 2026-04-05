@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, Info, Save, Trash2 } from "lucide-react";
+import { ChevronLeft, Info, Save, Trash2, Upload, FileText, X } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -20,38 +20,71 @@ import api from "@/utils/api";
 import { ProductSkuSearchPopover } from "@/components/molecules/ProductSkuSearchPopover";
 import PageHeader from "@/components/atoms/Pageheader";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
-
-// Validation schema
-const schema = yup.object({
-	returnNumber: yup.string().required("Return number is required"),
-	supplierId: yup.string().optional(),
-	supplierNameSnapshot: yup.string().optional(),
-	supplierCodeSnapshot: yup.string().optional(),
-	invoiceNumber: yup.string().optional(),
-	returnReason: yup.string().optional(),
-	safeId: yup.string().optional(),
-	returnType: yup.string().required("Return type is required"),
-	notes: yup.string().optional(),
-	items: yup
-		.array()
-		.of(
-			yup.object({
-				variantId: yup.number().required(),
-				returnedQuantity: yup.number().min(1).required(),
-				unitCost: yup.number().min(0).required(),
-				taxInclusive: yup.boolean().optional(),
-				taxRate: yup.number().min(0).max(100).optional(),
-			})
-		)
-		.min(1, "At least one item is required"),
-});
+import { cn } from "@/utils/cn";
 
 export default function CreateReturnInvoicePage() {
 	const navigate = useRouter();
 	const locale = useLocale();
 	const isRTL = locale === "ar";
+	const tValidation = useTranslations("validation");
 	const t = useTranslations("returnInvoice");
 	const { formatCurrency } = usePlatformSettings();
+
+	const [receiptImage, setReceiptImage] = useState(null);
+
+	const MAX_RECEIPT_MB = 5;
+	const ALLOWED_RECEIPT_TYPES = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+
+	const schema = useMemo(
+		() =>
+			yup.object({
+				returnNumber: yup.string().required(tValidation("returnNumberRequired")),
+				supplierId: yup.string().optional(),
+				supplierNameSnapshot: yup.string().optional(),
+				supplierCodeSnapshot: yup.string().optional(),
+				invoiceNumber: yup.string().optional(),
+				returnReason: yup.string().optional(),
+				safeId: yup.string().optional(),
+				returnType: yup.string().optional().nullable(),
+				notes: yup.string().optional(),
+				paidAmount: yup
+					.number()
+					.transform((value, originalValue) => {
+						// يحول string لرقم
+						if (originalValue === "" || originalValue === null || originalValue === undefined) return 0;
+						const n = Number(originalValue);
+						return Number.isFinite(n) ? n : 0;
+					})
+					.min(0, tValidation("mustBePositive"))
+					.optional(),
+				items: yup
+					.array()
+					.of(
+						yup.object({
+							variantId: yup.number().required(tValidation("productRequired")),
+							returnedQuantity: yup
+								.number()
+								.transform((v, o) => (o === "" || o === null || o === undefined ? 0 : Number(o)))
+								.min(1, tValidation("quantityMinimum"))
+								.required(tValidation("quantityRequired")),
+							unitCost: yup
+								.number()
+								.transform((v, o) => (o === "" || o === null || o === undefined ? 0 : Number(o)))
+								.min(0, tValidation("mustBePositive"))
+								.required(tValidation("unitCostRequired")),
+							taxInclusive: yup.boolean().optional(),
+							taxRate: yup
+								.number()
+								.transform((v, o) => (o === "" || o === null || o === undefined ? 0 : Number(o)))
+								.min(0, tValidation("mustBePositive"))
+								.max(100, tValidation("taxRateRange"))
+								.optional(),
+						})
+					)
+					.min(1, tValidation("itemsRequired")),
+			}),
+		[tValidation]
+	);
 
 	const [suppliers, setSuppliers] = useState([]);
 	const [loading, setLoading] = useState(false);
@@ -72,14 +105,54 @@ export default function CreateReturnInvoicePage() {
 			invoiceNumber: "",
 			returnReason: "",
 			safeId: "",
-			returnType: "cash_refund",
+			returnType: null,
 			notes: "",
+			paidAmount: 0,
 			items: [],
+			receiptAsset: null,
 		},
 	});
 
 	const watchedItems = watch("items");
 	const watchedSupplier = watch("supplierId");
+
+	const handleImageUpload = (e) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		// accept image/pdf
+		const okType = ALLOWED_RECEIPT_TYPES.includes(file.type);
+		if (!okType) {
+			toast.error(tValidation("invalidFileType") || "Invalid file type");
+			return;
+		}
+
+		if (file.size > MAX_RECEIPT_MB * 1024 * 1024) {
+			toast.error(tValidation("fileTooLarge") || "File too large");
+			return;
+		}
+
+		// لو PDF مش هنعمل preview image
+		if (file.type === "application/pdf") {
+			const pdfObj = { file, preview: null, name: file.name, isPdf: true };
+			setReceiptImage(pdfObj);
+			setValue("receiptAsset", pdfObj, { shouldValidate: true });
+			return;
+		}
+
+		const reader = new FileReader();
+		reader.onloadend = () => {
+			const obj = { file, preview: reader.result, name: file.name, isPdf: false };
+			setReceiptImage(obj);
+			setValue("receiptAsset", obj, { shouldValidate: true });
+		};
+		reader.readAsDataURL(file);
+	};
+
+	const handleRemoveImage = () => {
+		setReceiptImage(null);
+		setValue("receiptAsset", null, { shouldValidate: true });
+	};
 
 	// Fetch suppliers
 	useEffect(() => {
@@ -108,6 +181,8 @@ export default function CreateReturnInvoicePage() {
 	const handleDeleteProduct = (index) => {
 		const newItems = watchedItems.filter((_, i) => i !== index);
 		setValue("items", newItems);
+
+		setSelectSku((prev) => prev.filter((s) => s.id !== deletedItem.variantId));
 	};
 
 	// const handleSelectSku = (product, sku) => {
@@ -125,6 +200,7 @@ export default function CreateReturnInvoicePage() {
 
 	// 	setValue("items", [...watchedItems, newItem]);
 	// };
+	const [selectSku, setSelectSku] = useState([]); // array
 
 	const handleSelectSku = (sku) => {
 		const currentItems = watchedItems ?? [];
@@ -136,13 +212,15 @@ export default function CreateReturnInvoicePage() {
 
 		if (alreadyExists) return;
 
+
+		setSelectSku((prev) => [...prev, sku]);
 		const newItem = {
 			variantId: sku.id,
 			productName: sku.productName,
 			sku: sku.sku || sku.key,
 			attributes: sku.attributes || {},
 			returnedQuantity: 1,
-			unitCost: 0,
+			unitCost: sku.price,
 			taxInclusive: false,
 			taxRate: 5,
 		};
@@ -156,35 +234,49 @@ export default function CreateReturnInvoicePage() {
 		newItems[index] = { ...newItems[index], [field]: value };
 		setValue("items", newItems);
 	};
-
+	console.log(errors)
 	const onSubmit = async (data) => {
 		setLoading(true);
 		try {
-			const payload = {
-				returnNumber: data.returnNumber,
-				supplierId: data.supplierId ? Number(data.supplierId) : undefined,
-				supplierNameSnapshot: data.supplierNameSnapshot || undefined,
-				supplierCodeSnapshot: data.supplierCodeSnapshot || undefined,
-				invoiceNumber: data.invoiceNumber || undefined,
-				returnReason: data.returnReason || undefined,
-				safeId: data.safeId ? Number(data.safeId) : undefined,
-				returnType: data.returnType,
-				notes: data.notes || undefined,
-				items: data.items.map((item) => ({
-					variantId: item.variantId,
-					returnedQuantity: Number(item.returnedQuantity),
-					unitCost: Number(item.unitCost),
-					taxInclusive: Boolean(item.taxInclusive),
-					taxRate: Number(item.taxRate || 5),
-				})),
-			};
+			const fd = new FormData();
 
-			await api.post("/purchases/return", payload);
-			toast.success("Return invoice created successfully");
+			fd.append("returnNumber", data.returnNumber);
+			if (data.supplierId) fd.append("supplierId", String(Number(data.supplierId)));
+			if (data.supplierNameSnapshot) fd.append("supplierNameSnapshot", data.supplierNameSnapshot);
+			if (data.supplierCodeSnapshot) fd.append("supplierCodeSnapshot", data.supplierCodeSnapshot);
+			if (data.invoiceNumber) fd.append("invoiceNumber", data.invoiceNumber);
+			if (data.returnReason) fd.append("returnReason", data.returnReason);
+			if (data.safeId) fd.append("safeId", String(data.safeId));
+			if (data.returnType) fd.append("returnType", data.returnType);
+			if (data.notes) fd.append("notes", data.notes);
+			fd.append("paidAmount", String(Number(data.paidAmount || 0)));
+
+			const items = (data.items || []).map((item) => ({
+				variantId: Number(item.variantId),
+				returnedQuantity: Number(item.returnedQuantity),
+				unitCost: Number(item.unitCost),
+				taxInclusive: Boolean(item.taxInclusive),
+				taxRate: item.taxRate !== undefined && item.taxRate !== null ? Number(item.taxRate) : 5,
+			}));
+			fd.append("items", JSON.stringify(items));
+
+			if (receiptImage?.file) {
+				fd.append("receiptAsset", receiptImage.file);
+			}
+
+			const apiPromise = api.post("/purchases-return", fd, {
+				headers: { "Content-Type": "multipart/form-data" },
+			});
+
+			await toast.promise(apiPromise, {
+				loading: t("messages.creatingReturn"),
+				success: t("messages.createSuccess"),
+				error: (err) => err.response?.data?.message || t("messages.createFailed"),
+			});
+
 			navigate.push("/purchases/return");
 		} catch (error) {
 			console.error("Failed to create return:", error);
-			toast.error(error.response?.data?.message || "Failed to create return invoice");
 		} finally {
 			setLoading(false);
 		}
@@ -209,7 +301,10 @@ export default function CreateReturnInvoicePage() {
 		}, 0),
 	};
 
-	const totalReturn = summary.subtotal + summary.taxTotal;
+	const watchedPaidAmount = watch("paidAmount");
+
+	const paidAmount = parseFloat(watchedPaidAmount) || 0;
+	const totalReturn = (summary.subtotal + summary.taxTotal) - paidAmount;
 
 	return (
 		<motion.div
@@ -244,9 +339,9 @@ export default function CreateReturnInvoicePage() {
 
 
 			<form onSubmit={handleSubmit(onSubmit)}>
-				<div className="flex gap-6">
-					{/* Left Column - Return Information */}
-					<div className="w-full max-w-[400px] space-y-6">
+				<div className="flex flex-col lg:flex-row gap-6">
+					{/* Left Column - Main Form */}
+					<div className="w-full lg:max-w-[400px] space-y-6">
 						<motion.div
 							className="main-card"
 							initial={{ opacity: 0, x: -20 }}
@@ -269,7 +364,6 @@ export default function CreateReturnInvoicePage() {
 											<Input
 												{...field}
 												placeholder={t("placeholders.returnNumber")}
-												className="rounded-full h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
 											/>
 										)}
 									/>
@@ -313,7 +407,6 @@ export default function CreateReturnInvoicePage() {
 											<Input
 												{...field}
 												placeholder={t("placeholders.invoiceNumber")}
-												className="rounded-full h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
 											/>
 										)}
 									/>
@@ -330,13 +423,12 @@ export default function CreateReturnInvoicePage() {
 											<Input
 												{...field}
 												placeholder={t("placeholders.returnReason")}
-												className="rounded-full h-[45px] bg-[#fafafa] dark:bg-slate-800/50"
 											/>
 										)}
 									/>
 								</div>
 
-								<div className="space-y-2">
+								{/* <div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
 										{t("fields.returnType")} *
 									</Label>
@@ -365,7 +457,7 @@ export default function CreateReturnInvoicePage() {
 									{errors.returnType && (
 										<p className="text-xs text-red-500">{errors.returnType.message}</p>
 									)}
-								</div>
+								</div> */}
 
 								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
@@ -405,7 +497,7 @@ export default function CreateReturnInvoicePage() {
 								{t("sections.addProducts")}
 							</h3>
 
-							<ProductSkuSearchPopover handleSelectSku={handleSelectSku} selectedSkus={watchedItems} />
+							<ProductSkuSearchPopover handleSelectSku={handleSelectSku} selectedSkus={selectSku} />
 							{errors.items && <p className="text-xs text-red-500 mt-2">{errors.items.message}</p>}
 						</motion.div>
 
@@ -468,24 +560,38 @@ export default function CreateReturnInvoicePage() {
 													)}
 												</td>
 												<td className="p-3">
-													<Input
-														type="number"
-														value={product.returnedQuantity}
-														onChange={(e) =>
-															handleProductFieldChange(index, "returnedQuantity", e.target.value)
-														}
-														className="h-8 w-20"
-													/>
+													<div className="flex flex-col gap-1">
+														<Input
+															type="number"
+															value={product.returnedQuantity}
+															onChange={(e) =>
+																handleProductFieldChange(index, "returnedQuantity", e.target.value)
+															}
+															className="h-8 w-20"
+														/>
+														{errors.items?.[index]?.returnedQuantity && (
+															<p className="text-[10px] text-red-500 font-medium">
+																{errors.items[index].returnedQuantity.message}
+															</p>
+														)}
+													</div>
 												</td>
 												<td className="p-3">
-													<Input
-														type="number"
-														value={product.unitCost}
-														onChange={(e) =>
-															handleProductFieldChange(index, "unitCost", e.target.value)
-														}
-														className="h-8 w-24"
-													/>
+													<div className="flex flex-col gap-1">
+														<Input
+															type="number"
+															value={product.unitCost}
+															onChange={(e) =>
+																handleProductFieldChange(index, "unitCost", e.target.value)
+															}
+															className="h-8 w-24"
+														/>
+														{errors.items?.[index]?.unitCost && (
+															<p className="text-[10px] text-red-500 font-medium">
+																{errors.items[index].unitCost.message}
+															</p>
+														)}
+													</div>
 												</td>
 												<td className="p-3">
 													<Select
@@ -504,14 +610,21 @@ export default function CreateReturnInvoicePage() {
 													</Select>
 												</td>
 												<td className="p-3">
-													<Input
-														type="number"
-														value={product.taxRate}
-														onChange={(e) =>
-															handleProductFieldChange(index, "taxRate", e.target.value)
-														}
-														className="h-8 w-16"
-													/>
+													<div className="flex flex-col gap-1">
+														<Input
+															type="number"
+															value={product.taxRate}
+															onChange={(e) =>
+																handleProductFieldChange(index, "taxRate", e.target.value)
+															}
+															className="h-8 w-16"
+														/>
+														{errors.items?.[index]?.taxRate && (
+															<p className="text-[10px] text-red-500 font-medium">
+																{errors.items[index].taxRate.message}
+															</p>
+														)}
+													</div>
 												</td>
 												<td className="p-3 text-center">
 													<motion.button
@@ -555,8 +668,17 @@ export default function CreateReturnInvoicePage() {
 					</div>
 
 					{/* Right Column - Summary */}
-					<div className="w-full max-w-[350px]">
-						<ReturnSummary t={t} summary={summary} totalReturn={totalReturn} control={control} formatCurrency={formatCurrency} />
+					<div className="w-full lg:max-w-[350px] space-y-4">
+						<ReceiptImageUpload
+							t={t}
+							isRTL={isRTL}
+							image={receiptImage}
+							onImageChange={handleImageUpload}
+							onRemove={handleRemoveImage}
+							ALLOWED_RECEIPT_TYPES={ALLOWED_RECEIPT_TYPES}
+							tValidation={tValidation}
+						/>
+						<ReturnSummary t={t} summary={summary} totalReturn={totalReturn} control={control} formatCurrency={formatCurrency} errors={errors} />
 					</div>
 				</div>
 			</form>
@@ -564,7 +686,128 @@ export default function CreateReturnInvoicePage() {
 	);
 }
 
-function ReturnSummary({ summary, t, totalReturn, control, formatCurrency }) {
+function ReceiptImageUpload({ image, onImageChange, onRemove, t, isRTL, ALLOWED_RECEIPT_TYPES, tValidation }) {
+	const inputRef = useRef(null);
+	const [isDragging, setIsDragging] = useState(false);
+
+	const handleDrop = (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+		setIsDragging(false);
+
+		const file = e.dataTransfer.files?.[0];
+		if (!file) return;
+
+		const okType = ALLOWED_RECEIPT_TYPES.includes(file.type);
+		if (!okType) {
+			toast.error(tValidation("invalidFileType") || "Invalid file type");
+			return;
+		}
+
+		const fakeEvent = { target: { files: [file] } };
+		onImageChange(fakeEvent);
+	};
+
+	return (
+		<motion.div
+			dir={isRTL ? "rtl" : "ltr"}
+			initial={{ opacity: 0, x: 20 }}
+			animate={{ opacity: 1, x: 0 }}
+			transition={{ delay: 0.25 }}
+			className="main-card"
+		>
+			<div
+				onDragEnter={(e) => {
+					e.preventDefault();
+					e.stopPropagation();
+					setIsDragging(true);
+				}}
+				onDragOver={(e) => {
+					e.preventDefault();
+					e.stopPropagation();
+					setIsDragging(true);
+				}}
+				onDragEnterCapture={(e) => {
+					e.preventDefault();
+					e.stopPropagation();
+					setIsDragging(true);
+				}}
+				onDragLeave={(e) => {
+					e.preventDefault();
+					e.stopPropagation();
+					setIsDragging(false);
+				}}
+				onDrop={handleDrop}
+				className={cn(
+					"rounded-xl border-2 border-dashed transition-all duration-300",
+					isDragging
+						? "border-primary bg-primary/5"
+						: "border-primary/60 bg-white/40 dark:bg-slate-900/20"
+				)}
+			>
+				<input ref={inputRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={onImageChange} />
+
+				{!image ? (
+					<div
+						onClick={() => inputRef.current?.click()}
+						className="p-8 rounded-xl text-center hover:bg-primary/20 duration-300 cursor-pointer"
+					>
+						<div className="flex flex-col items-center gap-4">
+							<div className="w-20 h-20 rounded-xl bg-primary/10 flex items-center justify-center">
+								<Upload size={32} className="text-primary" />
+							</div>
+
+							<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200">
+								{t("sections.receiptImage")}
+							</h3>
+						</div>
+					</div>
+				) : (
+					<div className="p-4">
+						<div className="relative rounded-xl overflow-hidden bg-gray-100 dark:bg-slate-800">
+							<div className="relative rounded-xl overflow-hidden bg-gray-100 dark:bg-slate-800 h-48 flex items-center justify-center">
+								{image.isPdf ? (
+									<div className="flex flex-col items-center gap-2">
+										<FileText size={40} className="text-primary" />
+										<span className="text-sm text-gray-700 dark:text-slate-200">PDF</span>
+									</div>
+								) : (
+									<img src={image.preview} alt={t("upload.receiptAlt") || "Receipt"} className="w-full h-48 object-cover" />
+								)}
+							</div>
+
+							<div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+						</div>
+
+						<div className="mt-4 flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-slate-800/50">
+							<div className="flex items-center gap-3">
+								<div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/30 flex items-center justify-center">
+									<FileText size={20} className="text-blue-600 dark:text-blue-400" />
+								</div>
+								<div className="max-w-[150px]">
+									<p className="text-sm font-medium text-gray-700 dark:text-slate-200 truncate">{image.name}</p>
+									<p className="text-xs text-gray-400 uppercase">{image.isPdf ? "PDF" : "IMG"}</p>
+								</div>
+							</div>
+
+							<motion.button
+								type="button"
+								onClick={onRemove}
+								whileHover={{ scale: 1.1 }}
+								whileTap={{ scale: 0.9 }}
+								className="w-8 h-8 rounded-xl bg-red-100 text-red-600 hover:bg-red-600 hover:text-white flex items-center justify-center transition-colors dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
+							>
+								<X size={16} />
+							</motion.button>
+						</div>
+					</div>
+				)}
+			</div>
+		</motion.div>
+	);
+}
+
+function ReturnSummary({ summary, t, totalReturn, control, formatCurrency, errors }) {
 	return (
 		<motion.div
 			initial={{ opacity: 0, x: 20 }}
@@ -596,6 +839,27 @@ function ReturnSummary({ summary, t, totalReturn, control, formatCurrency }) {
 					<span className="text-base font-semibold text-gray-700 dark:text-slate-200">
 						{formatCurrency(summary.taxTotal)}
 					</span>
+				</div>
+
+				<div className="space-y-2">
+					<Label className="text-sm text-gray-600 dark:text-slate-300">
+						{t("fields.paidAmount")}
+					</Label>
+					<Controller
+						name="paidAmount"
+						control={control}
+						render={({ field }) => (
+							<Input
+								{...field}
+								type="number"
+								placeholder="0.00"
+								className="rounded-xl h-[45px] border-gray-200 dark:border-slate-700"
+							/>
+						)}
+					/>
+					{errors.paidAmount && (
+						<p className="text-xs text-red-500">{errors.paidAmount.message}</p>
+					)}
 				</div>
 
 				<div className="flex items-center justify-between p-4 rounded-xl bg-primary/10   border-2 border-primary/20 ">

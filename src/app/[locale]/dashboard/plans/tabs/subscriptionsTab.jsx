@@ -547,8 +547,8 @@ export default function SubscriptionsTab() {
                 onChange={([start, end]) =>
                   setFilters((f) => ({
                     ...f,
-                    startDate: start ? start.toISOString().split("T")[0] : null,
-                    endDate: end ? end.toISOString().split("T")[0] : null,
+                    startDate: start ? start.toLocaleDateString() : null,
+                    endDate: end ? end.toLocaleDateString() : null,
                   }))
                 }
                 options={{

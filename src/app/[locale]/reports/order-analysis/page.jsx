@@ -1111,8 +1111,8 @@ export default function OrdersStatisticsPage() {
             onChange={([s, e]) =>
               setFilters((f) => ({
                 ...f,
-                startDate: s ? s.toISOString().split("T")[0] : null,
-                endDate: e ? e.toISOString().split("T")[0] : null,
+                startDate: s ? s.toLocaleDateString() : null,
+                endDate: e ? e.toLocaleDateString() : null,
               }))
             }
             options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}

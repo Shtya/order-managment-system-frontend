@@ -3827,6 +3827,8 @@
       "active": "نشط",
       "inactive": "غير نشط"
     },
+    "total": "الإجمالي",
+    "apply": "تطبيق",
     "notSpecified": "غير محدد",
     "none": "لا يوجد",
     "items": "عنصر",
@@ -4005,7 +4007,9 @@
         "confirmedOrders": "الطلبات المؤكدة",
         "shippedOrders": "الطلبات المشحونة",
         "deliveredOrders": "الطلبات المستلمة",
-        "upsellOrders": "طلبات Upsell"
+        "upsellOrders": "طلبات Upsell",
+        "preparationFailedCount": "فشل فحص التحضير",
+        "outgoingFailedCount": "فشل فحص الخروج"
       },
       "columns": {
         "employeeName": "اسم الموظف",
@@ -4018,7 +4022,9 @@
         "shippedOrders": "الطلبات المشحونة",
         "shippedRate": "نسبة الشحن",
         "upsellOrders": "طلبات Upsell",
-        "upsellRate": "نسبة Upsell"
+        "upsellRate": "نسبة Upsell",
+        "preparationFailedCount": "فشل التحضير",
+        "outgoingFailedCount": "فشل الخروج"
       },
       "searchPlaceholder": "ابحث باسم الموظف...",
       "empty": {
@@ -6140,6 +6146,11 @@
           "f6": "دعم فني 24/7"
         }
       }
+    },
+    "types": {
+      "monthly": "شهريا",
+      "yearly": "سنويا",
+      "plan": "خطة"
     }
   },
   "faq": {
@@ -6426,7 +6437,8 @@
           "unlimitedOrders": "طلبات غير محدودة",
           "extraFee": "{fee} {currency} رسوم إضافية للطلب",
           "bulkUpload": "{count} رفع جماعي/شهر"
-        }
+        },
+        "negotiated": "حسب الإتفاق"
       },
       "features": {
         "order_management": {
@@ -7531,5 +7543,239 @@
       "saveError": "فشل في تحديث الإعدادات.",
       "loadError": "فشل في تحميل بيانات الإعدادات."
     }
+  },
+  "badge": "جديد",
+  "accounts": {
+    "title": "الحسابات",
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "accounts": "الحسابات"
+    },
+    "tabs": {
+      "overview": "نظرة عامة",
+      "monthlyExpenses": "المصروفات الشهرية",
+      "manualExpenses": "المصروفات المانيول",
+      "cityDeliveries": "التسليمات في المحافظات",
+      "employeePerformance": "أداء الموظفين",
+      "supplierAccounts": "حسابات الموردين",
+      "monthClosing": "تقفيل الشهر"
+    },
+    "stats": {
+      "totalExpenses": "إجمالي المصروفات",
+      "productPurchases": "شراء منتجات",
+      "manualExpenses": "مصروفات مانيول",
+      "returns": "المرتجعات (فلوس)",
+      "netResult": "صافي النتيجة",
+      "shippingCost": "تكلفة الشحن",
+      "totalSuppliers": "إجمالي الموردين",
+      "totalOwed": "إجمالي المديونية للموردين",
+      "totalCredit": "إجمالي الأرصدة الدائنة",
+      "lastSettlement": "آخر رصيد تقفيل",
+      "totalHistorySales": "إجمالي مبيعات الشهر",
+      "totalHistoryCosts": "إجمالي تكاليف الشهر",
+      "totalNetProfit": "إجمالي الأرباح"
+    },
+    "export": "تصدير",
+    "filters": {
+      "supplier": "المورد",
+      "allSuppliers": "كل الموردين",
+      "none": "لا يوجد",
+      "dateRange": "الفترة الزمنية",
+      "dateRangePlaceholder": "اختر الفترة",
+      "apply": "تطبيق",
+      "year": "العام",
+      "selectYear": "إختر العام"
+    },
+    "overview": {
+      "lastExpenses": "آخر المصروفات",
+      "viewAll": "عرض الكل",
+      "expensesBreakdown": "تفاصيل المصروفات",
+      "expensesTrend": "المصروفات",
+      "monthClosing": "تقفيل الشهر",
+      "reviewReport": "عرض التقرير",
+      "suppliers": "حسابات الموردين",
+      "employeePerformance": "أداء الموظفين",
+      "cityDeliveries": "التسليمات حسب المحافظة",
+      "viewReport": "عرض التقرير",
+      "periods": {
+        "daily": "يومي",
+        "weekly": "أسبوعي",
+        "monthly": "شهري"
+      }
+    },
+    "monthlyExpenses": {
+      "title": "المصروفات الشهرية",
+      "columns": {
+        "date": "التاريخ",
+        "type": "النوع",
+        "source": "المصدر",
+        "reference": "المرجع",
+        "amount": "المبلغ",
+        "status": "الحالة"
+      },
+      "types": {
+        "purchase": "شراء منتج",
+        "shipping": "شحن",
+        "return": "مرتجع",
+        "manual": "مصروف يدوي"
+      },
+      "filters": {
+        "source": "المصدر",
+        "reference": "المرجع",
+        "allSources": "كل المصادر"
+      },
+      "details": {
+        "title": "تفاصيل المصروف",
+        "products": "المنتجات",
+        "quantity": "الكمية",
+        "unitPrice": "سعر الوحدة",
+        "ordersList": "قائمة الطلبات",
+        "shippingCompany": "شركة الشحن",
+        "costPerOrder": "التكلفة لكل طلب",
+        "returnReason": "سبب المرتجع",
+        "supplier": "المورد"
+      }
+    },
+    "manualExpenses": {
+      "title": "المصروفات المانيوال",
+      "columns": {
+        "date": "التاريخ",
+        "category": "التصنيف",
+        "description": "البيان",
+        "amount": "المبلغ",
+        "addedBy": "بواسطة",
+        "actions": "الإجراءات"
+      },
+      "categories": {
+        "ads": "إعلانات",
+        "packaging": "تغليف",
+        "transport": "نقل",
+        "office": "مكتب",
+        "salaries": "مرتبات",
+        "other": "أخرى"
+      },
+      "actions": {
+        "view": "عرض التفاصيل",
+        "edit": "تعديل",
+        "delete": "حذف",
+        "add": "إضافة مصروف جديد"
+      },
+      "categoryMgmt": {
+        "title": "إدارة التصنيفات",
+        "editTitle": "تعديل بيانات التصنيف",
+        "addTitle": "إضافة تصنيف مصروفات جديد",
+        "description": "قم بإدارة اسم ووصف التصنيف ليظهر في الخيارات عند تسجيل أي مصروف.",
+        "nameLabel": "اسم التصنيف",
+        "namePlaceholder": "مثال: إعلانات تسويقية",
+        "descLabel": "الوصف (اختياري)",
+        "descPlaceholder": "وصف مختصر لما يشمله هذا التصنيف...",
+        "addNew": "إضافة تصنيف جديد",
+        "saveBtn": "حفظ التصنيف",
+        "close": "إغلاق"
+      },
+      "form": {
+        "amount": "المبلغ",
+        "date": "التاريخ",
+        "category": "التصنيف",
+        "description": "البيان/الوصف",
+        "attachment": "صورة الفاتورة/الإيصال (اختياري)",
+        "upload": "رفع صورة",
+        "save": "حفظ",
+        "cancel": "إلغاء"
+      },
+      "deleteAlert": {
+        "title": "هل أنت متأكد من الحذف؟",
+        "description": "لا يمكن التراجع عن هذا الإجراء بعد الحذف.",
+        "confirm": "حذف",
+        "cancel": "إلغاء"
+      }
+    },
+    "monthClosing": {
+      "title": "تقفيلات الفترة (الأرباح والخسائر)",
+      "columns": {
+        "closedAt": "تاريخ التقفيل",
+        "period": "الفترة الزمنية",
+        "totalCost": "إجمالي التكلفة",
+        "totalReturn": "إجمالي المرتجعات",
+        "totalSelling": "إجمالي المبيعات",
+        "deceased": "الهالك",
+        "finalBalance": "الرصيد النهائي"
+      },
+      "actions": {
+        "newClosing": "تقفيل فترة جديد",
+        "viewDetails": "عرض تفاصيل التقفيل"
+      },
+      "details": {
+        "title": "تفاصيل التقفيل المالي",
+        "productCosts": "تكلفة المنتجات المباعة",
+        "manualExpenses": "المصروفات المانيوال",
+        "soldOrdersCount": "عدد الطلبات المباعة",
+        "confirmClosing": "تأكيد وإتمام التقفيل",
+        "summaryTitle": "ملخص النشاط المالي للفترة"
+      },
+      "form": {
+        "selectPeriod": "اختر الفترة الزمنية للتقفيل"
+      }
+    },
+    "cityDeliveries": {
+      "title": "التسليمات في المحافظات",
+      "stats": {
+        "topCity": "أعلى محافظة تسليماً",
+        "lowestCity": "أقل محافظة تسليماً",
+        "avgDeliveries": "متوسط التسليمات"
+      },
+      "columns": {
+        "city": "المحافظة",
+        "total": "إجمالي التسليمات",
+        "delivered": "التسليمات الفعلية",
+        "returns": "عدد المرتجعات",
+        "successRate": "نسبة النجاح"
+      }
+    },
+    "supplierAccounts": {
+      "columns": {
+        "supplierName": "اسم المورد",
+        "lastClosing": "تاريخ آخر تقفيل",
+        "pendingBalance": "الرصيد المعلق"
+      },
+      "actions": {
+        "statement": "كشف حساب",
+        "closePeriod": "تقفيل الفترة",
+        "printPdf": "طباعة PDF",
+        "confirmClosing": "تأكيد التقفيل",
+        "viewInvoice": "عرض التفاصيل"
+      },
+      "statement": {
+        "title": "كشف حساب تفصيلي",
+        "invoiceRef": "رقم الفاتورة",
+        "date": "التاريخ",
+        "amount": "المبلغ",
+        "totalPurchases": "إجمالي مشتريات",
+        "totalReturns": "إجمالي مرتجعات",
+        "totalPaid": "إجمالي مدفوعات",
+        "prevBalance": "رصيد مرحل سابق",
+        "netBalance": "الرصيد النهائي (الصافي)",
+        "detailedPurchases": "تفاصيل فواتير المشتريات",
+        "detailedReturns": "تفاصيل فواتير المرتجعات"
+      },
+      "close": {
+        "title": "تقفيل الفترة للمورد",
+        "prevClosingBalance": "الرصيد السابق المرحل (من آخر تقفيل)",
+        "totalPurchasesThisPeriod": "إجمالي المشتريات في هذه الفترة",
+        "totalReturnsThisPeriod": "إجمالي المرتجعات في هذه الفترة",
+        "totalPaymentsThisPeriod": "إجمالي المدفوعات في هذه الفترة",
+        "totalPurchases": "إجمالي المشتريات",
+        "totalReturns": "إجمالي المرتجعات",
+        "totalPayments": "إجمالي المدفوعات",
+        "finalAccumulatedBalance": "الرصيد النهائي التراكمي للتقفيل"
+      },
+      "history": {
+        "title": "سجل التقفيلات السابقة",
+        "closedAt": "تاريخ التقفيل",
+        "period": "الفترة",
+        "balance": "الرصيد المعتمد"
+      }
+    },
+    "history": "التقفيلات السابقة"
   }
 }

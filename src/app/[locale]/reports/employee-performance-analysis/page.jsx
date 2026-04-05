@@ -12,6 +12,8 @@ import {
     ShoppingBag,
     HelpCircle,
     Package,
+    AlertTriangle,
+    XCircle
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -56,20 +58,20 @@ export const EMPLOYEE_STATS = [
     },
     {
         id: 3,
-        code: "shippedOrders", // Matches statsData.shippedOrders
-        nameKey: "employeeStats.stats.shippedOrders",
-        color: "#8b5cf6", // Kept the purple color from the old 'upsell'
-        darkColor: "#8b5cf6",
-        icon: Package, // Changed from TrendingUp to Package
+        code: "preparationFailedCount",
+        nameKey: "employeeStats.stats.preparationFailedCount",
+        color: "#f59e0b",
+        darkColor: "#f59e0b",
+        icon: AlertTriangle,
         sortOrder: 3,
     },
     {
         id: 4,
-        code: "deliveredOrders", // Matches statsData.deliveredOrders
-        nameKey: "employeeStats.stats.deliveredOrders",
-        color: "#10b981",
-        darkColor: "#10b981",
-        icon: Truck,
+        code: "outgoingFailedCount",
+        nameKey: "employeeStats.stats.outgoingFailedCount",
+        color: "#ef4444",
+        darkColor: "#ef4444",
+        icon: XCircle,
         sortOrder: 4,
     },
 ];
@@ -89,7 +91,9 @@ export function EmployeeStatisticsPage() {
         totalOrders: 0,
         confirmedOrders: 0,
         deliveredOrders: 0,
-        shippedOrders: 0, // بدلاً من upsell
+        shippedOrders: 0,
+        preparationFailedCount: 0,
+        outgoingFailedCount: 0,
     });
 
     const [pager, setPager] = useState({
@@ -148,6 +152,8 @@ export function EmployeeStatisticsPage() {
                 confirmedOrders: getCountByCode('confirmed'),
                 shippedOrders: getCountByCode('shipped'),
                 deliveredOrders: getCountByCode('delivered'),
+                preparationFailedCount: getCountByCode('preparationFailedCount'),
+                outgoingFailedCount: getCountByCode('outgoingFailedCount'),
             });
 
         } catch (e) {
@@ -345,6 +351,30 @@ export function EmployeeStatisticsPage() {
                     );
                 },
             },
+            {
+                key: "preparationFailedCount",
+                header: t("employeeStats.columns.preparationFailedCount"),
+                cell: (row) => (
+                    <span className={cn(
+                        "font-bold text-sm px-2.5 py-1 rounded-xl tabular-nums",
+                        (row.preparationFailedCount ?? 0) > 5 ? "bg-red-50 text-red-600" : "bg-orange-50 text-orange-600"
+                    )}>
+                        {row.preparationFailedCount ?? 0}
+                    </span>
+                ),
+            },
+            {
+                key: "outgoingFailedCount",
+                header: t("employeeStats.columns.outgoingFailedCount"),
+                cell: (row) => (
+                    <span className={cn(
+                        "font-bold text-sm px-2.5 py-1 rounded-xl tabular-nums",
+                        (row.outgoingFailedCount ?? 0) > 5 ? "bg-red-50 text-red-600" : "bg-orange-50 text-orange-600"
+                    )}>
+                        {row.outgoingFailedRate ?? 0}
+                    </span>
+                ),
+            },
         ],
         [t]
     );
@@ -370,7 +400,7 @@ export function EmployeeStatisticsPage() {
                 stats={EMPLOYEE_STATS.map((s) => ({
                     id: s.id,
                     name: t(s.nameKey),
-                    value: statsData[s.code] ?? 0,
+                    value: s.isPercent ? `${statsData[s.code] ?? 0}%` : (statsData[s.code] ?? 0),
                     icon: s.icon,
                     color: s.color,
                     sortOrder: s.sortOrder,
@@ -424,8 +454,8 @@ export function EmployeeStatisticsPage() {
                                 onChange={([start, end]) =>
                                     setFilters((f) => ({
                                         ...f,
-                                        startDate: start ? start.toISOString().split("T")[0] : null,
-                                        endDate: end ? end.toISOString().split("T")[0] : null,
+                                        startDate: start ? start.toLocaleDateString() : null,
+                                        endDate: end ? end.toLocaleDateString() : null,
                                     }))
                                 }
                                 options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}

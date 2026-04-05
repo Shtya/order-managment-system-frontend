@@ -577,8 +577,8 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 	const [seletOpen, setSelectOpen] = useState(false);
 	const [distributionType, setDistributionType] = useState(null);
 	const [dateRange, setDateRange] = useState({
-		from: new Date().toISOString().split("T")[0],
-		to: new Date().toISOString().split("T")[0],
+		from: new Date().toLocaleDateString(),
+		to: new Date().toLocaleDateString(),
 	});
 	const [selectedStatuses, setSelectedStatuses] = useState([]);
 

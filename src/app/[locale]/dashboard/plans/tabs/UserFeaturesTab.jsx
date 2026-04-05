@@ -207,8 +207,8 @@ export default function UserFeaturesTab() {
                             value={[filters.startDate ? new Date(filters.startDate) : null, filters.endDate ? new Date(filters.endDate) : null]}
                             onChange={([start, end]) => setFilters(f => ({
                                 ...f,
-                                startDate: start ? start.toISOString().split("T")[0] : null,
-                                endDate: end ? end.toISOString().split("T")[0] : null,
+                                startDate: start ? start.toLocaleDateString() : null,
+                                endDate: end ? end.toLocaleDateString() : null,
                             }))}
                             options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
                             data-size="default"

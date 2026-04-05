@@ -196,7 +196,7 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="!max-w-3xl rounded-2xl max-h-[90vh] overflow-y-auto border-0 shadow-2xl" >
+      <DialogContent className="!max-w-3xl rounded-2xl max-h-[90vh] overflow-y-auto border-0  p-0 shadow-2xl" >
         {/* Header */}
         <div className="relative px-6 pt-6 pb-5 rounded-t-2xl overflow-hidden"
           style={{ background: "linear-gradient(135deg, #ff8b00 0%, #ff5c2b 55%, #ffb703 100%)" }}>

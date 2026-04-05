@@ -3827,6 +3827,8 @@
       "active": "Active",
       "inactive": "Inactive"
     },
+    "total": "Total",
+    "apply": "Apply",
     "notSpecified": "Not Specified",
     "none": "None",
     "items": "Items",
@@ -4005,7 +4007,9 @@
         "confirmedOrders": "Confirmed Orders",
         "shippedOrders": "Shipped Orders",
         "deliveredOrders": "Delivered Orders",
-        "upsellOrders": "Upsell Orders"
+        "upsellOrders": "Upsell Orders",
+        "preparationFailedCount": "Prep. Scan Failure",
+        "outgoingFailedCount": "Outg. Scan Failure"
       },
       "columns": {
         "employeeName": "Employee Name",
@@ -4018,7 +4022,9 @@
         "shippedOrders": "Shipped Orders",
         "shippedRate": "Shipping Rate",
         "upsellOrders": "Upsell Orders",
-        "upsellRate": "Upsell Rate"
+        "upsellRate": "Upsell Rate",
+        "preparationFailedCount": "Prep. Failure",
+        "outgoingFailedCount": "Outg. Failure)"
       },
       "searchPlaceholder": "Search by employee name...",
       "empty": {
@@ -6140,6 +6146,11 @@
           "f6": "24/7 Technical Support"
         }
       }
+    },
+    "types": {
+      "monthly": "Monthly",
+      "yearly": "yearly",
+      "plan": "plan"
     }
   },
   "faq": {
@@ -6426,7 +6437,8 @@
           "unlimitedOrders": "Unlimited orders",
           "extraFee": "{fee} {currency} extra order fee",
           "bulkUpload": "{count} bulk uploads/month"
-        }
+        },
+        "negotiated": "Negotiated"
       },
       "features": {
         "order_management": {
@@ -7531,5 +7543,239 @@
       "saveError": "Failed to update settings.",
       "loadError": "Failed to load settings data."
     }
+  },
+  "badge": "New",
+  "accounts": {
+    "title": "Accounts",
+    "breadcrumb": {
+      "home": "Home",
+      "accounts": "Accounts"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "monthlyExpenses": "Monthly Expenses",
+      "manualExpenses": "Manual Expenses",
+      "cityDeliveries": "City Deliveries",
+      "employeePerformance": "Employee Performance",
+      "supplierAccounts": "Supplier Accounts",
+      "monthClosing": "Month Closing"
+    },
+    "stats": {
+      "totalExpenses": "Total Expenses",
+      "productPurchases": "Product Purchases",
+      "manualExpenses": "Manual Expenses",
+      "returns": "Returns (Money)",
+      "netResult": "Net Result",
+      "shippingCost": "Shipping Cost",
+      "totalSuppliers": "Total Suppliers",
+      "totalOwed": "Total Owed to Suppliers",
+      "totalCredit": "Total Credit Balances",
+      "lastSettlement": "Last Settlement Balance",
+      "totalHistorySales": "Total Monthly Sales",
+      "totalHistoryCosts": "Total Monthly Costs",
+      "totalNetProfit": "Total Net Profit"
+    },
+    "export": "Export",
+    "filters": {
+      "supplier": "Supplier",
+      "allSuppliers": "All Suppliers",
+      "none": "None",
+      "dateRange": "Date Range",
+      "dateRangePlaceholder": "Select date range",
+      "apply": "Apply",
+      "year": "Year",
+      "selectYear": "Select Year"
+    },
+    "overview": {
+      "lastExpenses": "Last Expenses",
+      "viewAll": "View All",
+      "expensesBreakdown": "Expenses Breakdown",
+      "expensesTrend": "Expenses Trend",
+      "monthClosing": "Month Closing",
+      "reviewReport": "Review Report",
+      "suppliers": "Supplier Accounts",
+      "employeePerformance": "Employee Performance",
+      "cityDeliveries": "City Deliveries",
+      "viewReport": "View Report",
+      "periods": {
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "monthly": "Monthly"
+      }
+    },
+    "monthlyExpenses": {
+      "title": "Monthly Expenses",
+      "columns": {
+        "date": "Date",
+        "type": "Type",
+        "source": "Source",
+        "reference": "Reference",
+        "amount": "Amount",
+        "status": "Status"
+      },
+      "types": {
+        "purchase": "Product Purchase",
+        "shipping": "Shipping",
+        "return": "Return",
+        "manual": "Manual Expense"
+      },
+      "filters": {
+        "source": "Source",
+        "reference": "Reference",
+        "allSources": "All Sources"
+      },
+      "details": {
+        "title": "Expense Details",
+        "products": "Products",
+        "quantity": "Quantity",
+        "unitPrice": "Unit Price",
+        "ordersList": "Orders List",
+        "shippingCompany": "Shipping Company",
+        "costPerOrder": "Cost per Order",
+        "returnReason": "Return Reason",
+        "supplier": "Supplier"
+      }
+    },
+    "manualExpenses": {
+      "title": "Manual Expenses",
+      "columns": {
+        "date": "Date",
+        "category": "Category",
+        "description": "Description",
+        "amount": "Amount",
+        "addedBy": "Added By",
+        "actions": "Actions"
+      },
+      "categories": {
+        "ads": "Ads",
+        "packaging": "Packaging",
+        "transport": "Transport",
+        "office": "Office",
+        "salaries": "Salaries",
+        "other": "Other"
+      },
+      "actions": {
+        "view": "View Details",
+        "edit": "Edit",
+        "delete": "Delete",
+        "add": "Add New Expense"
+      },
+      "categoryMgmt": {
+        "title": "Category Management",
+        "editTitle": "Edit Category Data",
+        "addTitle": "Add New Expense Category",
+        "description": "Manage category name and description to appear in options when recording any expense.",
+        "nameLabel": "Category Name",
+        "namePlaceholder": "Example: Marketing Ads",
+        "descLabel": "Description (Optional)",
+        "descPlaceholder": "Short description of what this category includes...",
+        "addNew": "Add New Category",
+        "saveBtn": "Save Category",
+        "close": "Close"
+      },
+      "form": {
+        "amount": "Amount",
+        "date": "Date",
+        "category": "Category",
+        "description": "Description/Details",
+        "attachment": "Invoice/Receipt Image (Optional)",
+        "upload": "Upload Image",
+        "save": "Save",
+        "cancel": "Cancel"
+      },
+      "deleteAlert": {
+        "title": "Are you sure you want to delete?",
+        "description": "This action cannot be undone after deletion.",
+        "confirm": "Delete",
+        "cancel": "Cancel"
+      }
+    },
+    "monthClosing": {
+      "title": "Period Settlements (P&L)",
+      "columns": {
+        "closedAt": "Closing Date",
+        "period": "Time Period",
+        "totalCost": "Total Cost",
+        "totalReturn": "Total Returns",
+        "totalSelling": "Total Sales",
+        "deceased": "Deceased",
+        "finalBalance": "Final Balance"
+      },
+      "actions": {
+        "newClosing": "New Period Settlement",
+        "viewDetails": "View Settlement Details"
+      },
+      "details": {
+        "title": "Financial Settlement Details",
+        "productCosts": "Sold Products Cost",
+        "manualExpenses": "Manual Expenses",
+        "soldOrdersCount": "Number of Sold Orders",
+        "confirmClosing": "Confirm and Complete Settlement",
+        "summaryTitle": "Financial Activity Summary for Period"
+      },
+      "form": {
+        "selectPeriod": "Select Time Period for Settlement"
+      }
+    },
+    "cityDeliveries": {
+      "title": "City Deliveries",
+      "stats": {
+        "topCity": "Top City Deliveries",
+        "lowestCity": "Lowest City Deliveries",
+        "avgDeliveries": "Average Deliveries"
+      },
+      "columns": {
+        "city": "City",
+        "total": "All Deliveries",
+        "delivered": "Actual Deliveries",
+        "returns": "Number of Returns",
+        "successRate": "Success Rate"
+      }
+    },
+    "supplierAccounts": {
+      "columns": {
+        "supplierName": "Supplier Name",
+        "lastClosing": "Last Closing Date",
+        "pendingBalance": "Pending Balance"
+      },
+      "actions": {
+        "statement": "Account Statement",
+        "closePeriod": "Close Period",
+        "printPdf": "Print PDF",
+        "confirmClosing": "Confirm Closing",
+        "viewInvoice": "View Details"
+      },
+      "statement": {
+        "title": "Detailed Account Statement",
+        "invoiceRef": "Invoice Ref",
+        "date": "Date",
+        "amount": "Amount",
+        "totalPurchases": "Total Purchases",
+        "totalReturns": "Total Returns",
+        "totalPaid": "Total Paid",
+        "prevBalance": "Prev. Closing Balance",
+        "netBalance": "Final Net Balance",
+        "detailedPurchases": "Purchase Invoices Details",
+        "detailedReturns": "Return Invoices Details"
+      },
+      "close": {
+        "title": "Supplier Period Settlement",
+        "prevClosingBalance": "Previous Carried Balance (Last Closing)",
+        "totalPurchasesThisPeriod": "Total Purchases in Period",
+        "totalReturnsThisPeriod": "Total Returns in Period",
+        "totalPaymentsThisPeriod": "Total Payments in Period",
+        "totalPurchases": "Total Purchases",
+        "totalReturns": "Total Returns",
+        "totalPayments": "Total Payments",
+        "finalAccumulatedBalance": "Final Accumulated Settlement Balance"
+      },
+      "history": {
+        "title": "Previous Closings History",
+        "closedAt": "Closed At",
+        "period": "Period",
+        "balance": "Approved Balance"
+      }
+    },
+    "history": "Previous Closes"
   }
 }

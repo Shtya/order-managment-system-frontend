@@ -2930,6 +2930,7 @@
       "invoiceNumber": "رقم الفاتورة",
       "returnReason": "سبب الإرجاع",
       "returnType": "نوع الإرجاع",
+      "paidAmount": "المبلغ المسترد",
       "safe": "الخزنة"
     },
     "placeholders": {
@@ -2958,7 +2959,8 @@
       "addProducts": "إضافة المنتجات",
       "productsTable": "جدول المنتجات",
       "notes": "ملاحظات",
-      "summaryTitle": "ملخص الإرجاع"
+      "summaryTitle": "ملخص الإرجاع",
+      "receiptImage": "صورة الاصال"
     },
     "table": {
       "sku": "SKU",
@@ -2981,7 +2983,15 @@
     },
     "yes": "نعم",
     "no": "لا",
-    "currency": "ج.م"
+    "currency": "ج.م",
+    "messages": {
+      "createSuccess": "تم إنشاء فاتورة المرتجع بنجاح",
+      "createFailed": "فشل في إنشاء فاتورة المرتجع",
+      "creatingReturn": "جاري إنشاء فاتورة المرتجع..."
+    },
+    "upload": {
+      "receiptAlt": "فاتورة"
+    }
   },
   "salesInvoices": {
     "breadcrumb": {
@@ -3590,7 +3600,10 @@
     "unitCostRequired": "تكلفة القطعة مطلوبة",
     "quantityMinimum": "يجب أن تكون الكمية 1 على الأقل",
     "quantityRequired": "عدد القطع مطلوب",
-    "productRequired": "المنتج مطلوب"
+    "productRequired": "المنتج مطلوب",
+    "returnNumberRequired": "رقم المرتجع مطلوب",
+    "returnTypeRequired": "نوع المرتجع مطلوب",
+    "taxRateRange": "يجب أن تكون نسبة الضريبة بين 0 و 100"
   },
   "purchases": {
     "breadcrumb": {
@@ -3744,6 +3757,180 @@
     },
     "empty": "لا توجد فواتير مشتريات",
     "currency": "ج.م"
+  },
+  "purchasesReturn": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "returns": "مرتجعات المشتريات"
+    },
+    "common": {
+      "total": "الإجمالي",
+      "limit": "الحد",
+      "save": "حفظ",
+      "notSpecified": "غير محدد"
+    },
+    "actions": {
+      "createReturn": "إنشاء مرتجع جديد",
+      "howToUse": "كيفية الاستخدام",
+      "view": "عرض التفاصيل",
+      "viewDesc": "عرض تفاصيل المرتجع",
+      "logs": "سجلات التدقيق",
+      "auditLogs": "سجلات التدقيق",
+      "auditLogsDesc": "عرض سجل تدقيق المرتجع",
+      "editPaidAmount": "تعديل المبلغ المسترد",
+      "updatePaidAmount": "تحديث المبلغ المسترد",
+      "updatePaidAmountDesc": "تعديل قيمة المبلغ المسترد",
+      "accept": "قبول المرتجع",
+      "approve": "الموافقة",
+      "approveDesc": "الموافقة على هذا المرتجع",
+      "suspend": "تعليق",
+      "reject": "رفض",
+      "rejectDesc": "رفض هذا المرتجع",
+      "changeStatus": "تغيير الحالة",
+      "makePending": "إعادة إلى قيد الانتظار",
+      "makePendingDesc": "إعادة المرتجع إلى حالة قيد الانتظار",
+      "cancel": "إلغاء",
+      "save": "حفظ",
+      "close": "إغلاق"
+    },
+    "stats": {
+      "returnInvoicesCount": "عدد فواتير المرتجع",
+      "totalReturnValue": "إجمالي قيمة المرتجعات"
+    },
+    "toolbar": {
+      "searchPlaceholder": "البحث برقم المرتجع أو الفاتورة...",
+      "filter": "تصفية",
+      "export": "تصدير"
+    },
+    "filters": {
+      "status": "الحالة",
+      "statusPlaceholder": "اختر الحالة",
+      "statusAll": "كل الحالات",
+      "statusPending": "قيد الانتظار",
+      "statusApproved": "تمت الموافقة",
+      "statusRejected": "مرفوض",
+      "returnType": "نوع المرتجع",
+      "returnTypePlaceholder": "اختر النوع",
+      "returnTypeAll": "كل الأنواع",
+      "returnTypeCash": "استرداد نقدي",
+      "returnTypeBank": "تحويل بنكي",
+      "returnTypeDeduct": "خصم من رصيد المورد",
+      "supplier": "المورد",
+      "supplierPlaceholder": "اختر المورد",
+      "all": "كل الموردين",
+      "apply": "تطبيق"
+    },
+    "table": {
+      "lineTax": "الضريبة",
+      "yes": "نعم",
+      "no": "لا",
+      "returnedQuantity": "الكمية المرتجعة",
+      "unitCost": "تكلفة الوحدة",
+      "taxInclusive": "شامل الضريبة",
+      "taxRate": "نسبة الضريبة",
+      "name": "اسم المنتج",
+      "sku": "رمز SKU",
+      "returnNumber": "رقم المرتجع",
+      "invoiceNumber": "رقم الفاتورة",
+      "returnDate": "تاريخ المرتجع",
+      "status": "الحالة",
+      "createdBy": "بواسطة",
+      "supplierName": "اسم المورد",
+      "returnType": "نوع المرتجع",
+      "subtotal": "المجموع الفرعي",
+      "tax": "الضريبة",
+      "paidAmount": "المبلغ المسترد",
+      "quantityCount": "عدد الكمية",
+      "totalReturn": "إجمالي المرتجع",
+      "receipt": "الإيصال",
+      "options": "خيارات",
+      "noReceipt": "لا يوجد إيصال",
+      "actions": "الإجراءات",
+      "remainingAmount": "المبلغ المتبقي"
+    },
+    "statuses": {
+      "pending": "قيد الانتظار",
+      "accepted": "تمت الموافقة",
+      "rejected": "مرفوض"
+    },
+    "returnTypes": {
+      "cashRefund": "استرداد نقدي",
+      "bankTransfer": "تحويل بنكي",
+      "supplierDeduction": "خصم من رصيد المورد"
+    },
+    "logs": {
+      "title": "سجلات التدقيق",
+      "description": "مسار تدقيق هذا المرتجع",
+      "empty": "لا توجد سجلات",
+      "showDetails": "عرض التفاصيل"
+    },
+    "acceptPreview": {
+      "title": "معاينة القبول",
+      "returnNumber": "رقم المرتجع",
+      "loading": "جاري تحميل المعاينة...",
+      "empty": "لا توجد معاينة",
+      "emptyDescription": "لم يتم العثور على عناصر لهذا المرتجع.",
+      "totalItems": "عدد العناصر",
+      "totalQuantityToRemove": "إجمالي الكمية المراد إزالتها",
+      "sku": "رمز المنتج",
+      "stockBefore": "المخزون قبل",
+      "removeQty": "الكمية المزالة",
+      "stockAfter": "المخزون بعد",
+      "hasErrors": "تم العثور على أخطاء",
+      "hasErrorsDescription": "قم بإصلاح أخطاء العناصر قبل قبول هذا المرتجع.",
+      "previewReady": "المعاينة جاهزة",
+      "apply": "تطبيق القبول"
+    },
+    "details": {
+      "title": "تفاصيل المرتجع",
+      "returnNumber": "رقم المرتجع",
+      "supplier": "المورد",
+      "noSupplier": "لا يوجد مورد",
+      "safe": "الخزنة",
+      "date": "التاريخ",
+      "status": "الحالة",
+      "items": "العناصر",
+      "receiptAsset": "الإيصال",
+      "receiptAlt": "الإيصال",
+      "openPdf": "فتح PDF",
+      "openAsset": "عرض الملف",
+      "notes": "ملاحظات"
+    },
+    "updatePaidAmount": {
+      "title": "تحديث المبلغ المسترد",
+      "description": "أدخل المبلغ المسترد الجديد لهذا المرتجع.",
+      "paidAmount": "المبلغ المسترد"
+    },
+    "summary": {
+      "subtotal": "المجموع الفرعي",
+      "paidAmount": "المبلغ المسترد",
+      "remainingAmount": "المبلغ المتبقي",
+      "totalReturn": "إجمالي المرتجع",
+      "tax": "الضريبة"
+    },
+    "empty": "لا توجد مرتجعات مشتريات",
+    "messages": {
+      "statsError": "فشل في تحميل الإحصائيات",
+      "returnsError": "فشل في تحميل بيانات المرتجعات",
+      "statusUpdated": "تم تحديث حالة المرتجع بنجاح",
+      "statusFailed": "فشل في تحديث حالة المرتجع",
+      "statusUpdateFailed": "فشل في تحديث حالة المرتجع",
+      "paidAmountUpdated": "تم تحديث المبلغ المسترد بنجاح",
+      "paidAmountFailed": "فشل في تحديث المبلغ المسترد",
+      "updatePaidAmountSuccess": "تم تحديث المبلغ المسترد بنجاح",
+      "updatePaidAmountFailed": "فشل في تحديث المبلغ المسترد",
+      "fetchDetailsFailed": "فشل في تحميل تفاصيل المرتجع",
+      "detailsFailed": "فشل في تحميل تفاصيل المرتجع",
+      "previewFailed": "فشل في تحميل معاينة القبول",
+      "logsFailed": "فشل في تحميل سجلات التدقيق",
+      "updatingStatus": "جاري تحديث الحالة...",
+      "acceptTitle": "قبول المرتجع",
+      "acceptWarning": "سيؤدي هذا إلى خصم المخزون لجميع العناصر في هذا المرتجع. هل أنت متأكد؟",
+      "rejectTitle": "رفض المرتجع",
+      "rejectWarning": "هل أنت متأكد أنك تريد رفض هذا المرتجع؟",
+      "suspendTitle": "تعليق المرتجع",
+      "suspendWarning": "سيؤدي هذا إلى إعادة المرتجع إلى حالة قيد الانتظار. هل أنت متأكد؟"
+    }
   },
   "purchaseInvoice": {
     "current_price": "السعر الحالي",

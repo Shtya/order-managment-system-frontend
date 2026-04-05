@@ -268,7 +268,7 @@ export default function CreatePurchaseInvoicePage() {
 
 	const total = summary.subtotal;
 	const paidAmount = parseFloat(watchedPaidAmount) || 0;
-	const remainingAmount = Math.max(total - paidAmount, 0);
+	const remainingAmount = total - paidAmount;
 
 	return (
 		<motion.div

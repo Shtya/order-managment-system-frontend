@@ -2969,7 +2969,8 @@
       "unitCost": "Unit Cost",
       "taxInclusive": "Tax Inclusive",
       "taxRate": "Tax Rate",
-      "actions": "Actions"
+      "actions": "Actions",
+      "available": "Available"
     },
     "summary": {
       "productCount": "Product Count",
@@ -3137,6 +3138,21 @@
     }
   },
   "addProduct": {
+    "purchase": {
+      "hasInvoice": "Has Purchase Invoice?",
+      "invoiceInfo": "Purchase Invoice Details",
+      "supplier": "Supplier",
+      "supplierPlaceholder": "Select Supplier",
+      "invoiceNumber": "Invoice Number",
+      "safe": "Safe",
+      "safePlaceholder": "Select Safe",
+      "notes": "Notes",
+      "receipt": "Invoice Image",
+      "totalQuantity": "Total Quantity",
+      "paidAmount": "Paid Amount",
+      "summary": "Purchase Summary",
+      "quantityDistribution": "Automatically divides quantity among variations"
+    },
     "breadcrumb": {
       "home": "Home",
       "products": "Products",
@@ -3591,6 +3607,7 @@
     }
   },
   "validation": {
+    "quantityExceedsAvailable": "Quantity must not exceed available quantity",
     "supplierRequired": "Supplier is required",
     "receiptNumberRequired": "Receipt number is required",
     "safeRequired": "Safe is required",
@@ -3821,6 +3838,7 @@
       "apply": "Apply"
     },
     "table": {
+      "createdAt": "Created At",
       "lineTax": "Tax",
       "yes": "Yes",
       "no": "No",
@@ -7920,6 +7938,17 @@
       }
     },
     "supplierAccounts": {
+      "title": "Supplier Accounts",
+      "loading": {
+        "message": "Loading supplier data...",
+        "notFound": "Supplier not found"
+      },
+      "details": {
+        "title": "Supplier Details",
+        "purchasesTab": "Purchases",
+        "returnsTab": "Returns",
+        "historyTab": "Closing History"
+      },
       "columns": {
         "supplierName": "Supplier Name",
         "lastClosing": "Last Closing Date",

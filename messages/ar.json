@@ -2969,7 +2969,8 @@
       "unitCost": "التكلفة للقطعة",
       "taxInclusive": "شامل الضريبة",
       "taxRate": "نسبة الضريبة",
-      "actions": "الإجراءات"
+      "actions": "الإجراءات",
+      "available": "المتاح"
     },
     "summary": {
       "productCount": "عدد المنتجات",
@@ -3137,6 +3138,21 @@
     }
   },
   "addProduct": {
+    "purchase": {
+      "hasInvoice": "هل توجد فاتورة شراء؟",
+      "invoiceInfo": "تفاصيل فاتورة الشراء",
+      "supplier": "المورد",
+      "supplierPlaceholder": "اختر المورد",
+      "invoiceNumber": "رقم الفاتورة",
+      "safe": "الخزنة",
+      "safePlaceholder": "اختر الخزنة",
+      "notes": "ملاحظات",
+      "receipt": "صورة الفاتورة",
+      "totalQuantity": "إجمالي الكمية",
+      "paidAmount": "المبلغ المدفوع",
+      "summary": "ملخص الشراء",
+      "quantityDistribution": "توزيع الكمية تلقائياً بين المتغيرات"
+    },
     "breadcrumb": {
       "home": "الرئيسية",
       "products": "المنتجات",
@@ -3275,7 +3291,7 @@
     "combinations": {
       "onHand": "المخزون",
       "reserved": "محجوز",
-      "available": "المتفر",
+      "available": "متوفر",
       "title": "المتغيرات",
       "count": "العدد",
       "empty": "لا توجد متغيرات",
@@ -3591,6 +3607,7 @@
     }
   },
   "validation": {
+    "quantityExceedsAvailable": "يجب أن تكون الكمية مساوي أو أقل من المخزون",
     "supplierRequired": "المورد مطلوب",
     "receiptNumberRequired": "رقم الإيصال مطلوب",
     "safeRequired": "الخزنة مطلوبة",
@@ -3821,6 +3838,7 @@
       "apply": "تطبيق"
     },
     "table": {
+      "createdAt": "تاريخ الإنشاء",
       "lineTax": "الضريبة",
       "yes": "نعم",
       "no": "لا",
@@ -7920,6 +7938,17 @@
       }
     },
     "supplierAccounts": {
+      "title": "حسابات الموردين",
+      "loading": {
+        "message": "جاري تحميل بيانات المورد...",
+        "notFound": "المورد غير موجود"
+      },
+      "details": {
+        "title": "تفاصيل المورد",
+        "purchasesTab": "المشتريات",
+        "returnsTab": "المرتجعات",
+        "historyTab": "سجل التقفيلات"
+      },
       "columns": {
         "supplierName": "اسم المورد",
         "lastClosing": "تاريخ آخر تقفيل",

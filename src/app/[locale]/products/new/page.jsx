@@ -19,6 +19,8 @@ import {
 	Package,
 	Save,
 	ChevronRight,
+	FilePlus,
+	Info,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -148,6 +150,13 @@ function defaultValues() {
 		categoryId: '', storeId: '', warehouseId: '', description: '',
 		callCenterProductDescription: '', upsellingEnabled: false,
 		upsellingProducts: [], attributes: [], combinations: [],
+		purchase: {
+			supplierId: '',
+			receiptNumber: '',
+			safeId: '',
+			notes: '',
+			paidAmount: ''
+		}
 	};
 }
 
@@ -213,6 +222,7 @@ function Card({ children, className, ...props }) {
 const inputClass = "h-[46px] rounded-xl bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-[14px] placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/50 transition-colors";
 
 export default function AddProductPage({ isEditMode = false, existingProduct = null, productId = null }) {
+	const tPurchase = useTranslations("purchaseInvoice");
 	const t = useTranslations('addProduct');
 	const locale = useLocale();
 	const [imageErrors, setImageErrors] = useState({
@@ -226,6 +236,11 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	const [mainFiles, setMainFiles] = useState([]);
 	const [otherFiles, setOtherFiles] = useState([]);
 	const [removedImages, setRemovedImages] = useState([]);
+
+	const [hasPurchase, setHasPurchase] = useState(false);
+	const [suppliers, setSuppliers] = useState([]);
+	const [purchaseReceipt, setPurchaseReceipt] = useState([]);
+	const [totalPurchaseQuantity, setTotalPurchaseQuantity] = useState('');
 
 	const schema = useMemo(() => makeSchema(t), [t]);
 	const { control, register, handleSubmit, setValue, reset, watch, formState: { errors, isSubmitting } } = useForm({
@@ -251,10 +266,11 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		let mounted = true;
 		(async () => {
 			try {
-				const [catsRes, storesRes, whRes] = await Promise.all([
+				const [catsRes, storesRes, whRes, suppliersRes] = await Promise.all([
 					api.get('/lookups/categories', { params: { limit: 200 } }),
 					api.get('/lookups/stores', { params: { limit: 200, isActive: true } }),
 					api.get('/lookups/warehouses', { params: { limit: 200, isActive: true } }),
+					api.get('/lookups/suppliers', { params: { limit: 200 } }),
 				]);
 				if (!mounted) return;
 				setCategories(Array.isArray(catsRes.data) ? catsRes.data : []);
@@ -267,6 +283,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				}
 
 				setWarehouses(Array.isArray(whRes.data) ? whRes.data : []);
+				setSuppliers(Array.isArray(suppliersRes.data) ? suppliersRes.data : []);
 			} catch (e) { toast.error(normalizeAxiosError(e)); }
 		})();
 		return () => { mounted = false; };
@@ -334,6 +351,31 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		setValue('combinations', updated, { shouldDirty: true, shouldValidate: false });
 	};
 
+	// --- Purchase Quantity Distribution Logic ---
+	const handleTotalQuantityChange = (val) => {
+		setTotalPurchaseQuantity(val);
+		const num = Number(val);
+		if (isNaN(num) || num <= 0) return;
+
+		const combos = watch('combinations') || [];
+		if (combos.length === 0) return;
+
+		const perSku = Math.floor(num / combos.length);
+		const remainder = num % combos.length;
+
+		const next = combos.map((c, idx) => ({
+			...c,
+			stockOnHand: perSku + (idx === 0 ? remainder : 0)
+		}));
+		setValue('combinations', next, { shouldDirty: true });
+	};
+
+	const handleSkuQuantityBlur = () => {
+		const combos = watch('combinations') || [];
+		const total = combos.reduce((acc, c) => acc + (Number(c.stockOnHand) || 0), 0);
+		setTotalPurchaseQuantity(String(total));
+	};
+
 	const onSubmit = async (data) => {
 		try {
 			const isOthersValid = validateImages(otherFiles, 'other');
@@ -379,6 +421,20 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			if (isEditMode && removedImages.length > 0) fd.append('removedImages', JSON.stringify(removedImages));
 			(otherFiles ?? []).forEach((f) => { if (!f) return; if (f.isFromLibrary || f.isExisting) return; if (f.file) fd.append('images', f.file); });
 			if (!isEditMode) fd.append('combinations', JSON.stringify([...data.combinations]));
+
+			// Add Purchase Data if enabled
+			if (!isEditMode && hasPurchase) {
+				const pData = {
+					...data.purchase,
+					supplierId: data.purchase.supplierId && data.purchase.supplierId !== 'none' ? Number(data.purchase.supplierId) : undefined,
+					safeId: data.purchase.safeId && data.purchase.safeId !== 'none' ? data.purchase.safeId : undefined,
+					paidAmount: Number(data.purchase.paidAmount || 0),
+				};
+				fd.append('purchase', JSON.stringify(pData));
+
+				const receipt = purchaseReceipt[0];
+				if (receipt?.file) fd.append('purchaseReceiptAsset', receipt.file);
+			}
 
 			const apiCall = isEditMode
 				? api.patch(`/products/${productId}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
@@ -682,10 +738,130 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 								<Card>
 									<div className="flex items-center justify-between mb-5">
 										<SectionHeader title={t('combinations.title')} />
-										<span className="text-[12px] font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">
-											{comboFields.length} {t('combinations.count')}
-										</span>
+										<div className="flex items-center gap-4">
+											{!isEditMode && (
+												<div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/50">
+													<Controller
+														control={control}
+														name="hasPurchase"
+														render={({ field }) => (
+															<Checkbox
+																checked={hasPurchase}
+																onCheckedChange={(v) => {
+																	setHasPurchase(!!v);
+																}}
+																id="has-purchase"
+																className="rounded-md"
+															/>
+														)}
+													/>
+													<label htmlFor="has-purchase" className="text-[12px] font-bold text-amber-700 dark:text-amber-400 cursor-pointer select-none">
+														{t('purchase.hasInvoice')}
+													</label>
+												</div>
+											)}
+											<span className="text-[12px] font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">
+												{comboFields.length} {t('combinations.count')}
+											</span>
+										</div>
 									</div>
+
+									{/* Purchase Data Form (Only in Create Mode + Toggle On) */}
+									{!isEditMode && hasPurchase && (
+										<motion.div
+											initial={{ opacity: 0, height: 0 }}
+											animate={{ opacity: 1, height: 'auto' }}
+											className="mb-6 p-5 rounded-2xl border-2 border-dashed border-primary/20 bg-primary/[0.02] space-y-5"
+										>
+											<div className="flex items-center gap-2 pb-2 border-b border-primary/10">
+												<FilePlus className="w-4 h-4 text-primary" />
+												<h4 className="text-[14px] font-bold text-primary">{t('purchase.invoiceInfo')}</h4>
+											</div>
+
+											<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+												<Field label={t('purchase.supplier')}>
+													<Controller
+														control={control}
+														name="purchase.supplierId"
+														render={({ field }) => (
+															<Select value={field.value || ''} onValueChange={field.onChange}>
+																<SelectTrigger className="bg-white dark:bg-slate-900">
+																	<SelectValue placeholder={t('purchase.supplierPlaceholder')} />
+																</SelectTrigger>
+																<SelectContent>
+																	<SelectItem value="none">{t('common.none')}</SelectItem>
+																	{suppliers.map((s) => (
+																		<SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
+																	))}
+																</SelectContent>
+															</Select>
+														)}
+													/>
+												</Field>
+
+												<Field label={t('purchase.invoiceNumber')}>
+													<Input {...register('purchase.receiptNumber')} placeholder="INV-000" className="bg-white dark:bg-slate-900" />
+												</Field>
+
+												<Field label={t('purchase.safe')}>
+													<Controller
+														control={control}
+														name="purchase.safeId"
+														render={({ field }) => (
+															<Select value={field.value || ''} onValueChange={field.onChange}>
+																<SelectTrigger className="bg-white dark:bg-slate-900">
+																	<SelectValue placeholder={t('purchase.safePlaceholder')} />
+																</SelectTrigger>
+																<SelectContent className="bg-card-select">
+																	<SelectItem value="نقدي">{tPurchase("options.safe.cash")}</SelectItem>
+																	<SelectItem value="الخزينة الرئيسية">{tPurchase("options.safe.main")}</SelectItem>
+																	<SelectItem value="الخزينة الفرعية">{tPurchase("options.safe.sub")}</SelectItem>
+																	<SelectItem value="الخزينة الإضافية">{tPurchase("options.safe.extra")}</SelectItem>
+																</SelectContent>
+															</Select>
+														)}
+													/>
+												</Field>
+
+												<Field label={t('purchase.totalQuantity')}>
+													<div className="relative">
+														<Input
+															type="number"
+															value={totalPurchaseQuantity}
+															onChange={(e) => handleTotalQuantityChange(e.target.value)}
+															placeholder="0"
+															className="bg-white dark:bg-slate-900 pr-10"
+														/>
+														<div className="absolute end-3 top-1/2 -translate-y-1/2 group cursor-help">
+															<Info className="w-4 h-4 text-slate-400" />
+															<div className="absolute bottom-full right-0 mb-2 w-48 p-2 rounded-lg bg-slate-800 text-white text-[10px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+																{t('purchase.quantityDistribution')}
+															</div>
+														</div>
+													</div>
+												</Field>
+
+												<Field label={t('purchase.paidAmount')}>
+													<Input type="number" step="0.01" {...register('purchase.paidAmount')} placeholder="0.00" className="bg-white dark:bg-slate-900" />
+												</Field>
+
+												<div className="md:row-span-2">
+													<ImageUploadBox
+														title={t('purchase.receipt')}
+														files={purchaseReceipt}
+														onFilesChange={(next) => setPurchaseReceipt(next.slice(0, 1))}
+														multiple={false}
+														// className="h-[46px] min-h-0 py-0"
+														compact
+													/>
+												</div>
+
+												<Field label={t('purchase.notes')} className="md:col-span-2 ">
+													<Textarea {...register('purchase.notes')} placeholder="..." className="bg-white dark:bg-slate-900 min-h-[60px]" />
+												</Field>
+											</div>
+										</motion.div>
+									)}
 
 									<div className="overflow-hidden rounded-xl border border-slate-100 dark:border-slate-800">
 										<div className="overflow-x-auto max-h-[520px] overflow-y-auto">
@@ -709,7 +885,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 														const attrs = current?.attributes || {};
 
 														// حساب المتوفر: الكمية الفعلية - المحجوز
-														const onHand = current?.stockOnHand || 0;
+														const onHand = isEditMode || hasPurchase ? current?.stockOnHand || 0 : 0;
 														const reserved = current?.reserved || 0;
 														const available = Math.max(0, onHand - reserved);
 														return (
@@ -734,7 +910,16 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 																	/>
 																</td>
 																<td className="px-2 py-3 text-center">
-																	<span className="font-medium text-slate-700 dark:text-slate-300">{onHand}</span>
+																	{!isEditMode && hasPurchase ? (
+																		<Input
+																			type="number"
+																			{...register(`combinations.${idx}.stockOnHand`)}
+																			onBlur={handleSkuQuantityBlur}
+																			className="h-[34px] w-[70px] mx-auto text-center rounded-lg text-[12px]"
+																		/>
+																	) : (
+																		<span className="font-medium text-slate-700 dark:text-slate-300">{onHand}</span>
+																	)}
 																</td>
 																<td className="px-2 py-3 text-center">
 																	<span className="text-amber-600 dark:text-amber-400 font-medium">{reserved}</span>

@@ -984,3 +984,10 @@ select:focus-visible {
 }
 
 /* ───────────────────────────────────────────────────────────────────────── */
+
+html[dir="rtl"] .dir-force {
+  direction: rtl !important;
+}
+html[dir="ltr"] .dir-force {
+  direction: ltr !important; 
+}

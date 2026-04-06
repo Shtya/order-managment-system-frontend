@@ -349,7 +349,7 @@ export default function SuppliersPage() {
 							{
 								icon: <Eye />,
 								tooltip: t("actions.view"),
-								onClick: (r) => openView(r),
+								onClick: (r) => router.push(`/suppliers/${r.id}`),
 								variant: "purple",
 								permission: "suppliers.read",
 							},

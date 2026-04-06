@@ -179,6 +179,7 @@ export default function CreateReturnInvoicePage() {
 	}, [watchedSupplier, suppliers, setValue]);
 
 	const handleDeleteProduct = (index) => {
+		const deletedItem = watchedItems[index];
 		const newItems = watchedItems.filter((_, i) => i !== index);
 		setValue("items", newItems);
 
@@ -204,22 +205,21 @@ export default function CreateReturnInvoicePage() {
 
 	const handleSelectSku = (sku) => {
 		const currentItems = watchedItems ?? [];
-
+		if (!sku?.available) return;
 		// Prevent duplicate selection
 		const alreadyExists = currentItems.some(
 			(item) => item.variantId === sku.id
 		);
-
 		if (alreadyExists) return;
-
 
 		setSelectSku((prev) => [...prev, sku]);
 		const newItem = {
 			variantId: sku.id,
-			productName: sku.productName,
+			productName: sku.name,
 			sku: sku.sku || sku.key,
 			attributes: sku.attributes || {},
 			returnedQuantity: 1,
+			availableQuantity: sku.available || 0, // Store available quantity
 			unitCost: sku.price,
 			taxInclusive: false,
 			taxRate: 5,
@@ -231,10 +231,25 @@ export default function CreateReturnInvoicePage() {
 
 	const handleProductFieldChange = (index, field, value) => {
 		const newItems = [...watchedItems];
-		newItems[index] = { ...newItems[index], [field]: value };
+		let finalValue = value;
+
+		// Validation for returnedQuantity
+		if (field === "returnedQuantity") {
+			const available = newItems[index].availableQuantity || 0;
+			const numValue = Number(value);
+
+			if (numValue > available) {
+				toast.error(`${tValidation("quantityExceedsAvailable") || "Quantity exceeds available"}: ${available}`);
+				finalValue = available;
+			} else if (numValue < 1) {
+				finalValue = 1;
+			}
+		}
+
+		newItems[index] = { ...newItems[index], [field]: finalValue };
 		setValue("items", newItems);
 	};
-	console.log(errors)
+
 	const onSubmit = async (data) => {
 		setLoading(true);
 		try {
@@ -497,7 +512,7 @@ export default function CreateReturnInvoicePage() {
 								{t("sections.addProducts")}
 							</h3>
 
-							<ProductSkuSearchPopover handleSelectSku={handleSelectSku} selectedSkus={selectSku} />
+							<ProductSkuSearchPopover handleSelectSku={handleSelectSku} selectedSkus={selectSku} closeOnSelect={false} />
 							{errors.items && <p className="text-xs text-red-500 mt-2">{errors.items.message}</p>}
 						</motion.div>
 
@@ -567,8 +582,12 @@ export default function CreateReturnInvoicePage() {
 															onChange={(e) =>
 																handleProductFieldChange(index, "returnedQuantity", e.target.value)
 															}
+															max={product.availableQuantity}
 															className="h-8 w-20"
 														/>
+														<p className="text-[10px] text-gray-500 font-medium">
+															{t("table.available")}: {product.availableQuantity}
+														</p>
 														{errors.items?.[index]?.returnedQuantity && (
 															<p className="text-[10px] text-red-500 font-medium">
 																{errors.items[index].returnedQuantity.message}

@@ -831,7 +831,7 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 	);
 }
 
-function DetailsModal({ isOpen, onClose, invoice, isLoading, formatCurrency }) {
+export function DetailsModal({ isOpen, onClose, invoice, isLoading, formatCurrency }) {
 	const t = useTranslations("purchases");
 	const receipt = invoice?.receiptAsset || null;
 

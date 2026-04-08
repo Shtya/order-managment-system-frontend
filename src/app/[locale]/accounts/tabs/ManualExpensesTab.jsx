@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import {
   Eye,
@@ -22,7 +22,8 @@ import {
   MoreHorizontal,
   Loader2,
   Download,
-  Settings2
+  Settings2,
+  AlertCircle
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import Table, { FilterField } from "@/components/atoms/Table";
@@ -56,6 +57,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import api from "@/utils/api";
+import { useExport } from "@/hook/useExport";
+import toast from "react-hot-toast";
 
 // Category configuration
 export const CATEGORY_CONFIG = {
@@ -68,40 +72,103 @@ export const CATEGORY_CONFIG = {
 };
 
 // --- Form Component (Exported) ---
-export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onSave }) {
+export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onSave, categories }) {
   const t = useTranslations("accounts");
+  const fileInputRef = useRef(null);
+
   const [formData, setFormData] = useState({
     amount: "",
-    date: new Date().toISOString().split("T")[0],
-    category: "other",
+    collectionDate: new Date(),
+    categoryId: "none",
     description: "",
     attachment: null
   });
+  console.log(formData);
+  const handleDivClick = () => {
+    // Manually trigger the hidden input
+    fileInputRef.current?.click();
+  };
 
-  React.useEffect(() => {
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 20MB client-side check
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("File is too large (max 20MB)");
+      e.target.value = ""; // Reset the input
+      return;
+    }
+
+    setFormData(prev => ({ ...prev, attachment: file }));
+  };
+
+
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
     if (editingExpense) {
       setFormData({
         amount: Math.abs(editingExpense.amount),
-        date: editingExpense.date,
-        category: editingExpense.category,
-        description: editingExpense.description,
+        collectionDate: new Date(editingExpense.collectionDate),
+        categoryId: String(editingExpense.categoryId || "none"),
+        description: editingExpense.description || "",
         attachment: editingExpense.attachment || null
       });
     } else {
       setFormData({
         amount: "",
-        date: new Date().toISOString().split("T")[0],
-        category: "other",
+        collectionDate: new Date(),
+        categoryId: "none",
         description: "",
         attachment: null
       });
     }
   }, [editingExpense, open]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSave(formData);
-    onOpenChange(false);
+
+    if (formData.categoryId === "none") {
+      toast.error(t("manualExpenses.form.selectCategoryError") || "Please select a category");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // 1. Initialize FormData
+      const data = new FormData();
+
+      // 2. Append standard fields
+      data.append("amount", String(formData.amount));
+      data.append("categoryId", String(formData.categoryId));
+      data.append("collectionDate", formData.collectionDate);
+      data.append("description", formData.description || "");
+
+      // 3. Append the file (only if a new one was selected)
+      // The key "attachment" must match the @UploadedFile('attachment') in NestJS
+      if (formData.attachment instanceof File) {
+        data.append("attachment", formData.attachment);
+      }
+
+      // 4. Send request
+      if (editingExpense) {
+        await api.patch(`/expenses/${editingExpense.id}`, data);
+        toast.success(t("manualExpenses.messages.updated"));
+      } else {
+        await api.post("/expenses", data);
+        toast.success(t("manualExpenses.messages.created"));
+      }
+
+      onSave?.();
+      onOpenChange(false);
+    } catch (err) {
+      console.error("Error saving expense:", err);
+      toast.error(err?.response?.data?.message || "Error saving expense");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -130,8 +197,7 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
                   className="theme-field pl-8"
                   placeholder="0.00"
                 />
-                <DollarSign size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">ج</span>
+
               </div>
             </div>
 
@@ -140,12 +206,25 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
               <Label className="text-xs font-bold">{t("manualExpenses.form.date")}</Label>
               <div className="relative">
                 <Flatpickr
-                  value={formData.date}
-                  onChange={([date]) => setFormData({ ...formData, date: date.toISOString().split("T")[0] })}
-                  options={{ dateFormat: "Y-m-d", maxDate: "today" }}
-                  className="theme-field w-full"
+                  // IMPORTANT: Use the date object for value, but store the string in state
+                  value={formData.collectionDate ? new Date(formData.collectionDate) : new Date()}
+                  onChange={([date]) => {
+                    if (date) {
+                      setFormData({ ...formData, collectionDate: date });
+                    }
+                  }}
+                  options={{
+                    dateFormat: "Y-m-d",
+                    maxDate: "today",
+                    // FIX: This prevents the Dialog focus trap from "disabling" the calendar
+                    static: true,
+                    monthSelectorType: "dropdown"
+                  }}
+                  date-site
+                  // Ensure padding-left (pl-8) so text doesn't hide behind the icon
+                  className="theme-field w-full pl-9"
                 />
-                <Calendar size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+
               </div>
             </div>
           </div>
@@ -154,24 +233,22 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
           <div className="space-y-2">
             <Label className="text-xs font-bold">{t("manualExpenses.form.category")}</Label>
             <Select
-              value={formData.category}
-              onValueChange={(v) => setFormData({ ...formData, category: v })}
+              value={formData.categoryId}
+              onValueChange={(v) => setFormData({ ...formData, categoryId: v })}
             >
               <SelectTrigger className="theme-field">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {Object.keys(CATEGORY_CONFIG).map((cat) => {
-                  const Config = CATEGORY_CONFIG[cat];
-                  return (
-                    <SelectItem key={cat} value={cat}>
-                      <div className="flex items-center gap-2">
-                        <Config.icon size={14} className={Config.iconColor} style={{ color: Config.iconColor }} />
-                        <span>{t(`manualExpenses.categories.${cat}`)}</span>
-                      </div>
-                    </SelectItem>
-                  );
-                })}
+                <SelectItem value="none">{t("common.none")}</SelectItem>
+                {categories?.map((cat) => (
+                  <SelectItem key={cat.id} value={String(cat.id)}>
+                    <div className="flex items-center gap-2">
+                      <Plus size={14} className="text-primary" />
+                      <span>{cat.name}</span>
+                    </div>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -191,12 +268,29 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
           {/* Attachment */}
           <div className="space-y-2">
             <Label className="text-xs font-bold">{t("manualExpenses.form.attachment")}</Label>
-            <div className="border-2 border-dashed border-border rounded-xl p-4 flex flex-col items-center justify-center gap-2 hover:border-primary/50 transition-colors cursor-pointer group">
+
+            {/* 1. Add onClick to the parent div */}
+            <div
+              onClick={handleDivClick}
+              className="border-2 border-dashed border-border rounded-xl p-4 flex flex-col items-center justify-center gap-2 hover:border-primary/50 transition-colors cursor-pointer group"
+            >
               <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 group-hover:text-primary transition-colors">
                 <ImageIcon size={20} />
               </div>
-              <span className="text-xs text-muted-foreground font-medium">{t("manualExpenses.form.upload")}</span>
-              <input type="file" className="hidden" accept="image/*" />
+
+              <span className="text-xs font-medium">
+                {formData.attachment instanceof File
+                  ? formData.attachment.name
+                  : (formData.attachment ? "Change attachment" : t("manualExpenses.form.upload"))}
+              </span>
+              {/* 2. Link the ref to the input */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                accept="image/*,.pdf" // Added PDF support as you mentioned docs
+              />
             </div>
           </div>
 
@@ -204,8 +298,8 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="rounded-xl">
               {t("manualExpenses.form.cancel")}
             </Button>
-            <Button type="submit" className="rounded-xl px-8">
-              {t("manualExpenses.form.save")}
+            <Button type="submit" className="rounded-xl px-8" disabled={loading}>
+              {loading ? <Loader2 size={16} className="animate-spin" /> : t("manualExpenses.form.save")}
             </Button>
           </DialogFooter>
         </form>
@@ -217,18 +311,41 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
 // --- Delete Alert Component (Exported) ---
 export function DeleteManualExpenseAlert({ open, onOpenChange, onConfirm }) {
   const t = useTranslations("accounts.manualExpenses.deleteAlert");
+  const [loading, setLoading] = useState(false);
+
+  const handleConfirm = async () => {
+    setLoading(true);
+    try {
+      await onConfirm();
+      onOpenChange(false);
+    } catch (err) {
+      console.error("Error deleting expense:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent className="rounded-2xl">
         <AlertDialogHeader>
-          <AlertDialogTitle>{t("title")}</AlertDialogTitle>
-          <AlertDialogDescription>{t("description")}</AlertDialogDescription>
+          <div className="w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-2">
+            <AlertCircle size={24} />
+          </div>
+          <AlertDialogTitle className="text-xl font-black">{t("title")}</AlertDialogTitle>
+          <AlertDialogDescription className="text-sm font-medium leading-relaxed">
+            {t("description")}
+          </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="gap-2">
-          <AlertDialogCancel className="rounded-xl">{t("cancel")}</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm} className="bg-red-600 hover:bg-red-700 rounded-xl">
-            {t("confirm")}
-          </AlertDialogAction>
+        <AlertDialogFooter className="gap-2 pt-4">
+          <AlertDialogCancel className="rounded-xl mt-0">{t("cancel")}</AlertDialogCancel>
+          <Button
+            onClick={handleConfirm}
+            className="rounded-xl bg-red-600 hover:bg-red-700 text-white px-8"
+            disabled={loading}
+          >
+            {loading ? <Loader2 size={16} className="animate-spin" /> : t("confirm")}
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -237,61 +354,105 @@ export function DeleteManualExpenseAlert({ open, onOpenChange, onConfirm }) {
 
 // --- Main Tab Component ---
 export default function ManualExpensesTab({
-  onAdd,
-  onEdit,
-  onDelete
+  categories,
+  refreshCategories
 }) {
   const tOrders = useTranslations("orders");
   const t = useTranslations("accounts");
   const [search, setSearch] = useState("");
   const [selectedExpense, setSelectedExpense] = useState(null);
 
-  // Mock data
-  const [expenses, setExpenses] = useState([
-    {
-      id: 1,
-      date: "2025-12-01",
-      category: "ads",
-      description: "إعلانات فيسبوك لشهر نوفمبر - حملة الشتاء",
-      amount: -2450,
-      addedBy: "Ahmed Ali",
-      attachment: "https://via.placeholder.com/150"
-    },
-    {
-      id: 2,
-      date: "2025-12-02",
-      category: "packaging",
-      description: "شراء كراتين وبلاستر للمخزن (500 قطعة)",
-      amount: -1200,
-      addedBy: "Sara Mohamed",
-    },
-    {
-      id: 3,
-      date: "2025-12-03",
-      category: "transport",
-      description: "نقل بضاعة من الميناء إلى المخزن الرئيسي",
-      amount: -3500,
-      addedBy: "Ahmed Ali",
+  // Modals State
+  const [addEditModalOpen, setAddEditModalOpen] = useState(false);
+  const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState(null);
+
+  // API Data State
+  const [expenses, setExpenses] = useState([]);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [loading, setLoading] = useState(false);
+  const [filters, setFilters] = useState({
+    categoryId: "none",
+    startDate: null,
+    endDate: null
+  });
+
+  const { handleExport, exportLoading } = useExport();
+
+  const fetchExpenses = async () => {
+    setLoading(true);
+    try {
+      const params = {
+        page: currentPage,
+        limit: perPage,
+        search: search.trim() || undefined,
+        categoryId: filters.categoryId !== "none" ? filters.categoryId : undefined,
+        startDate: filters.startDate || undefined,
+        endDate: filters.endDate || undefined
+      };
+      const res = await api.get("/expenses", { params });
+      setExpenses(res.data.records || []);
+      setTotalRecords(res.data.total_records || 0);
+    } catch (err) {
+      console.error("Error fetching expenses:", err);
+      toast.error(t("manualExpenses.messages.fetchError") || "Error fetching expenses");
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
+
+  useEffect(() => {
+    fetchExpenses();
+  }, [currentPage, perPage, search, filters]);
+
+  const handleAdd = () => {
+    setEditingExpense(null);
+    setAddEditModalOpen(true);
+  };
+
+  const handleEdit = (expense) => {
+    setEditingExpense(expense);
+    setAddEditModalOpen(true);
+  };
+
+  const handleDelete = (expense) => {
+    setEditingExpense(expense);
+    setDeleteAlertOpen(true);
+  };
+
+  const onExport = async () => {
+    const params = {
+      search: search.trim() || undefined,
+      categoryId: filters.categoryId !== "none" ? filters.categoryId : undefined,
+      startDate: filters.startDate || undefined,
+      endDate: filters.endDate || undefined
+    };
+
+    await handleExport({
+      endpoint: "/expenses/export",
+      params,
+      filename: `manual_expenses_${Date.now()}.xlsx`,
+    });
+  };
 
   const columns = useMemo(() => [
     {
-      key: "date",
+      key: "collectionDate",
       header: t("manualExpenses.columns.date"),
-      cell: (row) => <span className="text-xs font-medium">{row.date}</span>
+      cell: (row) => <span className="text-xs font-medium">{new Date(row.collectionDate).toLocaleDateString()}</span>
     },
     {
       key: "category",
       header: t("manualExpenses.columns.category"),
       cell: (row) => {
-        const config = CATEGORY_CONFIG[row.category] || CATEGORY_CONFIG.other;
         return (
           <div className="flex items-center gap-2">
-            <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center", config.color)}>
-              <config.icon size={14} />
+            <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center bg-primary/10 text-primary")}>
+              <Tag size={14} />
             </div>
-            <span className="text-xs font-bold">{t(`manualExpenses.categories.${row.category}`)}</span>
+            <span className="text-xs font-bold">{row.category?.name || t("common.none")}</span>
           </div>
         );
       }
@@ -310,21 +471,21 @@ export default function ManualExpensesTab({
       header: t("manualExpenses.columns.amount"),
       cell: (row) => (
         <span className="text-sm font-black text-red-600 tabular-nums">
-          -{Math.abs(row.amount).toLocaleString()}ج
+          -{Number(row.amount).toLocaleString()}ج
         </span>
       )
     },
     {
-      key: "addedBy",
+      key: "createdByUserId",
       header: t("manualExpenses.columns.addedBy"),
-      cell: (row) => (
+      cell: (row) => (row.createdByUserId ? (
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
             <User size={12} className="text-muted-foreground" />
           </div>
-          <span className="text-xs font-semibold">{row.addedBy}</span>
+          <span className="text-xs font-semibold">{row.createdByUserId}</span>
         </div>
-      )
+      ) : null)
     },
     {
       key: "actions",
@@ -343,7 +504,7 @@ export default function ManualExpensesTab({
             variant="ghost"
             size="icon"
             className="w-8 h-8 rounded-lg hover:bg-orange-100 hover:text-orange-600"
-            onClick={() => onEdit?.(row)}
+            onClick={() => handleEdit(row)}
           >
             <Pencil size={14} />
           </Button>
@@ -351,20 +512,21 @@ export default function ManualExpensesTab({
             variant="ghost"
             size="icon"
             className="w-8 h-8 rounded-lg hover:bg-red-100 hover:text-red-600"
-            onClick={() => onDelete?.(row)}
+            onClick={() => handleDelete(row)}
           >
             <Trash2 size={14} />
           </Button>
         </div>
       )
     }
-  ], [t, onEdit, onDelete]);
-  let exportLoading = false;
+  ], [t]);
+
   return (
     <div className="space-y-5">
       <Table
         searchValue={search}
         onSearchChange={setSearch}
+        loading={loading}
         labels={{
           searchPlaceholder: tOrders("toolbar.searchPlaceholder"),
           apply: tOrders("filters.apply"),
@@ -376,17 +538,61 @@ export default function ManualExpensesTab({
         columns={columns}
         data={expenses}
         pagination={{
-          total_records: expenses.length,
-          current_page: 1,
-          per_page: 10,
+          total_records: totalRecords,
+          current_page: currentPage,
+          per_page: perPage,
         }}
+        onPageChange={setCurrentPage}
+        onLimitChange={setPerPage}
+        filters={
+          <>
+            <FilterField label={t("manualExpenses.form.category")}>
+              <Select
+                value={filters.categoryId}
+                onValueChange={(v) => setFilters({ ...filters, categoryId: v })}
+              >
+                <SelectTrigger className="h-9 rounded-lg border-dashed">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t("common.all")}</SelectItem>
+                  {categories?.map((cat) => (
+                    <SelectItem key={cat.id} value={String(cat.id)}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FilterField>
+
+            <FilterField label={t("filters.dateRange")}>
+              <div className="flex items-center gap-2">
+                <Flatpickr
+                  value={filters.startDate}
+                  onChange={([date]) => setFilters({ ...filters, startDate: date.toISOString().split("T")[0] })}
+                  options={{ dateFormat: "Y-m-d" }}
+                  placeholder={t("filters.startDate")}
+                  className="h-9 rounded-lg border border-input bg-background px-3 py-1 text-xs shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                />
+                <span className="text-muted-foreground">-</span>
+                <Flatpickr
+                  value={filters.endDate}
+                  onChange={([date]) => setFilters({ ...filters, endDate: date.toISOString().split("T")[0] })}
+                  options={{ dateFormat: "Y-m-d" }}
+                  placeholder={t("filters.endDate")}
+                  className="h-9 rounded-lg border border-input bg-background px-3 py-1 text-xs shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </div>
+            </FilterField>
+          </>
+        }
         actions={[
           {
             key: "add",
             label: t("manualExpenses.actions.add"),
             icon: <Plus size={14} />,
             color: "primary",
-            onClick: onAdd,
+            onClick: handleAdd,
             permission: "orders.create",
           },
           {
@@ -398,8 +604,8 @@ export default function ManualExpensesTab({
               <Download size={14} />
             ),
             color: "blue",
-            // onClick: handleExport,
-            // disabled: exportLoading,
+            onClick: onExport,
+            disabled: exportLoading,
             permission: "orders.read",
           },
 
@@ -422,18 +628,18 @@ export default function ManualExpensesTab({
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-red-50 rounded-2xl border border-red-100 flex flex-col items-center justify-center gap-1">
                   <span className="text-[10px] font-black uppercase tracking-wider text-red-400">{t("manualExpenses.columns.amount")}</span>
-                  <span className="text-2xl font-black text-red-600">-{Math.abs(selectedExpense.amount).toLocaleString()}ج</span>
+                  <span className="text-2xl font-black text-red-600">-{Number(selectedExpense.amount).toLocaleString()}ج</span>
                 </div>
                 <div className="p-4 bg-muted/30 rounded-2xl border border-border flex flex-col items-center justify-center gap-1">
                   <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">{t("manualExpenses.columns.date")}</span>
-                  <span className="text-sm font-bold">{selectedExpense.date}</span>
+                  <span className="text-sm font-bold">{new Date(selectedExpense.collectionDate).toLocaleDateString()}</span>
                 </div>
               </div>
 
               {/* Description Box (Orange as requested) */}
               <div className="p-5 bg-orange-50 rounded-2xl border border-orange-100 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-3 text-orange-200 group-hover:text-orange-300 transition-colors">
-                  <FileText size={40} />
+                  <FileText size="40" />
                 </div>
                 <div className="relative z-10 space-y-2">
                   <span className="text-[10px] font-black uppercase tracking-wider text-orange-400">{t("manualExpenses.columns.description")}</span>
@@ -453,11 +659,8 @@ export default function ManualExpensesTab({
                     <span className="text-xs font-bold text-muted-foreground">{t("manualExpenses.columns.category")}</span>
                   </div>
                   <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-background border border-border shadow-sm">
-                    {(() => {
-                      const Config = CATEGORY_CONFIG[selectedExpense.category] || CATEGORY_CONFIG.other;
-                      return <Config.icon size={12} className={Config.iconColor} style={{ color: Config.iconColor }} />;
-                    })()}
-                    <span className="text-xs font-black">{t(`categories.${selectedExpense.category}`)}</span>
+                    <Tag size={12} className="text-primary" />
+                    <span className="text-xs font-black">{selectedExpense.category?.name || t("common.none")}</span>
                   </div>
                 </div>
 
@@ -468,7 +671,7 @@ export default function ManualExpensesTab({
                     </div>
                     <span className="text-xs font-bold text-muted-foreground">{t("manualExpenses.columns.addedBy")}</span>
                   </div>
-                  <span className="text-xs font-black">{selectedExpense.addedBy}</span>
+                  <span className="text-xs font-black">{selectedExpense.createdByUserId}</span>
                 </div>
 
                 {selectedExpense.attachment && (
@@ -494,6 +697,31 @@ export default function ManualExpensesTab({
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Form Modals */}
+      <ManualExpenseFormModal
+        open={addEditModalOpen}
+        onOpenChange={setAddEditModalOpen}
+        editingExpense={editingExpense}
+        categories={categories}
+        onSave={fetchExpenses}
+      />
+
+      <DeleteManualExpenseAlert
+        open={deleteAlertOpen}
+        onOpenChange={setDeleteAlertOpen}
+        onConfirm={async () => {
+          try {
+            await api.delete(`/expenses/${editingExpense.id}`);
+            toast.success(t("manualExpenses.messages.deleted") || "Expense deleted successfully");
+            fetchExpenses();
+          } catch (err) {
+            console.error("Error deleting expense:", err);
+            toast.error(err?.response?.data?.message || t("manualExpenses.messages.deleteError") || "Error deleting expense");
+            throw err;
+          }
+        }}
+      />
     </div>
   );
 }
@@ -508,7 +736,9 @@ export function CategoryFormModal({ open, onOpenChange, editingCategory, onSave 
     description: "",
   });
 
-  React.useEffect(() => {
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
     if (editingCategory) {
       setFormData({
         name: editingCategory.name || "",
@@ -522,10 +752,25 @@ export function CategoryFormModal({ open, onOpenChange, editingCategory, onSave 
     }
   }, [editingCategory, open]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSave?.(formData);
-    onOpenChange(false);
+    setLoading(true);
+    try {
+      if (editingCategory) {
+        await api.patch(`/expense-categories/${editingCategory.id}`, formData);
+        toast.success(t("messages.categoryUpdated") || "Category updated successfully");
+      } else {
+        await api.post("/expense-categories", formData);
+        toast.success(t("messages.categoryCreated") || "Category created successfully");
+      }
+      onSave?.();
+      onOpenChange(false);
+    } catch (err) {
+      console.error("Error saving category:", err);
+      toast.error(err?.response?.data?.message || t("messages.categoryError") || "Error saving category");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -567,14 +812,56 @@ export function CategoryFormModal({ open, onOpenChange, editingCategory, onSave 
 
           <DialogFooter className="gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="rounded-xl">
-              {t("form.cancel")}
+              {t("form.cancel") || "Cancel"}
             </Button>
-            <Button type="submit" className="rounded-xl px-8 bg-slate-800 hover:bg-slate-900 text-white">
-              {t("categoryMgmt.saveBtn")}
+            <Button type="submit" className="rounded-xl px-8 bg-slate-800 hover:bg-slate-900 text-white" disabled={loading}>
+              {loading ? <Loader2 size={16} className="animate-spin" /> : (t("categoryMgmt.saveBtn") || "Save")}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+// --- Delete Category Alert Component (Exported) ---
+export function DeleteCategoryAlert({ open, onOpenChange, onConfirm, categoryName }) {
+  const t = useTranslations("accounts.manualExpenses.deleteAlert");
+  const [loading, setLoading] = useState(false);
+
+  const handleConfirm = async () => {
+    setLoading(true);
+    try {
+      await onConfirm();
+      onOpenChange(false);
+    } catch (err) {
+      console.error("Error deleting category:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent className="rounded-2xl">
+        <AlertDialogHeader>
+
+          <AlertDialogTitle className="text-xl font-black">{t("title")}</AlertDialogTitle>
+          <AlertDialogDescription className="text-sm font-medium leading-relaxed">
+            {t("description")} {categoryName ? `(${categoryName})` : ""}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter className="gap-2 pt-4">
+          <AlertDialogCancel className="rounded-xl mt-0">{t("cancel")}</AlertDialogCancel>
+          <Button
+            onClick={handleConfirm}
+            className="rounded-xl bg-red-600 hover:bg-red-700 text-white px-8"
+            disabled={loading}
+          >
+            {loading ? <Loader2 size={16} className="animate-spin" /> : t("confirm")}
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

@@ -7759,7 +7759,7 @@
     "tabs": {
       "overview": "Overview",
       "monthlyExpenses": "Monthly Expenses",
-      "manualExpenses": "Manual Expenses",
+      "manualExpenses": "Operating Expenses",
       "cityDeliveries": "City Deliveries",
       "employeePerformance": "Employee Performance",
       "supplierAccounts": "Supplier Accounts",
@@ -7768,7 +7768,7 @@
     "stats": {
       "totalExpenses": "Total Expenses",
       "productPurchases": "Product Purchases",
-      "manualExpenses": "Manual Expenses",
+      "manualExpenses": "Operating Expenses",
       "returns": "Returns (Money)",
       "netResult": "Net Result",
       "shippingCost": "Shipping Cost",
@@ -7781,17 +7781,24 @@
       "totalNetProfit": "Total Net Profit"
     },
     "export": "Export",
+    "common": {
+      "none": "None",
+      "all": "All"
+    },
     "filters": {
       "supplier": "Supplier",
       "allSuppliers": "All Suppliers",
       "none": "None",
       "dateRange": "Date Range",
       "dateRangePlaceholder": "Select date range",
+      "startDate": "Start Date",
+      "endDate": "End Date",
       "apply": "Apply",
       "year": "Year",
       "selectYear": "Select Year"
     },
     "overview": {
+      "viewOperetionalExpenses": "View Operating Expenses",
       "lastExpenses": "Last Expenses",
       "viewAll": "View All",
       "expensesBreakdown": "Expenses Breakdown",
@@ -7802,11 +7809,21 @@
       "employeePerformance": "Employee Performance",
       "cityDeliveries": "City Deliveries",
       "viewReport": "View Report",
+      "noData": "No data available currently",
+      "purchaseProducts": "Purchase Products",
+      "purchase": "Purchase",
+      "payable": "Payable",
+      "receivable": "Receivable",
+      "unknownCity": "Unknown City",
+      "closingFor": "Closing for month {month} of {year}",
       "periods": {
         "daily": "Daily",
         "weekly": "Weekly",
         "monthly": "Monthly"
-      }
+      },
+      "none": "None",
+      "withoutSupplier": "Without supplier",
+      "export": "Export Excel"
     },
     "monthlyExpenses": {
       "title": "Monthly Expenses",
@@ -7842,7 +7859,7 @@
       }
     },
     "manualExpenses": {
-      "title": "Manual Expenses",
+      "title": "Operating Expenses",
       "columns": {
         "date": "Date",
         "category": "Category",
@@ -7876,6 +7893,8 @@
         "descPlaceholder": "Short description of what this category includes...",
         "addNew": "Add New Category",
         "saveBtn": "Save Category",
+        "deleteBtn": "Delete Category",
+        "deleteConfirm": "Are you sure you want to delete this category?",
         "close": "Close"
       },
       "form": {
@@ -7886,7 +7905,21 @@
         "attachment": "Invoice/Receipt Image (Optional)",
         "upload": "Upload Image",
         "save": "Save",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "selectCategoryError": "Please select a category"
+      },
+      "messages": {
+        "updated": "Expense updated successfully",
+        "created": "Expense created successfully",
+        "deleted": "Expense deleted successfully",
+        "error": "Error saving expense",
+        "fetchError": "Error fetching expenses",
+        "deleteError": "Error deleting expense",
+        "categoryUpdated": "Category updated successfully",
+        "categoryCreated": "Category created successfully",
+        "categoryDeleted": "Category deleted successfully",
+        "categoryError": "Error saving category",
+        "categoryDeleteError": "Error deleting category"
       },
       "deleteAlert": {
         "title": "Are you sure you want to delete?",
@@ -7896,7 +7929,19 @@
       }
     },
     "monthClosing": {
+      "status": {
+        "closed": "Closed",
+        "pending": "Not Closed"
+      },
+      "netResult": "Estimated Net Profit",
+      "profit": "Profit",
+      "loss": "Loss",
       "title": "Period Settlements (P&L)",
+      "steps": {
+        "reviewRevenue": "Review Revenue",
+        "reviewExpenses": "Review Expenses",
+        "settleSuppliers": "Settle Supplier Accounts"
+      },
       "columns": {
         "closedAt": "Closing Date",
         "period": "Time Period",
@@ -7913,7 +7958,7 @@
       "details": {
         "title": "Financial Settlement Details",
         "productCosts": "Sold Products Cost",
-        "manualExpenses": "Manual Expenses",
+        "manualExpenses": "Operating Expenses",
         "soldOrdersCount": "Number of Sold Orders",
         "confirmClosing": "Confirm and Complete Settlement",
         "summaryTitle": "Financial Activity Summary for Period"

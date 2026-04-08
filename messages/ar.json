@@ -7759,7 +7759,7 @@
     "tabs": {
       "overview": "نظرة عامة",
       "monthlyExpenses": "المصروفات الشهرية",
-      "manualExpenses": "المصروفات المانيول",
+      "manualExpenses": "المصاريف التشغيلية",
       "cityDeliveries": "التسليمات في المحافظات",
       "employeePerformance": "أداء الموظفين",
       "supplierAccounts": "حسابات الموردين",
@@ -7768,7 +7768,7 @@
     "stats": {
       "totalExpenses": "إجمالي المصروفات",
       "productPurchases": "شراء منتجات",
-      "manualExpenses": "مصروفات مانيول",
+      "manualExpenses": "مصروفات تشغيلية",
       "returns": "المرتجعات (فلوس)",
       "netResult": "صافي النتيجة",
       "shippingCost": "تكلفة الشحن",
@@ -7781,17 +7781,24 @@
       "totalNetProfit": "إجمالي الأرباح"
     },
     "export": "تصدير",
+    "common": {
+      "none": "لا يوجد",
+      "all": "الكل"
+    },
     "filters": {
       "supplier": "المورد",
       "allSuppliers": "كل الموردين",
       "none": "لا يوجد",
       "dateRange": "الفترة الزمنية",
       "dateRangePlaceholder": "اختر الفترة",
+      "startDate": "تاريخ البداية",
+      "endDate": "تاريخ النهاية",
       "apply": "تطبيق",
       "year": "العام",
       "selectYear": "إختر العام"
     },
     "overview": {
+      "viewOperetionalExpenses": "عرض المصروفات التشغيلية",
       "lastExpenses": "آخر المصروفات",
       "viewAll": "عرض الكل",
       "expensesBreakdown": "تفاصيل المصروفات",
@@ -7802,11 +7809,21 @@
       "employeePerformance": "أداء الموظفين",
       "cityDeliveries": "التسليمات حسب المحافظة",
       "viewReport": "عرض التقرير",
+      "noData": "لا توجد بيانات متاحة حالياً",
+      "purchaseProducts": "شراء منتجات",
+      "purchase": "شراء",
+      "payable": "عليك",
+      "receivable": "لك",
+      "unknownCity": "مدينة غير معروفة",
+      "closingFor": "تقفيل شهر {month} لعام {year}",
       "periods": {
         "daily": "يومي",
         "weekly": "أسبوعي",
         "monthly": "شهري"
-      }
+      },
+      "none": "لا يوجد",
+      "withoutSupplier": "بدون مورد",
+      "export": "تصدير إكسل"
     },
     "monthlyExpenses": {
       "title": "المصروفات الشهرية",
@@ -7842,7 +7859,7 @@
       }
     },
     "manualExpenses": {
-      "title": "المصروفات المانيوال",
+      "title": "المصروفات التشغيلية",
       "columns": {
         "date": "التاريخ",
         "category": "التصنيف",
@@ -7876,6 +7893,8 @@
         "descPlaceholder": "وصف مختصر لما يشمله هذا التصنيف...",
         "addNew": "إضافة تصنيف جديد",
         "saveBtn": "حفظ التصنيف",
+        "deleteBtn": "حذف التصنيف",
+        "deleteConfirm": "هل أنت متأكد من حذف هذا التصنيف؟",
         "close": "إغلاق"
       },
       "form": {
@@ -7886,7 +7905,21 @@
         "attachment": "صورة الفاتورة/الإيصال (اختياري)",
         "upload": "رفع صورة",
         "save": "حفظ",
-        "cancel": "إلغاء"
+        "cancel": "إلغاء",
+        "selectCategoryError": "يرجى اختيار تصنيف"
+      },
+      "messages": {
+        "updated": "تم تحديث المصروف بنجاح",
+        "created": "تم تسجيل المصروف بنجاح",
+        "deleted": "تم حذف المصروف بنجاح",
+        "error": "حدث خطأ أثناء حفظ المصروف",
+        "fetchError": "حدث خطأ أثناء جلب المصروفات",
+        "deleteError": "حدث خطأ أثناء حذف المصروف",
+        "categoryUpdated": "تم تحديث التصنيف بنجاح",
+        "categoryCreated": "تم إنشاء التصنيف بنجاح",
+        "categoryDeleted": "تم حذف التصنيف بنجاح",
+        "categoryError": "حدث خطأ أثناء حفظ التصنيف",
+        "categoryDeleteError": "حدث خطأ أثناء حذف التصنيف"
       },
       "deleteAlert": {
         "title": "هل أنت متأكد من الحذف؟",
@@ -7896,7 +7929,19 @@
       }
     },
     "monthClosing": {
+      "status": {
+        "closed": "مغلق",
+        "pending": "لم يغلق"
+      },
+      "netResult": "صافي الربح التقديري",
+      "profit": "ربح",
+      "loss": "خسارة",
       "title": "تقفيلات الفترة (الأرباح والخسائر)",
+      "steps": {
+        "reviewRevenue": "مراجعة الإيرادات",
+        "reviewExpenses": "مراجعة المصروفات",
+        "settleSuppliers": "تسوية حسابات الموردين"
+      },
       "columns": {
         "closedAt": "تاريخ التقفيل",
         "period": "الفترة الزمنية",
@@ -7913,7 +7958,7 @@
       "details": {
         "title": "تفاصيل التقفيل المالي",
         "productCosts": "تكلفة المنتجات المباعة",
-        "manualExpenses": "المصروفات المانيوال",
+        "manualExpenses": "المصروفات التشغيلية",
         "soldOrdersCount": "عدد الطلبات المباعة",
         "confirmClosing": "تأكيد وإتمام التقفيل",
         "summaryTitle": "ملخص النشاط المالي للفترة"

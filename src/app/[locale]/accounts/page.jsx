@@ -1,36 +1,87 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useSearchParams, useRouter } from "next/navigation";
 import PageHeader from "@/components/atoms/Pageheader";
-import { Info, BarChart2, DollarSign, Wallet, CheckCircle, Plus, Building2, TrendingUp } from "lucide-react";
+import { Info, BarChart2, DollarSign, Wallet, CheckCircle, Plus, Building2, TrendingUp, Calendar } from "lucide-react";
 import Button_ from "@/components/atoms/Button";
-
+import api from "@/utils/api";
+import Flatpickr from "react-flatpickr";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 // Import tabs
 import OverviewTab from "./tabs/OverviewTab";
 import MonthlyExpensesTab from "./tabs/MonthlyExpensesTab";
-import ManualExpensesTab, { ManualExpenseFormModal, DeleteManualExpenseAlert, CATEGORY_CONFIG, CategoryFormModal } from "./tabs/ManualExpensesTab";
+import ManualExpensesTab, { ManualExpenseFormModal, DeleteManualExpenseAlert, CATEGORY_CONFIG, CategoryFormModal, DeleteCategoryAlert } from "./tabs/ManualExpensesTab";
 import CityDeliveriesTab from "./tabs/CityDeliveriesTab";
 import SupplierAccountsTab from "./tabs/SupplierAccountsTab";
 import MonthClosingTab from "./tabs/MonthClosingTab";
+import { FilterField } from "@/components/atoms/Table";
+import toast from "react-hot-toast";
 
 export default function Accounts() {
     const t = useTranslations("accounts");
     const searchParams = useSearchParams();
     const router = useRouter();
 
-    // Modals State
-    const [addEditModalOpen, setAddEditModalOpen] = useState(false);
-    const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
-    const [editingExpense, setEditingExpense] = useState(null);
+    // States الخاصة بالتصنيفات
+    const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+    const [categoryDeleteAlertOpen, setCategoryDeleteAlertOpen] = useState(false);
+    const [editingCategory, setEditingCategory] = useState(null);
+    const [categories, setCategories] = useState([]);
 
     // Get current tab from search params or default to 'overview'
     const activeTab = searchParams.get("tab") || "overview";
 
-    // States الخاصة بالتصنيفات
-    const [categoryModalOpen, setCategoryModalOpen] = useState(false);
-    const [editingCategory, setEditingCategory] = useState(null);
+    // Stats and Filters state
+    const [stats, setStats] = useState(null);
+    const [loadingStats, setLoadingStats] = useState(false);
+
+    // Default dates: this month
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date();
+
+    const [filters, setFilters] = useState({
+        startDate: startOfMonth,
+        endDate: endOfMonth,
+    });
+
+    const fetchCategories = async () => {
+        try {
+            setLoadingStats(true);
+            const res = await api.get("/expense-categories");
+            setCategories(res.data || []);
+        } catch (err) {
+            console.error("Error fetching categories:", err);
+        } finally {
+            setLoadingStats(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+    useEffect(() => {
+        // Define the async function
+        const fetchStats = async () => {
+            if (activeTab === "overview" || activeTab === "monthlyExpenses") {
+                setLoadingStats(true);
+                try {
+                    const res = await api.get("/accounting/stats", { params: filters });
+                    setStats(res.data);
+                } catch (err) {
+                    console.error("Error fetching stats:", err);
+                } finally {
+                    setLoadingStats(false);
+                }
+            }
+        };
+
+        // Execute the function
+        fetchStats();
+    }, [activeTab, filters]);
 
     const handleTabChange = (tabId) => {
         const params = new URLSearchParams(searchParams);
@@ -39,24 +90,15 @@ export default function Accounts() {
     };
 
     // Handlers
-    const handleAddManualExpense = () => {
-        setEditingExpense(null);
-        setAddEditModalOpen(true);
-    };
-
-    const handleEditManualExpense = (expense) => {
-        setEditingExpense(expense);
-        setAddEditModalOpen(true);
-    };
-
-    const handleDeleteManualExpense = (expense) => {
-        setEditingExpense(expense);
-        setDeleteAlertOpen(true);
-    };
-
     const handleAddCategory = () => {
         setEditingCategory(null);
         setCategoryModalOpen(true);
+    };
+
+    // Delete category
+    const handleDeleteCategory = async (cat) => {
+        setEditingCategory(cat);
+        setCategoryDeleteAlertOpen(true);
     };
 
     const handleEditCategory = (cat) => {
@@ -66,7 +108,7 @@ export default function Accounts() {
 
     const ACCOUNTS_TABS = useMemo(() => [
         { id: "overview", label: t("tabs.overview") },
-        { id: "monthlyExpenses", label: t("tabs.monthlyExpenses") },
+        // { id: "monthlyExpenses", label: t("tabs.monthlyExpenses") },
         { id: "manualExpenses", label: t("tabs.manualExpenses") },
         { id: "cityDeliveries", label: t("tabs.cityDeliveries") },
         // { id: "employeePerformance", label: t("tabs.employeePerformance") },
@@ -78,32 +120,23 @@ export default function Accounts() {
     const statsData = useMemo(() => {
         if (activeTab === "overview" || activeTab === "monthlyExpenses") {
             return [
-                { name: t("stats.totalExpenses"), value: "198,880", icon: DollarSign, color: "#f97316" },
-                { name: t("stats.productPurchases"), value: "128,900", icon: BarChart2, color: "#8b5cf6" },
-                { name: t("stats.shippingCost"), value: "45,300", icon: Wallet, color: "#3b82f6" },
-                { name: t("stats.manualExpenses"), value: "24,680", icon: BarChart2, color: "#a855f7" },
-                { name: t("stats.returns"), value: "18,250", icon: BarChart2, color: "#ef4444" },
-                { name: t("stats.netResult"), value: "132,450", icon: BarChart2, color: "#10b981" },
+                { name: t("stats.productPurchases"), value: stats?.productCost?.toLocaleString() || "0", icon: BarChart2, color: "#8b5cf6" },
+                { name: t("stats.manualExpenses"), value: stats?.manualExpenses?.toLocaleString() || "0", icon: BarChart2, color: "#a855f7" },
+                { name: t("stats.totalExpenses"), value: stats ? (Number(stats?.manualExpenses) + Number(stats?.productCost)).toLocaleString() || "0" : "0", icon: DollarSign, color: "#f97316" },
+                { name: t("stats.returns"), value: stats?.returnsCost?.toLocaleString() || "0", icon: BarChart2, color: "#ef4444" },
             ];
         }
 
         if (activeTab === "manualExpenses") {
-            const categories = [
-                { id: "ads", name: t("manualExpenses.categories.ads"), description: "وصف الإعلانات", value: "8,450", ...CATEGORY_CONFIG.ads },
-                { id: "packaging", name: t("manualExpenses.categories.packaging"), description: "وصف التغليف", value: "3,200", ...CATEGORY_CONFIG.packaging },
-                { id: "transport", name: t("manualExpenses.categories.transport"), description: "وصف النقل", value: "5,500", ...CATEGORY_CONFIG.transport },
-                { id: "office", name: t("manualExpenses.categories.office"), description: "وصف المكتب", value: "2,100", ...CATEGORY_CONFIG.office },
-                { id: "salaries", name: t("manualExpenses.categories.salaries"), description: "وصف الرواتب", value: "15,000", ...CATEGORY_CONFIG.salaries },
-            ];
-
             return [
                 ...categories.map(cat => ({
                     id: cat.id,
                     name: cat.name,
-                    value: cat.value,
-                    icon: cat.icon,
-                    color: cat.iconColor,
+                    value: cat.expensesCount || 0, // Could fetch summary if needed
+                    icon: Plus,
+                    // color: "#a855f7",
                     editable: true,
+                    onDelete: () => handleDeleteCategory(cat),
                     // 4. تغيير الـ onEdit ليفتح نافذة التصنيفات
                     onEdit: () => handleEditCategory(cat),
                 })),
@@ -148,20 +181,20 @@ export default function Accounts() {
             default:
                 return [];
         }
-    }, [activeTab, t]);
+    }, [activeTab, stats, t, categories]);
+
 
     const renderTabContent = () => {
         switch (activeTab) {
             case "overview":
-                return <OverviewTab />;
+                return <OverviewTab stats={stats} loadingStats={loadingStats} mainFilters={filters} onFiltersChange={setFilters} />;
             case "monthlyExpenses":
                 return <MonthlyExpensesTab />;
             case "manualExpenses":
                 return (
                     <ManualExpensesTab
-                        onAdd={handleAddManualExpense}
-                        onEdit={handleEditManualExpense}
-                        onDelete={handleDeleteManualExpense}
+                        categories={categories}
+                        refreshCategories={fetchCategories}
                     />
                 );
             case "cityDeliveries":
@@ -192,44 +225,41 @@ export default function Accounts() {
                         icon={<Info size={18} />}
                     />
                 }
+                statsLoading={loadingStats}
                 stats={statsData}
                 items={ACCOUNTS_TABS}
                 active={activeTab}
                 setActive={handleTabChange}
             />
 
+
             <div className="mt-6">
                 {renderTabContent()}
             </div>
-
-            {/* Modals for Manual Expenses */}
-            <ManualExpenseFormModal
-                open={addEditModalOpen}
-                onOpenChange={setAddEditModalOpen}
-                editingExpense={editingExpense}
-                onSave={(data) => {
-                    console.log("Saving expense:", data);
-                    // Add logic to update state/backend here
-                }}
-            />
-
-            <DeleteManualExpenseAlert
-                open={deleteAlertOpen}
-                onOpenChange={setDeleteAlertOpen}
-                onConfirm={() => {
-                    console.log("Deleting expense:", editingExpense);
-                    // Add logic to delete from state/backend here
-                    setDeleteAlertOpen(false);
-                }}
-            />
 
             <CategoryFormModal
                 open={categoryModalOpen}
                 onOpenChange={setCategoryModalOpen}
                 editingCategory={editingCategory}
-                onSave={(data) => {
-                    console.log("Saving Category:", data);
-                    // قم بإضافة كود حفظ التصنيف هنا
+                onSave={() => {
+                    fetchCategories();
+                }}
+            />
+
+            <DeleteCategoryAlert
+                open={categoryDeleteAlertOpen}
+                onOpenChange={setCategoryDeleteAlertOpen}
+                categoryName={editingCategory?.name}
+                onConfirm={async () => {
+                    try {
+                        await api.delete(`/expense-categories/${editingCategory.id}`);
+                        toast.success(t("manualExpenses.messages.categoryDeleted") || "Category deleted successfully");
+                        fetchCategories();
+                    } catch (err) {
+                        console.error("Error deleting category:", err);
+                        toast.error(err?.response?.data?.message || t("manualExpenses.messages.categoryDeleteError") || "Error deleting category");
+                        throw err;
+                    }
                 }}
             />
         </div>

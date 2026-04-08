@@ -775,8 +775,9 @@
            placeholder:text-muted-foreground/80 transition-all duration-200 !outline-none 
            disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50;
 
-    /* Sizing (Removed the stray 'data-' and the '!important' from h-10) */
-    @apply h-10 data-[size=sm]:text-xs data-[size=sm]:px-3 
+    /* for not has size ise sm */
+
+    @apply h-10 data-[size=sm]:text-xs data-[size=sm]:px-3  
            data-[size=default]:text-sm data-[size=default]:px-3.5 
            data-[size=lg]:text-sm data-[size=lg]:px-4;
 

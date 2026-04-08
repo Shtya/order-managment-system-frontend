@@ -25,7 +25,6 @@ import {
 } from "lucide-react";
 import api from "@/utils/api";
 import Flatpickr from "react-flatpickr";
-
 import {
   Select,
   SelectContent,
@@ -402,15 +401,28 @@ export default function DashboardPage() {
             onChange={([s, e]) => {
               setFilters((f) => ({
                 ...f,
-                startDate: s ? s.toLocaleDateString() : null,
-                endDate: e ? e.toLocaleDateString() : null,
+                startDate: s ? s.toISOString().split('T')[0] : null,
+                endDate: e ? e.toISOString().split('T')[0] : null,
               }));
               setQuickRange(null);
             }}
-            options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
+            onReady={(selectedDates, dateStr, instance) => {
+              const size = instance.element.getAttribute('data-size');
+              if (size && instance.altInput) {
+                instance.altInput.setAttribute('data-size', size);
+              }
+            }}
+            options={{
+              mode: "range",
+              dateFormat: "Y-m-d",
+              maxDate: "today",
+              altInput: true,
+              altFormat: "Y-m-d",
+              altInputClass: "theme-field",
+            }}
             placeholder={t("filters.dateRangePlaceholder")}
             data-size="default"
-            className={"theme-field"}
+            className="hidden"
           />
         </FilterField>
 

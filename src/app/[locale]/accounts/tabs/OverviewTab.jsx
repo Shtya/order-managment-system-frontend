@@ -32,36 +32,128 @@ import {
   THIRD
 } from "../../reports/order-analysis/page";
 import Button_ from "@/components/atoms/Button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FilterField } from "@/components/atoms/Table";
-import Flatpickr from "react-flatpickr";
 import api from "@/utils/api";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 
-export default function OverviewTab() {
-  const t = useTranslations("accounts");
-  const [suppliers, setSuppliers] = useState([]);
-
-  // Default dates: this month
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toLocaleDateString();
-  const endOfMonth = new Date().toLocaleDateString();
-
+export default function OverviewTab({ stats, loadingStats, mainFilters, onFiltersChange }) {
   const [filters, setFilters] = useState({
-    startDate: startOfMonth,
-    endDate: endOfMonth,
-    supplierId: "all",
+    startDate: mainFilters?.startDate || null,
+    endDate: mainFilters?.endDate || null,
+  })
+
+
+  const { currency } = usePlatformSettings();
+  const t = useTranslations("accounts");
+  // const [suppliers, setSuppliers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [lastExpenses, setLastExpenses] = useState({ lastPurchases: [], lastManualExpenses: [] });
+  const [trend, setTrend] = useState([]);
+  const [supplierBalances, setSupplierBalances] = useState([]);
+  const [cityReport, setCityReport] = useState([]);
+  const [closingPreview, setClosingPreview] = useState(null);
+
+  // Default dates for closing (previous month)
+  const prevMonth = new Date();
+  prevMonth.setMonth(prevMonth.getMonth() - 1);
+
+  const [closingMonth, setClosingMonth] = useState({
+    year: prevMonth.getFullYear(),
+    month: prevMonth.getMonth() + 1
   });
 
+
+  // useEffect(() => {
+  //   const fetchLookups = async () => {
+  //     try {
+
+  //       const res = await api.get("/lookups/suppliers", { params: { limit: 100 } });
+  //       setSuppliers(Array.isArray(res.data) ? res.data : []);
+  //     } catch (err) {
+  //       console.error("Error fetching suppliers:", err);
+  //     }
+  //   };
+  //   fetchLookups();
+  // }, []);
   useEffect(() => {
-    api.get("/lookups/suppliers", { params: { limit: 100 } })
-      .then(res => setSuppliers(Array.isArray(res.data) ? res.data : []))
-      .catch(err => console.error("Error fetching suppliers:", err));
+    onFiltersChange(filters);
+    fetchAccountingData();
   }, []);
 
-  const handleApplyFilters = () => {
-    console.log("Applying filters:", filters);
-    // Here you would normally refetch data based on filters
+  const fetchAccountingData = async () => {
+    try {
+      setLoading(true);
+      // We use Promise.all to fire all requests simultaneously
+      const [expensesRes, trendRes, balancesRes, cityRes] = await Promise.all([
+        api.get("/accounting/last-expenses", { params: filters }),
+        api.get("/accounting/trend", { params: filters }),
+        api.get("/accounting/suppliers-balances", { params: filters }),
+        api.get("/accounting/shipments-city-report", { params: filters })
+      ]);
+
+      setLastExpenses(expensesRes.data);
+      setTrend(trendRes.data);
+      setSupplierBalances(balancesRes.data);
+      setCityReport(cityRes.data?.records);
+    } catch (err) {
+      console.error("Error fetching accounting data:", err);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const [loadingClosingPreview, setLoadingClosingPreview] = useState(false);
+  useEffect(() => {
+    const fetchClosingPreview = async () => {
+      try {
+        setLoadingClosingPreview(true);
+        const { year, month } = closingMonth;
+        if (!year || !month) return;
+
+        const res = await api.get("/monthly-closings/preview", { params: { year, month } });
+        setClosingPreview(res.data);
+      } catch (err) {
+        console.error("Error fetching closing preview:", err);
+      } finally {
+        setLoadingClosingPreview(false);
+      }
+    };
+
+    if (closingMonth) {
+      fetchClosingPreview();
+    }
+  }, [closingMonth]);
+
+  const handleApplyFilters = () => {
+    fetchAccountingData();
+  };
+
+  // Combine and sort last expenses
+  const combinedExpenses = useMemo(() => {
+    const purchases = (lastExpenses.lastPurchases || []).map(p => ({
+      id: `p-${p.id}`,
+      name: `${t("overview.purchaseProducts")} - ${p.supplier?.name || t("overview.withoutSupplier")} - #${p.receiptNumber}`,
+      date: new Date(p.statusUpdateDate).toLocaleDateString("ar-EG"),
+      rawDate: new Date(p.statusUpdateDate),
+      amount: p.total,
+      icon: Package,
+      color: 'orange'
+    }));
+
+    const manual = (lastExpenses.lastManualExpenses || []).map(e => ({
+      id: `m-${e.id}`,
+      name: `${t("stats.manualExpenses")} - ${e.category?.name || t("overview.none")}`,
+      date: new Date(e.collectionDate).toLocaleDateString("ar-EG"),
+      rawDate: new Date(e.collectionDate),
+      amount: e.amount,
+      icon: CreditCard,
+      color: 'purple'
+    }));
+
+    return [...purchases, ...manual]
+      .sort((a, b) => b.rawDate - a.rawDate)
+      .slice(0, 6);
+  }, [lastExpenses, t]);
 
   // Mock data for last expenses table
   const lastExpensesColumns = [
@@ -93,38 +185,18 @@ export default function OverviewTab() {
           "font-black text-xs tabular-nums px-2 py-1 rounded-md",
           row.amount < 0 ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"
         )}>
-          {row.amount.toLocaleString()}ج
+          {row.amount.toLocaleString()} {currency}
         </span>
       )
     }
   ];
 
-  const lastExpensesData = [
-    { id: 1, name: "شراء منتجات - مورد 8", date: "30 نوفمبر 2025", amount: 14700, icon: Package, color: 'orange' },
-    { id: 2, name: "شحن - طلبات اليوم", date: "29 نوفمبر 2025", amount: 8300, icon: Truck, color: 'blue' },
-    { id: 3, name: "أدوات تغليف", date: "28 نوفمبر 2025", amount: 2450, icon: CreditCard, color: 'purple' },
-    { id: 4, name: "إعلان فيسبوك", date: "27 نوفمبر 2025", amount: 1200, icon: TrendingUp, color: 'purple' },
-    { id: 5, name: "مرتجع طلب #10234", date: "26 نوفمبر 2025", amount: -3600, icon: RefreshCw, color: 'red' },
-  ];
-
   // Mock data for Donut chart
-  const expensesBreakdownData = [
-    { name: t("stats.productPurchases"), count: 128900, color: "#8b5cf6" },
-    { name: t("stats.shippingCost"), count: 45300, color: "#3b82f6" },
-    { name: t("stats.manualExpenses"), count: 24680, color: "#a855f7" },
-    { name: t("stats.returns"), count: 18250, color: "#ef4444" },
-  ];
-
-  // Mock data for Trend chart
-  const trendData = [
-    { label: "الأسبوع 1", value: 8000 },
-    { label: "الأسبوع 2", value: 24000 },
-    { label: "الأسبوع 3", value: 21000 },
-    { label: "الأسبوع 4", value: 26000 },
-    { label: "الأسبوع 5", value: 24000 },
-    { label: "الأسبوع 6", value: 38000 },
-  ];
-
+  const expensesBreakdownData = useMemo(() => [
+    { name: t("stats.productPurchases"), count: stats?.productCost || 0, color: "#8b5cf6" },
+    { name: t("stats.manualExpenses"), count: stats?.manualExpenses || 0, color: "#a855f7" },
+  ], [stats, t]);
+  console.log(filters)
   return (
     <div className="space-y-6">
       {/* Filters */}
@@ -133,47 +205,11 @@ export default function OverviewTab() {
         onRefresh={handleApplyFilters}
         applyLabel={t("filters.apply")}
       >
-        {/* Date range */}
-        <FilterField label={t("filters.dateRange")} icon={Calendar}>
-          <Flatpickr
-            value={[
-              filters.startDate ? new Date(filters.startDate) : null,
-              filters.endDate ? new Date(filters.endDate) : null,
-            ]}
-            onChange={([s, e]) => {
-
-              setFilters((f) => ({
-                ...f,
-                startDate: s ? s.toLocaleDateString() : null,
-                endDate: e ? e.toLocaleDateString() : null,
-              }));
-            }}
-            options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
-            placeholder={t("filters.dateRangePlaceholder")}
-            data-size="default"
-            className={"theme-field"}
-          />
-        </FilterField>
-
-        {/* Supplier */}
-        <FilterField label={t("filters.supplier")} icon={Building2}>
-          <Select
-            value={filters.supplierId}
-            onValueChange={(v) => setFilters((f) => ({ ...f, supplierId: v }))}
-          >
-            <SelectTrigger className="theme-field">
-              <SelectValue placeholder={t("filters.allSuppliers")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("filters.allSuppliers")}</SelectItem>
-              {suppliers.map((s) => (
-                <SelectItem key={s.id} value={String(s.id)}>
-                  {s.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </FilterField>
+        <DateRangePicker
+          value={filters}
+          onChange={(newDates) => setFilters(f => ({ ...f, ...newDates }))}
+          placeholder={t("filters.dateRangePlaceholder")}
+        />
       </TableFilters>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -184,22 +220,15 @@ export default function OverviewTab() {
             title={t("overview.expensesTrend")}
             icon={TrendingUp}
             color={PRIMARY}
-          // action={
-          //   <Select value={period} onValueChange={setPeriod}>
-          //     <SelectTrigger className="h-8 w-28 text-[10px] font-bold uppercase tracking-wider">
-          //       <SelectValue />
-          //     </SelectTrigger>
-          //     <SelectContent>
-          //       <SelectItem value="daily">{t("overview.periods.daily")}</SelectItem>
-          //       <SelectItem value="weekly">{t("overview.periods.weekly")}</SelectItem>
-          //       <SelectItem value="monthly">{t("overview.periods.monthly")}</SelectItem>
-          //     </SelectContent>
-          //   </Select>
-          // }
           >
             <TrendChart
-              data={trendData}
-              configs={[{ key: 'value', label: t("stats.totalExpenses"), color: PRIMARY }]}
+              loading={loading}
+              data={trend}
+              configs={[
+                { key: 'productCost', label: t("stats.productPurchases"), color: '#8b5cf6' },
+                { key: 'manualExpenses', label: t("stats.manualExpenses"), color: '#a855f7' },
+                { key: 'totalCost', label: t("stats.totalExpenses"), color: PRIMARY }
+              ]}
             />
           </Card>
         </div>
@@ -210,6 +239,7 @@ export default function OverviewTab() {
             <div className="py-4">
               <div className="">
                 <StatusDonut
+                  loading={loading || loadingStats}
                   data={expensesBreakdownData}
                   config={{ key: 'count', label: 'name' }}
                 />
@@ -220,65 +250,60 @@ export default function OverviewTab() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
 
         {/* 3. Summary Cards (Suppliers, Employees, Cities) */}
-        <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="lg:col-span-4 grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Suppliers */}
           <SummaryCard
+            loading={loading}
             title={t("overview.suppliers")}
             icon={Building2}
             color="#10b981"
             href="?tab=supplierAccounts"
-            items={[
-              { label: "المورد الأول", value: "128,900ج", status: "مستقر", statusColor: "bg-emerald-50 text-emerald-600" },
-              { label: "المورد الثاني", value: "64,500ج", status: "متأخر", statusColor: "bg-orange-50 text-orange-600" },
-              { label: "المورد الثالث", value: "45,200ج", status: "مستقر", statusColor: "bg-emerald-50 text-emerald-600" },
-            ]}
-            t={t}
-          />
-
-          {/* Employees */}
-          <SummaryCard
-            title={t("overview.employeePerformance")}
-            icon={Users}
-            color="#8b5cf6"
-            href="?tab=employeePerformance"
-            items={[
-              { label: "أحمد محمد", value: "520", percent: 94 },
-              { label: "سارة علي", value: "480", percent: 91 },
-              { label: "محمد حسن", value: "450", percent: 89 },
-            ]}
+            items={supplierBalances.slice(0, 3).map(s => ({
+              label: s.supplierName,
+              value: `${s.absoluteBalance.toLocaleString()}ج`,
+              status: s.financialStatus === 'PAYABLE' ? t("overview.payable") : t("overview.receivable"),
+              statusColor: s.financialStatus === 'PAYABLE' ? "bg-orange-50 text-orange-600" : "bg-emerald-50 text-emerald-600"
+            }))}
             t={t}
           />
 
           {/* City Deliveries */}
           <SummaryCard
+            loading={loading}
             title={t("overview.cityDeliveries")}
             icon={Truck}
             color="#3b82f6"
             href="?tab=cityDeliveries"
-            items={[
-              { label: "القاهرة", value: "1,240 / 1,350", percent: 92 },
-              { label: "الجيزة", value: "890 / 1,020", percent: 87 },
-              { label: "الإسكندرية", value: "620 / 750", percent: 83 },
-            ]}
+            items={cityReport.slice(0, 3).map(c => ({
+              label: c.city || t("overview.unknownCity"),
+              value: `${c.actualDeliveries.toLocaleString()} / ${c.totalShipments.toLocaleString()}`,
+              percent: c.successRate
+            }))}
             t={t}
           />
         </div>
 
         {/* 4. Last Expenses Table */}
-        <div className="lg:col-span-1 flex flex-col gap-6">
+        <div className="lg:col-span-2 flex flex-col gap-6">
           <Card
             title={t("overview.lastExpenses")}
             icon={DollarSign}
             color={THIRD}
             action={
-              <Button_ variant="ghost" size="sm" label={t("overview.viewAll")} className="text-[10px] h-6" />
+              <Button_
+                variant="ghost"
+                size="sm"
+                label={t("overview.viewOperetionalExpenses")}
+                className="text-[10px] h-6"
+                onClick={() => window.location.search = "?tab=manualExpenses"}
+              />
             }
           >
             <div className="mt-2">
-              <MiniTable columns={lastExpensesColumns} data={lastExpensesData} />
+              <MiniTable columns={lastExpensesColumns} data={combinedExpenses} />
             </div>
           </Card>
 
@@ -286,43 +311,76 @@ export default function OverviewTab() {
           <motion.div
             whileHover={{ y: -4 }}
             className="p-4 rounded-2xl border border-border bg-card relative overflow-hidden group cursor-pointer"
-            onClick={() => window.location.search = "?tab=monthClosing"}
+            onClick={() => window.location.search = `?tab=monthClosing&year=${closingMonth.year}&month=${closingMonth.month}`}
           >
             <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 blur-3xl -mr-8 -mt-8" />
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-500 flex items-center justify-center">
-                  <Calendar size={16} />
+
+            {loadingClosingPreview ? (
+              <div className="animate-pulse space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800" />
+                    <div className="h-4 w-24 bg-slate-100 dark:bg-slate-800 rounded" />
+                  </div>
+                  <div className="h-4 w-12 bg-slate-100 dark:bg-slate-800 rounded-full" />
                 </div>
-                <span className="font-bold text-sm">{t("overview.monthClosing")}</span>
+                <div className="flex flex-col items-center py-2 space-y-2">
+                  <div className="h-3 w-20 bg-slate-100 dark:bg-slate-800 rounded" />
+                  <div className="h-8 w-32 bg-slate-100 dark:bg-slate-800 rounded" />
+                </div>
+                <div className="pt-3 border-t border-dashed border-border flex items-center justify-between">
+                  <div className="h-3 w-28 bg-slate-100 dark:bg-slate-800 rounded" />
+                  <div className="h-4 w-4 bg-slate-100 dark:bg-slate-800 rounded" />
+                </div>
               </div>
-              <ChevronLeft size={16} className="text-muted-foreground group-hover:translate-x-[-4px] transition-transform" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="text-muted-foreground">مراجعة المصروفات</span>
-                <div className="w-3 h-3 rounded-full bg-emerald-500" />
-              </div>
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="text-muted-foreground">تسوية حسابات الموردين</span>
-                <div className="w-3 h-3 rounded-full bg-amber-500 animate-pulse" />
-              </div>
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="text-muted-foreground">تأكيد المرتجعات</span>
-                <div className="w-3 h-3 rounded-full bg-blue-500" />
-              </div>
-            </div>
-            <div className="mt-4 pt-3 border-t border-dashed border-border flex items-center justify-center">
-              <span className="text-[10px] font-black uppercase text-orange-500">تقفيل شهر نوفمبر 2025</span>
-            </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-500 flex items-center justify-center">
+                      <Calendar size={16} />
+                    </div>
+                    <span className="font-bold text-sm">{t("overview.monthClosing")}</span>
+                  </div>
+
+                  {/* Status Badge */}
+                  <div className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${closingPreview?.isClosed
+                    ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                    : "bg-amber-50 text-amber-600 border-amber-100"
+                    }`}>
+                    {closingPreview?.isClosed ? t("monthClosing.status.closed") : t("monthClosing.status.pending")}
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-center justify-center py-2">
+                  <span className="text-muted-foreground text-[11px] mb-1">
+                    {t("monthClosing.netResult")}
+                  </span>
+                  <div className={`text-xl font-black flex items-center gap-1 ${closingPreview?.netProfit >= 0 ? "text-emerald-500" : "text-red-500"
+                    }`}>
+                    {closingPreview?.netProfit >= 0 ? "+" : ""}
+                    {new Intl.NumberFormat().format(closingPreview?.netProfit || 0)}
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-dashed border-border flex items-center justify-between">
+                  <span className="text-[10px] font-medium text-muted-foreground uppercase">
+                    {t("overview.closingFor", { month: closingMonth.month, year: closingMonth.year })}
+                  </span>
+                  <ChevronLeft size={14} className="text-muted-foreground group-hover:translate-x-[-4px] transition-transform" />
+                </div>
+              </>
+            )}
           </motion.div>
         </div>
       </div>
-    </div>
+    </div >
   );
 }
 
-function SummaryCard({ title, icon: Icon, color, items, href, t }) {
+function SummaryCard({ title, loading, icon: Icon, color, items, href, t }) {
+  const hasData = items && items.length > 0;
+
   return (
     <Card
       title={title}
@@ -339,33 +397,58 @@ function SummaryCard({ title, icon: Icon, color, items, href, t }) {
         />
       }
     >
-      <div className="space-y-4 mt-2">
-        {items.map((item, idx) => (
-          <div key={idx} className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold">{item.label}</span>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] tabular-nums font-medium text-muted-foreground">{item.value}</span>
-                {item.status && (
-                  <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded-md", item.statusColor)}>
-                    {item.status}
-                  </span>
+      <div className={cn("mt-2", hasData ? "space-y-5" : "py-8 flex flex-col items-center justify-center text-center")}>
+        {loading ? (
+          <div className="w-full space-y-4 animate-pulse">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="h-4 w-24 bg-slate-100 dark:bg-slate-800 rounded" />
+                  <div className="h-4 w-16 bg-slate-100 dark:bg-slate-800 rounded" />
+                </div>
+                <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full" />
+              </div>
+            ))}
+          </div>
+        )
+          : !hasData ? (
+            <div className="flex flex-col items-center gap-2 opacity-40">
+              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                <Icon size={20} />
+              </div>
+              <span className="text-[11px] font-medium">{t("overview.noData")}</span>
+            </div>
+          ) : (
+            items.map((item, idx) => (
+              <div key={idx} className="flex flex-col gap-2.5 group">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-bold group-hover:text-primary transition-colors">{item.label}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs tabular-nums font-bold text-muted-foreground">{item.value}</span>
+                    {item.status && (
+                      <span className={cn("text-[10px] font-black px-2 py-0.5 rounded-lg", item.statusColor)}>
+                        {item.status}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {item.percent !== undefined && (
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${item.percent}%` }}
+                        className="h-full rounded-full"
+                        style={{ backgroundColor: color }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                      />
+                    </div>
+                    <span className="text-[11px] font-black tabular-nums min-w-[30px] text-right" style={{ color }}>{item.percent}%</span>
+                  </div>
                 )}
               </div>
-            </div>
-            {item.percent !== undefined && (
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${item.percent}%`, backgroundColor: color }}
-                  />
-                </div>
-                <span className="text-[10px] font-black tabular-nums" style={{ color }}>{item.percent}%</span>
-              </div>
-            )}
-          </div>
-        ))}
+            ))
+          )}
       </div>
     </Card>
   );

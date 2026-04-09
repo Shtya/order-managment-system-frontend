@@ -10,7 +10,7 @@ export default function BrandLogo({ className = "", size = "h-8" }) {
     const isAr = locale === "ar";
 
 
-    const logoSrc = isAr ? "/logoAr.svg" : "/logoEn.svg";
+    const logoSrc = isAr ? "/Logo-imgAr.png" : "/Logo-imEn.png";
 
     return (
         <motion.div

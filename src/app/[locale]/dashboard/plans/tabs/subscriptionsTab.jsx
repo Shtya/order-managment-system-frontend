@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import api from "@/utils/api";
 import Table, { FilterField } from "@/components/atoms/Table";
+import { ActionButtons } from "@/components/atoms/Actions";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -43,6 +44,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { platformCurrency } from "@/utils/healpers";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 
 
 function formatDate(dateStr) {
@@ -444,31 +446,21 @@ export default function SubscriptionsTab() {
         key: "actions",
         header: t("columns.actions"),
         cell: (row) => (
-          <div className="flex items-center justify-center gap-2">
-            {/* إظهار زر الإلغاء فقط إذا كان الاشتراك نشطاً */}
-            {row.status === "active" && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <motion.button
-                      whileHover={{ scale: 1.06 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => {
-                        setSelectedSub(row);
-                        setCancelOpen(true);
-                      }}
-                      className="w-9 h-9 rounded-full border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all flex items-center justify-center dark:bg-red-950/30 dark:hover:bg-red-600 dark:border-red-900"
-                    >
-                      <Ban size={16} />
-                    </motion.button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {t("actions.cancelSubscription")}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-          </div>
+          <ActionButtons
+            row={row}
+            actions={[
+              {
+                icon: <Ban />,
+                tooltip: t("actions.cancelSubscription"),
+                onClick: (r) => {
+                  setSelectedSub(r);
+                  setCancelOpen(true);
+                },
+                variant: "rose",
+                hidden: row.status !== "active",
+              },
+            ]}
+          />
         ),
       },
     ];
@@ -539,26 +531,17 @@ export default function SubscriptionsTab() {
 
             {/* Date Range */}
             <FilterField label={t("filters.date")}>
-              <Flatpickr
-                value={[
-                  filters.startDate ? new Date(filters.startDate) : null,
-                  filters.endDate ? new Date(filters.endDate) : null,
-                ]}
-                onChange={([start, end]) =>
-                  setFilters((f) => ({
-                    ...f,
-                    startDate: start ? start.toLocaleDateString() : null,
-                    endDate: end ? end.toLocaleDateString() : null,
-                  }))
-                }
-                options={{
-                  mode: "range",
-                  dateFormat: "Y-m-d",
-                  maxDate: "today",
+              <DateRangePicker
+                value={{
+                  startDate: filters.startDate,
+                  endDate: filters.endDate
                 }}
-                data-size="default"
-                className={"theme-field"}
+                onChange={(newDates) => setFilters((prev) => ({
+                  ...prev,
+                  ...newDates
+                }))}
                 placeholder={t("filters.datePlaceholder")}
+                dataSize="default"
               />
             </FilterField>
           </>

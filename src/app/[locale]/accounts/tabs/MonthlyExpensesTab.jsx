@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import Table, { FilterField } from "@/components/atoms/Table";
-import Flatpickr from "react-flatpickr";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 import {
   Dialog,
   DialogContent,
@@ -44,8 +44,8 @@ export default function MonthlyExpensesTab() {
 
   // Default dates: this month
   const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("monthlyExpenses.T")[0];
-  const endOfMonth = new Date().toISOString().split("monthlyExpenses.T")[0];
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endOfMonth = new Date();
 
   const [filters, setFilters] = useState({
     startDate: startOfMonth,
@@ -167,7 +167,7 @@ export default function MonthlyExpensesTab() {
             "text-sm font-black tabular-nums",
             row.amount > 0 ? "text-emerald-600" : "text-red-600"
           )}>
-            {Math.abs(row.amount).toLocaleString()}ج
+            {Math.abs(row.amount).toLocaleString()}
           </span>
         </div>
       )
@@ -204,21 +204,9 @@ export default function MonthlyExpensesTab() {
           <>
             {/* Date Range */}
             <FilterField label={t("filters.dateRange")} icon={Calendar}>
-              <Flatpickr
-                value={[
-                  filters.startDate ? new Date(filters.startDate) : null,
-                  filters.endDate ? new Date(filters.endDate) : null,
-                ]}
-                onChange={([s, e]) => {
-                  setFilters((f) => ({
-                    ...f,
-                    startDate: s ? s.toISOString().split("monthlyExpenses.T")[0] : null,
-                    endDate: e ? e.toISOString().split("monthlyExpenses.T")[0] : null,
-                  }));
-                }}
-                options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
-                data-size="default"
-                className="theme-field"
+              <DateRangePicker
+                value={{ startDate: filters.startDate, endDate: filters.endDate }}
+                onChange={(newDates) => setFilters(f => ({ ...f, ...newDates }))}
               />
             </FilterField>
 
@@ -289,7 +277,7 @@ export default function MonthlyExpensesTab() {
                 <div className="flex flex-col items-end">
                   <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">{t("monthlyExpenses.columns.amount")}</span>
                   <span className={cn("text-lg font-black", selectedExpense.amount > 0 ? "text-emerald-600" : "text-red-600")}>
-                    {Math.abs(selectedExpense.amount).toLocaleString()}ج
+                    {Math.abs(selectedExpense.amount).toLocaleString()}
                   </span>
                 </div>
               </div>

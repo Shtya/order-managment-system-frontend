@@ -133,7 +133,7 @@ export default function OverviewTab({ stats, loadingStats, mainFilters, onFilter
     const purchases = (lastExpenses.lastPurchases || []).map(p => ({
       id: `p-${p.id}`,
       name: `${t("overview.purchaseProducts")} - ${p.supplier?.name || t("overview.withoutSupplier")} - #${p.receiptNumber}`,
-      date: new Date(p.statusUpdateDate).toLocaleDateString("ar-EG"),
+      date: new Date(p.statusUpdateDate).toLocaleDateString(),
       rawDate: new Date(p.statusUpdateDate),
       amount: p.total,
       icon: Package,
@@ -143,7 +143,7 @@ export default function OverviewTab({ stats, loadingStats, mainFilters, onFilter
     const manual = (lastExpenses.lastManualExpenses || []).map(e => ({
       id: `m-${e.id}`,
       name: `${t("stats.manualExpenses")} - ${e.category?.name || t("overview.none")}`,
-      date: new Date(e.collectionDate).toLocaleDateString("ar-EG"),
+      date: new Date(e.collectionDate).toLocaleDateString(),
       rawDate: new Date(e.collectionDate),
       amount: e.amount,
       icon: CreditCard,

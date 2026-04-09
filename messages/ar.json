@@ -7806,7 +7806,8 @@
       "endDate": "تاريخ النهاية",
       "apply": "تطبيق",
       "year": "العام",
-      "selectYear": "إختر العام"
+      "selectYear": "إختر العام",
+      "datePlaceholder": "إختر التاريخ"
     },
     "toolbar": {
       "searchPlaceholder": "بحث..."

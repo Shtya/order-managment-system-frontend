@@ -23,3 +23,25 @@ reviews:
             suggestion: ''
             type: approve
             time: '2026-04-08T23:47:19.833Z'
+  accounts.filters.datePlaceholder:
+    locales:
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: IxLmbtRZOXZ4WktJ0Qkzf
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-09T18:33:13.762Z'
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: ho3aWKdA42_GEqARAO5Ff
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-09T18:33:15.599Z'

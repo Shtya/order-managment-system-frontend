@@ -49,6 +49,7 @@ import {
 import PageHeader from "@/components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
 import { useSocket } from "@/context/SocketContext";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -739,26 +740,20 @@ export function FailedOrdersTab() {
 
             {/* Date range */}
             <FilterField label={t("filters.date")}>
-              <Flatpickr
-                value={[
-                  filters.startDate ? new Date(filters.startDate) : null,
-                  filters.endDate ? new Date(filters.endDate) : null,
-                ]}
-                onChange={([start, end]) =>
-                  setFilters((f) => ({
-                    ...f,
-                    startDate: start ? start.toLocaleDateString() : null,
-                    endDate: end ? end.toLocaleDateString() : null,
+              <DateRangePicker
+                value={{
+                  startDate: filters.startDate,
+                  endDate: filters.endDate,
+                }}
+                onChange={(newDates) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    ...newDates,
                   }))
                 }
-                options={{
-                  mode: "range",
-                  dateFormat: "Y-m-d",
-                  maxDate: "today",
-                }}
-                data-size="default"
-                className={"theme-field"}
                 placeholder={t("filters.datePlaceholder")}
+                dataSize="default"
+                maxDate="today"
               />
             </FilterField>
           </>

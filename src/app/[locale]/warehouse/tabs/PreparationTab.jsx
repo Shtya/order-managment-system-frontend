@@ -30,6 +30,7 @@ import { useExport } from "@/hook/useExport";
 import StoreFilter from "@/components/atoms/StoreFilter";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import ProductFilter from "@/components/atoms/ProductFilter";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 
 // ─────────────────────────────────────────────────────────────
 // DESIGN TOKENS — Single source of truth for the whole page
@@ -1963,7 +1964,12 @@ function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fet
 						<StoreFilter value={filters.store} onChange={(v) => setFilters(f => ({ ...f, store: v }))} />
 						<ProductFilter value={filters.productId} onChange={(v) => setFilters(f => ({ ...f, productId: v }))} />
 						<FilterField label={t("table.date")}>
-							<Input type="date" value={filters.date} onChange={(e) => setFilters((f) => ({ ...f, date: e.target.value }))} className="h-10 rounded-xl text-sm" />
+							<DateRangePicker
+								mode="single"
+								value={filters.date}
+								onChange={(date) => setFilters((f) => ({ ...f, date }))}
+								dataSize="default"
+							/>
 						</FilterField>
 					</>
 				}

@@ -39,6 +39,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import api from "@/utils/api";
 import { OrderStatus } from "../tabs/OrderTab";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 
 
 
@@ -577,8 +578,8 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 	const [seletOpen, setSelectOpen] = useState(false);
 	const [distributionType, setDistributionType] = useState(null);
 	const [dateRange, setDateRange] = useState({
-		from: new Date().toLocaleDateString(),
-		to: new Date().toLocaleDateString(),
+		from: new Date(),
+		to: new Date(),
 	});
 	const [selectedStatuses, setSelectedStatuses] = useState([]);
 
@@ -892,20 +893,20 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 									<div className="grid grid-cols-2 gap-3">
 										<div className="space-y-1.5">
 											<Label className="text-xs font-semibold">{t("distribution.fromDate")}</Label>
-											<Input
-												type="date"
+											<DateRangePicker
+												mode="single"
 												value={dateRange.from}
-												onChange={e => setDateRange(p => ({ ...p, from: e.target.value }))}
-												className="rounded-xl h-10 text-sm"
+												onChange={(date) => setDateRange(p => ({ ...p, from: date }))}
+												dataSize="default"
 											/>
 										</div>
 										<div className="space-y-1.5">
 											<Label className="text-xs font-semibold">{t("distribution.toDate")}</Label>
-											<Input
-												type="date"
+											<DateRangePicker
+												mode="single"
 												value={dateRange.to}
-												onChange={e => setDateRange(p => ({ ...p, to: e.target.value }))}
-												className="rounded-xl h-10 text-sm"
+												onChange={(date) => setDateRange(p => ({ ...p, to: date }))}
+												dataSize="default"
 											/>
 										</div>
 									</div>

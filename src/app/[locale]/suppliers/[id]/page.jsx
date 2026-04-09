@@ -37,6 +37,7 @@ import toast from "react-hot-toast";
 import { DetailsModal as PurchaseDetailsModal } from "@/app/[locale]/purchases/page";
 import { DetailsModal as ReturnDetailsModal } from "@/app/[locale]/purchases/return/page";
 import { cn } from "@/utils/cn";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 
 export default function SupplierDetailsPage() {
     const params = useParams();
@@ -448,16 +449,17 @@ export default function SupplierDetailsPage() {
                             <div className="flex items-center gap-3">
                                 <div className="flex flex-col gap-1">
                                     <span className="text-xs font-bold px-1">{tPurchases("filters.dateRange")}</span>
-                                    <Flatpickr
-                                        value={[purchasesFilters.startDate, purchasesFilters.endDate]}
-                                        onChange={([s, e]) => setPurchasesFilters({
-                                            startDate: s ? s.toISOString().split('T')[0] : null,
-                                            endDate: e ? e.toISOString().split('T')[0] : null
-                                        })}
-                                        options={{ mode: "range", dateFormat: "Y-m-d" }}
-                                        className="theme-field h-10 w-64"
-                                        data-size="default"
+                                    <DateRangePicker
+                                        value={{
+                                            startDate: purchasesFilters.startDate,
+                                            endDate: purchasesFilters.endDate
+                                        }}
+                                        onChange={(newDates) => setPurchasesFilters(prev => ({
+                                            ...prev,
+                                            ...newDates
+                                        }))}
                                         placeholder={tPurchases("filters.selectDateRange")}
+                                        dataSize="default"
                                     />
                                 </div>
                             </div>
@@ -489,16 +491,17 @@ export default function SupplierDetailsPage() {
                             <div className="flex items-center gap-3">
                                 <div className="flex flex-col gap-1">
                                     <span className="text-xs font-bold px-1">{tPurchases("filters.dateRange")}</span>
-                                    <Flatpickr
-                                        value={[returnsFilters.startDate, returnsFilters.endDate]}
-                                        onChange={([s, e]) => setReturnsFilters({
-                                            startDate: s ? s.toISOString().split('T')[0] : null,
-                                            endDate: e ? e.toISOString().split('T')[0] : null
-                                        })}
-                                        options={{ mode: "range", dateFormat: "Y-m-d" }}
-                                        data-size="default"
-                                        className="theme-field h-10 w-64 theme-primary"
+                                    <DateRangePicker
+                                        value={{
+                                            startDate: returnsFilters.startDate,
+                                            endDate: returnsFilters.endDate
+                                        }}
+                                        onChange={(newDates) => setReturnsFilters(prev => ({
+                                            ...prev,
+                                            ...newDates
+                                        }))}
                                         placeholder={tPurchases("filters.selectDateRange")}
+                                        dataSize="default"
                                     />
                                 </div>
                             </div>

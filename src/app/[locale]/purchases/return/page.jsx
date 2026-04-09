@@ -63,6 +63,7 @@ import {
 import api from "@/utils/api";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
+import AssetPreview from "@/components/atoms/AssetPreview";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { baseImg } from "@/utils/axios";
 import { Bone } from "@/components/atoms/BannerSkeleton";
@@ -430,30 +431,15 @@ export default function PurchasesReturnPage() {
 				key: "receiptAsset",
 				header: t("table.receipt"),
 				className: "w-[90px]",
-				cell: (row) => {
-					const asset = baseImg + row.receiptAsset;
-					if (!row.receiptAsset) return <span className="text-xs text-gray-400 text-center block">{t("table.noReceipt")}</span>;
-
-					if (isImagePath(asset)) {
-						return (
-							<button type="button" onClick={() => console.log("view", row.id)} className="inline-flex items-center gap-2">
-								<div className="w-10 h-10 rounded-xl overflow-hidden border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800">
-									<img src={asset} alt={t("table.receipt")} className="w-full h-full object-cover" />
-								</div>
-							</button>
-						);
-					}
-
-					if (isPdfPath(asset)) {
-						return (
-							<a href={asset} target="_blank" rel="noreferrer" className="inline-flex justify-center w-full items-center gap-2 text-primary">
-								<FileText size={18} />
-							</a>
-						);
-					}
-
-					return <span className="text-center block">-</span>;
-				},
+				cell: (row) => (
+					<div className="flex justify-center">
+						<AssetPreview
+							src={row.receiptAsset}
+							alt={t("table.receipt")}
+							labels={{ preview: t("table.receipt") }}
+						/>
+					</div>
+				),
 			},
 			{
 				key: "status",

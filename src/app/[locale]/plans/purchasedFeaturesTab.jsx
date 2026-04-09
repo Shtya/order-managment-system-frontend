@@ -13,6 +13,7 @@ import { useTranslations } from "next-intl";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import Table from "@/components/atoms/Table";
+import { ActionButtons } from "@/components/atoms/Actions";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/utils/cn";
 import {
@@ -136,29 +137,22 @@ export default function PurchasedFeaturesTab() {
                             {tf("messages.alreadyOwned").trim()}
                         </div>
                     ) : (
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <motion.button
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        onClick={() => handlePurchase(row.id)}
-                                        disabled={purchasingId === row.id}
-                                        className="h-9 px-4 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-md shadow-emerald-200 dark:shadow-none disabled:opacity-50"
-                                    >
-                                        {purchasingId === row.id ? (
-                                            <Loader2 size={14} className="animate-spin" />
-                                        ) : (
-                                            <ShoppingCart size={14} />
-                                        )}
-                                        {/* <span className="text-xs font-bold">{tf("actions.purchase").trim()}</span> */}
-                                    </motion.button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    {tf("tooltips.purchaseNow").trim()}
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
+                        <ActionButtons
+                            row={row}
+                            actions={[
+                                {
+                                    icon: purchasingId === row.id ? (
+                                        <Loader2 className="animate-spin" />
+                                    ) : (
+                                        <ShoppingCart />
+                                    ),
+                                    tooltip: tf("tooltips.purchaseNow").trim(),
+                                    onClick: (r) => handlePurchase(r.id),
+                                    disabled: purchasingId === row.id,
+                                    variant: "emerald",
+                                },
+                            ]}
+                        />
                     )}
                 </div>
             ),

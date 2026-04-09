@@ -49,7 +49,7 @@ export default function useIdleTab({ t, searchDebounced, filters, idleFromDate, 
     if (filters.salePriceFrom !== "") params.set("salePrice.gte", String(filters.salePriceFrom));
     if (filters.salePriceTo !== "") params.set("salePrice.lte", String(filters.salePriceTo));
 
-    if (idleFromDate) params.set("created_at.lte", `${idleFromDate}T23:59:59.999Z`);
+    if (idleFromDate) params.set("created_at.lte", idleFromDate);
 
     params.set("sortBy", "created_at");
     params.set("sortOrder", "DESC");

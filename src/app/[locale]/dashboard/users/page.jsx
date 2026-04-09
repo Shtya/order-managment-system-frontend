@@ -36,12 +36,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 // ✅ shadcn select
 import {
@@ -77,9 +71,15 @@ import { useRouter } from "@/i18n/navigation";
 import ManageSubscription from "./manageSubscription";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table, { FilterField } from "@/components/atoms/Table";
+import { ActionButtons } from "@/components/atoms/Actions";
 import AssignFeatureModal from "./assignFeatureModal";
 import ManageWalletModal from "./ManageWalletModal";
-
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 /** =========================
  * WhatsApp Countries (same pattern)
@@ -526,145 +526,75 @@ export default function SuperAdminUsersPage() {
 				header: t("table.options"),
 				cell: (row) => {
 					const isAdmin = row.role?.name === "admin";
-					// التحقق من وجود اشتراك حالي
 					const hasSubscription = !!row.subscription?.id;
 
-					return (<div className="flex items-center gap-2">
-						{isAdmin && (
-							<TooltipProvider>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<motion.button
-											whileHover={{ scale: 1.06 }}
-											whileTap={{ scale: 0.95 }}
-											onClick={() => {
-												setSelectedUser(row);
-												setSubscriptionId(null); // نضع القيمة null لفتح وضع "إضافة"
-												setSubOpen(true);
-											}}
-											className="w-9 h-9 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center dark:bg-emerald-950/30 dark:hover:bg-emerald-600"
-										>
-											<Plus size={16} />
-										</motion.button>
-									</TooltipTrigger>
-									<TooltipContent>
-										{t("actions.addSubscription")}
-									</TooltipContent>
-								</Tooltip>
-							</TooltipProvider>
-						)}
-
-
-						{hasSubscription && isAdmin && (
-							<TooltipProvider>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<motion.button
-											whileHover={{ scale: 1.06 }}
-											whileTap={{ scale: 0.95 }}
-											onClick={() => {
-												setSelectedUser(row);
-												// نمرر الـ id للاشتراك الموجود
-												setSubscriptionId(row.subscription.id);
-												setSubOpen(true);
-											}}
-											className="w-9 h-9 rounded-full border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center dark:bg-blue-950/30 dark:hover:bg-blue-600"
-										>
-											<CreditCard size={16} />
-										</motion.button>
-									</TooltipTrigger>
-									<TooltipContent>
-										{t("actions.manageSubscription")}
-									</TooltipContent>
-								</Tooltip>
-
-							</TooltipProvider>
-						)}
-
-						{isAdmin && <TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.06 }}
-										whileTap={{ scale: 0.95 }}
-										onClick={() => {
-											console.log(row)
-											setSelectedUser(row); // نضع بيانات المستخدم بالكامل
-											setAssignOpen(true);  // نفتح نافذة تخصيص الميزات
-										}}
-										className="w-9 h-9 rounded-full border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center dark:bg-blue-950/30 dark:hover:bg-blue-600"
-									>
-										<Sparkles size={16} />
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>
-									{t("actions.manageFeatures")}
-								</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>}
-
-
-						{isAdmin && <TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.06 }}
-										whileTap={{ scale: 0.95 }}
-										onClick={() => {
-											setSelectedUser(row);
-											setWalletOpen(true); // افتح نافذة المحفظة
-										}}
-										className="w-9 h-9 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center dark:bg-emerald-950/30 dark:hover:bg-emerald-600"
-									>
-										<Wallet size={16} />
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>
-									{t("actions.manageWallet")}
-								</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>}
-
-						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.06 }}
-										whileTap={{ scale: 0.95 }}
-										onClick={() => {
-											setSelectedUser(row);
-											setEditOpen(true);
-										}}
-										className="w-9 h-9 rounded-full border border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all flex items-center justify-center dark:bg-blue-950/30 dark:hover:bg-blue-600"
-									>
-										<Pencil size={16} />
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>{t("actions.edit")}</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
-
-						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.06 }}
-										whileTap={{ scale: 0.95 }}
-										onClick={() => {
-											setSelectedUser(row);
-											setDeactivateOpen(true);
-										}}
-										className="w-9 h-9 rounded-full border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all flex items-center justify-center dark:bg-red-950/30 dark:hover:bg-red-600"
-									>
-										<Trash2 size={16} />
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>
-									{t("actions.deactivate")}
-								</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
-					</div>)
+					return (
+						<ActionButtons
+							row={row}
+							actions={[
+								{
+									icon: <Plus />,
+									tooltip: t("actions.addSubscription"),
+									onClick: (r) => {
+										setSelectedUser(r);
+										setSubscriptionId(null);
+										setSubOpen(true);
+									},
+									variant: "emerald",
+									hidden: !isAdmin,
+								},
+								{
+									icon: <CreditCard />,
+									tooltip: t("actions.manageSubscription"),
+									onClick: (r) => {
+										setSelectedUser(r);
+										setSubscriptionId(r.subscription.id);
+										setSubOpen(true);
+									},
+									variant: "blue",
+									hidden: !hasSubscription || !isAdmin,
+								},
+								{
+									icon: <Sparkles />,
+									tooltip: t("actions.manageFeatures"),
+									onClick: (r) => {
+										setSelectedUser(r);
+										setAssignOpen(true);
+									},
+									variant: "blue",
+									hidden: !isAdmin,
+								},
+								{
+									icon: <Wallet />,
+									tooltip: t("actions.manageWallet"),
+									onClick: (r) => {
+										setSelectedUser(r);
+										setWalletOpen(true);
+									},
+									variant: "emerald",
+									hidden: !isAdmin,
+								},
+								{
+									icon: <Pencil />,
+									tooltip: t("actions.edit"),
+									onClick: (r) => {
+										setSelectedUser(r);
+										setEditOpen(true);
+									},
+									variant: "purple",
+								},
+								{
+									icon: <Trash2 />,
+									tooltip: t("actions.deactivate"),
+									onClick: (r) => {
+										setSelectedUser(r);
+										setDeactivateOpen(true);
+									},
+									variant: "rose",
+								},
+							]}
+						/>
+					);
 				}
 				,
 			},

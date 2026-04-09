@@ -48,6 +48,7 @@ import Flatpickr from "react-flatpickr";
 
 import PageHeader from "@/components/atoms/Pageheader";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 
 // ── Payment Sources ───────────────────────────────────────────────────────────
 
@@ -704,13 +705,13 @@ export default function CollectOrderPage() {
                       name="collectionDate"
                       control={control}
                       render={({ field }) => (
-                        <Flatpickr
+                        <DateRangePicker
+                          mode="single"
                           value={field.value}
-                          onChange={([date]) => field.onChange(date)}
-                          options={{ dateFormat: "Y-m-d", maxDate: "today" }}
-                          data-size="default"
-                          className={"theme-field"}
+                          onChange={(date) => field.onChange(date)}
                           placeholder={t("placeholders.collectionDate")}
+                          dataSize="default"
+                          maxDate="today"
                         />
                       )}
                     />

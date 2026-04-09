@@ -24,6 +24,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 import Button_ from "@/components/atoms/Button";
 import { CARRIERS, STATUS, getOrderItemCount } from "./data";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 
 const CARRIER_STYLES = {
   ARAMEX: "bg-red-50 text-red-700 border-red-200",
@@ -560,11 +561,11 @@ function DistributionOrdersTable({ type, orders, updateOrder, pushOp, rejectOrde
             </FilterField>
 
             <FilterField label={t("fields.date")}>
-              <Input
-                type="date"
+              <DateRangePicker
+                mode="single"
                 value={filters.date}
-                onChange={(event) => setFilters((current) => ({ ...current, date: event.target.value }))}
-                className="h-10 rounded-xl"
+                onChange={(date) => setFilters((current) => ({ ...current, date }))}
+                dataSize="default"
               />
             </FilterField>
           </>

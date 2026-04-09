@@ -56,6 +56,7 @@ import { Input } from "@/components/ui/input";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { generateBgColors, getIconForStatus } from "../../orders/page";
 import { useDebounce } from "@/hook/useDebounce";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 
 ChartJS.register(
   CategoryScale,
@@ -1083,7 +1084,10 @@ export default function OrdersStatisticsPage() {
         stats={statsCards}
         items={QUICK_RANGES}
         active={quickRange}
-        setActive={setQuickRange}
+        setActive={(v) => {
+          setQuickRange(v)
+          setFilters(p => ({ ...p, startDate: null, endDate: null }))
+        }}
       />
 
       {/* Filters */}
@@ -1103,22 +1107,18 @@ export default function OrdersStatisticsPage() {
         </FilterField>
 
         <FilterField label={t("filters.dateRange")} icon={Calendar}>
-          <Flatpickr
-            value={[
-              filters.startDate ? new Date(filters.startDate) : null,
-              filters.endDate ? new Date(filters.endDate) : null,
-            ]}
-            onChange={([s, e]) =>
-              setFilters((f) => ({
-                ...f,
-                startDate: s ? s.toLocaleDateString() : null,
-                endDate: e ? e.toLocaleDateString() : null,
-              }))
-            }
-            options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
+          <DateRangePicker
+            value={{
+              startDate: filters.startDate,
+              endDate: filters.endDate,
+            }}
+            onChange={(newDates) => {
+              setFilters(f => ({ ...f, ...newDates }))
+              setQuickRange(null)
+            }}
             placeholder={t("filters.dateRangePlaceholder")}
-            data-size="default"
-            className={"theme-field"}
+            dataSize="default"
+            maxDate="today"
           />
         </FilterField>
 

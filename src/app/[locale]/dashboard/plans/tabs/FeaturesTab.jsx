@@ -1,4 +1,5 @@
 import Table from "@/components/atoms/Table";
+import { ActionButtons } from "@/components/atoms/Actions";
 import { Edit3, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
@@ -105,25 +106,17 @@ export default function FeaturesTab() {
             key: "actions",
             header: tf("columns.actions"),
             cell: (row) => (
-                <div className="flex items-center gap-2">
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <motion.button
-                                    whileHover={{ scale: 1.06 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => handleEditClick(row)}
-                                    className="w-9 h-9 rounded-full border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center dark:bg-blue-950/30 dark:hover:bg-blue-600"
-                                >
-                                    <Edit3 size={16} />
-                                </motion.button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                {tf("actions.editFeature")}
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                </div>
+                <ActionButtons
+                    row={row}
+                    actions={[
+                        {
+                            icon: <Edit3 />,
+                            tooltip: tf("actions.editFeature"),
+                            onClick: (r) => handleEditClick(r),
+                            variant: "blue",
+                        },
+                    ]}
+                />
             ),
         }
     ], [t, tf, formatCurrency]);

@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { CARRIERS, STATUS, getOrderItemCount } from "./data";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 
 function CarrierBadge({ carrier }) {
   const tone = {
@@ -386,7 +387,12 @@ function LabelsTable({ orders, filters, setFilters, selectedCodes, setSelectedCo
             </FilterField>
 
             <FilterField label={statusMode === "printed" ? t("fields.printedAt") : t("fields.orderDate")}>
-              <Input type="date" value={filters.date} onChange={(event) => setFilters((current) => ({ ...current, date: event.target.value }))} className="h-10 rounded-xl" />
+              <DateRangePicker
+                mode="single"
+                value={filters.date}
+                onChange={(date) => setFilters((current) => ({ ...current, date }))}
+                dataSize="default"
+              />
             </FilterField>
           </>
         }

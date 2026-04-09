@@ -4,21 +4,38 @@ import React, { useMemo } from "react";
 import Flatpickr from "react-flatpickr";
 import { useTranslations } from "next-intl";
 
-export default function DateRangePicker({ value, onChange, placeholder, dataSize = "default", className = "hidden", staticShow = false, closeOnSelect = true }) {
+export default function DateRangePicker({
+  value,
+  onChange,
+  placeholder,
+  dataSize = "default",
+  className = "hidden",
+  staticShow = false,
+  closeOnSelect = true,
+  mode = "range" // "single" or "range"
+}) {
   const t = useTranslations("accounts");
 
   const dateValue = useMemo(() => {
+    if (mode === "single") {
+      return value ? new Date(value) : null;
+    }
     return [
       value?.startDate ? new Date(value.startDate) : null,
       value?.endDate ? new Date(value.endDate) : null,
     ].filter(Boolean); // Filter out nulls if empty
-  }, [value?.startDate, value?.endDate]);
+  }, [value, mode]);
 
-  const handleChange = ([s, e]) => {
-    onChange({
-      startDate: s ? s : null,
-      endDate: e ? e : null,
-    });
+  const handleChange = (selectedDates) => {
+    if (mode === "single") {
+      onChange(selectedDates[0] || null);
+    } else {
+      const [s, e] = selectedDates;
+      onChange({
+        startDate: s ? s : null,
+        endDate: e ? e : null,
+      });
+    }
   };
 
   return (
@@ -32,7 +49,7 @@ export default function DateRangePicker({ value, onChange, placeholder, dataSize
         }
       }}
       options={{
-        mode: "range",
+        mode: mode,
         dateFormat: "Y-m-d",
         maxDate: "today",
         altInput: true,
@@ -40,8 +57,9 @@ export default function DateRangePicker({ value, onChange, placeholder, dataSize
         altFormat: "Y-m-d",
         closeOnSelect: closeOnSelect,
         altInputClass: "theme-field",
+        monthSelectorType: "dropdown",
       }}
-      placeholder={placeholder || t("filters.dateRangePlaceholder")}
+      placeholder={placeholder || (mode === "single" ? t("filters.datePlaceholder") : t("filters.dateRangePlaceholder"))}
       data-size={dataSize}
       className={className}
     />

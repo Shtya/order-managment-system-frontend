@@ -1,11 +1,11 @@
 // app/[locale]/layout.js
 import React from 'react';
-import {NextIntlClientProvider, hasLocale} from 'next-intl';
-import {getMessages} from 'next-intl/server';
-import {notFound} from 'next/navigation';
-import {routing} from '../../i18n/routing';
+import { NextIntlClientProvider, hasLocale } from 'next-intl';
+import { getMessages } from 'next-intl/server';
+import { notFound } from 'next/navigation';
+import { routing } from '../../i18n/routing';
 
-import {Cairo, Inter, Open_Sans, Roboto_Mono , Sora} from 'next/font/google';
+import { Cairo, Inter, Open_Sans, Roboto_Mono, Sora } from 'next/font/google';
 import './globals.css';
 
 import LayoutShell from './LayoutShell';
@@ -47,17 +47,17 @@ const arabicFont = Cairo({
 });
 
 export function generateStaticParams() {
-  return routing.locales.map((locale) => ({locale}));
+  return routing.locales.map((locale) => ({ locale }));
 }
 
 export const metadata = {
-  title: 'FitPro - Transform Your Body, Transform Your Life',
+  title: 'Madar: The Comprehensive Business Order Management Platform',
   description:
-    'Professional fitness coaching platform with personalized workout plans, nutrition tracking, and progress analytics.'
+    'Efficiently manage orders, streamline shipments, and gain business insights with real-time analytics.'
 };
 
-export default async function RootLayout({children, params}) {
-  const {locale} = await params;
+export default async function RootLayout({ children, params }) {
+  const { locale } = await params;
 
   if (!hasLocale(routing.locales, locale)) notFound();
 

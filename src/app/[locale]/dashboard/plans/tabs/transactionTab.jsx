@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/utils/cn";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { platformCurrency } from "@/utils/healpers";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 
 
 
@@ -386,22 +387,17 @@ export default function TransactionTab({ defaultPurpose, allowedPurposes }) {
                     </FilterField>}
                     {/* Date Range */}
                     <FilterField label={t("filters.date")}>
-                        <Flatpickr
-                            value={[
-                                filters.startDate ? new Date(filters.startDate) : null,
-                                filters.endDate ? new Date(filters.endDate) : null,
-                            ]}
-                            onChange={([start, end]) =>
-                                setFilters(f => ({
-                                    ...f,
-                                    startDate: start ? start.toLocaleDateString() : null,
-                                    endDate: end ? end.toLocaleDateString() : null,
-                                }))
-                            }
-                            options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
-                            data-size="default"
-                            className={"theme-field"}
+                        <DateRangePicker
+                            value={{
+                                startDate: filters.startDate,
+                                endDate: filters.endDate
+                            }}
+                            onChange={(newDates) => setFilters(prev => ({
+                                ...prev,
+                                ...newDates
+                            }))}
                             placeholder={t("filters.datePlaceholder")}
+                            dataSize="default"
                         />
                     </FilterField>
                 </>

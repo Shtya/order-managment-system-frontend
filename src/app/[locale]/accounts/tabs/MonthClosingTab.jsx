@@ -101,17 +101,17 @@ export default function MonthClosingTab() {
     {
       key: "revenue",
       header: t("columns.totalSelling") || "الإيرادات",
-      cell: (row) => <span className="text-sm font-bold text-emerald-600 tabular-nums">{Number(row.revenue).toLocaleString()}ج</span>
+      cell: (row) => <span className="text-sm font-bold text-emerald-600 tabular-nums">{Number(row.revenue).toLocaleString()}</span>
     },
     {
       key: "productCost",
       header: t("columns.productCost") || "تكلفة البضاعة",
-      cell: (row) => <span className="text-sm font-medium text-orange-600 tabular-nums">-{Number(row.productCost).toLocaleString()}ج</span>
+      cell: (row) => <span className="text-sm font-medium text-orange-600 tabular-nums">-{Number(row.productCost).toLocaleString()}</span>
     },
     {
       key: "operationalExpenses",
       header: t("columns.operationalExpenses") || "المصاريف",
-      cell: (row) => <span className="text-sm font-medium text-red-600 tabular-nums">-{Number(row.operationalExpenses).toLocaleString()}ج</span>
+      cell: (row) => <span className="text-sm font-medium text-red-600 tabular-nums">-{Number(row.operationalExpenses).toLocaleString()}</span>
     },
     {
       key: "returnsCost",

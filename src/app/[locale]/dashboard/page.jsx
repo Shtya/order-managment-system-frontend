@@ -52,6 +52,7 @@ import { useDebounce } from "@/hook/useDebounce";
 import toast from "react-hot-toast";
 import Button_ from "@/components/atoms/Button";
 import { cn } from "@/utils/cn";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 
 // ── FilterField wrapper (matches the one in OrdersStatisticsPage) ─────────────
 
@@ -382,7 +383,10 @@ export default function DashboardPage() {
         stats={statsData}
         items={QUICK_RANGES}
         active={quickRange}
-        setActive={setQuickRange}
+        setActive={(v) => {
+          setQuickRange(v)
+          setFilters(p => ({ ...p, startDate: null, endDate: null }))
+        }}
       />
 
       {/* Filters */}
@@ -393,36 +397,12 @@ export default function DashboardPage() {
       >
         {/* Date range */}
         <FilterField label={t("filters.dateRange")} icon={Calendar}>
-          <Flatpickr
-            value={[
-              filters.startDate ? new Date(filters.startDate) : null,
-              filters.endDate ? new Date(filters.endDate) : null,
-            ]}
-            onChange={([s, e]) => {
-              setFilters((f) => ({
-                ...f,
-                startDate: s ? s.toISOString().split('T')[0] : null,
-                endDate: e ? e.toISOString().split('T')[0] : null,
-              }));
-              setQuickRange(null);
+          <DateRangePicker
+            value={{ startDate: filters.startDate, endDate: filters.endDate }}
+            onChange={(newDates) => {
+              setFilters(f => ({ ...f, ...newDates }))
+              setQuickRange(null)
             }}
-            onReady={(selectedDates, dateStr, instance) => {
-              const size = instance.element.getAttribute('data-size');
-              if (size && instance.altInput) {
-                instance.altInput.setAttribute('data-size', size);
-              }
-            }}
-            options={{
-              mode: "range",
-              dateFormat: "Y-m-d",
-              maxDate: "today",
-              altInput: true,
-              altFormat: "Y-m-d",
-              altInputClass: "theme-field",
-            }}
-            placeholder={t("filters.dateRangePlaceholder")}
-            data-size="default"
-            className="hidden"
           />
         </FilterField>
 

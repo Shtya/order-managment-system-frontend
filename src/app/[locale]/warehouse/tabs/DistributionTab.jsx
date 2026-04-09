@@ -69,6 +69,7 @@ import api from "@/utils/api";
 // ─────────────────────────────────────────────
 import { CARRIER_STYLES, CARRIERS, CARRIER_META } from "./data";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 
 // ─────────────────────────────────────────────
 // MAIN TAB
@@ -1332,13 +1333,11 @@ function UnassignedOrdersSubtab({ t, fetchStats, updateStatsAfterAssign }) {
               onChange={(v) => setFilters((f) => ({ ...f, productId: v }))}
             />
             <FilterField label={t("field.date")}>
-              <Input
-                type="date"
+              <DateRangePicker
+                mode="single"
                 value={filters.date}
-                onChange={(e) =>
-                  setFilters((f) => ({ ...f, date: e.target.value }))
-                }
-                className="h-10 rounded-xl text-sm"
+                onChange={(date) => setFilters((f) => ({ ...f, date }))}
+                dataSize="default"
               />
             </FilterField>
           </>
@@ -1821,13 +1820,11 @@ function AssignedOrdersSubtab({
               </Select>
             </FilterField>
             <FilterField label={t("field.date")}>
-              <Input
-                type="date"
+              <DateRangePicker
+                mode="single"
                 value={filters.date}
-                onChange={(e) =>
-                  setFilters((f) => ({ ...f, date: e.target.value }))
-                }
-                className="h-10 rounded-xl text-sm"
+                onChange={(date) => setFilters((f) => ({ ...f, date }))}
+                dataSize="default"
               />
             </FilterField>
           </>

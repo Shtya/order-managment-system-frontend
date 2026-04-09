@@ -163,7 +163,7 @@ export default function SupplierAccountsTab() {
             "text-sm font-black tabular-nums p-1.5 px-2.5 rounded-md",
             balance > 0 ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"
           )}>
-            {Math.abs(balance).toLocaleString()}ج
+            {Math.abs(balance).toLocaleString()}
             <span className="text-[10px] font-normal mr-1">
               ({balance > 0 ? t('overview.payable') : t('overview.receivable')})
             </span>
@@ -285,8 +285,8 @@ function AccountStatementModal({ supplier, onClose, t, router }) {
     try {
       const params = {
         supplierId: supplier.id,
-        startDate: filters.startDate ? filters.startDate.toISOString().split("T")[0] : undefined,
-        endDate: filters.endDate ? filters.endDate.toISOString().split("T")[0] : undefined,
+        startDate: filters.startDate ? filters.startDate : undefined,
+        endDate: filters.endDate ? filters.endDate : undefined,
       };
       // 1. Fetch Summary Stats
       const statsRes = await api.get("/accounting/supplier-closings/supplier-preview", { params });
@@ -338,7 +338,7 @@ function AccountStatementModal({ supplier, onClose, t, router }) {
           <tr>
             <td>${inv.ref || '-'}</td>
             <td>${inv.date}</td>
-            <td style="font-weight: bold;">${inv.amount.toLocaleString()} ج.م</td>
+            <td style="font-weight: bold;">${inv.amount.toLocaleString()} </td>
           </tr>
         `).join('')
       : `<tr><td colspan="3" style="text-align:center; padding: 15px;">لا توجد فواتير مشتريات في هذه الفترة</td></tr>`;
@@ -349,7 +349,7 @@ function AccountStatementModal({ supplier, onClose, t, router }) {
           <tr>
             <td>${inv.ref || '-'}</td>
             <td>${inv.date}</td>
-            <td style="font-weight: bold; color: #ef4444;">${inv.amount.toLocaleString()} ج.م</td>
+            <td style="font-weight: bold; color: #ef4444;">${inv.amount.toLocaleString()}</td>
           </tr>
         `).join('')
       : `<tr><td colspan="3" style="text-align:center; padding: 15px;">لا توجد فواتير مرتجعات في هذه الفترة</td></tr>`;
@@ -469,7 +469,7 @@ function AccountStatementModal({ supplier, onClose, t, router }) {
   const miniInvoiceColumns = [
     { key: "ref", header: t("supplierAccounts.statement.invoiceRef"), cell: (row) => <span className="font-mono text-xs">{row.ref}</span> },
     { key: "date", header: t("supplierAccounts.statement.date"), cell: (row) => <span className="tabular-nums text-[11px]">{row.date}</span> },
-    { key: "amount", header: t("supplierAccounts.statement.amount"), cell: (row) => <span className="font-black text-xs">{row.amount.toLocaleString()}ج</span> },
+    { key: "amount", header: t("supplierAccounts.statement.amount"), cell: (row) => <span className="font-black text-xs">{row.amount.toLocaleString()}</span> },
     {
       key: "actions",
       header: "",
@@ -563,8 +563,8 @@ function CloseAccountPeriodModal({ supplier, onClose, onSuccess, t, tCommon }) {
     try {
       const params = {
         supplierId: supplier.id,
-        startDate: filters.startDate ? filters.startDate.toISOString().split("T")[0] : undefined,
-        endDate: filters.endDate ? filters.endDate.toISOString().split("T")[0] : undefined,
+        startDate: filters.startDate ? filters.startDate : undefined,
+        endDate: filters.endDate ? filters.endDate : undefined,
       };
       const res = await api.get("/accounting/supplier-closings/supplier-preview", { params });
       setSummary(res.data);
@@ -585,8 +585,8 @@ function CloseAccountPeriodModal({ supplier, onClose, onSuccess, t, tCommon }) {
     try {
       const payload = {
         supplierId: supplier.id,
-        startDate: filters.startDate.toISOString().split("T")[0],
-        endDate: filters.endDate.toISOString().split("T")[0],
+        startDate: filters.startDate,
+        endDate: filters.endDate,
       };
       await api.post("/accounting/supplier-closings/close", payload);
       toast.success(t("manualExpenses.messages.categoryUpdated") || "تم التقفيل بنجاح");
@@ -722,7 +722,7 @@ function ClosingHistoryModal({ supplier, onClose, t }) {
             <tr>
               <td>${inv.receiptNumber || inv.invoiceNumber || '-'}</td>
               <td>${new Date(inv.statusUpdateDate || inv.created_at).toLocaleDateString()}</td>
-              <td style="font-weight: bold;">${Number(inv.total).toLocaleString()} ج.م</td>
+              <td style="font-weight: bold;">${Number(inv.total).toLocaleString()} </td>
             </tr>
           `).join('')
         : `<tr><td colspan="3" style="text-align:center; padding: 15px;">لا توجد فواتير مشتريات</td></tr>`;
@@ -732,7 +732,7 @@ function ClosingHistoryModal({ supplier, onClose, t }) {
             <tr>
               <td>${inv.returnNumber || '-'}</td>
               <td>${new Date(inv.statusUpdateDate || inv.created_at).toLocaleDateString()}</td>
-              <td style="font-weight: bold; color: #ef4444;">${Number(inv.totalReturn).toLocaleString()} ج.م</td>
+              <td style="font-weight: bold; color: #ef4444;">${Number(inv.totalReturn).toLocaleString()} </td>
             </tr>
           `).join('')
         : `<tr><td colspan="3" style="text-align:center; padding: 15px;">لا توجد فواتير مرتجعات</td></tr>`;

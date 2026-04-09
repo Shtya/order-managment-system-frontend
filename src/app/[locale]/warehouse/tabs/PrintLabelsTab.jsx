@@ -31,6 +31,7 @@ import { toast } from "react-hot-toast";
 import { OrderDetailModal } from "./DistributionTab";
 import BarcodeCell from "@/components/atoms/BarcodeCell";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 
 function CarrierPill({ carrier }) {
   const s = CARRIER_STYLES[carrier?.toUpperCase()] || CARRIER_STYLES.NONE;
@@ -494,7 +495,12 @@ function NotPrintedSubtab({ onPrinted, resetToken, fetchStats }) {
             <StoreFilter value={filters.store} onChange={(v) => setFilters(f => ({ ...f, store: v }))} />
             <ProductFilter value={filters.productId} onChange={(v) => setFilters(f => ({ ...f, productId: v }))} />
             <FilterField label={t("filter.date")}>
-              <Input type="date" value={filters.date} onChange={(e) => setFilters((f) => ({ ...f, date: e.target.value }))} className="h-10 rounded-xl text-sm" />
+              <DateRangePicker
+                mode="single"
+                value={filters.date}
+                onChange={(date) => setFilters((f) => ({ ...f, date }))}
+                dataSize="default"
+              />
             </FilterField>
           </>
         }
@@ -648,7 +654,12 @@ function PrintedSubtab({ resetToken, fetchStats }) {
             <StoreFilter value={filters.store} onChange={(v) => setFilters(f => ({ ...f, store: v }))} />
             <ProductFilter value={filters.productId} onChange={(v) => setFilters(f => ({ ...f, productId: v }))} />
             <FilterField label={t("filter.printDate")}>
-              <Input type="date" value={filters.date} onChange={(e) => setFilters((f) => ({ ...f, date: e.target.value }))} className="h-10 rounded-xl text-sm" />
+              <DateRangePicker
+                mode="single"
+                value={filters.date}
+                onChange={(date) => setFilters((f) => ({ ...f, date }))}
+                dataSize="default"
+              />
             </FilterField>
           </>
         }

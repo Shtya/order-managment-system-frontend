@@ -27,7 +27,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import Table, { FilterField } from "@/components/atoms/Table";
-import Flatpickr from "react-flatpickr";
 import {
   Dialog,
   DialogContent,
@@ -57,6 +56,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ActionButtons } from "@/components/atoms/Actions";
 import api from "@/utils/api";
 import { useExport } from "@/hook/useExport";
 import toast from "react-hot-toast";
@@ -248,22 +248,12 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
                   control={control}
                   name="collectionDate"
                   render={({ field }) => (
-                    <Flatpickr
-                      value={field.value ? new Date(field.value) : new Date()}
-                      onChange={([date]) => {
-                        if (date) {
-                          field.onChange(date);
-                        }
-                      }}
-
-                      options={{
-                        dateFormat: "Y-m-d",
-                        maxDate: "today",
-                        static: true,
-                        monthSelectorType: "dropdown",
-
-                      }}
-                      data-size='default'
+                    <DateRangePicker
+                      mode="single"
+                      value={field.value}
+                      onChange={(date) => field.onChange(date)}
+                      staticShow={true}
+                      dataSize="default"
                       className={cn("theme-field w-full pl-9", errors.collectionDate && "border-red-500")}
                     />
                   )}
@@ -556,7 +546,7 @@ export default function ManualExpensesTab({
       header: t("manualExpenses.columns.amount"),
       cell: (row) => (
         <span className="text-sm font-black text-red-600 tabular-nums">
-          -{Number(row.amount).toLocaleString()}ج
+          -{Number(row.amount).toLocaleString()}
         </span>
       )
     },
@@ -582,34 +572,31 @@ export default function ManualExpensesTab({
       key: "actions",
       header: t("manualExpenses.columns.actions"),
       cell: (row) => (
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="w-8 h-8 rounded-lg hover:bg-primary/10 hover:text-primary"
-            onClick={() => setSelectedExpense(row)}
-          >
-            <Eye size={14} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            disabled={row.monthlyClosingId}
-            className="w-8 h-8 rounded-lg hover:bg-orange-100 hover:text-orange-600"
-            onClick={() => handleEdit(row)}
-          >
-            <Pencil size={14} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            disabled={row.monthlyClosingId}
-            className="w-8 h-8 rounded-lg hover:bg-red-100 hover:text-red-600"
-            onClick={() => handleDelete(row)}
-          >
-            <Trash2 size={14} />
-          </Button>
-        </div>
+        <ActionButtons
+          row={row}
+          actions={[
+            {
+              icon: <Eye />,
+              tooltip: t("manualExpenses.actions.view"),
+              onClick: (r) => setSelectedExpense(r),
+              variant: "slate",
+            },
+            {
+              icon: <Pencil />,
+              tooltip: t("manualExpenses.actions.edit"),
+              onClick: (r) => handleEdit(r),
+              disabled: !!row.monthlyClosingId,
+              variant: "amber",
+            },
+            {
+              icon: <Trash2 />,
+              tooltip: t("manualExpenses.actions.delete"),
+              onClick: (r) => handleDelete(r),
+              disabled: !!row.monthlyClosingId,
+              variant: "rose",
+            },
+          ]}
+        />
       )
     }
   ], [t]);

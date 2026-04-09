@@ -7806,7 +7806,8 @@
       "endDate": "End Date",
       "apply": "Apply",
       "year": "Year",
-      "selectYear": "Select Year"
+      "selectYear": "Select Year",
+      "datePlaceholder": "ٍSelect date"
     },
     "toolbar": {
       "searchPlaceholder": "Search..."

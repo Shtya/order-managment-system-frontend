@@ -70,9 +70,11 @@ import { baseImg } from "@/utils/axios";
 import { Badge } from "@/components/ui/badge";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
+import AssetPreview from "@/components/atoms/AssetPreview";
 import { Bone } from "@/components/atoms/BannerSkeleton";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 
 const isImagePath = (p) => !!p && /\.(png|jpg|jpeg|webp|gif)$/i.test(p);
 const isPdfPath = (p) => !!p && /\.pdf$/i.test(p);
@@ -173,22 +175,20 @@ function FiltersPanel({ t, value, onChange, onApply, suppliers }) {
 
 					<div className="space-y-2">
 						<Label>{t("filters.dateRange")}</Label>
-						<Flatpickr
-							value={[
-								value.startDate ? new Date(value.startDate) : null,
-								value.endDate ? new Date(value.endDate) : null,
-							]}
-							onChange={([start, end]) => {
+						<DateRangePicker
+							value={{
+								startDate: value.startDate,
+								endDate: value.endDate,
+							}}
+							onChange={(newDates) =>
 								onChange({
 									...value,
-									startDate: start ? start.toLocaleDateString() : null,
-									endDate: end ? end.toLocaleDateString() : null,
-								});
-							}}
-							options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
-							data-size="default"
-							className={"theme-field"}
+									...newDates,
+								})
+							}
 							placeholder={t("filters.selectDateRange")}
+							dataSize="default"
+							maxDate="today"
 						/>
 					</div>
 
@@ -1432,30 +1432,15 @@ export default function PurchasesPage() {
 				key: "receiptAsset",
 				header: t("table.receipt"),
 				className: "w-[90px]",
-				cell: (row) => {
-					const asset = baseImg + row.receiptAsset;
-					if (!row.receiptAsset) return <span className="text-xs text-gray-400 text-center block">{t("table.noReceipt")}</span>;
-
-					if (isImagePath(asset)) {
-						return (
-							<button type="button" onClick={() => handleViewDetails(row)} className="inline-flex items-center gap-2">
-								<div className="w-10 h-10 rounded-xl overflow-hidden border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800">
-									<img src={asset} alt="receipt" className="w-full h-full object-cover" />
-								</div>
-							</button>
-						);
-					}
-
-					if (isPdfPath(asset)) {
-						return (
-							<a href={asset} target="_blank" rel="noreferrer" className="inline-flex justify-center w-full items-center gap-2 text-primary">
-								<FileText size={18} />
-							</a>
-						);
-					}
-
-					return <span className="text-center block">-</span>;
-				},
+				cell: (row) => (
+					<div className="flex justify-center">
+						<AssetPreview
+							src={row.receiptAsset}
+							alt={t("table.receipt")}
+							labels={{ preview: t("table.receipt") }}
+						/>
+					</div>
+				),
 			},
 			{
 				key: "status",
@@ -1633,22 +1618,20 @@ export default function PurchasesPage() {
 						</FilterField>
 
 						<FilterField label={t("filters.dateRange")}>
-							<Flatpickr
-								value={[
-									filters.startDate ? new Date(filters.startDate) : null,
-									filters.endDate ? new Date(filters.endDate) : null,
-								]}
-								onChange={([start, end]) => {
-									setFilters((f) => ({
-										...f,
-										startDate: start ? start.toLocaleDateString() : null,
-										endDate: end ? end.toLocaleDateString() : null,
-									}));
+							<DateRangePicker
+								value={{
+									startDate: filters.startDate,
+									endDate: filters.endDate,
 								}}
-								options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
-								data-size="default"
-								className={"theme-field"}
+								onChange={(newDates) =>
+									setFilters((prev) => ({
+										...prev,
+										...newDates,
+									}))
+								}
 								placeholder={t("filters.selectDateRange")}
+								dataSize="default"
+								maxDate="today"
 							/>
 						</FilterField>
 

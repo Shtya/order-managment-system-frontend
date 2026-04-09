@@ -52,6 +52,7 @@ import PermissionsSelector from "@/components/atoms/PermissionsSelector";
 
 import PageHeader from "@/components/atoms/Pageheader";
 import Table, { FilterField } from "@/components/atoms/Table";
+import { ActionButtons } from "@/components/atoms/Actions";
 import { useAuth } from "@/context/AuthContext";
 
 /** ✅ Main Page Component */
@@ -220,58 +221,29 @@ export default function RolesPermissionsPage() {
 				key: "options",
 				header: t("table.options"),
 				cell: (row) => (
-					<div className="flex items-center gap-2">
-						{/* ✅ Show Edit button only if NOT global */}
-						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.1 }}
-										whileTap={{ scale: 0.95 }}
-										onClick={() => handleEditRole(row)}
-										className="w-9 h-9 rounded-full border border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all flex items-center justify-center dark:bg-purple-950/30 dark:hover:bg-purple-600"
-									>
-										<Edit size={16} />
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>{t("actions.edit")}</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
-
-						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.1 }}
-										whileTap={{ scale: 0.95 }}
-										onClick={() => handleDeleteClick(row)}
-										className="w-9 h-9 rounded-full border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all flex items-center justify-center dark:bg-red-950/30 dark:hover:bg-red-600"
-									>
-										<Trash2 size={16} />
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>{t("actions.delete")}</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
-
-
-						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<motion.button
-										whileHover={{ scale: 1.1 }}
-										whileTap={{ scale: 0.95 }}
-										onClick={() => handlePreviewRole(row)}
-										className="w-9 h-9 rounded-full border border-primary/20 bg-primary/10 text-primary  hover:bg-primary hover:text-white transition-all flex items-center justify-center dark:bg-primary/15"
-									>
-										<Eye size={16} />
-									</motion.button>
-								</TooltipTrigger>
-								<TooltipContent>{t("actions.preview")}</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
-
-					</div>
+					<ActionButtons
+						row={row}
+						actions={[
+							{
+								icon: <Edit />,
+								tooltip: t("actions.edit"),
+								onClick: (r) => handleEditRole(r),
+								variant: "purple",
+							},
+							{
+								icon: <Trash2 />,
+								tooltip: t("actions.delete"),
+								onClick: (r) => handleDeleteClick(r),
+								variant: "rose",
+							},
+							{
+								icon: <Eye />,
+								tooltip: t("actions.preview"),
+								onClick: (r) => handlePreviewRole(r),
+								variant: "slate",
+							},
+						]}
+					/>
 				),
 			},
 		];

@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/utils/cn";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { platformCurrency } from "@/utils/healpers";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 
 
 
@@ -203,16 +204,18 @@ export default function UserFeaturesTab() {
                     </FilterField>
 
                     <FilterField label={t("filters.date")}>
-                        <Flatpickr
-                            value={[filters.startDate ? new Date(filters.startDate) : null, filters.endDate ? new Date(filters.endDate) : null]}
-                            onChange={([start, end]) => setFilters(f => ({
-                                ...f,
-                                startDate: start ? start.toLocaleDateString() : null,
-                                endDate: end ? end.toLocaleDateString() : null,
+                        <DateRangePicker
+                            value={{
+                                startDate: filters.startDate,
+                                endDate: filters.endDate
+                            }}
+                            onChange={(newDates) => setFilters(prev => ({
+                                ...prev,
+                                ...newDates
                             }))}
-                            options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
-                            data-size="default"
-                            className={"theme-field"} placeholder={t("filters.datePlaceholder")}
+                            placeholder={t("filters.datePlaceholder")}
+                            dataSize="default"
+                            maxDate="today"
                         />
                     </FilterField>
                 </>

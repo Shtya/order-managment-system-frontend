@@ -20,14 +20,14 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 import api from "@/utils/api";
 import toast from "react-hot-toast";
-import Flatpickr from "react-flatpickr";
 
 
 import useProductsTab, { ProductViewModal } from "./ProductsTab";
 import useBundlesTab, { BundleViewModal } from "./BundlesTab";
 import useIdleTab from "./IdleTab";
 import PageHeader from "@/components/atoms/Pageheader";
-import Table from "@/components/atoms/Table";
+import Table, { FilterField } from "@/components/atoms/Table";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 import { useSearchParams } from "next/navigation";
 
 function normalizeAxiosError(err) {
@@ -202,14 +202,7 @@ function subMonths(date, months) {
 	return d;
 }
 
-function FilterField({ label, children }) {
-	return (
-		<div className="space-y-2">
-			<Label>{label}</Label>
-			{children}
-		</div>
-	);
-}
+
 
 export default function ProductsPage() {
 	const t = useTranslations("products");
@@ -711,11 +704,13 @@ export default function ProductsPage() {
 						{/* Idle tab extra filter example (optional) */}
 						{active === "idle" && (
 							<FilterField label={t("tabs.idleDate")}>
-								<Input
-									type="date"
+								<DateRangePicker
+									mode="single"
 									value={idleFromDate}
-									onChange={(e) => setIdleFromDate(e.target.value)}
-									className="h-10 rounded-xl text-sm"
+									onChange={(date) => {
+										setIdleFromDate(date);
+									}}
+									dataSize="default"
 								/>
 							</FilterField>
 						)}

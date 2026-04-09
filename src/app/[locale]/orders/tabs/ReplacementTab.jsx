@@ -33,6 +33,7 @@ import PageHeader from "@/components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
 import ActionButtons from "@/components/atoms/Actions";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 
 
 function hexToBg(hex) {
@@ -504,20 +505,20 @@ export function ReplacementTab({ statuses }) {
 
 					{/* Date range */}
 					<FilterField label={t("filters.date")}>
-						<Flatpickr
-							value={[
-								filters.startDate ? new Date(filters.startDate) : null,
-								filters.endDate ? new Date(filters.endDate) : null,
-							]}
-							onChange={([start, end]) => setFilters(f => ({
-								...f,
-								startDate: start ? start.toLocaleDateString() : null,
-								endDate: end ? end.toLocaleDateString() : null,
-							}))}
-							options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
-							data-size="default"
-							className={"theme-field"}
+						<DateRangePicker
+							value={{
+								startDate: filters.startDate,
+								endDate: filters.endDate,
+							}}
+							onChange={(newDates) =>
+								setFilters((prev) => ({
+									...prev,
+									...newDates,
+								}))
+							}
 							placeholder={t("filters.datePlaceholder")}
+							dataSize="default"
+							maxDate="today"
 						/>
 					</FilterField>
 				</>

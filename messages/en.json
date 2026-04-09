@@ -7768,6 +7768,7 @@
     "stats": {
       "totalExpenses": "Total Expenses",
       "productPurchases": "Product Purchases",
+      "totalPaid": "Total Paid",
       "manualExpenses": "Operating Expenses",
       "returns": "Returns (Money)",
       "netResult": "Net Result",
@@ -7778,10 +7779,13 @@
       "lastSettlement": "Last Settlement Balance",
       "totalHistorySales": "Total Monthly Sales",
       "totalHistoryCosts": "Total Monthly Costs",
-      "totalNetProfit": "Total Net Profit"
+      "totalNetProfit": "Total Net Profit",
+      "totalReceived": "Total Received",
+      "finalBalance": "Final Balance"
     },
     "export": "Export",
     "common": {
+      "cancel": "Cancel",
       "none": "None",
       "all": "All"
     },
@@ -7796,6 +7800,9 @@
       "apply": "Apply",
       "year": "Year",
       "selectYear": "Select Year"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Search..."
     },
     "overview": {
       "viewOperetionalExpenses": "View Operating Expenses",
@@ -7866,7 +7873,8 @@
         "description": "Description",
         "amount": "Amount",
         "addedBy": "Added By",
-        "actions": "Actions"
+        "actions": "Actions",
+        "attachment": "Invoice/Receipt Image"
       },
       "categories": {
         "ads": "Ads",
@@ -7904,9 +7912,18 @@
         "description": "Description/Details",
         "attachment": "Invoice/Receipt Image (Optional)",
         "upload": "Upload Image",
+        "changeAttachment": "Change Attachment",
         "save": "Save",
         "cancel": "Cancel",
         "selectCategoryError": "Please select a category"
+      },
+      "validation": {
+        "amountNumber": "Amount must be a number",
+        "amountRequired": "Amount is required",
+        "amountPositive": "Amount must be positive",
+        "dateRequired": "Date is required",
+        "descriptionRequired": "Description is required",
+        "fileTooLarge": "File is too large (max 20MB)"
       },
       "messages": {
         "updated": "Expense updated successfully",
@@ -7972,13 +7989,13 @@
       "stats": {
         "topCity": "Top City Deliveries",
         "lowestCity": "Lowest City Deliveries",
-        "avgDeliveries": "Average Deliveries"
+        "avgDeliveries": "Delivery Rate"
       },
       "columns": {
         "city": "City",
         "total": "All Deliveries",
         "delivered": "Actual Deliveries",
-        "returns": "Number of Returns",
+        "returns": "Shipment failed",
         "successRate": "Success Rate"
       }
     },

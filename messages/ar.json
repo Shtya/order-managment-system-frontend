@@ -7768,6 +7768,7 @@
     "stats": {
       "totalExpenses": "إجمالي المصروفات",
       "productPurchases": "شراء منتجات",
+      "totalPaid": "إجمالي المدفوعات",
       "manualExpenses": "مصروفات تشغيلية",
       "returns": "المرتجعات (فلوس)",
       "netResult": "صافي النتيجة",
@@ -7778,10 +7779,13 @@
       "lastSettlement": "آخر رصيد تقفيل",
       "totalHistorySales": "إجمالي مبيعات الشهر",
       "totalHistoryCosts": "إجمالي تكاليف الشهر",
-      "totalNetProfit": "إجمالي الأرباح"
+      "totalNetProfit": "إجمالي الأرباح",
+      "totalReceived": "إجمالي المستلم",
+      "finalBalance": "الرصيد النهائي"
     },
     "export": "تصدير",
     "common": {
+      "cancel": "الغاء",
       "none": "لا يوجد",
       "all": "الكل"
     },
@@ -7796,6 +7800,9 @@
       "apply": "تطبيق",
       "year": "العام",
       "selectYear": "إختر العام"
+    },
+    "toolbar": {
+      "searchPlaceholder": "بحث..."
     },
     "overview": {
       "viewOperetionalExpenses": "عرض المصروفات التشغيلية",
@@ -7863,10 +7870,11 @@
       "columns": {
         "date": "التاريخ",
         "category": "التصنيف",
-        "description": "البيان",
+        "description": "الوصف",
         "amount": "المبلغ",
         "addedBy": "بواسطة",
-        "actions": "الإجراءات"
+        "actions": "الإجراءات",
+        "attachment": "صورة الفاتورة/الإيصال\t"
       },
       "categories": {
         "ads": "إعلانات",
@@ -7904,9 +7912,18 @@
         "description": "البيان/الوصف",
         "attachment": "صورة الفاتورة/الإيصال (اختياري)",
         "upload": "رفع صورة",
+        "changeAttachment": "تغيير المرفق",
         "save": "حفظ",
         "cancel": "إلغاء",
         "selectCategoryError": "يرجى اختيار تصنيف"
+      },
+      "validation": {
+        "amountNumber": "يجب أن يكون المبلغ رقماً",
+        "amountRequired": "المبلغ مطلوب",
+        "amountPositive": "يجب أن يكون المبلغ أكبر من صفر",
+        "dateRequired": "التاريخ مطلوب",
+        "descriptionRequired": "الوصف مطلوب",
+        "fileTooLarge": "حجم الملف كبير جداً (الحد الأقصى 20 ميجابايت)"
       },
       "messages": {
         "updated": "تم تحديث المصروف بنجاح",
@@ -7972,13 +7989,13 @@
       "stats": {
         "topCity": "أعلى محافظة تسليماً",
         "lowestCity": "أقل محافظة تسليماً",
-        "avgDeliveries": "متوسط التسليمات"
+        "avgDeliveries": "معدل التوصيل"
       },
       "columns": {
         "city": "المحافظة",
         "total": "إجمالي التسليمات",
         "delivered": "التسليمات الفعلية",
-        "returns": "عدد المرتجعات",
+        "returns": "فشل التوصيل",
         "successRate": "نسبة النجاح"
       }
     },

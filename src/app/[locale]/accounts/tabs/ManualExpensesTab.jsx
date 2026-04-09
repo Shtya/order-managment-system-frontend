@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect, useRef } from "react";
+import React, { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import {
   Eye,
@@ -60,6 +60,12 @@ import {
 import api from "@/utils/api";
 import { useExport } from "@/hook/useExport";
 import toast from "react-hot-toast";
+import { useForm, Controller } from "react-hook-form";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { avatarSrc } from "@/components/atoms/UserSelect";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
+import { useDebounce } from "@/hook/useDebounce";
 
 // Category configuration
 export const CATEGORY_CONFIG = {
@@ -71,93 +77,88 @@ export const CATEGORY_CONFIG = {
   other: { icon: MoreHorizontal, color: "text-slate-500 bg-slate-50", iconColor: "#64748b" },
 };
 
+const createManualExpenseSchema = (t) =>
+  yup.object({
+    amount: yup
+      .number()
+      .typeError(t("manualExpenses.validation.amountNumber"))
+      .required(t("manualExpenses.validation.amountRequired"))
+      .positive(t("manualExpenses.validation.amountPositive")),
+    collectionDate: yup.date().required(t("manualExpenses.validation.dateRequired")),
+    categoryId: yup
+      .string()
+      .notOneOf(["none"], t("manualExpenses.form.selectCategoryError"))
+      .required(t("manualExpenses.form.selectCategoryError")),
+    description: yup.string().required(t("manualExpenses.validation.descriptionRequired")),
+    attachment: yup.mixed().nullable(),
+  });
+
 // --- Form Component (Exported) ---
 export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onSave, categories }) {
   const t = useTranslations("accounts");
   const fileInputRef = useRef(null);
-
-  const [formData, setFormData] = useState({
-    amount: "",
-    collectionDate: new Date(),
-    categoryId: "none",
-    description: "",
-    attachment: null
-  });
-  console.log(formData);
-  const handleDivClick = () => {
-    // Manually trigger the hidden input
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // 20MB client-side check
-    if (file.size > 20 * 1024 * 1024) {
-      toast.error("File is too large (max 20MB)");
-      e.target.value = ""; // Reset the input
-      return;
-    }
-
-    setFormData(prev => ({ ...prev, attachment: file }));
-  };
-
-
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+  const schema = useMemo(() => createManualExpenseSchema(t), [t]);
+
+  const getDefaultValues = useCallback(() => {
     if (editingExpense) {
-      setFormData({
+      return {
         amount: Math.abs(editingExpense.amount),
         collectionDate: new Date(editingExpense.collectionDate),
         categoryId: String(editingExpense.categoryId || "none"),
         description: editingExpense.description || "",
-        attachment: editingExpense.attachment || null
-      });
-    } else {
-      setFormData({
-        amount: "",
-        collectionDate: new Date(),
-        categoryId: "none",
-        description: "",
-        attachment: null
-      });
+        attachment: editingExpense.attachment || null,
+      };
     }
-  }, [editingExpense, open]);
+    return {
+      amount: "",
+      collectionDate: new Date(),
+      categoryId: "none",
+      description: "",
+      attachment: null,
+    };
+  }, [editingExpense]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const {
+    control,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: getDefaultValues(),
+  });
 
-    if (formData.categoryId === "none") {
-      toast.error(t("manualExpenses.form.selectCategoryError") || "Please select a category");
-      return;
+  const attachment = watch("attachment");
+
+
+  useEffect(() => {
+    if (open) {
+      reset(getDefaultValues());
     }
+  }, [editingExpense, open, reset, getDefaultValues]);
 
+  const onSubmit = async (data) => {
     setLoading(true);
-
     try {
-      // 1. Initialize FormData
-      const data = new FormData();
+      const payload = new FormData();
+      payload.append("amount", String(data.amount));
+      payload.append("categoryId", String(data.categoryId));
+      payload.append("collectionDate", data.collectionDate?.toISOString());
+      payload.append("description", data.description || "");
 
-      // 2. Append standard fields
-      data.append("amount", String(formData.amount));
-      data.append("categoryId", String(formData.categoryId));
-      data.append("collectionDate", formData.collectionDate);
-      data.append("description", formData.description || "");
-
-      // 3. Append the file (only if a new one was selected)
-      // The key "attachment" must match the @UploadedFile('attachment') in NestJS
-      if (formData.attachment instanceof File) {
-        data.append("attachment", formData.attachment);
+      if (data.attachment instanceof File) {
+        payload.append("attachment", data.attachment);
       }
 
-      // 4. Send request
       if (editingExpense) {
-        await api.patch(`/expenses/${editingExpense.id}`, data);
+        await api.patch(`/expenses/${editingExpense.id}`, payload);
         toast.success(t("manualExpenses.messages.updated"));
       } else {
-        await api.post("/expenses", data);
+        await api.post("/expenses", payload);
         toast.success(t("manualExpenses.messages.created"));
       }
 
@@ -165,12 +166,44 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
       onOpenChange(false);
     } catch (err) {
       console.error("Error saving expense:", err);
-      toast.error(err?.response?.data?.message || "Error saving expense");
+      toast.error(err?.response?.data?.message || t("manualExpenses.messages.error"));
     } finally {
       setLoading(false);
     }
   };
 
+  const handleDivClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error(t("manualExpenses.validation.fileTooLarge"));
+      e.target.value = "";
+      return;
+    }
+
+    setValue("attachment", file, { shouldValidate: true });
+  };
+
+  // Determine the image source
+  const getPreviewSrc = () => {
+    if (!attachment) return null;
+
+    // Case 1: Local File object (just selected)
+    if (attachment instanceof File) {
+      return URL.createObjectURL(attachment);
+    }
+
+    // Case 2: Server string (editing existing)
+    // Use your existing avatarSrc helper
+    return avatarSrc(attachment);
+  };
+
+  const previewSrc = getPreviewSrc();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
@@ -183,113 +216,154 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-5 py-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 py-4">
           <div className="grid grid-cols-2 gap-4">
             {/* Amount */}
             <div className="space-y-2">
               <Label className="text-xs font-bold">{t("manualExpenses.form.amount")}</Label>
               <div className="relative">
-                <Input
-                  type="number"
-                  required
-                  value={formData.amount}
-                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                  className="theme-field pl-8"
-                  placeholder="0.00"
+                <Controller
+                  name="amount"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      type="number"
+                      step="0.01"
+                      className={cn("theme-field pl-8", errors.amount && "border-red-500")}
+                      placeholder="0.00"
+                    />
+                  )}
                 />
-
+                <DollarSign size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               </div>
+              {errors.amount && <p className="text-xs text-red-500">{errors.amount.message}</p>}
             </div>
 
             {/* Date */}
             <div className="space-y-2">
               <Label className="text-xs font-bold">{t("manualExpenses.form.date")}</Label>
               <div className="relative">
-                <Flatpickr
-                  // IMPORTANT: Use the date object for value, but store the string in state
-                  value={formData.collectionDate ? new Date(formData.collectionDate) : new Date()}
-                  onChange={([date]) => {
-                    if (date) {
-                      setFormData({ ...formData, collectionDate: date });
-                    }
-                  }}
-                  options={{
-                    dateFormat: "Y-m-d",
-                    maxDate: "today",
-                    // FIX: This prevents the Dialog focus trap from "disabling" the calendar
-                    static: true,
-                    monthSelectorType: "dropdown"
-                  }}
-                  date-site
-                  // Ensure padding-left (pl-8) so text doesn't hide behind the icon
-                  className="theme-field w-full pl-9"
-                />
+                <Controller
+                  control={control}
+                  name="collectionDate"
+                  render={({ field }) => (
+                    <Flatpickr
+                      value={field.value ? new Date(field.value) : new Date()}
+                      onChange={([date]) => {
+                        if (date) {
+                          field.onChange(date);
+                        }
+                      }}
 
+                      options={{
+                        dateFormat: "Y-m-d",
+                        maxDate: "today",
+                        static: true,
+                        monthSelectorType: "dropdown",
+
+                      }}
+                      data-size='default'
+                      className={cn("theme-field w-full pl-9", errors.collectionDate && "border-red-500")}
+                    />
+                  )}
+                />
               </div>
+              {errors.collectionDate && <p className="text-xs text-red-500">{errors.collectionDate.message}</p>}
             </div>
           </div>
 
           {/* Category */}
           <div className="space-y-2">
             <Label className="text-xs font-bold">{t("manualExpenses.form.category")}</Label>
-            <Select
-              value={formData.categoryId}
-              onValueChange={(v) => setFormData({ ...formData, categoryId: v })}
-            >
-              <SelectTrigger className="theme-field">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">{t("common.none")}</SelectItem>
-                {categories?.map((cat) => (
-                  <SelectItem key={cat.id} value={String(cat.id)}>
-                    <div className="flex items-center gap-2">
-                      <Plus size={14} className="text-primary" />
-                      <span>{cat.name}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Controller
+              control={control}
+              name="categoryId"
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className={cn("theme-field", errors.categoryId && "border-red-500")}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{t("common.none")}</SelectItem>
+                    {categories?.map((cat) => (
+                      <SelectItem key={cat.id} value={String(cat.id)}>
+                        <div className="flex items-center gap-2">
+                          <Plus size={14} className="text-primary" />
+                          <span>{cat.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.categoryId && <p className="text-xs text-red-500">{errors.categoryId.message}</p>}
           </div>
 
           {/* Description */}
           <div className="space-y-2">
             <Label className="text-xs font-bold">{t("manualExpenses.form.description")}</Label>
-            <Textarea
-              required
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="theme-field min-h-[100px] resize-none"
-              placeholder="..."
+            <Controller
+              name="description"
+              control={control}
+              render={({ field }) => (
+                <Textarea
+                  {...field}
+                  className={cn("theme-field min-h-[100px] resize-none", errors.description && "border-red-500")}
+                  placeholder="..."
+                />
+              )}
             />
+            {errors.description && <p className="text-xs text-red-500">{errors.description.message}</p>}
           </div>
 
           {/* Attachment */}
           <div className="space-y-2">
             <Label className="text-xs font-bold">{t("manualExpenses.form.attachment")}</Label>
-
-            {/* 1. Add onClick to the parent div */}
             <div
               onClick={handleDivClick}
-              className="border-2 border-dashed border-border rounded-xl p-4 flex flex-col items-center justify-center gap-2 hover:border-primary/50 transition-colors cursor-pointer group"
+              className={`relative group border-2 border-dashed rounded-xl transition-all cursor-pointer overflow-hidden ${previewSrc ? "border-primary/20 aspect-video" : "border-border p-6 flex flex-col items-center justify-center gap-2 hover:border-primary/50"
+                }`}
             >
-              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                <ImageIcon size={20} />
-              </div>
+              {previewSrc ? (
+                <>
+                  {/* Preview Image */}
+                  <img
+                    src={previewSrc}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
 
-              <span className="text-xs font-medium">
-                {formData.attachment instanceof File
-                  ? formData.attachment.name
-                  : (formData.attachment ? "Change attachment" : t("manualExpenses.form.upload"))}
-              </span>
-              {/* 2. Link the ref to the input */}
+                  {/* Hover Overlay */}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white gap-2">
+                    <Pencil size={24} />
+                    <span className="text-xs font-bold">{t("manualExpenses.form.changeAttachment")}</span>
+                    {attachment instanceof File && (
+                      <span className="text-[10px] bg-black/50 px-2 py-1 rounded-full max-w-[80%] truncate">
+                        {attachment.name}
+                      </span>
+                    )}
+                  </div>
+                </>
+              ) : (
+                /* Empty State / Upload Placeholder */
+                <>
+                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                    <ImageIcon size={20} />
+                  </div>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {t("manualExpenses.form.upload")}
+                  </span>
+                </>
+              )}
+
               <input
                 type="file"
                 ref={fileInputRef}
                 onChange={handleFileChange}
                 className="hidden"
-                accept="image/*,.pdf" // Added PDF support as you mentioned docs
+                accept="image/*,.pdf"
               />
             </div>
           </div>
@@ -371,7 +445,7 @@ export default function ManualExpensesTab({
   const [expenses, setExpenses] = useState([]);
   const [totalRecords, setTotalRecords] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
+  const [perPage, setPerPage] = useState(12);
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
     categoryId: "none",
@@ -379,15 +453,21 @@ export default function ManualExpensesTab({
     endDate: null
   });
 
+
+  const { debouncedValue: debouncedSearch } = useDebounce({
+    value: search,
+    delay: 300,
+  });
+
   const { handleExport, exportLoading } = useExport();
 
-  const fetchExpenses = async () => {
+  const fetchExpenses = async (page = currentPage, per_page = perPage,) => {
     setLoading(true);
     try {
       const params = {
-        page: currentPage,
-        limit: perPage,
-        search: search.trim() || undefined,
+        page,
+        limit: per_page,
+        search: debouncedSearch.trim() || undefined,
         categoryId: filters.categoryId !== "none" ? filters.categoryId : undefined,
         startDate: filters.startDate || undefined,
         endDate: filters.endDate || undefined
@@ -397,15 +477,20 @@ export default function ManualExpensesTab({
       setTotalRecords(res.data.total_records || 0);
     } catch (err) {
       console.error("Error fetching expenses:", err);
-      toast.error(t("manualExpenses.messages.fetchError") || "Error fetching expenses");
+      toast.error(t("manualExpenses.messages.fetchError"));
     } finally {
       setLoading(false);
     }
   };
 
+
+  const applyFilters = () => {
+    fetchExpenses(1, perPage);
+  };
+
   useEffect(() => {
     fetchExpenses();
-  }, [currentPage, perPage, search, filters]);
+  }, [debouncedSearch, currentPage, perPage]);
 
   const handleAdd = () => {
     setEditingExpense(null);
@@ -478,14 +563,20 @@ export default function ManualExpensesTab({
     {
       key: "createdByUserId",
       header: t("manualExpenses.columns.addedBy"),
-      cell: (row) => (row.createdByUserId ? (
+      cell: (row) => (
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
             <User size={12} className="text-muted-foreground" />
           </div>
-          <span className="text-xs font-semibold">{row.createdByUserId}</span>
+          <span className="text-xs font-semibold">{row.user?.name || t("common.none")}</span>
         </div>
-      ) : null)
+      )
+    },
+    {
+      key: "attachment",
+      header: t("manualExpenses.columns.attachment"),
+      type: "imgs"
+
     },
     {
       key: "actions",
@@ -503,6 +594,7 @@ export default function ManualExpensesTab({
           <Button
             variant="ghost"
             size="icon"
+            disabled={row.monthlyClosingId}
             className="w-8 h-8 rounded-lg hover:bg-orange-100 hover:text-orange-600"
             onClick={() => handleEdit(row)}
           >
@@ -511,6 +603,7 @@ export default function ManualExpensesTab({
           <Button
             variant="ghost"
             size="icon"
+            disabled={row.monthlyClosingId}
             className="w-8 h-8 rounded-lg hover:bg-red-100 hover:text-red-600"
             onClick={() => handleDelete(row)}
           >
@@ -521,6 +614,7 @@ export default function ManualExpensesTab({
     }
   ], [t]);
 
+
   return (
     <div className="space-y-5">
       <Table
@@ -528,7 +622,7 @@ export default function ManualExpensesTab({
         onSearchChange={setSearch}
         loading={loading}
         labels={{
-          searchPlaceholder: tOrders("toolbar.searchPlaceholder"),
+          searchPlaceholder: t("toolbar.searchPlaceholder"),
           apply: tOrders("filters.apply"),
           total: tOrders("pagination.total"),
           limit: tOrders("pagination.limit"),
@@ -544,6 +638,10 @@ export default function ManualExpensesTab({
         }}
         onPageChange={setCurrentPage}
         onLimitChange={setPerPage}
+        hasActiveFilters={Object.values(filters).some(
+          (v) => v && v !== "all" && v !== null,
+        )}
+        onApplyFilters={applyFilters}
         filters={
           <>
             <FilterField label={t("manualExpenses.form.category")}>
@@ -566,26 +664,15 @@ export default function ManualExpensesTab({
             </FilterField>
 
             <FilterField label={t("filters.dateRange")}>
-              <div className="flex items-center gap-2">
-                <Flatpickr
-                  value={filters.startDate}
-                  onChange={([date]) => setFilters({ ...filters, startDate: date.toISOString().split("T")[0] })}
-                  options={{ dateFormat: "Y-m-d" }}
-                  placeholder={t("filters.startDate")}
-                  className="h-9 rounded-lg border border-input bg-background px-3 py-1 text-xs shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                />
-                <span className="text-muted-foreground">-</span>
-                <Flatpickr
-                  value={filters.endDate}
-                  onChange={([date]) => setFilters({ ...filters, endDate: date.toISOString().split("T")[0] })}
-                  options={{ dateFormat: "Y-m-d" }}
-                  placeholder={t("filters.endDate")}
-                  className="h-9 rounded-lg border border-input bg-background px-3 py-1 text-xs shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                />
-              </div>
+              <DateRangePicker
+                value={filters}
+                onChange={(newDates) => setFilters(f => ({ ...f, ...newDates }))}
+                placeholder={t("filters.dateRangePlaceholder")}
+              />
             </FilterField>
           </>
         }
+        isLoading={loading}
         actions={[
           {
             key: "add",
@@ -626,7 +713,7 @@ export default function ManualExpensesTab({
             <div className="space-y-6 py-4">
               {/* Amount & Date Header */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-red-50 rounded-2xl border border-red-100 flex flex-col items-center justify-center gap-1">
+                <div className="p-4 bg-muted/30 rounded-2xl border border-border flex flex-col items-center justify-center gap-1">
                   <span className="text-[10px] font-black uppercase tracking-wider text-red-400">{t("manualExpenses.columns.amount")}</span>
                   <span className="text-2xl font-black text-red-600">-{Number(selectedExpense.amount).toLocaleString()}ج</span>
                 </div>
@@ -637,7 +724,7 @@ export default function ManualExpensesTab({
               </div>
 
               {/* Description Box (Orange as requested) */}
-              <div className="p-5 bg-orange-50 rounded-2xl border border-orange-100 relative overflow-hidden group">
+              <div className="p-4 bg-muted/30 rounded-2xl border border-border flex flex-col justify-center group">
                 <div className="absolute top-0 right-0 p-3 text-orange-200 group-hover:text-orange-300 transition-colors">
                   <FileText size="40" />
                 </div>
@@ -671,7 +758,7 @@ export default function ManualExpensesTab({
                     </div>
                     <span className="text-xs font-bold text-muted-foreground">{t("manualExpenses.columns.addedBy")}</span>
                   </div>
-                  <span className="text-xs font-black">{selectedExpense.createdByUserId}</span>
+                  <span className="text-xs font-black">{selectedExpense.user?.name || t("common.none")}</span>
                 </div>
 
                 {selectedExpense.attachment && (
@@ -679,16 +766,11 @@ export default function ManualExpensesTab({
                     <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground px-1">{t("manualExpenses.form.attachment")}</span>
                     <div className="relative aspect-video rounded-2xl overflow-hidden border border-border bg-muted/30 group">
                       <img
-                        src={selectedExpense.attachment}
+                        src={avatarSrc(selectedExpense.attachment)}
                         alt="Attachment"
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Button variant="secondary" size="sm" className="rounded-full gap-2">
-                          <Eye size={14} />
-                          {t("manualExpenses.actions.view")}
-                        </Button>
-                      </div>
+
                     </div>
                   </div>
                 )}
@@ -713,11 +795,11 @@ export default function ManualExpensesTab({
         onConfirm={async () => {
           try {
             await api.delete(`/expenses/${editingExpense.id}`);
-            toast.success(t("manualExpenses.messages.deleted") || "Expense deleted successfully");
+            toast.success(t("manualExpenses.messages.deleted"));
             fetchExpenses();
           } catch (err) {
             console.error("Error deleting expense:", err);
-            toast.error(err?.response?.data?.message || t("manualExpenses.messages.deleteError") || "Error deleting expense");
+            toast.error(err?.response?.data?.message || t("manualExpenses.messages.deleteError"));
             throw err;
           }
         }}

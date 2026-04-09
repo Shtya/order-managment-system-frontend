@@ -503,7 +503,7 @@ const ImageModal = memo(function ImageModal({ src, alt, open, onClose, labels = 
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent
         showCloseButton={false}
-        className="max-w-4xl !p-0 overflow-hidden rounded-2xl border border-border/60 main-card !p-0 shadow-2xl"
+        className="max-w-4xl !p-0 overflow-hidden rounded-2xl border border-border/60 !p-0 shadow-2xl"
       >
         {/* Header */}
         <div className="relative flex items-center justify-between gap-4 px-5 py-4 border-b border-border/40 overflow-hidden">
@@ -655,7 +655,7 @@ export default function Table({
 
             {/* Body */}
             <TableBody>
-              <AnimatePresence >
+              <AnimatePresence>
                 {isLoading ? (
                   <TableSkeleton key="skel" columns={columns} rows={Number(pagination?.per_page ?? 6)} compact={compact} />
 

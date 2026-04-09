@@ -66,10 +66,21 @@ export default function Accounts() {
     useEffect(() => {
         // Define the async function
         const fetchStats = async () => {
-            if (activeTab === "overview" || activeTab === "monthlyExpenses") {
+            if (activeTab === "overview" || activeTab === "monthlyExpenses" || activeTab === "cityDeliveries" || activeTab === "supplierAccounts") {
                 setLoadingStats(true);
                 try {
-                    const res = await api.get("/accounting/stats", { params: filters });
+                    let endpoint = "/accounting/stats";
+                    let params = { ...filters };
+
+                    if (activeTab === "cityDeliveries") {
+                        endpoint = "/accounting/shipments-summary";
+                        params = {};
+                    } else if (activeTab === "supplierAccounts") {
+                        endpoint = "/accounting/supplier-closings/financial-stats";
+                        params = {};
+                    }
+
+                    const res = await api.get(endpoint, { params: params });
                     setStats(res.data);
                 } catch (err) {
                     console.error("Error fetching stats:", err);
@@ -154,17 +165,40 @@ export default function Accounts() {
 
         if (activeTab === "cityDeliveries") {
             return [
-                { name: t("cityDeliveries.stats.topCity"), value: "القاهرة (245)", icon: CheckCircle, color: "#10b981" },
-                { name: t("cityDeliveries.stats.lowestCity"), value: "المنيا (12)", icon: Info, color: "#ef4444" },
-                { name: t("cityDeliveries.stats.avgDeliveries"), value: "85%", icon: BarChart2, color: "#3b82f6" },
+                {
+                    name: t("cityDeliveries.stats.topCity"),
+                    value: stats?.highestCity?.city && stats?.highestCity?.count !== undefined
+                        ? `${stats.highestCity.city} (${stats.highestCity.count})`
+                        : "N/A",
+                    icon: CheckCircle,
+                    color: "#10b981"
+                },
+                {
+                    name: t("cityDeliveries.stats.lowestCity"),
+                    value: stats?.lowestCity?.city && stats?.lowestCity?.count !== undefined
+                        ? `${stats.lowestCity.city} (${stats.lowestCity.count})`
+                        : "N/A",
+                    icon: Info,
+                    color: "#ef4444"
+                },
+                {
+                    name: t("cityDeliveries.stats.avgDeliveries"),
+                    value: stats?.deliveriesRate !== undefined
+                        ? `${stats.deliveriesRate}%`
+                        : "0%",
+                    icon: BarChart2,
+                    color: "#3b82f6"
+                },
             ];
         }
 
         if (activeTab === "supplierAccounts") {
             return [
-                { name: t("stats.totalSuppliers"), value: "15", icon: Building2, color: "#3b82f6" },
-                { name: t("stats.totalOwed"), value: "45,800", icon: DollarSign, color: "#ef4444" },
-                { name: t("stats.totalCredit"), value: "12,400", icon: Wallet, color: "#10b981" },
+                { name: t("stats.productPurchases"), value: stats?.totalPurchases?.toLocaleString() || "0", icon: Building2, color: "#3b82f6" },
+                { name: t("stats.totalPaid"), value: stats?.totalPaid?.toLocaleString() || "0", icon: Wallet, color: "#10b981" },
+                { name: t("stats.totalReceived"), value: stats?.totalTaken?.toLocaleString() || "0", icon: Wallet, color: "#10b981" },
+                { name: t("stats.returns"), value: stats?.totalReturns?.toLocaleString() || "0", icon: BarChart2, color: "#ef4444" },
+                { name: t("stats.finalBalance"), value: stats?.finalBalance?.toLocaleString() || "0", icon: DollarSign, color: "#f97316" },
             ];
         }
 

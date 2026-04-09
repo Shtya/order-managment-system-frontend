@@ -1,47 +1,96 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import {
   MapPin,
   TrendingUp,
   TrendingDown,
-  BarChart2,
   Calendar,
   Download,
-  Loader2
+  Loader2,
+  XCircle
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import Table, { FilterField } from "@/components/atoms/Table";
-import Flatpickr from "react-flatpickr";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
+import api from "@/utils/api";
+import { useDebounce } from "@/hook/useDebounce";
+import { useExport } from "@/hook/useExport";
+import toast from "react-hot-toast";
 
 export default function CityDeliveriesTab() {
-  const t = useTranslations("accounts.cityDeliveries");
-  const tCommon = useTranslations("accounts");
   const tOrders = useTranslations("orders");
+  const tCommon = useTranslations("accounts");
+  const t = useTranslations("accounts.cityDeliveries");
 
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
 
   // Default dates: this month
   const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
-  const endOfMonth = new Date().toISOString().split("T")[0];
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endOfMonth = new Date();
 
   const [filters, setFilters] = useState({
     startDate: startOfMonth,
     endDate: endOfMonth,
   });
 
-  // Mock data
-  const cityData = [
-    { id: 1, city: "القاهرة", total: 150, delivered: 135, returns: 15, successRate: 90 },
-    { id: 2, city: "الجيزة", total: 120, delivered: 102, returns: 18, successRate: 85 },
-    { id: 3, city: "الإسكندرية", total: 95, delivered: 88, returns: 7, successRate: 92 },
-    { id: 4, city: "المنصورة", total: 60, delivered: 45, returns: 15, successRate: 75 },
-    { id: 5, city: "طنطا", total: 45, delivered: 40, returns: 5, successRate: 88 },
-    { id: 6, city: "المنيا", total: 30, delivered: 12, returns: 18, successRate: 40 },
-  ];
+  const [records, setRecords] = useState([]);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(12);
+
+  const { debouncedValue: debouncedSearch } = useDebounce({
+    value: search,
+    delay: 300,
+  });
+
+  const { handleExport, exportLoading } = useExport();
+
+  const fetchCityReport = async (page = currentPage, per_page = perPage) => {
+    setLoading(true);
+    try {
+      const params = {
+        page,
+        limit: per_page,
+        search: debouncedSearch.trim() || undefined,
+        startDate: filters.startDate || undefined,
+        endDate: filters.endDate || undefined,
+      };
+      const res = await api.get("/accounting/shipments-city-report", { params });
+      setRecords(res.data.records || []);
+      setTotalRecords(res.data.total_records || 0);
+    } catch (err) {
+      console.error("Error fetching city report:", err);
+      toast.error(tCommon("manualExpenses.messages.fetchError"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const applyFilters = () => {
+    fetchCityReport(1, perPage);
+  };
+
+  useEffect(() => {
+    fetchCityReport();
+  }, [debouncedSearch, currentPage, perPage]);
+
+  const onExport = async () => {
+    const params = {
+      search: search.trim() || undefined,
+      startDate: filters.startDate || undefined,
+      endDate: filters.endDate || undefined,
+    };
+
+    await handleExport({
+      endpoint: "/accounting/shipments-city-report/export",
+      params,
+      filename: `city_deliveries_report_${Date.now()}.xlsx`,
+    });
+  };
 
   const columns = useMemo(() => [
     {
@@ -57,27 +106,27 @@ export default function CityDeliveriesTab() {
       )
     },
     {
-      key: "total",
+      key: "totalShipments",
       header: t("columns.total"),
-      cell: (row) => <span className="text-sm font-semibold tabular-nums">{row.total}</span>
+      cell: (row) => <span className="text-sm font-semibold tabular-nums">{row.totalShipments}</span>
     },
     {
-      key: "delivered",
+      key: "actualDeliveries",
       header: t("columns.delivered"),
       cell: (row) => (
         <div className="flex items-center gap-1.5 text-emerald-600 font-bold tabular-nums">
           <TrendingUp size={14} />
-          {row.delivered}
+          {row.actualDeliveries}
         </div>
       )
     },
     {
-      key: "returns",
+      key: "failedShipments",
       header: t("columns.returns"),
       cell: (row) => (
         <div className="flex items-center gap-1.5 text-red-600 font-bold tabular-nums">
-          <TrendingDown size={14} />
-          {row.returns}
+          <XCircle size={14} />
+          {row.failedShipments}
         </div>
       )
     },
@@ -94,7 +143,7 @@ export default function CityDeliveriesTab() {
           <div className="flex items-center gap-3">
             <div className="flex-1 h-1.5 w-16 bg-muted rounded-full overflow-hidden hidden md:block">
               <div
-                className={cn("h-full rounded-full transition-all", 
+                className={cn("h-full rounded-full transition-all",
                   rate < 60 ? "bg-red-500" : rate < 85 ? "bg-orange-500" : "bg-emerald-500"
                 )}
                 style={{ width: `${rate}%` }}
@@ -114,9 +163,10 @@ export default function CityDeliveriesTab() {
       <Table
         searchValue={search}
         onSearchChange={setSearch}
+        loading={loading}
         labels={{
-          searchPlaceholder: tOrders("toolbar.searchPlaceholder"),
-          apply: tCommon("filters.apply"),
+          searchPlaceholder: tCommon("toolbar.searchPlaceholder"),
+          apply: tOrders("filters.apply"),
           total: tOrders("pagination.total"),
           limit: tOrders("pagination.limit"),
           emptyTitle: tOrders("empty"),
@@ -124,44 +174,43 @@ export default function CityDeliveriesTab() {
         }}
         filters={
           <>
-            {/* Date Range */}
-            <FilterField label={tCommon("filters.dateRange")} icon={Calendar}>
-              <Flatpickr
-                value={[
-                  filters.startDate ? new Date(filters.startDate) : null,
-                  filters.endDate ? new Date(filters.endDate) : null,
-                ]}
-                onChange={([s, e]) => {
-                  setFilters((f) => ({
-                    ...f,
-                    startDate: s ? s.toISOString().split("T")[0] : null,
-                    endDate: e ? e.toISOString().split("T")[0] : null,
-                  }));
-                }}
-                options={{ mode: "range", dateFormat: "Y-m-d", maxDate: "today" }}
-                data-size="default"
-                className="theme-field"
+            <FilterField label={tCommon("filters.dateRange")}>
+              <DateRangePicker
+                value={filters}
+                onChange={(newDates) => setFilters(f => ({ ...f, ...newDates }))}
               />
             </FilterField>
           </>
         }
+        hasActiveFilters={Object.values(filters).some(
+          (v) => v && v !== "all" && v !== null,
+        )}
+        onApplyFilters={applyFilters}
         actions={[
           {
             key: "export",
             label: tCommon("export"),
-            icon: <Download size={14} />,
+            icon: exportLoading ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <Download size={14} />
+            ),
             color: "blue",
+            onClick: onExport,
+            disabled: exportLoading,
             permission: "orders.read",
           },
         ]}
         columns={columns}
-        data={cityData}
+        data={records}
         isLoading={loading}
         pagination={{
-          total_records: cityData.length,
-          current_page: 1,
-          per_page: 10,
+          total_records: totalRecords,
+          current_page: currentPage,
+          per_page: perPage,
         }}
+        onPageChange={setCurrentPage}
+        onLimitChange={setPerPage}
       />
     </div>
   );

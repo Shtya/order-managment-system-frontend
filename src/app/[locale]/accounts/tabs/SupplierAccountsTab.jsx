@@ -525,11 +525,11 @@ function AccountStatementModal({ supplier, onClose, t, router }) {
           </div>
         ) : data && (
           <div className="space-y-6 py-2">
-            <div className="grid grid-cols-5 gap-3">
+            <div className="grid grid-cols-4 gap-3">
               <MiniSummary title={t("supplierAccounts.statement.totalPurchases")} value={data.summary.totalPurchases} icon={Package} color="purple" />
               <MiniSummary title={t("supplierAccounts.statement.totalReturns")} value={data.summary.totalReturns} icon={RefreshCw} color="red" />
               <MiniSummary title={t("supplierAccounts.statement.totalPaid")} value={data.summary.totalPaid} icon={DollarSign} color="emerald" />
-              <MiniSummary title={t("supplierAccounts.statement.prevBalance")} value={0} icon={Ban} color="orange" />
+              {/* <MiniSummary title={t("supplierAccounts.statement.prevBalance")} value={0} icon={Ban} color="orange" /> */}
               <MiniSummary title={t("supplierAccounts.statement.netBalance")} value={data.summary.finalBalance} icon={CheckCircle2} color="red" isFinal />
             </div>
 

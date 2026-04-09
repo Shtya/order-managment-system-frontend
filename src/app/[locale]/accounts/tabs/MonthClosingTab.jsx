@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import {
   Calendar,
@@ -14,12 +14,12 @@ import {
   TrendingUp,
   ShoppingCart,
   Plus,
-  ArrowUpRight,
-  ArrowDownRight
+  Loader2,
+  Ban,
+  Settings
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import Table, { FilterField } from "@/components/atoms/Table";
-import Flatpickr from "react-flatpickr";
 import {
   Dialog,
   DialogContent,
@@ -27,111 +27,101 @@ import {
   DialogTitle,
   DialogDescription
 } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Button_ from "@/components/atoms/Button";
 import ActionButtons from "@/components/atoms/Actions";
+import api from "@/utils/api";
+import toast from "react-hot-toast";
+import { useDebounce } from "@/hook/useDebounce";
+import { useExport } from "@/hook/useExport";
 
 export default function MonthClosingTab() {
   const tCommon = useTranslations("common");
   const t = useTranslations("accounts.monthClosing");
 
+  // State
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [closings, setClosings] = useState([]);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+
   const [newClosingOpen, setNewClosingOpen] = useState(false);
   const [selectedClosing, setSelectedClosing] = useState(null);
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Mock Data
-  // ─────────────────────────────────────────────────────────────────────────
+  const { debouncedValue: debouncedSearch } = useDebounce({ value: search, delay: 300 });
+  const { handleExport, exportLoading } = useExport();
 
-  const closingHistory = [
-    {
-      id: 1,
-      closedAt: "2025-11-30",
-      period: "2025-11-01 - 2025-11-30",
-      productCosts: 35000,
-      manualExpenses: 10000,
-      manualExpensesDetails: [
-        { category: "ads", amount: 5000, description: "Facebook Ads" },
-        { category: "salaries", amount: 5000, description: "Team Salaries" }
-      ],
-      totalCost: 45000,
-      totalReturn: 5000,
-      totalSelling: 65000,
-      soldOrdersCount: 124,
-      deceased: 2000,
-      finalBalance: 13000, // (65000 - 5000) - (45000 + 2000) = 60000 - 47000 = 13000
-      currency: "ج"
-    },
-    {
-      id: 2,
-      closedAt: "2025-10-31",
-      period: "2025-10-01 - 2025-10-31",
-      productCosts: 30000,
-      manualExpenses: 8000,
-      manualExpensesDetails: [
-        { category: "office", amount: 2000, description: "Office Rent" },
-        { category: "transport", amount: 6000, description: "Shipping Logistics" }
-      ],
-      totalCost: 38000,
-      totalReturn: 3000,
-      totalSelling: 52000,
-      soldOrdersCount: 98,
-      deceased: 1000,
-      finalBalance: 10000, // (52000 - 3000) - (38000 + 1000) = 49000 - 39000 = 10000
-      currency: "ج"
+  // Fetch List
+  const fetchClosings = useCallback(async (page = currentPage, limit = perPage) => {
+    setLoading(true);
+    try {
+      const params = {
+        page,
+        limit,
+        search: debouncedSearch.trim() || undefined,
+      };
+      const res = await api.get("/monthly-closings", { params });
+      setClosings(res.data.records || []);
+      setTotalRecords(res.data.total_records || 0);
+    } catch (err) {
+      console.error("Error fetching closings:", err);
+      toast.error(t("fetchError") || "حدث خطأ أثناء جلب البيانات");
+    } finally {
+      setLoading(false);
     }
-  ];
+  }, [debouncedSearch, currentPage, perPage, tCommon]);
 
-  // ─────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    fetchClosings();
+  }, [fetchClosings]);
+
+  // Export
+  const onExport = async () => {
+    await handleExport({
+      endpoint: "/monthly-closings/export",
+      params: { search: debouncedSearch.trim() || undefined },
+      filename: `monthly_closings_${Date.now()}.xlsx`,
+    });
+  };
+
   // Columns
-  // ─────────────────────────────────────────────────────────────────────────
-
   const columns = useMemo(() => [
-    {
-      key: "closedAt",
-      header: t("columns.closedAt"),
-      cell: (row) => (
-        <div className="flex items-center gap-2">
-          <Calendar size={14} className="text-muted-foreground" />
-          <span className="text-sm font-bold tabular-nums">{row.closedAt}</span>
-        </div>
-      )
-    },
     {
       key: "period",
       header: t("columns.period"),
-      cell: (row) => <span className="text-xs font-medium text-muted-foreground">{row.period}</span>
-    },
-    {
-      key: "totalCost",
-      header: t("columns.totalCost"),
       cell: (row) => (
-        <div className="flex flex-col gap-1">
-          <span className="text-sm font-bold text-red-600 tabular-nums">
-            {(row.totalCost + (row.deceased || 0)).toLocaleString()}{row.currency}
-          </span>
-
+        <div className="flex items-center gap-2">
+          <Calendar size={14} className="text-muted-foreground" />
+          <span className="text-sm font-bold">{row.month} / {row.year}</span>
         </div>
       )
     },
     {
-      key: "deceased",
-      header: t("columns.deceased"),
-      cell: (row) => <span className="text-sm font-bold text-red-600 tabular-nums">{row.deceased.toLocaleString()}{row.currency}</span>
+      key: "revenue",
+      header: t("columns.totalSelling") || "الإيرادات",
+      cell: (row) => <span className="text-sm font-bold text-emerald-600 tabular-nums">{Number(row.revenue).toLocaleString()}ج</span>
     },
     {
-      key: "totalReturn",
-      header: t("columns.totalReturn"),
-      cell: (row) => <span className="text-sm font-bold text-orange-600 tabular-nums">{row.totalReturn.toLocaleString()}{row.currency}</span>
+      key: "productCost",
+      header: t("columns.productCost") || "تكلفة البضاعة",
+      cell: (row) => <span className="text-sm font-medium text-orange-600 tabular-nums">-{Number(row.productCost).toLocaleString()}ج</span>
     },
     {
-      key: "totalSelling",
-      header: t("columns.totalSelling"),
-      cell: (row) => <span className="text-sm font-bold text-emerald-600 tabular-nums">{row.totalSelling.toLocaleString()}{row.currency}</span>
+      key: "operationalExpenses",
+      header: t("columns.operationalExpenses") || "المصاريف",
+      cell: (row) => <span className="text-sm font-medium text-red-600 tabular-nums">-{Number(row.operationalExpenses).toLocaleString()}ج</span>
     },
     {
-      key: "finalBalance",
-      header: t("columns.finalBalance"),
-      cell: (row) => <span className="text-sm font-black text-primary tabular-nums">{row.finalBalance.toLocaleString()}{row.currency}</span>
+      key: "returnsCost",
+      header: t("columns.totalReturn") || "المرتجعات",
+      cell: (row) => <span className="text-sm font-medium text-purple-600 tabular-nums">-{Number(row.returnsCost).toLocaleString()}ج</span>
+    },
+    {
+      key: "netProfit",
+      header: t("columns.finalBalance") || "صافي الربح",
+      cell: (row) => <span className="text-sm font-black text-primary tabular-nums">{Number(row.netProfit).toLocaleString()}ج</span>
     },
     {
       key: "actions",
@@ -151,7 +141,7 @@ export default function MonthClosingTab() {
       )
     }
   ], [t]);
-  let exportLoading = false;
+
   return (
     <div className="space-y-6">
       <Table
@@ -159,8 +149,8 @@ export default function MonthClosingTab() {
         onSearchChange={setSearch}
         labels={{ searchPlaceholder: tCommon("search") }}
         columns={columns}
-        data={closingHistory}
-        isLoading={false}
+        data={closings}
+        isLoading={loading}
         actions={[
           {
             key: "add",
@@ -173,25 +163,22 @@ export default function MonthClosingTab() {
           {
             key: "export",
             label: tCommon("export"),
-            icon: exportLoading ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : (
-              <Download size={14} />
-            ),
+            icon: exportLoading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />,
             color: "blue",
-            // onClick: handleExport,
-            // disabled: exportLoading,
+            onClick: onExport,
+            disabled: exportLoading,
             permission: "orders.read",
           },
-
         ]}
-
-        pagination={{ total_records: closingHistory.length, current_page: 1, per_page: 10 }}
+        pagination={{ total_records: totalRecords, current_page: currentPage, per_page: perPage }}
+        onPageChange={setCurrentPage}
+        onLimitChange={setPerPage}
       />
 
       <NewClosingModal
         open={newClosingOpen}
         onClose={() => setNewClosingOpen(false)}
+        onSuccess={() => fetchClosings(1)}
         t={t}
         tCommon={tCommon}
       />
@@ -210,28 +197,74 @@ export default function MonthClosingTab() {
 // Modals
 // ─────────────────────────────────────────────────────────────────────────
 
-function NewClosingModal({ open, onClose, t, tCommon }) {
-  const [filters, setFilters] = useState({
-    startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-    endDate: new Date(),
-  });
+function NewClosingModal({ open, onClose, onSuccess, t, tCommon }) {
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1; // 1-12
 
-  // Mock summary for preview
-  const summaryPreview = {
-    totalCost: 42000,
-    productCosts: 32000,
-    manualExpenses: 10000,
-    totalReturn: 4500,
-    totalSelling: 58000,
-    soldOrdersCount: 115,
-    deceased: 11500,
-    finalBalance: 11500,
-    currency: "ج"
+  const [year, setYear] = useState(currentYear.toString());
+  const [month, setMonth] = useState(currentMonth.toString());
+
+  const [preview, setPreview] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [closingLoading, setClosingLoading] = useState(false);
+
+  const years = useMemo(() => {
+    return Array.from({ length: 12 }, (_, i) => (currentYear - i).toString());
+  }, [currentYear]);
+
+
+  const months = useMemo(() => {
+    const allMonths = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
+
+    if (year === currentYear.toString()) {
+      return allMonths.filter(m => Number(m) <= currentMonth);
+    }
+
+    return allMonths;
+  }, [year, currentYear, currentMonth]);
+
+  const fetchPreview = useCallback(async () => {
+    setLoading(true);
+    setPreview(null);
+    try {
+      const res = await api.get("/monthly-closings/preview", {
+        params: { year, month }
+      });
+      setPreview(res.data);
+    } catch (err) {
+      console.error("Error fetching preview:", err);
+      toast.error(err?.response?.data?.message || "تعذر جلب التقرير المبدئي");
+    } finally {
+      setLoading(false);
+    }
+  }, [year, month]);
+
+  useEffect(() => {
+    if (open) fetchPreview();
+  }, [open, year, month, fetchPreview]);
+
+  const handleConfirmClosing = async () => {
+    setClosingLoading(true);
+    try {
+      await api.post("/monthly-closings/close", {
+        year: Number(year),
+        month: Number(month)
+      });
+      toast.success("تم تقفيل الشهر بنجاح");
+      onSuccess?.();
+      onClose();
+    } catch (err) {
+      console.error("Error closing month:", err);
+      // Backend throws specific invoice arrays, display them nicely
+      toast.error(err?.response?.data?.message || "حدث خطأ أثناء التقفيل", { duration: 5000 });
+    } finally {
+      setClosingLoading(false);
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px] overflow-auto max-h-[90vh]">
+      <DialogContent className="sm:max-w-[750px] overflow-auto max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary">
             <TrendingUp size={20} />
@@ -243,23 +276,49 @@ function NewClosingModal({ open, onClose, t, tCommon }) {
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          <div className="p-4 border border-border bg-muted/10 rounded-2xl flex items-center justify-between gap-4">
-            <FilterField label={t("form.selectPeriod")} icon={Calendar} className="flex-1">
-              <Flatpickr
-                value={[filters.startDate, filters.endDate]}
-                onChange={([s, e]) => setFilters({ startDate: s, endDate: e })}
-                options={{ mode: "range", dateFormat: "Y-m-d" }}
-                className="theme-field h-10 w-full mt-1"
-              />
+          <div className="p-4 border border-border bg-muted/10 rounded-2xl flex items-center gap-4">
+            <FilterField label="السنة" icon={Calendar} className="flex-1">
+              <Select value={year} onValueChange={setYear}>
+                <SelectTrigger className="theme-field h-10 w-full mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+              </Select>
             </FilterField>
-            <Button_ label={tCommon("apply")} variant="outline" className="mt-5" />
+
+            <FilterField label="الشهر" icon={Calendar} className="flex-1">
+              <Select value={month} onValueChange={setMonth}>
+                <SelectTrigger className="theme-field h-10 w-full mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>{months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+              </Select>
+            </FilterField>
           </div>
 
-          <ClosingSummaryView summary={summaryPreview} t={t} tCommon={tCommon} />
+          {loading ? (
+            <div className="h-48 flex items-center justify-center">
+              <Loader2 className="animate-spin text-primary" size={32} />
+            </div>
+          ) : preview ? (
+            <>
+              {preview.isClosed ? (
+                <div className="p-6 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-center font-bold flex flex-col items-center gap-2">
+                  <Ban size={32} className="opacity-50" />
+                  هذا الشهر تم تقفيله مسبقاً!
+                </div>
+              ) : (
+                <ClosingSummaryView summary={preview} t={t} tCommon={tCommon} />
+              )}
+            </>
+          ) : null}
 
           <div className="pt-4 border-t border-dashed border-border flex items-center justify-end gap-3">
-            <Button_ label={tCommon("cancel")} variant="ghost" size="sm" onClick={onClose} />
-            <Button_ label={t("details.confirmClosing")} variant="default" size="sm" icon={<CheckCircle2 size={14} />} />
+            <Button_ label={tCommon("cancel")} variant="ghost" size="sm" onClick={onClose} disabled={closingLoading} />
+            <Button_
+              label={t("details.confirmClosing") || "تأكيد التقفيل"}
+              variant="default"
+              size="sm"
+              icon={closingLoading ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+              onClick={handleConfirmClosing}
+              disabled={closingLoading || !preview || preview.isClosed}
+            />
           </div>
         </div>
       </DialogContent>
@@ -267,18 +326,110 @@ function NewClosingModal({ open, onClose, t, tCommon }) {
   );
 }
 
-function ClosingDetailsModal({ closing, onClose, t, tCommon = { tCommon } }) {
+function ClosingDetailsModal({ closing, onClose, t, tCommon }) {
+
+  const handlePrint = () => {
+    if (!closing) return;
+
+    const printContent = `
+      <html dir="rtl" lang="ar">
+        <head>
+          <title>تقفيل شهر ${closing.month} / ${closing.year}</title>
+          <style>
+            body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; color: #111827; direction: rtl; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; }
+            .header h1 { margin: 0 0 10px 0; font-size: 24px; color: #1f2937; }
+            .header p { margin: 0; color: #6b7280; font-size: 14px; }
+            
+            .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }
+            .summary-box { padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; background-color: #f9fafb; display: flex; justify-content: space-between; align-items: center;}
+            .summary-box .title { font-size: 14px; color: #4b5563; font-weight: bold;}
+            .summary-box .value { font-size: 16px; font-weight: black; color: #111827; }
+            
+            .summary-box.positive .value { color: #059669; }
+            .summary-box.negative .value { color: #dc2626; }
+            
+            .final-box { grid-column: span 2; background-color: #f0fdf4; border-color: #86efac; text-align: center; padding: 20px; flex-direction: column; gap: 10px;}
+            .final-box .title { font-size: 16px; color: #166534; }
+            .final-box .value { font-size: 32px; color: #166534; }
+
+            @media print {
+              body { padding: 0; }
+              @page { margin: 1cm; }
+              .summary-box, .final-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>تقرير تقفيل الشهر الأرباح</h1>
+            <p>الفترة: ${closing.month} / ${closing.year}</p>
+            <p>تم التقفيل في: ${new Date(closing.createdAt || new Date()).toLocaleDateString()}</p>
+          </div>
+
+          <div class="summary-grid">
+            <div class="summary-box positive">
+              <span class="title">إجمالي الإيرادات</span>
+              <span class="value">${Number(closing.revenue).toLocaleString()} ج.م</span>
+            </div>
+            <div class="summary-box negative">
+              <span class="title">تكلفة البضاعة المباعة</span>
+              <span class="value">- ${Number(closing.productCost).toLocaleString()} ج.م</span>
+            </div>
+            <div class="summary-box negative">
+              <span class="title">المصاريف التشغيلية</span>
+              <span class="value">- ${Number(closing.operationalExpenses).toLocaleString()} ج.م</span>
+            </div>
+            <div class="summary-box negative">
+              <span class="title">تكلفة المرتجعات</span>
+              <span class="value">- ${Number(closing.returnsCost).toLocaleString()} ج.م</span>
+            </div>
+            <div class="summary-box final-box">
+              <span class="title">صافي الربح النهائي</span>
+              <span class="value">${Number(closing.netProfit).toLocaleString()} ج.م</span>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.open();
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.onload = () => {
+        printWindow.focus();
+        printWindow.print();
+      };
+    } else {
+      toast.error("يرجى السماح بالنوافذ المنبثقة (Pop-ups) للطباعة");
+    }
+  };
+
   return (
     <Dialog open={!!closing} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[700px] overflow-auto max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileText className="text-primary" size={20} />
-            {t("details.title")}
-          </DialogTitle>
-          <DialogDescription>
-            {closing?.period}
-          </DialogDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle className="flex items-center gap-2">
+                <FileText className="text-primary" size={20} />
+                {t("details.title") || "تفاصيل التقفيل"}
+              </DialogTitle>
+              <DialogDescription className="mt-1">
+                {closing?.month} / {closing?.year}
+              </DialogDescription>
+            </div>
+
+            <Button_
+              size="sm"
+              variant="outline"
+              label="طباعة التقرير"
+              icon={<Download size={14} />}
+              onClick={handlePrint}
+            />
+          </div>
         </DialogHeader>
 
         {closing && (
@@ -292,86 +443,53 @@ function ClosingDetailsModal({ closing, onClose, t, tCommon = { tCommon } }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Shared Summary View
+// Shared Summary View mapped to Backend fields
 // ─────────────────────────────────────────────────────────────────────────
 
-function ClosingSummaryView({ summary, t, tCommon }) {
+function ClosingSummaryView({ summary, t }) {
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <MiniSummaryCard
-          title={t("columns.totalSelling")}
-          value={summary.totalSelling}
-          icon={ShoppingCart}
+          title={t("columns.totalSelling") || "الإيرادات"}
+          value={summary.revenue}
+          icon={TrendingUp}
           color="emerald"
-          trend={`${summary.soldOrdersCount} ${t("details.soldOrdersCount")}`}
         />
         <MiniSummaryCard
-          title={t("columns.totalCost")}
-          value={summary.totalCost + (summary.deceased || 0)}
-          icon={DollarSign}
-          color="red"
-        />
-        <MiniSummaryCard
-          title={t("columns.totalReturn")}
-          value={summary.totalReturn}
-          icon={RefreshCw}
+          title={t("columns.productCost") || "تكلفة البضاعة"}
+          value={summary.productCost}
+          icon={Package}
           color="orange"
+        />
+        <MiniSummaryCard
+          title={t("columns.operationalExpenses") || "المصاريف التشغيلية"}
+          value={summary.operationalExpenses}
+          icon={Settings}
+          color="purple"
+        />
+        <MiniSummaryCard
+          title={t("columns.totalReturn") || "المرتجعات"}
+          value={summary.returnsCost}
+          icon={RefreshCw}
+          color="red"
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
-
-        <Card_ title={t("details.summaryTitle")} icon={TrendingUp} color="blue">
-          <div className="space-y-3">
-            <DetailRow_ label={t("details.productCosts")} value={summary.productCosts} iconColor="purple" />
-            {summary.deceased > 0 && (
-              <DetailRow_ label={t("columns.deceased")} value={summary.deceased} iconColor="red" />
-            )}
-            <DetailRow_ label={t("columns.totalReturn")} value={-summary.totalReturn} iconColor="orange" />
-
-            <div className="h-px bg-border my-2 border-dashed" />
-
-            <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
-              <span className="text-sm font-bold">{t("columns.deceased")}</span>
-              <span className={cn("text-base font-black tabular-nums text-red-600")}>
-                {summary.deceased.toLocaleString()}ج
-              </span>
-            </div>
-          </div>
-        </Card_>
-
-        {/* Detailed Manual Expenses */}
-        <Card_ title={t("details.manualExpenses")} icon={DollarSign} color="slate">
-          <div className="space-y-2">
-            {(summary.manualExpensesDetails || []).map((exp, idx) => (
-              <div key={idx} className="flex items-center justify-between py-1 border-b border-border last:border-0 border-dashed">
-                <div className="flex flex-col">
-                  <span className="text-[11px] font-bold text-foreground capitalize">{exp.category}</span>
-                  <span className="text-[10px] text-muted-foreground">{exp.description}</span>
-                </div>
-                <span className="text-xs font-black tabular-nums text-red-600">-{exp.amount.toLocaleString()}ج</span>
-              </div>
-            ))}
-            <div className="pt-2 flex items-center justify-between border-t border-border mt-2">
-              <span className="text-xs font-black">{tCommon("total")}</span>
-              <span className="text-sm font-black text-red-600 tabular-nums">{summary.manualExpenses.toLocaleString()}ج</span>
-            </div>
-          </div>
-        </Card_>
-
-
-        <div className=" col-span-2 flex flex-col justify-center items-center p-8 rounded-3xl bg-primary/5 border-2 border-primary/10 relative overflow-hidden">
+      <div className="grid grid-cols-1">
+        <div className="col-span-1 flex flex-col justify-center items-center p-8 rounded-3xl bg-primary/5 border-2 border-primary/10 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-10">
-            <TrendingUp size={120} className="text-primary" />
+            <DollarSign size={120} className="text-primary" />
           </div>
-          <span className="text-xs font-black uppercase tracking-[2px] text-primary/60 mb-2">{t("columns.finalBalance")}</span>
+          <span className="text-xs font-black uppercase tracking-[2px] text-primary/60 mb-2">
+            {t("columns.finalBalance") || "صافي الربح"}
+          </span>
           <span className="text-4xl font-black text-primary tabular-nums tracking-tighter">
-            {summary.finalBalance.toLocaleString()}ج
+            {Number(summary.netProfit).toLocaleString()}ج
           </span>
           <div className="mt-4 flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold">
             <CheckCircle2 size={12} />
-            إجمالي الربح الصافي
+            نتيجة الفترة
           </div>
         </div>
       </div>

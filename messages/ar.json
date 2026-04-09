@@ -7777,11 +7777,18 @@
       "totalOwed": "إجمالي المديونية للموردين",
       "totalCredit": "إجمالي الأرصدة الدائنة",
       "lastSettlement": "آخر رصيد تقفيل",
+      "returnsCost": "تكلفة المرتجعات",
+      "productCost": "تكلفة البضاعة",
       "totalHistorySales": "إجمالي مبيعات الشهر",
       "totalHistoryCosts": "إجمالي تكاليف الشهر",
       "totalNetProfit": "إجمالي الأرباح",
       "totalReceived": "إجمالي المستلم",
-      "finalBalance": "الرصيد النهائي"
+      "finalBalance": "الرصيد النهائي",
+      "lastMonthProfit": "ربح الشهر الماضي",
+      "currentRevenue": "إيرادات الشهر الحالي",
+      "currentTotalCosts": "إجمالي تكاليف الشهر",
+      "currentNetProfit": "صافي ربح الشهر الحالي",
+      "operationalExpenses": "المصاريف التشغيلية"
     },
     "export": "تصدير",
     "common": {
@@ -7950,6 +7957,7 @@
         "closed": "مغلق",
         "pending": "لم يغلق"
       },
+      "fetchError": "حدث خطأ أثناء جلب البيانات",
       "netResult": "صافي الربح التقديري",
       "profit": "ربح",
       "loss": "خسارة",
@@ -7960,6 +7968,8 @@
         "settleSuppliers": "تسوية حسابات الموردين"
       },
       "columns": {
+        "productCost": "تكلفة البضاعة",
+        "operationalExpenses": "المصاريف التشغيلية",
         "closedAt": "تاريخ التقفيل",
         "period": "الفترة الزمنية",
         "totalCost": "إجمالي التكلفة",

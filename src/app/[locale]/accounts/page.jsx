@@ -4,7 +4,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useSearchParams, useRouter } from "next/navigation";
 import PageHeader from "@/components/atoms/Pageheader";
-import { Info, BarChart2, DollarSign, Wallet, CheckCircle, Plus, Building2, TrendingUp, Calendar } from "lucide-react";
+import { Info, BarChart2, DollarSign, Wallet, CheckCircle, Plus, Building2, TrendingUp, Calendar, Package, Settings, RefreshCw } from "lucide-react";
 import Button_ from "@/components/atoms/Button";
 import api from "@/utils/api";
 import Flatpickr from "react-flatpickr";
@@ -64,9 +64,9 @@ export default function Accounts() {
     }, []);
 
     useEffect(() => {
-        // Define the async function
         const fetchStats = async () => {
-            if (activeTab === "overview" || activeTab === "monthlyExpenses" || activeTab === "cityDeliveries" || activeTab === "supplierAccounts") {
+            // Add monthClosing to the condition
+            if (["overview", "monthlyExpenses", "cityDeliveries", "supplierAccounts", "monthClosing"].includes(activeTab)) {
                 setLoadingStats(true);
                 try {
                     let endpoint = "/accounting/stats";
@@ -78,9 +78,12 @@ export default function Accounts() {
                     } else if (activeTab === "supplierAccounts") {
                         endpoint = "/accounting/supplier-closings/financial-stats";
                         params = {};
+                    } else if (activeTab === "monthClosing") {
+                        endpoint = "/monthly-closings/stats";
+                        params = {};
                     }
 
-                    const res = await api.get(endpoint, { params: params });
+                    const res = await api.get(endpoint, { params });
                     setStats(res.data);
                 } catch (err) {
                     console.error("Error fetching stats:", err);
@@ -90,7 +93,6 @@ export default function Accounts() {
             }
         };
 
-        // Execute the function
         fetchStats();
     }, [activeTab, filters]);
 
@@ -165,30 +167,9 @@ export default function Accounts() {
 
         if (activeTab === "cityDeliveries") {
             return [
-                {
-                    name: t("cityDeliveries.stats.topCity"),
-                    value: stats?.highestCity?.city && stats?.highestCity?.count !== undefined
-                        ? `${stats.highestCity.city} (${stats.highestCity.count})`
-                        : "N/A",
-                    icon: CheckCircle,
-                    color: "#10b981"
-                },
-                {
-                    name: t("cityDeliveries.stats.lowestCity"),
-                    value: stats?.lowestCity?.city && stats?.lowestCity?.count !== undefined
-                        ? `${stats.lowestCity.city} (${stats.lowestCity.count})`
-                        : "N/A",
-                    icon: Info,
-                    color: "#ef4444"
-                },
-                {
-                    name: t("cityDeliveries.stats.avgDeliveries"),
-                    value: stats?.deliveriesRate !== undefined
-                        ? `${stats.deliveriesRate}%`
-                        : "0%",
-                    icon: BarChart2,
-                    color: "#3b82f6"
-                },
+                { name: t("cityDeliveries.stats.topCity"), value: stats?.highestCity?.city && stats?.highestCity?.count !== undefined ? `${stats.highestCity.city} (${stats.highestCity.count})` : "N/A", icon: CheckCircle, color: "#10b981" },
+                { name: t("cityDeliveries.stats.lowestCity"), value: stats?.lowestCity?.city && stats?.lowestCity?.count !== undefined ? `${stats.lowestCity.city} (${stats.lowestCity.count})` : "N/A", icon: Info, color: "#ef4444" },
+                { name: t("cityDeliveries.stats.avgDeliveries"), value: stats?.deliveriesRate !== undefined ? `${stats.deliveriesRate}%` : "0%", icon: BarChart2, color: "#3b82f6" },
             ];
         }
 
@@ -203,11 +184,16 @@ export default function Accounts() {
         }
 
         if (activeTab === "monthClosing") {
+            const current = stats?.currentMonthStats;
+            const last = stats?.lastMonthProfit;
+
             return [
-                { name: t("stats.lastSettlement"), value: "15,000", icon: CheckCircle, color: "#10b981" },
-                { name: t("stats.totalHistorySales"), value: "117,000", icon: BarChart2, color: "#8b5cf6" },
-                { name: t("stats.totalHistoryCosts"), value: "83,000", icon: DollarSign, color: "#f97316" },
-                { name: t("stats.totalNetProfit"), value: "34,000", icon: TrendingUp, color: "#10b981" },
+                { name: t("stats.lastMonthProfit") + (last?.month ? ` (${last.month}/${last.year})` : ""), value: last?.netProfit?.toLocaleString() || "0", icon: CheckCircle, color: "#10b981" },
+                { name: t("stats.currentRevenue"), value: current?.revenue?.toLocaleString() || "0", icon: TrendingUp, color: "#8b5cf6" },
+                { name: t("stats.productCost"), value: current?.productCost?.toLocaleString() || "0", icon: Package, color: "#f97316" },
+                { name: t("stats.operationalExpenses"), value: current?.operationalExpenses?.toLocaleString() || "0", icon: Settings, color: "#f59e0b" },
+                { name: t("stats.returnsCost"), value: current?.returnsCost?.toLocaleString() || "0", icon: RefreshCw, color: "#ef4444" },
+                { name: t("stats.currentNetProfit"), value: current?.netProfit?.toLocaleString() || "0", icon: DollarSign, color: "#059669", isFinal: true },
             ];
         }
 

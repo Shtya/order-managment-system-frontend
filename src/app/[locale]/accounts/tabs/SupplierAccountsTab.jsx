@@ -271,8 +271,6 @@ export default function SupplierAccountsTab() {
 // ─────────────────────────────────────────────────────────────────────────
 
 
-// ... your other imports (Dialog, FileText, Calendar, FilterField, DateRangePicker, Button_, MiniSummary, Card, MiniTable, etc.)
-
 function AccountStatementModal({ supplier, onClose, t, router }) {
   const [filters, setFilters] = useState({
     startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
@@ -502,6 +500,7 @@ function AccountStatementModal({ supplier, onClose, t, router }) {
             <FilterField label={t("filters.dateRange")} icon={Calendar} className="flex flex-col gap-3">
               <DateRangePicker
                 value={filters}
+                closeOnSelect={false}
                 staticShow={true}
                 onChange={(newDates) => setFilters(f => ({ ...f, ...newDates }))}
               />
@@ -623,6 +622,7 @@ function CloseAccountPeriodModal({ supplier, onClose, onSuccess, t, tCommon }) {
                 <DateRangePicker
                   value={filters}
                   staticShow={true}
+                  closeOnSelect={false}
                   onChange={(newDates) => setFilters(f => ({ ...f, ...newDates }))}
                 />
               </FilterField>

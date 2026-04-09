@@ -792,7 +792,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
         variants={isMobile ? variants.mobile : variants.desktop}
         transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
         className={`
-          fixed bg-sidebar dark:bg-card top-0 ${isRTL ? "right-0" : "left-0"}
+          fixed  bg-card top-0 ${isRTL ? "right-0" : "left-0"}
           h-screen flex flex-col overflow-hidden z-[100002]
           
         `}
@@ -881,7 +881,8 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
         {/* Nav — scrollable middle */}
         <nav
           dir={isRTL ? "rtl" : "ltr"}
-          className="flex-1 pt-1.5 overflow-y-auto overflow-x-hidden px-2 pb-2 space-y-px thin-scroll"
+
+          className={`flex-1 pt-1.5 overflow-y-auto overflow-x-hidden px-2 pb-2 space-y-px thin-scroll bg-sidebar dark:bg-card ${isRTL ? "border-l" : "border-r"} border-border`}
         >
           {filteredItems.map((item, i) => {
             const hasChildren = Boolean(item.children?.length);

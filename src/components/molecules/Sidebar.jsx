@@ -64,6 +64,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "../ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import BrandLogo from "../atoms/BrandLogo";
 
 /* ══════════════════════════════════════════════════════════════
    MENU DEFINITION
@@ -791,29 +792,32 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
         animate={isMobile ? (isOpen ? "open" : "closed") : (isOpen ? "open" : "closed")}
         variants={isMobile ? variants.mobile : variants.desktop}
         transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className={`
-          fixed  bg-card top-0 ${isRTL ? "right-0" : "left-0"}
-          h-screen flex flex-col overflow-hidden z-[100002]
-          
-        `}
-        style={{
 
+        className={`
+          fixed  top-0 ${isRTL ? "right-0" : "left-0"}
+          h-screen flex flex-col overflow-hidden z-[100002] bg-sidebar dark:bg-card ${isRTL ? "border-l" : "border-r"} border-border`}
+
+
+        style={{
+          boxShadow: isOpen
+            ? "rgba(50,50,93,.14) 0px 20px 60px -12px, rgba(0,0,0,.14) 0px 14px 36px -24px"
+            : "rgba(50,50,93,.08) 0px 10px 30px -6px",
           width: isMobile ? sidebarWidth : undefined
         }}
       >
         {/* Logo block — same height as header (56px = h-14) */}
         {/* <SidebarLogo isOpen={isOpen} /> */}
         <motion.div
-          className={`${(!isOpen && !isMobile) ? "mx-auto pe-[7px] " : "px-4 flex items-center justify-between gap-3 "} bg-card py-[11.6px] ${isRTL ? "max-lg:border-l" : "max-lg:border-r"} max-lg:border-border`}
+          className={`${(!isOpen && !isMobile) ? "mx-auto pe-[7px] " : "px-4 flex items-center justify-between gap-3 "} py-[11.6px]`}
           whileTap={{ scale: 0.92 }}
         >
           <div className="flex items-center gap-3">
             {!isMobile && (
               <Button
                 onClick={onOpenSidebar}
-                variant="outline"
-                size="sm"
-                className="h-8 w-8 p-0 rounded-xl bg-muted border-border text-muted-foreground hover:bg-muted/80 transition-all duration-200"
+                variant="ghost"
+                className={`p-0 rounded-xl bg-sideIcon text-white transition-all duration-300 hover:bg-white/10 hover:text-white ${isOpen ? "w-[30px] h-[30px]" : "w-[34px] h-[34px]"
+                  }`}
               >
                 <AnimatePresence mode="wait">
                   <motion.span
@@ -832,35 +836,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
 
             {(isOpen || isMobile) && (
               <div className={`flex items-center gap-2.5 `}>
-                <motion.div
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.12, duration: 0.35 }}
-                  className="flex items-center gap-1"
-                >
-                  <div className="relative w-8 h-8 rounded-full overflow-hidden shadow-md shadow-primary/20 flex-shrink-0">
-                    <div className="absolute inset-0 bg-primary" />
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/28 to-transparent skew-x-12"
-                      animate={{ x: ["-150%", "250%"] }}
-                      transition={{
-                        duration: 3.5,
-                        repeat: Infinity,
-                        repeatDelay: 2.5,
-                        ease: "easeInOut",
-                      }}
-                    />
-                    <div className="relative flex items-center justify-center h-full">
-                      <Package className="text-white" size={14} />
-                    </div>
-                  </div>
-
-                  <span
-                    className="text-[15px] font-bold tracking-tight text-foreground"
-                  >
-                    {t("brand")}
-                  </span>
-                </motion.div>
+                <BrandLogo />
               </div>
             )}
           </div>
@@ -869,7 +845,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
             <Button
               onClick={onOpenSidebar}
               variant="ghost"
-              className="h-8 w-8 p-0 rounded-xl text-muted-foreground hover:text-foreground lg:hidden"
+              className="h-8 w-8 p-0 rounded-xl text-white hover:text-white hover:bg-white/10 lg:hidden"
             >
               <X size={18} />
             </Button>
@@ -882,7 +858,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
         <nav
           dir={isRTL ? "rtl" : "ltr"}
 
-          className={`flex-1 pt-1.5 overflow-y-auto overflow-x-hidden px-2 pb-2 space-y-px thin-scroll bg-sidebar dark:bg-card ${isRTL ? "border-l" : "border-r"} border-border`}
+          className={`flex-1 pt-1.5 overflow-y-auto overflow-x-hidden px-2 pb-2 space-y-px thin-scroll `}
         >
           {filteredItems.map((item, i) => {
             const hasChildren = Boolean(item.children?.length);
@@ -939,7 +915,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           })}
         </nav>
       </motion.aside>
-    </TooltipProvider>
+    </TooltipProvider >
   );
 };
 

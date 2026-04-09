@@ -16,9 +16,9 @@
   --secondary2: #5750a0;
 
   /* ── Gradient primitives (used by .btn-solid etc.) ── */
- --primary-from: 103 99 175;
---primary-to: 118 114 185;
---primary-shadow: 118 114 185 / 0.32;
+  --primary-from: 103 99 175;
+  --primary-to: 118 114 185;
+  --primary-shadow: 118 114 185 / 0.32; 
   --muted: #F3F4F6;
   /* ── Radius scale ── */
   --radius: 0.75rem; /* 12 px — single source of truth */
@@ -69,12 +69,15 @@
   --primary: #ff8b00;
   --secondary: #ffb703;
   --third: #ff5c2b;
+  
+  --sidebar: #020024;
   --sideIcon: #020024;
+  --sidebar-active-bg: #FFFFFF14;
+  --sidebar-foreground: #ffffff;
+
   --primary-from: 255 180 64;
   --primary-to: 255 139 0;
   --primary-shadow: 255 139 0 / 0.32;
-
-  
 
   --background: #0f1117;
   --sidebar: #13161f;
@@ -435,7 +438,7 @@
     rgba(50, 50, 93, 0.04) 0px 2px 8px 0px,
     rgba(50, 50, 93, 0.06) 0px 8px 32px -4px,
     rgba(0, 0, 0, 0.03) 0px 16px 48px -8px,
-    rgba(255, 255, 255, 0.9) 0px -1px 0px 0px inset !important;
+    rgba(17, 16, 16, 0.9) 0px -1px 0px 0px inset !important;
 }
 
 .dark .main-card {

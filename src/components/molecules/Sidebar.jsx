@@ -792,31 +792,28 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
         variants={isMobile ? variants.mobile : variants.desktop}
         transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
         className={`
-          fixed bg-sidebar top-0 ${isRTL ? "right-0" : "left-0"}
+          fixed bg-sidebar dark:bg-card top-0 ${isRTL ? "right-0" : "left-0"}
           h-screen flex flex-col overflow-hidden z-[100002]
-          ${isRTL ? "border-l" : "border-r"} border-border
+          
         `}
         style={{
-          boxShadow: isOpen
-            ? "rgba(50,50,93,.14) 0px 20px 60px -12px, rgba(0,0,0,.14) 0px 14px 36px -24px"
-            : "rgba(50,50,93,.08) 0px 10px 30px -6px",
+
           width: isMobile ? sidebarWidth : undefined
         }}
       >
         {/* Logo block — same height as header (56px = h-14) */}
         {/* <SidebarLogo isOpen={isOpen} /> */}
         <motion.div
-          className={`${(!isOpen && !isMobile) ? "mx-auto pe-[7px] " : "px-4 flex items-center justify-between gap-3 "} my-[11.6px] `}
+          className={`${(!isOpen && !isMobile) ? "mx-auto pe-[7px] " : "px-4 flex items-center justify-between gap-3 "} bg-card py-[11.6px] ${isRTL ? "max-lg:border-l" : "max-lg:border-r"} max-lg:border-border`}
           whileTap={{ scale: 0.92 }}
         >
           <div className="flex items-center gap-3">
             {!isMobile && (
               <Button
                 onClick={onOpenSidebar}
-                className="h-8 w-8 p-0 rounded-xl border overflow-hidden
-												bg-sideIcon backdrop-blur-sm border-border
-												hover:border-white/35 text-white/70 hover:text-white
-												transition-all duration-200"
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 p-0 rounded-xl bg-muted border-border text-muted-foreground hover:bg-muted/80 transition-all duration-200"
               >
                 <AnimatePresence mode="wait">
                   <motion.span
@@ -859,7 +856,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
                   </div>
 
                   <span
-                    className="text-[15px] font-bold tracking-tight text-white"
+                    className="text-[15px] font-bold tracking-tight text-foreground"
                   >
                     {t("brand")}
                   </span>
@@ -872,7 +869,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
             <Button
               onClick={onOpenSidebar}
               variant="ghost"
-              className="h-8 w-8 p-0 rounded-xl text-white hover:text-white lg:hidden"
+              className="h-8 w-8 p-0 rounded-xl text-muted-foreground hover:text-foreground lg:hidden"
             >
               <X size={18} />
             </Button>

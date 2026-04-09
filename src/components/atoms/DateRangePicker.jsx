@@ -4,7 +4,7 @@ import React, { useMemo } from "react";
 import Flatpickr from "react-flatpickr";
 import { useTranslations } from "next-intl";
 
-export default function DateRangePicker({ value, onChange, placeholder, dataSize = "default", className = "hidden", staticShow = false }) {
+export default function DateRangePicker({ value, onChange, placeholder, dataSize = "default", className = "hidden", staticShow = false, closeOnSelect = true }) {
   const t = useTranslations("accounts");
 
   const dateValue = useMemo(() => {
@@ -38,6 +38,7 @@ export default function DateRangePicker({ value, onChange, placeholder, dataSize
         altInput: true,
         static: staticShow,
         altFormat: "Y-m-d",
+        closeOnSelect: closeOnSelect,
         altInputClass: "theme-field",
       }}
       placeholder={placeholder || t("filters.dateRangePlaceholder")}

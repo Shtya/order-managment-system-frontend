@@ -7781,7 +7781,14 @@
       "totalHistoryCosts": "Total Monthly Costs",
       "totalNetProfit": "Total Net Profit",
       "totalReceived": "Total Received",
-      "finalBalance": "Final Balance"
+      "finalBalance": "Final Balance",
+      "lastMonthProfit": "Last Month Profit",
+      "currentRevenue": "Current Month Revenue",
+      "currentTotalCosts": "Total Monthly Costs",
+      "currentNetProfit": "Current Net Profit",
+      "operationalExpenses": "Operational Expenses",
+      "productCost": "Product Cost",
+      "returnsCost": "Returns Cost"
     },
     "export": "Export",
     "common": {
@@ -7950,6 +7957,7 @@
         "closed": "Closed",
         "pending": "Not Closed"
       },
+      "fetchError": "An error occurred while fetching data",
       "netResult": "Estimated Net Profit",
       "profit": "Profit",
       "loss": "Loss",
@@ -7960,6 +7968,8 @@
         "settleSuppliers": "Settle Supplier Accounts"
       },
       "columns": {
+        "productCost": "Product Cost",
+        "operationalExpenses": "Operational Expenses",
         "closedAt": "Closing Date",
         "period": "Time Period",
         "totalCost": "Total Cost",

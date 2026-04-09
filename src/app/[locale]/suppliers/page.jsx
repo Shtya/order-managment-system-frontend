@@ -173,7 +173,6 @@ export default function SuppliersPage() {
 				setPager({
 					total_records: res.data?.total_records ?? 0,
 					current_page: res.data?.current_page ?? page,
-					per_page: res.data?.per_page ?? per_page,
 					records: res.data?.records ?? [],
 				});
 			} catch (e) {
@@ -333,25 +332,25 @@ export default function SuppliersPage() {
 						row={row}
 						actions={[
 							{
-								icon: <Trash2 />,
-								tooltip: t("actions.delete"),
-								onClick: (r) => setDeleteState({ open: true, id: r.id }),
-								variant: "red",
-								permission: "suppliers.delete",
-							},
-							{
 								icon: <Edit2 />,
 								tooltip: t("actions.edit"),
 								onClick: (r) => openEdit(r),
-								variant: "blue",
+								variant: "primary",
 								permission: "suppliers.update",
 							},
 							{
 								icon: <Eye />,
 								tooltip: t("actions.view"),
 								onClick: (r) => router.push(`/suppliers/${r.id}`),
-								variant: "purple",
+								variant: "primary",
 								permission: "suppliers.read",
+							},
+							{
+								icon: <Trash2 />,
+								tooltip: t("actions.delete"),
+								onClick: (r) => setDeleteState({ open: true, id: r.id }),
+								variant: "red",
+								permission: "suppliers.delete",
 							},
 						]}
 					/>
@@ -421,7 +420,7 @@ export default function SuppliersPage() {
 						key: "export",
 						label: t("toolbar.export"),
 						icon: <FileDown size={14} />,
-						color: "blue",
+						color: "primary",
 						onClick: onExport,
 						permission: "suppliers.read",
 					},

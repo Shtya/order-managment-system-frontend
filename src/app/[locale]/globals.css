@@ -9,17 +9,17 @@
 
 :root {
   /* ── Brand ── */
-  --primary: #ff6a1e;
-  --secondary: #ffb703;
-  --third: #ff5c2b;
+  --primary: #6763AF;
+  --secondary: #5750a0;
+  --third: #7672B9;
   --primary2: #6763af;
   --secondary2: #5750a0;
 
   /* ── Gradient primitives (used by .btn-solid etc.) ── */
-  --primary-from: 255 183 3;
-  --primary-to: 255 92 43;
-  --primary-shadow: 255 92 43 / 0.32;
-
+ --primary-from: 103 99 175;
+--primary-to: 118 114 185;
+--primary-shadow: 118 114 185 / 0.32;
+  --muted: #F3F4F6;
   /* ── Radius scale ── */
   --radius: 0.75rem; /* 12 px — single source of truth */
   --radius-sm: 0.5rem; /* 8 px  */
@@ -28,7 +28,10 @@
 
   /* ── Surface / layout ── */
   --background: #f6f6f7;
-  --sidebar: #ffffff;
+  --sidebar: #020024;
+  --sideIcon: #020024;
+  --sidebar-active-bg: #FFFFFF14;
+  --sidebar-foreground: #ffffff;
   --card: oklch(0.9999 0.001 240);
   --border: oklch(0.9 0.005 240);
   --input: oklch(0.922 0 0);
@@ -66,10 +69,12 @@
   --primary: #ff8b00;
   --secondary: #ffb703;
   --third: #ff5c2b;
-
+  --sideIcon: #020024;
   --primary-from: 255 180 64;
   --primary-to: 255 139 0;
   --primary-shadow: 255 139 0 / 0.32;
+
+  
 
   --background: #0f1117;
   --sidebar: #13161f;
@@ -104,7 +109,11 @@
   --radius-lg: var(--radius-lg);
   --radius-xl: var(--radius-xl);
 
+  --muted: var(--muted);
+
+  --color-sideIcon: var(--sideIcon);
   --color-background: var(--background);
+  --color-sidebar: var(--sidebar);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);

@@ -10,6 +10,11 @@ import { useAuth } from "@/context/AuthContext";
 // COLOR VARIANTS
 // ─────────────────────────────────────────────────────────────
 const VARIANTS = {
+	primary: {
+		base: "border-primary/20 bg-primary/5 text-primary dark:border-primary/30 dark:bg-primary/10 dark:text-primary",
+		hover: "hover:bg-primary hover:border-primary hover:text-white hover:shadow-md dark:hover:bg-primary dark:hover:border-primary",
+		tooltip: { bg: "#6763AF", shadow: "rgba(103, 99, 175, 0.4)" },
+	},
 	purple: {
 		base: "border-purple-200 bg-purple-50 text-purple-500 dark:border-purple-800/60 dark:bg-purple-950/20 dark:text-purple-400",
 		hover: "hover:bg-purple-500 hover:border-purple-500 hover:text-white hover:shadow-md dark:hover:bg-purple-500 dark:hover:border-purple-500",
@@ -191,17 +196,17 @@ function CustomTooltip({ children, label, color }) {
 											display: "block",
 											...(position.placement === "top"
 												? {
-														bottom: -4,
-														borderLeft: "4px solid transparent",
-														borderRight: "4px solid transparent",
-														borderTop: `4px solid ${bg}`,
-												  }
+													bottom: -4,
+													borderLeft: "4px solid transparent",
+													borderRight: "4px solid transparent",
+													borderTop: `4px solid ${bg}`,
+												}
 												: {
-														top: -4,
-														borderLeft: "4px solid transparent",
-														borderRight: "4px solid transparent",
-														borderBottom: `4px solid ${bg}`,
-												  }),
+													top: -4,
+													borderLeft: "4px solid transparent",
+													borderRight: "4px solid transparent",
+													borderBottom: `4px solid ${bg}`,
+												}),
 										}}
 									/>
 								</div>

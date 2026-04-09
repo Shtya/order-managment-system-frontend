@@ -113,19 +113,15 @@ function IconBox({ Icon, active, collapsed, isLocked }) {
   return (
     <div
       data-iconbox
-      className={`${!active && "bg-icon"} relative shrink-0 flex items-center justify-center rounded-xl transition-all duration-300 ${collapsed ? "w-[34px] h-[34px]" : "w-[30px] h-[30px]"
+      className={`${!active && "bg-sideIcon"} relative shrink-0 flex items-center justify-center rounded-xl transition-all duration-300 ${collapsed ? "w-[34px] h-[34px]" : "w-[30px] h-[30px]"
         }`}
       style={
         active
           ? {
-            background:
-              "linear-gradient(135deg, var(--primary), var(--third))",
-            boxShadow:
-              "0 3px 14px color-mix(in oklab, var(--primary) 40%, transparent)",
+            // background: "linear-gradient(135deg, var(--primary), var(--third))",
+            // boxShadow: "0 3px 14px color-mix(in oklab, var(--primary) 40%, transparent)",
           }
-          : {
-
-          }
+          : {}
       }
     >
       {active && (
@@ -145,7 +141,7 @@ function IconBox({ Icon, active, collapsed, isLocked }) {
         />
       )}
       <Icon
-        className={`relative z-10 transition-colors duration-200 ${active ? "text-white" : "text-muted-foreground"}`}
+        className={`relative z-10 transition-colors duration-200 text-white`}
         size={14}
         strokeWidth={active ? 2.4 : 1.9}
       />
@@ -188,10 +184,10 @@ function MenuItem({
   `;
 
   const activeStyle = {
-    background: "color-mix(in oklab, var(--primary) 8%, var(--card))",
-    color: "var(--primary)",
+    background: "var(--sidebar-active-bg)",
+    color: "var(--sidebar-foreground)",
   };
-  const inactiveStyle = { color: "var(--muted-foreground)" };
+  const inactiveStyle = { color: "var(--sidebar-foreground)" };
 
   const inner = (
     <>
@@ -314,8 +310,7 @@ function MenuItem({
         style={active ? activeStyle : inactiveStyle}
         onMouseEnter={(e) => {
           if (!active)
-            e.currentTarget.style.background =
-              "color-mix(in oklab, var(--primary) 4%, var(--card))";
+            e.currentTarget.style.background = "rgba(255, 255, 255, 0.04)";
         }}
         onMouseLeave={(e) => {
           if (!active) e.currentTarget.style.background = "transparent";
@@ -341,8 +336,7 @@ function MenuItem({
       style={active ? activeStyle : inactiveStyle}
       onMouseEnter={(e) => {
         if (!active)
-          e.currentTarget.style.background =
-            "color-mix(in oklab, var(--primary) 4%, var(--card))";
+          e.currentTarget.style.background = "rgba(255, 255, 255, 0.04)";
       }}
       onMouseLeave={(e) => {
         if (!active) e.currentTarget.style.background = "transparent";
@@ -378,17 +372,15 @@ function SubItem({ child, isActive, isRTL, index }) {
         style={
           active
             ? {
-              background:
-                "color-mix(in oklab, var(--primary) 7%, var(--card))",
-              color: "var(--primary)",
+              background: "var(--sidebar-active-bg)",
+              color: "var(--sidebar-foreground)",
               fontWeight: 600,
             }
-            : { color: "var(--muted-foreground)" }
+            : { color: "var(--sidebar-foreground)" }
         }
         onMouseEnter={(e) => {
           if (!active)
-            e.currentTarget.style.background =
-              "color-mix(in oklab, var(--primary) 3.5%, var(--card))";
+            e.currentTarget.style.background = "rgba(255, 255, 255, 0.04)";
         }}
         onMouseLeave={(e) => {
           if (!active) e.currentTarget.style.background = "transparent";
@@ -408,19 +400,16 @@ function SubItem({ child, isActive, isRTL, index }) {
           style={
             active
               ? {
-                background:
-                  "linear-gradient(135deg, var(--primary), var(--third))",
-                boxShadow:
-                  "0 2px 8px color-mix(in oklab, var(--primary) 30%, transparent)",
+                background: "rgba(255, 255, 255, 0.1)",
+                // boxShadow: "0 2px 8px color-mix(in oklab, var(--primary) 30%, transparent)",
               }
               : {
-                background:
-                  "color-mix(in oklab, var(--muted) 75%, transparent)",
+                background: "rgba(255, 255, 255, 0.05)",
               }
           }
         >
           <Icon
-            className={`transition-colors ${active ? "text-white" : "text-muted-foreground"}`}
+            className={`transition-colors text-white`}
             size={11}
             strokeWidth={active ? 2.4 : 1.9}
           />
@@ -803,7 +792,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
         variants={isMobile ? variants.mobile : variants.desktop}
         transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
         className={`
-          fixed bg-card top-0 ${isRTL ? "right-0" : "left-0"}
+          fixed bg-sidebar top-0 ${isRTL ? "right-0" : "left-0"}
           h-screen flex flex-col overflow-hidden z-[100002]
           ${isRTL ? "border-l" : "border-r"} border-border
         `}
@@ -825,8 +814,8 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
               <Button
                 onClick={onOpenSidebar}
                 className="h-8 w-8 p-0 rounded-xl border overflow-hidden
-												bg-icon backdrop-blur-sm border-border
-												hover:border-primary/35 text-muted-foreground hover:text-foreground
+												bg-sideIcon backdrop-blur-sm border-border
+												hover:border-white/35 text-white/70 hover:text-white
 												transition-all duration-200"
               >
                 <AnimatePresence mode="wait">
@@ -870,9 +859,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
                   </div>
 
                   <span
-                    className="text-[15px] font-bold tracking-tight
-												bg-gradient-to-r from-foreground to-muted-foreground
-												bg-clip-text text-transparent"
+                    className="text-[15px] font-bold tracking-tight text-white"
                   >
                     {t("brand")}
                   </span>
@@ -885,7 +872,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
             <Button
               onClick={onOpenSidebar}
               variant="ghost"
-              className="h-8 w-8 p-0 rounded-xl text-muted-foreground hover:text-foreground lg:hidden"
+              className="h-8 w-8 p-0 rounded-xl text-white hover:text-white lg:hidden"
             >
               <X size={18} />
             </Button>

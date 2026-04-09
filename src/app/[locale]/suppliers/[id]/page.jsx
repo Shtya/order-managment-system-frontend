@@ -204,7 +204,7 @@ export default function SupplierDetailsPage() {
                             icon: <Eye />,
                             tooltip: tPurchases("actions.view"),
                             onClick: handleViewPurchase,
-                            variant: "purple",
+                            variant: "primary",
                         }
                     ]}
                 />
@@ -246,7 +246,7 @@ export default function SupplierDetailsPage() {
                             icon: <Eye />,
                             tooltip: tReturns("actions.view"),
                             onClick: handleViewReturn,
-                            variant: "purple",
+                            variant: "primary",
                         }
                     ]}
                 />
@@ -418,17 +418,17 @@ export default function SupplierDetailsPage() {
             </div>
 
             {/* Main Content Tabs */}
-            <Tabs defaultValue="purchases" className="w-full dir-force">
-                <TabsList className="grid w-full grid-cols-3 mb-6 h-12">
-                    <TabsTrigger value="purchases" className="flex items-center gap-2">
+            <Tabs defaultValue="purchases" className="w-full dir-force ">
+                <TabsList className="grid w-full grid-cols-3 !h-auto mb-6 main-card">
+                    <TabsTrigger value="purchases" className="flex items-center gap-2 py-2.5">
                         <ReceiptText size={18} />
                         {t("details.purchasesTab")}
                     </TabsTrigger>
-                    <TabsTrigger value="returns" className="flex items-center gap-2">
+                    <TabsTrigger value="returns" className="flex items-center gap-2 py-2.5">
                         <TrendingUp size={18} />
                         {t("details.returnsTab")}
                     </TabsTrigger>
-                    <TabsTrigger value="history" className="flex items-center gap-2">
+                    <TabsTrigger value="history" className="flex items-center gap-2 py-2.5">
                         <History size={18} />
                         {t("details.historyTab")}
                     </TabsTrigger>

@@ -47,19 +47,18 @@ function AnimatedCounter({ value, delay = 0 }) {
 ══════════════════════════════════════════════════════════════ */
 function InfoCard({
 	title, value, icon, editable,
-	isAddCard, onEdit, onDelete, onClick, customStyles,
+	isAddCard, onEdit, onDelete, onClick,
 }) {
 	const t = useTranslations("orders");
 	const [hov, setHov] = useState(false);
 	const Icon = icon;
 
-	const accentHex = customStyles?.iconColor || null;
-	const accent = accentHex || "var(--primary)";
-	const iconBg = accentHex ? `${accentHex}18` : "color-mix(in oklab, var(--primary) 12%, transparent)";
-	const iconBorder = accentHex ? `1px solid ${accentHex}28` : "1px solid color-mix(in oklab, var(--primary) 18%, transparent)";
-	const glowColor = accentHex ? `${accentHex}30` : "color-mix(in oklab, var(--primary) 22%, transparent)";
-	const badgeBg = accentHex ? `${accentHex}12` : "color-mix(in oklab, var(--primary) 9%, transparent)";
-	const badgeBdr = accentHex ? `1px solid ${accentHex}28` : "1px solid color-mix(in oklab, var(--primary) 20%, transparent)";
+	const accent = "var(--primary)";
+	const iconBg = "color-mix(in oklab, var(--primary) 12%, transparent)";
+	const iconBorder = "1px solid color-mix(in oklab, var(--primary) 18%, transparent)";
+	const glowColor = "color-mix(in oklab, var(--primary) 22%, transparent)";
+	const badgeBg = "color-mix(in oklab, var(--primary) 9%, transparent)";
+	const badgeBdr = "1px solid color-mix(in oklab, var(--primary) 20%, transparent)";
 
 	if (isAddCard) {
 		return (
@@ -140,7 +139,7 @@ function InfoCard({
 			<div style={{
 				position: "absolute", inset: 0, pointerEvents: "none",
 				opacity: hov ? 1 : 0,
-				background: `radial-gradient(ellipse at 15% 15%, ${accentHex ? accentHex + "0d" : "color-mix(in oklab, var(--primary) 6%, transparent)"}, transparent 65%)`,
+				background: `radial-gradient(ellipse at 15% 15%, color-mix(in oklab, var(--primary) 6%, transparent), transparent 65%)`,
 				transition: "opacity .3s",
 			}} />
 			<div style={{
@@ -421,7 +420,6 @@ export function StatsGrid({ stats }) {
 									onEdit={stat.onEdit}
 									onDelete={stat.onDelete}
 									onClick={stat.onClick}
-									customStyles={{ iconColor: stat.color }}
 								/>
 							)}
 						</motion.div>

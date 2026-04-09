@@ -195,11 +195,9 @@ export default function CallCenterPage() {
                 key: "isActive",
                 header: t("callCenter.columns.status"),
                 cell: (row) => (
-                    <span className={cn(
-                        "px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider",
-                        row.isActive
-                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                            : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                    <span style={{ background: "color-mix(in oklab, var(--muted) 50%, var(--card))" }} className={cn(
+                        "px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-foreground",
+
                     )}>
                         {row.isActive ? t("common.statusCodes.active") : t("common.statusCodes.inactive")}
                     </span>
@@ -222,8 +220,8 @@ export default function CallCenterPage() {
                 header: t("callCenter.columns.lockedAssignments"),
                 cell: (row) => (
                     <div className="flex items-center gap-1.5">
-                        <Lock size={14} className="text-amber-500" />
-                        <span className="font-bold text-sm tabular-nums text-amber-600">
+                        <Lock size={14} className="text-primary" />
+                        <span className="font-bold text-sm tabular-nums text-primary">
                             {row.lockedAssignments ?? 0}
                         </span>
                     </div>

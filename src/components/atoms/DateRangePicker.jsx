@@ -1,11 +1,18 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import Flatpickr from "react-flatpickr";
 import { useTranslations } from "next-intl";
 
-export default function DateRangePicker({ value, onChange, placeholder, dataSize = "default", className = "hidden" }) {
+export default function DateRangePicker({ value, onChange, placeholder, dataSize = "default", className = "hidden", staticShow = false }) {
   const t = useTranslations("accounts");
+
+  const dateValue = useMemo(() => {
+    return [
+      value?.startDate ? new Date(value.startDate) : null,
+      value?.endDate ? new Date(value.endDate) : null,
+    ].filter(Boolean); // Filter out nulls if empty
+  }, [value?.startDate, value?.endDate]);
 
   const handleChange = ([s, e]) => {
     onChange({
@@ -16,10 +23,7 @@ export default function DateRangePicker({ value, onChange, placeholder, dataSize
 
   return (
     <Flatpickr
-      value={[
-        value?.startDate ? new Date(value.startDate) : null,
-        value?.endDate ? new Date(value.endDate) : null,
-      ]}
+      value={dateValue}
       onChange={handleChange}
       onReady={(selectedDates, dateStr, instance) => {
         const size = instance.element.getAttribute('data-size');
@@ -32,6 +36,7 @@ export default function DateRangePicker({ value, onChange, placeholder, dataSize
         dateFormat: "Y-m-d",
         maxDate: "today",
         altInput: true,
+        static: staticShow,
         altFormat: "Y-m-d",
         altInputClass: "theme-field",
       }}

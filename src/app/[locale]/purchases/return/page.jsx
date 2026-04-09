@@ -29,6 +29,8 @@ import {
 	ChevronDown,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useRouter, usePathname } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 
 import InfoCard from "@/components/atoms/InfoCard";
@@ -121,6 +123,9 @@ function JsonBlock({ value }) {
 export default function PurchasesReturnPage() {
 	const t = useTranslations("purchasesReturn");
 	const { formatCurrency } = usePlatformSettings();
+	const router = useRouter();
+	const pathname = usePathname();
+	const searchParams = useSearchParams();
 
 	const [search, setSearch] = useState("");
 	const [filtersOpen, setFiltersOpen] = useState(false);
@@ -160,9 +165,27 @@ export default function PurchasesReturnPage() {
 		}
 	};
 
+	useEffect(() => {
+		const invoiceId = searchParams.get("detials");
+		if (invoiceId && !detailsOpen) {
+			fetchInvoiceDetails(invoiceId);
+		}
+	}, [searchParams]);
+
+	const updateUrlWithId = (id) => {
+		const params = new URLSearchParams(searchParams.toString());
+		if (id) {
+			params.set("detials", id);
+		} else {
+			params.delete("detials");
+		}
+		router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+	};
+
 	const fetchInvoiceDetails = async (id) => {
 		setIsDetailLoading(true);
 		setDetailsOpen(true);
+		updateUrlWithId(id);
 		try {
 			const res = await api.get(`/purchases-return/${id}`);
 			setSelectedInvoice(res.data);
@@ -170,6 +193,7 @@ export default function PurchasesReturnPage() {
 			console.error("Failed to fetch details:", error);
 			toast.error(t("messages.detailsFailed"));
 			setDetailsOpen(false);
+			updateUrlWithId(null);
 		} finally {
 			setIsDetailLoading(false);
 		}
@@ -462,7 +486,7 @@ export default function PurchasesReturnPage() {
 								<span>{t("actions.logs")}</span>
 							</DropdownMenuItem>
 
-							<DropdownMenuItem onClick={() => { setSelectedInvoice(row); setPaidAmountOpen(true); }} className="flex items-center gap-2 cursor-pointer rounded-xl hover:bg-primary/5 transition-colors" permission="purchase_returns.update">
+							<DropdownMenuItem disabled={row.closingId !== null} onClick={() => { setSelectedInvoice(row); setPaidAmountOpen(true); }} className="flex items-center gap-2 cursor-pointer rounded-xl hover:bg-primary/5 transition-colors" permission="purchase_returns.update">
 								<Edit size={16} className="text-gray-600" />
 								<span>{t("actions.editPaidAmount")}</span>
 							</DropdownMenuItem>
@@ -476,7 +500,7 @@ export default function PurchasesReturnPage() {
 							<DropdownMenuItem
 								onClick={() => { setSelectedInvoice(row); setPreviewOpen(true); }}
 								className="flex items-center gap-2 cursor-pointer rounded-xl hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
-								disabled={row.status === "accepted"}
+								disabled={row.status === "accepted" || row.closingId !== null}
 								permission="purchase_returns.update"
 							>
 								<Check size={16} className="text-green-600" />
@@ -486,7 +510,7 @@ export default function PurchasesReturnPage() {
 							<DropdownMenuItem
 								onClick={() => handleStatusChange(row.id, "pending")}
 								className="flex items-center gap-2 cursor-pointer rounded-xl hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-colors"
-								disabled={row.status === "pending"}
+								disabled={row.status === "pending" || row.closingId !== null}
 								permission="purchase_returns.update"
 							>
 								<Pause size={16} className="text-yellow-600" />
@@ -496,7 +520,7 @@ export default function PurchasesReturnPage() {
 							<DropdownMenuItem
 								onClick={() => handleStatusChange(row.id, "rejected")}
 								className="flex items-center gap-2 cursor-pointer rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-								disabled={row.status === "rejected"}
+								disabled={row.status === "rejected" || row.closingId !== null}
 								permission="purchase_returns.update"
 							>
 								<X size={16} className="text-red-600" />
@@ -627,7 +651,11 @@ export default function PurchasesReturnPage() {
 			{/* Modals */}
 			<DetailsModal
 				isOpen={detailsOpen}
-				onClose={() => setDetailsOpen(false)}
+				onClose={() => {
+					setDetailsOpen(false);
+					setSelectedInvoice(null);
+					updateUrlWithId(null);
+				}}
 				invoice={selectedInvoice}
 				isLoading={isDetailLoading}
 				formatCurrency={formatCurrency}

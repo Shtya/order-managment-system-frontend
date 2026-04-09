@@ -24,7 +24,8 @@ import {
 	Info,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { useRouter, usePathname } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
 
 import InfoCard from "@/components/atoms/InfoCard";
 import DataTable from "@/components/atoms/DataTable";
@@ -1171,6 +1172,8 @@ export default function PurchasesPage() {
 	const t = useTranslations("purchases");
 	const { formatCurrency } = usePlatformSettings();
 	const router = useRouter();
+	const pathname = usePathname();
+	const searchParams = useSearchParams();
 
 	const [search, setSearch] = useState("");
 	const [filtersOpen, setFiltersOpen] = useState(false);
@@ -1189,6 +1192,23 @@ export default function PurchasesPage() {
 		invoice: null,
 		isLoading: false
 	});
+
+	useEffect(() => {
+		const invoiceId = searchParams.get("detials");
+		if (invoiceId && !detailsModal.isOpen) {
+			handleViewDetails({ id: invoiceId });
+		}
+	}, [searchParams]);
+
+	const updateUrlWithId = (id) => {
+		const params = new URLSearchParams(searchParams.toString());
+		if (id) {
+			params.set("detials", id);
+		} else {
+			params.delete("detials");
+		}
+		router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+	};
 	const [editModal, setEditModal] = useState({ isOpen: false, invoice: null });
 	const [logsModal, setLogsModal] = useState({ isOpen: false, invoiceId: null });
 	const [acceptModal, setAcceptModal] = useState({ isOpen: false, invoiceId: null });
@@ -1332,6 +1352,7 @@ export default function PurchasesPage() {
 	const handleViewDetails = async (row) => {
 		// Open modal immediately and set loading to true
 		setDetailsModal({ isOpen: true, invoice: null, isLoading: true });
+		updateUrlWithId(row.id);
 
 		try {
 			const res = await api.get(`/purchases/${row.id}`);
@@ -1342,6 +1363,7 @@ export default function PurchasesPage() {
 			toast.error(t("messages.fetchDetailsFailed"));
 			// Close modal or just stop loading on error
 			setDetailsModal(prev => ({ ...prev, isLoading: false }));
+			updateUrlWithId(null);
 		}
 	};
 
@@ -1485,7 +1507,7 @@ export default function PurchasesPage() {
 								<span>{t("actions.logs")}</span>
 							</DropdownMenuItem>
 
-							<DropdownMenuItem onClick={() => setEditModal({ isOpen: true, invoice: row })} className="flex items-center gap-2 cursor-pointer" permission="purchases.update">
+							<DropdownMenuItem disabled={row.closingId !== null} onClick={() => setEditModal({ isOpen: true, invoice: row })} className="flex items-center gap-2 cursor-pointer" permission="purchases.update">
 								<Edit size={16} className="text-gray-600" />
 								<span>{t("actions.editPaidAmount")}</span>
 							</DropdownMenuItem>
@@ -1499,7 +1521,7 @@ export default function PurchasesPage() {
 							<DropdownMenuItem
 								onClick={() => handleAcceptClick(row)}
 								className="flex items-center gap-2 cursor-pointer"
-								disabled={row.status === "accepted"}
+								disabled={row.status === "accepted" || row.closingId !== null}
 								permission="purchases.update"
 							>
 								<Check size={16} className="text-green-600" />
@@ -1509,7 +1531,7 @@ export default function PurchasesPage() {
 							<DropdownMenuItem
 								onClick={() => handleStatusChange(row.id, "pending")}
 								className="flex items-center gap-2 cursor-pointer"
-								disabled={row.status === "pending"}
+								disabled={row.status === "pending" || row.closingId !== null}
 								permission="purchases.update"
 							>
 								<Pause size={16} className="text-yellow-600" />
@@ -1519,7 +1541,7 @@ export default function PurchasesPage() {
 							<DropdownMenuItem
 								onClick={() => handleStatusChange(row.id, "rejected")}
 								className="flex items-center gap-2 cursor-pointer"
-								disabled={row.status === "rejected"}
+								disabled={row.status === "rejected" || row.closingId !== null}
 								permission="purchases.update"
 							>
 								<X size={16} className="text-red-600" />
@@ -1660,7 +1682,10 @@ export default function PurchasesPage() {
 
 			<DetailsModal
 				isOpen={detailsModal.isOpen}
-				onClose={() => setDetailsModal({ isOpen: false, invoice: null })}
+				onClose={() => {
+					setDetailsModal({ isOpen: false, invoice: null });
+					updateUrlWithId(null);
+				}}
 				invoice={detailsModal.invoice}
 				isLoading={detailsModal.isLoading}
 				formatCurrency={formatCurrency}

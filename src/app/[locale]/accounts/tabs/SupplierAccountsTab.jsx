@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import {
@@ -15,50 +15,123 @@ import {
   History,
   CheckCircle2,
   FileText,
-  AlertTriangle,
-  ChevronLeft,
-  ExternalLink,
-  Loader2
+  Loader2,
+  AlertCircle
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import Table, { FilterField } from "@/components/atoms/Table";
-import Flatpickr from "react-flatpickr";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
+import api from "@/utils/api";
+import toast from "react-hot-toast";
+import { useDebounce } from "@/hook/useDebounce";
+import { useExport } from "@/hook/useExport";
+import Button_ from "@/components/atoms/Button";
+import ActionButtons from "@/components/atoms/Actions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
+  DialogFooter
 } from "@/components/ui/dialog";
-import Button_ from "@/components/atoms/Button";
-import ActionButtons from "@/components/atoms/Actions";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MiniTable, SummaryCard, SECONDARY } from "../../reports/order-analysis/page"; // نفترض وجود هذه المكونات من الـ Overview
+
+// ─────────────────────────────────────────────────────────────────────────
+// Small Helper Components
+// ─────────────────────────────────────────────────────────────────────────
+
+
+function MiniTable({ columns, data, maxH = "auto" }) {
+  return (
+    <div className="overflow-auto" style={{ maxHeight: maxH }}>
+      <table className="w-full text-right border-separate border-spacing-y-2">
+        <thead>
+          <tr>
+            {columns.map((col) => (
+              <th key={col.key} className="text-[10px] font-black uppercase tracking-wider text-muted-foreground px-2 py-1">
+                {col.header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((row, idx) => (
+            <tr key={idx} className="bg-muted/30 hover:bg-muted/50 transition-colors">
+              {columns.map((col) => (
+                <td key={col.key} className="px-2 py-2 first:rounded-r-xl last:rounded-l-xl border-y border-border/50 first:border-r last:border-l">
+                  {col.cell ? col.cell(row) : row[col.key]}
+                </td>
+              ))}
+            </tr>
+          ))}
+          {data.length === 0 && (
+            <tr>
+              <td colSpan={columns.length} className="text-center py-8 text-xs text-muted-foreground italic">
+                لا توجد بيانات متاحة
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
 export default function SupplierAccountsTab() {
-  const tCommon = useTranslations("common");
+  const tCommon = useTranslations("accounts");
+  const tOrders = useTranslations("orders");
   const t = useTranslations("accounts");
   const router = useRouter();
 
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [suppliers, setSuppliers] = useState([]);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(12);
+
+  const { debouncedValue: debouncedSearch } = useDebounce({
+    value: search,
+    delay: 300,
+  });
+
+  const { handleExport, exportLoading } = useExport();
 
   // Modals Visibility
   const [statementSupplier, setStatementSupplier] = useState(null);
   const [closingSupplier, setClosingSupplier] = useState(null);
   const [historySupplier, setHistorySupplier] = useState(null);
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Mock Data (بيانات وهمية للتجربة)
-  // ─────────────────────────────────────────────────────────────────────────
+  const fetchSuppliers = async (page = currentPage, limit = perPage) => {
+    setLoading(true);
+    try {
+      const params = {
+        page,
+        limit,
+        search: debouncedSearch.trim() || undefined,
+      };
+      const res = await api.get("/suppliers", { params });
+      setSuppliers(res.data.records || []);
+      setTotalRecords(res.data.total_records || 0);
+    } catch (err) {
+      console.error("Error fetching suppliers:", err);
+      toast.error(tCommon("manualExpenses.messages.fetchError"));
+    } finally {
+      setLoading(false)
+    }
+  };
 
-  const suppliersSettlementData = [
-    { id: 1, name: "المورد الأول (أحمد)", lastClosedDate: "2025-10-31", currentBalance: 15400, currency: "ج" },
-    { id: 2, name: "المورد الثاني (شركة الأمل)", lastClosedDate: "2025-09-30", currentBalance: -3200, currency: "ج" },
-    { id: 3, name: "مورد مواد تغليف", lastClosedDate: null, currentBalance: 2450, currency: "ج" },
-  ];
+  useEffect(() => {
+    fetchSuppliers();
+  }, [debouncedSearch, currentPage, perPage]);
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Columns Definitions (تعريف الأعمدة)
-  // ─────────────────────────────────────────────────────────────────────────
+  const onExport = async () => {
+    await handleExport({
+      endpoint: "/suppliers/export",
+      params: { search: debouncedSearch.trim() || undefined },
+      filename: `suppliers_accounts_${Date.now()}.xlsx`,
+    });
+  };
 
   const columns = useMemo(() => [
     {
@@ -72,28 +145,31 @@ export default function SupplierAccountsTab() {
       )
     },
     {
-      key: "lastClosedDate",
+      key: "lastClosingEndDate",
       header: t("supplierAccounts.columns.lastClosing"),
       cell: (row) => (
         <span className="text-xs font-medium text-muted-foreground tabular-nums">
-          {row.lastClosedDate ? row.lastClosedDate : "لم يتم التقفيل"}
+          {row.lastClosingEndDate ? new Date(row.lastClosingEndDate).toLocaleDateString() : "لم يتم التقفيل"}
         </span>
       )
     },
     {
-      key: "currentBalance",
+      key: "dueBalance",
       header: t("supplierAccounts.columns.pendingBalance"),
-      cell: (row) => (
-        <span className={cn(
-          "text-sm font-black tabular-nums p-1.5 px-2.5 rounded-md",
-          row.currentBalance > 0 ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"
-        )}>
-          {Math.abs(row.currentBalance).toLocaleString()}{row.currency}
-          <span className="text-[10px] font-normal mr-1">
-            ({row.currentBalance > 0 ? "علي فلوس" : "لي فلوس"})
+      cell: (row) => {
+        const balance = Number(row.dueBalance || 0);
+        return (
+          <span className={cn(
+            "text-sm font-black tabular-nums p-1.5 px-2.5 rounded-md",
+            balance > 0 ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"
+          )}>
+            {Math.abs(balance).toLocaleString()}ج
+            <span className="text-[10px] font-normal mr-1">
+              ({balance > 0 ? t('overview.payable') : t('overview.receivable')})
+            </span>
           </span>
-        </span>
-      )
+        );
+      }
     },
     {
       key: "actions",
@@ -125,16 +201,23 @@ export default function SupplierAccountsTab() {
       )
     }
   ], [t]);
-  let exportLoading = false;
+
   return (
     <div className="space-y-6">
       <Table
         searchValue={search}
         onSearchChange={setSearch}
-        labels={{ searchPlaceholder: tCommon("search") }}
+        labels={{
+          searchPlaceholder: tCommon("toolbar.searchPlaceholder"),
+          apply: tOrders("filters.apply"),
+          total: tOrders("pagination.total"),
+          limit: tOrders("pagination.limit"),
+          emptyTitle: tOrders("empty"),
+          emptySubtitle: tOrders("emptySubtitle"),
+        }}
         columns={columns}
-        data={suppliersSettlementData}
-        isLoading={false}
+        data={suppliers}
+        isLoading={loading}
         actions={[
           {
             key: "export",
@@ -145,13 +228,18 @@ export default function SupplierAccountsTab() {
               <Download size={14} />
             ),
             color: "blue",
-            // onClick: handleExport,
-            // disabled: exportLoading,
+            onClick: onExport,
+            disabled: exportLoading,
             permission: "orders.read",
           },
-
         ]}
-        pagination={{ total_records: suppliersSettlementData.length, current_page: 1, per_page: 10 }}
+        pagination={{
+          total_records: totalRecords,
+          current_page: currentPage,
+          per_page: perPage
+        }}
+        onPageChange={setCurrentPage}
+        onLimitChange={setPerPage}
       />
 
       <AccountStatementModal
@@ -164,6 +252,7 @@ export default function SupplierAccountsTab() {
       <CloseAccountPeriodModal
         supplier={closingSupplier}
         onClose={() => setClosingSupplier(null)}
+        onSuccess={() => fetchSuppliers()}
         t={t}
         tCommon={tCommon}
       />
@@ -181,28 +270,202 @@ export default function SupplierAccountsTab() {
 // Sub-components for Modals
 // ─────────────────────────────────────────────────────────────────────────
 
+
+// ... your other imports (Dialog, FileText, Calendar, FilterField, DateRangePicker, Button_, MiniSummary, Card, MiniTable, etc.)
+
 function AccountStatementModal({ supplier, onClose, t, router }) {
   const [filters, setFilters] = useState({
     startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     endDate: new Date(),
   });
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState(null);
 
-  // Mock data for statement
-  const statementDetailsMock = {
-    summary: {
-      totalPurchases: 25000,
-      totalReturns: 3000,
-      totalPaid: 15000,
-      prevClosingBalance: 8400,
-      netBalance: 15400,
-    },
-    purchaseInvoices: [
-      { id: 1, ref: "PUR-001", date: "2025-11-05", amount: 10000 },
-      { id: 2, ref: "PUR-002", date: "2025-11-12", amount: 15000 },
-    ],
-    returnInvoices: [
-      { id: 1, ref: "RET-001", date: "2025-11-10", amount: 3000 },
-    ]
+  const fetchStatement = useCallback(async () => {
+    if (!supplier) return;
+    setLoading(true);
+    try {
+      const params = {
+        supplierId: supplier.id,
+        startDate: filters.startDate ? filters.startDate.toISOString().split("T")[0] : undefined,
+        endDate: filters.endDate ? filters.endDate.toISOString().split("T")[0] : undefined,
+      };
+      // 1. Fetch Summary Stats
+      const statsRes = await api.get("/accounting/supplier-closings/supplier-preview", { params });
+
+      // 2. Fetch Invoices & Returns
+      const [purchasesRes, returnsRes] = await Promise.all([
+        api.get("/purchases", { params: { ...params, status: "accepted", closed: "false" } }),
+        api.get("/purchases-return", { params: { ...params, status: "accepted", closed: "false" } }),
+      ]);
+
+      setData({
+        summary: statsRes.data,
+        purchaseInvoices: (purchasesRes.data.records || []).map(p => ({
+          id: p.id,
+          url: `/purchases?detials=${p.id}`,
+          ref: p.receiptNumber || p.invoiceNumber, // Fallback if needed
+          date: new Date(p.statusUpdateDate).toLocaleDateString(),
+          amount: Number(p.total)
+        })),
+        returnInvoices: (returnsRes.data.records || []).map(r => ({
+          id: r.id,
+          url: `/purchases-return?detials=${r.id}`,
+          ref: r.returnNumber,
+          date: new Date(r.statusUpdateDate).toLocaleDateString(),
+          amount: Number(r.totalReturn)
+        }))
+      });
+    } catch (err) {
+      console.error("Error fetching statement:", err);
+      toast.error(t("manualExpenses.messages.fetchError"));
+    } finally {
+      setLoading(false);
+    }
+  }, [supplier, filters, t]);
+
+  useEffect(() => {
+    if (supplier) fetchStatement();
+  }, [supplier, fetchStatement]);
+
+  // ==========================================
+  // PRINT LOGIC
+  // ==========================================
+  const handlePrint = () => {
+    if (!data) return;
+
+    // Generate rows for purchases
+    const purchaseRows = data.purchaseInvoices.length > 0
+      ? data.purchaseInvoices.map(inv => `
+          <tr>
+            <td>${inv.ref || '-'}</td>
+            <td>${inv.date}</td>
+            <td style="font-weight: bold;">${inv.amount.toLocaleString()} ج.م</td>
+          </tr>
+        `).join('')
+      : `<tr><td colspan="3" style="text-align:center; padding: 15px;">لا توجد فواتير مشتريات في هذه الفترة</td></tr>`;
+
+    // Generate rows for returns
+    const returnRows = data.returnInvoices.length > 0
+      ? data.returnInvoices.map(inv => `
+          <tr>
+            <td>${inv.ref || '-'}</td>
+            <td>${inv.date}</td>
+            <td style="font-weight: bold; color: #ef4444;">${inv.amount.toLocaleString()} ج.م</td>
+          </tr>
+        `).join('')
+      : `<tr><td colspan="3" style="text-align:center; padding: 15px;">لا توجد فواتير مرتجعات في هذه الفترة</td></tr>`;
+
+    // Build the HTML template
+    const printContent = `
+      <html dir="rtl" lang="ar">
+        <head>
+          <title>${t("supplierAccounts.statement.title")} - ${supplier?.name}</title>
+          <style>
+            body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; color: #111827; direction: rtl; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; }
+            .header h1 { margin: 0 0 10px 0; font-size: 24px; color: #1f2937; }
+            .header p { margin: 0; color: #6b7280; font-size: 14px; }
+            
+            .summary-grid { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 40px; }
+            .summary-box { flex: 1; min-width: 130px; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; text-align: center; background-color: #f9fafb; }
+            .summary-box .title { font-size: 13px; color: #6b7280; margin-bottom: 8px; }
+            .summary-box .value { font-size: 20px; font-weight: bold; color: #111827; }
+            .summary-box.final { border-color: #ef4444; background-color: #fef2f2; }
+            .summary-box.final .value { color: #ef4444; }
+
+            .section { margin-bottom: 40px; page-break-inside: avoid; }
+            .section h2 { font-size: 18px; margin-bottom: 15px; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; display: inline-block;}
+            
+            table { width: 100%; border-collapse: collapse; font-size: 14px; }
+            th, td { border: 1px solid #e5e7eb; padding: 12px; text-align: right; }
+            th { background-color: #f3f4f6; color: #374151; font-weight: bold; }
+            tbody tr:nth-child(even) { background-color: #f9fafb; }
+            
+            @media print {
+              body { padding: 0; }
+              @page { margin: 1cm; }
+              .summary-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>${t("supplierAccounts.statement.title")} - ${supplier?.name}</h1>
+            <p>${t("filters.dateRange")}: ${filters.startDate ? new Date(filters.startDate).toLocaleDateString() : ''} 
+               إلى 
+               ${filters.endDate ? new Date(filters.endDate).toLocaleDateString() : ''}</p>
+          </div>
+
+          <div class="summary-grid">
+            <div class="summary-box">
+              <div class="title">${t("supplierAccounts.statement.totalPurchases")}</div>
+              <div class="value">${data.summary.totalPurchases?.toLocaleString() || 0}</div>
+            </div>
+            <div class="summary-box">
+              <div class="title">${t("supplierAccounts.statement.totalReturns")}</div>
+              <div class="value">${data.summary.totalReturns?.toLocaleString() || 0}</div>
+            </div>
+            <div class="summary-box">
+              <div class="title">${t("supplierAccounts.statement.totalPaid")}</div>
+              <div class="value">${data.summary.totalPaid?.toLocaleString() || 0}</div>
+            </div>
+            <div class="summary-box final">
+              <div class="title">${t("supplierAccounts.statement.netBalance")}</div>
+              <div class="value">${data.summary.finalBalance?.toLocaleString() || 0}</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>${t("supplierAccounts.statement.detailedPurchases")}</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>${t("supplierAccounts.statement.invoiceRef")}</th>
+                  <th>${t("supplierAccounts.statement.date")}</th>
+                  <th>${t("supplierAccounts.statement.amount")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${purchaseRows}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="section">
+            <h2>${t("supplierAccounts.statement.detailedReturns")}</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>${t("supplierAccounts.statement.invoiceRef")}</th>
+                  <th>${t("supplierAccounts.statement.date")}</th>
+                  <th>${t("supplierAccounts.statement.amount")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${returnRows}
+              </tbody>
+            </table>
+          </div>
+        </body>
+      </html>
+    `;
+
+    // Open print window, write HTML, and trigger print
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.open();
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+
+      // Focus and print after ensuring the DOM is loaded
+      printWindow.onload = () => {
+        printWindow.focus();
+        printWindow.print();
+      };
+    } else {
+      toast.error("يرجى السماح بالنوافذ المنبثقة (Pop-ups) لطباعة التقرير");
+    }
   };
 
   const miniInvoiceColumns = [
@@ -214,7 +477,7 @@ function AccountStatementModal({ supplier, onClose, t, router }) {
       header: "",
       cell: (row) => (
         <button
-          onClick={() => router.push(`/purchases/details/${row.id}`)}
+          onClick={() => router.push(row.url)}
           className="p-1 hover:bg-muted rounded-md transition-colors text-primary"
           title={t("supplierAccounts.actions.viewInvoice")}
         >
@@ -236,35 +499,47 @@ function AccountStatementModal({ supplier, onClose, t, router }) {
 
         <div className="flex items-center justify-between gap-4 p-4 border border-border bg-muted/20 rounded-xl my-4">
           <div className="flex items-end gap-3">
-            <FilterField label={t("filters.dateRange")} icon={Calendar}>
-              <Flatpickr
-                value={[filters.startDate, filters.endDate]}
-                onChange={([s, e]) => setFilters({ startDate: s, endDate: e })}
-                options={{ mode: "range", dateFormat: "Y-m-d" }}
-                className="theme-field h-9 w-52"
+            <FilterField label={t("filters.dateRange")} icon={Calendar} className="flex flex-col gap-3">
+              <DateRangePicker
+                value={filters}
+                staticShow={true}
+                onChange={(newDates) => setFilters(f => ({ ...f, ...newDates }))}
               />
             </FilterField>
-            <Button_ size="sm" variant="outline" label={t("filters.apply")} />
           </div>
-          <Button_ size="sm" variant="outline" label={t("supplierAccounts.actions.printPdf")} icon={<Download size={14} />} className="text-blue-600 border-blue-200 hover:bg-blue-50" />
+
+          {/* UPDATED PRINT BUTTON */}
+          <Button_
+            size="sm"
+            variant="outline"
+            label={t("supplierAccounts.actions.printPdf")}
+            icon={<Download size={14} />}
+            className="text-blue-600 border-blue-200 hover:bg-blue-50"
+            onClick={handlePrint}
+            disabled={loading || !data}
+          />
         </div>
 
-        {supplier && (
+        {loading ? (
+          <div className="h-64 flex items-center justify-center">
+            <Loader2 className="animate-spin text-primary" size={32} />
+          </div>
+        ) : data && (
           <div className="space-y-6 py-2">
             <div className="grid grid-cols-5 gap-3">
-              <MiniSummary title={t("supplierAccounts.statement.totalPurchases")} value={statementDetailsMock.summary.totalPurchases} icon={Package} color="purple" />
-              <MiniSummary title={t("supplierAccounts.statement.totalReturns")} value={statementDetailsMock.summary.totalReturns} icon={RefreshCw} color="red" />
-              <MiniSummary title={t("supplierAccounts.statement.totalPaid")} value={statementDetailsMock.summary.totalPaid} icon={DollarSign} color="emerald" />
-              <MiniSummary title={t("supplierAccounts.statement.prevBalance")} value={statementDetailsMock.summary.prevClosingBalance} icon={Ban} color="orange" />
-              <MiniSummary title={t("supplierAccounts.statement.netBalance")} value={statementDetailsMock.summary.netBalance} icon={CheckCircle2} color="red" isFinal />
+              <MiniSummary title={t("supplierAccounts.statement.totalPurchases")} value={data.summary.totalPurchases} icon={Package} color="purple" />
+              <MiniSummary title={t("supplierAccounts.statement.totalReturns")} value={data.summary.totalReturns} icon={RefreshCw} color="red" />
+              <MiniSummary title={t("supplierAccounts.statement.totalPaid")} value={data.summary.totalPaid} icon={DollarSign} color="emerald" />
+              <MiniSummary title={t("supplierAccounts.statement.prevBalance")} value={0} icon={Ban} color="orange" />
+              <MiniSummary title={t("supplierAccounts.statement.netBalance")} value={data.summary.finalBalance} icon={CheckCircle2} color="red" isFinal />
             </div>
 
             <div className="grid grid-cols-2 gap-4 mt-6">
               <Card title={t("supplierAccounts.statement.detailedPurchases")} icon={Package}>
-                <MiniTable columns={miniInvoiceColumns} data={statementDetailsMock.purchaseInvoices} maxH="300px" />
+                <MiniTable columns={miniInvoiceColumns} data={data.purchaseInvoices} maxH="300px" />
               </Card>
               <Card title={t("supplierAccounts.statement.detailedReturns")} icon={RefreshCw} color="red">
-                <MiniTable columns={miniInvoiceColumns} data={statementDetailsMock.returnInvoices} maxH="300px" />
+                <MiniTable columns={miniInvoiceColumns} data={data.returnInvoices} maxH="300px" />
               </Card>
             </div>
           </div>
@@ -274,19 +549,56 @@ function AccountStatementModal({ supplier, onClose, t, router }) {
   );
 }
 
-function CloseAccountPeriodModal({ supplier, onClose, t, tCommon }) {
+function CloseAccountPeriodModal({ supplier, onClose, onSuccess, t, tCommon }) {
   const [filters, setFilters] = useState({
     startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     endDate: new Date(),
   });
+  const [loading, setLoading] = useState(false);
+  const [closingLoading, setClosingLoading] = useState(false);
+  const [summary, setSummary] = useState(null);
 
-  // Mock summary data for the period
-  const periodSummaryMock = {
-    prevClosingBalance: 8400,
-    totalPurchases: 25000,
-    totalReturns: 3000,
-    totalPaid: 15000,
-    netBalance: 15400,
+  const fetchPreview = useCallback(async () => {
+    if (!supplier) return;
+    setLoading(true);
+    try {
+      const params = {
+        supplierId: supplier.id,
+        startDate: filters.startDate ? filters.startDate.toISOString().split("T")[0] : undefined,
+        endDate: filters.endDate ? filters.endDate.toISOString().split("T")[0] : undefined,
+      };
+      const res = await api.get("/accounting/supplier-closings/supplier-preview", { params });
+      setSummary(res.data);
+    } catch (err) {
+      console.error("Error fetching closing preview:", err);
+      toast.error(t("manualExpenses.messages.fetchError"));
+    } finally {
+      setLoading(false);
+    }
+  }, [supplier, filters, t]);
+
+  useEffect(() => {
+    if (supplier) fetchPreview();
+  }, [supplier, fetchPreview]);
+
+  const handleConfirmClosing = async () => {
+    setClosingLoading(true);
+    try {
+      const payload = {
+        supplierId: supplier.id,
+        startDate: filters.startDate.toISOString().split("T")[0],
+        endDate: filters.endDate.toISOString().split("T")[0],
+      };
+      await api.post("/accounting/supplier-closings/close", payload);
+      toast.success(t("manualExpenses.messages.categoryUpdated") || "تم التقفيل بنجاح");
+      onSuccess?.();
+      onClose();
+    } catch (err) {
+      console.error("Error closing period:", err);
+      toast.error(err?.response?.data?.message || t("manualExpenses.messages.error"));
+    } finally {
+      setClosingLoading(false);
+    }
   };
 
   return (
@@ -307,31 +619,46 @@ function CloseAccountPeriodModal({ supplier, onClose, t, tCommon }) {
             </div>
 
             <div className="p-4 border border-border bg-muted/10 rounded-xl">
-              <FilterField label={t("filters.dateRange")} icon={Calendar}>
-                <Flatpickr
-                  value={[filters.startDate, filters.endDate]}
-                  onChange={([s, e]) => setFilters({ startDate: s, endDate: e })}
-                  options={{ mode: "range", dateFormat: "Y-m-d" }}
-                  className="theme-field h-9 w-full mt-1"
+              <FilterField label={t("filters.dateRange")} icon={Calendar} className="flex flex-col gap-3">
+                <DateRangePicker
+                  value={filters}
+                  staticShow={true}
+                  onChange={(newDates) => setFilters(f => ({ ...f, ...newDates }))}
                 />
               </FilterField>
+              {/* <div className="mt-3 flex justify-end">
+                <Button_ size="xs" label={t("filters.apply")} onClick={fetchPreview} disabled={loading} />
+              </div> */}
             </div>
 
-            <div className="space-y-3">
-              <DetailRow label={t("supplierAccounts.close.prevClosingBalance")} value={periodSummaryMock.prevClosingBalance} />
-              <DetailRow label={t("supplierAccounts.close.totalPurchasesThisPeriod")} value={periodSummaryMock.totalPurchases} iconColor="purple" />
-              <DetailRow label={t("supplierAccounts.close.totalReturnsThisPeriod")} value={-periodSummaryMock.totalReturns} iconColor="red" />
-              <DetailRow label={t("supplierAccounts.close.totalPaymentsThisPeriod")} value={-periodSummaryMock.totalPaid} iconColor="emerald" />
-
-              <div className="flex items-center justify-between p-4 rounded-xl bg-red-50/50 border border-red-100 mt-4">
-                <span className="font-bold text-red-900">{t("supplierAccounts.close.finalAccumulatedBalance")}</span>
-                <span className="font-black text-xl text-red-600 tab">{periodSummaryMock.netBalance.toLocaleString()}ج</span>
+            {loading ? (
+              <div className="h-32 flex items-center justify-center">
+                <Loader2 className="animate-spin text-primary" size={24} />
               </div>
-            </div>
+            ) : summary && (
+              <div className="space-y-3">
+                <DetailRow label={t("supplierAccounts.close.prevClosingBalance")} value={0} />
+                <DetailRow label={t("supplierAccounts.close.totalPurchasesThisPeriod")} value={summary.totalPurchases} iconColor="purple" />
+                <DetailRow label={t("supplierAccounts.close.totalReturnsThisPeriod")} value={-summary.totalReturns} iconColor="red" />
+                <DetailRow label={t("supplierAccounts.close.totalPaymentsThisPeriod")} value={-summary.totalPaid} iconColor="emerald" />
+
+                <div className="flex items-center justify-between p-4 rounded-xl bg-red-50/50 border border-red-100 mt-4">
+                  <span className="font-bold text-red-900">{t("supplierAccounts.close.finalAccumulatedBalance")}</span>
+                  <span className="font-black text-xl text-red-600 tab">{summary.finalBalance.toLocaleString()}ج</span>
+                </div>
+              </div>
+            )}
 
             <div className="pt-4 border-t border-dashed border-border flex items-center justify-end gap-3 mt-4">
-              <Button_ label={tCommon("cancel")} variant="ghost" size="sm" onClick={onClose} />
-              <Button_ label={t("supplierAccounts.actions.confirmClosing")} variant="default" size="sm" icon={<CheckCircle2 size={14} />} />
+              <Button_ label={tCommon("common.cancel")} variant="ghost" size="sm" onClick={onClose} />
+              <Button_
+                label={t("supplierAccounts.actions.confirmClosing")}
+                variant="default"
+                size="sm"
+                icon={closingLoading ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                disabled={closingLoading || !summary || (summary.pCount === 0 && summary.rCount === 0)}
+                onClick={handleConfirmClosing}
+              />
             </div>
           </div>
         )}
@@ -340,46 +667,233 @@ function CloseAccountPeriodModal({ supplier, onClose, t, tCommon }) {
   );
 }
 
+
 function ClosingHistoryModal({ supplier, onClose, t }) {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear.toString());
-  const years = useMemo(() => Array.from({ length: 30 }, (_, i) => (currentYear - i).toString()), [currentYear]);
+  const [loading, setLoading] = useState(false);
+  const [history, setHistory] = useState([]);
 
-  const closingHistoryMock = [
-    { id: 1, closedAt: "2025-10-31", period: "1 - 31 أكتوبر", prevBalance: 8400, netPurchases: 12000, netReturns: 2000, totalPaid: 10000, finalBalance: 8400, status: "completed" },
-    { id: 2, closedAt: "2025-09-30", period: "1 - 30 سبتمبر", prevBalance: 10400, netPurchases: 15000, netReturns: 1000, totalPaid: 12000, finalBalance: 10400, status: "completed" },
-  ];
+  // Track which specific closing record is currently fetching for print
+  const [printingId, setPrintingId] = useState(null);
+
+  const years = useMemo(() => Array.from({ length: 10 }, (_, i) => (currentYear - i).toString()), [currentYear]);
+
+  const fetchHistory = useCallback(async () => {
+    if (!supplier) return;
+    setLoading(true);
+    try {
+      const params = {
+        supplierId: supplier.id,
+        year: selectedYear,
+      };
+      const res = await api.get("/accounting/supplier-closings/closings", { params });
+      setHistory(res.data.records || []);
+    } catch (err) {
+      console.error("Error fetching closing history:", err);
+      toast.error(t("manualExpenses.messages.fetchError"));
+    } finally {
+      setLoading(false);
+    }
+  }, [supplier, selectedYear, t]);
+
+  useEffect(() => {
+    if (supplier) fetchHistory();
+  }, [supplier, fetchHistory]);
+
+  // ==========================================
+  // PRINT SPECIFIC CLOSING LOGIC
+  // ==========================================
+  const handlePrintClosing = async (closingRow) => {
+    setPrintingId(closingRow.id);
+    try {
+      // 1. Fetch Invoices tied specifically to this closingId
+      const [purchasesRes, returnsRes] = await Promise.all([
+        api.get("/purchases", { params: { closingId: closingRow.id } }),
+        api.get("/purchases-return", { params: { closingId: closingRow.id } }),
+      ]);
+
+      const purchases = purchasesRes.data.records || [];
+      const returns = returnsRes.data.records || [];
+
+      // 2. Build HTML Rows
+      const purchaseRows = purchases.length > 0
+        ? purchases.map(inv => `
+            <tr>
+              <td>${inv.receiptNumber || inv.invoiceNumber || '-'}</td>
+              <td>${new Date(inv.statusUpdateDate || inv.created_at).toLocaleDateString()}</td>
+              <td style="font-weight: bold;">${Number(inv.total).toLocaleString()} ج.م</td>
+            </tr>
+          `).join('')
+        : `<tr><td colspan="3" style="text-align:center; padding: 15px;">لا توجد فواتير مشتريات</td></tr>`;
+
+      const returnRows = returns.length > 0
+        ? returns.map(inv => `
+            <tr>
+              <td>${inv.returnNumber || '-'}</td>
+              <td>${new Date(inv.statusUpdateDate || inv.created_at).toLocaleDateString()}</td>
+              <td style="font-weight: bold; color: #ef4444;">${Number(inv.totalReturn).toLocaleString()} ج.م</td>
+            </tr>
+          `).join('')
+        : `<tr><td colspan="3" style="text-align:center; padding: 15px;">لا توجد فواتير مرتجعات</td></tr>`;
+
+      // 3. Build Print HTML Document
+      const printContent = `
+        <html dir="rtl" lang="ar">
+          <head>
+            <title>${t("supplierAccounts.history.title")} - ${supplier?.name}</title>
+            <style>
+              body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; color: #111827; direction: rtl; }
+              .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; }
+              .header h1 { margin: 0 0 10px 0; font-size: 24px; color: #1f2937; }
+              .header p { margin: 0; color: #6b7280; font-size: 14px; }
+              
+              .summary-grid { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 40px; }
+              .summary-box { flex: 1; min-width: 130px; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; text-align: center; background-color: #f9fafb; }
+              .summary-box .title { font-size: 13px; color: #6b7280; margin-bottom: 8px; }
+              .summary-box .value { font-size: 20px; font-weight: bold; color: #111827; }
+              .summary-box.final { border-color: #ef4444; background-color: #fef2f2; }
+              .summary-box.final .value { color: #ef4444; }
+
+              .section { margin-bottom: 40px; page-break-inside: avoid; }
+              .section h2 { font-size: 18px; margin-bottom: 15px; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; display: inline-block;}
+              
+              table { width: 100%; border-collapse: collapse; font-size: 14px; }
+              th, td { border: 1px solid #e5e7eb; padding: 12px; text-align: right; }
+              th { background-color: #f3f4f6; color: #374151; font-weight: bold; }
+              tbody tr:nth-child(even) { background-color: #f9fafb; }
+              
+              @media print {
+                body { padding: 0; }
+                @page { margin: 1cm; }
+                .summary-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>${t("supplierAccounts.history.title")} - ${supplier?.name}</h1>
+              <p>الفترة: ${new Date(closingRow.startDate).toLocaleDateString()} إلى ${new Date(closingRow.endDate).toLocaleDateString()}</p>
+              <p>تم التقفيل في: ${new Date(closingRow.createdAt).toLocaleDateString()}</p>
+            </div>
+
+            <div class="summary-grid">
+              <div class="summary-box">
+                <div class="title">${t("supplierAccounts.close.totalPurchases")}</div>
+                <div class="value">${Number(closingRow.totalPurchases).toLocaleString()}</div>
+              </div>
+              <div class="summary-box">
+                <div class="title">${t("supplierAccounts.close.totalReturns")}</div>
+                <div class="value">${Number(closingRow.totalReturns).toLocaleString()}</div>
+              </div>
+              <div class="summary-box">
+                <div class="title">${t("supplierAccounts.close.totalPayments")}</div>
+                <div class="value">${Number(closingRow.totalPaid).toLocaleString()}</div>
+              </div>
+              <div class="summary-box final">
+                <div class="title">${t("supplierAccounts.history.balance")}</div>
+                <div class="value">${Number(closingRow.finalBalance).toLocaleString()}</div>
+              </div>
+            </div>
+
+            <div class="section">
+              <h2>${t("supplierAccounts.statement.detailedPurchases")}</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>${t("supplierAccounts.statement.invoiceRef")}</th>
+                    <th>${t("supplierAccounts.statement.date")}</th>
+                    <th>${t("supplierAccounts.statement.amount")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${purchaseRows}
+                </tbody>
+              </table>
+            </div>
+
+            <div class="section">
+              <h2>${t("supplierAccounts.statement.detailedReturns")}</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>${t("supplierAccounts.statement.invoiceRef")}</th>
+                    <th>${t("supplierAccounts.statement.date")}</th>
+                    <th>${t("supplierAccounts.statement.amount")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${returnRows}
+                </tbody>
+              </table>
+            </div>
+          </body>
+        </html>
+      `;
+
+      // 4. Trigger Print
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.open();
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        printWindow.onload = () => {
+          printWindow.focus();
+          printWindow.print();
+        };
+      } else {
+        toast.error("يرجى السماح بالنوافذ المنبثقة للطباعة");
+      }
+    } catch (err) {
+      console.error("Error fetching closing details:", err);
+      toast.error("حدث خطأ أثناء جلب الفواتير");
+    } finally {
+      setPrintingId(null);
+    }
+  };
 
   const miniHistoryColumns = [
-    { key: "closedAt", header: t("supplierAccounts.history.closedAt"), cell: (row) => <span className="tabular-nums text-[11px]">{row.closedAt}</span> },
-    { key: "period", header: t("supplierAccounts.history.period"), cell: (row) => <span className="text-xs font-medium">{row.period}</span> },
+    { key: "createdAt", header: t("supplierAccounts.history.closedAt"), cell: (row) => <span className="tabular-nums text-[11px]">{new Date(row.createdAt).toLocaleDateString()}</span> },
     {
-      key: "prevBalance",
-      header: t("supplierAccounts.close.prevClosingBalance"),
-      cell: (row) => <span className="tabular-nums text-xs">{row.prevBalance.toLocaleString()}ج</span>
+      key: "period",
+      header: t("supplierAccounts.history.period"),
+      cell: (row) => (
+        <span className="text-xs font-medium">
+          {new Date(row.startDate).toLocaleDateString()} - {new Date(row.endDate).toLocaleDateString()}
+        </span>
+      )
     },
     {
-      key: "netPurchases",
+      key: "totalPurchases",
       header: t("supplierAccounts.close.totalPurchases"),
-      cell: (row) => <span className="tabular-nums text-xs text-purple-600">{row.netPurchases.toLocaleString()}ج</span>
+      cell: (row) => <span className="tabular-nums text-xs text-purple-600">{Number(row.totalPurchases).toLocaleString()}ج</span>
     },
     {
-      key: "netReturns",
+      key: "totalReturns",
       header: t("supplierAccounts.close.totalReturns"),
-      cell: (row) => <span className="tabular-nums text-xs text-red-600">{(row.netReturns * -1).toLocaleString()}ج</span>
+      cell: (row) => <span className="tabular-nums text-xs text-red-600">{(Number(row.totalReturns) * -1).toLocaleString()}ج</span>
     },
     {
       key: "totalPaid",
       header: t("supplierAccounts.close.totalPayments"),
-      cell: (row) => <span className="tabular-nums text-xs text-emerald-600">{(row.totalPaid * -1).toLocaleString()}ج</span>
+      cell: (row) => <span className="tabular-nums text-xs text-emerald-600">{(Number(row.totalPaid) * -1).toLocaleString()}ج</span>
     },
-    { key: "finalBalance", header: t("supplierAccounts.history.balance"), cell: (row) => <span className="font-black text-xs text-red-600 tabular-nums">{row.finalBalance.toLocaleString()}ج</span> },
+    { key: "finalBalance", header: t("supplierAccounts.history.balance"), cell: (row) => <span className="font-black text-xs text-red-600 tabular-nums">{Number(row.finalBalance).toLocaleString()}ج</span> },
     {
       key: "actions",
       header: "",
       cell: (row) => (
-        <button className="p-1 hover:bg-muted rounded-md transition-colors text-muted-foreground">
-          <Download size={14} />
+        <button
+          onClick={() => handlePrintClosing(row)}
+          disabled={printingId === row.id}
+          className="p-1 hover:bg-muted rounded-md transition-colors text-muted-foreground disabled:opacity-50"
+          title="طباعة التقرير"
+        >
+          {printingId === row.id ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : (
+            <Download size={14} />
+          )}
         </button>
       )
     }
@@ -411,13 +925,18 @@ function ClosingHistoryModal({ supplier, onClose, t }) {
             </FilterField>
           </div>
 
-          <MiniTable columns={miniHistoryColumns} data={closingHistoryMock} />
+          {loading ? (
+            <div className="h-64 flex items-center justify-center">
+              <Loader2 className="animate-spin text-primary" size={32} />
+            </div>
+          ) : (
+            <MiniTable columns={miniHistoryColumns} data={history} />
+          )}
         </div>
       </DialogContent>
     </Dialog>
   );
 }
-
 // ─────────────────────────────────────────────────────────────────────────
 // Small Helper Components for the modals
 // ─────────────────────────────────────────────────────────────────────────

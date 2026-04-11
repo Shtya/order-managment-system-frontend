@@ -201,7 +201,7 @@ function Hero({ t, heroImage, locale, switchLocale, user }) {
           </motion.p>
 
           <CTAInput t={t} />
-          
+
           <motion.div
             {...fadeUp(0.35)}
             className="mt-6 flex flex-col gap-5"
@@ -240,20 +240,73 @@ function Hero({ t, heroImage, locale, switchLocale, user }) {
         </div>
 
         {/* Hero image with floating animation */}
-        <motion.div
-          initial={{ opacity: 0, y: 40, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.85, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="relative"
-        >
-          <motion.img
-            src={heroImage || "landing/hero.png"}
-            alt="Dashboard preview"
-            animate={{ y: [0, -12, 0] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            className="relative z-10  w-full"
-          />
-        </motion.div>
+        <div className="w-full max-w-xl mx-auto flex justify-center items-center relative">
+          <svg viewBox="0 0 600 600" className="w-full h-auto">
+            <circle cx="300" cy="300" r="280" fill="#f0fdf4" opacity="0.5"></circle>
+
+            <circle cx="300" cy="300" r="220" fill="white" opacity="0.8"></circle>
+            <circle cx="300" cy="300" r="180" fill="none" stroke="var(--primary)" strokeWidth="3" strokeDasharray="10,5" opacity="0.3"><animateTransform attributeName="transform" type="rotate" from="0 300 300" to="360 300 300" dur="20s" repeatCount="indefinite"></animateTransform></circle>
+            <circle cx="300" cy="300" r="50" fill="var(--primary)"></circle>
+            <circle cx="300" cy="300" r="40" fill="white"></circle>
+            <circle cx="300" cy="300" r="25" fill="var(--primary)"></circle>
+            <g><circle cx="300" cy="120" r="45" fill="white" stroke="var(--primary)" strokeWidth="3"></circle>
+              <circle cx="300" cy="120" r="35" fill="color-mix(in srgb, var(--primary), white 95%)"></circle>
+              <path d="M 290 115 Q 290 105, 300 105 Q 310 105, 310 115 L 310 125 M 288 120 L 288 130 Q 288 133, 291 133 L 294 133 M 306 133 L 309 133 Q 312 133, 312 130 L 312 120" stroke="var(--primary)" strokeWidth="2" fill="none" strokeLinecap="round"></path><text x="300" y="145" textAnchor="middle" className="text-xs" fill="var(--primary)" style={{ fontWeight: 600 }}>{t("hero.callCenter")}</text></g><g><circle cx="480" cy="300" r="45" fill="white" stroke="var(--primary)" strokeWidth="3"></circle>
+              <circle cx="480" cy="300" r="35" fill="color-mix(in srgb, var(--primary), white 95%)"></circle>
+              <rect x="465" y="290" width="30" height="25" fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></rect><path d="M 465 295 L 480 285 L 495 295 M 480 285 L 480 315" stroke="var(--primary)" strokeWidth="2" fill="none" strokeLinecap="round"></path><text x="480" y="330" textAnchor="middle" className="text-xs" fill="var(--primary)" style={{ fontWeight: 600 }}>{t("hero.warehouse")}</text></g><g><circle cx="300" cy="480" r="45" fill="white" stroke="var(--primary)" strokeWidth="3"></circle>
+              <circle cx="300" cy="480" r="35" fill="color-mix(in srgb, var(--primary), white 95%)"></circle>
+              <circle cx="293" cy="505" r="3" fill="var(--primary)"></circle>
+              <circle cx="307" cy="505" r="3" fill="var(--primary)"></circle>
+              <path d="M 285 475 L 288 475 L 295 497 L 310 497 M 288 475 L 315 475 L 312 485 L 295 485" stroke="var(--primary)" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"></path><text x="300" y="465" textAnchor="middle" className="text-xs" fill="var(--primary)" style={{ fontWeight: 600 }}>{t("hero.orders")}</text></g><g><circle cx="120" cy="300" r="45" fill="white" stroke="var(--primary)" strokeWidth="3"></circle>
+              <circle cx="120" cy="300" r="35" fill="color-mix(in srgb, var(--primary), white 95%)"></circle>
+              <rect x="100" y="295" width="20" height="15" fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></rect><path d="M 120 295 L 130 295 L 133 303 L 133 310 L 100 310" stroke="var(--primary)" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"></path><circle cx="108" cy="313" r="3" fill="none" stroke="var(--primary)" strokeWidth="2"></circle>
+              <circle cx="125" cy="313" r="3" fill="none" stroke="var(--primary)" strokeWidth="2"></circle>
+              <text x="120" y="330" textAnchor="middle" className="text-xs" fill="var(--primary)" style={{ fontWeight: 600 }}>{t("hero.shipping")}</text></g><line x1="300" y1="300" x2="300" y2="165" stroke="var(--primary)" strokeWidth="2" strokeDasharray="5,5" opacity="0.4"></line><line x1="300" y1="300" x2="435" y2="300" stroke="var(--primary)" strokeWidth="2" strokeDasharray="5,5" opacity="0.4"></line><line x1="300" y1="300" x2="300" y2="435" stroke="var(--primary)" strokeWidth="2" strokeDasharray="5,5" opacity="0.4"></line><line x1="300" y1="300" x2="165" y2="300" stroke="var(--primary)" strokeWidth="2" strokeDasharray="5,5" opacity="0.4"></line><circle r="4" fill="var(--primary)"><animateMotion dur="3s" repeatCount="indefinite" path="M 300 300 L 300 165"></animateMotion></circle>
+            <circle r="4" fill="var(--primary)"><animateMotion dur="3s" repeatCount="indefinite" path="M 300 300 L 435 300"></animateMotion></circle>
+            <circle r="4" fill="var(--primary)"><animateMotion dur="3s" repeatCount="indefinite" path="M 300 300 L 300 435"></animateMotion></circle>
+            <circle r="4" fill="var(--primary)"><animateMotion dur="3s" repeatCount="indefinite" path="M 300 300 L 165 300"></animateMotion></circle>
+            <circle cx="300" cy="300" r="240" fill="none" stroke="var(--primary)" strokeWidth="2" opacity="0.2"><animateTransform attributeName="transform" type="rotate" from="0 300 300" to="-360 300 300" dur="30s" repeatCount="indefinite"></animateTransform></circle>
+            <circle r="8" fill="var(--primary)" opacity="0.6"><animateMotion dur="8s" repeatCount="indefinite" path="M 300,60 A 240,240 0 1,1 300,60"></animateMotion></circle>
+            <circle r="8" fill="var(--primary)" opacity="0.6"><animateMotion dur="8s" begin="2s" repeatCount="indefinite" path="M 300,60 A 240,240 0 1,1 300,60"></animateMotion></circle>
+            <circle r="8" fill="var(--primary)" opacity="0.6"><animateMotion dur="8s" begin="4s" repeatCount="indefinite" path="M 300,60 A 240,240 0 1,1 300,60"></animateMotion></circle>
+            <circle r="8" fill="var(--primary)" opacity="0.6"><animateMotion dur="8s" begin="6s" repeatCount="indefinite" path="M 300,60 A 240,240 0 1,1 300,60"></animateMotion></circle>
+            <defs>
+              <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="var(--primary)"></stop><stop offset="100%" stop-color="#3db567"></stop></linearGradient></defs>
+          </svg>
+          <div
+            className="absolute top-4 left-0 md:top-10 md:-left-10 scale-90 md:scale-100 origin-top-left bg-white rounded-2xl shadow-xl p-3 md:p-4 border border-gray-100 animate-float"
+            style={{ animation: "float 3s ease-in-out 0s infinite normal none running" }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                <div className="w-1.5 h-5 md:w-2 md:h-6 bg-primary rounded-full"></div>
+              </div>
+              <div>
+                <div className="text-[10px] md:text-xs text-gray-600">{t("hero.revenue")}</div>
+                <div className="text-base md:text-lg font-semibold">+24.5%</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Orders Card (Bottom Right) */}
+          <div
+            className="absolute bottom-4 right-0 md:bottom-20 md:-right-10 scale-90 md:scale-100 origin-bottom-right bg-white rounded-2xl shadow-xl p-3 md:p-4 border border-gray-100 animate-float"
+            style={{ animation: "float 4s ease-in-out 1s infinite normal none running" }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 md:w-5 md:h-5 text-primary">
+                  <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+                  <polyline points="16 7 22 7 22 13"></polyline>
+                </svg>
+              </div>
+              <div>
+                <div className="text-[10px] md:text-xs text-gray-600">{t("hero.orders")}</div>
+                <div className="text-base md:text-lg font-semibold">1,247</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <FeatureSection />

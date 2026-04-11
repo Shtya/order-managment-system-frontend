@@ -5997,6 +5997,11 @@
       "dashboard": "Dashboard"
     },
     "hero": {
+      "callCenter": "Call Center",
+      "warehouse": "Warehouse",
+      "orders": "Orders",
+      "shipping": "Shipping",
+      "revenue": "Revenue",
       "badge": "#1 E-Commerce Platform",
       "title1": "Everything you need to sell and scale…",
       "title2": "in one platform.",

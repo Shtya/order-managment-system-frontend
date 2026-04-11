@@ -486,7 +486,7 @@ function NotPrintedSubtab({ onPrinted, resetToken, fetchStats }) {
         labels={{ searchPlaceholder: t("notPrinted.search"), filter: t("common.filter"), apply: t("common.apply"), total: t("common.total"), limit: t("common.limit"), emptyTitle: t("notPrinted.empty"), emptySubtitle: "" }}
         actions={[
           { key: "printSelected", label: selectedOrders.length > 0 ? t("notPrinted.printSelected", { count: selectedOrders.length }) : t("notPrinted.printSelectedDefault"), icon: <Printer size={14} />, color: "emerald", onClick: () => selectedOrders.length > 0 && setPrintPreview({ open: true, orders: pager.records.filter((o) => selectedOrders.includes(o.orderNumber)) }), disabled: selectedOrders.length === 0, permission: "orders.update" },
-          { key: "export", label: t("common.export"), icon: exportLoading ? <Loader2 className="animate-spin" size={14} /> : <FileDown size={14} />, color: "blue", onClick: onExport, disabled: exportLoading, permission: "orders.read" },
+          { key: "export", label: t("common.export"), icon: exportLoading ? <Loader2 className="animate-spin" size={14} /> : <FileDown size={14} />, color: "primary", onClick: onExport, disabled: exportLoading, permission: "orders.read" },
         ]}
         hasActiveFilters={hasActiveFilters} onApplyFilters={applyFilters}
         filters={
@@ -645,7 +645,7 @@ function PrintedSubtab({ resetToken, fetchStats }) {
         labels={{ searchPlaceholder: t("printed.search"), filter: t("common.filter"), apply: t("common.apply"), total: t("common.total"), limit: t("common.limit"), emptyTitle: t("printed.empty"), emptySubtitle: "" }}
         actions={[
           { key: "reprintSelected", label: selectedOrders.length > 0 ? t("printed.printSelected", { count: selectedOrders.length }) : t("printed.printSelectedDefault"), icon: <Printer size={14} />, color: "emerald", onClick: () => selectedOrders.length > 0 && setPrintPreview({ open: true, orders: pager.records.filter((o) => selectedOrders.includes(o.orderNumber)) }), disabled: selectedOrders.length === 0, permission: "orders.update" },
-          { key: "export", label: t("common.export"), icon: exportLoading ? <Loader2 className="animate-spin" size={14} /> : <FileDown size={14} />, color: "blue", onClick: onExport, disabled: exportLoading, permission: "orders.read" },
+          { key: "export", label: t("common.export"), icon: exportLoading ? <Loader2 className="animate-spin" size={14} /> : <FileDown size={14} />, color: "primary", onClick: onExport, disabled: exportLoading, permission: "orders.read" },
         ]}
         hasActiveFilters={hasActiveFilters} onApplyFilters={applyFilters}
         filters={

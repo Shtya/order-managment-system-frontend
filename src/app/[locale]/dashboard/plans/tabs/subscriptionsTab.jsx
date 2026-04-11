@@ -493,7 +493,7 @@ export default function SubscriptionsTab() {
             ) : (
               <Download size={14} />
             ),
-            color: "blue",
+            color: "primary",
             onClick: handleExport,
             disabled: exportLoading,
           },

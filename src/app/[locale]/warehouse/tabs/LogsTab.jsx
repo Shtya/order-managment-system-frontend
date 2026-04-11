@@ -461,7 +461,7 @@ export default function LogsTab({ orders = [] }) {
             ) : (
               <FileDown size={14} />
             ),
-            color: "blue",
+            color: "primary",
             onClick: onExport,
             disabled: exportLoading,
             permission: "orders.read",

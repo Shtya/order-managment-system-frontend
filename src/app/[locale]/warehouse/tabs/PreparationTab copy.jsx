@@ -1806,7 +1806,7 @@ function InProgressSubtab({ orders, updateOrder, pushOp, onPrepareOrder, onPrepa
       <Table
         searchValue={search} onSearchChange={setSearch} onSearch={() => { }}
         labels={{ searchPlaceholder: t("searchPlaceholder"), filter: t("filter"), apply: t("apply"), total: t("total"), limit: t("limit"), emptyTitle: t("inProgress.emptyTitle"), emptySubtitle: "" }}
-        actions={[{ key: "export", label: t("export"), icon: <FileDown size={14} />, color: "blue", onClick: () => { } }]}
+        actions={[{ key: "export", label: t("export"), icon: <FileDown size={14} />, color: "primary", onClick: () => { } }]}
         hasActiveFilters={filters.carrier !== "all"} onApplyFilters={() => { }}
         filters={
           <FilterField label={t("filters.carrier")}>
@@ -1890,7 +1890,7 @@ function PreparedSubtab({ orders, setDistributionDialog, setSelectedOrdersGlobal
       <Table
         searchValue={search} onSearchChange={setSearch} onSearch={() => { }}
         labels={{ searchPlaceholder: t("searchPlaceholder"), filter: t("filter"), apply: t("apply"), total: t("total"), limit: t("limit"), emptyTitle: t("prepared.emptyTitle"), emptySubtitle: "" }}
-        actions={[{ key: "export", label: t("export"), icon: <FileDown size={14} />, color: "blue", onClick: () => { } }]}
+        actions={[{ key: "export", label: t("export"), icon: <FileDown size={14} />, color: "primary", onClick: () => { } }]}
         hasActiveFilters={filters.carrier !== "all"} onApplyFilters={() => { }}
         filters={
           <FilterField label={t("filters.carrier")}>

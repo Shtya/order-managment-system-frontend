@@ -1956,7 +1956,7 @@ function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fet
 			<Table
 				searchValue={search} onSearchChange={setSearch} onSearch={applyFilters}
 				labels={{ searchPlaceholder: t("searchPlaceholder"), filter: t("filter"), apply: t("apply"), total: t("total"), limit: t("limit"), emptyTitle: t("inProgress.emptyTitle"), emptySubtitle: "" }}
-				actions={[{ key: "export", label: t("export"), icon: exportLoading ? <Loader2 size={14} className="animate-spin" /> : <FileDown size={14} />, color: "blue", onClick: onExport, disabled: exportLoading, permission: "orders.read" }]}
+				actions={[{ key: "export", label: t("export"), icon: exportLoading ? <Loader2 size={14} className="animate-spin" /> : <FileDown size={14} />, color: "primary", onClick: onExport, disabled: exportLoading, permission: "orders.read" }]}
 				hasActiveFilters={hasActiveFilters} onApplyFilters={applyFilters}
 				filters={
 					<>
@@ -2041,7 +2041,7 @@ function PreparedSubtab({ orders, setDistributionDialog, setSelectedOrdersGlobal
 			<Table
 				searchValue={search} onSearchChange={setSearch} onSearch={applyFilters}
 				labels={{ searchPlaceholder: t("searchPlaceholder"), filter: t("filter"), apply: t("apply"), total: t("total"), limit: t("limit"), emptyTitle: t("prepared.emptyTitle"), emptySubtitle: "" }}
-				actions={[{ key: "export", label: t("export"), icon: <FileDown size={14} />, color: "blue", onClick: () => { } }]}
+				actions={[{ key: "export", label: t("export"), icon: <FileDown size={14} />, color: "primary", onClick: () => { } }]}
 				hasActiveFilters={filters.carrier !== "all"} onApplyFilters={applyFilters}
 				filters={
 					<FilterField label={t("filters.carrier")}>

@@ -677,7 +677,7 @@ export default function ManualExpensesTab({
             ) : (
               <Download size={14} />
             ),
-            color: "blue",
+            color: "primary",
             onClick: onExport,
             disabled: exportLoading,
             permission: "orders.read",

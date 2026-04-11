@@ -456,7 +456,7 @@ export default function SalesInvoicesPage() {
 						key: "export",
 						label: t("toolbar.export"),
 						icon: <FileDown size={14} />,
-						color: "blue",
+						color: "primary",
 						onClick: () => console.log("export"),
 						permission: "sales_invoice.read",
 					},

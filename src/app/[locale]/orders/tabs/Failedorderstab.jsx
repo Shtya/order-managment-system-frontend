@@ -664,7 +664,7 @@ export function FailedOrdersTab() {
             ) : (
               <Download size={14} />
             ),
-            color: "blue",
+            color: "primary",
             onClick: handleExport,
             disabled: exportLoading,
           },

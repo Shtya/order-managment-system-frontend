@@ -87,7 +87,7 @@ function PreparedSubtab({ orders, setDistributionDialog, setSelectedOrdersGlobal
     <Table
       searchValue={search}
       onSearchChange={setSearch}
-      onSearch={() => {}}
+      onSearch={() => { }}
       labels={{
         searchPlaceholder: t("prepared.search"),
         filter: t("common.filter"),
@@ -98,10 +98,10 @@ function PreparedSubtab({ orders, setDistributionDialog, setSelectedOrdersGlobal
         emptySubtitle: "",
       }}
       actions={[
-        { key: "export", label: t("actions.export"), icon: <FileDown size={14} />, color: "blue", onClick: () => {} },
+        { key: "export", label: t("actions.export"), icon: <FileDown size={14} />, color: "primary", onClick: () => { } },
       ]}
       hasActiveFilters={carrier !== "all"}
-      onApplyFilters={() => {}}
+      onApplyFilters={() => { }}
       filters={
         <FilterField label={t("fields.carrier")}>
           <Select value={carrier} onValueChange={setCarrier}>
@@ -143,9 +143,9 @@ export default function PreparationTab({
 
   const stats = subtab === "prepared"
     ? [
-        { id: "prepared", name: t("stats.preparedOrders"), value: preparedOrders.length, icon: CheckCircle2, color: "#10b981", sortOrder: 0 },
-        { id: "items", name: t("stats.preparedItemsTable"), value: preparedOrders.reduce((sum, order) => sum + getOrderItemCount(order), 0), icon: Package, color: "#2563eb", sortOrder: 1 },
-      ]
+      { id: "prepared", name: t("stats.preparedOrders"), value: preparedOrders.length, icon: CheckCircle2, color: "#10b981", sortOrder: 0 },
+      { id: "items", name: t("stats.preparedItemsTable"), value: preparedOrders.reduce((sum, order) => sum + getOrderItemCount(order), 0), icon: Package, color: "#2563eb", sortOrder: 1 },
+    ]
     : [];
 
   return (
@@ -156,7 +156,7 @@ export default function PreparationTab({
           { name: t("breadcrumbs.warehouse"), href: "/warehouse" },
           { name: t("breadcrumbs.preparation") },
         ]}
-        buttons={<Button_ size="sm" label={t("actions.help")} variant="ghost" onClick={() => {}} icon={<Info size={16} />} />}
+        buttons={<Button_ size="sm" label={t("actions.help")} variant="ghost" onClick={() => { }} icon={<Info size={16} />} />}
         stats={stats}
         items={[
           { id: "preparing", label: t("tabs.preparing"), count: preparingOrders.length, icon: Clock },

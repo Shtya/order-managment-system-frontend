@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 
@@ -373,6 +373,43 @@ export function PageHeaderStatsSkeleton({ count = 6 }) {
 export function StatsGrid({ stats }) {
 	const t = useTranslations("common");
 	const [isExpanded, setIsExpanded] = useState(false);
+	const [isOverflowing, setIsOverflowing] = useState(false);
+	const gridRef = useRef(null);
+
+	const COLLAPSED_HEIGHT = 200;
+	const MAX_ROWS = 2;
+
+	useEffect(() => {
+		const gridEl = gridRef.current;
+		if (!gridEl) return;
+
+		const checkOverflow = () => {
+			const computedStyle = window.getComputedStyle(gridEl);
+
+			const gridColumnsString = computedStyle.getPropertyValue('grid-template-columns');
+
+			const numColumns = gridColumnsString.split(' ').length;
+
+			const maxVisibleItems = numColumns * MAX_ROWS;
+
+			if (stats.length > maxVisibleItems) {
+				setIsOverflowing(true);
+			} else {
+				setIsOverflowing(false);
+				if (isExpanded) setIsExpanded(false); // Auto-close if screen widens
+			}
+		};
+
+		checkOverflow();
+
+		const observer = new ResizeObserver(() => {
+			checkOverflow();
+		});
+
+		observer.observe(gridEl);
+		return () => observer.disconnect();
+
+	}, [isExpanded, stats.length]);
 
 	if (!stats) return null;
 	if (!Array.isArray(stats)) return <div>{stats}</div>;
@@ -380,28 +417,23 @@ export function StatsGrid({ stats }) {
 
 	const sorted = [...stats].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
-	// Define max visible stats before collapse
-	const MAX_VISIBLE_ROWS = 2; // Show 1 row initially (typically 4-6 items)
-	const ITEMS_PER_ROW = 6; // Estimate based on grid layout
-	const MAX_VISIBLE = MAX_VISIBLE_ROWS * ITEMS_PER_ROW;
-
-	const hasMoreStats = sorted.length > MAX_VISIBLE;
-	const visibleStats = isExpanded ? sorted : sorted.slice(0, MAX_VISIBLE);
-	const hiddenCount = sorted.length - MAX_VISIBLE;
-
 	return (
 		<div className="relative">
-			{/* Stats Grid with height limit */}
 			<div
 				className="relative"
 				style={{
-					maxHeight: isExpanded ? 'none' : `${MAX_VISIBLE_ROWS * 100}px`,
-					overflow: 'hidden',
-					transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+					// Using a large px value instead of 'none' ensures the CSS transition animates smoothly
+					maxHeight: isExpanded ? "2000px" : `${COLLAPSED_HEIGHT}px`,
+					overflow: "hidden",
+					transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
 				}}
 			>
-				<div className="grid gap-3 py-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))" }}>
-					{visibleStats.map((stat, i) => (
+				<div
+					ref={gridRef}
+					className="grid gap-3 py-3"
+					style={{ gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))" }}
+				>
+					{sorted.map((stat, i) => (
 						<motion.div
 							key={stat.id ?? i}
 							style={{ order: stat.sortOrder ?? i }}
@@ -426,27 +458,25 @@ export function StatsGrid({ stats }) {
 					))}
 				</div>
 
-				{/* Gradient Shadow when collapsed */}
-				{hasMoreStats && !isExpanded && (
+				{isOverflowing && !isExpanded && (
 					<motion.div
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						transition={{ delay: 0.2 }}
 						style={{
-							position: 'absolute',
-							bottom: -20,
+							position: "absolute",
+							bottom: 0,
 							left: 0,
 							right: 0,
-							height: '80px',
-							background: 'linear-gradient(to bottom, transparent 0%, var(--card) 70%)',
-							pointerEvents: 'none',
+							height: "80px",
+							background: "linear-gradient(to bottom, transparent 0%, var(--card) 90%)",
+							pointerEvents: "none",
 						}}
 					/>
 				)}
 			</div>
 
-			{/* Expand/Collapse Button */}
-			{hasMoreStats && (
+			{isOverflowing && (
 				<motion.div
 					initial={{ opacity: 0, y: 10 }}
 					animate={{ opacity: 1, y: 0 }}
@@ -457,19 +487,19 @@ export function StatsGrid({ stats }) {
 						onClick={() => setIsExpanded(!isExpanded)}
 						className="group relative flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold transition-all outline-none"
 						style={{
-							background: 'var(--muted)',
-							border: '1px solid var(--border)',
-							color: 'var(--muted-foreground)',
+							background: "var(--muted)",
+							border: "1px solid var(--border)",
+							color: "var(--muted-foreground)",
 						}}
 						onMouseEnter={(e) => {
-							e.currentTarget.style.background = 'color-mix(in oklab, var(--primary) 10%, var(--muted))';
-							e.currentTarget.style.borderColor = 'color-mix(in oklab, var(--primary) 30%, var(--border))';
-							e.currentTarget.style.color = 'var(--primary)';
+							e.currentTarget.style.background = "color-mix(in oklab, var(--primary) 10%, var(--muted))";
+							e.currentTarget.style.borderColor = "color-mix(in oklab, var(--primary) 30%, var(--border))";
+							e.currentTarget.style.color = "var(--primary)";
 						}}
 						onMouseLeave={(e) => {
-							e.currentTarget.style.background = 'var(--muted)';
-							e.currentTarget.style.borderColor = 'var(--border)';
-							e.currentTarget.style.color = 'var(--muted-foreground)';
+							e.currentTarget.style.background = "var(--muted)";
+							e.currentTarget.style.borderColor = "var(--border)";
+							e.currentTarget.style.color = "var(--muted-foreground)";
 						}}
 					>
 						{/* Icon */}
@@ -489,14 +519,7 @@ export function StatsGrid({ stats }) {
 						</motion.svg>
 
 						{/* Text */}
-						<span>
-							{isExpanded
-								? t("stats.hide")
-								: t("stats.showAll")
-							}
-						</span>
-
-
+						<span>{isExpanded ? t("stats.hide") : t("stats.showAll")}</span>
 					</button>
 				</motion.div>
 			)}

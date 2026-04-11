@@ -190,25 +190,25 @@ export default function useIdleTab({ t, searchDebounced, filters, idleFromDate, 
             row={row}
             actions={[
               {
-                icon: <Trash2 />,
-                tooltip: t("actions.delete"),
-                onClick: (r) => onAskDelete?.(r.id, "products"),
-                variant: "red",
-                permission: "products.delete",
-              },
-              {
                 icon: <Edit2 />,
                 tooltip: t("actions.edit"),
                 onClick: (r) => router.push(`/products/edit/${r.id}`),
-                variant: "blue",
+                variant: "primary",
                 permission: "products.update",
               },
               {
                 icon: <Eye />,
                 tooltip: t("actions.view"),
                 onClick: (r) => onOpenView?.(r.id, "products"),
-                variant: "purple",
+                variant: "primary",
                 permission: "products.read",
+              },
+              {
+                icon: <Trash2 />,
+                tooltip: t("actions.delete"),
+                onClick: (r) => onAskDelete?.(r.id, "products"),
+                variant: "red",
+                permission: "products.delete",
               },
             ]}
           />

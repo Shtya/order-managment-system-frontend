@@ -17,7 +17,7 @@ import ScanBar from "../atoms/ScanBar";
 import { buildOrderOverviewCards, buildOrderSummarySection, openPdfDocument } from "../utils/pdf";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
-function buildReturnDocumentBody({ orders, createdAt, employee, title, formatCurrency }) {
+function buildReturnDocumentBody({ orders, createdAt, employee, title, formatCurrency, currency }) {
   const summary = getDocumentSummary(orders);
   const orderSections = orders.map((order) => {
     const productRows = (order.products || []).map((product) => `
@@ -26,7 +26,7 @@ function buildReturnDocumentBody({ orders, createdAt, employee, title, formatCur
         <td>${product.name}</td>
         <td>${product.requestedQty}</td>
         <td>${product.condition || "سليم"}</td>
-        <td>${formatCurrency ? formatCurrency((Number(product.price) || 0) * (Number(product.requestedQty) || 0)) : `${(Number(product.price) || 0) * (Number(product.requestedQty) || 0)} ر.س`}</td>
+        <td>${formatCurrency ? formatCurrency((Number(product.price) || 0) * (Number(product.requestedQty) || 0)) : `${(Number(product.price) || 0) * (Number(product.requestedQty) || 0)} ${currency}`}</td>
       </tr>
     `).join("");
 
@@ -40,7 +40,7 @@ function buildReturnDocumentBody({ orders, createdAt, employee, title, formatCur
           <span class="badge badge-warning">${order.carrier || "بدون شركة"}</span>
         </div>
         <div style="padding: 16px; display: flex; flex-direction: column; gap: 16px;">
-          ${buildOrderOverviewCards(order, { customer: "العميل", city: "المدينة", orderValue: "قيمة الطلب", orderSummary: "ملخص الطلب", itemsWord: "قطعة" }, formatCurrency)}
+          ${buildOrderOverviewCards(order, { customer: "العميل", city: "المدينة", orderValue: "قيمة الطلب", orderSummary: "ملخص الطلب", itemsWord: "قطعة" }, formatCurrency, currency)}
           <div class="table-wrap">
             <table>
               <thead>
@@ -71,12 +71,12 @@ function buildReturnDocumentBody({ orders, createdAt, employee, title, formatCur
         <div class="summary-box"><span>إجمالي الطلبات</span><b>${orders.length}</b></div>
         <div class="summary-box"><span>إجمالي عدد الـ SKU</span><b>${summary.totalSkus}</b></div>
         <div class="summary-box"><span>إجمالي الكميات</span><b>${summary.totalItems}</b></div>
-        <div class="summary-box"><span>القيمة الإجمالية</span><b>${formatCurrency ? formatCurrency(summary.totalValue) : `${summary.totalValue} ر.س`}</b></div>
+        <div class="summary-box"><span>القيمة الإجمالية</span><b>${formatCurrency ? formatCurrency(summary.totalValue) : `${summary.totalValue} ${currency}`}</b></div>
       </div>
     </section>
 
     ${orderSections}
-    ${buildOrderSummarySection(orders, { title: "الملخص النهائي", totalOrders: "إجمالي الطلبات", totalSkus: "إجمالي عدد الـ SKU", totalItems: "إجمالي الكميات", totalValue: "القيمة الإجمالية" }, formatCurrency)}
+    ${buildOrderSummarySection(orders, { title: "الملخص النهائي", totalOrders: "إجمالي الطلبات", totalSkus: "إجمالي عدد الـ SKU", totalItems: "إجمالي الكميات", totalValue: "القيمة الإجمالية" }, formatCurrency, currency)}
   `;
 }
 
@@ -160,7 +160,7 @@ function ReturnItemRow({ item, selection, onToggle, onQtyChange, onConditionChan
 }
 
 function ReturnFilesSubtab({ returnFiles, orders, t }) {
-  const { formatCurrency } = usePlatformSettings();
+  const { formatCurrency, currency } = usePlatformSettings();
   const [carrier, setCarrier] = useState("all");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState({ current_page: 1, per_page: 12 });
@@ -179,7 +179,7 @@ function ReturnFilesSubtab({ returnFiles, orders, t }) {
     openPdfDocument({
       title: t("files.returnPdfTitle"),
       filename: file.filename,
-      body: buildReturnDocumentBody({ orders: snapshot, createdAt: file.createdAt, employee: file.createdBy, title: t("files.returnPdfTitle"), formatCurrency }),
+      body: buildReturnDocumentBody({ orders: snapshot, createdAt: file.createdAt, employee: file.createdBy, title: t("files.returnPdfTitle"), formatCurrency, currency }),
     });
   };
 

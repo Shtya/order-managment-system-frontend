@@ -401,7 +401,7 @@ export default function SalesInvoicesPage() {
 								icon: <Eye />,
 								tooltip: t("actions.view"),
 								onClick: (r) => console.log("view", r.id),
-								variant: "purple",
+								variant: "primary",
 								permission: "sales_invoice.read",
 							},
 						]}

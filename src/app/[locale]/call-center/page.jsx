@@ -277,7 +277,7 @@ export default function CallCenterPage() {
                         key: "distribute",
                         label: t("orders.toolbar.distribute"),
                         icon: <Users size={15} />,
-                        color: "emerald",
+                        color: "primary",
                         onClick: () => setDistributionOpen(true),
                         permission: "order.assign",
                     },

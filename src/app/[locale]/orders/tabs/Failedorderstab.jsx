@@ -601,7 +601,7 @@ export function FailedOrdersTab() {
                     ? t("failedOrders.actions.retrying")
                     : t("failedOrders.actions.retry"),
                   onClick: (r) => handleRetry(r),
-                  variant: "orange",
+                  variant: "primary",
                   disabled: isRetrying,
                 },
               ]}

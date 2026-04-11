@@ -113,7 +113,7 @@ export default function FeaturesTab() {
                             icon: <Edit3 />,
                             tooltip: tf("actions.editFeature"),
                             onClick: (r) => handleEditClick(r),
-                            variant: "blue",
+                            variant: "primary",
                         },
                     ]}
                 />

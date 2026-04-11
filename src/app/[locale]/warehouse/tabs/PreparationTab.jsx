@@ -1929,8 +1929,8 @@ function InProgressSubtab({ updateOrder, pushOp, onPrepareOrder, resetToken, fet
 			key: "actions", header: t("table.actions"),
 			cell: (row) => (
 				<ActionButtons row={row} actions={[
-					{ icon: <Info />, tooltip: t("actions.details"), onClick: (r) => setDetailModal(r), variant: "purple", permission: "orders.read" },
-					{ icon: <ScanLine />, tooltip: t("actions.continuePrepare"), onClick: (r) => onPrepareOrder?.(r), variant: "blue", permission: "warehouses.scan-preparation" },
+					{ icon: <Info />, tooltip: t("actions.details"), onClick: (r) => setDetailModal(r), variant: "primary", permission: "orders.read" },
+					{ icon: <ScanLine />, tooltip: t("actions.continuePrepare"), onClick: (r) => onPrepareOrder?.(r), variant: "primary", permission: "warehouses.scan-preparation" },
 					{
 						icon: downloadingWrongLog[row.id] ? (
 							<Loader2 size={13} className="animate-spin" />
@@ -2029,8 +2029,8 @@ function PreparedSubtab({ orders, setDistributionDialog, setSelectedOrdersGlobal
 			key: "actions", header: t("table.actions"),
 			cell: (row) => (
 				<ActionButtons row={row} actions={[
-					{ icon: <Info />, tooltip: t("actions.details"), onClick: (r) => setDetailModal(r), variant: "purple" },
-					{ icon: <Truck />, tooltip: t("actions.distribute"), onClick: (r) => { setSelectedOrdersGlobal?.([r.code]); setDistributionDialog?.(true); }, variant: "emerald" },
+					{ icon: <Info />, tooltip: t("actions.details"), onClick: (r) => setDetailModal(r), variant: "primary" },
+					{ icon: <Truck />, tooltip: t("actions.distribute"), onClick: (r) => { setSelectedOrdersGlobal?.([r.code]); setDistributionDialog?.(true); }, variant: "primary" },
 				]} />
 			),
 		},

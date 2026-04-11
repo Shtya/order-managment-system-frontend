@@ -182,19 +182,19 @@ export default function SupplierAccountsTab() {
               icon: <FileText />,
               tooltip: t("supplierAccounts.actions.statement"),
               onClick: (r) => setStatementSupplier(r),
-              variant: "blue",
+              variant: "primary",
             },
             {
               icon: <Ban />,
               tooltip: t("supplierAccounts.actions.closePeriod"),
               onClick: (r) => setClosingSupplier(r),
-              variant: "orange",
+              variant: "primary",
             },
             {
               icon: <History />,
               tooltip: t("history"),
               onClick: (r) => setHistorySupplier(r),
-              variant: "slate",
+              variant: "primary",
             },
           ]}
         />

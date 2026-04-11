@@ -21,6 +21,7 @@ import PageHeader from "../../../../components/atoms/Pageheader";
 import ActionButtons from "@/components/atoms/Actions";
 import Button_ from "@/components/atoms/Button";
 import { STATUS, CARRIERS } from "./data";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 // ─────────────────────────────────────────────────────────────
 // CARRIER STYLES
@@ -95,6 +96,7 @@ function ScanProgress({ products }) {
 function OrderDetailModal({ open, onClose, order }) {
   const t = useTranslations("warehouse.preparation");
   if (!order) return null;
+  const { currency } = usePlatformSettings();
 
   const infoRows = [
     { label: t("modal.customer"), value: order.customer, icon: User, accent: "#ff8b00" },
@@ -104,7 +106,7 @@ function OrderDetailModal({ open, onClose, order }) {
     { label: t("modal.store"), value: order.store, icon: Store, accent: "#6763af" },
     { label: t("modal.carrier"), value: order.carrier || t("modal.notSpecified"), icon: Truck, accent: "#ff5c2b" },
     { label: t("modal.trackingCode"), value: order.trackingCode || "—", icon: Hash, accent: "#6763af" },
-    { label: t("modal.total"), value: `${order.total} ر.س`, icon: TrendingUp, accent: "#10b981" },
+    { label: t("modal.total"), value: `${order.total} ${currency}`, icon: TrendingUp, accent: "#10b981" },
   ];
 
   return (
@@ -174,7 +176,7 @@ function OrderDetailModal({ open, onClose, order }) {
                   <span className="flex-1 text-sm text-slate-700 dark:text-slate-200 font-medium">{p.name}</span>
                   <span className="text-xs text-slate-400 font-mono">×{p.requestedQty}</span>
                   <span className="font-bold text-sm" style={{ color: "#ff8b00" }}>
-                    {(Number(p.price) || 0) * (Number(p.requestedQty) || 0)} ر.س
+                    {(Number(p.price) || 0) * (Number(p.requestedQty) || 0)} {currency}
                   </span>
                 </motion.div>
               ))}
@@ -1790,9 +1792,9 @@ function InProgressSubtab({ orders, updateOrder, pushOp, onPrepareOrder, onPrepa
       key: "actions", header: t("table.actions"),
       cell: (row) => (
         <ActionButtons row={row} actions={[
-          { icon: <Info />, tooltip: t("actions.details"), onClick: (r) => setDetailModal(r), variant: "purple" },
+          { icon: <Info />, tooltip: t("actions.details"), onClick: (r) => setDetailModal(r), variant: "primary" },
           // ← clicking this goes to scanning subtab and auto-loads the order
-          { icon: <ScanLine />, tooltip: t("actions.continuePrepare"), onClick: (r) => onPrepareOrder?.(r), variant: "blue" },
+          { icon: <ScanLine />, tooltip: t("actions.continuePrepare"), onClick: (r) => onPrepareOrder?.(r), variant: "primary" },
           { icon: <Ban />, tooltip: t("actions.reject"), onClick: (r) => setRejectModal(r), variant: "red" },
         ]} />
       ),
@@ -1876,7 +1878,7 @@ function PreparedSubtab({ orders, setDistributionDialog, setSelectedOrdersGlobal
       key: "actions", header: t("table.actions"),
       cell: (row) => (
         <ActionButtons row={row} actions={[
-          { icon: <Info />, tooltip: t("actions.details"), onClick: (r) => setDetailModal(r), variant: "purple" },
+          { icon: <Info />, tooltip: t("actions.details"), onClick: (r) => setDetailModal(r), variant: "primary" },
           { icon: <Truck />, tooltip: t("actions.distribute"), onClick: (r) => { setSelectedOrdersGlobal?.([r.code]); setDistributionDialog?.(true); }, variant: "emerald" },
         ]} />
       ),

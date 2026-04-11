@@ -579,14 +579,14 @@ export default function ManualExpensesTab({
               icon: <Eye />,
               tooltip: t("manualExpenses.actions.view"),
               onClick: (r) => setSelectedExpense(r),
-              variant: "slate",
+              variant: "primary",
             },
             {
               icon: <Pencil />,
               tooltip: t("manualExpenses.actions.edit"),
               onClick: (r) => handleEdit(r),
               disabled: !!row.monthlyClosingId,
-              variant: "amber",
+              variant: "primary",
             },
             {
               icon: <Trash2 />,

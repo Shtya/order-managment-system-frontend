@@ -540,7 +540,7 @@ export default function SuperAdminUsersPage() {
 										setSubscriptionId(null);
 										setSubOpen(true);
 									},
-									variant: "emerald",
+									variant: "primary",
 									hidden: !isAdmin,
 								},
 								{
@@ -551,7 +551,7 @@ export default function SuperAdminUsersPage() {
 										setSubscriptionId(r.subscription.id);
 										setSubOpen(true);
 									},
-									variant: "blue",
+									variant: "primary",
 									hidden: !hasSubscription || !isAdmin,
 								},
 								{
@@ -561,7 +561,7 @@ export default function SuperAdminUsersPage() {
 										setSelectedUser(r);
 										setAssignOpen(true);
 									},
-									variant: "blue",
+									variant: "primary",
 									hidden: !isAdmin,
 								},
 								{
@@ -571,7 +571,7 @@ export default function SuperAdminUsersPage() {
 										setSelectedUser(r);
 										setWalletOpen(true);
 									},
-									variant: "emerald",
+									variant: "primary",
 									hidden: !isAdmin,
 								},
 								{
@@ -581,7 +581,7 @@ export default function SuperAdminUsersPage() {
 										setSelectedUser(r);
 										setEditOpen(true);
 									},
-									variant: "purple",
+									variant: "primary",
 								},
 								{
 									icon: <Trash2 />,

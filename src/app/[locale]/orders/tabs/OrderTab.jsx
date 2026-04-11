@@ -668,21 +668,21 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
                 icon: <Eye />,
                 tooltip: t("actions.view"),
                 onClick: (r) => router.push(`/orders/details/${r.id}`),
-                variant: "purple",
+                variant: "primary",
                 permission: "orders.read",
               },
               {
                 icon: <Copy />,
                 tooltip: t("actions.duplicate"),
                 onClick: (r) => router.push(`/orders/new?from=${r.id}`),
-                variant: "emerald",
+                variant: "primary",
                 permission: "orders.create",
               },
               {
                 icon: <Edit2 />,
                 tooltip: t("actions.edit"),
                 onClick: (r) => router.push(`/orders/edit/${r.id}`),
-                variant: "blue",
+                variant: "primary",
                 permission: "orders.update",
               },
               {
@@ -780,7 +780,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
             ) : (
               <Download size={14} />
             ),
-            color: "blue",
+            color: "primary",
             onClick: handleExport,
             disabled: exportLoading,
             permission: "orders.read",

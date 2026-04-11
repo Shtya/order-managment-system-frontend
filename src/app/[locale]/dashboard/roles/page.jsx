@@ -228,19 +228,19 @@ export default function RolesPermissionsPage() {
 								icon: <Edit />,
 								tooltip: t("actions.edit"),
 								onClick: (r) => handleEditRole(r),
-								variant: "purple",
+								variant: "primary",
+							},
+							{
+								icon: <Eye />,
+								tooltip: t("actions.preview"),
+								onClick: (r) => handlePreviewRole(r),
+								variant: "primary",
 							},
 							{
 								icon: <Trash2 />,
 								tooltip: t("actions.delete"),
 								onClick: (r) => handleDeleteClick(r),
 								variant: "rose",
-							},
-							{
-								icon: <Eye />,
-								tooltip: t("actions.preview"),
-								onClick: (r) => handlePreviewRole(r),
-								variant: "slate",
 							},
 						]}
 					/>

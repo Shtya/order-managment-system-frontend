@@ -78,7 +78,7 @@ function CarrierSelect({ CARRIERS, preparedOrders, value, onChange }) {
 					aria-hidden
 					className={cn(
 						"absolute start-0 top-1.5 bottom-1.5 w-[2px] rounded-full",
-						"bg-gradient-to-b from-[var(--primary)] to-[var(--third,#ff5c2b)]",
+						"bg-gradient-to-b from-[var(--primary)] to-[var(--third,var(--secondary))]",
 						"transition-opacity duration-200",
 						open ? "opacity-100" : "opacity-0"
 					)}
@@ -141,7 +141,7 @@ function CarrierSelect({ CARRIERS, preparedOrders, value, onChange }) {
 						<div
 							aria-hidden
 							className="absolute inset-x-0 top-0 h-[2px]
-                bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)]
+                bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,var(--third))] to-[var(--third,var(--secondary))]
                 opacity-70"
 						/>
 						{/* inner sheen */}
@@ -356,7 +356,7 @@ export default function ScanBar({
               text-primary-foreground text-xs font-black flex items-center gap-1.5
               overflow-hidden"
 						style={{
-							background: "linear-gradient(135deg, var(--primary) 0%, var(--third, #ff5c2b) 100%)",
+							background: "linear-gradient(135deg, var(--primary) 0%, var(--third, var(--secondary)) 100%)",
 							boxShadow: "0 2px 10px -2px rgb(var(--primary-shadow)), inset 0 1px 0 rgba(255,255,255,0.2)",
 						}}
 					>

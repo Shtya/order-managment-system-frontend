@@ -308,7 +308,7 @@ function LabelsTable({ orders, filters, setFilters, selectedCodes, setSelectedCo
             key: "print-selected",
             label: statusMode === "printed" ? t("actions.reprintSelected", { count: selectedCodes.length }) : t("actions.printSelected", { count: selectedCodes.length }),
             icon: <Printer size={14} />,
-            color: "emerald",
+            color: "primary",
             onClick: () => onPrint(orders.filter((order) => selectedCodes.includes(order.code))),
             disabled: selectedCodes.length === 0,
           },
@@ -317,7 +317,7 @@ function LabelsTable({ orders, filters, setFilters, selectedCodes, setSelectedCo
               key: "prepare-selected",
               label: t("actions.prepareSelected", { count: selectedCodes.length }),
               icon: <Package size={14} />,
-              color: "blue",
+              color: "primary",
               onClick: () => onPrepareSelection(orders.filter((order) => selectedCodes.includes(order.code) && order.status !== STATUS.PREPARED)),
               disabled: selectedCodes.length === 0,
             }]

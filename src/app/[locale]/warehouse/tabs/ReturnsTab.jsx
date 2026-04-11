@@ -64,7 +64,7 @@ const DS = {
   radiusSm: "rounded-md",
   radiusXl: "rounded-xl",
 
-  primary: "#ff8b00",
+  primary: "var(--primary)",
   primaryLight: "rgba(255,139,0,0.10)",
   primaryBorder: "rgba(255,139,0,0.25)",
   accent: "#6763af",
@@ -72,9 +72,9 @@ const DS = {
   successLight: "rgba(16,185,129,0.10)",
   danger: "#ef4444",
   dangerLight: "rgba(239,68,68,0.10)",
-  warning: "#ffb703",
+  warning: "var(--third)",
 
-  headerGradient: "linear-gradient(135deg, var(--primary) 0%, #ff5c2b 100%)",
+  headerGradient: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)",
   successGradient: "linear-gradient(135deg, #059669 0%, #10b981 100%)",
   dangerGradient: "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)",
   cardGradient: "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)",
@@ -96,7 +96,7 @@ const DS = {
 function getCarrierMeta(c = "") {
   return (
     CARRIER_META[c.toUpperCase().replace(/\s/g, "")] || {
-      color: "#ff8b00",
+      color: "var(--primary)",
       light: "#fff8f0",
     }
   );
@@ -1791,7 +1791,7 @@ function OrdersList({
                                   className="w-6 h-6 rounded-xl flex items-center justify-center flex-shrink-0"
                                   style={{ background: "#ff8b0012" }}
                                 >
-                                  <Package size={11} style={{ color: "#ff8b00" }} />
+                                  <Package size={11} style={{ color: "var(--primary)" }} />
                                 </div>
                                 <div className="min-w-0">
                                   <p className="text-[12px] font-semibold text-slate-700 dark:text-slate-200 truncate">
@@ -1814,7 +1814,7 @@ function OrdersList({
                               <div className="flex justify-center">
                                 <span
                                   className="inline-flex items-center justify-center w-7 h-7 rounded-xl text-[11px] font-black"
-                                  style={{ background: "#ff8b0015", color: "#ff8b00" }}
+                                  style={{ background: "#ff8b0015", color: "var(--primary)" }}
                                 >
                                   {p.quantity}
                                 </span>

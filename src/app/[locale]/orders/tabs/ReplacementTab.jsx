@@ -128,7 +128,7 @@ const REPLACEMENT_STATS = [
 		id: 1,
 		code: "total",
 		title: "replacement.stats.total",
-		color: "#ff8b00",        // --primary light
+		color: "var(--primary)",        // --primary light
 		darkColor: "#5b4bff",    // --primary dark
 		icon: RefreshCcw,
 		value: 142

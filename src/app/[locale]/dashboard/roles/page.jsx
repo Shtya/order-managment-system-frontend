@@ -240,7 +240,7 @@ export default function RolesPermissionsPage() {
 								icon: <Trash2 />,
 								tooltip: t("actions.delete"),
 								onClick: (r) => handleDeleteClick(r),
-								variant: "rose",
+								variant: "red",
 							},
 						]}
 					/>

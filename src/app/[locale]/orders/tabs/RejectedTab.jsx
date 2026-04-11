@@ -27,11 +27,11 @@ const DS = {
   radiusSm: "rounded-md",
   radiusXl: "rounded-xl",
 
-  primary: "#ff8b00",
+  primary: "var(--primary)",
   accent: "#6763af",
   success: "#10b981",
   danger: "#ef4444",
-  warning: "#ffb703",
+  warning: "var(--third)",
 
   headerGradient: "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)",
 

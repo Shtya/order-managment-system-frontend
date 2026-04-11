@@ -33,11 +33,11 @@ export default function SwitcherTabs({
                   "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 rounded-xl",
                   itemClassName,
                   isActive
-                    ? ["text-[#ff8b00] dark:text-[#5b4bff]", activeClassName].join(" ")
+                    ? ["text-[var(--primary)] dark:text-[#5b4bff]", activeClassName].join(" ")
                     : [
-                        "text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200",
-                        inactiveClassName,
-                      ].join(" "),
+                      "text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200",
+                      inactiveClassName,
+                    ].join(" "),
                 ].join(" ")}
               >
                 <div className="flex items-center gap-2">
@@ -46,7 +46,7 @@ export default function SwitcherTabs({
                       size={18}
                       className={
                         isActive
-                          ? "text-[#ff8b00] dark:text-[#5b4bff]"
+                          ? "text-[var(--primary)] dark:text-[#5b4bff]"
                           : "text-gray-400 dark:text-slate-500"
                       }
                     />
@@ -61,7 +61,7 @@ export default function SwitcherTabs({
                     layoutId="pretty-switcher-underline"
                     className={[
                       "absolute bottom-0 left-0 right-0 h-[3px] rounded-full",
-                      "bg-gradient-to-r from-[#ff8b00] via-[#ffb703] to-[#ff5c2b]",
+                      "bg-gradient-to-r from-[var(--primary)] via-[var(--third)] to-[var(--secondary)]",
                       "dark:from-[#5b4bff] dark:via-[#8b7cff] dark:to-[#3be7ff]",
                       underlineClassName,
                     ].join(" ")}

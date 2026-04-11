@@ -711,12 +711,10 @@ export default function ManualExpensesTab({
               </div>
 
               {/* Description Box (Orange as requested) */}
-              <div className="p-4 bg-muted/30 rounded-2xl border border-border flex flex-col justify-center group">
-                <div className="absolute top-0 right-0 p-3 text-orange-200 group-hover:text-orange-300 transition-colors">
-                  <FileText size="40" />
-                </div>
+              <div className="p-3 bg-muted/30 rounded-2xl border border-border flex flex-col justify-center group">
+
                 <div className="relative z-10 space-y-2">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-orange-400">{t("manualExpenses.columns.description")}</span>
+                  <span className="text-xs font-bold text-muted-foreground">{t("manualExpenses.columns.description")}</span>
                   <p className="text-sm font-bold text-orange-900 leading-relaxed">
                     {selectedExpense.description}
                   </p>

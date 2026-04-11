@@ -590,7 +590,7 @@ export default function SuperAdminUsersPage() {
 										setSelectedUser(r);
 										setDeactivateOpen(true);
 									},
-									variant: "rose",
+									variant: "red",
 								},
 							]}
 						/>

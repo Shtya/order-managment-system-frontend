@@ -112,7 +112,7 @@ function DistributionDialog({ open, onClose, orders, selectedOrderCodes, updateO
       <DialogContent className="!max-w-2xl rounded-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
           <DialogTitle className="text-lg font-bold flex items-center gap-2">
-            <Truck className="text-[#ff8b00] dark:text-[#5b4bff]" size={22} />
+            <Truck className="text-[var(--primary)] dark:text-[#5b4bff]" size={22} />
             {t("title")}
           </DialogTitle>
         </DialogHeader>
@@ -144,7 +144,7 @@ function DistributionDialog({ open, onClose, orders, selectedOrderCodes, updateO
                   className={cn(
                     "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
                     selectedOrders.includes(order.code)
-                      ? "bg-[#ff8b00]/8 border-[#ff8b00]/40 dark:border-[#5b4bff]/40"
+                      ? "bg-[var(--primary)]/8 border-[var(--primary)]/40 dark:border-[#5b4bff]/40"
                       : "bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700"
                   )}
                   onClick={() => toggleOrder(order.code)}>

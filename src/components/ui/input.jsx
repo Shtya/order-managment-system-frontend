@@ -88,7 +88,7 @@ function InputBase({ className, size = "default", error, ...props }) {
 				"placeholder:text-muted-foreground/80transition-all duration-200",
 				"hover:border-[var(--primary)]/50 dark:hover:border-[#5b4bff]/50 hover:bg-background",
 				"!outline-none focus:border-[var(--primary)] dark:focus:border-[#5b4bff] focus:bg-background",
-				"focus:shadow-[0_0_0_3px_rgba(255,139,0,0.12)] dark:focus:shadow-[0_0_0_3px_rgba(91,75,255,0.18)]",
+				"focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--primary),transparent_88%)] dark:focus:shadow-[0_0_0_3px_rgba(91,75,255,0.18)]",
 				"disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
 				" data-[size=sm]:text-xs data-[size=sm]:px-3",
 				"data- !h-10 data-[size=default]:text-sm data-[size=default]:px-3.5",

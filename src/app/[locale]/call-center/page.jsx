@@ -29,7 +29,7 @@ const CALL_CENTER_STATS = [
         id: 1,
         code: "new",
         nameKey: "callCenter.stats.new",
-        color: "#ff8b00",
+        color: "var(--primary)",
         icon: ShoppingBag,
         sortOrder: 1,
     },

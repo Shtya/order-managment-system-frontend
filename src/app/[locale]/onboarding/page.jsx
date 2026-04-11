@@ -1559,7 +1559,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
       badge: plan.isPopular ? t("popular_badge") : null,
       dotColor:
         plan.color ||
-        (index === 0 ? "#8B88C1" : index === 1 ? "#BAEB33" : "#FF5C2B"),
+        (index === 0 ? "#8B88C1" : index === 1 ? "#BAEB33" : "var(--primary)"),
 
       isPopular: !!plan.isPopular,
       features,
@@ -1669,7 +1669,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
             gap: 10,
           }}
         >
-          <IcCheck  size={18} style={{ color: "#3b82f6", marginTop: 2 }} />
+          <IcCheck size={18} style={{ color: "#3b82f6", marginTop: 2 }} />
           <div style={{ flex: 1 }}>
             <div
               style={{
@@ -1886,7 +1886,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
                         style={{
                           fontSize: 20,
                           fontWeight: 900,
-                          color: isFeatured ? "#BAEB33" : "#FF5C2B",
+                          color: isFeatured ? "#BAEB33" : "var(--primary)",
                         }}
                       >
                         {t("status.negotiated")}

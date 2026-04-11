@@ -59,15 +59,15 @@ import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const P = "var(--primary)";
-const S = "var(--secondary,#ffb703)";
-const TH = "var(--third,#ff5c2b)";
+const S = "var(--secondary,var(--third))";
+const TH = "var(--third,var(--secondary))";
 const P_06 = "color-mix(in oklab, var(--primary)  6%, transparent)";
 const P_10 = "color-mix(in oklab, var(--primary) 10%, transparent)";
 const P_15 = "color-mix(in oklab, var(--primary) 15%, transparent)";
 const P_20 = "color-mix(in oklab, var(--primary) 20%, transparent)";
 const P_25 = "color-mix(in oklab, var(--primary) 25%, transparent)";
-const S_10 = "color-mix(in oklab, var(--secondary,#ffb703) 10%, transparent)";
-const S_22 = "color-mix(in oklab, var(--secondary,#ffb703) 22%, transparent)";
+const S_10 = "color-mix(in oklab, var(--secondary,var(--third)) 10%, transparent)";
+const S_22 = "color-mix(in oklab, var(--secondary,var(--third)) 22%, transparent)";
 
 // ── Accent bar (3-stop gradient) ──────────────────────────────────────────────
 function AccentBar({ className }) {
@@ -75,7 +75,7 @@ function AccentBar({ className }) {
     <div
       aria-hidden
       className={cn(
-        "h-[2.5px] bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)]",
+        "h-[2.5px] bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,var(--third))] to-[var(--third,var(--secondary))]",
         className,
       )}
     />
@@ -614,7 +614,7 @@ export function OrderDetailsPage({ order, loading }) {
                     order.deposit > 0 && {
                       label: t("details.deposit"),
                       value: formatCurrency(order.deposit),
-                      valueClass: "text-[var(--secondary,#ffb703)]",
+                      valueClass: "text-[var(--secondary,var(--third))]",
                     },
                   ]
                     .filter(Boolean)

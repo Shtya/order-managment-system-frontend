@@ -28,7 +28,7 @@ export function ModalShell({ children, onClose, maxWidth = "max-w-md" }) {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.94, y: 14 }}
                     transition={{ type: "spring", stiffness: 340, damping: 28 }}
-                    className={`relative w-full ${maxWidth} pointer-events-auto rounded-xl border border-[var(--border)]  shadow-2xl overflow-hidden`}
+                    className={`relative w-full ${maxWidth} pointer-events-auto rounded-xl bg-background  border border-[var(--border)]  shadow-2xl overflow-hidden`}
                     onClick={(e) => e.stopPropagation()}
                 >
                     {children}

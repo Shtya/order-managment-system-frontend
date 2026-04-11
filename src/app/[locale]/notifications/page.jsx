@@ -189,14 +189,14 @@ function NotificationRow({ n, idx, onRead, t }) {
         >
           {n.title}
         </p>
-        <p className="text-xs text-muted-foreground leading-relaxed break-words">
+        <p className="text-xs  text-muted-foreground group-hover:text-white leading-relaxed break-words">
           {n.message}
         </p>
       </div>
 
       {/* Meta */}
       <div className="shrink-0 flex flex-col items-end gap-1.5 pt-0.5">
-        <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+        <span className="text-[10px] text-muted-foreground group-hover:text-white whitespace-nowrap">
           {formatRelativeDate(n.createdAt, t)}
         </span>
         {!n.isRead && (
@@ -218,7 +218,7 @@ function FilterPill({ active, onClick, children }) {
         "px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 ",
         active
           ? "bg-[color-mix(in_oklab,var(--primary)_12%,transparent)] text-[var(--primary)] border border-[color-mix(in_oklab,var(--primary)_25%,transparent)]"
-          : "bg-[var(--secondary)] text-muted-foreground border border-border/60 hover:border-border",
+          : "bg-[var(--secondary)] text-white dark:text-muted-foreground border border-border/60 hover:border-border",
       )}
     >
       {children}
@@ -353,8 +353,8 @@ export default function NotificationsPage() {
             onClick={handleRefresh}
             disabled={loading}
             className="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold
-              bg-[var(--secondary)] border border-border/60 text-muted-foreground
-              hover:text-foreground hover:border-border transition"
+              bg-[var(--secondary)] border border-border/60 text-white dark:text-muted-foreground
+              hover:text-white hover:border-border transition"
           >
             <RefreshCw size={14} className={cn(loading && "animate-spin")} />
             {tN("refresh")}
@@ -394,20 +394,20 @@ export default function NotificationsPage() {
           <div className="relative flex-1 min-w-[200px]">
             <Search
               size={14}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white dark:text-muted-foreground pointer-events-none"
             />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={tN("searchPlaceholder")}
-              className="w-full h-9 pr-9 pl-3 rounded-xl border border-border/60 bg-[var(--secondary)]
+              className="w-full h-9 pr-9 pl-3 rounded-xl border border-border/60 dark:bg-[var(--secondary)]
                 text-sm text-foreground placeholder:text-muted-foreground
                 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)]/40 transition"
             />
             {search && (
               <button
                 onClick={() => setSearch("")}
-                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition"
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white dark:text-muted-foreground hover:text-foreground transition"
               >
                 <X size={13} />
               </button>
@@ -465,9 +465,9 @@ export default function NotificationsPage() {
               >
                 <div className="w-16 h-16 rounded-xl bg-[var(--secondary)] border border-border/60 flex items-center justify-center">
                   {filter === "unread" ? (
-                    <BellOff size={28} className="text-muted-foreground" />
+                    <BellOff size={28} className="text-white dark:text-muted-foreground" />
                   ) : (
-                    <Inbox size={28} className="text-muted-foreground" />
+                    <Inbox size={28} className="text-white dark:text-muted-foreground" />
                   )}
                 </div>
                 <div>
@@ -476,7 +476,7 @@ export default function NotificationsPage() {
                       ? tN("empty.noUnread")
                       : tN("empty.noNotifications")}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-white dark:text-muted-foreground text-muted-foreground">
                     {tN("empty.description")}
                   </p>
                 </div>

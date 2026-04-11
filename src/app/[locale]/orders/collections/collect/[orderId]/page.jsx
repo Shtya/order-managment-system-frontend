@@ -80,7 +80,7 @@ const PaymentSourceMeta = {
   vodafone_cash: { icon: Smartphone, color: "#DC2626" },
   orange_cash: { icon: Smartphone, color: "#EA580C" },
   etisalat_cash: { icon: Smartphone, color: "#16A34A" },
-  fawry: { icon: ShoppingBag, color: "#ff8b00" },
+  fawry: { icon: ShoppingBag, color: "var(--primary)" },
   aman: { icon: ShoppingBag, color: "#7C3AED" },
   meeza: { icon: CreditCard, color: "#BE185D" },
   other: { icon: Wallet, color: "#6B7280" },
@@ -134,7 +134,7 @@ function FieldGroup({ label, required, error, children, icon: Icon }) {
 const FIELD_CLS =
   "h-[40px] rounded-xl border-[var(--border)]  text-[var(--foreground)] " +
   "placeholder:text-[var(--muted-foreground)] " +
-  "focus:ring-2 focus:ring-[#ff8b00]/25 focus:border-[#ff8b00]/50 transition-all";
+  "focus:ring-2 focus:ring-[var(--primary)]/25 focus:border-[var(--primary)]/50 transition-all";
 
 // ── Payment Source Picker ─────────────── ──────────────────────────────────────
 
@@ -157,7 +157,7 @@ function PaymentSourcePicker({ value, onChange, tCollect }) {
             className={cn(
               "relative flex items-center gap-2.5 p-2.5 rounded-xl border-2 transition-all duration-200 text-left active:scale-[0.96]",
               !sel &&
-              "border-[var(--border)] bg-[var(--card)] hover:border-[#ff8b00]/30",
+              "border-[var(--border)] bg-[var(--card)] hover:border-[var(--primary)]/30",
             )}
             style={
               sel
@@ -232,12 +232,12 @@ function OrderTimeline({ deliveredAt, t }) {
                   step.done
                     ? {
                       background: "linear-gradient(135deg,#10b981,#059669)",
-                      boxShadow: "0 3px 10px #10b98140",
+                      boxShadow: "0 4px 14px var(--primary)",
                     }
                     : step.active
                       ? {
-                        background: "linear-gradient(135deg,#ff8b00,#ff5c2b)",
-                        boxShadow: "0 3px 12px #ff8b0050",
+                        background: "linear-gradient(135deg,var(--primary),var(--secondary))",
+                        boxShadow: "0 4px 14px var(--primary)",
                       }
                       : { background: "var(--muted)" }
                 }
@@ -258,7 +258,7 @@ function OrderTimeline({ deliveredAt, t }) {
                   color: step.done
                     ? "#10b981"
                     : step.active
-                      ? "#ff8b00"
+                      ? "var(--primary)"
                       : "var(--muted-foreground)",
                 }}
               >
@@ -320,8 +320,8 @@ function OrderHeroCard({ order, t }) {
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center"
             style={{
-              background: "linear-gradient(135deg,#ff8b00,#ff5c2b)",
-              boxShadow: "0 4px 14px #ff8b0038",
+              background: "linear-gradient(135deg,var(--primary),var(--secondary))",
+              boxShadow: "0 4px 14px var(--primary)",
             }}
           >
             <Package size={17} className="text-white" />
@@ -330,7 +330,7 @@ function OrderHeroCard({ order, t }) {
           <div className="flex flex-col ">
             <p
               className="text-[9px] tracking-[0.25em] font-bold uppercase "
-              style={{ color: "#ff8b00aa" }}
+              style={{ color: "var(--primary)" }}
             >
               {t("fields.orderNumber")}
             </p>
@@ -339,11 +339,9 @@ function OrderHeroCard({ order, t }) {
                 #{order.orderNumber}
               </span>
               <Badge
-                className="text-[10px] font-bold border px-2.5 py-0.5 rounded-full"
+                className="text-[10px] font-bold border px-2.5 py-0.5 rounded-full bg-primary/10 border-primary/30"
                 style={{
-                  background: "#ff8b0012",
-                  borderColor: "#ff8b0030",
-                  color: "#ff8b00",
+                  color: "var(--primary)",
                 }}
               >
                 {order.status?.name || t("status.delivered")}
@@ -365,10 +363,9 @@ function OrderHeroCard({ order, t }) {
             }}
           >
             <div
-              className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: "#ff8b0015" }}
+              className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary/10"
             >
-              <Icon size={12} style={{ color: "#ff8b00" }} />
+              <Icon size={12} style={{ color: "var(--primary)" }} />
             </div>
             <div className="min-w-0">
               <p className="text-[9px] uppercase tracking-widest font-bold mb-0.5 text-[var(--muted-foreground)]">
@@ -393,8 +390,7 @@ function OrderHeroCard({ order, t }) {
         >
           <MapPin
             size={12}
-            className="mt-0.5 flex-shrink-0"
-            style={{ color: "#ff8b0088" }}
+            className="mt-0.5 flex-shrink-0 text-primary"
           />
           <p className="text-[13px] leading-relaxed text-[var(--muted-foreground)]">
             {order.address}
@@ -522,8 +518,8 @@ export default function CollectOrderPage() {
           className="text-center"
         >
           <div className="relative w-14 h-14 mx-auto mb-4">
-            <div className="absolute inset-0 rounded-full border-4 border-[#ff8b00]/15" />
-            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#ff8b00] animate-spin" />
+            <div className="absolute inset-0 rounded-full border-4 border-[var(--primary)]/15" />
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[var(--primary)] animate-spin" />
           </div>
           <p className="text-sm font-semibold text-[var(--muted-foreground)]">
             {t("messages.loading")}
@@ -556,7 +552,7 @@ export default function CollectOrderPage() {
       name: t("fields.orderTotal"),
       value: formatCurrency(order.finalTotal),
       icon: Wallet,
-      color: "#ff8b00",
+      color: "var(--primary)",
       sortOrder: 1,
     },
     {
@@ -572,7 +568,7 @@ export default function CollectOrderPage() {
       name: t("fields.shippingCost"),
       value: formatCurrency(order.shippingCost),
       icon: Truck,
-      color: "#ff5c2b",
+      color: "var(--secondary)",
       sortOrder: 3,
     },
     {
@@ -580,7 +576,7 @@ export default function CollectOrderPage() {
       name: t("stats.remainingBalance"),
       value: formatCurrency(remaining),
       icon: Banknote,
-      color: remaining > 0 ? "#ff8b00" : "#10b981",
+      color: remaining > 0 ? "var(--primary)" : "#10b981",
       sortOrder: 4,
     },
   ];
@@ -640,8 +636,8 @@ export default function CollectOrderPage() {
                   <div
                     className="w-10 h-10 rounded-xl flex items-center justify-center"
                     style={{
-                      background: "linear-gradient(135deg,#ff8b00,#ff5c2b)",
-                      boxShadow: "0 4px 14px #ff8b0038",
+                      background: "linear-gradient(135deg,var(--primary),var(--secondary))",
+                      boxShadow: "0 4px 14px var(--primary)",
                     }}
                   >
                     <CreditCard size={17} className="text-white" />
@@ -788,11 +784,9 @@ export default function CollectOrderPage() {
                             placeholder={t("placeholders.amount")}
                             endIcon={
                               <span
-                                className=" text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-xl"
+                                className=" text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-xl bg-primary/10 border border-primary/30"
                                 style={{
-                                  color: "#ff8b00",
-                                  background: "#ff8b0012",
-                                  border: "1px solid #ff8b0022",
+                                  color: "var(--primary)",
                                 }}
                               >
                                 {currency}
@@ -812,15 +806,11 @@ export default function CollectOrderPage() {
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="rounded-xl px-4 py-2.5 flex items-center justify-between"
-                      style={{
-                        background: "#ff8b0009",
-                        border: "1px solid #ff8b001e",
-                      }}
+                      className="rounded-xl px-4 py-2.5 flex items-center justify-between bg-primary/10 border border-primary/30"
                     >
                       <span
                         className="text-xs font-semibold"
-                        style={{ color: "#ff8b00" }}
+                        style={{ color: "var(--primary)" }}
                       >
                         {t("hints.afterCollection")}
                       </span>
@@ -830,7 +820,7 @@ export default function CollectOrderPage() {
                           color:
                             remaining - watchedAmount <= 0
                               ? "#10b981"
-                              : "#ff8b00",
+                              : "var(--primary)",
                         }}
                       >
                         {formatCurrency(Math.max(0, remaining - watchedAmount))}{" "}

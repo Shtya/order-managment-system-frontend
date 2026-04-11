@@ -41,7 +41,7 @@ const T = {
   onInkMuted: "rgba(255,255,255,0.38)",
   onInkRule: "rgba(255,255,255,0.08)",
   accent: "var(--primary)",
-  accentGrad: "linear-gradient(90deg, var(--primary), var(--third, #ff5c2b))",
+  accentGrad: "linear-gradient(90deg, var(--primary), var(--third, var(--secondary)))",
 };
 
 /* ─────────────────────────────────────────────────────────

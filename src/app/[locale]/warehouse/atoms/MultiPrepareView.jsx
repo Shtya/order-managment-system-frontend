@@ -678,7 +678,7 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
                   text-primary-foreground text-xs font-black flex items-center gap-1.5
                   overflow-hidden disabled:opacity-40"
                 style={{
-                  background: "linear-gradient(135deg, var(--primary) 0%, var(--third, #ff5c2b) 100%)",
+                  background: "linear-gradient(135deg, var(--primary) 0%, var(--third, var(--secondary)) 100%)",
                   boxShadow: "0 2px 10px -2px rgb(var(--primary-shadow)), inset 0 1px 0 rgba(255,255,255,0.2)",
                 }}
               >

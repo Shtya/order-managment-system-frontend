@@ -133,7 +133,7 @@ function SelectContent({ className, children, position = "popper", align = "star
 				<div
 					aria-hidden
 					className="pointer-events-none absolute inset-x-0 top-0 h-[2px]
-            bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)]
+            bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,var(--third))] to-[var(--third,var(--secondary))]
             opacity-70"
 				/>
 

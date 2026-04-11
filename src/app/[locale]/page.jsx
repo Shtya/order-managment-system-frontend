@@ -240,7 +240,7 @@ function Hero({ t, heroImage, locale, switchLocale, user }) {
         </div>
 
         {/* Hero image with floating animation */}
-        <div className="w-full max-w-xl mx-auto flex justify-center items-center relative">
+        <motion.div  {...fadeUp(0.1)} className="w-full max-w-xl mx-auto flex justify-center items-center relative">
           <svg viewBox="0 0 600 600" className="w-full h-auto">
             <circle cx="300" cy="300" r="280" fill="#f0fdf4" opacity="0.5"></circle>
 
@@ -306,7 +306,7 @@ function Hero({ t, heroImage, locale, switchLocale, user }) {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       <FeatureSection />

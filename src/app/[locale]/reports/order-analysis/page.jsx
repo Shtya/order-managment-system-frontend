@@ -471,8 +471,13 @@ export function TrendChart({ data, loading, configs = [] }) {
         labels: {
           usePointStyle: true,
           pointStyle: "circle",
+          font: { family: "Cairo, Cairo Fallback" },
           padding: 20,
-          font: { size: 11, weight: "600" },
+          font: {
+            family: "Cairo, Cairo Fallback",
+            size: 11,
+            weight: "600"
+          },
           color: "#64748b",
         },
       },
@@ -484,6 +489,20 @@ export function TrendChart({ data, loading, configs = [] }) {
         borderColor: "#e2e8f0",
         borderWidth: 1,
         padding: 12,
+        titleFont: {
+          family: "Cairo, Cairo Fallback",
+          size: 11,
+          weight: "700",
+        },
+        bodyFont: {
+          family: "Cairo, Cairo Fallback",
+          size: 10,
+          weight: "500",
+        },
+        // Optional: Add Cairo to the items inside the tooltip
+        footerFont: {
+          family: "Cairo, Cairo Fallback",
+        },
         cornerRadius: 14,
         boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
       },
@@ -491,12 +510,12 @@ export function TrendChart({ data, loading, configs = [] }) {
     scales: {
       x: {
         grid: { color: "rgba(0,0,0,0.03)", drawBorder: false },
-        ticks: { font: { size: 11 }, color: "#94a3b8", maxRotation: 0 },
+        ticks: { font: { family: "Cairo, Cairo Fallback", size: 10 }, color: "#94a3b8", maxRotation: 0 },
         border: { display: false },
       },
       y: {
         grid: { color: "rgba(0,0,0,0.03)", drawBorder: false },
-        ticks: { font: { size: 11 }, color: "#94a3b8" },
+        ticks: { font: { family: "Cairo, Cairo Fallback", size: 10 }, color: "#94a3b8" },
         border: { display: false },
         beginAtZero: true,
       },
@@ -504,7 +523,7 @@ export function TrendChart({ data, loading, configs = [] }) {
         y1: {
           position: "right",
           grid: { display: false },
-          ticks: { font: { size: 11 }, color: "#94a3b8" },
+          ticks: { font: { family: "Cairo, Cairo Fallback", size: 10 }, color: "#94a3b8" },
           border: { display: false },
         },
       }),

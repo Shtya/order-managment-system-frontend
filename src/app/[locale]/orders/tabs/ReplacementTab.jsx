@@ -391,7 +391,7 @@ export function ReplacementTab({ statuses }) {
 							icon: <Eye />,
 							tooltip: t("actions.view"),
 							onClick: (r) => router.push(`/orders/details/${r.replacementOrderId}`),
-							variant: "purple",
+							variant: "primary",
 							permission: "orders.readReplace",
 						},
 					]}

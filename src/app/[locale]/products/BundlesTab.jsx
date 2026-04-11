@@ -207,25 +207,25 @@ export default function useBundlesTab({ t, searchDebounced, filters, onAskDelete
             row={row}
             actions={[
               {
-                icon: <Trash2 />,
-                tooltip: t("actions.delete"),
-                onClick: (r) => onAskDelete?.(r.id, "bundles"),
-                variant: "red",
-                permission: "products.delete",
-              },
-              {
                 icon: <Edit2 />,
                 tooltip: t("actions.edit"),
                 onClick: (r) => router.push(`/bundles/edit/${r.id}`),
-                variant: "blue",
+                variant: "primary",
                 permission: "products.update",
               },
               {
                 icon: <Eye />,
                 tooltip: t("actions.view"),
                 onClick: (r) => onOpenView?.(r.id, "bundles"),
-                variant: "purple",
+                variant: "primary",
                 permission: "products.read",
+              },
+              {
+                icon: <Trash2 />,
+                tooltip: t("actions.delete"),
+                onClick: (r) => onAskDelete?.(r.id, "bundles"),
+                variant: "red",
+                permission: "products.delete",
               },
             ]}
           />

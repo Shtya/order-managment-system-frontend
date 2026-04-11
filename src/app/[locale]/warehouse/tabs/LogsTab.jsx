@@ -417,7 +417,7 @@ export default function LogsTab({ orders = [] }) {
                 icon: <Info />,
                 tooltip: t("actions.viewOperationLog"),
                 onClick: (r) => openGenericLog(r),
-                variant: "purple",
+                variant: "primary",
                 permission: "orders.read",
               },
             ]}

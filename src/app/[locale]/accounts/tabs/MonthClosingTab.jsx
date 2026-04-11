@@ -134,7 +134,7 @@ export default function MonthClosingTab() {
               icon: <Eye />,
               tooltip: t("actions.viewDetails"),
               onClick: (r) => setSelectedClosing(r),
-              variant: "blue",
+              variant: "primary",
             }
           ]}
         />

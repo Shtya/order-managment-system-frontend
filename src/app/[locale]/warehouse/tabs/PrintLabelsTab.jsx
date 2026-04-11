@@ -471,8 +471,8 @@ function NotPrintedSubtab({ onPrinted, resetToken, fetchStats }) {
         <ActionButtons
           row={row}
           actions={[
-            { icon: <Info />, tooltip: t("common.details"), onClick: (r) => setDetailModal(r), variant: "purple", permission: "orders.read" },
-            { icon: <Printer />, tooltip: t("common.printLabel"), onClick: (r) => setPrintPreview({ open: true, orders: [r] }), variant: "blue", permission: "orders.update" },
+            { icon: <Info />, tooltip: t("common.details"), onClick: (r) => setDetailModal(r), variant: "primary", permission: "orders.read" },
+            { icon: <Printer />, tooltip: t("common.printLabel"), onClick: (r) => setPrintPreview({ open: true, orders: [r] }), variant: "primary", permission: "orders.update" },
           ]}
         />
       ),
@@ -630,8 +630,8 @@ function PrintedSubtab({ resetToken, fetchStats }) {
         <ActionButtons
           row={row}
           actions={[
-            { icon: <Info />, tooltip: t("common.details"), onClick: (r) => setDetailModal(r), variant: "purple", permission: "orders.read" },
-            { icon: <Printer />, tooltip: t("common.reprint"), onClick: (r) => setPrintPreview({ open: true, orders: [r] }), variant: "blue", permission: "orders.update" },
+            { icon: <Info />, tooltip: t("common.details"), onClick: (r) => setDetailModal(r), variant: "primary", permission: "orders.read" },
+            { icon: <Printer />, tooltip: t("common.reprint"), onClick: (r) => setPrintPreview({ open: true, orders: [r] }), variant: "primary", permission: "orders.update" },
           ]}
         />
       ),

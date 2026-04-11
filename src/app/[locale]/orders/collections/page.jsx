@@ -445,7 +445,7 @@ export default function OrderCollectionPage() {
 								icon: <HandCoins />,
 								tooltip: t("actions.collect"),
 								onClick: (r) => router.push(`/orders/collections/collect/${r.orderId}`),
-								variant: "emerald",
+								variant: "primary",
 								permission: "orders-collect.create",
 							},
 						]}

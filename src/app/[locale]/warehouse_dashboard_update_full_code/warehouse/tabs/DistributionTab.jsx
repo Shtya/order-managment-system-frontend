@@ -481,7 +481,7 @@ function DistributionOrdersTable({ type, orders, updateOrder, pushOp, rejectOrde
             key: "export",
             label: t("actions.export"),
             icon: <FileDown size={14} />,
-            color: "blue",
+            color: "primary",
             onClick: () => { },
           },
         ]}

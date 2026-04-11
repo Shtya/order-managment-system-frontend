@@ -19,7 +19,7 @@ import { buildOrderOverviewCards, buildOrderSummarySection, openPdfDocument } fr
 import { cn } from "@/utils/cn";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
-function buildOutgoingDocumentBody({ orders, carrier, employee, createdAt, title, formatCurrency }) {
+function buildOutgoingDocumentBody({ orders, carrier, employee, createdAt, title, formatCurrency, currency }) {
   const summary = getDocumentSummary(orders);
   const orderSections = orders.map((order) => {
     const productRows = (order.products || []).map((product) => `
@@ -28,7 +28,7 @@ function buildOutgoingDocumentBody({ orders, carrier, employee, createdAt, title
         <td>${product.name}</td>
         <td>${product.shelf || "غير محدد"}</td>
         <td>${product.requestedQty}</td>
-        <td>${formatCurrency ? formatCurrency((Number(product.price) || 0) * (Number(product.requestedQty) || 0)) : `${(Number(product.price) || 0) * (Number(product.requestedQty) || 0)} ر.س`}</td>
+        <td>${formatCurrency ? formatCurrency((Number(product.price) || 0) * (Number(product.requestedQty) || 0)) : `${(Number(product.price) || 0) * (Number(product.requestedQty) || 0)} ${currency}`}</td>
       </tr>
     `).join("");
 
@@ -42,7 +42,7 @@ function buildOutgoingDocumentBody({ orders, carrier, employee, createdAt, title
           <span class="badge badge-success">${carrier}</span>
         </div>
         <div style="padding: 16px; display: flex; flex-direction: column; gap: 16px;">
-          ${buildOrderOverviewCards(order, { orderValue: "قيمة الطلب", orderSummary: "ملخص الطلب", customer: "العميل", city: "المدينة", itemsWord: "قطعة" }, formatCurrency)}
+          ${buildOrderOverviewCards(order, { orderValue: "قيمة الطلب", orderSummary: "ملخص الطلب", customer: "العميل", city: "المدينة", itemsWord: "قطعة" }, formatCurrency, currency)}
           <div class="table-wrap">
             <table>
               <thead>
@@ -73,12 +73,12 @@ function buildOutgoingDocumentBody({ orders, carrier, employee, createdAt, title
         <div class="summary-box"><span>إجمالي الطلبات</span><b>${orders.length}</b></div>
         <div class="summary-box"><span>إجمالي عدد الـ SKU</span><b>${summary.totalSkus}</b></div>
         <div class="summary-box"><span>إجمالي الكميات</span><b>${summary.totalItems}</b></div>
-        <div class="summary-box"><span>القيمة الإجمالية</span><b>${formatCurrency ? formatCurrency(summary.totalValue) : `${summary.totalValue} ر.س`}</b></div>
+        <div class="summary-box"><span>القيمة الإجمالية</span><b>${formatCurrency ? formatCurrency(summary.totalValue) : `${summary.totalValue} ${currency}`}</b></div>
       </div>
     </section>
 
     ${orderSections}
-    ${buildOrderSummarySection(orders, { title: "الملخص النهائي", totalOrders: "إجمالي الطلبات", totalSkus: "إجمالي عدد الـ SKU", totalItems: "إجمالي الكميات", totalValue: "القيمة الإجمالية" }, formatCurrency)}
+    ${buildOrderSummarySection(orders, { title: "الملخص النهائي", totalOrders: "إجمالي الطلبات", totalSkus: "إجمالي عدد الـ SKU", totalItems: "إجمالي الكميات", totalValue: "القيمة الإجمالية" }, formatCurrency, currency)}
 
     <section class="signature">
       <h2 class="section-title">تأكيد الاستلام</h2>
@@ -350,7 +350,7 @@ function ScanOutgoingSubtab({ orders, updateOrder, pushOp, rejectOrder, inventor
 }
 
 function OutgoingFilesSubtab({ deliveryFiles, orders, t }) {
-  const { formatCurrency } = usePlatformSettings();
+  const { formatCurrency, currency } = usePlatformSettings();
   const [carrier, setCarrier] = useState("all");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState({ current_page: 1, per_page: 12 });
@@ -369,7 +369,7 @@ function OutgoingFilesSubtab({ deliveryFiles, orders, t }) {
     openPdfDocument({
       title: t("files.deliveryPdfTitle"),
       filename: file.filename,
-      body: buildOutgoingDocumentBody({ orders: snapshot, carrier: file.carrier, employee: file.createdBy, createdAt: file.createdAt, title: t("files.deliveryPdfTitle"), formatCurrency }),
+      body: buildOutgoingDocumentBody({ orders: snapshot, carrier: file.carrier, employee: file.createdBy, createdAt: file.createdAt, title: t("files.deliveryPdfTitle"), formatCurrency, currency }),
     });
   };
 

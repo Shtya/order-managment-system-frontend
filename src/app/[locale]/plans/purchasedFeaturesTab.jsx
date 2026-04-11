@@ -149,7 +149,7 @@ export default function PurchasedFeaturesTab() {
                                     tooltip: tf("tooltips.purchaseNow").trim(),
                                     onClick: (r) => handlePurchase(r.id),
                                     disabled: purchasingId === row.id,
-                                    variant: "emerald",
+                                    variant: "primary",
                                 },
                             ]}
                         />

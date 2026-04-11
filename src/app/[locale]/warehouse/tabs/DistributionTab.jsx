@@ -919,7 +919,7 @@ function UnassignedOrdersSubtab({ t, fetchStats, updateStatsAfterAssign }) {
     date: "",
     productId: "all",
   });
-
+  const { currency } = usePlatformSettings();
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [assignDialog, setAssignDialog] = useState({ open: false, codes: [] });
   const [cancelModal, setCancelModal] = useState({ open: false, order: null });
@@ -1177,7 +1177,7 @@ function UnassignedOrdersSubtab({ t, fetchStats, updateStatsAfterAssign }) {
         header: t("field.total"),
         cell: (row) => (
           <span className="font-bold text-emerald-700 dark:text-emerald-400">
-            {row.finalTotal} ر.س
+            {row.finalTotal} {currency}
           </span>
         ),
       },
@@ -1221,7 +1221,7 @@ function UnassignedOrdersSubtab({ t, fetchStats, updateStatsAfterAssign }) {
                 icon: <Info />,
                 tooltip: t("tooltip.details"),
                 onClick: (r) => setDetailModal(r),
-                variant: "purple",
+                variant: "primary",
                 permission: "orders.read",
               },
               {
@@ -1231,7 +1231,7 @@ function UnassignedOrdersSubtab({ t, fetchStats, updateStatsAfterAssign }) {
                   : t("tooltip.assign"),
                 onClick: (r) =>
                   setAssignDialog({ open: true, codes: [r.orderNumber] }),
-                variant: "orange",
+                variant: "primary",
                 disabled: row.isAssigning,
                 permission: "order.assign",
               },
@@ -1420,6 +1420,7 @@ function AssignedOrdersSubtab({
   fetchStats,
   updateStatsAfterAssign,
 }) {
+  const { currency } = usePlatformSettings();
   const [search, setSearch] = useState("");
   const { debouncedValue: debouncedSearch } = useDebounce({
     value: search,
@@ -1669,7 +1670,7 @@ function AssignedOrdersSubtab({
         header: t("field.total"),
         cell: (row) => (
           <span className="font-bold text-emerald-700 dark:text-emerald-400">
-            {row.finalTotal} ر.س
+            {row.finalTotal} {currency}
           </span>
         ),
       },
@@ -1684,7 +1685,7 @@ function AssignedOrdersSubtab({
                 icon: <Info />,
                 tooltip: t("tooltip.details"),
                 onClick: (r) => setDetailModal(r),
-                variant: "purple",
+                variant: "primary",
                 permission: "orders.read",
               },
               {
@@ -1694,7 +1695,7 @@ function AssignedOrdersSubtab({
                   : t("tooltip.changeAssign"),
                 onClick: (r) =>
                   setAssignDialog({ open: true, codes: [r.orderNumber] }),
-                variant: "orange",
+                variant: "primary",
                 disabled: row.isAssigning,
                 permission: "order.assign",
               },

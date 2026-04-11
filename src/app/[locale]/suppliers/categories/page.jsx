@@ -418,25 +418,25 @@ export default function SupplierCategoriesPage() {
 						row={row}
 						actions={[
 							{
-								icon: <Trash2 />,
-								tooltip: t("actions.delete"),
-								onClick: (r) => setDeleteState({ open: true, id: r.id }),
-								variant: "red",
-								permission: "categories.delete",
-							},
-							{
 								icon: <Edit2 />,
 								tooltip: t("actions.edit"),
 								onClick: (r) => openEdit(r),
-								variant: "blue",
+								variant: "primary",
 								permission: "categories.update",
 							},
 							{
 								icon: <Eye />,
 								tooltip: t("actions.view"),
 								onClick: (r) => openView(r),
-								variant: "purple",
+								variant: "primary",
 								permission: "categories.read",
+							},
+							{
+								icon: <Trash2 />,
+								tooltip: t("actions.delete"),
+								onClick: (r) => setDeleteState({ open: true, id: r.id }),
+								variant: "red",
+								permission: "categories.delete",
 							},
 						]}
 					/>

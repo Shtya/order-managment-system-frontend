@@ -547,9 +547,25 @@ export default function EmployeesPage() {
 									icon: busy.toggle ? <Loader2 size={16} className="animate-spin" /> : (row.isActive ? <ToggleLeft size={16} /> : <ToggleRight size={16} />),
 									tooltip: row.isActive ? (t("actions.deactivate") || "Deactivate") : (t("actions.activate") || "Activate"),
 									onClick: (r) => handleToggleActive(r),
-									variant: row.isActive ? "amber" : "emerald",
+									variant: row.isActive ? "primary" : "slate",
 									disabled: !!busy.toggle,
 									permission: "users.deactivate",
+								},
+								{
+									icon: busy.edit ? <Loader2 size={16} className="animate-spin" /> : <Edit2 size={16} />,
+									tooltip: t("actions.edit"),
+									onClick: (r) => openEdit(r),
+									variant: "primary",
+									disabled: !!busy.edit,
+									permission: "users.update",
+								},
+								{
+									icon: busy.view ? <Loader2 size={16} className="animate-spin" /> : <Eye size={16} />,
+									tooltip: t("actions.view"),
+									onClick: (r) => handleView(r),
+									variant: "primary",
+									disabled: !!busy.view,
+									permission: "users.read",
 								},
 								{
 									icon: busy.del ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />,
@@ -558,22 +574,6 @@ export default function EmployeesPage() {
 									variant: "red",
 									disabled: !!busy.del,
 									permission: "users.deactivate", // Use deactivate as proxy if delete not available
-								},
-								{
-									icon: busy.edit ? <Loader2 size={16} className="animate-spin" /> : <Edit2 size={16} />,
-									tooltip: t("actions.edit"),
-									onClick: (r) => openEdit(r),
-									variant: "blue",
-									disabled: !!busy.edit,
-									permission: "users.update",
-								},
-								{
-									icon: busy.view ? <Loader2 size={16} className="animate-spin" /> : <Eye size={16} />,
-									tooltip: t("actions.view"),
-									onClick: (r) => handleView(r),
-									variant: "purple",
-									disabled: !!busy.view,
-									permission: "users.read",
 								},
 							]}
 						/>

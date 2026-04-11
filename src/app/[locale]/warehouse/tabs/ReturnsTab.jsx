@@ -3007,7 +3007,7 @@ function ReturnsFilesSubtab({
                 ),
                 tooltip: t("files.tooltip.downloadReceipt"),
                 onClick: (r) => handleDownload(r),
-                variant: "blue",
+                variant: "primary",
                 disabled: !!downloading[row.id],
                 permission: "orders.read",
               },

@@ -6,7 +6,7 @@ import {
 	Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
- 
+
 import { cn } from "@/utils/cn";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
@@ -18,9 +18,9 @@ function StepBadge({ number, active, done }) {
 			className={cn(
 				"w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300",
 				done
-					? "bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)] dark:from-[#5b4bff] dark:to-[#3be7ff]"
+					? "bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)] "
 					: active
-						? "bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)] dark:from-[#5b4bff] dark:to-[#3be7ff] shadow-[0_4px_12px_var(--primary-shadow,rgba(255,139,0,0.35))]"
+						? "bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]  shadow-[0_4px_12px_var(--primary-shadow,rgba(255,139,0,0.35))]"
 						: "bg-muted border border-border"
 			)}
 		>
@@ -160,7 +160,7 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 					<div className="relative flex items-center gap-4 px-6 py-5 border-b border-border">
 						<div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0
 							bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]
-							dark:from-[#5b4bff] dark:to-[#3be7ff]
+							
 							shadow-[0_4px_16px_var(--primary-shadow,rgba(255,139,0,0.4))]">
 							<Upload className="text-white" size={19} />
 						</div>
@@ -222,8 +222,8 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 									"min-h-[160px] rounded-xl border-2 border-dashed cursor-pointer",
 									"transition-all duration-300",
 									dragOver || file
-										? "border-[var(--primary)] dark:border-[#5b4bff] bg-[var(--primary)]/6 dark:bg-[#5b4bff]/10"
-										: "border-border hover:border-[var(--primary)] dark:hover:border-[#5b4bff] hover:bg-[var(--primary)]/5 dark:hover:bg-[#5b4bff]/8"
+										? "border-[var(--primary)] bg-[var(--primary)]/6 dark:bg-[#5b4bff]/10"
+										: "border-border hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 dark:hover:bg-[#5b4bff]/8"
 								)}
 							>
 								{/* bg glow on drag */}
@@ -250,7 +250,7 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 									>
 										<div className="w-12 h-12 rounded-xl flex items-center justify-center
 											bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]
-											dark:from-[#5b4bff] dark:to-[#3be7ff]
+											
 											shadow-[0_4px_16px_var(--primary-shadow,rgba(255,139,0,.3))]">
 											<FileCheck2 size={22} className="text-white" />
 										</div>
@@ -258,7 +258,7 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 										<p className="text-xs text-muted-foreground">
 											{(file.size / 1024).toFixed(1)} KB
 										</p>
-										<span className="text-[10px] font-bold uppercase tracking-wider text-[var(--primary)] dark:text-[#8b7cff]">
+										<span className="text-[10px] font-bold uppercase tracking-wider text-[var(--primary)] ">
 											{t("bulkUpload.clickToChangeFile")}
 										</span>
 									</motion.div>
@@ -270,7 +270,7 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 											group-hover:border-[var(--primary)]/30
 											group-hover:bg-[var(--primary)]/8 dark:group-hover:bg-[#5b4bff]/12
 											transition-all duration-300">
-											<Upload size={20} className="text-muted-foreground group-hover:text-[var(--primary)] dark:group-hover:text-[#8b7cff] transition-colors" />
+											<Upload size={20} className="text-muted-foreground group-hover:text-[var(--primary)]  transition-colors" />
 										</div>
 										<div className="text-center">
 											<p className="text-sm font-bold text-foreground">
@@ -301,7 +301,7 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 						disabled={!file || uploading}
 						className="h-10 px-6 rounded-xl text-sm font-bold text-white gap-2
 							bg-gradient-to-r from-[var(--primary)] to-[var(--third,#ff5c2b)]
-							dark:from-[#5b4bff] dark:to-[#3be7ff]
+							
 							shadow-[0_4px_16px_var(--primary-shadow,rgba(255,139,0,.35))]
 							hover:shadow-[0_6px_24px_var(--primary-shadow,rgba(255,139,0,.5))]
 							hover:brightness-110

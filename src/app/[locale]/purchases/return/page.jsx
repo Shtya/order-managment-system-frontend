@@ -560,7 +560,7 @@ export default function PurchasesReturnPage() {
 						key: "export",
 						label: t("toolbar.export"),
 						icon: <FileDown size={14} />,
-						color: "blue",
+						color: "primary",
 						onClick: () => console.log("export"),
 						permission: "purchase_returns.read",
 					},

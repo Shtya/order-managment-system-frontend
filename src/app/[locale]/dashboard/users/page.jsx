@@ -669,7 +669,7 @@ export default function SuperAdminUsersPage() {
 					{
 						key: "export",
 						label: t("toolbar.export"),
-						color: "blue",
+						color: "primary",
 						onClick: handleExport,
 					},
 				]}

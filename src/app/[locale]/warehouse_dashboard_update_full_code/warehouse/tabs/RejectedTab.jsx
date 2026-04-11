@@ -166,7 +166,7 @@ export function RejectedTab({ orders, updateOrder, pushOp }) {
           emptySubtitle: "",
         }}
         actions={[
-          { key: "export", label: t("actions.export"), icon: <FileDown size={14} />, color: "blue", onClick: () => { } },
+          { key: "export", label: t("actions.export"), icon: <FileDown size={14} />, color: "primary", onClick: () => { } },
         ]}
         hasActiveFilters={false}
         onApplyFilters={() => { }}

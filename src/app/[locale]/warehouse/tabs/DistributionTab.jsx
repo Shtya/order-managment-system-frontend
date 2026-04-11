@@ -1293,7 +1293,7 @@ function UnassignedOrdersSubtab({ t, fetchStats, updateStatsAfterAssign }) {
             ) : (
               <FileDown size={14} />
             ),
-            color: "blue",
+            color: "primary",
             onClick: onExport,
             disabled: exportLoading,
             permission: "orders.read",
@@ -1781,7 +1781,7 @@ function AssignedOrdersSubtab({
             ) : (
               <FileDown size={14} />
             ),
-            color: "blue",
+            color: "primary",
             onClick: onExport,
             disabled: exportLoading,
             permission: "orders.read",

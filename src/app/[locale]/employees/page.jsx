@@ -647,7 +647,7 @@ export default function EmployeesPage() {
 						) : (
 							<Download size={14} />
 						),
-						color: "blue",
+						color: "primary",
 						onClick: handleExport,
 						disabled: exportLoading,
 						permission: "users.read",

@@ -312,7 +312,7 @@ export function LogsTab({ opsLogs, orders = [] }) {
           emptySubtitle: "",
         }}
         actions={[
-          { key: "export", label: t("actions.export"), icon: <FileDown size={14} />, color: "blue", onClick: () => { } },
+          { key: "export", label: t("actions.export"), icon: <FileDown size={14} />, color: "primary", onClick: () => { } },
         ]}
         hasActiveFilters={operationType !== "all" || result !== "all" || carrier !== "all"}
         onApplyFilters={() => { }}

@@ -164,7 +164,7 @@ export default function MonthClosingTab() {
             key: "export",
             label: tCommon("export"),
             icon: exportLoading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />,
-            color: "blue",
+            color: "primary",
             onClick: onExport,
             disabled: exportLoading,
             permission: "orders.read",

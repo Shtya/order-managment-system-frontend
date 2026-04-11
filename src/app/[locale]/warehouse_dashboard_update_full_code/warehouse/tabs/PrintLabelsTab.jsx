@@ -322,7 +322,7 @@ function LabelsTable({ orders, filters, setFilters, selectedCodes, setSelectedCo
               disabled: selectedCodes.length === 0,
             }]
             : []),
-          { key: "export", label: t("actions.export"), icon: <FileDown size={14} />, color: "blue", onClick: () => { } },
+          { key: "export", label: t("actions.export"), icon: <FileDown size={14} />, color: "primary", onClick: () => { } },
         ]}
         hasActiveFilters={hasActiveFilters}
         onApplyFilters={() => { }}

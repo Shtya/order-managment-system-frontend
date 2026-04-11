@@ -435,7 +435,7 @@ export function EmployeeStatisticsPage() {
                         ) : (
                             <Download size={14} />
                         ),
-                        color: "blue",
+                        color: "primary",
                         onClick: handleExport,
                         disabled: exportLoading,
                     },

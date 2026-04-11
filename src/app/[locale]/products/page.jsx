@@ -570,7 +570,7 @@ export default function ProductsPage() {
 						icon: exportLoading
 							? <Loader2 size={14} className="animate-spin" />
 							: <Download size={14} />,
-						color: "blue",
+						color: "primary",
 						disabled: exportLoading,
 						onClick: onExport,
 						permission: "products.read",

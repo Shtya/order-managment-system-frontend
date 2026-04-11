@@ -454,7 +454,7 @@ export function ReplacementTab({ statuses }) {
 					icon: exportLoading
 						? <Loader2 size={14} className="animate-spin" />
 						: <Download size={14} />,
-					color: "blue",
+					color: "primary",
 					onClick: handleExport,
 					disabled: exportLoading,
 				},

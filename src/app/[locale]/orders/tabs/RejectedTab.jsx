@@ -433,7 +433,7 @@ export default function RejectedTab({ resetToken }) {
             key: "export",
             label: t("export"),
             icon: exportLoading ? <Loader2 size={14} className="animate-spin" /> : <FileDown size={14} />,
-            color: "blue",
+            color: "primary",
             onClick: onExport,
             disabled: exportLoading,
             permission: "orders.read",

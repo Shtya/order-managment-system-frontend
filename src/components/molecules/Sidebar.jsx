@@ -435,7 +435,7 @@ function SubItem({ child, isActive, isRTL, index }) {
     </motion.div>
   );
 }
-export const excludedSubcriptionPaths = ["/plans", "/wallet"];
+export const excludedSubcriptionPaths = ["/plans", "/wallet", "/onboarding"];
 const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
 
   const pathname = usePathname();

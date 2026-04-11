@@ -75,6 +75,8 @@ const toastOptions = (isRTL) => ({
   },
 });
 
+
+const pathsWitohutLayout = ["/onboarding"];
 function DashboardLayout({ children }) {
   const locale = useLocale();
   const isRTL = locale === "ar";
@@ -104,8 +106,10 @@ function DashboardLayout({ children }) {
 
   const { hasActiveSubscription, isSuperAdmin, isLoading, user } = useAuth();
   const isExcluded = excludedSubcriptionPaths.some(path => pathname.startsWith(path));
+  const isPublic = isPublicRoute(AllPathname);
 
-  const isLocked = !isSuperAdmin && !hasActiveSubscription && !isExcluded && !isLoading && user;
+  const isLocked = !isSuperAdmin && !hasActiveSubscription && !isExcluded && !isPublic && !isLoading && user;
+
   useEffect(() => {
     if (!isMobile) {
       localStorage.setItem(
@@ -131,6 +135,7 @@ function DashboardLayout({ children }) {
     };
   }, [isMobile]);
 
+  const isPathWithoutLayout = pathsWitohutLayout.some((path) => pathname.startsWith(path));
   const isAuthRoute = isPublicRoute(AllPathname);
   const [mounted, setMounted] = useState(false);
 
@@ -141,7 +146,7 @@ function DashboardLayout({ children }) {
   const sidebarW = isSidebarOpen ? 260 : 68;
 
   const effectiveMargin = mounted ? (isMobile ? 0 : sidebarW) : (isMobile ? 0 : 68);
-  if (isAuthRoute || pathname === "") {
+  if (isAuthRoute || isPathWithoutLayout || pathname === "") {
     return (
       <div>
         <Toaster position="top-center" toastOptions={toastOptions(isRTL)} />

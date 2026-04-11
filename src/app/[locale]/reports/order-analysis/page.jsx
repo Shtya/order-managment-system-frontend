@@ -24,6 +24,7 @@ import {
   Filter,
   PieChart,
   Info,
+  FileDown,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
@@ -73,9 +74,9 @@ ChartJS.register(
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const PRIMARY = "#ff8b00";
-export const SECONDARY = "#ffb703";
-export const THIRD = "#ff5c2b";
+export const PRIMARY = "#6763AF";
+export const SECONDARY = "#5750a0";
+export const THIRD = "#7672B9";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -105,19 +106,13 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-slate-100 dark:border-slate-800 bg-card",
-        "shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden",
+        "main-card",
         className,
       )}
     >
-      {/* Top accent stripe */}
-      <div
-        className="h-[3px] w-full"
-        style={{ background: `linear-gradient(90deg, ${color}cc, ${color}33)` }}
-      />
 
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div
             className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
@@ -139,7 +134,7 @@ export function Card({
       <div className="h-px mx-5 bg-gradient-to-r from-transparent via-slate-100 dark:via-slate-800 to-transparent" />
 
       {/* Body */}
-      <div className="p-5">{children}</div>
+      <div className="pt-5">{children}</div>
     </div>
   );
 }
@@ -147,29 +142,25 @@ export function Card({
 // ─────────────────────────────────────────────────────────────────────────────
 // Export Button
 // ─────────────────────────────────────────────────────────────────────────────
-
 export function ExportBtn({ onClick, loading }) {
   const t = useTranslations("dashboard");
+
   return (
     <motion.button
-      whileHover={{ scale: 1.04 }}
-      whileTap={{ scale: 0.96 }}
+      whileHover={{ scale: 1.02, y: -1 }}
+      whileTap={{ scale: 0.97 }}
       onClick={onClick}
+      type="button"
       disabled={loading}
       className={cn(
-        "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold",
-        "border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30",
-        "text-blue-600 dark:text-blue-400",
-        "hover:bg-blue-600 hover:text-white hover:border-blue-600",
-        "dark:hover:bg-blue-600 dark:hover:text-white",
-        "disabled:opacity-50 disabled:cursor-not-allowed",
-        "transition-all duration-200 shadow-sm",
+        "btn btn-solid btn-sm",
+        "disabled:opacity-50 disabled:cursor-not-allowed gap-1.5"
       )}
     >
       {loading ? (
-        <Loader2 size={12} className="animate-spin" />
+        <Loader2 size={14} className="animate-spin" />
       ) : (
-        <Download size={12} />
+        <FileDown size={14} />
       )}
       {t("common.export")}
     </motion.button>
@@ -249,7 +240,7 @@ export function StatusDonut({
   allowImage = false,
 }) {
   const t = useTranslations("dashboard");
-  const BRAND_COLORS = [PRIMARY, SECONDARY, THIRD, "#feb144", "#ff7b54"];
+  const BRAND_COLORS = [PRIMARY, "#3b82f6", "#89D8F0", "#4682D4", "#FDD512"];
   const hasData = data && data.length > 0;
   const total = hasData
     ? data.reduce((s, d) => s + (Number(d[config.key]) ?? 0), 0)
@@ -647,8 +638,8 @@ export const TableFilters = memo(function TableFilters({
     >
       {/* Header bar */}
       <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-        <div className="w-6 h-6 rounded-lg bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900/30 flex items-center justify-center">
-          <Filter size={12} className="text-orange-500" />
+        <div className="w-6 h-6 rounded-lg bg-primary/10 dark:bg-primary/20 border border-primary/30 dark:border-primary/40 flex items-center justify-center">
+          <Filter size={12} className="text-primary" />
         </div>
         <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
           الفلاتر

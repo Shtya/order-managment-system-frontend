@@ -60,7 +60,7 @@ function FilterField({ label, icon: FieldIcon, children }) {
   return (
     <div className="flex flex-col gap-1.5">
       <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-        {FieldIcon && <FieldIcon size={10} className="text-orange-400" />}
+        {FieldIcon && <FieldIcon size={10} className="text-primary" />}
         {label}
       </label>
       {children}
@@ -245,7 +245,7 @@ export default function DashboardPage() {
     {
       key: "sales",
       label: t("chart.sales"),
-      color: THIRD,
+      color: "#FDD306",
       fillOpacity: 0.05,
       yAxisID: "y1",
     },
@@ -294,7 +294,7 @@ export default function DashboardPage() {
       key: "costs",
       header: t("profitTable.columns.costs"),
       cell: (r) => (
-        <span className="font-semibold text-red-500 dark:text-red-400 tabular-nums">
+        <span className="font-semibold text-slate-700 dark:text-slate-200 tabular-nums">
           {fmt(r.costs)}
         </span>
       ),
@@ -308,9 +308,7 @@ export default function DashboardPage() {
           <span
             className={cn(
               "font-bold tabular-nums",
-              positive
-                ? "text-emerald-600 dark:text-emerald-400"
-                : "text-red-500 dark:text-red-400",
+              "text-slate-700 dark:text-slate-200"
             )}
           >
             {fmt(r.profit)}
@@ -463,7 +461,7 @@ export default function DashboardPage() {
                 label: "name",
                 hasPercentage: true,
               }}
-              allowImage={true}
+              allowImage={true} x
             />
           </Card>
         </motion.div>
@@ -478,7 +476,7 @@ export default function DashboardPage() {
         <Card
           title={t("profitTable.title")}
           icon={DollarSign}
-          color="#10b981"
+          color={PRIMARY}
           action={
             <ExportBtn
               loading={exProds}

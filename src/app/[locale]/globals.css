@@ -1004,3 +1004,7 @@ html[dir="rtl"] .dir-force {
 html[dir="ltr"] .dir-force {
   direction: ltr !important; 
 }
+
+.cards-space {
+  @apply space-y-5 md:space-y-8
+}

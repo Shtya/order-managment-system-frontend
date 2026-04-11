@@ -47,6 +47,8 @@ export const getRequiredRole = (pathname) => {
   return match ? match.role : null;
 };
 
-export const isDashboardPath = (pathname) => {
-  return getCleanPath(pathname).startsWith("/dashboard");
+export const isSuperAdimnPaths = (pathname) => {
+  const path = getCleanPath(pathname);
+
+  return path.startsWith("/dashboard") || path.startsWith("/notifications");
 };

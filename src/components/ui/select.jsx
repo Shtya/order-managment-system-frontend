@@ -73,7 +73,7 @@ function SelectTrigger({ className, size = "default", children, ...props }) {
       <span
         aria-hidden
         className="pointer-events-none absolute start-0 top-2 bottom-2 w-[2px] rounded-full
-          bg-gradient-to-b from-[var(--primary)] to-[var(--third,#ff5c2b)]
+          bg-gradient-to-b from-[var(--primary)] to-[var(--third,var(--secondary))]
           opacity-0 group-data-[state=open]:opacity-100 transition-opacity duration-200"
       />
 

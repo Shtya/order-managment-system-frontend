@@ -885,9 +885,13 @@ select:focus-visible {
 .flatpickr-calendar::before {
   content: "";
   @apply absolute inset-x-0 top-0 h-[2px] z-20 opacity-70;
-  background: linear-gradient(to right, var(--primary), var(--secondary, #ffb703), var(--third, #ff5c2b));
+  background: linear-gradient(
+    to right, 
+    var(--primary), 
+    var(--secondary), 
+    var(--third)
+  );
 }
-
 /* الهيدر (الأشهر والسنوات) */
 .flatpickr-months {
   @apply !items-center !px-2 !pt-3 !pb-1;

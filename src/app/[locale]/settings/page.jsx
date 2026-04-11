@@ -111,7 +111,7 @@ function AccentBar({ className }) {
     <div
       aria-hidden
       className={cn(
-        "h-[2.5px] bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)]",
+        "h-[2.5px] bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,var(--third))] to-[var(--third,var(--secondary))]",
         className,
       )}
     />

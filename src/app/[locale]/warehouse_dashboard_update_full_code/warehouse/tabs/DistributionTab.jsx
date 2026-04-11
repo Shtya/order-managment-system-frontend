@@ -473,7 +473,7 @@ function DistributionOrdersTable({ type, orders, updateOrder, pushOp, rejectOrde
             key: "assign-selected",
             label: t("actions.assignSelected", { count: selectedCodes.length }),
             icon: <Truck size={14} />,
-            color: "emerald",
+            color: "primary",
             onClick: () => setAssignDialogCodes(selectedCodes),
             disabled: selectedCodes.length === 0,
           },

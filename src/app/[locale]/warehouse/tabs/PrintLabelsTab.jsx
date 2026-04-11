@@ -70,7 +70,7 @@ export default function PrintLabelsTab({ subtab, setSubtab, resetToken }) {
 
   const stats = [
     { id: "total-distributed", name: t("stats.totalDistributed"), value: statsData.totalDistributed, icon: Truck, color: "#6763af", bgColor: "#6763af15", sortOrder: 0 },
-    { id: "not-printed", name: t("stats.notPrinted"), value: statsData.notPrinted, icon: Printer, color: "#ffb703", bgColor: "#ffb70315", sortOrder: 1 },
+    { id: "not-printed", name: t("stats.notPrinted"), value: statsData.notPrinted, icon: Printer, color: "var(--third)", bgColor: "#ffb70315", sortOrder: 1 },
     { id: "printed", name: t("stats.printed"), value: statsData.printed, icon: CheckCircle2, color: "#10b981", bgColor: "#10b98115", sortOrder: 2 },
   ];
 
@@ -200,7 +200,9 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
       <DialogContent className="!max-w-3xl rounded-2xl max-h-[90vh] overflow-y-auto border-0  p-0 shadow-2xl" >
         {/* Header */}
         <div className="relative px-6 pt-6 pb-5 rounded-t-2xl overflow-hidden"
-          style={{ background: "linear-gradient(135deg, #ff8b00 0%, #ff5c2b 55%, #ffb703 100%)" }}>
+          style={{
+            background: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 55%, var(--third) 100%)"
+          }}>
           <div className="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white/10" />
           <div className="absolute -bottom-6 -right-2 w-28 h-28 rounded-full bg-white/10" />
           <div className="relative flex items-start justify-between">
@@ -232,7 +234,9 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
                 {/* Screen preview card */}
                 <div className="w-full bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm mb-3">
                   {/* Label header */}
-                  <div className="label-header p-4" style={{ background: "linear-gradient(135deg, #ff8b00, #ff5c2b)" }}>
+                  <div className="label-header p-4" style={{
+                    background: "linear-gradient(135deg, var(--primary), var(--secondary))"
+                  }}>
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="text-white/70 text-[11px] mb-0.5">{t("printPreview.orderCode")}</p>
@@ -335,7 +339,9 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-white shadow-lg"
-            style={{ background: "linear-gradient(135deg, #ff8b00 0%, #ff5c2b 100%)" }}
+            style={{
+              background: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)"
+            }}
           >
             <Printer size={15} />
             {t("printPreview.printNow", { count: orders.length })}
@@ -451,7 +457,7 @@ function NotPrintedSubtab({ onPrinted, resetToken, fetchStats }) {
       className: "w-[48px]",
       cell: (row) => (<div className="flex items-center justify-center"><Checkbox checked={selectedOrders.includes(row.orderNumber)} onCheckedChange={() => toggleOrder(row.orderNumber)} /></div>),
     },
-    { key: "code", header: t("field.orderCode"), cell: (row) => <span className="font-mono font-bold text-[#ff8b00]">{row.orderNumber}</span> },
+    { key: "code", header: t("field.orderCode"), cell: (row) => <span className="font-mono font-bold text-[var(--primary)]">{row.orderNumber}</span> },
     { key: "customer", header: t("field.customer"), cell: (row) => <span className="font-semibold">{row.customerName}</span> },
     { key: "phone", header: t("field.phone"), cell: (row) => <span className="font-mono text-slate-500 text-sm" dir="ltr">{row.phoneNumber}</span> },
     { key: "city", header: t("field.city") },
@@ -485,7 +491,7 @@ function NotPrintedSubtab({ onPrinted, resetToken, fetchStats }) {
         searchValue={search} onSearchChange={setSearch} onSearch={applyFilters}
         labels={{ searchPlaceholder: t("notPrinted.search"), filter: t("common.filter"), apply: t("common.apply"), total: t("common.total"), limit: t("common.limit"), emptyTitle: t("notPrinted.empty"), emptySubtitle: "" }}
         actions={[
-          { key: "printSelected", label: selectedOrders.length > 0 ? t("notPrinted.printSelected", { count: selectedOrders.length }) : t("notPrinted.printSelectedDefault"), icon: <Printer size={14} />, color: "emerald", onClick: () => selectedOrders.length > 0 && setPrintPreview({ open: true, orders: pager.records.filter((o) => selectedOrders.includes(o.orderNumber)) }), disabled: selectedOrders.length === 0, permission: "orders.update" },
+          { key: "printSelected", label: selectedOrders.length > 0 ? t("notPrinted.printSelected", { count: selectedOrders.length }) : t("notPrinted.printSelectedDefault"), icon: <Printer size={14} />, color: "primary", onClick: () => selectedOrders.length > 0 && setPrintPreview({ open: true, orders: pager.records.filter((o) => selectedOrders.includes(o.orderNumber)) }), disabled: selectedOrders.length === 0, permission: "orders.update" },
           { key: "export", label: t("common.export"), icon: exportLoading ? <Loader2 className="animate-spin" size={14} /> : <FileDown size={14} />, color: "primary", onClick: onExport, disabled: exportLoading, permission: "orders.read" },
         ]}
         hasActiveFilters={hasActiveFilters} onApplyFilters={applyFilters}
@@ -617,7 +623,7 @@ function PrintedSubtab({ resetToken, fetchStats }) {
       className: "w-[48px]",
       cell: (row) => (<div className="flex items-center justify-center"><Checkbox checked={selectedOrders.includes(row.orderNumber)} onCheckedChange={() => toggleOrder(row.orderNumber)} /></div>),
     },
-    { key: "code", header: t("field.orderCode"), cell: (row) => <span className="font-mono font-bold text-[#ff8b00]">{row.orderNumber}</span> },
+    { key: "code", header: t("field.orderCode"), cell: (row) => <span className="font-mono font-bold text-[var(--primary)]">{row.orderNumber}</span> },
     { key: "customer", header: t("field.customer"), cell: (row) => <span className="font-semibold">{row.customerName}</span> },
     { key: "phone", header: t("field.phone"), cell: (row) => <span className="font-mono text-slate-500 text-sm" dir="ltr">{row.phoneNumber}</span> },
     { key: "city", header: t("field.city") },
@@ -644,7 +650,7 @@ function PrintedSubtab({ resetToken, fetchStats }) {
         searchValue={search} onSearchChange={setSearch} onSearch={applyFilters}
         labels={{ searchPlaceholder: t("printed.search"), filter: t("common.filter"), apply: t("common.apply"), total: t("common.total"), limit: t("common.limit"), emptyTitle: t("printed.empty"), emptySubtitle: "" }}
         actions={[
-          { key: "reprintSelected", label: selectedOrders.length > 0 ? t("printed.printSelected", { count: selectedOrders.length }) : t("printed.printSelectedDefault"), icon: <Printer size={14} />, color: "emerald", onClick: () => selectedOrders.length > 0 && setPrintPreview({ open: true, orders: pager.records.filter((o) => selectedOrders.includes(o.orderNumber)) }), disabled: selectedOrders.length === 0, permission: "orders.update" },
+          { key: "reprintSelected", label: selectedOrders.length > 0 ? t("printed.printSelected", { count: selectedOrders.length }) : t("printed.printSelectedDefault"), icon: <Printer size={14} />, color: "primary", onClick: () => selectedOrders.length > 0 && setPrintPreview({ open: true, orders: pager.records.filter((o) => selectedOrders.includes(o.orderNumber)) }), disabled: selectedOrders.length === 0, permission: "orders.update" },
           { key: "export", label: t("common.export"), icon: exportLoading ? <Loader2 className="animate-spin" size={14} /> : <FileDown size={14} />, color: "primary", onClick: onExport, disabled: exportLoading, permission: "orders.read" },
         ]}
         hasActiveFilters={hasActiveFilters} onApplyFilters={applyFilters}

@@ -18,9 +18,9 @@ function StepBadge({ number, active, done }) {
 			className={cn(
 				"w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300",
 				done
-					? "bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)] "
+					? "bg-gradient-to-br from-[var(--primary)] to-[var(--third,var(--primary))] "
 					: active
-						? "bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]  shadow-[0_4px_12px_var(--primary-shadow,rgba(255,139,0,0.35))]"
+						? "bg-gradient-to-br from-[var(--primary)] to-[var(--third,var(--primary))]  shadow-[0_4px_12px_var(--primary-shadow,rgba(255,139,0,0.35))]"
 						: "bg-muted border border-border"
 			)}
 		>
@@ -159,7 +159,7 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 					<div className="absolute inset-0  " />
 					<div className="relative flex items-center gap-4 px-6 py-5 border-b border-border">
 						<div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0
-							bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]
+							bg-gradient-to-br from-[var(--primary)] to-[var(--third,var(--primary))]
 							
 							shadow-[0_4px_16px_var(--primary-shadow,rgba(255,139,0,0.4))]">
 							<Upload className="text-white" size={19} />
@@ -249,7 +249,7 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 										className="flex flex-col items-center gap-2 relative"
 									>
 										<div className="w-12 h-12 rounded-xl flex items-center justify-center
-											bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]
+											bg-gradient-to-br from-[var(--primary)] to-[var(--third,var(--primary))]
 											
 											shadow-[0_4px_16px_var(--primary-shadow,rgba(255,139,0,.3))]">
 											<FileCheck2 size={22} className="text-white" />
@@ -300,7 +300,7 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 						onClick={handleUpload}
 						disabled={!file || uploading}
 						className="h-10 px-6 rounded-xl text-sm font-bold text-white gap-2
-							bg-gradient-to-r from-[var(--primary)] to-[var(--third,#ff5c2b)]
+							bg-gradient-to-r from-[var(--primary)] to-[var(--third,var(--primary))]
 							
 							shadow-[0_4px_16px_var(--primary-shadow,rgba(255,139,0,.35))]
 							hover:shadow-[0_6px_24px_var(--primary-shadow,rgba(255,139,0,.5))]

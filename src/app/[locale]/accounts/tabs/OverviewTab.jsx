@@ -137,7 +137,7 @@ export default function OverviewTab({ stats, loadingStats, mainFilters, onFilter
       rawDate: new Date(p.statusUpdateDate),
       amount: p.total,
       icon: Package,
-      color: 'orange'
+      color: 'primary'
     }));
 
     const manual = (lastExpenses.lastManualExpenses || []).map(e => ({
@@ -165,8 +165,9 @@ export default function OverviewTab({ stats, loadingStats, mainFilters, onFilter
           <div className={cn(
             "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
             row.color === 'blue' ? "bg-blue-50 text-blue-500" :
-              row.color === 'purple' ? "bg-purple-50 text-purple-500" :
-                row.color === 'orange' ? "bg-orange-50 text-orange-500" : "bg-red-50 text-red-500"
+              row.color === 'primary' ? "bg-primary/10 text-primary" :
+                row.color === 'purple' ? "bg-purple-50 text-purple-500" :
+                  row.color === 'orange' ? "bg-orange-50 text-orange-500" : "bg-red-50 text-red-500"
           )}>
             <row.icon size={14} />
           </div>
@@ -337,7 +338,7 @@ export default function OverviewTab({ stats, loadingStats, mainFilters, onFilter
               <>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-500 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                       <Calendar size={16} />
                     </div>
                     <span className="font-bold text-sm">{t("overview.monthClosing")}</span>

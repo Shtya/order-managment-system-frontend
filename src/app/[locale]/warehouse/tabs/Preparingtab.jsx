@@ -36,7 +36,7 @@ function ScanProgress({ products }) {
             "h-full rounded-full",
             pct === 100
               ? "bg-gradient-to-r from-emerald-500 to-teal-600"
-              : "bg-gradient-to-r from-[#ff8b00] to-[#ff5c2b]"
+              : "bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)]"
           )}
         />
       </div>
@@ -253,7 +253,7 @@ export default function PreparingTab({ orders, updateOrder, pushOp, onPrepareOrd
               current_page: 1,
               per_page: filtered.length,
             }}
-            onPageChange={() => {}}
+            onPageChange={() => { }}
             emptyState={t("preparingTab.empty.table")}
           />
         )}

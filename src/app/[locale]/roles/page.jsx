@@ -117,7 +117,7 @@ function DialogAccentBar() {
 	return (
 		<div
 			className="h-[3px] w-full rounded-t-2xl shrink-0"
-			style={{ background: "linear-gradient(90deg, var(--primary), var(--secondary, #ffb703))" }}
+			style={{ background: "linear-gradient(90deg, var(--primary), var(--secondary, var(--third)))" }}
 		/>
 	);
 }
@@ -515,7 +515,7 @@ function RolePreviewDialog({ t, open, onClose, role }) {
 
 	return (
 		<Dialog open={open} onOpenChange={onClose}>
-			<DialogContent className="!max-w-3xl max-h-[92vh] overflow-x-hidden overflow-y-auto p-0 gap-0 rounded-lg border border-border shadow-[0_24px_64px_rgba(0,0,0,0.14)]">
+			<DialogContent className="!max-w-3xl max-h-[92vh] overflow-x-hidden overflow-y-auto gap-0 rounded-lg border border-border shadow-[0_24px_64px_rgba(0,0,0,0.14)]">
 
 
 				<DialogHeader>

@@ -1,6 +1,6 @@
 import createMiddleware from "next-intl/middleware";
 import { NextResponse } from "next/server";
-import { isPublicRoute, getRequiredRole, isDashboardPath, getCleanPath } from "./utils/route-utils";
+import { isPublicRoute, getRequiredRole, isSuperAdimnPaths, getCleanPath } from "./utils/route-utils";
 
 const intlMiddleware = createMiddleware({
   locales: ["en", "ar"],
@@ -38,7 +38,7 @@ export default function middleware(req) {
     return NextResponse.redirect(new URL(`/${locale}/`, req.url));
   }
 
-  if (userRole === "super_admin" && !isDashboardPath(pathname)) {
+  if (userRole === "super_admin" && !isSuperAdimnPaths(pathname)) {
     return NextResponse.redirect(new URL(`/${locale}/dashboard/users`, req.url));
   }
 

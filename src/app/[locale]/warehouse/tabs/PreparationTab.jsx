@@ -41,7 +41,7 @@ const DS = {
 	radiusXl: "rounded-xl",        // cards/panels
 
 	// Brand colors
-	primary: "#ff8b00",
+	primary: "var(--primary)",
 	primaryLight: "rgba(255,139,0,0.10)",
 	primaryBorder: "rgba(255,139,0,0.25)",
 	accent: "#6763af",
@@ -49,10 +49,10 @@ const DS = {
 	successLight: "rgba(16,185,129,0.10)",
 	danger: "#ef4444",
 	dangerLight: "rgba(239,68,68,0.10)",
-	warning: "#ffb703",
+	warning: "var(--third)",
 
 	// Gradients
-	headerGradient: "linear-gradient(135deg, var(--primary) 0%, #ff5c2b 100%)",
+	headerGradient: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)",
 	successGradient: "linear-gradient(135deg, #059669 0%, #10b981 100%)",
 	dangerGradient: "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)",
 	cardGradient: "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)",
@@ -73,7 +73,7 @@ const WRONG_SCAN_PDF_STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
 
   :root {
-    --primary: #ff8b00;
+    --primary: var(--primary);
     --primary-soft: #fff4e6;
     --err: #ef4444;
     --err-mid: #b91c1c;

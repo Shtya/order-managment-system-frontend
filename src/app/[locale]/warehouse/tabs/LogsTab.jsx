@@ -50,12 +50,12 @@ const DS = {
   radius: "rounded-lg",
   radiusSm: "rounded-md",
   radiusXl: "rounded-xl",
-  primary: "#ff8b00",
+  primary: "var(--primary)",
   accent: "#6763af",
   success: "#10b981",
   danger: "#ef4444",
-  warning: "#ffb703",
-  headerGradient: "linear-gradient(135deg, #ff8b00 0%, #ff5c2b 100%)",
+  warning: "var(--third)",
+  headerGradient: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)",
   dangerGradient: "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)",
 };
 
@@ -153,7 +153,7 @@ const PDF_STYLE = `
     .sig-row { display:flex; gap:20px; margin-top:10px; }
     .sig-field { flex:1; border-bottom:1px solid #94a3b8; padding-bottom:6px; }
     .sig-field-label { font-size:11px; color:#94a3b8; margin-bottom:28px; }
-    .header-bar { background:linear-gradient(135deg,#ff8b00,#ff5c2b); color:#fff; padding:16px 20px; border-radius:12px; margin-bottom:20px; }
+    .header-bar { background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#fff; padding:16px 20px; border-radius:12px; margin-bottom:20px; }
     .header-bar.err-bar { background:linear-gradient(135deg,#dc2626,#b91c1c); }
     .header-bar.info-bar { background:linear-gradient(135deg,#3b82f6,#6366f1); }
     .ts { font-size:11px; color:#94a3b8; font-family:monospace; }
@@ -1089,7 +1089,7 @@ function OrderLogModal({ open, onClose, op, t }) {
           {products.length > 0 && (
             <div>
               <h4 className="text-sm font-bold mb-3 flex items-center gap-2">
-                <Package className="w-4 h-4 text-[#ff8b00]" />
+                <Package className="w-4 h-4 text-[var(--primary)]" />
                 {t("orderLogModal.products")}
               </h4>
               <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
@@ -1203,7 +1203,7 @@ function OrderLogModal({ open, onClose, op, t }) {
 
           <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-5 space-y-4">
             <h4 className="text-sm font-bold flex items-center gap-2">
-              <PenLine className="w-4 h-4 text-[#ff8b00]" />
+              <PenLine className="w-4 h-4 text-[var(--primary)]" />
               {t("orderLogModal.signatureSection")}
             </h4>
 
@@ -1236,7 +1236,7 @@ function OrderLogModal({ open, onClose, op, t }) {
                 <Button
                   onClick={handleSign}
                   disabled={!signerName.trim()}
-                  className="w-full bg-[#ff8b00] hover:bg-[#e07a00] text-white gap-2"
+                  className="w-full bg-[var(--primary)] hover:bg-[#e07a00] text-white gap-2"
                 >
                   <PenLine size={16} />
                   {t("orderLogModal.confirmSignature")}

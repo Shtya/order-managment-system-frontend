@@ -105,13 +105,13 @@ export default function GlobalRetrySettingsModal({
           {/* background tint */}
           <div
             className="absolute inset-0 pointer-events-none opacity-[0.06]
-            bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]
+            bg-gradient-to-br from-[var(--primary)] to-[var(--third,var(--secondary))]
             dark:from-[#5b4bff] dark:to-[#3be7ff]"
           />
           {/* bottom accent bar */}
           <div
             className="absolute inset-x-0 bottom-0 h-[2px]
-            bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)]
+            bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,var(--third))] to-[var(--third,var(--secondary))]
             dark:from-[#5b4bff] dark:via-[#8b7cff] dark:to-[#3be7ff] opacity-60"
           />
 
@@ -119,7 +119,7 @@ export default function GlobalRetrySettingsModal({
             {/* Icon Container */}
             <div
               className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0
-    bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]
+    bg-gradient-to-br from-[var(--primary)] to-[var(--third,var(--secondary))]
     dark:from-[#5b4bff] dark:to-[#3be7ff]
     shadow-[0_6px_20px_rgba(var(--primary-shadow))]"
             >
@@ -172,7 +172,7 @@ export default function GlobalRetrySettingsModal({
                       <motion.div
                         layoutId="tab-indicator"
                         className="absolute inset-x-2 -bottom-px h-[2px] rounded-full
-              bg-gradient-to-r from-[var(--primary)] to-[var(--third,#ff5c2b)]
+              bg-gradient-to-r from-[var(--primary)] to-[var(--third,var(--secondary))]
               dark:from-[#5b4bff] dark:to-[#3be7ff]"
                       />
                     )}
@@ -261,7 +261,7 @@ export default function GlobalRetrySettingsModal({
               onClick={handleSave}
               disabled={saving}
               className="h-10 px-6 rounded-xl text-sm font-bold text-white flex items-center gap-2
-                bg-gradient-to-r from-[var(--primary)] to-[var(--third,#ff5c2b)]
+                bg-gradient-to-r from-[var(--primary)] to-[var(--third,var(--secondary))]
                 dark:from-[#5b4bff] dark:to-[#3be7ff]
                 shadow-[0_4px_16px_rgba(var(--primary-shadow))]
                 hover:shadow-[0_6px_24px_rgba(var(--primary-shadow))]
@@ -390,7 +390,7 @@ function StatusMultiSelect({
               {/* gradient strip */}
               <div
                 className="h-[2px] w-full rounded-t-2xl bg-gradient-to-r
-                from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)] opacity-70"
+                from-[var(--primary)] via-[var(--secondary,var(--third))] to-[var(--third,var(--secondary))] opacity-70"
               />
 
               <div className="overflow-y-auto max-h-[230px] p-1.5 space-y-0.5">
@@ -579,7 +579,7 @@ function ToggleRow({ label, description, checked, onCheckedChange }) {
           ? "border-[var(--primary)]/30 dark:border-[#5b4bff]/30"
           : "border-border bg-muted/20",
       )}
-      style={checked ? { background: rgba("#ff8b00", 0.04) } : {}}
+      style={checked ? { background: rgba("var(--primary)", 0.04) } : {}}
     >
       <div className="min-w-0 flex-1">
         <p className="text-sm font-bold text-foreground">{label}</p>
@@ -732,7 +732,7 @@ export function GeneralTab({ settings, patch, t }) {
       {/* Retry limits card */}
       <SectionCard
         icon={RotateCcw}
-        iconColor="#ff8b00"
+        iconColor="var(--primary)"
         title={t("retrySettings.retryLimitsTitle")}
         subtitle={t("retrySettings.retryLimitsSubtitle")}
       >
@@ -852,7 +852,7 @@ export function AutomationTab({ settings, statuses, patch, toggleCode, t }) {
       {/* 2 — Retry statuses */}
       <SectionCard
         icon={RotateCcw}
-        iconColor="#ff8b00"
+        iconColor="var(--primary)"
         title={t("retrySettings.retryStatusesTitle")}
         subtitle={t("retrySettings.retryStatusesSubtitle")}
         badge={settings.retryStatuses.length}
@@ -916,7 +916,7 @@ export function ShippingTab({ settings, statuses, patchShipping, patch, t }) {
         {isShipment && (
           <div
             className="absolute inset-x-0 top-0 h-[2.5px]
-              bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)]
+              bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,var(--third))] to-[var(--third,var(--secondary))]
               dark:from-[#5b4bff] dark:via-[#8b7cff] dark:to-[#3be7ff]"
           />
         )}
@@ -964,7 +964,7 @@ export function ShippingTab({ settings, statuses, patchShipping, patch, t }) {
           className="p-4 flex items-center gap-4"
           style={
             isShipment
-              ? { background: rgba("#ff8b00", 0.03) }
+              ? { background: rgba("var(--primary)", 0.03) }
               : {}
           }
         >
@@ -972,7 +972,7 @@ export function ShippingTab({ settings, statuses, patchShipping, patch, t }) {
             className={cn(
               "w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
               isShipment
-                ? "bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)] dark:from-[#5b4bff] dark:to-[#3be7ff] shadow-[0_4px_12px_rgba(var(--primary-shadow))]"
+                ? "bg-gradient-to-br from-[var(--primary)] to-[var(--third,var(--secondary))] dark:from-[#5b4bff] dark:to-[#3be7ff] shadow-[0_4px_12px_rgba(var(--primary-shadow))]"
                 : "bg-muted border border-border",
             )}
           >
@@ -1014,7 +1014,7 @@ export function ShippingTab({ settings, statuses, patchShipping, patch, t }) {
             {/* Card: Routing */}
             <SectionCard
               icon={Truck}
-              iconColor="#ff8b00"
+              iconColor="var(--primary)"
               title={t("retrySettings.shipping.routing")}
               subtitle={t("retrySettings.shipping.routingDesc")}
             >
@@ -1351,13 +1351,13 @@ export function NotificationsSettingsTab({ settings, patch, t }) {
         />
         <div
           className="absolute inset-x-0 top-0 h-[2px] opacity-60
-            bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)]
+            bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,var(--third))] to-[var(--third,var(--secondary))]
             dark:from-[rgb(91,75,255)] dark:via-[#8b7cff] dark:to-[#3be7ff]"
         />
         <div className="relative flex items-start gap-3">
           <div
             className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0
-              bg-gradient-to-br from-[var(--primary)] to-[var(--third,#ff5c2b)]
+              bg-gradient-to-br from-[var(--primary)] to-[var(--third,var(--secondary))]
               dark:from-[#5b4bff] dark:to-[#3be7ff]"
           >
             <Bell size={15} className="text-white" />

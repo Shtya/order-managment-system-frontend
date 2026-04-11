@@ -24,7 +24,7 @@ import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 // ─── RAW HEX (for alpha only) ──────────────────────────────────────────────
 const HEX = {
-  orange: "#ff6a1e", amber: "#ffb703", flame: "#ff5c2b",
+  orange: "var(--primary)", amber: "var(--third)", flame: "var(--secondary)",
   violet: "#6763af", green: "#16a34a", red: "#dc2626", sky: "#0369a1",
 };
 const rgba = (hex, op) => {

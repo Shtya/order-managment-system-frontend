@@ -147,7 +147,7 @@ export default function DistributionTab({ subtab, setSubtab }) {
       name: t("stats.readyToPrint"),
       value: statsData.lifecycle.distributedNotPrinted,
       icon: Printer,
-      color: "#ff6a1e",
+      color: "var(--primary)",
       bgColor: "#ff6a1e15",
       sortOrder: 3,
     },
@@ -262,7 +262,7 @@ export function OrderDetailModal({ open, onClose, order, hideNotes }) {
       label: t("field.customerName"),
       value: order.customerName,
       icon: User,
-      accent: "#ff6a1e",
+      accent: "var(--primary)",
     },
     {
       label: t("field.phoneNumber"),
@@ -274,31 +274,31 @@ export function OrderDetailModal({ open, onClose, order, hideNotes }) {
       label: t("field.city"),
       value: order.city,
       icon: MapPin,
-      accent: "#ff6a1e",
+      accent: "var(--primary)",
     },
     {
       label: t("field.area"),
       value: order.area,
       icon: MapPin,
-      accent: "#ffb703",
+      accent: "var(--third)",
     },
     {
       label: t("field.store"),
       value: order.store?.name || "-",
       icon: Store,
-      accent: "#6763af",
+      accent: "var(--primary)",
     },
     {
       label: t("field.carrier"),
       value: order.shippingCompany?.name || t("common.notSpecified"),
       icon: Truck,
-      accent: "#ff5c2b",
+      accent: "var(--secondary)",
     },
     {
       label: t("field.trackingCode"),
       value: order.trackingNumber || t("common.none"),
       icon: Hash,
-      accent: "#6763af",
+      accent: "var(--primary)",
     },
     {
       label: t("field.paymentType"),
@@ -309,19 +309,19 @@ export function OrderDetailModal({ open, onClose, order, hideNotes }) {
             ? t("payment.cod")
             : order.paymentMethod,
       icon: CreditCard,
-      accent: order.paymentMethod === "cod" ? "#ffb703" : "#10b981",
+      accent: "var(--third)",
     },
     {
       label: t("field.total"),
       value: `${formatCurrency(order.finalTotal)}`,
       icon: TrendingUp,
-      accent: "#10b981",
+      accent: "var(--third)",
     },
     {
       label: t("field.shippingCost"),
       value: `${formatCurrency(order.shippingCost)}`,
       icon: Truck,
-      accent: "#ff6a1e",
+      accent: "var(--primary)",
     },
     {
       label: t("field.allowOpenPackage"),
@@ -329,7 +329,7 @@ export function OrderDetailModal({ open, onClose, order, hideNotes }) {
         ? t("value.allowed")
         : t("value.notAllowed"),
       icon: Package,
-      accent: order.allowOpenPackage ? "#10b981" : "#ef4444",
+      accent: "var(--primary)",
     },
     // {
     //   label: t("field.returnOrder"),
@@ -454,8 +454,8 @@ export function OrderDetailModal({ open, onClose, order, hideNotes }) {
                   className="flex items-center gap-3 px-4 py-3"
                 >
                   <div
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
-                    style={{ backgroundColor: "#ff6a1e18", color: "#ff6a1e" }}
+                    className="w-7 h-7 rounded-lg flex items-center bg-primary/18 justify-center text-xs font-bold flex-shrink-0"
+                    style={{ color: "var(--primary)" }}
                   >
                     {i + 1}
                   </div>
@@ -473,7 +473,7 @@ export function OrderDetailModal({ open, onClose, order, hideNotes }) {
                   </span>
                   <span
                     className="font-bold text-sm"
-                    style={{ color: "#ff6a1e" }}
+                    style={{ color: "var(--primary)" }}
                   >
                     {formatCurrency((Number(p.unitPrice) || 0) * (Number(p.quantity) || 0))}
 
@@ -487,12 +487,11 @@ export function OrderDetailModal({ open, onClose, order, hideNotes }) {
           {/* Notes */}
           {!!order.notes && !hideNotes && (
             <div
-              className="rounded-xl p-4 border"
-              style={{ backgroundColor: "#ffb70310", borderColor: "#ffb70340" }}
+              className="rounded-xl p-4 border bg-primary/10 border-primary/30"
             >
               <div className="flex items-center gap-2 mb-2">
-                <AlertCircle size={14} style={{ color: "#ffb703" }} />
-                <p className="text-xs font-bold" style={{ color: "#ff6a1e" }}>
+                <AlertCircle size={14} style={{ color: "var(--third)" }} />
+                <p className="text-xs font-bold" style={{ color: "var(--primary)" }}>
                   {t("section.notes")}
                 </p>
               </div>
@@ -672,7 +671,7 @@ function AssignCarrierDialog({
         <div className="p-6 space-y-5">
           <div className="space-y-3">
             <Label className="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
-              <Truck size={14} style={{ color: "#ff8b00" }} />
+              <Truck size={14} style={{ color: "var(--primary)" }} />
               {t("assign.requiredCarrier")}
               <span className="text-red-500">*</span>
             </Label>
@@ -779,7 +778,7 @@ function AssignCarrierDialog({
                     className={cn(
                       "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
                       isChecked
-                        ? "bg-white dark:bg-slate-900 border-[#ff6a1e]/40 shadow-sm"
+                        ? "bg-white dark:bg-slate-900 border-[var(--primary)]/40 shadow-sm"
                         : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-slate-300",
                     )}
                     onClick={() => toggleOrder(order.orderNumber)}
@@ -788,7 +787,7 @@ function AssignCarrierDialog({
                       className={cn(
                         "w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all",
                         isChecked
-                          ? "border-[#ff6a1e] bg-[#ff6a1e]"
+                          ? "border-[var(--primary)] bg-[var(--primary)]"
                           : "border-slate-300 dark:border-slate-600",
                       )}
                     >
@@ -798,16 +797,15 @@ function AssignCarrierDialog({
                     </div>
 
                     <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                      style={{ backgroundColor: "#ff6a1e12" }}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-primary/20 "
                     >
-                      <Package size={14} style={{ color: "#ff6a1e" }} />
+                      <Package size={14} style={{ color: "var(--primary)" }} />
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <p
                         className="font-mono font-bold text-sm"
-                        style={{ color: "#ff6a1e" }}
+                        style={{ color: "var(--primary)" }}
                       >
                         {order.orderNumber}
                       </p>
@@ -879,7 +877,7 @@ function AssignCarrierDialog({
                 !loading && carrier && selectedOrders.length > 0
                   ? {
                     background:
-                      "linear-gradient(135deg, #ff6a1e 0%, #ff5c2b 100%)",
+                      "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)",
                   }
                   : {}
               }
@@ -1104,7 +1102,7 @@ function UnassignedOrdersSubtab({ t, fetchStats, updateStatsAfterAssign }) {
         key: "code",
         header: t("field.orderCode"),
         cell: (row) => (
-          <span className="font-mono font-bold text-[#ff6a1e] dark:text-[#ffb703]">
+          <span className="font-mono font-bold text-[var(--primary)] dark:text-[var(--third)]">
             {row.orderNumber}
           </span>
         ),
@@ -1278,7 +1276,7 @@ function UnassignedOrdersSubtab({ t, fetchStats, updateStatsAfterAssign }) {
             key: "assign",
             label: t("action.assignSelected", { count: selectedOrders.length }),
             icon: <Truck size={14} />,
-            color: "emerald",
+            color: "primary",
             onClick: () =>
               selectedOrders.length > 0 &&
               setAssignDialog({ open: true, codes: selectedOrders }),
@@ -1573,7 +1571,7 @@ function AssignedOrdersSubtab({
         key: "code",
         header: t("field.orderCode"),
         cell: (row) => (
-          <span className="font-mono font-bold text-[#ff6a1e] dark:text-[#ffb703]">
+          <span className="font-mono font-bold text-[var(--primary)] dark:text-[var(--third)]">
             {row.orderNumber}
           </span>
         ),

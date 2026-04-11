@@ -278,7 +278,7 @@ export function EmployeeStatisticsPage() {
                 key: "confirmedOrders",
                 header: t("employeeStats.columns.confirmedOrders"),
                 cell: (row) => (
-                    <span className="font-bold text-blue-600 dark:text-blue-400 text-sm tabular-nums">
+                    <span className="font-bold text-sm tabular-nums">
                         {row.confirmed?.count ?? 0} {/* تحديث: confirmed.count */}
                     </span>
                 ),
@@ -304,7 +304,7 @@ export function EmployeeStatisticsPage() {
                 key: "shippedOrders",
                 header: t("employeeStats.columns.shippedOrders"),
                 cell: (row) => (
-                    <span className="font-bold text-purple-600 dark:text-purple-400 text-sm tabular-nums">
+                    <span className="font-bold text-sm tabular-nums">
                         {row.shipped?.count ?? 0} {/* تحديث: shipped.count بدلاً من upsell */}
                     </span>
                 ),
@@ -315,12 +315,7 @@ export function EmployeeStatisticsPage() {
                 cell: (row) => {
                     const rate = row.shipped?.percent ?? 0; // تحديث: shipped.percent
                     return (
-                        <span
-                            className={cn(
-                                "font-bold text-sm px-2.5 py-1 rounded-xl tabular-nums",
-                                "bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400"
-                            )}
-                        >
+                        <span className="font-bold text-sm tabular-nums">
                             {rate ?? 0}%
                         </span>
                     );
@@ -330,7 +325,7 @@ export function EmployeeStatisticsPage() {
                 key: "deliveredOrders",
                 header: t("employeeStats.columns.deliveredOrders"),
                 cell: (row) => (
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm tabular-nums">
+                    <span className="font-bold text-sm tabular-nums">
                         {row.delivered?.count ?? 0} {/* تحديث: delivered.count */}
                     </span>
                 ),
@@ -356,10 +351,7 @@ export function EmployeeStatisticsPage() {
                 key: "preparationFailedCount",
                 header: t("employeeStats.columns.preparationFailedCount"),
                 cell: (row) => (
-                    <span className={cn(
-                        "font-bold text-sm px-2.5 py-1 rounded-xl tabular-nums",
-                        (row.preparationFailedCount ?? 0) > 5 ? "bg-red-50 text-red-600" : "bg-orange-50 text-orange-600"
-                    )}>
+                    <span className="font-bold text-sm tabular-nums">
                         {row.preparationFailedCount ?? 0}
                     </span>
                 ),
@@ -368,10 +360,7 @@ export function EmployeeStatisticsPage() {
                 key: "outgoingFailedCount",
                 header: t("employeeStats.columns.outgoingFailedCount"),
                 cell: (row) => (
-                    <span className={cn(
-                        "font-bold text-sm px-2.5 py-1 rounded-xl tabular-nums",
-                        (row.outgoingFailedCount ?? 0) > 5 ? "bg-red-50 text-red-600" : "bg-orange-50 text-orange-600"
-                    )}>
+                    <span className="font-bold text-sm tabular-nums">
                         {row.outgoingFailedRate ?? 0}
                     </span>
                 ),

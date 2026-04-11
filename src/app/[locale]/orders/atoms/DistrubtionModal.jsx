@@ -375,7 +375,7 @@ export const BlockEmployeePopover = ({
 									<AvatarFallback
 										className="text-[10px] font-black text-white"
 										style={{
-											background: "linear-gradient(135deg, var(--primary), var(--third, #ff5c2b))",
+											background: "linear-gradient(135deg, var(--primary), var(--third, var(--primary)))",
 										}}
 									>
 										{(selectedUser.name || "?").slice(0, 2).toUpperCase()}
@@ -474,7 +474,7 @@ export const BlockEmployeePopover = ({
 												<AvatarImage src={u?.avatarUrl} alt={u?.name} />
 												<AvatarFallback
 													className="text-[10px] font-black text-white"
-													style={{ background: "linear-gradient(135deg, var(--primary), var(--third, #ff5c2b))" }}
+													style={{ background: "linear-gradient(135deg, var(--primary), var(--third, var(--primary)))" }}
 												>
 													{(u?.name || "?").slice(0, 2).toUpperCase()}
 												</AvatarFallback>

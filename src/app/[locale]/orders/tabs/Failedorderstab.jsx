@@ -112,7 +112,7 @@ const FAILED_STATS_TEMPLATE = [
   //     id: 1,
   //     code: "total",
   //     title: "failedOrders.stats.total",
-  //     color: "#ff8b00",
+  //     color: "var(--primary)",
   //     darkColor: "#5b4bff",
   //     icon: PackageX,
   // },

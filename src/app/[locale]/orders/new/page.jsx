@@ -1604,7 +1604,7 @@ function OrderSummary({ t, summary }) {
 						label={t("summary.finalTotal")}
 						value={formatCurrency(summary.finalTotal)}
 						accentFrom="var(--primary)"
-						accentTo="var(--secondary,#ffb703)"
+						accentTo="var(--secondary,var(--third))"
 						textColor="text-[var(--primary)]"
 						borderColor="border-[var(--primary)]/30"
 					/>
@@ -1620,7 +1620,7 @@ function OrderSummary({ t, summary }) {
 							<SummaryRow
 								label={t("summary.deposit")}
 								value={formatCurrency(summary.deposit)}
-								valueClassName="text-[var(--secondary,#ffb703)]"
+								valueClassName="text-[var(--secondary,var(--third))]"
 							/>
 						</div>
 
@@ -1628,10 +1628,10 @@ function OrderSummary({ t, summary }) {
 							<TotalRow
 								label={t("summary.remaining")}
 								value={formatCurrency(summary.remaining)}
-								accentFrom="var(--third,#ff5c2b)"
+								accentFrom="var(--third,var(--secondary))"
 								accentTo="var(--primary)"
-								textColor="text-[var(--third,#ff5c2b)]"
-								borderColor="border-[var(--third,#ff5c2b)]/30"
+								textColor="text-[var(--third,var(--secondary))]"
+								borderColor="border-[var(--third,var(--secondary))]/30"
 							/>
 						</div>
 					</>

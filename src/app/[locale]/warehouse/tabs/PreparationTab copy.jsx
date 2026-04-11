@@ -99,12 +99,12 @@ function OrderDetailModal({ open, onClose, order }) {
   const { currency } = usePlatformSettings();
 
   const infoRows = [
-    { label: t("modal.customer"), value: order.customer, icon: User, accent: "#ff8b00" },
+    { label: t("modal.customer"), value: order.customer, icon: User, accent: "var(--primary)" },
     { label: t("modal.phone"), value: order.phone, icon: Hash, accent: "#6763af" },
-    { label: t("modal.city"), value: order.city, icon: MapPin, accent: "#ff8b00" },
-    { label: t("modal.area"), value: order.area || "—", icon: MapPin, accent: "#ffb703" },
+    { label: t("modal.city"), value: order.city, icon: MapPin, accent: "var(--primary)" },
+    { label: t("modal.area"), value: order.area || "—", icon: MapPin, accent: "var(--third)" },
     { label: t("modal.store"), value: order.store, icon: Store, accent: "#6763af" },
-    { label: t("modal.carrier"), value: order.carrier || t("modal.notSpecified"), icon: Truck, accent: "#ff5c2b" },
+    { label: t("modal.carrier"), value: order.carrier || t("modal.notSpecified"), icon: Truck, accent: "var(--secondary)" },
     { label: t("modal.trackingCode"), value: order.trackingCode || "—", icon: Hash, accent: "#6763af" },
     { label: t("modal.total"), value: `${order.total} ${currency}`, icon: TrendingUp, accent: "#10b981" },
   ];
@@ -170,12 +170,12 @@ function OrderDetailModal({ open, onClose, order }) {
                 <motion.div key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
                   className="flex items-center gap-3 px-4 py-3">
                   <div className="w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold flex-shrink-0"
-                    style={{ backgroundColor: "#ff8b0018", color: "#ff8b00" }}>{i + 1}</div>
+                    style={{ backgroundColor: "#ff8b0018", color: "var(--primary)" }}>{i + 1}</div>
                   <span className="font-mono text-[11px] px-2 py-0.5 rounded-md font-bold"
                     style={{ backgroundColor: "#6763af12", color: "#6763af" }}>{p.sku}</span>
                   <span className="flex-1 text-sm text-slate-700 dark:text-slate-200 font-medium">{p.name}</span>
                   <span className="text-xs text-slate-400 font-mono">×{p.requestedQty}</span>
-                  <span className="font-bold text-sm" style={{ color: "#ff8b00" }}>
+                  <span className="font-bold text-sm" style={{ color: "var(--primary)" }}>
                     {(Number(p.price) || 0) * (Number(p.requestedQty) || 0)} {currency}
                   </span>
                 </motion.div>
@@ -185,8 +185,8 @@ function OrderDetailModal({ open, onClose, order }) {
           {order.notes && (
             <div className="rounded-md p-4 border" style={{ backgroundColor: "#ffb70310", borderColor: "#ffb70340" }}>
               <div className="flex items-center gap-2 mb-2">
-                <AlertCircle size={14} style={{ color: "#ffb703" }} />
-                <p className="text-xs font-bold" style={{ color: "#ff8b00" }}>{t("modal.notes")}</p>
+                <AlertCircle size={14} style={{ color: "var(--third)" }} />
+                <p className="text-xs font-bold" style={{ color: "var(--primary)" }}>{t("modal.notes")}</p>
               </div>
               <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{order.notes}</p>
             </div>
@@ -343,17 +343,17 @@ function OrdersSlidePanel({ open, onClose, orders, activeOrderCode, onSelectOrde
                     onClick={() => onSelectOrder(order)}
                     className={cn("p-3 rounded-md border cursor-pointer transition-all",
                       isActive
-                        ? "border-[#ff8b00]/50 bg-[#ff8b00]/5 shadow-sm"
+                        ? "border-[var(--primary)]/50 bg-[var(--primary)]/5 shadow-sm"
                         : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300"
                     )}>
                     <div className="flex items-start justify-between mb-1.5">
-                      <span className="font-mono font-bold text-sm" style={{ color: "#ff8b00" }}>{order.code}</span>
+                      <span className="font-mono font-bold text-sm" style={{ color: "var(--primary)" }}>{order.code}</span>
                       {pct === 100 && <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-1.5 py-0.5 rounded-full">{t("panel.done")}</span>}
                     </div>
                     <p className="text-xs text-slate-600 dark:text-slate-300 font-medium mb-2 truncate">{order.customer}</p>
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                        <div className={cn("h-full rounded-full transition-all duration-500", pct === 100 ? "bg-emerald-500" : "bg-[#ff8b00]")} style={{ width: `${pct}%` }} />
+                        <div className={cn("h-full rounded-full transition-all duration-500", pct === 100 ? "bg-emerald-500" : "bg-[var(--primary)]")} style={{ width: `${pct}%` }} />
                       </div>
                       <span className="text-[11px] font-mono font-semibold text-slate-500">{scanned}/{total}</span>
                     </div>
@@ -405,7 +405,7 @@ function QtyRing({ pct, done, size = 36, stroke = 3 }) {
       <motion.circle
         cx={size / 2} cy={size / 2} r={r}
         fill="none"
-        stroke={done ? "#10b981" : "#ff8b00"}
+        stroke={done ? "#10b981" : "var(--primary)"}
         strokeWidth={stroke}
         strokeLinecap="round"
         strokeDasharray={circ}
@@ -515,7 +515,7 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
                   strokeWidth="3.5" />
                 <motion.circle
                   cx="22" cy="22" r="18" fill="none"
-                  stroke={isAllDone ? "#10b981" : "#ff8b00"}
+                  stroke={isAllDone ? "#10b981" : "var(--primary)"}
                   strokeWidth="3.5" strokeLinecap="round"
                   strokeDasharray={2 * Math.PI * 18}
                   animate={{ strokeDashoffset: 2 * Math.PI * 18 * (1 - pct / 100) }}
@@ -532,7 +532,7 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
                     exit={{ opacity: 0, scale: 0.7 }}
                     className={cn(
                       "text-[9px] font-black tabular-nums leading-none",
-                      isAllDone ? "text-emerald-600" : "text-[#ff8b00]"
+                      isAllDone ? "text-emerald-600" : "text-[var(--primary)]"
                     )}
                   >{pct}%</motion.span>
                 </AnimatePresence>
@@ -543,7 +543,7 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
           {/* Order code */}
           <div className="min-w-0">
             <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">{t("table.orderNumber")}</p>
-            <p className="font-mono font-black text-sm leading-none" style={{ color: "#ff8b00" }}>{order.code}</p>
+            <p className="font-mono font-black text-sm leading-none" style={{ color: "var(--primary)" }}>{order.code}</p>
           </div>
 
           {/* Tracking */}
@@ -577,7 +577,7 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
             >
               {isAllDone
                 ? <CheckCircle2 size={11} className="text-emerald-500" />
-                : <ScanLine size={11} style={{ color: "#ff8b00" }} />
+                : <ScanLine size={11} style={{ color: "var(--primary)" }} />
               }
               {totalScanned}<span className="text-slate-300 dark:text-slate-600 font-normal">/</span>{totalQty}
             </motion.div>
@@ -630,7 +630,7 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
                   className={cn(
                     "border-b border-slate-50 dark:border-slate-700/30 transition-colors duration-300",
                     done && "bg-emerald-50/60 dark:bg-emerald-950/10",
-                    isJust && !done && "bg-[#ff8b00]/5"
+                    isJust && !done && "bg-[var(--primary)]/5"
                   )}
                 >
 
@@ -642,7 +642,7 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
                       className="w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black"
                       style={{
                         backgroundColor: done ? "rgba(52,211,153,0.15)" : "#ff8b0015",
-                        color: done ? "#059669" : "#ff8b00",
+                        color: done ? "#059669" : "var(--primary)",
                       }}
                     >{i + 1}</motion.div>
                   </td>
@@ -657,12 +657,12 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
                           done
                             ? "border-emerald-200 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/30"
                             : isJust
-                              ? "border-[#ff8b00]/40 bg-[#ff8b00]/5"
+                              ? "border-[var(--primary)]/40 bg-[var(--primary)]/5"
                               : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
                         )}>
                           {p.image
                             ? <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
-                            : <Package size={15} className={done ? "text-emerald-400" : isJust ? "text-[#ff8b00]" : "text-slate-300"} />
+                            : <Package size={15} className={done ? "text-emerald-400" : isJust ? "text-[var(--primary)]" : "text-slate-300"} />
                           }
                         </div>
                         {/* Done checkmark overlay */}
@@ -685,7 +685,7 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
                               animate={{ scale: 1.6, opacity: 0 }}
                               exit={{ opacity: 0 }}
                               transition={{ duration: 0.6, ease: "easeOut" }}
-                              className="absolute inset-0 rounded-lg border-2 border-[#ff8b00]"
+                              className="absolute inset-0 rounded-lg border-2 border-[var(--primary)]"
                             />
                           )}
                         </AnimatePresence>
@@ -745,7 +745,7 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
                         <div className="absolute inset-0 flex items-center justify-center">
                           <span className={cn(
                             "text-[9px] font-black tabular-nums leading-none",
-                            done ? "text-emerald-600" : "text-[#ff8b00]"
+                            done ? "text-emerald-600" : "text-[var(--primary)]"
                           )}>{scanned}</span>
                         </div>
                       </div>
@@ -779,7 +779,7 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
                           animate={{ scale: 1, opacity: 1 }}
                           exit={{ scale: 0.7, opacity: 0 }}
                           className="inline-flex items-center gap-1.5 text-[11px] font-black px-2.5 py-1 rounded-full border"
-                          style={{ backgroundColor: "#ff8b0015", color: "#ff8b00", borderColor: "#ff8b0030" }}
+                          style={{ backgroundColor: "#ff8b0015", color: "var(--primary)", borderColor: "#ff8b0030" }}
                         >
                           <motion.span
                             animate={{ rotate: [0, 15, -10, 0] }}
@@ -891,11 +891,11 @@ export function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSu
       >
         <div className={cn(
           "absolute top-0 left-0 w-full h-[2px] rounded-full transition-colors duration-300",
-          isSuccess ? "bg-emerald-500" : isError ? "bg-red-500" : isActive ? "bg-[#ff8b00]" : "bg-slate-300 dark:bg-slate-600"
+          isSuccess ? "bg-emerald-500" : isError ? "bg-red-500" : isActive ? "bg-[var(--primary)]" : "bg-slate-300 dark:bg-slate-600"
         )} />
         <div className={cn(
           "absolute top-0 left-0 h-full w-[2px] rounded-full transition-colors duration-300",
-          isSuccess ? "bg-emerald-500" : isError ? "bg-red-500" : isActive ? "bg-[#ff8b00]" : "bg-slate-300 dark:bg-slate-600"
+          isSuccess ? "bg-emerald-500" : isError ? "bg-red-500" : isActive ? "bg-[var(--primary)]" : "bg-slate-300 dark:bg-slate-600"
         )} />
       </motion.div>
       {/* Top-right */}
@@ -906,11 +906,11 @@ export function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSu
       >
         <div className={cn(
           "absolute top-0 right-0 w-full h-[2px] rounded-full transition-colors duration-300",
-          isSuccess ? "bg-emerald-500" : isError ? "bg-red-500" : isActive ? "bg-[#ff8b00]" : "bg-slate-300 dark:bg-slate-600"
+          isSuccess ? "bg-emerald-500" : isError ? "bg-red-500" : isActive ? "bg-[var(--primary)]" : "bg-slate-300 dark:bg-slate-600"
         )} />
         <div className={cn(
           "absolute top-0 right-0 h-full w-[2px] rounded-full transition-colors duration-300",
-          isSuccess ? "bg-emerald-500" : isError ? "bg-red-500" : isActive ? "bg-[#ff8b00]" : "bg-slate-300 dark:bg-slate-600"
+          isSuccess ? "bg-emerald-500" : isError ? "bg-red-500" : isActive ? "bg-[var(--primary)]" : "bg-slate-300 dark:bg-slate-600"
         )} />
       </motion.div>
       {/* Bottom-left */}
@@ -921,11 +921,11 @@ export function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSu
       >
         <div className={cn(
           "absolute bottom-0 left-0 w-full h-[2px] rounded-full transition-colors duration-300",
-          isSuccess ? "bg-emerald-500" : isError ? "bg-red-500" : isActive ? "bg-[#ff8b00]" : "bg-slate-300 dark:bg-slate-600"
+          isSuccess ? "bg-emerald-500" : isError ? "bg-red-500" : isActive ? "bg-[var(--primary)]" : "bg-slate-300 dark:bg-slate-600"
         )} />
         <div className={cn(
           "absolute bottom-0 left-0 h-full w-[2px] rounded-full transition-colors duration-300",
-          isSuccess ? "bg-emerald-500" : isError ? "bg-red-500" : isActive ? "bg-[#ff8b00]" : "bg-slate-300 dark:bg-slate-600"
+          isSuccess ? "bg-emerald-500" : isError ? "bg-red-500" : isActive ? "bg-[var(--primary)]" : "bg-slate-300 dark:bg-slate-600"
         )} />
       </motion.div>
       {/* Bottom-right */}
@@ -936,11 +936,11 @@ export function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSu
       >
         <div className={cn(
           "absolute bottom-0 right-0 w-full h-[2px] rounded-full transition-colors duration-300",
-          isSuccess ? "bg-emerald-500" : isError ? "bg-red-500" : isActive ? "bg-[#ff8b00]" : "bg-slate-300 dark:bg-slate-600"
+          isSuccess ? "bg-emerald-500" : isError ? "bg-red-500" : isActive ? "bg-[var(--primary)]" : "bg-slate-300 dark:bg-slate-600"
         )} />
         <div className={cn(
           "absolute bottom-0 right-0 h-full w-[2px] rounded-full transition-colors duration-300",
-          isSuccess ? "bg-emerald-500" : isError ? "bg-red-500" : isActive ? "bg-[#ff8b00]" : "bg-slate-300 dark:bg-slate-600"
+          isSuccess ? "bg-emerald-500" : isError ? "bg-red-500" : isActive ? "bg-[var(--primary)]" : "bg-slate-300 dark:bg-slate-600"
         )} />
       </motion.div>
 
@@ -951,7 +951,7 @@ export function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSu
           disabled && "opacity-50 pointer-events-none",
           // idle / typing
           !isSuccess && !isError && !isFocused && "border-border bg-background/60",
-          !isSuccess && !isError && isFocused && "border-[#ff8b00]/70 bg-background shadow-[0_0_0_3px_rgba(255,139,0,0.10)]",
+          !isSuccess && !isError && isFocused && "border-[var(--primary)]/70 bg-background shadow-[0_0_0_3px_rgba(255,139,0,0.10)]",
           // success
           isSuccess && "border-emerald-500 bg-background shadow-[0_0_0_3px_rgba(16,185,129,0.12)]",
           // error
@@ -1050,7 +1050,7 @@ export function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSu
                 "transition-colors duration-200",
                 isSuccess ? "text-emerald-500"
                   : isError ? "text-red-500"
-                    : isFocused ? "text-[#ff8b00]"
+                    : isFocused ? "text-[var(--primary)]"
                       : "text-muted-foreground/80"
               )}
             />
@@ -1065,7 +1065,7 @@ export function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSu
             animate={
               isSuccess ? { backgroundColor: "#10b981", scale: [1, 1.4, 1], opacity: [1, 0.6, 1] } :
                 isError ? { backgroundColor: "#ef4444", scale: [1, 1.4, 1] } :
-                  isFocused ? { backgroundColor: "#ff8b00", scale: [1, 1.2, 1], opacity: [1, 0.5, 1] } :
+                  isFocused ? { backgroundColor: "var(--primary)", scale: [1, 1.2, 1], opacity: [1, 0.5, 1] } :
                     { backgroundColor: "#94a3b8", scale: 1 }
             }
             transition={
@@ -1143,7 +1143,7 @@ export function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSu
                 ? "linear-gradient(135deg, #059669 0%, #10b981 100%)"
                 : isError
                   ? "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)"
-                  : "linear-gradient(135deg, var(--primary, #ff8b00) 0%, #ff5c2b 100%)",
+                  : "linear-gradient(135deg, var(--primary, var(--primary)) 0%, var(--secondary) 100%)",
               boxShadow: isSuccess
                 ? "0 2px 10px -2px rgba(16,185,129,0.55), inset 0 1px 0 rgba(255,255,255,0.2)"
                 : isError
@@ -1722,7 +1722,7 @@ function ScanWorkflowPanel({ orders, updateOrder, pushOp, onOpenPanel, jumpToOrd
                 className="w-16 h-16 rounded-md flex items-center justify-center mb-4"
                 style={{ background: "linear-gradient(135deg, #ff8b0015, #ffb70315)", border: "1px dashed #ff8b0040" }}
               >
-                <ScanLine size={28} style={{ color: "#ff8b00" }} />
+                <ScanLine size={28} style={{ color: "var(--primary)" }} />
               </motion.div>
               <p className="text-slate-600 dark:text-slate-300 font-semibold mb-1">{t("scan.readyTitle")}</p>
               <p className="text-sm text-slate-400">{t("scan.readySubtitle")}</p>
@@ -1780,7 +1780,7 @@ function InProgressSubtab({ orders, updateOrder, pushOp, onPrepareOrder, onPrepa
       className: "w-[48px]",
       cell: (row) => (<div className="flex items-center justify-center"><Checkbox checked={selectedOrders.includes(row.code)} onCheckedChange={() => toggleOrder(row.code)} /></div>),
     },
-    { key: "code", header: t("table.orderNumber"), cell: (row) => <span className="font-mono font-bold text-[#ff8b00]">{row.code}</span> },
+    { key: "code", header: t("table.orderNumber"), cell: (row) => <span className="font-mono font-bold text-[var(--primary)]">{row.code}</span> },
     { key: "customer", header: t("table.customer"), cell: (row) => <span className="font-semibold">{row.customer}</span> },
     { key: "phone", header: t("table.phone"), cell: (row) => <span className="font-mono text-slate-500 text-sm">{row.phone}</span> },
     { key: "city", header: t("table.city") },
@@ -1855,7 +1855,7 @@ function PreparedSubtab({ orders, setDistributionDialog, setSelectedOrdersGlobal
   }, [prepared, search, filters]);
 
   const columns = useMemo(() => [
-    { key: "code", header: t("table.orderNumber"), cell: (row) => <span className="font-mono font-bold text-[#ff8b00]">{row.code}</span> },
+    { key: "code", header: t("table.orderNumber"), cell: (row) => <span className="font-mono font-bold text-[var(--primary)]">{row.code}</span> },
     { key: "customer", header: t("table.customer"), cell: (row) => <span className="font-semibold">{row.customer}</span> },
     { key: "phone", header: t("table.phone"), cell: (row) => <span className="font-mono text-slate-500 text-sm">{row.phone}</span> },
     { key: "city", header: t("table.city") },
@@ -1943,9 +1943,9 @@ export default function PreparationTab({
 
   const stats = [
     { id: "in-progress", name: t("stats.inProgress"), value: preparing.length, icon: Clock, color: "#6763af", sortOrder: 0 },
-    { id: "total-items", name: t("stats.totalItems"), value: totalItems, icon: Package, color: "#ffb703", sortOrder: 1 },
+    { id: "total-items", name: t("stats.totalItems"), value: totalItems, icon: Package, color: "var(--third)", sortOrder: 1 },
     { id: "scanned", name: t("stats.scanned"), value: scannedItems, icon: CheckCircle2, color: "#10b981", sortOrder: 2 },
-    { id: "prepared", name: t("stats.prepared"), value: prepared.length, icon: CheckCircle2, color: "#ff8b00", sortOrder: 3 },
+    { id: "prepared", name: t("stats.prepared"), value: prepared.length, icon: CheckCircle2, color: "var(--primary)", sortOrder: 3 },
   ];
 
   return (

@@ -244,7 +244,7 @@ function SkuRow({ sku, idx, isSelected, debounced, onSelect, t }) {
         <span
           aria-hidden
           className="pointer-events-none absolute start-0 top-3 bottom-3 w-[2.5px] rounded-full
-            bg-gradient-to-b from-[var(--primary)] to-[var(--third,#ff5c2b)]
+            bg-gradient-to-b from-[var(--primary)] to-[var(--third,var(--secondary))]
             opacity-0 group-hover:opacity-100 transition-opacity duration-200"
         />
       </div>
@@ -437,7 +437,7 @@ export function ProductSkuSearchPopover({
           <div
             aria-hidden
             className="absolute inset-x-0 top-0 h-[2px] rounded-t-2xl
-              bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,#ffb703)] to-[var(--third,#ff5c2b)]"
+              bg-gradient-to-r from-[var(--primary)] via-[var(--secondary,var(--third))] to-[var(--third,var(--secondary))]"
           />
 
           {/* ── Search header ──────────────────────────────────────────── */}

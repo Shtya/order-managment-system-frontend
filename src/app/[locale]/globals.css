@@ -66,18 +66,18 @@
 
 /* ── Dark mode overrides ── */
 .dark {
-  --primary: #ff8b00;
-  --secondary: #ffb703;
-  --third: #ff5c2b;
-  
+   --primary: #6763AF;
+  --secondary: #5750a0;
+  --third: #7672B9;
+
   --sidebar: #020024;
   --sideIcon: #020024;
   --sidebar-active-bg: #FFFFFF14;
   --sidebar-foreground: #ffffff;
 
-  --primary-from: 255 180 64;
-  --primary-to: 255 139 0;
-  --primary-shadow: 255 139 0 / 0.32;
+   --primary-from: 103 99 175;
+  --primary-to: 118 114 185;
+  --primary-shadow: 118 114 185 / 0.32; 
 
   --background: #0f1117;
   --sidebar: #13161f;

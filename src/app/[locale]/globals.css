@@ -1009,6 +1009,10 @@ html[dir="ltr"] .dir-force {
   direction: ltr !important; 
 }
 
-.cards-space {
+.space-between {
   @apply space-y-5 md:space-y-8
+}
+
+.space-under {
+  @apply mb-5 md:mb-8
 }

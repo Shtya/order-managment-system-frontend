@@ -363,7 +363,7 @@ export default function DashboardPage() {
   // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen p-4 md:p-5 cards-space">
+    <div className="min-h-screen p-4 md:p-5 space-between">
       {/* Page header */}
       <PageHeader
         breadcrumbs={[

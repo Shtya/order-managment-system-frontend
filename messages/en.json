@@ -1442,7 +1442,8 @@
         "region": "Region",
         "productName": "Product Name",
         "date": "Date",
-        "distributedAt": "Distribution Date"
+        "distributedAt": "Distribution Date",
+        "status": "Status"
       },
       "section": {
         "products": "Products",

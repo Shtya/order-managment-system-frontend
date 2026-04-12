@@ -45,3 +45,25 @@ reviews:
             suggestion: ''
             type: approve
             time: '2026-04-09T18:33:15.599Z'
+  warehouse.distribution.field.status:
+    locales:
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: 5erYad-HpKCRXJMbScbG0
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-12T11:51:39.047Z'
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: aUCqgzwDCppkzqCP410Sw
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-12T11:51:41.207Z'

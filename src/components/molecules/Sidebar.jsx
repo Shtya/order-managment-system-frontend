@@ -495,6 +495,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
     [isActive],
   );
   const { shippingCompanies } = usePlatformSettings();
+
   const menuItems = useMemo(() => [
     {
       icon: LayoutDashboard,

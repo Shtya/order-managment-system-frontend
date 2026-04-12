@@ -33,7 +33,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import PageHeader from "@/components/atoms/Pageheader";
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import {
   Card,
   ExportBtn,
@@ -73,8 +73,8 @@ function FilterField({ label, icon: FieldIcon, children }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
-  const tDates = useTranslations("orderAnalysis");
   const t = useTranslations("dashboard");
+  const tDates = useTranslations("orderAnalysis");
 
   const [quickRange, setQuickRange] = useState("this_month");
   const [filters, setFilters] = useState({
@@ -268,18 +268,35 @@ export default function DashboardPage() {
       })),
     [summary],
   );
-
+  const format = useFormatter();
   // ── Profit table columns ────────────────────────────────────────────────────
 
   const profitCols = [
     {
       key: "period",
       header: t("profitTable.columns.period"),
-      cell: (r) => (
-        <span className="font-semibold text-sm text-slate-700 dark:text-slate-200">
-          {r.period ?? "—"}
-        </span>
-      ),
+      cell: (r) => {
+        const dateOptions = {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        };
+
+        return (
+          <span className="font-semibold text-sm text-slate-700 dark:text-slate-200 dir-auto">
+            {r.startDate && r.endDate ? (
+              <>
+                {format.dateTime(new Date(r.startDate), dateOptions)}
+                <span className="mx-1">-</span>
+                {format.dateTime(new Date(r.endDate), dateOptions)}
+              </>
+            ) : (
+              "—"
+            )}
+          </span>
+        );
+      },
+
     },
     {
       key: "sales",

@@ -698,7 +698,7 @@ export default function CreateOrderPageComplete({
 		};
 
 		initBosta();
-	}, [config.needsGeo, setValue]);
+	}, [config.needsGeo, setValue, shippingProvider]);
 
 	useEffect(() => {
 		const fetchGeography = async () => {
@@ -730,7 +730,7 @@ export default function CreateOrderPageComplete({
 		};
 
 		fetchGeography();
-	}, [config.needsGeo, config.showDistric, providerMeta.cityId]);
+	}, [config.needsGeo, config.showDistric, providerMeta.cityId, shippingProvider]);
 
 	// ── Bosta meta setter ────────────────────────────────────────────────────
 	const handleBostaChange = useCallback((field, value) => {

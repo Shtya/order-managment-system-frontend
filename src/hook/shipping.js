@@ -13,14 +13,14 @@ export const SHIP_PROVIDERS = [
         emoji: '📦',
         desc: { ar: 'أسرع شركات التوصيل في مصر', en: 'Fastest delivery companies in Egypt' },
     },
-    {
-        key: 'jt',
-        code: 'jt',
-        label: { ar: 'J&T Express', en: 'J&T Express' },
-        img: "/integrate/5.png",
-        emoji: '🚚',
-        desc: { ar: 'تغطية واسعة في المنطقة العربية', en: 'Wide coverage in the Arab region' },
-    },
+    // {
+    //     key: 'jt',
+    //     code: 'jt',
+    //     label: { ar: 'J&T Express', en: 'J&T Express' },
+    //     img: "/integrate/5.png",
+    //     emoji: '🚚',
+    //     desc: { ar: 'تغطية واسعة في المنطقة العربية', en: 'Wide coverage in the Arab region' },
+    // },
     {
         key: 'turbo',
         code: 'turbo',
@@ -328,8 +328,8 @@ export function useShippingSettings(companyCode, callbacks = {}) {
             onSaved?.(isEditMode);
             fetchSetup()
             const providerLabel = provider?.label[locale] || provider?.label.en;
-            const successMsg = isEditMode 
-                ? t("settings.toastUpdateSuccess", { provider: providerLabel }) 
+            const successMsg = isEditMode
+                ? t("settings.toastUpdateSuccess", { provider: providerLabel })
                 : t("settings.toastConnectSuccess", { provider: providerLabel });
             toast.success(successMsg || `Successfully ${isEditMode ? 'updated' : 'connected'} ${providerLabel} ✓`);
 

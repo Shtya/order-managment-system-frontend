@@ -555,6 +555,7 @@ function StoreConfigDialog({
   t,
   onCreated,
 }) {
+  const { user } = useAuth();
   const {
     config,
     isEdit,

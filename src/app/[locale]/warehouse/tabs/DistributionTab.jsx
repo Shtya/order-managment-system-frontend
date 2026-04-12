@@ -331,6 +331,12 @@ export function OrderDetailModal({ open, onClose, order, hideNotes }) {
       icon: Package,
       accent: "var(--primary)",
     },
+    {
+      label: t("field.status"),
+      value: order.status.code,
+      icon: Info,
+      accent: order.status.code === "confirmed" ? "#10b981" : "#ef4444",
+    }
     // {
     //   label: t("field.returnOrder"),
     //   value: order?.replacementResult?.originalOrder?.orderNumber || "-",
@@ -967,7 +973,7 @@ function UnassignedOrdersSubtab({ t, fetchStats, updateStatsAfterAssign }) {
     const params = {
       page,
       limit: per_page,
-      status: "confirmed",
+      status: "confirmed,failed_delivery",
     };
 
     if (debouncedSearch) params.search = debouncedSearch;

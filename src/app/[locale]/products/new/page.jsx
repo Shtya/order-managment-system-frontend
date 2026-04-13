@@ -478,7 +478,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 			if (failedCount > 0) {
 				if (isEditMode) {
-					toast.error(t('messages.updatedWithErrors', { count: failedCount }), { id: 	 });
+					toast.error(t('messages.updatedWithErrors', { count: failedCount }), { id: toastId });
 				}
 				else {
 					toast.error(t('messages.createdWithErrors', { count: failedCount }), { id: toastId });

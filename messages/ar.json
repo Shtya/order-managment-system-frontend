@@ -3345,7 +3345,11 @@
       "saving": "جاري الحفظ...",
       "created": "تم إنشاء المنتج بنجاح",
       "updated": "تم تحديث المنتج بنجاح",
-      "templateAdded": "تمت إضافة {name}"
+      "templateAdded": "تمت إضافة {name}",
+      "creating": "جاري إنشاء المنتج...",
+    "updating": "جاري تحديث المنتج...",
+    "createdWithErrors": "تم إنشاء المنتج، ولكن فشل رفع {count} من الصور.",
+    "updatedWithErrors": "تم تحديث المنتج، ولكن فشل رفع {count} من الصور."
     },
     "errors": {
       "mainImageRequired": "الصورة الرئيسية مطلوبة",

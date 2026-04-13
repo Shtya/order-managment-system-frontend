@@ -3345,7 +3345,11 @@
       "saving": "Saving...",
       "created": "Product created successfully",
       "updated": "Product updated successfully",
-      "templateAdded": "Added {name}"
+      "templateAdded": "Added {name}",
+      "creating": "Creating product...",
+    "updating": "Updating product...",
+    "createdWithErrors": "Product created, but {count} images failed to upload.",
+    "updatedWithErrors": "Product updated, but {count} images failed to upload."
     },
     "errors": {
       "mainImageRequired": "Main image is required",

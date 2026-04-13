@@ -229,6 +229,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		main: { general: '', specific: {} },
 		other: { general: '', specific: {} }
 	});
+
 	const navigate = useRouter();
 	const [categories, setCategories] = useState([]);
 	const [stores, setStores] = useState([]);
@@ -298,7 +299,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		if (lastCombSigRef.current === sig) return;
 		lastCombSigRef.current = sig;
 		const currentCombos = watch('combinations') || [];
-		console.log('data', attributes, currentName, currentPrice);
+
 		const generated = buildCombinationsFromAttributes(attributes, currentName, currentPrice);
 		const byKey = new Map(currentCombos.map((c) => [c.key, c]));
 		const next = generated.map((g) => {
@@ -319,11 +320,12 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		toast.success(t('messages.templateAdded', { name }));
 	};
 
-	const validateImages = (files, type) => {
+	const getErrors = (files, type) => {
+		const maxAllowed = 20;
 		let generalError = '';
 		let specificErrors = {};
 		if (type === 'main' && (!files || files.length === 0)) generalError = t('errors.mainImageRequired');
-		if (type === 'other' && files.length > 20) generalError = t('errors.maxItemsExceeded', { max: 20 });
+		if (type === 'other' && files.length > maxAllowed) generalError = t('errors.maxItemsExceeded', { max: 20 });
 		if (files && files.length > 0) {
 			files.forEach((f) => {
 				if (f.isExisting) return;
@@ -333,9 +335,20 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				else if (fileObj.size > 10 * 1024 * 1024) specificErrors[f.id] = t('errors.fileTooLarge', { size: 10 });
 			});
 		}
-		setImageErrors((prev) => ({ ...prev, [type]: { general: generalError, specific: specificErrors } }));
-		return !generalError && Object.keys(specificErrors).length === 0;
+
+		return {
+			maxAllowed,
+			ok: !generalError && Object.keys(specificErrors).length === 0,
+			general: generalError,
+			specific: specificErrors
+		}
+	}
+	const validateImages = (files, type) => {
+		const { general, specific } = getErrors(files, type)
+		setImageErrors((prev) => ({ ...prev, [type]: { general, specific } }));
+		return !general && Object.keys(specific).length === 0;
 	};
+
 
 	const handleSalePriceBlur = () => {
 		const currentPrice = salePrice || '';
@@ -382,6 +395,10 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			const isOthersValid = validateImages(otherFiles, 'other');
 			const isMainValid = validateImages(mainFiles, 'main');
 			if (!isMainValid || !isOthersValid) return;
+			const anyUploading = [...(mainFiles ?? []), ...(otherFiles ?? [])].some((f) => f && f.uploadStatus === 'uploading');
+			const anyUploadFailed = [...(mainFiles ?? []), ...(otherFiles ?? [])].some((f) => f && f.uploadStatus === 'error');
+			if (anyUploading) { toast.error('Please wait for images upload to finish'); return; }
+			if (anyUploadFailed) { toast.error('Some images failed to upload'); return; }
 			if (slugStatus == 'takenStore' || slugStatus === 'taken') return;
 			if (data.combinations && data.combinations.length > 0) {
 				const missingPrices = data.combinations.filter((c) => !c.price || c.price === '');
@@ -412,13 +429,15 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			fd.append('upsellingProducts', JSON.stringify(upsellingProducts));
 
 			const main = mainFiles[0];
-			if (main?.file) fd.append('mainImage', main.file);
+			if (main?.orphanId) fd.append('mainImageOrphanId', String(main.orphanId));
 			else if (main?.url && !main.url.startsWith('/uploads') && !main.isExisting) fd.append('mainImage', String(main.url));
 
 			const existingImages = (otherFiles || []).filter((f) => f?.isExisting && f?.url && !removedImages.includes(f.url)).map((f) => ({ url: String(f.url) }));
 			const imagesMeta = (otherFiles || []).filter((f) => f?.isFromLibrary && !f?.isExisting && f?.url).map((f) => ({ url: String(f.url) }));
+			const orphanIds = (otherFiles || []).filter((f) => !f?.isExisting && !f?.isFromLibrary && f?.orphanId).map((f) => Number(f.orphanId));
 			if (isEditMode) fd.append('imagesMeta', JSON.stringify([...existingImages, ...imagesMeta]));
-			else if (imagesMeta.length) fd.append('imagesMeta', JSON.stringify(imagesMeta));
+			else fd.append('imagesMeta', JSON.stringify(imagesMeta));
+			if (orphanIds.length) fd.append('imagesOrphanIds', JSON.stringify(orphanIds));
 			if (isEditMode && removedImages.length > 0) fd.append('removedImages', JSON.stringify(removedImages));
 			if (!isEditMode) fd.append('combinations', JSON.stringify([...data.combinations]));
 
@@ -444,48 +463,14 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 
 
-			const productRes = await apiCall;
-			const newId = productRes.data?.id || productId;
-
-			const newFilesToUpload = (otherFiles ?? []).filter(f => f && !f.isFromLibrary && !f.isExisting && f.file);
-			let failedCount = 0;
-
-			if (newFilesToUpload.length > 0) {
-				const chunks = [];
-				for (let i = 0; i < newFilesToUpload.length; i += 3) {
-					chunks.push(newFilesToUpload.slice(i, i + 3));
-				}
-
-				const uploadPromises = chunks.map(async (chunk) => {
-					try {
-						const batchFd = new FormData();
-						chunk.forEach(f => batchFd.append('images', f.file));
-						await api.patch(`/products/${newId}/append-images`, batchFd, {
-							headers: { 'Content-Type': 'multipart/form-data' }
-						});
-					} catch (err) {
-						failedCount += chunk.length;
-					}
-				});
-
-				await Promise.allSettled(uploadPromises);
-			}
+			await apiCall;
 
 			if (isEditMode && data.combinations && data.combinations.length > 0) {
 				const combinationsPayload = data.combinations.map((c) => ({ attributes: c.attributes ?? {}, price: safeNumberString(c.price) || null }));
 				await api.put(`/products/${productId}/skus`, { items: combinationsPayload });
 			}
 
-			if (failedCount > 0) {
-				if (isEditMode) {
-					toast.error(t('messages.updatedWithErrors', { count: failedCount }), { id: toastId });
-				}
-				else {
-					toast.error(t('messages.createdWithErrors', { count: failedCount }), { id: toastId });
-				}
-			} else {
-				toast.success(isEditMode ? t('messages.updated') : t('messages.created'), { id: toastId });
-			}
+			toast.success(isEditMode ? t('messages.updated') : t('messages.created'), { id: toastId });
 
 			navigate.push('/products');
 		} catch (error) {
@@ -1045,30 +1030,51 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 						<ImageUploadBox
 							title={t('uploads.mainImage')}
 							files={mainFiles}
-							onFilesChange={(next) => {
-								mainFiles.forEach((f) => f?.previewUrl && !f.isFromLibrary && !f.isExisting && URL.revokeObjectURL(f.previewUrl));
-								setMainFiles(next.slice(0, 1));
-								setImageErrors(prev => ({ ...prev, main: {} }));
+							onFilesChange={(updater, isDeleted) => {
+								setMainFiles((prev) => {
+									const next = typeof updater === 'function' ? updater(prev) : updater;
+
+									prev.forEach((f) => f?.previewUrl && !f.isFromLibrary && !f.isExisting && URL.revokeObjectURL(f.previewUrl));
+
+									//keep one uploadStatus success and keep any ather things
+									const safeNext = (next ?? []).filter(Boolean);
+									const success = safeNext.find((n) => n?.uploadStatus === 'success');
+									const others = safeNext.filter((n) => n?.uploadStatus !== 'success');
+									const sliced = [success, ...others].filter(Boolean)
+
+									return sliced;
+								});
+								// setImageErrors(prev => ({ ...prev, main: {} }));
 							}}
+
 							onRemove={(fileToRemove) => {
 								if (fileToRemove.isExisting && fileToRemove.url) setRemovedImages((prev) => [...prev, fileToRemove.url]);
 							}}
 							error={imageErrors.main}
 							multiple={false}
+							uploadMode="direct"
+							setErrors={(errors) => setImageErrors((prev) => ({ ...prev, ["main"]: errors }))}
+							getErrors={(next) => getErrors(next, 'main')}
 						/>
 
 						<ImageUploadBox
 							title={t('uploads.otherImages')}
 							files={otherFiles}
-							onFilesChange={(next) => {
-								setOtherFiles(next);
-								setImageErrors(prev => ({ ...prev, other: {} }));
+							onFilesChange={(updater) => {
+								setOtherFiles((prev) => {
+									const next = typeof updater === 'function' ? updater(prev) : updater;
+									return next ?? [];
+								});
+								// setImageErrors(prev => ({ ...prev, other: {} }));
 							}}
 							onRemove={(fileToRemove) => {
 								if (fileToRemove.isExisting && fileToRemove.url) setRemovedImages((prev) => [...prev, fileToRemove.url]);
 							}}
 							error={imageErrors.other}
 							multiple={true}
+							uploadMode="direct"
+							setErrors={(errors) => setImageErrors((prev) => ({ ...prev, ["other"]: errors }))}
+							getErrors={(next) => getErrors(next, 'other')}
 						/>
 					</div>
 				</motion.div>
@@ -1252,17 +1258,132 @@ function UpsellProductSelector({ t, value, onChange }) {
 }
 
 /** ── Image Upload Box ─────────────────────────────────────────────────────── */
-export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple = true, accept = 'image/*', className, error }) {
+export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple = true, accept = 'image/*', className, error, uploadMode = 'local', getErrors, setErrors }) {
 	const t = useTranslations('addProduct');
 	const inputRef = useRef(null);
 	const [isDragging, setIsDragging] = useState(false);
 	const generalErrorMessage = typeof error === 'string' ? error : error?.general;
 	const specificErrors = error?.specific || {};
 
+	const deleteOrphan = React.useCallback((orphanId) => {
+		const id = Number(orphanId);
+		if (!Number.isFinite(id) || id <= 0) return;
+		// Fire-and-forget: cron will clean up if this fails
+		void api.delete(`/orphan-files/${id}`).catch(() => { });
+	}, []);
+
+	const uploadOne = React.useCallback(async (item) => {
+		const fd = new FormData();
+		fd.append('file', item.file);
+		const res = await api.post('/orphan-files', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+		const id = res?.data?.id;
+		const url = res?.data?.url;
+		if (!id || !url) throw new Error('Upload failed');
+		return { orphanId: Number(id), orphanUrl: String(url) };
+	}, []);
+
 	const addFiles = React.useCallback((picked) => {
-		const next = picked.map((file) => ({ id: makeId(), file, previewUrl: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined, isFromLibrary: false, isExisting: false }));
-		onFilesChange([...(files ?? []), ...next]);
-	}, [files, onFilesChange]);
+		const next = picked.map((file) => ({
+			id: makeId(),
+			file,
+			previewUrl: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
+			isFromLibrary: false,
+			isExisting: false,
+			uploadStatus: uploadMode === 'direct' ? 'uploading' : 'idle',
+			orphanId: null,
+			orphanUrl: null,
+		}));
+		const safeFiles = (files ?? []).filter(Boolean);
+
+
+		const revokePreview = (item) => {
+			if (item?.previewUrl && !item.isFromLibrary && !item.isExisting) {
+				URL.revokeObjectURL(item.previewUrl);
+			}
+		};
+
+		if (!multiple && typeof getErrors === 'function') {
+			const { ok } = getErrors(next);
+			if (!ok) {
+				next.forEach((n) => {
+					n.uploadStatus = "error";
+					return n;
+				})
+				const merged = [...next, ...safeFiles];
+				//get errors again after merging to save prev old files errors
+				const { ok, ...errors } = getErrors(merged);
+				setErrors(errors)
+				onFilesChange(merged);
+				return;
+			}
+		}
+		// MULTI MODE: allow partial upload (valid only)
+		if (multiple && typeof getErrors === 'function') {
+			const { specific = {}, maxAllowed = 20 } = getErrors(next) || {};
+
+			const invalidNext = next.filter((n) => !!specific?.[n.id]).map((n) => ({ ...n, uploadStatus: "error" }));
+			const validNext = next.filter((n) => !specific?.[n.id]);
+
+			const remainingSlots = Math.max(0, Number(maxAllowed) - safeFiles.length);
+			const acceptedValid = validNext.slice(0, remainingSlots);
+			const droppedValid = validNext.slice(remainingSlots);
+
+			// drop extra valids completely if exceeding max (revoke previews)
+			droppedValid.forEach(revokePreview);
+
+			const merged = [...invalidNext, ...acceptedValid, ...safeFiles];
+			// compute errors for merged so UI shows invalid messages and keeps previous errors
+			const { ok, ...errors } = getErrors(merged) || {};
+			if (typeof setErrors === "function") setErrors(errors);
+			onFilesChange(merged);
+
+			// upload only accepted valid
+			if (uploadMode === 'direct') {
+				acceptedValid.forEach(async (it) => {
+					try {
+						const { orphanId, orphanUrl } = await uploadOne(it);
+						onFilesChange((curr) => (curr ?? []).filter(Boolean).map((x) => x.id === it.id ? { ...x, uploadStatus: 'success', orphanId, orphanUrl } : x));
+					} catch (e) {
+						onFilesChange((curr) => (curr ?? []).filter(Boolean).map((x) => x.id === it.id ? { ...x, uploadStatus: 'error' } : x));
+					}
+				});
+			}
+
+			return;
+		}
+
+		// single-file mode: replacing should delete old orphan first
+		if (!multiple) {
+			const prev = safeFiles?.[0];
+			const proposed = next.slice(0, 1);
+			onFilesChange(proposed);
+
+			// after validation passes, delete old and replace
+			if (prev?.previewUrl && !prev.isFromLibrary && !prev.isExisting) URL.revokeObjectURL(prev.previewUrl);
+			if (uploadMode === 'direct' && prev?.orphanId && !prev.isExisting && !prev.isFromLibrary) deleteOrphan(prev.orphanId);
+
+
+		} else {
+			const merged = [...next, ...safeFiles];
+
+			onFilesChange(merged);
+
+		}
+
+		if (uploadMode === 'direct') {
+			next.forEach(async (it) => {
+				try {
+					const { orphanId, orphanUrl } = await uploadOne(it);
+
+					onFilesChange((curr) => {
+						return (curr ?? []).filter(Boolean).map((x) => x.id === it.id ? { ...x, uploadStatus: 'success', orphanId, orphanUrl } : x);
+					});
+				} catch (e) {
+					onFilesChange((curr) => (curr ?? []).filter(Boolean).map((x) => x.id === it.id ? { ...x, uploadStatus: 'error' } : x));
+				}
+			});
+		}
+	}, [deleteOrphan, files, multiple, uploadMode, uploadOne]);
 
 	const onPick = (e) => {
 		const picked = Array.from(e.target.files ?? []);
@@ -1272,10 +1393,15 @@ export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple
 	};
 
 	const removeFile = (id) => {
-		const target = (files ?? []).find((f) => f.id === id);
+		const target = (files ?? []).filter(Boolean).find((f) => f.id === id);
 		if (onRemove) onRemove(target);
 		if (target?.previewUrl && !target.isFromLibrary && !target.isExisting) URL.revokeObjectURL(target.previewUrl);
-		onFilesChange((files ?? []).filter((f) => f.id !== id));
+		// remove from UI first
+		onFilesChange((files ?? []).filter(Boolean).filter((f) => f.id !== id));
+		// then try to delete orphan row (only for direct uploads)
+		if (uploadMode === 'direct' && target?.orphanId && !target.isExisting && !target.isFromLibrary) {
+			deleteOrphan(target.orphanId);
+		}
 	};
 
 	const handleDrop = (e) => {
@@ -1353,9 +1479,9 @@ export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple
 			)}
 
 			{/* File List */}
-			{(files ?? []).length > 0 && (
+			{(files ?? []).filter(Boolean).length > 0 && (
 				<div className="mt-3 space-y-2">
-					{(files ?? []).map((f) => {
+					{(files ?? []).filter(Boolean).map((f) => {
 						const fileError = specificErrors[f.id];
 						return (
 							<div
@@ -1385,6 +1511,13 @@ export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple
 									</p>
 									{fileError ? (
 										<p className="text-[11px] text-red-500 font-medium">{fileError}</p>
+									) : f.uploadStatus === 'uploading' ? (
+										<p className="text-[11px] text-slate-400 flex items-center gap-1 justify-end">
+											<Loader2 className="h-3 w-3 animate-spin" />
+											Uploading...
+										</p>
+									) : f.uploadStatus === 'error' ? (
+										<p className="text-[11px] text-red-500 font-medium">Upload failed</p>
 									) : (
 										<p className="text-[11px] text-slate-400">
 											{f.isFromLibrary || f.isExisting ? t('uploads.fromLibrary') : `${((f?.file?.size || 0) / 1024).toFixed(1)} KB`}

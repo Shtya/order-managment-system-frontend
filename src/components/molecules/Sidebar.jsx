@@ -598,8 +598,8 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
         { icon: Package, labelKey: "products", href: "/products" },
         { icon: PackagePlus, labelKey: "newProduct", href: "/products/new" },
         { icon: Layers, labelKey: "newBundle", href: "/bundles/new" },
-        { icon: Package, labelKey: "categories", href: "/categories" },
-        
+        { icon: Package, labelKey: "categories", href: "/products/categories" },
+
       ],
     },
     {

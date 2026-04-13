@@ -7216,6 +7216,74 @@
     "qty": "الكمية",
     "total": "الإجمالي"
   },
+  "categories": {
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "products": "المنتجات",
+      "categories": "التصنيفات"
+    },
+    "actions": {
+      "add": "إضافة تصنيف",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "duplicate": "نسخ",
+      "view": "عرض"
+    },
+    "table": {
+      "id": "المعرف",
+      "name": "الاسم",
+      "slug": "المسار",
+      "createdAt": "تاريخ الإنشاء",
+      "options": "إجراءات"
+    },
+    "form": {
+      "createTitle": "إضافة تصنيف",
+      "editTitle": "تعديل التصنيف",
+      "name": "اسم التصنيف",
+      "namePlaceholder": "مثال: إلكترونيات",
+      "cancel": "إلغاء",
+      "save": "حفظ",
+      "saving": "جارٍ الحفظ…"
+    },
+    "validation": {
+      "nameRequired": "الاسم مطلوب",
+      "nameMax": "الاسم يجب ألا يتجاوز {max} حرفاً",
+      "slugRequired": "المسار (slug) مطلوب",
+      "slugMax": "المسار يجب ألا يتجاوز {max} حرفاً",
+      "slugInvalid": "المسار يقبل أحرفاً إنجليزية صغيرة وأرقاماً وشرطات فقط"
+    },
+    "toast": {
+      "created": "تم إنشاء التصنيف بنجاح",
+      "updated": "تم تحديث التصنيف بنجاح",
+      "deleted": "تم حذف التصنيف بنجاح",
+      "duplicated": "تم نسخ التصنيف بنجاح"
+    },
+    "delete": {
+      "title": "حذف التصنيف",
+      "description": "هل أنت متأكد من حذف \"{name}\"؟ لا يمكن التراجع.",
+      "confirm": "حذف",
+      "cancel": "إلغاء"
+    },
+    "duplicate": {
+      "title": "نسخ التصنيف",
+      "description": "إنشاء نسخة من \"{name}\" بمسار جديد؟",
+      "confirm": "نسخ",
+      "cancel": "إلغاء",
+      "copyName": "{name} (نسخة)"
+    },
+    "view": {
+      "title": "تفاصيل التصنيف",
+      "name": "الاسم",
+      "slug": "المسار",
+      "close": "إغلاق"
+    },
+    "empty": "لا توجد تصنيفات بعد.",
+    "global": {
+      "badge": "افتراضي",
+      "lockedToast": "لا يمكن تعديل أو حذف التصنيفات الافتراضية",
+      "lockedHint": "مقفل (افتراضي)"
+    }
+  },
   "settings": {
     "breadcrumb": {
       "home": "الرئيسية"

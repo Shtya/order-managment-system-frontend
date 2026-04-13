@@ -7216,6 +7216,74 @@
     "qty": "Quantity",
     "total": "Total"
   },
+  "categories": {
+    "breadcrumb": {
+      "home": "Home",
+      "products": "Products",
+      "categories": "Categories"
+    },
+    "actions": {
+      "add": "Add category",
+      "edit": "Edit",
+      "delete": "Delete",
+      "duplicate": "Duplicate",
+      "view": "View"
+    },
+    "table": {
+      "id": "ID",
+      "name": "Name",
+      "slug": "Slug",
+      "createdAt": "Created",
+      "options": "Actions"
+    },
+    "form": {
+      "createTitle": "Add category",
+      "editTitle": "Edit category",
+      "name": "Category name",
+      "namePlaceholder": "e.g. Electronics",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…"
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "nameMax": "Name must be at most {max} characters",
+      "slugRequired": "Slug is required",
+      "slugMax": "Slug must be at most {max} characters",
+      "slugInvalid": "Slug may only contain lowercase letters, numbers, and hyphens"
+    },
+    "toast": {
+      "created": "Category created successfully",
+      "updated": "Category updated successfully",
+      "deleted": "Category deleted successfully",
+      "duplicated": "Category duplicated successfully"
+    },
+    "delete": {
+      "title": "Delete category",
+      "description": "Are you sure you want to delete \"{name}\"? This cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "duplicate": {
+      "title": "Duplicate category",
+      "description": "Create a copy of \"{name}\" with a new slug?",
+      "confirm": "Duplicate",
+      "cancel": "Cancel",
+      "copyName": "{name} (Copy)"
+    },
+    "view": {
+      "title": "Category details",
+      "name": "Name",
+      "slug": "Slug",
+      "close": "Close"
+    },
+    "empty": "No categories yet.",
+    "global": {
+      "badge": "Global",
+      "lockedToast": "Global categories cannot be edited or deleted",
+      "lockedHint": "Locked (global)"
+    }
+  },
   "settings": {
     "breadcrumb": {
       "home": "Home"

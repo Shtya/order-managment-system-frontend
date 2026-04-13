@@ -377,7 +377,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	};
 
 	const onSubmit = async (data) => {
-		const toastId = toast.loading(isEditMode ? t('messages.updating') : t('messages.creating'));
+		let toastId;
 		try {
 			const isOthersValid = validateImages(otherFiles, 'other');
 			const isMainValid = validateImages(mainFiles, 'main');
@@ -436,7 +436,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				const receipt = purchaseReceipt[0];
 				if (receipt?.file) fd.append('purchaseReceiptAsset', receipt.file);
 			}
-
+			toastId = toast.loading(isEditMode ? t('messages.updating') : t('messages.creating'));
 
 			const apiCall = isEditMode
 				? api.patch(`/products/${productId}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
@@ -478,7 +478,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 			if (failedCount > 0) {
 				if (isEditMode) {
-					toast.error(t('messages.updatedWithErrors', { count: failedCount }), { id: toastId });
+					toast.error(t('messages.updatedWithErrors', { count: failedCount }), { id: 	 });
 				}
 				else {
 					toast.error(t('messages.createdWithErrors', { count: failedCount }), { id: toastId });

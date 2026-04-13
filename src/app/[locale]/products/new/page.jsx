@@ -412,8 +412,9 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			const wp = safeNumberString(data.wholesalePrice);
 			if (wp !== '') fd.append('wholesalePrice', wp);
 
+
 			const sp = safeNumberString(data.salePrice);
-			if (sp !== '') fd.append('salePrice', wp);
+			if (sp !== '') fd.append('salePrice', sp);
 
 			const lp = safeNumberString(data.lowestPrice);
 			if (lp !== '') fd.append('lowestPrice', lp);

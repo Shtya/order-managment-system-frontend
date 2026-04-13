@@ -377,6 +377,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	};
 
 	const onSubmit = async (data) => {
+		const toastId = toast.loading(isEditMode ? t('messages.updating') : t('messages.creating'));
 		try {
 			const isOthersValid = validateImages(otherFiles, 'other');
 			const isMainValid = validateImages(mainFiles, 'main');
@@ -419,9 +420,9 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			if (isEditMode) fd.append('imagesMeta', JSON.stringify([...existingImages, ...imagesMeta]));
 			else if (imagesMeta.length) fd.append('imagesMeta', JSON.stringify(imagesMeta));
 			if (isEditMode && removedImages.length > 0) fd.append('removedImages', JSON.stringify(removedImages));
-			(otherFiles ?? []).forEach((f) => { if (!f) return; if (f.isFromLibrary || f.isExisting) return; if (f.file) fd.append('images', f.file); });
 			if (!isEditMode) fd.append('combinations', JSON.stringify([...data.combinations]));
 
+			// (otherFiles ?? []).forEach((f) => { if (!f) return; if (f.isFromLibrary || f.isExisting) return; if (f.file) fd.append('images', f.file); });
 			// Add Purchase Data if enabled
 			if (!isEditMode && hasPurchase) {
 				const pData = {
@@ -436,19 +437,60 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				if (receipt?.file) fd.append('purchaseReceiptAsset', receipt.file);
 			}
 
+
 			const apiCall = isEditMode
 				? api.patch(`/products/${productId}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
 				: api.post('/products', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
 
-			await toast.promise(apiCall, { loading: t('messages.saving'), success: isEditMode ? t('messages.updated') : t('messages.created'), error: (err) => normalizeAxiosError(err) });
+
+
+			const productRes = await apiCall;
+			const newId = productRes.data?.id || productId;
+
+			const newFilesToUpload = (otherFiles ?? []).filter(f => f && !f.isFromLibrary && !f.isExisting && f.file);
+			let failedCount = 0;
+
+			if (newFilesToUpload.length > 0) {
+				const chunks = [];
+				for (let i = 0; i < newFilesToUpload.length; i += 3) {
+					chunks.push(newFilesToUpload.slice(i, i + 3));
+				}
+
+				const uploadPromises = chunks.map(async (chunk) => {
+					try {
+						const batchFd = new FormData();
+						chunk.forEach(f => batchFd.append('images', f.file));
+						await api.patch(`/products/${newId}/append-images`, batchFd, {
+							headers: { 'Content-Type': 'multipart/form-data' }
+						});
+					} catch (err) {
+						failedCount += chunk.length;
+					}
+				});
+
+				await Promise.allSettled(uploadPromises);
+			}
 
 			if (isEditMode && data.combinations && data.combinations.length > 0) {
 				const combinationsPayload = data.combinations.map((c) => ({ attributes: c.attributes ?? {}, price: safeNumberString(c.price) || null }));
 				await api.put(`/products/${productId}/skus`, { items: combinationsPayload });
 			}
 
+			if (failedCount > 0) {
+				if (isEditMode) {
+					toast.error(t('messages.updatedWithErrors', { count: failedCount }), { id: toastId });
+				}
+				else {
+					toast.error(t('messages.createdWithErrors', { count: failedCount }), { id: toastId });
+				}
+			} else {
+				toast.success(isEditMode ? t('messages.updated') : t('messages.created'), { id: toastId });
+			}
+
 			navigate.push('/products');
-		} catch (error) { }
+		} catch (error) {
+			toast.error(normalizeAxiosError(error), { id: toastId });
+		}
 	};
 
 	useEffect(() => {

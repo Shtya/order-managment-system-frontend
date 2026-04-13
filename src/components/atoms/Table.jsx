@@ -452,22 +452,49 @@ const ImgCell = memo(function ImgCell({ src, alt, onOpen }) {
 });
 
 const ImgsCell = memo(function ImgsCell({ images, onOpen }) {
-  if (!images.length) return <span className="text-muted-foreground/80text-sm">—</span>;
+  if (!images?.length) return <span className="text-muted-foreground/80 text-sm">—</span>;
+
+  const MAX_VISIBLE = 5;
+  const displayImages = images.slice(0, MAX_VISIBLE);
+  const remainingCount = images.length - MAX_VISIBLE;
+
   return (
     <div className="flex items-center">
-      {images.map((img, idx) => {
+      {displayImages.map((img, idx) => {
         const fullSrc = toFullSrc(img.src);
+        const isLastVisible = idx === MAX_VISIBLE - 1;
+        const hasMore = remainingCount > 0;
+
         return (
           <motion.button
-            key={`${img.src}-${idx}`} type="button"
+            key={`${img.src}-${idx}`}
+            type="button"
             onClick={() => onOpen(fullSrc, img.alt)}
-            style={{ zIndex: images.length - idx, marginInlineStart: idx === 0 ? 0 : -14 }}
+            style={{
+              zIndex: MAX_VISIBLE - idx,
+              marginInlineStart: idx === 0 ? 0 : -14
+            }}
             whileHover={{ scale: 1.14, zIndex: 50, y: -2 }}
             whileTap={{ scale: 0.95 }}
             transition={{ type: "spring", stiffness: 400, damping: 28 }}
-            className="relative w-11 h-11 rounded-xl overflow-hidden border-2 border-background shadow-md cursor-pointer"
+            className="relative w-11 h-11 rounded-xl overflow-hidden border-2 border-background shadow-md cursor-pointer bg-muted"
           >
-            <img src={fullSrc} alt={img.alt} className="w-full h-full object-cover" loading="lazy" />
+            <img
+              src={fullSrc}
+              alt={img.alt}
+              className={cn(
+                "w-full h-full object-cover",
+                (isLastVisible && hasMore) && "blur-[1.5px] brightness-75"
+              )}
+              loading="lazy"
+            />
+
+            {/* The +Count Overlay */}
+            {isLastVisible && hasMore && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/30 text-white font-bold text-xs">
+                +{remainingCount + 1}
+              </div>
+            )}
           </motion.button>
         );
       })}

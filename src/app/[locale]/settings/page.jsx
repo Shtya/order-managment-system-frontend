@@ -438,7 +438,7 @@ export default function SettingsPage() {
       label: t("tabs.configuration.label"),
       icon: Settings2,
     },
-    { id: "categories", label: t("tabs.categories.label"), icon: Layers },
+    // { id: "categories", label: t("tabs.categories.label"), icon: Layers },
     { id: "account", label: t("tabs.account.label"), icon: User },
     { id: "security", label: t("tabs.security.label"), icon: Shield },
     { id: "notifications", label: t("tabs.notifications.label"), icon: Bell },
@@ -447,7 +447,7 @@ export default function SettingsPage() {
   const content = {
     company: <CompanyTab />,
     configuration: <SettingsTab />,
-    categories: <CategoriesTab />,
+    // categories: <CategoriesTab />,
     account: <AccountTab />,
     security: <SecurityTab />,
     notifications: <NotificationsTab />,

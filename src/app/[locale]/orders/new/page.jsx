@@ -874,9 +874,7 @@ export default function CreateOrderPageComplete({
 				paymentMethod: data.paymentMethod,
 				paymentStatus: data.paymentStatus || undefined,
 				shippingCompanyId:
-					data.shippingCompanyId && data.shippingCompanyId !== "none"
-						? data.shippingCompanyId
-						: undefined,
+					data.shippingCompanyId ? data.shippingCompanyId : undefined,
 				storeId:
 					data.storeId && data.storeId !== "none" ? data.storeId : undefined,
 				shippingCost: Number(data.shippingCost || 0),

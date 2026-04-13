@@ -722,7 +722,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       roles: ["SUPER_ADMIN"],
     },
 
-  ], [shippingCompanies?.length]);
+  ], [shippingCompanies]);
 
   useEffect(() => {
     const active = menuItems.find((item) =>

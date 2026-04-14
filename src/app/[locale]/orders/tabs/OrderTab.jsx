@@ -505,8 +505,8 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
       //   ),
       // },
       {
-        key: "status",
-        header: t("table.confirmOrder"),
+        key: "confirmStatus",
+        header: t("table.status"),
         cell: (row) => {
           const currentCode = row.status?.code;
           const currentStatusId = row.status?.id;

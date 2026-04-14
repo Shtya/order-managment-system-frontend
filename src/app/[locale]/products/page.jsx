@@ -21,7 +21,6 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 
-
 import useProductsTab, { ProductViewModal } from "./ProductsTab";
 import useBundlesTab, { BundleViewModal } from "./BundlesTab";
 import useIdleTab from "./IdleTab";

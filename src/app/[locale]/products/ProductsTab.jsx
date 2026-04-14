@@ -190,6 +190,42 @@ export default function useProductsTab({ t, searchDebounced, filters, filtersOpe
 				}
 			},
 			{
+				key: "reservedCount",
+				header: t("table.totalReserved"),
+				className: "min-w-[120px]",
+				cell: (row) => {
+					const total = (row?.skus || []).reduce((sum, s) => sum + (Number(s?.reserved) || 0), 0);
+					return (
+						<Badge
+							className={cn(
+								"rounded-full font-semibold",
+								total > 0 ? "bg-amber-100 text-amber-700 border border-amber-200" : "bg-gray-100 text-gray-600 border border-gray-200"
+							)}
+						>
+							{total} {t("table.items")}
+						</Badge>
+					);
+				}
+			},
+			{
+				key: "availableCount",
+				header: t("table.totalAvailable"),
+				className: "min-w-[120px]",
+				cell: (row) => {
+					const total = (row?.skus || []).reduce((sum, s) => sum + (Number(s?.available) || 0), 0);
+					return (
+						<Badge
+							className={cn(
+								"rounded-full font-semibold",
+								total > 0 ? "bg-blue-100 text-blue-700 border border-blue-200" : "bg-gray-100 text-gray-600 border border-gray-200"
+							)}
+						>
+							{total} {t("table.items")}
+						</Badge>
+					);
+				}
+			},
+			{
 				key: "created_at",
 				header: t("table.createdAt"),
 				className: "min-w-[120px]",

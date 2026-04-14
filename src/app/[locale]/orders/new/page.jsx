@@ -590,7 +590,7 @@ export default function CreateOrderPageComplete({
 		resolver: yupResolver(schema),
 		defaultValues: getDefaultValues(),
 	});
-
+	console.log(errors)
 	const watchedItems = watch("items");
 	const watchedShippingCost = watch("shippingCost");
 	const watchedDiscount = watch("discount");

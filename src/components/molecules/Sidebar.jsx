@@ -551,7 +551,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       roles: ["ADMIN"],
       permission: "warehouses.read",
       children: [
-        ...(shippingCompanies?.length > 1 || !shippingCompanies ? [{
+        ...(shippingCompanies?.length !== 1? [{
           icon: Truck,
           labelKey: "warehouseDistribution",
           href: "/warehouse?tab=distribution",

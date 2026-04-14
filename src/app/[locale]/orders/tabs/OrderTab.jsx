@@ -493,19 +493,19 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
           </span>
         ),
       },
+      // {
+      //   key: "status",
+      //   header: t("table.status"),
+      //   cell: (row) => (
+      //     <Badge className={cn("rounded-xl", getStatusBadge(row.status))}>
+      //       {row.status.system
+      //         ? t(`statuses.${row.status.code}`)
+      //         : row.status.name || row.status.code}
+      //     </Badge>
+      //   ),
+      // },
       {
         key: "status",
-        header: t("table.status"),
-        cell: (row) => (
-          <Badge className={cn("rounded-xl", getStatusBadge(row.status))}>
-            {row.status.system
-              ? t(`statuses.${row.status.code}`)
-              : row.status.name || row.status.code}
-          </Badge>
-        ),
-      },
-      {
-        key: "confirmStatus",
         header: t("table.confirmOrder"),
         cell: (row) => {
           const currentCode = row.status?.code;
@@ -516,7 +516,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
                 defaultValue={String(currentStatusId)}
                 onValueChange={async (val) => {
                   const statusId = val;
-                  if (isNaN(statusId) || statusId === currentStatusId) return;
+                  if (!statusId || statusId === currentStatusId) return;
                   const toastId = toast.loading(t("messages.statusUpdating"));
                   try {
                     setUpdating(row.id, true);

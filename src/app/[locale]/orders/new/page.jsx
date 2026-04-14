@@ -70,7 +70,7 @@ const createSchema = (t) =>
 			.array()
 			.of(
 				yup.object({
-					variantId: yup.number().required(),
+					variantId: yup.string().required(),
 					quantity: yup.number().min(1).required(),
 					unitPrice: yup.number().min(0).required(),
 				})

@@ -1229,8 +1229,8 @@ function CreateUserDialog({
 							const payload = {
 								name: form.name.trim(),
 								email: form.email.trim(),
-								roleId: Number(form.roleId),
-								// planId: form.planId && form.planId !== "none" ? Number(form.planId) : undefined,
+								roleId: form.roleId,
+								// planId: form.planId && form.planId !== "none" ? form.planId : undefined,
 								password: form.password?.trim() || undefined,
 							};
 							onCreated?.(payload);
@@ -1393,7 +1393,7 @@ function EditUserDialog({
 							const patch = {};
 							if (form.name.trim()) patch.name = form.name.trim();
 							if (form.email.trim()) patch.email = form.email.trim();
-							if (form.roleId) patch.roleId = Number(form.roleId);
+							if (form.roleId) patch.roleId = form.roleId;
 
 							// if (!form.planId || form.planId === "none") patch.planId = null;
 							// else patch.planId = Number(form.planId);

@@ -1114,7 +1114,7 @@ function UpsellingCardWithAction({ order, items, onOpenModal, t, isRtl }) {
 	const addedIds = useMemo(() => {
 		return new Set(
 			items.flatMap(item => [
-				Number(item.variant?.product?.id)
+				tem.variant?.product?.id
 			]).filter(Boolean)
 		);
 	}, [items]);
@@ -1123,7 +1123,7 @@ function UpsellingCardWithAction({ order, items, onOpenModal, t, isRtl }) {
 	const addedSkusMap = useMemo(() => {
 		const map = new Map();
 		items.forEach(item => {
-			const pId = Number(item.variant?.product?.id || item.productId);
+			const pId = item.variant?.product?.id || item.productId;
 			const sku = item.variant?.sku || item.sku;
 
 			if (pId && sku) {

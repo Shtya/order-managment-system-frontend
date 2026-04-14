@@ -440,9 +440,9 @@ export const BlockEmployeePopover = ({
 							<div className="p-1.5 space-y-0.5">
 								{empItems.map((item) => {
 									const u = item.user;
-									const isSelected = Number(block.employee?.user?.id) === Number(u?.id);
+									const isSelected = block.employee?.user?.id === u?.id;
 									const usedElsewhere = assignmentBlocks.some(
-										(b) => b.id !== block.id && Number(b.employee?.user?.id) === Number(u?.id)
+										(b) => b.id !== block.id && b.employee?.user?.id === u?.id
 									);
 									const lc = loadColor(item?.activeCount);
 
@@ -689,7 +689,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 			setAssigning(true);
 			try {
 				await api.post("/orders/assign-manual", {
-					assignments: valid.map(b => ({ userId: Number(b.employee.user.id), orderIds: b.orderIds })),
+					assignments: valid.map(b => ({ userId: b.employee.user.id, orderIds: b.orderIds })),
 				});
 				toast.success(t("distribution.normalSuccess", { count: valid.reduce((s, b) => s + b.orderIds.length, 0), employees: valid.length }));
 				onSuccess?.();
@@ -726,7 +726,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 			setAutoEmployeesLoading(true);
 			try {
 				const response = await api.post("/orders/auto-assign-preview", {
-					statusIds: selectedStatuses.map(s => Number(s)),
+					statusIds: selectedStatuses.map(s => s),
 					requestedOrderCount: orderCount || 0,
 					requestedEmployeeCount: employeeCount || 0,
 					startDate: dateRange.from,

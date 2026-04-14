@@ -515,7 +515,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
               <Select
                 defaultValue={String(currentStatusId)}
                 onValueChange={async (val) => {
-                  const statusId = Number(val);
+                  const statusId = val;
                   if (isNaN(statusId) || statusId === currentStatusId) return;
                   const toastId = toast.loading(t("messages.statusUpdating"));
                   try {

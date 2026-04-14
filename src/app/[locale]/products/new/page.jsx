@@ -420,6 +420,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			if (lp !== '') fd.append('lowestPrice', lp);
 			if ((data.storageRack ?? '').trim()) fd.append('storageRack', data.storageRack.trim());
 			if ((data.slug ?? '').trim()) fd.append('slug', data.slug.trim());
+			
 			if (data.categoryId && data.categoryId !== 'none') fd.append('categoryId', data.categoryId);
 			if (data.storeId && data.storeId !== 'none') fd.append('storeId', data.storeId);
 			if (data.warehouseId && data.warehouseId !== 'none') fd.append('warehouseId', data.warehouseId);
@@ -435,7 +436,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 			const existingImages = (otherFiles || []).filter((f) => f?.isExisting && f?.url && !removedImages.includes(f.url)).map((f) => ({ url: String(f.url) }));
 			const imagesMeta = (otherFiles || []).filter((f) => f?.isFromLibrary && !f?.isExisting && f?.url).map((f) => ({ url: String(f.url) }));
-			const orphanIds = (otherFiles || []).filter((f) => !f?.isExisting && !f?.isFromLibrary && f?.orphanId).map((f) => Number(f.orphanId));
+			const orphanIds = (otherFiles || []).filter((f) => !f?.isExisting && !f?.isFromLibrary && f?.orphanId).map((f) => f.orphanId);
 			if (isEditMode) fd.append('imagesMeta', JSON.stringify([...existingImages, ...imagesMeta]));
 			else fd.append('imagesMeta', JSON.stringify(imagesMeta));
 			if (orphanIds.length) fd.append('imagesOrphanIds', JSON.stringify(orphanIds));
@@ -447,7 +448,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			if (!isEditMode && hasPurchase) {
 				const pData = {
 					...data.purchase,
-					supplierId: data.purchase.supplierId && data.purchase.supplierId !== 'none' ? Number(data.purchase.supplierId) : undefined,
+					supplierId: data.purchase.supplierId && data.purchase.supplierId !== 'none' ? data.purchase.supplierId : undefined,
 					safeId: data.purchase.safeId && data.purchase.safeId !== 'none' ? data.purchase.safeId : undefined,
 					paidAmount: Number(data.purchase.paidAmount || 0),
 				};
@@ -1267,7 +1268,7 @@ export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple
 	const specificErrors = error?.specific || {};
 
 	const deleteOrphan = React.useCallback((orphanId) => {
-		const id = Number(orphanId);
+		const id = orphanId;
 		if (!Number.isFinite(id) || id <= 0) return;
 		// Fire-and-forget: cron will clean up if this fails
 		void api.delete(`/orphan-files/${id}`).catch(() => { });
@@ -1280,7 +1281,7 @@ export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple
 		const id = res?.data?.id;
 		const url = res?.data?.url;
 		if (!id || !url) throw new Error('Upload failed');
-		return { orphanId: Number(id), orphanUrl: String(url) };
+		return { orphanId: id, orphanUrl: String(url) };
 	}, []);
 
 	const addFiles = React.useCallback((picked) => {

@@ -2219,7 +2219,7 @@ function ReturnsOrdersSlidePanel({ open, onClose, selectedCarrier, onManifestCre
     try {
       setCreatingManifest(true);
       await api.post('/orders/manifests/return', {
-        shippingCompanyId: firstCarrierId ? Number(firstCarrierId) : null,
+        shippingCompanyId: firstCarrierId ? firstCarrierId : null,
         orderIds: selectedOrderIds,
       });
       toast.success(t("scan.messages.returnSuccess", { code: "" }) || "Return manifest created successfully");

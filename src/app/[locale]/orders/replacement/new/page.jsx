@@ -1814,7 +1814,7 @@ export default function CreateReplacementPage({
       fd.append("anotherReason", form.anotherReason);
       fd.append("paymentMethod", form.paymentMethod);
       if (form.shippingCompanyId && form.shippingCompanyId !== "none") {
-        fd.append("shippingCompanyId", Number(form.shippingCompanyId));
+        fd.append("shippingCompanyId", form.shippingCompanyId);
       }
       fd.append("shippingCost", Number(form.shippingCost) || 0);
       fd.append("discount", Number(form.discount) || 0);

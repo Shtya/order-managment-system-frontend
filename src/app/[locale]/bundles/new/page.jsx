@@ -49,14 +49,14 @@ const makeSchema = (t) =>
 			.min(1, t('validation.priceMin', { min: 1 })), // Native min check
 		description: yup.string().nullable().max(2000, t('validation.descriptionTooLong', { max: 2000 })),
 		storeId: yup.string().nullable(),
-		variantId: yup.number().required(t('validation.mainVariantRequired')),
+		variantId: yup.string().required(t('validation.mainVariantRequired')),
 		variant: yup.mixed().nullable(),
 		bundleItems: yup
 			.array()
 			.of(
 				yup.object({
 					variant: yup.mixed().nullable(),
-					variantId: yup.number().required(t('validation.productRequired')),
+					variantId: yup.string().required(t('validation.productRequired')),
 					qty: yup.number().min(1, t('validation.quantityMinOne')).required(t('validation.quantityRequired')),
 				})
 			)
@@ -173,10 +173,10 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 				price: data.wholesalePrice,
 				description: data.description,
 				sku: `BUNDLE-${slugifyKey(data.name).substring(0, 10).toUpperCase()}-${Date.now()}`,
-				variantId: Number(data.variantId),
-				storeId: data.storeId === 'none' ? null : Number(data.storeId),
+				variantId: data.variantId,
+				storeId: data.storeId === 'none' ? null : data.storeId,
 				items: data.bundleItems.map((item) => ({
-					variantId: Number(item.variantId),
+					variantId: item.variantId,
 					qty: Number(item.qty),
 				})),
 			};
@@ -295,9 +295,9 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 									return (
 										<div className="space-y-2">
 											<ProductSkuSearchPopover
-												selectedSkus={field.value ? [{ id: Number(field.value) }] : []}
+												selectedSkus={field.value ? [{ id: field.value }] : []}
 												handleSelectSku={(sku) => {
-													field.onChange(Number(sku.id));
+													field.onChange(sku.id);
 													setValue('variant', sku);
 												}}
 											/>
@@ -365,11 +365,11 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 													return (
 														<div className="space-y-2">
 															<ProductSkuSearchPopover
-																selectedSkus={itemValue.variantId ? [{ id: Number(itemValue.variantId) }] : []}
+																selectedSkus={itemValue.variantId ? [{ id: itemValue.variantId }] : []}
 																handleSelectSku={(sku) => {
 																	setValue(`bundleItems.${index}`, {
 																		...itemValue,
-																		variantId: Number(sku.id),
+																		variantId: sku.id,
 																		variant: sku,
 																	});
 																}}

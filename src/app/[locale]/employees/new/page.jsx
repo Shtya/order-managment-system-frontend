@@ -89,7 +89,7 @@ export default function AddEmployeePage() {
 				}),
 
 			roleId: yup
-				.number()
+				.string()
 				.typeError(t("validation.roleRequired"))
 				.required(t("validation.roleRequired")),
 			password: yup
@@ -516,7 +516,7 @@ export default function AddEmployeePage() {
 									render={({ field }) => (
 										<Select
 											value={field.value ? String(field.value) : ""}
-											onValueChange={(v) => field.onChange(v ? Number(v) : undefined)}
+											onValueChange={(v) => field.onChange(v ? v : undefined)}
 										>
 											<SelectTrigger
 												className={cn(

@@ -201,17 +201,19 @@ function AddressSection({
 	// When user picks a city/zone/district — auto-fill the hidden RHF fields
 	const handleCityChange = useCallback(
 		(cityId, resetArea = true) => {
+			const cities = provider ?  providerCities  : normalCities;
 			if(!cityId) return;
+			const city = cities.find((c) => String(c.id) === cityId);
+			
+			if(!city) return;
 			
 			onMetaChange("cityId", cityId);
 			onMetaChange("zoneId", "");
 			onMetaChange("districtId", "");
-			const cities = provider ?  providerCities  : normalCities;
-			const city = cities.find((c) => String(c.id) === cityId);
 			if (city) setValue("city", city[nameKey] || city.nameEn, { shouldValidate: true });
 			if(resetArea ) setValue("area", "", { shouldValidate: false });
 		},
-		[providerCities, nameKey, onMetaChange, setValue, provider]
+		[providerCities,normalCities, nameKey, onMetaChange, setValue, provider]
 	);
 
 	const handleZoneChange = useCallback(

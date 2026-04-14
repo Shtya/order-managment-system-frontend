@@ -742,7 +742,7 @@ function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAddi
 function UpsellSection({ order, items, onOpen, t, isRtl }) {
   const upItems = order?.items?.flatMap(i => i.variant?.product?.upsellingEnabled ? i.variant.product.upsellingProducts || [] : []) || [];
   if (!upItems.length) return null;
-  const addedMap = useMemo(() => { const m = new Map(); items.forEach(i => { const pId = Number(i.variant?.product?.id || i.productId); const sku = i.variant?.sku || i.sku; if (pId && sku) { if (!m.has(pId)) m.set(pId, new Set()); m.get(pId).add(sku); } }); return m; }, [items]);
+  const addedMap = useMemo(() => { const m = new Map(); items.forEach(i => { const pId = i.variant?.product?.id || i.productId; const sku = i.variant?.sku || i.sku; if (pId && sku) { if (!m.has(pId)) m.set(pId, new Set()); m.get(pId).add(sku); } }); return m; }, [items]);
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .1 }}>
@@ -750,7 +750,7 @@ function UpsellSection({ order, items, onOpen, t, isRtl }) {
         <CardHead icon={Star} color={HEX.violet} eyebrow={t("upsell") || "Upsell"} title={t("upselling")} right={<Tag color={HEX.violet} sm>{upItems.length}</Tag>} />
         <div style={{ padding: "12px 18px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
           {upItems.map((up, i) => {
-            const added = Array.from(addedMap.get(Number(up.productId)) || new Set());
+            const added = Array.from(addedMap.get(up.productId) || new Set());
             return (
               <div key={i} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, padding: "12px 14px", borderRadius: "var(--radius)", background: rgba(HEX.violet, .04), border: `1px solid ${rgba(HEX.violet, .14)}` }}>
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 10, flex: 1 }}>

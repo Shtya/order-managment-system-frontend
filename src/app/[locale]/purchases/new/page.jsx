@@ -60,7 +60,7 @@ export default function CreatePurchaseInvoicePage() {
 					.array()
 					.of(
 						yup.object({
-							variantId: yup.number().required(tValidation("productRequired")),
+							variantId: yup.string().required(tValidation("productRequired")),
 							quantity: yup
 								.number()
 								.transform((v, o) => Number(o))
@@ -206,7 +206,7 @@ export default function CreatePurchaseInvoicePage() {
 			const fd = new FormData();
 
 			fd.append("receiptNumber", data.receiptNumber);
-			fd.append("supplierId", String(Number(data.supplierId)));
+			fd.append("supplierId", String(data.supplierId));
 			fd.append("safeId", String(data.safeId));
 
 			if (data.notes) fd.append("notes", data.notes);
@@ -214,7 +214,7 @@ export default function CreatePurchaseInvoicePage() {
 
 			// items لازم تبقى JSON string
 			const items = (data.items || []).map((item) => ({
-				variantId: Number(item.variantId),
+				variantId: item.variantId,
 				quantity: Number(item.quantity),
 				purchaseCost: Number(item.purchaseCost),
 			}));

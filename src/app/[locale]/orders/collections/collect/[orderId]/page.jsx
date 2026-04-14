@@ -493,8 +493,8 @@ export default function CollectOrderPage() {
     try {
       setLoading(true);
       await api.post("/collections", {
-        orderId: Number(orderId),
-        shippingCompanyId: Number(data.shippingCompanyId),
+        orderId: orderId,
+        shippingCompanyId: data.shippingCompanyId,
         source: data.source,
         // currency: data.currency,
         amount: Number(data.amount),
@@ -668,7 +668,7 @@ export default function CollectOrderPage() {
                       render={({ field }) => (
                         <Select
                           value={String(field.value)}
-                          onValueChange={(v) => field.onChange(Number(v))}
+                          onValueChange={(v) => field.onChange(v)}
                         >
                           <SelectTrigger className={FIELD_CLS}>
                             <SelectValue

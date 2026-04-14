@@ -62,7 +62,7 @@ export default function ManageSubscription({ userId, subscriptionId, onSaved }) 
 
     // ── Validation Schema ─────────────────────────────────────────────────────
     const schema = yup.object({
-        planId: yup.number().required(t("validation.planRequired")),
+        planId: yup.string().required(t("validation.planRequired")),
         status: yup.string().required(t("validation.statusRequired")),
         duration: yup.string().required(),
         durationIndays: yup.number().when('duration', {
@@ -138,8 +138,8 @@ export default function ManageSubscription({ userId, subscriptionId, onSaved }) 
             // بناء الـ Payload مع التأكد من أنواع البيانات (Data Casting)
             const payload = {
                 // الحقول الأساسية
-                planId: Number(data.planId),
-                userId: Number(userId),
+                planId: data.planId,
+                userId: userId,
                 status: data.status,
                 duration: data.duration,
 

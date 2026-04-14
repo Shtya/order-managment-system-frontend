@@ -61,7 +61,7 @@ export default function CreateReturnInvoicePage() {
 					.array()
 					.of(
 						yup.object({
-							variantId: yup.number().required(tValidation("productRequired")),
+							variantId: yup.string().required(tValidation("productRequired")),
 							returnedQuantity: yup
 								.number()
 								.transform((v, o) => (o === "" || o === null || o === undefined ? 0 : Number(o)))
@@ -256,7 +256,7 @@ export default function CreateReturnInvoicePage() {
 			const fd = new FormData();
 
 			fd.append("returnNumber", data.returnNumber);
-			if (data.supplierId) fd.append("supplierId", String(Number(data.supplierId)));
+			if (data.supplierId) fd.append("supplierId", String(data.supplierId));
 			if (data.supplierNameSnapshot) fd.append("supplierNameSnapshot", data.supplierNameSnapshot);
 			if (data.supplierCodeSnapshot) fd.append("supplierCodeSnapshot", data.supplierCodeSnapshot);
 			if (data.invoiceNumber) fd.append("invoiceNumber", data.invoiceNumber);
@@ -267,7 +267,7 @@ export default function CreateReturnInvoicePage() {
 			fd.append("paidAmount", String(Number(data.paidAmount || 0)));
 
 			const items = (data.items || []).map((item) => ({
-				variantId: Number(item.variantId),
+				variantId: item.variantId,
 				returnedQuantity: Number(item.returnedQuantity),
 				unitCost: Number(item.unitCost),
 				taxInclusive: Boolean(item.taxInclusive),

@@ -1923,7 +1923,7 @@ function OutgoingOrdersSlidePanel({ open, onClose, selectedCarrier, onManifestCr
 		try {
 			setCreatingManifest(true);
 			await api.post('/orders/manifests', {
-				shippingCompanyId: firstCarrierId ? Number(firstCarrierId) : null,
+				shippingCompanyId: firstCarrierId ? firstCarrierId : null,
 				orderIds: selectedOrderIds
 			});
 			toast.success(t("scan.messages.manifestCreated") || "Manifest created successfully");

@@ -34,7 +34,7 @@ const schema = yup.object({
 		.array()
 		.of(
 			yup.object({
-				variantId: yup.number().required(),
+				variantId: yup.string().required(),
 				quantity: yup.number().min(1).required(),
 				unitPrice: yup.number().min(0).required(),
 				discount: yup.number().min(0).optional(),
@@ -116,7 +116,7 @@ export default function CreateSalesInvoicePage() {
 				phone: data.phone || undefined,
 				paymentMethod: data.paymentMethod || undefined,
 				paymentStatus: data.paymentStatus || undefined,
-				safeId: data.safeId ? Number(data.safeId) : undefined,
+				safeId: data.safeId ? data.safeId : undefined,
 				notes: data.notes || undefined,
 				shippingCost: Number(data.shippingCost || 0),
 				paidAmount: Number(data.paidAmount || 0),

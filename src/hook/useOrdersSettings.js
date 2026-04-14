@@ -160,9 +160,7 @@ export default function useOrdersSettings({ isOpen = true, onClose } = {}) {
           payload.shipping.shippingCompanyId !== "all" &&
           payload.shipping.shippingCompanyId !== "none"
         ) {
-          payload.shipping.shippingCompanyId = Number(
-            payload.shipping.shippingCompanyId,
-          );
+          payload.shipping.shippingCompanyId =  payload.shipping.shippingCompanyId
         } else {
           payload.shipping.shippingCompanyId = null;
         }
@@ -174,9 +172,7 @@ export default function useOrdersSettings({ isOpen = true, onClose } = {}) {
           payload.shipping.warehouseDefaultShippingCompanyId !== "all" &&
           payload.shipping.warehouseDefaultShippingCompanyId !== "none"
         ) {
-          payload.shipping.warehouseDefaultShippingCompanyId = Number(
-            payload.shipping.warehouseDefaultShippingCompanyId,
-          );
+          payload.shipping.warehouseDefaultShippingCompanyId =  payload.shipping.warehouseDefaultShippingCompanyId
         } else {
           payload.shipping.warehouseDefaultShippingCompanyId = null;
         }

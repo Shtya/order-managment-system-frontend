@@ -592,7 +592,7 @@ function AssignCarrierDialog({
           `/shipping/providers/${provider}/orders/bulk-assign`,
           {
             items: orderIds.map((id) => ({
-              orderId: Number(id), // Ensuring it's a number to match the DTO
+              orderId: id, // Ensuring it's a number to match the DTO
             })),
           },
         );

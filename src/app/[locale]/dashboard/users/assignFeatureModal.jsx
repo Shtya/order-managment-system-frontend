@@ -64,7 +64,7 @@ export default function AssignFeatureModal({ isOpen, onClose, user, onRefresh })
             setSaving(true);
             await api.post("/extra-features/assign", {
                 userId: user.id,
-                featureId: Number(form.featureId),
+                featureId: form.featureId,
                 price: Number(form.price),
                 paymentMethod: form.paymentMethod.trim()
             });

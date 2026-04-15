@@ -3259,6 +3259,7 @@
       "attribute": "الخاصية",
       "deleteAttribute": "حذف الخاصية",
       "name": "الاسم",
+      "duplicateName": "اسم هذه الخاصية مكرر بالفعل.",
       "templates": {
         "size": "الحجم",
         "sizeValues": [
@@ -3297,6 +3298,7 @@
       "count": "العدد",
       "empty": "لا توجد متغيرات",
       "combinationName": "اسم المتغير",
+      "isActive": "نشط",
       "price": "السعر",
       "quantity": "الكمية",
       "placeholders": {
@@ -3354,6 +3356,8 @@
     "errors": {
       "mainImageRequired": "الصورة الرئيسية مطلوبة",
       "missingPrices": "يجب إدخال السعر لجميع المتغيرات",
+      "skuAlreadyExists": "بعض قيم SKU موجودة بالفعل في حسابك. يرجى تعديل الصفوف المميزة.",
+      "thisSkuAlreadyExists": "هذا الرمز SKU موجود بالفعل في حسابك. يرجى تعديله.",
       "bundleItemsRequired": "يجب إضافة منتج واحد على الأقل للباقة",
       "maxItemsExceeded": "لا يمكنك إضافة أكثر من {max} صور إضافية",
       "invalidFileType": "عذراً، يجب أن يكون الملف المرفق صورة فقط (JPG, PNG, etc)",

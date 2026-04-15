@@ -81,6 +81,29 @@ function canonicalKey(attrs) {
 	return keys.map((k) => `${k}=${String(attrs[k])}`).join('|');
 }
 
+function parseBooleanLike(value, fallback = true) {
+	if (typeof value === 'boolean') return value;
+	if (typeof value === 'string') {
+		const v = value.trim().toLowerCase();
+		if (v === 'true' || v === '1') return true;
+		if (v === 'false' || v === '0') return false;
+	}
+	if (typeof value === 'number') {
+		if (value === 1) return true;
+		if (value === 0) return false;
+	}
+	return fallback;
+}
+
+function getSkuBaseFromSlug(slug) {
+	const clean = (slug || '').toString().trim().toLowerCase();
+	const parts = clean.split('-').map((x) => x.trim()).filter(Boolean);
+	const picked = (parts.length >= 2 ? parts.slice(0, 2) : parts.slice(0, 1))
+		.join('-')
+		.replace(/[^a-z0-9-]/g, '');
+	return (picked || 'product').toUpperCase();
+}
+
 const ATTRIBUTE_TEMPLATES = [
 	{ id: 'size', icon: Ruler, name: 'الحجم', nameEn: 'Size', values: ['صغير', 'متوسط'], valuesEn: ['Small', 'Medium'] },
 	{ id: 'color', icon: Palette, name: 'اللون', nameEn: 'Color', values: ['أحمر', 'أزرق', 'أخضر'], valuesEn: ['Red', 'Blue', 'Green'] },
@@ -88,21 +111,27 @@ const ATTRIBUTE_TEMPLATES = [
 	{ id: 'weight', icon: Package, name: 'الوزن', nameEn: 'Weight', values: ['خفيف', 'متوسط', 'ثقيل'], valuesEn: ['Light', 'Medium', 'Heavy'] },
 ];
 
-function buildCombinationsFromAttributes(attributes, productName = '', defaultPrice = '') {
+function buildCombinationsFromAttributes(attributes, slug = '', defaultPrice = '') {
 	const usable = (attributes || [])
 		.map((attr) => {
 			const key = slugifyKey(attr?.name);
 			const values = (attr?.values || [])
 				.map((v) => ({ value: slugifyKey(v), label: (v || '').trim() }))
 				.filter((v) => v.value);
-
 			return { key, name: (attr?.name || '').trim(), values };
 		})
 		.filter((attr) => attr.key && attr.values.length > 0);
-	if (!usable.length) return [];
+	const uniqueUsable = [];
+	const seenAttrKeys = new Set();
+	for (const attr of usable) {
+		if (seenAttrKeys.has(attr.key)) continue;
+		seenAttrKeys.add(attr.key);
+		uniqueUsable.push(attr);
+	}
+	if (!uniqueUsable.length) return [];
 
 	let acc = [{ attrs: {} }];
-	for (const attr of usable) {
+	for (const attr of uniqueUsable) {
 		const next = [];
 		for (const base of acc) {
 			for (const val of attr.values) {
@@ -114,10 +143,10 @@ function buildCombinationsFromAttributes(attributes, productName = '', defaultPr
 
 	return acc.map((x) => {
 		const key = canonicalKey(x.attrs);
-		const productSlug = slugifyKey(productName).substring(0, 10).toUpperCase() || 'PRODUCT';
+		const productSlug = getSkuBaseFromSlug(slug);
 		const attrValues = Object.values(x.attrs).map((v) => slugifyKey(v).substring(0, 3).toUpperCase()).join('-');
 		const autoSKU = attrValues ? `${productSlug}-${attrValues}` : '';
-		return { key, attributes: x.attrs, sku: autoSKU, stockOnHand: 0, price: defaultPrice || '' };
+		return { key, attributes: x.attrs, sku: autoSKU, stockOnHand: 0, price: defaultPrice || '', isActive: true, isExisting: false };
 	});
 }
 
@@ -137,7 +166,7 @@ const makeSchema = (t) =>
 		upsellingEnabled: yup.boolean().default(false),
 		upsellingProducts: yup.array().of(yup.object({ productId: yup.string().trim().required(t('validation.upsellProductRequired')), label: yup.string().nullable(), callCenterDescription: yup.string().nullable().max(1000, t('validation.descriptionTooLong', { max: 1000 })) })).default([]),
 		attributes: yup.array().of(yup.object({ id: yup.string().required(), name: yup.string().trim().required(t('validation.attributeNameRequired')), values: yup.array().of(yup.string().trim().required(t('validation.attributeValueRequired'))).min(1, t('validation.atLeastOneValue')) })).default([]),
-		combinations: yup.array().of(yup.object({ key: yup.string().trim().required(t('validation.combinationKeyRequired')), sku: yup.string().trim().max(120, t('validation.combinationSkuMax')).nullable(), attributes: yup.object().required(t('validation.combinationAttrsRequired')), stockOnHand: yup.number().typeError(t('validation.invalidNumber')).min(0, t('validation.stockNonNegative')).default(0), price: yup.number().typeError(t('validation.invalidNumber')).required(t('validation.priceRequired')).min(0, t('validation.noNegative')) })).default([]),
+		combinations: yup.array().of(yup.object({ key: yup.string().trim().required(t('validation.combinationKeyRequired')), sku: yup.string().trim().max(120, t('validation.combinationSkuMax')).nullable(), attributes: yup.object().required(t('validation.combinationAttrsRequired')), stockOnHand: yup.number().typeError(t('validation.invalidNumber')).min(0, t('validation.stockNonNegative')).default(0), price: yup.number().typeError(t('validation.invalidNumber')).required(t('validation.priceRequired')).min(0, t('validation.noNegative')), isActive: yup.boolean().default(true), isExisting: yup.boolean().default(false) })).default([]),
 	}).required();
 
 function defaultAttribute() {
@@ -220,8 +249,17 @@ function Card({ children, className, ...props }) {
 
 // ─── Styled Input ─────────────────────────────────────────────────────────────
 const inputClass = "h-[46px] rounded-xl bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-[14px] placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/50 transition-colors";
+async function generateHash(input) {
+	const encoder = new TextEncoder();
+	const data = encoder.encode(input);
 
+	const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+	const hashArray = Array.from(new Uint8Array(hashBuffer));
+
+	return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}
 export default function AddProductPage({ isEditMode = false, existingProduct = null, productId = null }) {
+	const combinationsSectionRef = useRef(null);
 	const tPurchase = useTranslations("purchaseInvoice");
 	const t = useTranslations('addProduct');
 	const locale = useLocale();
@@ -229,7 +267,6 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		main: { general: '', specific: {} },
 		other: { general: '', specific: {} }
 	});
-
 	const navigate = useRouter();
 	const [categories, setCategories] = useState([]);
 	const [stores, setStores] = useState([]);
@@ -250,6 +287,9 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 	const upsellingEnabled = watch('upsellingEnabled');
 	const productName = watch('name');
+	const productSlug = watch('slug');
+	const attributesForDupCheck = useWatch({ control, name: 'attributes' }) || [];
+	const [skuConflictMap, setSkuConflictMap] = useState({});
 
 	useEffect(() => {
 		if (!upsellingEnabled) setValue('upsellingProducts', [], { shouldDirty: true });
@@ -262,6 +302,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 	const { fields: attributeFields, append: appendAttribute, remove: removeAttribute } = useFieldArray({ control, name: 'attributes', keyName: 'fieldId' });
 	const { fields: comboFields } = useFieldArray({ control, name: 'combinations', keyName: 'fieldId' });
+
 
 	useEffect(() => {
 		let mounted = true;
@@ -293,21 +334,43 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	const lastCombSigRef = useRef('');
 	useEffect(() => {
 		const attributes = attributesWatch || [];
-		const currentName = productName || '';
+		const currentSlug = productSlug || '';
+		const currentCombos = watch('combinations') || [];
 		const currentPrice = salePrice || '';
-		const sig = JSON.stringify({ attributes: (attributes || []).map((a) => ({ name: a?.name, values: a?.values || [] })), productName: currentName, salePrice: currentPrice });
+		const sig = JSON.stringify({ attributes: (attributes || []).map((a) => ({ name: a?.name, values: a?.values || [] })), productSlug: currentSlug, salePrice: currentPrice, isEditMode });
 		if (lastCombSigRef.current === sig) return;
 		lastCombSigRef.current = sig;
-		const currentCombos = watch('combinations') || [];
 
-		const generated = buildCombinationsFromAttributes(attributes, currentName, currentPrice);
+
+		const generated = buildCombinationsFromAttributes(attributes, currentSlug, currentPrice);
 		const byKey = new Map(currentCombos.map((c) => [c.key, c]));
-		const next = generated.map((g) => {
+
+		const activeGenerated = generated.map((g) => {
 			const old = byKey.get(g.key);
-			return { ...g, sku: g.sku, stockOnHand: old?.stockOnHand ?? g.stockOnHand ?? 0, price: old?.price && old.price !== '' ? old.price : g.price };
+
+			return {
+				...g,
+				sku: old?.sku && old.sku !== '' ? old.sku : g.sku,
+				stockOnHand: old?.stockOnHand ?? g.stockOnHand ?? 0,
+				price: old?.price && old.price !== '' ? old.price : g.price,
+				isActive: old?.isActive ?? true,
+				isExisting: !!old?.isExisting,
+				variantId: old?.variantId,
+				reserved: old?.reserved ?? 0,
+			};
 		});
-		setValue('combinations', next, { shouldDirty: true, shouldValidate: false });
-	}, [attributesWatch, productName, salePrice]);
+		if (!isEditMode) {
+			setValue('combinations', activeGenerated, { shouldDirty: true, shouldValidate: false });
+			return;
+		}
+
+		const generatedKeys = new Set(activeGenerated.map((x) => x.key));
+		const inactiveLegacy = currentCombos
+			.filter((c) => c?.isExisting && c?.key && !generatedKeys.has(c.key))
+			.map((c) => ({ ...c, isActive: false }));
+
+		setValue('combinations', [...activeGenerated, ...inactiveLegacy], { shouldDirty: true, shouldValidate: false });
+	}, [attributesWatch, productSlug, salePrice, isEditMode]);
 
 	useEffect(() => {
 		return () => {
@@ -350,9 +413,11 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	};
 
 
+	const currentCombos = watch('combinations') || [];
+
 	const handleSalePriceBlur = () => {
+
 		const currentPrice = salePrice || '';
-		const currentCombos = watch('combinations') || [];
 		const updated = currentCombos.map((combo) => {
 			const hasPrice = combo.price && Number(combo.price) !== 0 && combo.price !== '';
 
@@ -366,6 +431,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 	// --- Purchase Quantity Distribution Logic ---
 	const handleTotalQuantityChange = (val) => {
+
 		setTotalPurchaseQuantity(val);
 		const num = Number(val);
 		if (isNaN(num) || num <= 0) return;
@@ -420,7 +486,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			if (lp !== '') fd.append('lowestPrice', lp);
 			if ((data.storageRack ?? '').trim()) fd.append('storageRack', data.storageRack.trim());
 			if ((data.slug ?? '').trim()) fd.append('slug', data.slug.trim());
-			
+
 			if (data.categoryId && data.categoryId !== 'none') fd.append('categoryId', data.categoryId);
 			if (data.storeId && data.storeId !== 'none') fd.append('storeId', data.storeId);
 			if (data.warehouseId && data.warehouseId !== 'none') fd.append('warehouseId', data.warehouseId);
@@ -441,7 +507,40 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			else fd.append('imagesMeta', JSON.stringify(imagesMeta));
 			if (orphanIds.length) fd.append('imagesOrphanIds', JSON.stringify(orphanIds));
 			if (isEditMode && removedImages.length > 0) fd.append('removedImages', JSON.stringify(removedImages));
-			if (!isEditMode) fd.append('combinations', JSON.stringify([...data.combinations]));
+
+			const skusToCheck = (data.combinations || [])
+				.filter((c) => c?.isActive !== false)
+				.map((c) => (c?.sku || '').trim())
+				.filter(Boolean);
+			if (skusToCheck.length) {
+				const checkRes = await api.post('/products/check-skus', {
+					skus: skusToCheck,
+					productId: isEditMode ? productId : undefined,
+				});
+				const existingSkus = new Set(checkRes?.data?.existing || []);
+				const conflicts = {};
+				(data.combinations || []).forEach((c, idx) => {
+					const sku = (c?.sku || '').trim();
+					if (sku && existingSkus.has(sku)) {
+						conflicts[c?.sku] = true;
+					}
+				});
+				setSkuConflictMap(conflicts);
+				if (Object.keys(conflicts).length > 0) {
+					toast.error(t('errors.skuAlreadyExists'));
+					setTimeout(() => {
+						combinationsSectionRef.current?.scrollIntoView({
+							behavior: 'smooth',
+							block: 'start',
+						});
+					}, 0);
+					return;
+				}
+			} else {
+				setSkuConflictMap({});
+			}
+
+			fd.append('combinations', JSON.stringify([...(data.combinations || [])]));
 
 			// (otherFiles ?? []).forEach((f) => { if (!f) return; if (f.isFromLibrary || f.isExisting) return; if (f.file) fd.append('images', f.file); });
 			// Add Purchase Data if enabled
@@ -467,11 +566,6 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 			await apiCall;
 
-			if (isEditMode && data.combinations && data.combinations.length > 0) {
-				const combinationsPayload = data.combinations.map((c) => ({ attributes: c.attributes ?? {}, price: safeNumberString(c.price) || null }));
-				await api.put(`/products/${productId}/skus`, { items: combinationsPayload });
-			}
-
 			toast.success(isEditMode ? t('messages.updated') : t('messages.created'), { id: toastId });
 
 			navigate.push('/products');
@@ -483,8 +577,27 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	useEffect(() => {
 		if (!isEditMode || !existingProduct) return;
 		const extractedAttributes = extractAttributesFromSkus(existingProduct.skus || []);
-		const combinations = (existingProduct.skus || []).map((sku) => ({ key: sku.key, sku: sku.sku || '', attributes: sku.attributes || {}, stockOnHand: sku.stockOnHand || 0, reserved: sku.reserved || 0, price: sku.price?.toString() || existingProduct.salePrice?.toString() || '' }));
-		reset({ name: existingProduct.name || '', slug: existingProduct.slug || '', wholesalePrice: existingProduct.wholesalePrice?.toString() || '', salePrice: existingProduct.salePrice?.toString() || '', lowestPrice: existingProduct.lowestPrice?.toString() || '', storageRack: existingProduct.storageRack || '', categoryId: existingProduct.categoryId ? String(existingProduct.categoryId) : 'none', storeId: existingProduct.storeId ? String(existingProduct.storeId) : 'none', warehouseId: existingProduct.warehouseId ? String(existingProduct.warehouseId) : 'none', description: existingProduct.description || '', callCenterProductDescription: existingProduct.callCenterProductDescription || '', upsellingEnabled: existingProduct.upsellingEnabled || false, upsellingProducts: existingProduct.upsellingProducts || [], attributes: extractedAttributes, combinations: combinations });
+		const combinations = (existingProduct.skus || []).map((sku) => ({
+			key: sku.key,
+			variantId: sku.id,
+			sku: sku.sku || '',
+			attributes: sku.attributes || {},
+			stockOnHand: sku.stockOnHand || 0,
+			reserved: sku.reserved || 0,
+			price: sku.price?.toString() || existingProduct.salePrice?.toString() || '',
+			isActive: parseBooleanLike(sku.isActive ?? sku.active, true),
+			isExisting: true
+		}));
+
+		reset({
+			name: existingProduct.name || '', slug: existingProduct.slug || '', wholesalePrice: existingProduct.wholesalePrice?.toString() || '',
+			salePrice: existingProduct.salePrice?.toString() || '', lowestPrice: existingProduct.lowestPrice?.toString() || '', storageRack: existingProduct.storageRack || '',
+			categoryId: existingProduct.categoryId ? String(existingProduct.categoryId) : 'none', storeId: existingProduct.storeId ? String(existingProduct.storeId) : 'none',
+			warehouseId: existingProduct.warehouseId ? String(existingProduct.warehouseId) : 'none', description: existingProduct.description || '',
+			callCenterProductDescription: existingProduct.callCenterProductDescription || '', upsellingEnabled: existingProduct.upsellingEnabled || false,
+			upsellingProducts: existingProduct.upsellingProducts || [], attributes: extractedAttributes, combinations: combinations
+		});
+
 		if (existingProduct.mainImage) { setMainFiles([{ id: makeId(), file: null, previewUrl: existingProduct.mainImage, isFromLibrary: false, isExisting: true, url: existingProduct.mainImage }]); }
 		if (existingProduct.images && existingProduct.images.length) { setOtherFiles(existingProduct.images.map((img) => ({ id: makeId(), file: null, previewUrl: img.url, isFromLibrary: false, isExisting: true, url: img.url }))); }
 	}, [isEditMode, existingProduct, reset]);
@@ -506,6 +619,21 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		}, 280);
 		return () => clearTimeout(checkUnique);
 	}, [watchSlug, errors.slug, productId]);
+
+	const duplicateAttributeIndexes = useMemo(() => {
+		const seen = new Map();
+		const dup = new Set();
+		(attributesForDupCheck || []).forEach((attr, idx) => {
+			const key = slugifyKey(attr?.name);
+			if (!key) return;
+			if (seen.has(key)) {
+				dup.add(idx);
+			} else {
+				seen.set(key, idx);
+			}
+		});
+		return dup;
+	}, [attributesForDupCheck]);
 
 	const staggerContainer = {
 		animate: { transition: { staggerChildren: 0.07 } }
@@ -754,6 +882,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 												aIndex={aIndex}
 												onRemove={() => removeAttribute(aIndex)}
 												setValue={setValue}
+												isDuplicate={duplicateAttributeIndexes.has(aIndex)}
 											/>
 										))
 									)}
@@ -763,7 +892,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 						{/* Combinations Card */}
 						{comboFields.length > 0 && (
-							<motion.div variants={fadeUp}>
+							<motion.div ref={combinationsSectionRef} variants={fadeUp} className="scroll-mt-24">
 								<Card>
 									<div className="flex items-center justify-between mb-5">
 										<SectionHeader title={t('combinations.title')} />
@@ -893,12 +1022,13 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 									)}
 
 									<div className="overflow-hidden rounded-xl border border-slate-100 dark:border-slate-800">
-										<div className="overflow-x-auto max-h-[520px] overflow-y-auto">
+										<div className="overflow-x-auto max-h-[520px] overflow-y-auto" >
 											<table className="w-full text-[13px]">
 												<thead>
 													<tr className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
 														<th className="text-right px-4 py-3 font-semibold text-slate-500 dark:text-slate-400">{t('combinations.combinationName')}</th>
 														<th className="text-right px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 font-[Inter]">SKU</th>
+														<th className="text-center px-2 py-3 font-semibold text-slate-500 dark:text-slate-400 w-[100px]">{t('combinations.isActive')}</th>
 														<th className="text-center px-2 py-3 font-semibold text-slate-500 dark:text-slate-400 w-[80px]">{t('combinations.onHand')}</th>
 														<th className="text-center px-2 py-3 font-semibold text-slate-500 dark:text-slate-400 w-[80px]">{t('combinations.reserved')}</th>
 														<th className="text-center px-2 py-3 font-semibold text-slate-500 dark:text-slate-400 w-[80px]">{t('combinations.available')}</th>
@@ -912,6 +1042,10 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 														const cErr = errors?.combinations?.[idx];
 														const current = combinationsWatch?.[idx];
 														const attrs = current?.attributes || {};
+														const skuHasConflict = !!skuConflictMap[c.sku];
+														const isExistingCombination = isEditMode && !!current?.isExisting;
+														const canEditSku = !isEditMode || !isExistingCombination;
+
 
 														// حساب المتوفر: الكمية الفعلية - المحجوز
 														const onHand = isEditMode || hasPurchase ? current?.stockOnHand || 0 : 0;
@@ -934,8 +1068,29 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 																	<Input
 																		{...register(`combinations.${idx}.sku`)}
 																		placeholder={t('combinations.placeholders.sku')}
-																		disabled
-																		className="h-[38px] rounded-lg font-[Inter] text-[12px] bg-slate-100 dark:bg-slate-900 border-transparent text-slate-400 cursor-not-allowed"
+																		disabled={!canEditSku}
+																		className={cn(
+																			"h-[38px] rounded-lg font-[Inter] text-[12px]",
+																			canEditSku
+																				? "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+																				: "bg-slate-100 dark:bg-slate-900 border-transparent text-slate-400 cursor-not-allowed",
+																			skuHasConflict ? "border-red-400 ring-1 ring-red-300" : ""
+																		)}
+																	/>
+																	{skuHasConflict && <p className="text-[11px] text-red-500 mt-0.5">{t('errors.thisSkuAlreadyExists')}</p>}
+
+																</td>
+																<td className="px-2 py-3 text-center">
+																	<Controller
+																		control={control}
+																		name={`combinations.${idx}.isActive`}
+																		render={({ field }) => (
+																			<Checkbox
+																				checked={parseBooleanLike(field.value, true)}
+																				onCheckedChange={(v) => field.onChange(!!v)}
+																				className="rounded-md"
+																			/>
+																		)}
 																	/>
 																</td>
 																<td className="px-2 py-3 text-center">
@@ -1086,7 +1241,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 }
 
 /** ── Attribute Editor ─────────────────────────────────────────────────────── */
-function AttributeEditor({ t, control, register, errors, aIndex, onRemove, setValue }) {
+function AttributeEditor({ t, control, register, errors, aIndex, onRemove, setValue, isDuplicate = false }) {
 	const valuesWatch = useWatch({ control, name: `attributes.${aIndex}.values` }) || [];
 
 	return (
@@ -1094,7 +1249,10 @@ function AttributeEditor({ t, control, register, errors, aIndex, onRemove, setVa
 			initial={{ opacity: 0, y: 8 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-			className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4"
+			className={cn(
+				"rounded-xl border bg-white dark:bg-slate-900 p-4",
+				isDuplicate ? "border-red-300 dark:border-red-800" : "border-slate-100 dark:border-slate-800"
+			)}
 		>
 			<div className="flex items-center justify-between mb-4">
 				<div className="flex items-center gap-2.5">
@@ -1137,6 +1295,7 @@ function AttributeEditor({ t, control, register, errors, aIndex, onRemove, setVa
 					{errors?.values?.message && <p className="text-[11px] text-red-500">{errors.values.message}</p>}
 				</div>
 			</div>
+			{isDuplicate && <p className="text-[11px] text-red-500 mt-2">{t('attributes.duplicateName')}</p>}
 		</motion.div>
 	);
 }

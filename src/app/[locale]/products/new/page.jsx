@@ -10,7 +10,6 @@ import {
 	FileText,
 	Loader2,
 	Trash2,
-	Search,
 	UploadCloud,
 	Zap,
 	Shirt,
@@ -48,6 +47,11 @@ import { baseImg } from '@/utils/axios';
 import { useAutoTranslate } from '@/utils/autoTranslate';
 import SlugInput from '@/components/atoms/SlugInput';
 import PageHeader from '@/components/atoms/Pageheader';
+import ProductFilter from '@/components/atoms/ProductFilter';
+import { InvoiceSummary, ReceiptImageUpload } from '../../purchases/new/page';
+
+const MAX_RECEIPT_MB = 5;
+const ALLOWED_RECEIPT_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? 'Unexpected error';
@@ -71,7 +75,7 @@ function slugifyKey(s) {
 		.trim()
 		.toLowerCase()
 		.replace(/\s+/g, '_')
-		.replace(/[^\w]/g, '')
+		// .replace(/[^\w]/g, '')
 		.replace(/_+/g, '_')
 		.replace(/^_+|_+$/g, '');
 }
@@ -142,21 +146,33 @@ function buildCombinationsFromAttributes(attributes, slug = '', defaultPrice = '
 	}
 
 	return acc.map((x) => {
+
 		const key = canonicalKey(x.attrs);
 		const productSlug = getSkuBaseFromSlug(slug);
-		const attrValues = Object.values(x.attrs).map((v) => slugifyKey(v).substring(0, 3).toUpperCase()).join('-');
+		const attrValues = Object.values(x.attrs)
+			.map((v) => {
+
+				const isArabic = /[\u0600-\u06FF]/.test(v);
+				const slug = slugifyKey(v).toUpperCase();
+
+				return isArabic ? slug : slug.substring(0, 3);
+			})
+			.join('-');
+
 		const autoSKU = attrValues ? `${productSlug}-${attrValues}` : '';
 		return { key, attributes: x.attrs, sku: autoSKU, stockOnHand: 0, price: defaultPrice || '', isActive: true, isExisting: false };
 	});
 }
 
-const makeSchema = (t) =>
+const makeSchema = (t, tValidation) =>
 	yup.object({
+		hasPurchase: yup.boolean().default(false),
+		type: yup.string().oneOf(['single', 'variable']).default('variable'),
 		name: yup.string().trim().required(t('validation.nameRequired')).max(200, t('validation.nameTooLong', { max: 200 })),
 		slug: yup.string().trim().required(t('validation.slugRequired')).matches(/^[a-z0-9-]+$/, t('validation.slugInvalid')),
-		wholesalePrice: yup.number().transform((value, originalValue) => originalValue === "" ? null : value).nullable().typeError(t('validation.invalidNumber')).min(0, t('validation.noNegative')),
-		salePrice: yup.number().transform((value, originalValue) => originalValue === "" ? null : value).nullable().typeError(t('validation.invalidNumber')).min(0, t('validation.noNegative')),
-		lowestPrice: yup.number().transform((value, originalValue) => originalValue === "" ? null : value).nullable().typeError(t('validation.invalidNumber')).min(0, t('validation.noNegative')),
+		wholesalePrice: yup.number().transform((value, originalValue) => originalValue === "" ? NaN : value).typeError(t('validation.requiredNumber')).required(t('validation.requiredNumber')).min(0, t('validation.noNegative')),
+		salePrice: yup.number().transform((value, originalValue) => originalValue === "" ? NaN : value).typeError(t('validation.requiredNumber')).required(t('validation.requiredNumber')).min(0, t('validation.noNegative')),
+		lowestPrice: yup.number().transform((value, originalValue) => originalValue === "" ? NaN : value).typeError(t('validation.requiredNumber')).required(t('validation.requiredNumber')).min(0, t('validation.noNegative')),
 		storageRack: yup.string().nullable(),
 		categoryId: yup.string().nullable(),
 		storeId: yup.string().nullable(),
@@ -166,7 +182,85 @@ const makeSchema = (t) =>
 		upsellingEnabled: yup.boolean().default(false),
 		upsellingProducts: yup.array().of(yup.object({ productId: yup.string().trim().required(t('validation.upsellProductRequired')), label: yup.string().nullable(), callCenterDescription: yup.string().nullable().max(1000, t('validation.descriptionTooLong', { max: 1000 })) })).default([]),
 		attributes: yup.array().of(yup.object({ id: yup.string().required(), name: yup.string().trim().required(t('validation.attributeNameRequired')), values: yup.array().of(yup.string().trim().required(t('validation.attributeValueRequired'))).min(1, t('validation.atLeastOneValue')) })).default([]),
-		combinations: yup.array().of(yup.object({ key: yup.string().trim().required(t('validation.combinationKeyRequired')), sku: yup.string().trim().max(120, t('validation.combinationSkuMax')).nullable(), attributes: yup.object().required(t('validation.combinationAttrsRequired')), stockOnHand: yup.number().typeError(t('validation.invalidNumber')).min(0, t('validation.stockNonNegative')).default(0), price: yup.number().typeError(t('validation.invalidNumber')).required(t('validation.priceRequired')).min(0, t('validation.noNegative')), isActive: yup.boolean().default(true), isExisting: yup.boolean().default(false) })).default([]),
+		combinations: yup.array().of(
+			yup.object({
+				key: yup.string().trim().required(t('validation.combinationKeyRequired')),
+				sku: yup
+					.string()
+					.trim()
+					.max(120, t('validation.combinationSkuMax'))
+					.nullable()
+					.test('sku-format', t('validation.skuFormat'), (val) => {
+						if (val == null || String(val).trim() === '') return true;
+						return /^[a-zA-Z0-9-]+$/.test(String(val).trim());
+					}),
+				attributes: yup.object().required(t('validation.combinationAttrsRequired')),
+				stockOnHand: yup.number().typeError(t('validation.invalidNumber')).min(0, t('validation.stockNonNegative')).default(0),
+				price: yup.number().typeError(t('validation.invalidNumber')).required(t('validation.priceRequired')).min(0, t('validation.noNegative')),
+				isActive: yup.boolean().default(true),
+				isExisting: yup.boolean().default(false)
+			})
+		)
+			.default([])
+			.test('single-sku-required', t('validation.singleSkuRequired'), function (value) {
+				if (this.parent?.type !== 'single') return true;
+				const hasSku = !!((value?.[0]?.sku ?? '').toString().trim());
+				return hasSku || this.createError({ path: 'combinations[0].sku', message: t('validation.singleSkuRequired') });
+			})
+			.test('unique-skus', t('validation.duplicateSku'), function (value) {
+				if (!value || value.length <= 1) return true;
+
+				const skus = value
+					.map(v => (v.sku || '').toString().trim().toLowerCase())
+					.filter(sku => sku !== '');
+
+				const duplicates = skus.filter((sku, index) => skus.indexOf(sku) !== index);
+
+				if (duplicates.length > 0) {
+
+					const duplicateIndex = value.findIndex(v =>
+						(v.sku || '').toString().trim().toLowerCase() === duplicates[0]
+					);
+
+					return this.createError({
+						path: `combinations[${duplicateIndex}].sku`,
+						message: `${t('validation.skuMustBeUnique')}: ${duplicates[0]}`
+					});
+				}
+				return true;
+			}),
+		purchase: yup.object({
+			supplierId: yup.string().optional(),
+			receiptNumber: yup.string().optional(),
+			safeId: yup.string().optional(),
+			notes: yup.string().optional(),
+			paidAmount: yup
+				.number()
+				.transform((value, originalValue) => {
+					if (originalValue === "" || originalValue === null || originalValue === undefined) return 0;
+					const n = Number(originalValue);
+					return Number.isFinite(n) ? n : 0;
+				})
+				.min(0, tValidation('mustBePositive'))
+				.optional(),
+		})
+			.default({
+				supplierId: '',
+				receiptNumber: '',
+				safeId: '',
+				notes: '',
+				paidAmount: 0
+			})
+			// ✅ APPLY VALIDATION HERE
+			.when('hasPurchase', {
+				is: true,
+				then: (schema) => schema.shape({
+					supplierId: yup.string().required(tValidation('supplierRequired')),
+					receiptNumber: yup.string().required(tValidation('receiptNumberRequired')),
+					safeId: yup.string().required(tValidation('safeRequired')),
+				}),
+				otherwise: (schema) => schema.optional(),
+			}),
 	}).required();
 
 function defaultAttribute() {
@@ -175,6 +269,8 @@ function defaultAttribute() {
 
 function defaultValues() {
 	return {
+		hasPurchase: false,
+		type: 'variable',
 		name: '', slug: '', wholesalePrice: '', salePrice: '', lowestPrice: '', storageRack: '',
 		categoryId: '', storeId: '', warehouseId: '', description: '',
 		callCenterProductDescription: '', upsellingEnabled: false,
@@ -200,6 +296,233 @@ function extractAttributesFromSkus(skus) {
 		});
 	});
 	return Array.from(attributeMap.entries()).map(([name, valuesSet]) => ({ id: makeId(), name, values: Array.from(valuesSet) }));
+}
+
+function ProductPurchaseReceiptUpload({ receipt, onChange, onRemove, t, tValidation }) {
+	const inputRef = useRef(null);
+	const [isDragging, setIsDragging] = useState(false);
+
+	const handlePick = (file) => {
+		if (!file) return;
+		const okType = ALLOWED_RECEIPT_TYPES.includes(file.type);
+		if (!okType) {
+			toast.error(tValidation('invalidFileType'));
+			return;
+		}
+		if (file.size > MAX_RECEIPT_MB * 1024 * 1024) {
+			toast.error(tValidation('fileTooLarge'));
+			return;
+		}
+		if (file.type === 'application/pdf') {
+			onChange({ file, preview: null, name: file.name, isPdf: true });
+			return;
+		}
+		const reader = new FileReader();
+		reader.onloadend = () => {
+			onChange({ file, preview: reader.result, name: file.name, isPdf: false });
+		};
+		reader.readAsDataURL(file);
+	};
+
+	return (
+		<div
+			onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+			onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+			onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
+			onDrop={(e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				setIsDragging(false);
+				handlePick(e.dataTransfer.files?.[0]);
+			}}
+			className={cn("rounded-xl border-2 min-h-[200px] flex items-center  justify-center border-dashed transition-all duration-300", isDragging ? "border-primary bg-primary/5" : "border-primary/30 bg-white dark:bg-slate-900")}
+		>
+			<input
+				ref={inputRef}
+				type="file"
+				accept={ALLOWED_RECEIPT_TYPES.join(',')}
+				className="hidden"
+				onChange={(e) => handlePick(e.target.files?.[0])}
+			/>
+			{!receipt ? (
+				<div onClick={() => inputRef.current?.click()} className="min-h-[200px] flex-1 flex items-center justify-center flex-col gap-2 p-4 rounded-xl text-center hover:bg-primary/10 duration-300 cursor-pointer">
+					<div className="text-[12px] font-semibold text-slate-600 dark:text-slate-300">{t('purchase.receipt')}</div>
+					<div className="text-[11px] text-slate-400 mt-1">{t('uploads.attach')}</div>
+				</div>
+			) : (
+				<div className="p-3 flex items-center justify-between gap-2">
+					<div className="min-w flex-col -0">
+						<p className="text-[12px] font-semibold text-slate-700 flex-1 dark:text-slate-200 truncate">{receipt.name}</p>
+						<p className="text-[11px] text-slate-400">{receipt.isPdf ? 'PDF' : 'Image'}</p>
+					</div>
+					<Button type="button" variant="ghost" size="sm" onClick={onRemove}>
+						<X className="w-4 h-4 text-red-500" />
+					</Button>
+				</div>
+			)}
+		</div>
+	);
+}
+
+function PurchaseDataForm({
+	t,
+	tPurchase,
+	control,
+	register,
+	errors,
+	suppliers,
+	totalPurchaseQuantity,
+	onTotalQuantityChange,
+	totalPurchaseQuantityError,
+	purchaseReceipt,
+	setPurchaseReceipt,
+	setValue,
+	clearErrors,
+	invoiceSummary,
+}) {
+	const tValidation = useTranslations("validation");
+
+	const handleImageUpload = (e) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		// accept image/pdf
+		const okType = ALLOWED_RECEIPT_TYPES.includes(file.type);
+		if (!okType) {
+			toast.error(tValidation("invalidFileType") || "Invalid file type");
+			return;
+		}
+
+		if (file.size > MAX_RECEIPT_MB * 1024 * 1024) {
+			toast.error(tValidation("fileTooLarge") || "File too large");
+			return;
+		}
+
+		// لو PDF مش هنعمل preview image
+		if (file.type === "application/pdf") {
+			const pdfObj = { file, preview: null, name: file.name, isPdf: true };
+			setPurchaseReceipt(pdfObj);
+			setValue('purchase.receiptAsset', pdfObj, { shouldValidate: true });
+			clearErrors('purchase.receiptAsset');
+			return;
+		}
+
+		const reader = new FileReader();
+		reader.onloadend = () => {
+			const obj = { file, preview: reader.result, name: file.name, isPdf: false };
+			setPurchaseReceipt(obj);
+			setValue('purchase.receiptAsset', obj, { shouldValidate: true });
+			clearErrors('purchase.receiptAsset');
+		};
+		reader.readAsDataURL(file);
+	};
+
+
+	const handleRemoveImage = () => {
+		setPurchaseReceipt(null);
+		setValue('purchase.receiptAsset', null, { shouldValidate: true });
+	};
+
+	return (
+		<motion.div
+			initial={{ opacity: 0, height: 0 }}
+			animate={{ opacity: 1, height: 'auto' }}
+			className="my-6 p-5 rounded-2xl border-2 border-dashed border-primary/20 bg-primary/[0.02] space-y-5"
+		>
+			<div className="flex items-center gap-2 pb-2 border-b border-primary/10">
+				<FilePlus className="w-4 h-4 text-primary" />
+				<h4 className="text-[14px] font-bold text-primary">{t('purchase.invoiceInfo')}</h4>
+			</div>
+			<div className='flex max-lg:flex-col gap-6 '>
+				<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 space-y-6 h-fit">
+					<Field label={t('purchase.supplier')}>
+						<Controller
+							control={control}
+							name="purchase.supplierId"
+							render={({ field }) => (
+								<Select value={field.value || ''} onValueChange={field.onChange}>
+									<SelectTrigger className="bg-white dark:bg-slate-900">
+										<SelectValue placeholder={t('purchase.supplierPlaceholder')} />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="none">{t('common.none')}</SelectItem>
+										{suppliers.map((s) => (
+											<SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							)}
+						/>
+						{errors?.purchase?.supplierId?.message && <p className="text-[11px] text-red-500">{errors.purchase.supplierId.message}</p>}
+					</Field>
+					<Field label={t('purchase.invoiceNumber')}>
+						<Input {...register('purchase.receiptNumber')} placeholder="INV-000" className="bg-white dark:bg-slate-900" />
+						{errors?.purchase?.receiptNumber?.message && <p className="text-[11px] text-red-500">{errors.purchase.receiptNumber.message}</p>}
+					</Field>
+					<Field label={t('purchase.safe')}>
+						<Controller
+							control={control}
+							name="purchase.safeId"
+							render={({ field }) => (
+								<Select value={field.value || ''} onValueChange={field.onChange}>
+									<SelectTrigger className="bg-white dark:bg-slate-900">
+										<SelectValue placeholder={t('purchase.safePlaceholder')} />
+									</SelectTrigger>
+									<SelectContent className="bg-card-select">
+										<SelectItem value="نقدي">{tPurchase("options.safe.cash")}</SelectItem>
+										<SelectItem value="الخزينة الرئيسية">{tPurchase("options.safe.main")}</SelectItem>
+										<SelectItem value="الخزينة الفرعية">{tPurchase("options.safe.sub")}</SelectItem>
+										<SelectItem value="الخزينة الإضافية">{tPurchase("options.safe.extra")}</SelectItem>
+									</SelectContent>
+								</Select>
+							)}
+						/>
+						{errors?.purchase?.safeId?.message && <p className="text-[11px] text-red-500">{errors.purchase.safeId.message}</p>}
+					</Field>
+					<Field label={t('purchase.totalQuantity')}>
+						<div className="relative">
+							<Input
+								type="number"
+								value={totalPurchaseQuantity}
+								onChange={(e) => onTotalQuantityChange(e.target.value)}
+								placeholder="0"
+								className="bg-white dark:bg-slate-900 pr-10"
+							/>
+							<div className="absolute end-3 top-1/2 -translate-y-1/2 group cursor-help">
+								<Info className="w-4 h-4 text-slate-400" />
+								<div className="absolute bottom-full right-0 mb-2 w-48 p-2 rounded-lg bg-slate-800 text-white text-[10px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+									{t('purchase.quantityDistribution')}
+								</div>
+							</div>
+						</div>
+						{totalPurchaseQuantityError && <p className="text-[11px] text-red-500">{totalPurchaseQuantityError}</p>}
+					</Field>
+					<Field label={t('purchase.paidAmount')}>
+						<Input type="number" step="0.01" {...register('purchase.paidAmount')} placeholder="0.00" className="bg-white dark:bg-slate-900" />
+					</Field>
+					<Field label={t('purchase.notes')} className="lg:col-span-2 ">
+						<Textarea {...register('purchase.notes')} placeholder="..." className="bg-white dark:bg-slate-900 !min-h-[120px]" />
+					</Field>
+				</div>
+				<div className='w-full space-y-4 lg:max-w-[350px]'>
+					<div className="space-y-1">
+						<ReceiptImageUpload
+							image={purchaseReceipt}
+							onImageChange={handleImageUpload}
+							onRemove={handleRemoveImage}
+						/>
+
+					</div>
+					<InvoiceSummary
+						paidAmount={invoiceSummary.paidAmount}
+						remainingAmount={invoiceSummary.remainingAmount}
+						total={invoiceSummary.total}
+						summary={invoiceSummary.summary}
+					/>
+				</div>
+			</div>
+		</motion.div>
+	);
 }
 
 // ─── Section Header ──────────────────────────────────────────────────────────
@@ -249,19 +572,12 @@ function Card({ children, className, ...props }) {
 
 // ─── Styled Input ─────────────────────────────────────────────────────────────
 const inputClass = "h-[46px] rounded-xl bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-[14px] placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/50 transition-colors";
-async function generateHash(input) {
-	const encoder = new TextEncoder();
-	const data = encoder.encode(input);
 
-	const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-	const hashArray = Array.from(new Uint8Array(hashBuffer));
-
-	return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-}
 export default function AddProductPage({ isEditMode = false, existingProduct = null, productId = null }) {
 	const combinationsSectionRef = useRef(null);
 	const tPurchase = useTranslations("purchaseInvoice");
 	const t = useTranslations('addProduct');
+	const tValidation = useTranslations('validation');
 	const locale = useLocale();
 	const [imageErrors, setImageErrors] = useState({
 		main: { general: '', specific: {} },
@@ -277,32 +593,53 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 	const [hasPurchase, setHasPurchase] = useState(false);
 	const [suppliers, setSuppliers] = useState([]);
-	const [purchaseReceipt, setPurchaseReceipt] = useState([]);
+	const [purchaseReceipt, setPurchaseReceipt] = useState(null);
 	const [totalPurchaseQuantity, setTotalPurchaseQuantity] = useState('');
+	const [totalPurchaseQuantityError, setTotalPurchaseQuantityError] = useState('');
 
-	const schema = useMemo(() => makeSchema(t), [t]);
-	const { control, register, handleSubmit, setValue, reset, watch, formState: { errors, isSubmitting } } = useForm({
+	const schema = useMemo(() => makeSchema(t, tValidation), [t, tValidation]);
+	const { control, register, handleSubmit, setValue, reset, watch, clearErrors, formState: { errors, isSubmitting } } = useForm({
 		defaultValues: defaultValues(), resolver: yupResolver(schema), mode: 'onTouched',
 	});
 
 	const upsellingEnabled = watch('upsellingEnabled');
 	const productName = watch('name');
 	const productSlug = watch('slug');
+	const productType = watch('type') || 'variable';
 	const attributesForDupCheck = useWatch({ control, name: 'attributes' }) || [];
 	const [skuConflictMap, setSkuConflictMap] = useState({});
+	const salePrice = watch('salePrice');
+	const purchasePaidAmount = watch('purchase.paidAmount');
+
+	useEffect(() => {
+		if (productType !== 'single') return;
+		const current = watch('combinations') || [];
+		const first = current[0] || {};
+		const defaultSku = (first?.sku || '').toString().trim() || `${getSkuBaseFromSlug(productSlug || productName || '')}-MAIN`;
+		setValue('combinations', [{
+			key: 'default',
+			attributes: {},
+			sku: defaultSku,
+			stockOnHand: first?.stockOnHand ?? 0,
+			reserved: first?.reserved ?? 0,
+			price: salePrice || first?.price || '',
+			isActive: parseBooleanLike(first?.isActive, true),
+			isExisting: !!first?.isExisting,
+			variantId: first?.variantId,
+		}], { shouldDirty: true, shouldValidate: true });
+	}, [productType, productSlug, productName, salePrice, setValue]);
 
 	useEffect(() => {
 		if (!upsellingEnabled) setValue('upsellingProducts', [], { shouldDirty: true });
 	}, [upsellingEnabled, setValue]);
 
 	const wholesalePrice = watch('wholesalePrice');
-	const salePrice = watch('salePrice');
 	const attributesWatch = useWatch({ control, name: 'attributes' });
 	const combinationsWatch = useWatch({ control, name: 'combinations' });
 
 	const { fields: attributeFields, append: appendAttribute, remove: removeAttribute } = useFieldArray({ control, name: 'attributes', keyName: 'fieldId' });
 	const { fields: comboFields } = useFieldArray({ control, name: 'combinations', keyName: 'fieldId' });
-
+	console.log(errors)
 
 	useEffect(() => {
 		let mounted = true;
@@ -337,9 +674,25 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		const currentSlug = productSlug || '';
 		const currentCombos = watch('combinations') || [];
 		const currentPrice = salePrice || '';
-		const sig = JSON.stringify({ attributes: (attributes || []).map((a) => ({ name: a?.name, values: a?.values || [] })), productSlug: currentSlug, salePrice: currentPrice, isEditMode });
+		const sig = JSON.stringify({ attributes: (attributes || []).map((a) => ({ name: a?.name, values: a?.values || [] })), productSlug: currentSlug, salePrice: currentPrice, isEditMode, productType });
 		if (lastCombSigRef.current === sig) return;
 		lastCombSigRef.current = sig;
+
+		if (productType !== 'variable') {
+			const first = currentCombos?.[0] || {};
+			setValue('combinations', [{
+				key: 'default',
+				attributes: {},
+				sku: first?.sku || '',
+				stockOnHand: first?.stockOnHand ?? 0,
+				reserved: first?.reserved ?? 0,
+				price: currentPrice || first?.price || '',
+				isActive: parseBooleanLike(first?.isActive, true),
+				isExisting: !!first?.isExisting,
+				variantId: first?.variantId,
+			}], { shouldDirty: true, shouldValidate: false });
+			return;
+		}
 
 
 		const generated = buildCombinationsFromAttributes(attributes, currentSlug, currentPrice);
@@ -370,7 +723,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			.map((c) => ({ ...c, isActive: false }));
 
 		setValue('combinations', [...activeGenerated, ...inactiveLegacy], { shouldDirty: true, shouldValidate: false });
-	}, [attributesWatch, productSlug, salePrice, isEditMode]);
+	}, [attributesWatch, productSlug, salePrice, isEditMode, productType]);
 
 	useEffect(() => {
 		return () => {
@@ -419,11 +772,11 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 		const currentPrice = salePrice || '';
 		const updated = currentCombos.map((combo) => {
-			const hasPrice = combo.price && Number(combo.price) !== 0 && combo.price !== '';
+			const isExisting = combo?.isExisting;
 
 			return {
 				...combo,
-				price: hasPrice ? combo.price : currentPrice
+				price: isExisting ? combo.price : currentPrice
 			};
 		});
 		setValue('combinations', updated, { shouldDirty: true, shouldValidate: false });
@@ -431,9 +784,13 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 	// --- Purchase Quantity Distribution Logic ---
 	const handleTotalQuantityChange = (val) => {
+		setTotalPurchaseQuantityError('');
 
-		setTotalPurchaseQuantity(val);
-		const num = Number(val);
+		const cleanVal = val ? val.toString().replace(/[^0-9]/g, '') : '';
+		setTotalPurchaseQuantity(cleanVal);
+
+		const num = parseInt(cleanVal, 10);
+
 		if (isNaN(num) || num <= 0) return;
 
 		const combos = watch('combinations') || [];
@@ -453,7 +810,29 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		const combos = watch('combinations') || [];
 		const total = combos.reduce((acc, c) => acc + (Number(c.stockOnHand) || 0), 0);
 		setTotalPurchaseQuantity(String(total));
+		if (total > 0) setTotalPurchaseQuantityError('');
 	};
+
+	const purchaseSummary = useMemo(() => {
+		const combos = Array.isArray(combinationsWatch) ? combinationsWatch : [];
+		const stockRows = combos.filter((c) => Number(c?.stockOnHand || 0) > 0);
+		const subtotal = stockRows.reduce((sum, c) => {
+			const stock = Number(c?.stockOnHand || 0);
+			const price = Number(c?.price || 0);
+			return sum + (stock * price);
+		}, 0);
+		const paidAmount = Number(purchasePaidAmount || 0);
+		const total = subtotal - paidAmount;
+		return {
+			summary: {
+				productCount: stockRows.length,
+				subtotal,
+			},
+			paidAmount,
+			total,
+			remainingAmount: total,
+		};
+	}, [combinationsWatch, purchasePaidAmount]);
 
 	const onSubmit = async (data) => {
 		let toastId;
@@ -466,14 +845,22 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			if (anyUploading) { toast.error('Please wait for images upload to finish'); return; }
 			if (anyUploadFailed) { toast.error('Some images failed to upload'); return; }
 			if (slugStatus == 'takenStore' || slugStatus === 'taken') return;
+			if (!isEditMode && hasPurchase && Number(totalPurchaseQuantity || 0) <= 0) {
+				setTotalPurchaseQuantityError(t('validation.totalQuantityRequired'));
+				toast.error(t('validation.totalQuantityRequired'));
+				return;
+			}
 			if (data.combinations && data.combinations.length > 0) {
-				const missingPrices = data.combinations.filter((c) => !c.price || c.price === '');
+				const sourceCombos = productType === 'single'
+					? [{ ...(data.combinations?.[0] || {}), price: data.salePrice }]
+					: data.combinations;
+				const missingPrices = sourceCombos.filter((c) => !c.price || c.price === '');
 				if (missingPrices.length > 0) { toast.error(t('errors.missingPrices')); return; }
 			}
 
 			const fd = new FormData();
 			fd.append('name', data.name.trim());
-			fd.append('type', 'PRODUCT');
+			if (!isEditMode) fd.append('type', productType);
 
 			const wp = safeNumberString(data.wholesalePrice);
 			if (wp !== '') fd.append('wholesalePrice', wp);
@@ -508,7 +895,18 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			if (orphanIds.length) fd.append('imagesOrphanIds', JSON.stringify(orphanIds));
 			if (isEditMode && removedImages.length > 0) fd.append('removedImages', JSON.stringify(removedImages));
 
-			const skusToCheck = (data.combinations || [])
+			const combinationsPayload = productType === 'single'
+				? [{
+					key: data.combinations?.[0]?.key || 'default',
+					attributes: {},
+					sku: data.combinations?.[0]?.sku || '',
+					price: safeNumberString(data.salePrice) || null,
+					stockOnHand: Number(data.combinations?.[0]?.stockOnHand || 0),
+					isActive: parseBooleanLike(data.combinations?.[0]?.isActive, true),
+				}]
+				: [...(data.combinations || [])];
+
+			const skusToCheck = (combinationsPayload || [])
 				.filter((c) => c?.isActive !== false)
 				.map((c) => (c?.sku || '').trim())
 				.filter(Boolean);
@@ -519,7 +917,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				});
 				const existingSkus = new Set(checkRes?.data?.existing || []);
 				const conflicts = {};
-				(data.combinations || []).forEach((c, idx) => {
+				(combinationsPayload || []).forEach((c, idx) => {
 					const sku = (c?.sku || '').trim();
 					if (sku && existingSkus.has(sku)) {
 						conflicts[c?.sku] = true;
@@ -540,20 +938,25 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				setSkuConflictMap({});
 			}
 
-			fd.append('combinations', JSON.stringify([...(data.combinations || [])]));
+			if (!isEditMode && productType === 'single') {
+				fd.append('singleSkuItem', JSON.stringify(combinationsPayload[0] || {}));
+			} else {
+				fd.append('combinations', JSON.stringify(combinationsPayload));
+			}
 
 			// (otherFiles ?? []).forEach((f) => { if (!f) return; if (f.isFromLibrary || f.isExisting) return; if (f.file) fd.append('images', f.file); });
 			// Add Purchase Data if enabled
 			if (!isEditMode && hasPurchase) {
 				const pData = {
-					...data.purchase,
+					notes: data.purchase.notes,
+					receiptNumber: data.purchase.receiptNumber,
 					supplierId: data.purchase.supplierId && data.purchase.supplierId !== 'none' ? data.purchase.supplierId : undefined,
 					safeId: data.purchase.safeId && data.purchase.safeId !== 'none' ? data.purchase.safeId : undefined,
 					paidAmount: Number(data.purchase.paidAmount || 0),
 				};
 				fd.append('purchase', JSON.stringify(pData));
 
-				const receipt = purchaseReceipt[0];
+				const receipt = purchaseReceipt;
 				if (receipt?.file) fd.append('purchaseReceiptAsset', receipt.file);
 			}
 			toastId = toast.loading(isEditMode ? t('messages.updating') : t('messages.creating'));
@@ -590,6 +993,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		}));
 
 		reset({
+			type: existingProduct.type || 'variable',
 			name: existingProduct.name || '', slug: existingProduct.slug || '', wholesalePrice: existingProduct.wholesalePrice?.toString() || '',
 			salePrice: existingProduct.salePrice?.toString() || '', lowestPrice: existingProduct.lowestPrice?.toString() || '', storageRack: existingProduct.storageRack || '',
 			categoryId: existingProduct.categoryId ? String(existingProduct.categoryId) : 'none', storeId: existingProduct.storeId ? String(existingProduct.storeId) : 'none',
@@ -683,15 +1087,40 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 					variants={staggerContainer}
 					initial="initial"
 					animate="animate"
-					className="flex gap-5 mt-5 items-start"
+					className="flex max-xl:flex-col gap-5 mt-5 items-start"
 				>
 					{/* ── Left Column ── */}
-					<div className="space-y-5 flex-1 min-w-0">
+					<div className="space-y-5 flex-1 min-w-0 w-full">
 
 						{/* Product Info Card */}
 						<motion.div variants={fadeUp}>
 							<Card>
-								<SectionHeader title={t('sections.productInfo')} />
+								<SectionHeader title={t('sections.productInfo')} action={
+									!isEditMode && (
+										<Controller
+											control={control}
+											name="type"
+											render={({ field }) => (
+												<div className="flex items-center gap-2 h-[34px] px-2 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
+													<label
+														htmlFor="product-type-check"
+														className="text-[14px] font-medium text-slate-500 dark:text-slate-400 cursor-pointer select-none"
+													>
+														{t('sections.isSingleProduct')}
+													</label>
+													<Checkbox
+														id="product-type-check"
+														checked={field.value === 'single'}
+														onCheckedChange={(checked) => {
+															field.onChange(checked ? 'single' : 'variable');
+														}}
+														className="h-6 w-6 border-slate-300 dark:border-slate-600 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+													/>
+												</div>
+											)}
+										/>
+									)
+								} />
 								<div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-x-3">
 									<Field label={t('fields.productName')} error={errors?.name?.message} className=" ">
 										<Input {...register('name')} placeholder={t('placeholders.productName')} />
@@ -799,6 +1228,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 										/>
 									</Field>
 
+
 									<Field label={t('fields.description')} className="col-span-full">
 										<Textarea
 											{...register('description')}
@@ -811,7 +1241,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 						</motion.div>
 
 						{/* Attributes Card */}
-						<motion.div variants={fadeUp}>
+						{productType === 'variable' && <motion.div variants={fadeUp}>
 							<Card>
 								<SectionHeader
 									title={t('attributes.title')}
@@ -888,17 +1318,17 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 									)}
 								</div>
 							</Card>
-						</motion.div>
+						</motion.div>}
 
 						{/* Combinations Card */}
-						{comboFields.length > 0 && (
+						{productType === 'variable' && comboFields.length > 0 && (
 							<motion.div ref={combinationsSectionRef} variants={fadeUp} className="scroll-mt-24">
 								<Card>
 									<div className="flex items-center justify-between mb-5">
 										<SectionHeader title={t('combinations.title')} />
 										<div className="flex items-center gap-4">
 											{!isEditMode && (
-												<div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/50">
+												<div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-primary/10 dark:bg-primary/30 border border-primary/20 dark:border-primary/70">
 													<Controller
 														control={control}
 														name="hasPurchase"
@@ -907,13 +1337,14 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 																checked={hasPurchase}
 																onCheckedChange={(v) => {
 																	setHasPurchase(!!v);
+																	setValue('hasPurchase', !!v, { shouldValidate: true });
 																}}
 																id="has-purchase"
 																className="rounded-md"
 															/>
 														)}
 													/>
-													<label htmlFor="has-purchase" className="text-[12px] font-bold text-amber-700 dark:text-amber-400 cursor-pointer select-none">
+													<label htmlFor="has-purchase" className="text-[12px] font-bold text-primary dark:text-primary-400 cursor-pointer select-none">
 														{t('purchase.hasInvoice')}
 													</label>
 												</div>
@@ -926,99 +1357,23 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 									{/* Purchase Data Form (Only in Create Mode + Toggle On) */}
 									{!isEditMode && hasPurchase && (
-										<motion.div
-											initial={{ opacity: 0, height: 0 }}
-											animate={{ opacity: 1, height: 'auto' }}
-											className="mb-6 p-5 rounded-2xl border-2 border-dashed border-primary/20 bg-primary/[0.02] space-y-5"
-										>
-											<div className="flex items-center gap-2 pb-2 border-b border-primary/10">
-												<FilePlus className="w-4 h-4 text-primary" />
-												<h4 className="text-[14px] font-bold text-primary">{t('purchase.invoiceInfo')}</h4>
-											</div>
-
-											<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-												<Field label={t('purchase.supplier')}>
-													<Controller
-														control={control}
-														name="purchase.supplierId"
-														render={({ field }) => (
-															<Select value={field.value || ''} onValueChange={field.onChange}>
-																<SelectTrigger className="bg-white dark:bg-slate-900">
-																	<SelectValue placeholder={t('purchase.supplierPlaceholder')} />
-																</SelectTrigger>
-																<SelectContent>
-																	<SelectItem value="none">{t('common.none')}</SelectItem>
-																	{suppliers.map((s) => (
-																		<SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
-																	))}
-																</SelectContent>
-															</Select>
-														)}
-													/>
-												</Field>
-
-												<Field label={t('purchase.invoiceNumber')}>
-													<Input {...register('purchase.receiptNumber')} placeholder="INV-000" className="bg-white dark:bg-slate-900" />
-												</Field>
-
-												<Field label={t('purchase.safe')}>
-													<Controller
-														control={control}
-														name="purchase.safeId"
-														render={({ field }) => (
-															<Select value={field.value || ''} onValueChange={field.onChange}>
-																<SelectTrigger className="bg-white dark:bg-slate-900">
-																	<SelectValue placeholder={t('purchase.safePlaceholder')} />
-																</SelectTrigger>
-																<SelectContent className="bg-card-select">
-																	<SelectItem value="نقدي">{tPurchase("options.safe.cash")}</SelectItem>
-																	<SelectItem value="الخزينة الرئيسية">{tPurchase("options.safe.main")}</SelectItem>
-																	<SelectItem value="الخزينة الفرعية">{tPurchase("options.safe.sub")}</SelectItem>
-																	<SelectItem value="الخزينة الإضافية">{tPurchase("options.safe.extra")}</SelectItem>
-																</SelectContent>
-															</Select>
-														)}
-													/>
-												</Field>
-
-												<Field label={t('purchase.totalQuantity')}>
-													<div className="relative">
-														<Input
-															type="number"
-															value={totalPurchaseQuantity}
-															onChange={(e) => handleTotalQuantityChange(e.target.value)}
-															placeholder="0"
-															className="bg-white dark:bg-slate-900 pr-10"
-														/>
-														<div className="absolute end-3 top-1/2 -translate-y-1/2 group cursor-help">
-															<Info className="w-4 h-4 text-slate-400" />
-															<div className="absolute bottom-full right-0 mb-2 w-48 p-2 rounded-lg bg-slate-800 text-white text-[10px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-																{t('purchase.quantityDistribution')}
-															</div>
-														</div>
-													</div>
-												</Field>
-
-												<Field label={t('purchase.paidAmount')}>
-													<Input type="number" step="0.01" {...register('purchase.paidAmount')} placeholder="0.00" className="bg-white dark:bg-slate-900" />
-												</Field>
-
-												<div className="md:row-span-2">
-													<ImageUploadBox
-														title={t('purchase.receipt')}
-														files={purchaseReceipt}
-														onFilesChange={(next) => setPurchaseReceipt(next.slice(0, 1))}
-														multiple={false}
-														// className="h-[46px] min-h-0 py-0"
-														compact
-													/>
-												</div>
-
-												<Field label={t('purchase.notes')} className="md:col-span-2 ">
-													<Textarea {...register('purchase.notes')} placeholder="..." className="bg-white dark:bg-slate-900 min-h-[60px]" />
-												</Field>
-											</div>
-										</motion.div>
+										<PurchaseDataForm
+											t={t}
+											tPurchase={tPurchase}
+											tValidation={tValidation}
+											control={control}
+											register={register}
+											errors={errors}
+											suppliers={suppliers}
+											totalPurchaseQuantity={totalPurchaseQuantity}
+											onTotalQuantityChange={handleTotalQuantityChange}
+											totalPurchaseQuantityError={totalPurchaseQuantityError}
+											purchaseReceipt={purchaseReceipt}
+											setPurchaseReceipt={setPurchaseReceipt}
+											setValue={setValue}
+											clearErrors={clearErrors}
+											invoiceSummary={purchaseSummary}
+										/>
 									)}
 
 									<div className="overflow-hidden rounded-xl border border-slate-100 dark:border-slate-800">
@@ -1070,13 +1425,14 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 																		placeholder={t('combinations.placeholders.sku')}
 																		disabled={!canEditSku}
 																		className={cn(
-																			"h-[38px] rounded-lg font-[Inter] text-[12px]",
+																			"h-[38px] rounded-lg font-[Inter] text-[12px] !min-w-[150px]",
 																			canEditSku
 																				? "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700"
 																				: "bg-slate-100 dark:bg-slate-900 border-transparent text-slate-400 cursor-not-allowed",
-																			skuHasConflict ? "border-red-400 ring-1 ring-red-300" : ""
+																			skuHasConflict || cErr?.sku ? "border-red-400 ring-1 ring-red-300" : ""
 																		)}
 																	/>
+																	{cErr?.sku?.message && <p className="text-[11px] text-red-500 mt-0.5">{errors.combinations[idx].sku.message}</p>}
 																	{skuHasConflict && <p className="text-[11px] text-red-500 mt-0.5">{t('errors.thisSkuAlreadyExists')}</p>}
 
 																</td>
@@ -1137,6 +1493,106 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 							</motion.div>
 						)}
 
+						{productType === 'single' && (
+							<motion.div variants={fadeUp}>
+								<Card>
+									<SectionHeader
+										title={t('singleSku.title')}
+									// action={
+									// 	!isEditMode && (
+									// 		<Controller
+									// 			control={control}
+									// 			name="combinations.0.isActive"
+									// 			render={({ field }) => (
+									// 				<div className="flex items-center gap-2 h-[34px] px-3 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
+									// 					<label
+									// 						htmlFor="single-sku-active"
+									// 						className="text-[13px] font-medium text-slate-500 dark:text-slate-400 cursor-pointer select-none"
+									// 					>
+									// 						{t('combinations.isActive')}
+									// 					</label>
+									// 					<Checkbox
+									// 						id="single-sku-active"
+									// 						checked={parseBooleanLike(field.value, true)}
+									// 						onCheckedChange={(v) => field.onChange(!!v)}
+									// 						className="h-5 w-5 border-slate-300 dark:border-slate-600 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+									// 					/>
+									// 				</div>
+									// 			)}
+									// 		/>
+									// 	)
+									// }
+									/>
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+										<Field label="SKU">
+											<Input
+												{...register('combinations.0.sku')}
+												placeholder={t('combinations.placeholders.sku')}
+												disabled={isEditMode}
+											/>
+											{errors?.combinations?.[0]?.sku?.message && <p className="text-[11px] text-red-500 mt-0.5">{errors.combinations[0].sku.message}</p>}
+										</Field>
+
+										<Field label={t('combinations.onHand')}>
+											{!isEditMode && hasPurchase ? (
+												<Input
+													type="number"
+													{...register('combinations.0.stockOnHand')}
+													onBlur={handleSkuQuantityBlur}
+												/>
+											) : (
+												<Input value={String(combinationsWatch?.[0]?.stockOnHand || 0)} disabled />
+											)}
+										</Field>
+										<Field label={t('combinations.reserved')}>
+											<Input value={String(combinationsWatch?.[0]?.reserved || 0)} disabled />
+										</Field>
+										<Field label={t('combinations.available')}>
+											<Input value={String(Math.max(0, Number(combinationsWatch?.[0]?.stockOnHand || 0) - Number(combinationsWatch?.[0]?.reserved || 0)))} disabled />
+										</Field>
+										{/* <Field label={t('combinations.price')}>
+											<Input value={salePrice || ''} disabled />
+										</Field> */}
+									</div>
+									{!isEditMode && (
+										<div className="flex items-center gap-2 px-3 py-2 mt-4 rounded-xl bg-primary/10 dark:bg-primary/30 border border-primary/20 dark:border-primary/70 w-fit">
+											<Checkbox
+												checked={hasPurchase}
+												onCheckedChange={(v) => {
+													setHasPurchase(!!v);
+													setValue('hasPurchase', !!v, { shouldValidate: true });
+												}}
+												id="has-purchase-single"
+												className="rounded-md"
+											/>
+											<label htmlFor="has-purchase-single" className="text-[12px] font-bold text-primary dark:text-primary-400 cursor-pointer select-none">
+												{t('purchase.hasInvoice')}
+											</label>
+										</div>
+									)}
+									{!isEditMode && hasPurchase && (
+										<PurchaseDataForm
+											t={t}
+											tPurchase={tPurchase}
+											tValidation={tValidation}
+											control={control}
+											register={register}
+											errors={errors}
+											suppliers={suppliers}
+											totalPurchaseQuantity={totalPurchaseQuantity}
+											onTotalQuantityChange={handleTotalQuantityChange}
+											totalPurchaseQuantityError={totalPurchaseQuantityError}
+											purchaseReceipt={purchaseReceipt}
+											setPurchaseReceipt={setPurchaseReceipt}
+											setValue={setValue}
+											clearErrors={clearErrors}
+											invoiceSummary={purchaseSummary}
+										/>
+									)}
+								</Card>
+							</motion.div>
+						)}
+
 						{/* Upselling Card */}
 						<motion.div variants={fadeUp}>
 							<Card>
@@ -1173,6 +1629,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 											t={t}
 											value={watch('upsellingProducts') || []}
 											onChange={(next) => setValue('upsellingProducts', next, { shouldValidate: true, shouldDirty: true })}
+											excludeProductId={isEditMode ? productId : undefined}
 										/>
 									)}
 								</div>
@@ -1183,7 +1640,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 					</div>
 
 					{/* ── Right Column (Media) ── */}
-					<div className="sticky top-[20px] h-fit space-y-4 w-full max-w-[360px] max-xl:max-w-[300px] shrink-0">
+					<div className="xl:sticky xl:top-[20px] h-fit space-y-4 w-full xl:max-w-[360px] shrink-0">
 						<ImageUploadBox
 							title={t('uploads.mainImage')}
 							files={mainFiles}
@@ -1301,86 +1758,61 @@ function AttributeEditor({ t, control, register, errors, aIndex, onRemove, setVa
 }
 
 /** ── Upsell Product Selector ─────────────────────────────────────────────── */
-function UpsellProductSelector({ t, value, onChange }) {
-	const [products, setProducts] = useState([]);
-	const [loading, setLoading] = useState(false);
-	const [search, setSearch] = useState('');
+function UpsellProductSelector({ t, value, onChange, excludeProductId }) {
 	const selectedIds = (value || []).map((x) => String(x.productId));
 
-	useEffect(() => { loadProducts(); }, []);
-
-	const loadProducts = async () => {
-		setLoading(true);
-		try {
-			const response = await api.get('/products', { params: { limit: 100 } });
-			const list = Array.isArray(response.data?.records) ? response.data.records : Array.isArray(response.data) ? response.data : [];
-			setProducts(list);
-		} catch (error) { toast.error(t('upsell.failedToLoad')); }
-		finally { setLoading(false); }
+	const handleIdsChange = (ids) => {
+		void (async () => {
+			const prev = value || [];
+			const prevById = new Map(prev.map((x) => [String(x.productId), x]));
+			const next = [];
+			let loadFailed = false;
+			for (const rawId of ids) {
+				const sid = String(rawId);
+				if (prevById.has(sid)) {
+					next.push(prevById.get(sid));
+					continue;
+				}
+				try {
+					const res = await api.get(`/products/${sid}`);
+					const p = res.data;
+					next.push({
+						productId: sid,
+						label: p.name || `#${sid}`,
+						callCenterDescription: '',
+						mainImage: p.mainImage,
+					});
+				} catch {
+					loadFailed = true;
+					next.push({ productId: sid, label: `#${sid}`, callCenterDescription: '' });
+				}
+			}
+			if (loadFailed) toast.error(t('upsell.failedToLoad'));
+			onChange(next);
+		})();
 	};
 
-	const filteredProducts = products.filter((p) => !selectedIds.includes(String(p.id)) && (search ? p.name?.toLowerCase().includes(search.toLowerCase()) : true));
-	const addProduct = (product) => { onChange([...(value || []), { ...product, productId: String(product.id), label: product.name || `#${product.id}`, callCenterDescription: '' }]); };
-	const removeProduct = (productId) => { onChange((value || []).filter((x) => String(x.productId) !== String(productId))); };
-	const updateDesc = (productId, desc) => { onChange((value || []).map((x) => (String(x.productId) === String(productId) ? { ...x, callCenterDescription: desc } : x))); };
-	const selectedProducts = (value || []).map((x) => { const p = products.find((pp) => String(pp.id) === String(x.productId)); return { ...x, name: p?.name || x.label || `#${x.productId}` }; });
+	const removeProduct = (productId) => {
+		onChange((value || []).filter((x) => String(x.productId) !== String(productId)));
+	};
+	const updateDesc = (productId, desc) => {
+		onChange((value || []).map((x) => (String(x.productId) === String(productId) ? { ...x, callCenterDescription: desc } : x)));
+	};
+	const selectedProducts = value || [];
 	const getImg = (p) => p?.mainImage || p?.images?.[0]?.url || '';
-	const safeText = (v) => (v == null || v === '' ? '—' : String(v));
+	const displayName = (x) => x.label || x.name || `#${x.productId}`;
 
 	return (
 		<div className="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800">
-			<Field label={t('upsell.selectProducts')}>
-				<div className="relative">
-					<Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-					<Input
-						value={search}
-						onChange={(e) => setSearch(e.target.value)}
-						placeholder={t('upsell.searchProducts')}
-					/>
-
-					{search && (
-						<div className="absolute z-10 bottom-[calc(100%+6px)] w-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl shadow-black/10">
-							<div className="flex items-center justify-between px-3 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-								<span className="text-[11px] text-slate-500">{t('upsell.searchResultsCount')}: <b>{filteredProducts.length}</b></span>
-								<span className="text-[11px] text-slate-400">{t('upsell.clickToSelect')}</span>
-							</div>
-							<div className="max-h-64 overflow-y-auto">
-								{filteredProducts.length === 0 ? (
-									<div className="py-8 text-center">
-										<p className="text-[13px] font-medium text-slate-500">{t('upsell.noResults')}</p>
-										<p className="text-[12px] text-slate-400 mt-1">{t('upsell.tryDifferent')}</p>
-									</div>
-								) : (
-									filteredProducts.map((product) => {
-										const img = getImg(product);
-										return (
-											<button
-												key={product.id}
-												type="button"
-												onClick={() => { addProduct(product); setSearch(''); }}
-												className="w-full text-left px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors border-b border-slate-50 dark:border-slate-800 last:border-0"
-											>
-												<div className="flex items-center gap-3">
-													<div className="w-9 h-9 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 shrink-0">
-														{img ? <img src={baseImg + img} alt={product.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-400">—</div>}
-													</div>
-													<div className="min-w-0 flex-1">
-														<div className="flex items-center gap-2">
-															<span className="font-semibold text-[13px] text-slate-800 dark:text-white truncate">{safeText(product.name)}</span>
-															<span className="text-[10px] font-[Inter] px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-500 shrink-0">#{product.id}</span>
-														</div>
-														<p className="text-[11px] text-slate-400 truncate mt-0.5">{safeText(product.category?.name)} · {safeText(product.store?.name)}</p>
-													</div>
-												</div>
-											</button>
-										);
-									})
-								)}
-							</div>
-						</div>
-					)}
-				</div>
-			</Field>
+			<ProductFilter
+				multiple
+				value={selectedIds}
+				onChange={handleIdsChange}
+				showAllOption={false}
+				label={t('upsell.selectProducts')}
+				title={t('upsell.searchProducts')}
+				excludeIds={excludeProductId ? [String(excludeProductId)] : []}
+			/>
 
 			{selectedProducts.length > 0 && (
 				<div className="space-y-2">
@@ -1390,10 +1822,10 @@ function UpsellProductSelector({ t, value, onChange }) {
 							<div className="flex items-center justify-between gap-2 mb-3">
 								<div className="flex items-center gap-2.5 min-w-0">
 									<div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 shrink-0">
-										{x.mainImage ? <img src={baseImg + getImg(x)} alt={x.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-400">—</div>}
+										{x.mainImage ? <img src={baseImg + getImg(x)} alt={displayName(x)} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-400">—</div>}
 									</div>
 									<div>
-										<span className="text-[13px] font-semibold text-slate-800 dark:text-white">{x.name}</span>
+										<span className="text-[13px] font-semibold text-slate-800 dark:text-white">{displayName(x)}</span>
 										<span className="text-[11px] font-[Inter] ml-2 text-slate-400">#{x.productId}</span>
 									</div>
 								</div>

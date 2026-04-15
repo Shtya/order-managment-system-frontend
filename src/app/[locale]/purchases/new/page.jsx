@@ -24,8 +24,7 @@ import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 export default function CreatePurchaseInvoicePage() {
 	const navigate = useRouter();
-	const locale = useLocale();
-	const isRTL = locale === "ar";
+
 	const tValidation = useTranslations("validation");
 	const t = useTranslations("purchaseInvoice");
 	const { formatCurrency, currency } = usePlatformSettings();
@@ -272,7 +271,6 @@ export default function CreatePurchaseInvoicePage() {
 
 	return (
 		<motion.div
-			dir={isRTL ? "rtl" : "ltr"}
 			initial={{ opacity: 0, y: 20, scale: 0.98 }}
 			animate={{ opacity: 1, y: 0, scale: 1 }}
 			transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.15 }}
@@ -554,8 +552,6 @@ export default function CreatePurchaseInvoicePage() {
 					{/* Right Column - Summary */}
 					<div className="w-full space-y-4 md:max-w-[350px]">
 						<ReceiptImageUpload
-							t={t}
-							isRTL={isRTL}
 							image={receiptImage}
 							onImageChange={handleImageUpload}
 							onRemove={handleRemoveImage}
@@ -563,12 +559,10 @@ export default function CreatePurchaseInvoicePage() {
 						<InvoiceSummary
 							errors={errors}
 							summary={summary}
-							t={t}
 							total={total}
 							paidAmount={paidAmount}
 							remainingAmount={remainingAmount}
 							control={control}
-							formatCurrency={formatCurrency}
 						/>
 					</div>
 				</div>
@@ -577,10 +571,13 @@ export default function CreatePurchaseInvoicePage() {
 	);
 }
 
-function ReceiptImageUpload({ image, onImageChange, onRemove, t, isRTL }) {
+export function ReceiptImageUpload({ image, onImageChange, onRemove }) {
 	const inputRef = useRef(null);
+	const tValidation = useTranslations("validation");
+	const t = useTranslations("purchaseInvoice");
 	const [isDragging, setIsDragging] = useState(false);
-
+	const locale = useLocale();
+	const isRTL = locale === "ar";
 	const handleDrop = (e) => {
 		e.preventDefault();
 		e.stopPropagation();
@@ -694,7 +691,10 @@ function ReceiptImageUpload({ image, onImageChange, onRemove, t, isRTL }) {
 	);
 }
 
-function InvoiceSummary({ errors, summary, t, total, paidAmount, remainingAmount, control, formatCurrency }) {
+export function InvoiceSummary({ errors, summary, total, paidAmount, remainingAmount, control }) {
+	const { formatCurrency, currency } = usePlatformSettings();
+
+	const t = useTranslations("purchaseInvoice");
 	return (
 		<motion.div
 			initial={{ opacity: 0, x: 20 }}
@@ -721,7 +721,7 @@ function InvoiceSummary({ errors, summary, t, total, paidAmount, remainingAmount
 					</span>
 				</div>
 
-				<div className="space-y-2">
+				{control && <div className="space-y-2">
 					<Label className="text-sm text-gray-600 dark:text-slate-300">{t("summary.paidAmount")}</Label>
 					<Controller
 						name="paidAmount"
@@ -743,7 +743,15 @@ function InvoiceSummary({ errors, summary, t, total, paidAmount, remainingAmount
 							<p className="text-xs text-red-500">{errors.paidAmount
 								.message}</p>
 						)}
-				</div>
+				</div>}
+				{!control && (
+					<div className="flex items-center justify-between p-3 rounded-xl bg-red-50 dark:bg-red-950/20">
+						<span className="text-sm text-gray-600 dark:text-slate-300">{t("summary.paidAmount")}</span>
+						<span className="text-base font-semibold text-red-600 dark:text-red-400">
+							{formatCurrency(Number(paidAmount || 0))}
+						</span>
+					</div>
+				)}
 
 				<div className="flex items-center justify-between p-3 rounded-xl bg-green-50 dark:bg-green-950/20">
 					<span className="text-sm text-gray-600 dark:text-slate-300">{t("summary.invoiceTotal")}</span>

@@ -19,15 +19,15 @@ function Textarea({ className, error, resize = "y", ...props }) {
         "px-3.5 py-3",
         // resize variants
         resize === "none" && "resize-none",
-        resize === "y"    && "resize-y",
-        resize === "x"    && "resize-x",
+        resize === "y" && "resize-y",
+        resize === "x" && "resize-x",
         resize === "both" && "resize",
         // error
         error && fieldError,
         // aria-invalid mirrors error state automatically
         "aria-invalid:border-destructive",
         "aria-invalid:focus:shadow-[0_0_0_3px_oklch(var(--destructive)/0.15)]",
-        // className
+        className
       )}
       {...props}
     />

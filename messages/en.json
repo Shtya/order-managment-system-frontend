@@ -3178,6 +3178,7 @@
       "bundle": "Bundle"
     },
     "sections": {
+      "isSingleProduct": "Is Single Product?",
       "productInfo": "Product Information",
       "bundleInfo": "Bundle Information",
       "upselling": "Upselling"
@@ -3192,6 +3193,7 @@
       "category": "Category",
       "store": "Store",
       "warehouse": "Warehouse",
+      "productType": "Product Type",
       "description": "Description",
       "totalPrice": "Total Price",
       "mainVariant": "Main Variant",
@@ -3222,6 +3224,9 @@
       "checking": "Checking availability..."
     },
     "validation": {
+      "duplicateSku": "Duplicate SKU found",
+      "skuRequired": "SKU is required",
+      "skuMustBeUnique": "SKU must not be duplicated",
       "priceMin": "Price must be at least {min}",
       "nameTooLong": "Name is too long (maximum {max} characters)",
       "descriptionTooLong": "Description is too long (maximum {max} characters)",
@@ -3233,11 +3238,13 @@
       "slugTakenStore": "This slug is already used in this store",
       "slugTaken": "This slug is already in use",
       "invalidNumber": "Invalid number",
+      "requiredNumber": "This field is required",
       "attributeNameRequired": "Attribute name is required",
       "attributeValueRequired": "Attribute value is required",
       "atLeastOneValue": "At least one value must be added",
       "combinationKeyRequired": "Variant key is required",
       "combinationSkuMax": "SKU code must not exceed 120 characters",
+      "skuFormat": "SKU may only contain English letters, numbers, and dashes",
       "combinationAttrsRequired": "Variant attributes are required",
       "stockNonNegative": "Stock must not be negative",
       "upsellProductRequired": "Product is required",
@@ -3249,6 +3256,9 @@
       "mainVariantRequired": "Main variant is required",
       "mainVariantInItems": "Main variant cannot be part of the bundle items",
       "duplicateItems": "Bundle cannot contain duplicate items"
+      ,
+      "singleSkuRequired": "SKU is required for single product.",
+      "totalQuantityRequired": "Total quantity must be greater than 0."
     },
     "attributes": {
       "title": "Attributes and Variants",
@@ -3305,6 +3315,13 @@
         "sku": "Auto-generated",
         "price": "Enter price"
       }
+    },
+    "types": {
+      "single": "Single",
+      "variable": "Variable"
+    },
+    "singleSku": {
+      "title": "SKU Details"
     },
     "bundles": {
       "title": "Products in Bundle",
@@ -3404,7 +3421,11 @@
       "callCenterDesc": "Call Center Description",
       "exportBuilderNotReady": "Export builder is not ready",
       "total": "Total",
-      "limit": "Results per page"
+      "limit": "Results per page",
+      "active": "Active",
+      "inactive": "Inactive",
+      "selectedCount": "{count} selected",
+      "selectProducts": "Select products"
     },
     "bundleModal": {
       "title": "Bundle Details",
@@ -3471,6 +3492,8 @@
       "storePlaceholder": "Select store",
       "warehouse": "Warehouse",
       "warehousePlaceholder": "Select warehouse",
+      "type": "Type",
+      "typePlaceholder": "Select type",
       "priceFrom": "Price From",
       "priceFromPlaceholder": "Enter minimum price",
       "priceTo": "Price To",
@@ -3485,7 +3508,10 @@
       "salePriceFrom": "Sale price from",
       "salePriceTo": "Sale price to",
       "salePriceFromPlaceholder": "Enter sale price from",
-      "salePriceToPlaceholder": "Enter the selling price to"
+      "salePriceToPlaceholder": "Enter the selling price to",
+      "errors": {
+        "fromMustBeLessOrEqualTo": "From value must be less than or equal to To value."
+      }
     },
     "idle": {
       "label": "Show idle products since:",
@@ -3493,10 +3519,12 @@
       "applyDate": "Apply Date"
     },
     "table": {
+      "slug": "Slug",
       "id": "ID",
       "mainImage": "Main Image",
       "imagesCount": "Other Images",
       "name": "Name",
+      "type": "Type",
       "sku": "SKUs Codes",
       "category": "Category",
       "store": "Store",
@@ -3517,6 +3545,10 @@
     },
     "yes": "Yes",
     "no": "No",
+    "types": {
+      "single": "Single",
+      "variable": "Variable"
+    },
     "empty": "No products found",
     "delete": {
       "title": "Confirm Deletion",

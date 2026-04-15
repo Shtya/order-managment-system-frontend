@@ -214,8 +214,9 @@ export default function ProductsPage() {
 	const [searchDebounced, setSearchDebounced] = useState("");
 
 	const [filtersOpen, setFiltersOpen] = useState(false);
-	const defaultFilters = useMemo(() => ({ storageRack: "", categoryId: "", storeId: "", warehouseId: "", priceFrom: "", priceTo: "", salePriceFrom: "", salePriceTo: "" }), []);
+	const defaultFilters = useMemo(() => ({ storageRack: "", categoryId: "", storeId: "", warehouseId: "", productType: "none", priceFrom: "", priceTo: "", salePriceFrom: "", salePriceTo: "" }), []);
 	const [filters, setFilters] = useState(defaultFilters);
+	const [filterErrors, setFilterErrors] = useState({});
 
 	const [idleFromDate, setIdleFromDate] = useState(() => toISODateOnly(subMonths(new Date(), 2)));
 
@@ -241,11 +242,22 @@ export default function ProductsPage() {
 	}, [filters]);
 
 	const onApplyFilters = () => {
+		const nextErrors = {};
+		const isInvalidRange = (from, to) => from !== "" && to !== "" && Number(from) > Number(to);
+		if (isInvalidRange(filters.priceFrom, filters.priceTo)) {
+			nextErrors.priceRange = t("filters.errors.fromMustBeLessOrEqualTo");
+		}
+		if (isInvalidRange(filters.salePriceFrom, filters.salePriceTo)) {
+			nextErrors.salePriceRange = t("filters.errors.fromMustBeLessOrEqualTo");
+		}
+		setFilterErrors(nextErrors);
+		if (Object.keys(nextErrors).length > 0) return;
 		current.fetchData({ page: 1, per_page: current.pager.per_page });
 	};
 
 	const onResetFilters = () => {
 		setFilters(defaultFilters);
+		setFilterErrors({});
 		current.fetchData({ page: 1, per_page: current.pager.per_page });
 	};
 
@@ -654,6 +666,23 @@ export default function ProductsPage() {
 								</Select>
 							</FilterField>
 						)}
+						{active !== "bundles" && (
+							<FilterField label={t("filters.type")}>
+								<Select
+									value={filters.productType || "none"}
+									onValueChange={(v) => setFilters((f) => ({ ...f, productType: v }))}
+								>
+									<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+										<SelectValue placeholder={t("filters.typePlaceholder")} />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="none">{t("filters.any")}</SelectItem>
+										<SelectItem value="single">{t("types.single")}</SelectItem>
+										<SelectItem value="variable">{t("types.variable")}</SelectItem>
+									</SelectContent>
+								</Select>
+							</FilterField>
+						)}
 
 						{/* Price From */}
 						<FilterField label={active !== "bundles" ? t("filters.wholesalePriceFrom") : t("filters.priceFrom")}>
@@ -713,6 +742,13 @@ export default function ProductsPage() {
 								/>
 							</FilterField>
 						)}
+						{(filterErrors.priceRange || filterErrors.salePriceRange) && (
+							<div className="md:col-span-full">
+								<p className="text-[12px] text-red-500 font-medium">
+									{filterErrors.priceRange || filterErrors.salePriceRange}
+								</p>
+							</div>
+						)}
 					</>
 				}
 				columns={current.columns}
@@ -725,8 +761,6 @@ export default function ProductsPage() {
 				}}
 				onPageChange={({ page: p, per_page }) => current.fetchData({ page: p, per_page })}
 			/>
-
-
 
 			<ConfirmDialog
 				open={deleteState.open}

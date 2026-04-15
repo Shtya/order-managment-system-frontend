@@ -49,6 +49,7 @@ export default function useProductsTab({ t, searchDebounced, filters, filtersOpe
 		if (filters.categoryId) params.set("categoryId", filters.categoryId);
 		if (filters.storeId) params.set("storeId", filters.storeId);
 		if (filters.warehouseId) params.set("warehouseId", filters.warehouseId);
+		if (filters.productType && filters.productType !== "none") params.set("productType", filters.productType);
 
 		if (filters.priceFrom !== "") params.set("wholesalePrice.gte", String(filters.priceFrom));
 		if (filters.priceTo !== "") params.set("wholesalePrice.lte", String(filters.priceTo));
@@ -108,6 +109,21 @@ export default function useProductsTab({ t, searchDebounced, filters, filtersOpe
 			{ key: "mainImage", header: t("table.mainImage"), className: "w-[100px]", type: "img" },
 			{ key: "images", header: t("table.imagesCount"), className: "w-[100px]", type: "imgs" },
 			{ key: "name", header: t("table.name"), className: "text-gray-700 dark:text-slate-200 font-semibold min-w-[200px]" },
+			{ 
+				key: "slug", 
+				header: t("table.slug"), 
+				className: "text-slate-500 dark:text-slate-400 font-mono text-[12px] min-w-[150px] truncate" 
+			},
+			{
+				key: "type",
+				header: t("table.type"),
+				className: "min-w-[110px]",
+				cell: (row) => (
+					<Badge className="rounded-full ">
+						{row?.type === "single" ? t("types.single") : t("types.variable")}
+					</Badge>
+				)
+			},
 			{
 				key: "sku",
 				header: t("table.sku"),
@@ -324,7 +340,7 @@ export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 						<>
 							<div className="rounded-xl border bg-white dark:bg-slate-900 p-4 shadow-sm">
 								<div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-									<div className="flex gap-4">
+									<div className="flex gap-4 max-md:flex-col">
 										<div className="w-20 h-20 shrink-0 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border">
 											{mainImage ? (
 												// eslint-disable-next-line @next/next/no-img-element
@@ -357,6 +373,17 @@ export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 													<Warehouse size={14} className="mr-1" />
 													{t("productModal.warehouse")}: {product?.warehouse?.name ?? na}
 												</Badge>
+												<Badge className="rounded-full bg-violet-50 text-violet-700 border border-violet-200 dark:bg-violet-900/20 dark:text-violet-200">
+													{t("table.type")}: {product?.type === "single" ? t("types.single") : t("types.variable")}
+												</Badge>
+												{/* <Badge className={cn(
+													"rounded-full border",
+													product?.isActive === false
+														? "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-200"
+														: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200"
+												)}>
+													{product?.isActive === false ? t("common.inactive") : t("common.active")}
+												</Badge> */}
 											</div>
 
 											<div className="mt-3 flex flex-wrap gap-2">
@@ -478,13 +505,14 @@ export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 								) : (
 									<div className="overflow-x-auto rounded-xl border">
 										{/* 1. هذا الـ div هو الحل: يجبر المحتوى أن يكون عرضه 800px على الأقل */}
-										<div className="min-w-[800px]">
+										<div className="min-w-[720px]">
 
 											{/* Header */}
 											<div className="grid grid-cols-12 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-200 px-4 py-3">
-												<div className="col-span-5">{t("common.sku")}</div>
+												<div className="col-span-4">{t("common.sku")}</div>
+												<div className="col-span-2 text-center">{t("common.price")}</div>
 												<div className="col-span-3 text-center">{t("common.attributes")}</div>
-												<div className="col-span-4 text-center">{t("common.stock")}</div>
+												<div className="col-span-3 text-center">{t("common.stock")}</div>
 											</div>
 
 											{/* Body */}
@@ -496,11 +524,28 @@ export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 														<div key={s.id} className="grid grid-cols-12 px-4 py-3 text-sm bg-white dark:bg-slate-900 items-center">
 
 															{/* SKU Info */}
-															<div className="col-span-5 overflow-hidden">
+															<div className="col-span-4 overflow-hidden">
 																<div className="font-semibold text-slate-900 dark:text-slate-50 truncate">{s.sku ?? `#${s.id}`}</div>
 																<div className="text-xs text-slate-500 truncate">
 																	{t("common.key")}: {s.key ?? na}
 																</div>
+																<div className="mt-1">
+																	<Badge className={cn(
+																		"rounded-full border text-[10px]",
+																		s?.isActive === false
+																			? "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-200"
+																			: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200"
+																	)}>
+																		{s?.isActive === false ? t("common.inactive") : t("common.active")}
+																	</Badge>
+																</div>
+															</div>
+
+															<div className="col-span-2 flex flex-wrap items-center justify-center gap-1.5">
+
+																<Badge className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200">
+																	{formatCurrency(s?.price || 0)}
+																</Badge>
 															</div>
 
 															{/* Attributes */}
@@ -521,7 +566,7 @@ export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 
 															{/* Stock info */}
 															{/* 3. تغيير flex-wrap إلى flex-nowrap لضمان بقائها في سطر واحد */}
-															<div className="col-span-4 flex items-center justify-center gap-2 flex-nowrap">
+															<div className="col-span-3 flex items-center justify-center gap-2 flex-nowrap">
 																<Badge className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap shrink-0">
 																	{t("common.onHand")}: {s.stockOnHand ?? 0}
 																</Badge>

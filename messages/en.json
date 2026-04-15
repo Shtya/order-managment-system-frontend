@@ -3259,6 +3259,7 @@
       "attribute": "Attribute",
       "deleteAttribute": "Delete Attribute",
       "name": "Name",
+      "duplicateName": "This attribute name already exists.",
       "templates": {
         "size": "Size",
         "sizeValues": [
@@ -3297,6 +3298,7 @@
       "count": "Count",
       "empty": "No variants found",
       "combinationName": "Variant Name",
+      "isActive": "Active",
       "price": "Price",
       "quantity": "Quantity",
       "placeholders": {
@@ -3354,6 +3356,8 @@
     "errors": {
       "mainImageRequired": "Main image is required",
       "missingPrices": "Price must be entered for all variants",
+      "skuAlreadyExists": "Some SKU values already exist in your account. Please update highlighted rows.",
+      "thisSkuAlreadyExists": "This SKU already exists in your account. Please update it.",
       "bundleItemsRequired": "At least one product must be added to the bundle",
       "maxItemsExceeded": "You cannot add more than {max} additional images",
       "invalidFileType": "Sorry, the attached file must be an image only (JPG, PNG, etc.)",

@@ -3178,6 +3178,7 @@
       "bundle": "باقة"
     },
     "sections": {
+      "isSingleProduct": "هل هذا منتج مفرد؟",
       "productInfo": "معلومات المنتج",
       "bundleInfo": "معلومات الباقة",
       "upselling": "البيع الإضافي"
@@ -3192,6 +3193,7 @@
       "category": "الفئة",
       "store": "المتجر",
       "warehouse": "المستودع",
+      "productType": "نوع المنتج",
       "description": "الوصف",
       "totalPrice": "السعر الإجمالي",
       "mainVariant": "المتغير الأساسي",
@@ -3222,6 +3224,9 @@
       "checking": "جاري التحقق من التوفر..."
     },
     "validation": {
+      "duplicateSku": "يوجد sku مكرر",
+      "skuRequired": "رمز SKU مطلوب",
+      "skuMustBeUnique": "رمز SKU يجب أن لا يكون مكرراً",
       "priceMin": "يجب أن يكون السعر {min} على الأقل",
       "nameTooLong": "الاسم طويل جداً (الحد الأقصى {max} حرف)",
       "descriptionTooLong": "الوصف طويل جداً (الحد الأقصى {max} حرف)",
@@ -3233,11 +3238,13 @@
       "slugTakenStore": "هذا الرابط مستخدم بالفعل في هذا المتجر",
       "slugTaken": "هذا الرابط مستخدم بالفعل",
       "invalidNumber": "رقم غير صحيح",
+      "requiredNumber": "هذا الحقل مطلوب",
       "attributeNameRequired": "اسم الخاصية مطلوب",
       "attributeValueRequired": "قيمة الخاصية مطلوبة",
       "atLeastOneValue": "يجب إضافة قيمة واحدة على الأقل",
       "combinationKeyRequired": "مفتاح المتغير مطلوب",
       "combinationSkuMax": "يجب ألا يتجاوز رمز SKU 120 حرفًا",
+      "skuFormat": "يجب أن يحتوي رمز SKU على أحرف إنجليزية وأرقام وشرطات فقط",
       "combinationAttrsRequired": "خصائص المتغير مطلوبة",
       "stockNonNegative": "المخزون يجب أن يكون غير سالب",
       "upsellProductRequired": "المنتج مطلوب",
@@ -3249,6 +3256,9 @@
       "mainVariantRequired": "المتغير الأساسي مطلوب",
       "mainVariantInItems": "المتغير الأساسي لا يمكن أن يكون ضمن عناصر الباندل",
       "duplicateItems": "الباندل لا يمكن أن يحتوي على عناصر مكررة"
+      ,
+      "singleSkuRequired": "رمز SKU مطلوب للمنتج المفرد.",
+      "totalQuantityRequired": "إجمالي الكمية يجب أن يكون أكبر من 0."
     },
     "attributes": {
       "title": "الخصائص والمتغيرات",
@@ -3305,6 +3315,13 @@
         "sku": "يتم توليده تلقائيًا",
         "price": "أدخل السعر"
       }
+    },
+    "types": {
+      "single": "مفرد",
+      "variable": "متغير"
+    },
+    "singleSku": {
+      "title": "تفاصيل SKU "
     },
     "bundles": {
       "title": "المنتجات في الباقة",
@@ -3404,7 +3421,11 @@
       "callCenterDesc": "وصف خدمة العملاء",
       "exportBuilderNotReady": "مُنشئ التصدير غير جاهز",
       "total": "الإجمالي",
-      "limit": "عدد النتائج"
+      "limit": "عدد النتائج",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "selectedCount": "{count} محدد",
+      "selectProducts": "اختر المنتجات"
     },
     "bundleModal": {
       "title": "تفاصيل الباندل",
@@ -3471,6 +3492,8 @@
       "storePlaceholder": "اختر المتجر",
       "warehouse": "المستودع",
       "warehousePlaceholder": "اختر المستودع",
+      "type": "النوع",
+      "typePlaceholder": "اختر النوع",
       "priceFrom": "السعر من",
       "priceFromPlaceholder": "أدخل السعر من",
       "priceTo": "السعر إلى",
@@ -3485,7 +3508,10 @@
       "salePriceFrom": "سعر البيع من",
       "salePriceTo": "سعر البيع إلى",
       "salePriceFromPlaceholder": "أدخل سعر البيع من",
-      "salePriceToPlaceholder": "أدخل سعر البيع إلى"
+      "salePriceToPlaceholder": "أدخل سعر البيع إلى",
+      "errors": {
+        "fromMustBeLessOrEqualTo": "قيمة البداية يجب أن تكون أقل من أو تساوي قيمة النهاية."
+      }
     },
     "idle": {
       "label": "عرض المنتجات الراكدة من تاريخ:",
@@ -3493,10 +3519,12 @@
       "applyDate": "تطبيق التاريخ"
     },
     "table": {
+      "slug": "المسار (slug)",
       "id": "الرقم",
       "mainImage": "الصورة الرئيسية",
       "imagesCount": "الصور الاخري",
       "name": "الاسم",
+      "type": "النوع",
       "sku": "رموز SKUs",
       "category": "الفئة",
       "store": "المتجر",
@@ -3517,6 +3545,10 @@
     },
     "yes": "نعم",
     "no": "لا",
+    "types": {
+      "single": "مفرد",
+      "variable": "متغير"
+    },
     "empty": "لا توجد منتجات",
     "delete": {
       "title": "تأكيد الحذف",

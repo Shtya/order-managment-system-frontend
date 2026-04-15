@@ -42,6 +42,7 @@ export default function useIdleTab({ t, searchDebounced, filters, idleFromDate, 
     if (filters.categoryId) params.set("categoryId", filters.categoryId);
     if (filters.storeId) params.set("storeId", filters.storeId);
     if (filters.warehouseId) params.set("warehouseId", filters.warehouseId);
+    if (filters.productType && filters.productType !== "none") params.set("productType", filters.productType);
 
     if (filters.priceFrom !== "") params.set("wholesalePrice.gte", String(filters.priceFrom));
     if (filters.priceTo !== "") params.set("wholesalePrice.lte", String(filters.priceTo));
@@ -101,6 +102,16 @@ export default function useIdleTab({ t, searchDebounced, filters, idleFromDate, 
       { key: "id", header: t("table.id"), className: "font-semibold text-primary w-[80px]" },
       { key: "mainImage", header: t("table.mainImage"), className: "w-[100px]", type: "img" },
       { key: "images", header: t("table.imagesCount"), className: "w-[100px]", type: "imgs" },
+      {
+        key: "type",
+        header: t("table.type"),
+        className: "min-w-[110px]",
+        cell: (row) => (
+          <Badge className="rounded-full ">
+            {row?.type === "single" ? t("types.single") : t("types.variable")}
+          </Badge>
+        )
+      },
       {
         key: "name",
         header: t("table.name"),

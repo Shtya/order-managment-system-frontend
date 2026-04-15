@@ -497,7 +497,7 @@ export default function SuppliersPage() {
 }
 
 
-const makeSchema = (t, countries) =>
+const makeSchema = (t, countries, tPhone) =>
 	yup.object({
 		name: yup.string().trim().required(t("validation.nameRequired")).max(120, t("validation.nameMax")),
 		address: yup.string().trim().nullable().max(200, t("validation.addressMax")),
@@ -506,7 +506,7 @@ const makeSchema = (t, countries) =>
 		phoneCountry: yup.string().required(),
 		phoneNumber: yup.string().test("phone-valid", t("validation.phoneInvalid"), function (value) {
 			const country = countries.find((c) => c.key === this.parent.phoneCountry) || countries[0];
-			const error = validatePhone(value, country);
+			const error = validatePhone(value, country,tPhone);
 			return !error;
 		}),
 
@@ -517,19 +517,19 @@ const makeSchema = (t, countries) =>
 			.test("phone-valid", t("validation.phoneInvalid"), function (value) {
 				if (!value) return true;
 				const country = countries.find((c) => c.key === this.parent.secondPhoneCountry) || countries[0];
-				const error = validatePhone(value, country);
+				const error = validatePhone(value, country, tPhone);
 				return !error;
 			}),
 
 		email: yup.string().trim().nullable().email(t("validation.emailInvalid")).max(100, t("validation.emailMax")),
-		categoryIds: yup.array().of(yup.number()).min(1, t("validation.categoryRequired")),
+		categoryIds: yup.array().of(yup.string()).min(1, t("validation.categoryRequired")),
 	});
 
 function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess, t, countries }) {
 	const [categories, setCategories] = useState([]);
 	const [loadingCategories, setLoadingCategories] = useState(false);
-
-	const schema = useMemo(() => makeSchema(t, countries), [t, countries]);
+	const tPhone = useTranslations("inputPhone");
+	const schema = useMemo(() => makeSchema(t, countries, tPhone), [t, countries, tPhone]);
 
 	const {
 		control,
@@ -555,7 +555,7 @@ function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess, t, countr
 	});
 
 	const selectedCategories = watch("categoryIds") || [];
-
+	console.log(errors)
 	useEffect(() => {
 		(async () => {
 			setLoadingCategories(true);

@@ -325,7 +325,7 @@ export function BundleViewModal({ open, onOpenChange, bundle, viewLoading }) {
                           <div className="text-base font-semibold text-slate-900 dark:text-slate-100 truncate">
                             {bundle.variant.product?.name || na}
                           </div>
-                          <div className="flex items-center gap-2 mt-1">
+                          <div className="flex items-center flex-wrap   gap-2 mt-1">
                             <Badge variant="outline" className="font-mono text-[10px] py-0 h-5 border-primary/30 text-primary dark:text-primary/90">
                               {bundle.variant.sku}
                             </Badge>

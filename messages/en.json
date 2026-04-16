@@ -361,6 +361,8 @@
     "dashboard": "Dashboard",
     "orders": "Orders",
     "employeeOrders": "Employee Orders",
+    "newPurchase": "New Purchase",
+    "newPurchaseReturn": "New Purchase Return",
     "createPurchaseReturn": "Create Purchase Return",
     "products": "Products",
     "newProduct": "New Product",
@@ -2935,6 +2937,7 @@
       "safe": "Safe"
     },
     "placeholders": {
+      "none": "None",
       "returnNumber": "Enter return number",
       "supplierName": "Select supplier",
       "invoiceNumber": "Enter invoice number",
@@ -2993,7 +2996,8 @@
     },
     "upload": {
       "receiptAlt": "invoice"
-    }
+    },
+    "current_price": "Current price"
   },
   "salesInvoices": {
     "breadcrumb": {
@@ -3143,6 +3147,7 @@
       "hasInvoice": "Has Purchase Invoice?",
       "invoiceInfo": "Purchase Invoice Details",
       "supplier": "Supplier",
+      "noSupplier": "No Supplier",
       "supplierPlaceholder": "Select Supplier",
       "invoiceNumber": "Invoice Number",
       "safe": "Safe",
@@ -3650,7 +3655,7 @@
     }
   },
   "validation": {
-    "imageOrPDF": "Only image or PDF files are allowed",
+    "noDecimalsAllowed": "Value must be a whole number (no decimals allowed)",
     "fileTooLargeMB": "File size must be less than {MB} MB",
     "fileTooLarge": "File too large",
     "quantityExceedsAvailable": "Quantity must not exceed available quantity",
@@ -3685,10 +3690,12 @@
     },
     "toolbar": {
       "searchPlaceholder": "Search purchases...",
-      "filter": "Filter"
+      "filter": "Filter",
+      "export": "export"
     },
     "filters": {
       "supplier": "Supplier",
+      "noSupplier": "No Supplier",
       "supplierPlaceholder": "Select supplier",
       "status": "Status",
       "statusPlaceholder": "Select status",
@@ -3817,7 +3824,8 @@
       "fetchDetailsFailed": "Failed to load invoice details",
       "statsFailed": "Failed to load purchase statistics",
       "logsFailed": "Failed to load audit logs",
-      "updatingStatus": "Updating status..."
+      "updatingStatus": "Updating status...",
+      "exportFailed": "Export failed"
     },
     "empty": "No purchase invoices found",
     "currency": "EGP"
@@ -3858,6 +3866,9 @@
       "close": "Close"
     },
     "stats": {
+      "acceptedInvoices": "Accepted Invoices",
+      "pendingInvoices": "Pending Invoices",
+      "rejectedInvoices": "Rejected Invoices",
       "returnInvoicesCount": "Return Invoices Count",
       "totalReturnValue": "Total Return Value"
     },
@@ -3881,8 +3892,15 @@
       "returnTypeDeduct": "Deduct from Supplier Balance",
       "supplier": "Supplier",
       "supplierPlaceholder": "Select Supplier",
-      "all": "All Suppliers",
-      "apply": "Apply"
+      "all": "All",
+      "apply": "Apply",
+      "dateRange": "Date Range",
+      "selectDateRange": "Select date range",
+      "hasReceipt": "Has Receipt",
+      "hasReceiptPlaceholder": "Select status",
+      "yes": "Yes",
+      "no": "No",
+      "noSupplier": "No Supplier"
     },
     "table": {
       "createdAt": "Created At",
@@ -3975,6 +3993,7 @@
     },
     "empty": "No purchase returns found",
     "messages": {
+      "exportError": "Export failed",
       "statsError": "Failed to load statistics",
       "returnsError": "Failed to load returns data",
       "statusUpdated": "Return status updated successfully",
@@ -4018,7 +4037,8 @@
       "supplierName": "Select supplier",
       "receiptNumber": "Enter receipt number",
       "safe": "Select safe",
-      "notes": "Enter additional notes"
+      "notes": "Enter additional notes",
+      "none": "None"
     },
     "options": {
       "safe": {
@@ -4041,7 +4061,8 @@
       "unitCost": "Unit Cost",
       "quantityCount": "Quantity",
       "invoiceTotal": "Invoice Total",
-      "actions": "Actions"
+      "actions": "Actions",
+      "available": "Available"
     },
     "upload": {
       "receiptAlt": "Receipt Image"

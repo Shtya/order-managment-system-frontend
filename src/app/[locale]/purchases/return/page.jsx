@@ -68,6 +68,7 @@ import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { baseImg } from "@/utils/axios";
 import { Bone } from "@/components/atoms/BannerSkeleton";
 import { avatarSrc } from "@/components/atoms/UserSelect";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
 
 const isImagePath = (p) => !!p && /\.(png|jpg|jpeg|webp|gif)$/i.test(p);
 const isPdfPath = (p) => !!p && /\.pdf$/i.test(p);
@@ -130,7 +131,14 @@ export default function PurchasesReturnPage() {
 
 	const [search, setSearch] = useState("");
 	const [filtersOpen, setFiltersOpen] = useState(false);
-	const [filters, setFilters] = useState({ status: "all", returnType: "all", supplierId: "none" });
+	const [filters, setFilters] = useState({
+		status: "all",
+		returnType: "all",
+		supplierId: "all",
+		startDate: null,
+		endDate: null,
+		hasReceipt: "all",
+	});
 	const [loading, setLoading] = useState(false);
 	const [suppliers, setSuppliers] = useState([]);
 
@@ -203,21 +211,35 @@ export default function PurchasesReturnPage() {
 	const statsCards = useMemo(
 		() => [
 			{
-				name: t("stats.returnInvoicesCount"),
-				value: String(stats.returnInvoicesCount ?? 0),
-				icon: RotateCcw,
-				color: "#6B7CFF", // blue
+				name: t("stats.acceptedInvoices"),
+				value: String(stats.accepted ?? 0),
+				icon: CheckCircle,
+				color: "#22C55E",
 				sortOrder: 0,
 			},
 			{
-				name: t("stats.totalReturnValue"),
-				value: formatCurrency(stats.totalReturnValue ?? 0),
-				icon: TrendingDown,
-				color: "#EF4444",
+				name: t("stats.pendingInvoices"),
+				value: String(stats.pending ?? 0),
+				icon: Clock,
+				color: "#F59E0B",
 				sortOrder: 1,
 			},
+			{
+				name: t("stats.rejectedInvoices"),
+				value: String(stats.rejected ?? 0),
+				icon: XCircle,
+				color: "#EF4444",
+				sortOrder: 2,
+			},
+			// {
+			// 	name: t("stats.totalReturnValue"),
+			// 	value: formatCurrency(stats.totalReturnValue ?? 0),
+			// 	icon: TrendingDown,
+			// 	color: "#6B7CFF",
+			// 	sortOrder: 3,
+			// },
 		],
-		[t, stats]
+		[t, stats, formatCurrency]
 	);
 
 	// Fetch stats
@@ -257,8 +279,17 @@ export default function PurchasesReturnPage() {
 			if (filters.returnType && filters.returnType !== "all") {
 				params.returnType = filters.returnType;
 			}
-			if (filters.supplierId && filters.supplierId !== "none") {
+			if (filters.supplierId && filters.supplierId !== "all") {
 				params.supplierId = filters.supplierId;
+			}
+			if (filters.startDate) {
+				params.startDate = filters.startDate;
+			}
+			if (filters.endDate) {
+				params.endDate = filters.endDate;
+			}
+			if (filters.hasReceipt && filters.hasReceipt !== "all") {
+				params.hasReceipt = filters.hasReceipt;
 			}
 
 			const res = await api.get("/purchases-return", { params });
@@ -322,9 +353,35 @@ export default function PurchasesReturnPage() {
 		return (
 			(filters.status && filters.status !== "all") ||
 			(filters.returnType && filters.returnType !== "all") ||
-			(filters.supplierId && filters.supplierId !== "none")
+			(filters.supplierId && filters.supplierId !== "all") ||
+			Boolean(filters.startDate) ||
+			Boolean(filters.endDate) ||
+			(filters.hasReceipt && filters.hasReceipt !== "all")
 		);
 	}, [filters]);
+
+	const handleExport = async () => {
+		try {
+			const params = {
+				search,
+				...filters,
+			};
+			const res = await api.get("/purchases-return/export", {
+				params,
+				responseType: "blob",
+			});
+			const url = window.URL.createObjectURL(new Blob([res.data]));
+			const link = document.createElement("a");
+			link.href = url;
+			link.setAttribute("download", `Purchase_Returns_${Date.now()}.xlsx`);
+			document.body.appendChild(link);
+			link.click();
+			link.remove();
+		} catch (error) {
+			console.error(error);
+			toast.error(t("messages.exportError"));
+		}
+	};
 
 
 	const columns = useMemo(() => {
@@ -461,7 +518,7 @@ export default function PurchasesReturnPage() {
 							</Button>
 						</DropdownMenuTrigger>
 
-						<DropdownMenuContent align="start" className="w-56 bg-card-select p-2 rounded-2xl border-2 border-border shadow-2xl">
+						<DropdownMenuContent align="start" className="w-56">
 							<DropdownMenuItem onClick={() => fetchInvoiceDetails(row.id)} className="flex items-center gap-2 cursor-pointer rounded-xl hover:bg-primary/5 transition-colors" permission="purchase_returns.read">
 								<Eye size={16} className="text-blue-600" />
 								<span>{t("actions.view")}</span>
@@ -561,7 +618,7 @@ export default function PurchasesReturnPage() {
 						label: t("toolbar.export"),
 						icon: <FileDown size={14} />,
 						color: "primary",
-						onClick: () => console.log("export"),
+						onClick: handleExport,
 						permission: "purchase_returns.read",
 					},
 				]}
@@ -569,6 +626,26 @@ export default function PurchasesReturnPage() {
 				onApplyFilters={applyFilters}
 				filters={
 					<>
+						<FilterField label={t("filters.supplier")}>
+							<Select
+								value={filters.supplierId}
+								onValueChange={(v) => setFilters((f) => ({ ...f, supplierId: v }))}
+							>
+								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+									<SelectValue placeholder={t("filters.supplierPlaceholder")} />
+								</SelectTrigger>
+								<SelectContent className="bg-card-select">
+									<SelectItem value="all">{t("filters.all")}</SelectItem>
+									<SelectItem value="none">{t("filters.noSupplier")}</SelectItem>
+									{suppliers.map((s) => (
+										<SelectItem key={s.id} value={String(s.id)}>
+											{s.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</FilterField>
+
 						<FilterField label={t("filters.status")}>
 							<Select
 								value={filters.status}
@@ -582,6 +659,40 @@ export default function PurchasesReturnPage() {
 									<SelectItem value="pending">{t("filters.statusPending")}</SelectItem>
 									<SelectItem value="accepted">{t("filters.statusApproved")}</SelectItem>
 									<SelectItem value="rejected">{t("filters.statusRejected")}</SelectItem>
+								</SelectContent>
+							</Select>
+						</FilterField>
+
+						<FilterField label={t("filters.dateRange")}>
+							<DateRangePicker
+								value={{
+									startDate: filters.startDate,
+									endDate: filters.endDate,
+								}}
+								onChange={(newDates) =>
+									setFilters((prev) => ({
+										...prev,
+										...newDates,
+									}))
+								}
+								placeholder={t("filters.selectDateRange")}
+								dataSize="default"
+								maxDate="today"
+							/>
+						</FilterField>
+
+						<FilterField label={t("filters.hasReceipt")}>
+							<Select
+								value={filters.hasReceipt}
+								onValueChange={(v) => setFilters((f) => ({ ...f, hasReceipt: v }))}
+							>
+								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+									<SelectValue placeholder={t("filters.hasReceiptPlaceholder")} />
+								</SelectTrigger>
+								<SelectContent className="bg-card-select">
+									<SelectItem value="all">{t("filters.all")}</SelectItem>
+									<SelectItem value="yes">{t("filters.yes")}</SelectItem>
+									<SelectItem value="no">{t("filters.no")}</SelectItem>
 								</SelectContent>
 							</Select>
 						</FilterField>
@@ -603,24 +714,7 @@ export default function PurchasesReturnPage() {
 							</Select>
 						</FilterField> */}
 
-						<FilterField label={t("filters.supplier")}>
-							<Select
-								value={filters.supplierId}
-								onValueChange={(v) => setFilters((f) => ({ ...f, supplierId: v }))}
-							>
-								<SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
-									<SelectValue placeholder={t("filters.supplierPlaceholder")} />
-								</SelectTrigger>
-								<SelectContent className="bg-card-select">
-									<SelectItem value="none">{t("filters.all")}</SelectItem>
-									{suppliers.map((s) => (
-										<SelectItem key={s.id} value={String(s.id)}>
-											{s.name}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</FilterField>
+
 					</>
 				}
 				columns={columns}
@@ -1323,6 +1417,8 @@ export function DetailsModal({ isOpen, onClose, invoice, isLoading, formatCurren
 function DetailsModalSkeleton() {
 	return (
 		<div className="space-y-6 animate-pulse">
+
+			{/* Header */}
 			<div className="border-b-2 border-border pb-4 space-y-3">
 				<div className="flex items-center gap-3">
 					<Bone className="w-12 h-12 rounded-xl" />
@@ -1332,11 +1428,83 @@ function DetailsModalSkeleton() {
 					</div>
 				</div>
 			</div>
-			<div className="grid grid-cols-4 gap-4">
-				{[1, 2, 3, 4].map(i => <Bone key={i} className="h-20 rounded-xl" />)}
+
+			{/* Info Grid */}
+			<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+				{Array.from({ length: 4 }).map((_, i) => (
+					<div
+						key={i}
+						className="p-4 rounded-xl border border-border/40 bg-muted/20 space-y-2"
+					>
+						<Bone className="h-3 w-16" />
+						<Bone className="h-4 w-24" />
+					</div>
+				))}
 			</div>
-			<Bone className="h-40 rounded-xl" />
-			<Bone className="h-32 rounded-xl" />
+
+			{/* Items Section */}
+			<div className="space-y-3">
+				<Bone className="h-5 w-40" />
+
+				<div className="rounded-xl border border-border/30 overflow-hidden">
+					{/* Table Header */}
+					<div className="bg-muted/30 px-4 py-3 flex justify-between">
+						<Bone className="h-3 w-20" />
+						<Bone className="h-3 w-24" />
+						<Bone className="h-3 w-16" />
+						<Bone className="h-3 w-16" />
+						<Bone className="h-3 w-20" />
+					</div>
+
+					{/* Table Rows */}
+					{Array.from({ length: 3 }).map((_, i) => (
+						<div
+							key={i}
+							className="grid grid-cols-5 gap-4 px-4 py-4 border-t border-border/20"
+						>
+							<Bone className="h-4 w-16" />
+							<Bone className="h-4 w-28" />
+							<Bone className="h-4 w-16" />
+							<Bone className="h-4 w-12 mx-auto" />
+							<Bone className="h-4 w-20" />
+						</div>
+					))}
+				</div>
+			</div>
+
+			{/* Summary */}
+			<div className="p-6 rounded-xl border border-primary/20 bg-primary/5 space-y-4">
+				<div className="flex justify-between">
+					<Bone className="h-4 w-28" />
+					<Bone className="h-4 w-20" />
+				</div>
+				<div className="flex justify-between">
+					<Bone className="h-4 w-32" />
+					<Bone className="h-4 w-20" />
+				</div>
+				<div className="flex justify-between pt-3 border-t border-primary/20">
+					<Bone className="h-5 w-36" />
+					<Bone className="h-6 w-24" />
+				</div>
+			</div>
+
+			{/* Receipt */}
+			<div className="space-y-3">
+				<Bone className="h-5 w-40" />
+				<Bone className="h-40 w-full rounded-xl" />
+			</div>
+
+			{/* Notes */}
+			<div className="p-4 rounded-xl border border-border/40 space-y-2">
+				<Bone className="h-3 w-20" />
+				<Bone className="h-4 w-full" />
+				<Bone className="h-4 w-5/6" />
+			</div>
+
+			{/* Footer */}
+			<div className="border-t-2 border-border pt-4 flex justify-end">
+				<Bone className="h-10 w-28 rounded-xl" />
+			</div>
 		</div>
 	);
 }

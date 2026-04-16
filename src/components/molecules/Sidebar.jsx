@@ -551,7 +551,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       roles: ["ADMIN"],
       permission: "warehouses.read",
       children: [
-        ...(shippingCompanies?.length !== 1? [{
+        ...(shippingCompanies?.length !== 1 ? [{
           icon: Truck,
           labelKey: "warehouseDistribution",
           href: "/warehouse?tab=distribution",
@@ -625,7 +625,9 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       permission: "purchases.read",
       children: [
         { icon: FileText, labelKey: "purchases", href: "/purchases" },
+        { icon: PackagePlus, labelKey: "newPurchase", href: "/purchases/new" },
         { icon: Undo2, labelKey: "purchasesReturn", href: "/purchases/return" },
+        { icon: PackagePlus, labelKey: "newPurchaseReturn", href: "/purchases/return/new" },
       ],
     },
 

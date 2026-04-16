@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, X, Upload, Trash2, FileText, Tag, Info, Save } from "lucide-react";
+import { ChevronLeft, X, Upload, Trash2, FileText, Tag, Info, Save, Package } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -20,6 +20,7 @@ import toast from "react-hot-toast";
 import { ProductSkuSearchPopover } from "../../../../components/molecules/ProductSkuSearchPopover";
 import PageHeader from "@/components/atoms/Pageheader";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { Textarea } from "@/components/ui/textarea";
 
 
 export default function CreatePurchaseInvoicePage() {
@@ -39,7 +40,7 @@ export default function CreatePurchaseInvoicePage() {
 	const schema = useMemo(
 		() =>
 			yup.object({
-				supplierId: yup.string().required(tValidation("supplierRequired")),
+				supplierId: yup.string().optional().nullable(),
 				receiptNumber: yup.string().required(tValidation("receiptNumberRequired")),
 				safeId: yup.string().required(tValidation("safeRequired")),
 				notes: yup.string().optional(),
@@ -62,7 +63,8 @@ export default function CreatePurchaseInvoicePage() {
 							variantId: yup.string().required(tValidation("productRequired")),
 							quantity: yup
 								.number()
-								.transform((v, o) => Number(o))
+								.transform((v, o) => (o === "" || o === null || o === undefined ? 0 : Number(o)))
+								.integer(tValidation("noDecimalsAllowed"))
 								.min(1, tValidation("quantityMinimum"))
 								.required(tValidation("quantityRequired")),
 							purchaseCost: yup
@@ -100,6 +102,8 @@ export default function CreatePurchaseInvoicePage() {
 		}
 	});
 
+	console.log(errors)
+
 	const watchedItems = watch("items");
 	const watchedPaidAmount = watch("paidAmount");
 
@@ -128,7 +132,7 @@ export default function CreatePurchaseInvoicePage() {
 		}
 
 		if (file.size > MAX_RECEIPT_MB * 1024 * 1024) {
-			toast.error(tValidation("fileTooLarge") || "File too large");
+			toast.error(tValidation("fileTooLargeMB", { MB: 5 }) || "File too large");
 			return;
 		}
 
@@ -183,12 +187,14 @@ export default function CreatePurchaseInvoicePage() {
 		const newItem = {
 			variantId: sku.id,
 			quantity: 1,
-			purchaseCost: 0,
+			purchaseCost: sku.price,
 			sku: sku.sku,
-			productName: sku.label || sku.productName,
+			availableQuantity: sku.available || 0,
+			productName: sku.name,
 			price: sku.price,
 			attributes: sku.attributes || {},
 		};
+
 
 		setValue("items", [...(watchedItems ?? []), newItem]);
 	};
@@ -205,7 +211,10 @@ export default function CreatePurchaseInvoicePage() {
 			const fd = new FormData();
 
 			fd.append("receiptNumber", data.receiptNumber);
-			fd.append("supplierId", String(data.supplierId));
+			// fd.append("supplierId", String(data.supplierId));
+			if (data.supplierId && data.supplierId !== "none") {
+				fd.append("supplierId", String(data.supplierId));
+			}
 			fd.append("safeId", String(data.safeId));
 
 			if (data.notes) fd.append("notes", data.notes);
@@ -300,7 +309,7 @@ export default function CreatePurchaseInvoicePage() {
 			/>
 
 			<form onSubmit={handleSubmit(onSubmit)}>
-				<div className="flex max-md:flex-col gap-6">
+				<div className="flex max-lg:flex-col gap-6">
 					<div className="flex-1 space-y-6">
 						{/* Form Fields */}
 						<motion.div
@@ -323,6 +332,7 @@ export default function CreatePurchaseInvoicePage() {
 													<SelectValue placeholder={t("placeholders.supplierName")} />
 												</SelectTrigger>
 												<SelectContent>
+													<SelectItem value="none">{t("placeholders.none") || "None"}</SelectItem>
 													{suppliers.map((c) => (
 														<SelectItem key={c.id} value={String(c.id)}>
 															{c.name}
@@ -383,22 +393,29 @@ export default function CreatePurchaseInvoicePage() {
 									)}
 								</div>
 
-								<div className="space-y-2">
-									<Label className="text-sm text-gray-600 dark:text-slate-300">
-										{t("sections.notes")}
-									</Label>
-									<Controller
-										name="notes"
-										control={control}
-										render={({ field }) => (
-											<Input
-												{...field}
-												placeholder={t("placeholders.notes")}
-											/>
-										)}
-									/>
-								</div>
 							</div>
+						</motion.div>
+
+						<motion.div
+							className="main-card"
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 0.35 }}
+						>
+							<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
+								{t("sections.notes")}
+							</h3>
+							<Controller
+								name="notes"
+								control={control}
+								render={({ field }) => (
+									<Textarea
+										{...field}
+										placeholder={t("placeholders.notes")}
+										className="min-h-[100px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 rounded-xl"
+									/>
+								)}
+							/>
 						</motion.div>
 
 						{/* Add Products */}
@@ -412,78 +429,80 @@ export default function CreatePurchaseInvoicePage() {
 								{t("sections.addProducts")}
 							</h3>
 
-							<ProductSkuSearchPopover handleSelectSku={handleSelectSku} selectedSkus={selectSku} />
+							<ProductSkuSearchPopover handleSelectSku={handleSelectSku} selectedSkus={selectSku} closeOnSelect={false} />
 							{errors.items && (
 								<p className="text-xs text-red-500 mt-2">{errors.items.message}</p>
 							)}
 						</motion.div>
 
 						{/* Products Table */}
-						{watchedItems.length > 0 && (
-							<motion.div
-								className="main-card"
-								initial={{ opacity: 0, y: 20 }}
-								animate={{ opacity: 1, y: 0 }}
-								transition={{ delay: 0.3 }}
-							>
-								<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
-									{t("sections.productsTable")}
-								</h3>
 
-								<div className="overflow-x-auto">
-									<table className="w-full">
-										<thead>
-											<tr className="border-b border-gray-200 dark:border-slate-700">
-												<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
-													{t("table.sku")}
-												</th>
-												<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
-													{t("table.name")}
-												</th>
-												<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
-													{t("table.unitCost")}
-												</th>
-												<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
-													{t("table.quantityCount")}
-												</th>
-												<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
-													{t("table.invoiceTotal")}
-												</th>
-												<th className="text-center p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
-													{t("table.actions")}
-												</th>
-											</tr>
-										</thead>
-										<tbody>
-											{watchedItems.map((product, index) => {
-												const unitCost = parseFloat(product.purchaseCost) || 0;
-												const quantity = parseFloat(product.quantity) || 0;
-												const invoiceTotal = unitCost * quantity;
+						<motion.div
+							className="main-card"
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 0.3 }}
+						>
+							<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
+								{t("sections.productsTable")}
+							</h3>
 
-												return (
-													<>
+							<div className="overflow-x-auto">
+								<table className="w-full">
+									<thead>
+										<tr className="border-b border-gray-200 dark:border-slate-700">
+											<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
+												{t("table.sku")}
+											</th>
+											<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
+												{t("table.name")}
+											</th>
+											<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
+												{t("table.unitCost")}
+											</th>
+											<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
+												{t("table.quantityCount")}
+											</th>
+											<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
+												{t("table.invoiceTotal")}
+											</th>
+											<th className="text-center p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
+												{t("table.actions")}
+											</th>
+										</tr>
+									</thead>
+									<tbody>
+										{watchedItems.map((product, index) => {
+											const unitCost = parseFloat(product.purchaseCost) || 0;
+											const quantity = parseFloat(product.quantity) || 0;
+											const invoiceTotal = unitCost * quantity;
 
 
-														<tr
-															key={index}
-															className="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors"
-														>
-															<td className="p-3 text-sm text-gray-600 dark:text-slate-300">
-																{product.sku}
-															</td>
-															<td className="p-3 text-sm font-semibold text-gray-700 dark:text-slate-200">
-																{product.productName}
-																{Object.keys(product.attributes || {}).length > 0 && (
-																	<div className="text-xs text-gray-500 font-normal mt-1">
-																		{Object.entries(product.attributes).map(([key, value]) => (
-																			<span key={key} className="mr-2">
-																				{key}: {value}
-																			</span>
-																		))}
-																	</div>
-																)}
-															</td>
-															<td className="p-3">
+											return (
+												<>
+
+
+													<tr
+														key={index}
+														className="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors"
+													>
+														<td className="p-3 text-sm text-gray-600 dark:text-slate-300">
+															{product.sku}
+														</td>
+														<td className="p-3 text-sm font-semibold text-gray-700 dark:text-slate-200">
+															{product.productName}
+															{Object.keys(product.attributes || {}).length > 0 && (
+																<div className="text-xs text-gray-500 font-normal mt-1">
+																	{Object.entries(product.attributes).map(([key, value]) => (
+																		<span key={key} className="mr-2">
+																			{key}: {value}
+																		</span>
+																	))}
+																</div>
+															)}
+														</td>
+														<td className="p-3">
+															<div className="flex flex-col gap-1">
 																<div className="flex items-center gap-3">
 																	{/* Purchase Cost Input */}
 																	<Input
@@ -492,7 +511,7 @@ export default function CreatePurchaseInvoicePage() {
 																		onChange={(e) =>
 																			handleProductFieldChange(index, "purchaseCost", e.target.value)
 																		}
-																		className="h-8 w-24"
+																		className={cn("h-8 w-24", errors.items?.[index]?.purchaseCost && "border-red-500")}
 																		min="0"
 
 																	/>
@@ -503,54 +522,68 @@ export default function CreatePurchaseInvoicePage() {
 																		<span className="font-medium">{formatCurrency(product.price)}</span>
 																		<span className="text-xs text-gray-400">({t("current_price")})</span>
 																	</div>
-
 																</div>
-															</td>
+																{errors.items?.[index]?.purchaseCost && (
+																	<span className="text-[10px] text-red-500 font-medium">
+																		{errors.items[index].purchaseCost.message}
+																	</span>
+																)}
+															</div>
+														</td>
 
-															<td className="p-3">
-																<Input
-																	type="number"
-																	value={product.quantity}
-																	onChange={(e) =>
-																		handleProductFieldChange(index, "quantity", e.target.value)
-																	}
-																	className="h-8 w-20"
-																	min="1"
-																/>
-															</td>
-															<td className="p-3 text-sm font-semibold text-green-600 dark:text-green-400">
-																{formatCurrency(invoiceTotal)}
-															</td>
-															<td className="p-3 text-center">
-																<motion.button
-																	type="button"
-																	whileHover={{ scale: 1.1 }}
-																	whileTap={{ scale: 0.9 }}
-																	onClick={() => handleDeleteProduct(index)}
-																	className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
-																>
-																	<Trash2 size={16} />
-																</motion.button>
-															</td>
-														</tr>
-														{errors.items?.[index]?.purchaseCost && (
-															<span className="text-xs text-red-500 font-medium mt-1">
-																{errors.items[index].purchaseCost.message}
-															</span>
-														)}
-													</>
+														<td className="p-3">
+															<div className="flex flex-col gap-1">
+																<div className="flex items-center gap-3">
+																	<Input
+																		type="number"
+																		value={product.quantity}
+																		onChange={(e) =>
+																			handleProductFieldChange(index, "quantity", e.target.value)
+																		}
+																		className={cn("h-8 w-20", errors.items?.[index]?.quantity && "border-red-500")}
+																		min="1"
+																	/>
+																	<div className="flex items-center gap-1 text-sm text-gray-600">
+																		<Package size={14} className="text-green-600" />
+																		<span className="font-medium">{product.availableQuantity}</span>
+																		<span className="text-xs text-gray-400">({t("table.available")})</span>
+																	</div>
+																</div>
+																{errors.items?.[index]?.quantity && (
+																	<span className="text-[10px] text-red-500 font-medium">
+																		{errors.items[index].quantity.message}
+																	</span>
+																)}
+															</div>
+														</td>
+														<td className="p-3 text-sm font-semibold text-green-600 dark:text-green-400">
+															{formatCurrency(invoiceTotal)}
+														</td>
+														<td className="p-3 text-center">
+															<motion.button
+																type="button"
+																whileHover={{ scale: 1.1 }}
+																whileTap={{ scale: 0.9 }}
+																onClick={() => handleDeleteProduct(index)}
+																className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
+															>
+																<Trash2 size={16} />
+															</motion.button>
+														</td>
+													</tr>
+												</>
 
-												);
-											})}
-										</tbody>
-									</table>
-								</div>
-							</motion.div>
-						)}
+											);
+										})}
+									</tbody>
+								</table>
+							</div>
+						</motion.div>
+
 					</div>
 
 					{/* Right Column - Summary */}
-					<div className="w-full space-y-4 md:max-w-[350px]">
+					<div className="w-full space-y-4 lg:max-w-[350px]">
 						<ReceiptImageUpload
 							image={receiptImage}
 							onImageChange={handleImageUpload}

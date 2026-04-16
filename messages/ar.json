@@ -361,6 +361,8 @@
     "dashboard": "لوحة التحكم",
     "orders": "الطلبات",
     "employeeOrders": "طلبات الموظفين",
+    "newPurchase": "شراء جديد",
+    "newPurchaseReturn": "مرتجع شراء جديد",
     "createPurchaseReturn": "إنشاء مرتجع شراء",
     "products": "المنتجات",
     "newProduct": "منتج جديد",
@@ -2884,6 +2886,7 @@
       "returnTypeBank": "تحويل بنكي",
       "returnTypeDeduct": "خصم من حساب المورد",
       "supplier": "المورد",
+      "noSupplier": "بدون مورد",
       "supplierPlaceholder": "اختر المورد",
       "apply": "تطبيق",
       "all": "الكل"
@@ -2935,6 +2938,7 @@
       "safe": "الخزنة"
     },
     "placeholders": {
+      "none": "بدون",
       "returnNumber": "أدخل رقم الإرجاع",
       "supplierName": "اختر المورد",
       "invoiceNumber": "أدخل رقم الفاتورة",
@@ -2993,7 +2997,8 @@
     },
     "upload": {
       "receiptAlt": "فاتورة"
-    }
+    },
+    "current_price": "السعر الحالي"
   },
   "salesInvoices": {
     "breadcrumb": {
@@ -3650,6 +3655,7 @@
     }
   },
   "validation": {
+    "noDecimalsAllowed": "يجب أن يكون الرقم صحيحاً (لا يسمح بالكسور العشرية)",
     "imageOrPDF": "يسمح فقط بملفات الصور أو PDF",
     "fileTooLargeMB": "يجب أن يكون حجم الملف أقل من {MB} ميجابايت",
     "fileTooLarge": "حجم الملف كبير",
@@ -3685,10 +3691,12 @@
     },
     "toolbar": {
       "searchPlaceholder": "البحث في المشتريات...",
-      "filter": "تصفية"
+      "filter": "تصفية",
+      "export": "تصدير"
     },
     "filters": {
       "supplier": "المورد",
+      "noSupplier": "بدون مورد",
       "supplierPlaceholder": "اختر المورد",
       "status": "الحالة",
       "statusPlaceholder": "اختر الحالة",
@@ -3817,7 +3825,8 @@
       "fetchDetailsFailed": "فشل في تحميل تفاصيل الفاتورة",
       "statsFailed": "فشل في تحميل إحصائيات المشتريات",
       "logsFailed": "فشل في تحميل سجلات التدقيق",
-      "updatingStatus": "جاري تحديث الحالة..."
+      "updatingStatus": "جاري تحديث الحالة...",
+      "exportFailed": "فشل التصدير"
     },
     "empty": "لا توجد فواتير مشتريات",
     "currency": "ج.م"
@@ -3858,6 +3867,9 @@
       "close": "إغلاق"
     },
     "stats": {
+      "acceptedInvoices": "الفواتير المقبولة",
+      "pendingInvoices": "الفواتير قيد الانتظار",
+      "rejectedInvoices": "الفواتير المرفوضة",
       "returnInvoicesCount": "عدد فواتير المرتجع",
       "totalReturnValue": "إجمالي قيمة المرتجعات"
     },
@@ -3881,8 +3893,15 @@
       "returnTypeDeduct": "خصم من رصيد المورد",
       "supplier": "المورد",
       "supplierPlaceholder": "اختر المورد",
-      "all": "كل الموردين",
-      "apply": "تطبيق"
+      "all": "الكل",
+      "apply": "تطبيق",
+      "dateRange": "نطاق التاريخ",
+      "selectDateRange": "اختر نطاق التاريخ",
+      "hasReceipt": "يوجد إيصال",
+      "hasReceiptPlaceholder": "اختر الحالة",
+      "yes": "نعم",
+      "no": "لا",
+      "noSupplier": "بدون مورد"
     },
     "table": {
       "createdAt": "تاريخ الإنشاء",
@@ -3975,6 +3994,7 @@
     },
     "empty": "لا توجد مرتجعات مشتريات",
     "messages": {
+      "exportError": "فشل التصدير",
       "statsError": "فشل في تحميل الإحصائيات",
       "returnsError": "فشل في تحميل بيانات المرتجعات",
       "statusUpdated": "تم تحديث حالة المرتجع بنجاح",
@@ -4018,7 +4038,8 @@
       "supplierName": "اختر المورد",
       "receiptNumber": "أدخل رقم الإيصال",
       "safe": "اختر الخزنة",
-      "notes": "أدخل ملاحظات إضافية"
+      "notes": "أدخل ملاحظات إضافية",
+      "none": "بدون"
     },
     "options": {
       "safe": {
@@ -4041,7 +4062,8 @@
       "unitCost": "تكلفة القطعة",
       "quantityCount": "عدد القطع",
       "invoiceTotal": "إجمالي الفاتورة",
-      "actions": "الإجراءات"
+      "actions": "الإجراءات",
+      "available": "المتاح"
     },
     "upload": {
       "receiptAlt": "صورة الإيصال"

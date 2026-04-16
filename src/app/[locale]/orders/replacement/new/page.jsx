@@ -61,7 +61,6 @@ import {
 import { ProductSkuSearchPopover } from "@/components/molecules/ProductSkuSearchPopover";
 import { Button } from "@/components/ui/button";
 import api from "@/utils/api";
-import { ImageUploadBox } from "@/app/[locale]/products/new/page";
 import Button_ from "@/components/atoms/Button";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { BreadcrumbBar } from "@/components/atoms/Breadcrumb";
@@ -70,6 +69,7 @@ import Img from "@/components/atoms/Img";
 import PageHeader from "@/components/atoms/Pageheader";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { ImageUploadBox } from "@/components/atoms/ImageUploadBox";
 
 let _imgIdCounter = 0;
 function makeId() {

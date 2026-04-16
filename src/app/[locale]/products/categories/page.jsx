@@ -33,6 +33,8 @@ import { useSlugify } from "@/components/atoms/SlugInput";
 import { useAuth } from "@/context/AuthContext";
 import { baseImg } from "@/utils/axios";
 import { Badge } from "@/components/ui/badge";
+import { ImageUploadBox, makeId } from "@/components/atoms/ImageUploadBox";
+import { avatarSrc } from "@/components/atoms/UserSelect";
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -75,10 +77,12 @@ function ConfirmDialog({ open, onOpenChange, title, description, confirmText, ca
 	);
 }
 
-function CategoryFormDialog({ open, onOpenChange, category, onSuccess, t }) {
+function CategoryFormDialog({ open, onOpenChange, category, onSuccess }) {
+	const t = useTranslations("categories");
 	const schema = useMemo(() => createCategorySchema(t), [t]);
 	const { user } = useAuth();
 	const [slugStatus, setSlugStatus] = useState(null);
+	const [imageFiles, setImageFiles] = useState([]);
 
 	const {
 		register,
@@ -99,8 +103,19 @@ function CategoryFormDialog({ open, onOpenChange, category, onSuccess, t }) {
 	useEffect(() => {
 		if (category) {
 			reset({ name: category.name ?? "", slug: category.slug ?? "" });
+			if (category.image) {
+				setImageFiles([{
+					id: makeId(),
+					url: category.image,
+					isExisting: true,
+					uploadStatus: 'success'
+				}]);
+			} else {
+				setImageFiles([]);
+			}
 		} else {
 			reset({ name: "", slug: "" });
+			setImageFiles([]);
 		}
 		setSlugStatus(null);
 	}, [category, reset, open]);
@@ -126,17 +141,26 @@ function CategoryFormDialog({ open, onOpenChange, category, onSuccess, t }) {
 
 	const onSubmit = async (values) => {
 		try {
+			const fd = new FormData();
+			fd.append('name', values.name);
+			fd.append('slug', values.slug);
+
+			// Handle image upload if there's a new file
+			const newFile = imageFiles.find(f => !f.isExisting && !f.isFromLibrary);
+			if (newFile) {
+				fd.append('image', newFile.file);
+			} else if (imageFiles.length === 0) {
+				fd.append('removeImage', 'true');
+			}
+
 			if (category?.id) {
-				await api.patch(`/categories/${category.id}`, {
-					name: values.name,
-					slug: values.slug,
+				await api.patch(`/categories/${category.id}`, fd, {
+					headers: { 'Content-Type': 'multipart/form-data' }
 				});
 				toast.success(t("toast.updated"));
 			} else {
-				await api.post("/categories", {
-					name: values.name,
-					slug: values.slug,
-					adminId: user?.id,
+				await api.post("/categories", fd, {
+					headers: { 'Content-Type': 'multipart/form-data' }
 				});
 				toast.success(t("toast.created"));
 			}
@@ -157,17 +181,33 @@ function CategoryFormDialog({ open, onOpenChange, category, onSuccess, t }) {
 					</DialogTitle>
 				</DialogHeader>
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pt-2">
-					<div className="space-y-2">
-						<Label className="text-sm font-semibold">{t("form.name")}</Label>
-						<Input {...register("name")} placeholder={t("form.namePlaceholder")} className="rounded-xl h-[50px]" />
-						{errors.name && <p className="text-xs text-red-600">{errors.name.message}</p>}
+					<div className="grid grid-cols-1  gap-6">
+						<div className="space-y-2">
+							<Label className="text-sm font-semibold">{t("form.name")}</Label>
+							<Input {...register("name")} placeholder={t("form.namePlaceholder")} className="rounded-xl h-[50px]" />
+							{errors.name && <p className="text-xs text-red-600">{errors.name.message}</p>}
+						</div>
+						<SlugInput errors={errors} register={register} name={name} slugStatus={slugStatus} slug={slug} setValue={setValue} className="h-[50px]" />
+
+						<div className="space-y-2">
+							<Label className="text-sm font-semibold">{t("form.image") || "Image"}</Label>
+							<ImageUploadBox
+								title={t("form.imageUpload") || "Category Image"}
+								files={imageFiles}
+								onFilesChange={setImageFiles}
+								multiple={false}
+								uploadMode="local"
+								className="h-full"
+							/>
+						</div>
 					</div>
-					<SlugInput errors={errors} register={register} name={name} slugStatus={slugStatus} slug={slug} setValue={setValue} className="h-[50px]" />
+
+
 					<div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
 						<Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting} className="rounded-xl">
 							{t("form.cancel")}
 						</Button>
-						<Button type="submit" disabled={isSubmitting} className="rounded-xl bg-primary hover:bg-primary/90">
+						<Button type="submit" disabled={isSubmitting || slugStatus === 'taken'} className="rounded-xl bg-primary hover:bg-primary/90">
 							{isSubmitting ? (
 								<>
 									<Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -186,6 +226,8 @@ function CategoryFormDialog({ open, onOpenChange, category, onSuccess, t }) {
 
 function ViewCategoryDialog({ open, onOpenChange, category, t }) {
 	if (!category) return null;
+
+
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="max-w-lg">
@@ -195,21 +237,30 @@ function ViewCategoryDialog({ open, onOpenChange, category, t }) {
 						{t("view.title")}
 					</DialogTitle>
 				</DialogHeader>
-				<div className="space-y-3">
-					<div>
-						<p className="text-xs text-muted-foreground">{t("view.name")}</p>
-						<p className="font-semibold">{category.name}</p>
+				<div className="flex gap-6">
+					<div className="w-32 h-32 rounded-xl border overflow-hidden flex items-center justify-center bg-primary/5 border-primary/20 shrink-0">
+						{avatarSrc(category?.image) ? (
+							<img src={avatarSrc(category?.image)} alt="" className="w-full h-full object-cover" />
+						) : (
+							<Layers size={32} className="text-primary" />
+						)}
 					</div>
-					<div>
-						<p className="text-xs text-muted-foreground">{t("view.slug")}</p>
-						<p className="font-mono text-sm">/{category.slug}</p>
-					</div>
-					{category.created_at && (
-						<div className="flex items-center gap-2 text-sm text-muted-foreground">
-							<CalendarDays size={14} />
-							{new Date(category.created_at).toLocaleDateString()}
+					<div className="space-y-3 flex-1">
+						<div>
+							<p className="text-xs text-muted-foreground">{t("view.name")}</p>
+							<p className="font-semibold">{category.name}</p>
 						</div>
-					)}
+						<div>
+							<p className="text-xs text-muted-foreground">{t("view.slug")}</p>
+							<p className="font-mono text-sm">/{category.slug}</p>
+						</div>
+						{category.created_at && (
+							<div className="flex items-center gap-2 text-sm text-muted-foreground">
+								<CalendarDays size={14} />
+								{new Date(category.created_at).toLocaleDateString()}
+							</div>
+						)}
+					</div>
 				</div>
 				<div className="flex justify-end pt-2">
 					<Button variant="outline" onClick={() => onOpenChange(false)}>
@@ -228,7 +279,7 @@ export default function CategoriesPage() {
 	const [pager, setPager] = useState({
 		total_records: 0,
 		current_page: 1,
-		per_page: 10,
+		per_page: 12,
 		records: [],
 	});
 
@@ -282,7 +333,7 @@ export default function CategoriesPage() {
 
 
 	useEffect(() => {
-		fetchCategories({ page: 1, per_page: 10 });
+		fetchCategories({ page: 1, per_page: 12 });
 	}, [fetchCategories]);
 
 	const handlePageChange = ({ page, per_page }) => {
@@ -333,7 +384,10 @@ export default function CategoriesPage() {
 		try {
 			const newName = t("duplicate.copyName", { name: cat.name });
 			const newSlug = await generateSlug(newName);
-			await api.post("/categories", { name: newName, slug: newSlug || `copy-${cat.slug}-${Date.now()}` });
+			await api.post(`/categories/${cat.id}/duplicate`, {
+				name: newName,
+				slug: newSlug || `copy-${cat.slug}-${Date.now()}`
+			});
 			setDuplicateState({ open: false, category: null });
 			await fetchCategories({ page: pager.current_page, per_page: pager.per_page });
 			toast.success(t("toast.duplicated"));
@@ -362,13 +416,14 @@ export default function CategoriesPage() {
 				className: "font-semibold text-primary w-[72px]",
 			},
 			{
-				key: "thumb",
+				key: "image",
 				header: "",
+				type: "img",
 				className: "w-14",
 				cell: (row) => (
 					<div className="w-10 h-10 rounded-lg border overflow-hidden flex items-center justify-center bg-primary/5 border-primary/20">
-						{imgSrc(row) ? (
-							<img src={imgSrc(row)} alt="" className="w-full h-full object-cover" />
+						{avatarSrc(row?.image) ? (
+							<img src={avatarSrc(row?.image)} alt="" className="w-full h-full object-cover" />
 						) : (
 							<Layers size={16} className="text-primary" />
 						)}
@@ -492,7 +547,7 @@ export default function CategoriesPage() {
 				emptyState={t("empty")}
 			/>
 
-			<CategoryFormDialog open={formOpen} onOpenChange={setFormOpen} category={editingCategory} onSuccess={handleFormSuccess} t={t} />
+			<CategoryFormDialog open={formOpen} onOpenChange={setFormOpen} category={editingCategory} onSuccess={handleFormSuccess} />
 
 			<ViewCategoryDialog open={viewOpen} onOpenChange={setViewOpen} category={viewingCategory} t={t} />
 

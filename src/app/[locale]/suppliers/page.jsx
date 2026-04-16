@@ -185,7 +185,7 @@ export default function SuppliersPage() {
 	);
 
 	useEffect(() => {
-		fetchSuppliers({ page: 1, per_page: 10 });
+		fetchSuppliers({ page: 1, per_page: 12 });
 	}, [fetchSuppliers]);
 
 	const handlePageChange = ({ page, per_page }) => {
@@ -506,7 +506,7 @@ const makeSchema = (t, countries, tPhone) =>
 		phoneCountry: yup.string().required(),
 		phoneNumber: yup.string().test("phone-valid", t("validation.phoneInvalid"), function (value) {
 			const country = countries.find((c) => c.key === this.parent.phoneCountry) || countries[0];
-			const error = validatePhone(value, country,tPhone);
+			const error = validatePhone(value, country, tPhone);
 			return !error;
 		}),
 

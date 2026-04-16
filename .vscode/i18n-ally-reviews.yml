@@ -45,3 +45,27 @@ reviews:
             suggestion: ''
             type: approve
             time: '2026-04-16T00:56:14.223Z'
+  categories.form.image:
+    locales:
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: MH81U79xIOypjl_k5jk8_
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-16T12:31:20.560Z'
+  categories.form.imageUpload:
+    locales:
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: wb4gMsVBQ2fAIUUgkGpC2
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-16T12:31:50.064Z'

@@ -192,7 +192,7 @@ export default function SuperAdminUsersPage() {
 	const [pagination, setPagination] = useState({
 		total_records: 0,
 		current_page: 1,
-		per_page: 10,
+		per_page: 12
 	});
 
 	// ✅ server stats

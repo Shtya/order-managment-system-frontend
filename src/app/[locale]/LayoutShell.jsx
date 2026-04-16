@@ -194,7 +194,7 @@ function DashboardLayout({ children }) {
         />
 
         {/* Scrollable page content */}
-        <main className=" z-[10] flex-1 overflow-y-auto overflow-x-hidden relative  ">
+        <main className=" z-[10] flex-1 overflow-y-auto overflow-x-hidden relative ">
           <div
             className="pointer-events-none absolute inset-0"
             style={{ zIndex: 0 }}

@@ -379,6 +379,7 @@ function PurchaseDataForm({
 	setValue,
 	clearErrors,
 	invoiceSummary,
+	singleMode = false
 }) {
 	const tValidation = useTranslations("validation");
 
@@ -389,12 +390,12 @@ function PurchaseDataForm({
 		// accept image/pdf
 		const okType = ALLOWED_RECEIPT_TYPES.includes(file.type);
 		if (!okType) {
-			toast.error(tValidation("invalidFileType") || "Invalid file type");
+			toast.error(tValidation("imageOrPDF") || "Invalid file type");
 			return;
 		}
 
 		if (file.size > MAX_RECEIPT_MB * 1024 * 1024) {
-			toast.error(tValidation("fileTooLarge") || "File too large");
+			toast.error(tValidation("fileTooLargeMB", { MB: 5 }) || "File too large");
 			return;
 		}
 
@@ -479,7 +480,7 @@ function PurchaseDataForm({
 						/>
 						{errors?.purchase?.safeId?.message && <p className="text-[11px] text-red-500">{errors.purchase.safeId.message}</p>}
 					</Field>
-					<Field label={t('purchase.totalQuantity')}>
+					{!singleMode && <Field label={t('purchase.totalQuantity')}>
 						<div className="relative">
 							<Input
 								type="number"
@@ -496,9 +497,9 @@ function PurchaseDataForm({
 							</div>
 						</div>
 						{totalPurchaseQuantityError && <p className="text-[11px] text-red-500">{totalPurchaseQuantityError}</p>}
-					</Field>
+					</Field>}
 					<Field label={t('purchase.paidAmount')}>
-						<Input type="number" step="0.01" {...register('purchase.paidAmount')} placeholder="0.00" className="bg-white dark:bg-slate-900" />
+						<Input type="number"  {...register('purchase.paidAmount')} placeholder="0.00" className="bg-white dark:bg-slate-900" />
 					</Field>
 					<Field label={t('purchase.notes')} className="lg:col-span-2 ">
 						<Textarea {...register('purchase.notes')} placeholder="..." className="bg-white dark:bg-slate-900 !min-h-[120px]" />
@@ -639,7 +640,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 	const { fields: attributeFields, append: appendAttribute, remove: removeAttribute } = useFieldArray({ control, name: 'attributes', keyName: 'fieldId' });
 	const { fields: comboFields } = useFieldArray({ control, name: 'combinations', keyName: 'fieldId' });
-	console.log(errors)
+
 
 	useEffect(() => {
 		let mounted = true;
@@ -669,12 +670,48 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	}, [isEditMode, setValue]);
 
 	const lastCombSigRef = useRef('');
+	const extractedAttributes = useMemo(() => extractAttributesFromSkus(existingProduct.skus || []), [existingProduct.skus])
+	const isAttrEdited = useRef(false)
+
+	const initialSig = useMemo(() => {
+		if (!isEditMode || !extractedAttributes || isAttrEdited.current) return '';
+		return JSON.stringify({
+			attributes: extractedAttributes.map(a => ({ name: a?.name, values: a?.values || [] })),
+		});
+	}, [isEditMode, extractedAttributes, existingProduct]);
+
+	const currentSig = useMemo(() => {
+		if (isAttrEdited.current) return;
+
+		const attributes = attributesWatch || [];
+
+		return JSON.stringify({
+			attributes: attributes.map((a) => ({
+				name: a?.name,
+				values: a?.values || []
+			})),
+
+		});
+	}, [attributesWatch]);
+
+	useEffect(() => {
+		if (currentSig !== initialSig) {
+			console.log(true)
+			isAttrEdited.current = true;
+		}
+	}, [currentSig, initialSig])
 	useEffect(() => {
 		const attributes = attributesWatch || [];
 		const currentSlug = productSlug || '';
 		const currentCombos = watch('combinations') || [];
 		const currentPrice = salePrice || '';
-		const sig = JSON.stringify({ attributes: (attributes || []).map((a) => ({ name: a?.name, values: a?.values || [] })), productSlug: currentSlug, salePrice: currentPrice, isEditMode, productType });
+		const sig = JSON.stringify({
+			attributes: (attributes || []).map((a) => ({ name: a?.name, values: a?.values || [] })),
+			productSlug: currentSlug,
+			salePrice: currentPrice,
+			isEditMode, productType
+		});
+
 		if (lastCombSigRef.current === sig) return;
 		lastCombSigRef.current = sig;
 
@@ -693,7 +730,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			}], { shouldDirty: true, shouldValidate: false });
 			return;
 		}
-
+		if (!isAttrEdited.current) return;
 
 		const generated = buildCombinationsFromAttributes(attributes, currentSlug, currentPrice);
 		const byKey = new Map(currentCombos.map((c) => [c.key, c]));
@@ -797,13 +834,14 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		if (combos.length === 0) return;
 
 		const perSku = Math.floor(num / combos.length);
+
 		const remainder = num % combos.length;
 
 		const next = combos.map((c, idx) => ({
 			...c,
 			stockOnHand: perSku + (idx === 0 ? remainder : 0)
 		}));
-		setValue('combinations', next, { shouldDirty: true });
+		setValue('combinations', next, { shouldDirty: true, shouldValidate: true });
 	};
 
 	const handleSkuQuantityBlur = () => {
@@ -977,9 +1015,9 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		}
 	};
 
+
 	useEffect(() => {
 		if (!isEditMode || !existingProduct) return;
-		const extractedAttributes = extractAttributesFromSkus(existingProduct.skus || []);
 		const combinations = (existingProduct.skus || []).map((sku) => ({
 			key: sku.key,
 			variantId: sku.id,
@@ -1052,7 +1090,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			transition={{ duration: 0.3 }}
-			className="min-h-screen bg-slate-50 dark:bg-slate-950 p-5 pb-16"
+			className="min-h-screen bg-slate-50 dark:bg-slate-950 p-5 pb-16 "
 		>
 			{/* ── Page Header ── */}
 			<PageHeader
@@ -1121,7 +1159,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 										/>
 									)
 								} />
-								<div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-x-3">
+								<div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3">
 									<Field label={t('fields.productName')} error={errors?.name?.message} className=" ">
 										<Input {...register('name')} placeholder={t('placeholders.productName')} />
 									</Field>
@@ -1142,7 +1180,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 									<Field label={t('fields.wholesalePrice')} error={errors?.wholesalePrice?.message}>
 										<Input
 											type="number"
-											step="0.01"
+
 											{...register('wholesalePrice')}
 											placeholder={t('placeholders.wholesalePrice')}
 
@@ -1152,7 +1190,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 									<Field label={t('fields.salePrice')} error={errors?.salePrice?.message}>
 										<Input
 											type="number"
-											step="0.01"
+
 											{...register('salePrice')}
 											onBlur={handleSalePriceBlur}
 											placeholder={t('placeholders.salePrice')}
@@ -1161,7 +1199,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 									</Field>
 
 									<Field label={t('fields.lowestPrice')} error={errors?.lowestPrice?.message}>
-										<Input type="number" step="0.01" {...register('lowestPrice')} placeholder={t('placeholders.lowestPrice')} />
+										<Input type="number"  {...register('lowestPrice')} placeholder={t('placeholders.lowestPrice')} />
 									</Field>
 
 									<Field label={t('fields.storageRack')}>
@@ -1397,10 +1435,9 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 														const cErr = errors?.combinations?.[idx];
 														const current = combinationsWatch?.[idx];
 														const attrs = current?.attributes || {};
-														const skuHasConflict = !!skuConflictMap[c.sku];
+														const skuHasConflict = !!skuConflictMap[current.sku];
 														const isExistingCombination = isEditMode && !!current?.isExisting;
 														const canEditSku = !isEditMode || !isExistingCombination;
-
 
 														// حساب المتوفر: الكمية الفعلية - المحجوز
 														const onHand = isEditMode || hasPurchase ? current?.stockOnHand || 0 : 0;
@@ -1473,14 +1510,35 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 																	</span>
 																</td>
 																<td className="px-4 py-3">
-																	<Input
-																		type="number"
-																		step="0.01"
-																		{...register(`combinations.${idx}.price`)}
-																		placeholder="0.00"
-																		className={cn("h-[38px] rounded-lg font-[Inter] text-[13px]", cErr?.price ? "border-red-300" : "border-slate-200 dark:border-slate-700")}
+																	<Controller
+																		control={control}
+																		name={`combinations.${idx}.price`}
+																		render={({ field }) => (
+																			<Input
+																				{...field}
+																				type="number"
+																				// Allows decimals for pricing
+																				placeholder="0.00"
+																				onChange={(e) => {
+																					// Convert string input to float for the form state
+																					const val = e.target.value === '' ? 0 : parseFloat(e.target.value);
+																					field.onChange(val);
+																				}}
+																				className={cn(
+																					"h-[38px] rounded-lg font-[Inter] text-[13px]",
+																					cErr?.price
+																						? "border-red-400 ring-1 ring-red-300"
+																						: "border-slate-200 dark:border-slate-700"
+																				)}
+																			/>
+																		)}
 																	/>
-																	{cErr?.price?.message && <p className="text-[11px] text-red-500 mt-0.5">{cErr.price.message}</p>}
+
+																	{cErr?.price?.message && (
+																		<p className="text-[11px] text-red-500 mt-0.5">
+																			{cErr.price.message}
+																		</p>
+																	)}
 																</td>
 															</tr>
 														);
@@ -1527,7 +1585,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 										<Field label="SKU">
 											<Input
 												{...register('combinations.0.sku')}
-												placeholder={t('combinations.placeholders.sku')}
+												placeholder={t('combinations.placeholders.skuSingle')}
 												disabled={isEditMode}
 											/>
 											{errors?.combinations?.[0]?.sku?.message && <p className="text-[11px] text-red-500 mt-0.5">{errors.combinations[0].sku.message}</p>}
@@ -1573,6 +1631,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 									{!isEditMode && hasPurchase && (
 										<PurchaseDataForm
 											t={t}
+											singleMode={true}
 											tPurchase={tPurchase}
 											tValidation={tValidation}
 											control={control}

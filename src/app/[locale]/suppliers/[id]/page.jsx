@@ -53,12 +53,12 @@ export default function SupplierDetailsPage() {
     const [loading, setLoading] = useState(true);
 
     // Purchases State
-    const [purchasesPager, setPurchasesPager] = useState({ records: [], total_records: 0, current_page: 1, per_page: 10 });
+    const [purchasesPager, setPurchasesPager] = useState({ records: [], total_records: 0, current_page: 1, per_page: 12 });
     const [purchasesLoading, setPurchasesLoading] = useState(false);
     const [purchasesFilters, setPurchasesFilters] = useState({ startDate: null, endDate: null });
 
     // Returns State
-    const [returnsPager, setReturnsPager] = useState({ records: [], total_records: 0, current_page: 1, per_page: 10 });
+    const [returnsPager, setReturnsPager] = useState({ records: [], total_records: 0, current_page: 1, per_page: 12 });
     const [returnsLoading, setReturnsLoading] = useState(false);
     const [returnsFilters, setReturnsFilters] = useState({ startDate: null, endDate: null });
 

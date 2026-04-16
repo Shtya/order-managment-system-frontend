@@ -334,7 +334,7 @@ export default function SupplierCategoriesPage() {
 
 
 	useEffect(() => {
-		fetchCategories({ page: 1, per_page: 10 });
+		fetchCategories({ page: 1, per_page: 12 });
 	}, [fetchCategories]);
 
 	const handlePageChange = ({ page, per_page }) => {

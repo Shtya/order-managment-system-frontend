@@ -7285,7 +7285,9 @@
       "namePlaceholder": "e.g. Electronics",
       "cancel": "Cancel",
       "save": "Save",
-      "saving": "Saving…"
+      "saving": "Saving…",
+      "image": "Category image",
+      "imageUpload": "Upload image"
     },
     "validation": {
       "nameRequired": "Name is required",

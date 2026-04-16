@@ -23,6 +23,7 @@ import { baseImg } from "@/utils/axios";
 import { useTranslations } from "next-intl";
 
 import { useAuth } from "@/context/AuthContext";
+import { avatarSrc } from "./UserSelect";
 
 const ACTION_KEYS = new Set(["actions", "options"]);
 const DEFAULT_PER_PAGE_OPTIONS = [6, 12, 24, 48];
@@ -431,7 +432,7 @@ const TableSkeleton = memo(function TableSkeleton({ columns, rows = 6, compact }
    IMAGE CELLS
 ══════════════════════════════════════════════════════════════ */
 const ImgCell = memo(function ImgCell({ src, alt, onOpen }) {
-  const fullSrc = toFullSrc(src);
+  const fullSrc = avatarSrc(src);
   if (!fullSrc) return <span className="text-muted-foreground/80text-sm">—</span>;
   return (
     <motion.button
@@ -461,7 +462,7 @@ const ImgsCell = memo(function ImgsCell({ images, onOpen }) {
   return (
     <div className="flex items-center">
       {displayImages.map((img, idx) => {
-        const fullSrc = toFullSrc(img.src);
+        const fullSrc = avatarSrc(img.src);
         const isLastVisible = idx === MAX_VISIBLE - 1;
         const hasMore = remainingCount > 0;
 
@@ -654,7 +655,7 @@ export default function Table({
                       {columns.map((col) => {
                         if (col.type === "img") return (
                           <TableCell key={col.key} className={cn("!px-5", compact ? "py-2.5" : "py-3.5", col.className)}>
-                            <ImgCell src={row[col.key]} alt={col.header ?? ""} onOpen={openImage} />
+                            {!row[col.key] && typeof col.cell === "function" ? col.cell(row, i, helpers) : <ImgCell src={row[col.key]} alt={col.header ?? ""} onOpen={openImage} />}
                           </TableCell>
                         );
 

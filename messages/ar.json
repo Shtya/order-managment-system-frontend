@@ -5667,7 +5667,9 @@
       "howToUse": "كيفية الاستخدام",
       "view": "عرض",
       "save": "حفظ",
-      "saving": "جاري الحفظ..."
+      "saving": "جاري الحفظ...",
+      "image": "صورة القسم",
+      "imageUpload": "رفع صورة"
     },
     "validation": {
       "planRequired": "الخطة مطلوبة",
@@ -7285,7 +7287,9 @@
       "namePlaceholder": "مثال: إلكترونيات",
       "cancel": "إلغاء",
       "save": "حفظ",
-      "saving": "جارٍ الحفظ…"
+      "saving": "جارٍ الحفظ…",
+      "image": "صورة المنتج",
+      "imageUpload": "إختر صورة"
     },
     "validation": {
       "nameRequired": "الاسم مطلوب",

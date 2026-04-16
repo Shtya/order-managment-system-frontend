@@ -264,46 +264,49 @@ export function BundleViewModal({ open, onOpenChange, bundle, viewLoading }) {
   const { formatCurrency } = usePlatformSettings();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="!max-w-3xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Package className="text-primary" size={18} />
+      <DialogContent className="!max-w-5xl max-h-[90vh] overflow-hidden p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700">
+          <DialogTitle className="flex items-center gap-2 text-xl font-bold">
+            <Package className="text-primary" size={20} />
             <span>{t("bundleModal.title")}</span>
           </DialogTitle>
         </DialogHeader>
 
-        {viewLoading ? (
-          <BundleModalSkeleton />
-        ) : !bundle ? (
-          <div className="text-slate-500">{t("bundleModal.noData")}</div>
-        ) : (
-          <div className="space-y-5">
-            <div className="rounded-xl border bg-white dark:bg-slate-900 p-4 shadow-sm">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <div className="text-xl font-semibold text-slate-900 dark:text-slate-50">{bundle.name ?? na}</div>
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-110px)] space-y-6 bg-white dark:bg-slate-900">
+          {viewLoading ? (
+            <BundleModalSkeleton />
+          ) : !bundle ? (
+            <div className="py-10 text-center text-slate-500">{t("bundleModal.noData")}</div>
+          ) : (
+            <>
+              {/* Top Info Card */}
+              <div className="rounded-xl border bg-white dark:bg-slate-900 p-4 shadow-sm">
+                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                  <div>
+                    <div className="text-xl font-semibold text-slate-900 dark:text-slate-50">{bundle.name ?? na}</div>
 
-                  <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-                    <Badge className="rounded-full bg-primary/10 text-primary border border-primary/20">
-                      <Hash size={14} className="mr-1" />
-                      {t("common.id")}: {bundle.id}
-                    </Badge>
-
-                    <Badge className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                      <Tag size={14} className="mr-1" />
-                      {bundle.sku ?? na}
-                    </Badge>
-
-                    <Badge className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200">
-                      {t("common.price")}: {formatCurrency(bundle.price, na)}
-                    </Badge>
-
-                    {bundle.store && (
-                      <Badge className="rounded-full bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-200">
-                        <Store size={14} className="mr-1" />
-                        {t("bundleModal.store")}: {bundle.store.name}
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                      <Badge className="rounded-full bg-primary/10 text-primary border border-primary/20">
+                        <Hash size={14} className="mr-1" />
+                        {t("common.id")}: {bundle.id}
                       </Badge>
-                    )}
+
+                      <Badge className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                        <Tag size={14} className="mr-1" />
+                        {bundle.sku ?? na}
+                      </Badge>
+
+                      <Badge className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200">
+                        {t("common.price")}: {formatCurrency(bundle.price, na)}
+                      </Badge>
+
+                      {bundle.store && (
+                        <Badge className="rounded-full bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-200">
+                          <Store size={14} className="mr-1" />
+                          {t("bundleModal.store")}: {bundle.store.name}
+                        </Badge>
+                      )}
+                    </div>
 
                     {bundle.variant && (
                       <div className="w-full mt-4 flex items-center gap-4 p-4 rounded-xl bg-primary/5 dark:bg-primary/10 border border-primary/20">
@@ -333,105 +336,111 @@ export function BundleViewModal({ open, onOpenChange, bundle, viewLoading }) {
                         </div>
                       </div>
                     )}
+                  </div>
 
-                    {bundle.description && (
-                      <div className="mt-4 p-3 rounded-lg bg-muted/30 border border-border/40">
-                        <div className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center gap-1">
-                          <AlignLeft size={12} />
-                          {t("common.description")}
-                        </div>
-                        <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
-                          {bundle.description}
-                        </div>
+                  <div className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                    <CalendarDays size={14} />
+                    {formatDate(bundle.created_at, na)}
+                  </div>
+                </div>
+
+                {bundle.description && (
+                  <div className="mt-4 p-3 rounded-lg bg-muted/30 border border-border/40">
+                    <div className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center gap-1">
+                      <AlignLeft size={12} />
+                      {t("common.description")}
+                    </div>
+                    <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                      {bundle.description}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Contents Section */}
+              <div className="space-y-3">
+                <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  {t("bundleModal.contents")} ({items.length})
+                </div>
+
+                {items.length === 0 ? (
+                  <div className="text-slate-500">{t("bundleModal.noItems")}</div>
+                ) : (
+                  <div className="overflow-x-auto rounded-xl border">
+                    <div className="min-w-[720px]">
+                      {/* Table Header */}
+                      <div className="grid grid-cols-12 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-200 px-4 py-3">
+                        <div className="col-span-4">{t("common.variant")}</div>
+                        <div className="col-span-2 text-center">{t("common.qty")}</div>
+                        <div className="col-span-3 text-center">{t("common.stock")}</div>
+                        <div className="col-span-3 text-right">{t("common.attributes")}</div>
                       </div>
-                    )}
-                  </div>
-                </div>
 
-                <div className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                  <CalendarDays size={14} />
-                  {formatDate(bundle.created_at, na)}
-                </div>
-              </div>
-            </div>
+                      {/* Table Body */}
+                      <div className="divide-y">
+                        {items.map((it) => {
+                          const v = it.variant;
+                          const available = Math.max(0, (v?.stockOnHand ?? 0) - (v?.reserved ?? 0));
+                          const attrs = v?.attributes ? Object.entries(v.attributes) : [];
 
-            <Separator />
+                          return (
+                            <div key={it.id} className="grid grid-cols-12 px-4 py-3 text-sm bg-white dark:bg-slate-900 items-center">
+                              <div className="col-span-4 overflow-hidden">
+                                <div className="font-semibold text-slate-900 dark:text-slate-50 truncate">
+                                  {v?.sku ?? `#${it.variantId}`}
+                                </div>
+                                <div className="text-xs text-slate-500 truncate">
+                                  {t("common.variantId")}: {it.variantId}
+                                </div>
+                              </div>
 
-            <div className="space-y-3">
-              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                {t("bundleModal.contents")} ({items.length})
-              </div>
-
-              {items.length === 0 ? (
-                <div className="text-slate-500">{t("bundleModal.noItems")}</div>
-              ) : (
-                <div className="overflow-hidden rounded-xl border">
-                  <div className="grid grid-cols-12 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-200 px-4 py-3">
-                    <div className="col-span-5">{t("common.variant")}</div>
-                    <div className="col-span-2 text-center">{t("common.qty")}</div>
-                    <div className="col-span-3 text-center">{t("common.stock")}</div>
-                    <div className="col-span-2 text-right">{t("common.attributes")}</div>
-                  </div>
-
-                  <div className="divide-y">
-                    {items.map((it) => {
-                      const v = it.variant;
-                      const available = Math.max(0, (v?.stockOnHand ?? 0) - (v?.reserved ?? 0));
-                      const attrs = v?.attributes ? Object.entries(v.attributes) : [];
-
-                      return (
-                        <div key={it.id} className="grid grid-cols-12 px-4 py-3 text-sm bg-white dark:bg-slate-900">
-                          <div className="col-span-5">
-                            <div className="font-semibold text-slate-900 dark:text-slate-50">
-                              {v?.sku ?? `#${it.variantId}`}
-                            </div>
-                            <div className="text-xs text-slate-500">
-                              {t("common.variantId")}: {it.variantId} • {t("common.itemId")}: {it.id}
-                            </div>
-                          </div>
-
-                          <div className="col-span-2 flex items-center justify-center">
-                            <Badge className="rounded-full bg-primary/10 text-primary border border-primary/20">
-                              × {it.qty}
-                            </Badge>
-                          </div>
-
-                          <div className="col-span-3 flex items-center justify-center gap-2">
-                            <Badge className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                              {t("common.onHand")}: {v?.stockOnHand ?? 0}
-                            </Badge>
-                            <Badge className="rounded-full bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-200">
-                              {t("common.available")}: {available}
-                            </Badge>
-                          </div>
-
-                          <div className="col-span-2 flex flex-wrap items-center justify-end gap-2">
-                            {attrs.length === 0 ? (
-                              <span className="text-slate-400">{na}</span>
-                            ) : (
-                              attrs.slice(0, 3).map(([k, val]) => (
-                                <Badge
-                                  key={k}
-                                  className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
-                                >
-                                  {k}: {String(val)}
+                              <div className="col-span-2 flex items-center justify-center">
+                                <Badge className="rounded-full bg-primary/10 text-primary border border-primary/20">
+                                  × {it.qty}
                                 </Badge>
-                              ))
-                            )}
+                              </div>
 
-                            {attrs.length > 3 && (
-                              <Badge className="rounded-full bg-slate-100 text-slate-600">+{attrs.length - 3}</Badge>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
+                              <div className="col-span-3 flex items-center justify-center gap-2 flex-nowrap">
+                                <Badge className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap shrink-0">
+                                  {t("common.onHand")}: {v?.stockOnHand ?? 0}
+                                </Badge>
+                                <Badge className="rounded-full bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-200 whitespace-nowrap shrink-0">
+                                  {t("common.available")}: {available}
+                                </Badge>
+                              </div>
+
+                              <div className="col-span-3 flex flex-wrap items-center justify-end gap-1.5">
+                                {attrs.length === 0 ? (
+                                  <span className="text-slate-400">{na}</span>
+                                ) : (
+                                  <>
+                                    {attrs.slice(0, 2).map(([k, val]) => (
+                                      <Badge
+                                        key={k}
+                                        className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap"
+                                      >
+                                        {k}: {String(val)}
+                                      </Badge>
+                                    ))}
+                                    {attrs.length > 2 && (
+                                      <Badge className="rounded-full bg-slate-100 text-slate-600 whitespace-nowrap">+{attrs.length - 2}</Badge>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
@@ -480,22 +489,22 @@ function BundleModalSkeleton() {
         <Bone className="h-4 w-32" /> {/* Title */}
         <div className="rounded-xl border border-border/30 overflow-hidden">
           {/* Table Header */}
-          <div className="bg-[var(--secondary)]/60 px-4 py-3 flex justify-between">
-            <Bone className="h-2.5 w-24" />
-            <Bone className="h-2.5 w-12" />
-            <Bone className="h-2.5 w-20" />
-            <Bone className="h-2.5 w-16" />
+          <div className="bg-[var(--secondary)]/60 px-4 py-3 grid grid-cols-12">
+            <div className="col-span-4"><Bone className="h-2.5 w-24" /></div>
+            <div className="col-span-2 flex justify-center"><Bone className="h-2.5 w-12" /></div>
+            <div className="col-span-3 flex justify-center"><Bone className="h-2.5 w-20" /></div>
+            <div className="col-span-3 flex justify-end"><Bone className="h-2.5 w-16" /></div>
           </div>
           {/* Table Rows */}
           {[0, 1, 2].map((i) => (
             <div
               key={i}
               className={cn(
-                "grid grid-cols-12 items-center gap-4 px-4 py-4 border-t border-border/20",
+                "grid grid-cols-12 items-center px-4 py-4 border-t border-border/20",
                 i % 2 !== 0 && "bg-muted/15"
               )}
             >
-              <div className="col-span-5 space-y-2">
+              <div className="col-span-4 space-y-2">
                 <Bone className="h-4 w-32" />
                 <Bone className="h-2.5 w-24" />
               </div>
@@ -506,7 +515,7 @@ function BundleModalSkeleton() {
                 <Bone className="h-5 w-16 rounded-full" />
                 <Bone className="h-5 w-16 rounded-full" />
               </div>
-              <div className="col-span-2 flex justify-end">
+              <div className="col-span-3 flex justify-end">
                 <Bone className="h-5 w-14 rounded-full" />
               </div>
             </div>

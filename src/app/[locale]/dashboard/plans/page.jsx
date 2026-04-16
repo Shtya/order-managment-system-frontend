@@ -971,7 +971,7 @@ function EditablePlanCard({
 										className="h-9 text-sm rounded-xl"
 										placeholder="0.00"
 										min="0"
-										step="0.01"
+
 										// يتم تعطيل الحقل إذا كان الحفظ جارياً أو إذا تم اختيار "غير مسموح"
 										disabled={isSaving || formData.extraFeeNotAllowed}
 									/>

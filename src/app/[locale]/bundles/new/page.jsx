@@ -1,7 +1,7 @@
 // File: bundles/new/page.jsx
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, X, Plus, Loader2, Trash2, Package, QrCode, Save, BackpackIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -201,6 +201,14 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 		}
 	};
 
+	const bundleItemsWatch = watch('bundleItems') || [];
+
+	const allSelectedSkus = useMemo(() => {
+		return bundleItemsWatch
+			.filter(item => item && item.variantId)
+			.map(item => ({ id: item.variantId }));
+	}, [bundleItemsWatch]);
+
 	return (
 		<motion.div initial={{ opacity: 0, y: 20, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.15 }} className="min-h-screen p-5">
 
@@ -253,7 +261,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 							</Label>
 							<Input
 								type="number"
-								step="0.01"
+
 								{...register('wholesalePrice')}
 								placeholder={t('placeholders.totalPrice')}
 
@@ -295,7 +303,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 									return (
 										<div className="space-y-2">
 											<ProductSkuSearchPopover
-												selectedSkus={field.value ? [{ id: field.value }] : []}
+												selectedSkus={allSelectedSkus}
 												handleSelectSku={(sku) => {
 													field.onChange(sku.id);
 													setValue('variant', sku);
@@ -365,7 +373,8 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 													return (
 														<div className="space-y-2">
 															<ProductSkuSearchPopover
-																selectedSkus={itemValue.variantId ? [{ id: itemValue.variantId }] : []}
+																// selectedSkus={itemValue.variantId ? [{ id: itemValue.variantId }] : []}
+																selectedSkus={allSelectedSkus}
 																handleSelectSku={(sku) => {
 																	setValue(`bundleItems.${index}`, {
 																		...itemValue,

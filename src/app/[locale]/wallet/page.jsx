@@ -268,7 +268,7 @@ function DepositModal({ onClose, onDeposit, t, currency }) {
             <div className="relative">
               <input
                 type="number"
-                step="0.01"
+
                 min="0.01"
                 value={amount}
                 onChange={(e) => {

@@ -229,7 +229,6 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
                     <Input
                       {...field}
                       type="number"
-                      step="0.01"
                       className={cn("theme-field pl-8", errors.amount && "border-red-500")}
                       placeholder="0.00"
                     />

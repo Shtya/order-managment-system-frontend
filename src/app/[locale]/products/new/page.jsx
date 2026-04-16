@@ -670,7 +670,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	}, [isEditMode, setValue]);
 
 	const lastCombSigRef = useRef('');
-	const extractedAttributes = useMemo(() => extractAttributesFromSkus(existingProduct.skus || []), [existingProduct.skus])
+	const extractedAttributes = useMemo(() => extractAttributesFromSkus(existingProduct?.skus || []), [existingProduct?.skus])
 	const isAttrEdited = useRef(false)
 
 	const initialSig = useMemo(() => {

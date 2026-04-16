@@ -103,7 +103,7 @@ function SectionCard({ title, badge, children, delay = 0 }) {
 // Reusable Select with loading state
 // ─────────────────────────────────────────────────────────────────────────────
 function GeoSelect({ label, required, value, onValueChange, items, isLoading, placeholder, disabled, hint, nameKey = "nameEn" }) {
-	
+
 	const t = useTranslations("createOrder");
 	return (
 		<div className="space-y-2">
@@ -201,19 +201,19 @@ function AddressSection({
 	// When user picks a city/zone/district — auto-fill the hidden RHF fields
 	const handleCityChange = useCallback(
 		(cityId, resetArea = true) => {
-			const cities = provider ?  providerCities  : normalCities;
-			if(!cityId) return;
+			const cities = provider ? providerCities : normalCities;
+			if (!cityId) return;
 			const city = cities.find((c) => String(c.id) === cityId);
-			
-			if(!city) return;
-			
+
+			if (!city) return;
+
 			onMetaChange("cityId", cityId);
 			onMetaChange("zoneId", "");
 			onMetaChange("districtId", "");
 			if (city) setValue("city", city[nameKey] || city.nameEn, { shouldValidate: true });
-			if(resetArea ) setValue("area", "", { shouldValidate: false });
+			if (resetArea) setValue("area", "", { shouldValidate: false });
 		},
-		[providerCities,normalCities, nameKey, onMetaChange, setValue, provider]
+		[providerCities, normalCities, nameKey, onMetaChange, setValue, provider]
 	);
 
 	const handleZoneChange = useCallback(
@@ -375,17 +375,17 @@ function AddressSection({
 			>
 				{/* City */}
 				<div className="space-y-2">
-				
-				<GeoSelect
-					label={t("fields.city")}
-					required
-					nameKey={nameKey}
-					value={providerMeta.cityId}
-					onValueChange={(cityId) =>  handleCityChange(cityId, false)}
-					items={normalCities ?? []}
-					isLoading={normalCitiesLoading}
-					placeholder={t("placeholders.city")}
-				/>
+
+					<GeoSelect
+						label={t("fields.city")}
+						required
+						nameKey={nameKey}
+						value={providerMeta.cityId}
+						onValueChange={(cityId) => handleCityChange(cityId, false)}
+						items={normalCities ?? []}
+						isLoading={normalCitiesLoading}
+						placeholder={t("placeholders.city")}
+					/>
 					{errors.city && <p className="text-xs text-red-500">{errors.city.message}</p>}
 				</div>
 
@@ -599,7 +599,7 @@ export default function CreateOrderPageComplete({
 	const watchedDeposit = watch("deposit");
 	const watchedShippingCompanyId = watch("shippingCompanyId");
 	const area = watch("area");
-	
+
 
 	// ── Derive isBosta ───────────────────────────────────────────────────────
 	const selectedCompany = useMemo(
@@ -894,7 +894,7 @@ export default function CreateOrderPageComplete({
 			return;
 		}
 		setLoading(true);
-		
+
 		try {
 			const payload = {
 				customerName: data.customerName,
@@ -919,11 +919,11 @@ export default function CreateOrderPageComplete({
 				notes: data.notes || undefined,
 				customerNotes: data.customerNotes || undefined,
 				shippingMetadata: {
-							cityId: providerMeta.cityId || undefined,
-							zoneId: providerMeta.zoneId || undefined,
-							districtId: providerMeta.districtId || undefined,
-							locationId: providerMeta.locationId || undefined,
-					},
+					cityId: providerMeta.cityId || undefined,
+					zoneId: providerMeta.zoneId || undefined,
+					districtId: providerMeta.districtId || undefined,
+					locationId: providerMeta.locationId || undefined,
+				},
 				removedItems: removedItemsIds,
 				items: data.items.map((item) => ({
 					variantId: item.variantId,
@@ -1250,7 +1250,7 @@ export default function CreateOrderPageComplete({
 												{...field}
 												type="number"
 												min="0"
-												step="0.01"
+
 												placeholder="0.00"
 
 											/>
@@ -1271,7 +1271,7 @@ export default function CreateOrderPageComplete({
 												{...field}
 												type="number"
 												min="0"
-												step="0.01"
+
 												placeholder="0.00"
 
 											/>
@@ -1292,7 +1292,7 @@ export default function CreateOrderPageComplete({
 												{...field}
 												type="number"
 												min="0"
-												step="0.01"
+
 												placeholder="0.00"
 
 											/>
@@ -1457,7 +1457,7 @@ export default function CreateOrderPageComplete({
 																}
 																className="h-9 w-28"
 																min="0"
-																step="0.01"
+
 															/>
 														</td>
 														<td className="p-3">

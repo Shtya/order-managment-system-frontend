@@ -306,24 +306,24 @@ export function BundleViewModal({ open, onOpenChange, bundle, viewLoading }) {
                     )}
 
                     {bundle.variant && (
-                      <div className="w-full mt-4 flex items-center gap-4 p-4 rounded-xl bg-purple-50/50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-900/20">
-                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-white dark:bg-slate-800 flex items-center justify-center border border-purple-200 dark:border-purple-800 shrink-0 shadow-sm">
+                      <div className="w-full mt-4 flex items-center gap-4 p-4 rounded-xl bg-primary/5 dark:bg-primary/10 border border-primary/20">
+                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-white dark:bg-slate-800 flex items-center justify-center border border-primary/20 dark:border-border shrink-0 shadow-sm">
                           {bundle.variant.mainImage ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={avatarSrc(bundle.variant.mainImage)} alt={bundle.variant.sku} className="w-full h-full object-cover" />
                           ) : (
-                            <ImageIcon size={24} className="text-purple-300" />
+                            <ImageIcon size={24} className="text-primary/50" />
                           )}
                         </div>
                         <div className="flex flex-col min-w-0">
-                          <div className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider mb-1">
+                          <div className="text-xs font-bold text-primary dark:text-primary/90 uppercase tracking-wider mb-1">
                             {t("bundleModal.variant")}
                           </div>
                           <div className="text-base font-semibold text-slate-900 dark:text-slate-100 truncate">
                             {bundle.variant.product?.name || na}
                           </div>
                           <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="outline" className="font-mono text-[10px] py-0 h-5 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300">
+                            <Badge variant="outline" className="font-mono text-[10px] py-0 h-5 border-primary/30 text-primary dark:text-primary/90">
                               {bundle.variant.sku}
                             </Badge>
                             <span className="text-[10px] text-slate-400">

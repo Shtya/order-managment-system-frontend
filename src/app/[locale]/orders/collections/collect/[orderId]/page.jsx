@@ -779,7 +779,7 @@ export default function CollectOrderPage() {
                           <Input
                             {...field}
                             type="number"
-                            step="0.01"
+
                             min="0.01"
                             placeholder={t("placeholders.amount")}
                             endIcon={

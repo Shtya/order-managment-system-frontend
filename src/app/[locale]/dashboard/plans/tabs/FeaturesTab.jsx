@@ -174,7 +174,7 @@ export default function FeaturesTab() {
                                         <Input
                                             type="number"
                                             min="0"
-                                            step="0.01"
+
                                             value={editForm.price}
                                             onChange={(e) => setEditForm((p) => ({ ...p, price: e.target.value }))}
                                             className="rounded-full h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 mt-1 font-en"

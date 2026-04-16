@@ -494,7 +494,7 @@ export default function CreatePurchaseInvoicePage() {
 																		}
 																		className="h-8 w-24"
 																		min="0"
-																		step="0.01"
+
 																	/>
 
 																	{/* Current Price Display */}
@@ -733,7 +733,7 @@ export function InvoiceSummary({ errors, summary, total, paidAmount, remainingAm
 								placeholder="0"
 								className="rounded-xl h-[45px] border-gray-200 dark:border-slate-700"
 								min="0"
-								step="0.01"
+
 							/>
 						)}
 					/>

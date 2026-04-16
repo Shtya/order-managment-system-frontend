@@ -391,7 +391,7 @@ function PurchaseDataForm({
 		// accept image/pdf
 		const okType = ALLOWED_RECEIPT_TYPES.includes(file.type);
 		if (!okType) {
-			toast.error(tValidation("imageOrPDF") || "Invalid file type");
+			toast.error(tValidation("invalidFileType") || "Invalid file type");
 			return;
 		}
 

@@ -22,6 +22,7 @@ import {
 	DollarSign,
 	Plus,
 	Info,
+	FileDown,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/navigation";
@@ -148,7 +149,8 @@ function FiltersPanel({ t, value, onChange, onApply, suppliers }) {
 								<SelectValue placeholder={t("filters.supplierPlaceholder")} />
 							</SelectTrigger>
 							<SelectContent className="bg-card-select">
-								<SelectItem value="none">{t("filters.all")}</SelectItem>
+								<SelectItem value="all">{t("filters.all")}</SelectItem>
+								<SelectItem value="none">{t("filters.noSupplier") || "No Supplier"}</SelectItem>
 								{suppliers.map((s) => (
 									<SelectItem key={s.id} value={String(s.id)}>
 										{s.name}
@@ -1178,7 +1180,7 @@ export default function PurchasesPage() {
 	const [search, setSearch] = useState("");
 	const [filtersOpen, setFiltersOpen] = useState(false);
 	const [filters, setFilters] = useState({
-		supplierId: "none",
+		supplierId: "all",
 		status: "all",
 		startDate: null,
 		endDate: null,
@@ -1272,8 +1274,9 @@ export default function PurchasesPage() {
 		try {
 			const params = { page, limit: perPage, search };
 
-			if (filters.supplierId && filters.supplierId !== "none") params.supplierId = filters.supplierId;
-			if (filters.status && filters.status !== "all") params.status = filters.status;
+			if (filters.supplierId && filters.supplierId !== "all") {
+				params.supplierId = filters.supplierId;
+			} if (filters.status && filters.status !== "all") params.status = filters.status;
 			if (filters.startDate) params.startDate = filters.startDate;
 			if (filters.endDate) params.endDate = filters.endDate;
 			if (filters.hasReceipt && filters.hasReceipt !== "all") params.hasReceipt = filters.hasReceipt;
@@ -1308,7 +1311,7 @@ export default function PurchasesPage() {
 	const handlePageChange = ({ page, per_page }) => fetchPurchases(page, per_page);
 	const hasActiveFilters = useMemo(() => {
 		return (
-			(filters.supplierId && filters.supplierId !== "none") ||
+			(filters.supplierId && filters.supplierId !== "all") ||
 			(filters.status && filters.status !== "all") ||
 			Boolean(filters.startDate) ||
 			Boolean(filters.endDate) ||
@@ -1349,6 +1352,29 @@ export default function PurchasesPage() {
 
 	const applyFilters = () => fetchPurchases(1, pager.per_page);
 
+	const handleExport = async () => {
+		try {
+			const params = {
+				search,
+				...filters,
+			};
+			const res = await api.get("/purchases/export", {
+				params,
+				responseType: "blob",
+			});
+			const url = window.URL.createObjectURL(new Blob([res.data]));
+			const link = document.createElement("a");
+			link.href = url;
+			link.setAttribute("download", `Purchases_${Date.now()}.xlsx`);
+			document.body.appendChild(link);
+			link.click();
+			link.remove();
+		} catch (error) {
+			console.error(error);
+			toast.error(t("messages.exportFailed"));
+		}
+	};
+
 	const handleViewDetails = async (row) => {
 		// Open modal immediately and set loading to true
 		setDetailsModal({ isOpen: true, invoice: null, isLoading: true });
@@ -1385,7 +1411,7 @@ export default function PurchasesPage() {
 				header: t("table.supplier"),
 				cell: (row) => (
 					<span className=" font-[inter] text-gray-600 dark:text-slate-200">
-						{row?.supplier?.name ? row?.supplier?.name : t("table.noSupplier")}
+						{row?.supplier?.name ? row?.supplier?.name : "-"}
 					</span>
 				),
 			},
@@ -1576,7 +1602,16 @@ export default function PurchasesPage() {
 					emptyTitle: t("empty"),
 					emptySubtitle: "",
 				}}
-				actions={[]}
+				actions={[
+					{
+						key: "export",
+						label: t("toolbar.export"),
+						icon: <FileDown size={14} />,
+						color: "primary",
+						onClick: handleExport,
+						permission: "purchases.read",
+					},
+				]}
 				hasActiveFilters={hasActiveFilters}
 				onApplyFilters={applyFilters}
 				filters={
@@ -1590,7 +1625,8 @@ export default function PurchasesPage() {
 									<SelectValue placeholder={t("filters.supplierPlaceholder")} />
 								</SelectTrigger>
 								<SelectContent className="bg-card-select">
-									<SelectItem value="none">{t("filters.all")}</SelectItem>
+									<SelectItem value="all">{t("filters.all")}</SelectItem>
+									<SelectItem value="none">{t("filters.noSupplier")}</SelectItem>
 									{suppliers.map((s) => (
 										<SelectItem key={s.id} value={String(s.id)}>
 											{s.name}

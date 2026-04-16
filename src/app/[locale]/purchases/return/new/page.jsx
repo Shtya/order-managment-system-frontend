@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, Info, Save, Trash2, Upload, FileText, X } from "lucide-react";
+import { ChevronLeft, Info, Save, Trash2, Upload, FileText, X, Package, Tag } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -65,6 +65,7 @@ export default function CreateReturnInvoicePage() {
 							returnedQuantity: yup
 								.number()
 								.transform((v, o) => (o === "" || o === null || o === undefined ? 0 : Number(o)))
+								.integer(tValidation("noDecimalsAllowed"))
 								.min(1, tValidation("quantityMinimum"))
 								.required(tValidation("quantityRequired")),
 							unitCost: yup
@@ -128,7 +129,7 @@ export default function CreateReturnInvoicePage() {
 		}
 
 		if (file.size > MAX_RECEIPT_MB * 1024 * 1024) {
-			toast.error(tValidation("fileTooLarge") || "File too large");
+			toast.error(tValidation("fileTooLargeMB", { MB: 5 }) || "File too large");
 			return;
 		}
 
@@ -220,7 +221,8 @@ export default function CreateReturnInvoicePage() {
 			attributes: sku.attributes || {},
 			returnedQuantity: 1,
 			availableQuantity: sku.available || 0, // Store available quantity
-			unitCost: sku.price,
+			unitCost: sku.price || 0,
+			originalUnitCost: sku.price || 0,
 			taxInclusive: false,
 			taxRate: 5,
 		};
@@ -236,13 +238,11 @@ export default function CreateReturnInvoicePage() {
 		// Validation for returnedQuantity
 		if (field === "returnedQuantity") {
 			const available = newItems[index].availableQuantity || 0;
-			const numValue = Number(value);
+			const numValue = value === "" ? "" : Number(value);
 
-			if (numValue > available) {
+			if (numValue !== "" && numValue > available) {
 				toast.error(`${tValidation("quantityExceedsAvailable") || "Quantity exceeds available"}: ${available}`);
 				finalValue = available;
-			} else if (numValue < 1) {
-				finalValue = 1;
 			}
 		}
 
@@ -256,7 +256,9 @@ export default function CreateReturnInvoicePage() {
 			const fd = new FormData();
 
 			fd.append("returnNumber", data.returnNumber);
-			if (data.supplierId) fd.append("supplierId", String(data.supplierId));
+			if (data.supplierId && data.supplierId !== "none") {
+				fd.append("supplierId", String(data.supplierId));
+			}
 			if (data.supplierNameSnapshot) fd.append("supplierNameSnapshot", data.supplierNameSnapshot);
 			if (data.supplierCodeSnapshot) fd.append("supplierCodeSnapshot", data.supplierCodeSnapshot);
 			if (data.invoiceNumber) fd.append("invoiceNumber", data.invoiceNumber);
@@ -356,94 +358,96 @@ export default function CreateReturnInvoicePage() {
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<div className="flex flex-col lg:flex-row gap-6">
 					{/* Left Column - Main Form */}
-					<div className="w-full lg:max-w-[400px] space-y-6">
-						<motion.div
-							className="main-card"
-							initial={{ opacity: 0, x: -20 }}
-							animate={{ opacity: 1, x: 0 }}
-							transition={{ delay: 0.2 }}
-						>
-							<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
-								{t("sections.returnInfo")}
-							</h3>
+					<div className="flex-1 space-y-6">
+						<div className="w-full space-y-6">
+							<motion.div
+								className="main-card"
+								initial={{ opacity: 0, x: -20 }}
+								animate={{ opacity: 1, x: 0 }}
+								transition={{ delay: 0.2 }}
+							>
+								<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
+									{t("sections.returnInfo")}
+								</h3>
 
-							<div className="space-y-4">
-								<div className="space-y-2">
-									<Label className="text-sm text-gray-600 dark:text-slate-300">
-										{t("fields.returnNumber")} *
-									</Label>
-									<Controller
-										name="returnNumber"
-										control={control}
-										render={({ field }) => (
-											<Input
-												{...field}
-												placeholder={t("placeholders.returnNumber")}
-											/>
+								<div className="grid md:grid-cols-[repeat(auto-fit,minmax(350px,1fr))] gap-2">
+									<div className="space-y-2">
+										<Label className="text-sm text-gray-600 dark:text-slate-300">
+											{t("fields.returnNumber")} *
+										</Label>
+										<Controller
+											name="returnNumber"
+											control={control}
+											render={({ field }) => (
+												<Input
+													{...field}
+													placeholder={t("placeholders.returnNumber")}
+												/>
+											)}
+										/>
+										{errors.returnNumber && (
+											<p className="text-xs text-red-500">{errors.returnNumber.message}</p>
 										)}
-									/>
-									{errors.returnNumber && (
-										<p className="text-xs text-red-500">{errors.returnNumber.message}</p>
-									)}
-								</div>
+									</div>
 
-								<div className="space-y-2">
-									<Label className="text-sm text-gray-600 dark:text-slate-300">
-										{t("fields.supplierName")}
-									</Label>
-									<Controller
-										name="supplierId"
-										control={control}
-										render={({ field }) => (
-											<Select value={field.value} onValueChange={field.onChange}>
-												<SelectTrigger className="w-full rounded-full !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
-													<SelectValue placeholder={t("placeholders.supplierName")} />
-												</SelectTrigger>
-												<SelectContent>
-													{suppliers.map((s) => (
-														<SelectItem key={s.id} value={String(s.id)}>
-															{s.name}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
-										)}
-									/>
-								</div>
+									<div className="space-y-2">
+										<Label className="text-sm text-gray-600 dark:text-slate-300">
+											{t("fields.supplierName")}
+										</Label>
+										<Controller
+											name="supplierId"
+											control={control}
+											render={({ field }) => (
+												<Select value={field.value} onValueChange={field.onChange}>
+													<SelectTrigger className="w-full rounded-xl !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
+														<SelectValue placeholder={t("placeholders.supplierName")} />
+													</SelectTrigger>
+													<SelectContent>
+														<SelectItem value="none">{t("placeholders.none") || "None"}</SelectItem>
+														{suppliers.map((s) => (
+															<SelectItem key={s.id} value={String(s.id)}>
+																{s.name}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+											)}
+										/>
+									</div>
 
-								<div className="space-y-2">
-									<Label className="text-sm text-gray-600 dark:text-slate-300">
-										{t("fields.invoiceNumber")}
-									</Label>
-									<Controller
-										name="invoiceNumber"
-										control={control}
-										render={({ field }) => (
-											<Input
-												{...field}
-												placeholder={t("placeholders.invoiceNumber")}
-											/>
-										)}
-									/>
-								</div>
+									<div className="space-y-2">
+										<Label className="text-sm text-gray-600 dark:text-slate-300">
+											{t("fields.invoiceNumber")}
+										</Label>
+										<Controller
+											name="invoiceNumber"
+											control={control}
+											render={({ field }) => (
+												<Input
+													{...field}
+													placeholder={t("placeholders.invoiceNumber")}
+												/>
+											)}
+										/>
+									</div>
 
-								<div className="space-y-2">
-									<Label className="text-sm text-gray-600 dark:text-slate-300">
-										{t("fields.returnReason")}
-									</Label>
-									<Controller
-										name="returnReason"
-										control={control}
-										render={({ field }) => (
-											<Input
-												{...field}
-												placeholder={t("placeholders.returnReason")}
-											/>
-										)}
-									/>
-								</div>
+									<div className="space-y-2">
+										<Label className="text-sm text-gray-600 dark:text-slate-300">
+											{t("fields.returnReason")}
+										</Label>
+										<Controller
+											name="returnReason"
+											control={control}
+											render={({ field }) => (
+												<Input
+													{...field}
+													placeholder={t("placeholders.returnReason")}
+												/>
+											)}
+										/>
+									</div>
 
-								{/* <div className="space-y-2">
+									{/* <div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
 										{t("fields.returnType")} *
 									</Label>
@@ -474,34 +478,53 @@ export default function CreateReturnInvoicePage() {
 									)}
 								</div> */}
 
-								<div className="space-y-2">
-									<Label className="text-sm text-gray-600 dark:text-slate-300">
-										{t("fields.safe")}
-									</Label>
-									<Controller
-										name="safeId"
-										control={control}
-										render={({ field }) => (
-											<Select value={field.value} onValueChange={field.onChange}>
-												<SelectTrigger className="w-full rounded-full !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
-													<SelectValue placeholder={t("placeholders.safe")} />
-												</SelectTrigger>
-												<SelectContent className="bg-card-select">
-													<SelectItem value="نقدي">{t("options.safe.cash")}</SelectItem>
-													<SelectItem value="الخزينة الرئيسية">{t("options.safe.main")}</SelectItem>
-													<SelectItem value="الخزينة الفرعية">{t("options.safe.sub")}</SelectItem>
-													<SelectItem value="الخزينة الإضافية">{t("options.safe.extra")}</SelectItem>
-												</SelectContent>
-											</Select>
-										)}
-									/>
+									<div className="space-y-2">
+										<Label className="text-sm text-gray-600 dark:text-slate-300">
+											{t("fields.safe")}
+										</Label>
+										<Controller
+											name="safeId"
+											control={control}
+											render={({ field }) => (
+												<Select value={field.value} onValueChange={field.onChange}>
+													<SelectTrigger className="w-full rounded-full !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
+														<SelectValue placeholder={t("placeholders.safe")} />
+													</SelectTrigger>
+													<SelectContent className="bg-card-select">
+														<SelectItem value="نقدي">{t("options.safe.cash")}</SelectItem>
+														<SelectItem value="الخزينة الرئيسية">{t("options.safe.main")}</SelectItem>
+														<SelectItem value="الخزينة الفرعية">{t("options.safe.sub")}</SelectItem>
+														<SelectItem value="الخزينة الإضافية">{t("options.safe.extra")}</SelectItem>
+													</SelectContent>
+												</Select>
+											)}
+										/>
+									</div>
 								</div>
-							</div>
+							</motion.div>
+						</div>
+						<motion.div
+							className="main-card"
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 0.35 }}
+						>
+							<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
+								{t("sections.notes")}
+							</h3>
+							<Controller
+								name="notes"
+								control={control}
+								render={({ field }) => (
+									<Textarea
+										{...field}
+										placeholder={t("placeholders.notes")}
+										className="min-h-[100px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 rounded-xl"
+									/>
+								)}
+							/>
 						</motion.div>
-					</div>
-
-					{/* Middle Column - Products */}
-					<div className="flex-1 space-y-6">
+						{/* Middle Column - Products */}
 						<motion.div
 							className="main-card"
 							initial={{ opacity: 0, y: 20 }}
@@ -537,10 +560,10 @@ export default function CreateReturnInvoicePage() {
 												{t("table.name")}
 											</th>
 											<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
-												{t("table.returnedQuantity")}
+												{t("table.unitCost")}
 											</th>
 											<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
-												{t("table.unitCost")}
+												{t("table.returnedQuantity")}
 											</th>
 											<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
 												{t("table.taxInclusive")}
@@ -576,35 +599,23 @@ export default function CreateReturnInvoicePage() {
 												</td>
 												<td className="p-3">
 													<div className="flex flex-col gap-1">
-														<Input
-															type="number"
-															value={product.returnedQuantity}
-															onChange={(e) =>
-																handleProductFieldChange(index, "returnedQuantity", e.target.value)
-															}
-															max={product.availableQuantity}
-															className="h-8 w-20"
-														/>
-														<p className="text-[10px] text-gray-500 font-medium">
-															{t("table.available")}: {product.availableQuantity}
-														</p>
-														{errors.items?.[index]?.returnedQuantity && (
-															<p className="text-[10px] text-red-500 font-medium">
-																{errors.items[index].returnedQuantity.message}
-															</p>
-														)}
-													</div>
-												</td>
-												<td className="p-3">
-													<div className="flex flex-col gap-1">
-														<Input
-															type="number"
-															value={product.unitCost}
-															onChange={(e) =>
-																handleProductFieldChange(index, "unitCost", e.target.value)
-															}
-															className="h-8 w-24"
-														/>
+														<div className="flex items-center gap-1">
+															<Input
+																type="number"
+																value={product.unitCost}
+																onChange={(e) =>
+																	handleProductFieldChange(index, "unitCost", e.target.value)
+																}
+																className="h-8 w-24"
+															/>
+
+															<div className="flex items-center gap-1 text-sm text-gray-600">
+																<Tag size={14} className="text-green-600" />
+																<span className="font-medium">{formatCurrency(product.originalUnitCost)}</span>
+																<span className="text-xs text-gray-400">({t("current_price")})</span>
+															</div>
+														</div>
+
 														{errors.items?.[index]?.unitCost && (
 															<p className="text-[10px] text-red-500 font-medium">
 																{errors.items[index].unitCost.message}
@@ -612,6 +623,34 @@ export default function CreateReturnInvoicePage() {
 														)}
 													</div>
 												</td>
+
+												<td className="p-3">
+													<div className="flex flex-col gap-1">
+														<div className="flex items-center gap-1">
+															<Input
+																type="number"
+																value={product.returnedQuantity}
+																onChange={(e) =>
+																	handleProductFieldChange(index, "returnedQuantity", e.target.value)
+																}
+																max={product.availableQuantity}
+																className={cn("h-8 w-20", errors.items?.[index]?.returnedQuantity && "border-red-500")}
+															/>
+															<div className="flex items-center gap-1 text-sm text-gray-600">
+																<Package size={14} className="text-green-600" />
+																<span className="font-medium">{product.availableQuantity}</span>
+																<span className="text-xs text-gray-400">({t("table.available")})</span>
+															</div>
+														</div>
+
+														{errors.items?.[index]?.returnedQuantity && (
+															<p className="text-[10px] text-red-500 font-medium leading-tight">
+																{errors.items[index].returnedQuantity.message}
+															</p>
+														)}
+													</div>
+												</td>
+
 												<td className="p-3">
 													<Select
 														value={product.taxInclusive ? "yes" : "no"}
@@ -661,28 +700,6 @@ export default function CreateReturnInvoicePage() {
 									</tbody>
 								</table>
 							</div>
-						</motion.div>
-
-						<motion.div
-							className="main-card"
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.35 }}
-						>
-							<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
-								{t("sections.notes")}
-							</h3>
-							<Controller
-								name="notes"
-								control={control}
-								render={({ field }) => (
-									<Textarea
-										{...field}
-										placeholder={t("placeholders.notes")}
-										className="min-h-[100px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 rounded-xl"
-									/>
-								)}
-							/>
 						</motion.div>
 					</div>
 

@@ -3255,8 +3255,7 @@
       "noNegative": "Value must be 0 or more",
       "mainVariantRequired": "Main variant is required",
       "mainVariantInItems": "Main variant cannot be part of the bundle items",
-      "duplicateItems": "Bundle cannot contain duplicate items"
-      ,
+      "duplicateItems": "Bundle cannot contain duplicate items",
       "singleSkuRequired": "SKU is required for single product.",
       "totalQuantityRequired": "Total quantity must be greater than 0."
     },
@@ -3312,6 +3311,7 @@
       "price": "Price",
       "quantity": "Quantity",
       "placeholders": {
+        "skuSingle": "Example: PRODUCT-123",
         "sku": "Auto-generated",
         "price": "Enter price"
       }
@@ -3366,9 +3366,9 @@
       "updated": "Product updated successfully",
       "templateAdded": "Added {name}",
       "creating": "Creating product...",
-    "updating": "Updating product...",
-    "createdWithErrors": "Product created, but {count} images failed to upload.",
-    "updatedWithErrors": "Product updated, but {count} images failed to upload."
+      "updating": "Updating product...",
+      "createdWithErrors": "Product created, but {count} images failed to upload.",
+      "updatedWithErrors": "Product updated, but {count} images failed to upload."
     },
     "errors": {
       "mainImageRequired": "Main image is required",
@@ -3650,6 +3650,9 @@
     }
   },
   "validation": {
+    "imageOrPDF": "Only image or PDF files are allowed",
+    "fileTooLargeMB": "File size must be less than {MB} MB",
+    "fileTooLarge": "File too large",
     "quantityExceedsAvailable": "Quantity must not exceed available quantity",
     "supplierRequired": "Supplier is required",
     "receiptNumberRequired": "Receipt number is required",
@@ -3663,7 +3666,8 @@
     "productRequired": "Product is required",
     "returnNumberRequired": "Return number is required",
     "returnTypeRequired": "Return type is required",
-    "taxRateRange": "Tax rate must be between 0 and 100"
+    "taxRateRange": "Tax rate must be between 0 and 100",
+    "invalidFileType": "Invalid file type"
   },
   "purchases": {
     "breadcrumb": {

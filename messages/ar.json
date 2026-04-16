@@ -3255,8 +3255,7 @@
       "noNegative": "القيمة يجب أن تكون 0 أو أكثر",
       "mainVariantRequired": "المتغير الأساسي مطلوب",
       "mainVariantInItems": "المتغير الأساسي لا يمكن أن يكون ضمن عناصر الباندل",
-      "duplicateItems": "الباندل لا يمكن أن يحتوي على عناصر مكررة"
-      ,
+      "duplicateItems": "الباندل لا يمكن أن يحتوي على عناصر مكررة",
       "singleSkuRequired": "رمز SKU مطلوب للمنتج المفرد.",
       "totalQuantityRequired": "إجمالي الكمية يجب أن يكون أكبر من 0."
     },
@@ -3312,6 +3311,7 @@
       "price": "السعر",
       "quantity": "الكمية",
       "placeholders": {
+        "skuSingle": "مثال: PRODUCT-123",
         "sku": "يتم توليده تلقائيًا",
         "price": "أدخل السعر"
       }
@@ -3366,9 +3366,9 @@
       "updated": "تم تحديث المنتج بنجاح",
       "templateAdded": "تمت إضافة {name}",
       "creating": "جاري إنشاء المنتج...",
-    "updating": "جاري تحديث المنتج...",
-    "createdWithErrors": "تم إنشاء المنتج، ولكن فشل رفع {count} من الصور.",
-    "updatedWithErrors": "تم تحديث المنتج، ولكن فشل رفع {count} من الصور."
+      "updating": "جاري تحديث المنتج...",
+      "createdWithErrors": "تم إنشاء المنتج، ولكن فشل رفع {count} من الصور.",
+      "updatedWithErrors": "تم تحديث المنتج، ولكن فشل رفع {count} من الصور."
     },
     "errors": {
       "mainImageRequired": "الصورة الرئيسية مطلوبة",
@@ -3650,6 +3650,9 @@
     }
   },
   "validation": {
+    "imageOrPDF": "يسمح فقط بملفات الصور أو PDF",
+    "fileTooLargeMB": "يجب أن يكون حجم الملف أقل من {MB} ميجابايت",
+    "fileTooLarge": "حجم الملف كبير",
     "quantityExceedsAvailable": "يجب أن تكون الكمية مساوي أو أقل من المخزون",
     "supplierRequired": "المورد مطلوب",
     "receiptNumberRequired": "رقم الإيصال مطلوب",
@@ -3663,7 +3666,8 @@
     "productRequired": "المنتج مطلوب",
     "returnNumberRequired": "رقم المرتجع مطلوب",
     "returnTypeRequired": "نوع المرتجع مطلوب",
-    "taxRateRange": "يجب أن تكون نسبة الضريبة بين 0 و 100"
+    "taxRateRange": "يجب أن تكون نسبة الضريبة بين 0 و 100",
+    "invalidFileType": "نوع ملف غير صالح"
   },
   "purchases": {
     "breadcrumb": {

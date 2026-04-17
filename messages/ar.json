@@ -781,7 +781,9 @@
       "updating": "جاري التحديث...",
       "guide": "كيفية الربط",
       "guideTitle": "دليل التكامل والربط",
-      "configureFirst": "يرجى إعداد التكامل أولاً"
+      "configureFirst": "يرجى إعداد التكامل أولاً",
+      "integrate": "ربط المتجر",
+      "cancelIntegration": "إلغاء الربط"
     },
     "webhook": {
       "title": "إعداد Webhook",
@@ -806,6 +808,7 @@
       "viewDocs": "عرض التوثيق"
     },
     "form": {
+      "syncNewProducts": "مزامنة المنتجات الجديدة",
       "storeInfoSection": "معلومات المتجر",
       "storeName": "اسم المتجر",
       "storeNamePlaceholder": "متجري الإلكتروني",
@@ -856,7 +859,9 @@
     "messages": {
       "statusUpdated": "تم تحديث الحالة بنجاح",
       "syncStarted": "بدأت المزامنة",
-      "secretsRegenerated": "تم إعادة إنشاء الأسرار بنجاح"
+      "secretsRegenerated": "تم إعادة إنشاء الأسرار بنجاح",
+      "easyOrderNotFound": "متجر EasyOrder غير موجود لهذا المستخدم",
+      "integrationCancelled": "تم إلغاء الربط بنجاح"
     }
   },
   "integrated": {

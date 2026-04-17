@@ -21,16 +21,14 @@ import {
   ChevronRight,
   Info,
   ImageIcon,
+  X,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import api, { BASE_URL } from "@/utils/api";
+import api from "@/utils/api";
 import toast from "react-hot-toast";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
 
 import { useRouter } from "@/i18n/navigation";
 import { ModalHeader, ModalShell } from "@/components/ui/modalShell";
@@ -42,8 +40,11 @@ import {
   PROVIDER_CONFIG,
   useStoreConfig,
   useStoreWebhook,
+  generateEasyOrdersInstallUrl,
 } from "@/hook/stores";
 import { useAuth } from "@/context/AuthContext";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Controller } from "react-hook-form";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -59,19 +60,28 @@ function normalizeAxiosError(err) {
 const PROVIDERS = ["easyorder", "shopify", "woocommerce"];
 
 // ─── Provider Configuration ──────────────────────────────────────────────────
-// ★ Added three fields per provider: accent, accentBg, strip
-//   All other fields are identical to the original.
 
 // ─── StoreCard ───────────────────────────────────────────────────────────────
-// ★ ONLY the JSX returned here was changed.
-//   handleToggle, props, and all logic are identical to the original.
 
 export default function StoresIntegrationPage() {
+  const { user } = useAuth();
   const t = useTranslations("storeIntegrations");
   const router = useRouter();
 
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Handle EasyOrder error from URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get("error");
+    if (error === "easyOrder_not_found") {
+      toast.error(t("messages.easyOrderNotFound") || "EasyOrder store not found for this user");
+      // Remove the error from URL without refreshing
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [t]);
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentProvider, setCurrentProvider] = useState(null);
   const [currentStore, setCurrentStore] = useState(null);
@@ -113,7 +123,7 @@ export default function StoresIntegrationPage() {
     }
   };
 
-  const handleConfigure = (provider, store) => {
+  const handleConfigure = async (provider, store) => {
     setCurrentProvider(provider);
     setCurrentStore(store);
     setDialogOpen(true);
@@ -257,13 +267,15 @@ function StoreCard({
   fetchStores,
   index,
 }) {
-  const { hasPermission } = useAuth();
+  const { user, hasPermission } = useAuth();
   const config = PROVIDER_CONFIG[provider];
   const hasStore = !!store;
   const isSyncing = store?.syncStatus === "syncing";
   const isActive = store?.isActive ?? false;
+  const isIntegrated = store?.isIntegrated ?? false;
 
   const [toggling, setToggling] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   async function handleToggle() {
     if (!hasStore) {
@@ -284,6 +296,30 @@ function StoreCard({
       setToggling(false);
     }
   }
+
+  const handleEasyOrderAction = async () => {
+    if (!hasStore) {
+      onConfigure(provider, null);
+      return;
+    }
+
+    if (isIntegrated) {
+      // Cancel integration
+      setCancelling(true);
+      try {
+        await api.patch("/stores/cancel-integration");
+        await fetchStores();
+        toast.success(t("messages.integrationCancelled") || "Integration cancelled successfully");
+      } catch (e) {
+        toast.error(normalizeAxiosError(e));
+      } finally {
+        setCancelling(false);
+      }
+    } else {
+      // Integrate: redirect to install URL
+      window.location.href = generateEasyOrdersInstallUrl(user?.id);
+    }
+  };
 
   // accent shortcuts from the three new PROVIDER_CONFIG tokens
   const accent = config.accent;
@@ -370,7 +406,7 @@ function StoreCard({
             <div className="flex flex-col items-end gap-1 flex-shrink-0">
               <button
                 onClick={handleToggle}
-                disabled={toggling || isSyncing}
+                disabled={toggling || isSyncing || (config.autoIntegrated && !isIntegrated)}
                 className="relative rounded-full transition-all duration-300"
                 style={{
                   width: 40,
@@ -464,16 +500,48 @@ function StoreCard({
       <div
         className="px-4 py-3 flex items-center gap-1.5 flex-wrap border-t border-white/50 dark:border-[var(--border)] bg-white/55 dark:bg-[var(--muted)]/80 backdrop-blur-md"
       >
-        {hasPermission(hasStore ? "stores.update" : "stores.create") && (
-          <button
-            onClick={() => onConfigure(provider, store)}
-            className={fbCls}
-            onMouseEnter={onEnter}
-            onMouseLeave={onLeave}
-          >
-            <Settings2 size={12} />
-            {hasStore ? t("card.settings") : t("card.configureSettings")}
-          </button>
+        {provider === "easyorder" ? (
+          <>
+            <button
+              onClick={handleEasyOrderAction}
+              disabled={cancelling}
+              className={fbCls}
+              onMouseEnter={onEnter}
+              onMouseLeave={onLeave}
+            >
+              {cancelling ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : isIntegrated ? (
+                <X size={12} className="text-red-500" />
+              ) : (
+                <Zap size={12} className="text-amber-500" />
+              )}
+              {isIntegrated ? t("card.cancelIntegration") || "Cancel Integration" : t("card.integrate") || "Integrate"}
+            </button>
+            {hasStore && hasPermission("stores.update") && (
+              <button
+                onClick={() => onConfigure(provider, store)}
+                className={fbCls}
+                onMouseEnter={onEnter}
+                onMouseLeave={onLeave}
+              >
+                <Settings2 size={12} />
+                {t("card.settings")}
+              </button>
+            )}
+          </>
+        ) : (
+          hasPermission(hasStore ? "stores.update" : "stores.create") && (
+            <button
+              onClick={() => onConfigure(provider, store)}
+              className={fbCls}
+              onMouseEnter={onEnter}
+              onMouseLeave={onLeave}
+            >
+              <Settings2 size={12} />
+              {hasStore ? t("card.settings") : t("card.configureSettings")}
+            </button>
+          )
         )}
 
         {config?.guide?.showSteps ? (
@@ -503,7 +571,7 @@ function StoreCard({
           </a>
         ) : null}
 
-        {hasStore && hasPermission("stores.read") && (
+        {hasStore && hasPermission("stores.read") && config.showWebhook ? (
           <button
             onClick={() => onOpenWebhook(provider, store)}
             title="Webhook"
@@ -514,7 +582,7 @@ function StoreCard({
             <Webhook size={12} />
             Webhook
           </button>
-        )}
+        ) : null}
 
         {/* Sync pushed to end; disabled state preserved from original */}
         {hasPermission("stores.update") && (
@@ -595,7 +663,7 @@ function StoreConfigDialog({
     <ModalShell
       open={open}
       onOpenChange={(v) => !v && onClose()}
-      maxWidth="max-w-2xl"
+      maxWidth="max-w-2xl max-h-[90vh] overflow-auto!"
     >
       <ModalHeader
         icon={Settings2}
@@ -650,6 +718,28 @@ function StoreConfigDialog({
                       {errors.storeUrl.message}
                     </div>
                   )}
+                </div>
+
+                <div className="flex gap-1.5">
+                  <Controller
+                    control={control}
+                    name="syncNewProducts"
+                    render={({ field }) => (
+                      <div className="flex items-center gap-2 h-[34px] px-2 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
+                        <Checkbox
+                          id="syncNewProducts"
+                          checked={field.value}
+                          onCheckedChange={(checked) => {
+                            field.onChange(checked);
+                          }}
+                          className="h-6 w-6 border-slate-300 dark:border-slate-600 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                        />
+                        <Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
+                          {t("form.syncNewProducts")}
+                        </Label>
+                      </div>
+                    )}
+                  />
                 </div>
 
                 {/* {!isEdit && (
@@ -763,7 +853,7 @@ function StoreConfigDialog({
               )}
 
               {/* Webhooks Section - only on first-time create; when edit use Webhook modal */}
-              {!isEdit && provider !== "woocommerce" && (
+              {!isEdit && provider !== "woocommerce" && provider !== "easyorder" && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <div className="w-0.5 h-5 bg-primary rounded-full" />
@@ -787,7 +877,7 @@ function StoreConfigDialog({
                         <div className="flex gap-2">
                           <input
                             readOnly
-                            value={config.webhookEndpoints.create(user?.id)}
+                            value={config.webhookEndpoints?.create?.(user?.id) || ""}
                             className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
                           />
                           <button
@@ -795,7 +885,7 @@ function StoreConfigDialog({
                             onClick={() =>
                               navigator.clipboard.writeText(
                                 String(
-                                  config.webhookEndpoints.create(user?.id) ||
+                                  config.webhookEndpoints?.create?.(user?.id) ||
                                   "",
                                 ),
                               )
@@ -815,7 +905,7 @@ function StoreConfigDialog({
                         <div className="flex gap-2">
                           <input
                             readOnly
-                            value={config.webhookEndpoints.update(user?.id)}
+                            value={config.webhookEndpoints?.update?.(user?.id) || ""}
                             className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
                           />
                           <button
@@ -823,7 +913,7 @@ function StoreConfigDialog({
                             onClick={() =>
                               navigator.clipboard.writeText(
                                 String(
-                                  config.webhookEndpoints.update(user?.id) ||
+                                  config.webhookEndpoints?.update?.(user?.id) ||
                                   "",
                                 ),
                               )
@@ -843,7 +933,7 @@ function StoreConfigDialog({
                   </div>
 
                   {/* User-provided webhook secrets */}
-                  {config.fields.webhookSecret &&
+                  {config.fields?.webhookSecret &&
                     config.fields.webhookSecret.userProvides && (
                       <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
@@ -877,124 +967,6 @@ function StoreConfigDialog({
                         )}
                       </div>
                     )}
-
-                  {/* EasyOrder user-provided secrets */}
-                  {provider === "easyorder" && (
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
-                          {t("form.webhookCreateOrderSecret")}
-                        </Label>
-                        <Input
-                          value={fields.webhookCreateOrderSecret || ""}
-                          placeholder={
-                            isEdit
-                              ? masks.webhookCreateOrderSecret ||
-                              t("form.maskedPlaceholder")
-                              : t("form.secretPlaceholder")
-                          }
-                          onChange={(e) => {
-                            setFields((prev) => ({
-                              ...prev,
-                              webhookCreateOrderSecret: e.target.value,
-                            }));
-                            markTouched("webhookCreateOrderSecret");
-                          }}
-                          className={cn(
-
-                            masks?.webhookCreateOrderSecret &&
-                            "placeholder:text-gray-950 dark:placeholder:text-gray-100",
-                          )}
-                        />
-                        {fieldErrors.webhookCreateOrderSecret && (
-                          <div className="text-xs text-red-600">
-                            {fieldErrors.webhookCreateOrderSecret}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
-                          {t("form.webhookUpdateStatusSecret")}
-                        </Label>
-                        <Input
-                          value={fields.webhookUpdateStatusSecret || ""}
-                          placeholder={
-                            isEdit
-                              ? masks.webhookUpdateStatusSecret ||
-                              t("form.maskedPlaceholder")
-                              : t("form.secretPlaceholder")
-                          }
-                          onChange={(e) => {
-                            setFields((prev) => ({
-                              ...prev,
-                              webhookUpdateStatusSecret: e.target.value,
-                            }));
-                            markTouched("webhookUpdateStatusSecret");
-                          }}
-                          className={cn(
-
-                            masks?.webhookUpdateStatusSecret &&
-                            "placeholder:text-gray-950 dark:placeholder:text-gray-100",
-                          )}
-                        />
-                        {fieldErrors.webhookUpdateStatusSecret && (
-                          <div className="text-xs text-red-600">
-                            {fieldErrors.webhookUpdateStatusSecret}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* WooCommerce system-generated secrets */}
-                  {/* {provider === "woocommerce" && (
-									<>
-										{(systemSecrets.webhookCreateOrderSecret || systemSecrets.webhookUpdateStatusSecret) && (
-											<div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 space-y-3">
-												<p className="text-xs font-semibold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
-													<AlertCircle size={13} />
-													{t("instructions.systemSecretsTitle")}
-												</p>
-												<p className="text-xs text-amber-700 dark:text-amber-400">
-													{t("instructions.systemSecretsDescription")}
-												</p>
-
-												{systemSecrets.webhookCreateOrderSecret && (
-													<div className="space-y-0.5">
-														<p className="text-xs text-amber-600 dark:text-amber-400 font-semibold">
-															{t("form.webhookCreateOrderSecret")}
-														</p>
-														<CopyableCode text={systemSecrets.webhookCreateOrderSecret} />
-													</div>
-												)}
-
-												{systemSecrets.webhookUpdateStatusSecret && (
-													<div className="space-y-0.5">
-														<p className="text-xs text-amber-600 dark:text-amber-400 font-semibold">
-															{t("form.webhookUpdateStatusSecret")}
-														</p>
-														<CopyableCode text={systemSecrets.webhookUpdateStatusSecret} />
-													</div>
-												)}
-
-												{isEdit && (
-													<Button
-														type="button"
-														variant="outline"
-														size="sm"
-														onClick={handleRegenerateSecrets}
-														disabled={regeneratingSecrets}
-														className="mt-2"
-													>
-														{regeneratingSecrets && <Loader2 size={14} className="mr-2 animate-spin" />}
-														{t("form.regenerateSecrets")}
-													</Button>
-												)}
-											</div>
-										)}
-									</>
-								)} */}
                 </div>
               )}
 
@@ -1083,7 +1055,7 @@ function StoreWebhookModal({ provider, store, onClose, fetchStores, t }) {
                 <input
                   readOnly
                   value={config.webhookEndpoints.create(user?.id)}
-
+                  className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
                 />
                 <button
                   type="button"
@@ -1105,7 +1077,7 @@ function StoreWebhookModal({ provider, store, onClose, fetchStores, t }) {
                 <input
                   readOnly
                   value={config.webhookEndpoints.update(user?.id)}
-
+                  className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
                 />
                 <button
                   type="button"
@@ -1123,11 +1095,32 @@ function StoreWebhookModal({ provider, store, onClose, fetchStores, t }) {
               {t("webhook.urlHint")}
             </p>
 
-            {/* EasyOrder / Shopify: user-provided secrets (input + save) */}
-            {(provider === "easyorder" || provider === "shopify") && (
+            {/* User-provided secrets (input + save) */}
+            {Object.keys(config.fields || {}).some(key => config.fields[key].userProvides) && (
               <>
-                {provider === "easyorder" && (
-                  <div className="grid grid-cols-1 gap-3">
+                <div className="grid grid-cols-1 gap-3">
+                  {config.fields.webhookSecret?.userProvides && (
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-[var(--card-foreground)]">
+                        {t("form.webhookSecret")}
+                      </label>
+                      <Input
+                        value={webhookFields.webhookSecret ?? ""}
+                        placeholder={
+                          cred.webhookSecret
+                            ? t("form.maskedPlaceholder") || "••••••••"
+                            : t("form.secretPlaceholder")
+                        }
+                        onChange={(e) =>
+                          setWebhookFields((p) => ({
+                            ...p,
+                            webhookSecret: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                  )}
+                  {config.fields.webhookCreateOrderSecret?.userProvides && (
                     <div className="space-y-1.5">
                       <label className="text-sm font-medium text-[var(--card-foreground)]">
                         {t("form.webhookCreateOrderSecret")}
@@ -1145,9 +1138,10 @@ function StoreWebhookModal({ provider, store, onClose, fetchStores, t }) {
                             webhookCreateOrderSecret: e.target.value,
                           }))
                         }
-
                       />
                     </div>
+                  )}
+                  {config.fields.webhookUpdateStatusSecret?.userProvides && (
                     <div className="space-y-1.5">
                       <label className="text-sm font-medium text-[var(--card-foreground)]">
                         {t("form.webhookUpdateStatusSecret")}
@@ -1165,38 +1159,15 @@ function StoreWebhookModal({ provider, store, onClose, fetchStores, t }) {
                             webhookUpdateStatusSecret: e.target.value,
                           }))
                         }
-
                       />
                     </div>
-                  </div>
-                )}
-                {provider === "shopify" && (
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-[var(--card-foreground)]">
-                      {t("form.webhookSecret")}
-                    </label>
-                    <Input
-                      value={webhookFields.webhookSecret ?? ""}
-                      placeholder={
-                        cred.webhookSecret
-                          ? t("form.maskedPlaceholder") || "••••••••"
-                          : t("form.secretPlaceholder")
-                      }
-                      onChange={(e) =>
-                        setWebhookFields((p) => ({
-                          ...p,
-                          webhookSecret: e.target.value,
-                        }))
-                      }
-
-                    />
-                  </div>
-                )}
+                  )}
+                </div>
                 <PrimaryBtn
                   onClick={saveSecrets}
                   disabled={saving}
                   loading={saving}
-                  className="w-full"
+                  className="w-full mt-2"
                 >
                   {t("form.update")}
                 </PrimaryBtn>
@@ -1216,7 +1187,7 @@ function StoreWebhookModal({ provider, store, onClose, fetchStores, t }) {
                         <input
                           readOnly
                           value={cred.webhookCreateOrderSecret}
-
+                          className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
                         />
                         <button
                           type="button"
@@ -1240,7 +1211,7 @@ function StoreWebhookModal({ provider, store, onClose, fetchStores, t }) {
                         <input
                           readOnly
                           value={cred.webhookUpdateStatusSecret}
-
+                          className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
                         />
                         <button
                           type="button"
@@ -1556,5 +1527,3 @@ export function StoreGuideModal({ provider, onClose }) {
     </ModalShell>
   );
 }
-
-// ─── Main Page Component ─────────────────────────────────────────────────────

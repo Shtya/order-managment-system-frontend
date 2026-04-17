@@ -45,3 +45,91 @@ reviews:
             suggestion: ''
             type: approve
             time: '2026-04-16T22:03:56.842Z'
+  storeIntegrations.messages.easyOrderNotFound:
+    locales:
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: pKZUCUMeI6ZhqAR1JfKaQ
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-17T14:55:22.526Z'
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: qWDrecX_bNZLZW0aXxL3l
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-17T14:55:24.692Z'
+  storeIntegrations.messages.integrationCancelled:
+    locales:
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: rfKT8L5kXfFuK1FhsqUr-
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-17T14:55:46.510Z'
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: dcCUAr7vWeLec13Invd44
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-17T14:55:48.900Z'
+  storeIntegrations.card.integrate:
+    locales:
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: EEgIbSDKm7OuliSLbAZFL
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-17T14:56:14.531Z'
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: CBN-xBfuEtoEzjtwOe5tF
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-17T14:56:16.949Z'
+  storeIntegrations.card.cancelIntegration:
+    locales:
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: lhi40Vj1dPRALIoqyR3Q1
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-17T14:56:35.293Z'
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: KkWxtCB5v2vHdko3d-Da2
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-17T14:56:38.314Z'

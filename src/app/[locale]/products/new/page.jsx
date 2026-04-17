@@ -636,6 +636,14 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	}, [upsellingEnabled, setValue]);
 
 	const wholesalePrice = watch('wholesalePrice');
+	const categoryId = watch('categoryId');
+	const storeId = watch('storeId');
+	const warehouseId = watch('warehouseId');
+
+	console.log("warehouseId", warehouseId);
+	console.log("storeId", storeId);
+	console.log("categoryId", categoryId);
+
 	const attributesWatch = useWatch({ control, name: 'attributes' });
 	const combinationsWatch = useWatch({ control, name: 'combinations' });
 
@@ -697,7 +705,6 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 	useEffect(() => {
 		if (currentSig !== initialSig) {
-			console.log(true)
 			isAttrEdited.current = true;
 		}
 	}, [currentSig, initialSig])
@@ -913,9 +920,9 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			if ((data.storageRack ?? '').trim()) fd.append('storageRack', data.storageRack.trim());
 			if ((data.slug ?? '').trim()) fd.append('slug', data.slug.trim());
 
-			if (data.categoryId && data.categoryId !== 'none') fd.append('categoryId', data.categoryId);
-			if (data.storeId && data.storeId !== 'none') fd.append('storeId', data.storeId);
-			if (data.warehouseId && data.warehouseId !== 'none') fd.append('warehouseId', data.warehouseId);
+			if (data.categoryId) fd.append('categoryId', data.categoryId);
+			if (data.storeId) fd.append('storeId', data.storeId);
+			if (data.warehouseId) fd.append('warehouseId', data.warehouseId);
 			if ((data.description ?? '').trim()) fd.append('description', data.description.trim());
 			if ((data.callCenterProductDescription ?? '').trim()) fd.append('callCenterProductDescription', data.callCenterProductDescription.trim());
 			fd.append('upsellingEnabled', data.upsellingEnabled ? 'true' : 'false');
@@ -1035,8 +1042,9 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			type: existingProduct.type || 'variable',
 			name: existingProduct.name || '', slug: existingProduct.slug || '', wholesalePrice: existingProduct.wholesalePrice?.toString() || '',
 			salePrice: existingProduct.salePrice?.toString() || '', lowestPrice: existingProduct.lowestPrice?.toString() || '', storageRack: existingProduct.storageRack || '',
-			categoryId: existingProduct.categoryId ? String(existingProduct.categoryId) : 'none', storeId: existingProduct.storeId ? String(existingProduct.storeId) : 'none',
-			warehouseId: existingProduct.warehouseId ? String(existingProduct.warehouseId) : 'none', description: existingProduct.description || '',
+			categoryId: (existingProduct.categoryId || existingProduct.category?.id) ? String(existingProduct.categoryId || existingProduct.category?.id) : 'none',
+			storeId: (existingProduct.storeId || existingProduct.store?.id) ? String(existingProduct.storeId || existingProduct.store?.id) : 'none',
+			warehouseId: (existingProduct.warehouseId || existingProduct.warehouse?.id) ? String(existingProduct.warehouseId || existingProduct.warehouse?.id) : 'none', description: existingProduct.description || '',
 			callCenterProductDescription: existingProduct.callCenterProductDescription || '', upsellingEnabled: existingProduct.upsellingEnabled || false,
 			upsellingProducts: existingProduct.upsellingProducts || [], attributes: extractedAttributes, combinations: combinations
 		});
@@ -1047,7 +1055,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 	const [slugStatus, setSlugStatus] = useState(null);
 	const watchSlug = watch('slug');
-	const storeId = watch('storeId');
+
 	useEffect(() => {
 		if (!watchSlug || errors.slug) { setSlugStatus(null); return; }
 		const checkUnique = setTimeout(async () => {
@@ -1211,19 +1219,41 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 										<Controller
 											control={control}
 											name="categoryId"
-											render={({ field }) => (
-												<Select value={field.value || ''} onValueChange={field.onChange}>
-													<SelectTrigger >
-														<SelectValue placeholder={t('placeholders.category')} />
-													</SelectTrigger>
-													<SelectContent>
-														<SelectItem value="none">{t('common.none')}</SelectItem>
-														{categories.map((c) => (
-															<SelectItem key={c.id} value={String(c.id)}>{c.label ?? c.name ?? `#${c.id}`}</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
-											)}
+											render={({ field }) => {
+												// 1. Check if the currently selected category ID is missing from the loaded categories array
+												const isOrphan = field.value && field.value !== 'none' && !categories.some(c => String(c.id) === field.value);
+
+												return (
+													<Select
+														value={field.value || ''}
+														onValueChange={(val) => {
+															// 2. Block the auto-wipe while allowing intentional 'none'
+															if (!val && field.value && field.value !== 'none') return;
+															field.onChange(val);
+														}}
+													>
+														<SelectTrigger>
+															<SelectValue placeholder={t('placeholders.category')} />
+														</SelectTrigger>
+														<SelectContent>
+															<SelectItem value="none">{t('common.none')}</SelectItem>
+
+															{/* 3. Inject the temporary option to satisfy Radix UI */}
+															{isOrphan && (
+																<SelectItem value={field.value}>
+																	{existingProduct?.category?.name ?? existingProduct?.category?.label ?? `#${field.value}`}
+																</SelectItem>
+															)}
+
+															{categories.map((c) => (
+																<SelectItem key={c.id} value={String(c.id)}>
+																	{c.label ?? c.name ?? `#${c.id}`}
+																</SelectItem>
+															))}
+														</SelectContent>
+													</Select>
+												);
+											}}
 										/>
 									</Field>
 
@@ -1231,19 +1261,39 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 										<Controller
 											control={control}
 											name="storeId"
-											render={({ field }) => (
-												<Select value={field.value || ''} onValueChange={field.onChange}>
-													<SelectTrigger >
-														<SelectValue placeholder={t('placeholders.store')} />
-													</SelectTrigger>
-													<SelectContent>
-														<SelectItem value="none">{t('common.none')}</SelectItem>
-														{stores.map((s) => (
-															<SelectItem key={s.id} value={String(s.id)}>{s.label ?? s.name ?? `#${s.id}`}</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
-											)}
+											render={({ field }) => {
+												// 1. Identify if the current value is missing from the async list
+												const isOrphan = field.value && field.value !== 'none' && !stores.some(s => String(s.id) === field.value);
+
+												return (
+													<Select
+														value={field.value || ''}
+														onValueChange={(val) => {
+															// 2. Guard against UI auto-clears (allow explicit "none" but block empty strings)
+															if (!val && field.value && field.value !== 'none') return;
+															field.onChange(val);
+														}}
+													>
+														<SelectTrigger >
+															<SelectValue placeholder={t('placeholders.store')} />
+														</SelectTrigger>
+														<SelectContent>
+															<SelectItem value="none">{t('common.none')}</SelectItem>
+
+															{/* 3. Render a temporary option so the Select considers the ID valid */}
+															{isOrphan && (
+																<SelectItem value={field.value}>
+																	{existingProduct?.store?.name ?? existingProduct?.store?.label ?? `#${field.value}`}
+																</SelectItem>
+															)}
+
+															{stores.map((s) => (
+																<SelectItem key={s.id} value={String(s.id)}>{s.label ?? s.name ?? `#${s.id}`}</SelectItem>
+															))}
+														</SelectContent>
+													</Select>
+												);
+											}}
 										/>
 									</Field>
 
@@ -1251,19 +1301,36 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 										<Controller
 											control={control}
 											name="warehouseId"
-											render={({ field }) => (
-												<Select value={field.value || ''} onValueChange={field.onChange}>
-													<SelectTrigger >
-														<SelectValue placeholder={t('placeholders.warehouse')} />
-													</SelectTrigger>
-													<SelectContent>
-														<SelectItem value="none">{t('common.none')}</SelectItem>
-														{warehouses.map((w) => (
-															<SelectItem key={w.id} value={String(w.id)}>{w.label ?? w.name ?? `#${w.id}`}</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
-											)}
+											render={({ field }) => {
+												const isOrphan = field.value && field.value !== 'none' && !warehouses.some(w => String(w.id) === field.value);
+
+												return (
+													<Select
+														value={field.value || ''}
+														onValueChange={(val) => {
+															if (!val && field.value && field.value !== 'none') return;
+															field.onChange(val);
+														}}
+													>
+														<SelectTrigger >
+															<SelectValue placeholder={t('placeholders.warehouse')} />
+														</SelectTrigger>
+														<SelectContent>
+															<SelectItem value="none">{t('common.none')}</SelectItem>
+
+															{isOrphan && (
+																<SelectItem value={field.value}>
+																	{existingProduct?.warehouse?.name ?? existingProduct?.warehouse?.label ?? `#${field.value}`}
+																</SelectItem>
+															)}
+
+															{warehouses.map((w) => (
+																<SelectItem key={w.id} value={String(w.id)}>{w.label ?? w.name ?? `#${w.id}`}</SelectItem>
+															))}
+														</SelectContent>
+													</Select>
+												);
+											}}
 										/>
 									</Field>
 

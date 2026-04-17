@@ -10,6 +10,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { toast } from 'react-hot-toast';
 import { getUser } from './getUser';
 import { tenantId } from '@/utils/healpers';
+import { useAuth } from '@/context/AuthContext';
 
 export const STORE_PROVIDERS = [
     {
@@ -41,6 +42,8 @@ export const STORE_PROVIDERS = [
 
 export const PROVIDER_CONFIG = {
     easyorder: {
+        autoIntegrated: true,
+        showWebhook: false,
         label: "EasyOrder",
         logo: "/integrate/easyorder.png",
         website: "easy-orders.net",
@@ -51,7 +54,7 @@ export const PROVIDER_CONFIG = {
         strip: "linear-gradient(90deg,#c8832a,#e8a84a)",
         docsLink: "https://public-api-docs.easy-orders.net/docs/intro",
         guide: {
-            showSteps: true,
+            showSteps: false,
             tabs: [
                 {
                     key: "api",
@@ -163,7 +166,7 @@ export const PROVIDER_CONFIG = {
                                 en: "Create another webhook. Copy the webhook URL provided below and paste it into the URL field. Then select the type 'Order Status Update' and click Save.",
                                 ar: "قم بإنشاء Webhook آخر. قم بنسخ رابط الـ Webhook الموضح بالأسفل وألصقه في حقل الرابط (URL)، ثم اختر النوع 'Order Status Update' واضغط حفظ."
                             },
-                            url: `${BASE_URL}/stores/webhooks/easyorder/orders/status`,
+                            url: (me) => `${BASE_URL}/stores/webhooks/${tenantId(me)}/easyorder/orders/status`,
                             image: "/guide/easyorder/webhook-step5.png",
                         },
                         {
@@ -179,17 +182,16 @@ export const PROVIDER_CONFIG = {
                         },
                     ]
                 }
-            ], docsUrl: "https://public-api-docs.easy-orders.net/docs/authentication"
+            ],
+            // docsUrl: "https://public-api-docs.easy-orders.net/docs/authentication"
         },
         webhookDocsUrl: "https://public-api-docs.easy-orders.net/docs/webhooks",
         fields: {
-            apiKey: { required: true, userProvides: true },
-            webhookCreateOrderSecret: { required: true, userProvides: true },
-            webhookUpdateStatusSecret: { required: true, userProvides: true },
+            // EasyOrder only needs name and storeUrl for initial upsert
         },
         webhookEndpoints: {
             create: (adminId) => `${BASE_URL}/stores/webhooks/${adminId}/easyorder/orders/create`,
-            update: (adminId) => `${BASE_URL}/stores/webhooks/easyorder/orders/status`,
+            update: (adminId) => `${BASE_URL}/stores/webhooks/${adminId}/easyorder/orders/status`,
         },
         instructions: {
             apiKey: [
@@ -209,6 +211,7 @@ export const PROVIDER_CONFIG = {
         },
     },
     shopify: {
+        showWebhook: true,
         label: "Shopify",
         logo: "/integrate/shopify.png",
         website: "shopify.com",
@@ -321,7 +324,7 @@ export const PROVIDER_CONFIG = {
                                 en: "Click 'Create Webhook'. For Event select 'Order Update', format JSON, then copy the URL shown below into the URL field in Shopify.",
                                 ar: "اضغط على 'Create Webhook'. اختر Event 'Order Update'، الصيغة JSON، ثم انسخ الرابط المعروض أدناه وألصقه في حقل URL في Shopify."
                             },
-                            url: (me) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/shopify/orders/status`,
+                            url: (me) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/${tenantId(me)}/shopify/orders/status`,
                             image: "/guide/shopify/webhook-step3.png",
                         }
                     ]
@@ -336,7 +339,7 @@ export const PROVIDER_CONFIG = {
         },
         webhookEndpoints: {
             create: (adminId) => `${BASE_URL}/stores/webhooks/${adminId}/shopify/orders/create`,
-            update: (adminId) => `${BASE_URL}/stores/webhooks/shopify/orders/status`,
+            update: (adminId) => `${BASE_URL}/stores/webhooks/${adminId}/shopify/orders/status`,
         },
         instructions: {
             apiKey: [
@@ -354,6 +357,7 @@ export const PROVIDER_CONFIG = {
         },
     },
     woocommerce: {
+        showWebhook: true,
         label: "WooCommerce",
         logo: "/integrate/woocommerce.png",
         website: "woocommerce.com",
@@ -481,7 +485,7 @@ export const PROVIDER_CONFIG = {
         },
         webhookEndpoints: {
             create: (adminId) => `${BASE_URL}/stores/webhooks/${adminId}/woocommerce/orders/create`,
-            update: (adminId) => `${BASE_URL}/stores/webhooks/woocommerce/orders/status`,
+            update: (adminId) => `${BASE_URL}/stores/webhooks/${adminId}/woocommerce/orders/status`,
         },
         instructions: {
             apiKey: [
@@ -498,6 +502,31 @@ export const PROVIDER_CONFIG = {
             ],
         },
     },
+};
+
+export function generateEasyOrdersInstallUrl(adminId) {
+    const baseUrl = "https://app.easy-orders.net/#/install-app";
+
+    const apiBase = "https://binaural-taryn-unprecipitatively.ngrok-free.dev"
+    const appBase = process.env.NEXT_PUBLIC_FRONTEND_URL; // http://localhost:3000
+    const iconURL = `${appBase}/Logo.png`; // You can also use a NEXT_PUBLIC_ icon env here
+
+    const params = new URLSearchParams({
+        app_name: "Madar",
+        app_description: "Madar System Integration",
+        app_icon: iconURL,
+        callback_url: `${apiBase}/stores/webhooks/easyorder/callback?adminId=${adminId}`,
+        orders_webhook: `${apiBase}/stores/webhooks/${adminId}/easyorder/orders/create`,
+        order_status_webhook: `${apiBase}/stores/webhooks/${adminId}/easyorder/orders/status`,
+        permissions: [
+            "products:create", "products:read", "products:update", "products:delete",
+            "orders:create", "orders:read", "orders:update", "orders:delete",
+            "shipping_areas", "categories:create", "categories:read", "categories:update", "categories:delete"
+        ].join(","),
+        redirect_url: `${appBase}/store-integration`
+    });
+
+    return `${baseUrl}?${params.toString()}`;
 };
 
 export function useStoreWebhook({ store, provider, onClose }) {
@@ -580,7 +609,7 @@ export function useStoreWebhook({ store, provider, onClose }) {
 
     // --- Action: Rotate WooCommerce Secrets ---
     const rotateWooCommerce = async () => {
-        if(!store?.id) return;
+        if (!store?.id) return;
         setRotating(true);
         setError(null);
         try {
@@ -620,6 +649,7 @@ export function useStoreWebhook({ store, provider, onClose }) {
 
 
 export function useStoreConfig({ open, onClose, provider, existingStore, fetchStores, onCreated }) {
+    const { user } = useAuth();
     const t = useTranslations("storeIntegrations");
     const config = PROVIDER_CONFIG[provider];
     const isEdit = !!existingStore;
@@ -633,6 +663,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
         () =>
             yup.object({
                 name: yup.string().trim().required(t("validation.nameRequired")),
+                syncNewProducts: yup.boolean().default(true),
                 storeUrl: yup.string().trim().url(t("validation.invalidUrl")).required(t("validation.storeUrlRequired")),
                 isActive: yup.boolean().default(true),
             }),
@@ -646,7 +677,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
         reset,
         formState: { errors, isSubmitting },
     } = useForm({
-        defaultValues: { name: "", storeUrl: "", isActive: true },
+        defaultValues: { name: "", storeUrl: "", isActive: true, syncNewProducts: true },
         resolver: yupResolver(schema),
     });
 
@@ -672,6 +703,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
                     reset({
                         name: d.name || "",
                         storeUrl: d.storeUrl || "",
+                        syncNewProducts: d.syncNewProducts ?? true,
                         isActive: d.isActive ?? true,
                     });
 
@@ -680,7 +712,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
                     const newMasks = {};
                     const newSystemSecrets = {};
 
-                    Object.keys(config.fields).forEach((fieldName) => {
+                    Object.keys(config.fields || {}).forEach((fieldName) => {
                         if (config.fields[fieldName].systemProvides) {
                             newSystemSecrets[fieldName] = integ[fieldName] || "";
                         } else {
@@ -698,7 +730,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
                 }
             })();
         } else {
-            reset({ name: "", storeUrl: "", isActive: true });
+            reset({ name: "", storeUrl: "", isActive: true, syncNewProducts: true });
             setMasks({});
             setSystemSecrets({});
         }
@@ -707,7 +739,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
         setFields({});
         setTouched({});
         setFieldErrors({});
-    }, [open, isEdit, existingStore?.id, provider, config, reset]);
+    }, [open, isEdit, existingStore?.id, provider, config, reset, onClose]);
 
     const markTouched = (field) => setTouched((prev) => ({ ...prev, [field]: true }));
 
@@ -723,11 +755,11 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
         });
         if (!allRequiredSatisfied) return false;
 
-        if (isEdit) {
-            // 2. On edit: at least one new value
-            const hasAtLeastOneNewValue = fieldEntries.some(([key]) => (fields[key]?.trim() || "").length > 0);
-            return hasAtLeastOneNewValue;
-        }
+        // if (isEdit) {
+        //     // 2. On edit: at least one new value
+        //     const hasAtLeastOneNewValue = fieldEntries.some(([key]) => (fields[key]?.trim() || "").length > 0);
+        //     return hasAtLeastOneNewValue;
+        // }
         // Create: all required must have value in fields
         return requiredUserFields.every(([key]) => (fields[key]?.trim() || "").length > 0);
     };
@@ -760,7 +792,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
         let createdStoreId = null;
 
         // Validate required user-provided fields on create
-        if (!isEdit) {
+        if (!isEdit && provider !== "easyorder") {
             let hasError = false;
             Object.entries(config.fields).forEach(([fieldName, fieldConfig]) => {
                 if (fieldConfig.userProvides && fieldConfig.required && !fields[fieldName]?.trim()) {
@@ -779,8 +811,22 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
             const payload = {
                 name: data.name.trim(),
                 storeUrl: data.storeUrl.trim(),
-                isActive: data.isActive,
+                syncNewProducts: data.syncNewProducts,
             };
+
+            if (provider === "easyorder") {
+                // EasyOrder uses the upsert endpoint
+                await api.post("/stores/integrations", { ...payload, provider: "easyorder" });
+                await fetchStores();
+                onClose();
+                // Redirect to install URL only in create mode
+                if (!isEdit) {
+                    window.location.href = generateEasyOrdersInstallUrl(user?.id);
+                } else {
+                    toast.success(t("form.updateSuccess"));
+                }
+                return;
+            }
 
             if (isEdit) {
                 // Only include touched user-provided fields

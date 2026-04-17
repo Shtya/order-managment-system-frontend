@@ -781,7 +781,9 @@
       "updating": "Updating...",
       "guide": "How to Connect",
       "guideTitle": "Integration and Connection Guide",
-      "configureFirst": "Please configure the integration first"
+      "configureFirst": "Please configure the integration first",
+      "integrate": "Integrate",
+      "cancelIntegration": "Cancel Integration"
     },
     "webhook": {
       "title": "Webhook Setup",
@@ -806,6 +808,7 @@
       "viewDocs": "View Documentation"
     },
     "form": {
+      "syncNewProducts": "Sync New Products",
       "storeInfoSection": "Store Information",
       "storeName": "Store Name",
       "storeNamePlaceholder": "My Online Store",
@@ -856,7 +859,9 @@
     "messages": {
       "statusUpdated": "Status updated successfully",
       "syncStarted": "Sync started",
-      "secretsRegenerated": "Secrets regenerated successfully"
+      "secretsRegenerated": "Secrets regenerated successfully",
+      "easyOrderNotFound": "EasyOrder store not found for this user",
+      "integrationCancelled": "Integration cancelled successfully"
     }
   },
   "integrated": {

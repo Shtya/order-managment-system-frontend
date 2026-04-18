@@ -352,6 +352,8 @@
     "viewBarcode": "توسيع الباركود"
   },
   "sidebar": {
+    "stores": "المتاجر",
+    "syncFailures": "أخطاء مزامنة المنتجات",
     "locked": "مغلق",
     "subscription_required": "الاشتراك مطلوب",
     "logo": "لوجو",
@@ -4351,7 +4353,8 @@
         "total": "الاجمالي",
         "paymentMethods": {
           "cod": "الدفع عند الاستلام"
-        }
+        },
+        "email": "البريد الإلكتروني"
       },
       "actions": {
         "retryOrder": "إعادة المحاولة وحفظ الطلب",
@@ -4408,7 +4411,8 @@
         "retryCount": "عدد المحاولات",
         "customerPhone": "رقم الهاتف",
         "lastRetryFailedReason": "سبب فشل أخر محاولة",
-        "itemNameVsQuantity": "المنتجات"
+        "itemNameVsQuantity": "المنتجات",
+        "customerEmail": "البريد الإلكتروني"
       },
       "filters": {
         "store": "المتجر",
@@ -8296,5 +8300,67 @@
       }
     },
     "history": "التقفيلات السابقة"
+  },
+  "syncFailures": {
+    "title": "أخطاء مزامنة المنتجات",
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "stores": "المتاجر",
+      "syncFailures": "أخطاء مزامنة المنتجات"
+    },
+    "stats": {
+      "total": "إجمالي الأخطاء",
+      "create": "أخطاء الإنشاء",
+      "update": "أخطاء التحديث"
+    },
+    "columns": {
+      "remoteProductId": "معرف المنتج الخارجي",
+      "product": "المنتج",
+      "store": "المتجر",
+      "action": "الإجراء",
+      "status": "الحالة",
+      "date": "التاريخ",
+      "error": "رسالة الخطأ",
+      "responseStatus": "كود الخطأ",
+      "create": "إنشاء",
+      "update": "تحديث",
+      "actions": "الإجراءات"
+    },
+    "filters": {
+      "action": "نوع الإجراء",
+      "allActions": "كل الإجراءات",
+      "create": "إنشاء",
+      "update": "تحديث",
+      "store": "المتجر",
+      "allStores": "كل المتاجر",
+      "dateRange": "الفترة الزمنية",
+      "apply": "تطبيق الفلاتر",
+      "export": "تصدير السجلات"
+    },
+    "toolbar": {
+      "searchPlaceholder": "البحث باسم المنتج، الرابط...",
+      "filter": "تصفية"
+    },
+    "common": {
+      "total": "إجمالي السجلات",
+      "limit": "عدد السجلات في الصفحة"
+    },
+    "empty": {
+      "title": "لم يتم العثور على أخطاء مزامنة",
+      "subtitle": "حاول تغيير الفلاتر أو كلمة البحث"
+    },
+    "details": {
+      "title": "تفاصيل سجل الخطأ",
+      "requestPayload": "بيانات الطلب (Payload)",
+      "errorMessage": "رسالة الخطأ",
+      "responseStatus": "حالة الاستجابة",
+      "remoteProductId": "معرف المنتج البعيد",
+      "action": "الإجراء",
+      "date": "وقت الحدوث"
+    },
+    "actions": {
+      "close": "إلغاء",
+      "view": "عرض التفاصيل"
+    }
   }
 }

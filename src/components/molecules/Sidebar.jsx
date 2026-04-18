@@ -58,6 +58,8 @@ import {
   Headset,
   RefreshCcw,
   Receipt,
+  AlertTriangle,
+  Store,
 } from "lucide-react";
 import { FaUserTie } from "react-icons/fa6";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -645,6 +647,18 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       href: "/store-integration",
       roles: ["ADMIN"],
       permission: "stores.read",
+      children: [
+        {
+          icon: Store,
+          labelKey: "stores",
+          href: "/store-integration",
+        },
+        {
+          icon: AlertTriangle,
+          labelKey: "syncFailures",
+          href: "/store-integration/sync-failures",
+        },
+      ],
     },
     {
       icon: BarChart3,

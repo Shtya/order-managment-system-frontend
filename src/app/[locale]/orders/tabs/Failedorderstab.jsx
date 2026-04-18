@@ -431,7 +431,11 @@ function FailedOrderDetailsModal({
                     <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-2 ">
                         <Label className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1.5 block">{t('labels.name')}</Label>
-                        <p className="text-sm font-black text-slate-900 dark:text-white truncate">{payload?.full_name || '—'}</p>
+                        <p className="text-sm font-black text-slate-900 dark:text-white truncate">{payload?.fullName || '—'}</p>
+                      </div>
+                      <div className="space-y-2 ">
+                        <Label className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1.5 block">{t('labels.email')}</Label>
+                        <p className="text-sm font-black text-slate-900 dark:text-white truncate">{payload?.email || '—'}</p>
                       </div>
                       <div className="space-y-2 ">
                         <Label className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1.5 block">{t('labels.phone')}</Label>
@@ -440,13 +444,13 @@ function FailedOrderDetailsModal({
                           {payload?.phone || '—'}
                         </p>
                       </div>
-                    </div>
-                    <div className="space-y-2 ">
-                      <Label className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1.5 block">{t('labels.government')}</Label>
-                      <p className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
-                        <MapPin className="w-3.5 h-3.5 text-primary" />
-                        {payload?.government || '—'}
-                      </p>
+                      <div className="space-y-2 ">
+                        <Label className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1.5 block">{t('labels.government')}</Label>
+                        <p className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                          <MapPin className="w-3.5 h-3.5 text-primary" />
+                          {payload?.government || '—'}
+                        </p>
+                      </div>
                     </div>
                     <div className="pt-4 space-y-2 border-t-2 border-gray-50 dark:border-slate-800">
                       <Label className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1.5 block">{t('labels.address')}</Label>
@@ -469,7 +473,7 @@ function FailedOrderDetailsModal({
                         <Label className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1.5 block">{t('labels.paymentMethod')}</Label>
                         <Badge variant="outline" className="font-black px-2 py-0.5 rounded-lg border-2 uppercase text-[10px] tracking-wider">
                           <CreditCard className="w-3 h-3 mr-1.5" />
-                          {payload?.payment_method === "cod" ? t('labels.paymentMethods.cod') : payload?.payment_method || "—"}
+                          {payload?.paymentMethod === "cod" ? t('labels.paymentMethods.cod') : payload?.paymentMethod || "—"}
                         </Badge>
                       </div>
                       <div className="space-y-2">
@@ -480,11 +484,11 @@ function FailedOrderDetailsModal({
                     <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <Label className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1.5 block">{t('labels.shippingCost')}</Label>
-                        <p className="text-sm font-black text-slate-900 dark:text-white">{formatCurrency(payload?.shipping_cost || 0)}</p>
+                        <p className="text-sm font-black text-slate-900 dark:text-white">{formatCurrency(payload?.shippingCost || 0)}</p>
                       </div>
                       <div className="space-y-2">
                         <Label className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1.5 block">{t('labels.total')}</Label>
-                        <p className="text-sm font-black text-slate-900 dark:text-white">{formatCurrency(payload?.total || 0)}</p>
+                        <p className="text-sm font-black text-slate-900 dark:text-white">{formatCurrency(payload?.totalCost || 0)}</p>
                       </div>
                     </div>
                   </div>
@@ -513,7 +517,7 @@ function FailedOrderDetailsModal({
                     <thead className="bg-gray-50/50 dark:bg-slate-800/50 border-b-2 border-gray-100 dark:border-slate-800">
                       <tr>
                         <th className="text-right p-4 font-black text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-widest">{t('table.product')}</th>
-                        <th className="text-center p-4 font-black text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-widest">{t('table.sku')}</th>
+                        {/* <th className="text-center p-4 font-black text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-widest">{t('table.sku')}</th> */}
                         <th className="text-center p-4 font-black text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-widest">{t('table.quantity')}</th>
                         <th className="text-right p-4 font-black text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-widest">{t('table.total')}</th>
                         <th className="text-right p-4 font-black text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-widest">{t('table.problem')}</th>
@@ -521,8 +525,8 @@ function FailedOrderDetailsModal({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
-                      {payload?.cart_items?.map((item, idx) => {
-                        const problem = problems.find(p => p.slug === item.product_slug || p.sku === item.variant?.sku);
+                      {payload?.cartItems?.map((item, idx) => {
+                        const problem = problems.find(p => p.slug === item.productSlug || p.sku === item.variant?.sku);
                         return (
                           <tr key={idx} className={cn(
                             "hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors group",
@@ -532,14 +536,14 @@ function FailedOrderDetailsModal({
                               <div className="font-black text-slate-900 dark:text-white leading-tight">{item.name}</div>
                               <div className="text-[10px] text-slate-400 mt-1 font-bold uppercase tracking-wider flex items-center gap-1.5">
                                 <ExternalLink className="w-3 h-3" />
-                                Slug: {item.product_slug}
+                                Slug: {item.productSlug}
                               </div>
                             </td>
-                            <td className="p-4 text-center">
+                            {/* <td className="p-4 text-center">
                               <span className="font-black text-xs px-2 py-1 rounded bg-gray-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 uppercase tracking-tighter">
                                 {item.variant?.key || item.variant?.sku || '—'}
                               </span>
-                            </td>
+                            </td> */}
                             <td className="p-4 text-center">
                               <span className="inline-flex items-center px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 font-black text-slate-700 dark:text-slate-300">
                                 {item.quantity}
@@ -1107,19 +1111,27 @@ export function FailedOrdersTab() {
           </div>
         ),
       },
-
+      {
+        key: "email",
+        header: t("failedOrders.columns.customerEmail"),
+        cell: (row) => (
+          <span className="text-gray-700 dark:text-slate-200 font-semibold text-sm">
+            {row.email ?? row.payload?.email ?? "—"}
+          </span>
+        ),
+      },
       // Items Name vs Quantity
       {
         key: "itemNameVsQuantity",
         header: t("failedOrders.columns.itemNameVsQuantity"),
         cell: (row) => {
-          const items = row.payload?.cart_items || row.payload?.items || [];
+          const items = row.payload?.cartItems || row.payload?.items || [];
           return (
             <div className="text-sm">
               {items.length > 0 ? (
                 items.map((item, idx) => (
                   <div key={idx} className="flex gap-2 text-gray-700 dark:text-slate-300">
-                    <span>{item.name || item.product_name || "Product"}</span>
+                    <span>{item.name || item.productName || "Product"}</span>
                     <span className="text-muted-foreground"> (x{item.quantity})</span>
                   </div>
                 ))

@@ -352,6 +352,8 @@
     "viewBarcode": "Expand Barcode"
   },
   "sidebar": {
+    "stores": "Stores",
+    "syncFailures": "Product Sync Errors",
     "locked": "Locked",
     "subscription_required": "Subscription Required",
     "logo": "Logo",
@@ -4350,7 +4352,8 @@
         "total": "Total",
         "paymentMethods": {
           "cod": "Cash on Delivery"
-        }
+        },
+        "email": "Email"
       },
       "actions": {
         "retryOrder": "Retry & Save Order",
@@ -4407,7 +4410,8 @@
         "retryCount": "Retry Count",
         "customerPhone": "Customer Phone",
         "lastRetryFailedReason": "Last Failure Reason",
-        "itemNameVsQuantity": "Items"
+        "itemNameVsQuantity": "Items",
+        "customerEmail": "Email"
       },
       "filters": {
         "store": "Store",
@@ -8293,5 +8297,67 @@
       }
     },
     "history": "Previous Closes"
+  },
+  "syncFailures": {
+    "title": "Product Sync Errors",
+    "breadcrumb": {
+      "home": "Home",
+      "stores": "Stores",
+      "syncFailures": "Product Sync Errors"
+    },
+    "stats": {
+      "total": "Total Errors",
+      "create": "Create Errors",
+      "update": "Update Errors"
+    },
+    "columns": {
+      "remoteProductId": "Remote Product ID",
+      "product": "Product",
+      "store": "Store",
+      "action": "Action",
+      "status": "Status",
+      "date": "Date",
+      "error": "Error Message",
+      "responseStatus": "Error code",
+      "create": "Create",
+      "update": "Update",
+      "actions": "Actions"
+    },
+    "filters": {
+      "action": "Action Type",
+      "allActions": "All Actions",
+      "create": "Create",
+      "update": "Update",
+      "store": "Store",
+      "allStores": "All Stores",
+      "dateRange": "Date Range",
+      "apply": "Apply Filters",
+      "export": "Export Logs"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Search by product name, slug...",
+      "filter": "Filters"
+    },
+    "common": {
+      "total": "Total Logs",
+      "limit": "Logs per page"
+    },
+    "empty": {
+      "title": "No sync errors found",
+      "subtitle": "Try adjusting your filters or search term"
+    },
+    "details": {
+      "title": "Error Log Details",
+      "requestPayload": "Request Payload",
+      "errorMessage": "Error Message",
+      "responseStatus": "Response Status",
+      "remoteProductId": "Remote Product ID",
+      "action": "Action",
+      "date": "Occurred At"
+    },
+    "actions": {
+      "close": "Close",
+      "view": "View Details"
+    }
   }
 }

@@ -189,7 +189,20 @@ const makeSchema = (t, tValidation) =>
 				sku: yup
 					.string()
 					.trim()
-					.transform((value) => (value ? value.replace(/\s+/g, '') : value))
+					.transform((value) => {
+						if (!value) return value;
+
+						return value
+							.trim()
+							.replace(/\s+/g, (match, offset, string) => {
+								const charBefore = string[offset - 1];
+								const charAfter = string[offset + match.length];
+
+								const isSurroundedBySpecial = /[-_]/.test(charBefore) || /[-_]/.test(charAfter);
+
+								return isSurroundedBySpecial ? '' : '-';
+							});
+					})
 					.max(120, t('validation.combinationSkuMax'))
 					.nullable()
 					.test('sku-format', t('validation.skuFormat'), (val) => {

@@ -509,7 +509,7 @@ export function generateEasyOrdersInstallUrl(adminId) {
 
     const apiBase = process.env.NEXT_PUBLIC_BASE_URL;
     const appBase = process.env.NEXT_PUBLIC_FRONTEND_URL; // http://localhost:3000
-    const iconURL = `${appBase}/Logo.png`; // You can also use a NEXT_PUBLIC_ icon env here
+    const iconURL = `${appBase}/logo.png`; // You can also use a NEXT_PUBLIC_ icon env here
 
     const params = new URLSearchParams({
         app_name: "Madar",

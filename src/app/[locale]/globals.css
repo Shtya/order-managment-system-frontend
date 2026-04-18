@@ -1016,3 +1016,8 @@ html[dir="ltr"] .dir-force {
 .space-under {
   @apply mb-5 md:mb-8
 }
+
+.flatpickr-calendar {
+  pointer-events: auto !important;
+  z-index: 99999 !important;
+}

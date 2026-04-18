@@ -99,7 +99,12 @@ export default function useIdleTab({ t, searchDebounced, filters, idleFromDate, 
   const columns = useMemo(() => {
     const na = t("common.na");
     return [
-      { key: "id", header: t("table.id"), className: "font-semibold text-primary w-[80px]" },
+      // { key: "id", header: t("table.id"), className: "font-semibold text-primary w-[80px]" },
+      {
+        key: "name",
+        header: t("table.name"),
+        className: "text-gray-700 dark:text-slate-200 font-semibold min-w-[200px]"
+      },
       { key: "mainImage", header: t("table.mainImage"), className: "w-[100px]", type: "img" },
       { key: "images", header: t("table.imagesCount"), className: "w-[100px]", type: "imgs" },
       {
@@ -111,11 +116,6 @@ export default function useIdleTab({ t, searchDebounced, filters, idleFromDate, 
             {row?.type === "single" ? t("types.single") : t("types.variable")}
           </Badge>
         )
-      },
-      {
-        key: "name",
-        header: t("table.name"),
-        className: "text-gray-700 dark:text-slate-200 font-semibold min-w-[200px]"
       },
       {
         key: "category",

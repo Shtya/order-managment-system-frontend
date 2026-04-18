@@ -748,7 +748,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 
 	return (
 		<Dialog open={isOpen} onOpenChange={handleClose}>
-			<DialogContent className="max-w-3xl max-h-[92vh] overflow-hidden flex flex-col p-0 gap-0 rounded-xl border border-border">
+			<DialogContent className="max-w-3xl max-h-[92vh] overflow-auto! flex flex-col p-0 gap-0 rounded-xl border border-border">
 
 				{/* ══ HEADER ══════════════════════════════════════════════════ */}
 				<div className="relative overflow-hidden flex-shrink-0">

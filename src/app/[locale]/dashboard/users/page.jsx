@@ -382,11 +382,11 @@ export default function SuperAdminUsersPage() {
 
 	const columns = useMemo(() => {
 		return [
-			{
-				key: "id",
-				header: t("table.id"),
-				className: "text-gray-700 dark:text-slate-200 font-semibold",
-			},
+			// {
+			// 	key: "id",
+			// 	header: t("table.id"),
+			// 	className: "text-gray-700 dark:text-slate-200 font-semibold",
+			// },
 			{
 				key: "name",
 				header: t("table.name"),

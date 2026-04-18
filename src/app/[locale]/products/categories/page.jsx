@@ -410,11 +410,11 @@ export default function CategoriesPage() {
 
 	const columns = useMemo(
 		() => [
-			{
-				key: "id",
-				header: t("table.id"),
-				className: "font-semibold text-primary w-[72px]",
-			},
+			// {
+			// 	key: "id",
+			// 	header: t("table.id"),
+			// 	className: "font-semibold text-primary w-[72px]",
+			// },
 			{
 				key: "image",
 				header: "",

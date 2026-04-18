@@ -1600,7 +1600,7 @@ export default function PurchasesPage() {
 					total: t("common.total"),
 					limit: t("common.limit"),
 					emptyTitle: t("empty"),
-					emptySubtitle: "",
+					emptySubtitle: t("empty.subtitle"),
 				}}
 				actions={[
 					{

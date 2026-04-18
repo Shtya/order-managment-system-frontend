@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { FilterField } from "./Table";
 import api from "@/utils/api";
 
-export default function StoreFilter({ value, onChange, autoSelectIfSingle = false }) {
+export default function StoreFilter({ value, onChange, autoSelectIfSingle = false, none = true }) {
     const t = useTranslations("orders");
     const [list, setList] = useState([]);
 
@@ -39,7 +39,7 @@ export default function StoreFilter({ value, onChange, autoSelectIfSingle = fals
                 </SelectTrigger>
                 <SelectContent>
                     <SelectItem value="all">{t("filters.all")}</SelectItem>
-                    <SelectItem value="none">{t("filters.none")}</SelectItem>
+                    {none && <SelectItem value="none">{t("filters.none")}</SelectItem>}
                     {list.map(store => (
                         <SelectItem key={store.id ?? store.value} value={String(store.id ?? store.value)}>
                             {store.name ?? store.label}

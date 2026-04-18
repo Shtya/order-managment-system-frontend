@@ -4315,6 +4315,75 @@
       }
     },
     "failedOrders": {
+      "title": "Failed Order Details",
+      "sections": {
+        "clientDetails": "Client Details",
+        "orderDetails": "Order Details",
+        "itemsDetails": "Items Details"
+      },
+      "details": {
+        "externalOrderId": "External Order ID",
+        "status": "Retry Status",
+        "date": "Order date",
+        "store": "Store Name",
+        "total": "Total Amount"
+      },
+      "table": {
+        "product": "Product Name",
+        "sku": "SKU / Variant",
+        "quantity": "Quantity",
+        "total": "Line Total",
+        "problem": "Detected Problem",
+        "actions": "Actions"
+      },
+      "labels": {
+        "failureReason": "Failure Reason",
+        "attempts": "Attempts",
+        "name": "Name",
+        "phone": "Phone",
+        "government": "Government/City",
+        "address": "Full Address",
+        "paymentMethod": "Payment Method",
+        "paymentStatus": "Payment Status",
+        "shippingCost": "Shipping Cost",
+        "store": "Source Store",
+        "total": "Total",
+        "paymentMethods": {
+          "cod": "Cash on Delivery"
+        }
+      },
+      "actions": {
+        "retryOrder": "Retry & Save Order",
+        "markAsResolved": "Mark as Resolved",
+        "fetchExternalDetails": "Fetch External Product Data",
+        "createProduct": "Create Local Product",
+        "editProduct": "Edit Product Attributes",
+        "includeInPurchaseOrder": "Select for Purchase Order",
+        "createPOForSelected": "Create Purchase Order",
+        "retry": "Retry",
+        "retrying": "Retrying...",
+        "alreadySuccess": "Already successful",
+        "showDetails": "Show failure details",
+        "fixAndRetry": "Fix & retry",
+        "cancel": "Cancel"
+      },
+      "problems": {
+        "PRODUCT_NOT_FOUND": "Product Not Found Locally",
+        "SKU_NOT_FOUND": "Variant/SKU Missing",
+        "INSUFFICIENT_STOCK": "Insufficient Stock"
+      },
+      "errors": {
+        "fetchFailed": "Failed to load order details.",
+        "notFound": "No data found for this record.",
+        "externalFetchFailed": "Could not fetch data from the provider.",
+        "failedToLoadData": "Failed to load product data.",
+        "noSkusSelected": "Please select at least one SKU to create a purchase order."
+      },
+      "common": {
+        "loading": "Loading",
+        "unknownError": "An unknown error occurred",
+        "close": "Cancel"
+      },
       "searchPlaceholder": "Search by store, customer name, or order number...",
       "stats": {
         "total": "Total Failed",
@@ -4336,21 +4405,30 @@
         "errorReason": "Error Reason",
         "status": "Status",
         "retryCount": "Retry Count",
-        "customerPhone": "Customer Phone"
+        "customerPhone": "Customer Phone",
+        "lastRetryFailedReason": "Last Failure Reason",
+        "itemNameVsQuantity": "Items"
       },
       "filters": {
         "store": "Store",
         "storePlaceholder": "Select store"
       },
-      "actions": {
-        "retry": "Retry",
-        "retrying": "Retrying...",
-        "alreadySuccess": "Already successful"
+      "modal": {
+        "title": "Failure Details",
+        "problems": "Detected Problems",
+        "payload": "Order Payload",
+        "solveSection": "Solve Problems",
+        "solvePlaceholder": "Enter solution details...",
+        "retryButton": "Retry Order",
+        "retrying": "Retrying order {orderId}...",
+        "success": "Order {orderId} retried successfully",
+        "error": "Retry failed: {message}"
       },
       "messages": {
         "fetchFailed": "Failed to load orders, please try again",
         "retryStarted": "Retry request sent successfully",
-        "retryFailed": "Retry failed, please try again later"
+        "retrySuccess": "Order has been successfully created!",
+        "retryFailed": "Failed to retry the order. Please check the problems and try again."
       },
       "empty": {
         "title": "No orders requiring review",
@@ -4819,7 +4897,8 @@
   "callCenter": {
     "breadcrumb": {
       "home": "Home",
-      "callCenter": "Call Center"
+      "callCenter": "Call Center",
+      "orders": " Orders"
     },
     "title": "Call Center",
     "stats": {

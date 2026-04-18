@@ -182,12 +182,12 @@ export default function CreatePurchaseInvoicePage() {
 		}
 
 		setSelectSku((prev) => [...prev, sku]);
-
+		console.log(sku)
 		// Create new item with default values (no tax fields)
 		const newItem = {
 			variantId: sku.id,
 			quantity: 1,
-			purchaseCost: sku.price,
+			purchaseCost: sku.wholesalePrice,
 			sku: sku.sku,
 			availableQuantity: sku.available || 0,
 			productName: sku.name,
@@ -519,7 +519,7 @@ export default function CreatePurchaseInvoicePage() {
 																	{/* Current Price Display */}
 																	<div className="flex items-center gap-1 text-sm text-gray-600">
 																		<Tag size={14} className="text-green-600" />
-																		<span className="font-medium">{formatCurrency(product.price)}</span>
+																		<span className="font-medium">{formatCurrency(product.purchaseCost)}</span>
 																		<span className="text-xs text-gray-400">({t("current_price")})</span>
 																	</div>
 																</div>

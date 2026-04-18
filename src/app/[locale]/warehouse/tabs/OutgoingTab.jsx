@@ -2601,13 +2601,13 @@ function OutgoingFilesSubtab({
 	}, [pager.records]); // سيعاد الحساب فقط عند تغير البيانات القادمة من السيرفر
 	const columns = useMemo(
 		() => [
-			{
-				key: "id",
-				header: t("files.th.fileNumber"),
-				cell: (row) => (
-					<span className="font-mono font-bold text-primary">{row.manifestNumber}</span>
-				),
-			},
+			// {
+			// 	key: "id",
+			// 	header: t("files.th.fileNumber"),
+			// 	cell: (row) => (
+			// 		<span className="font-mono font-bold text-primary">{row.manifestNumber}</span>
+			// 	),
+			// },
 			{
 				key: "carrier",
 				header: t("files.th.carrier"),

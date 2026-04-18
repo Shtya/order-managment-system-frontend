@@ -105,15 +105,69 @@ export default function useProductsTab({ t, searchDebounced, filters, filtersOpe
 	const columns = useMemo(() => {
 		const na = t("common.na");
 		return [
-			{ key: "id", header: t("table.id"), className: "font-semibold text-primary w-[80px]" },
+			// { key: "id", header: t("table.id"), className: "font-semibold text-primary w-[80px]" },
+			{ key: "name", header: t("table.name"), className: "text-gray-700 dark:text-slate-200 font-semibold min-w-[200px]" },
+			{
+				key: "stockCount",
+				header: t("table.totalStock"),
+				className: "min-w-[120px]",
+				cell: (row) => {
+					const total = (row?.skus || []).reduce((sum, s) => sum + (s.stockOnHand || 0), 0);
+					return (
+						<Badge
+							className={cn(
+								"rounded-full font-semibold",
+								total > 0 ? "bg-green-100 text-green-700 border border-green-200" : "bg-gray-100 text-gray-600 border border-gray-200"
+							)}
+						>
+							{total} {t("table.items")}
+						</Badge>
+					);
+				}
+			},
+			{
+				key: "reservedCount",
+				header: t("table.totalReserved"),
+				className: "min-w-[120px]",
+				cell: (row) => {
+					const total = (row?.skus || []).reduce((sum, s) => sum + (Number(s?.reserved) || 0), 0);
+					return (
+						<Badge
+							className={cn(
+								"rounded-full font-semibold",
+								total > 0 ? "bg-amber-100 text-amber-700 border border-amber-200" : "bg-gray-100 text-gray-600 border border-gray-200"
+							)}
+						>
+							{total} {t("table.items")}
+						</Badge>
+					);
+				}
+			},
+			{
+				key: "availableCount",
+				header: t("table.totalAvailable"),
+				className: "min-w-[120px]",
+				cell: (row) => {
+					const total = (row?.skus || []).reduce((sum, s) => sum + (Number(s?.available) || 0), 0);
+					return (
+						<Badge
+							className={cn(
+								"rounded-full font-semibold",
+								total > 0 ? "bg-blue-100 text-blue-700 border border-blue-200" : "bg-gray-100 text-gray-600 border border-gray-200"
+							)}
+						>
+							{total} {t("table.items")}
+						</Badge>
+					);
+				}
+			},
 			{ key: "mainImage", header: t("table.mainImage"), className: "w-[100px]", type: "img" },
 			{ key: "images", header: t("table.imagesCount"), className: "w-[100px]", type: "imgs" },
-			{ key: "name", header: t("table.name"), className: "text-gray-700 dark:text-slate-200 font-semibold min-w-[200px]" },
-			{ 
-				key: "slug", 
-				header: t("table.slug"), 
-				className: "text-slate-500 dark:text-slate-400 font-mono text-[12px] min-w-[150px] truncate" 
-			},
+			// { 
+			// 	key: "slug", 
+			// 	header: t("table.slug"), 
+			// 	className: "text-slate-500 dark:text-slate-400 font-mono text-[12px] min-w-[150px] truncate" 
+			// },
 			{
 				key: "type",
 				header: t("table.type"),
@@ -187,60 +241,7 @@ export default function useProductsTab({ t, searchDebounced, filters, filtersOpe
 					</div>
 				)
 			},
-			{
-				key: "stockCount",
-				header: t("table.totalStock"),
-				className: "min-w-[120px]",
-				cell: (row) => {
-					const total = (row?.skus || []).reduce((sum, s) => sum + (s.stockOnHand || 0), 0);
-					return (
-						<Badge
-							className={cn(
-								"rounded-full font-semibold",
-								total > 0 ? "bg-green-100 text-green-700 border border-green-200" : "bg-gray-100 text-gray-600 border border-gray-200"
-							)}
-						>
-							{total} {t("table.items")}
-						</Badge>
-					);
-				}
-			},
-			{
-				key: "reservedCount",
-				header: t("table.totalReserved"),
-				className: "min-w-[120px]",
-				cell: (row) => {
-					const total = (row?.skus || []).reduce((sum, s) => sum + (Number(s?.reserved) || 0), 0);
-					return (
-						<Badge
-							className={cn(
-								"rounded-full font-semibold",
-								total > 0 ? "bg-amber-100 text-amber-700 border border-amber-200" : "bg-gray-100 text-gray-600 border border-gray-200"
-							)}
-						>
-							{total} {t("table.items")}
-						</Badge>
-					);
-				}
-			},
-			{
-				key: "availableCount",
-				header: t("table.totalAvailable"),
-				className: "min-w-[120px]",
-				cell: (row) => {
-					const total = (row?.skus || []).reduce((sum, s) => sum + (Number(s?.available) || 0), 0);
-					return (
-						<Badge
-							className={cn(
-								"rounded-full font-semibold",
-								total > 0 ? "bg-blue-100 text-blue-700 border border-blue-200" : "bg-gray-100 text-gray-600 border border-gray-200"
-							)}
-						>
-							{total} {t("table.items")}
-						</Badge>
-					);
-				}
-			},
+
 			{
 				key: "created_at",
 				header: t("table.createdAt"),

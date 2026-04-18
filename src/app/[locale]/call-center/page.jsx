@@ -248,6 +248,7 @@ export default function CallCenterPage() {
             <PageHeader
                 breadcrumbs={[
                     { name: t("callCenter.breadcrumb.home"), href: "/" },
+                    { name: t("callCenter.breadcrumb.orders"), href: "/orders" },
                     { name: t("callCenter.title") },
                 ]}
                 statsCount={3}

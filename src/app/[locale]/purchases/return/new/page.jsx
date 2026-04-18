@@ -221,8 +221,8 @@ export default function CreateReturnInvoicePage() {
 			attributes: sku.attributes || {},
 			returnedQuantity: 1,
 			availableQuantity: sku.available || 0, // Store available quantity
-			unitCost: sku.price || 0,
-			originalUnitCost: sku.price || 0,
+			unitCost: sku.wholesalePrice || 0,
+			originalUnitCost: sku.wholesalePrice || 0,
 			taxInclusive: false,
 			taxRate: 5,
 		};

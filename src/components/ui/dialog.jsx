@@ -49,7 +49,7 @@ function DialogContent({
 	className,
 	children,
 	showCloseButton = true,
- 	...props
+	...props
 }) {
 	return (
 		<DialogPortal data-slot="dialog-portal">
@@ -60,6 +60,14 @@ function DialogContent({
 					"bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-xl border p-6 shadow-lg duration-200 sm:max-w-lg",
 					className
 				)}
+				onInteractOutside={(e) => {
+					// Prevent the modal from closing when you click a date inside Flatpickr
+					const isFlatpickrClick = e.target.closest(".flatpickr-calendar");
+					if (isFlatpickrClick) {
+						e.preventDefault();
+					}
+				}}
+
 				{...props}>
 				{children}
 				{showCloseButton && (
@@ -96,7 +104,7 @@ function DialogContent({
 						<span className="absolute inset-0 rounded-xl bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
 						{/* icon */}
-						 <XIcon
+						<XIcon
 							className={cn(
 								"relative z-10 size-4",
 								"text-gray-600 dark:text-slate-200",

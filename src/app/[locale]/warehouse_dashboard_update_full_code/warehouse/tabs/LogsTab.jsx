@@ -249,11 +249,11 @@ export function LogsTab({ opsLogs, orders = [] }) {
   ];
 
   const columns = useMemo(() => [
-    {
-      key: "id",
-      header: t("fields.id"),
-      cell: (row) => <span className="font-mono text-sm font-black text-primary">{row.id}</span>,
-    },
+    // {
+    //   key: "id",
+    //   header: t("fields.id"),
+    //   cell: (row) => <span className="font-mono text-sm font-black text-primary">{row.id}</span>,
+    // },
     {
       key: "operationType",
       header: t("fields.operationType"),

@@ -240,11 +240,11 @@ export default function SuppliersPage() {
 
 	const columns = useMemo(
 		() => [
-			{
-				key: "id",
-				header: t("table.id"),
-				className: "font-semibold text-primary w-[80px]",
-			},
+			// {
+			// 	key: "id",
+			// 	header: t("table.id"),
+			// 	className: "font-semibold text-primary w-[80px]",
+			// },
 			{
 				key: "name",
 				header: t("table.name"),

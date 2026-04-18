@@ -193,11 +193,11 @@ function ReturnFilesSubtab({ returnFiles, orders, t }) {
   };
 
   const columns = useMemo(() => [
-    {
-      key: "id",
-      header: t("files.fields.fileCode"),
-      cell: (row) => <span className="font-mono text-sm font-black text-primary">{row.id}</span>,
-    },
+    // {
+    //   key: "id",
+    //   header: t("files.fields.fileCode"),
+    //   cell: (row) => <span className="font-mono text-sm font-black text-primary">{row.id}</span>,
+    // },
     {
       key: "carrier",
       header: t("fields.carrier"),

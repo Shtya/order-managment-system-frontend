@@ -95,7 +95,7 @@ export default function useBundlesTab({ t, searchDebounced, filters, onAskDelete
   const columns = useMemo(() => {
     const na = t("common.na");
     return [
-      { key: "id", header: t("table.id"), className: "font-semibold text-primary w-[80px]" },
+      // { key: "id", header: t("table.id"), className: "font-semibold text-primary w-[80px]" },
       {
         key: "name",
         header: t("table.name"),

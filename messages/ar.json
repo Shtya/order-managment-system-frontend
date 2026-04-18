@@ -3243,7 +3243,7 @@
       "nameRequired": "اسم المنتج مطلوب",
       "slugRequired": "الرابط مطلوب",
       "categoryRequired": "يجب اختيار فئة",
-      "slugInvalid": "يجب أن يحتوي الرابط على أحرف إنجليزية صغيرة، أرقام، وشرطات فقط (مثل: name-101)",
+      "slugInvalid": "يجب أن يحتوي الرابط على أحرف إنجليزية صغيرة، أرقام، شرطات، وشرطات سفلية فقط (مثل: product_name-101)",
       "slugAvailable": "هذا الرابط متاح للاستخدام",
       "slugTakenStore": "هذا الرابط مستخدم بالفعل في هذا المتجر",
       "slugTaken": "هذا الرابط مستخدم بالفعل",
@@ -4316,6 +4316,75 @@
       }
     },
     "failedOrders": {
+      "title": "تفاصيل الطلب المتعثر",
+      "sections": {
+        "clientDetails": "بيانات العميل",
+        "orderDetails": "تفاصيل الطلب",
+        "itemsDetails": "تفاصيل المنتجات"
+      },
+      "details": {
+        "externalOrderId": "رقم الطلب الخارجي",
+        "status": "حالة إعادة المحاولة",
+        "date": "تاريخ الطلب",
+        "store": "اسم المتجر",
+        "total": "المبلغ الإجمالي"
+      },
+      "table": {
+        "product": "اسم المنتج",
+        "sku": "الرمز التعريفي / المتغير",
+        "quantity": "الكمية",
+        "total": "إجمالي السطر",
+        "problem": "المشكلة المكتشفة",
+        "actions": "الإجراءات"
+      },
+      "labels": {
+        "failureReason": "سبب التعثر",
+        "attempts": "المحاولات",
+        "name": "الاسم",
+        "phone": "رقم الهاتف",
+        "government": "المحافظة/المدينة",
+        "address": "العنوان بالكامل",
+        "paymentMethod": "طريقة الدفع",
+        "paymentStatus": "حالة الدفع",
+        "shippingCost": "تكلفة الشحن",
+        "store": "المتجر المصدر",
+        "total": "الاجمالي",
+        "paymentMethods": {
+          "cod": "الدفع عند الاستلام"
+        }
+      },
+      "actions": {
+        "retryOrder": "إعادة المحاولة وحفظ الطلب",
+        "markAsResolved": "تحديد كمحلول",
+        "fetchExternalDetails": "جلب بيانات المنتج الخارجية",
+        "createProduct": "إنشاء منتج محلي",
+        "editProduct": "تعديل خصائص المنتج",
+        "includeInPurchaseOrder": "تحديد لإنشاء فاتورة مشتريات",
+        "createPOForSelected": "إنشاء فاتورة مشتريات",
+        "retry": "إعادة المحاولة",
+        "retrying": "جارٍ إعادة المحاولة...",
+        "alreadySuccess": "تمّ بنجاح",
+        "showDetails": "عرض تفاصيل الفشل",
+        "fixAndRetry": "إصلاح وإعادة محاولة",
+        "cancel": "إلغاء"
+      },
+      "problems": {
+        "PRODUCT_NOT_FOUND": "المنتج غير موجود محلياً",
+        "SKU_NOT_FOUND": "الرمز التعريفي (SKU) غير موجود",
+        "INSUFFICIENT_STOCK": "كمية المخزون غير كافية"
+      },
+      "errors": {
+        "fetchFailed": "فشل في تحميل تفاصيل الطلب.",
+        "notFound": "لا توجد بيانات لهذا السجل.",
+        "externalFetchFailed": "تعذر جلب البيانات من المزود.",
+        "failedToLoadData": "فشل تحميل بيانات المنتج.",
+        "noSkusSelected": "يرجى تحديد عنصر واحد على الأقل لإنشاء فاتورة مشتريات."
+      },
+      "common": {
+        "loading": "جاري التحميل",
+        "unknownError": "حدث خطأ غير معروف",
+        "close": "إلغاء"
+      },
       "searchPlaceholder": "ابحث بالمتجر أو اسم العميل أو رقم الطلب...",
       "stats": {
         "total": "إجمالي الفاشلة",
@@ -4337,21 +4406,30 @@
         "errorReason": "سبب الخطأ",
         "status": "الحالة",
         "retryCount": "عدد المحاولات",
-        "customerPhone": "رقم الهاتف"
+        "customerPhone": "رقم الهاتف",
+        "lastRetryFailedReason": "سبب فشل أخر محاولة",
+        "itemNameVsQuantity": "المنتجات"
       },
       "filters": {
         "store": "المتجر",
         "storePlaceholder": "اختر المتجر"
       },
-      "actions": {
-        "retry": "إعادة المحاولة",
-        "retrying": "جارٍ إعادة المحاولة...",
-        "alreadySuccess": "تمّ بنجاح"
+      "modal": {
+        "title": "تفاصيل الفشل",
+        "problems": "المشاكل المكتشفة",
+        "payload": "بيانات الطلب",
+        "solveSection": "حل المشاكل",
+        "solvePlaceholder": "أدخل تفاصيل الحل...",
+        "retryButton": "إعادة محاولة الطلب",
+        "retrying": "جاري إعادة محاولة الطلب {orderId}...",
+        "success": "تم إعادة محاولة الطلب {orderId} بنجاح",
+        "error": "فشلت إعادة المحاولة: {message}"
       },
       "messages": {
         "fetchFailed": "فشل تحميل الطلبات، يرجى المحاولة مجدداً",
         "retryStarted": "تمّ إرسال طلب إعادة المحاولة بنجاح",
-        "retryFailed": "فشلت إعادة المحاولة، يرجى المحاولة لاحقاً"
+        "retrySuccess": "تم إنشاء الطلب بنجاح!",
+        "retryFailed": "فشلت إعادة المحاولة. يرجى مراجعة المشاكل والمحاولة مرة أخرى."
       },
       "empty": {
         "title": "لا توجد طلبات تحتاج مراجعة",
@@ -4820,7 +4898,8 @@
   "callCenter": {
     "breadcrumb": {
       "home": "الرئيسية",
-      "callCenter": "مركز الاتصال"
+      "callCenter": "مركز الاتصال",
+      "orders": "الطلبات"
     },
     "title": "مركز الاتصال",
     "stats": {

@@ -507,7 +507,7 @@ export const PROVIDER_CONFIG = {
 export function generateEasyOrdersInstallUrl(adminId) {
     const baseUrl = "https://app.easy-orders.net/#/install-app";
 
-    const apiBase = "https://binaural-taryn-unprecipitatively.ngrok-free.dev"
+    const apiBase = process.env.NEXT_PUBLIC_BASE_URL;
     const appBase = process.env.NEXT_PUBLIC_FRONTEND_URL; // http://localhost:3000
     const iconURL = `${appBase}/Logo.png`; // You can also use a NEXT_PUBLIC_ icon env here
 

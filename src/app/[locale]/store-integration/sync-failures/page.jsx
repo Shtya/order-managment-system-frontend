@@ -208,13 +208,12 @@ export default function SyncFailuresPage() {
   const fetchStats = async () => {
     try {
       setStatsLoading(true);
-      const res = await api.get("/product-sync-state/statistics");
+      const res = await api.get("/product-sync-state/logs/statistics");
       setStats({
         total: res.data.total || 0,
-        create: res.data.failed || 0, // Placeholder
-        update: res.data.synced || 0, // Placeholder
+        create: res.data.create || 0,
+        update: res.data.update || 0,
       });
-      setStatsLoading(false);
     } catch (error) {
       console.error(error);
     } finally {

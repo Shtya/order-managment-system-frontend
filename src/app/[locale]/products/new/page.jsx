@@ -70,7 +70,7 @@ export function makeId() {
 	return crypto.randomUUID();
 }
 
-function slugifyKey(s) {
+export function slugifyKey(s) {
 	return (s || '')
 		.toString()
 		.trim()
@@ -81,7 +81,7 @@ function slugifyKey(s) {
 		.replace(/^_+|_+$/g, '');
 }
 
-function canonicalKey(attrs) {
+export function canonicalKey(attrs) {
 	const keys = Object.keys(attrs || {}).sort((a, b) => a.localeCompare(b));
 	return keys.map((k) => `${k}=${String(attrs[k])}`).join('|');
 }
@@ -282,7 +282,7 @@ function defaultAttribute() {
 	return { id: makeId(), name: '', values: [] };
 }
 
-function defaultValues() {
+function getDefaultValues() {
 	return {
 		hasPurchase: false,
 		type: 'variable',
@@ -589,7 +589,8 @@ function Card({ children, className, ...props }) {
 // ─── Styled Input ─────────────────────────────────────────────────────────────
 const inputClass = "h-[46px] rounded-xl bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-[14px] placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/50 transition-colors";
 
-export default function AddProductPage({ isEditMode = false, existingProduct = null, productId = null }) {
+export default function AddProductPage({ isEditMode = false, existingProduct = null, productId = null, defaultValues = null }) {
+	const remoteId = defaultValues?.remoteId;
 	const combinationsSectionRef = useRef(null);
 	const tPurchase = useTranslations("purchaseInvoice");
 	const t = useTranslations('addProduct');
@@ -615,7 +616,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 	const schema = useMemo(() => makeSchema(t, tValidation), [t, tValidation]);
 	const { control, register, handleSubmit, setValue, reset, watch, clearErrors, formState: { errors, isSubmitting } } = useForm({
-		defaultValues: defaultValues(), resolver: yupResolver(schema), mode: 'onTouched',
+		defaultValues: defaultValues ? defaultValues : getDefaultValues(), resolver: yupResolver(schema), mode: 'onTouched',
 	});
 
 	const upsellingEnabled = watch('upsellingEnabled');
@@ -654,9 +655,6 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	const storeId = watch('storeId');
 	const warehouseId = watch('warehouseId');
 
-	console.log("warehouseId", warehouseId);
-	console.log("storeId", storeId);
-	console.log("categoryId", categoryId);
 
 	const attributesWatch = useWatch({ control, name: 'attributes' });
 	const combinationsWatch = useWatch({ control, name: 'combinations' });
@@ -726,6 +724,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		const attributes = attributesWatch || [];
 		const currentSlug = productSlug || '';
 		const currentCombos = watch('combinations') || [];
+		console.log(currentCombos)
 		const currentPrice = salePrice || '';
 		const sig = JSON.stringify({
 			attributes: (attributes || []).map((a) => ({ name: a?.name, values: a?.values || [] })),
@@ -755,6 +754,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		if (!isAttrEdited.current) return;
 
 		const generated = buildCombinationsFromAttributes(attributes, currentSlug, currentPrice);
+
 		const byKey = new Map(currentCombos.map((c) => [c.key, c]));
 
 		const activeGenerated = generated.map((g) => {
@@ -1020,7 +1020,9 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				if (receipt?.file) fd.append('purchaseReceiptAsset', receipt.file);
 			}
 			toastId = toast.loading(isEditMode ? t('messages.updating') : t('messages.creating'));
-
+			if (!isEditMode) {
+				fd.append('remoteId', remoteId);
+			}
 			const apiCall = isEditMode
 				? api.patch(`/products/${productId}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
 				: api.post('/products', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
@@ -1036,7 +1038,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			toast.error(normalizeAxiosError(error), { id: toastId });
 		}
 	};
-
+	console.log(errors)
 
 	useEffect(() => {
 		if (!isEditMode || !existingProduct) return;
@@ -1353,7 +1355,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 										<Textarea
 											{...register('description')}
 											placeholder={t('placeholders.description')}
-											className="rounded-xl min-h-[96px] bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-[14px] placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/50 resize-none transition-colors"
+											className="rounded-xl min-h-[96px] bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-[14px] placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/50 transition-colors"
 										/>
 									</Field>
 								</div>

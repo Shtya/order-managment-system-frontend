@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 import {
@@ -266,6 +266,10 @@ export function ProductSkuSearchPopover({
 }) {
   const t = useTranslations("productSearch");
 
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
   const [open, setOpen] = useState(false);
   const triggerRef = useRef(null);
   const inputRef = useRef(null);
@@ -279,6 +283,39 @@ export function ProductSkuSearchPopover({
   const [searchResults, setSearchResults] = useState([]);
   const [hasMore, setHasMore] = useState(false);
   const [nextCursor, setNextCursor] = useState(null);
+
+  useEffect(() => {
+    const initSkusFromUrl = async () => {
+      const skusParam = searchParams.get('skus');
+      if (!skusParam) return;
+
+      const skuIds = skusParam.split(',').map(id => id.trim()).filter(Boolean);
+      if (skuIds.length === 0) return;
+
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete('skus');
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+
+      try {
+        const res = await api.get('/lookups/skus', {
+          params: { skus: skuIds.join(',') }
+        });
+
+        const fetchedSkus = Array.isArray(res.data?.data)
+          ? res.data.data
+          : Array.isArray(res.data) ? res.data : [];
+
+        fetchedSkus.forEach(sku => {
+          handleSelectSku(sku);
+        });
+      } catch (error) {
+        console.error("Failed to fetch initial SKUs from URL:", error);
+      }
+    };
+
+    initSkusFromUrl();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); //
 
   // Measure trigger width
   useEffect(() => {

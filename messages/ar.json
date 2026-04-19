@@ -4325,6 +4325,7 @@
         "itemsDetails": "تفاصيل المنتجات"
       },
       "details": {
+        
         "externalOrderId": "رقم الطلب الخارجي",
         "status": "حالة إعادة المحاولة",
         "date": "تاريخ الطلب",
@@ -4332,6 +4333,9 @@
         "total": "المبلغ الإجمالي"
       },
       "table": {
+      "attributes": "الخصائص",
+      "price": "السعر",
+      "expense": "التكلفة",
         "product": "اسم المنتج",
         "sku": "الرمز التعريفي / المتغير",
         "quantity": "الكمية",
@@ -4340,6 +4344,19 @@
         "actions": "الإجراءات"
       },
       "labels": {
+      "city": "المدينة",
+      "area": "المنطقة",
+      "deposit": "العربون",
+      "categories": "الفئات",
+      "variations": "الخيارات",
+      "variants": "الأنواع",
+      "price": "السعر",
+      "expense": "التكلفة",
+      "quantity": "الكمية",
+      "additionalImages": "صور إضافية",
+      "requestedVariant": "النوع المطلوب",
+      "variantKey": "مفتاح النوع",
+      "productId": "معرف المنتج",
         "failureReason": "سبب التعثر",
         "attempts": "المحاولات",
         "name": "الاسم",
@@ -4357,6 +4374,9 @@
         "email": "البريد الإلكتروني"
       },
       "actions": {
+         "viewExternalProductDetails": "عرض تفاصيل المنتج الخارجي",
+      "createProductFromExternal": "إنشاء منتج من البيانات الخارجية",
+      "editProductAndAddVariant": "تعديل المنتج وإضافة النوع",
         "retryOrder": "إعادة المحاولة وحفظ الطلب",
         "markAsResolved": "تحديد كمحلول",
         "fetchExternalDetails": "جلب بيانات المنتج الخارجية",
@@ -4379,13 +4399,16 @@
       "errors": {
         "fetchFailed": "فشل في تحميل تفاصيل الطلب.",
         "notFound": "لا توجد بيانات لهذا السجل.",
+         "failedToLoadProductDetails": "فشل تحميل تفاصيل المنتج",
         "externalFetchFailed": "تعذر جلب البيانات من المزود.",
         "failedToLoadData": "فشل تحميل بيانات المنتج.",
+        "skuNotFoundInSystem": "هذا النوع غير موجود في النظام",
         "noSkusSelected": "يرجى تحديد عنصر واحد على الأقل لإنشاء فاتورة مشتريات."
       },
       "common": {
         "loading": "جاري التحميل",
         "unknownError": "حدث خطأ غير معروف",
+         "loadingProductDetails": "جارٍ تحميل تفاصيل المنتج",
         "close": "إلغاء"
       },
       "searchPlaceholder": "ابحث بالمتجر أو اسم العميل أو رقم الطلب...",

@@ -591,6 +591,7 @@ const inputClass = "h-[46px] rounded-xl bg-slate-50 dark:bg-slate-800/60 border-
 
 export default function AddProductPage({ isEditMode = false, existingProduct = null, productId = null, defaultValues = null }) {
 	const remoteId = defaultValues?.remoteId;
+
 	const combinationsSectionRef = useRef(null);
 	const tPurchase = useTranslations("purchaseInvoice");
 	const t = useTranslations('addProduct');
@@ -604,8 +605,8 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	const [categories, setCategories] = useState([]);
 	const [stores, setStores] = useState([]);
 	const [warehouses, setWarehouses] = useState([]);
-	const [mainFiles, setMainFiles] = useState([]);
-	const [otherFiles, setOtherFiles] = useState([]);
+	const [mainFiles, setMainFiles] = useState(defaultValues?.mainImage ? [defaultValues?.mainImage] : []);
+	const [otherFiles, setOtherFiles] = useState(defaultValues?.images || []);
 	const [removedImages, setRemovedImages] = useState([]);
 
 	const [hasPurchase, setHasPurchase] = useState(false);
@@ -662,7 +663,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	const { fields: attributeFields, append: appendAttribute, remove: removeAttribute } = useFieldArray({ control, name: 'attributes', keyName: 'fieldId' });
 	const { fields: comboFields } = useFieldArray({ control, name: 'combinations', keyName: 'fieldId' });
 
-
+	console.log(errors)
 	useEffect(() => {
 		let mounted = true;
 		(async () => {
@@ -674,7 +675,33 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 					api.get('/lookups/suppliers', { params: { limit: 200 } }),
 				]);
 				if (!mounted) return;
-				setCategories(Array.isArray(catsRes.data) ? catsRes.data : []);
+				let loadedCategories = Array.isArray(catsRes.data) ? catsRes.data : [];
+				const defaultCategoryValue = defaultValues?.categoryName; // هذا الآن يحمل اسم التصنيف
+
+				if (!isEditMode && defaultCategoryValue && defaultCategoryValue !== 'none') {
+
+					const existingCat = loadedCategories.find(c =>
+						(c.name && c.name.toLowerCase() === defaultCategoryValue.toLowerCase()) ||
+						(c.label && c.label.toLowerCase() === defaultCategoryValue.toLowerCase())
+					);
+
+					if (existingCat) {
+
+						setValue('categoryId', String(existingCat.id));
+						setValue('categoryId', String(defaultCategoryValue));
+					} else {
+						loadedCategories = [
+							...loadedCategories,
+							{
+								id: defaultCategoryValue,
+								name: defaultCategoryValue,
+								isExternal: true
+							}
+						];
+					}
+				}
+
+				setCategories(loadedCategories);
 
 				const storesData = Array.isArray(storesRes.data) ? storesRes.data : [];
 				setStores(storesData);
@@ -934,7 +961,17 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			if ((data.storageRack ?? '').trim()) fd.append('storageRack', data.storageRack.trim());
 			if ((data.slug ?? '').trim()) fd.append('slug', data.slug.trim());
 
-			if (data.categoryId) fd.append('categoryId', data.categoryId);
+
+			if (data.categoryId && data.categoryId !== 'none') {
+				const selectedCat = categories.find(c => String(c.id) === String(data.categoryId));
+
+				if (selectedCat && selectedCat.isExternal) {
+					fd.append('categoryName', selectedCat.name);
+				} else {
+					fd.append('categoryId', data.categoryId);
+				}
+			}
+
 			if (data.storeId) fd.append('storeId', data.storeId);
 			if (data.warehouseId) fd.append('warehouseId', data.warehouseId);
 			if ((data.description ?? '').trim()) fd.append('description', data.description.trim());
@@ -1038,7 +1075,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			toast.error(normalizeAxiosError(error), { id: toastId });
 		}
 	};
-	console.log(errors)
+
 
 	useEffect(() => {
 		if (!isEditMode || !existingProduct) return;
@@ -1236,7 +1273,6 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 											control={control}
 											name="categoryId"
 											render={({ field }) => {
-												// 1. Check if the currently selected category ID is missing from the loaded categories array
 												const isOrphan = field.value && field.value !== 'none' && !categories.some(c => String(c.id) === field.value);
 
 												return (
@@ -1263,7 +1299,15 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 															{categories.map((c) => (
 																<SelectItem key={c.id} value={String(c.id)}>
-																	{c.label ?? c.name ?? `#${c.id}`}
+																	<div className="flex items-center justify-between w-full gap-2">
+																		{c.isExternal && (
+																			<Badge variant="secondary" >
+																				{t('common.remote') || 'Remote'}
+																			</Badge>
+																		)}
+																		<span>{c.label ?? c.name ?? `#${c.id}`}</span>
+
+																	</div>
 																</SelectItem>
 															))}
 														</SelectContent>
@@ -1355,7 +1399,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 										<Textarea
 											{...register('description')}
 											placeholder={t('placeholders.description')}
-											className="rounded-xl min-h-[96px] bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-[14px] placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/50 transition-colors"
+											className="rounded-xl min-h-[150px] bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-[14px] placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary/50 transition-colors"
 										/>
 									</Field>
 								</div>

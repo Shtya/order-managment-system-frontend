@@ -98,6 +98,7 @@ export function FilterField({ label, children, className, lableClass }) {
    TOOLBAR
 ══════════════════════════════════════════════════════════════ */
 export const TableToolbar = memo(function TableToolbar({
+  hasSearch,
   searchValue = "",
   onSearchChange,
   onSearch,
@@ -122,12 +123,12 @@ export const TableToolbar = memo(function TableToolbar({
 
   return (
     <div className="flex items-center justify-between gap-3 flex-wrap">
-      <FloatingSearchInput
+      {hasSearch && <FloatingSearchInput
         searchValue={searchValue}
         onSearchChange={onSearchChange}
         onKeyDown={handleKeyDown}
         searchPlaceholder={searchPlaceholder}
-      />
+      />}
 
       <div className="flex items-center gap-2 flex-wrap">
         {onToggleFilters && (
@@ -507,14 +508,14 @@ const ImgsCell = memo(function ImgsCell({ images, onOpen }) {
    MAIN TABLE
 ══════════════════════════════════════════════════════════════ */
 export default function Table({
-  searchValue = "", onSearchChange, onSearch,
+  searchValue = "", onSearchChange, onSearch, hasSearch,
   actions = [], filters, hasActiveFilters = false, onApplyFilters,
   labels = {}, columns = [], data = [], isLoading = false,
   rowKey = (row, i) => row?.id ?? i,
   emptyState, striped = false, compact = false, hoverable = true,
   pagination = null, onPageChange,
   pageParamName = "page", limitParamName = "limit",
-  perPageOptions = DEFAULT_PER_PAGE_OPTIONS, className = "",
+  perPageOptions = DEFAULT_PER_PAGE_OPTIONS, className = "", flat = false
 }) {
   const isRTL = useIsRTL();
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -536,8 +537,8 @@ export default function Table({
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className="relative main-card !p-0 rounded-2xl border border-border/50 overflow-hidden"
-        style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05), 0 6px 24px rgba(0,0,0,0.05)" }}
+        className={`relative ${!flat && "main-card  rounded-2xl border border-border/50 "} !p-0overflow-hidden`}
+        style={!flat ? { boxShadow: "0 1px 3px rgba(0,0,0,0.05), 0 6px 24px rgba(0,0,0,0.05)" } : {}}
       >
 
 
@@ -547,6 +548,7 @@ export default function Table({
             searchValue={searchValue}
             onSearchChange={onSearchChange}
             onSearch={onSearch}
+            hasSearch={hasSearch}
             searchPlaceholder={labels.searchPlaceholder}
             isFiltersOpen={filtersOpen}
             onToggleFilters={hasFilters ? () => setFiltersOpen((v) => !v) : undefined}

@@ -3229,7 +3229,8 @@
       "salePrice": "أدخل سعر البيع"
     },
     "common": {
-      "none": "بدون"
+      "none": "بدون",
+      "remote": "خارجي"
     },
     "status": {
       "translating": "جاري الترجمة...",
@@ -4322,10 +4323,10 @@
       "sections": {
         "clientDetails": "بيانات العميل",
         "orderDetails": "تفاصيل الطلب",
-        "itemsDetails": "تفاصيل المنتجات"
+        "itemsDetails": "تفاصيل المنتجات",
+        "failureDetails": "التفاصيل الأساسيه"
       },
       "details": {
-        
         "externalOrderId": "رقم الطلب الخارجي",
         "status": "حالة إعادة المحاولة",
         "date": "تاريخ الطلب",
@@ -4333,9 +4334,9 @@
         "total": "المبلغ الإجمالي"
       },
       "table": {
-      "attributes": "الخصائص",
-      "price": "السعر",
-      "expense": "التكلفة",
+        "attributes": "الخصائص",
+        "price": "السعر",
+        "expense": "التكلفة",
         "product": "اسم المنتج",
         "sku": "الرمز التعريفي / المتغير",
         "quantity": "الكمية",
@@ -4344,19 +4345,19 @@
         "actions": "الإجراءات"
       },
       "labels": {
-      "city": "المدينة",
-      "area": "المنطقة",
-      "deposit": "العربون",
-      "categories": "الفئات",
-      "variations": "الخيارات",
-      "variants": "الأنواع",
-      "price": "السعر",
-      "expense": "التكلفة",
-      "quantity": "الكمية",
-      "additionalImages": "صور إضافية",
-      "requestedVariant": "النوع المطلوب",
-      "variantKey": "مفتاح النوع",
-      "productId": "معرف المنتج",
+        "city": "المدينة",
+        "area": "المنطقة",
+        "deposit": "العربون",
+        "categories": "الفئات",
+        "variations": "الخيارات",
+        "variants": "الأنواع",
+        "price": "السعر",
+        "expense": "التكلفة",
+        "quantity": "الكمية",
+        "additionalImages": "صور إضافية",
+        "requestedVariant": "النوع المطلوب",
+        "variantKey": "مفتاح النوع",
+        "productId": "معرف المنتج",
         "failureReason": "سبب التعثر",
         "attempts": "المحاولات",
         "name": "الاسم",
@@ -4371,12 +4372,15 @@
         "paymentMethods": {
           "cod": "الدفع عند الاستلام"
         },
-        "email": "البريد الإلكتروني"
+        "email": "البريد الإلكتروني",
+        "externalId": "المعرف الطلب الخارجي",
+        "orderStatus": "حالة الطلب",
+        "description": "الوصف"
       },
       "actions": {
-         "viewExternalProductDetails": "عرض تفاصيل المنتج الخارجي",
-      "createProductFromExternal": "إنشاء منتج من البيانات الخارجية",
-      "editProductAndAddVariant": "تعديل المنتج وإضافة النوع",
+        "viewExternalProductDetails": "عرض تفاصيل المنتج الخارجي",
+        "createProductFromExternal": "إنشاء منتج من البيانات الخارجية",
+        "editProductAndAddVariant": "تعديل المنتج وإضافة النوع",
         "retryOrder": "إعادة المحاولة وحفظ الطلب",
         "markAsResolved": "تحديد كمحلول",
         "fetchExternalDetails": "جلب بيانات المنتج الخارجية",
@@ -4389,7 +4393,8 @@
         "alreadySuccess": "تمّ بنجاح",
         "showDetails": "عرض تفاصيل الفشل",
         "fixAndRetry": "إصلاح وإعادة محاولة",
-        "cancel": "إلغاء"
+        "cancel": "إلغاء",
+        "showAndFix": "عرض التفاصيل و المحاولة مجددا"
       },
       "problems": {
         "PRODUCT_NOT_FOUND": "المنتج غير موجود محلياً",
@@ -4399,7 +4404,7 @@
       "errors": {
         "fetchFailed": "فشل في تحميل تفاصيل الطلب.",
         "notFound": "لا توجد بيانات لهذا السجل.",
-         "failedToLoadProductDetails": "فشل تحميل تفاصيل المنتج",
+        "failedToLoadProductDetails": "فشل تحميل تفاصيل المنتج",
         "externalFetchFailed": "تعذر جلب البيانات من المزود.",
         "failedToLoadData": "فشل تحميل بيانات المنتج.",
         "skuNotFoundInSystem": "هذا النوع غير موجود في النظام",
@@ -4408,7 +4413,7 @@
       "common": {
         "loading": "جاري التحميل",
         "unknownError": "حدث خطأ غير معروف",
-         "loadingProductDetails": "جارٍ تحميل تفاصيل المنتج",
+        "loadingProductDetails": "جارٍ تحميل تفاصيل المنتج",
         "close": "إلغاء"
       },
       "searchPlaceholder": "ابحث بالمتجر أو اسم العميل أو رقم الطلب...",
@@ -4461,6 +4466,10 @@
       "empty": {
         "title": "لا توجد طلبات تحتاج مراجعة",
         "subtitle": "جميع الطلبات الواردة من المتاجر الخارجية تمّت معالجتها بنجاح"
+      },
+      "breadcrumb": {
+        "home": "الرئيسية",
+        "failedOrders": "طلبات تحتاج مراجعة"
       }
     },
     "custom": "مخصص",

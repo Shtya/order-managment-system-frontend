@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import api from "@/utils/api";
 import { toast } from "react-hot-toast";
 import { Loader2 } from "lucide-react";
-import AddProductPage, { canonicalKey, slugifyKey } from "../../new/page";
+import AddProductPage, { canonicalKey, makeId, slugifyKey } from "../../new/page";
 import { normalizeAxiosError } from "@/utils/axios";
 import { convert } from "html-to-text";
 
@@ -38,8 +38,18 @@ export default function ImportExternalProductPage() {
         })();
     }, [provider, id]);
 
+
+
+
     // دالة التحويل (Mapping)
     function transformExternalToLocal(ext) {
+        const remoteImages = (ext.images || []).map(url => ({
+            id: crypto.randomUUID(), // معرف مؤقت للمكون
+            url: url,
+            isRemote: true, // علامة للباك-إند
+            isFromLibrary: true // لتجاوز الـ validation المحلي في المكون
+        }));
+
         return {
             remoteId: id,
             hasPurchase: false,
@@ -50,16 +60,25 @@ export default function ImportExternalProductPage() {
             salePrice: ext.price || '',
             lowestPrice: '',
             storageRack: '',
-            categoryId: ext.categories?.[0]?.id || '', // نأخذ أول تصنيف
+            categoryName: ext.categories?.[0]?.name || '', // نأخذ أول تصنيف
+            categoryId: ext.categories?.[0]?.name || '', // نأخذ أول تصنيف
             storeId: '',
             warehouseId: '',
-            description: convert(ext.description || ''),
+            description: convert(ext.description, {
+                wordwrap: false,
+                selectors: [
+                    { selector: 'img', format: 'skip' },
+                    { selector: 'a', options: { ignoreHref: true } },
+                ],
+            }).replace(/\n{2,}/g, '\n')   // 👈 collapse multiple newlines into one
+                .trim(),
             callCenterProductDescription: '',
             upsellingEnabled: false,
             upsellingProducts: [],
 
             // تحويل السمات (Attributes)
             attributes: ext.variations?.map(v => ({
+                id: makeId(),
                 name: v.name,
                 values: v.props.map(p => p.name)
             })) || [],
@@ -73,9 +92,9 @@ export default function ImportExternalProductPage() {
                     }
                     return acc;
                 }, {});
-
+                const altkey = canonicalKey(attrs);
                 return {
-                    key: canonicalKey(attrs),
+                    key: v.key || altkey,
                     sku: v.sku,
                     price: v.price,
                     isExisting: false,
@@ -95,8 +114,13 @@ export default function ImportExternalProductPage() {
                 paidAmount: ''
             },
             // إضافة الصور إن كان المكون يدعمها في الـ existingProduct
-            images: ext.images || [],
-            thumb: ext.thumb || ''
+            images: remoteImages || [],
+            mainImage: {
+                id: crypto.randomUUID(), // معرف مؤقت للمكون
+                url: ext.thumb,
+                isRemote: true, // علامة للباك-إند
+                isFromLibrary: true // لتجاوز الـ validation المحلي في المكون
+            }
         };
     }
 

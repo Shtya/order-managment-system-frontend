@@ -3229,7 +3229,8 @@
       "salePrice": "Enter Sale price"
     },
     "common": {
-      "none": "None"
+      "none": "None",
+       "remote": "Remote"
     },
     "status": {
       "translating": "Translating...",
@@ -4321,7 +4322,8 @@
       "sections": {
         "clientDetails": "Client Details",
         "orderDetails": "Order Details",
-        "itemsDetails": "Items Details"
+        "itemsDetails": "Items Details",
+        "failureDetails": "Main details"
       },
       "details": {
         "externalOrderId": "External Order ID",
@@ -4353,7 +4355,10 @@
         "paymentMethods": {
           "cod": "Cash on Delivery"
         },
-        "email": "Email"
+        "email": "Email",
+        "externalId": "External Order Id",
+        "orderStatus": "Order status",
+        "description": "Description"
       },
       "actions": {
         "retryOrder": "Retry & Save Order",
@@ -4368,7 +4373,8 @@
         "alreadySuccess": "Already successful",
         "showDetails": "Show failure details",
         "fixAndRetry": "Fix & retry",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "showAndFix": "View Details & retry"
       },
       "problems": {
         "PRODUCT_NOT_FOUND": "Product Not Found Locally",
@@ -4437,6 +4443,10 @@
       "empty": {
         "title": "No orders requiring review",
         "subtitle": "All incoming orders from external stores were processed successfully"
+      },
+      "breadcrumb": {
+        "home": "Home",
+        "failedOrders": "Orders Requiring Review"
       }
     },
     "custom": "Custom",

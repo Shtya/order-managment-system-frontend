@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAutoTranslate } from '@/utils/autoTranslate';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export function useSlugify() {
     const { translate } = useAutoTranslate();
@@ -44,7 +44,15 @@ export default function SlugInput({ mainName, mainSlug, register, name, slug, er
     const t = useTranslations('addProduct');
     const { generateSlug, isTranslating } = useSlugify();
 
+    const initialNameRef = useRef(name);
+    const isFirstRun = useRef(true);
+
     useEffect(() => {
+        if (isFirstRun.current) {
+            isFirstRun.current = false;
+            return;
+        }
+
         const delayDebounceFn = setTimeout(async () => {
             if (mainName === name) return setValue("slug", mainSlug);
             const slug = await generateSlug(name);

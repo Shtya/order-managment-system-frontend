@@ -58,6 +58,7 @@ import { useSocket } from "@/context/SocketContext";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import { useDebounce } from "@/hook/useDebounce";
 import { FailedOrderDetailsModal } from "./FailedOrderDetailsModal";
+import { useRouter } from "@/i18n/navigation";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -231,6 +232,7 @@ function ErrorReasonCell({ row }) {
 export function FailedOrdersTab() {
   const t = useTranslations("orders");
   const { subscribe } = useSocket();
+  const router = useRouter()
   const [search, setSearch] = useState("");
   const { debouncedValue: debouncedSearch } = useDebounce({ value: search })
   // ── State ────────────────────────────────────────────────────────────────
@@ -626,32 +628,16 @@ export function FailedOrdersTab() {
           const isRetryable =
             row.status !== "success" && row.status !== "retrying";
 
-          if (!isRetryable) {
-            return (
-              <span className="text-xs text-muted-foreground italic">
-                {row.status === "success"
-                  ? t("failedOrders.actions.alreadySuccess")
-                  : t("failedOrders.actions.retrying")}
-              </span>
-            );
-          }
-
           return (
             <ActionButtons
               row={row}
               actions={[
                 {
                   icon: <Eye />,
-                  tooltip: t("failedOrders.actions.showDetails"),
-                  onClick: (r) => handleOpenModal(r.id, false),
+                  tooltip: t(row.status !== "success" ? "failedOrders.actions.showAndFix" : "failedOrders.actions.showDetails"),
+                  onClick: (r) => router.push(`/orders/failedOrders/${r.id}`),
                   variant: "outline",
-                },
-                {
-                  icon: <Wrench />,
-                  tooltip: t("failedOrders.actions.fixAndRetry"),
-                  onClick: (r) => handleOpenModal(r.id, true),
-                  variant: "primary",
-                },
+                }
               ]}
             />
           );

@@ -454,7 +454,8 @@
       "guest": "Guest",
       "noEmail": "No email"
     },
-    "toggleSidebar": "Toggle Sidebar"
+    "toggleSidebar": "Toggle Sidebar",
+    "now": "Now"
   },
   "employees": {
     "breadcrumb": {
@@ -3230,7 +3231,7 @@
     },
     "common": {
       "none": "None",
-       "remote": "Remote"
+      "remote": "Remote"
     },
     "status": {
       "translating": "Translating...",

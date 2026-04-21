@@ -751,7 +751,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		const attributes = attributesWatch || [];
 		const currentSlug = productSlug || '';
 		const currentCombos = watch('combinations') || [];
-		console.log(currentCombos)
+
 		const currentPrice = salePrice || '';
 		const sig = JSON.stringify({
 			attributes: (attributes || []).map((a) => ({ name: a?.name, values: a?.values || [] })),

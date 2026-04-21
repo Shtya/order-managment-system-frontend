@@ -259,7 +259,7 @@ export const PROVIDER_CONFIG = {
                                 en: "Add the URL shown below into the App URL field. Uncheck 'Embedded app'. Then add the required scopes and click Save.",
                                 ar: "أضف الرابط المعروض أدناه في حقل App URL. قم بإلغاء تحديد 'Embedded app'. ثم أضف الصلاحيات المطلوبة واضغط حفظ."
                             },
-                            url: (me) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/shopify/init`,
+                            url: (me) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/${tenantId(me)}shopify/init`,
                             image: "/guide/shopify/step4.png",
                             tip: {
                                 en: "Click 'Add scopes' and include the required permissions (read_all_orders,write_locations,read_locations,read_orders,write_orders,read_products,write_products,read_publications,write_publications).",
@@ -753,7 +753,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
             const hasExistingValue = !!(masks[key] || (config.fields[key].systemProvides && systemSecrets[key]));
             return hasExistingValue || hasNewValue;
         });
-        if (!allRequiredSatisfied) return false;
+        if (!allRequiredSatisfied) return true;
 
         // if (isEdit) {
         //     // 2. On edit: at least one new value
@@ -761,7 +761,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
         //     return hasAtLeastOneNewValue;
         // }
         // Create: all required must have value in fields
-        return requiredUserFields.every(([key]) => (fields[key]?.trim() || "").length > 0);
+        return true;
     };
 
     // Regenerate WooCommerce secrets

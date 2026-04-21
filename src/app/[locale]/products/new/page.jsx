@@ -1055,7 +1055,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				if (receipt?.file) fd.append('purchaseReceiptAsset', receipt.file);
 			}
 			toastId = toast.loading(isEditMode ? t('messages.updating') : t('messages.creating'));
-			if (!isEditMode) {
+			if (!isEditMode && remoteId) {
 				fd.append('remoteId', remoteId);
 			}
 			const apiCall = isEditMode

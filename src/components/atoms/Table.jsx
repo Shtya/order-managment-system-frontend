@@ -508,7 +508,7 @@ const ImgsCell = memo(function ImgsCell({ images, onOpen }) {
    MAIN TABLE
 ══════════════════════════════════════════════════════════════ */
 export default function Table({
-  searchValue = "", onSearchChange, onSearch, hasSearch,
+  searchValue = "", onSearchChange, onSearch, hasSearch = true,
   actions = [], filters, hasActiveFilters = false, onApplyFilters,
   labels = {}, columns = [], data = [], isLoading = false,
   rowKey = (row, i) => row?.id ?? i,

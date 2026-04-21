@@ -863,8 +863,11 @@
       "statusUpdated": "Status updated successfully",
       "syncStarted": "Sync started",
       "secretsRegenerated": "Secrets regenerated successfully",
-      "easyOrderNotFound": "EasyOrder store not found for this user",
-      "integrationCancelled": "Integration cancelled successfully"
+      "easyOrderNotFound": "EasyOrder store not found or not active for this user",
+      "shopifyNotFound": "Shopify store not found or not active for this user",
+      "woocommerceNotFound": "WooCommerce store not found or not active for this user",
+      "integrationCancelled": "Integration cancelled successfully",
+      "shopifySecurityFailed": "Shopify security verification failed. Please try again."
     }
   },
   "integrated": {

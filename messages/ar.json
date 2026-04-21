@@ -863,8 +863,11 @@
       "statusUpdated": "تم تحديث الحالة بنجاح",
       "syncStarted": "بدأت المزامنة",
       "secretsRegenerated": "تم إعادة إنشاء الأسرار بنجاح",
-      "easyOrderNotFound": "متجر EasyOrder غير موجود لهذا المستخدم",
-      "integrationCancelled": "تم إلغاء الربط بنجاح"
+      "easyOrderNotFound": "متجر EasyOrder غير موجود أو غير مفعل لهذا المستخدم",
+      "shopifyNotFound": "متجر Shopify غير موجود أو غير مفعل لهذا المستخدم",
+      "woocommerceNotFound": "متجر WooCommerce غير موجود أو غير مفعل لهذا المستخدم",
+      "integrationCancelled": "تم إلغاء الربط بنجاح",
+      "shopifySecurityFailed": "فشل التحقق الأمني من Shopify، يرجى المحاولة مرة أخرى"
     }
   },
   "integrated": {

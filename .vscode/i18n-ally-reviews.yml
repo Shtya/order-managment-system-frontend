@@ -67,3 +67,25 @@ reviews:
             suggestion: ''
             type: approve
             time: '2026-04-20T23:13:07.353Z'
+  storeIntegrations.messages.easyOrderNotFound:
+    locales:
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: h_OCGFKmBol0dtyqTSiIQ
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-21T08:51:46.670Z'
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: LrlrXS6XQqQSKaSBayjmk
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-21T08:51:47.725Z'

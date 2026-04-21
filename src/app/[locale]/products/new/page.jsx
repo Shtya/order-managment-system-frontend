@@ -656,7 +656,6 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	const storeId = watch('storeId');
 	const warehouseId = watch('warehouseId');
 
-
 	const attributesWatch = useWatch({ control, name: 'attributes' });
 	const combinationsWatch = useWatch({ control, name: 'combinations' });
 
@@ -678,7 +677,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				let loadedCategories = Array.isArray(catsRes.data) ? catsRes.data : [];
 				const defaultCategoryValue = defaultValues?.categoryName; // هذا الآن يحمل اسم التصنيف
 
-				if (!isEditMode && defaultCategoryValue && defaultCategoryValue !== 'none') {
+				if (!isEditMode && defaultCategoryValue) {
 
 					const existingCat = loadedCategories.find(c =>
 						(c.name && c.name.toLowerCase() === defaultCategoryValue.toLowerCase()) ||
@@ -686,14 +685,13 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 					);
 
 					if (existingCat) {
-
 						setValue('categoryId', String(existingCat.id));
-						setValue('categoryId', String(defaultCategoryValue));
 					} else {
+						const newId = makeId();
 						loadedCategories = [
 							...loadedCategories,
 							{
-								id: defaultCategoryValue,
+								id: newId,
 								name: defaultCategoryValue,
 								isExternal: true
 							}

@@ -487,6 +487,11 @@ export function FailedOrdersTab() {
           );
         },
       },
+      {
+        key: "status",
+        header: t("failedOrders.columns.status"),
+        cell: (row) => <FailStatusBadge status={row.status} t={t} />,
+      },
 
       // Customer name
       {
@@ -578,11 +583,7 @@ export function FailedOrdersTab() {
       },
 
       // Status badge
-      {
-        key: "status",
-        header: t("failedOrders.columns.status"),
-        cell: (row) => <FailStatusBadge status={row.status} t={t} />,
-      },
+
 
       // Retry count
       {

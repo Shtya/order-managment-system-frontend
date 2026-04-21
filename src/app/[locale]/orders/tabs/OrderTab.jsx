@@ -522,8 +522,8 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
                     setUpdating(row.id, true);
                     await api.patch(`/orders/${row.id}/status`, { statusId });
                     toast.success(t("messages.statusUpdated"), { id: toastId });
-                    fetchStats();
-                    fetchOrders(pager.current_page, pager.per_page);
+                    await fetchOrders(pager.current_page, pager.per_page);
+                    await fetchStats();
                   } catch (err) {
                     console.error(err);
                     toast.error(

@@ -2,7 +2,7 @@
 export function tenantId(me) {
     if (!me) return null;
 
-    const roleName = me.role;
+    const roleName = typeof me.role === 'string' ? me.role : me.role?.name;
     if (roleName === 'super_admin') return null;
     if (roleName === 'admin') return me.id;
 

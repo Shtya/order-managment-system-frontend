@@ -77,9 +77,16 @@ export default function StoresIntegrationPage() {
     const error = params.get("error");
     if (error === "easyOrder_not_found") {
       toast.error(t("messages.easyOrderNotFound") || "EasyOrder store not found for this user");
-      // Remove the error from URL without refreshing
-      window.history.replaceState({}, "", window.location.pathname);
+    } else if (error === "shopify_store_not_found") {
+      toast.error(t("messages.shopifyNotFound") || "Shopify store not found for this user");
+    } else if (error === "woocommerce_store_not_found") {
+      toast.error(t("messages.woocommerceNotFound") || "Woocommerce store not found for this user");
     }
+    else if (error === "shopify_security_verification_failed") {
+      toast.error(t("messages.shopifySecurityFailed") || "Shopify security verification failed. Please try again.");
+    }
+    if (error)
+      window.history.replaceState({}, "", window.location.pathname);
   }, [t]);
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -307,7 +314,7 @@ function StoreCard({
       // Cancel integration
       setCancelling(true);
       try {
-        await api.patch("/stores/cancel-integration");
+        await api.patch("/stores/cancel-integration/cancel-integration");
         await fetchStores();
         toast.success(t("messages.integrationCancelled") || "Integration cancelled successfully");
       } catch (e) {
@@ -1380,6 +1387,7 @@ export function StoreGuideModal({ provider, onClose }) {
                 <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border bg-muted/40 px-3 py-2">
                   {(() => {
                     // If URL is a function, call it with store/admin ID (replace with your param)
+                    console.log(user)
                     const url =
                       typeof currentStep.url === "function"
                         ? currentStep.url(user) // or any param needed

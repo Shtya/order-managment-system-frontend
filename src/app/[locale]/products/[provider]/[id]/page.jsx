@@ -43,6 +43,7 @@ export default function ImportExternalProductPage() {
 
     // دالة التحويل (Mapping)
     function transformExternalToLocal(ext) {
+
         const remoteImages = (ext.images || []).map(url => ({
             id: crypto.randomUUID(), // معرف مؤقت للمكون
             url: url,
@@ -52,6 +53,7 @@ export default function ImportExternalProductPage() {
 
         return {
             remoteId: id,
+            storeId: ext?.storeId,
             hasPurchase: false,
             type: ext.variants?.length > 0 ? 'variable' : 'simple',
             name: ext.name || '',
@@ -61,8 +63,7 @@ export default function ImportExternalProductPage() {
             lowestPrice: '',
             storageRack: '',
             categoryName: ext.categories?.[0]?.name || '', // نأخذ أول تصنيف
-            categoryId: ext.categories?.[0]?.name || '', // نأخذ أول تصنيف
-            storeId: '',
+            // categoryId: ext.categories?.[0]?.name || '', // نأخذ أول تصنيف
             warehouseId: '',
             description: convert(ext.description, {
                 wordwrap: false,
@@ -144,6 +145,7 @@ export default function ImportExternalProductPage() {
             </div>
         );
     }
+
 
     return <AddProductPage isEditMode={false} defaultValues={mappedProduct} />;
 }

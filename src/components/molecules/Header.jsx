@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
@@ -121,6 +121,7 @@ export default function Header({ toggleSidebar, isSidebarOpen, isMobile }) {
     handleMarkAsRead,
     unreadCount: unreadNotificationsCount,
   } = useNotification();
+
 
   //only top 10 memized
   const topNotifications = useMemo(

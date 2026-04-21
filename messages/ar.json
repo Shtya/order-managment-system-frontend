@@ -454,7 +454,8 @@
       "guest": "زائر",
       "noEmail": "لا يوجد بريد"
     },
-    "toggleSidebar": "تبديل القائمة الجانبية"
+    "toggleSidebar": "تبديل القائمة الجانبية",
+    "now": "الآن"
   },
   "employees": {
     "breadcrumb": {

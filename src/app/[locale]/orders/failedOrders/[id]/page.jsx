@@ -296,6 +296,43 @@ export default function FailedOrderDetailsPage() {
             )
         },
         {
+            key: "options",
+            header: t('table.options'),
+            cell: (row) => {
+                const props = row.variant?.variation_props || [];
+
+                return (
+                    <div className="flex flex-wrap items-center gap-1.5">
+                        {props.length === 0 ? (
+                            <span className="text-slate-400 text-xs italic">
+                                {t('table.noOptions')}
+                            </span>
+                        ) : (
+                            <>
+                                {props.slice(0, 3).map((prop, idx) => (
+                                    <Badge
+                                        key={idx}
+                                        className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap font-medium text-[10px] border-none"
+                                    >
+                                        <span className="opacity-70 mr-1">
+                                            {prop.name.replace(/_/g, ' ')}:
+                                        </span>
+                                        {prop.value.replace(/_/g, ' ')}
+                                    </Badge>
+                                ))}
+
+                                {props.length > 3 && (
+                                    <Badge className="rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 text-[10px] border-none">
+                                        +{props.length - 3}
+                                    </Badge>
+                                )}
+                            </>
+                        )}
+                    </div>
+                );
+            }
+        },
+        {
             key: "quantity",
             header: t('table.quantity'),
             cell: (row) => (
@@ -317,7 +354,7 @@ export default function FailedOrderDetailsPage() {
             key: "problem",
             header: t('table.problem'),
             cell: (row) => {
-                const problem = problems.find(p => p.slug === row.productSlug);
+                const problem = problems.find(p => p.slug === row.productSlug && p.key === row.variant.key);
 
                 if (problem && !isSuccess) {
                     return (
@@ -335,11 +372,13 @@ export default function FailedOrderDetailsPage() {
                 );
             }
         },
+
         {
             key: "actions",
             header: t('table.actions'),
             cell: (row) => {
-                const problem = problems.find(p => p.slug === row.productSlug);
+                const problem = problems.find(p => p.slug === row.productSlug && p.key === row.variant.key);
+
                 const remoteId = row?.remoteProductId || problem?.remoteId;
                 const provider = failure?.store?.provider;
                 if (failure.status === 'success') return [];

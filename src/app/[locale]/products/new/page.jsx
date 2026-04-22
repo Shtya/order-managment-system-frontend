@@ -82,7 +82,8 @@ export function slugifyKey(s) {
 }
 
 export function canonicalKey(attrs) {
-	const keys = Object.keys(attrs || {}).sort((a, b) => a.localeCompare(b));
+	const keys = Object.keys(attrs || {})
+		.sort((a, b) => a.localeCompare(b));
 	return keys.map((k) => `${k}=${String(attrs[k])}`).join('|');
 }
 

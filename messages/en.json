@@ -4342,7 +4342,9 @@
         "quantity": "Quantity",
         "total": "Line Total",
         "problem": "Detected Problem",
-        "actions": "Actions"
+        "actions": "Actions",
+        "options": "Selected Options",
+        "noOptions": "No Options"
       },
       "labels": {
         "failureReason": "Failure Reason",
@@ -4382,7 +4384,7 @@
       },
       "problems": {
         "PRODUCT_NOT_FOUND": "Product Not Found Locally",
-        "SKU_NOT_FOUND": "Variant/SKU Missing",
+        "SKU_NOT_FOUND": "Selected options not found for this product",
         "INSUFFICIENT_STOCK": "Insufficient Stock"
       },
       "errors": {

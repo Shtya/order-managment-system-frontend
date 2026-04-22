@@ -81,7 +81,7 @@ export default function ImportExternalProductPage() {
             attributes: ext.variations?.map(v => ({
                 id: makeId(),
                 name: v.name,
-                values: v.props.map(p => p.name)
+                values: v.props.map(p => p.value)
             })) || [],
 
             combinations: ext.variants?.map(v => {

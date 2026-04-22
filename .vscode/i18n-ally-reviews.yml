@@ -89,3 +89,47 @@ reviews:
             suggestion: ''
             type: approve
             time: '2026-04-21T08:51:47.725Z'
+  orders.failedOrders.table.options:
+    locales:
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: iebGe99V3L-g1AdQIlCZJ
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-22T17:32:48.640Z'
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: WvGLYFiTvKUa-8Pa2OmtJ
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-22T17:32:50.405Z'
+  orders.failedOrders.table.noOptions:
+    locales:
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: Fym6deKkzKqlM72v2yl0w
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-22T17:33:19.454Z'
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: AwzC8CwUOZ9_DmEQmTzpt
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-22T17:33:21.245Z'

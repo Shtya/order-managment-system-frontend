@@ -555,7 +555,7 @@ export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 																	<span className="text-slate-400">{na}</span>
 																) : (
 																	attrs.slice(0, 3).map(([k, v]) => (
-																		< Badge key={k} className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap" >
+																		<Badge key={k} className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap" >
 																			{k}: {String(v)}
 																		</Badge>
 																	))

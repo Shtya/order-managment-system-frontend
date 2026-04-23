@@ -160,7 +160,7 @@ export default function SignUp({ t: tProp, onSwitchMode }) {
             companyName: formData.company,
             phone: `${formData.dial || "+20"}${formData.phone}`,
             businessType: formData.businessType,
-            password: formData.password || password,
+            password: password || formData.password,
           }),
         },
       );
@@ -220,9 +220,9 @@ export default function SignUp({ t: tProp, onSwitchMode }) {
         {step === 2 && (
           <Step3
             key="s3"
-            onNext={async (d) => {
-              merge(d);
-              await register(d);
+            onNext={async ({ password }) => {
+              merge(password);
+              await register({ password });
             }}
             onBack={() => setStep(1)}
             t={t}
@@ -547,17 +547,23 @@ function Step3({ onNext, onBack, t }) {
     : pw !== cpw
       ? t("validation.passwords_match")
       : "";
+  const checks = {
+    length: pw.length >= 8,
+    upper: /[A-Z]/.test(pw),
+    lower: /[a-z]/.test(pw),
+    number: /[0-9]/.test(pw),
+  };
 
   const next = () => {
     setTouched({ pw: true, cpw: true });
-    if (pwErr || cpwErr) return;
-    const score =
-      [/[A-Z]/, /[a-z]/, /[0-9]/].filter((r) => r.test(pw)).length +
-      (pw.length >= 8 ? 1 : 0);
-    if (score < 3) {
+
+    if (!Object.values(checks).every(Boolean)) {
       toast.error(t("signup.pw_weak"));
       return;
     }
+
+    if (pw !== cpw) return;
+
     onNext({ password: pw });
   };
 
@@ -594,6 +600,7 @@ function Step3({ onNext, onBack, t }) {
         error={touched.pw && pwErr}
         icon={<LockIcon />}
       />
+
       <PasswordStrength password={pw} />
 
       <div style={{ marginTop: 12 }}>

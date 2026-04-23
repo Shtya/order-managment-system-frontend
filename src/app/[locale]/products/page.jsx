@@ -3,7 +3,7 @@
 
 import React, { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Box, ChevronLeft, FileDown, Filter, Layers, Package, RefreshCw, Loader2, Info, Plus, Truck, CheckCircle, Boxes, PackageSearch, Download } from "lucide-react";
+import { Box, ChevronLeft, FileDown, Filter, Layers, Package, RefreshCw, Loader2, Info, Plus, Truck, CheckCircle, Boxes, PackageSearch, Download, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 
@@ -73,7 +73,7 @@ function ProductsTableToolbar({ t, searchValue, onSearchChange, onExport, isFilt
 }
 
 function FiltersPanel({ t, value, onChange, onApply, onReset, categories, stores, warehouses, currentTab }) {
-	const isBundle = currentTab === "bundles";
+	const isBundle = ["bundles", "deleted_bundles"]?.includes(active);
 
 	return (
 		<motion.div
@@ -150,23 +150,23 @@ function FiltersPanel({ t, value, onChange, onApply, onReset, categories, stores
 					)}
 
 					<div className="space-y-2">
-						<Label>{currentTab !== "bundles" ? t("filters.wholesalePriceFrom") : t("filters.priceFrom")}</Label>
+						<Label>{!["bundles", "deleted_bundles"]?.includes(active) ? t("filters.wholesalePriceFrom") : t("filters.priceFrom")}</Label>
 						<Input
 							type="number"
 							value={value.priceFrom ?? ""}
 							onChange={(e) => onChange({ ...value, priceFrom: e.target.value })}
-							placeholder={currentTab !== "bundles" ? t("filters.wholesalePriceFromPlaceholder") : t("filters.priceFromPlaceholder")}
+							placeholder={!["bundles", "deleted_bundles"]?.includes(active) ? t("filters.wholesalePriceFromPlaceholder") : t("filters.priceFromPlaceholder")}
 							className="rounded-full h-[45px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
 						/>
 					</div>
 
 					<div className="space-y-2">
-						<Label>{currentTab !== "bundles" ? t("filters.wholesalePriceTo") : t("filters.priceTo")}</Label>
+						<Label>{!["bundles", "deleted_bundles"]?.includes(active) ? t("filters.wholesalePriceTo") : t("filters.priceTo")}</Label>
 						<Input
 							type="number"
 							value={value.priceTo ?? ""}
 							onChange={(e) => onChange({ ...value, priceTo: e.target.value })}
-							placeholder={currentTab !== "bundles" ? t("filters.wholesalePriceToPlaceholder") : t("filters.priceToPlaceholder")}
+							placeholder={!["bundles", "deleted_bundles"]?.includes(active) ? t("filters.wholesalePriceToPlaceholder") : t("filters.priceToPlaceholder")}
 							className="rounded-full h-[45px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"
 						/>
 					</div>
@@ -210,6 +210,7 @@ export default function ProductsPage() {
 	const pathname = usePathname();
 	const viewId = searchParams.get("id");
 	const [active, setActive] = useState("products");
+	
 	const [search, setSearch] = useState("");
 	const [searchDebounced, setSearchDebounced] = useState("");
 
@@ -266,7 +267,9 @@ export default function ProductsPage() {
 		() => [
 			{ id: "products", label: t("tabs.products"), icon: Box },
 			{ id: "bundles", label: t("tabs.bundles"), icon: Layers },
-			{ id: "idle", label: t("tabs.idle"), icon: Box }
+			{ id: "idle", label: t("tabs.idle"), icon: Box },
+			{ id: "deleted_products", label: t("tabs.deleted"), icon: Trash2 },
+			{ id: "deleted_bundles", label: t("tabs.deleted_bundles"), icon: Trash2 }
 		],
 		[t]
 	);
@@ -275,7 +278,7 @@ export default function ProductsPage() {
 		const handleUrlState = async () => {
 			if (!viewId) return;
 
-			const targetScope = active === "bundles" ? "bundles" : "products";
+			const targetScope = ["bundles", "deleted_bundles"]?.includes(active) ? "bundles" : "products";
 
 			await openView(viewId, targetScope);
 
@@ -456,7 +459,7 @@ export default function ProductsPage() {
 			params.delete("page");
 			params.delete("limit");
 
-			const baseRoute = active === "bundles" ? "/bundles" : "/products";
+			const baseRoute = ["bundles", "deleted_bundles"]?.includes(active) ? "/bundles" : "/products";
 
 			// 2. Call the export endpoint
 			const response = await api.get(`${baseRoute}/export`, {
@@ -529,7 +532,7 @@ export default function ProductsPage() {
 		activetab: active
 	});
 
-	const current = active === "bundles" ? bundlesLogic : active === "idle" ? idleLogic : productsLogic;
+	const current = ["bundles", "deleted_bundles"]?.includes(active) ? bundlesLogic : active === "idle" ? idleLogic : productsLogic;
 
 
 	return (
@@ -543,13 +546,13 @@ export default function ProductsPage() {
 				buttons={
 					<>
 						<Button_
-							href={active === "bundles" ? "/bundles/new" : "/products/new"}
+							href={["bundles", "deleted_bundles"]?.includes(active) ? "/bundles/new" : "/products/new"}
 							size="sm"
-							label={active === "bundles" ? t("actions.addBundle") : t("actions.addProduct")}
+							label={["bundles", "deleted_bundles"]?.includes(active) ? t("actions.addBundle") : t("actions.addProduct")}
 							tone="primary"
 							variant="solid"
 							icon={<Plus size={15} />}
-							permission={active === "bundles" ? "products.create" : "products.create"}
+							permission={["bundles", "deleted_bundles"]?.includes(active) ? "products.create" : "products.create"}
 						/>
 						<Button_ size="sm" label={t("actions.howToUse")} tone="outline" variant="ghost" icon={<Info size={15} />} permission="products.read" />
 					</>

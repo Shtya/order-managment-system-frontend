@@ -303,14 +303,62 @@ export default function SyncFailuresPage() {
     {
       key: "action",
       header: t("columns.action"),
-      cell: (row) => (
-        <Badge variant="outline" className={cn(
-          "font-black uppercase text-[10px] tracking-widest border-2",
-          row.action === "create" ? "bg-blue-50 text-blue-700 border-blue-100" : "bg-purple-50 text-purple-700 border-purple-100"
-        )}>
-          {row.action === "create" ? t("columns.create") : t("columns.update")}
-        </Badge>
-      ),
+      cell: (row) => {
+        const action = row.action?.toLowerCase();
+
+        const styles = {
+          create: "bg-blue-50 text-blue-700 border-blue-100",
+          update: "bg-purple-50 text-purple-700 border-purple-100",
+          bundle_sync: "bg-orange-50 text-orange-700 border-orange-100",
+        };
+
+        const labels = {
+          create: t("columns.create"),
+          update: t("columns.update"),
+          bundle_sync: t("columns.bundle_sync"),
+        };
+
+        return (
+          <Badge
+            variant="outline"
+            className={cn(
+              "font-black uppercase text-[10px] tracking-widest border-2",
+              styles[action] || "bg-gray-50 text-gray-700 border-gray-200"
+            )}
+          >
+            {labels[action] || action}
+          </Badge>
+        );
+      },
+    },
+    {
+      key: "entityType",
+      header: t("columns.entityType"),
+      cell: (row) => {
+        const type = row.entityType;
+
+        const styles = {
+          product: "bg-green-50 text-green-700 border-green-100",
+          bundle: "bg-orange-50 text-orange-700 border-orange-100",
+        };
+
+        const labels = {
+          product: t("columns.product"),
+          bundle: t("columns.bundle"),
+        };
+
+        return (
+          <Badge
+            variant="outline"
+            className={cn(
+              "font-bold uppercase text-[10px] tracking-widest border",
+              styles[type] || "bg-gray-50 text-gray-700 border-gray-200"
+            )}
+          >
+            {labels[type] || type}
+          </Badge>
+        );
+      },
     },
     {
       key: "store",
@@ -323,10 +371,10 @@ export default function SyncFailuresPage() {
     },
     {
       key: "product",
-      header: t("columns.product"),
+      header: t("columns.bundle"),
       cell: (row) => (
         <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-          {row.product?.name || "N/A"}
+          {row.bundle?.name || "N/A"}
         </span>
       ),
     },

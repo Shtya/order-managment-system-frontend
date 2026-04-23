@@ -81,6 +81,8 @@ export default function StoresIntegrationPage() {
       toast.error(t("messages.shopifyNotFound") || "Shopify store not found for this user");
     } else if (error === "woocommerce_store_not_found") {
       toast.error(t("messages.woocommerceNotFound") || "Woocommerce store not found for this user");
+    } else if (error === "shopify_connection_failed") {
+      toast.error(t("messages.shopifyConnectionFailed"));
     }
     else if (error === "shopify_security_verification_failed") {
       toast.error(t("messages.shopifySecurityFailed") || "Shopify security verification failed. Please try again.");

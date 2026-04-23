@@ -3,7 +3,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { CalendarDays, Edit2, Eye, QrCode, Trash2, Package, Tag, Hash, Store, AlignLeft, Image as ImageIcon } from "lucide-react";
+import { CalendarDays, Edit2, Eye, QrCode, Trash2, Package, Tag, Hash, Store, AlignLeft, Image as ImageIcon, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/utils/cn";
@@ -42,7 +42,7 @@ export default function useBundlesTab({ t, searchDebounced, filters, onAskDelete
     params.set("limit", String(per_page));
 
     if (searchDebounced?.trim()) params.set("search", searchDebounced.trim());
-
+    if (activetab === "deleted_bundles") params.set("isActive", "false");
     if (filters.priceFrom !== "") params.set("wholesalePrice.gte", String(filters.priceFrom));
     if (filters.priceTo !== "") params.set("wholesalePrice.lte", String(filters.priceTo));
 
@@ -87,7 +87,7 @@ export default function useBundlesTab({ t, searchDebounced, filters, onAskDelete
   }, [searchDebounced, filters]);
 
   useEffect(() => {
-    if (activetab !== "bundles") return;
+    if (!["bundles", "deleted_bundles"]?.includes(activetab)) return;
     fetchData({ page: 1, per_page: pager.per_page });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchDebounced, activetab]);
@@ -209,6 +209,7 @@ export default function useBundlesTab({ t, searchDebounced, filters, onAskDelete
               {
                 icon: <Edit2 />,
                 tooltip: t("actions.edit"),
+                hidden: activetab === "deleted_bundles",
                 onClick: (r) => router.push(`/bundles/edit/${r.id}`),
                 variant: "primary",
                 permission: "products.update",
@@ -221,8 +222,30 @@ export default function useBundlesTab({ t, searchDebounced, filters, onAskDelete
                 permission: "products.read",
               },
               {
+                icon: <RotateCcw />,
+                tooltip: t("actions.reactivate"),
+                hidden: activetab !== "deleted_bundles",
+                onClick: async (r) => {
+                  const toastId = toast.loading(t("common.loading"));
+
+                  try {
+                    await api.patch(`/bundles/${r.id}/restore`);
+
+                    toast.success(t("actions.success"), { id: toastId });
+
+                    // reload products
+                    await fetchData({ page: 1, per_page: pager.per_page });
+                  } catch (e) {
+                    toast.error(normalizeAxiosError(e), { id: toastId });
+                  }
+                },
+                variant: "green",
+                permission: "products.update",
+              },
+              {
                 icon: <Trash2 />,
                 tooltip: t("actions.delete"),
+                hidden: activetab === "deleted_bundles",
                 onClick: (r) => onAskDelete?.(r.id, "bundles"),
                 variant: "red",
                 permission: "products.delete",

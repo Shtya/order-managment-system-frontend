@@ -2272,9 +2272,10 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
     country: yup.string().required(t("validation.country_required")),
     currency: yup.string().required(t("validation.currency_required")),
     name: yup.string().trim().required(t("validation.name_required")),
-    tax: yup.string().trim(),
-    commercial: yup.string().trim(),
-    phone: yup.string().trim(),
+    tax: yup.string().trim().nullable(),
+    commercial: yup.string().trim().nullable(),
+    phone: yup.string().trim().nullable(),
+    address: yup.string().trim().nullable(),
     website: yup
       .string()
       .trim()
@@ -2285,7 +2286,6 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
         t("validation.invalid_url"),
         (v) => !v || /^(https?:\/\/)/.test(v),
       ),
-    address: yup.string().trim(),
   });
 
   const {
@@ -2300,14 +2300,17 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
       country: "",
       currency: "",
       name: "",
-      tax: "",
-      commercial: "",
-      phone: "",
-      website: "",
-      address: "",
+      tax: null,
+      commercial: null,
+      phone: null,
+      website: null,
+      address: null,
     },
+    shouldFocusError: false,
     mode: "onTouched",
   });
+
+  console.log(errors)
 
   useEffect(() => {
     if (!open) return;
@@ -2320,11 +2323,11 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
             country: res.data.country || "",
             currency: res.data.currency || "",
             name: res.data.name || "",
-            tax: res.data.tax || "",
-            commercial: res.data.commercial || "",
-            phone: res.data.phone || "",
-            website: res.data.website || "",
-            address: res.data.address || "",
+            tax: res.data.tax || null,
+            commercial: res.data.commercial || null,
+            phone: res.data.phone || null,
+            website: res.data.website || null,
+            address: res.data.address || null,
           });
         }
       } catch (err) {
@@ -2337,7 +2340,17 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
 
   const onSubmit = async (data) => {
     try {
-      await api.post("/users/company", data);
+      const payload = {
+        country: data.country || "",
+        currency: data.currency || "",
+        name: data.name || "",
+        tax: data.tax || null,
+        commercial: data.commercial || null,
+        phone: data.phone || null,
+        website: data.website || null,
+        address: data.address || null,
+      }
+      await api.post("/users/company", payload);
       toast.success(t("toasts.save_success"));
       onNext();
     } catch (err) {

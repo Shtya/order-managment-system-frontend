@@ -284,7 +284,7 @@ export default function useProductsTab({ t, searchDebounced, filters, filtersOpe
 									const toastId = toast.loading(t("common.loading"));
 
 									try {
-										await api.patch(`/products/${r.id}`, { isActive: true });
+										await api.patch(`/products/${r.id}/restore`);
 
 										toast.success(t("actions.success"), { id: toastId });
 

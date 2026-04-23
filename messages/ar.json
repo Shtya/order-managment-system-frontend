@@ -867,7 +867,8 @@
       "shopifyNotFound": "متجر Shopify غير موجود أو غير مفعل لهذا المستخدم",
       "woocommerceNotFound": "متجر WooCommerce غير موجود أو غير مفعل لهذا المستخدم",
       "integrationCancelled": "تم إلغاء الربط بنجاح",
-      "shopifySecurityFailed": "فشل التحقق الأمني من Shopify، يرجى المحاولة مرة أخرى"
+      "shopifySecurityFailed": "فشل التحقق الأمني من Shopify، يرجى المحاولة مرة أخرى",
+      "shopifyConnectionFailed": "تعذر الاتصال بمتجر شوبيفاي، يرجى التحقق من الإعدادات والمحاولة مرة أخرى"
     }
   },
   "integrated": {
@@ -3477,14 +3478,18 @@
       "howToUse": "كيفية الاستخدام",
       "delete": "حذف",
       "edit": "تعديل",
-      "view": "عرض"
+      "view": "عرض",
+      "reactivate": "إعادة التفعيل",
+      "success": "تمت بنجاح"
     },
     "tabs": {
       "products": "المنتجات",
       "bundles": "الباقات",
       "mine": "منتجاتي",
       "idle": "المنتجات الراكدة",
-      "idleDate": "بداية التراكم"
+      "idleDate": "بداية التراكم",
+      "deleted": "المنتجات المحذوفة",
+      "deleted_bundles": "الباقات المحذوفة"
     },
     "stats": {
       "withShippingCompanies": "مع شركات الشحن",
@@ -4404,7 +4409,7 @@
       },
       "problems": {
         "PRODUCT_NOT_FOUND": "المنتج غير موجود محلياً",
-        "SKU_NOT_FOUND":"الخيارات المختارة غير موجودة لهذا المنتج",
+        "SKU_NOT_FOUND": "الخيارات المختارة غير موجودة لهذا المنتج",
         "INSUFFICIENT_STOCK": "كمية المخزون غير كافية"
       },
       "errors": {
@@ -8362,7 +8367,10 @@
       "responseStatus": "كود الخطأ",
       "create": "إنشاء",
       "update": "تحديث",
-      "actions": "الإجراءات"
+      "actions": "الإجراءات",
+      "bundle": "الباقة",
+      "bundle_sync": "تكامل باقة",
+      "entityType": "النوع"
     },
     "filters": {
       "action": "نوع الإجراء",

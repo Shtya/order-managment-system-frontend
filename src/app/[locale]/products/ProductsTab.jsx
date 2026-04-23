@@ -3,7 +3,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { CalendarDays, DollarSign, Edit2, Eye, QrCode, Tag, Trash2, Hash, Package, Boxes, Store, Warehouse, Image as ImageIcon, CheckCircle2, XCircle } from "lucide-react";
+import { CalendarDays, DollarSign, Edit2, Eye, QrCode, Tag, Trash2, Hash, Package, Boxes, Store, Warehouse, Image as ImageIcon, CheckCircle2, XCircle, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/utils/cn";
@@ -44,7 +44,7 @@ export default function useProductsTab({ t, searchDebounced, filters, filtersOpe
 		params.set("type", "PRODUCT");
 
 		if (searchDebounced?.trim()) params.set("search", searchDebounced.trim());
-
+		if (activetab === "deleted_products") params.set("isActive", "false");
 		if (filters.storageRack?.trim()) params.set("storageRack.ilike", filters.storageRack.trim());
 		if (filters.categoryId) params.set("categoryId", filters.categoryId);
 		if (filters.storeId) params.set("storeId", filters.storeId);
@@ -95,7 +95,7 @@ export default function useProductsTab({ t, searchDebounced, filters, filtersOpe
 	}, [searchDebounced, filters]);
 
 	useEffect(() => {
-		if (activetab !== "products") return;
+		if (!["products", "deleted_products"]?.includes(activetab)) return;
 		fetchData({ page: 1, per_page: pager.per_page });
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [searchDebounced, activetab]);
@@ -264,6 +264,7 @@ export default function useProductsTab({ t, searchDebounced, filters, filtersOpe
 							{
 								icon: <Edit2 />,
 								tooltip: t("actions.edit"),
+								hidden: activetab === "deleted_products",
 								onClick: (r) => router.push(`/products/edit/${r.id}`),
 								variant: "primary",
 								permission: "products.update",
@@ -276,8 +277,30 @@ export default function useProductsTab({ t, searchDebounced, filters, filtersOpe
 								permission: "products.read",
 							},
 							{
+								icon: <RotateCcw />,
+								tooltip: t("actions.reactivate"),
+								hidden: activetab !== "deleted_products",
+								onClick: async (r) => {
+									const toastId = toast.loading(t("common.loading"));
+
+									try {
+										await api.patch(`/products/${r.id}`, { isActive: true });
+
+										toast.success(t("actions.success"), { id: toastId });
+
+										// reload products
+										await fetchData({ page: 1, per_page: pager.per_page });
+									} catch (e) {
+										toast.error(normalizeAxiosError(e), { id: toastId });
+									}
+								},
+								variant: "green",
+								permission: "products.update",
+							},
+							{
 								icon: <Trash2 />,
 								tooltip: t("actions.delete"),
+								hidden: activetab === "deleted_products",
 								onClick: (r) => onAskDelete?.(r.id, "products"),
 								variant: "red",
 								permission: "products.delete",

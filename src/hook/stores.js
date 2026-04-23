@@ -253,17 +253,18 @@ export const PROVIDER_CONFIG = {
                             },
                             image: "/guide/shopify/step3.png",
                         },
+
                         {
                             title: { en: "Configure App URL & Scopes", ar: "إعداد رابط التطبيق والصلاحيات" },
                             desc: {
                                 en: "Add the URL shown below into the App URL field. Uncheck 'Embedded app'. Then add the required scopes and click Save.",
                                 ar: "أضف الرابط المعروض أدناه في حقل App URL. قم بإلغاء تحديد 'Embedded app'. ثم أضف الصلاحيات المطلوبة واضغط حفظ."
                             },
-                            url: (me) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/${tenantId(me)}shopify/init`,
+                            url: (me) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/${tenantId(me)}/shopify/init`,
                             image: "/guide/shopify/step4.png",
                             tip: {
-                                en: "Click 'Add scopes' and include the required permissions (read_all_orders,write_locations,read_locations,read_orders,write_orders,read_products,write_products,read_publications,write_publications).",
-                                ar: "اضغط على 'Add scopes' وأضف الصلاحيات المطلوبة  (read_all_orders,write_locations,read_locations,read_orders,write_orders,read_products,write_products,read_publications,write_publications)."
+                                en: "Click 'Add scopes' and include the required permissions \n read_all_orders, write_locations, read_locations, read_orders, write_orders, read_products, write_products, read_publications, write_publications, read_third_party_fulfillment_orders, write_third_party_fulfillment_orders, read_merchant_managed_fulfillment_orders, write_merchant_managed_fulfillment_orders, read_assigned_fulfillment_orders, write_assigned_fulfillment_orders, write_locations",
+                                ar: "اضغط على 'Add scopes' وأضف الصلاحيات المطلوبة  \n read_all_orders, write_locations, read_locations, read_orders, write_orders, read_products, write_products, read_publications, write_publications, read_third_party_fulfillment_orders, write_third_party_fulfillment_orders, read_merchant_managed_fulfillment_orders, write_merchant_managed_fulfillment_orders, read_assigned_fulfillment_orders, write_assigned_fulfillment_orders, write_locations"
                             }
                         },
                         {

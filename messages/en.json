@@ -867,7 +867,8 @@
       "shopifyNotFound": "Shopify store not found or not active for this user",
       "woocommerceNotFound": "WooCommerce store not found or not active for this user",
       "integrationCancelled": "Integration cancelled successfully",
-      "shopifySecurityFailed": "Shopify security verification failed. Please try again."
+      "shopifySecurityFailed": "Shopify security verification failed. Please try again.",
+      "shopifyConnectionFailed": "Failed to connect to Shopify store. Please check your settings and try again."
     }
   },
   "integrated": {
@@ -3477,14 +3478,18 @@
       "howToUse": "How to Use",
       "delete": "Delete",
       "edit": "Edit",
-      "view": "View"
+      "view": "View",
+      "reactivate": "Reactivate",
+      "success": "Successfully completed"
     },
     "tabs": {
       "products": "Products",
       "bundles": "Bundles",
       "mine": "My Products",
       "idle": "Idle Products",
-      "idleDate": "Accumulation Start"
+      "idleDate": "Accumulation Start",
+      "deleted": "Deleted Products",
+      "deleted_bundles": "Deleted Bundles"
     },
     "stats": {
       "withShippingCompanies": "With Shipping Companies",
@@ -8337,7 +8342,10 @@
       "responseStatus": "Error code",
       "create": "Create",
       "update": "Update",
-      "actions": "Actions"
+      "actions": "Actions",
+      "bundle": "Bundle",
+      "bundle_sync": "Sync Bundle",
+      "entityType": "Type"
     },
     "filters": {
       "action": "Action Type",

@@ -74,8 +74,12 @@ export default function ImportExternalProductPage() {
             }).replace(/\n{2,}/g, '\n')   // 👈 collapse multiple newlines into one
                 .trim(),
             callCenterProductDescription: '',
-            upsellingEnabled: false,
-            upsellingProducts: [],
+            upsellingEnabled: ext?.upsellings?.length > 0,
+            upsellingProducts: ext?.upsellings?.map(up => ({
+                productId: up.id,
+                label: up.name,
+                callCenterDescription: ''
+            })),
 
             // تحويل السمات (Attributes)
             attributes: ext.variations?.map(v => ({

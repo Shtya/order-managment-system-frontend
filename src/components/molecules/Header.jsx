@@ -30,6 +30,7 @@ import { getNotificationLink } from "@/app/[locale]/notifications/page";
 import { useNotification } from "@/context/NotificationContext";
 import { useAuth } from "@/context/AuthContext";
 import toast from "react-hot-toast";
+import BrandLogo from "../atoms/BrandLogo";
 
 // ─── Fullscreen hook ──────────────────────────────────────────────────────────
 function useFullscreen() {
@@ -159,37 +160,7 @@ export default function Header({ toggleSidebar, isSidebarOpen, isMobile }) {
             </IconBtn>
           )}
 
-          <motion.div
-            initial={{ opacity: 0, x: -12 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.12, duration: 0.35 }}
-            className="flex items-center gap-2"
-          >
-            <div className="relative w-9 h-9 rounded-full overflow-hidden shadow-md shadow-primary/20 flex-shrink-0">
-              <div className="absolute inset-0 bg-primary" />
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/28 to-transparent skew-x-12"
-                animate={{ x: ["-150%", "250%"] }}
-                transition={{
-                  duration: 3.5,
-                  repeat: Infinity,
-                  repeatDelay: 2.5,
-                  ease: "easeInOut",
-                }}
-              />
-              <div className="relative flex items-center justify-center h-full">
-                <Package className="text-white" size={14} />
-              </div>
-            </div>
-
-            <span
-              className="text-[15px] font-bold tracking-tight
-              bg-gradient-to-r from-foreground to-muted-foreground
-              bg-clip-text text-transparent hidden sm:block"
-            >
-              {t("brand")}
-            </span>
-          </motion.div>
+          <BrandLogo />
         </div>
 
         {/* ── RIGHT: Actions ── */}

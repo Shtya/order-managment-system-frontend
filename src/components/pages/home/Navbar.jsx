@@ -13,6 +13,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import BrandLogo from "@/components/atoms/BrandLogo";
 
 const BRAND = "#6763AF";
 const BRAND_L = "#8b88c9";
@@ -425,56 +426,7 @@ export default function Navbar({ t, locale, switchLocale, user }) {
           <div className="container mx-auto px-6">
             <div className="flex items-center justify-between h-16">
               {/* Logo */}
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="flex items-center gap-2.5 cursor-pointer select-none"
-              >
-                <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden relative"
-                  style={{
-                    background: `linear-gradient(135deg,${BRAND},#8b88c9)`,
-                    boxShadow: `0 4px 14px ${BRAND}44`,
-                  }}
-                >
-                  <motion.div
-                    className="absolute inset-0 -skew-x-12"
-                    animate={{ x: ["-150%", "250%"] }}
-                    transition={{
-                      duration: 3.5,
-                      repeat: Infinity,
-                      repeatDelay: 2,
-                    }}
-                    style={{
-                      background:
-                        "linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent)",
-                    }}
-                  />
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    className="relative z-10"
-                  >
-                    <path
-                      d="M21 8L12 3L3 8V16L12 21L21 16V8Z"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M12 3V21M3 8L12 13L21 8"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-                <span className="font-extrabold text-gray-800 text-[15px] tracking-tight">
-                  {t("brand.name")}{" "}
-                  <span style={{ color: BRAND }}>{t("brand.suffix")}</span>
-                </span>
-              </motion.div>
+              <BrandLogo />
 
               {/* Desktop links */}
               <div className="hidden lg:flex items-center gap-0.5">

@@ -827,6 +827,7 @@
       "apiKeyPlaceholder": "أدخل مفتاح API",
       "clientSecret": "السر",
       "secretPlaceholder": "أدخل السر",
+      "clientSecretPlaceholder": "أدخل السر",
       "maskedPlaceholder": "••••••••••",
       "webhooksSection": "إعداد Webhooks",
       "webhookSecret": "سر Webhook",
@@ -838,7 +839,8 @@
       "update": "تحديث",
       "createSuccess": "تم إنشاء المتجر بنجاح",
       "updateSuccess": "تم تحديث المتجر بنجاح",
-      "copied": "تم النسخ"
+      "copied": "تم النسخ",
+      "webhookSecretPlaceholder": "أدخل Webhook Secret"
     },
     "instructions": {
       "apiKeyTitle": "كيفية الحصول على مفتاح API",
@@ -7359,6 +7361,7 @@
       "duplicate": "مكرر",
       "postponed": "مؤجل",
       "delivered": "تم التسليم",
+      "failed_delivery": "فشل التوصيل",
       "in_shipping": "قيد الشحن",
       "waiting_stock": "بانتظار المخزون",
       "no_answer_shipping": "لا رد من الشحن",

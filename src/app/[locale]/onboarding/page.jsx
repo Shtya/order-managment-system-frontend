@@ -14,6 +14,8 @@ import {
   Check,
   Copy,
   Crown,
+  ExternalLink,
+  HelpCircle,
   Loader2,
   MessageCircle,
   Package,
@@ -36,10 +38,15 @@ import {
 import { useLocale, useTranslations } from "next-intl";
 import {
   STORE_PROVIDERS,
-  useStoreConfig,
-  useStoreWebhook,
+  PROVIDER_CONFIG,
+  generateEasyOrdersInstallUrl,
 } from "@/hook/stores";
-import { PrimaryBtn } from "@/components/atoms/Button";
+import {
+  StoreConfigDialog,
+  StoreWebhookModal,
+  StoreGuideModal,
+} from "../store-integration/page";
+import { useSocket } from "@/context/SocketContext";
 import { useSubscriptionsApi } from "../plans/page";
 import { cn } from "@/utils/cn";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
@@ -72,12 +79,13 @@ const CSS = `
     --shadow-lg: 0 24px 64px rgba(103,99,175,.16);
   }
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
+  .ob-root, .ob-root *, .ob-root *::before, .ob-root *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  .ob-root {
     font-family: var(--font);
     background: var(--bg);
     color: var(--text);
     -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
   }
 
   /* ── Inputs ── */
@@ -1032,6 +1040,7 @@ function Sidebar({ step }) {
 
 /* ─── Step 0: Welcome ─────────────────────────────────────── */
 function WelcomeStep({ onNext, open, nextLoading }) {
+  const { user } = useAuth()
   const t = useTranslations("onboarding.welcome");
   const tiles = [
     {
@@ -1194,7 +1203,7 @@ function WelcomeStep({ onNext, open, nextLoading }) {
       <BtnPrimary
         onClick={onNext}
         loading={nextLoading}
-        disabled={nextLoading}
+        disabled={nextLoading || !user}
         style={{ width: "100%" }}
       >
         {t("start_btn")} <IcArrow dir="right" />
@@ -2610,35 +2619,41 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
   const tp = useTranslations("onboarding.plans");
   const t = useTranslations("storeIntegrations");
   const locale = useLocale();
-  const [active, setActive] = useState(null);
-  const [showWebhooks, setShowWebhooks] = useState(false);
-  const [stores, setStores] = useState({});
-  const [connected, setConnected] = useState({});
-  const [listLoading, setListLoading] = useState(true);
-
   const { user } = useAuth();
-  const provider = STORE_PROVIDERS.find((p) => p.key === active);
-  const existingStore = active ? stores[active] : null;
 
-  // --- 1. Fetch Logic (Trimmed & Optimized) ---
+  const [stores, setStores] = useState([]);
+  const [listLoading, setListLoading] = useState(true);
+  const [cancelling, setCancelling] = useState(false);
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [currentProvider, setCurrentProvider] = useState(null);
+  const [currentStore, setCurrentStore] = useState(null);
+  const [modalStore, setModalStore] = useState(null);
+  const [webhookModalProvider, setWebhookModalProvider] = useState(null);
+  const [guideProvider, setGuideProvider] = useState(null);
+
+  const { subscribe } = useSocket();
+  useEffect(() => {
+    const unsubscribe = subscribe("STORE_SYNC_STATUS", (payload) => {
+      if (payload) {
+        const { storeId, status } = payload;
+        setStores((prev) =>
+          prev.map((store) =>
+            store.id === storeId ? { ...store, syncStatus: status } : store,
+          ),
+        );
+      }
+    });
+    return unsubscribe;
+  }, [subscribe]);
+
   const fetchStores = async () => {
-    setListLoading(true);
     try {
-      const { data } = await api.get("/stores/integrations");
-      const storesArray = Array.isArray(data) ? data : data?.records || [];
-
-      const storesMap = {};
-      const connectedMap = {};
-
-      storesArray.forEach((store) => {
-        storesMap[store.provider] = store;
-        connectedMap[store.provider] = true;
-      });
-
-      setStores(storesMap);
-      setConnected(connectedMap);
+      setListLoading(true);
+      const res = await api.get("/stores");
+      setStores(res.data?.records || []);
     } catch (e) {
-      console.error("Error fetching stores:", e);
+      // toast.error(normalizeAxiosError(e));
     } finally {
       setListLoading(false);
     }
@@ -2648,54 +2663,76 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
     if (open) fetchStores();
   }, [open]);
 
-  // --- 2. Store Config Hook (Mapped to your original names) ---
-  const {
-    config: providerConfig, // Mapped from 'config'
-    isSubmitting: saving, // Mapped from 'isSubmitting'
-    fetchingStore: configLoading,
-    fields: fd, // Mapped from 'fields'
-    markTouched,
-    setFields: setFd, // Mapped from 'setFields'
-    systemSecrets, // Exact match
-    handleSubmit,
-    onSubmit,
-    register, // 💡 Used for name/url inputs
-    errors,
-  } = useStoreConfig({
-    open: !!active,
-    onClose: () => {
-      setActive(null);
-      setShowWebhooks(false);
-    },
-    provider: active,
-    existingStore,
-    fetchStores,
-    onCreated: () => setShowWebhooks(true),
-  });
+  const handleConfigure = async (provider, store) => {
+    setCurrentProvider(provider);
+    setCurrentStore(store);
+    setDialogOpen(true);
+  };
 
-  // --- 3. Webhook Hook (Exact match) ---
-  const {
-    loading: webhookLoading,
-    webhookFields,
-    setWebhookFields,
-    rotating,
-    copyToClipboard,
-    saveSecrets,
-    rotateWooCommerce,
-    cred,
-  } = useStoreWebhook({
-    store: existingStore,
-    provider: active,
-    onClose: () => setShowWebhooks(false),
-  });
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setCurrentProvider(null);
+    setCurrentStore(null);
+  };
 
-  // --- 4. Aliases for your JSX ---
-  const loading = listLoading || configLoading;
-  const save = handleSubmit(onSubmit); // Mapped: Replaces your manual save()
+  const handleOpenWebhook = (provider, store) => {
+    setWebhookModalProvider(provider);
+    setModalStore(store);
+  };
+
+  const handleCloseWebhookModal = () => {
+    setWebhookModalProvider(null);
+    setModalStore(null);
+  };
+
+  const handleOpenGuide = (provider, store) => {
+    setGuideProvider(provider);
+    setModalStore(store);
+  };
+
+  const handleCloseGuide = () => {
+    setGuideProvider(null);
+    setModalStore(null);
+  };
+
+  const handleSync = async (storeId) => {
+    try {
+      await api.post(`/stores/${storeId}/sync`);
+      toast.success(t("messages.syncStarted"));
+      await fetchStores();
+    } catch (e) {
+      toast.error(e?.response?.data?.message || e?.message || "Unexpected error");
+    }
+  };
+
+  const handleEasyOrderAction = async (provider, store) => {
+    const isIntegrated = store?.isIntegrated ?? false;
+    const hasStore = !!store;
+
+    if (!hasStore) {
+      handleConfigure(provider, null);
+      return;
+    }
+
+    if (isIntegrated) {
+      setCancelling(true);
+      try {
+        await api.patch("/stores/cancel-integration/cancel-integration");
+        await fetchStores();
+        toast.success(t("messages.integrationCancelled") || "Integration cancelled successfully");
+      } catch (e) {
+        toast.error(e?.response?.data?.message || e?.message || "Unexpected error");
+      } finally {
+        setCancelling(false);
+      }
+    } else {
+      window.location.href = generateEasyOrdersInstallUrl(user?.id);
+    }
+  };
 
   const connectedCount = useMemo(() => {
-    return Object.keys(connected || {}).length;
-  }, [connected]);
+    return stores.length;
+  }, [stores]);
 
   if (!open) return null;
 
@@ -2724,32 +2761,35 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
         </p>
       </div>
 
-      {loading ? (
+      {listLoading ? (
         <ProvidersSkeleton />
       ) : (
         <AnimatePresence mode="wait">
-          {!active ? (
-            <motion.div
-              key="list"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+          <motion.div
+            key="list"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+                marginBottom: 28,
+              }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 10,
-                  marginBottom: 28,
-                }}
-              >
-                {STORE_PROVIDERS.map((p) => (
+              {STORE_PROVIDERS.map((p) => {
+                const store = stores.find((s) => s.provider === p.key);
+                const isConnected = !!store;
+                const config = PROVIDER_CONFIG[p.key];
+
+                return (
                   <div
                     key={p.key}
-                    onClick={() => setActive(p.key)}
-                    className={`prov-card${connected[p.key] ? " connected" : ""}`}
+                    className={`prov-card${isConnected ? " connected" : ""}`}
                     style={{
-                      cursor: "pointer",
+                      cursor: "default",
                       display: "flex",
                       alignItems: "center",
                       gap: 12,
@@ -2761,7 +2801,6 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                     }}
                   >
                     <div
-
                       style={{
                         display: "flex",
                         alignItems: "center",
@@ -2776,10 +2815,10 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                           height: 44,
                           borderRadius: 12,
                           flexShrink: 0,
-                          background: connected[p.key]
+                          background: isConnected
                             ? "#f0fdf4"
                             : "var(--surface2)",
-                          border: `1.5px solid ${connected[p.key] ? "#bbf7d0" : "var(--border)"}`,
+                          border: `1.5px solid ${isConnected ? "#bbf7d0" : "var(--border)"}`,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -2826,435 +2865,122 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                       </div>
                     </div>
 
-                    {/* Status badge */}
-                    {connected[p.key] ? (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 5,
-                          color: "#10b981",
-                          fontSize: 12,
-                          fontWeight: 700,
-                          background: "#f0fdf4",
-                          border: "1px solid #bbf7d0",
-                          borderRadius: 99,
-                          padding: "4px 10px",
-                          flexShrink: 0,
-                        }}
-                      >
-                        <IcCheck /> {ts("status.connected")}
-                      </motion.div>
-                    ) : (
-                      <div
-                        style={{
-                          fontSize: 12,
-                          color: "var(--p)",
-                          fontWeight: 700,
-                          border: "1.5px solid var(--p)",
-                          borderRadius: 8,
-                          padding: "4px 12px",
-                          flexShrink: 0,
-                          transition: "background .15s, color .15s",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = "var(--p)";
-                          e.currentTarget.style.color = "#fff";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = "transparent";
-                          e.currentTarget.style.color = "var(--p)";
-                        }}
-                      >
-                        {ts("status.connect_btn")}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <div
-                style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}
-              >
-                <BtnGhost onClick={onBack}>{tp("back_btn")}</BtnGhost>
-                {connectedCount === 0 && (
-                  <BtnGhost onClick={onNext}>{ts("actions.skip")}</BtnGhost>
-                )}
-                {connectedCount > 0 && (
-                  <BtnPrimary onClick={onNext}>
-                    {tp("continue_btn")} <IcArrow dir="right" />
-                  </BtnPrimary>
-                )}
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="form"
-              initial={{ opacity: 0, x: 12 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -12 }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  marginBottom: 22,
-                }}
-              >
-                <div
-                  style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 12,
-                    flexShrink: 0,
-                    background: "var(--surface2)",
-                    border: "1.5px solid var(--border)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    overflow: "hidden",
-                    transition: "all .2s",
-                  }}
-                >
-                  <img
-                    src={provider.img}
-                    alt={provider.label[locale] || provider.label.en}
-                    style={{ width: 28, height: 28, objectFit: "contain" }}
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                      e.currentTarget.parentElement.innerHTML = `<span style="font-size:22px">${provider.emoji || "🔗"}</span>`;
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <div
-                    style={{
-                      fontSize: 15,
-                      fontWeight: 700,
-                      color: "var(--text)",
-                    }}
-                  >
-                    {provider.label[locale] || provider.label.en}
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--text-3)" }}>
-                    {connected[provider.key]
-                      ? t("editTitle")
-                      : t("addTitle")}
-                  </div>
-                </div>
-              </div>
-
-              {/* Show webhook info if just saved WooCommerce */}
-              {showWebhooks &&
-                provider.code === "woocommerce" &&
-                systemSecrets.webhookCreateOrderSecret ? (
-                <div
-                  style={{
-                    background: "#fffbeb",
-                    border: "1.5px solid #fde68a",
-                    borderRadius: 12,
-                    padding: 16,
-                    marginBottom: 16,
-                  }}
-                >
-                  <p
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: "#92400e",
-                      marginBottom: 8,
-                    }}
-                  >
-                    {ts("webhooks.title")}
-                  </p>
-                  <p
-                    style={{
-                      fontSize: 11,
-                      color: "#78350f",
-                      marginBottom: 12,
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    {ts("webhooks.desc")}
-                  </p>
-
-                  <div style={{ marginBottom: 8 }}>
-                    <p
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: "#78350f",
-                        marginBottom: 4,
-                      }}
-                    >
-                      Webhook Create Secret:
-                    </p>
-                    <CopyableCode
-                      text={systemSecrets.webhookCreateOrderSecret}
-                    />
-                  </div>
-
-                  <div>
-                    <p
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: "#78350f",
-                        marginBottom: 4,
-                      }}
-                    >
-                      Webhook Update Secret:
-                    </p>
-                    <CopyableCode
-                      text={systemSecrets.webhookUpdateStatusSecret}
-                    />
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="grid grid-cols-2 gap-2">
-                    {/* Store Name - Updated to use register */}
-                    <Field
-                      label={t("form.name")}
-                      required
-                      error={errors?.name?.message}
-                    >
-                      <InputWrap icon={<span>🏪</span>}>
-                        <input
-                          className="ob-input"
-                          placeholder={t("form.namePlaceholder")}
-                          {...register("name")}
+                    {/* Actions Group */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      {p.key === "easyorder" ? (
+                        <BtnPrimary
+                          onClick={() => handleEasyOrderAction(p.key, store)}
+                          loading={cancelling}
                           style={{
-                            paddingLeft: 36,
-                            width: "100%",
-                            height: 42,
-                            borderRadius: 10,
-                            border: "1.5px solid var(--border)",
-                            background: "var(--surface)",
-                            fontSize: 13,
-                            color: "var(--text)",
-                            outline: "none",
+                            padding: "6px 12px",
+                            fontSize: 11,
+                            background: store?.isIntegrated ? "#ef4444" : "var(--p)",
+                            borderColor: store?.isIntegrated ? "#ef4444" : "var(--p)",
                           }}
-                        />
-                      </InputWrap>
-                    </Field>
-
-                    {/* Store URL - Updated to use register */}
-                    <Field
-                      label={t("form.storeUrl")}
-                      required
-                      error={errors?.storeUrl?.message}
-                    >
-                      <InputWrap icon={<IcGlobe />}>
-                        <input
-                          className="ob-input"
-                          placeholder="https://mystore.example.com"
-                          {...register("storeUrl")}
-                          style={{
-
-                            textAlign: "left",
-                            paddingLeft: 36,
-                            width: "100%",
-                            height: 42,
-                            borderRadius: 10,
-                            border: "1.5px solid var(--border)",
-                            background: "var(--surface)",
-                            fontSize: 13,
-                            color: "var(--text)",
-                            outline: "none",
-                          }}
-                        />
-                      </InputWrap>
-                    </Field>
-                  </div>
-
-                  {/* Webhook URLs Info */}
-                  {providerConfig && user?.id && (
-                    <div className="space-y-3">
-                      <Field label={t("instructions.webhookCreateOrderLabel")}>
-                        <div className="flex gap-2">
-                          <input
-                            readOnly
-                            value={providerConfig.webhookEndpoints.create(
-                              user?.id,
-                            )}
-                            className="ob-input flex-1"
-                            style={{ background: "var(--surface2)" }}
-                          />
-                          <button
-                            type="button"
-                            onClick={() =>
-                              copyToClipboard(
-                                providerConfig.webhookEndpoints.create(
-                                  user?.id,
-                                ),
-                              )
-                            }
-                            className="copy-btn"
-                          >
-                            <Copy size={16} />
-                          </button>
-                        </div>
-                      </Field>
-
-                      <Field label={t("instructions.webhookUpdateStatusLabel")}>
-                        <div className="flex gap-2">
-                          <input
-                            readOnly
-                            value={providerConfig.webhookEndpoints.update(
-                              user?.id,
-                            )}
-                            className="ob-input flex-1"
-                            style={{ background: "var(--surface2)" }}
-                          />
-                          <button
-                            type="button"
-                            onClick={() =>
-                              copyToClipboard(
-                                providerConfig.webhookEndpoints.update(
-                                  user?.id,
-                                ),
-                              )
-                            }
-                            className="copy-btn"
-                          >
-                            <Copy size={16} />
-                          </button>
-                        </div>
-                      </Field>
-                    </div>
-                  )}
-
-                  {/* Integration Fields */}
-                  {providerConfig &&
-                    Object.keys(providerConfig.fields).map((fieldKey) => {
-                      const field = providerConfig.fields[fieldKey];
-                      if (!field.userProvides) {
-                        if (cred[fieldKey]) {
-                          return (
-                            <Field key={fieldKey} label={t(`form.${fieldKey}`)}>
-                              <div className="flex gap-2">
-                                <input
-                                  readOnly
-                                  value={cred[fieldKey]}
-                                  className="ob-input flex-1"
-                                  style={{ background: "var(--surface2)" }}
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    copyToClipboard(cred[fieldKey])
-                                  }
-                                  className="copy-btn"
-                                >
-                                  <Copy size={16} />
-                                </button>
-                              </div>
-                            </Field>
-                          );
-                        }
-                        return null;
-                      }
-
-                      const existingValue =
-                        stores[active]?.credentials?.[fieldKey];
-                      const placeholder =
-                        existingValue || t(`form.${fieldKey}`);
-                      return (
-                        <Field
-                          key={fieldKey}
-                          label={t(`form.${fieldKey}`)}
-                          required={field.required}
                         >
-                          <InputWrap icon={<IcLock />}>
-                            <input
-                              className="ob-input"
-                              type="password"
-                              placeholder={placeholder}
-                              value={fd[fieldKey] || ""}
-                              onChange={(e) => {
-                                setFd((p) => ({
-                                  ...p,
-                                  [fieldKey]: e.target.value,
-                                }));
-                                markTouched(fieldKey);
-                              }}
-                              style={{
+                          {store?.isIntegrated ? t("card.cancelIntegration") : t("card.integrate")}
+                        </BtnPrimary>
+                      ) : (
+                        <BtnPrimary
+                          onClick={() => handleConfigure(p.key, store)}
+                          style={{
+                            padding: "6px 12px",
+                            fontSize: 11,
+                          }}
+                        >
+                          {isConnected ? t("card.settings") : t("card.configureSettings")}
+                        </BtnPrimary>
+                      )}
 
-                                textAlign: "left",
-                                paddingLeft: 36,
-                                width: "100%",
-                                height: 42,
-                                borderRadius: 10,
-                                border: "1.5px solid var(--border)",
-                                background: "var(--surface)",
-                                fontSize: 13,
-                                color: "var(--text)",
-                                outline: "none",
-                              }}
-                            />
-                          </InputWrap>
-                        </Field>
-                      );
-                    })}
-                  {/* --- 3. Webhook Hook (Dynamic Fields Handling) --- */}
-                  {!webhookLoading &&
-                    providerConfig &&
-                    active === "woocommerce" && (
-                      <div className="flex items-center justify-between gap-4 p-3! rounded-xl bg-[var(--surface2)] border border-[var(--border)]">
-                        <p className="text-xs text-[var(--text-3)] leading-relaxed flex-1">
-                          {t("webhook.securityHint")}
-                        </p>
+                      {config?.guide?.showSteps && (
                         <button
-                          onClick={rotateWooCommerce}
-                          disabled={rotating}
-                          className="flex items-center gap-2 text-nowrap px-3! py-2! rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:brightness-95 transition-all disabled:opacity-50"
+                          onClick={() => handleOpenGuide(p.key, store)}
+                          style={{
+                            background: "none",
+                            border: "1px solid var(--border)",
+                            borderRadius: 8,
+                            padding: "6px",
+                            color: "var(--text-3)",
+                            cursor: "pointer"
+                          }}
+                          title={t("card.guide")}
                         >
-                          {rotating ? (
-                            <Loader2 size={14} className="animate-spin" />
-                          ) : (
-                            <RotateCcw size={14} />
-                          )}
-                          <span className="text-xs font-semibold">
-                            {t("webhook.rotate")}
-                          </span>
+                          <HelpCircle size={14} />
                         </button>
-                      </div>
-                    )}
-                </>
+                      )}
+
+                      {isConnected && config?.showWebhook && (
+                        <button
+                          onClick={() => handleOpenWebhook(p.key, store)}
+                          style={{
+                            background: "none",
+                            border: "1px solid var(--border)",
+                            borderRadius: 8,
+                            padding: "6px",
+                            color: "var(--text-3)",
+                            cursor: "pointer"
+                          }}
+                          title="Webhook"
+                        >
+                          <Webhook size={14} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div
+              style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}
+            >
+              <BtnGhost onClick={onBack}>{tp("back_btn")}</BtnGhost>
+              {connectedCount === 0 && (
+                <BtnGhost onClick={onNext}>{ts("actions.skip")}</BtnGhost>
               )}
-
-              <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-                <BtnGhost
-                  onClick={() => {
-                    setActive(null);
-                    setShowWebhooks(false);
-                    // Note: Fields and Secrets are now managed by hooks' internal state/onClose
-                  }}
-                >
-                  {showWebhooks ? ts("actions.close") : ts("actions.cancel")}
-                </BtnGhost>
-
-                {!showWebhooks && (
-                  <BtnPrimary
-                    onClick={save}
-                    loading={saving || nextLoading}
-                    disabled={nextLoading}
-                    style={{ flex: 1 }}
-                  >
-                    {connected[provider.key]
-                      ? ts("actions.update_store")
-                      : ts("actions.save_store")}
-                  </BtnPrimary>
-                )}
-              </div>
-            </motion.div>
-          )}
+              {connectedCount > 0 && (
+                <BtnPrimary onClick={onNext}>
+                  {tp("continue_btn")} <IcArrow dir="right" />
+                </BtnPrimary>
+              )}
+            </div>
+          </motion.div>
         </AnimatePresence>
+      )}
+
+      {/* Configuration Dialog */}
+      {dialogOpen && currentProvider && (
+        <StoreConfigDialog
+          open={dialogOpen}
+          onClose={handleCloseDialog}
+          provider={currentProvider}
+          existingStore={currentStore}
+          fetchStores={fetchStores}
+          t={t}
+          onCreated={(provider, id) =>
+            handleOpenWebhook(provider, { id, provider })
+          }
+        />
+      )}
+
+      {/* Guide Modal */}
+      {guideProvider && (
+        <StoreGuideModal
+          provider={{ code: guideProvider }}
+          onClose={handleCloseGuide}
+        />
+      )}
+
+      {/* Webhook Modal */}
+      {webhookModalProvider && modalStore && (
+        <StoreWebhookModal
+          provider={webhookModalProvider}
+          open={!!webhookModalProvider}
+          store={modalStore}
+          onClose={handleCloseWebhookModal}
+          fetchStores={fetchStores}
+          t={t}
+        />
       )}
     </motion.div>
   );

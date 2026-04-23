@@ -212,6 +212,7 @@ export const PROVIDER_CONFIG = {
     },
     shopify: {
         showWebhook: true,
+        showWebhooksSectionCreate: true,
         label: "Shopify",
         logo: "/integrate/shopify.png",
         website: "shopify.com",
@@ -334,9 +335,9 @@ export const PROVIDER_CONFIG = {
         },
         webhookDocsUrl: "https://help.shopify.com/en/manual/apps/app-types/custom-apps/webhooks",
         fields: {
-            apiKey: { required: true, userProvides: true },
-            clientSecret: { required: true, userProvides: true },
-            webhookSecret: { required: true, userProvides: true },
+            apiKey: { requiredCreateMote: true, masked: true },
+            clientSecret: { requiredCreateMote: true, masked: true },
+            webhookSecret: { required: true },
         },
         webhookEndpoints: {
             create: (adminId) => `${BASE_URL}/stores/webhooks/${adminId}/shopify/orders/create`,
@@ -479,10 +480,10 @@ export const PROVIDER_CONFIG = {
         },
         webhookDocsUrl: "https://woocommerce.github.io/woocommerce-rest-api-docs/#webhooks",
         fields: {
-            apiKey: { required: true, userProvides: true },
-            clientSecret: { required: true, userProvides: true },
-            webhookCreateOrderSecret: { required: true, systemProvides: true }, // System generates
-            webhookUpdateStatusSecret: { required: true, systemProvides: true }, // System generates
+            apiKey: { requiredCreateMote: true,masked: true },
+            clientSecret: { requiredCreateMote: true,masked: true },
+            webhookCreateOrderSecret: { readonly: true }, // System generates
+            webhookUpdateStatusSecret: { readonly: true }, // System generates
         },
         webhookEndpoints: {
             create: (adminId) => `${BASE_URL}/stores/webhooks/${adminId}/woocommerce/orders/create`,
@@ -530,7 +531,7 @@ export function generateEasyOrdersInstallUrl(adminId) {
     return `${baseUrl}?${params.toString()}`;
 };
 
-export function useStoreWebhook({ store, provider, onClose }) {
+export function useStoreWebhook({ store, provider, onClose, open }) {
     const t = useTranslations("storeIntegrations");
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -554,9 +555,9 @@ export function useStoreWebhook({ store, provider, onClose }) {
         }
     }, [provider]);
 
-    // --- Action: Fetch Store Data ---
+    // --- Action: Fetch Store Data --- 
     const fetchStore = useCallback(async () => {
-        if (!store?.id) return;
+        if (!store?.id || !open) return;
         setLoading(true);
         setError(null);
         try {
@@ -568,7 +569,7 @@ export function useStoreWebhook({ store, provider, onClose }) {
         } finally {
             setLoading(false);
         }
-    }, [store?.id, mapFields]);
+    }, [store?.id, mapFields, open]);
 
     useEffect(() => {
 
@@ -648,7 +649,6 @@ export function useStoreWebhook({ store, provider, onClose }) {
     };
 }
 
-
 export function useStoreConfig({ open, onClose, provider, existingStore, fetchStores, onCreated }) {
     const { user } = useAuth();
     const t = useTranslations("storeIntegrations");
@@ -660,16 +660,61 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
     const [error, setError] = useState(null);
 
     // Form schema
-    const schema = useMemo(
-        () =>
-            yup.object({
-                name: yup.string().trim().required(t("validation.nameRequired")),
-                syncNewProducts: yup.boolean().default(true),
-                storeUrl: yup.string().trim().url(t("validation.invalidUrl")).required(t("validation.storeUrlRequired")),
-                isActive: yup.boolean().default(true),
-            }),
-        [t]
-    );
+   const schema = useMemo(() => {
+    const shape = {
+        name: yup.string().trim().required(t("validation.nameRequired")),
+        syncNewProducts: yup.boolean().default(true),
+        storeUrl: yup.string().trim().url(t("validation.invalidUrl")).required(t("validation.storeUrlRequired")),
+        isActive: yup.boolean().default(true),
+    };
+
+    if (config?.fields) {
+        Object.entries(config.fields).forEach(([fieldName, fieldOptions]) => {
+            let fieldValidator = yup.string().trim();
+
+            if (fieldOptions.required) {
+                fieldValidator = fieldValidator.required(
+                    t(`validation.${fieldName}Required`)
+                );
+            }
+            if (fieldOptions.requiredCreateMote && !isEdit) {
+                fieldValidator = fieldValidator.required(
+                    t(`validation.${fieldName}Required`)
+                );
+            }
+
+            shape[fieldName] = fieldValidator;
+        });
+    }
+
+    return yup.object(shape);
+    }, [t, config, isEdit]);
+
+    const defaultValues = useMemo(() => {
+        const values = {
+            name: existingStore?.name || "",
+            storeUrl: existingStore?.storeUrl || "",
+            isActive: existingStore?.isActive ?? true,
+            syncNewProducts: existingStore?.syncNewProducts ?? true,
+        };
+
+        if (config?.fields) {
+            Object.entries(config.fields).forEach(([fieldName, fieldOptions]) => {
+                const savedValue = config?.fields?.[fieldName]?.defaultValue ?? existingStore?.credentials?.[fieldName];
+
+            if (fieldOptions.requiredCreateMode && !isEdit ) {
+                values[fieldName] = savedValue || "";
+            } 
+
+            if (fieldOptions.required) {
+                values[fieldName] = savedValue || "";
+            } 
+
+        });
+    }
+
+        return values;
+    }, [existingStore, config, isEdit]);
 
     const {
         register,
@@ -678,14 +723,11 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
         reset,
         formState: { errors, isSubmitting },
     } = useForm({
-        defaultValues: { name: "", storeUrl: "", isActive: true, syncNewProducts: true },
+        defaultValues: defaultValues,
         resolver: yupResolver(schema),
     });
-
+    
     // Field states
-    const [fields, setFields] = useState({});
-    const [touched, setTouched] = useState({});
-    const [fieldErrors, setFieldErrors] = useState({});
     const [masks, setMasks] = useState({});
     const [systemSecrets, setSystemSecrets] = useState({});
 
@@ -701,12 +743,13 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
                     const res = await api.get(`/stores/${existingStore.id}`);
                     const d = res.data;
 
-                    reset({
+                    const baseValues = {
                         name: d.name || "",
                         storeUrl: d.storeUrl || "",
                         syncNewProducts: d.syncNewProducts ?? true,
                         isActive: d.isActive ?? true,
-                    });
+                    };
+
 
                     // Load masked secrets
                     const integ = d.credentials || {};
@@ -714,13 +757,16 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
                     const newSystemSecrets = {};
 
                     Object.keys(config.fields || {}).forEach((fieldName) => {
-                        if (config.fields[fieldName].systemProvides) {
+                        if (config.fields[fieldName].readonly) {
                             newSystemSecrets[fieldName] = integ[fieldName] || "";
+                        } else if(!config.fields[fieldName]?.masked) {
+                             baseValues[fieldName] = integ[fieldName] || "";
                         } else {
                             newMasks[fieldName] = integ[fieldName] || "";
                         }
                     });
-
+                    
+                    reset(baseValues);
                     setMasks(newMasks);
                     setSystemSecrets(newSystemSecrets);
                 } catch (e) {
@@ -736,34 +782,8 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
             setSystemSecrets({});
         }
 
-        // Clear all fields
-        setFields({});
-        setTouched({});
-        setFieldErrors({});
-    }, [open, isEdit, existingStore?.id, provider, config, reset, onClose]);
+    }, [open, isEdit, existingStore?.id, provider, config, reset]);
 
-    const markTouched = (field) => setTouched((prev) => ({ ...prev, [field]: true }));
-
-    const isValid = () => {
-        const fieldEntries = Object.entries(config.fields || {});
-        const requiredUserFields = fieldEntries.filter(([, fc]) => fc.required && fc.userProvides);
-
-        // 1. All required (user-provided) fields satisfied
-        const allRequiredSatisfied = requiredUserFields.every(([key]) => {
-            const hasNewValue = (fields[key]?.trim() || "").length > 0;
-            const hasExistingValue = !!(masks[key] || (config.fields[key].systemProvides && systemSecrets[key]));
-            return hasExistingValue || hasNewValue;
-        });
-        if (!allRequiredSatisfied) return true;
-
-        // if (isEdit) {
-        //     // 2. On edit: at least one new value
-        //     const hasAtLeastOneNewValue = fieldEntries.some(([key]) => (fields[key]?.trim() || "").length > 0);
-        //     return hasAtLeastOneNewValue;
-        // }
-        // Create: all required must have value in fields
-        return true;
-    };
 
     // Regenerate WooCommerce secrets
     const handleRegenerateSecrets = async () => {
@@ -793,20 +813,6 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
         let createdStoreId = null;
 
         // Validate required user-provided fields on create
-        if (!isEdit && provider !== "easyorder") {
-            let hasError = false;
-            Object.entries(config.fields).forEach(([fieldName, fieldConfig]) => {
-                if (fieldConfig.userProvides && fieldConfig.required && !fields[fieldName]?.trim()) {
-                    setFieldErrors((prev) => ({
-                        ...prev,
-                        [fieldName]: t(`validation.${fieldName}Required`),
-                    }));
-                    hasError = true;
-                }
-            });
-            if (hasError) return;
-            setFieldErrors({});
-        }
 
         try {
             const payload = {
@@ -818,8 +824,8 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
             if (provider === "easyorder") {
                 // EasyOrder uses the upsert endpoint
                 await api.post("/stores/integrations", { ...payload, provider: "easyorder" });
-                await fetchStores();
                 onClose();
+                await fetchStores();
                 // Redirect to install URL only in create mode
                 if (!isEdit) {
                     window.location.href = generateEasyOrdersInstallUrl(user?.id);
@@ -833,8 +839,8 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
                 // Only include touched user-provided fields
                 const credentials = {};
                 Object.keys(config.fields).forEach((fieldName) => {
-                    if (config.fields[fieldName].userProvides && touched[fieldName] && fields[fieldName]?.trim()) {
-                        credentials[fieldName] = fields[fieldName].trim();
+                    if (!config.fields[fieldName].readonly) {
+                        credentials[fieldName] = data[fieldName]?.trim();
                     }
                 });
 
@@ -846,9 +852,10 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
 
                 // Update masks
                 const freshInteg = res.data?.credentials || {};
+                createdStoreId = existingStore.id;
                 const newMasks = {};
                 Object.keys(config.fields).forEach((fieldName) => {
-                    if (config.fields[fieldName].userProvides) {
+                    if (config.fields[fieldName].masked){
                         newMasks[fieldName] = freshInteg[fieldName] || "";
                     }
                 });
@@ -859,9 +866,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
                 // Create new store
                 const credentials = {};
                 Object.keys(config.fields).forEach((fieldName) => {
-                    if (config.fields[fieldName].userProvides) {
-                        credentials[fieldName] = fields[fieldName]?.trim() || "";
-                    }
+                    credentials[fieldName] = data[fieldName]?.trim() || "";
                 });
 
                 const res = await api.post("/stores", {
@@ -870,24 +875,13 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
                     credentials,
                 });
                 createdStoreId = res.data?.id;
+                onCreated?.(provider, createdStoreId);
                 toast.success(t("form.createSuccess"));
             }
 
             // Clear fields and reset touched
-            setFields({});
-            setTouched({});
+            onClose();
             await fetchStores();
-
-            if (!isEdit) {
-                onClose();
-                if (provider === "woocommerce" && createdStoreId) {
-                    if (typeof onCreated === "function") {
-                        onCreated(provider, createdStoreId);
-                    }
-                }
-            } else {
-                onClose();
-            }
         } catch (e) {
             const msg = normalizeAxiosError(e);
             toast.error(msg);
@@ -905,14 +899,8 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
         handleSubmit,
         errors,
         isSubmitting,
-        fields,
-        setFields,
-        touched,
-        markTouched,
-        fieldErrors,
         masks,
         systemSecrets,
-        isValid,
         handleRegenerateSecrets,
         onSubmit
     };

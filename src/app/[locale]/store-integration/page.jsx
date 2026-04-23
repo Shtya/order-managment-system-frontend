@@ -4,14 +4,10 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ChevronLeft,
-  Settings,
+  Store,
   RefreshCw,
   Loader2,
   AlertCircle,
-  CheckCircle2,
-  Clock,
-  Zap,
-  Store,
   ExternalLink,
   Settings2,
   HelpCircle,
@@ -22,6 +18,7 @@ import {
   Info,
   ImageIcon,
   X,
+  Zap,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
@@ -64,9 +61,7 @@ const PROVIDERS = ["easyorder", "shopify", "woocommerce"];
 // ─── StoreCard ───────────────────────────────────────────────────────────────
 
 export default function StoresIntegrationPage() {
-  const { user } = useAuth();
   const t = useTranslations("storeIntegrations");
-  const router = useRouter();
 
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -254,6 +249,7 @@ export default function StoresIntegrationPage() {
       {webhookModalProvider && modalStore && (
         <StoreWebhookModal
           provider={webhookModalProvider}
+          open={webhookModalProvider && modalStore}
           store={modalStore}
           onClose={handleCloseWebhookModal}
           fetchStores={fetchStores}
@@ -316,7 +312,7 @@ function StoreCard({
       // Cancel integration
       setCancelling(true);
       try {
-        await api.patch("/stores/cancel-integration/cancel-integration");
+        await api.patch("/stores/easyorder/cancel-integration");
         await fetchStores();
         toast.success(t("messages.integrationCancelled") || "Integration cancelled successfully");
       } catch (e) {
@@ -623,7 +619,7 @@ function StoreCard({
 
 // ─── Store Configuration Dialog ──────────────────────────────────────────────
 
-function StoreConfigDialog({
+export function StoreConfigDialog({
   open,
   onClose,
   provider,
@@ -637,22 +633,13 @@ function StoreConfigDialog({
     config,
     isEdit,
     fetchingStore,
-    regeneratingSecrets,
     error,
     register,
     control,
     handleSubmit,
     errors,
     isSubmitting,
-    fields,
-    setFields,
-    touched,
-    markTouched,
-    fieldErrors,
     masks,
-    isValid,
-    systemSecrets,
-    handleRegenerateSecrets,
     onSubmit,
   } = useStoreConfig({
     open,
@@ -663,10 +650,11 @@ function StoreConfigDialog({
     onCreated,
   });
 
-  const inputCls =
-    "rounded-xl h-[46px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20";
-
   if (!config) return null;
+
+  const hasFields = useMemo(() => {
+    return Object.keys(config.fields || {}).length > 0;
+  }, [config.fields]);
 
   return (
     <ModalShell
@@ -680,14 +668,14 @@ function StoreConfigDialog({
         subtitle={t("dialog.subtitle")}
         onClose={onClose}
       />
-      <div className="rounded-xl  max-h-[90vh] overflow-y-auto  p-3">
+      <div className="rounded-xl  max-h-[90vh] p-3">
         {fetchingStore ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 size={28} className="animate-spin text-primary" />
           </div>
         ) : (
           <>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-4">
+            <form className="space-y-5 mt-4">
               {/* Store Info Section */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-2">
@@ -718,6 +706,7 @@ function StoreConfigDialog({
                     {t("form.storeUrl")}
                   </Label>
                   <Input
+                    type="url"
                     {...register("storeUrl")}
                     placeholder="https://your-store.com"
 
@@ -768,7 +757,7 @@ function StoreConfigDialog({
               </div>
 
               {/* API Keys Section */}
-              {(config.fields.apiKey || config.fields.clientSecret) && (
+              {hasFields && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <div className="w-0.5 h-5 bg-primary rounded-full" />
@@ -777,92 +766,43 @@ function StoreConfigDialog({
                     </span>
                   </div>
 
-                  {/* Instructions */}
-                  {/* <div className="bg-[#FAFBFF] dark:bg-[#1E1E2E] border border-[#E8E8F0] dark:border-[#3A3A4A] rounded-xl p-3.5 space-y-2">
-										<p className="text-xs font-semibold text-gray-700 dark:text-slate-200 flex items-center gap-1.5">
-											<Zap size={13} className="text-primary" />
-											{t("instructions.apiKeyTitle")}
-										</p>
-										{config.instructions.apiKey.map((instruction, idx) => (
-											<InstructionStep key={idx} step={idx + 1}>
-												{instruction}
-											</InstructionStep>
-										))}
-									</div> */}
 
                   {/* Field Inputs */}
                   <div className="grid grid-cols-1 gap-3">
-                    {config.fields.apiKey && (
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
-                          {t("form.apiKey")}
-                        </Label>
-                        <Input
-                          value={fields.apiKey || ""}
-                          placeholder={
-                            isEdit
-                              ? masks.apiKey || t("form.maskedPlaceholder")
-                              : t("form.apiKeyPlaceholder")
-                          }
-                          onChange={(e) => {
-                            setFields((prev) => ({
-                              ...prev,
-                              apiKey: e.target.value,
-                            }));
-                            markTouched("apiKey");
-                          }}
-                          className={cn(
-                            masks?.apiKey &&
-                            "placeholder:text-gray-950 dark:placeholder:text-gray-100",
-                          )}
-                        />
-                        {fieldErrors.apiKey && (
-                          <div className="text-xs text-red-600">
-                            {fieldErrors.apiKey}
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    {Object.entries(config.fields).map(([fieldKey, fieldConfig]) => {
+                      if (fieldConfig.readonly) return null;
 
-                    {config.fields.clientSecret && (
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
-                          {t("form.clientSecret")}
-                        </Label>
-                        <Input
-                          value={fields.clientSecret || ""}
-                          placeholder={
-                            isEdit
-                              ? masks.clientSecret ||
-                              t("form.maskedPlaceholder")
-                              : t("form.secretPlaceholder")
-                          }
-                          onChange={(e) => {
-                            setFields((prev) => ({
-                              ...prev,
-                              clientSecret: e.target.value,
-                            }));
-                            markTouched("clientSecret");
-                          }}
-                          className={cn(
-
-                            masks?.clientSecret &&
-                            "placeholder:text-gray-950 dark:placeholder:text-gray-100",
+                      return (
+                        <div key={fieldKey} className="space-y-1.5">
+                          <Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
+                            {t(`form.${fieldKey}`)}
+                          </Label>
+                          <Input
+                            placeholder={
+                              isEdit && fieldConfig.masked
+                                ? masks[fieldKey] || t("form.maskedPlaceholder")
+                                : t(`form.${fieldKey}Placeholder`)
+                            }
+                            {...register(fieldKey)}
+                            className={cn(
+                              isEdit && fieldConfig.masked && masks?.[fieldKey] &&
+                              "placeholder:text-gray-950 dark:placeholder:text-gray-100",
+                            )}
+                          />
+                          {errors?.[fieldKey] && (
+                            <div className="text-xs text-red-600">
+                              {errors[fieldKey].message}
+                            </div>
                           )}
-                        />
-                        {fieldErrors.clientSecret && (
-                          <div className="text-xs text-red-600">
-                            {fieldErrors.clientSecret}
-                          </div>
-                        )}
-                      </div>
-                    )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
 
               {/* Webhooks Section - only on first-time create; when edit use Webhook modal */}
-              {!isEdit && provider !== "woocommerce" && provider !== "easyorder" && (
+              {((config?.showWebhooksSectionEdit && isEdit) || (config?.showWebhooksSectionCreate && !isEdit)) && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <div className="w-0.5 h-5 bg-primary rounded-full" />
@@ -940,42 +880,6 @@ function StoreConfigDialog({
                       </p>
                     </div>
                   </div>
-
-                  {/* User-provided webhook secrets */}
-                  {config.fields?.webhookSecret &&
-                    config.fields.webhookSecret.userProvides && (
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
-                          {t("form.webhookSecret")}
-                        </Label>
-                        <Input
-                          value={fields.webhookSecret || ""}
-                          placeholder={
-                            isEdit
-                              ? masks.webhookSecret ||
-                              t("form.maskedPlaceholder")
-                              : t("form.secretPlaceholder")
-                          }
-                          onChange={(e) => {
-                            setFields((prev) => ({
-                              ...prev,
-                              webhookSecret: e.target.value,
-                            }));
-                            markTouched("webhookSecret");
-                          }}
-                          className={cn(
-
-                            masks?.webhookSecret &&
-                            "placeholder:text-gray-950 dark:placeholder:text-gray-100",
-                          )}
-                        />
-                        {fieldErrors.webhookSecret && (
-                          <div className="text-xs text-red-600">
-                            {fieldErrors.webhookSecret}
-                          </div>
-                        )}
-                      </div>
-                    )}
                 </div>
               )}
 
@@ -988,10 +892,11 @@ function StoreConfigDialog({
               )}
 
               {/* Submit Button */}
-              <div className="flex justify-end gap-2 pt-4 border-t border-gray-200 dark:border-slate-800">
+              <div className="flex justify-end gap-2 pt-4 border-t border-gray-200 dark:border-slate-800 mb-3">
                 <PrimaryBtn
                   type="submit"
-                  disabled={!isValid() || isSubmitting}
+                  onClick={handleSubmit(onSubmit)}
+                  disabled={isSubmitting}
                   loading={isSubmitting}
                   className="w-full"
                 >
@@ -1008,25 +913,18 @@ function StoreConfigDialog({
 
 // ─── Store Webhook Modal (shape/style as shipping WebhookModal) ─────────────────
 
-function StoreWebhookModal({ provider, store, onClose, fetchStores, t }) {
+export function StoreWebhookModal({ provider, store, onClose, open, fetchStores, t }) {
   const { user } = useAuth();
   const {
     loading,
-    saving,
     error,
-    storeData,
-    webhookFields,
-    setWebhookFields,
     rotating,
     copyToClipboard,
-    saveSecrets,
     rotateWooCommerce,
     cred,
-  } = useStoreWebhook({ store, provider, onClose });
+  } = useStoreWebhook({ store, provider, onClose, open });
 
   const config = PROVIDER_CONFIG[provider];
-  const inputCls =
-    "flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]";
 
   return (
     <ModalShell onClose={onClose} maxWidth="max-w-lg">
@@ -1103,85 +1001,6 @@ function StoreWebhookModal({ provider, store, onClose, fetchStores, t }) {
             <p className="text-[11px] text-[var(--muted-foreground)]">
               {t("webhook.urlHint")}
             </p>
-
-            {/* User-provided secrets (input + save) */}
-            {Object.keys(config.fields || {}).some(key => config.fields[key].userProvides) && (
-              <>
-                <div className="grid grid-cols-1 gap-3">
-                  {config.fields.webhookSecret?.userProvides && (
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-[var(--card-foreground)]">
-                        {t("form.webhookSecret")}
-                      </label>
-                      <Input
-                        value={webhookFields.webhookSecret ?? ""}
-                        placeholder={
-                          cred.webhookSecret
-                            ? t("form.maskedPlaceholder") || "••••••••"
-                            : t("form.secretPlaceholder")
-                        }
-                        onChange={(e) =>
-                          setWebhookFields((p) => ({
-                            ...p,
-                            webhookSecret: e.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-                  )}
-                  {config.fields.webhookCreateOrderSecret?.userProvides && (
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-[var(--card-foreground)]">
-                        {t("form.webhookCreateOrderSecret")}
-                      </label>
-                      <Input
-                        value={webhookFields.webhookCreateOrderSecret ?? ""}
-                        placeholder={
-                          cred.webhookCreateOrderSecret
-                            ? t("form.maskedPlaceholder") || "••••••••"
-                            : t("form.secretPlaceholder")
-                        }
-                        onChange={(e) =>
-                          setWebhookFields((p) => ({
-                            ...p,
-                            webhookCreateOrderSecret: e.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-                  )}
-                  {config.fields.webhookUpdateStatusSecret?.userProvides && (
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-[var(--card-foreground)]">
-                        {t("form.webhookUpdateStatusSecret")}
-                      </label>
-                      <Input
-                        value={webhookFields.webhookUpdateStatusSecret ?? ""}
-                        placeholder={
-                          cred.webhookUpdateStatusSecret
-                            ? t("form.maskedPlaceholder") || "••••••••"
-                            : t("form.secretPlaceholder")
-                        }
-                        onChange={(e) =>
-                          setWebhookFields((p) => ({
-                            ...p,
-                            webhookUpdateStatusSecret: e.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-                  )}
-                </div>
-                <PrimaryBtn
-                  onClick={saveSecrets}
-                  disabled={saving}
-                  loading={saving}
-                  className="w-full mt-2"
-                >
-                  {t("form.update")}
-                </PrimaryBtn>
-              </>
-            )}
 
             {/* WooCommerce: system secrets (read-only + copy + regenerate) */}
             {provider === "woocommerce" && (

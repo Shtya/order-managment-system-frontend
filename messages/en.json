@@ -827,6 +827,7 @@
       "apiKeyPlaceholder": "Enter API key",
       "clientSecret": "Secret",
       "secretPlaceholder": "Enter secret",
+      "clientSecretPlaceholder": "Enter secret",
       "maskedPlaceholder": "••••••••••",
       "webhooksSection": "Webhook Setup",
       "webhookSecret": "Webhook Secret",
@@ -838,7 +839,8 @@
       "update": "Update",
       "createSuccess": "Store created successfully",
       "updateSuccess": "Store updated successfully",
-      "copied": "Copied"
+      "copied": "Copied",
+      "webhookSecretPlaceholder": "Enter Webhook Secret"
     },
     "instructions": {
       "apiKeyTitle": "How to get the API key",
@@ -4593,6 +4595,7 @@
       "duplicate": "Duplicate",
       "postponed": "Postponed",
       "delivered": "Delivered",
+      "failed_delivery": "Failed Delivery",
       "in_shipping": "In Shipping",
       "waiting_stock": "Waiting for Stock",
       "no_answer_shipping": "No Response from Shipping",

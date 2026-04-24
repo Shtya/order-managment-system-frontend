@@ -22,7 +22,6 @@ import { Badge } from "@/components/ui/badge";
 import { useNotification } from "@/context/NotificationContext";
 
 
-
 export const NotificationType = Object.freeze({
   ORDER_STATUS_UPDATE: 'order_status_update',
   SUBSCRIPTION_ACTIVATED: 'subscription_activated',
@@ -54,6 +53,9 @@ export const NotificationType = Object.freeze({
   ORDER_USAGE_FAILED: 'order_usage_failed',
   LOW_STOCK_ALERT: 'low_stock_alert',
   MARKETING_MESSAGE: 'marketing_message',
+  SYSTEM_ERROR: 'system_error',
+  ORDER_CREATED: 'order_created',
+  PRODUCT_SYNC_FAILED: 'product_sync_failed'
 });
 
 // ─────────────────────────────────────────────
@@ -65,6 +67,9 @@ export function getNotificationLink(entity, id, type) {
     type === NotificationType.EXTRA_FEATURE_ASSIGNED
   ) {
     return "/plans?tab=features";
+  }
+  if (type === NotificationType.PRODUCT_SYNC_FAILED) {
+    return "/store-integration/sync-failures";
   }
 
   if (entity === "subscription" || (type && type.startsWith("subscription"))) {

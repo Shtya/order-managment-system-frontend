@@ -55,7 +55,7 @@ const VARIANTS = {
 // ─────────────────────────────────────────────────────────────
 // CUSTOM TOOLTIP
 // ─────────────────────────────────────────────────────────────
-function CustomTooltip({ children, label, color }) {
+export function CustomTooltip({ children, label, color }) {
 	const [visible, setVisible] = useState(false);
 	const [mounted, setMounted] = useState(false);
 

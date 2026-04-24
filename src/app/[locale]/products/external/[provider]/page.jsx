@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import api from "@/utils/api";
 import { toast } from "react-hot-toast";
@@ -13,7 +13,10 @@ import { convert } from "html-to-text";
 export default function ImportExternalProductPage() {
     const t = useTranslations('editProduct'); // نستخدم نفس مفاتيح الترجمة للتحميل
     const params = useParams();
-    const { provider, id } = params;
+    const searchParams = useSearchParams();
+    const id = searchParams.get("id");
+
+    const { provider } = params;
 
     const [loading, setLoading] = useState(true);
     const [mappedProduct, setMappedProduct] = useState(null);
@@ -24,7 +27,10 @@ export default function ImportExternalProductPage() {
         (async () => {
             setLoading(true);
             try {
-                const res = await api.get(`/stores/external/${provider}/${id}`);
+                const res = await api.get(`/stores/external/${provider}`, {
+                    params: { id },
+                });
+
                 const externalData = res.data;
 
 

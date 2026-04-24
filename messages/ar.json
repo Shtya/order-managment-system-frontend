@@ -4633,6 +4633,7 @@
       "ready": "جاهز",
       "shipped": "تم الشحن",
       "returned": "مرتجع",
+      "failed_delivery": "فشل التوصيل",
       "no_answer": "لا يوجد رد",
       "out_of_area": "خارج نطاق التوصيل",
       "distributed": "تم التوزيع",

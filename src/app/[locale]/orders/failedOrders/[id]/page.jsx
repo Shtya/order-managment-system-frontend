@@ -41,10 +41,13 @@ import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
 import ActionButtons from "@/components/atoms/Actions";
 import { convert } from "html-to-text";
+import { normalizeAxiosError } from "@/utils/axios";
 const WebhookOrderProblem = {
     PRODUCT_NOT_FOUND: 'PRODUCT_NOT_FOUND',
     SKU_NOT_FOUND: 'SKU_NOT_FOUND',
     INSUFFICIENT_STOCK: 'INSUFFICIENT_STOCK',
+    PRODUCT_INACTIVE: 'PRODUCT_INACTIVE',
+    SKU_INACTIVE: 'SKU_INACTIVE',
 };
 
 function formatDate(dateStr) {
@@ -273,7 +276,7 @@ export default function FailedOrderDetailsPage() {
         if (externalCache[remoteId]?.data || externalCache[remoteId]?.loading) return;
         try {
             setExternalCache(prev => ({ ...prev, [remoteId]: { loading: true } }));
-            const res = await api.get(`/stores/external/${provider}/${remoteId}`);
+            const res = await api.get(`/stores/external/${provider}?id=${remoteId}`);
             setExternalCache(prev => ({ ...prev, [remoteId]: { loading: false, data: res.data } }));
         } catch (err) {
             setExternalCache(prev => ({ ...prev, [remoteId]: { loading: false, error: true } }));
@@ -400,12 +403,34 @@ export default function FailedOrderDetailsPage() {
                     });
                 }
 
-                if (problem?.code === WebhookOrderProblem.SKU_NOT_FOUND) {
+                if (problem?.code === WebhookOrderProblem.SKU_NOT_FOUND || problem?.code === WebhookOrderProblem.SKU_INACTIVE) {
                     actions.push({
                         icon: <Edit size={16} />,
                         tooltip: t('actions.editProductAndAddVariant'),
                         variant: "primary",
                         onClick: () => router.push(`/products/edit/${row.variant?.localProductId || problem.productId}`)
+                    });
+                }
+
+                if (problem?.code === WebhookOrderProblem.PRODUCT_INACTIVE) {
+                    actions.push({
+                        icon: <Edit size={16} />,
+                        tooltip: t('actions.reactivateProduct'),
+                        variant: "primary",
+                        onClick: async (r) => {
+                            const toastId = toast.loading(t("common.loading"));
+
+                            try {
+                                await api.patch(`/products/${r.id}/restore`);
+
+                                toast.success(t("actions.restored"), { id: toastId });
+
+                                // reload products
+                                await fetchData();
+                            } catch (e) {
+                                toast.error(normalizeAxiosError(e), { id: toastId });
+                            }
+                        },
                     });
                 }
 
@@ -458,7 +483,7 @@ export default function FailedOrderDetailsPage() {
         );
     }
 
-    const isRetryDisabled = problems.length > 0 || retrying;
+    const isRetryDisabled = problems.length > 0 || retrying || isSuccess;
 
     const statusMap = {
         pending: {

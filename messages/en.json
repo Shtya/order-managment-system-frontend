@@ -4387,12 +4387,17 @@
         "showDetails": "Show failure details",
         "fixAndRetry": "Fix & retry",
         "cancel": "Cancel",
-        "showAndFix": "View Details & retry"
+        "showAndFix": "View Details & retry",
+        "editProductAndAddVariant": "Edit ",
+        "reactivateProduct": "Reactivate Product",
+        "restored": "Product Reactivated Successfully"
       },
       "problems": {
         "PRODUCT_NOT_FOUND": "Product Not Found Locally",
         "SKU_NOT_FOUND": "Selected options not found for this product",
-        "INSUFFICIENT_STOCK": "Insufficient Stock"
+        "INSUFFICIENT_STOCK": "Insufficient Stock",
+        "PRODUCT_INACTIVE": "Product Deleted",
+        "SKU_INACTIVE": "SKU Inactive"
       },
       "errors": {
         "fetchFailed": "Failed to load order details.",

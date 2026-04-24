@@ -16,6 +16,8 @@ import toast from "react-hot-toast";
 import { Bell, X } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useTranslations } from "use-intl";
+import { useRouter } from "@/i18n/navigation";
+import { getNotificationLink } from "@/app/[locale]/notifications/page";
 
 const NotificationContext = createContext();
 
@@ -140,15 +142,28 @@ export const useNotification = () => useContext(NotificationContext);
 
 
 function NotificationToast({ toastItem, notification, isRtl }) {
+  const {
+    handleMarkAsRead,
+  } = useNotification();
+
   const t = useTranslations("header");
+  const router = useRouter();
+
+  const handleClick = async () => {
+    if (!notification.isRead) await handleMarkAsRead(notification.id);
+    const link = getNotificationLink(notification.relatedEntityType, notification.relatedEntityId, notification.type);
+    toast.dismiss(toastItem.id);
+    if (link !== "#") router.push(link);
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0, x: isRtl ? -100 : 100, scale: 0.9 }}
       animate={{ opacity: 1, x: 0, scale: 1 }}
+      onClick={handleClick}
       exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
       className={cn(
-        "relative flex w-full max-w-[380px] overflow-hidden rounded-2xl border bg-card/95 p-4 shadow-2xl backdrop-blur-md",
+        "relative flex w-full cursor-pointer max-w-[380px] overflow-hidden rounded-2xl border bg-card/95 p-4 shadow-2xl backdrop-blur-md",
         "border-border/50 ring-1 ring-black/5 dark:ring-white/5",
         t.visible ? "animate-in fade-in zoom-in" : "animate-out fade-out zoom-out"
       )}
@@ -184,7 +199,10 @@ function NotificationToast({ toastItem, notification, isRtl }) {
 
         {/* Close Button */}
         <button
-          onClick={() => toast.dismiss(toastItem.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            toast.dismiss(toastItem.id);
+          }}
           className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground/50 transition-colors hover:bg-muted hover:text-foreground"
         >
           <X size={14} strokeWidth={2.5} />

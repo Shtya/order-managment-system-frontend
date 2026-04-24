@@ -21,12 +21,14 @@ import {
   Package,
   RefreshCw,
   RotateCcw,
+  Settings2,
   Store,
   Truck,
   Upload,
   Users,
   Webhook,
   X,
+  Zap,
 } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import {
@@ -47,6 +49,7 @@ import {
   StoreGuideModal,
 } from "../store-integration/page";
 import { useSocket } from "@/context/SocketContext";
+import { CustomTooltip } from "@/components/atoms/Actions";
 import { useSubscriptionsApi } from "../plans/page";
 import { cn } from "@/utils/cn";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
@@ -2717,7 +2720,7 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
     if (isIntegrated) {
       setCancelling(true);
       try {
-        await api.patch("/stores/cancel-integration/cancel-integration");
+        await api.patch("/stores/easyorder/cancel-integration");
         await fetchStores();
         toast.success(t("messages.integrationCancelled") || "Integration cancelled successfully");
       } catch (e) {
@@ -2782,58 +2785,46 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
               {STORE_PROVIDERS.map((p) => {
                 const store = stores.find((s) => s.provider === p.key);
                 const isConnected = !!store;
+                const isIntegrated = store?.isIntegrated ?? false;
                 const config = PROVIDER_CONFIG[p.key];
+
+                const accent = config.accent;
+                const fbCls =
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 bg-white/80 dark:bg-[var(--muted)] border border-white/60 dark:border-[var(--border)] text-gray-600 dark:text-gray-300 shadow-sm";
+                const onEnter = (e) => {
+                  e.currentTarget.style.borderColor = accent;
+                  e.currentTarget.style.color = accent;
+                };
+                const onLeave = (e) => {
+                  e.currentTarget.style.borderColor = "";
+                  e.currentTarget.style.color = "";
+                };
 
                 return (
                   <div
                     key={p.key}
-                    className={`prov-card${isConnected ? " connected" : ""}`}
-                    style={{
-                      cursor: "default",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 12,
-                      padding: 14,
-                      borderRadius: 14,
-                      border: "1.5px solid var(--border)",
-                      background: "var(--surface)",
-                      transition: "all .2s",
-                    }}
+                    className={cn(
+                      "prov-card group transition-all duration-200",
+                      "flex flex-col sm:flex-row items-start sm:items-center gap-4",
+                      "p-4 rounded-2xl border-1.5 border-[var(--border)] bg-[var(--surface)]",
+                      isConnected && "connected"
+                    )}
                   >
                     <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 12,
-                        flex: 1,
-                      }}
+                      className="flex items-center gap-3 flex-1 w-full"
                     >
                       {/* Logo container */}
                       <div
-                        style={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: 12,
-                          flexShrink: 0,
-                          background: isConnected
-                            ? "#f0fdf4"
-                            : "var(--surface2)",
-                          border: `1.5px solid ${isConnected ? "#bbf7d0" : "var(--border)"}`,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          overflow: "hidden",
-                          transition: "all .2s",
-                        }}
+                        className={cn(
+                          "w-11 h-11 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden transition-all duration-200",
+                          "border-1.5",
+                          isConnected ? "bg-[#f0fdf4] border-[#bbf7d0]" : "bg-[var(--surface2)] border-[var(--border)]"
+                        )}
                       >
                         <img
                           src={p.img}
                           alt={p.label[locale] || p.label.en}
-                          style={{
-                            width: 28,
-                            height: 28,
-                            objectFit: "contain",
-                          }}
+                          className="w-7 h-7 object-contain"
                           onError={(e) => {
                             e.currentTarget.style.display = "none";
                             e.currentTarget.parentElement.innerHTML = `<span style="font-size:22px">${p.emoji || "🔗"}</span>`;
@@ -2842,23 +2833,14 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                       </div>
 
                       {/* Text */}
-                      <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="flex-1 min-w-0">
                         <div
-                          style={{
-                            fontSize: 14,
-                            fontWeight: 700,
-                            color: "var(--text)",
-                          }}
+                          className="text-sm font-bold text-[var(--text)]"
                         >
                           {p.label[locale] || p.label.en}
                         </div>
                         <div
-                          style={{
-                            fontSize: 12,
-                            color: "var(--text-3)",
-                            marginTop: 2,
-                            lineHeight: 1.4,
-                          }}
+                          className="text-xs text-[var(--text-3)] mt-0.5 line-clamp-1 sm:line-clamp-2 leading-relaxed"
                         >
                           {p.desc[locale] || p.desc.en}
                         </div>
@@ -2866,63 +2848,61 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
                     </div>
 
                     {/* Actions Group */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      {p.key === "easyorder" ? (
-                        <BtnPrimary
+                    <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto sm:justify-end">
+                      {p.key === "easyorder" && (
+                        <button
                           onClick={() => handleEasyOrderAction(p.key, store)}
-                          loading={cancelling}
-                          style={{
-                            padding: "6px 12px",
-                            fontSize: 11,
-                            background: store?.isIntegrated ? "#ef4444" : "var(--p)",
-                            borderColor: store?.isIntegrated ? "#ef4444" : "var(--p)",
-                          }}
+                          disabled={cancelling}
+                          className={cn(fbCls, "flex-1 sm:flex-none justify-center")}
+                          onMouseEnter={onEnter}
+                          onMouseLeave={onLeave}
                         >
-                          {store?.isIntegrated ? t("card.cancelIntegration") : t("card.integrate")}
-                        </BtnPrimary>
-                      ) : (
-                        <BtnPrimary
-                          onClick={() => handleConfigure(p.key, store)}
-                          style={{
-                            padding: "6px 12px",
-                            fontSize: 11,
-                          }}
-                        >
-                          {isConnected ? t("card.settings") : t("card.configureSettings")}
-                        </BtnPrimary>
+                          {cancelling ? (
+                            <Loader2 size={12} className="animate-spin" />
+                          ) : isIntegrated ? (
+                            <X size={12} className="text-red-500" />
+                          ) : (
+                            <Zap size={12} className="text-amber-500" />
+                          )}
+                          <span className="truncate">
+                            {isIntegrated ? t("card.cancelIntegration") || "Cancel Integration" : t("card.integrate") || "Integrate"}
+                          </span>
+                        </button>
                       )}
+
+                      <button
+                        onClick={() => handleConfigure(p.key, store)}
+                        className={cn(fbCls, "flex-1 sm:flex-none justify-center")}
+                        onMouseEnter={onEnter}
+                        onMouseLeave={onLeave}
+                      >
+                        <Settings2 size={12} />
+                        <span className="truncate">
+                          {isConnected ? t("card.settings") : t("card.configureSettings")}
+                        </span>
+                      </button>
 
                       {config?.guide?.showSteps && (
                         <button
                           onClick={() => handleOpenGuide(p.key, store)}
-                          style={{
-                            background: "none",
-                            border: "1px solid var(--border)",
-                            borderRadius: 8,
-                            padding: "6px",
-                            color: "var(--text-3)",
-                            cursor: "pointer"
-                          }}
-                          title={t("card.guide")}
+                          className={cn(fbCls, "flex-1 sm:flex-none justify-center")}
+                          onMouseEnter={onEnter}
+                          onMouseLeave={onLeave}
                         >
-                          <HelpCircle size={14} />
+                          <HelpCircle size={12} />
+                          <span className="hidden sm:inline">{t("card.guide")}</span>
                         </button>
                       )}
 
                       {isConnected && config?.showWebhook && (
                         <button
                           onClick={() => handleOpenWebhook(p.key, store)}
-                          style={{
-                            background: "none",
-                            border: "1px solid var(--border)",
-                            borderRadius: 8,
-                            padding: "6px",
-                            color: "var(--text-3)",
-                            cursor: "pointer"
-                          }}
-                          title="Webhook"
+                          className={cn(fbCls, "flex-1 sm:flex-none justify-center")}
+                          onMouseEnter={onEnter}
+                          onMouseLeave={onLeave}
                         >
-                          <Webhook size={14} />
+                          <Webhook size={12} />
+                          <span className="hidden sm:inline">Webhook</span>
                         </button>
                       )}
                     </div>

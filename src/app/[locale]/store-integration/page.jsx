@@ -33,6 +33,7 @@ import { GhostBtn, PrimaryBtn } from "@/components/atoms/Button";
 import { useSocket } from "@/context/SocketContext";
 import { tenantId } from "@/utils/healpers";
 import PageHeader from "@/components/atoms/Pageheader";
+import { CustomTooltip } from "@/components/atoms/Actions";
 import {
   PROVIDER_CONFIG,
   useStoreConfig,
@@ -552,7 +553,6 @@ function StoreCard({
         {config?.guide?.showSteps ? (
           <button
             onClick={() => onOpenGuide(provider, store)}
-            title={t("card.guideTitle")}
             className={fbCls}
             onMouseEnter={onEnter}
             onMouseLeave={onLeave}
@@ -565,7 +565,6 @@ function StoreCard({
             href={config.guide.docsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            title={t("card.guideTitle")}
             className={fbCls}
             style={{ textDecoration: "none" }}
             onMouseEnter={onEnter}
@@ -579,7 +578,6 @@ function StoreCard({
         {hasStore && hasPermission("stores.read") && config.showWebhook ? (
           <button
             onClick={() => onOpenWebhook(provider, store)}
-            title="Webhook"
             className={`font-en ${fbCls}`}
             onMouseEnter={onEnter}
             onMouseLeave={onLeave}

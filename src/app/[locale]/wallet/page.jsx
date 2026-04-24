@@ -268,15 +268,14 @@ function DepositModal({ onClose, onDeposit, t, currency }) {
             <div className="relative">
               <input
                 type="number"
-
-                min="0.01"
+                min="0"
                 value={amount}
                 onChange={(e) => {
                   setAmount(e.target.value);
                   setErr("");
                 }}
                 placeholder={t("deposit.amountPlaceholder")}
-                className="w-full h-12 px-4 pr-16 rounded-xl border-2 border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+                className="w-full h-12 px-4 pe-16 rounded-xl border-2 border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none"
                 disabled={submitting}
               />
               <span className="absolute end-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-gray-500 dark:text-gray-400">

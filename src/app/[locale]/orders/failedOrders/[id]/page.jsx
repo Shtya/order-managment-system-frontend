@@ -396,7 +396,7 @@ export default function FailedOrderDetailsPage() {
                         icon: <Store size={16} />,
                         tooltip: t('actions.createProduct'),
                         variant: "outline",
-                        onClick: () => router.push(`/products/${provider}/${remoteId}`)
+                        onClick: () => router.push(`/products/external/${provider}?id=${remoteId}`)
                     });
                 }
 

@@ -4393,7 +4393,7 @@
       "actions": {
         "viewExternalProductDetails": "عرض تفاصيل المنتج الخارجي",
         "createProductFromExternal": "إنشاء منتج من البيانات الخارجية",
-        "editProductAndAddVariant": "تعديل المنتج وإضافة النوع",
+        "editProductAndAddVariant": "تعديل المنتج",
         "retryOrder": "إعادة المحاولة وحفظ الطلب",
         "markAsResolved": "تحديد كمحلول",
         "fetchExternalDetails": "جلب بيانات المنتج الخارجية",
@@ -4407,12 +4407,16 @@
         "showDetails": "عرض تفاصيل الفشل",
         "fixAndRetry": "إصلاح وإعادة محاولة",
         "cancel": "إلغاء",
-        "showAndFix": "عرض التفاصيل و المحاولة مجددا"
+        "showAndFix": "عرض التفاصيل و المحاولة مجددا",
+        "reactivateProduct": "إعادة تنشيط المنتج",
+        "restored": "تم إعادة تنشيط المنتج"
       },
       "problems": {
         "PRODUCT_NOT_FOUND": "المنتج غير موجود محلياً",
         "SKU_NOT_FOUND": "الخيارات المختارة غير موجودة لهذا المنتج",
-        "INSUFFICIENT_STOCK": "كمية المخزون غير كافية"
+        "INSUFFICIENT_STOCK": "كمية المخزون غير كافية",
+        "PRODUCT_INACTIVE": "المنتج ممسوح",
+        "SKU_INACTIVE": "هذا ال sku غير مفعل"
       },
       "errors": {
         "fetchFailed": "فشل في تحميل تفاصيل الطلب.",

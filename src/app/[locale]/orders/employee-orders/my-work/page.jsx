@@ -27,13 +27,21 @@ const HEX = {
   orange: "var(--primary)", amber: "var(--third)", flame: "var(--secondary)",
   violet: "#6763af", green: "#16a34a", red: "#dc2626", sky: "#0369a1",
 };
-const rgba = (hex, op) => {
-  if (!hex?.startsWith("#")) return hex;
-  const x = hex.replace("#", "");
-  const r = parseInt(x.slice(0, 2), 16), g = parseInt(x.slice(2, 4), 16), b = parseInt(x.slice(4, 6), 16);
-  return `rgba(${r},${g},${b},${op})`;
-};
+// const rgba = (hex, op) => {
+//   if (!hex?.startsWith("#")) return hex;
+//   const x = hex.replace("#", "");
+//   const r = parseInt(x.slice(0, 2), 16), g = parseInt(x.slice(2, 4), 16), b = parseInt(x.slice(4, 6), 16);
+//   return `rgba(${r},${g},${b},${op})`;
+// };
+const rgba = (color, op = 0.1) => {
+  if (!color) return "";
 
+  // تحويل نسبة الشفافية (Opacity) إلى نسبة مئوية للشفاف (Transparent)
+  // 0.1 opacity تعني 90% transparent
+  const transparentPercentage = (1 - op) * 100;
+
+  return `color-mix(in srgb, ${color}, transparent ${transparentPercentage}%)`;
+};
 
 const fmtDt = (d, loc = "ar-EG") => d ? new Date(d).toLocaleString(loc, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
 
@@ -112,7 +120,7 @@ const GS = () => (
     .ptable th {
       
       font-size:9px; font-weight:800; letter-spacing:0.2em; text-transform:uppercase;
-      color:var(--muted-foreground);
+      color:var(--foreground);
       padding:9px 12px; text-align:start; border-bottom:1.5px solid var(--border);
       white-space:nowrap;
     }
@@ -132,13 +140,13 @@ const GS = () => (
 
     /* ── Qty pill ── */
     .qty { display:inline-flex; align-items:center; border-radius:var(--radius); border:1.5px solid var(--border); background:var(--muted); overflow:hidden; }
-    .qty button { width:28px;height:28px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;color:var(--muted-foreground);transition:background .1s,color .1s; }
+    .qty button { width:28px;height:28px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;color:var(--foreground);transition:background .1s,color .1s; }
     .qty button:hover { background:var(--border); color:var(--foreground); }
     .qty input { width:32px;height:28px;text-align:center;border:none;border-left:1.5px solid var(--border);border-right:1.5px solid var(--border);background:transparent;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--foreground); }
 
     /* ── Form field ── */
     .field { display:flex; flex-direction:column; gap:5px; }
-    .field label {  font-size:9.5px; font-weight:800; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted-foreground); transition:color .15s; }
+    .field label {  font-size:9.5px; font-weight:800; letter-spacing:0.18em; text-transform:uppercase; color:var(--foreground); transition:color .15s; }
     .field label.on { color:var(--primary); }
     .field input {
       height:40px; border-radius:var(--radius); border:1.5px solid var(--border);
@@ -179,7 +187,7 @@ function Ping({ color, size = 8 }) {
 
 function Tag({ children, color, sm = false }) {
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontWeight: 700, fontSize: sm ? 9 : 10.5, letterSpacing: "0.05em", padding: sm ? "2px 7px" : "3px 10px", borderRadius: 6, background: rgba(color, .1), color, border: `1px solid ${rgba(color, .24)}`, whiteSpace: "nowrap" }}>
+    <span style={{ background: `color-mix(in srgb, ${color}, transparent 90%)`, display: "inline-flex", alignItems: "center", gap: 3, fontWeight: 700, fontSize: sm ? 9 : 10.5, letterSpacing: "0.05em", padding: sm ? "2px 7px" : "3px 10px", borderRadius: 6, color, border: `1px solid ${rgba(color, .24)}`, whiteSpace: "nowrap" }}>
       {children}
     </span>
   );
@@ -210,14 +218,14 @@ function NumStat({ value, color, size = 20, delay = 0, plain = false }) {
 // Card header with left accent bar
 function CardHead({ icon: Icon, color, title, eyebrow, right, py = "14px" }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: `${py} 20px`, borderBottom: "1px solid var(--border)", background: rgba(color, .025) }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: `${py} 20px`, borderBottom: "1px solid var(--border)", background: `color-mix(in srgb, ${color}, transparent 75%)`, }}>
       <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 34, height: 34, borderRadius: "var(--radius)", background: rgba(color, .1), border: `1px solid ${rgba(color, .2)}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <Icon size={14} style={{ color }} />
           </div>
           <div>
-            {eyebrow && <div style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: rgba(color, .6), marginBottom: 2 }}>{eyebrow}</div>}
+            {eyebrow && <div style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: `color-mix(in srgb, ${color}, transparent 50%)`, marginBottom: 2 }}>{eyebrow}</div>}
             <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--card-foreground)", lineHeight: 1 }}>{title}</div>
           </div>
         </div>
@@ -231,15 +239,15 @@ function CardHead({ icon: Icon, color, title, eyebrow, right, py = "14px" }) {
 function ColHead({ open, onToggle, icon: Icon, color, title, eyebrow, right }) {
   return (
     <button type="button" onClick={onToggle}
-      style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 20px", background: open ? rgba(color, .025) : "transparent", border: "none", borderBottom: open ? "1px solid var(--border)" : "none", cursor: "pointer", outline: "none", transition: "background .2s" }}>
+      style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 20px", background: open ? `color-mix(in srgb, ${color}, transparent 75%)` : "transparent", border: "none", borderBottom: open ? "1px solid var(--border)" : "none", cursor: "pointer", outline: "none", transition: "background .2s" }} >
       <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
         {/* <div style={{width:4,alignSelf:"stretch",borderRadius:"0 3px 3px 0",background:open?color:rgba(color,.3),flexShrink:0,minHeight:24,marginInlineEnd:14,transition:"background .2s"}} /> */}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 30, height: 30, borderRadius: "var(--radius)", background: rgba(color, .08), border: `1px solid ${rgba(color, .16)}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <div style={{ width: 30, height: 30, borderRadius: "var(--radius)", background: `color-mix(in srgb, ${color}, transparent 90%)`, border: `1px solid ${rgba(color, .16)}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <Icon size={13} style={{ color }} />
           </div>
           <div style={{ textAlign: "start" }}>
-            {eyebrow && <div style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: rgba(color, .55), marginBottom: 2 }}>{eyebrow}</div>}
+            {eyebrow && <div style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: `color-mix(in srgb, ${color}, transparent 50%)`, marginBottom: 2 }}>{eyebrow}</div>}
             <div style={{ fontSize: 13, fontWeight: 700, color: "var(--card-foreground)", lineHeight: 1 }}>{title}</div>
           </div>
         </div>
@@ -247,10 +255,10 @@ function ColHead({ open, onToggle, icon: Icon, color, title, eyebrow, right }) {
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         {right}
         <div style={{ width: 22, height: 22, borderRadius: "var(--radius-sm)", background: "var(--muted)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", transform: open ? "rotate(180deg)" : "rotate(0)", transition: "transform .22s" }}>
-          <ChevronDown size={12} style={{ color: "var(--muted-foreground)" }} />
+          <ChevronDown size={12} style={{ color: "var(--foreground)" }} />
         </div>
       </div>
-    </button>
+    </button >
   );
 }
 
@@ -266,12 +274,12 @@ function MetTile({ icon: Icon, label, value, color, delay = 0, plain = false }) 
       <div style={{ position: "absolute", left: 0, top: 8, bottom: 8, width: 3, borderRadius: "0 3px 3px 0", background: color, opacity: hov ? 1 : .42, transition: "opacity .2s" }} />
       <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at 0% 50%,${rgba(color, .07)},transparent 65%)`, opacity: hov ? 1 : 0, transition: "opacity .28s", pointerEvents: "none" }} />
       <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 11 }}>
-        <div style={{ width: 38, height: 38, borderRadius: "var(--radius)", background: rgba(color, .1), border: `1px solid ${rgba(color, .2)}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <div style={{ width: 38, height: 38, borderRadius: "var(--radius)", background: `color-mix(in srgb, ${color}, transparent 90%)`, border: `1px solid ${rgba(color, .2)}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <Icon size={15} style={{ color }} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <NumStat value={value} color={hov ? color : "var(--foreground)"} size={19} delay={delay * 800} plain={plain} />
-          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--muted-foreground)", marginTop: 5 }}>{label}</div>
+          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--foreground)", marginTop: 5 }}>{label}</div>
         </div>
       </div>
     </motion.div>
@@ -500,8 +508,8 @@ function Hero({ order, t, isRtl }) {
               <div style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: rgba(HEX.orange, .65), marginBottom: 4 }}>{t("orderNumber")}</div>
               <div className="serif" style={{ fontSize: 44, fontStyle: "italic", lineHeight: .88, letterSpacing: "-0.015em", color: "var(--foreground)" }}>{order.orderNumber}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 7 }}>
-                <Clock size={10} style={{ color: "var(--muted-foreground)" }} />
-                <span style={{ fontSize: 11, color: "var(--muted-foreground)" }}>{fmtDt(order.created_at, isRtl ? "ar-EG" : "en-US")}</span>
+                <Clock size={10} style={{ color: "var(--foreground)" }} />
+                <span style={{ fontSize: 11, color: "var(--foreground)" }}>{fmtDt(order.created_at, isRtl ? "ar-EG" : "en-US")}</span>
               </div>
             </div>
           </div>
@@ -553,7 +561,7 @@ function Hero({ order, t, isRtl }) {
             </div>
             {order.shippingCompany && (
               <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                <Truck size={11} style={{ color: "var(--muted-foreground)" }} />
+                <Truck size={11} style={{ color: "var(--foreground)" }} />
                 <span style={{ fontSize: 12, color: "var(--foreground)" }}>{order.shippingCompany.name}</span>
               </div>
             )}
@@ -580,12 +588,12 @@ function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAddi
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .3 }}>
-      <div className="main-card !p-0 ">
+      <div className="main-card !p-0 overflow-hidden">
 
         <ColHead open={open} onToggle={() => setOpen(p => !p)} icon={icon} color={color} eyebrow={eyebrow} title={title}
           right={
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span className="mono" style={{ fontSize: 11, color: "var(--muted-foreground)" }}>{totalQty} × {formatCurrency(totalAmt)}</span>
+              <span className="mono" style={{ fontSize: 11, color: "var(--foreground)" }}>{totalQty} × {formatCurrency(totalAmt)}</span>
               <Tag color={color} sm>{items?.length || 0}</Tag>
             </div>
           } />
@@ -623,7 +631,7 @@ function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAddi
                               <div style={{ position: "relative", width: 44, height: 44, borderRadius: "var(--radius)", overflow: "hidden", background: "var(--muted)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                                 {prod?.mainImage
                                   ? <img src={avatarSrc(prod.mainImage)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                                  : <Package size={16} style={{ color: "var(--muted-foreground)" }} />}
+                                  : <Package size={16} style={{ color: "var(--foreground)" }} />}
                                 <span style={{ position: "absolute", bottom: -3, insetInlineEnd: -3, minWidth: 17, height: 17, borderRadius: 99, background: color, border: "2.5px solid var(--card)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Mono',monospace", fontSize: 8, fontWeight: 600, color: "#fff", padding: "0 3px" }}>
                                   {item.quantity}
                                 </span>
@@ -634,13 +642,13 @@ function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAddi
                             <td style={{ minWidth: 140 }}>
                               <p style={{ fontSize: 12.5, fontWeight: 700, color: "var(--card-foreground)", lineHeight: 1.3, marginBottom: 2 }}>{prod?.name || item.productName || "—"}</p>
                               {prod?.callCenterProductDescription && (
-                                <p style={{ fontSize: 10.5, color: "var(--muted-foreground)", lineHeight: 1.4 }}>{prod.callCenterProductDescription.slice(0, 55)}{prod.callCenterProductDescription.length > 55 ? "…" : ""}</p>
+                                <p style={{ fontSize: 10.5, color: "var(--foreground)", lineHeight: 1.4 }}>{prod.callCenterProductDescription.slice(0, 55)}{prod.callCenterProductDescription.length > 55 ? "…" : ""}</p>
                               )}
                             </td>
 
                             {/* SKU */}
                             <td>
-                              <span className="mono" style={{ fontSize: 10, padding: "3px 8px", borderRadius: "var(--radius-sm)", background: "var(--muted)", color: "var(--muted-foreground)", border: "1px solid var(--border)", whiteSpace: "nowrap", display: "inline-block" }}>{item.variant?.sku || item.sku}</span>
+                              <span className="mono" style={{ fontSize: 10, padding: "3px 8px", borderRadius: "var(--radius-sm)", background: "var(--muted)", color: "var(--foreground)", border: "1px solid var(--border)", whiteSpace: "nowrap", display: "inline-block" }}>{item.variant?.sku || item.sku}</span>
                             </td>
 
                             {/* Attributes */}
@@ -672,7 +680,7 @@ function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAddi
 
                             {/* Unit price */}
                             <td style={{ textAlign: "end" }}>
-                              <span className="mono" style={{ fontSize: 12, color: "var(--muted-foreground)" }}>{formatCurrency(item.unitPrice)}</span>
+                              <span className="mono" style={{ fontSize: 12, color: "var(--foreground)" }}>{formatCurrency(item.unitPrice)}</span>
                             </td>
 
                             {/* Line total */}
@@ -696,7 +704,7 @@ function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAddi
                     <tfoot>
                       <tr>
                         <td colSpan={6} style={{ textAlign: "end" }}>
-                          <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--muted-foreground)" }}>{t("productsTotal") || "إجمالي المنتجات"}</span>
+                          <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--foreground)" }}>{t("productsTotal") || "إجمالي المنتجات"}</span>
                         </td>
                         <td style={{ textAlign: "end", paddingInlineEnd: 18 }}>
                           <span className="mono" style={{ fontSize: 14, fontWeight: 500, color }}>{formatCurrency(totalAmt)}</span>
@@ -708,7 +716,7 @@ function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAddi
                 </div>
               ) : (
                 !isAdditional && (
-                  <div style={{ padding: "28px 18px", textAlign: "center", color: "var(--muted-foreground)", fontSize: 13 }}>
+                  <div style={{ padding: "28px 18px", textAlign: "center", color: "var(--foreground)", fontSize: 13 }}>
                     {t("noItems") || "لا توجد منتجات"}
                   </div>
                 )
@@ -759,7 +767,7 @@ function UpsellSection({ order, items, onOpen, t, isRtl }) {
                   </div>
                   <div style={{ textAlign: isRtl ? "right" : "left" }}>
                     <p style={{ fontSize: 12.5, fontWeight: 700, color: HEX.violet, marginBottom: 3 }}>{up.label}</p>
-                    {up.callCenterDescription && <p style={{ fontSize: 11, color: "var(--muted-foreground)", lineHeight: 1.5 }}>{up.callCenterDescription}</p>}
+                    {up.callCenterDescription && <p style={{ fontSize: 11, color: "var(--foreground)", lineHeight: 1.5 }}>{up.callCenterDescription}</p>}
                     {added.length > 0 && <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 6 }}>{added.map(s => <Tag key={s} color={HEX.green} sm><CheckCircle size={8} style={{ marginInlineEnd: 3 }} />{s}</Tag>)}</div>}
                   </div>
                 </div>
@@ -865,11 +873,11 @@ function HistSection({ order, t, isRtl }) {
                       <div style={{ flex: 1, minWidth: 0, paddingBottom: last ? 0 : 16, textAlign: isRtl ? "right" : "left" }}>
                         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 5, marginBottom: 4 }}>
                           {entry.fromStatus && <Tag color={fc} sm>{entry.fromStatus.system ? t(`statuses.${entry.fromStatus.code}`) : entry.fromStatus.name}</Tag>}
-                          {isRtl ? <ArrowLeft size={8} style={{ color: "var(--muted-foreground)" }} /> : <ArrowRight size={8} style={{ color: "var(--muted-foreground)" }} />}
+                          {isRtl ? <ArrowLeft size={8} style={{ color: "var(--foreground)" }} /> : <ArrowRight size={8} style={{ color: "var(--foreground)" }} />}
                           {entry.toStatus && <Tag color={tc} sm>{entry.toStatus.system ? t(`statuses.${entry.toStatus.code}`) : entry.toStatus.name}</Tag>}
                         </div>
                         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
-                          <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10.5, color: "var(--muted-foreground)" }}><Clock size={9} />{fmtDt(entry.created_at, isRtl ? "ar-EG" : "en-US")}</span>
+                          <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10.5, color: "var(--foreground)" }}><Clock size={9} />{fmtDt(entry.created_at, isRtl ? "ar-EG" : "en-US")}</span>
                           {entry.notes && <span style={{ fontSize: 10.5, color: "var(--foreground)", background: "var(--muted)", padding: "2px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)" }}>{entry.notes}</span>}
                         </div>
                       </div>
@@ -977,11 +985,11 @@ function DecisionSection({ order, notes, setNotes, changingStatus, isLocked, dec
       <div className="main-card !p-0 overflow-hidden">
 
         {/* Serif panel header */}
-        <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)", background: rgba(HEX.orange, .025) }}>
+        <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)", background: `color-mix(in srgb, ${HEX.orange}, transparent 75%)` }}>
           <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
             <div style={{ width: 4, alignSelf: "stretch", borderRadius: "0 3px 3px 0", background: `linear-gradient(180deg,${HEX.orange},${HEX.amber})`, flexShrink: 0, minHeight: 40, marginInlineEnd: 14 }} />
             <div>
-              <div style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: rgba(HEX.orange, .65), marginBottom: 4 }}>{t("workPage.changeStatus")}</div>
+              <div style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: `color-mix(in srgb, ${HEX.orange}, transparent 65%)`, marginBottom: 4 }}>{t("workPage.changeStatus")}</div>
               <div className="serif" style={{ fontSize: 24, fontStyle: "italic", color: "var(--card-foreground)", lineHeight: 1 }}>{t("workPage.selectStatus")}</div>
             </div>
           </div>
@@ -995,12 +1003,12 @@ function DecisionSection({ order, notes, setNotes, changingStatus, isLocked, dec
               <motion.div key="fb" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                 style={{ borderRadius: "var(--radius)", overflow: "hidden", border: `1px solid ${isLocked ? rgba(HEX.red, .25) : rgba(HEX.green, .25)}`, background: isLocked ? rgba(HEX.red, .04) : rgba(HEX.green, .04) }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px" }}>
-                  <div style={{ width: 32, height: 32, borderRadius: "var(--radius-sm)", background: isLocked ? rgba(HEX.red, .12) : rgba(HEX.green, .12), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: "var(--radius-sm)", background: isLocked ? `color-mix(in srgb, ${HEX.red}, transparent 75%)` : `color-mix(in srgb, ${HEX.green}, transparent 75%)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     {isLocked ? <Lock size={14} style={{ color: HEX.red }} /> : refetching ? <Loader2 size={14} style={{ color: HEX.orange, animation: "spin 1s linear infinite" }} /> : <CheckCircle size={14} style={{ color: HEX.green }} />}
                   </div>
                   <div style={{ flex: 1 }}>
                     <p style={{ fontSize: 13, fontWeight: 700, color: "var(--card-foreground)", marginBottom: 2 }}>{isLocked ? t("workPage.orderLocked") : refetching ? t("workPage.updatingOrder") : t("workPage.statusChanged")}</p>
-                    <p style={{ fontSize: 11, color: "var(--muted-foreground)" }}>{isLocked ? t("workPage.lockedMessage") : refetching ? t("workPage.pleaseWait") : t("workPage.orderUpdated")}</p>
+                    <p style={{ fontSize: 11, color: "var(--foreground)" }}>{isLocked ? t("workPage.lockedMessage") : refetching ? t("workPage.pleaseWait") : t("workPage.orderUpdated")}</p>
                   </div>
                   {isLocked && countdown && <span className="mono" style={{ padding: "4px 12px", borderRadius: 999, background: HEX.red, color: "#fff", fontSize: 12, fontWeight: 500 }}>{countdown}</span>}
                 </div>
@@ -1022,11 +1030,11 @@ function DecisionSection({ order, notes, setNotes, changingStatus, isLocked, dec
           {!decided && !isLocked && (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
               <motion.div animate={{ y: [0, 4, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
-                <ChevronDown size={12} style={{ color: "var(--muted-foreground)" }} />
+                <ChevronDown size={12} style={{ color: "var(--foreground)" }} />
               </motion.div>
-              <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--muted-foreground)" }}>{t("workPage.selectFromBottom")}</span>
+              <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--foreground)" }}>{t("workPage.selectFromBottom")}</span>
               <motion.div animate={{ y: [0, 4, 0] }} transition={{ repeat: Infinity, duration: 1.5, delay: .2 }}>
-                <ChevronDown size={12} style={{ color: "var(--muted-foreground)" }} />
+                <ChevronDown size={12} style={{ color: "var(--foreground)" }} />
               </motion.div>
             </div>
           )}
@@ -1051,12 +1059,12 @@ function SaveBar({ onSave, onCancel, loading, t }) {
             </div>
             <div>
               <p style={{ fontSize: 14, fontWeight: 700, color: "var(--card-foreground)", marginBottom: 2 }}>{t("unsavedChanges")}</p>
-              <p style={{ fontSize: 11, color: "var(--muted-foreground)" }}>{t("unsavedChangesDesc")}</p>
+              <p style={{ fontSize: 11, color: "var(--foreground)" }}>{t("unsavedChangesDesc")}</p>
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <button onClick={onCancel} disabled={loading}
-              style={{ padding: "9px 20px", borderRadius: "var(--radius)", border: "1.5px solid var(--border)", background: "var(--muted)", fontSize: 13, fontWeight: 700, color: "var(--muted-foreground)" }}>
+              style={{ padding: "9px 20px", borderRadius: "var(--radius)", border: "1.5px solid var(--border)", background: "var(--muted)", fontSize: 13, fontWeight: 700, color: "var(--foreground)" }}>
               {t("cancel")}
             </button>
             <motion.button onClick={onSave} disabled={loading} whileHover={{ scale: 1.02 }} whileTap={{ scale: .97 }}
@@ -1117,7 +1125,7 @@ function ActionBar({ order, allowedStatuses, changingStatus, selStatusId, isLock
             <motion.button type="button" onClick={nextOrder} disabled={!canNext}
               whileHover={canNext ? { y: -2, boxShadow: `0 8px 24px ${rgba(HEX.orange, .42)}` } : {}}
               whileTap={canNext ? { scale: .96 } : {}}
-              style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 8, padding: "9px 22px", borderRadius: "var(--radius)", border: "none", background: canNext ? `linear-gradient(135deg,${HEX.orange},${HEX.flame})` : "var(--muted)", fontSize: 13, fontWeight: 700, color: canNext ? "#fff" : "var(--muted-foreground)", opacity: canNext ? 1 : .5, cursor: canNext ? "pointer" : "not-allowed", boxShadow: canNext ? `0 4px 16px ${rgba(HEX.orange, .35)}` : "none", transition: "all .2s" }}>
+              style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 8, padding: "9px 22px", borderRadius: "var(--radius)", border: "none", background: canNext ? `linear-gradient(135deg,${HEX.orange},${HEX.flame})` : "var(--muted)", fontSize: 13, fontWeight: 700, color: canNext ? "#fff" : "var(--foreground)", opacity: canNext ? 1 : .5, cursor: canNext ? "pointer" : "not-allowed", boxShadow: canNext ? `0 4px 16px ${rgba(HEX.orange, .35)}` : "none", transition: "all .2s" }}>
               {t("workPage.nextOrder")}
               {loading || refetching ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> : <SkipForward size={13} style={{ transform: isRtl ? "scaleX(-1)" : "none" }} />}
             </motion.button>
@@ -1138,7 +1146,7 @@ function UpsellModal({ isOpen, onClose, product, handleSelectSku, selectedSkus, 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px", borderBottom: "1px solid var(--border)" }}>
           <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--card-foreground)" }}>{product ? product.label || product.name : t("addAdditionalProduct")}</h3>
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--muted)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <X size={15} style={{ color: "var(--muted-foreground)" }} />
+            <X size={15} style={{ color: "var(--foreground)" }} />
           </button>
         </div>
         <div style={{ padding: "12px 18px", flex: 1, overflowY: "auto" }}>
@@ -1189,10 +1197,10 @@ function Empty({ onRetry, onBack, t, isRtl }) {
           <Package size={36} style={{ color: HEX.orange }} />
         </motion.div>
         <h3 className="serif" style={{ fontSize: 32, fontStyle: "italic", color: "var(--foreground)", marginBottom: 10 }}>{t("workPage.noOrders") || "لا توجد طلبات"}</h3>
-        <p style={{ fontSize: 13, color: "var(--muted-foreground)", lineHeight: 1.72, marginBottom: 28 }}>{t("workPage.noOrdersDescription") || "لا توجد طلبات معلقة حالياً."}</p>
+        <p style={{ fontSize: 13, color: "var(--foreground)", lineHeight: 1.72, marginBottom: 28 }}>{t("workPage.noOrdersDescription") || "لا توجد طلبات معلقة حالياً."}</p>
         <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
           <motion.button onClick={onRetry} whileHover={{ y: -2 }} whileTap={{ scale: .97 }}
-            style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: "var(--radius-xl)", background: "var(--card)", border: "1.5px solid var(--border)", fontSize: 13, fontWeight: 700, color: "var(--muted-foreground)", boxShadow: "var(--shadow-sm)" }}>
+            style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: "var(--radius-xl)", background: "var(--card)", border: "1.5px solid var(--border)", fontSize: 13, fontWeight: 700, color: "var(--foreground)", boxShadow: "var(--shadow-sm)" }}>
             <RefreshCw size={13} />{t("retry") || "إعادة المحاولة"}
           </motion.button>
           <motion.button onClick={onBack} whileHover={{ y: -2 }} whileTap={{ scale: .97 }}

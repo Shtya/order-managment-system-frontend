@@ -363,7 +363,7 @@ function PermissionsSelector({ permissions = [], selected = [], onChange, disabl
 														whileTap={!disabled ? { scale: 0.96 } : {}}
 														className={cn(
 															"inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg",
-															"border text-[11px] font-mono font-semibold select-none",
+															"border text-[11px] font-semibold select-none",
 															"transition-all duration-150",
 															disabled && "opacity-40 cursor-not-allowed pointer-events-none",
 														)}
@@ -374,7 +374,7 @@ function PermissionsSelector({ permissions = [], selected = [], onChange, disabl
 														}}
 													>
 														{active && <Check size={9} strokeWidth={3} style={{ color: "var(--primary)" }} />}
-														{perm}
+														{t(`permissionsItems.${perm.replace(/\./g, '_')}`)}
 													</motion.button>
 												);
 											})}
@@ -571,9 +571,9 @@ function RolePreviewDialog({ t, open, onClose, role }) {
 										{ps.map(p => (
 											<span
 												key={p}
-												className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-mono font-medium border border-border main-card text-foreground/70"
+												className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px]  font-medium border border-border main-card text-foreground/70"
 											>
-												{p}
+												{t(`permissionsItems.${p.replace(/\./g, '_')}`)}
 											</span>
 										))}
 									</div>

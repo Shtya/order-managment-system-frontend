@@ -175,16 +175,23 @@ export default function CreatePurchaseInvoicePage() {
 
 	const [selectSku, setSelectSku] = useState([]); // array
 
-	const handleSelectSku = (sku) => {
-		// Check if already selected
-		if (selectSku.some((s) => s.id === sku.id)) {
-			return;
-		}
+	const handleSelectSku = (skuOrSkus) => {
+		// 1. تحويل المدخلات إلى مصفوفة دائماً لتوحيد المنطق
+		const incomingSkus = Array.isArray(skuOrSkus) ? skuOrSkus : [skuOrSkus];
 
-		setSelectSku((prev) => [...prev, sku]);
-		console.log(sku)
-		// Create new item with default values (no tax fields)
-		const newItem = {
+		// 2. تصفية العناصر (إزالة ما تم اختياره مسبقاً وتجنب التكرار داخل المصفوفة القادمة)
+		const newUniqueSkus = incomingSkus.filter((sku) => {
+			const isAlreadySelected = selectSku.some((s) => s.id === sku.id);
+			return !isAlreadySelected;
+		});
+
+		if (newUniqueSkus.length === 0) return;
+
+		// 3. تحديث قائمة الـ Skus المختارة (للعرض)
+		setSelectSku((prev) => [...prev, ...newUniqueSkus]);
+
+		// 4. تحويل الـ Skus الجديدة إلى تنسيق Items الخاص بالنموذج
+		const newItems = newUniqueSkus.map((sku) => ({
 			variantId: sku.id,
 			quantity: 1,
 			purchaseCost: sku.wholesalePrice,
@@ -193,12 +200,11 @@ export default function CreatePurchaseInvoicePage() {
 			productName: sku.name,
 			price: sku.price,
 			attributes: sku.attributes || {},
-		};
+		}));
 
-
-		setValue("items", [...(watchedItems ?? []), newItem]);
+		// 5. تحديث قيمة الحقل في React Hook Form مرة واحدة
+		setValue("items", [...(watchedItems ?? []), ...newItems]);
 	};
-
 	const handleProductFieldChange = (index, field, value) => {
 		const newItems = [...watchedItems];
 		newItems[index] = { ...newItems[index], [field]: value };
@@ -479,99 +485,97 @@ export default function CreatePurchaseInvoicePage() {
 
 
 											return (
-												<>
 
+												<tr
+													key={index}
+													className="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors"
+												>
+													<td className="p-3 text-sm text-gray-600 dark:text-slate-300">
+														{product.sku}
+													</td>
+													<td className="p-3 text-sm font-semibold text-gray-700 dark:text-slate-200">
+														{product.productName}
+														{Object.keys(product.attributes || {}).length > 0 && (
+															<div className="text-xs text-gray-500 font-normal mt-1">
+																{Object.entries(product.attributes).map(([key, value]) => (
+																	<span key={key} className="mr-2">
+																		{key}: {value}
+																	</span>
+																))}
+															</div>
+														)}
+													</td>
+													<td className="p-3">
+														<div className="flex flex-col gap-1">
+															<div className="flex items-center gap-3">
+																{/* Purchase Cost Input */}
+																<Input
+																	type="number"
+																	value={product.purchaseCost}
+																	onChange={(e) =>
+																		handleProductFieldChange(index, "purchaseCost", e.target.value)
+																	}
+																	className={cn("h-8 w-24", errors.items?.[index]?.purchaseCost && "border-red-500")}
+																	min="0"
 
-													<tr
-														key={index}
-														className="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors"
-													>
-														<td className="p-3 text-sm text-gray-600 dark:text-slate-300">
-															{product.sku}
-														</td>
-														<td className="p-3 text-sm font-semibold text-gray-700 dark:text-slate-200">
-															{product.productName}
-															{Object.keys(product.attributes || {}).length > 0 && (
-																<div className="text-xs text-gray-500 font-normal mt-1">
-																	{Object.entries(product.attributes).map(([key, value]) => (
-																		<span key={key} className="mr-2">
-																			{key}: {value}
-																		</span>
-																	))}
+																/>
+
+																{/* Current Price Display */}
+																<div className="flex items-center gap-1 text-sm text-gray-600">
+																	<Tag size={14} className="text-green-600" />
+																	<span className="font-medium">{formatCurrency(product.purchaseCost)}</span>
+																	<span className="text-xs text-gray-400">({t("current_price")})</span>
 																</div>
+															</div>
+															{errors.items?.[index]?.purchaseCost && (
+																<span className="text-[10px] text-red-500 font-medium">
+																	{errors.items[index].purchaseCost.message}
+																</span>
 															)}
-														</td>
-														<td className="p-3">
-															<div className="flex flex-col gap-1">
-																<div className="flex items-center gap-3">
-																	{/* Purchase Cost Input */}
-																	<Input
-																		type="number"
-																		value={product.purchaseCost}
-																		onChange={(e) =>
-																			handleProductFieldChange(index, "purchaseCost", e.target.value)
-																		}
-																		className={cn("h-8 w-24", errors.items?.[index]?.purchaseCost && "border-red-500")}
-																		min="0"
+														</div>
+													</td>
 
-																	/>
-
-																	{/* Current Price Display */}
-																	<div className="flex items-center gap-1 text-sm text-gray-600">
-																		<Tag size={14} className="text-green-600" />
-																		<span className="font-medium">{formatCurrency(product.purchaseCost)}</span>
-																		<span className="text-xs text-gray-400">({t("current_price")})</span>
-																	</div>
+													<td className="p-3">
+														<div className="flex flex-col gap-1">
+															<div className="flex items-center gap-3">
+																<Input
+																	type="number"
+																	value={product.quantity}
+																	onChange={(e) =>
+																		handleProductFieldChange(index, "quantity", e.target.value)
+																	}
+																	className={cn("h-8 w-20", errors.items?.[index]?.quantity && "border-red-500")}
+																	min="1"
+																/>
+																<div className="flex items-center gap-1 text-sm text-gray-600">
+																	<Package size={14} className="text-green-600" />
+																	<span className="font-medium">{product.availableQuantity}</span>
+																	<span className="text-xs text-gray-400">({t("table.available")})</span>
 																</div>
-																{errors.items?.[index]?.purchaseCost && (
-																	<span className="text-[10px] text-red-500 font-medium">
-																		{errors.items[index].purchaseCost.message}
-																	</span>
-																)}
 															</div>
-														</td>
+															{errors.items?.[index]?.quantity && (
+																<span className="text-[10px] text-red-500 font-medium">
+																	{errors.items[index].quantity.message}
+																</span>
+															)}
+														</div>
+													</td>
+													<td className="p-3 text-sm font-semibold text-green-600 dark:text-green-400">
+														{formatCurrency(invoiceTotal)}
+													</td>
+													<td className="p-3 text-center">
+														<motion.button
+															type="button"
+															whileHover={{ scale: 1.1 }}
+															whileTap={{ scale: 0.9 }}
+															onClick={() => handleDeleteProduct(index)}
+															className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
+														>
+															<Trash2 size={16} />
+														</motion.button>
+													</td>
+												</tr>
 
-														<td className="p-3">
-															<div className="flex flex-col gap-1">
-																<div className="flex items-center gap-3">
-																	<Input
-																		type="number"
-																		value={product.quantity}
-																		onChange={(e) =>
-																			handleProductFieldChange(index, "quantity", e.target.value)
-																		}
-																		className={cn("h-8 w-20", errors.items?.[index]?.quantity && "border-red-500")}
-																		min="1"
-																	/>
-																	<div className="flex items-center gap-1 text-sm text-gray-600">
-																		<Package size={14} className="text-green-600" />
-																		<span className="font-medium">{product.availableQuantity}</span>
-																		<span className="text-xs text-gray-400">({t("table.available")})</span>
-																	</div>
-																</div>
-																{errors.items?.[index]?.quantity && (
-																	<span className="text-[10px] text-red-500 font-medium">
-																		{errors.items[index].quantity.message}
-																	</span>
-																)}
-															</div>
-														</td>
-														<td className="p-3 text-sm font-semibold text-green-600 dark:text-green-400">
-															{formatCurrency(invoiceTotal)}
-														</td>
-														<td className="p-3 text-center">
-															<motion.button
-																type="button"
-																whileHover={{ scale: 1.1 }}
-																whileTap={{ scale: 0.9 }}
-																onClick={() => handleDeleteProduct(index)}
-																className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
-															>
-																<Trash2 size={16} />
-															</motion.button>
-														</td>
-													</tr>
-												</>
 
 											);
 										})}

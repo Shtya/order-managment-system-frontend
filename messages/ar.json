@@ -1189,7 +1189,9 @@
     "categories_delete": "حذف التصنيفات",
     "categories_read": "عرض التصنيفات",
     "categories_update": "تعديل التصنيفات",
-
+    "orders_confirm-incoming" : "تأكيد الوارد",
+    "orders_distribution": "توزيع الطلبات",
+    "orders_restoreFailed": "مراجعة الطلبات",
     "dashboard_read": "عرض لوحة التحكم",
 
     "extra-features_create": "إنشاء الميزات الإضافية",

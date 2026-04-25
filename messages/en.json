@@ -1207,6 +1207,9 @@
     "order_readSettings": "View order settings",
     "order_update": "Update order",
     "order_updateSettings": "Update order settings",
+    "orders_confirm-incoming" : "Confirm order",
+    "orders_distribution": "distribute orders",
+    "orders_restoreFailed": "Review Orders",
 
     "orders-collect_create": "Create order collection",
     "orders-collect_read": "View order collection",

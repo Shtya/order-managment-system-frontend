@@ -1048,7 +1048,7 @@ function DecisionSection({ order, notes, setNotes, changingStatus, isLocked, dec
 function SaveBar({ onSave, onCancel, loading, t }) {
   return (
     <motion.div initial={{ y: 90, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-      style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, pointerEvents: "none" }}>
+      style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, pointerEvents: "none" }} className=" max-w-[1000px] w-full left-1/2 -translate-x-1/2 " >
       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom,transparent,color-mix(in oklab,var(--background) 90%,transparent) 40%,var(--background))" }} />
       <div style={{ position: "relative", padding: "10px 24px 22px", pointerEvents: "auto" }}>
         {/* Full width — no max-width */}

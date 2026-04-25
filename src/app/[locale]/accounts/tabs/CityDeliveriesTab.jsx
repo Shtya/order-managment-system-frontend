@@ -195,9 +195,9 @@ export default function CityDeliveriesTab() {
             ) : (
               <Download size={14} />
             ),
+            disabled: exportLoading,
             color: "primary",
             onClick: onExport,
-            disabled: exportLoading,
             permission: "orders.read",
           },
         ]}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
 	Package,
@@ -11,6 +11,7 @@ import {
 	Lock,
 	Timer,
 	Download,
+	Loader2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -26,6 +27,8 @@ import PageHeader from "@/components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
 import Table from "@/components/atoms/Table";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { useExport } from "@/hook/useExport";
+import { useDebounce } from "@/hook/useDebounce";
 
 
 const getRemainingTime = (targetDate) => {
@@ -106,16 +109,32 @@ export default function MyAssignedOrdersPage() {
 		fetchStats();
 	}, []);
 
-	const fetchAssignedOrders = async (page, limit) => {
+	// Table columns
+	const [searchTerm, setSearchTerm] = useState("");
+	const { debouncedValue: debouncedSearch } = useDebounce({
+		value: searchTerm,
+		delay: 300,
+	});
+
+
+	const fetchAssignedOrders = useCallback(async (page, limit) => {
 		try {
 			setLoading(true);
+
 			const response = await api.get("/orders/assigned", {
-				params: { limit, page },
+				params: {
+					limit,
+					page,
+					search: debouncedSearch.trim() || undefined,
+				},
 			});
+
 			const data = response.data;
+
 			setPager({
 				total_records: data.total_records || 0,
 				current_page: data.current_page || page,
+				per_page: data.per_page || limit,
 				records: Array.isArray(data.records) ? data.records : [],
 			});
 		} catch (error) {
@@ -124,7 +143,7 @@ export default function MyAssignedOrdersPage() {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [debouncedSearch, t]); // 🔥 important dependencies
 
 	const fetchStats = async () => {
 		try {
@@ -196,18 +215,23 @@ export default function MyAssignedOrdersPage() {
 	};
 
 
-	// Table columns
-	const [searchTerm, setSearchTerm] = useState("");
-	const [hasActiveFilters, setHasActiveFilters] = useState(false);
+	useEffect(() => {
+		fetchAssignedOrders(1, pager.per_page);
+	}, [debouncedSearch]);
 
-	const handleSearch = () => {
-		// Implement search logic
-		fetchAssignedOrders(1, pager.per_page, searchTerm);
-	};
 
-	const handleExport = () => {
-		// Implement export logic
-		console.log("Exporting data...");
+	const { handleExport, exportLoading } = useExport();
+
+	const onExport = async () => {
+		const params = {
+			search: searchTerm.trim() || undefined
+		};
+
+		await handleExport({
+			endpoint: "/orders/assigned/export",
+			params,
+			filename: `orders_${Date.now()}.xlsx`,
+		});
 	};
 
 	const { formatCurrency } = usePlatformSettings();
@@ -384,13 +408,17 @@ export default function MyAssignedOrdersPage() {
 
 				searchValue={searchTerm}
 				onSearchChange={setSearchTerm}
-				onSearch={handleSearch}
 				actions={[
 					{
 						key: 'export',
 						label: t('actions.export'),
-						icon: <Download size={14} />,
-						onClick: handleExport,
+						icon: exportLoading ? (
+							<Loader2 size={14} className="animate-spin" />
+						) : (
+							<Download size={14} />
+						),
+						disabled: exportLoading,
+						onClick: onExport,
 						color: 'emerald'
 					}
 				]}

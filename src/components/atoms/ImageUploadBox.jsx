@@ -168,9 +168,23 @@ export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple
         addFiles(picked);
     };
 
-    const prettyExt = (name) => {
-        const ext = name?.split('.').pop()?.toUpperCase();
-        return ext && ext !== name?.toUpperCase() ? ext : 'IMG';
+    const prettyExt = (file) => {
+        if (!file) return '';
+
+        const url =
+            file.isExisting || file.isFromLibrary
+                ? file.url
+                : file.previewUrl;
+
+        if (!url) return '';
+
+        // Remove query params & hash
+        const cleanUrl = url.split('?')[0].split('#')[0];
+
+        // Extract extension (no dot)
+        const match = cleanUrl.match(/\.([a-zA-Z0-9]+)$/);
+
+        return match ? match[1].toLowerCase() : '';
     };
 
     const isImage = (f) => (f?.file?.type?.startsWith?.('image/') ? true : !!f?.isFromLibrary || !!f?.isExisting);
@@ -281,8 +295,8 @@ export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple
                                 </div>
 
                                 {/* Type badge */}
-                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-primary/8 text-primary border border-primary/15 shrink-0 font-[Inter]">
-                                    {prettyExt(f?.file?.name || 'IMG')}
+                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-primary/8 text-primary border border-primary/15 shrink-0 font-[Inter]  uppercase">
+                                    {prettyExt(f || 'IMG')}
                                 </span>
 
                                 {/* Remove */}

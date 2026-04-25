@@ -264,8 +264,12 @@ export const PROVIDER_CONFIG = {
                             url: (me) => `${process.env.NEXT_PUBLIC_BASE_URL}/stores/webhooks/${tenantId(me)}/shopify/init`,
                             image: "/guide/shopify/step4.png",
                             tip: {
-                                en: "Click 'Add scopes' and include the required permissions \n read_all_orders, write_locations, read_locations, read_orders, write_orders, read_products, write_products, read_publications, write_publications, read_third_party_fulfillment_orders, write_third_party_fulfillment_orders, read_merchant_managed_fulfillment_orders, write_merchant_managed_fulfillment_orders, read_assigned_fulfillment_orders, write_assigned_fulfillment_orders, write_locations",
-                                ar: "اضغط على 'Add scopes' وأضف الصلاحيات المطلوبة  \n read_all_orders, write_locations, read_locations, read_orders, write_orders, read_products, write_products, read_publications, write_publications, read_third_party_fulfillment_orders, write_third_party_fulfillment_orders, read_merchant_managed_fulfillment_orders, write_merchant_managed_fulfillment_orders, read_assigned_fulfillment_orders, write_assigned_fulfillment_orders, write_locations"
+                                en: "Click 'Add scopes' and include the required permissions",
+                                ar: "اضغط على 'Add scopes' وأضف الصلاحيات المطلوبة"
+                            },
+                            copyableTip: {
+                                ar: "read_all_orders, write_locations, read_locations, read_orders, write_orders, read_products, write_products, read_publications, write_publications, read_third_party_fulfillment_orders, write_third_party_fulfillment_orders, read_merchant_managed_fulfillment_orders, write_merchant_managed_fulfillment_orders, read_assigned_fulfillment_orders, write_assigned_fulfillment_orders",
+                                en: "read_all_orders, write_locations, read_locations, read_orders, write_orders, read_products, write_products, read_publications, write_publications, read_third_party_fulfillment_orders, write_third_party_fulfillment_orders, read_merchant_managed_fulfillment_orders, write_merchant_managed_fulfillment_orders, read_assigned_fulfillment_orders, write_assigned_fulfillment_orders"
                             }
                         },
                         {
@@ -480,8 +484,8 @@ export const PROVIDER_CONFIG = {
         },
         webhookDocsUrl: "https://woocommerce.github.io/woocommerce-rest-api-docs/#webhooks",
         fields: {
-            apiKey: { requiredCreateMote: true,masked: true },
-            clientSecret: { requiredCreateMote: true,masked: true },
+            apiKey: { requiredCreateMote: true, masked: true },
+            clientSecret: { requiredCreateMote: true, masked: true },
             webhookCreateOrderSecret: { readonly: true }, // System generates
             webhookUpdateStatusSecret: { readonly: true }, // System generates
         },
@@ -660,34 +664,34 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
     const [error, setError] = useState(null);
 
     // Form schema
-   const schema = useMemo(() => {
-    const shape = {
-        name: yup.string().trim().required(t("validation.nameRequired")),
-        syncNewProducts: yup.boolean().default(true),
-        storeUrl: yup.string().trim().url(t("validation.invalidUrl")).required(t("validation.storeUrlRequired")),
-        isActive: yup.boolean().default(true),
-    };
+    const schema = useMemo(() => {
+        const shape = {
+            name: yup.string().trim().required(t("validation.nameRequired")),
+            syncNewProducts: yup.boolean().default(true),
+            storeUrl: yup.string().trim().url(t("validation.invalidUrl")).required(t("validation.storeUrlRequired")),
+            isActive: yup.boolean().default(true),
+        };
 
-    if (config?.fields) {
-        Object.entries(config.fields).forEach(([fieldName, fieldOptions]) => {
-            let fieldValidator = yup.string().trim();
+        if (config?.fields) {
+            Object.entries(config.fields).forEach(([fieldName, fieldOptions]) => {
+                let fieldValidator = yup.string().trim();
 
-            if (fieldOptions.required) {
-                fieldValidator = fieldValidator.required(
-                    t(`validation.${fieldName}Required`)
-                );
-            }
-            if (fieldOptions.requiredCreateMote && !isEdit) {
-                fieldValidator = fieldValidator.required(
-                    t(`validation.${fieldName}Required`)
-                );
-            }
+                if (fieldOptions.required) {
+                    fieldValidator = fieldValidator.required(
+                        t(`validation.${fieldName}Required`)
+                    );
+                }
+                if (fieldOptions.requiredCreateMote && !isEdit) {
+                    fieldValidator = fieldValidator.required(
+                        t(`validation.${fieldName}Required`)
+                    );
+                }
 
-            shape[fieldName] = fieldValidator;
-        });
-    }
+                shape[fieldName] = fieldValidator;
+            });
+        }
 
-    return yup.object(shape);
+        return yup.object(shape);
     }, [t, config, isEdit]);
 
     const defaultValues = useMemo(() => {
@@ -702,16 +706,16 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
             Object.entries(config.fields).forEach(([fieldName, fieldOptions]) => {
                 const savedValue = config?.fields?.[fieldName]?.defaultValue ?? existingStore?.credentials?.[fieldName];
 
-            if (fieldOptions.requiredCreateMode && !isEdit ) {
-                values[fieldName] = savedValue || "";
-            } 
+                if (fieldOptions.requiredCreateMode && !isEdit) {
+                    values[fieldName] = savedValue || "";
+                }
 
-            if (fieldOptions.required) {
-                values[fieldName] = savedValue || "";
-            } 
+                if (fieldOptions.required) {
+                    values[fieldName] = savedValue || "";
+                }
 
-        });
-    }
+            });
+        }
 
         return values;
     }, [existingStore, config, isEdit]);
@@ -726,7 +730,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
         defaultValues: defaultValues,
         resolver: yupResolver(schema),
     });
-    
+
     // Field states
     const [masks, setMasks] = useState({});
     const [systemSecrets, setSystemSecrets] = useState({});
@@ -759,13 +763,13 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
                     Object.keys(config.fields || {}).forEach((fieldName) => {
                         if (config.fields[fieldName].readonly) {
                             newSystemSecrets[fieldName] = integ[fieldName] || "";
-                        } else if(!config.fields[fieldName]?.masked) {
-                             baseValues[fieldName] = integ[fieldName] || "";
+                        } else if (!config.fields[fieldName]?.masked) {
+                            baseValues[fieldName] = integ[fieldName] || "";
                         } else {
                             newMasks[fieldName] = integ[fieldName] || "";
                         }
                     });
-                    
+
                     reset(baseValues);
                     setMasks(newMasks);
                     setSystemSecrets(newSystemSecrets);
@@ -855,7 +859,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
                 createdStoreId = existingStore.id;
                 const newMasks = {};
                 Object.keys(config.fields).forEach((fieldName) => {
-                    if (config.fields[fieldName].masked){
+                    if (config.fields[fieldName].masked) {
                         newMasks[fieldName] = freshInteg[fieldName] || "";
                     }
                 });

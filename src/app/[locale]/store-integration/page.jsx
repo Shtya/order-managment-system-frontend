@@ -1279,14 +1279,35 @@ export function StoreGuideModal({ provider, onClose }) {
           )}
 
           {currentStep?.tip && (
-            <div className="flex gap-2.5 p-3 rounded-xl bg-[var(--primary)]/5 border border-[var(--primary)]/15">
-              <Info
-                size={14}
-                className="text-[var(--primary)] flex-shrink-0 mt-0.5"
-              />
-              <p className="text-xs text-[var(--foreground)] leading-relaxed">
-                {p(currentStep.tip)}
-              </p>
+            <div className="flex flex-col gap-3 p-3 rounded-xl bg-[var(--primary)]/5 border border-[var(--primary)]/15">
+              <div className="flex gap-2.5">
+                <Info
+                  size={14}
+                  className="text-[var(--primary)] flex-shrink-0 mt-0.5"
+                />
+                <p className="text-xs text-[var(--foreground)] leading-relaxed">
+                  {p(currentStep.tip)}
+                </p>
+              </div>
+
+              {currentStep.copyableTip && (
+                <div className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg bg-black/5 dark:bg-white/5 border border-dashed border-[var(--primary)]/20 ml-6">
+                  <span className="text-[10px] font-mono text-[var(--muted-foreground)] truncate">
+                    {p(currentStep.copyableTip)}
+                  </span>
+
+                  <button
+                    onClick={() => {
+                      const textToCopy = p(currentStep.copyableTip);
+                      navigator.clipboard.writeText(textToCopy);
+                      // يمكنك إضافة toast هنا للتنبيه بالنجاح
+                    }}
+                    className="text-xs font-medium px-2 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 transition flex-shrink-0"
+                  >
+                    <Copy size={12} className="text-primary" />
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </motion.div>

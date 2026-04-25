@@ -304,10 +304,7 @@ export function ProductSkuSearchPopover({
         const fetchedSkus = Array.isArray(res.data?.data)
           ? res.data.data
           : Array.isArray(res.data) ? res.data : [];
-
-        fetchedSkus.forEach(sku => {
-          handleSelectSku(sku);
-        });
+        handleSelectSku(fetchedSkus);
       } catch (error) {
         console.error("Failed to fetch initial SKUs from URL:", error);
       }

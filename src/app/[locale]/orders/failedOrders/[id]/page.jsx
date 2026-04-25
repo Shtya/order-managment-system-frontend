@@ -42,6 +42,7 @@ import Table from "@/components/atoms/Table";
 import ActionButtons from "@/components/atoms/Actions";
 import { convert } from "html-to-text";
 import { normalizeAxiosError } from "@/utils/axios";
+import Button_ from "@/components/atoms/Button";
 const WebhookOrderProblem = {
     PRODUCT_NOT_FOUND: 'PRODUCT_NOT_FOUND',
     SKU_NOT_FOUND: 'SKU_NOT_FOUND',
@@ -399,6 +400,7 @@ export default function FailedOrderDetailsPage() {
                         icon: <Store size={16} />,
                         tooltip: t('actions.createProduct'),
                         variant: "outline",
+                        permission: "orders.restoreFailed",
                         onClick: () => router.push(`/products/external/${provider}?id=${remoteId}`)
                     });
                 }
@@ -408,6 +410,7 @@ export default function FailedOrderDetailsPage() {
                         icon: <Edit size={16} />,
                         tooltip: t('actions.editProductAndAddVariant'),
                         variant: "primary",
+                        permission: "orders.restoreFailed",
                         onClick: () => router.push(`/products/edit/${row.variant?.localProductId || problem.productId}`)
                     });
                 }
@@ -417,6 +420,7 @@ export default function FailedOrderDetailsPage() {
                         icon: <Edit size={16} />,
                         tooltip: t('actions.reactivateProduct'),
                         variant: "primary",
+                        permission: "orders.restoreFailed",
                         onClick: async (r) => {
                             const toastId = toast.loading(t("common.loading"));
 
@@ -517,17 +521,14 @@ export default function FailedOrderDetailsPage() {
                     { name: `${payload?.fullName || id}` }
                 ]}
                 buttons={
-                    <Button
+                    <Button_
                         onClick={handleRetry}
                         disabled={isRetryDisabled}
-                        className={cn(
-                            "shadow-lg font-bold",
-                            isRetryDisabled ? "bg-muted text-muted-foreground shadow-none" : "bg-primary text-primary-foreground hover:bg-primary/90"
-                        )}
-                    >
-                        {retrying ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
-                        {t('actions.retryOrder')}
-                    </Button>
+                        permission="orders.restoreFailed"
+                        icon={retrying ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+                        label={t('actions.retryOrder')}
+                    />
+
                 }
             />
 

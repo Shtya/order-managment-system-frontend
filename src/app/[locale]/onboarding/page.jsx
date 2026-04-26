@@ -1202,15 +1202,17 @@ function WelcomeStep({ onNext, open, nextLoading }) {
           {t("hint")}
         </p>
       </div>
+      <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
 
-      <BtnPrimary
-        onClick={onNext}
-        loading={nextLoading}
-        disabled={nextLoading || !user}
-        style={{ width: "100%" }}
-      >
-        {t("start_btn")} <IcArrow dir="right" />
-      </BtnPrimary>
+        <BtnPrimary
+          onClick={onNext}
+          loading={nextLoading}
+          disabled={nextLoading || !user}
+          style={{ width: "100%" }}
+        >
+          {t("start_btn")} <IcArrow dir="right" />
+        </BtnPrimary>
+      </div>
     </motion.div>
   );
 }

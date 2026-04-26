@@ -77,7 +77,7 @@ export function TagInput({
 				{tags.map((t) => (
 					<Badge
 						key={t}
-						variant="secondary"
+						variant="outline"
 						className={cn(
 							"rounded-full px-3 py-1 text-sm",
 							"bg-primary/20 text-primary hover:bg-primary/15",
@@ -91,7 +91,7 @@ export function TagInput({
 							className="rounded-full p-0.5 hover:bg-black/10"
 							aria-label={`Remove ${t}`}
 						>
-							<X className="h-3 w-3 rtl:ml-[-5px] " />
+							<X className="h-3 w-3" />
 						</button>
 					</Badge>
 				))}

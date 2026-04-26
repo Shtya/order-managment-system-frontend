@@ -625,7 +625,11 @@ export default function Table({
                             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                             className="relative w-14 h-14 rounded-2xl border border-border/60 flex items-center justify-center main-card shadow-sm"
                           >
-                            <Package size={22} style={{ color: "color-mix(in oklab, var(--muted-foreground) 40%, transparent)" }} />
+                            <Package
+                              size={22}
+                              className="flex-shrink-0" // يمنع تقلص الأيقونة
+                              style={{ color: "color-mix(in oklab, var(--muted-foreground) 40%, transparent)" }}
+                            />
                           </motion.div>
                         </div>
                         <div className="text-center space-y-1">

@@ -88,7 +88,7 @@ import {
   WarehouseTab,
   NotificationsSettingsTab
 } from "../orders/atoms/SettingsModal";
-import useOrdersSettings from "@/hook/useOrdersSettings";
+import {useOrdersSettings} from "@/hook/useOrdersSettings";
 import { useTheme } from "next-themes";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { avatarSrc } from "@/components/atoms/UserSelect";
@@ -782,7 +782,7 @@ function SettingsTab() {
     patchShipping,
     handleSave,
     toggleCode,
-  } = useOrdersSettings({ isOpen: true, onClose: () => { } });
+  } = useOrdersSettings();
 
   const tabs = SETTINGS_TABS.map((t) => ({
     key: t.key,
@@ -863,7 +863,7 @@ function NotificationsTab() {
     patch,
     saving,
     handleSave,
-  } = useOrdersSettings({ isOpen: true, onClose: () => { } });
+  } = useOrdersSettings();
   const notifications = [
     { id: 1, key: "orderUpdates", icon: Truck, field: "notifyOrderUpdates" },
     { id: 2, key: "newProducts", icon: Layers, field: "notifyNewProducts" },

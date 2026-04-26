@@ -1176,130 +1176,105 @@
     "US": "USA"
   },
   "roles-client": {
-     "permissionsItems": {
-    "admin-settings_read": "View admin settings",
-    "*": "All Permissions",
-    "admin-settings_update": "Update admin settings",
-
-    "assets_create": "Create assets",
-    "assets_delete": "Delete assets",
-    "assets_read": "View assets",
-    "assets_update": "Update assets",
-
-    "categories_create": "Create categories",
-    "categories_delete": "Delete categories",
-    "categories_read": "View categories",
-    "categories_update": "Update categories",
-
-    "dashboard_read": "View dashboard",
-
-    "extra-features_create": "Create extra features",
-    "extra-features_read": "View extra features",
-    "extra-features_update": "Update extra features",
-
-    "notifications_read": "View notifications",
-    "notifications_update": "Update notifications",
-
-    "order_assign": "Assign order",
-    "order_create": "Create order",
-    "order_delete": "Delete order",
-    "order_read": "View order",
-    "order_readSettings": "View order settings",
-    "order_update": "Update order",
-    "order_updateSettings": "Update order settings",
-    "orders_confirm-incoming" : "Confirm order",
-    "orders_distribution": "distribute orders",
-    "orders_restoreFailed": "Review Orders",
-
-    "orders-collect_create": "Create order collection",
-    "orders-collect_read": "View order collection",
-
-    "orders_create": "Create orders",
-    "orders_delete": "Delete orders",
-    "orders_read": "View orders",
-    "orders_readReplace": "View order replacements",
-    "orders_replace": "Replace order",
-    "orders_update": "Update orders",
-
-    "payments_read": "View payments",
-
-    "permissions_create": "Create permissions",
-    "permissions_delete": "Delete permissions",
-    "permissions_read": "View permissions",
-
-    "plans_create": "Create plans",
-    "plans_delete": "Delete plans",
-    "plans_read": "View plans",
-    "plans_update": "Update plans",
-
-    "products_create": "Create products",
-    "products_delete": "Delete products",
-    "products_read": "View products",
-    "products_update": "Update products",
-
-    "purchase_returns_create": "Create purchase returns",
-    "purchase_returns_delete": "Delete purchase returns",
-    "purchase_returns_read": "View purchase returns",
-    "purchase_returns_update": "Update purchase returns",
-
-    "purchases_create": "Create purchases",
-    "purchases_delete": "Delete purchases",
-    "purchases_read": "View purchases",
-    "purchases_update": "Update purchases",
-
-    "return-request_create": "Create return request",
-
-    "roles_create": "Create roles",
-    "roles_delete": "Delete roles",
-    "roles_read": "View roles",
-    "roles_update": "Update roles",
-
-    "sales_invoice_create": "Create sales invoice",
-    "sales_invoice_delete": "Delete sales invoice",
-    "sales_invoice_read": "View sales invoice",
-    "sales_invoice_update": "Update sales invoice",
-
-    "shipping-companies_create": "Create shipping companies",
-    "shipping-companies_delete": "Delete shipping companies",
-    "shipping-companies_read": "View shipping companies",
-    "shipping-companies_update": "Update shipping companies",
-
-    "stores_create": "Create stores",
-    "stores_delete": "Delete stores",
-    "stores_read": "View stores",
-    "stores_update": "Update stores",
-
-    "subscriptions_create": "Create subscriptions",
-    "subscriptions_read": "View subscriptions",
-    "subscriptions_update": "Update subscriptions",
-
-    "suppliers_create": "Create suppliers",
-    "suppliers_delete": "Delete suppliers",
-    "suppliers_read": "View suppliers",
-    "suppliers_update": "Update suppliers",
-
-    "transactions_cancel": "Cancel transaction",
-    "transactions_create": "Create transactions",
-    "transactions_read": "View transactions",
-    "transactions_update": "Update transactions",
-
-    "users_create": "Create users",
-    "users_create_admin": "Create admin user",
-    "users_deactivate": "Deactivate user",
-    "users_read": "View users",
-    "users_update": "Update users",
-    "users_view_credentials": "View user credentials",
-
-    "wallet_read": "View wallet",
-    "wallet_update": "Update wallet",
-
-    "warehouses_create": "Create warehouses",
-    "warehouses_delete": "Delete warehouses",
-    "warehouses_read": "View warehouses",
-    "warehouses_scan-preparation": "Scan warehouse preparation",
-    "warehouses_scan-shipping": "Scan warehouse shipping",
-    "warehouses_update": "Update warehouses"
-  },
+    "permissionsItems": {
+      "admin-settings_read": "View admin settings",
+      "*": "All Permissions",
+      "admin-settings_update": "Update admin settings",
+      "assets_create": "Create assets",
+      "assets_delete": "Delete assets",
+      "assets_read": "View assets",
+      "assets_update": "Update assets",
+      "categories_create": "Create categories",
+      "categories_delete": "Delete categories",
+      "categories_read": "View categories",
+      "categories_update": "Update categories",
+      "dashboard_read": "View dashboard",
+      "extra-features_create": "Create extra features",
+      "extra-features_read": "View extra features",
+      "extra-features_update": "Update extra features",
+      "notifications_read": "View notifications",
+      "notifications_update": "Update notifications",
+      "order_assign": "Assign order",
+      "order_create": "Create order",
+      "order_delete": "Delete order",
+      "order_read": "View order",
+      "order_readSettings": "View order settings",
+      "order_update": "Update order",
+      "order_updateSettings": "Update order settings",
+      "orders_confirm-incoming": "Confirm order",
+      "orders_distribution": "distribute orders",
+      "orders_restoreFailed": "Review Orders",
+      "orders-collect_create": "Create order collection",
+      "orders-collect_read": "View order collection",
+      "orders_create": "Create orders",
+      "orders_delete": "Delete orders",
+      "orders_read": "View orders",
+      "orders_readReplace": "View order replacements",
+      "orders_replace": "Replace order",
+      "orders_update": "Update orders",
+      "payments_read": "View payments",
+      "permissions_create": "Create permissions",
+      "permissions_delete": "Delete permissions",
+      "permissions_read": "View permissions",
+      "plans_create": "Create plans",
+      "plans_delete": "Delete plans",
+      "plans_read": "View plans",
+      "plans_update": "Update plans",
+      "products_create": "Create products",
+      "products_delete": "Delete products",
+      "products_read": "View products",
+      "products_update": "Update products",
+      "purchase_returns_create": "Create purchase returns",
+      "purchase_returns_delete": "Delete purchase returns",
+      "purchase_returns_read": "View purchase returns",
+      "purchase_returns_update": "Update purchase returns",
+      "purchases_create": "Create purchases",
+      "purchases_delete": "Delete purchases",
+      "purchases_read": "View purchases",
+      "purchases_update": "Update purchases",
+      "return-request_create": "Create return request",
+      "roles_create": "Create roles",
+      "roles_delete": "Delete roles",
+      "roles_read": "View roles",
+      "roles_update": "Update roles",
+      "sales_invoice_create": "Create sales invoice",
+      "sales_invoice_delete": "Delete sales invoice",
+      "sales_invoice_read": "View sales invoice",
+      "sales_invoice_update": "Update sales invoice",
+      "shipping-companies_create": "Create shipping companies",
+      "shipping-companies_delete": "Delete shipping companies",
+      "shipping-companies_read": "View shipping companies",
+      "shipping-companies_update": "Update shipping companies",
+      "stores_create": "Create stores",
+      "stores_delete": "Delete stores",
+      "stores_read": "View stores",
+      "stores_update": "Update stores",
+      "subscriptions_create": "Create subscriptions",
+      "subscriptions_read": "View subscriptions",
+      "subscriptions_update": "Update subscriptions",
+      "suppliers_create": "Create suppliers",
+      "suppliers_delete": "Delete suppliers",
+      "suppliers_read": "View suppliers",
+      "suppliers_update": "Update suppliers",
+      "transactions_cancel": "Cancel transaction",
+      "transactions_create": "Create transactions",
+      "transactions_read": "View transactions",
+      "transactions_update": "Update transactions",
+      "users_create": "Create users",
+      "users_create_admin": "Create admin user",
+      "users_deactivate": "Deactivate user",
+      "users_read": "View users",
+      "users_update": "Update users",
+      "users_view_credentials": "View user credentials",
+      "wallet_read": "View wallet",
+      "wallet_update": "Update wallet",
+      "warehouses_create": "Create warehouses",
+      "warehouses_delete": "Delete warehouses",
+      "warehouses_read": "View warehouses",
+      "warehouses_scan-preparation": "Scan warehouse preparation",
+      "warehouses_scan-shipping": "Scan warehouse shipping",
+      "warehouses_update": "Update warehouses"
+    },
     "breadcrumb": {
       "home": "Home",
       "roles": "Roles & Permissions"
@@ -1549,6 +1524,7 @@
         "errorFetchingOrders": "An error occurred while loading orders"
       },
       "modal": {
+        "assigningInProgress": "Assigning orders to carrier...",
         "orderDetailsTitle": "Order Details — {code}",
         "assignCarrierSubtitle": "Order Distribution",
         "assignCarrierTitle": "Assign to Shipping Company",
@@ -1599,13 +1575,39 @@
         "allowed": "Allowed",
         "notAllowed": "Not Allowed"
       },
+      "validation": {
+        "customerNameRequired": "Customer name is required",
+        "phoneNumberRequired": "Phone number is required",
+        "invalidEgPhone": "Enter a valid Egyptian mobile number (01xxxxxxxxx)",
+        "firstLineRequired": "Address is required",
+        "firstLineTooShort": "Address is too short",
+        "cityIdRequired": "City is required",
+        "districtIdRequired": "District is required",
+        "zoneIdRequired": "Zone is required"
+      },
       "assign": {
+        "noIneligible": "No ineligible orders selected. Please select orders that need fixing.",
         "ordersSelected": "Orders Selected",
         "requiredCarrier": "Required Shipping Company",
         "selectedOrders": "Selected Orders",
         "noOrders": "No orders",
         "assigning": "Assigning...",
-        "assign": "Assign"
+        "assign": "Assign",
+        "updateFailed": "Could not save changes for this order",
+        "fixedSuccessfully": "Successfully updated {count} order(s).",
+        "fixRequiredValues": "Fix required values ({count} orders)",
+        "allSetNoFixes": "All set! No fixes required.",
+        "tabAllOrders": "All Orders",
+        "tabNeedsFix": "Needs Fix",
+        "tabIneligible": "Ineligible",
+        "totalSelected": "Total Selected",
+        "ready": "Ready",
+        "needsFix": "Needs Fix",
+        "ineligible": "Ineligible",
+        "alreadyShipped": "Already shipped",
+        "invalidStatus": "Invalid status",
+        "assignOrdersCount": "Assign {count} orders",
+        "fixErrorsDetected": "Some orders have issues and couldn't be updated."
       },
       "reject": {
         "subtitle": "Order Management",
@@ -1655,8 +1657,12 @@
         "all": "All",
         "allRegions": "All Regions",
         "allProducts": "All Products",
-        "allCarriers": "All Shipping Companies"
-      }
+        "allCarriers": "All Shipping Companies",
+        "saving": "Saving...",
+        "saveMissingData": "Save missing data",
+        "error": "Something went wrong. Please try again."
+      },
+      "loading": "Loading..."
     },
     "print": {
       "breadcrumbs": {
@@ -4278,6 +4284,34 @@
     "loadMore": "Load More"
   },
   "orders": {
+    "trackingStatus": {
+      "new": "New",
+      "in_progress": "In Progress",
+      "picked_up": "Picked Up",
+      "in_transit": "In Transit",
+      "delivered": "Delivered",
+      "returned": "Returned",
+      "exception": "Exception",
+      "cancelled": "Cancelled",
+      "terminated": "Terminated",
+      "lost": "Lost",
+      "damaged": "Damaged",
+      "on_hold": "On Hold",
+      "action_required": "Action Required",
+      "archived": "Archived"
+    },
+    "trackShipment": {
+      "title": "Shipment Tracking",
+      "subtitle": "Real-time tracking details for this order",
+      "trackingNumber": "Tracking Number",
+      "loading": "Fetching shipment details...",
+      "currentStatus": "Current Status",
+      "rawState": "Provider State",
+      "providerShipmentId": "Provider Shipment ID",
+      "company": "Shipping company",
+      "createdAt": "Creation date",
+      "updatedAt": "Date of last update"
+    },
     "invalidOrderId": "Invalid order ID",
     "actions": {
       "duplicate": "Duplicate Order",
@@ -4298,7 +4332,8 @@
       "refresh": "Refresh",
       "saving": "Saving...",
       "view": "View",
-      "settings": "Settings"
+      "settings": "Settings",
+      "trackShipment": "Shipment tracking"
     },
     "breadcrumb": {
       "home": "Home",
@@ -4612,7 +4647,8 @@
       "cancel": "Cancel",
       "back": "Back",
       "save": "Save",
-      "loading": "Loading..."
+      "loading": "Loading...",
+      "close": "Close"
     },
     "empty": "No data to display",
     "messages": {
@@ -4635,7 +4671,8 @@
       "statusUpdating": "Updating status...",
       "loading": "Loading...",
       "errorFetchingOrder": "Failed to load order data",
-      "orderNotFound": "Order not found"
+      "orderNotFound": "Order not found",
+      "errorFetchingTracking": "Failed to fetch tracking details. Please try again later."
     },
     "details": {
       "statusUpdated": "Status updated successfully",
@@ -4877,6 +4914,23 @@
       "moreErrors": "and {{count}} more errors"
     },
     "distribution": {
+      "fields": {
+        "orderNumber": "Order Number",
+        "customerName": "Customer Name",
+        "phoneNumber": "Phone Number",
+        "address": "Address",
+        "city": "City",
+        "zone": "Zone",
+        "district": "District"
+      },
+      "placeholders": {
+        "customerName": "Enter customer name...",
+        "phoneNumber": "01X XXXX XXXX",
+        "address": "Enter full street address...",
+        "city": "Select City",
+        "zone": "Select Zone",
+        "district": "Select District"
+      },
       "title": "Order Distribution",
       "normalTitle": "Manual Distribution",
       "normalDescription": "Distribute orders to a specific employee",
@@ -5042,7 +5096,9 @@
       "trackingNumber": "Tracking Number",
       "storeName": "Store Name",
       "storeAddress": "Store Address",
-      "orderNumber": "Order Number"
+      "orderNumber": "Order Number",
+      "providerShipmentId": "Provider Shipment ID",
+      "notes": "Notes"
     },
     "retry": {
       "locked": "Locked"

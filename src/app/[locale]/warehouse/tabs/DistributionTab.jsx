@@ -70,6 +70,7 @@ import api from "@/utils/api";
 import { CARRIER_STYLES, CARRIERS, CARRIER_META } from "./data";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
+import AssignCarrierDialog from "../atoms/AssignCarrierDialog";
 
 // ─────────────────────────────────────────────
 // MAIN TAB
@@ -525,387 +526,387 @@ export function OrderDetailModal({ open, onClose, order, hideNotes }) {
 // ─────────────────────────────────────────────
 // ASSIGN CARRIER DIALOG — REDESIGNED
 // ─────────────────────────────────────────────
-function AssignCarrierDialog({
-  t,
-  open,
-  onClose,
-  orders,
-  selectedOrderCodes,
-  onConfirm,
-}) {
-  const tCommon = useTranslations("common");
-  const [selectedOrders, setSelectedOrders] = useState([]);
-  const [carrier, setCarrier] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { formatCurrency, shippingCompanies } = usePlatformSettings()
-  const availableOrders = useMemo(() => {
-    return orders.filter((o) => selectedOrderCodes.includes(o.orderNumber));
-  }, [orders, selectedOrderCodes]);
+// function AssignCarrierDialog({
+//   t,
+//   open,
+//   onClose,
+//   orders,
+//   selectedOrderCodes,
+//   onConfirm,
+// }) {
+//   const tCommon = useTranslations("common");
+//   const [selectedOrders, setSelectedOrders] = useState([]);
+//   const [carrier, setCarrier] = useState("");
+//   const [loading, setLoading] = useState(false);
+//   const { formatCurrency, shippingCompanies } = usePlatformSettings()
+//   const availableOrders = useMemo(() => {
+//     return orders.filter((o) => selectedOrderCodes.includes(o.orderNumber));
+//   }, [orders, selectedOrderCodes]);
 
-  useEffect(() => {
-    if (!open) return;
-    setSelectedOrders(availableOrders.map((o) => o.orderNumber));
+//   useEffect(() => {
+//     if (!open) return;
+//     setSelectedOrders(availableOrders.map((o) => o.orderNumber));
 
-    console.log(availableOrders[0]);
-    if (
-      availableOrders.length === 1 &&
-      availableOrders[0]?.shippingCompany?.code
-    ) {
-      setCarrier(availableOrders[0].shippingCompany.code.toUpperCase());
-    } else {
-      setCarrier("");
-    }
-  }, [open, availableOrders]);
+//     console.log(availableOrders[0]);
+//     if (
+//       availableOrders.length === 1 &&
+//       availableOrders[0]?.shippingCompany?.code
+//     ) {
+//       setCarrier(availableOrders[0].shippingCompany.code.toUpperCase());
+//     } else {
+//       setCarrier("");
+//     }
+//   }, [open, availableOrders]);
 
-  const toggleOrder = (orderNumber) =>
-    setSelectedOrders((prev) =>
-      prev.includes(orderNumber)
-        ? prev.filter((o) => o !== orderNumber)
-        : [...prev, orderNumber],
-    );
+//   const toggleOrder = (orderNumber) =>
+//     setSelectedOrders((prev) =>
+//       prev.includes(orderNumber)
+//         ? prev.filter((o) => o !== orderNumber)
+//         : [...prev, orderNumber],
+//     );
 
-  const handleAssign = async () => {
-    if (!carrier || selectedOrders.length === 0) return;
-    setLoading(true);
-    try {
-      const provider = carrier.toLowerCase();
-      const orderIds = availableOrders
-        .filter((o) => selectedOrders.includes(o.orderNumber))
-        .map((o) => o.id);
+//   const handleAssign = async () => {
+//     if (!carrier || selectedOrders.length === 0) return;
+//     setLoading(true);
+//     try {
+//       const provider = carrier.toLowerCase();
+//       const orderIds = availableOrders
+//         .filter((o) => selectedOrders.includes(o.orderNumber))
+//         .map((o) => o.id);
 
-      let res;
-      if (orderIds.length === 1) {
-        // Single assignment
-        const orderId = orderIds[0];
-        res = await api.post(
-          `/shipping/providers/${provider}/orders/${orderId}/assign`,
-          {},
-        );
-        toast.success(
-          provider === "none"
-            ? t("modal.manualAssignSuccess") || "Assigned for manual shipping"
-            : t("modal.assignSuccess") || "Carrier assigned successfully",
-        );
-      } else {
-        // Bulk assignment
-        res = await api.post(
-          `/shipping/providers/${provider}/orders/bulk-assign`,
-          {
-            items: orderIds.map((id) => ({
-              orderId: id, // Ensuring it's a number to match the DTO
-            })),
-          },
-        );
-        toast.success(
-          provider === "none"
-            ? t("modal.manualAssignSuccess") || "Orders assigned manually"
-            : t("modal.bulkAssignStarted") || "Orders added to assignment queue",
-        );
-      }
+//       let res;
+//       if (orderIds.length === 1) {
+//         // Single assignment
+//         const orderId = orderIds[0];
+//         res = await api.post(
+//           `/shipping/providers/${provider}/orders/${orderId}/assign`,
+//           {},
+//         );
+//         toast.success(
+//           provider === "none"
+//             ? t("modal.manualAssignSuccess") || "Assigned for manual shipping"
+//             : t("modal.assignSuccess") || "Carrier assigned successfully",
+//         );
+//       } else {
+//         // Bulk assignment
+//         res = await api.post(
+//           `/shipping/providers/${provider}/orders/bulk-assign`,
+//           {
+//             items: orderIds.map((id) => ({
+//               orderId: id, // Ensuring it's a number to match the DTO
+//             })),
+//           },
+//         );
+//         toast.success(
+//           provider === "none"
+//             ? t("modal.manualAssignSuccess") || "Orders assigned manually"
+//             : t("modal.bulkAssignStarted") || "Orders added to assignment queue",
+//         );
+//       }
 
-      onClose();
-      onConfirm?.(orderIds, res?.data);
-    } catch (error) {
-      console.error("Assignment failed", error);
-      toast.error(
-        error.response?.data?.message ||
-        t("modal.assignFailed") ||
-        "Assignment failed",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+//       onClose();
+//       onConfirm?.(orderIds, res?.data);
+//     } catch (error) {
+//       console.error("Assignment failed", error);
+//       toast.error(
+//         error.response?.data?.message ||
+//         t("modal.assignFailed") ||
+//         "Assignment failed",
+//       );
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
 
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent
-        className="!max-w-2xl rounded-2xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl"
+//   return (
+//     <Dialog open={open} onOpenChange={onClose}>
+//       <DialogContent
+//         className="!max-w-2xl rounded-2xl max-h-[90vh] overflow-y-auto p-0 border-0 shadow-2xl"
 
-      >
-        {/* Header */}
-        <div className="relative px-6 pt-6 pb-5 rounded-t-2xl overflow-hidden bg-primary">
-          <div className="absolute -top-6 -left-6 w-28 h-28 rounded-full bg-white/10" />
-          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
+//       >
+//         {/* Header */}
+//         <div className="relative px-6 pt-6 pb-5 rounded-t-2xl overflow-hidden bg-primary">
+//           <div className="absolute -top-6 -left-6 w-28 h-28 rounded-full bg-white/10" />
+//           <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
 
-          <div className="relative flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                <Layers className="text-white" size={22} />
-              </div>
-              <div>
-                <p className="text-white/70 text-xs font-medium mb-0.5">
-                  {t("modal.assignCarrierSubtitle") || "توزيع الطلبات"}
-                </p>
-                <h2 className="text-white text-xl font-bold">
-                  {t("modal.assignCarrierTitle")}
-                </h2>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
-            >
-              <X size={16} className="text-white" />
-            </button>
-          </div>
+//           <div className="relative flex items-start justify-between">
+//             <div className="flex items-center gap-3">
+//               <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+//                 <Layers className="text-white" size={22} />
+//               </div>
+//               <div>
+//                 <p className="text-white/70 text-xs font-medium mb-0.5">
+//                   {t("modal.assignCarrierSubtitle") || "توزيع الطلبات"}
+//                 </p>
+//                 <h2 className="text-white text-xl font-bold">
+//                   {t("modal.assignCarrierTitle")}
+//                 </h2>
+//               </div>
+//             </div>
+//             <button
+//               onClick={onClose}
+//               className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+//             >
+//               <X size={16} className="text-white" />
+//             </button>
+//           </div>
 
-          {/* Progress indicator */}
-          <div className="relative mt-4 flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-full px-3 py-1.5">
-              <Send size={12} className="text-white/80" />
-              <span className="text-white/90 text-xs font-medium">
-                {selectedOrders.length}{" "}
-                {t("assign.ordersSelected") || "طلب محدد"}
-              </span>
-            </div>
-            {carrier && (
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-full px-3 py-1.5"
-              >
-                <Truck size={12} className="text-white/80" />
-                <span className="text-white/90 text-xs font-medium">
-                  {carrier}
-                </span>
-              </motion.div>
-            )}
-          </div>
-        </div>
+//           {/* Progress indicator */}
+//           <div className="relative mt-4 flex items-center gap-3">
+//             <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-full px-3 py-1.5">
+//               <Send size={12} className="text-white/80" />
+//               <span className="text-white/90 text-xs font-medium">
+//                 {selectedOrders.length}{" "}
+//                 {t("assign.ordersSelected") || "طلب محدد"}
+//               </span>
+//             </div>
+//             {carrier && (
+//               <motion.div
+//                 initial={{ scale: 0.8, opacity: 0 }}
+//                 animate={{ scale: 1, opacity: 1 }}
+//                 className="flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-full px-3 py-1.5"
+//               >
+//                 <Truck size={12} className="text-white/80" />
+//                 <span className="text-white/90 text-xs font-medium">
+//                   {carrier}
+//                 </span>
+//               </motion.div>
+//             )}
+//           </div>
+//         </div>
 
-        <div className="p-6 space-y-5">
-          <div className="space-y-3">
-            <Label className="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
-              <Truck size={14} style={{ color: "var(--primary)" }} />
-              {t("assign.requiredCarrier")}
-              <span className="text-red-500">*</span>
-            </Label>
+//         <div className="p-6 space-y-5">
+//           <div className="space-y-3">
+//             <Label className="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+//               <Truck size={14} style={{ color: "var(--primary)" }} />
+//               {t("assign.requiredCarrier")}
+//               <span className="text-red-500">*</span>
+//             </Label>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {/* Manual / None option */}
-              <motion.button
-                type="button"
-                onClick={() => setCarrier("NONE")}
-                whileTap={{ scale: 0.96 }}
-                className={cn(
-                  "relative flex flex-col items-center gap-2 py-3.5 rounded-2xl border-2 transition-all duration-200",
-                  carrier === "NONE"
-                    ? "border-transparent bg-slate-500/10 border-slate-500/60"
-                    : "border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-slate-200 dark:hover:border-slate-600",
-                )}
-                style={
-                  carrier === "NONE"
-                    ? {
-                      backgroundColor: "#64748b12",
-                      borderColor: "#64748b60",
-                    }
-                    : {}
-                }
-              >
-                <span
-                  className="text-[10px] font-black tracking-wide"
-                  style={{ color: carrier === "NONE" ? "#64748b" : "#64748b" }}
-                >
-                  {t("modal.manualAssign") || "توزيع يدوي"}
-                </span>
-              </motion.button>
+//             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+//               {/* Manual / None option */}
+//               <motion.button
+//                 type="button"
+//                 onClick={() => setCarrier("NONE")}
+//                 whileTap={{ scale: 0.96 }}
+//                 className={cn(
+//                   "relative flex flex-col items-center gap-2 py-3.5 rounded-2xl border-2 transition-all duration-200",
+//                   carrier === "NONE"
+//                     ? "border-transparent bg-slate-500/10 border-slate-500/60"
+//                     : "border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-slate-200 dark:hover:border-slate-600",
+//                 )}
+//                 style={
+//                   carrier === "NONE"
+//                     ? {
+//                       backgroundColor: "#64748b12",
+//                       borderColor: "#64748b60",
+//                     }
+//                     : {}
+//                 }
+//               >
+//                 <span
+//                   className="text-[10px] font-black tracking-wide"
+//                   style={{ color: carrier === "NONE" ? "#64748b" : "#64748b" }}
+//                 >
+//                   {t("modal.manualAssign") || "توزيع يدوي"}
+//                 </span>
+//               </motion.button>
 
-              {shippingCompanies.map((integration) => {
-                const providerCode =
-                  integration.provider?.toUpperCase() || "DEFAULT";
-                const CARRIER_COLORS = {
-                  ARAMEX: { color: "#ef4444" },
-                  SMSA: { color: "#3b82f6" },
-                  DHL: { color: "#eab308" },
-                  BOSTA: { color: "#f97316" },
-                  JT: { color: "#009688" },
-                  TURBO: { color: "#00bcd4" },
-                };
-                const { color } = CARRIER_COLORS[providerCode];
+//               {shippingCompanies.map((integration) => {
+//                 const providerCode =
+//                   integration.provider?.toUpperCase() || "DEFAULT";
+//                 const CARRIER_COLORS = {
+//                   ARAMEX: { color: "#ef4444" },
+//                   SMSA: { color: "#3b82f6" },
+//                   DHL: { color: "#eab308" },
+//                   BOSTA: { color: "#f97316" },
+//                   JT: { color: "#009688" },
+//                   TURBO: { color: "#00bcd4" },
+//                 };
+//                 const { color } = CARRIER_COLORS[providerCode];
 
-                const isSelected = carrier === providerCode;
+//                 const isSelected = carrier === providerCode;
 
-                return (
-                  <motion.button
-                    key={providerCode}
-                    type="button"
-                    onClick={() => setCarrier(providerCode)}
-                    whileTap={{ scale: 0.96 }}
-                    className={cn(
-                      "relative flex flex-col items-center gap-2 py-3.5 rounded-2xl border-2 transition-all duration-200",
-                      isSelected
-                        ? "border-transparent"
-                        : "border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-slate-200 dark:hover:border-slate-600",
-                    )}
-                    style={
-                      isSelected
-                        ? {
-                          backgroundColor: color + "12",
-                          borderColor: color + "60",
-                        }
-                        : {}
-                    }
-                  >
-                    <span
-                      className="text-xs font-bold tracking-wide transition-colors duration-200"
-                      style={{ color: isSelected ? color : "#64748b" }}
-                    >
-                      {providerCode}
-                    </span>
-                  </motion.button>
-                );
-              })}
-            </div>
-          </div>
+//                 return (
+//                   <motion.button
+//                     key={providerCode}
+//                     type="button"
+//                     onClick={() => setCarrier(providerCode)}
+//                     whileTap={{ scale: 0.96 }}
+//                     className={cn(
+//                       "relative flex flex-col items-center gap-2 py-3.5 rounded-2xl border-2 transition-all duration-200",
+//                       isSelected
+//                         ? "border-transparent"
+//                         : "border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-slate-200 dark:hover:border-slate-600",
+//                     )}
+//                     style={
+//                       isSelected
+//                         ? {
+//                           backgroundColor: color + "12",
+//                           borderColor: color + "60",
+//                         }
+//                         : {}
+//                     }
+//                   >
+//                     <span
+//                       className="text-xs font-bold tracking-wide transition-colors duration-200"
+//                       style={{ color: isSelected ? color : "#64748b" }}
+//                     >
+//                       {providerCode}
+//                     </span>
+//                   </motion.button>
+//                 );
+//               })}
+//             </div>
+//           </div>
 
-          {/* Orders list */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
-                <Package size={14} style={{ color: "#6763af" }} />
-                {t("assign.selectedOrders")}
-              </Label>
-              <span
-                className="text-xs font-semibold px-2.5 py-1 rounded-full"
-                style={{ backgroundColor: "#6763af18", color: "#6763af" }}
-              >
-                {t("common.selectedCount", { count: selectedOrders.length })}
-              </span>
-            </div>
+//           {/* Orders list */}
+//           <div className="space-y-2">
+//             <div className="flex items-center justify-between">
+//               <Label className="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+//                 <Package size={14} style={{ color: "#6763af" }} />
+//                 {t("assign.selectedOrders")}
+//               </Label>
+//               <span
+//                 className="text-xs font-semibold px-2.5 py-1 rounded-full"
+//                 style={{ backgroundColor: "#6763af18", color: "#6763af" }}
+//               >
+//                 {t("common.selectedCount", { count: selectedOrders.length })}
+//               </span>
+//             </div>
 
-            <div className="max-h-[260px] overflow-y-auto space-y-2 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 border border-slate-100 dark:border-slate-700">
-              {availableOrders.map((order) => {
-                const isChecked = selectedOrders.includes(order.orderNumber);
-                return (
-                  <motion.div
-                    key={order.orderNumber}
-                    whileHover={{ scale: 1.01 }}
-                    className={cn(
-                      "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
-                      isChecked
-                        ? "bg-white dark:bg-slate-900 border-[var(--primary)]/40 shadow-sm"
-                        : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-slate-300",
-                    )}
-                    onClick={() => toggleOrder(order.orderNumber)}
-                  >
-                    <div
-                      className={cn(
-                        "w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all",
-                        isChecked
-                          ? "border-[var(--primary)] bg-[var(--primary)]"
-                          : "border-slate-300 dark:border-slate-600",
-                      )}
-                    >
-                      {isChecked && (
-                        <CheckCircle2 size={12} className="text-white" />
-                      )}
-                    </div>
+//             <div className="max-h-[260px] overflow-y-auto space-y-2 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 border border-slate-100 dark:border-slate-700">
+//               {availableOrders.map((order) => {
+//                 const isChecked = selectedOrders.includes(order.orderNumber);
+//                 return (
+//                   <motion.div
+//                     key={order.orderNumber}
+//                     whileHover={{ scale: 1.01 }}
+//                     className={cn(
+//                       "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
+//                       isChecked
+//                         ? "bg-white dark:bg-slate-900 border-[var(--primary)]/40 shadow-sm"
+//                         : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-slate-300",
+//                     )}
+//                     onClick={() => toggleOrder(order.orderNumber)}
+//                   >
+//                     <div
+//                       className={cn(
+//                         "w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all",
+//                         isChecked
+//                           ? "border-[var(--primary)] bg-[var(--primary)]"
+//                           : "border-slate-300 dark:border-slate-600",
+//                       )}
+//                     >
+//                       {isChecked && (
+//                         <CheckCircle2 size={12} className="text-white" />
+//                       )}
+//                     </div>
 
-                    <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-primary/20 "
-                    >
-                      <Package size={14} style={{ color: "var(--primary)" }} />
-                    </div>
+//                     <div
+//                       className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-primary/20 "
+//                     >
+//                       <Package size={14} style={{ color: "var(--primary)" }} />
+//                     </div>
 
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className="font-mono font-bold text-sm"
-                        style={{ color: "var(--primary)" }}
-                      >
-                        {order.orderNumber}
-                      </p>
-                      <p className="text-xs text-slate-500 truncate">
-                        {order.customerName} — {order.city}
-                      </p>
-                    </div>
+//                     <div className="flex-1 min-w-0">
+//                       <p
+//                         className="font-mono font-bold text-sm"
+//                         style={{ color: "var(--primary)" }}
+//                       >
+//                         {order.orderNumber}
+//                       </p>
+//                       <p className="text-xs text-slate-500 truncate">
+//                         {order.customerName} — {order.city}
+//                       </p>
+//                     </div>
 
-                    <div className="text-left flex-shrink-0">
-                      <p className="font-bold text-sm text-emerald-600">
-                        {formatCurrency(order.finalTotal)}
-                      </p>
-                      {order.shippingCompany?.name && (
-                        <span
-                          className="text-[10px] font-bold px-1.5 py-0.5 rounded-md"
-                          style={{
-                            backgroundColor: "#6763af18",
-                            color: "#6763af",
-                          }}
-                        >
-                          {order.shippingCompany?.name}
-                        </span>
-                      )}
-                    </div>
-                  </motion.div>
-                );
-              })}
+//                     <div className="text-left flex-shrink-0">
+//                       <p className="font-bold text-sm text-emerald-600">
+//                         {formatCurrency(order.finalTotal)}
+//                       </p>
+//                       {order.shippingCompany?.name && (
+//                         <span
+//                           className="text-[10px] font-bold px-1.5 py-0.5 rounded-md"
+//                           style={{
+//                             backgroundColor: "#6763af18",
+//                             color: "#6763af",
+//                           }}
+//                         >
+//                           {order.shippingCompany?.name}
+//                         </span>
+//                       )}
+//                     </div>
+//                   </motion.div>
+//                 );
+//               })}
 
-              {availableOrders.length === 0 && (
-                <div className="text-center py-8">
-                  <Package size={32} className="text-slate-300 mx-auto mb-2" />
-                  <p className="text-slate-400 text-sm">
-                    {t("assign.noOrders")}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
+//               {availableOrders.length === 0 && (
+//                 <div className="text-center py-8">
+//                   <Package size={32} className="text-slate-300 mx-auto mb-2" />
+//                   <p className="text-slate-400 text-sm">
+//                     {t("assign.noOrders")}
+//                   </p>
+//                 </div>
+//               )}
+//             </div>
+//           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              disabled={loading}
-              className="rounded-xl"
-            >
-              {t("common.cancel")}
-            </Button>
-            <motion.button
-              onClick={handleAssign}
-              disabled={loading || !carrier || selectedOrders.length === 0}
-              whileHover={
-                !loading && carrier && selectedOrders.length > 0
-                  ? { scale: 1.02 }
-                  : {}
-              }
-              whileTap={
-                !loading && carrier && selectedOrders.length > 0
-                  ? { scale: 0.98 }
-                  : {}
-              }
-              className={cn(
-                "flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-white transition-all",
-                loading || !carrier || selectedOrders.length === 0
-                  ? "bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed"
-                  : "shadow-lg",
-              )}
-              style={
-                !loading && carrier && selectedOrders.length > 0
-                  ? {
-                    background:
-                      "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)",
-                  }
-                  : {}
-              }
-            >
-              {loading ? (
-                <>
-                  <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                  {t("assign.assigning")}
-                </>
-              ) : (
-                <>
-                  <Send size={15} />
-                  {t("assign.assign")}
-                </>
-              )}
-            </motion.button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
+//           <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+//             <Button
+//               variant="outline"
+//               onClick={onClose}
+//               disabled={loading}
+//               className="rounded-xl"
+//             >
+//               {t("common.cancel")}
+//             </Button>
+//             <motion.button
+//               onClick={handleAssign}
+//               disabled={loading || !carrier || selectedOrders.length === 0}
+//               whileHover={
+//                 !loading && carrier && selectedOrders.length > 0
+//                   ? { scale: 1.02 }
+//                   : {}
+//               }
+//               whileTap={
+//                 !loading && carrier && selectedOrders.length > 0
+//                   ? { scale: 0.98 }
+//                   : {}
+//               }
+//               className={cn(
+//                 "flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-white transition-all",
+//                 loading || !carrier || selectedOrders.length === 0
+//                   ? "bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed"
+//                   : "shadow-lg",
+//               )}
+//               style={
+//                 !loading && carrier && selectedOrders.length > 0
+//                   ? {
+//                     background:
+//                       "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)",
+//                   }
+//                   : {}
+//               }
+//             >
+//               {loading ? (
+//                 <>
+//                   <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+//                   {t("assign.assigning")}
+//                 </>
+//               ) : (
+//                 <>
+//                   <Send size={15} />
+//                   {t("assign.assign")}
+//                 </>
+//               )}
+//             </motion.button>
+//           </div>
+//         </div>
+//       </DialogContent>
+//     </Dialog>
+//   );
+// }
 
 // ─────────────────────────────────────────────
 // UNASSIGNED SUBTAB
@@ -1358,12 +1359,12 @@ function UnassignedOrdersSubtab({ t, fetchStats, updateStatsAfterAssign }) {
       />
 
       <AssignCarrierDialog
-        t={t}
         open={assignDialog.open}
         onClose={() => {
           setAssignDialog({ open: false, codes: [] });
         }}
         orders={pager.records || []}
+        refetchOrders={fetchOrders}
         onConfirm={(orderIds) => {
           setSelectedOrders([]); // Requirement 2: clear selection
 
@@ -1851,6 +1852,7 @@ function AssignedOrdersSubtab({
         onClose={() => {
           setAssignDialog({ open: false, codes: [] });
         }}
+        refetchOrders={fetchOrders}
         onConfirm={handleAssignOrders}
         orders={pager.records}
         selectedOrderCodes={assignDialog.codes}

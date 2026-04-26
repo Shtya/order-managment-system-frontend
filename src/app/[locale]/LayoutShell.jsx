@@ -17,20 +17,23 @@ import SubscriptionLock from "@/components/atoms/SubscriptionLock";
 import { useAuthInterceptor } from "@/hook/useAuthInterceptor";
 import { motion, AnimatePresence } from "framer-motion";
 import "flatpickr/dist/flatpickr.min.css";
+import { OrdersSettingsProvider } from "@/hook/useOrdersSettings";
 
 export default function LayoutShell({ children }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
       <AuthProvider>
-        <AuthInterceptorWrapper>
-          <SocketProvider>
-            <NotificationProvider>
-              <PlatformSettingsProvider>
-                <DashboardLayout>{children}</DashboardLayout>
-              </PlatformSettingsProvider>
-            </NotificationProvider>
-          </SocketProvider>
-        </AuthInterceptorWrapper>
+        <OrdersSettingsProvider>
+          <AuthInterceptorWrapper>
+            <SocketProvider>
+              <NotificationProvider>
+                <PlatformSettingsProvider>
+                  <DashboardLayout>{children}</DashboardLayout>
+                </PlatformSettingsProvider>
+              </NotificationProvider>
+            </SocketProvider>
+          </AuthInterceptorWrapper>
+        </OrdersSettingsProvider>
       </AuthProvider>
     </ThemeProvider>
   );

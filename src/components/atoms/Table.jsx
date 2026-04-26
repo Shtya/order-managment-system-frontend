@@ -537,10 +537,9 @@ export default function Table({
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className={`relative ${!flat && "main-card  rounded-2xl border border-border/50 "} !p-0overflow-hidden`}
+        className={`relative ${!flat && "main-card  rounded-2xl border border-border/50 "} !p-0 overflow-hidden`}
         style={!flat ? { boxShadow: "0 1px 3px rgba(0,0,0,0.05), 0 6px 24px rgba(0,0,0,0.05)" } : {}}
       >
-
 
         {/* ── Toolbar ──────────────────────────────────────── */}
         <div className="px-5 py-4 border-b border-border/40">

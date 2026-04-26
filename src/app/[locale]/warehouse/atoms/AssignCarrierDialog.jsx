@@ -136,7 +136,6 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
             OrderStatus.FAILED_DELIVERY,
         ];
 
-        console.log("Checking ineligibility for order", order.orderNumber, "with status", status, allowedStatuses.includes(status));
         return !allowedStatuses.includes(status);
     }, []);
 
@@ -478,7 +477,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                 res = await api.post(`/shipping/providers/${provider}/orders/${orderIds[0]}/assign`, {});
             } else {
                 res = await api.post(`/shipping/providers/${provider}/orders/bulk-assign`, {
-                    items: orderIds.map(id => ({ orderId: Number(id) })),
+                    items: orderIds.map(id => ({ orderId: id })),
                 });
             }
 

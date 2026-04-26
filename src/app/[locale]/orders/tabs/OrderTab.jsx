@@ -99,6 +99,7 @@ export const OrderStatus = {
   DELIVERED: "delivered",
   CANCELLED: "cancelled",
   RETURNED: "returned",
+  FAILED_DELIVERY: "failed_delivery"
 };
 
 // ✅ State Machine Transitions

@@ -133,9 +133,10 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
 
         const allowedStatuses = [
             OrderStatus.CONFIRMED,
-            OrderStatus.DELIVERED,
+            OrderStatus.FAILED_DELIVERY,
         ];
 
+        console.log("Checking ineligibility for order", order.orderNumber, "with status", status, allowedStatuses.includes(status));
         return !allowedStatuses.includes(status);
     }, []);
 

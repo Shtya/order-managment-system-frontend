@@ -471,7 +471,6 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
         try {
             const provider = carrier.toLowerCase();
             const orderIds = selectedReadyOrders.map((o) => o.id);
-
             let res;
             if (orderIds.length === 1) {
                 res = await api.post(`/shipping/providers/${provider}/orders/${orderIds[0]}/assign`, {});

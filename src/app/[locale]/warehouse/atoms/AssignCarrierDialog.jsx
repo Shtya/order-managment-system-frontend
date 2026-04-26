@@ -506,7 +506,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
             >
                 {/* Header & Stats Cards */}
                 <div className="relative shrink-0 bg-[var(--primary)] px-3 pt-4 pb-4 sm:px-6 sm:pt-6 sm:pb-6 rounded-t-2xl">
-                    <div className="absolute -top-6 -left-6 w-28 h-28 rounded-full bg-white/10" />
+                    {/* <div className="absolute -top-6 -left-6 w-28 h-28 rounded-full bg-white/10" /> */}
 
                     <div className="flex items-start justify-between gap-3 mb-4 sm:mb-6">
                         <div className="flex items-center gap-2 sm:gap-3 min-w-0">

@@ -739,7 +739,7 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 					)}
 
 					{/* Usage — pushed to end */}
-					{hasPermission("shipping-companies.read") && (
+					{/* {hasPermission("shipping-companies.read") && (
 						<button
 							onClick={() => isConfigured && setOpenModal("usage")}
 							disabled={!isConfigured}
@@ -752,7 +752,7 @@ function IntegratedCompanyCard({ company, integrationStatus, onRefreshStatus }) 
 							<BarChart3 size={12} />
 							{t("card.usage")}
 						</button>
-					)}
+					)} */}
 				</div>
 			</motion.div>
 

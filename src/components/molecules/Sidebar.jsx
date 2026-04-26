@@ -67,6 +67,7 @@ import { Button } from "../ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import BrandLogo from "../atoms/BrandLogo";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
 
 /* ══════════════════════════════════════════════════════════════
    MENU DEFINITION
@@ -439,6 +440,8 @@ function SubItem({ child, isActive, isRTL, index }) {
 }
 export const excludedSubcriptionPaths = ["/plans", "/wallet", "/onboarding"];
 const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
+  const { isDirectShippingEnabled } = useOrdersSettings();
+
 
   const pathname = usePathname();
   const [expandedItems, setExpandedItems] = useState(new Set());
@@ -546,50 +549,63 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       ],
     },
 
-    {
-      icon: Warehouse,
-      labelKey: "manageWarehouse",
-      href: "/warehouse",
-      // roles: ["ADMIN"],
-      permission: "warehouses.read",
-      children: [
-        ...(shippingCompanies?.length !== 1 ? [{
-          icon: Truck,
-          labelKey: "warehouseDistribution",
-          href: "/warehouse?tab=distribution",
-        }] : []),
-        {
-          icon: Printer,
-          labelKey: "warehousePrint",
-          href: "/warehouse?tab=print",
-        },
-        {
-          icon: Package,
-          labelKey: "warehousePreparation",
-          href: "/warehouse?tab=preparation",
-        },
-        {
-          icon: CheckCircle2,
-          labelKey: "warehouseOutgoing",
-          href: "/warehouse?tab=outgoing",
-        },
-        {
-          icon: RefreshCw,
-          labelKey: "warehouseReturns",
-          href: "/warehouse?tab=returns",
-        },
-        // {
-        //   icon: XCircle,
-        //   labelKey: "warehouseRejected",
-        //   href: "/warehouse?tab=rejected",
-        // },
-        {
-          icon: ClipboardList,
-          labelKey: "warehouseLogs",
-          href: "/warehouse?tab=logs",
-        },
-      ],
-    },
+    //show to /warehouse?tab=distribution if isDirectShippingEnabled enable
+    (isDirectShippingEnabled
+      ? {
+        icon: Truck,
+        labelKey: "warehouseDistribution", // "توزيع الطلبات"
+        href: "/warehouse?tab=distribution",
+        children: [
+          {
+            icon: Truck,
+            labelKey: "warehouseDistribution",
+            href: "/warehouse?tab=distribution",
+          },
+          {
+            icon: ClipboardList,
+            labelKey: "warehouseLogs",
+            href: "/warehouse?tab=logs",
+          },
+        ],
+      }
+      : {
+        icon: Warehouse,
+        labelKey: "manageWarehouse",
+        href: "/warehouse",
+        permission: "warehouses.read",
+        children: [
+          {
+            icon: Truck,
+            labelKey: "warehouseDistribution",
+            href: "/warehouse?tab=distribution",
+          },
+          {
+            icon: Printer,
+            labelKey: "warehousePrint",
+            href: "/warehouse?tab=print",
+          },
+          {
+            icon: Package,
+            labelKey: "warehousePreparation",
+            href: "/warehouse?tab=preparation",
+          },
+          {
+            icon: CheckCircle2,
+            labelKey: "warehouseOutgoing",
+            href: "/warehouse?tab=outgoing",
+          },
+          {
+            icon: RefreshCw,
+            labelKey: "warehouseReturns",
+            href: "/warehouse?tab=returns",
+          },
+          {
+            icon: ClipboardList,
+            labelKey: "warehouseLogs",
+            href: "/warehouse?tab=logs",
+          },
+        ],
+      }),
     {
       icon: Package,
       labelKey: "products",
@@ -764,7 +780,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       roles: ["SUPER_ADMIN"],
     },
 
-  ], [shippingCompanies]);
+  ], [shippingCompanies, isDirectShippingEnabled]);
 
   useEffect(() => {
     const active = menuItems.find((item) =>
@@ -810,7 +826,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
         isLocked
       };
     });
-  }, [user]);
+  }, [user, menuItems]);
 
   const toggleExpanded = (href) =>
     setExpandedItems((prev) => {

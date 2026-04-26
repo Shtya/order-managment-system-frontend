@@ -29,6 +29,7 @@ import {
   Building2,
   Landmark,
   ChevronRight,
+  Info,
 } from "lucide-react";
 import {
   Home,
@@ -736,39 +737,77 @@ export function OrderDetailsPage({ order, loading }) {
           </SideCard>
 
           {/* Shipping Info */}
-          {order.shippingCompany && (
+          {/* نتحقق من وجود بيانات الشحن في المصفوفة الجديدة أو البيانات القديمة كاحتياط */}
+          {((order.shipments && order.shipments.length > 0) || order.shippingCompany) && (
             <SideCard
               title={t("details.shippingInfo")}
               icon={Truck}
               delay={0.09}
             >
               <div className="space-y-0">
-                <InfoRow
-                  icon={Truck}
-                  label={t("fields.shippingCompany")}
-                  value={order.shippingCompany.name}
-                />
-                {order.trackingNumber && (
-                  <InfoRow
-                    icon={FileText}
-                    label={t("fields.trackingNumber")}
-                    value={order.trackingNumber}
-                  />
-                )}
-                {order.shippedAt && (
-                  <InfoRow
-                    icon={Calendar}
-                    label={t("details.shippedAt")}
-                    value={formatDate(order.shippedAt)}
-                  />
-                )}
-                {order.deliveredAt && (
-                  <InfoRow
-                    icon={CheckCircle}
-                    label={t("details.deliveredAt")}
-                    value={formatDate(order.deliveredAt)}
-                  />
-                )}
+                {/* نعرّف متغير للشحنة الأولى لسهولة الوصول */}
+                {(() => {
+                  const shipment = order.shipments?.[0];
+                  const companyName = shipment?.shippingCompany?.name || order.shippingCompany?.name;
+                  const trackingNum = shipment?.trackingNumber || order.trackingNumber;
+
+                  return (
+                    <>
+                      <InfoRow
+                        icon={Truck}
+                        label={t("fields.shippingCompany")}
+                        value={companyName}
+                      />
+
+                      {trackingNum && (
+                        <InfoRow
+                          icon={FileText}
+                          label={t("fields.trackingNumber")}
+                          value={trackingNum}
+                        />
+                      )}
+
+                      {/* عرض رقم الشحنة لدى المزود إذا وجد وكان مختلفاً عن رقم التتبع */}
+                      {shipment?.providerShipmentId && shipment.providerShipmentId !== trackingNum && (
+                        <InfoRow
+                          icon={Fingerprint} // أو أي أيقونة مناسبة مثل Hash
+                          label={t("fields.providerShipmentId")}
+                          value={shipment.providerShipmentId}
+                        />
+                      )}
+
+                      {/* عرض الحالة الموحدة */}
+                      {shipment?.unifiedStatus && (
+                        <InfoRow
+                          icon={Info}
+                          label={t("fields.status")}
+                          value={
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 uppercase">
+                              {t(`trackingStatus.${shipment.unifiedStatus}`)}
+                            </span>
+                          }
+                        />
+                      )}
+
+                      {/* تواريخ الشحن */}
+                      {(shipment?.created_at || order.shippedAt) && (
+                        <InfoRow
+                          icon={Calendar}
+                          label={t("details.shippedAt")}
+                          value={formatDate(shipment?.created_at || order.shippedAt)}
+                        />
+                      )}
+
+                      {(order.deliveredAt) && (
+                        <InfoRow
+                          icon={CheckCircle}
+                          label={t("details.deliveredAt")}
+                          value={formatDate(order.deliveredAt)}
+                        />
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             </SideCard>
           )}

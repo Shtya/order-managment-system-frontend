@@ -36,7 +36,7 @@ import {
   initialReturnFiles, initialInventory,
   STATUS, CARRIERS,
 } from "./tabs/data";
-import useOrdersSettings from "@/hook/useOrdersSettings";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
 
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/context/AuthContext";
@@ -208,7 +208,8 @@ const isValidSubtab = (tab, subtab) => {
 // MAIN PAGE
 // ─────────────────────────────────────────────────────────────────────────────
 export default function WarehouseFlowPage() {
-  const { shippingCompanies, isShippingLoading } = usePlatformSettings();
+  const { isDirectShippingEnabled } = useOrdersSettings();
+
   const { user, hasPermission, isSuperAdmin, hasActiveSubscription } = useAuth();
   const locale = useLocale();
   const dir = locale === "ar" ? "rtl" : "ltr";
@@ -283,11 +284,11 @@ export default function WarehouseFlowPage() {
   }, [activeTab]);
 
   useEffect(() => {
-    if (!isShippingLoading && shippingCompanies?.length === 1 && activeTab === "distribution") {
-
-      router.replace("/warehouse?tab=print");
+    console.log("Direct Shipping Enabled:", isDirectShippingEnabled, activeTab);
+    if (isDirectShippingEnabled && activeTab !== "distribution") {
+      router.replace("/warehouse?tab=distribution");
     }
-  }, [shippingCompanies, isShippingLoading, activeTab, router]);
+  }, [isDirectShippingEnabled]);
 
   // ── Callbacks ──────────────────────────────────────────────────────────────
   const pushOp = useCallback((op) => setOpsLogs(prev => [op, ...prev]), []);
@@ -304,7 +305,6 @@ export default function WarehouseFlowPage() {
     try { localStorage.removeItem(LS_PREPARE_KEY); } catch (_) { }
   }, []);
 
-  const { settings, patch, saving, saveSetting } = useOrdersSettings({ isOpen: true, onClose: () => { } });
 
 
   // ── Prepare view override ──────────────────────────────────────────────────
@@ -324,87 +324,87 @@ export default function WarehouseFlowPage() {
   }
 
 
+  // if (isDirectShippingEnabled) {
+  //   return (
+  //     // نضع z-index أقل من الـ Sidebar (عادة 40 أو 30) ونستخدم التموضع النسبي للأب
+  //     <div className="absolute inset-0 z-[40] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+  //       {/* ملحوظة: lg:mr-[280px] تعتمد على عرض الـ Sidebar لديك لضمان توسيط التنبيه في المساحة البيضاء فقط */}
 
-  if (settings?.orderFlowPath === "shipping") {
-    return (
-      // نضع z-index أقل من الـ Sidebar (عادة 40 أو 30) ونستخدم التموضع النسبي للأب
-      <div className="absolute inset-0 z-[40] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-        {/* ملحوظة: lg:mr-[280px] تعتمد على عرض الـ Sidebar لديك لضمان توسيط التنبيه في المساحة البيضاء فقط */}
+  //       <motion.div
+  //         initial={{ opacity: 0, scale: 0.95 }}
+  //         animate={{ opacity: 1, scale: 1 }}
+  //         className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 dark:border-slate-800"
+  //       >
+  //         {/* Header المحاكي للـ Dialog */}
+  //         <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+  //           <div className="flex items-center gap-2 font-bold text-lg">
+  //             <Lock className="text-red-500" size={22} />
+  //             <span>{tWarning("title")}</span>
+  //           </div>
+  //           {/* زر إغلاق يدوي يوجه للطلبات */}
+  //           <button
+  //             onClick={() => router.push("/orders")}
+  //             className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+  //           >
+  //             <X size={20} />
+  //           </button>
+  //         </div>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 dark:border-slate-800"
-        >
-          {/* Header المحاكي للـ Dialog */}
-          <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-            <div className="flex items-center gap-2 font-bold text-lg">
-              <Lock className="text-red-500" size={22} />
-              <span>{tWarning("title")}</span>
-            </div>
-            {/* زر إغلاق يدوي يوجه للطلبات */}
-            <button
-              onClick={() => router.push("/orders")}
-              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
-            >
-              <X size={20} />
-            </button>
-          </div>
+  //         <div className="p-6 space-y-6">
+  //           <div className="rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30 p-4">
+  //             <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+  //               {tWarning("subtitle")}
+  //             </p>
+  //             <p className="text-xs text-amber-600 mt-1">
+  //               {tWarning("description")}
+  //             </p>
+  //           </div>
 
-          <div className="p-6 space-y-6">
-            <div className="rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30 p-4">
-              <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
-                {tWarning("subtitle")}
-              </p>
-              <p className="text-xs text-amber-600 mt-1">
-                {tWarning("description")}
-              </p>
-            </div>
+  //           <div className="flex flex-col gap-2">
+  //             <Button_
+  //               className="w-full h-11"
+  //               tone="primary"
+  //               variant="solid"
+  //               onClick={() => saveSetting({ ...settings, orderFlowPath: "warehouse" })}
+  //               disabled={saving}
+  //               label={
+  //                 <div className="flex items-center gap-2">
+  //                   {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+  //                   <span>{tWarning("enableWarehouse")}</span>
+  //                 </div>
+  //               }
+  //               permission="order.updateSettings"
+  //             />
 
-            <div className="flex flex-col gap-2">
-              <Button_
-                className="w-full h-11"
-                tone="primary"
-                variant="solid"
-                onClick={() => saveSetting({ ...settings, orderFlowPath: "warehouse" })}
-                disabled={saving}
-                label={
-                  <div className="flex items-center gap-2">
-                    {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                    <span>{tWarning("enableWarehouse")}</span>
-                  </div>
-                }
-                permission="order.updateSettings"
-              />
+  //             <Button_
+  //               className="w-full h-11"
+  //               tone="gray"
+  //               variant="outline"
+  //               onClick={() => router.push("/settings")}
+  //               label={
+  //                 <div className="flex items-center gap-2">
+  //                   <Settings size={16} />
+  //                   <span>{tWarning("advancedSettings")}</span>
+  //                 </div>
+  //               }
+  //               permission="order.readSettings"
+  //             />
 
-              <Button_
-                className="w-full h-11"
-                tone="gray"
-                variant="outline"
-                onClick={() => router.push("/settings")}
-                label={
-                  <div className="flex items-center gap-2">
-                    <Settings size={16} />
-                    <span>{tWarning("advancedSettings")}</span>
-                  </div>
-                }
-                permission="order.readSettings"
-              />
-
-              <button
-                onClick={() => router.back()} // سيقوم بالعودة للصحفة السابقة في السجل (History)
-                className="text-xs text-slate-400 hover:text-primary transition-colors mt-2 underline flex items-center justify-center gap-1 mx-auto"
-              >
-                <ArrowRight size={12} /> {/* إضافة سهم اختياري لتعزيز الشكل البصري */}
-                <span>{tWarning("goBack")}</span>
-              </button>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
+  //             <button
+  //               onClick={() => router.back()} // سيقوم بالعودة للصحفة السابقة في السجل (History)
+  //               className="text-xs text-slate-400 hover:text-primary transition-colors mt-2 underline flex items-center justify-center gap-1 mx-auto"
+  //             >
+  //               <ArrowRight size={12} /> {/* إضافة سهم اختياري لتعزيز الشكل البصري */}
+  //               <span>{tWarning("goBack")}</span>
+  //             </button>
+  //           </div>
+  //         </div>
+  //       </motion.div>
+  //     </div>
+  //   );
+  // }
   // ── Main tabbed layout ─────────────────────────────────────────────────────
+
   return (
     <div
       className="min-h-screen !pb-0 p-4 md:p-6 "

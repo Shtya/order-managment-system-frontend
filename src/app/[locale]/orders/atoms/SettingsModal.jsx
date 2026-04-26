@@ -40,7 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import useOrdersSettings from "@/hook/useOrdersSettings";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import { P_08, P_04, P_12, P_20, P_25 } from "../../settings/page";
 import { MdNotificationAdd } from "react-icons/md";
@@ -89,8 +89,11 @@ export default function GlobalRetrySettingsModal({
     patchShipping,
     handleSave,
     toggleCode,
-  } = useOrdersSettings({ isOpen, onClose });
+  } = useOrdersSettings();
 
+  async function save() {
+    await handleSave(onClose);
+  }
   /* ═══════════════════════════════════════════════════════════
      RENDER
   ═══════════════════════════════════════════════════════════ */
@@ -258,7 +261,7 @@ export default function GlobalRetrySettingsModal({
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
-              onClick={handleSave}
+              onClick={save}
               disabled={saving}
               className="h-10 px-6 rounded-xl text-sm font-bold text-white flex items-center gap-2
                 bg-gradient-to-r from-[var(--primary)] to-[var(--third,var(--secondary))]
@@ -901,7 +904,7 @@ export function ShippingTab({ settings, statuses, patchShipping, patch, t }) {
   const { shippingCompanies } = usePlatformSettings();
   const hasMoreCompanies = shippingCompanies.length > 0;
   const isShipment = settings?.orderFlowPath === "shipping";
-  console.log(patch)
+
   return (
     <div className="space-y-4">
       {/* Master toggle */}
@@ -1002,7 +1005,7 @@ export function ShippingTab({ settings, statuses, patchShipping, patch, t }) {
       </div>
 
       {/* Expanded shipping config */}
-      <AnimatePresence>
+      {/* <AnimatePresence>
         {isShipment && (
           <motion.div
             initial={{ opacity: 0, y: 6 }}
@@ -1011,7 +1014,7 @@ export function ShippingTab({ settings, statuses, patchShipping, patch, t }) {
             transition={{ duration: 0.22 }}
             className="space-y-4"
           >
-            {/* Card: Routing */}
+            {/* Card: Routing 
             <SectionCard
               icon={Truck}
               iconColor="var(--primary)"
@@ -1069,7 +1072,7 @@ export function ShippingTab({ settings, statuses, patchShipping, patch, t }) {
               </p>
             </SectionCard>
 
-            {/* Card: Payment */}
+            {/* Card: Payment 
             <SectionCard
               icon={Shield}
               iconColor="#10b981"
@@ -1151,19 +1154,20 @@ export function ShippingTab({ settings, statuses, patchShipping, patch, t }) {
                 onCheckedChange={(v) =>
                   patchShipping({ requirePaymentConfirm: v })
                 }
-              /> */}
+              /> 
             </SectionCard>
 
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence> */}
+
       {!isShipment && <>
         {/* Card: Warehouse Automation */}
-        {hasMoreCompanies && <SectionCard
+        {/* {hasMoreCompanies && <SectionCard
           icon={Truck}
           iconColor="#3b82f6"
           title={t("retrySettings.shipping.autoShip")}
-        // subtitle={t("retrySettings.shipping.autoShipAfterWarehouseDesc")}
+        subtitle={t("retrySettings.shipping.autoShipAfterWarehouseDesc")}
         >
           <InlineToggle
             label={t("retrySettings.shipping.autoShipAfterWarehouse")}
@@ -1199,7 +1203,7 @@ export function ShippingTab({ settings, statuses, patchShipping, patch, t }) {
               </motion.div>
             )}
           </AnimatePresence>
-        </SectionCard>}
+        </SectionCard>} */}
 
         {/* Card: Automation Options */}
         <SectionCard

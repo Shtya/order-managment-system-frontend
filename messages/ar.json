@@ -1177,128 +1177,104 @@
   },
   "roles-client": {
     "permissionsItems": {
-    "admin-settings_read": "عرض إعدادات الإدارة",
-    "admin-settings_update": "تعديل إعدادات الإدارة",
-
-    "assets_create": "إنشاء الأصول",
-    "assets_delete": "حذف الأصول",
-    "assets_read": "عرض الأصول",
-    "assets_update": "تعديل الأصول",
-
-    "categories_create": "إنشاء التصنيفات",
-    "categories_delete": "حذف التصنيفات",
-    "categories_read": "عرض التصنيفات",
-    "categories_update": "تعديل التصنيفات",
-    "orders_confirm-incoming" : "تأكيد الوارد",
-    "orders_distribution": "توزيع الطلبات",
-    "orders_restoreFailed": "مراجعة الطلبات",
-    "dashboard_read": "عرض لوحة التحكم",
-
-    "extra-features_create": "إنشاء الميزات الإضافية",
-    "extra-features_read": "عرض الميزات الإضافية",
-    "extra-features_update": "تعديل الميزات الإضافية",
-
-    "notifications_read": "عرض الإشعارات",
-    "notifications_update": "تعديل الإشعارات",
-
-    "order_assign": "تعيين الطلب",
-    "order_create": "إنشاء طلب",
-    "order_delete": "حذف الطلب",
-    "order_read": "عرض الطلب",
-    "order_readSettings": "عرض إعدادات الطلب",
-    "order_update": "تعديل الطلب",
-    "order_updateSettings": "تعديل إعدادات الطلب",
-
-    "orders-collect_create": "إنشاء تجميع الطلبات",
-    "orders-collect_read": "عرض تجميع الطلبات",
-
-    "orders_create": "إنشاء الطلبات",
-    "orders_delete": "حذف الطلبات",
-    "orders_read": "عرض الطلبات",
-    "orders_readReplace": "عرض استبدال الطلبات",
-    "orders_replace": "استبدال الطلب",
-    "orders_update": "تعديل الطلبات",
-
-    "payments_read": "عرض المدفوعات",
-
-    "permissions_create": "إنشاء الصلاحيات",
-    "permissions_delete": "حذف الصلاحيات",
-    "permissions_read": "عرض الصلاحيات",
-
-    "plans_create": "إنشاء الخطط",
-    "plans_delete": "حذف الخطط",
-    "plans_read": "عرض الخطط",
-    "plans_update": "تعديل الخطط",
-
-    "products_create": "إنشاء المنتجات",
-    "products_delete": "حذف المنتجات",
-    "products_read": "عرض المنتجات",
-    "products_update": "تعديل المنتجات",
-
-    "purchase_returns_create": "إنشاء مرتجعات المشتريات",
-    "purchase_returns_delete": "حذف مرتجعات المشتريات",
-    "purchase_returns_read": "عرض مرتجعات المشتريات",
-    "purchase_returns_update": "تعديل مرتجعات المشتريات",
-
-    "purchases_create": "إنشاء المشتريات",
-    "purchases_delete": "حذف المشتريات",
-    "purchases_read": "عرض المشتريات",
-    "purchases_update": "تعديل المشتريات",
-
-    "return-request_create": "إنشاء طلب إرجاع",
-
-    "roles_create": "إنشاء الأدوار",
-    "roles_delete": "حذف الأدوار",
-    "roles_read": "عرض الأدوار",
-    "roles_update": "تعديل الأدوار",
-
-    "sales_invoice_create": "إنشاء فاتورة مبيعات",
-    "sales_invoice_delete": "حذف فاتورة مبيعات",
-    "sales_invoice_read": "عرض فاتورة المبيعات",
-    "sales_invoice_update": "تعديل فاتورة المبيعات",
-
-    "shipping-companies_create": "إنشاء شركات الشحن",
-    "shipping-companies_delete": "حذف شركات الشحن",
-    "shipping-companies_read": "عرض شركات الشحن",
-    "shipping-companies_update": "تعديل شركات الشحن",
-
-    "stores_create": "إنشاء المتاجر",
-    "stores_delete": "حذف المتاجر",
-    "stores_read": "عرض المتاجر",
-    "stores_update": "تعديل المتاجر",
-
-    "subscriptions_create": "إنشاء الاشتراكات",
-    "subscriptions_read": "عرض الاشتراكات",
-    "subscriptions_update": "تعديل الاشتراكات",
-
-    "suppliers_create": "إنشاء الموردين",
-    "suppliers_delete": "حذف الموردين",
-    "suppliers_read": "عرض الموردين",
-    "suppliers_update": "تعديل الموردين",
-
-    "transactions_cancel": "إلغاء المعاملة",
-    "transactions_create": "إنشاء المعاملات",
-    "transactions_read": "عرض المعاملات",
-    "transactions_update": "تعديل المعاملات",
-
-    "users_create": "إنشاء المستخدمين",
-    "users_create_admin": "إنشاء مستخدم إداري",
-    "users_deactivate": "تعطيل المستخدم",
-    "users_read": "عرض المستخدمين",
-    "users_update": "تعديل المستخدمين",
-    "users_view_credentials": "عرض بيانات المستخدم",
-
-    "wallet_read": "عرض المحفظة",
-    "wallet_update": "تعديل المحفظة",
-    "*": "كل  الصلاحيات",
-
-    "warehouses_create": "إنشاء المخازن",
-    "warehouses_delete": "حذف المخازن",
-    "warehouses_read": "عرض المخازن",
-    "warehouses_scan-preparation": "مسح تجهيز المخزن",
-    "warehouses_scan-shipping": "مسح شحن المخزن",
-    "warehouses_update": "تعديل المخازن"
-  },
+      "admin-settings_read": "عرض إعدادات الإدارة",
+      "admin-settings_update": "تعديل إعدادات الإدارة",
+      "assets_create": "إنشاء الأصول",
+      "assets_delete": "حذف الأصول",
+      "assets_read": "عرض الأصول",
+      "assets_update": "تعديل الأصول",
+      "categories_create": "إنشاء التصنيفات",
+      "categories_delete": "حذف التصنيفات",
+      "categories_read": "عرض التصنيفات",
+      "categories_update": "تعديل التصنيفات",
+      "orders_confirm-incoming": "تأكيد الوارد",
+      "orders_distribution": "توزيع الطلبات",
+      "orders_restoreFailed": "مراجعة الطلبات",
+      "dashboard_read": "عرض لوحة التحكم",
+      "extra-features_create": "إنشاء الميزات الإضافية",
+      "extra-features_read": "عرض الميزات الإضافية",
+      "extra-features_update": "تعديل الميزات الإضافية",
+      "notifications_read": "عرض الإشعارات",
+      "notifications_update": "تعديل الإشعارات",
+      "order_assign": "تعيين الطلب",
+      "order_create": "إنشاء طلب",
+      "order_delete": "حذف الطلب",
+      "order_read": "عرض الطلب",
+      "order_readSettings": "عرض إعدادات الطلب",
+      "order_update": "تعديل الطلب",
+      "order_updateSettings": "تعديل إعدادات الطلب",
+      "orders-collect_create": "إنشاء تجميع الطلبات",
+      "orders-collect_read": "عرض تجميع الطلبات",
+      "orders_create": "إنشاء الطلبات",
+      "orders_delete": "حذف الطلبات",
+      "orders_read": "عرض الطلبات",
+      "orders_readReplace": "عرض استبدال الطلبات",
+      "orders_replace": "استبدال الطلب",
+      "orders_update": "تعديل الطلبات",
+      "payments_read": "عرض المدفوعات",
+      "permissions_create": "إنشاء الصلاحيات",
+      "permissions_delete": "حذف الصلاحيات",
+      "permissions_read": "عرض الصلاحيات",
+      "plans_create": "إنشاء الخطط",
+      "plans_delete": "حذف الخطط",
+      "plans_read": "عرض الخطط",
+      "plans_update": "تعديل الخطط",
+      "products_create": "إنشاء المنتجات",
+      "products_delete": "حذف المنتجات",
+      "products_read": "عرض المنتجات",
+      "products_update": "تعديل المنتجات",
+      "purchase_returns_create": "إنشاء مرتجعات المشتريات",
+      "purchase_returns_delete": "حذف مرتجعات المشتريات",
+      "purchase_returns_read": "عرض مرتجعات المشتريات",
+      "purchase_returns_update": "تعديل مرتجعات المشتريات",
+      "purchases_create": "إنشاء المشتريات",
+      "purchases_delete": "حذف المشتريات",
+      "purchases_read": "عرض المشتريات",
+      "purchases_update": "تعديل المشتريات",
+      "return-request_create": "إنشاء طلب إرجاع",
+      "roles_create": "إنشاء الأدوار",
+      "roles_delete": "حذف الأدوار",
+      "roles_read": "عرض الأدوار",
+      "roles_update": "تعديل الأدوار",
+      "sales_invoice_create": "إنشاء فاتورة مبيعات",
+      "sales_invoice_delete": "حذف فاتورة مبيعات",
+      "sales_invoice_read": "عرض فاتورة المبيعات",
+      "sales_invoice_update": "تعديل فاتورة المبيعات",
+      "shipping-companies_create": "إنشاء شركات الشحن",
+      "shipping-companies_delete": "حذف شركات الشحن",
+      "shipping-companies_read": "عرض شركات الشحن",
+      "shipping-companies_update": "تعديل شركات الشحن",
+      "stores_create": "إنشاء المتاجر",
+      "stores_delete": "حذف المتاجر",
+      "stores_read": "عرض المتاجر",
+      "stores_update": "تعديل المتاجر",
+      "subscriptions_create": "إنشاء الاشتراكات",
+      "subscriptions_read": "عرض الاشتراكات",
+      "subscriptions_update": "تعديل الاشتراكات",
+      "suppliers_create": "إنشاء الموردين",
+      "suppliers_delete": "حذف الموردين",
+      "suppliers_read": "عرض الموردين",
+      "suppliers_update": "تعديل الموردين",
+      "transactions_cancel": "إلغاء المعاملة",
+      "transactions_create": "إنشاء المعاملات",
+      "transactions_read": "عرض المعاملات",
+      "transactions_update": "تعديل المعاملات",
+      "users_create": "إنشاء المستخدمين",
+      "users_create_admin": "إنشاء مستخدم إداري",
+      "users_deactivate": "تعطيل المستخدم",
+      "users_read": "عرض المستخدمين",
+      "users_update": "تعديل المستخدمين",
+      "users_view_credentials": "عرض بيانات المستخدم",
+      "wallet_read": "عرض المحفظة",
+      "wallet_update": "تعديل المحفظة",
+      "*": "كل  الصلاحيات",
+      "warehouses_create": "إنشاء المخازن",
+      "warehouses_delete": "حذف المخازن",
+      "warehouses_read": "عرض المخازن",
+      "warehouses_scan-preparation": "مسح تجهيز المخزن",
+      "warehouses_scan-shipping": "مسح شحن المخزن",
+      "warehouses_update": "تعديل المخازن"
+    },
     "breadcrumb": {
       "home": "الرئيسية",
       "roles": "الأدوار والصلاحيات"
@@ -1528,6 +1504,23 @@
         "orders": "الطلبات",
         "distribution": "التوزيع"
       },
+      "fields": {
+        "orderNumber": "رقم الطلب",
+        "customerName": "اسم العميل",
+        "phoneNumber": "رقم الهاتف",
+        "address": "العنوان",
+        "city": "المدينة",
+        "zone": "المنطقة",
+        "district": "الحي"
+      },
+      "placeholders": {
+        "customerName": "أدخل اسم العميل...",
+        "phoneNumber": "٠١× ×××× ××××",
+        "address": "أدخل العنوان بالتفصيل...",
+        "city": "اختر المدينة",
+        "zone": "اختر المنطقة",
+        "district": "اختر الحي"
+      },
       "header": {
         "howItWorks": "كيف يعمل"
       },
@@ -1548,6 +1541,7 @@
         "errorFetchingOrders": "حدث خطأ أثناء جلب الطلبات"
       },
       "modal": {
+        "assigningInProgress": "جارٍ توزيع الطلبات علي شركة الشحن...",
         "orderDetailsTitle": "تفاصيل الطلب {code}",
         "assignCarrierSubtitle": "توزيع الطلبات",
         "assignCarrierTitle": "تعيين شركة شحن",
@@ -1598,13 +1592,39 @@
         "allowed": "مسموح",
         "notAllowed": "غير مسموح"
       },
+      "validation": {
+        "customerNameRequired": "اسم العميل مطلوب",
+        "phoneNumberRequired": "رقم الهاتف مطلوب",
+        "invalidEgPhone": "أدخل رقم موبايل مصري صالحًا (01xxxxxxxxx)",
+        "firstLineRequired": "سطر العنوان مطلوب",
+        "firstLineTooShort": "العنوان قصير للغاية",
+        "cityIdRequired": "المدينة مطلوبة",
+        "districtIdRequired": "الحي مطلوب",
+        "zoneIdRequired": "المنطقة مطلوبة"
+      },
       "assign": {
+        "noIneligible": "لا توجد طلبات غير مؤهلة للتعيين",
         "ordersSelected": "طلبات محددة",
         "requiredCarrier": "شركة الشحن المطلوبة",
         "selectedOrders": "الطلبات المحددة",
         "noOrders": "لا توجد طلبات متاحة",
         "assigning": "جارٍ التعيين...",
-        "assign": "تعيين"
+        "assign": "تعيين",
+        "updateFailed": "تعذر حفظ التعديلات لهذا الطلب",
+        "fixedSuccessfully": "تم تحديث {count} طلبًا بنجاح.",
+        "fixRequiredValues": "أكمل القيم المطلوبة ({count} طلبًا)",
+        "allSetNoFixes": "كل شيء جاهز! لا توجد تعديلات مطلوبة.",
+        "tabAllOrders": "كل الطلبات",
+        "tabNeedsFix": "يحتاج إصلاحًا",
+        "tabIneligible": "غير مؤهل",
+        "totalSelected": "إجمالي المحدد",
+        "ready": "جاهز",
+        "needsFix": "يحتاج إصلاحًا",
+        "ineligible": "غير مؤهل",
+        "alreadyShipped": "تم الشحن مسبقًا",
+        "invalidStatus": "حالة غير صالحة",
+        "assignOrdersCount": "تعيين {count} طلبًا",
+        "fixErrorsDetected": "توجد مشكلات في بعض الطلبات ولم يتم التحديث."
       },
       "reject": {
         "subtitle": "إدارة الطلبات",
@@ -1654,8 +1674,12 @@
         "all": "الكل",
         "allRegions": "كل المناطق",
         "allProducts": "كل المنتجات",
-        "allCarriers": "كل شركات الشحن"
-      }
+        "allCarriers": "كل شركات الشحن",
+        "saving": "جارٍ الحفظ...",
+        "saveMissingData": "حفظ البيانات الناقصة",
+        "error": "حدث خطأ. يرجى المحاولة مرة أخرى."
+      },
+      "loading": "جاري التحميل..."
     },
     "print": {
       "breadcrumbs": {
@@ -4278,6 +4302,34 @@
     "loadMore": "تحميل المزيد"
   },
   "orders": {
+    "trackingStatus": {
+      "new": "جديد",
+      "in_progress": "قيد التنفيذ",
+      "picked_up": "تم الاستلام",
+      "in_transit": "قيد الشحن",
+      "delivered": "تم التسليم",
+      "returned": "تم الإرجاع",
+      "exception": "استثناء",
+      "cancelled": "ملغي",
+      "terminated": "منتهي",
+      "lost": "مفقود",
+      "damaged": "تالف",
+      "on_hold": "معلق",
+      "action_required": "يتطلب إجراء",
+      "archived": "مؤرشف"
+    },
+    "trackShipment": {
+      "title": "تتبع الشحنة",
+      "subtitle": "تفاصيل التتبع المباشر لهذا الطلب",
+      "trackingNumber": "رقم التتبع",
+      "loading": "جاري جلب تفاصيل الشحنة...",
+      "currentStatus": "الحالة الحالية",
+      "rawState": "حالة مزود الشحن",
+      "providerShipmentId": "رقم بوليصة المزود",
+      "company": "شركة الشحن",
+      "createdAt": "تاريخ الإنشاء",
+      "updatedAt": "تاريخ أخر تحديث"
+    },
     "invalidOrderId": "معرّف الطلب غير صحيح",
     "actions": {
       "duplicate": "تكرار الطلب",
@@ -4298,7 +4350,8 @@
       "refresh": "تحديث",
       "saving": "جاري الحفظ...",
       "view": "عرض",
-      "settings": "الإعدادات"
+      "settings": "الإعدادات",
+      "trackShipment": "تتبع الشحنة"
     },
     "breadcrumb": {
       "home": "الرئيسية",
@@ -4633,7 +4686,8 @@
       "cancel": "إلغاء",
       "back": "رجوع",
       "save": "حفظ",
-      "loading": "جاري التحميل..."
+      "loading": "جاري التحميل...",
+      "close": "إغلاق"
     },
     "empty": "لا توجد بيانات للعرض",
     "messages": {
@@ -4656,7 +4710,8 @@
       "statusUpdating": "جاري تحديث الحالة...",
       "loading": "جاري التحميل...",
       "errorFetchingOrder": "فشل تحميل بيانات الطلب",
-      "orderNotFound": "الطلب غير موجود"
+      "orderNotFound": "الطلب غير موجود",
+      "errorFetchingTracking": "فشل في جلب تفاصيل التتبع. يرجى المحاولة مرة أخرى لاحقاً."
     },
     "details": {
       "statusUpdated": "تم تحديث الحالة",
@@ -5063,7 +5118,9 @@
       "trackingNumber": "رقم التتبع",
       "storeName": "اسم المتجر",
       "storeAddress": "عنوان المتجر",
-      "orderNumber": "رقم الطلب"
+      "orderNumber": "رقم الطلب",
+      "providerShipmentId": "رقم الشحنة لدى المزود",
+      "notes": "ملاحظات"
     },
     "retry": {
       "locked": "مقفل"

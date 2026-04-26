@@ -169,12 +169,13 @@ export function ImageUploadBox({ title, files, onFilesChange, onRemove, multiple
     };
 
     const prettyExt = (file) => {
+
         if (!file) return '';
 
         const url =
             file.isExisting || file.isFromLibrary
                 ? file.url
-                : file.previewUrl;
+                : file.orphanUrl || file.file.name;
 
         if (!url) return '';
 

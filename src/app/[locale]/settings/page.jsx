@@ -88,7 +88,7 @@ import {
   WarehouseTab,
   NotificationsSettingsTab
 } from "../orders/atoms/SettingsModal";
-import {useOrdersSettings} from "@/hook/useOrdersSettings";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { useTheme } from "next-themes";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { avatarSrc } from "@/components/atoms/UserSelect";

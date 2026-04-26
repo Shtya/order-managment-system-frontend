@@ -1206,7 +1206,7 @@ export function ShippingTab({ settings, statuses, patchShipping, patch, t }) {
         </SectionCard>} */}
 
         {/* Card: Automation Options */}
-        <SectionCard
+        {/* <SectionCard
           icon={Zap}
           iconColor="#f59e0b"
           title={t("retrySettings.shipping.otherOptions")}
@@ -1241,7 +1241,7 @@ export function ShippingTab({ settings, statuses, patchShipping, patch, t }) {
               )}
             </div>
           ))}
-        </SectionCard>
+        </SectionCard> */}
       </>}
       {/* Card: Stock Management */}
       <SectionCard

@@ -8056,7 +8056,8 @@
       "subscription": "Subscription Plan",
       "feature": "Feature Purchased",
       "duration": "Duration",
-      "status": "Status"
+      "status": "Status",
+      "email": "Email"
     },
     "purpose": {
       "walletTopUp": "Wallet Top-Up",
@@ -8086,7 +8087,8 @@
       "title": "Unable to Load Payment Details",
       "noSessionId": "No payment session ID provided",
       "fetchFailed": "Failed to load payment information"
-    }
+    },
+    "customerInfo": "Customer information"
   },
   "paymentFail": {
     "title": "Payment Failed",

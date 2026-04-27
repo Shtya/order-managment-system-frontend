@@ -7,10 +7,10 @@ import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/utils/cn"
 
 // Custom animated check icon
-const AnimatedCheckIcon = () => (
+const AnimatedCheckIcon = ({ size = 20 }) => (
 	<motion.svg
-		width="20"
-		height="20"
+		width={size}
+		height={size}
 		viewBox="0 0 16 16"
 		fill="none"
 		xmlns="http://www.w3.org/2000/svg"
@@ -40,13 +40,14 @@ const AnimatedCheckIcon = () => (
 
 function Checkbox({
 	className,
+	size = 20,
 	...props
 }) {
 	return (
 		<CheckboxPrimitive.Root
 			data-slot="checkbox"
 			className={cn(
-				"peer relative border-input dark:bg-input/30 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground dark:data-[state=checked]:bg-primary data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-7 shrink-0 rounded-sm border shadow-xs transition-all duration-200 outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 hover:border-primary/50 active:scale-95",
+				"peer relative  border-input dark:bg-input/30 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground dark:data-[state=checked]:bg-primary data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-7 shrink-0 rounded-sm border shadow-xs transition-all duration-200 outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 hover:border-primary/50 active:scale-95",
 				className
 			)}
 			{...props}>
@@ -68,7 +69,7 @@ function Checkbox({
 						}}
 						className=" flex justify-center "
 					>
-						<AnimatedCheckIcon />
+						<AnimatedCheckIcon size={size} />
 					</motion.div>
 				</AnimatePresence>
 			</CheckboxPrimitive.Indicator>

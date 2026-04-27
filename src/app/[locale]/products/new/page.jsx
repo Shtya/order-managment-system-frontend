@@ -1493,7 +1493,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 										<SectionHeader title={t('combinations.title')} />
 										<div className="flex items-center gap-4">
 											{!isEditMode && (
-												<div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-primary/10 dark:bg-primary/30 border border-primary/20 dark:border-primary/70">
+												<div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-primary/10 dark:bg-primary/30 border border-primary/20 dark:border-primary/70">
 													<Controller
 														control={control}
 														name="hasPurchase"
@@ -1504,12 +1504,16 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 																	setHasPurchase(!!v);
 																	setValue('hasPurchase', !!v, { shouldValidate: true });
 																}}
+																size={16}
 																id="has-purchase"
-																className="rounded-md"
+																className="h-4 w-4 rounded-[4px]"
 															/>
 														)}
 													/>
-													<label htmlFor="has-purchase" className="text-[12px] font-bold text-primary dark:text-primary-400 cursor-pointer select-none">
+													<label
+														htmlFor="has-purchase"
+														className="text-[11px] font-bold text-primary dark:text-primary-400 cursor-pointer select-none leading-none"
+													>
 														{t('purchase.hasInvoice')}
 													</label>
 												</div>

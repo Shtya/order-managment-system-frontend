@@ -3288,7 +3288,7 @@
   },
   "addProduct": {
     "purchase": {
-      "hasInvoice": "Has Purchase Invoice?",
+      "hasInvoice": "Purchase Invoice?",
       "invoiceInfo": "Purchase Invoice Details",
       "supplier": "Supplier",
       "noSupplier": "No Supplier",

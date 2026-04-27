@@ -33,7 +33,7 @@ export const STORE_PROVIDERS = [
         key: 'woocommerce',
         code: 'woocommerce',
         label: { ar: 'WooCommerce', en: 'WooCommerce' },
-        img: "/integrate/WooCommerce.png",
+        img: "/integrate/woocommerce.png",
         emoji: '🛍️',
         desc: { ar: 'ربط متجر WooCommerce', en: 'Connect your WooCommerce store' },
     },

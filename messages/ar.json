@@ -3306,7 +3306,7 @@
   },
   "addProduct": {
     "purchase": {
-      "hasInvoice": "هل توجد فاتورة شراء؟",
+      "hasInvoice": "فاتورة شراء؟",
       "invoiceInfo": "تفاصيل فاتورة الشراء",
       "supplier": "المورد",
       "supplierPlaceholder": "اختر المورد",

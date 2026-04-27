@@ -136,7 +136,7 @@ export default function Header({ toggleSidebar, isSidebarOpen, isMobile }) {
       initial={{ y: -60, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.42, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="h-14 flex-shrink-0 bg-card z-[50] overflow-hidden relative"
+      className="h-14 flex-shrink-0 bg-card z-[10] overflow-hidden relative"
     >
       <style>
         {`
@@ -160,7 +160,7 @@ export default function Header({ toggleSidebar, isSidebarOpen, isMobile }) {
             </IconBtn>
           )}
 
-          <BrandLogo />
+          <BrandLogo className="text-[#672DAD]" />
         </div>
 
         {/* ── RIGHT: Actions ── */}

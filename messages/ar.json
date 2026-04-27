@@ -6361,7 +6361,11 @@
     "firstPage": "الصفحة الأولى",
     "prevPage": "السابق",
     "nextPage": "التالي",
-    "lastPage": "الصفحة الأخيرة"
+    "lastPage": "الصفحة الأخيرة",
+    "common": {
+      "emptyTitle": "لا توجد بيانات للعرض",
+      "emptySubtitle": "جرّب تغيير معايير البحث أو الفلترة"
+    }
   },
   "landing": {
     "roles": {

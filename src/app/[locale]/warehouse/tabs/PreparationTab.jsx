@@ -31,6 +31,7 @@ import StoreFilter from "@/components/atoms/StoreFilter";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import ProductFilter from "@/components/atoms/ProductFilter";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
+import { useClipboard } from "@/hook/useClipboard";
 
 // ─────────────────────────────────────────────────────────────
 // DESIGN TOKENS — Single source of truth for the whole page
@@ -1032,16 +1033,7 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
 		prevPct.current = pct;
 	}, [pct]);
 
-	const [copiedSku, setCopiedSku] = useState(null);
-	const handleCopySku = async (sku) => {
-		try {
-			await navigator.clipboard.writeText(String(sku));
-			setCopiedSku(sku);
-			setTimeout(() => setCopiedSku(null), 1400);
-		} catch (error) {
-			console.error("Copy failed:", error);
-		}
-	};
+	const { copied: copiedSku, handleCopy } = useClipboard();
 
 	return (
 		<motion.div
@@ -1208,7 +1200,7 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
 
 									{/* SKU */}
 									<td className="px-4 py-3">
-										<motion.button type="button" onClick={() => handleCopySku(p?.variant?.sku)}
+										<motion.button type="button" onClick={() => handleCopy(p?.variant?.sku)}
 											whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
 											className={cn("inline-flex items-center gap-1 font-mono text-[11px] px-2 py-1 font-bold cursor-pointer", DS.radiusSm)}
 											style={{ backgroundColor: DS.accent + "14", color: DS.accent }}>

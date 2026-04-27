@@ -520,7 +520,7 @@ export default function Table({
   const isRTL = useIsRTL();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [imgModal, setImgModal] = useState({ open: false, src: "", alt: "" });
-
+  const t = useTranslations("pagination");
   const openImage = useCallback((src, alt = "") => setImgModal({ open: true, src, alt }), []);
   const closeImage = useCallback(() => setImgModal({ open: false, src: "", alt: "" }), []);
   const helpers = useMemo(() => ({ openImage }), [openImage]);
@@ -633,10 +633,10 @@ export default function Table({
                         </div>
                         <div className="text-center space-y-1">
                           <p className="text-sm font-bold text-foreground">
-                            {emptyState ?? labels.emptyTitle ?? "No results found"}
+                            {emptyState ?? labels.emptyTitle ?? t("common.emptyTitle")}
                           </p>
                           <p className="text-xs text-muted-foreground/80">
-                            {labels.emptySubtitle ?? "Try adjusting your search or filters"}
+                            {labels.emptySubtitle ?? t("common.emptySubtitle")}
                           </p>
                         </div>
                       </motion.div>

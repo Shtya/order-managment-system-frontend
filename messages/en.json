@@ -6337,7 +6337,11 @@
     "firstPage": "First Page",
     "prevPage": "Previous",
     "nextPage": "Next",
-    "lastPage": "Last Page"
+    "lastPage": "Last Page",
+    "common": {
+      "emptyTitle": "No results found",
+      "emptySubtitle": "Try adjusting your search or filters"
+    }
   },
   "landing": {
     "roles": {

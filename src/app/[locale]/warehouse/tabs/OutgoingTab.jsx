@@ -44,6 +44,7 @@ import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import { useDebounce } from "@/hook/useDebounce";
 import api from "@/utils/api";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { useClipboard } from "@/hook/useClipboard";
 // ─────────────────────────────────────────────
 // ─────────────────────────────────────────────────────────────
 // DESIGN TOKENS
@@ -1743,14 +1744,9 @@ function OrdersList({
 
 function ScannedOrderTable({ order, localProducts, justScanned }) {
 	const t = useTranslations("warehouse.preparation");
-	const [copiedSku, setCopiedSku] = useState(null);
 
-	const handleCopySku = (sku) => {
-		if (!sku) return;
-		navigator.clipboard.writeText(sku);
-		setCopiedSku(sku);
-		setTimeout(() => setCopiedSku(null), 2000);
-	};
+
+	const { copied: copiedSku, handleCopy: handleCopySku } = useClipboard();
 
 	return (
 		<div className="overflow-hidden border-t border-slate-100 dark:border-slate-800">
@@ -2112,6 +2108,7 @@ export function ScanOutgoingSubtab({
 			}
 
 			setActiveOrder(order);
+			setWrongScans(order.failedScanCounts?.shipping || 0);
 			setLocalProducts((order.items || []).map((p) => ({
 				sku: p.variant?.sku || p.sku,
 				name: p.variant?.product?.name || p.name,
@@ -2157,21 +2154,21 @@ export function ScanOutgoingSubtab({
 			await fetchActiveOrder(val);
 		} else {
 			const productIndex = localProducts.findIndex((p) => p.sku === val);
-			if (productIndex === -1) {
-				if (soundEnabled) playBeep("error");
-				setWrongScans((p) => p + 1);
-				showFeedback("error", t("scan.errors.notFound", { code: val }));
-				setScanInput("");
-				return;
-			}
+			// if (productIndex === -1) {
+			// 	if (soundEnabled) playBeep("error");
+			// 	setWrongScans((p) => p + 1);
+			// 	showFeedback("error", t("scan.errors.notFound", { code: val }));
+			// 	setScanInput("");
+			// 	return;
+			// }
 
-			const product = localProducts[productIndex];
-			if (product.shippingScannedQuantity >= product.quantity) {
-				if (soundEnabled) playBeep("error");
-				showFeedback("error", t("scan.errors.alreadyScannedWithCode", { code: product.sku }));
-				setScanInput("");
-				return;
-			}
+			// const product = localProducts[productIndex];
+			// if (product.shippingScannedQuantity >= product.quantity) {
+			// 	if (soundEnabled) playBeep("error");
+			// 	showFeedback("error", t("scan.errors.alreadyScannedWithCode", { code: product.sku }));
+			// 	setScanInput("");
+			// 	return;
+			// }
 
 			try {
 				const res = await api.post(`/orders/${activeOrder.id}/scan-shipping/${val}`);
@@ -2591,7 +2588,7 @@ function OutgoingFilesSubtab({
 
 		pager.records.forEach((manifest) => {
 			const hasIncompleteScans = manifest.orders?.some(
-				(order) => (order.failedScanCounts?.shipping ?? 0) === 0
+				(order) => (order.failedScanCounts?.shipping ?? 0) != 0
 			);
 
 			statusMap[manifest.id] = hasIncompleteScans;
@@ -2711,7 +2708,6 @@ function OutgoingFilesSubtab({
 				total: t("common.total"),
 				limit: t("common.limit"),
 				emptyTitle: t("files.emptyTitle"),
-				emptySubtitle: "",
 			}}
 			actions={[]}
 			hasActiveFilters={filterCarrier !== "all" || filterIsPrinted !== "all"}

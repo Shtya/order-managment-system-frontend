@@ -407,7 +407,7 @@ export default function WarehouseFlowPage() {
 
   return (
     <div
-      className="min-h-screen !pb-0 p-4 md:p-6 "
+      className="min-h-screen p-4 md:p-6 "
       dir={dir}>
       <AnimatePresence mode="wait">
         <motion.div key={activeTab}

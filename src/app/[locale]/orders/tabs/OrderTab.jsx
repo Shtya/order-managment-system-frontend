@@ -81,33 +81,42 @@ import StoreFilter from "@/components/atoms/StoreFilter";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 
+//order status flow
+// New => Confirmed => Distrebuted (Assed to shipment company) =>  Printed (Waybills printed) =>  preparing (scanign its items for preparation)
+// =>  Ready (completly scaned) => packed (scaned again for outgoing and packed) => shipped (The relaetd manifast printed and order not gived to Delivary boy) => 
+// Delivered or failed deliver (for faield can be reassign to shipping compnay (Distrebuted) )
+
 // ✅ Order Status Constants (Mirroring your Enum)
 export const OrderStatus = {
   NEW: "new",
   UNDER_REVIEW: "under_review",
-  CONFIRMED: "confirmed",
-  DISTRIBUTE: "distributed",
-  POSTPONED: "postponed",
-  NO_ANSWER: "no_answer",
-  WRONG_NUMBER: "wrong_number",
-  OUT_OF_DELIVERY_AREA: "out_of_area",
-  DUPLICATE: "duplicate",
+  // ✅ حالات مرحلة التأكيد الجديدة
+  CONFIRMED: "confirmed", // مؤكد
+  DISTRIBUTED: "distributed",
+  POSTPONED: "postponed", // مؤجل
+  NO_ANSWER: "no_answer", // لا يوجد رد
+  WRONG_NUMBER: "wrong_number", // الرقم غلط
+  OUT_OF_DELIVERY_AREA: "out_of_area", // خارج نطاق التوصيل
+  DUPLICATE: "duplicate", // طلب مكرر
+  //
   PREPARING: "preparing",
+
+  PRINTED: "printed",
   READY: "ready",
+  PACKED: "packed",
+  REJECTED: "rejected",
   SHIPPED: "shipped",
   DELIVERED: "delivered",
-  DELIVERED: "delivered",
+  FAILED_DELIVERY: "failed_delivery",
   CANCELLED: "cancelled",
+  RETURN_PREPARING: "return_preparing",
   RETURNED: "returned",
-  FAILED_DELIVERY: "failed_delivery"
 };
 
-// ✅ State Machine Transitions
-export const validTransitions = {
+export const STATUS_TRANSITIONS = {
   [OrderStatus.NEW]: [
     OrderStatus.UNDER_REVIEW,
     OrderStatus.CONFIRMED,
-    OrderStatus.POSTPONED,
     OrderStatus.NO_ANSWER,
     OrderStatus.WRONG_NUMBER,
     OrderStatus.OUT_OF_DELIVERY_AREA,
@@ -117,51 +126,79 @@ export const validTransitions = {
 
   [OrderStatus.UNDER_REVIEW]: [
     OrderStatus.CONFIRMED,
-    OrderStatus.POSTPONED,
     OrderStatus.NO_ANSWER,
     OrderStatus.WRONG_NUMBER,
     OrderStatus.OUT_OF_DELIVERY_AREA,
     OrderStatus.DUPLICATE,
     OrderStatus.CANCELLED,
+    OrderStatus.REJECTED,
   ],
 
-  [OrderStatus.POSTPONED]: [
-    OrderStatus.UNDER_REVIEW,
-    OrderStatus.CONFIRMED,
-    OrderStatus.NO_ANSWER,
-    OrderStatus.WRONG_NUMBER,
-    OrderStatus.OUT_OF_DELIVERY_AREA,
-    OrderStatus.DUPLICATE,
+  [OrderStatus.CONFIRMED]: [
+    OrderStatus.DISTRIBUTED,
+    OrderStatus.SHIPPED, // ✅ direct shipping allowed
+    OrderStatus.CANCELLED,
+    OrderStatus.REJECTED,
+  ],
+
+  [OrderStatus.DISTRIBUTED]: [
+    OrderStatus.PRINTED,
+    OrderStatus.PREPARING, // optional shortcut
     OrderStatus.CANCELLED,
   ],
 
-  [OrderStatus.NO_ANSWER]: [
-    OrderStatus.UNDER_REVIEW,
-    OrderStatus.CONFIRMED,
-    OrderStatus.POSTPONED,
-    OrderStatus.WRONG_NUMBER,
-    OrderStatus.OUT_OF_DELIVERY_AREA,
-    OrderStatus.DUPLICATE,
+  [OrderStatus.PRINTED]: [
+    OrderStatus.PREPARING,
+    OrderStatus.CANCELLED,
+    OrderStatus.REJECTED,
+  ],
+
+  [OrderStatus.PREPARING]: [
+    OrderStatus.READY,
+    OrderStatus.CANCELLED,
+    OrderStatus.REJECTED,
+  ],
+
+  [OrderStatus.READY]: [
+    OrderStatus.PACKED,
     OrderStatus.CANCELLED,
   ],
 
-  [OrderStatus.CONFIRMED]: [OrderStatus.PREPARING, OrderStatus.CANCELLED],
+  [OrderStatus.PACKED]: [
+    OrderStatus.SHIPPED,
+    OrderStatus.CANCELLED,
+  ],
 
-  [OrderStatus.PREPARING]: [OrderStatus.READY, OrderStatus.CANCELLED],
+  [OrderStatus.SHIPPED]: [
+    OrderStatus.DELIVERED,
+    OrderStatus.FAILED_DELIVERY,
+  ],
 
-  [OrderStatus.READY]: [OrderStatus.SHIPPED, OrderStatus.CANCELLED],
+  [OrderStatus.FAILED_DELIVERY]: [
+    OrderStatus.DISTRIBUTED, // 🔁 reassign to shipping company
+    OrderStatus.SHIPPED,     // 🔁 resend directly
+    OrderStatus.RETURN_PREPARING,
+  ],
 
-  [OrderStatus.SHIPPED]: [OrderStatus.DELIVERED, OrderStatus.RETURNED],
+  [OrderStatus.RETURN_PREPARING]: [
+    OrderStatus.RETURNED,
+  ],
 
-  [OrderStatus.DELIVERED]: [OrderStatus.RETURNED],
-
-  // Terminal States (No outward transitions)
-  [OrderStatus.WRONG_NUMBER]: [],
-  [OrderStatus.OUT_OF_DELIVERY_AREA]: [],
-  [OrderStatus.DUPLICATE]: [],
+  // ❌ TERMINAL STATES (no transitions)
+  [OrderStatus.DELIVERED]: [],
   [OrderStatus.CANCELLED]: [],
+  [OrderStatus.REJECTED]: [],
   [OrderStatus.RETURNED]: [],
 };
+
+const GLOBAL_CUSTOM_ALLOWED = [
+  OrderStatus.NO_ANSWER,
+  OrderStatus.WRONG_NUMBER,
+  OrderStatus.OUT_OF_DELIVERY_AREA,
+  OrderStatus.DUPLICATE,
+  OrderStatus.CANCELLED,
+  OrderStatus.REJECTED,
+];
 
 // Main Orders Page Component
 export default function OrdersTab({ stats, fetchStats, statsLoading }) {
@@ -524,6 +561,11 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
         cell: (row) => {
           const currentCode = row.status?.code;
           const currentStatusId = row.status?.id;
+          const isCustom = !row.status.system;
+
+          const allowed = isCustom ? GLOBAL_CUSTOM_ALLOWED : STATUS_TRANSITIONS[currentCode] || [];
+
+          const isNew = currentCode === OrderStatus.NEW;
           return (
             <div className="flex items-center gap-2">
               <Select
@@ -531,6 +573,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
                 onValueChange={async (val) => {
                   const statusId = val;
                   if (!statusId || statusId === currentStatusId) return;
+
                   const toastId = toast.loading(t("messages.statusUpdating"));
                   try {
                     setUpdating(row.id, true);
@@ -543,21 +586,32 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
                     toast.error(
                       err.response?.data?.message ||
                       t("messages.errorUpdatingStatus"),
-                      { id: toastId },
+                      { id: toastId }
                     );
                   } finally {
                     setUpdating(row.id, false);
                   }
                 }}
-                disabled={updatingStatuses.includes(row.id) || currentCode === OrderStatus.DELIVERED}
+                disabled={
+                  updatingStatuses.includes(row.id) ||
+                  currentCode === OrderStatus.DELIVERED
+                }
               >
                 <SelectTrigger className="w-[150px] h-8">
                   <SelectValue />
                 </SelectTrigger>
+
                 <SelectContent>
                   {(stats || []).map((s) => {
+                    const isSame = s.code === currentCode;
+                    const isAllowed = (!s.system && isNew) || allowed.includes(s.code);
+
                     return (
-                      <SelectItem key={s.id} value={String(s.id)}>
+                      <SelectItem
+                        key={s.id}
+                        value={String(s.id)}
+                        disabled={!isSame && !isAllowed} // 🔥 main logic
+                      >
                         {s.system ? t(`statuses.${s.code}`) : s.name || s.code}
                       </SelectItem>
                     );

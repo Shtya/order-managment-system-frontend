@@ -4,7 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 export const BASE_URL = `${process.env.NEXT_PUBLIC_BASE_URL}`;
 
 export function getOnboardingStatus() {
-  const accessToken = localStorage.getItem('accessToken');
+  const accessToken = typeof window !== "undefined" ? localStorage.getItem('accessToken') : null;
   if (!accessToken) return true;
   try {
     const decoded = jwtDecode(accessToken);

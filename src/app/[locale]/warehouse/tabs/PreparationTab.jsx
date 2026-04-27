@@ -1033,9 +1033,14 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
 	}, [pct]);
 
 	const [copiedSku, setCopiedSku] = useState(null);
-	const handleCopySku = (sku) => {
-		navigator.clipboard?.writeText(sku).catch(() => { });
-		setCopiedSku(sku); setTimeout(() => setCopiedSku(null), 1400);
+	const handleCopySku = async (sku) => {
+		try {
+			await navigator.clipboard.writeText(String(sku));
+			setCopiedSku(sku);
+			setTimeout(() => setCopiedSku(null), 1400);
+		} catch (error) {
+			console.error("Copy failed:", error);
+		}
 	};
 
 	return (

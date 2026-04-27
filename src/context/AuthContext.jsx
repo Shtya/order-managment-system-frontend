@@ -9,8 +9,10 @@ export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
+
+    const accessToken = typeof window !== "undefined" ? localStorage.getItem('accessToken') : null;
+
     const fetchUser = useCallback(async () => {
-        const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) return null;
         try {
             const res = await api.get("/users/me");
@@ -22,7 +24,7 @@ export function AuthProvider({ children }) {
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [accessToken]);
 
     const getDashboardRoute = useCallback((userData) => {
         const targetUser = userData || user;
@@ -160,6 +162,7 @@ export function AuthProvider({ children }) {
         permissions: user?.role?.permissionNames,
         roleName: user?.role?.name || "user",
         planName: activeSubscription?.plan?.name || "No Plan",
+        accessToken
     };
 
     return (

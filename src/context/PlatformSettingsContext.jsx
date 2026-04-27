@@ -27,7 +27,7 @@ export function PlatformSettingsProvider({ children }) {
     }
   }, []);
 
-  const accessToken = localStorage.getItem("accessToken");
+  const accessToken = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
   const fetchCompany = useCallback(async () => {
     if (!accessToken) return;
     setIsCompanyLoading(true);

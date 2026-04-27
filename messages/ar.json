@@ -2874,7 +2874,8 @@
       "delete": "حذف",
       "edit": "تعديل",
       "view": "عرض",
-      "howToUse": "كيفية الإستخدام"
+      "howToUse": "كيفية الإستخدام",
+      "refresh": "تحديث الفئات"
     },
     "toolbar": {
       "searchPlaceholder": "ابحث عن مورد...",
@@ -5361,7 +5362,8 @@
       "notFound": "الطلب غير موجود"
     },
     "currency": "جنيه",
-    "invalidOrderId": "معرّف الطلب غير صحيح"
+    "invalidOrderId": "معرّف الطلب غير صحيح",
+    "availableQuantity": "الكمية المتاحة"
   },
   "CreateReplacement": {
     "title": "إنشاء استبدال",

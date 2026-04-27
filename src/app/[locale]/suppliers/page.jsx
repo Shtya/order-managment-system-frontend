@@ -26,6 +26,7 @@ import {
 	ReceiptText,
 	Wallet,
 	Info,
+	RefreshCw,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -109,7 +110,7 @@ export default function SuppliersPage() {
 		);
 	}, [tCountries]);
 
-	useEffect(() => {
+	const fetchCategories = useCallback(() => {
 		(async () => {
 			try {
 				const res = await api.get("/supplier-categories", { params: { limit: 200 } });
@@ -119,6 +120,12 @@ export default function SuppliersPage() {
 			}
 		})();
 	}, []);
+
+	useEffect(() => {
+		(async () => {
+			await fetchCategories()
+		})();
+	}, [fetchCategories]);
 
 	useEffect(() => {
 		(async () => {
@@ -478,7 +485,7 @@ export default function SuppliersPage() {
 				onPageChange={({ page, per_page }) => fetchSuppliers({ page, per_page })}
 			/>
 
-			<SupplierFormDialog open={formOpen} onOpenChange={setFormOpen} supplier={editingSupplier} onSuccess={handleFormSuccess} t={t} countries={countries} />
+			<SupplierFormDialog open={formOpen} onOpenChange={setFormOpen} supplier={editingSupplier} onSuccess={handleFormSuccess} countries={countries} />
 
 			<ViewSupplierDialog open={viewOpen} onOpenChange={setViewOpen} supplier={viewingSupplier} t={t} />
 
@@ -525,10 +532,11 @@ const makeSchema = (t, countries, tPhone) =>
 		categoryIds: yup.array().of(yup.string()).min(1, t("validation.categoryRequired")),
 	});
 
-function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess, t, countries }) {
+function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess, countries }) {
 	const [categories, setCategories] = useState([]);
 	const [loadingCategories, setLoadingCategories] = useState(false);
 	const tPhone = useTranslations("inputPhone");
+	const t = useTranslations("suppliers");
 	const schema = useMemo(() => makeSchema(t, countries, tPhone), [t, countries, tPhone]);
 
 	const {
@@ -555,8 +563,7 @@ function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess, t, countr
 	});
 
 	const selectedCategories = watch("categoryIds") || [];
-	console.log(errors)
-	useEffect(() => {
+	const fetchCategories = useCallback(() => {
 		(async () => {
 			setLoadingCategories(true);
 			try {
@@ -570,6 +577,10 @@ function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess, t, countr
 			}
 		})();
 	}, []);
+
+	useEffect(() => {
+		fetchCategories();
+	}, [fetchCategories]);
 
 	useEffect(() => {
 		if (supplier) {
@@ -738,15 +749,33 @@ function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess, t, countr
 							<div className="text-center p-8 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
 								<Tag size={32} className="mx-auto mb-3 text-slate-300" />
 								<p className="text-sm text-slate-500">{t("form.noCategories")}</p>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									className="mt-3"
-									onClick={() => window.open("/suppliers/categories?action=new", "_blank")}
-								>
-									{t("form.addCategoryLink")}
-								</Button>
+
+								<div className="flex items-center justify-center gap-2 mt-4">
+									{/* Refresh Button */}
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={fetchCategories}
+										disabled={loadingCategories}
+										className="h-9"
+									>
+										<RefreshCw className={cn("w-4 h-4 mr-2", loadingCategories && "animate-spin")} />
+										{t("actions.refresh")}
+									</Button>
+
+									{/* Add Category Button */}
+									<Button
+										type="button"
+										variant="default" // Changed to default for a better Call to Action
+										size="sm"
+										className="h-9"
+										onClick={() => window.open("/suppliers/categories?action=new", "_blank")}
+									>
+										<Plus size={16} className="mr-2" />
+										{t("form.addCategoryLink")}
+									</Button>
+								</div>
 							</div>
 						) : (
 							<div className="flex flex-wrap gap-3">

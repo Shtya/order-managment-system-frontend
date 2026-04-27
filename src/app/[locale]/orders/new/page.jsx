@@ -29,6 +29,7 @@ import { ProductSkuSearchPopover } from "@/components/molecules/ProductSkuSearch
 import PageHeader from "@/components/atoms/Pageheader";
 import { cn } from "@/utils/cn";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { FaInfoCircle } from "react-icons/fa";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -454,7 +455,7 @@ export default function CreateOrderPageComplete({
 }) {
 	const searchParams = useSearchParams();
 	const fromId = searchParams.get("from");
-
+	const tValidation = useTranslations("validation");
 	const [existingOrder, setExistingOrder] = useState(propExistingOrder);
 	const [isDuplicating, setIsDuplicating] = useState(false);
 
@@ -793,6 +794,7 @@ export default function CreateOrderPageComplete({
 	// ── Product handlers ─────────────────────────────────────────────────────
 	const handleSelectSku = useCallback(
 		(sku) => {
+			if (!sku?.available) return;
 			if (selectedSkus.some((s) => s.id === sku.id)) return;
 			setSelectedSkus((prev) => [...prev, sku]);
 			setValue("items", [
@@ -801,6 +803,7 @@ export default function CreateOrderPageComplete({
 					variantId: sku.id,
 					productName: sku.label || sku.productName,
 					sku: sku.sku || sku.key,
+					availableQuantity: sku.available || 0,
 					attributes: sku.attributes || {},
 					quantity: 1,
 					unitPrice: sku.price || 0,
@@ -849,24 +852,67 @@ export default function CreateOrderPageComplete({
 	const handleProductFieldChange = useCallback(
 		(index, field, value) => {
 			const updated = [...watchedItems];
-			updated[index] = { ...updated[index], [field]: value };
+			let finalValue = value;
+
+			// التحقق الخاص بحقل الكمية
+			if (field === "quantity") {
+				const available = updated[index].availableQuantity || 0;
+
+				if (value === "") {
+					finalValue = ""; // السماح بالحذف أثناء الكتابة
+				} else {
+					const numValue = Number(value);
+
+					if (numValue > available) {
+						finalValue = available;
+					} else if (numValue < 1) {
+						finalValue = 1;
+					} else {
+						finalValue = numValue;
+					}
+				}
+			}
+			// [2025-12-24] Remember to trim
+			else if (typeof value === "string") {
+				finalValue = value.trim();
+			}
+
+			updated[index] = { ...updated[index], [field]: finalValue };
 			setValue("items", updated);
 		},
-		[watchedItems, setValue]
+		[watchedItems, setValue, tValidation]
 	);
 
 	const handleQuantityChange = useCallback(
 		(index, delta) => {
 			const updated = [...watchedItems];
-			updated[index] = {
-				...updated[index],
-				quantity: Math.max(1, (updated[index].quantity || 1) + delta),
-			};
-			setValue("items", updated);
-		},
-		[watchedItems, setValue]
-	);
+			const item = updated[index];
+			const available = item.availableQuantity || 0;
+			const currentQty = item.quantity || 1;
 
+			let nextQty = currentQty + delta;
+
+			// التحقق من الحد الأدنى (1)
+			if (nextQty < 1) {
+				nextQty = 1;
+			}
+
+			// التحقق من تجاوز الكمية المتاحة عند الزيادة (delta > 0)
+			if (delta > 0 && nextQty > available) {
+				nextQty = available;
+			}
+
+			// تحديث القيمة فقط إذا تغيرت فعلياً لتجنب Re-renders غير ضرورية
+			if (nextQty !== currentQty) {
+				updated[index] = {
+					...item,
+					quantity: nextQty,
+				};
+				setValue("items", updated);
+			}
+		},
+		[watchedItems, setValue, tValidation]
+	);
 	// ── Order summary ────────────────────────────────────────────────────────
 	const summary = useMemo(() => {
 		const productsTotal = watchedItems.reduce((sum, item) => {
@@ -1489,6 +1535,11 @@ export default function CreateOrderPageComplete({
 																>
 																	<Plus size={14} />
 																</motion.button>
+																<div className="flex items-center gap-1 text-sm text-gray-600">
+																	<FaInfoCircle size={14} className="text-green-600" />
+																	<span className="font-medium">{product.availableQuantity}</span>
+																	<span className="text-xs text-gray-400">({t("availableQuantity")})</span>
+																</div>
 															</div>
 														</td>
 														<td className="p-3 text-sm font-semibold text-green-600 dark:text-green-400">

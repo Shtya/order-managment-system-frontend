@@ -241,7 +241,6 @@ export default function CreateReturnInvoicePage() {
 			const numValue = value === "" ? "" : Number(value);
 
 			if (numValue !== "" && numValue > available) {
-				toast.error(`${tValidation("quantityExceedsAvailable") || "Quantity exceeds available"}: ${available}`);
 				finalValue = available;
 			}
 		}

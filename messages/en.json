@@ -57,7 +57,8 @@
       "usageTitle": "View capabilities and services",
       "enable": "Enable provider",
       "disable": "Disable provider",
-      "configureFirst": "Please configure credentials first"
+      "configureFirst": "Please configure credentials first",
+      "configureSettings": "Configure Integration"
     },
     "settings": {
       "toastUpdateSuccess": "{provider} updated successfully ✓",
@@ -7137,6 +7138,10 @@
         "message": "Are you sure you want to cancel your current subscription? This action cannot be undone.",
         "yes": "Yes, cancel",
         "no": "No, keep it"
+      },
+      "card": {
+        "settings": "Settings",
+        "configureSettings": "Configure Integration"
       }
     },
     "company": {
@@ -7885,13 +7890,16 @@
         "confirm_password": "Confirm password",
         "update_password": "Update password",
         "new_email": "New email",
-        "send_otp": "Send verification code"
+        "send_otp": "Send verification code",
+        "password": "Password",
+        "set_password": "Add password"
       },
       "errors": {
         "mismatch": "Passwords do not match",
         "failed": "Failed to update password",
         "pw_weak": "Password is too weak",
-        "failedSendEmailOTP": "Failed to send verification code"
+        "failedSendEmailOTP": "Failed to send verification code",
+        "required": "Password required"
       },
       "password_success": "Password updated successfully",
       "email_otp_sent": "Verification code sent to your new email",
@@ -7934,7 +7942,9 @@
         "title": "Danger Zone",
         "description": "Permanently delete your account and all data",
         "delete": "Delete Account"
-      }
+      },
+      "add_password_success": "The password has been changed successfully",
+      "set_password_success": "Password added successfully"
     },
     "notifications": {
       "title": "Notification Preferences",

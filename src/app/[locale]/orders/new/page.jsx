@@ -1153,7 +1153,7 @@ export default function CreateOrderPageComplete({
 													<SelectItem value="cod">{t("paymentMethods.cod")}</SelectItem>
 													<SelectItem value="other">{t("paymentMethods.other")}</SelectItem>
 													<SelectItem value="unknown">{t("paymentMethods.unknown")}</SelectItem>
-													<SelectItem value="unknown">{t("paymentMethods.wallet")}</SelectItem>
+													<SelectItem value="wallet">{t("paymentMethods.wallet")}</SelectItem>
 												</SelectContent>
 											</Select>
 										)}

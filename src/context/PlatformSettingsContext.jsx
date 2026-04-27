@@ -27,8 +27,9 @@ export function PlatformSettingsProvider({ children }) {
     }
   }, []);
 
-
+  const accessToken = localStorage.getItem("accessToken");
   const fetchCompany = useCallback(async () => {
+    if (!accessToken) return;
     setIsCompanyLoading(true);
     try {
       const res = await api.get("/users/company");
@@ -38,10 +39,11 @@ export function PlatformSettingsProvider({ children }) {
     } finally {
       setIsCompanyLoading(false);
     }
-  }, []);
+  }, [accessToken]);
 
 
   const fetchShippingCompanies = useCallback(async () => {
+
     setIsShippingLoading(true);
     try {
       const res = await api.get("/shipping/integrations/active");

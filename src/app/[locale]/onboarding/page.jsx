@@ -545,6 +545,15 @@ export default function OnboardingPage() {
     finished: 5,
   };
 
+  const indexMap = {
+    0: "welcome",
+    1: "plan",
+    2: "company",
+    3: "store",
+    4: "shipping",
+    5: "finished"
+  }
+
   // PROBLEM 2 FIX: Resume from last time
   useEffect(() => {
     async function init() {
@@ -615,10 +624,10 @@ export default function OnboardingPage() {
       setStep((s) => s + 1);
       return;
     }
-
+    const enumStep = indexMap[step] || "welcome";
     setNextLoading(true); // start loading
     try {
-      const { data } = await api.post("/users/onboarding/next");
+      const { data } = await api.post(`/users/onboarding/next/${enumStep}`);
       const nextIndex = stepMap[data.nextStep];
 
       setStep(() => nextIndex);
@@ -3982,15 +3991,24 @@ function FinishedStep({ open }) {
           </motion.div>
         ))}
       </div>
-
-      {/* Go to dashboard */}
-      <BtnPrimary
-        onClick={handleSubmit}
-        disabled={loading}
-        style={{ width: "100%" }}
+      <div
+        style={{
+          display: "flex",
+          gap: 10,
+          justifyContent: "flex-end",
+          marginTop: 4,
+        }}
       >
-        {t("goBtn")} 🚀
-      </BtnPrimary>
+
+        {/* Go to dashboard */}
+        <BtnPrimary
+          onClick={handleSubmit}
+          disabled={loading}
+          style={{ width: "100%" }}
+        >
+          {t("goBtn")} 🚀
+        </BtnPrimary>
+      </div>
     </motion.div>
   );
 }

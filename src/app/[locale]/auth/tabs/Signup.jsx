@@ -18,7 +18,8 @@ import {
 } from "./AuthUi";
 import { useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
-
+import * as yup from 'yup';
+import api from "@/utils/api";
 /* ── Icons ── */
 const EmailIcon = () => (
   <svg
@@ -81,6 +82,7 @@ const LockIcon = () => (
     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
   </svg>
 );
+
 const BackBtn = ({ onClick }) => (
   <button
     type="button"
@@ -126,15 +128,16 @@ const PHONE_CODES = [
 ];
 
 /* ── Main ── */
-export default function SignUp({ t: tProp, onSwitchMode }) {
+export default function SignUp({ onSwitchMode }) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const initialEmail = searchParams.get("email") ?? "";
-
-  const tLocal = useTranslations("auth");
   const tCountries = useTranslations("countries");
-  const t = tProp ?? tLocal;
+  const t = useTranslations("auth");
+
+
+
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({ email: initialEmail });
   const merge = (d) => setFormData((p) => ({ ...p, ...d }));
@@ -146,9 +149,11 @@ export default function SignUp({ t: tProp, onSwitchMode }) {
     t("signup.step_verify"),
   ];
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const register = async ({ password }) => {
     const tid = toast.loading(t("signup.creating"));
     try {
+      setIsSubmitting(true);
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/auth/register`,
         {
@@ -170,6 +175,8 @@ export default function SignUp({ t: tProp, onSwitchMode }) {
       setStep(3);
     } catch (err) {
       toast.error(err?.message || t("signup.error"), { id: tid });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -220,7 +227,9 @@ export default function SignUp({ t: tProp, onSwitchMode }) {
         {step === 2 && (
           <Step3
             key="s3"
+            isSubmitting={isSubmitting}
             onNext={async ({ password }) => {
+              if (isSubmitting) return;
               merge(password);
               await register({ password });
             }}
@@ -290,21 +299,65 @@ function Step1({ data, onChange, onNext, t, tCountries }) {
   const [dial, setDial] = useState("+20");
   const touch = (k) => setTouched((p) => ({ ...p, [k]: true }));
 
-  const errs = {
-    name: !data.name?.trim() ? t("validation.required") : "",
-    company: !data.company?.trim() ? t("validation.required") : "",
-    phone: !data.phone?.trim()
-      ? t("validation.required")
-      : !/^[0-9]{7,11}$/.test(data.phone.trim())
-        ? t("validation.phone_invalid")
-        : "",
+  const [isChecking, setIsChecking] = useState(false);
+  const [apiError, setApiError] = useState("");
+
+  const step1Schema = yup.object().shape({
+    name: yup.string().required(t("validation.required")),
+    company: yup.string().required(t("validation.required")),
+    email: yup
+      .string()
+      .required(t("validation.required"))
+      .email(t("validation.email_invalid")),
+    phone: yup
+      .string()
+      .required(t("validation.required"))
+      .matches(/^[0-9]{7,11}$/, t("validation.phone_invalid")),
+  });
+
+  const getError = (field) => {
+    if (!touched[field]) return "";
+    try {
+      step1Schema.validateSyncAt(field, data);
+      return "";
+    } catch (err) {
+      return err.message;
+    }
   };
 
-  const next = () => {
-    setTouched({ name: true, company: true, phone: true });
-    if (errs.name || errs.company || errs.phone) return;
-    onChange({ dial });
-    onNext();
+  const errs = {
+    name: getError("name"),
+    company: getError("company"),
+    email: getError("email") || apiError,
+    phone: getError("phone"),
+  };
+
+  const next = async () => {
+    setTouched({ name: true, company: true, email: true, phone: true });
+    try {
+      step1Schema.validateSync(data, { abortEarly: false });
+    } catch (err) {
+      return;
+    }
+    setIsChecking(true);
+    try {
+      const { data: res } = await api.post("/auth/check-email", {
+        email: data.email.trim(),
+      });
+
+      if (res.exists) {
+        setApiError(t("validation.email_exists"));
+        return;
+      }
+      onChange({ dial });
+      onNext();
+    } catch (error) {
+      const message = error?.response?.data?.message || "An error occurred while checking the email.";
+      console.error("Check email failed:", error);
+      setApiError(message);
+    } finally {
+      setIsChecking(false);
+    }
   };
 
   return (
@@ -362,7 +415,10 @@ function Step1({ data, onChange, onNext, t, tCountries }) {
           type="email"
           placeholder={t("signup.email_placeholder")}
           value={data.email || ""}
-          onChange={(e) => onChange({ email: e.target.value })}
+          onChange={(e) => {
+            onChange({ email: e.target.value })
+            setApiError("");
+          }}
           onBlur={() => touch("email")}
           error={touched.email && errs.email}
           icon={<EmailIcon />}
@@ -444,7 +500,7 @@ function Step1({ data, onChange, onNext, t, tCountries }) {
         </div>
       </Field>
 
-      <BtnPrimary type="button" onClick={next}>
+      <BtnPrimary type="button" onClick={next} loading={isChecking} disabled={isChecking}>
         {t("signup.next")} <IconArrow dir="right" />
       </BtnPrimary>
     </motion.div>
@@ -532,7 +588,7 @@ function Step2({ data, onChange, onNext, onBack, t }) {
 }
 
 /* ── Step 3 ── */
-function Step3({ onNext, onBack, t }) {
+function Step3({ isSubmitting, onNext, onBack, t }) {
   const [pw, setPw] = useState("");
   const [cpw, setCpw] = useState("");
   const [touched, setTouched] = useState({});
@@ -617,7 +673,7 @@ function Step3({ onNext, onBack, t }) {
 
       <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
         <BackBtn onClick={onBack} />
-        <BtnPrimary type="button" onClick={next} style={{ flex: 1 }}>
+        <BtnPrimary type="button" onClick={next} style={{ flex: 1 }} disabled={isSubmitting}>
           {t("signup.next")} <IconArrow dir="right" />
         </BtnPrimary>
       </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocale, useTranslations } from 'next-intl';
 
@@ -24,7 +24,7 @@ export const IconCheck = ({ size = 13 }) => (
 	</svg>
 );
 export const IconArrow = () => {
-	const locale  = useLocale()
+	const locale = useLocale()
 	return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
 		style={{ transform: locale === 'ar' ? 'scaleX(-1)' : 'none' }}>
 		<path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
@@ -71,7 +71,7 @@ export function AuthInput({ icon, error, style, font, ...props }) {
 		<div style={{ position: 'relative' }} >
 			{icon && (
 				<span className='start-3.5' style={{
-					position: 'absolute',  top: '50%', transform: 'translateY(-50%)',
+					position: 'absolute', top: '50%', transform: 'translateY(-50%)',
 					color: 'var(--text-3)', display: 'flex', pointerEvents: 'none',
 				}}>
 					{icon}
@@ -110,7 +110,7 @@ export function PasswordInput({ label, icon, error, placeholder, value, onChange
 					style={{
 						position: 'absolute', left: 6, top: '50%', transform: 'translateY(-50%)',
 						background: 'none', border: 'none', cursor: 'pointer',
-						color: 'var(--text-3)', display: 'flex',alignItems: 'center', justifyContent: 'center', padding: 4, borderRadius: 6,
+						color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 4, borderRadius: 6,
 						transition: 'color .15s',
 					}}
 					onMouseOver={e => e.currentTarget.style.color = 'var(--p)'}
@@ -309,45 +309,128 @@ export function StepBar({ steps, current }) {
 }
 
 /* ── OTP 6-cell input ─────────────────────────────────────── */
-export function OtpInput({ value, onChange, hasError }) {
-	const vals = value.split('');
+export function OtpInput({ value = "", onChange, hasError }) {
+	const otp = value.replace(/\D/g, "").slice(0, 6);
+	const vals = otp.split("");
 
-	const handleKey = (e, idx) => {
-		if (/^\d$/.test(e.key)) {
-			const arr = vals.slice();
-			arr[idx] = e.key;
-			onChange(arr.join('').slice(0, 6));
-			if (idx < 5) document.getElementById(`otp-${idx + 1}`)?.focus();
-		} else if (e.key === 'Backspace') {
-			const arr = vals.slice();
-			arr[idx] = '';
-			onChange(arr.join(''));
-			if (idx > 0) document.getElementById(`otp-${idx - 1}`)?.focus();
-		}
-		e.preventDefault();
+	const focusInput = (idx) => {
+		document.getElementById(`otp-${idx}`)?.focus();
 	};
 
-	const handlePaste = (e) => {
-		const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-		onChange(pasted);
-		document.getElementById(`otp-${Math.min(pasted.length, 5)}`)?.focus();
+	const setDigits = (startIndex, digits) => {
+		const arr = Array(6).fill("");
+
+		for (let i = 0; i < 6; i++) {
+			arr[i] = vals[i] || "";
+		}
+
+		digits.forEach((digit, offset) => {
+			const pos = startIndex + offset;
+			if (pos < 6) arr[pos] = digit;
+		});
+
+		onChange(arr.join("").slice(0, 6));
+
+		const nextIndex = Math.min(startIndex + digits.length, 5);
+		focusInput(nextIndex);
+	};
+
+	const handleKeyDown = (e, idx) => {
+		const key = e.key;
+
+		if (/^\d$/.test(key)) {
+			e.preventDefault();
+			const arr = Array(6).fill("");
+			for (let i = 0; i < 6; i++) arr[i] = vals[i] || "";
+			arr[idx] = key;
+			onChange(arr.join("").slice(0, 6));
+			if (idx < 5) focusInput(idx + 1);
+			return;
+		}
+
+		if (key === "Backspace") {
+			e.preventDefault();
+			const arr = Array(6).fill("");
+			for (let i = 0; i < 6; i++) arr[i] = vals[i] || "";
+			arr[idx] = "";
+			onChange(arr.join(""));
+			if (idx > 0) focusInput(idx - 1);
+			return;
+		}
+
+		if (key === "ArrowLeft" && idx > 0) {
+			e.preventDefault();
+			focusInput(idx - 1);
+			return;
+		}
+
+		if (key === "ArrowRight" && idx < 5) {
+			e.preventDefault();
+			focusInput(idx + 1);
+			return;
+		}
+	};
+
+	const handlePaste = (e, idx) => {
 		e.preventDefault();
+		const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+		if (!pasted) return;
+		console.log(pasted)
+		if (pasted.length === 6) {
+			setDigits(0, pasted.split(""));
+		} else {
+			setDigits(idx, pasted.split(""));
+		}
+	};
+
+	const handleChange = (e, idx) => {
+		const raw = e.target.value.replace(/\D/g, "").slice(0, 6);
+
+		// normal single digit typing
+		if (raw.length === 1) {
+			const arr = Array(6).fill("");
+			for (let i = 0; i < 6; i++) arr[i] = vals[i] || "";
+			arr[idx] = raw;
+			onChange(arr.join("").slice(0, 6));
+			if (idx < 5) focusInput(idx + 1);
+			return;
+		}
+
+		// full OTP typed/pasted/autofilled into one field
+		if (raw.length === 6) {
+			setDigits(0, raw.split(""));
+		} else if (raw.length > 1) {
+			setDigits(idx, raw.split(""));
+		}
 	};
 
 	return (
-		<div style={{ display: 'flex', flexWrap: 'wrap', gap: "clamp(4px, 2vw, 8px)", justifyContent: 'center', direction: 'ltr' }}>
-			{Array(6).fill('').map((_, i) => (
-				<input
-					key={i} id={`otp-${i}`}
-					type="tel" maxLength={1}
-					value={vals[i] || ''}
-					onKeyDown={e => handleKey(e, i)}
-					onPaste={handlePaste}
-					onChange={() => { }}
-					autoFocus={i === 0}
-					className={`otp-cell${vals[i] ? ' filled' : ''}${hasError ? ' error-cell' : ''}`}
-				/>
-			))}
+		<div
+			style={{
+				display: "flex",
+				flexWrap: "wrap",
+				gap: "clamp(4px, 2vw, 8px)",
+				justifyContent: "center",
+				direction: "ltr",
+			}}
+		>
+			{Array(6)
+				.fill("")
+				.map((_, i) => (
+					<input
+						key={i}
+						id={`otp-${i}`}
+						type="tel"
+						inputMode="numeric"
+						autoComplete="one-time-code"
+						maxLength={6}
+						value={vals[i] || ""}
+						onKeyDown={(e) => handleKeyDown(e, i)}
+						onPaste={(e) => handlePaste(e, i)}
+						onChange={(e) => handleChange(e, i)}
+						className={`otp-cell${vals[i] ? " filled" : ""}${hasError ? " error-cell" : ""}`}
+					/>
+				))}
 		</div>
 	);
 }

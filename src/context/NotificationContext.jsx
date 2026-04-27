@@ -9,7 +9,7 @@ import React, {
   useRef,
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import api from "@/utils/api";
+import api, { getOnboardingStatus } from "@/utils/api";
 import { useSocket } from "./SocketContext";
 import { useLocale } from "next-intl";
 import toast from "react-hot-toast";
@@ -40,8 +40,15 @@ export function NotificationProvider({ children }) {
   const LIMIT = 10;
   const hasMore = notifications.length < total;
 
+  const isOnboarding = getOnboardingStatus();
+
   const fetchNotifications = useCallback(
     async (pageNum = 1, reset = false, params = {}) => {
+      if (isOnboarding) {
+        setLoading(false);
+        setLoadingMore(false);
+        return;
+      }
       try {
         reset ? setLoading(true) : setLoadingMore(true);
         const res = await api.get("/notifications", {
@@ -59,7 +66,7 @@ export function NotificationProvider({ children }) {
         setLoadingMore(false);
       }
     },
-    [],
+    [isOnboarding],
   );
 
   useEffect(() => {

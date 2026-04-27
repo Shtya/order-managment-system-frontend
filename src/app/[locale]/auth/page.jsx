@@ -597,7 +597,6 @@ export default function AuthPage() {
                       transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                     >
                       <SignUp
-                        t={t}
                         onSwitchMode={() => handleModeChange("signin")}
                       />
                     </motion.div>

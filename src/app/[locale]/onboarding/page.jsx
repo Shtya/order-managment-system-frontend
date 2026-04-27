@@ -31,12 +31,6 @@ import {
   Zap,
 } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
-import {
-  PROVIDER_META,
-  SHIP_PROVIDERS,
-  useShippingSettings,
-  useShippingWebhook,
-} from "@/hook/shipping";
 import { useLocale, useTranslations } from "next-intl";
 import {
   STORE_PROVIDERS,
@@ -48,6 +42,11 @@ import {
   StoreWebhookModal,
   StoreGuideModal,
 } from "../store-integration/page";
+import {
+  SettingsModal as ShippingSettingsModal,
+  GuideModal as ShippingGuideModal,
+  WebhookModal as ShippingWebhookModal,
+} from "../shipping-companies/page";
 import { useSocket } from "@/context/SocketContext";
 import { CustomTooltip } from "@/components/atoms/Actions";
 import { useSubscriptionsApi } from "../plans/page";
@@ -170,7 +169,6 @@ const CSS = `
     border-radius: 14px;
     padding: 16px 18px;
     display: flex; align-items: center; gap: 14px;
-    cursor: pointer;
     transition: all .2s;
     background: var(--surface);
   }
@@ -3054,212 +3052,75 @@ const ProvidersSkeleton = () => (
 
 // Provider metadata matching ShippingCompaniesPage
 
-const CopyableField = ({ label, value }) => {
-  const [copied, setCopied] = useState(false);
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(String(value || ""));
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch (_) { }
-  };
-
-  return (
-    <div style={{ marginBottom: 12 }}>
-      <label
-        style={{
-          fontSize: 11,
-          fontWeight: 600,
-          color: "var(--text)",
-          marginBottom: 4,
-          display: "block",
-        }}
-      >
-        {label}
-      </label>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          background: "var(--surface2)",
-          border: "1.5px solid var(--border)",
-          borderRadius: 10,
-          padding: "8px 12px",
-        }}
-      >
-        <input
-          readOnly
-          value={value || ""}
-          style={{
-            flex: 1,
-            background: "transparent",
-            border: "none",
-            outline: "none",
-            fontSize: 12,
-            color: "var(--text)",
-            fontFamily: "monospace",
-          }}
-        />
-        <button
-          onClick={copy}
-          style={{
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-            fontSize: 14,
-            padding: "2px 6px",
-          }}
-        >
-          {copied ? "✓" : "📋"}
-        </button>
-      </div>
-    </div>
-  );
-};
-
-const WebhookSkeleton = () => (
-  <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-    {[1, 2, 3].map((i) => (
-      <div
-        key={i}
-        style={{
-          border: "1.5px solid var(--border)",
-          borderRadius: 12,
-          padding: 12,
-          background: "var(--surface)",
-          display: "flex",
-          flexDirection: "column",
-          gap: 8,
-        }}
-      >
-        {/* label */}
-        <div
-          className="skeleton-pulse"
-          style={{
-            height: 10,
-            width: "30%",
-            borderRadius: 6,
-            background: "#eee",
-          }}
-        />
-
-        {/* value field */}
-        <div
-          className="skeleton-pulse"
-          style={{
-            height: 34,
-            width: "100%",
-            borderRadius: 8,
-            background: "#f5f5f5",
-          }}
-        />
-      </div>
-    ))}
-
-    {/* Security box skeleton */}
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 12,
-        borderRadius: 12,
-        padding: 12,
-        border: "1.5px solid var(--border)",
-        background: "var(--surface2)",
-      }}
-    >
-      <div
-        className="skeleton-pulse"
-        style={{
-          height: 10,
-          width: "60%",
-          borderRadius: 6,
-          background: "#eee",
-        }}
-      />
-
-      <div
-        className="skeleton-pulse"
-        style={{
-          height: 28,
-          width: 70,
-          borderRadius: 8,
-          background: "#eee",
-        }}
-      />
-    </div>
-  </div>
-);
+// Provider metadata matching ShippingCompaniesPage
 
 function ShippingStep({ onNext, onBack, open, nextLoading }) {
-  const t = useTranslations("shipping");
-  const ts = useTranslations("onboarding.shipping");
   const tp = useTranslations("onboarding.plans");
-  const tstore = useTranslations("onboarding.store");
+  const ts = useTranslations("onboarding.shipping");
+  const t = useTranslations("shipping");
   const locale = useLocale();
 
-  const [active, setActive] = useState(null); // The provider code
-  const [showWebhook, setShowWebhook] = useState(false);
+  const [integrationStatuses, setStatuses] = useState({});
+  const [statusLoading, setStatusLoading] = useState(true);
 
-  // Find current provider object
-  const provider = SHIP_PROVIDERS.find((p) => p.code === active) || null;
+  const [openModal, setOpenModal] = useState(null); // 'settings', 'guide', 'webhook'
+  const [currentCompany, setCurrentCompany] = useState(null);
 
-  const handleOnSaved = useCallback(
-    (isEditMode) => {
-      if (!isEditMode) {
-        setShowWebhook(true);
-      } else {
-        setActive(null);
-      }
-    },
-    [active, provider?.label],
-  );
-
-  // 3. Settings Hook (Renamed to match your original variable names)
-  const {
-    integrations,
-    connected,
-    fields,
-    values: fd, // Rename 'values' to 'fd'
-    setValue: setFd, // Rename 'setValue' to 'setFd'
-    handleSave: save, // Rename 'handleSave' to 'save'
-    saving,
-    loading: settingsLoading,
-    integrationData,
-  } = useShippingSettings(provider?.key, {
-    onSaved: handleOnSaved,
-    onFirstSetup: () => setShowWebhook(true),
-    onClose: () => {
-      setActive(null);
-      setShowWebhook(false);
-    },
-  });
-
-  // 4. Webhook Hook (Renamed to match your original variable names)
-  const {
-    data: webhookData, // Rename 'data' to 'webhookData'
-    setData: setWebhookData,
-    loading: webhookLoading,
-    rotating: rotatingSecret,
-    handleRotateSecret: rotateSecret, // Rename to match your function name
-    handleCopy: copy,
-    refresh,
-  } = useShippingWebhook(showWebhook ? active : null);
-
-  // Helper logic for the UI
-  const providerMeta = provider ? PROVIDER_META[provider.code] : null;
-  const webhookHiddenFields = providerMeta?.webhookHiddenFields || [];
-
-  const openWebhookSetup = async (providerKey) => {
-    setActive(providerKey);
-    setShowWebhook(true);
-    await refresh(providerKey);
+  const fetchStatuses = async () => {
+    try {
+      setStatusLoading(true);
+      const { data } = await api.get("/shipping/integrations/status");
+      const map = {};
+      (data?.integrations || []).forEach((item) => (map[item.provider] = item));
+      setStatuses(map);
+    } catch (_) {
+    } finally {
+      setStatusLoading(false);
+    }
   };
 
+  useEffect(() => {
+    if (open) fetchStatuses();
+  }, [open]);
+
+  const companies = useMemo(
+    () => [
+      {
+        id: 1,
+        code: "bosta",
+        name: "Bosta",
+        logo: "/integrate/bosta.png",
+        website: "bosta.co",
+        bg: "bg-[linear-gradient(300.09deg,#FAFAFA_74.95%,#B5CBE9_129.29%)]",
+        accent: "#2563a8",
+        accentBg: "#dbeafe",
+        strip: "linear-gradient(90deg,#2563a8,#60a5fa)",
+        description: t("integrated.description"),
+      },
+      {
+        id: 5,
+        code: "turbo",
+        name: "Turbo",
+        logo: "/integrate/4.png",
+        website: "turbo.com",
+        bg: "bg-[linear-gradient(300.09deg,#FAFAFA_74.95%,#CCB5E9_129.29%)]",
+        accent: "#5c3d8f",
+        accentBg: "#e0d4f5",
+        strip: "linear-gradient(90deg,#5c3d8f,#8b6abf)",
+        description: t("integrated.description"),
+      },
+    ],
+    [t]
+  );
+
+  const connectedCount = useMemo(() => {
+    return Object.keys(integrationStatuses).length;
+  }, [integrationStatuses]);
+
   if (!open) return null;
+
+  const fbCls =
+    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 bg-white/80 dark:bg-[var(--muted)] border border-white/60 dark:border-[var(--border)] text-gray-600 dark:text-gray-300 shadow-sm";
 
   return (
     <motion.div
@@ -3286,522 +3147,189 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
         </p>
       </div>
 
-      {settingsLoading ? (
+      {statusLoading ? (
         <ProvidersSkeleton />
       ) : (
         <AnimatePresence mode="wait">
-          {!active ? (
-            <motion.div
-              key="slist"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+          <motion.div
+            key="list"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+                marginBottom: 28,
+              }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 10,
-                  marginBottom: 28,
-                }}
-              >
-                {SHIP_PROVIDERS.map((p) => (
+              {companies.map((company) => {
+                const data = integrationStatuses[company.code];
+
+                const isConfigured = !!data?.credentialsConfigured ?? false;
+                console.log(isConfigured)
+                const accent = company.accent;
+
+                const onEnter = (e) => {
+                  e.currentTarget.style.borderColor = accent;
+                  e.currentTarget.style.color = accent;
+                };
+                const onLeave = (e) => {
+                  e.currentTarget.style.borderColor = "";
+                  e.currentTarget.style.color = "";
+                };
+
+                return (
                   <div
-                    key={p.key}
-                    onClick={() => setActive(p.key)}
-                    className={`prov-card${connected[p.key] ? " connected" : ""}`}
-                    style={{
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 12,
-                      padding: 14,
-                      borderRadius: 14,
-                      border: "1.5px solid var(--border)",
-                      background: "var(--surface)",
-                      transition: "all .2s",
-                    }}
+                    key={company.code}
+                    className={cn(
+                      "prov-card group transition-all duration-200",
+                      "flex flex-col sm:flex-row items-start sm:items-center gap-4",
+                      "p-4 rounded-2xl border-1.5 border-[var(--border)] bg-[var(--surface)]",
+                      isConfigured && "connected"
+                    )}
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 12,
-                        flex: 1,
-                      }}
-                    >
+                    <div className="flex items-center gap-3 flex-1 w-full">
+                      {/* Logo container */}
                       <div
-                        style={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: 12,
-                          flexShrink: 0,
-                          background: connected[p.key]
-                            ? "#f0fdf4"
-                            : "var(--surface2)",
-                          border: `1.5px solid ${connected[p.key] ? "#bbf7d0" : "var(--border)"}`,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          overflow: "hidden",
-                          transition: "all .2s",
-                        }}
+                        className={cn(
+                          "w-11 h-11 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden transition-all duration-200",
+                          "border-1.5",
+                          isConfigured
+                            ? "bg-[#f0fdf4] border-[#bbf7d0]"
+                            : "bg-[var(--surface2)] border-[var(--border)]"
+                        )}
                       >
                         <img
-                          src={p.img}
-                          alt={p.label[locale] || p.label.en}
-                          style={{
-                            width: 28,
-                            height: 28,
-                            objectFit: "contain",
-                          }}
+                          src={company.logo}
+                          alt={company.name}
+                          className="w-7 h-7 object-contain"
                           onError={(e) => {
                             e.currentTarget.style.display = "none";
-                            e.currentTarget.parentElement.innerHTML = `<span style="font-size:22px">${p.emoji || "🔗"}</span>`;
+                            e.currentTarget.parentElement.innerHTML = `<span style="font-size:22px">📦</span>`;
                           }}
                         />
                       </div>
 
-                      <div style={{ flex: 1 }}>
-                        <div
-                          style={{
-                            fontSize: 14,
-                            fontWeight: 700,
-                            color: "var(--text)",
-                          }}
-                        >
-                          {p.label[locale] || p.label.en}
+                      {/* Text */}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-bold text-[var(--text)]">
+                          {company.name}
                         </div>
-                        <div
-                          style={{
-                            fontSize: 12,
-                            color: "var(--text-3)",
-                            marginTop: 2,
-                          }}
-                        >
-                          {p.desc[locale] || p.desc.en}
+                        <div className="text-xs text-[var(--text-3)] mt-0.5 line-clamp-1 sm:line-clamp-2 leading-relaxed">
+                          {company.description}
                         </div>
                       </div>
                     </div>
 
-                    <div
-                      style={{ display: "flex", gap: 6, alignItems: "center" }}
-                    >
-                      {/* Webhook button - only show if connected */}
-                      {connected[p.key] && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openWebhookSetup(p.key);
-                          }}
-                          style={{
-                            fontSize: 11,
-                            color: "var(--p)",
-                            fontWeight: 600,
-                            border: "1.5px solid var(--border)",
-                            borderRadius: 8,
-                            padding: "4px 10px",
-                            background: "var(--surface)",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 4,
-                            cursor: "pointer",
-                            transition: "all .15s",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background =
-                              "var(--surface2)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = "var(--surface)";
-                          }}
-                        >
-                          <Webhook /> Webhook
-                        </button>
-                      )}
+                    {/* Actions Group */}
+                    <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto sm:justify-end">
+                      <button
+                        onClick={() => {
+                          setCurrentCompany(company);
+                          setOpenModal("settings");
+                        }}
+                        className={cn(fbCls, "flex-1 sm:flex-none justify-center")}
+                        onMouseEnter={onEnter}
+                        onMouseLeave={onLeave}
+                      >
+                        <Settings2 size={12} />
+                        <span className="truncate">
+                          {isConfigured ? t("card.settings") : t("card.configureSettings")}
+                        </span>
+                      </button>
 
-                      {/* Status badge */}
-                      {connected[p.key] ? (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 5,
-                            color: "#10b981",
-                            fontSize: 12,
-                            fontWeight: 700,
-                            background: "#f0fdf4",
-                            border: "1px solid #bbf7d0",
-                            borderRadius: 99,
-                            padding: "4px 10px",
-                            flexShrink: 0,
+                      <button
+                        onClick={() => {
+                          setCurrentCompany(company);
+                          setOpenModal("guide");
+                        }}
+                        className={cn(fbCls, "flex-1 sm:flex-none justify-center")}
+                        onMouseEnter={onEnter}
+                        onMouseLeave={onLeave}
+                      >
+                        <HelpCircle size={12} />
+                        <span className="hidden sm:inline">{t("card.guide")}</span>
+                      </button>
+
+                      {isConfigured && (
+                        <button
+                          onClick={() => {
+                            setCurrentCompany(company);
+                            setOpenModal("webhook");
                           }}
+                          className={cn(fbCls, "flex-1 sm:flex-none justify-center")}
+                          onMouseEnter={onEnter}
+                          onMouseLeave={onLeave}
                         >
-                          <IcCheck /> {tstore("status.connected")}
-                        </motion.div>
-                      ) : (
-                        <div
-                          onClick={() => setActive(p.key)}
-                          style={{
-                            fontSize: 12,
-                            color: "var(--p)",
-                            fontWeight: 700,
-                            border: "1.5px solid var(--p)",
-                            borderRadius: 8,
-                            padding: "4px 12px",
-                            flexShrink: 0,
-                            transition: "background .15s, color .15s",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = "var(--p)";
-                            e.currentTarget.style.color = "#fff";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = "transparent";
-                            e.currentTarget.style.color = "var(--p)";
-                          }}
-                        >
-                          {tstore("status.connect_btn")}
-                        </div>
+                          <Webhook size={12} />
+                          <span className="hidden sm:inline">Webhook</span>
+                        </button>
                       )}
                     </div>
                   </div>
-                ))}
-              </div>
-
-              <div
-                style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}
-              >
-                <BtnGhost onClick={onBack}>{tp("back_btn")}</BtnGhost>
-                <BtnPrimary onClick={onNext}>
-                  {Object.keys(connected).length > 0
-                    ? ts("actions.finish")
-                    : ts("actions.skip_finish")}{" "}
-                  <IcArrow dir="right" />
-                </BtnPrimary>
-              </div>
-            </motion.div>
-          ) : showWebhook ? (
-            // Webhook Setup View
-            <motion.div
-              key="webhook"
-              initial={{ opacity: 0, x: 12 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -12 }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  marginBottom: 22,
-                }}
-              >
-                <div
-                  style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 12,
-                    flexShrink: 0,
-                    background: "var(--surface2)",
-                    border: "1.5px solid var(--border)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    overflow: "hidden",
-                  }}
-                >
-                  <img
-                    src={provider.img}
-                    alt={provider.label[locale] || provider.label.en}
-                    style={{ width: 28, height: 28, objectFit: "contain" }}
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                      e.currentTarget.parentElement.innerHTML = `<span style="font-size:22px">${provider.emoji || "🔗"}</span>`;
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <div
-                    style={{
-                      fontSize: 15,
-                      fontWeight: 700,
-                      color: "var(--text)",
-                    }}
-                  >
-                    {ts("webhook.title", { name: provider.label[locale] || provider.label.en })}
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--text-3)" }}>
-                    {ts("webhook.subtitle", { name: provider.label[locale] || provider.label.en })}
-                  </div>
-                </div>
-              </div>
-
-              {/* Info box */}
-              <div
-                style={{
-                  background: "var(--surface2)",
-                  border: "1.5px solid var(--border)",
-                  borderRadius: 12,
-                  padding: 14,
-                  marginBottom: 16,
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: "var(--text)",
-                    marginBottom: 4,
-                  }}
-                >
-                  {ts("webhook.info_title")}
-                </p>
-                <p
-                  style={{
-                    fontSize: 11,
-                    color: "var(--text-3)",
-                    lineHeight: 1.5,
-                  }}
-                >
-                  {ts("webhook.info_desc")}
-                </p>
-              </div>
-
-              {webhookLoading ? (
-                <WebhookSkeleton />
-              ) : webhookData ? (
-                <>
-                  {/* Webhook URL */}
-                  {!webhookHiddenFields.includes("webhookUrl") && (
-                    <CopyableField
-                      label={t("webhook.urlLabel")}
-                      value={webhookData.webhookUrl}
-                    />
-                  )}
-
-                  {/* Header Name */}
-                  {!webhookHiddenFields.includes("headerName") && (
-                    <CopyableField
-                      label={t("webhook.headerName")}
-                      value={webhookData.headerName}
-                    />
-                  )}
-
-                  {/* Header Value (Secret) */}
-                  {!webhookHiddenFields.includes("headerValue") && (
-                    <CopyableField
-                      label={t("webhook.headerValue")}
-                      value={webhookData.headerValue}
-                    />
-                  )}
-
-                  {/* Security hint with rotate button */}
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: 12,
-                      background: "var(--surface2)",
-                      border: "1.5px solid var(--border)",
-                      borderRadius: 12,
-                      padding: 12,
-                      marginTop: 16,
-                    }}
-                  >
-                    <p
-                      style={{
-                        fontSize: 11,
-                        color: "var(--text-3)",
-                        lineHeight: 1.5,
-                        flex: 1,
-                      }}
-                    >
-                      {ts("webhook.security_hint")}
-                    </p>
-                    <button
-                      onClick={rotateSecret}
-                      disabled={rotatingSecret}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 6,
-                        fontSize: 11,
-                        fontWeight: 700,
-                        color: "var(--text)",
-                        background: "var(--surface)",
-                        border: "1.5px solid var(--border)",
-                        borderRadius: 8,
-                        padding: "6px 12px",
-                        cursor: rotatingSecret ? "not-allowed" : "pointer",
-                        opacity: rotatingSecret ? 0.5 : 1,
-                        transition: "all .2s",
-                      }}
-                    >
-                      {rotatingSecret ? (
-                        <>
-                          <Loader2 size={12} className="animate-spin" />
-                          {ts("webhook.renewing")}
-                        </>
-                      ) : (
-                        <>
-                          <RotateCcw size={12} /> {ts("webhook.renew_btn")}
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </>
-              ) : null}
-
-              <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-                <BtnGhost
-                  onClick={() => {
-                    setShowWebhook(false);
-                    setWebhookData(null);
-                    setActive(null);
-                  }}
-                >
-                  {tstore("actions.close")}
-                </BtnGhost>
-              </div>
-            </motion.div>
-          ) : (
-            // Credentials Form View
-            <motion.div
-              key="sform"
-              initial={{ opacity: 0, x: 12 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -12 }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  marginBottom: 22,
-                }}
-              >
-                <div
-                  style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 12,
-                    flexShrink: 0,
-                    background: "var(--surface2)",
-                    border: "1.5px solid var(--border)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    overflow: "hidden",
-                    transition: "all .2s",
-                  }}
-                >
-                  <img
-                    src={provider.img}
-                    alt={provider.label[locale] || provider.label.en}
-                    style={{ width: 28, height: 28, objectFit: "contain" }}
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                      e.currentTarget.parentElement.innerHTML = `<span style="font-size:22px">${provider.emoji || "🔗"}</span>`;
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <div
-                    style={{
-                      fontSize: 15,
-                      fontWeight: 700,
-                      color: "var(--text)",
-                    }}
-                  >
-                    {provider.label[locale] || provider.label.en}
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--text-3)" }}>
-                    {connected[provider.key]
-                      ? t("editTitle")
-                      : t("addTitle")}
-                  </div>
-                </div>
-              </div>
-
-              {fields.map((f) => {
-                const existingValue =
-                  integrations[active]?.credentials?.[f.key];
-                const placeholder =
-                  f.hide && existingValue ? existingValue : t(f.labelKey);
-
-                return (
-                  <Field
-                    key={f.key}
-                    label={t(f.labelKey)}
-                    required={f.required}
-                  >
-                    <InputWrap icon={<IcLock />}>
-                      <input
-                        className="ob-input"
-                        type={f.type}
-                        placeholder={placeholder}
-                        value={fd[f.key] || ""}
-                        onChange={(e) => setFd(f.key, e.target.value)}
-                        style={{
-
-                          textAlign: "left",
-                          paddingLeft: 36,
-                          width: "100%",
-                          height: 42,
-                          borderRadius: 10,
-                          border: "1.5px solid var(--border)",
-                          background: "var(--surface)",
-                          fontSize: 13,
-                          color: "var(--text)",
-                          outline: "none",
-                        }}
-                      />
-                    </InputWrap>
-                  </Field>
                 );
               })}
+            </div>
 
-              <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
-                <BtnGhost
-                  onClick={() => {
-                    setActive(null);
-                  }}
-                >
-                  {tstore("actions.cancel")}
-                </BtnGhost>
-                <BtnPrimary
-                  onClick={save}
-                  loading={saving || nextLoading}
-                  disabled={nextLoading}
-                  style={{ flex: 1 }}
-                >
-                  {connected[provider.key]
-                    ? ts("actions.update_data")
-                    : ts("actions.save_connect")}
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <BtnGhost onClick={onBack}>{tp("back_btn")}</BtnGhost>
+              {connectedCount === 0 && (
+                <BtnGhost onClick={onNext}>{ts("actions.skip")}</BtnGhost>
+              )}
+              {connectedCount > 0 && (
+                <BtnPrimary onClick={onNext}>
+                  {tp("continue_btn")} <IcArrow dir="right" />
                 </BtnPrimary>
-              </div>
-            </motion.div>
-          )}
+              )}
+            </div>
+          </motion.div>
         </AnimatePresence>
       )}
+
+      {/* Modals */}
+      <AnimatePresence>
+        {openModal === "settings" && currentCompany && (
+          <ShippingSettingsModal
+            key="settings"
+            company={currentCompany}
+            onClose={() => {
+              setOpenModal(null);
+              setCurrentCompany(null);
+            }}
+            onFirstSetup={() => setOpenModal("webhook")}
+            onSaved={() => fetchStatuses()}
+          />
+        )}
+        {openModal === "guide" && currentCompany && (
+          <ShippingGuideModal
+            key="guide"
+            company={currentCompany}
+            onClose={() => {
+              setOpenModal(null);
+              setCurrentCompany(null);
+            }}
+          />
+        )}
+        {openModal === "webhook" && currentCompany && (
+          <ShippingWebhookModal
+            key="webhook"
+            company={currentCompany}
+            onClose={() => {
+              setOpenModal(null);
+              setCurrentCompany(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
 
-const stepMap = {
-  welcome: 0,
-  plan: 1,
-  company: 2,
-  store: 3,
-  shipping: 4,
-  finished: 5,
-};
+
+
 
 const OnboardingSkeleton = () => (
   <div className="flex w-full max-w-[1000px] min-h-[580px] rounded-xl bg-surface overflow-hidden shadow-[0_28px_80px_rgba(103,99,175,0.1)]">

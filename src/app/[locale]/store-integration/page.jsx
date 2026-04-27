@@ -1300,7 +1300,6 @@ export function StoreGuideModal({ provider, onClose }) {
                     onClick={() => {
                       const textToCopy = p(currentStep.copyableTip);
                       navigator.clipboard.writeText(textToCopy);
-                      // يمكنك إضافة toast هنا للتنبيه بالنجاح
                     }}
                     className="text-xs font-medium px-2 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 transition flex-shrink-0"
                   >

@@ -1744,6 +1744,9 @@ function SecurityTab() {
 }
 
 function PasswordSection({ t }) {
+  const { user, setUser } = useAuth();
+  const hasPassword = user?.hasPassword;
+  console.log(user, hasPassword)
   const [data, setData] = useState({
     oldPassword: "",
     newPassword: "",
@@ -1752,17 +1755,38 @@ function PasswordSection({ t }) {
   const [loading, setLoading] = useState(false);
 
   const handleUpdate = async () => {
-    if (data.newPassword !== data.confirmPassword) {
+    // تنظيف المدخلات لضمان سلامة البيانات
+    const oldPass = data.oldPassword.trim();
+    const newPass = data.newPassword.trim();
+    const confirmPass = data.confirmPassword.trim();
+
+    if (!newPass) {
+      toast.error(t("errors.required"));
+      return;
+    }
+
+    if (newPass !== confirmPass) {
       toast.error(t("errors.mismatch"));
       return;
     }
+
     setLoading(true);
     try {
-      await api.post("/auth/change-password", {
-        newPassword: data.newPassword,
-        oldPassword: data.oldPassword,
-      });
-      toast.success(t("password_success"));
+      if (hasPassword) {
+        // حالة تغيير كلمة المرور الحالية
+        await api.post("/auth/change-password", {
+          newPassword: newPass,
+          oldPassword: oldPass,
+        });
+        toast.success(t("password_success"));
+      } else {
+        // حالة إضافة كلمة مرور لأول مرة
+        await api.post("/auth/set-password", {
+          newPassword: newPass,
+        });
+        toast.success(t("set_password_success"));
+      }
+      setUser(p => ({ ...p, hasPassword: true }));
       setData({ oldPassword: "", newPassword: "", confirmPassword: "" });
     } catch (err) {
       toast.error(err?.response?.data?.message || t("errors.failed"));
@@ -1774,27 +1798,35 @@ function PasswordSection({ t }) {
   return (
     <SettingCard>
       <div className="space-y-4 max-w-md">
-        <Field label={t("form.old_password")}>
-          <Input
-            type="password"
-            value={data.oldPassword}
-            onChange={(e) => setData({ ...data, oldPassword: e.target.value })}
-            className="h-11"
-          />
-        </Field>
-        <Field label={t("form.new_password")}>
+        {/* لا يظهر حقل كلمة المرور القديمة إذا لم يكن لدى المستخدم واحدة */}
+        {hasPassword && (
+          <Field label={t("form.old_password")}>
+            <Input
+              type="password"
+              value={data.oldPassword}
+              placeholder={t("form.old_password")}
+              onChange={(e) => setData({ ...data, oldPassword: e.target.value })}
+              className="h-11"
+            />
+          </Field>
+        )}
+
+        <Field label={hasPassword ? t("form.new_password") : t("form.password")}>
           <Input
             type="password"
             value={data.newPassword}
+            placeholder={t("form.new_password")}
             onChange={(e) => setData({ ...data, newPassword: e.target.value })}
             className="h-11"
           />
           <PasswordStrength password={data.newPassword} />
         </Field>
+
         <Field label={t("form.confirm_password")}>
           <Input
             type="password"
             value={data.confirmPassword}
+            placeholder={t("form.confirm_password")}
             onChange={(e) =>
               setData({ ...data, confirmPassword: e.target.value })
             }
@@ -1802,10 +1834,12 @@ function PasswordSection({ t }) {
           />
         </Field>
       </div>
+
       <SaveFooter
         onSave={handleUpdate}
         saving={loading}
-        label={t("form.update_password")}
+        // تغيير نص الزر بناءً على الحالة
+        label={hasPassword ? t("form.update_password") : t("form.set_password")}
       />
     </SettingCard>
   );

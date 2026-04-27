@@ -72,7 +72,7 @@ function SectionLabel({ icon: Icon, label }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Settings Modal  — per-provider config fields
 // ─────────────────────────────────────────────────────────────────────────────
-function SettingsModal({ company, onClose, onFirstSetup, onSaved }) {
+export function SettingsModal({ company, onClose, onFirstSetup, onSaved }) {
 	const t = useTranslations("shipping");
 	const {
 		fields, values, setValue, handleSave, isFormValid,
@@ -120,14 +120,13 @@ function SettingsModal({ company, onClose, onFirstSetup, onSaved }) {
 										value={values[field.key]}
 										onChange={(e) => setValue(field.key, e.target.value)}
 										placeholder={currentSavedValue || t(`settings.placeholders.${field.key}`, { fallback: `${t(field.labelKey)}…` })}
-										className={`w-full rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)] ${currentSavedValue && "placeholder:text-gray-950"} dark:placeholder:text-gray-100 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30 focus:border-[var(--primary)] transition-all`}
-										style={{ paddingRight: field.type === "password" ? "2.5rem" : undefined }}
+										className={`w-full ${field.type === "password" ? "pe-10 hide-eye-input" : ""} rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)] ${currentSavedValue && "placeholder:text-gray-950"} dark:placeholder:text-gray-100 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30 focus:border-[var(--primary)] transition-all`}
 									/>
 									{field.type === "password" && (
 										<button
 											type="button"
 											onClick={() => toggleShow(field.key)}
-											className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+											className="absolute end-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
 										>
 											{showFields[field.key] ? <EyeOff size={15} /> : <Eye size={15} />}
 										</button>
@@ -164,7 +163,7 @@ function SettingsModal({ company, onClose, onFirstSetup, onSaved }) {
 // -----------------------
 // Guide Modal
 // -----------------------
-function GuideModal({ company, onClose }) {
+export function GuideModal({ company, onClose }) {
 	const t = useTranslations("shipping");
 	const locale = useLocale();
 
@@ -301,7 +300,7 @@ function GuideModal({ company, onClose }) {
 // -----------------------
 // Usage Modal (unchanged)
 // -----------------------
-function UsageModal({ company, onClose }) {
+export function UsageModal({ company, onClose }) {
 	const t = useTranslations("shipping");
 	const { capabilities, services, loading, error } = useShippingUsage(company.code);
 
@@ -384,7 +383,7 @@ function UsageModal({ company, onClose }) {
 // -----------------------
 // Webhook Setup Modal
 // -----------------------
-function WebhookModal({ company, onClose }) {
+export function WebhookModal({ company, onClose }) {
 	const t = useTranslations("shipping");
 	const {
 		data,

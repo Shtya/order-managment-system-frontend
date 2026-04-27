@@ -1021,3 +1021,30 @@ html[dir="ltr"] .dir-force {
   pointer-events: auto !important;
   z-index: 99999 !important;
 }
+
+/* ❌ IE / old Edge */
+.hide-eye-input::-ms-reveal,
+.hide-eye-input::-ms-clear {
+  display: none;
+}
+
+/* ❌ Chrome / Safari (WebKit) password reveal */
+.hide-eye-input::-webkit-credentials-auto-fill-button,
+.hide-eye-input::-webkit-clear-button,
+.hide-eye-input::-webkit-inner-spin-button,
+.hide-eye-input::-webkit-outer-spin-button {
+  display: none !important;
+  -webkit-appearance: none;
+}
+
+/* ❌ Chrome password eye icon */
+.hide-eye-input[type="password"]::-webkit-textfield-decoration-container {
+  display: none;
+}
+
+/* ❌ Safari autofill icon */
+.hide-eye-input::-webkit-contacts-auto-fill-button {
+  visibility: hidden;
+  display: none !important;
+  pointer-events: none;
+}

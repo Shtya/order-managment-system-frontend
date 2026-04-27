@@ -1058,7 +1058,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 																					>
 																						<Checkbox
 																							checked={checked}
-																							onCheckedChange={() => toggleBlockOrder(block.id, order.id)}
+																							onChange={() => toggleBlockOrder(block.id, order.id)}
 																							className="data-[state=checked]:bg-primary data-[state=checked]:border-primary
 																								 "
 																						/>

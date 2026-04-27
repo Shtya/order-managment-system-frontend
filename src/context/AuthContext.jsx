@@ -9,8 +9,9 @@ export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
-
     const fetchUser = useCallback(async () => {
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) return null;
         try {
             const res = await api.get("/users/me");
             setUser(res.data);
@@ -26,7 +27,7 @@ export function AuthProvider({ children }) {
     const getDashboardRoute = useCallback((userData) => {
         const targetUser = userData || user;
         if (!targetUser) return '/auth?mode=signin';
-        
+
         const role = String(targetUser?.role?.name || '');
         const isOnboarded = targetUser?.onboardingStatus === 'completed' || role !== 'admin';
 
@@ -62,7 +63,7 @@ export function AuthProvider({ children }) {
 
         // Navigation Logic
         const targetPath = getDashboardRoute(data.user);
-        
+
         if (typeof window !== "undefined") {
             setTimeout(() => {
                 window.location.href = targetPath;

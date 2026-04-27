@@ -255,8 +255,9 @@ export function useShippingSettings(companyCode, callbacks = {}) {
         setError(null);
         setSuccess(false);
     }, [companyCode, integrations]);
-
+    
     const fetchSetup = useCallback(async () => {
+        
         setLoading(true);
         setError(null);
         try {

@@ -6941,7 +6941,8 @@
       "password_lower": "Must contain a lowercase letter",
       "password_number": "Must contain a number",
       "passwords_match": "Passwords do not match",
-      "phone_invalid": "Invalid phone number"
+      "phone_invalid": "Invalid phone number",
+      "email_exists": "Email already exists"
     },
     "strength": {
       "label": "Password Strength",

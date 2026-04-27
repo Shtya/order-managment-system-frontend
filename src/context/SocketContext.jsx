@@ -1,5 +1,5 @@
 
-import api from "@/utils/api";
+import api, { getOnboardingStatus } from "@/utils/api";
 import {
   createContext,
   useContext,
@@ -183,14 +183,15 @@ export const SocketProvider = ({ children }) => {
     };
   }, [user?.id]);
 
+  const isOnboarding = getOnboardingStatus();
   // Fetch unread counts on mount and when user changes
   useEffect(() => {
-    if (user?.id) {
+    if (user?.id && !isOnboarding) {
       fetchUnreadNotificationsCount();
     } else {
       setUnreadNotificationsCount(0);
     }
-  }, [user?.id]);
+  }, [user?.id, isOnboarding]);
 
   // Disconnect on unmount
   useEffect(() => {

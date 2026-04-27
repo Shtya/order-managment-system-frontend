@@ -1,4 +1,4 @@
-import api from "@/utils/api";
+import api, { getOnboardingStatus } from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { useTranslations } from "next-intl";
 import { createContext, useContext, useEffect, useState } from "react";
@@ -59,8 +59,14 @@ export function OrdersSettingsProvider({ children }) {
       setLoading(false);
     }
   }
+
+  const isOnboarding = getOnboardingStatus();
   /* ── fetch settings on open ─── */
   useEffect(() => {
+    if(isOnboarding) {
+      setLoading(false);
+      return;
+    }
     (async () => {
       const data = await fetchSettings();
       setSavedSettings(data);
@@ -127,7 +133,7 @@ export function OrdersSettingsProvider({ children }) {
             : { ...prev.shipping },
         }));
     })();
-  }, []);
+  }, [isOnboarding]);
   const patch = (p) => setSettings((prev) => ({ ...prev, ...p }));
   const patchShipping = (p) =>
     setSettings((prev) => ({ ...prev, shipping: { ...prev.shipping, ...p } }));

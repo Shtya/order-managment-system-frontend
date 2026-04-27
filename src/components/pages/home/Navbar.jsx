@@ -426,7 +426,9 @@ export default function Navbar({ t, locale, switchLocale, user }) {
           <div className="container mx-auto px-6">
             <div className="flex items-center justify-between h-16">
               {/* Logo */}
-              <BrandLogo />
+              <BrandLogo className="text-[#672DAD]" />
+
+
 
               {/* Desktop links */}
               <div className="hidden lg:flex items-center gap-0.5">

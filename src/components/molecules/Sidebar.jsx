@@ -860,7 +860,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
 
         className={`
           fixed  top-0 ${isRTL ? "right-0" : "left-0"}
-          h-screen flex flex-col overflow-hidden z-[100002] bg-sidebar dark:bg-card ${isRTL ? "border-l" : "border-r"} border-border`}
+          h-screen flex flex-col overflow-hidden z-[30] bg-sidebar dark:bg-card ${isRTL ? "border-l" : "border-r"} border-border`}
 
 
         style={{
@@ -901,7 +901,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
 
             {(isOpen || isMobile) && (
               <div className={`flex items-center gap-2.5 `}>
-                <BrandLogo />
+                <BrandLogo className="text-white" />
               </div>
             )}
           </div>

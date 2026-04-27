@@ -169,7 +169,7 @@ function DashboardLayout({ children }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsSidebarOpen(false)}
-            className="fixed inset-0 bg-black/40 z-[100] backdrop-blur-[2px]"
+            className="fixed inset-0 bg-black/40 z-[20] backdrop-blur-[2px]"
           />
         )}
       </AnimatePresence>

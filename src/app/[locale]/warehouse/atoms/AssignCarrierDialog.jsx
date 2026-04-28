@@ -341,28 +341,51 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
     }, [carrier, needsFixOrders.length]);
 
     // --- Interaction Handlers ---
-    const handleFixChange = useCallback((orderId, field, value) => {
+    const handleFixChange = useCallback(async (orderId, field, value) => {
+        // 1. Calculate the new state for this specific order
+        let updatedOrderData;
+
         setFixes(prev => {
-            const updated = { ...prev[orderId], [field]: value };
+            const currentOrder = prev[orderId] || {};
+            updatedOrderData = { ...currentOrder, [field]: value };
 
             // Cascading resets
             if (field === 'cityId') {
-                updated.zoneId = "";
-                updated.districtId = "";
+                updatedOrderData.zoneId = "";
+                updatedOrderData.districtId = "";
                 const config = CARRIER_CONFIG[carrier];
                 fetchZonesAndDistricts(config.provider, value, orderId, config.hasDistrict);
             }
             if (field === 'zoneId') {
-                updated.districtId = ""; // Reset district when zone changes (if applicable)
+                updatedOrderData.districtId = "";
             }
-            return { ...prev, [orderId]: updated };
+
+            return { ...prev, [orderId]: updatedOrderData };
         });
 
-        // Clear error on type
-        if (fixErrors[orderId]?.[field]) {
-            setFixErrors(prev => ({ ...prev, [orderId]: { ...prev[orderId], [field]: null } }));
+        // 2. Immediate Validation for this specific field
+        const schema = getValidationSchema(carrier, t);
+
+        try {
+            // We validate the field against the NEWLY calculated order data
+            await schema.validateAt(field, updatedOrderData);
+
+            // If valid, clear the error for this field
+            setFixErrors(prev => ({
+                ...prev,
+                [orderId]: { ...prev[orderId], [field]: null }
+            }));
+        } catch (err) {
+            // If invalid, set the error message immediately
+            setFixErrors(prev => ({
+                ...prev,
+                [orderId]: {
+                    ...prev[orderId],
+                    [field]: err.message // Validation message from Yup
+                }
+            }));
         }
-    }, [carrier]);
+    }, [carrier, t]);
 
 
     const validateFixes = useCallback(async (newFixes) => {
@@ -539,29 +562,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                 </div>
 
                 <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
-                    {/* Carrier Selection */}
-                    <div className="space-y-3">
-                        <Label className="text-sm font-bold text-slate-700 dark:text-slate-200">
-                            {t("assign.requiredCarrier")} *
-                        </Label>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                            {['NONE', ...shippingCompanies.map(c => c.provider?.toUpperCase())].map(providerCode => {
-                                const isSelected = carrier === providerCode;
-                                return (
-                                    <button
-                                        key={providerCode}
-                                        onClick={() => setCarrier(providerCode)}
-                                        className={cn(
-                                            "py-2.5 rounded-xl border-2 text-xs font-bold transition-all",
-                                            isSelected ? "border-primary bg-primary/10 text-primary" : "border-slate-200 text-slate-500 hover:border-slate-300"
-                                        )}
-                                    >
-                                        {providerCode}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
+
 
                     {/* Tabs */}
                     <div className="flex flex-wrap gap-1 sm:gap-2 border-b border-slate-200 dark:border-slate-800 pb-px -mx-1 px-1">
@@ -830,6 +831,30 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                                 ))}
                             </div>
                         )}
+                    </div>
+
+                    {/* Carrier Selection */}
+                    <div className="space-y-3">
+                        <Label className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                            {t("assign.requiredCarrier")} <span className="text-red-500">*</span>
+                        </Label>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                            {['NONE', ...shippingCompanies.map(c => c.provider?.toUpperCase())].map(providerCode => {
+                                const isSelected = carrier === providerCode;
+                                return (
+                                    <button
+                                        key={providerCode}
+                                        onClick={() => setCarrier(providerCode)}
+                                        className={cn(
+                                            "py-2.5 rounded-xl border-2 text-xs font-bold transition-all",
+                                            isSelected ? "border-primary bg-primary/10 text-primary" : "border-slate-200 text-slate-500 hover:border-slate-300"
+                                        )}
+                                    >
+                                        {providerCode}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
 
                     {/* Footer Actions */}

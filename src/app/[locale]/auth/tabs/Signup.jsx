@@ -20,6 +20,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import * as yup from 'yup';
 import api from "@/utils/api";
+import { useAuth } from "@/context/AuthContext";
 /* ── Icons ── */
 const EmailIcon = () => (
   <svg
@@ -131,7 +132,7 @@ const PHONE_CODES = [
 export default function SignUp({ onSwitchMode }) {
   const searchParams = useSearchParams();
   const router = useRouter();
-
+  const { setAuthToken } = useAuth();
   const initialEmail = searchParams.get("email") ?? "";
   const tCountries = useTranslations("countries");
   const t = useTranslations("auth");
@@ -182,8 +183,7 @@ export default function SignUp({ onSwitchMode }) {
 
   async function onVerified(data) {
     if (data?.accessToken) {
-      localStorage.setItem("accessToken", data.accessToken);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      setAuthToken(data.accessToken);
     }
     await fetch("/api/auth/login", {
       method: "POST",

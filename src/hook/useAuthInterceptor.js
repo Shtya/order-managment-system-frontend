@@ -16,8 +16,6 @@ export const useAuthInterceptor = () => {
                 if (response && response.status === 401) {
                     if (typeof window !== 'undefined') {
 
-                        localStorage.removeItem('user');
-
                         if (!isPublicRoute(pathname)) {
                             logout();
 

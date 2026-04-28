@@ -8,7 +8,6 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { toast } from 'react-hot-toast';
-import { getUser } from './getUser';
 import { tenantId } from '@/utils/healpers';
 import { useAuth } from '@/context/AuthContext';
 

@@ -1,4 +1,5 @@
 'use client'
+import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "@/i18n/navigation";
 import api from "@/utils/api";
 import { useTranslations } from "next-intl";
@@ -10,12 +11,11 @@ import toast from "react-hot-toast";
 
 export default function SuccessPage() {
     const t = useTranslations('auth');
-
+    const { setAuthToken } = useAuth();
     const searchParams = useSearchParams();
     const router = useRouter();
     const redirectUrl = searchParams?.get('redirect') || '/';
     const accessTokenFromUrl = searchParams?.get('accessToken');
-    // const refreshTokenFromUrl = searchParams?.get('refreshToken');
     // OAuth: if query has tokens, store them and fetch /auth/me
     useEffect(() => {
         const run = async () => {
@@ -23,10 +23,9 @@ export default function SuccessPage() {
                 router.push('/auth?mode=signin&error=google_failed');
             }
             try {
-                localStorage.setItem('accessToken', accessTokenFromUrl);
+                setAuthToken(accessTokenFromUrl);
                 const res = await api.get('/auth/sign');
                 const user = res.data?.user ?? res.data;
-                localStorage.setItem('user', JSON.stringify(user));
 
                 //set login data at cookie
                 await fetch('/api/auth/login', {

@@ -53,7 +53,7 @@ export function AuthProvider({ children }) {
                 setToken(savedToken);
                 await fetchUser();
 
-                setLoading(false);
+                setIsLoading(false);
             };
         }
         initializeAuth();

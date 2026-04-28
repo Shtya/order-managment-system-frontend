@@ -17,7 +17,7 @@ import { useAuth } from "./AuthContext";
 const SocketContext = createContext();
 
 export const SocketProvider = ({ children }) => {
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
 
   const socketRef = useRef(null);
   const subscribers = useRef(new Map());
@@ -94,14 +94,14 @@ export const SocketProvider = ({ children }) => {
   // Initialize Socket
   // ------------------------------
   useEffect(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+    accessToken
 
-    if (!user?.id || !token) return;
+    if (!user?.id || !accessToken) return;
 
     // Disconnect if token changes
     if (socketRef.current) {
       const oldToken = socketRef.current.auth?.token;
-      if (oldToken !== token) {
+      if (oldToken !== accessToken) {
         socketRef.current.disconnect();
         socketRef.current = null;
       }
@@ -110,7 +110,7 @@ export const SocketProvider = ({ children }) => {
     // Create socket instance
     if (!socketRef.current) {
       socketRef.current = io(process.env.NEXT_PUBLIC_BASE_URL, {
-        auth: { token },
+        auth: { accessToken },
         transports: ["websocket", "polling"],
         reconnection: true,
         reconnectionDelay: 1000,
@@ -133,7 +133,7 @@ export const SocketProvider = ({ children }) => {
 
     socket.on("reconnect", () => {
       // Refresh token on reconnect
-      socket.auth = { token };
+      socket.auth = { accessToken };
     });
 
     socket.on("reconnect_error", (err) => {
@@ -181,7 +181,7 @@ export const SocketProvider = ({ children }) => {
       socket.off("failed-order:update");
       socket.off("shipment:status");
     };
-  }, [user?.id]);
+  }, [user?.id, accessToken]);
 
   const isOnboarding = getOnboardingStatus();
   // Fetch unread counts on mount and when user changes

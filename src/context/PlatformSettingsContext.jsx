@@ -2,12 +2,14 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import api from "@/utils/api";
+import { useAuth } from "./AuthContext";
 
 const PlatformSettingsContext = createContext();
 
 export function PlatformSettingsProvider({ children }) {
   const [settings, setSettings] = useState(null);
   const [company, setCompany] = useState(null);
+  const { accessToken } = useAuth()
   const [shippingCompanies, setShippingCompanies] = useState([]);
 
   const [isSettingsLoading, setIsSettingsLoading] = useState(true);
@@ -27,7 +29,7 @@ export function PlatformSettingsProvider({ children }) {
     }
   }, []);
 
-  const accessToken = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+
   const fetchCompany = useCallback(async () => {
     if (!accessToken) return;
     setIsCompanyLoading(true);

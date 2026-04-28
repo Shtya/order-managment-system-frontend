@@ -795,6 +795,14 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
     const userRole = user.role?.name;
 
     return menuItems.filter((item) => {
+
+      const role = userRole?.toUpperCase();
+
+      // ✅ SPECIAL RULE: SUPER_ADMIN sees ONLY explicitly allowed items
+      if (role === 'SUPER_ADMIN') {
+        return item.roles?.includes('SUPER_ADMIN');
+      }
+
       // 1. Check Roles
       if (item.notRoles?.length) {
         return !item.notRoles.includes(userRole?.toUpperCase());

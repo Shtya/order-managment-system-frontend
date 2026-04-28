@@ -94,14 +94,14 @@ export const SocketProvider = ({ children }) => {
   // Initialize Socket
   // ------------------------------
   useEffect(() => {
-    accessToken
+    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
 
-    if (!user?.id || !accessToken) return;
+    if (!user?.id || !token) return;
 
     // Disconnect if token changes
     if (socketRef.current) {
       const oldToken = socketRef.current.auth?.token;
-      if (oldToken !== accessToken) {
+      if (oldToken !== token) {
         socketRef.current.disconnect();
         socketRef.current = null;
       }
@@ -110,7 +110,7 @@ export const SocketProvider = ({ children }) => {
     // Create socket instance
     if (!socketRef.current) {
       socketRef.current = io(process.env.NEXT_PUBLIC_BASE_URL, {
-        auth: { accessToken },
+        auth: { token },
         transports: ["websocket", "polling"],
         reconnection: true,
         reconnectionDelay: 1000,
@@ -133,7 +133,7 @@ export const SocketProvider = ({ children }) => {
 
     socket.on("reconnect", () => {
       // Refresh token on reconnect
-      socket.auth = { accessToken };
+      socket.auth = { token };
     });
 
     socket.on("reconnect_error", (err) => {
@@ -181,7 +181,7 @@ export const SocketProvider = ({ children }) => {
       socket.off("failed-order:update");
       socket.off("shipment:status");
     };
-  }, [user?.id, accessToken]);
+  }, [user?.id]);
 
   const isOnboarding = getOnboardingStatus();
   // Fetch unread counts on mount and when user changes

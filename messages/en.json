@@ -4909,10 +4909,11 @@
       "templateDownloadFailed": "Failed to download template",
       "invalidFileType": "Unsupported file format (use XLSX)",
       "noFileSelected": "Please select a file first",
-      "uploadSuccess": "Orders uploaded successfully",
+      "uploadSuccess": "Successfully queued orders for creation.",
       "uploadSuccessCount": "{{count}} orders created successfully",
       "uploadFailed": "Failed to upload orders",
       "uploadNoCreated": "No orders were created. Check the file and errors.",
+      "errorReportGenerated": "Errors found! Error report downloaded. Fix and reupload.",
       "moreErrors": "and {{count}} more errors"
     },
     "distribution": {

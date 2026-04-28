@@ -61,7 +61,7 @@ export default function ImportExternalProductPage() {
             remoteId: id,
             storeId: ext?.storeId,
             hasPurchase: false,
-            type: ext.variants?.length > 0 ? 'variable' : 'simple',
+            type: ext.variants?.length > 0 ? 'variable' : 'single',
             name: ext.name || '',
             slug: ext.slug || '',
             wholesalePrice: ext.expense || '',

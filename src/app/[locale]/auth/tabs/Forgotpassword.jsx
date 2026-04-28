@@ -125,11 +125,11 @@ export default function ForgotPassword({ t: tProp, onBack }) {
                 value={email} onChange={e => setEmail(e.target.value)}
                 onBlur={() => setTouched(p => ({ ...p, email: true }))}
                 error={touched.email && emailErr} icon={<MailIcon />}
-                style={{  textAlign: 'right' }}
+                style={{ textAlign: 'right' }}
               />
             </Field>
             <BtnPrimary loading={loading} type="button" onClick={sendOtp}>
-              {t('forgot.submit')} <IconArrow dir="right" />
+              {t('forgot.submit')} <IconArrow className="rtl:scale-[-1]!" />
             </BtnPrimary>
             <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-3)', marginTop: 16 }}>
               <BtnLink onClick={onBack}>{t('forgot.back')}</BtnLink>
@@ -169,7 +169,7 @@ export default function ForgotPassword({ t: tProp, onBack }) {
             </div>
 
             <BtnPrimary loading={loading} type="button" onClick={verifyOtp} disabled={otp.length !== 6}>
-              {t('forgot.otp_verify')} <IconArrow dir="right" />
+              {t('forgot.otp_verify')} <IconArrow className="rtl:scale-[-1]!" />
             </BtnPrimary>
           </motion.div>
         )}
@@ -196,7 +196,7 @@ export default function ForgotPassword({ t: tProp, onBack }) {
               />
             </div>
             <BtnPrimary loading={loading} type="button" onClick={resetPw} style={{ marginTop: 8 }}>
-              {t('forgot.reset_submit')} <IconArrow dir="right" />
+              {t('forgot.reset_submit')} <IconArrow className="rtl:scale-[-1]!" />
             </BtnPrimary>
           </motion.div>
         )}

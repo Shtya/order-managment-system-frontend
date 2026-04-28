@@ -115,7 +115,7 @@ export default function SignIn({ t: tProp, onSwitchMode, onForgotPassword }) {
             value={email} onChange={e => setEmail(e.target.value)} onBlur={() => touch('email')}
             error={touched.email && errors.email} icon={<MailIcon />}
             font="font-en"
-            style={{  height: "clamp(44px, 12vw, 48px)" }}
+            style={{ height: "clamp(44px, 12vw, 48px)" }}
           />
         </Field>
 
@@ -130,7 +130,7 @@ export default function SignIn({ t: tProp, onSwitchMode, onForgotPassword }) {
         </div>
 
         <BtnPrimary loading={loading} disabled={loading}>
-          {t('signin.submit')} <IconArrow  />
+          {t('signin.submit')} <IconArrow className="rtl:scale-[-1]!" />
         </BtnPrimary>
 
         <Divider label={t('signin.or')} />

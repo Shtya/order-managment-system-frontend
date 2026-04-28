@@ -501,7 +501,7 @@ function Step1({ data, onChange, onNext, t, tCountries }) {
       </Field>
 
       <BtnPrimary type="button" onClick={next} loading={isChecking} disabled={isChecking}>
-        {t("signup.next")} <IconArrow dir="right" />
+        {t("signup.next")} <IconArrow className="rtl:scale-[-1]!" />
       </BtnPrimary>
     </motion.div>
   );
@@ -580,7 +580,7 @@ function Step2({ data, onChange, onNext, onBack, t }) {
       <div style={{ display: "flex", gap: 10 }}>
         <BackBtn onClick={onBack} />
         <BtnPrimary type="button" onClick={next} style={{ flex: 1 }}>
-          {t("signup.next")} <IconArrow dir="right" />
+          {t("signup.next")} <IconArrow className="rtl:scale-[-1]!" />
         </BtnPrimary>
       </div>
     </motion.div>
@@ -674,7 +674,7 @@ function Step3({ isSubmitting, onNext, onBack, t }) {
       <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
         <BackBtn onClick={onBack} />
         <BtnPrimary type="button" onClick={next} style={{ flex: 1 }} disabled={isSubmitting}>
-          {t("signup.next")} <IconArrow dir="right" />
+          {t("signup.next")} <IconArrow className="rtl:scale-[-1]!" />
         </BtnPrimary>
       </div>
     </motion.div>
@@ -873,7 +873,7 @@ function Step4({ email, onVerified, t }) {
         onClick={verify}
         disabled={otp.length !== 6}
       >
-        {t("signup.otp_verify")} <IconArrow dir="right" />
+        {t("signup.otp_verify")} <IconArrow className="rtl:scale-[-1]!" />
       </BtnPrimary>
     </motion.div>
   );

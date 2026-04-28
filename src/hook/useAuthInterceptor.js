@@ -3,6 +3,7 @@ import { useAuth } from '@/context/AuthContext';
 import { isPublicRoute } from '@/utils/route-utils';
 import { usePathname } from '@/i18n/navigation';
 import api from '@/utils/api';
+import toast from 'react-hot-toast';
 
 export const useAuthInterceptor = () => {
     const { logout } = useAuth();

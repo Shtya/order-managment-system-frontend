@@ -4820,10 +4820,12 @@
       "other": "Other Method"
     },
     "paymentStatuses": {
-      "pending": "Unpaid",
-      "paid": "Paid",
-      "partial": "Partially Paid"
-    },
+    "pending": "Pending",
+    "paid": "Paid",
+    "partial": "Partially Paid",
+    "refunded": "Refunded",
+    "partially_refunded": "Partially Refunded"
+  },
     "toolbar": {
       "searchPlaceholder": "Search by order number, customer name, or phone",
       "filter": "Filter",

@@ -4858,11 +4858,13 @@
       "wallet": "محفظة إلكترونية",
       "other": "طريقة أخرى"
     },
-    "paymentStatuses": {
-      "pending": "غير مدفوع",
-      "paid": "مدفوع",
-      "partial": "مدفوع جزئيًا"
-    },
+  "paymentStatuses": {
+    "pending": "غير مدفوع",
+    "paid": "مدفوع",
+    "partial": "مدفوع جزئيًا",
+    "refunded": "تم الاسترداد",
+    "partially_refunded": "تم الاسترداد جزئيًا"
+  },
     "toolbar": {
       "searchPlaceholder": "ابحث برقم الطلب، اسم العميل أو الهاتف",
       "filter": "فلترة",

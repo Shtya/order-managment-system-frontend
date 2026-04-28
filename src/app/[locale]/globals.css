@@ -1,5 +1,70 @@
+
+@font-face {
+    font-family: 'Lama Sans';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Lama Sans'), url('https://fonts.cdnfonts.com/s/89696/LamaSans-Regular.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'Lama Sans';
+    font-style: normal;
+    font-weight: 100;
+    src: local('Lama Sans'), url('https://fonts.cdnfonts.com/s/89696/LamaSans-Thin.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'Lama Sans';
+    font-style: normal;
+    font-weight: 200;
+    src: local('Lama Sans'), url('https://fonts.cdnfonts.com/s/89696/LamaSans-ExtraLight.woff') format('woff');
+}
+@font-face {
+    font-family: 'Lama Sans';
+    font-style: normal;
+    font-weight: 300;
+    src: local('Lama Sans'), url('https://fonts.cdnfonts.com/s/89696/LamaSans-Light.woff') format('woff');
+}
+@font-face {
+    font-family: 'Lama Sans';
+    font-style: normal;
+    font-weight: 500;
+    src: local('Lama Sans'), url('https://fonts.cdnfonts.com/s/89696/LamaSans-Medium.woff') format('woff');
+}
+@font-face {
+    font-family: 'Lama Sans';
+    font-style: normal;
+    font-weight: 600;
+    src: local('Lama Sans'), url('https://fonts.cdnfonts.com/s/89696/LamaSans-SemiBoldExpandedItalic.woff') format('woff');
+}
+@font-face {
+    font-family: 'Lama Sans';
+    font-style: normal;
+    font-weight: 600;
+    src: local('Lama Sans'), url('https://fonts.cdnfonts.com/s/89696/LamaSans-SemiBoldExpanded.woff') format('woff');
+}
+@font-face {
+    font-family: 'Lama Sans';
+    font-style: normal;
+    font-weight: 700;
+    src: local('Lama Sans'), url('https://fonts.cdnfonts.com/s/89696/LamaSans-Bold.woff') format('woff');
+}
+@font-face {
+    font-family: 'Lama Sans';
+    font-style: normal;
+    font-weight: 900;
+    src: local('Lama Sans'), url('https://fonts.cdnfonts.com/s/89696/LamaSans-Black.woff') format('woff');
+}
+@font-face {
+    font-family: 'Lama Sans';
+    font-style: normal;
+    font-weight: 900;
+    src: local('Lama Sans'), url('https://fonts.cdnfonts.com/s/89696/LamaSans-BlackCondensed.woff') format('woff');
+}
+
 @import 'tailwindcss';
 @import 'tw-animate-css';
+
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -8,6 +73,7 @@
 ═══════════════════════════════════════════════════════════════ */
 
 :root {
+  --font-arabic: 'Lama Sans', sans-serif;
   /* ── Brand ── */
   --primary: #6763AF;
   --secondary: #5750a0;
@@ -163,6 +229,7 @@
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+    
   }
 
   [dir='ltr'] body {

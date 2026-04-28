@@ -23,10 +23,8 @@ export const IconCheck = ({ size = 13 }) => (
 		<polyline points="20 6 9 17 4 12" />
 	</svg>
 );
-export const IconArrow = () => {
-	const locale = useLocale()
-	return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-		style={{ transform: locale === 'ar' ? 'scaleX(-1)' : 'none' }}>
+export const IconArrow = ({ className }) => {
+	return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`ltr:scale-[-1] ${className}`}>
 		<path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
 	</svg>)
 };

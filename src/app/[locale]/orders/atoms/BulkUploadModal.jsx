@@ -91,25 +91,50 @@ export default function BulkUploadModal({ isOpen, onClose, onSuccess }) {
 			formData.append("file", file);
 			const res = await api.post("/orders/bulk", formData, {
 				headers: { "Content-Type": "multipart/form-data" },
+				responseType: "blob",
 			});
-			const data = res.data || {};
-			const created = data.created ?? 0;
-			const failed = data.failed ?? 0;
-			const errors = data.errors ?? [];
 
-			if (created > 0) {
-				toast.success(t("bulkUpload.uploadSuccessCount", { count: created }));
-				onSuccess?.();
+			// Check content-type header to determine response type
+			const contentType = res.headers["content-type"] || "";
+			const isExcelFile = contentType.includes("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+			if (isExcelFile) {
+				// Download error report Excel file
+				const blob = new Blob([res.data], {
+					type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+				});
+				const url = URL.createObjectURL(blob);
+				const link = document.createElement("a");
+				link.href = url;
+				link.download = `order_errors_${Date.now()}.xlsx`;
+				link.click();
+				URL.revokeObjectURL(url);
+
+				toast.error(t("bulkUpload.errorReportGenerated"));
 				setFile(null);
 				onClose();
+			} else if (contentType.includes("application/json")) {
+				// Parse JSON response from Blob
+				const jsonText = await res.data.text();
+				const data = JSON.parse(jsonText);
+				const message = data.message ?? 0;
+				const failed = data.failed ?? 0;
+
+				if (failed === 0) {
+					toast.success(message || t("bulkUpload.uploadSuccess"));
+					onSuccess?.();
+					setFile(null);
+					onClose();
+				} else {
+					toast.error(message || t("bulkUpload.uploadNoCreated"));
+				}
 			}
-			if (failed > 0 && errors.length > 0) {
-				errors.slice(0, 5).forEach((e) => toast.error(`${e.orderRef}: ${e.message}`));
-				if (errors.length > 5) toast.error(t("bulkUpload.moreErrors", { count: errors.length - 5 }));
-			}
-			if (created === 0 && failed > 0) toast.error(t("bulkUpload.uploadNoCreated"));
 		} catch (err) {
-			toast.error(err.response?.data?.message || t("bulkUpload.uploadFailed"));
+			const jsonText = await err.response.data.text();
+			const data = JSON.parse(jsonText)
+			console.error("Upload error:", err);
+			console.error("Error response:", jsonText);
+			toast.error(data?.message || t("bulkUpload.uploadFailed"));
 		} finally {
 			setUploading(false);
 		}

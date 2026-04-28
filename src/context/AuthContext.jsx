@@ -8,13 +8,15 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-
-
-    const accessToken = typeof window !== "undefined" ? localStorage.getItem('accessToken') : null;
+    const [token, setToken] = useState(null);
 
     const fetchUser = useCallback(async () => {
-        if (!accessToken) return null;
+        if (!token) {
+            setIsLoading(false);
+            return null;
+        };
         try {
+            setIsLoading(true);
             const res = await api.get("/users/me");
             setUser(res.data);
             return res.data;
@@ -24,7 +26,39 @@ export function AuthProvider({ children }) {
         } finally {
             setIsLoading(false);
         }
-    }, [accessToken]);
+    }, [token]);
+
+    const setAuthToken = useCallback(async (newToken) => {
+        const sanitizedToken = newToken?.trim() || null;
+
+        if (sanitizedToken) {
+            localStorage.setItem('accessToken', sanitizedToken);
+            setToken(sanitizedToken);
+            await fetchUser(sanitizedToken);
+
+        } else {
+
+            localStorage.removeItem('accessToken');
+            setToken(null);
+            setUser(null);
+        }
+    }, [fetchUser, setToken, setUser]);
+
+    useEffect(() => {
+        const initializeAuth = async () => {
+            const savedToken = localStorage.getItem('accessToken')?.trim();
+
+            if (savedToken) {
+                localStorage.setItem('accessToken', savedToken);
+                setToken(savedToken);
+                await fetchUser();
+
+                setLoading(false);
+            };
+        }
+        initializeAuth();
+    }, [fetchUser]);
+
 
     const getDashboardRoute = useCallback((userData) => {
         const targetUser = userData || user;
@@ -47,10 +81,7 @@ export function AuthProvider({ children }) {
     const handleAuthSuccess = useCallback(async (data) => {
         if (data?.accessToken) {
             localStorage.setItem('accessToken', data.accessToken);
-        }
-        if (data?.user) {
-            localStorage.setItem('user', JSON.stringify(data.user));
-            setUser(data.user);
+            setToken(data.accessToken);
         }
 
         // Call local API for session management
@@ -111,13 +142,11 @@ export function AuthProvider({ children }) {
         }
     }, []);
 
-    useEffect(() => {
-        fetchUser();
-    }, [fetchUser]);
 
     const logout = useCallback(async () => {
         try {
-            ["accessToken", "refreshToken", "user"].forEach((k) => localStorage.removeItem(k));
+            ["accessToken"].forEach((k) => localStorage.removeItem(k));
+            setToken(null);
             setUser(null);
             await fetch("/api/auth/logout", {
                 method: "POST",
@@ -162,7 +191,7 @@ export function AuthProvider({ children }) {
         permissions: user?.role?.permissionNames,
         roleName: user?.role?.name || "user",
         planName: activeSubscription?.plan?.name || "No Plan",
-        accessToken
+        accessToken: token,
     };
 
     return (
@@ -177,6 +206,7 @@ export function AuthProvider({ children }) {
                 handleGoogleLogin,
                 handleAuthSuccess,
                 getDashboardRoute,
+                setAuthToken,
                 ...helpers
             }}
         >

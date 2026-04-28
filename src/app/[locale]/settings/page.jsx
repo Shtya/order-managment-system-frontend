@@ -79,7 +79,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/utils/cn";
-import { getUser } from "../../../hook/getUser";
 import SlugInput, { useSlugify } from "@/components/atoms/SlugInput";
 import {
   AutomationTab,
@@ -1849,7 +1848,7 @@ function EmailSection({ t }) {
   const [step, setStep] = useState(1);
   const [newEmail, setNewEmail] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const { setAuthToken } = useAuth();
   const requestChange = async () => {
     setLoading(true);
     try {
@@ -1869,8 +1868,7 @@ function EmailSection({ t }) {
     setStep(1);
     setNewEmail("");
     if (data?.accessToken) {
-      localStorage.setItem("accessToken", data.accessToken);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      setAuthToken(data?.accessToken);
     }
     await fetch("/api/auth/login", {
       method: "POST",

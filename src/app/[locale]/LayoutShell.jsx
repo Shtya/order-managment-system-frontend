@@ -107,7 +107,7 @@ function DashboardLayout({ children }) {
     }
   }, [AllPathname, isMobile]);
 
-  const { hasActiveSubscription, isSuperAdmin, isLoading, user } = useAuth();
+  const { hasActiveSubscription, isSuperAdmin, isLoading, user, setAuthToken } = useAuth();
   const isExcluded = excludedSubcriptionPaths.some(path => pathname.startsWith(path));
   const isPublic = isPublicRoute(AllPathname);
 

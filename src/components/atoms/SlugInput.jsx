@@ -96,36 +96,68 @@ export default function SlugInput({ mainName, mainSlug, register, name, slug, er
             </div>
 
             {/* رسائل الخطأ والتحقق الأسفل */}
-            <div className="min-h-[20px] px-1">
-                {/* 1. خطأ الـ Validation (Regex أو Required) */}
-                {errors?.slug?.message && (
-                    <p className="text-xs text-red-600 font-medium">{errors.slug.message}</p>
-                )}
-
-                {/* 2. رسائل حالة الـ Slug (تظهر فقط إذا كان الـ Regex صحيحاً) */}
-                {!errors.slug && slug && (
-                    <>
-                        {slugStatus === 'checking' && (
-                            <p className="text-xs text-gray-500 italic">{t('status.checking')}</p>
-                        )}
-                        {slugStatus === 'unique' && (
-                            <p className="text-xs text-green-600 font-bold flex items-center gap-1">
-                                <span>✓</span> {t('validation.slugAvailable')}
-                            </p>
-                        )}
-                        {slugStatus === 'takenStore' && (
-                            <p className="text-xs text-red-600 font-bold flex items-center gap-1">
-                                <span>✕</span> {t('validation.slugTakenStore')}
-                            </p>
-                        )}
-                        {slugStatus === 'taken' && (
-                            <p className="text-xs text-red-600 font-bold flex items-center gap-1">
-                                <span>✕</span> {t('validation.slugTaken')}
-                            </p>
-                        )}
-                    </>
-                )}
-            </div>
+            <FieldStatusInfo
+                name="slug"
+                errors={errors}
+                value={slug}
+                status={slugStatus}
+                t={t}
+            />
         </div>
     );
 }
+
+export const FieldStatusInfo = ({
+    errors,
+    name,
+    value,
+    status,
+    t
+}) => {
+    // 1. Extract the specific error for this field
+    const fieldError = errors?.[name];
+
+    return (
+        <div className="min-h-[20px] px-1">
+            {/* 1. Standard Validation Error (Regex, Required, etc.) */}
+            {fieldError?.message && (
+                <p className="text-xs text-red-600 font-medium">
+                    {fieldError.message}
+                </p>
+            )}
+
+            {/* 2. Async Status Messages (Shows only if no standard error and value exists) */}
+            {!fieldError && value && (
+                <div className="flex items-center gap-1 text-xs">
+                    {status === 'checking' && (
+                        <p className="text-gray-500 italic">
+                            {t('status.checking')}
+                        </p>
+                    )}
+
+                    {status === 'unique' && (
+                        <p className="text-green-600 font-bold flex items-center gap-1">
+                            <span className="text-[10px]">✓</span>
+                            {/* Dynamically fetches validation.slugAvailable or validation.skuAvailable */}
+                            {t(`validation.${name}Available`)}
+                        </p>
+                    )}
+
+                    {status === 'takenStore' && (
+                        <p className="text-red-600 font-bold flex items-center gap-1">
+                            <span className="text-[10px]">✕</span>
+                            {t(`validation.${name}TakenStore`)}
+                        </p>
+                    )}
+
+                    {status === 'taken' && (
+                        <p className="text-red-600 font-bold flex items-center gap-1">
+                            <span className="text-[10px]">✕</span>
+                            {t(`validation.${name}Taken`)}
+                        </p>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};

@@ -1023,6 +1023,7 @@ export default function CreateOrderPageComplete({
 		>
 			{/* ── Header ── */}
 			<PageHeader
+				stacky
 				breadcrumbs={[
 					{ name: t("breadcrumb.home"), href: "/" },
 					{ name: t("breadcrumb.orders"), href: "/orders" },

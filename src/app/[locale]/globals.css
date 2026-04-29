@@ -1115,3 +1115,18 @@ html[dir="ltr"] .dir-force {
   display: none !important;
   pointer-events: none;
 }
+
+.save-btn {
+  position: fixed;
+  right: 50px;
+  top: 64px;
+
+  transition: all 0.25s ease;
+  transform: translateY(-10px);
+}
+
+.save-btn.show {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}

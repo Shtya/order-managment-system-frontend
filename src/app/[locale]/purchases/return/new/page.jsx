@@ -332,6 +332,7 @@ export default function CreateReturnInvoicePage() {
 		>
 
 			<PageHeader
+				stacky
 				breadcrumbs={[
 					{ name: t("breadcrumb.home"), href: "/" },
 					{ name: t("breadcrumb.returns"), href: "/purchases/return" },

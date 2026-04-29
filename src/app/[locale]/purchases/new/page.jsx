@@ -293,6 +293,7 @@ export default function CreatePurchaseInvoicePage() {
 		>
 
 			<PageHeader
+				stacky
 				breadcrumbs={[
 					{ name: t("breadcrumb.home"), href: "/" },
 					{ name: t("breadcrumb.purchases"), href: "/purchases" },

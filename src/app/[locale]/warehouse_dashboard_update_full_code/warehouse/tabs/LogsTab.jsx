@@ -291,7 +291,7 @@ export function LogsTab({ opsLogs, orders = [] }) {
     <div className="space-y-4">
       <PageHeader
         breadcrumbs={[
-          { name: t("breadcrumbs.home"), href: "/" },
+          { name: t("breadcrumbs.home"), href: "/dashboard" },
           { name: t("breadcrumbs.warehouse"), href: "/warehouse" },
           { name: t("breadcrumbs.logs") },
         ]}

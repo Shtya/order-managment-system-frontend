@@ -215,7 +215,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 
 			<PageHeader
 				breadcrumbs={[
-					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.home"), href: "/dashboard" },
 					{ name: t("breadcrumb.products"), href: "/products" },
 					{ name: isEditMode ? t('breadcrumb.editBundle') : t('breadcrumb.addBundle') }
 				]}

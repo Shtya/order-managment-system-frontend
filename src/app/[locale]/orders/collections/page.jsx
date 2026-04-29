@@ -538,7 +538,7 @@ export default function OrderCollectionPage() {
 		<div className="min-h-screen p-5 ">
 			<PageHeader
 				breadcrumbs={[
-					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.home"), href: "/dashboard" },
 					{ name: activeTab === "not_collected" ? t('breadcrumb.notCollected') : t("breadcrumb.fullyCollected") },
 				]}
 				buttons={

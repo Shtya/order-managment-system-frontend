@@ -53,6 +53,7 @@ import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
 import ActionButtons from "@/components/atoms/Actions";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { COUNTRIES } from "../settings/page";
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -89,26 +90,6 @@ export default function SuppliersPage() {
 	const [deleting, setDeleting] = useState(false);
 
 
-	const countries = useMemo(() => {
-		return (
-			[
-				{
-					key: "EG",
-					nameAr: tCountries("EG"),
-					dialCode: "+20",
-					placeholder: "1234567890",
-					phone: { min: 10, max: 10, regex: /^(10|11|12|15)\d{8}$/ },
-				},
-				{
-					key: "SA",
-					nameAr: tCountries("SA"),
-					dialCode: "+966",
-					placeholder: "512345678",
-					phone: { min: 9, max: 9, regex: /^5\d{8}$/ },
-				},
-			] || []
-		);
-	}, [tCountries]);
 
 	const fetchCategories = useCallback(() => {
 		(async () => {
@@ -378,7 +359,7 @@ export default function SuppliersPage() {
 
 			<PageHeader
 				breadcrumbs={[
-					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.home"), href: "/dashboard" },
 					{ name: t("breadcrumb.suppliers") }
 				]}
 				buttons={
@@ -485,7 +466,7 @@ export default function SuppliersPage() {
 				onPageChange={({ page, per_page }) => fetchSuppliers({ page, per_page })}
 			/>
 
-			<SupplierFormDialog open={formOpen} onOpenChange={setFormOpen} supplier={editingSupplier} onSuccess={handleFormSuccess} countries={countries} />
+			<SupplierFormDialog open={formOpen} onOpenChange={setFormOpen} supplier={editingSupplier} onSuccess={handleFormSuccess} />
 
 			<ViewSupplierDialog open={viewOpen} onOpenChange={setViewOpen} supplier={viewingSupplier} t={t} />
 
@@ -504,7 +485,7 @@ export default function SuppliersPage() {
 }
 
 
-const makeSchema = (t, countries, tPhone) =>
+const makeSchema = (t, tPhone) =>
 	yup.object({
 		name: yup.string().trim().required(t("validation.nameRequired")).max(120, t("validation.nameMax")),
 		address: yup.string().trim().nullable().max(200, t("validation.addressMax")),
@@ -512,7 +493,7 @@ const makeSchema = (t, countries, tPhone) =>
 
 		phoneCountry: yup.string().required(),
 		phoneNumber: yup.string().test("phone-valid", t("validation.phoneInvalid"), function (value) {
-			const country = countries.find((c) => c.key === this.parent.phoneCountry) || countries[0];
+			const country = COUNTRIES.find((c) => c.key === this.parent.phoneCountry) || COUNTRIES[0];
 			const error = validatePhone(value, country, tPhone);
 			return !error;
 		}),
@@ -523,7 +504,7 @@ const makeSchema = (t, countries, tPhone) =>
 			.nullable()
 			.test("phone-valid", t("validation.phoneInvalid"), function (value) {
 				if (!value) return true;
-				const country = countries.find((c) => c.key === this.parent.secondPhoneCountry) || countries[0];
+				const country = COUNTRIES.find((c) => c.key === this.parent.secondPhoneCountry) || COUNTRIES[0];
 				const error = validatePhone(value, country, tPhone);
 				return !error;
 			}),
@@ -532,12 +513,12 @@ const makeSchema = (t, countries, tPhone) =>
 		categoryIds: yup.array().of(yup.string()).min(1, t("validation.categoryRequired")),
 	});
 
-function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess, countries }) {
+export function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess }) {
 	const [categories, setCategories] = useState([]);
 	const [loadingCategories, setLoadingCategories] = useState(false);
 	const tPhone = useTranslations("inputPhone");
 	const t = useTranslations("suppliers");
-	const schema = useMemo(() => makeSchema(t, countries, tPhone), [t, countries, tPhone]);
+	const schema = useMemo(() => makeSchema(t, tPhone), [t, tPhone]);
 
 	const {
 		control,
@@ -632,6 +613,18 @@ function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess, countries
 				toast.success(t("messages.created"));
 			}
 
+			reset({
+				name: "",
+				address: "",
+				description: "",
+				phoneCountry: "EG",
+				phoneNumber: "",
+				secondPhoneCountry: "EG",
+				secondPhoneNumber: "",
+				email: "",
+				categoryIds: [],
+			});
+
 			onSuccess();
 			onOpenChange(false);
 		} catch (error) {
@@ -662,7 +655,7 @@ function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess, countries
 					</DialogTitle>
 				</DialogHeader>
 
-				<form onSubmit={handleSubmit(onSubmit)} className="space-y-6 ">
+				<form className="space-y-6 ">
 					<div className="space-y-2">
 						<Label className="text-sm font-semibold text-gray-600 dark:text-slate-300 flex items-center gap-1">
 							<User size={16} />
@@ -806,7 +799,7 @@ function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess, countries
 						<Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting} className="rounded-xl">
 							{t("form.cancel")}
 						</Button>
-						<Button type="submit" disabled={isSubmitting} className="rounded-xl bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20">
+						<Button onClick={handleSubmit(onSubmit)} disabled={isSubmitting} className="rounded-xl bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20">
 							{isSubmitting ? (
 								<>
 									<Loader2 className="w-4 h-4 animate-spin mr-2" />

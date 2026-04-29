@@ -432,7 +432,7 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
 
       <PageHeader
         breadcrumbs={[
-          { name: t("breadcrumb.home"), href: "/" },
+          { name: t("breadcrumb.home"), href: "/dashboard" },
           { name: ordersToPrep.length > 1 ? "تحضير الطلبات" : "تحضير الطلب" },
         ]}
         buttons={

@@ -50,6 +50,7 @@ import SlugInput, { FieldStatusInfo } from '@/components/atoms/SlugInput';
 import PageHeader from '@/components/atoms/Pageheader';
 import ProductFilter from '@/components/atoms/ProductFilter';
 import { InvoiceSummary, ReceiptImageUpload } from '../../purchases/new/page';
+import { SupplierFormDialog } from '../../suppliers/page';
 
 const MAX_RECEIPT_MB = 5;
 const ALLOWED_RECEIPT_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
@@ -412,6 +413,7 @@ function PurchaseDataForm({
 	register,
 	errors,
 	suppliers,
+	setSuppliers,
 	totalPurchaseQuantity,
 	onTotalQuantityChange,
 	totalPurchaseQuantityError,
@@ -424,6 +426,16 @@ function PurchaseDataForm({
 }) {
 	const tValidation = useTranslations("validation");
 	const t = useTranslations('addProduct');
+	const [formOpen, setFormOpen] = useState(false);
+	async function handleFormSuccess() {
+		try {
+			const res = await api.get('/lookups/suppliers', { params: { limit: 200 } });
+			setSuppliers(Array.isArray(res.data) ? res.data : []);
+		} catch (e) {
+			console.error(e);
+		}
+	};
+
 
 	const handleImageUpload = (e) => {
 		const file = e.target.files?.[0];
@@ -483,20 +495,60 @@ function PurchaseDataForm({
 							control={control}
 							name="purchase.supplierId"
 							render={({ field }) => (
-								<Select value={field.value || ''} onValueChange={field.onChange}>
+								<Select
+									value={field.value || ''}
+									onValueChange={(value) => {
+										// Check if the user clicked the "Add New" option
+										if (value === "ADD_NEW_SUPPLIER") {
+											setFormOpen(true);
+										} else {
+											field.onChange(value);
+										}
+									}}
+								>
 									<SelectTrigger className="bg-white dark:bg-slate-900">
 										<SelectValue placeholder={t('purchase.supplierPlaceholder')} />
 									</SelectTrigger>
 									<SelectContent>
+										<button
+											type="button"
+											onClick={(e) => {
+												e.preventDefault();
+												setFormOpen(true);
+											}}
+											className={cn(
+												"group relative cusror-pointer",
+												"flex w-full  items-center justify-center gap-2.5",
+												"!rounded-md px-3 py-2.5 text-sm outline-none",
+												// Use primary color to distinguish the action
+												"text-[var(--primary)] font-semibold",
+												// Match the focus/hover tokens from your SelectItem
+												"hover:bg-[var(--primary)]/8 focus:bg-[var(--primary)]/8",
+												"transition-colors duration-150 text-center"
+											)}
+										>
+											<span className="truncate flex items-center gap-2">
+												<span className="text-lg leading-none">+</span>
+												{t('purchase.addNewSupplier')}
+											</span>
+
+										</button>
+										<div className="border-t border-slate-100 dark:border-slate-800 my-1" />
 										<SelectItem value="none">{t('common.none')}</SelectItem>
+
 										{suppliers.map((s) => (
-											<SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
+											<SelectItem key={s.id} value={String(s.id)}>
+												{s.name}
+											</SelectItem>
 										))}
+
 									</SelectContent>
 								</Select>
 							)}
 						/>
-						{errors?.purchase?.supplierId?.message && <p className="text-[11px] text-red-500">{errors.purchase.supplierId.message}</p>}
+						{errors?.purchase?.supplierId?.message && (
+							<p className="text-[11px] text-red-500 mt-1">{errors.purchase.supplierId.message}</p>
+						)}
 					</Field>
 					<Field label={t('purchase.invoiceNumber')}>
 						<Input {...register('purchase.receiptNumber')} placeholder="INV-000" className="bg-white dark:bg-slate-900" />
@@ -564,6 +616,7 @@ function PurchaseDataForm({
 					/>
 				</div>
 			</div >
+			<SupplierFormDialog open={formOpen} onOpenChange={setFormOpen} onSuccess={handleFormSuccess} />
 		</motion.div >
 	);
 }
@@ -628,7 +681,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		main: { general: '', specific: {} },
 		other: { general: '', specific: {} }
 	});
-	const [isScrolled, setIsScrolled] = useState(false);
+
 	const navigate = useRouter();
 	const [categories, setCategories] = useState([]);
 	const [stores, setStores] = useState([]);
@@ -660,38 +713,24 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	const salePrice = watch('salePrice');
 	const purchasePaidAmount = watch('purchase.paidAmount');
 
-	// useEffect(() => {
-	// 	if (productType !== 'single') return;
-	// 	const current = watch('combinations') || [];
-	// 	const first = current[0] || {};
-	// 	const defaultSku = (first?.sku || '').toString().trim() || `${getSkuBaseFromSlug(productSlug || productName || '')}-MAIN`;
-	// 	setValue('combinations', [{
-	// 		key: 'default',
-	// 		attributes: {},
-	// 		sku: defaultSku,
-	// 		stockOnHand: first?.stockOnHand ?? 0,
-	// 		reserved: first?.reserved ?? 0,
-	// 		price: salePrice || first?.price || '',
-	// 		isActive: parseBooleanLike(first?.isActive, true),
-	// 		isExisting: !!first?.isExisting,
-	// 		variantId: first?.variantId,
-	// 	}], { shouldDirty: true, shouldValidate: true });
-	// }, [productType, productSlug, productName, salePrice, setValue]);
+	async function handleFormSuccess() {
+		try {
+			const res = await api.get('/lookups/suppliers', { params: { limit: 200 } });
+			setSuppliers(Array.isArray(res.data) ? res.data : []);
+		} catch (e) {
+			console.error(e);
+		}
+	};
 
 	useEffect(() => {
 		if (!upsellingEnabled) setValue('upsellingProducts', [], { shouldDirty: true });
 	}, [upsellingEnabled, setValue]);
 
-	const wholesalePrice = watch('wholesalePrice');
-	const categoryId = watch('categoryId');
-	const storeId = watch('storeId');
-	const warehouseId = watch('warehouseId');
 
 	const attributesWatch = useWatch({ control, name: 'attributes' });
 	const combinationsWatch = useWatch({ control, name: 'combinations' });
 
 
-	console.log(errors)
 	useEffect(() => {
 		let mounted = true;
 		(async () => {
@@ -1211,7 +1250,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			{/* ── Page Header ── */}
 			<PageHeader
 				breadcrumbs={[
-					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.home"), href: "/dashboard" },
 					{ name: t("breadcrumb.products"), href: "/products" },
 					{ name: isEditMode ? t('breadcrumb.editProduct') : t('breadcrumb.addProduct') }
 				]}
@@ -1481,6 +1520,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 									/>
 									<PurchaseDataForm
 										singleMode={productType === 'single'}
+										setSuppliers={setSuppliers}
 										tPurchase={tPurchase}
 										tValidation={tValidation}
 										control={control}

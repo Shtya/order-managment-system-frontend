@@ -230,97 +230,106 @@ function InfoCard({
 	 • default  — full-width row below header (original behaviour)
 	 • inline   — compact tabs that sit beside the breadcrumb
 ══════════════════════════════════════════════════════════════ */
+
+
 function SwitcherTabs({ items, activeId, onChange, variant = "default" }) {
+    const scrollbarHideStyle = {
+        msOverflowStyle: 'none',
+        WebkitOverflowScrolling: 'touch',
+    };
 
-	// ستايل مشترك لإخفاء شريط التمرير
-	const scrollbarHideStyle = {
-		msOverflowStyle: 'none',
-		WebkitOverflowScrolling: 'touch',
-	};
+    /* ── INLINE variant ── */
+    // (Kept exactly the same as the previous improved version)
+    if (variant === "inline") {
+        return (
+            <div
+                className="flex items-center gap-1 p-1.5 rounded-full bg-slate-100/80 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 w-full md:w-auto overflow-x-auto"
+                style={{ ...scrollbarHideStyle, maxWidth: "100%" }}
+            >
+                {items.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = item.id === activeId;
+                    
+                    return (
+                        <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => onChange?.(item.id)}
+                            className={`relative shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-[12px] md:text-[13px] font-medium transition-colors outline-none z-10 ${
+                                isActive ? "text-primary font-bold" : "text-muted-foreground hover:text-foreground"
+                            }`}
+                        >
+                            {isActive && (
+                                <motion.div
+                                    layoutId="inline-active-pill"
+                                    className="absolute inset-0 bg-card rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.1)] -z-10"
+                                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                                />
+                            )}
+                            {Icon && <Icon size={14} className="shrink-0" />}
+                            <span className="whitespace-nowrap">{item.label}</span>
+                        </button>
+                    );
+                })}
+            </div>
+        );
+    }
 
-	/* ── INLINE variant ── */
-	if (variant === "inline") {
-		return (
-			<div
-				className="flex items-center gap-1 p-1 rounded-full bg-muted border border-border w-full md:w-auto overflow-x-auto "
-				style={{ ...scrollbarHideStyle, maxWidth: "100%" }}
-			>
-				{items.map((item) => {
-					const Icon = item.icon;
-					const isActive = item.id === activeId;
-					return (
-						<button
-							key={item.id}
-							type="button"
-							onClick={() => onChange?.(item.id)}
-							className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 rounded-full text-[11px] md:text-[12.5px] font-semibold transition-all outline-none"
-							style={{
-								background: isActive ? "var(--card)" : "transparent",
-								color: isActive ? "var(--primary)" : "var(--muted-foreground)",
-								boxShadow: isActive ? "0 1px 4px rgba(0,0,0,0.08), 0 0 0 1px color-mix(in oklab, var(--primary) 18%, transparent)" : "none",
-							}}
-						>
-							{Icon && <Icon size={12} className="shrink-0" />}
-							<span className="whitespace-nowrap">{item.label}</span>
-							{item.count !== undefined && (
-								<span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[9px] font-bold"
-									style={{
-										background: isActive ? "color-mix(in oklab, var(--primary) 14%, transparent)" : "color-mix(in oklab, var(--muted-foreground) 15%, transparent)",
-										color: isActive ? "var(--primary)" : "var(--muted-foreground)",
-									}}>
-									{item.count}
-								</span>
-							)}
-						</button>
-					);
-				})}
-			</div>
-		);
-	}
+    /* ── DEFAULT variant (High-Clarity Card Footer) ── */
+    return (
+        <div
+            // 1. The container gets a shaded background to create depth
+            className="flex items-stretch w-full overflow-x-auto overflow-y-hidden bg-slate-50 dark:bg-slate-900/60 border-t border-border rounded-b-2xl"
+            style={{ ...scrollbarHideStyle }}
+        >
+            {items.map((item) => {
+                const Icon = item.icon;
+                const isActive = item.id === activeId;
+                
+                return (
+                    <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => onChange?.(item.id)}
+                        // 2. flex-1 makes the tabs stretch evenly across the footer
+                        className={`relative flex-1 min-w-[120px] shrink-0 flex items-center justify-center gap-2 px-4 py-4 md:py-4.5 text-[13px] outline-none transition-colors z-10 ${
+                            isActive 
+                                ? "text-primary font-bold" 
+                                : "text-muted-foreground font-medium hover:text-foreground hover:bg-slate-100/50 dark:hover:bg-slate-800/50"
+                        }`}
+                    >
+                        {/* 3. The Animated Physical Tab */}
+                        {isActive && (
+                            <motion.div
+                                layoutId="card-footer-active-bg"
+                                // bg-card matches the white/dark surface of the card above
+                                className="absolute inset-0 bg-card shadow-[0_-2px_8px_rgba(0,0,0,0.03)] z-[-1]"
+                                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                            >
+                                {/* 4. Thicker, bolder top line */}
+                                <div className="absolute top-[-1px] left-0 right-0 h-[3px] bg-primary rounded-b-sm" />
+                            </motion.div>
+                        )}
 
-	/* ── DEFAULT variant ── */
-	return (
-		<div
-			className="border-t border-border flex items-stretch w-full overflow-x-auto overflow-y-hidden"
-			style={{ ...scrollbarHideStyle }}
-		>
-			{items.map((item) => {
-				const Icon = item.icon;
-				const isActive = item.id === activeId;
-				return (
-					<button
-						key={item.id}
-						type="button"
-						onClick={() => onChange?.(item.id)}
-						className="relative shrink-0 flex items-center gap-2 px-4 py-3 md:px-5 md:py-3.5 text-[12px] md:text-[13px] font-semibold bg-transparent border-none cursor-pointer outline-none transition-colors"
-						style={{ color: isActive ? "var(--primary)" : "var(--muted-foreground)" }}
-					>
-						{Icon && <Icon size={14} className="shrink-0" />}
-						<span className="whitespace-nowrap">{item.label}</span>
-						{item.count !== undefined && (
-							<span className="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 rounded-full text-[10px] font-bold transition-all"
-								style={{
-									background: isActive ? "color-mix(in oklab, var(--primary) 14%, var(--card))" : "var(--muted)",
-									color: isActive ? "var(--primary)" : "var(--muted-foreground)",
-								}}>
-								{item.count}
-							</span>
-						)}
-						{isActive && (
-							<motion.span
-								layoutId="tab-underline"
-								className="absolute bottom-[-1px] left-0 right-0 h-[2.5px] rounded-t-full"
-								style={{ background: "linear-gradient(90deg, var(--primary), var(--secondary))" }}
-								transition={{ type: "spring", stiffness: 500, damping: 38, mass: 0.5 }}
-							/>
-						)}
-					</button>
-				);
-			})}
-			{/* spacer لإبقاء التبويبات بجهة اليسار */}
-			<div className="flex-1" />
-		</div>
-	);
+                        {/* Slightly larger icon for active state */}
+                        {Icon && <Icon size={isActive ? 18 : 16} className={`shrink-0 transition-all ${isActive ? "drop-shadow-sm" : ""}`} />}
+                        
+                        <span className="whitespace-nowrap tracking-wide">{item.label}</span>
+                        
+                        {item.count !== undefined && (
+                            <span className={`inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full text-[11px] transition-all ${
+                                isActive 
+                                    ? "bg-primary text-primary-foreground font-extrabold shadow-md" 
+                                    : "bg-slate-200 dark:bg-slate-800 text-muted-foreground font-bold"
+                            }`}>
+                                {item.count}
+                            </span>
+                        )}
+                    </button>
+                );
+            })}
+        </div>
+    );
 }
 
 /* ══════════════════════════════════════════════════════════════

@@ -8,7 +8,7 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [token, setToken] = useState(null);
+    const [token, setToken] = useState(() => localStorage.getItem('accessToken'));
 
     const fetchUser = useCallback(async () => {
         if (!token) {

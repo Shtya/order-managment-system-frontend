@@ -587,7 +587,7 @@ export default function CollectOrderPage() {
       <div className="pb-16 pt-6">
         <PageHeader
           breadcrumbs={[
-            { name: t("breadcrumb.home"), href: "/" },
+            { name: t("breadcrumb.home"), href: "/dashboard" },
             { name: t("breadcrumb.title") },
           ]}
           buttons={

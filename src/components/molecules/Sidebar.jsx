@@ -617,61 +617,51 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
         { icon: PackagePlus, labelKey: "newProduct", permission: "products.read", href: "/products/new" },
         { icon: Layers, labelKey: "newBundle", permission: "products.read", href: "/bundles/new" },
         { icon: Package, labelKey: "categories", permission: "categories.read", href: "/products/categories" },
-
       ],
     },
     {
       icon: Factory,
-      labelKey: "suppliers",
+      labelKey: "administration",
       href: "/suppliers",
-      // roles: ["ADMIN"],
-      permission: "suppliers.read",
       children: [
-        { icon: Factory, labelKey: "suppliers", href: "/suppliers" },
         {
-          icon: FolderTree,
-          labelKey: "categories",
-          href: "/suppliers/categories",
+          icon: Factory,
+          labelKey: "suppliers",
+          permission: "suppliers.read",
+          href: "/suppliers",
         },
-      ],
-    },
-    {
-      icon: FileText,
-      labelKey: "purchases",
-      href: "/purchases",
-      // roles: ["ADMIN"],
-      permission: "purchases.read",
-      children: [
-        { icon: FileText, labelKey: "purchases", permission: "purchases.read", href: "/purchases" },
+        {
+          icon: FileText,
+          labelKey: "purchases",
+          permission: "purchases.read",
+          href: "/purchases",
+        },
         { icon: PackagePlus, labelKey: "newPurchase", permission: "purchases.read", href: "/purchases/new" },
         { icon: Undo2, labelKey: "purchasesReturn", permission: "purchase_returns.read", href: "/purchases/return" },
         { icon: PackagePlus, labelKey: "newPurchaseReturn", permission: "purchase_returns.read", href: "/purchases/return/new" },
       ],
     },
-
-    // { icon: TrendingUp, labelKey: 'sales', href: '/sales', roles: ['ADMIN'] },
-    {
-      icon: Truck,
-      labelKey: "shippingCompanies",
-      href: "/shipping-companies",
-      // roles: ["ADMIN"],
-      permission: "shipping-companies.read",
-    },
     {
       icon: Plug,
-      labelKey: "storeIntegration",
-      href: "/store-integration",
-      // roles: ["ADMIN"],
-      permission: "stores.read",
+      labelKey: "synchronization",
+      href: "/shipping-companies",
       children: [
+        {
+          icon: Truck,
+          labelKey: "shippingCompanies",
+          permission: "shipping-companies.read",
+          href: "/shipping-companies",
+        },
         {
           icon: Store,
           labelKey: "stores",
+          permission: "stores.read",
           href: "/store-integration",
         },
         {
           icon: AlertTriangle,
           labelKey: "syncFailures",
+          permission: "stores.read",
           href: "/store-integration/sync-failures",
         },
       ],
@@ -722,31 +712,43 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
     },
     {
       icon: Wallet,
-      labelKey: "wallet",
+      labelKey: "finance",
       href: "/wallet",
-      roles: ["ADMIN"],
-      permission: "wallet.read"
+      children: [
+        {
+          icon: Wallet,
+          labelKey: "wallet",
+          roles: ["ADMIN"],
+          permission: "wallet.read",
+          href: "/wallet",
+        },
+        {
+          icon: CreditCard,
+          labelKey: "plans",
+          roles: ["ADMIN"],
+          permission: "plans.read",
+          href: "/plans",
+        },
+      ],
     },
     {
-      icon: CreditCard,
-      labelKey: "plans",
-      href: "/plans",
-      roles: ["ADMIN"],
-      permission: "plans.read"
-    },
-    {
-      icon: FaUserTie,
-      labelKey: "employees",
+      icon: Users,
+      labelKey: "team",
       href: "/employees",
-      // roles: ["ADMIN"],
-      permission: "users.read",
-    },
-    {
-      icon: Shield,
-      labelKey: "roles",
-      href: "/roles",
-      //  roles: ["ADMIN"],
-      permission: "roles.read"
+      children: [
+        {
+          icon: FaUserTie,
+          labelKey: "employees",
+          permission: "users.read",
+          href: "/employees",
+        },
+        {
+          icon: Shield,
+          labelKey: "roles",
+          permission: "roles.read",
+          href: "/roles",
+        },
+      ],
     },
     {
       icon: Settings,

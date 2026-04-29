@@ -122,7 +122,7 @@ export default function InputPhone({
 					{label}
 				</Label>
 			)}
- 
+
 			{control ? (
 				<div className="flex gap-2">
 					<div className={countryWidthClass}>
@@ -144,7 +144,7 @@ export default function InputPhone({
 					/>
 				</div>
 			) : (
- 				<div className="flex gap-2">
+				<div className="flex gap-2">
 					<div className={countryWidthClass}>
 						<Select value={controlledCountry} onValueChange={onCountryChange}>
 							<SelectTrigger

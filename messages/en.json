@@ -355,6 +355,10 @@
   "sidebar": {
     "stores": "Stores",
     "syncFailures": "Product Sync Errors",
+    "administration": "Administration",
+    "synchronization": "Synchronization",
+    "finance": "Finance",
+    "team": "Team",
     "locked": "Locked",
     "subscription_required": "Subscription Required",
     "logo": "Logo",
@@ -3304,7 +3308,8 @@
       "paidAmount": "Paid Amount",
       "summary": "Purchase Summary",
       "quantityDistribution": "Automatically divides quantity among variations",
-      "quantity": "Quantity"
+      "quantity": "Quantity",
+      "addNewSupplier": "Add Supplier"
     },
     "breadcrumb": {
       "home": "Home",
@@ -6887,6 +6892,17 @@
       "business_dropshipping": "Dropshipping",
       "business_brand": "Brand / Manufacturer",
       "business_other": "Other",
+      "other": "Other",
+       "fashion": "Fashion",
+      "electronics": "Electronics",
+      "home_appliances": "Home & Appliances",
+      "beauty_personal_care": "Beauty & Personal Care",
+      "sports_fitness": "Sports & Fitness",
+      "toys_games": "Toys & Games",
+      "automotive": "Automotive",
+      "food_beverages": "Food & Beverages",
+      "health_wellness": "Health & Wellness",
+      "books_stationery": "Books & Stationery",
       "biz_hint": "We’ll use this information to customize your dashboard and show the most suitable tools for your business.",
       "password": "Password",
       "password_placeholder": "At least 8 characters",

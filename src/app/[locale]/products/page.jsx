@@ -210,7 +210,7 @@ export default function ProductsPage() {
 	const pathname = usePathname();
 	const viewId = searchParams.get("id");
 	const [active, setActive] = useState("products");
-	
+
 	const [search, setSearch] = useState("");
 	const [searchDebounced, setSearchDebounced] = useState("");
 
@@ -540,7 +540,7 @@ export default function ProductsPage() {
 
 			<PageHeader
 				breadcrumbs={[
-					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.home"), href: "/dashboard" },
 					{ name: t("breadcrumb.products") }
 				]}
 				buttons={

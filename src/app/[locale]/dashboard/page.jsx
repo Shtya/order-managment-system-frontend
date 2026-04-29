@@ -53,6 +53,7 @@ import toast from "react-hot-toast";
 import Button_ from "@/components/atoms/Button";
 import { cn } from "@/utils/cn";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
+import StoreFilter from "@/components/atoms/StoreFilter";
 
 // ── FilterField wrapper (matches the one in OrdersStatisticsPage) ─────────────
 
@@ -384,7 +385,6 @@ export default function DashboardPage() {
       {/* Page header */}
       <PageHeader
         breadcrumbs={[
-          { name: t("breadcrumb.home"), href: "/" },
           { name: t("breadcrumb.dashboard") },
         ]}
         buttons={
@@ -422,26 +422,9 @@ export default function DashboardPage() {
         </FilterField>
 
         {/* Store */}
-        <FilterField label={t("filters.store")} icon={Store}>
-          <Select
-            value={filters.storeId}
-            onValueChange={(v) => setFilters((f) => ({ ...f, storeId: v }))}
-          >
-            <SelectTrigger className="h-10 rounded-xl border-slate-200 dark:border-slate-700 text-sm bg-white dark:bg-slate-800">
-              <SelectValue placeholder={t("filters.allStores")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("filters.allStores")}</SelectItem>
-              {stores.map((s) => (
-                <SelectItem key={s.id} value={String(s.id)}>
-                  {s.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </FilterField>
+        <StoreFilter  value={filters.storeId} icon={Store}
+            onChange={(v) => setFilters((f) => ({ ...f, storeId: v }))} none={false} autoSelectIfSingle={true} />
       </TableFilters>
-
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <motion.div

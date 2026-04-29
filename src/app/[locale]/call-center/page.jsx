@@ -247,7 +247,7 @@ export default function CallCenterPage() {
         <div className="min-h-screen p-5">
             <PageHeader
                 breadcrumbs={[
-                    { name: t("callCenter.breadcrumb.home"), href: "/" },
+                    { name: t("callCenter.breadcrumb.home"), href: "/dashboard" },
                     { name: t("callCenter.breadcrumb.orders"), href: "/orders" },
                     { name: t("callCenter.title") },
                 ]}

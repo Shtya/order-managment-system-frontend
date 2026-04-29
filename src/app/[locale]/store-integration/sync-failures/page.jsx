@@ -464,7 +464,7 @@ export default function SyncFailuresPage() {
     <div className="min-h-screen p-5">
       <PageHeader
         breadcrumbs={[
-          { name: t("breadcrumb.home"), href: "/" },
+          { name: t("breadcrumb.home"), href: "/dashboard" },
           { name: t("breadcrumb.stores"), href: "/store-integration" },
           { name: t("breadcrumb.syncFailures") }
         ]}

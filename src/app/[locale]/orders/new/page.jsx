@@ -1025,7 +1025,7 @@ export default function CreateOrderPageComplete({
 			<PageHeader
 				stacky
 				breadcrumbs={[
-					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.home"), href: "/dashboard" },
 					{ name: t("breadcrumb.orders"), href: "/orders" },
 					{
 						name: isEditMode

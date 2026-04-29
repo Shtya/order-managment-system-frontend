@@ -135,7 +135,7 @@ export default function WalletPage() {
       {/* Page Header */}
       <PageHeader
         breadcrumbs={[
-          { name: t("breadcrumb.home"), onClick: () => { } },
+          { name: t("breadcrumb.home"), href: "/dashboard" },
           { name: t("breadcrumb.wallet") },
         ]}
         buttons={

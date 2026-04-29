@@ -263,7 +263,7 @@ export default function AddEmployeePage() {
 		>
 			<PageHeader
 				breadcrumbs={[
-					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.home"), href: "/dashboard" },
 					{ name: t("breadcrumb.employees"), href: "/employees" },
 					{ name: t("breadcrumb.addEmployee") }
 				]}

@@ -627,10 +627,11 @@ export default function OnboardingPage() {
     try {
       const { data } = await api.post(`/users/onboarding/next/${enumStep}`);
       const nextIndex = stepMap[data.nextStep];
-
+      
       setStep(() => nextIndex);
       setDbStep(() => nextIndex);
     } catch (err) {
+      console.error("Error advancing onboarding step:", err);
       const msg = err.response?.data?.message || t("unexpected_error");
       toast.error(msg);
     } finally {
@@ -745,14 +746,14 @@ export default function OnboardingPage() {
                 open={step === 0}
                 nextLoading={nextLoading}
               />
-              <PlanStep
+             {step === 1 && <PlanStep
                 key="p"
                 onNext={next}
                 onBack={back}
                 selectedId={user?.subscriptions?.[0]?.planId}
                 open={step === 1}
                 nextLoading={nextLoading}
-              />
+              />}
               <CompanyStep
                 key="c"
                 onNext={next}
@@ -1524,6 +1525,7 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
     user,
     subscribe,
     cancelSubscription,
+    fetchActiveSubscription,
   } = useSubscriptionsApi();
 
   const currentPlanId =
@@ -1648,6 +1650,13 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
     }
   };
 
+  async function HandleNext() {
+    try {
+      await onNext();
+    } catch (err) {
+      console.error("Error in HandleNext:", err);
+    }
+  }
   if (!open) return null;
 
   return (
@@ -2146,10 +2155,8 @@ function PlanStep({ onNext, onBack, selectedId, open, nextLoading }) {
       <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
         <BtnGhost onClick={onBack}>{t("back_btn")}</BtnGhost>
         <BtnPrimary
-          onClick={() => onNext()}
-          disabled={
-            !hasActiveSubscription || isLoading || nextLoading || loading
-          }
+          onClick={HandleNext}
+          disabled={isLoading || nextLoading || loading}
           loading={nextLoading}
         >
           {t("continue_btn")} <IcArrow dir="right" />
@@ -2331,7 +2338,6 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
     mode: "onTouched",
   });
 
-  console.log(errors)
 
   useEffect(() => {
     if (!open) return;

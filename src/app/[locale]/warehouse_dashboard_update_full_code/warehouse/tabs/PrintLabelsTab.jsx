@@ -470,7 +470,7 @@ export default function PrintLabelsTab({ orders, updateOrder, pushOp, subtab, se
     <div className="space-y-4">
       <PageHeader
         breadcrumbs={[
-          { name: t("breadcrumbs.home"), href: "/" },
+          { name: t("breadcrumbs.home"), href: "/dashboard" },
           { name: t("breadcrumbs.warehouse"), href: "/warehouse" },
           { name: t("breadcrumbs.printLabels") },
         ]}

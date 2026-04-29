@@ -830,7 +830,7 @@ export default function SubscriptionsPage() {
     <div className="container mx-auto px-4 !mt-8 !mb-4">
       <PageHeader
         breadcrumbs={[
-          { name: t("breadcrumb.home"), href: "/" },
+          { name: t("breadcrumb.home"), href: "/dashboard" },
           { name: t("breadcrumb.subscriptions") },
         ]}
         items={tabs}

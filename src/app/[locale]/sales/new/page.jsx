@@ -181,7 +181,7 @@ export default function CreateSalesInvoicePage() {
 
 			<PageHeader
 				breadcrumbs={[
-					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.home"), href: "/dashboard" },
 					{ name: t("breadcrumb.salesInvoices"), href: "/sales" },
 					{ name: t('breadcrumb.createInvoice') }
 				]}

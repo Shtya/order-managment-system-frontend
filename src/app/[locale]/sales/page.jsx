@@ -416,7 +416,7 @@ export default function SalesInvoicesPage() {
 
 			<PageHeader
 				breadcrumbs={[
-					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.home"), href: "/dashboard" },
 					{ name: t("breadcrumb.salesInvoices") }
 				]}
 				buttons={

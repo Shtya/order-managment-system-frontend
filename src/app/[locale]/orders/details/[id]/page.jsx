@@ -297,7 +297,7 @@ export function OrderDetailsPage({ order, loading }) {
     <div className="p-4 md:p-6 bg-background min-h-screen">
       <PageHeader
         breadcrumbs={[
-          { name: t("breadcrumb.home"), href: "/" },
+          { name: t("breadcrumb.home"), href: "/dashboard" },
           { name: t("breadcrumb.orders"), href: "/orders" },
           { name: order.orderNumber },
         ]}

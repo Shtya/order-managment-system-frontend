@@ -616,7 +616,7 @@ export default function DistributionTab({ orders, updateOrder, pushOp, rejectOrd
     <div className="space-y-4">
       <PageHeader
         breadcrumbs={[
-          { name: t("breadcrumbs.home"), href: "/" },
+          { name: t("breadcrumbs.home"), href: "/dashboard" },
           { name: t("breadcrumbs.orders"), href: "/orders" },
           { name: t("breadcrumbs.distribution") },
         ]}

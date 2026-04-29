@@ -190,7 +190,7 @@ const DEFAULT_SUBTABS = {
 };
 
 const SUBTABS = {
-  distribution: ["unassigned", "assigned"],
+  distribution: ["unassigned"],
   print: ["not_printed", "printed"],
   preparation: ["preparing", "prepared", "scanning"],
   outgoing: ["scan", "files"],

@@ -393,13 +393,19 @@ export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 													{t("productModal.store")}: {product?.store?.name ?? na}
 												</Badge>
 
-												<Badge className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+												<Badge className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 ">
 													<Warehouse size={14} className="mr-1" />
 													{t("productModal.warehouse")}: {product?.warehouse?.name ?? na}
 												</Badge>
+												<Badge className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+													<Hash size={14} className="mr-1" />
+													{t("productModal.sku")}: {product?.sku ?? na}
+												</Badge>
+
 												<Badge className="rounded-full bg-violet-50 text-violet-700 border border-violet-200 dark:bg-violet-900/20 dark:text-violet-200">
 													{t("table.type")}: {product?.type === "single" ? t("types.single") : t("types.variable")}
 												</Badge>
+
 												{/* <Badge className={cn(
 													"rounded-full border",
 													product?.isActive === false

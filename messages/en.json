@@ -3303,7 +3303,8 @@
       "totalQuantity": "Total Quantity",
       "paidAmount": "Paid Amount",
       "summary": "Purchase Summary",
-      "quantityDistribution": "Automatically divides quantity among variations"
+      "quantityDistribution": "Automatically divides quantity among variations",
+      "quantity": "Quantity"
     },
     "breadcrumb": {
       "home": "Home",
@@ -3474,7 +3475,8 @@
       "variable": "Variable"
     },
     "singleSku": {
-      "title": "SKU Details"
+      "title": "Warehouse details",
+      "purchase": "Purchase invoice"
     },
     "bundles": {
       "title": "Products in Bundle",
@@ -3601,7 +3603,8 @@
       "imagesEmpty": "No additional images.",
       "skusEmpty": "No SKUs found.",
       "upsellingEmpty": "No upselling products.",
-      "salePrice": "Sale Price"
+      "salePrice": "Sale Price",
+      "sku": "SKU"
     },
     "breadcrumb": {
       "home": "Home",
@@ -4533,7 +4536,8 @@
         "email": "Email",
         "externalId": "External Order Id",
         "orderStatus": "Order status",
-        "description": "Description"
+        "description": "Description",
+        "sku": "SKU"
       },
       "actions": {
         "retryOrder": "Retry & Save Order",

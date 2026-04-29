@@ -337,8 +337,8 @@ export const BlockEmployeePopover = ({
 	loadingMore,
 	nextCursor,
 }) => {
-	const t = useTranslations("orders");
 	const tCommon = useTranslations("common");
+	const t = useTranslations("orders");
 	const [open, setOpen] = useState(false);
 	const selectedUser = block.employee?.user;
 
@@ -557,6 +557,8 @@ function Pill({ children, className }) {
 	);
 }
 
+
+
 /* ─── section header ─────────────────────────────────────────────────────── */
 function SectionLabel({ children }) {
 	return (
@@ -569,11 +571,30 @@ function SectionLabel({ children }) {
 export default function DistributionModal({ isOpen, onClose, statuses = [], onSuccess }) {
 	const t = useTranslations("orders");
 
+	const ALLOWED_STATUS_CODES = new Set([
+		OrderStatus.CANCELLED,
+		OrderStatus.RETURNED,
+		OrderStatus.FAILED_DELIVERY,
+		OrderStatus.REJECTED,
+		OrderStatus.NO_ANSWER,
+		OrderStatus.NEW,
+		OrderStatus.UNDER_REVIEW,
+		OrderStatus.OUT_OF_DELIVERY_AREA,
+	]);
+
+	const filteredStatuses = useMemo(() => {
+		if (!statuses?.length) return [];
+
+		return statuses.filter((s) =>
+			ALLOWED_STATUS_CODES.has(s.code?.toLowerCase())
+		);
+	}, [statuses]);
+
 	const newStatusId = useMemo(() => {
 
-		const status = statuses?.find(s => s.code?.toLowerCase() === OrderStatus.NEW);
+		const status = filteredStatuses?.find(s => s.code?.toLowerCase() === OrderStatus.NEW);
 		return status ? status.id : null;
-	}, [statuses]);
+	}, [filteredStatuses]);
 
 	const [seletOpen, setSelectOpen] = useState(false);
 	const [distributionType, setDistributionType] = useState(null);
@@ -919,7 +940,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 										setOpen={setSelectOpen}
 										selectedStatuses={selectedStatuses}
 										setSelectedStatuses={setSelectedStatuses}
-										statuses={statuses}
+										statuses={filteredStatuses}
 									/>
 								</div>
 

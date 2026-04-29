@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
+import { cn } from "@/utils/cn";
 
 /* ══════════════════════════════════════════════════════════════
 	 ANIMATED COUNTER
@@ -559,6 +560,8 @@ export function PageHeader({
 	items = [],
 	active,
 	setActive,
+	stacky = false,
+	...props
 }) {
 	const hasStats = statsLoading || (Array.isArray(stats) ? stats.length > 0 : !!stats);
 	const hasTabs = items?.length >= 1;
@@ -566,10 +569,48 @@ export function PageHeader({
 
 	const isCompact = hasTabs && !hasStats && !hasButtons;
 
+
+	const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
+	const headerRef = useRef(null);
+
+	const observeHeader = useCallback((node) => {
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (stacky) {
+					entries.forEach((entry) => {
+						setIsHeaderScrolled(!entry.isIntersecting);
+					});
+				}
+			},
+			{
+				rootMargin: '0px',
+				threshold: 0.5,
+			}
+		);
+
+		if (node && stacky) {
+
+			observer.observe(node);
+		}
+
+		return () => {
+			if (node && stacky) {
+				observer.unobserve(node);
+			}
+		};
+	}, [stacky]);
+
+	useEffect(() => {
+		if (headerRef.current) {
+			return observeHeader(headerRef.current);
+		}
+	}, [observeHeader, stacky]);
+
 	/* ── COMPACT LAYOUT ── */
 	if (isCompact) {
 		return (
 			<motion.div
+				{...props}
 				initial={{ opacity: 0, y: -6 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
@@ -676,6 +717,8 @@ export function PageHeader({
 	/* ── FULL LAYOUT (original, unchanged) ── */
 	return (
 		<motion.div
+			{...props}
+			ref={headerRef}
 			initial={{ opacity: 0, y: -8 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
@@ -742,12 +785,14 @@ export function PageHeader({
 					{buttons && (
 						<AnimatePresence mode="wait">
 							<motion.div
-								key="phdr-btns"
-								initial={{ opacity: 0, x: 8 }}
-								animate={{ opacity: 1, x: 0 }}
-								exit={{ opacity: 0, x: -8 }}
-								transition={{ duration: 0.15 }}
-								className="flex items-center gap-2 flex-wrap"
+								layout // This is the magic prop that animates the position change
+								transition={{ type: "spring", stiffness: 400, damping: 30 }}
+								className={cn(
+									"flex items-center gap-2 transition-shadow duration-300",
+									isHeaderScrolled
+										? "fixed end-12.5 top-16 shadow-md z-[10] bg-card/80 backdrop-blur-sm p-2 rounded-xl border border-slate-200 dark:border-slate-800"
+										: "relative"
+								)}
 							>
 								{buttons}
 							</motion.div>

@@ -19,7 +19,7 @@ export default function Button_({
 	permission,
 }) {
 	const { hasPermission } = useAuth();
-	
+
 	if (permission && !hasPermission(permission)) {
 		return null;
 	}
@@ -27,7 +27,7 @@ export default function Button_({
 	const isLink = !!href;
 	const Tag = isLink ? "a" : "button";
 	const extra = isLink ? { href } : { onClick, disabled, type };
- 
+
 	const classes = [
 		"btn",
 		`btn-${variant}`,
@@ -59,7 +59,7 @@ export function PrimaryBtn({
 	...props
 }) {
 	const { hasPermission } = useAuth();
-	
+
 	if (permission && !hasPermission(permission)) {
 		return null;
 	}
@@ -79,7 +79,7 @@ export function PrimaryBtn({
 
 export function GhostBtn({ children, onClick, className = "", permission }) {
 	const { hasPermission } = useAuth();
-	
+
 	if (permission && !hasPermission(permission)) {
 		return null;
 	}

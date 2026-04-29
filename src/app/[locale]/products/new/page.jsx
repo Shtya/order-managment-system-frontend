@@ -1,7 +1,7 @@
 // File: products/new/page.jsx
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
 	X,
@@ -46,7 +46,7 @@ import { TagInput } from '@/components/atoms/TagInput';
 import LANG from '@/components/atoms/LANG';
 import { baseImg } from '@/utils/axios';
 import { useAutoTranslate } from '@/utils/autoTranslate';
-import SlugInput from '@/components/atoms/SlugInput';
+import SlugInput, { FieldStatusInfo } from '@/components/atoms/SlugInput';
 import PageHeader from '@/components/atoms/Pageheader';
 import ProductFilter from '@/components/atoms/ProductFilter';
 import { InvoiceSummary, ReceiptImageUpload } from '../../purchases/new/page';
@@ -628,6 +628,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		main: { general: '', specific: {} },
 		other: { general: '', specific: {} }
 	});
+	const [isScrolled, setIsScrolled] = useState(false);
 	const navigate = useRouter();
 	const [categories, setCategories] = useState([]);
 	const [stores, setStores] = useState([]);
@@ -953,6 +954,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			if (anyUploading) { toast.error('Please wait for images upload to finish'); return; }
 			if (anyUploadFailed) { toast.error('Some images failed to upload'); return; }
 			if (slugStatus == 'takenStore' || slugStatus === 'taken') return;
+			if (skuStatus == 'takenStore' || skuStatus === 'taken') return;
 			if (!isEditMode && hasPurchase && Number(totalPurchaseQuantity || 0) <= 0) {
 				setTotalPurchaseQuantityError(t('validation.totalQuantityRequired'));
 				toast.error(t('validation.totalQuantityRequired'));
@@ -1123,7 +1125,9 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	}, [isEditMode, existingProduct, reset]);
 
 	const [slugStatus, setSlugStatus] = useState(null);
+	const [skuStatus, setSkuStatus] = useState(null);
 	const watchSlug = watch('slug');
+	const watchSku = watch('sku');
 
 	useEffect(() => {
 		if (!watchSlug || errors.slug) { setSlugStatus(null); return; }
@@ -1131,6 +1135,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			setSlugStatus('checking');
 			try {
 				const params = new URLSearchParams({ slug: watchSlug.trim() });
+				// if (storeId && storeId !== 'none') params.append('storeId', storeId);
 				if (productId) params.append('productId', productId);
 				const res = await api.get(`/products/check-slug?${params.toString()}`);
 				setSlugStatus(res.data.isUnique ? 'unique' : 'takenStore');
@@ -1138,6 +1143,38 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		}, 280);
 		return () => clearTimeout(checkUnique);
 	}, [watchSlug, errors.slug, productId]);
+
+	useEffect(() => {
+		if (!watchSku || errors.sku || isEditMode) {
+			setSkuStatus(null);
+			return;
+		}
+
+		const checkUnique = setTimeout(async () => {
+			// 2. Set status to 'checking' to trigger loading UI
+			setSkuStatus('checking');
+
+			try {
+				// [2025-12-24] Mandatory trim for SKU consistency
+				const params = new URLSearchParams({ sku: watchSku.trim() });
+
+				// if (storeId && storeId !== 'none') params.append('storeId', storeId);
+				if (productId) params.append('productId', productId);
+
+				const res = await api.get(`/products/check-sku?${params.toString()}`);
+
+				// 3. Use the same status strings as your slug logic
+				setSkuStatus(res.data.isUnique ? 'unique' : 'takenStore');
+
+			} catch (e) {
+				// 4. Reset on API failure
+				setSkuStatus(null);
+			}
+		}, 280);
+
+		return () => clearTimeout(checkUnique);
+	}, [watchSku, errors.sku, productId, isEditMode]);
+
 
 	const duplicateAttributeIndexes = useMemo(() => {
 		const seen = new Map();
@@ -1162,11 +1199,13 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } }
 	};
 
+
 	return (
 		<motion.div
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			transition={{ duration: 0.3 }}
+
 			className="min-h-screen bg-slate-50 dark:bg-slate-950 p-5 pb-16 "
 		>
 			{/* ── Page Header ── */}
@@ -1176,6 +1215,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 					{ name: t("breadcrumb.products"), href: "/products" },
 					{ name: isEditMode ? t('breadcrumb.editProduct') : t('breadcrumb.addProduct') }
 				]}
+				stacky
 				buttons={
 					<div className="flex items-center gap-2">
 						<Button_
@@ -1192,6 +1232,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 							variant="solid"
 							onClick={handleSubmit(onSubmit)}
 							icon={isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save size={16} />}
+
 						/>
 					</div>
 				}
@@ -1280,6 +1321,13 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 											{...register('sku')}
 											placeholder={t('combinations.placeholders.skuSingle')}
 											disabled={isEditMode}
+										/>
+										<FieldStatusInfo
+											name="sku"
+											errors={errors}
+											value={watchSku}
+											status={skuStatus}
+											t={t}
 										/>
 									</Field>
 

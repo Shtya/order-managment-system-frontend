@@ -4650,7 +4650,8 @@
       "back": "Back",
       "save": "Save",
       "loading": "Loading...",
-      "close": "Close"
+      "close": "Close",
+      "call": "Call Customer"
     },
     "empty": "No data to display",
     "messages": {
@@ -4820,12 +4821,12 @@
       "other": "Other Method"
     },
     "paymentStatuses": {
-    "pending": "Pending",
-    "paid": "Paid",
-    "partial": "Partially Paid",
-    "refunded": "Refunded",
-    "partially_refunded": "Partially Refunded"
-  },
+      "pending": "Pending",
+      "paid": "Paid",
+      "partial": "Partially Paid",
+      "refunded": "Refunded",
+      "partially_refunded": "Partially Refunded"
+    },
     "toolbar": {
       "searchPlaceholder": "Search by order number, customer name, or phone",
       "filter": "Filter",
@@ -4890,7 +4891,8 @@
       "amountReceived": "Amount Received",
       "lastUpdate": "Last Update",
       "createdat": "Order Date",
-      "actions": "Actions"
+      "actions": "Actions",
+      "finalTotal": "Final Total"
     },
     "bulkUpload": {
       "clickToChangeFile": "Click to change file",

@@ -126,7 +126,7 @@ function ExternalProductModal({ isOpen, onClose, remoteId, provider, cache, onFe
                                 <div className="flex-1 space-y-3">
                                     <h4 className="text-lg font-bold">{cache.data.name}</h4>
                                     <div className="flex flex-wrap gap-2">
-                                        <Badge variant="outline">SKU: {cache.data.sku}</Badge>
+                                        <Badge variant="outline">{t('labels.sku')}: {cache.data.sku}</Badge>
                                         <Badge variant="outline" className="text-primary">{t('labels.price')}: {formatCurrency(cache.data.price)}</Badge>
                                         <Badge variant="outline">{t('labels.quantity')}: {cache.data.quantity}</Badge>
                                     </div>
@@ -179,9 +179,10 @@ function ExternalProductModal({ isOpen, onClose, remoteId, provider, cache, onFe
                                                     <tr key={i} className="hover:bg-muted/30">
                                                         <td className="px-3 py-2">
                                                             <div className="flex flex-wrap gap-1">
-                                                                {v.variation_props?.map((p, idx) => (
+                                                                {/* //or object has no keys */}
+                                                                {v.variation_props && Object.keys(v.variation_props || {}).length > 0 ? v.variation_props?.map((p, idx) => (
                                                                     <span key={idx} className="px-2 py-0.5 rounded text-xs bg-accent">{p.variation_prop}</span>
-                                                                ))}
+                                                                )) : 'N/A'}
                                                             </div>
                                                         </td>
                                                         <td className="px-3 py-2 font-mono text-xs">{v.sku}</td>
@@ -385,7 +386,7 @@ export default function FailedOrderDetailsPage() {
 
                 const remoteId = row?.remoteProductId || problem?.remoteId;
                 const provider = failure?.store?.provider;
-                if (failure.status === 'success') return [];
+                // if (failure.status === 'success') return [];
                 // Build dynamic actions based on problem
                 let actions = [];
 

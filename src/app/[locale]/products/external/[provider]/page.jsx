@@ -64,6 +64,7 @@ export default function ImportExternalProductPage() {
             type: ext.variants?.length > 0 ? 'variable' : 'single',
             name: ext.name || '',
             slug: ext.slug || '',
+            sku: ext.sku || '',
             wholesalePrice: ext.expense || '',
             salePrice: ext.price || '',
             lowestPrice: '',

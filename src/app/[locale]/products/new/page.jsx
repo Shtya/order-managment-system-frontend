@@ -169,7 +169,7 @@ function buildCombinationsFromAttributes(attributes, slug = '', defaultPrice = '
 const makeSchema = (t, tValidation) =>
 	yup.object({
 		hasPurchase: yup.boolean().default(false),
-		type: yup.string().oneOf(['single', 'variable']).default('variable'),
+		// type: yup.string().oneOf(['single', 'variable']).default('variable'),
 		name: yup.string().trim().required(t('validation.nameRequired')).max(200, t('validation.nameTooLong', { max: 200 })),
 		slug: yup.string().trim().required(t('validation.slugRequired')).matches(/^[a-z0-9-_]+$/, t('validation.slugInvalid')),
 		wholesalePrice: yup.number().transform((value, originalValue) => originalValue === "" ? NaN : value).typeError(t('validation.requiredNumber')).required(t('validation.requiredNumber')).min(0, t('validation.noNegative')),
@@ -184,6 +184,30 @@ const makeSchema = (t, tValidation) =>
 		upsellingEnabled: yup.boolean().default(false),
 		upsellingProducts: yup.array().of(yup.object({ productId: yup.string().trim().required(t('validation.upsellProductRequired')), label: yup.string().nullable(), callCenterDescription: yup.string().nullable().max(1000, t('validation.descriptionTooLong', { max: 1000 })) })).default([]),
 		attributes: yup.array().of(yup.object({ id: yup.string().required(), name: yup.string().trim().required(t('validation.attributeNameRequired')), values: yup.array().of(yup.string().trim().required(t('validation.attributeValueRequired'))).min(1, t('validation.atLeastOneValue')) })).default([]),
+		sku: yup
+			.string()
+			.trim()
+			.required(t('validation.nameRequired'))
+			.transform((value) => {
+				if (!value) return value;
+
+				return value
+					.trim()
+					.replace(/\s+/g, (match, offset, string) => {
+						const charBefore = string[offset - 1];
+						const charAfter = string[offset + match.length];
+
+						const isSurroundedBySpecial = /[-_]/.test(charBefore) || /[-_]/.test(charAfter);
+
+						return isSurroundedBySpecial ? '' : '-';
+					});
+			})
+			.max(120, t('validation.combinationSkuMax'))
+			.nullable()
+			.test('sku-format', t('validation.skuFormat'), (val) => {
+				if (val == null || String(val).trim() === '') return true;
+				return /^[a-zA-Z0-9-]+$/.test(String(val).trim());
+			}),
 		combinations: yup.array().of(
 			yup.object({
 				key: yup.string().trim().required(t('validation.combinationKeyRequired')),
@@ -195,6 +219,7 @@ const makeSchema = (t, tValidation) =>
 
 						return value
 							.trim()
+							//
 							.replace(/\s+/g, (match, offset, string) => {
 								const charBefore = string[offset - 1];
 								const charAfter = string[offset + match.length];
@@ -287,6 +312,7 @@ function getDefaultValues() {
 	return {
 		hasPurchase: false,
 		type: 'variable',
+		sku: '',
 		name: '', slug: '', wholesalePrice: '', salePrice: '', lowestPrice: '', storageRack: '',
 		categoryId: '', storeId: '', warehouseId: '', description: '',
 		callCenterProductDescription: '', upsellingEnabled: false,
@@ -381,7 +407,6 @@ function ProductPurchaseReceiptUpload({ receipt, onChange, onRemove, t, tValidat
 }
 
 function PurchaseDataForm({
-	t,
 	tPurchase,
 	control,
 	register,
@@ -398,6 +423,7 @@ function PurchaseDataForm({
 	singleMode = false
 }) {
 	const tValidation = useTranslations("validation");
+	const t = useTranslations('addProduct');
 
 	const handleImageUpload = (e) => {
 		const file = e.target.files?.[0];
@@ -444,12 +470,12 @@ function PurchaseDataForm({
 		<motion.div
 			initial={{ opacity: 0, height: 0 }}
 			animate={{ opacity: 1, height: 'auto' }}
-			className="my-6 p-5 rounded-2xl border-2 border-dashed border-primary/20 bg-primary/[0.02] space-y-5"
+			className="my-6 p-5 rounded-2xl space-y-5"
 		>
-			<div className="flex items-center gap-2 pb-2 border-b border-primary/10">
+			{/* <div className="flex items-center gap-2 pb-2 border-b border-primary/10">
 				<FilePlus className="w-4 h-4 text-primary" />
 				<h4 className="text-[14px] font-bold text-primary">{t('purchase.invoiceInfo')}</h4>
-			</div>
+			</div> */}
 			<div className='flex max-lg:flex-col gap-6 '>
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 space-y-6 h-fit">
 					<Field label={t('purchase.supplier')}>
@@ -496,7 +522,7 @@ function PurchaseDataForm({
 						/>
 						{errors?.purchase?.safeId?.message && <p className="text-[11px] text-red-500">{errors.purchase.safeId.message}</p>}
 					</Field>
-					{!singleMode && <Field label={t('purchase.totalQuantity')}>
+					<Field label={singleMode ? t('purchase.quantity') : t('purchase.totalQuantity')}>
 						<div className="relative">
 							<Input
 								type="number"
@@ -505,15 +531,15 @@ function PurchaseDataForm({
 								placeholder="0"
 								className="bg-white dark:bg-slate-900 pr-10"
 							/>
-							<div className="absolute end-3 top-1/2 -translate-y-1/2 group cursor-help">
+							{!singleMode && <div className="absolute end-3 top-1/2 -translate-y-1/2 group cursor-help">
 								<Info className="w-4 h-4 text-slate-400" />
 								<div className="absolute bottom-full right-0 mb-2 w-48 p-2 rounded-lg bg-slate-800 text-white text-[10px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
 									{t('purchase.quantityDistribution')}
 								</div>
-							</div>
+							</div>}
 						</div>
 						{totalPurchaseQuantityError && <p className="text-[11px] text-red-500">{totalPurchaseQuantityError}</p>}
-					</Field>}
+					</Field>
 					<Field label={t('purchase.paidAmount')}>
 						<Input type="number"  {...register('purchase.paidAmount')} placeholder="0.00" className="bg-white dark:bg-slate-900" />
 					</Field>
@@ -537,8 +563,8 @@ function PurchaseDataForm({
 						summary={invoiceSummary.summary}
 					/>
 				</div>
-			</div>
-		</motion.div>
+			</div >
+		</motion.div >
 	);
 }
 
@@ -595,8 +621,8 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 	const combinationsSectionRef = useRef(null);
 	const tPurchase = useTranslations("purchaseInvoice");
-	const t = useTranslations('addProduct');
 	const tValidation = useTranslations('validation');
+	const t = useTranslations('addProduct');
 	const locale = useLocale();
 	const [imageErrors, setImageErrors] = useState({
 		main: { general: '', specific: {} },
@@ -620,33 +646,36 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	const { control, register, handleSubmit, setValue, reset, watch, clearErrors, formState: { errors, isSubmitting } } = useForm({
 		defaultValues: defaultValues ? defaultValues : getDefaultValues(), resolver: yupResolver(schema), mode: 'onTouched',
 	});
+	const { fields: attributeFields, append: appendAttribute, remove: removeAttribute } = useFieldArray({ control, name: 'attributes', keyName: 'fieldId' });
+	const { fields: comboFields } = useFieldArray({ control, name: 'combinations', keyName: 'fieldId' });
 
 	const upsellingEnabled = watch('upsellingEnabled');
 	const productName = watch('name');
 	const productSlug = watch('slug');
-	const productType = watch('type') || 'variable';
+	const productType = attributeFields.length > 0 ? 'variable' : 'single';
+
 	const attributesForDupCheck = useWatch({ control, name: 'attributes' }) || [];
 	const [skuConflictMap, setSkuConflictMap] = useState({});
 	const salePrice = watch('salePrice');
 	const purchasePaidAmount = watch('purchase.paidAmount');
 
-	useEffect(() => {
-		if (productType !== 'single') return;
-		const current = watch('combinations') || [];
-		const first = current[0] || {};
-		const defaultSku = (first?.sku || '').toString().trim() || `${getSkuBaseFromSlug(productSlug || productName || '')}-MAIN`;
-		setValue('combinations', [{
-			key: 'default',
-			attributes: {},
-			sku: defaultSku,
-			stockOnHand: first?.stockOnHand ?? 0,
-			reserved: first?.reserved ?? 0,
-			price: salePrice || first?.price || '',
-			isActive: parseBooleanLike(first?.isActive, true),
-			isExisting: !!first?.isExisting,
-			variantId: first?.variantId,
-		}], { shouldDirty: true, shouldValidate: true });
-	}, [productType, productSlug, productName, salePrice, setValue]);
+	// useEffect(() => {
+	// 	if (productType !== 'single') return;
+	// 	const current = watch('combinations') || [];
+	// 	const first = current[0] || {};
+	// 	const defaultSku = (first?.sku || '').toString().trim() || `${getSkuBaseFromSlug(productSlug || productName || '')}-MAIN`;
+	// 	setValue('combinations', [{
+	// 		key: 'default',
+	// 		attributes: {},
+	// 		sku: defaultSku,
+	// 		stockOnHand: first?.stockOnHand ?? 0,
+	// 		reserved: first?.reserved ?? 0,
+	// 		price: salePrice || first?.price || '',
+	// 		isActive: parseBooleanLike(first?.isActive, true),
+	// 		isExisting: !!first?.isExisting,
+	// 		variantId: first?.variantId,
+	// 	}], { shouldDirty: true, shouldValidate: true });
+	// }, [productType, productSlug, productName, salePrice, setValue]);
 
 	useEffect(() => {
 		if (!upsellingEnabled) setValue('upsellingProducts', [], { shouldDirty: true });
@@ -660,8 +689,6 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	const attributesWatch = useWatch({ control, name: 'attributes' });
 	const combinationsWatch = useWatch({ control, name: 'combinations' });
 
-	const { fields: attributeFields, append: appendAttribute, remove: removeAttribute } = useFieldArray({ control, name: 'attributes', keyName: 'fieldId' });
-	const { fields: comboFields } = useFieldArray({ control, name: 'combinations', keyName: 'fieldId' });
 
 	console.log(errors)
 	useEffect(() => {
@@ -763,18 +790,13 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		lastCombSigRef.current = sig;
 
 		if (productType !== 'variable') {
-			const first = currentCombos?.[0] || {};
-			setValue('combinations', [{
-				key: 'default',
-				attributes: {},
-				sku: first?.sku || '',
-				stockOnHand: first?.stockOnHand ?? 0,
-				reserved: first?.reserved ?? 0,
-				price: currentPrice || first?.price || '',
-				isActive: parseBooleanLike(first?.isActive, true),
-				isExisting: !!first?.isExisting,
-				variantId: first?.variantId,
-			}], { shouldDirty: true, shouldValidate: false });
+			if (isEditMode) {
+				const first = currentCombos?.[0] || {};
+				setValue('combinations', [first], { shouldDirty: true, shouldValidate: false });
+
+			} else {
+				setValue('combinations', [], { shouldDirty: true, shouldValidate: false });
+			}
 			return;
 		}
 		if (!isAttrEdited.current) return;
@@ -900,7 +922,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	};
 
 	const purchaseSummary = useMemo(() => {
-		const combos = Array.isArray(combinationsWatch) ? combinationsWatch : [];
+		const combos = productType ? [{ stockOnHand: totalPurchaseQuantity, price: salePrice }] : Array.isArray(combinationsWatch) ? combinationsWatch : [];
 		const stockRows = combos.filter((c) => Number(c?.stockOnHand || 0) > 0);
 		const subtotal = stockRows.reduce((sum, c) => {
 			const stock = Number(c?.stockOnHand || 0);
@@ -918,7 +940,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			total,
 			remainingAmount: total,
 		};
-	}, [combinationsWatch, purchasePaidAmount]);
+	}, [combinationsWatch, purchasePaidAmount, productType, totalPurchaseQuantity, salePrice]);
 
 	const onSubmit = async (data) => {
 		let toastId;
@@ -987,25 +1009,21 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			const imagesMeta = (otherFiles || []).filter((f) => f?.isFromLibrary && !f?.isExisting && f?.url).map((f) => ({ url: String(f.url) }));
 			const orphanIds = (otherFiles || []).filter((f) => !f?.isExisting && !f?.isFromLibrary && f?.orphanId).map((f) => f.orphanId);
 			if (isEditMode) fd.append('imagesMeta', JSON.stringify([...existingImages, ...imagesMeta]));
+			if (!isEditMode) fd.append('sku', data.sku);
+
 			else fd.append('imagesMeta', JSON.stringify(imagesMeta));
 			if (orphanIds.length) fd.append('imagesOrphanIds', JSON.stringify(orphanIds));
 			if (isEditMode && removedImages.length > 0) fd.append('removedImages', JSON.stringify(removedImages));
 
-			const combinationsPayload = productType === 'single'
-				? [{
-					key: data.combinations?.[0]?.key || 'default',
-					attributes: {},
-					sku: data.combinations?.[0]?.sku || '',
-					price: safeNumberString(data.salePrice) || null,
-					stockOnHand: Number(data.combinations?.[0]?.stockOnHand || 0),
-					isActive: parseBooleanLike(data.combinations?.[0]?.isActive, true),
-				}]
+			const combinationsPayload = productType == 'single'
+				? []
 				: [...(data.combinations || [])];
 
 			const skusToCheck = (combinationsPayload || [])
 				.filter((c) => c?.isActive !== false)
 				.map((c) => (c?.sku || '').trim())
 				.filter(Boolean);
+
 			if (skusToCheck.length) {
 				const checkRes = await api.post('/products/check-skus', {
 					skus: skusToCheck,
@@ -1034,9 +1052,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				setSkuConflictMap({});
 			}
 
-			if (!isEditMode && productType === 'single') {
-				fd.append('singleSkuItem', JSON.stringify(combinationsPayload[0] || {}));
-			} else {
+			if (productType !== 'single') {
 				fd.append('combinations', JSON.stringify(combinationsPayload));
 			}
 
@@ -1049,6 +1065,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 					supplierId: data.purchase.supplierId && data.purchase.supplierId !== 'none' ? data.purchase.supplierId : undefined,
 					safeId: data.purchase.safeId && data.purchase.safeId !== 'none' ? data.purchase.safeId : undefined,
 					paidAmount: Number(data.purchase.paidAmount || 0),
+					quantity: Number(totalPurchaseQuantity || 0),
 				};
 				fd.append('purchase', JSON.stringify(pData));
 
@@ -1092,7 +1109,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 		reset({
 			type: existingProduct.type || 'variable',
-			name: existingProduct.name || '', slug: existingProduct.slug || '', wholesalePrice: existingProduct.wholesalePrice?.toString() || '',
+			name: existingProduct.name || '', slug: existingProduct.slug || '', wholesalePrice: existingProduct.wholesalePrice?.toString() || '', sku: existingProduct.sku || '',
 			salePrice: existingProduct.salePrice?.toString() || '', lowestPrice: existingProduct.lowestPrice?.toString() || '', storageRack: existingProduct.storageRack || '',
 			categoryId: (existingProduct.categoryId || existingProduct.category?.id) ? String(existingProduct.categoryId || existingProduct.category?.id) : 'none',
 			storeId: (existingProduct.storeId || existingProduct.store?.id) ? String(existingProduct.storeId || existingProduct.store?.id) : 'none',
@@ -1114,7 +1131,6 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			setSlugStatus('checking');
 			try {
 				const params = new URLSearchParams({ slug: watchSlug.trim() });
-				if (storeId && storeId !== 'none') params.append('storeId', storeId);
 				if (productId) params.append('productId', productId);
 				const res = await api.get(`/products/check-slug?${params.toString()}`);
 				setSlugStatus(res.data.isUnique ? 'unique' : 'takenStore');
@@ -1194,32 +1210,28 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 						{/* Product Info Card */}
 						<motion.div variants={fadeUp}>
 							<Card>
-								<SectionHeader title={t('sections.productInfo')} action={
-									!isEditMode && (
-										<Controller
-											control={control}
-											name="type"
-											render={({ field }) => (
-												<div className="flex items-center gap-2 h-[34px] px-2 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
-													<label
-														htmlFor="product-type-check"
-														className="text-[14px] font-medium text-slate-500 dark:text-slate-400 cursor-pointer select-none"
-													>
-														{t('sections.isSingleProduct')}
-													</label>
-													<Checkbox
-														id="product-type-check"
-														checked={field.value === 'single'}
-														onCheckedChange={(checked) => {
-															field.onChange(checked ? 'single' : 'variable');
-														}}
-														className="h-6 w-6 border-slate-300 dark:border-slate-600 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-													/>
-												</div>
-											)}
-										/>
-									)
-								} />
+								<SectionHeader title={t('sections.productInfo')}
+									action={
+										!isEditMode && <div className="flex items-center gap-2 px-3 h-[34px] mt-4 rounded-lg bg-primary/10 dark:bg-primary/30 border border-primary/20 dark:border-primary/70 w-fit">
+											<Checkbox
+												checked={hasPurchase}
+												onCheckedChange={(v) => {
+													setHasPurchase(!!v);
+													setValue('hasPurchase', !!v, { shouldValidate: true });
+												}}
+												size={16}
+												id="has-purchase-single"
+												className="h-4.5 w-4.5 rounded-[4px]"
+											/>
+											<label
+												htmlFor="has-purchase-single"
+												className="text-[13px] font-medium text-primary dark:text-primary-400 cursor-pointer select-none leading-none"
+											>
+												{t('purchase.hasInvoice')}
+											</label>
+										</div>
+									}
+								/>
 								<div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3">
 									<Field label={t('fields.productName')} error={errors?.name?.message} className=" ">
 										<Input {...register('name')} placeholder={t('placeholders.productName')} />
@@ -1262,6 +1274,15 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 									<Field label={t('fields.lowestPrice')} error={errors?.lowestPrice?.message}>
 										<Input type="number"  {...register('lowestPrice')} placeholder={t('placeholders.lowestPrice')} />
 									</Field>
+
+									<Field label="SKU" error={errors?.sku?.message}>
+										<Input
+											{...register('sku')}
+											placeholder={t('combinations.placeholders.skuSingle')}
+											disabled={isEditMode}
+										/>
+									</Field>
+
 
 									<Field label={t('fields.storageRack')}>
 										<Input {...register('storageRack')} placeholder={t('placeholders.storageRack')} />
@@ -1404,9 +1425,35 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 								</div>
 							</Card>
 						</motion.div>
+						{!isEditMode && hasPurchase && (
+							<motion.div variants={fadeUp}>
+								<Card>
+									<SectionHeader
+										title={t('singleSku.purchase')}
+									/>
+									<PurchaseDataForm
+										singleMode={productType === 'single'}
+										tPurchase={tPurchase}
+										tValidation={tValidation}
+										control={control}
+										register={register}
+										errors={errors}
+										suppliers={suppliers}
+										totalPurchaseQuantity={totalPurchaseQuantity}
+										onTotalQuantityChange={handleTotalQuantityChange}
+										totalPurchaseQuantityError={totalPurchaseQuantityError}
+										purchaseReceipt={purchaseReceipt}
+										setPurchaseReceipt={setPurchaseReceipt}
+										setValue={setValue}
+										clearErrors={clearErrors}
+										invoiceSummary={purchaseSummary}
+									/>
+								</Card>
+							</motion.div>
+						)}
 
 						{/* Attributes Card */}
-						{productType === 'variable' && <motion.div variants={fadeUp}>
+						{!(productType === "single" && isEditMode) && <motion.div variants={fadeUp}>
 							<Card>
 								<SectionHeader
 									title={t('attributes.title')}
@@ -1486,64 +1533,17 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 						</motion.div>}
 
 						{/* Combinations Card */}
-						{productType === 'variable' && comboFields.length > 0 && (
+						{comboFields.length > 0 && !(isEditMode && productType === "single") && (
 							<motion.div ref={combinationsSectionRef} variants={fadeUp} className="scroll-mt-24">
 								<Card>
 									<div className="flex items-center justify-between mb-5">
 										<SectionHeader title={t('combinations.title')} />
 										<div className="flex items-center gap-4">
-											{!isEditMode && (
-												<div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-primary/10 dark:bg-primary/30 border border-primary/20 dark:border-primary/70">
-													<Controller
-														control={control}
-														name="hasPurchase"
-														render={({ field }) => (
-															<Checkbox
-																checked={hasPurchase}
-																onCheckedChange={(v) => {
-																	setHasPurchase(!!v);
-																	setValue('hasPurchase', !!v, { shouldValidate: true });
-																}}
-																size={16}
-																id="has-purchase"
-																className="h-4 w-4 rounded-[4px]"
-															/>
-														)}
-													/>
-													<label
-														htmlFor="has-purchase"
-														className="text-[11px] font-bold text-primary dark:text-primary-400 cursor-pointer select-none leading-none"
-													>
-														{t('purchase.hasInvoice')}
-													</label>
-												</div>
-											)}
 											<span className="text-[12px] font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">
 												{comboFields.length} {t('combinations.count')}
 											</span>
 										</div>
 									</div>
-
-									{/* Purchase Data Form (Only in Create Mode + Toggle On) */}
-									{!isEditMode && hasPurchase && (
-										<PurchaseDataForm
-											t={t}
-											tPurchase={tPurchase}
-											tValidation={tValidation}
-											control={control}
-											register={register}
-											errors={errors}
-											suppliers={suppliers}
-											totalPurchaseQuantity={totalPurchaseQuantity}
-											onTotalQuantityChange={handleTotalQuantityChange}
-											totalPurchaseQuantityError={totalPurchaseQuantityError}
-											purchaseReceipt={purchaseReceipt}
-											setPurchaseReceipt={setPurchaseReceipt}
-											setValue={setValue}
-											clearErrors={clearErrors}
-											invoiceSummary={purchaseSummary}
-										/>
-									)}
 
 									<div className="overflow-hidden rounded-xl border border-slate-100 dark:border-slate-800">
 										<div className="overflow-x-auto max-h-[520px] overflow-y-auto" >
@@ -1682,111 +1682,25 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 							</motion.div>
 						)}
 
-						{productType === 'single' && (
+						{productType === 'single' && isEditMode && (
 							<motion.div variants={fadeUp}>
 								<Card>
-									<SectionHeader
-										title={t('singleSku.title')}
-									// action={
-									// 	!isEditMode && (
-									// 		<Controller
-									// 			control={control}
-									// 			name="combinations.0.isActive"
-									// 			render={({ field }) => (
-									// 				<div className="flex items-center gap-2 h-[34px] px-3 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
-									// 					<label
-									// 						htmlFor="single-sku-active"
-									// 						className="text-[13px] font-medium text-slate-500 dark:text-slate-400 cursor-pointer select-none"
-									// 					>
-									// 						{t('combinations.isActive')}
-									// 					</label>
-									// 					<Checkbox
-									// 						id="single-sku-active"
-									// 						checked={parseBooleanLike(field.value, true)}
-									// 						onCheckedChange={(v) => field.onChange(!!v)}
-									// 						className="h-5 w-5 border-slate-300 dark:border-slate-600 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-									// 					/>
-									// 				</div>
-									// 			)}
-									// 		/>
-									// 	)
-									// }
-									/>
-									<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-										<Field label="SKU">
-											<Input
-												{...register('combinations.0.sku')}
-												placeholder={t('combinations.placeholders.skuSingle')}
-												disabled={isEditMode}
-											/>
-											{errors?.combinations?.[0]?.sku?.message && <p className="text-[11px] text-red-500 mt-0.5">{errors.combinations[0].sku.message}</p>}
-										</Field>
-
-										<Field label={t('combinations.onHand')}>
-											{!isEditMode && hasPurchase ? (
-												<Input
-													type="number"
-													{...register('combinations.0.stockOnHand')}
-													onBlur={handleSkuQuantityBlur}
-												/>
-											) : (
+									<SectionHeader title={t('singleSku.title')} />
+									{isEditMode && productType === 'single' && (
+										<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+											<Field label={t('combinations.onHand')}>
 												<Input value={String(combinationsWatch?.[0]?.stockOnHand || 0)} disabled />
-											)}
-										</Field>
-										<Field label={t('combinations.reserved')}>
-											<Input value={String(combinationsWatch?.[0]?.reserved || 0)} disabled />
-										</Field>
-										<Field label={t('combinations.available')}>
-											<Input value={String(Math.max(0, Number(combinationsWatch?.[0]?.stockOnHand || 0) - Number(combinationsWatch?.[0]?.reserved || 0)))} disabled />
-										</Field>
-										{/* <Field label={t('combinations.price')}>
-											<Input value={salePrice || ''} disabled />
-										</Field> */}
-									</div>
-									{!isEditMode && (
-										<div className="flex items-center gap-1.5 px-2 py-1 mt-4 rounded-lg bg-primary/10 dark:bg-primary/30 border border-primary/20 dark:border-primary/70 w-fit">
-											<Checkbox
-												checked={hasPurchase}
-												onCheckedChange={(v) => {
-													setHasPurchase(!!v);
-													setValue('hasPurchase', !!v, { shouldValidate: true });
-												}}
-												size={16}
-												id="has-purchase-single"
-												className="h-4 w-4 rounded-[4px]"
-											/>
-											<label
-												htmlFor="has-purchase-single"
-												className="text-[11px] font-bold text-primary dark:text-primary-400 cursor-pointer select-none leading-none"
-											>
-												{t('purchase.hasInvoice')}
-											</label>
-										</div>
-									)}
-									{!isEditMode && hasPurchase && (
-										<PurchaseDataForm
-											t={t}
-											singleMode={true}
-											tPurchase={tPurchase}
-											tValidation={tValidation}
-											control={control}
-											register={register}
-											errors={errors}
-											suppliers={suppliers}
-											totalPurchaseQuantity={totalPurchaseQuantity}
-											onTotalQuantityChange={handleTotalQuantityChange}
-											totalPurchaseQuantityError={totalPurchaseQuantityError}
-											purchaseReceipt={purchaseReceipt}
-											setPurchaseReceipt={setPurchaseReceipt}
-											setValue={setValue}
-											clearErrors={clearErrors}
-											invoiceSummary={purchaseSummary}
-										/>
-									)}
+											</Field>
+											<Field label={t('combinations.reserved')}>
+												<Input value={String(combinationsWatch?.[0]?.reserved || 0)} disabled />
+											</Field>
+											<Field label={t('combinations.available')}>
+												<Input value={String(Math.max(0, Number(combinationsWatch?.[0]?.stockOnHand || 0) - Number(combinationsWatch?.[0]?.reserved || 0)))} disabled />
+											</Field>
+										</div>)}
 								</Card>
 							</motion.div>
 						)}
-
 						{/* Upselling Card */}
 						<motion.div variants={fadeUp}>
 							<Card>

@@ -63,91 +63,105 @@ reviews:
             time: '2026-04-27T21:00:10.595Z'
   orders.bulkUpload.uploadSuccess:
     locales:
-      ar:
-        comments:
-          - user:
-              name: amagdykhalil
-              email: am2592379@gmail.com
-            id: BW0xFtJMu92tTs85g2oAL
-            comment: ''
-            suggestion: ''
-            type: approve
-            time: '2026-04-28T12:44:51.749Z'
       en:
         comments:
           - user:
               name: amagdykhalil
               email: am2592379@gmail.com
-            id: ZVp8lkleDF-3vqRUp76jq
+            id: KLVFrDhx2RE8M3y-HgVNc
             comment: ''
             suggestion: ''
             type: approve
-            time: '2026-04-28T12:45:02.724Z'
-  orders.table.finalTotal:
+            time: '2026-04-28T12:44:31.286Z'
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: ejpPpjFWPboYjTEtRDcFQ
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-28T12:44:33.123Z'
+  addProduct.singleSku.title:
     locales:
       en:
         comments:
           - user:
               name: amagdykhalil
               email: am2592379@gmail.com
-            id: bCdIzU-aTxVVAviiEjkTZ
+            id: ZRQoJMEST50eNFE-avhr-
             comment: ''
             suggestion: ''
             type: approve
-            time: '2026-04-29T09:17:31.127Z'
+            time: '2026-04-29T14:09:22.750Z'
       ar:
         comments:
           - user:
               name: amagdykhalil
               email: am2592379@gmail.com
-            id: TIDKG7FSVOACoCvOBQtoO
+            id: njiPEoKn4WXUFcJjWkWOn
             comment: ''
             suggestion: ''
             type: approve
-            time: '2026-04-29T09:17:33.008Z'
-          - user:
-              name: amagdykhalil
-              email: am2592379@gmail.com
-            id: DITcDsTMi_cIlwoqLj1Gm
-            comment: ''
-            suggestion: ''
-            type: approve
-            time: '2026-04-29T09:17:58.010Z'
-  orders.common.call:
+            time: '2026-04-29T14:09:24.945Z'
+  addProduct.purchase.totalQuantity:
     locales:
       en:
         comments:
           - user:
               name: amagdykhalil
               email: am2592379@gmail.com
-            id: xZ5O2ru_kMe-mkN80v84y
+            id: 8loKeIhmMf9Ojf6TelBsG
             comment: ''
             suggestion: ''
             type: approve
-            time: '2026-04-29T09:20:09.872Z'
+            time: '2026-04-29T14:18:35.088Z'
           - user:
               name: amagdykhalil
               email: am2592379@gmail.com
-            id: f77hAF2hWL_ZpQQ0B8wIF
+            id: EWIealSkKzXslCd5lRuQ6
             comment: ''
             suggestion: ''
             type: approve
-            time: '2026-04-29T09:21:07.737Z'
+            time: '2026-04-29T14:19:31.088Z'
       ar:
         comments:
           - user:
               name: amagdykhalil
               email: am2592379@gmail.com
-            id: cpa5GBaw-AuB468SeUmux
+            id: DJmhSAPd0xTtzhz51H5I-
             comment: ''
             suggestion: ''
             type: approve
-            time: '2026-04-29T09:20:11.726Z'
+            time: '2026-04-29T14:18:37.520Z'
           - user:
               name: amagdykhalil
               email: am2592379@gmail.com
-            id: mjEh-uOA5o4DCj33YpxGc
+            id: HyR8J1Zgu1qi-oIvwnI0E
             comment: ''
             suggestion: ''
             type: approve
-            time: '2026-04-29T09:21:04.017Z'
+            time: '2026-04-29T14:19:33.296Z'
+  addProduct.purchase.quantity:
+    locales:
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: AhshJXIesB6Hil1wbF7Th
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-29T14:19:47.159Z'
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: zslQT-NQ2J5UQ929PglEE
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-29T14:19:48.752Z'

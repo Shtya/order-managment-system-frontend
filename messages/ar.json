@@ -3320,7 +3320,8 @@
       "totalQuantity": "إجمالي الكمية",
       "paidAmount": "المبلغ المدفوع",
       "summary": "ملخص الشراء",
-      "quantityDistribution": "توزيع الكمية تلقائياً بين المتغيرات"
+      "quantityDistribution": "توزيع الكمية تلقائياً بين المتغيرات",
+      "quantity": "الكمية"
     },
     "breadcrumb": {
       "home": "الرئيسية",
@@ -3491,7 +3492,8 @@
       "variable": "متغير"
     },
     "singleSku": {
-      "title": "تفاصيل SKU "
+      "title": "تفاصيل المخرزن",
+      "purchase": "فاتورة الشراء"
     },
     "bundles": {
       "title": "المنتجات في الباقة",
@@ -3618,7 +3620,8 @@
       "upsellDisabled": "Upsell غير مفعّل",
       "imagesEmpty": "لا توجد صور إضافية.",
       "skusEmpty": "لا يوجد SKUs.",
-      "upsellingEmpty": "لا يوجد Upselling."
+      "upsellingEmpty": "لا يوجد Upselling.",
+      "sku": "SKU"
     },
     "breadcrumb": {
       "home": "الرئيسية",
@@ -4567,7 +4570,8 @@
         "email": "البريد الإلكتروني",
         "externalId": "المعرف الطلب الخارجي",
         "orderStatus": "حالة الطلب",
-        "description": "الوصف"
+        "description": "الوصف",
+        "sku": "SKU"
       },
       "actions": {
         "viewExternalProductDetails": "عرض تفاصيل المنتج الخارجي",

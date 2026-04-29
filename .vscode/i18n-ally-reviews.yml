@@ -83,3 +83,71 @@ reviews:
             suggestion: ''
             type: approve
             time: '2026-04-28T12:45:02.724Z'
+  orders.table.finalTotal:
+    locales:
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: bCdIzU-aTxVVAviiEjkTZ
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-29T09:17:31.127Z'
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: TIDKG7FSVOACoCvOBQtoO
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-29T09:17:33.008Z'
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: DITcDsTMi_cIlwoqLj1Gm
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-29T09:17:58.010Z'
+  orders.common.call:
+    locales:
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: xZ5O2ru_kMe-mkN80v84y
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-29T09:20:09.872Z'
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: f77hAF2hWL_ZpQQ0B8wIF
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-29T09:21:07.737Z'
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: cpa5GBaw-AuB468SeUmux
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-29T09:20:11.726Z'
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: mjEh-uOA5o4DCj33YpxGc
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-04-29T09:21:04.017Z'

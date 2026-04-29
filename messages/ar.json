@@ -4689,7 +4689,8 @@
       "back": "رجوع",
       "save": "حفظ",
       "loading": "جاري التحميل...",
-      "close": "إغلاق"
+      "close": "إغلاق",
+      "call": "اتصال بالعميل"
     },
     "empty": "لا توجد بيانات للعرض",
     "messages": {
@@ -4858,13 +4859,13 @@
       "wallet": "محفظة إلكترونية",
       "other": "طريقة أخرى"
     },
-  "paymentStatuses": {
-    "pending": "غير مدفوع",
-    "paid": "مدفوع",
-    "partial": "مدفوع جزئيًا",
-    "refunded": "تم الاسترداد",
-    "partially_refunded": "تم الاسترداد جزئيًا"
-  },
+    "paymentStatuses": {
+      "pending": "غير مدفوع",
+      "paid": "مدفوع",
+      "partial": "مدفوع جزئيًا",
+      "refunded": "تم الاسترداد",
+      "partially_refunded": "تم الاسترداد جزئيًا"
+    },
     "toolbar": {
       "searchPlaceholder": "ابحث برقم الطلب، اسم العميل أو الهاتف",
       "filter": "فلترة",
@@ -4929,7 +4930,8 @@
       "amountReceived": "المبلغ المستلم",
       "lastUpdate": "آخر تحديث",
       "createdat": "تاريخ الطلب",
-      "actions": "الإجراءات"
+      "actions": "الإجراءات",
+      "finalTotal": "التكلفة الإجمالية"
     },
     "bulkUpload": {
       "clickToChangeFile": "اضغط لتغيير الملف",

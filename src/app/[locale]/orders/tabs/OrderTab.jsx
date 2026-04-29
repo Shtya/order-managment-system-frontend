@@ -35,6 +35,9 @@ import {
   Building2,
   Calendar,
   Clock,
+  MessageCircle,
+  PhoneCall,
+  LucideMessageCircle,
 
 } from "lucide-react";
 
@@ -493,15 +496,6 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
   const columns = useMemo(() => {
     return [
       {
-        key: "orderNumber",
-        header: t("table.orderNumber"),
-        cell: (row) => (
-          <span className="text-primary font-bold font-mono">
-            {row.orderNumber}
-          </span>
-        ),
-      },
-      {
         key: "customerName",
         header: t("table.customerName"),
         cell: (row) => (
@@ -511,14 +505,88 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
         ),
       },
       {
-        key: "phoneNumber",
-        header: t("table.phoneNumber"),
+        key: "orderNumber",
+        header: t("table.orderNumber"),
         cell: (row) => (
-          <div className="flex items-center gap-2 text-sm">
-            <Phone size={14} />
-            {row.phoneNumber}
+          <span className="text-primary font-bold font-mono">
+            {row.orderNumber}
+          </span>
+        ),
+      },
+      {
+        key: "city",
+        header: t("table.city"),
+        cell: (row) => (
+          <div className="flex items-center gap-1 text-sm">
+            <MapPin size={12} />
+            {row.city}
           </div>
         ),
+      },
+      {
+        key: "address",
+        header: t("table.address"),
+        cell: (row) => (
+          <span className="text-sm text-gray-600 dark:text-slate-300 line-clamp-1">
+            {row.address}
+          </span>
+        ),
+      },
+      {
+        key: "shippingCost",
+        header: t("table.finalTotal"),
+        cell: (row) => (
+          <span className="text-gray-600 dark:text-slate-200">
+            {formatCurrency(row.finalTotal)}
+          </span>
+        ),
+      },
+      {
+        key: "shippingCost",
+        header: t("table.shippingCost"),
+        cell: (row) => (
+          <span className="text-gray-600 dark:text-slate-200">
+            {formatCurrency(row.shippingCost)}
+          </span>
+        ),
+      },
+      {
+        key: "phoneNumber",
+        header: t("table.phoneNumber"),
+        cell: (row) => {
+          const rawNumber = String(row.phoneNumber || "").trim();
+          const cleanNumber = rawNumber.replace(/\D/g, "");
+
+          return (
+            <div className="flex items-center justify-between gap-3 text-sm group">
+
+              {/* Phone */}
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="flex items-center gap-1 transition-opacity duration-200">
+                  <a
+                    href={`tel:${cleanNumber}`}
+                    className="p-1.5 hover:bg-blue-100 text-blue-600 rounded-full transition-all"
+                    title={t("common.call")}
+                  >
+                    <PhoneCall size={15} />
+                  </a>
+
+                  <a
+                    href={`https://wa.me/${cleanNumber}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 hover:bg-green-100 text-green-600 rounded-full transition-all"
+                    title="Whatsapp"
+                  >
+                    <LucideMessageCircle size={15} />
+                  </a>
+                </div>
+                <span className="truncate">{rawNumber}</span>
+              </div>
+
+            </div>
+          );
+        },
       },
       {
         key: "products",
@@ -535,15 +603,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
           </div>
         ),
       },
-      {
-        key: "shippingCost",
-        header: t("table.shippingCost"),
-        cell: (row) => (
-          <span className="text-gray-600 dark:text-slate-200">
-            {formatCurrency(row.shippingCost)}
-          </span>
-        ),
-      },
+
       // {
       //   key: "status",
       //   header: t("table.status"),
@@ -640,25 +700,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
           </Badge>
         ),
       },
-      {
-        key: "city",
-        header: t("table.city"),
-        cell: (row) => (
-          <div className="flex items-center gap-1 text-sm">
-            <MapPin size={12} />
-            {row.city}
-          </div>
-        ),
-      },
-      {
-        key: "address",
-        header: t("table.address"),
-        cell: (row) => (
-          <span className="text-sm text-gray-600 dark:text-slate-300 line-clamp-1">
-            {row.address}
-          </span>
-        ),
-      },
+
       {
         key: "shippingCompany",
         header: t("table.shippingCompany"),

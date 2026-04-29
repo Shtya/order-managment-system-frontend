@@ -284,12 +284,17 @@ export default function SignUp({ onSwitchMode }) {
   );
 }
 
-export const BIZ_TYPES_KEYS = [
-  "ecommerce",
-  "wholesale",
-  "retail",
-  "dropshipping",
-  "brand",
+export const PRODUCT_CATEGORY_KEYS = [
+  "fashion",
+  "electronics",
+  "home_appliances",
+  "beauty_personal_care",
+  "sports_fitness",
+  "toys_games",
+  "automotive",
+  "food_beverages",
+  "health_wellness",
+  "books_stationery",
   "other",
 ];
 
@@ -551,9 +556,9 @@ function Step2({ data, onChange, onNext, onBack, t }) {
           icon={<StoreIcon />}
         >
           <option value="">{t("signup.business_placeholder")}</option>
-          {BIZ_TYPES_KEYS.map((k) => (
+          {PRODUCT_CATEGORY_KEYS.map((k) => (
             <option key={k} value={k}>
-              {t(`signup.business_${k}`)}
+              {t(`signup.${k}`)}
             </option>
           ))}
         </AuthSelect>

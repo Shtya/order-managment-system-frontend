@@ -653,7 +653,7 @@ export function FailedOrdersTab() {
     <>
       <PageHeader
         breadcrumbs={[
-          { name: t("breadcrumb.home"), href: "/" },
+          { name: t("breadcrumb.home"), href: "/dashboard" },
           { name: t("tabs.failedOrders") },
         ]}
         buttons={

@@ -850,7 +850,7 @@ export default function ShippingCompaniesPage() {
 
 			<PageHeader
 				breadcrumbs={[
-					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.home"), href: "/dashboard" },
 					{ name: t("breadcrumb.shipping") },
 				]}
 			/>

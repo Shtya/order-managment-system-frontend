@@ -451,7 +451,7 @@ export default function SupplierCategoriesPage() {
 			{/* Header */}
 			<PageHeader
 				breadcrumbs={[
-					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.home"), href: "/dashboard" },
 					{ name: t("breadcrumb.suppliers"), href: "/suppliers" },
 					{ name: t("breadcrumb.categories") },
 				]}

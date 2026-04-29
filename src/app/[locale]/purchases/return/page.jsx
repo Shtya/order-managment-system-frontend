@@ -581,7 +581,7 @@ export default function PurchasesReturnPage() {
 
 			<PageHeader
 				breadcrumbs={[
-					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.home"), href: "/dashboard" },
 					{ name: t("breadcrumb.returns") }
 				]}
 				buttons={

@@ -295,12 +295,14 @@ export default function CreatePurchaseInvoicePage() {
 			<PageHeader
 				stacky
 				breadcrumbs={[
-					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.home"), href: "/dashboard" },
 					{ name: t("breadcrumb.purchases"), href: "/purchases" },
 					{ name: t("breadcrumb.createPurchaseInvoice") },
 				]}
 				buttons={
 					<>
+						<Button_ size="sm" label={t("actions.howToUse")} tone="ghost" icon={<Info size={18} />} />
+
 						<Button_
 							onClick={handleSubmit(onSubmit)}
 							size="sm"
@@ -310,7 +312,6 @@ export default function CreatePurchaseInvoicePage() {
 							disabled={loading}
 						/>
 
-						<Button_ size="sm" label={t("actions.howToUse")} tone="ghost" icon={<Info size={18} />} />
 					</>
 				}
 			/>

@@ -324,7 +324,7 @@ export default function SupplierDetailsPage() {
         <div className="min-h-screen p-5 space-y-6">
             <PageHeader
                 breadcrumbs={[
-                    { name: tSuppliers("breadcrumb.home"), href: "/" },
+                    { name: tSuppliers("breadcrumb.home"), href: "/dashboard" },
                     { name: tSuppliers("breadcrumb.suppliers"), href: "/suppliers" },
                     { name: supplier.name }
                 ]}

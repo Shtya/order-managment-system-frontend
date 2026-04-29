@@ -91,7 +91,7 @@ import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { useTheme } from "next-themes";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { avatarSrc } from "@/components/atoms/UserSelect";
-import { BIZ_TYPES_KEYS } from "../auth/tabs/Signup";
+import { PRODUCT_CATEGORY_KEYS } from "../auth/tabs/Signup";
 import { IconArrow, OtpInput, PasswordStrength } from "../auth/tabs/AuthUi";
 import PageHeader from "@/components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
@@ -643,9 +643,9 @@ function CompanyTab() {
                     className="h-10 w-full rounded-md border border-border/70 bg-background/60 px-3.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none  transition-all"
                   >
                     <option value="">{tsignup("business_placeholder")}</option>
-                    {BIZ_TYPES_KEYS.map((k) => (
+                    {PRODUCT_CATEGORY_KEYS.map((k) => (
                       <option key={k} value={k}>
-                        {tsignup(`business_${k}`)}
+                        {tsignup(`${k}`)}
                       </option>
                     ))}
                   </select>

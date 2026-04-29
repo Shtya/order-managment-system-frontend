@@ -355,6 +355,10 @@
   "sidebar": {
     "stores": "المتاجر",
     "syncFailures": "أخطاء مزامنة المنتجات",
+    "administration": "الإدارة",
+    "synchronization": "المزامنة",
+    "finance": "المالية",
+    "team": "الفريق",
     "locked": "مغلق",
     "subscription_required": "الاشتراك مطلوب",
     "logo": "لوجو",
@@ -3321,7 +3325,8 @@
       "paidAmount": "المبلغ المدفوع",
       "summary": "ملخص الشراء",
       "quantityDistribution": "توزيع الكمية تلقائياً بين المتغيرات",
-      "quantity": "الكمية"
+      "quantity": "الكمية",
+      "addNewSupplier": "إضافة مورد"
     },
     "breadcrumb": {
       "home": "الرئيسية",
@@ -6911,6 +6916,17 @@
       "business_dropshipping": "دروبشيبنج",
       "business_brand": "علامة تجارية / مصنع",
       "business_other": "أخرى",
+      "other": "أخرى",
+      "fashion": "أزياء",
+      "electronics": "إلكترونيات",
+      "home_appliances": "المنزل والأجهزة",
+      "beauty_personal_care": "الجمال والعناية الشخصية",
+      "sports_fitness": "الرياضة واللياقة",
+      "toys_games": "ألعاب",
+      "automotive": "السيارات",
+      "food_beverages": "الأطعمة والمشروبات",
+      "health_wellness": "الصحة والعافية",
+      "books_stationery": "كتب وقرطاسية",
       "biz_hint": "سنستخدم هذه المعلومات لتخصيص لوحة التحكم وعرض الأدوات الأنسب لنشاطك التجاري.",
       "password": "كلمة المرور",
       "password_placeholder": "8 أحرف على الأقل",

@@ -334,12 +334,14 @@ export default function CreateReturnInvoicePage() {
 			<PageHeader
 				stacky
 				breadcrumbs={[
-					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.home"), href: "/dashboard" },
 					{ name: t("breadcrumb.returns"), href: "/purchases/return" },
 					{ name: t("breadcrumb.createReturnInvoice") },
 				]}
 				buttons={
 					<>
+						<Button_ size="sm" label={t("actions.howToUse")} tone="ghost" icon={<Info size={18} />} />
+
 						<Button_
 							onClick={handleSubmit(onSubmit)}
 							size="sm"
@@ -349,7 +351,6 @@ export default function CreateReturnInvoicePage() {
 							disabled={loading}
 						/>
 
-						<Button_ size="sm" label={t("actions.howToUse")} tone="ghost" icon={<Info size={18} />} />
 					</>
 				}
 			/>

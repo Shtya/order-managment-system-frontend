@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { FilterField } from "./Table";
 import api from "@/utils/api";
 
-export default function StoreFilter({ value, onChange, autoSelectIfSingle = false, none = true }) {
+export default function StoreFilter({ value, onChange, icon,iconClass , autoSelectIfSingle = false, none = true }) {
     const t = useTranslations("orders");
     const [list, setList] = useState([]);
 
@@ -32,7 +32,7 @@ export default function StoreFilter({ value, onChange, autoSelectIfSingle = fals
     }, [list, autoSelectIfSingle, onChange, value]);
 
     return (
-        <FilterField label={t("filters.store")}>
+        <FilterField label={t("filters.store")} icon={icon} iconClass={iconClass}>
             <Select value={value} onValueChange={onChange}>
                 <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm focus:border-[var(--primary)] transition-all">
                     <SelectValue placeholder={t("filters.storePlaceholder")} />

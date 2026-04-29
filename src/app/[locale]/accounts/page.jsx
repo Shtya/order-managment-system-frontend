@@ -234,7 +234,7 @@ export default function Accounts() {
         <div className="min-h-screen p-4 md:p-5 space-y-5">
             <PageHeader
                 breadcrumbs={[
-                    { name: t("breadcrumb.home"), href: "/" },
+                    { name: t("breadcrumb.home"), href: "/dashboard" },
                     { name: t("breadcrumb.accounts") },
                 ]}
                 buttons={

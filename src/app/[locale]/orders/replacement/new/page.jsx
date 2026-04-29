@@ -1905,7 +1905,7 @@ export default function CreateReplacementPage({
       <form onSubmit={handleSubmit}>
         <PageHeader
           breadcrumbs={[
-            { name: t("breadcrumb.home"), href: "/" },
+            { name: t("breadcrumb.home"), href: "/dashboard" },
             { name: t(`breadcrumb.orders`), href: "/orders?tab=replacement" },
             { name: isEditMode ? t("titleEdit") : t("title") },
           ]}

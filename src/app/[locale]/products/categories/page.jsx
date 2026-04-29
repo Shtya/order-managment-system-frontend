@@ -522,7 +522,7 @@ export default function CategoriesPage() {
 		<div className="min-h-screen p-5">
 			<PageHeader
 				breadcrumbs={[
-					{ name: t("breadcrumb.home"), href: "/" },
+					{ name: t("breadcrumb.home"), href: "/dashboard" },
 					{ name: t("breadcrumb.products"), href: "/products" },
 					{ name: t("breadcrumb.categories") },
 				]}

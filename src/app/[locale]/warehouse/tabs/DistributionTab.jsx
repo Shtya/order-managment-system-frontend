@@ -176,7 +176,7 @@ export default function DistributionTab({ subtab, setSubtab }) {
     <div className="space-y-4">
       <PageHeader
         breadcrumbs={[
-          { name: t("breadcrumbs.home"), href: "/" },
+          { name: t("breadcrumbs.home"), href: "/dashboard" },
           { name: t("breadcrumbs.orders"), href: "/orders" },
           { name: t("breadcrumbs.distribution") },
         ]}
@@ -201,12 +201,12 @@ export default function DistributionTab({ subtab, setSubtab }) {
             count: statsData.lifecycle.confirmed,
             icon: AlertCircle,
           },
-          {
-            id: "assigned",
-            label: t("tabs.assigned"),
-            count: statsData.lifecycle.distributed,
-            icon: Truck,
-          },
+          // {
+          //   id: "assigned",
+          //   label: t("tabs.assigned"),
+          //   count: statsData.lifecycle.distributed,
+          //   icon: Truck,
+          // },
         ]}
         active={subtab}
         setActive={setSubtab}
@@ -237,13 +237,13 @@ export default function DistributionTab({ subtab, setSubtab }) {
               updateStatsAfterAssign={updateStatsAfterAssign}
             />
           )}
-          {subtab === "assigned" && (
+          {/* {subtab === "assigned" && (
             <AssignedOrdersSubtab
               t={t}
               fetchStats={fetchStats}
               updateStatsAfterAssign={updateStatsAfterAssign}
             />
-          )}
+          )} */}
         </motion.div>
       </AnimatePresence>
     </div>

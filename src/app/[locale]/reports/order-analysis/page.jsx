@@ -58,6 +58,7 @@ import { avatarSrc } from "@/components/atoms/UserSelect";
 import { generateBgColors, getIconForStatus } from "../../orders/page";
 import { useDebounce } from "@/hook/useDebounce";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
+import StoreFilter from "@/components/atoms/StoreFilter";
 
 ChartJS.register(
   CategoryScale,
@@ -1080,7 +1081,7 @@ export default function OrdersStatisticsPage() {
       {/* Page header */}
       <PageHeader
         breadcrumbs={[
-          { name: t("breadcrumb.home"), href: "/" },
+          { name: t("breadcrumb.home"), href: "/dashboard" },
           { name: t("breadcrumb.orderAnalysis") },
         ]}
         buttons={
@@ -1132,24 +1133,10 @@ export default function OrdersStatisticsPage() {
           />
         </FilterField>
 
-        <FilterField label={t("filters.store")} icon={Store}>
-          <Select
-            value={filters.storeId}
-            onValueChange={(v) => setFilters((f) => ({ ...f, storeId: v }))}
-          >
-            <SelectTrigger className="h-10 rounded-xl border-slate-200 dark:border-slate-700 text-sm">
-              <SelectValue placeholder={t("filters.allStores")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("filters.allStores")}</SelectItem>
-              {stores.map((s) => (
-                <SelectItem key={s.id} value={String(s.id)}>
-                  {s.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </FilterField>
+      <StoreFilter  value={filters.storeId} icon={Store} iconClass={"text-orange-400!"}
+            onChange={(v) => setFilters((f) => ({ ...f, storeId: v }))} none={false} autoSelectIfSingle={true} />
+
+
       </TableFilters>
 
       {/* Charts row */}

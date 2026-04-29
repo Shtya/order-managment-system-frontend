@@ -81,11 +81,12 @@ function useIsRTL() {
 /* ══════════════════════════════════════════════════════════════
    FILTER FIELD
 ══════════════════════════════════════════════════════════════ */
-export function FilterField({ label, children, className, lableClass }) {
+export function FilterField({ label, children, className, lableClass, icon: FieldIcon, iconClass }) {
   return (
     <div className={cn("space-y-1.5", className)}>
       {label && (
-        <label className={`text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 block ${lableClass}`}>
+        <label className={`flex items-center gap-1.5  text-[10px] font-black uppercase tracking-widest text-muted-foreground/80  ${lableClass}`}>
+           {FieldIcon && <FieldIcon size={10} className={iconClass} />}
           {label}
         </label>
       )}

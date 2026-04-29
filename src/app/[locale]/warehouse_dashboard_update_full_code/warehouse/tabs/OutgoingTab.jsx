@@ -489,7 +489,7 @@ export default function OutgoingTab({ orders, updateOrder, pushOp, rejectOrder, 
     <div className="space-y-4">
       <PageHeader
         breadcrumbs={[
-          { name: t("breadcrumbs.home"), href: "/" },
+          { name: t("breadcrumbs.home"), href: "/dashboard" },
           { name: t("breadcrumbs.warehouse"), href: "/warehouse" },
           { name: t("breadcrumbs.outgoing") },
         ]}

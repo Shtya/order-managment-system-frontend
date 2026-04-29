@@ -406,7 +406,7 @@ export function ReplacementTab({ statuses }) {
 
 		<PageHeader
 			breadcrumbs={[
-				{ name: t("breadcrumb.home"), href: "/" },
+				{ name: t("breadcrumb.home"), href: "/dashboard" },
 				{ name: t(`tabs.replacement`) },
 			]}
 			buttons={<Button_

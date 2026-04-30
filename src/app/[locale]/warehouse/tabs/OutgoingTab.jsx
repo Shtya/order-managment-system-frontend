@@ -46,6 +46,8 @@ import api from "@/utils/api";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useClipboard } from "@/hook/useClipboard";
 import { useAuth } from "@/context/AuthContext";
+import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 // ─────────────────────────────────────────────
 // ─────────────────────────────────────────────────────────────
 // DESIGN TOKENS
@@ -1494,7 +1496,7 @@ function OrdersList({
 			</div>
 		);
 	}
-		return (
+	return (
 		<div className="overflow-x-auto scrollbar-none">
 			<div className="min-w-[800px]">
 				<div
@@ -1517,7 +1519,7 @@ function OrdersList({
 						const isFlash = lastHighlight?.code === code;
 						const isOpen = !!expanded[code];
 						const prodCount = order.items?.length ?? 0;
-						
+
 						return (
 							<motion.div
 								key={code}
@@ -1866,7 +1868,7 @@ function OutgoingScanLogBoxes({ successCount, errorCount }) {
 // ─────────────────────────────────────────────────────────────
 // OUTGOING ORDERS SLIDE PANEL (For Picked Orders -> Manifest)
 // ─────────────────────────────────────────────────────────────
-function OutgoingOrdersSlidePanel({ selectedOrderIds, loading, setSelectedOrderIds, open, onClose, orders,  onManifestCreated }) {
+function OutgoingOrdersSlidePanel({ selectedOrderIds, loading, setSelectedOrderIds, open, onClose, orders, onManifestCreated }) {
 	const t = useTranslations("warehouse.outgoing");
 	const locale = useLocale();
 	const isRtl = locale !== "en";
@@ -1894,12 +1896,12 @@ function OutgoingOrdersSlidePanel({ selectedOrderIds, loading, setSelectedOrderI
 
 		try {
 			setCreatingManifest(true);
-			await api.post('/orders/manifests', {
+			const { data } = await api.post('/orders/manifests', {
 				shippingCompanyId: firstCarrierId ? firstCarrierId : null,
 				orderIds: selectedOrderIds
 			});
 			toast.success(t("scan.messages.manifestCreated") || "Manifest created successfully");
-			onManifestCreated();
+			onManifestCreated(data);
 			onClose();
 		} catch (error) {
 			console.error("Failed to create manifest", error);
@@ -1930,7 +1932,7 @@ function OutgoingOrdersSlidePanel({ selectedOrderIds, loading, setSelectedOrderI
 							right={<HeaderIconBtn onClick={onClose}><X size={13} className="text-white" /></HeaderIconBtn>}
 						>
 							<HeaderBadge>
-								<Package size={11} />{t("scan.readyOrders", { count: orders.length })}
+								<Package size={11} />{t("scan.readyOutgingOrders", { count: orders.length })}
 							</HeaderBadge>
 						</PanelHeader>
 
@@ -2001,13 +2003,17 @@ function OutgoingOrdersSlidePanel({ selectedOrderIds, loading, setSelectedOrderI
 // SCAN SUBTAB
 // ─────────────────────────────────────────────────────────────
 export function ScanOutgoingSubtab({
-	updateOrder,
-	pushOp,
 	fetchStats,
-	setSubtab
-}) {
-	const t = useTranslations("warehouse.outgoing");
+	setSubtab,
 
+}) {
+	const searchParams = useSearchParams();
+	const router = useRouter();
+	const pathname = usePathname();
+
+	const orderNumberFromUrl = searchParams.get("order");
+	const t = useTranslations("warehouse.outgoing");
+	const { shippingCompanies } = usePlatformSettings();
 	const [selectedCarrier, setSelectedCarrier] = useState("all");
 	const [scanStep, setScanStep] = useState("order"); // "order" | "items"
 	const [scanInput, setScanInput] = useState("");
@@ -2022,8 +2028,21 @@ export function ScanOutgoingSubtab({
 	const [soundEnabled, setSoundEnabled] = useState(true);
 	const [isFetchingOrder, setIsFetchingOrder] = useState(false);
 	const [loadingOrders, setLoadingOrders] = useState(false);
-	const [panelOpen, setPanelOpen] = useState(false);
+	const [panelOpen, setPanelOpen] = useState(() => {
+		return !!searchParams.get("manifest");
+	});
+
 	const scanRef = useRef(null);
+
+	const selectedCompany = useMemo(() => {
+		if (!shippingCompanies || selectedCarrier === "all" || selectedCarrier === "none") {
+			return null;
+		}
+
+		return shippingCompanies.find(
+			(c) => c.providerId === selectedCarrier
+		);
+	}, [shippingCompanies, selectedCarrier]);
 
 	const fetchAvailableOrders = useCallback(async () => {
 		// if (selectedCarrier === "all" || selectedCarrier === "none") {
@@ -2105,6 +2124,20 @@ export function ScanOutgoingSubtab({
 			setIsFetchingOrder(false);
 		}
 	}, [selectedCarrier, soundEnabled, showFeedback, t]);
+
+	useEffect(() => {
+		if (orderNumberFromUrl) {
+			fetchActiveOrder(orderNumberFromUrl);
+		}
+
+		const params = new URLSearchParams(searchParams.toString());
+		params.delete("order");
+		params.delete("manifest");
+
+		router.replace(
+			params.toString() ? `${pathname}?${params}` : pathname
+		);
+	}, [orderNumberFromUrl]);
 
 	const handleCarrierChange = (val) => {
 		setSelectedCarrier(val);
@@ -2232,7 +2265,7 @@ export function ScanOutgoingSubtab({
 							<HeaderIconBtn onClick={() => setSoundEnabled(v => !v)}>
 								{soundEnabled ? <Volume2 size={13} className="text-white" /> : <VolumeX size={13} className="text-white/60" />}
 							</HeaderIconBtn>
-							<HeaderBadge onClick={() => setPanelOpen(true)}><Layers size={12} />{t("scan.ordersBtn", { count: pickedOrders?.length || 0 })}</HeaderBadge>
+							<HeaderBadge onClick={() => setPanelOpen(true)}><Layers size={12} />{t("scan.ordersOutgingBtn", { count: pickedOrders?.length || 0 })}</HeaderBadge>
 							{isItemsMode && <HeaderBadge onClick={resetCurrentOrder}><X size={12} />{t("scan.cancelBtn")}</HeaderBadge>}
 						</>
 					}
@@ -2320,7 +2353,7 @@ export function ScanOutgoingSubtab({
 										<Truck size={13} style={{ color: meta?.color || DS.primary }} />
 									</div>
 									<p className="text-sm font-black text-slate-800 dark:text-slate-100">
-										{selectedCarrier}
+										{selectedCompany ? selectedCompany?.name : selectedCarrier}
 									</p>
 								</div>
 							</div>
@@ -2374,9 +2407,11 @@ export function ScanOutgoingSubtab({
 				setSelectedOrderIds={setSelectedOrderIds}
 				orders={pickedOrders}
 				loading={loadingPickedOrders}
-				onManifestCreated={() => {
+				onManifestCreated={(manifest) => {
+					setSubtab("files", {
+						manifestId: manifest?.id,
+					});
 					fetchStats?.();
-					setSubtab("files");
 				}}
 			/>
 		</div>
@@ -2430,7 +2465,7 @@ function FileSummaryCell({ row }) {
 function OutgoingFilesSubtab({
 	resetToken,
 }) {
-	const {user} = useAuth()
+	const { user } = useAuth()
 	const t = useTranslations("warehouse.outgoing");
 	const [search, setSearch] = useState("");
 	const { debouncedValue: debouncedSearch } = useDebounce({ value: search, delay: 350 })
@@ -2526,10 +2561,29 @@ function OutgoingFilesSubtab({
 		}
 	};
 
-	const handleDownload = async (row) => {
-		setDownloading((p) => ({ ...p, [row.id]: true }));
+	const searchParams = useSearchParams();
+	const router = useRouter();
+	const pathname = usePathname();
+
+	useEffect(() => {
+		const manifestId = searchParams.get("manifestId");
+
+		if (manifestId) {
+			handleDownload(manifestId);
+		}
+		// remove from URL after triggering
+		const params = new URLSearchParams(searchParams.toString());
+		params.delete("manifestId");
+
+		router.replace(
+			params.toString() ? `${pathname}?${params}` : pathname
+		);
+	}, []);
+
+	const handleDownload = async (id) => {
+		setDownloading((p) => ({ ...p, [id]: true }));
 		try {
-			const res = await api.get(`/orders/manifests/${row.id}`);
+			const res = await api.get(`/orders/manifests/${id}`);
 			const manifest = res.data;
 
 			// Prepare snapshot for PDF
@@ -2557,13 +2611,13 @@ function OutgoingFilesSubtab({
 			);
 
 			// Mark as printed
-			await api.patch(`/orders/${row.id}/mark-manifest-printed`);
+			await api.patch(`/orders/${id}/mark-manifest-printed`);
 			fetchManifests();
 		} catch (error) {
 			console.error("Error downloading manifest", error);
 			toast.error(t("messages.errorDownloadingManifest") || "Error downloading manifest");
 		} finally {
-			setDownloading((p) => ({ ...p, [row.id]: false }));
+			setDownloading((p) => ({ ...p, [id]: false }));
 		}
 	};
 
@@ -2579,7 +2633,7 @@ function OutgoingFilesSubtab({
 				orderNumber: l.order?.orderNumber || "-",
 				time: new Date(l.createdAt).toLocaleTimeString()
 			}));
-			
+
 			openPrintWindow(
 				buildWrongScanLogPDF(
 					logs,
@@ -2598,7 +2652,7 @@ function OutgoingFilesSubtab({
 	};
 	const manifestScanStatus = useMemo(() => {
 		const statusMap = {};
-		
+
 		(pager.records ?? []).forEach((manifest) => {
 			const hasIncompleteScans = manifest.orders?.some(
 				(order) => (order.failedScanCounts?.shipping ?? 0) !== 0
@@ -2606,10 +2660,10 @@ function OutgoingFilesSubtab({
 
 			statusMap[manifest.id] = hasIncompleteScans;
 		});
-		
+
 		return statusMap;
 	}, [pager.records]);
-	
+
 
 	const columns = useMemo(
 		() => [
@@ -2679,7 +2733,7 @@ function OutgoingFilesSubtab({
 								<Download size={13} />
 							),
 							tooltip: t("files.download"),
-							onClick: (r) => handleDownload(r),
+							onClick: (r) => handleDownload(r?.id),
 							variant: "blue",
 							disabled: !!downloading[row.id],
 							permission: "orders.read",
@@ -2708,7 +2762,7 @@ function OutgoingFilesSubtab({
 				},
 			}
 		],
-		[downloading, downloadingWrongLog, manifestScanStatus,t]
+		[downloading, downloadingWrongLog, manifestScanStatus, t]
 	);
 
 	return (

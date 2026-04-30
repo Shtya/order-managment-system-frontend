@@ -576,7 +576,7 @@ export default function Table({
               <TableRow className="hover:bg-transparent">
                 {columns.map((col, idx) => (
                   <TableHead
-                    key={col.key}
+                    key={idx}
                     className={cn(
                       "!px-5 whitespace-nowrap ltr:text-left rtl:text-right",
                       compact ? "py-3" : "py-3.5",
@@ -658,9 +658,9 @@ export default function Table({
                         striped && i % 2 === 1 && "bg-[color-mix(in_oklab,var(--muted)_45%,transparent)]",
                       )}
                     >
-                      {columns.map((col) => {
+                      {columns.map((col, idx) => {
                         if (col.type === "img") return (
-                          <TableCell key={col.key} className={cn("!px-5", compact ? "py-2.5" : "py-3.5", col.className)}>
+                          <TableCell key={idx} className={cn("!px-5", compact ? "py-2.5" : "py-3.5", col.className)}>
                             {!row[col.key] && typeof col.cell === "function" ? col.cell(row, i, helpers) : <ImgCell src={row[col.key]} alt={col.header ?? ""} onOpen={openImage} />}
                           </TableCell>
                         );
@@ -668,7 +668,7 @@ export default function Table({
                         if (col.type === "imgs") {
                           const imgs = normalizeImages(row[col.key], col.header ?? "");
                           return (
-                            <TableCell key={col.key} className={cn("!px-5", compact ? "py-2.5" : "py-3.5", col.className)}>
+                            <TableCell key={idx} className={cn("!px-5", compact ? "py-2.5" : "py-3.5", col.className)}>
                               <ImgsCell images={imgs} onOpen={openImage} />
                             </TableCell>
                           );
@@ -676,7 +676,7 @@ export default function Table({
 
                         return (
                           <TableCell
-                            key={col.key}
+                            key={idx}
                             className={cn(
                               "!px-5 text-sm whitespace-nowrap ltr:text-left rtl:text-right",
                               compact ? "py-2.5" : "py-3.5",

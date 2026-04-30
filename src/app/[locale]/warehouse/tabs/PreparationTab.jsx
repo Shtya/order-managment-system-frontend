@@ -32,6 +32,8 @@ import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import ProductFilter from "@/components/atoms/ProductFilter";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import { useClipboard } from "@/hook/useClipboard";
+import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 
 // ─────────────────────────────────────────────────────────────
 // DESIGN TOKENS — Single source of truth for the whole page
@@ -1527,6 +1529,10 @@ export function ScanLogBoxes({ successCount, errorCount }) {
 // ─────────────────────────────────────────────────────────────
 function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updateStatsAfterScanStart }) {
 	const t = useTranslations("warehouse.preparation");
+	const searchParams = useSearchParams();
+	const router = useRouter();
+	const pathname = usePathname();
+	const orderIdFromUrl = searchParams.get("order");
 
 	const [scanStep, setScanStep] = useState("order");
 	const [scanValue, setScanValue] = useState("");
@@ -1575,6 +1581,18 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 		}
 	}, [soundEnabled, showFeedback, t]);
 
+	useEffect(() => {
+		if (!orderIdFromUrl) return;
+
+		fetchActiveOrder(orderIdFromUrl);
+
+		const params = new URLSearchParams(searchParams.toString());
+		params.delete("order");
+
+		router.replace(
+			params.toString() ? `${pathname}?${params}` : pathname
+		);
+	}, [orderIdFromUrl]);
 	useEffect(() => {
 		if (!jumpToOrder) return;
 		fetchActiveOrder(jumpToOrder.id);

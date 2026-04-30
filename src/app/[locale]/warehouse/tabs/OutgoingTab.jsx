@@ -1756,7 +1756,7 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
 			>
 				<span>{t("table.products")}</span>
 				<span className="text-center flex justify-center gap-2">
-				<span>{t("scan.sku")}</span>
+					<span>{t("scan.sku")}</span>
 					<span className="text-primary">({t("click-copy")})</span>
 				</span>
 				<span className="text-center">{t("table.qty")}</span>
@@ -1956,7 +1956,9 @@ function OutgoingOrdersSlidePanel({ open, onClose, selectedCarrier, onManifestCr
 							title={t("scan.confirmOutgoing")}
 							right={<HeaderIconBtn onClick={onClose}><X size={13} className="text-white" /></HeaderIconBtn>}
 						>
-							<HeaderBadge><Package size={11} />{orders.length} {t("scan.readyOrders", { count: orders.length })}</HeaderBadge>
+							<HeaderBadge>
+								<Package size={11} />{t("scan.readyOrders", { count: orders.length })}
+							</HeaderBadge>
 						</PanelHeader>
 
 						<div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -2636,8 +2638,8 @@ function OutgoingFilesSubtab({
 				cell: (row) => (
 					<FileSummaryCell
 						row={row}
-						// totalOrders={row.totalOrders}
-						// totalItems={row.orders?.reduce((acc, o) => acc + (o.items?.reduce((sum, i) => sum + i.quantity, 0) || 0), 0) || 0}
+					// totalOrders={row.totalOrders}
+					// totalItems={row.orders?.reduce((acc, o) => acc + (o.items?.reduce((sum, i) => sum + i.quantity, 0) || 0), 0) || 0}
 					/>
 				),
 			},

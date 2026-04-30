@@ -543,7 +543,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
         },
         {
           icon: RefreshCcw,
-          labelKey: "failedOrders",
+          labelKey: "pendingOrders",
           href: "/orders?tab=failedOrders",
         },
       ],

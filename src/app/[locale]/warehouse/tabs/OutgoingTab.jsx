@@ -1499,7 +1499,7 @@ function OrdersList({
 			<div className="min-w-[800px]">
 				<div
 					className="grid text-[10px] font-extrabold uppercase tracking-[0.07em] text-slate-400 px-5 py-2.5 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/60 dark:bg-slate-800/30"
-					style={{ gridTemplateColumns: "32px 1fr 120px 90px 80px 110px 48px" }}
+					style={{ gridTemplateColumns: "3fr 2fr 1fr 1fr 1fr 1fr 1fr" }}
 				>
 					<span />
 					<span>{t("scan.table.order")}</span>
@@ -1533,7 +1533,7 @@ function OrdersList({
 											? "bg-emerald-50/60 dark:bg-emerald-950/10"
 											: "hover:bg-slate-50/70 dark:hover:bg-slate-800/30"
 									)}
-									style={{ gridTemplateColumns: "32px 1fr 120px 90px 80px 110px 48px" }}
+									style={{ gridTemplateColumns: "3fr 2fr 1fr 1fr 1fr 1fr 1fr" }}
 									onClick={() => prodCount > 0 && toggle(code)}
 								>
 									<AnimatePresence>
@@ -1647,7 +1647,7 @@ function OrdersList({
 											<div className="border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20">
 												<div
 													className="grid text-[9px] font-extrabold uppercase tracking-[0.07em] px-5 py-2.5 border-b text-slate-400 border-slate-100 dark:border-slate-800"
-													style={{ gridTemplateColumns: "2fr 90px 70px 80px 80px" }}
+													style={{ gridTemplateColumns: "3fr 2fr 1fr 1fr " }}
 												>
 													<span>{t("scan.table.product")}</span>
 													<span className="text-center">SKU</span>
@@ -1664,7 +1664,7 @@ function OrdersList({
 															animate={{ opacity: 1, x: 0 }}
 															transition={{ delay: pi * 0.04 }}
 															className="grid items-center px-5 py-3 hover:bg-white/70 dark:hover:bg-slate-800/40 transition-colors"
-															style={{ gridTemplateColumns: "2fr 90px 70px 80px 80px" }}
+															style={{ gridTemplateColumns: "3fr 2fr 1fr 1fr " }}
 														>
 															<div className="flex items-center gap-2.5 min-w-0">
 																<div
@@ -1702,14 +1702,14 @@ function OrdersList({
 
 															<div className="text-center">
 																<span className="text-[12px] font-bold text-slate-600 dark:text-slate-300 tabular-nums">
-																	{p.price ? formatCurrency(p.price) : "—"}
+																	{p.unitPrice ? formatCurrency(p.unitPrice) : "—"}
 																</span>
 															</div>
 
 															<div className="text-center">
-																{p.price && p.quantity ? (
+																{p.unitPrice && p.quantity ? (
 																	<span className="text-[12px] font-black text-slate-800 dark:text-slate-100 tabular-nums">
-																		{formatCurrency(p.price * p.quantity)}
+																		{formatCurrency(p.unitPrice * p.quantity)}
 																	</span>
 																) : (
 																	<span className="text-slate-300 dark:text-slate-600 text-xs">—</span>

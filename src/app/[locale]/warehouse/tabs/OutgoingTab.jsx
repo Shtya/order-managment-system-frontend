@@ -1866,39 +1866,12 @@ function OutgoingScanLogBoxes({ successCount, errorCount }) {
 // ─────────────────────────────────────────────────────────────
 // OUTGOING ORDERS SLIDE PANEL (For Picked Orders -> Manifest)
 // ─────────────────────────────────────────────────────────────
-function OutgoingOrdersSlidePanel({ open, onClose, selectedCarrier, onManifestCreated }) {
+function OutgoingOrdersSlidePanel({ selectedOrderIds, loading, setSelectedOrderIds, open, onClose, orders, selectedCarrier, onManifestCreated }) {
 	const t = useTranslations("warehouse.outgoing");
 	const locale = useLocale();
 	const isRtl = locale !== "en";
 
-	const [orders, setOrders] = useState([]);
-	const [loading, setLoading] = useState(false);
-	const [selectedOrderIds, setSelectedOrderIds] = useState([]);
 	const [creatingManifest, setCreatingManifest] = useState(false);
-
-	const fetchPickedOrders = useCallback(async () => {
-		// if (!selectedCarrier || selectedCarrier === "all") return;
-		try {
-			setLoading(true);
-			const res = await api.get('/orders', {
-				params: {
-					status: 'packed',
-					// shippingCompanyId: selectedCarrier,
-					limit: 100
-				}
-			});
-			setOrders(res.data?.records || []);
-			setSelectedOrderIds([]);
-		} catch (error) {
-			console.error("Failed to fetch picked orders", error);
-		} finally {
-			setLoading(false);
-		}
-	}, [selectedCarrier]);
-
-	useEffect(() => {
-		if (open) fetchPickedOrders();
-	}, [open, fetchPickedOrders]);
 
 	const toggleSelect = (id) => {
 		setSelectedOrderIds(prev =>
@@ -2151,6 +2124,37 @@ export function ScanOutgoingSubtab({
 		setTimeout(() => scanRef.current?.focus(), 100);
 	}, []);
 
+
+	const isItemsMode = scanStep === "items";
+	const meta = selectedCarrier !== "all" ? getCarrierMeta(selectedCarrier) : null;
+
+	const [selectedOrderIds, setSelectedOrderIds] = useState([]);
+	const [pickedOrders, setPickedOrders] = useState([]);
+	const [loadingPickedOrders, setLoadingPickedOrders] = useState([]);
+	const fetchPickedOrders = useCallback(async () => {
+		// if (!selectedCarrier || selectedCarrier === "all") return;
+		try {
+			setLoadingPickedOrders(true);
+			const res = await api.get('/orders', {
+				params: {
+					status: 'packed',
+					// shippingCompanyId: selectedCarrier,
+					limit: 100
+				}
+			});
+			setPickedOrders(res.data?.records || []);
+			setSelectedOrderIds([]);
+		} catch (error) {
+			console.error("Failed to fetch picked orders", error);
+		} finally {
+			setLoadingPickedOrders(false);
+		}
+	}, []);
+
+	useEffect(() => {
+		fetchPickedOrders();
+	}, [fetchPickedOrders]);
+
 	const handleScan = async () => {
 		const val = scanInput.trim();
 		if (!val) return;
@@ -2200,6 +2204,7 @@ export function ScanOutgoingSubtab({
 					setScannedOrdersCount(prev => prev + 1);
 					toast.success(t("scan.success.orderComplete") || "Order fully scanned and ready for shipping");
 					fetchAvailableOrders();
+					fetchPickedOrders();
 					fetchStats?.();
 					setTimeout(() => {
 						resetCurrentOrder();
@@ -2214,8 +2219,7 @@ export function ScanOutgoingSubtab({
 		}
 	};
 
-	const isItemsMode = scanStep === "items";
-	const meta = selectedCarrier !== "all" ? getCarrierMeta(selectedCarrier) : null;
+
 
 	return (
 		<div className="space-y-4" >
@@ -2229,7 +2233,7 @@ export function ScanOutgoingSubtab({
 							<HeaderIconBtn onClick={() => setSoundEnabled(v => !v)}>
 								{soundEnabled ? <Volume2 size={13} className="text-white" /> : <VolumeX size={13} className="text-white/60" />}
 							</HeaderIconBtn>
-							<HeaderBadge onClick={() => setPanelOpen(true)}><Layers size={12} />{t("scan.ordersBtn")}</HeaderBadge>
+							<HeaderBadge onClick={() => setPanelOpen(true)}><Layers size={12} />{t("scan.ordersBtn", { count: pickedOrders?.length || 0 })}</HeaderBadge>
 							{isItemsMode && <HeaderBadge onClick={resetCurrentOrder}><X size={12} />{t("scan.cancelBtn")}</HeaderBadge>}
 						</>
 					}
@@ -2368,6 +2372,10 @@ export function ScanOutgoingSubtab({
 				open={panelOpen}
 				onClose={() => setPanelOpen(false)}
 				selectedCarrier={selectedCarrier}
+				selectedOrderIds={selectedOrderIds}
+				setSelectedOrderIds={setSelectedOrderIds}
+				orders={pickedOrders}
+				loading={loadingPickedOrders}
 				onManifestCreated={() => {
 					fetchStats?.();
 					setSubtab("files");
@@ -2452,13 +2460,14 @@ function OutgoingFilesSubtab({
 				type: "SHIPPING"
 			};
 			const res = await api.get('/orders/manifests', { params });
-			setPager({
+			setPager(prev => ({
+				...prev,
 				total_records: res.data.total_records,
 				current_page: res.data.current_page || page,
 				per_page: res.data.per_page || per_page,
 				records: res.data.records,
 				type: "SHIPPING"
-			});
+			}));
 		} catch (error) {
 			console.error("Error fetching manifests", error);
 		} finally {
@@ -2590,17 +2599,19 @@ function OutgoingFilesSubtab({
 	};
 	const manifestScanStatus = useMemo(() => {
 		const statusMap = {};
-
-		pager.records.forEach((manifest) => {
+		
+		(pager.records ?? []).forEach((manifest) => {
 			const hasIncompleteScans = manifest.orders?.some(
-				(order) => (order.failedScanCounts?.shipping ?? 0) != 0
+				(order) => (order.failedScanCounts?.shipping ?? 0) !== 0
 			);
 
 			statusMap[manifest.id] = hasIncompleteScans;
 		});
-
+		
 		return statusMap;
-	}, [pager.records]); // سيعاد الحساب فقط عند تغير البيانات القادمة من السيرفر
+	}, [pager.records]);
+	
+
 	const columns = useMemo(
 		() => [
 			// {
@@ -2698,7 +2709,7 @@ function OutgoingFilesSubtab({
 				},
 			}
 		],
-		[downloading, downloadingWrongLog, t]
+		[downloading, downloadingWrongLog, manifestScanStatus,t]
 	);
 
 	return (

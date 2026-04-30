@@ -194,19 +194,35 @@ export const STATUS_TRANSITIONS = {
   [OrderStatus.RETURNED]: [],
 };
 
-const GLOBAL_CUSTOM_ALLOWED = [
+const ALLOWED_CONFIRM_STATUSES = [
+  OrderStatus.NEW,
+  OrderStatus.CONFIRMED,
+  OrderStatus.UNDER_REVIEW,
   OrderStatus.NO_ANSWER,
+  OrderStatus.POSTPONED,
   OrderStatus.WRONG_NUMBER,
   OrderStatus.OUT_OF_DELIVERY_AREA,
   OrderStatus.DUPLICATE,
   OrderStatus.CANCELLED,
-  OrderStatus.REJECTED,
+  OrderStatus.RETURNED,
 ];
+
 
 // Main Orders Page Component
 export default function OrdersTab({ stats, fetchStats, statsLoading }) {
   const t = useTranslations("orders");
   const { formatCurrency } = usePlatformSettings();
+
+  const filteredStats = useMemo(() => {
+    return ALLOWED_CONFIRM_STATUSES.map((statusCode) => {
+
+      const statData = stats?.find((s) => s.code === statusCode);
+
+      return {
+        ...statData
+      };
+    });
+  }, [stats, t]);
 
   const router = useRouter();
   const [retrySettingsOpen, setRetrySettingsOpen] = useState(false);
@@ -288,7 +304,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
       params.storeId = filters.store;
     if (filters.employee && filters.employee !== "all")
       params.userId = filters.employee;
-
+    params.forConfirm = 'true';
     return params;
   };
 
@@ -621,11 +637,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
         cell: (row) => {
           const currentCode = row.status?.code;
           const currentStatusId = row.status?.id;
-          const isCustom = !row.status.system;
 
-          const allowed = isCustom ? GLOBAL_CUSTOM_ALLOWED : STATUS_TRANSITIONS[currentCode] || [];
-
-          const isNew = currentCode === OrderStatus.NEW;
           return (
             <div className="flex items-center gap-2">
               <Select
@@ -662,15 +674,14 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
                 </SelectTrigger>
 
                 <SelectContent>
-                  {(stats || []).map((s) => {
+                  {(filteredStats || []).map((s) => {
                     const isSame = s.code === currentCode;
-                    const isAllowed = (!s.system && isNew) || allowed.includes(s.code);
 
                     return (
                       <SelectItem
                         key={s.id}
                         value={String(s.id)}
-                        disabled={!isSame && !isAllowed} // 🔥 main logic
+                        // disabled={isSame} // 🔥 main logic
                       >
                         {s.system ? t(`statuses.${s.code}`) : s.name || s.code}
                       </SelectItem>
@@ -821,7 +832,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
         ),
       },
     ];
-  }, [t, router, stats, formatCurrency]);
+  }, [t, router, filteredStats, formatCurrency]);
 
   return (
     <div className=" ">

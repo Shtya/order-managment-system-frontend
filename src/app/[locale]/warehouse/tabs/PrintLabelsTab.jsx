@@ -47,7 +47,6 @@ export default function PrintLabelsTab({ subtab, setSubtab, resetToken }) {
   const t = useTranslations("warehouse.print");
   const [loading, setLoading] = useState(true);
   const [statsData, setStatsData] = useState({
-    totalDistributed: 0,
     printed: 0,
     notPrinted: 0
   });
@@ -69,7 +68,7 @@ export default function PrintLabelsTab({ subtab, setSubtab, resetToken }) {
   }, [fetchStats, resetToken]);
 
   const stats = [
-    { id: "total-distributed", name: t("stats.totalDistributed"), value: statsData.totalDistributed, icon: Truck, color: "#6763af", bgColor: "#6763af15", sortOrder: 0 },
+    // { id: "total-distributed", name: t("stats.totalDistributed"), value: statsData.totalDistributed, icon: Truck, color: "#6763af", bgColor: "#6763af15", sortOrder: 0 },
     { id: "not-printed", name: t("stats.notPrinted"), value: statsData.notPrinted, icon: Printer, color: "var(--third)", bgColor: "#ffb70315", sortOrder: 1 },
     { id: "printed", name: t("stats.printed"), value: statsData.printed, icon: CheckCircle2, color: "#10b981", bgColor: "#10b98115", sortOrder: 2 },
   ];
@@ -98,7 +97,7 @@ export default function PrintLabelsTab({ subtab, setSubtab, resetToken }) {
       <AnimatePresence mode="wait">
         <motion.div key={subtab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15 }}>
           {subtab === "not_printed" && (
-            <NotPrintedSubtab onPrinted={() => setSubtab("printed")} resetToken={resetToken} fetchStats={fetchStats} />
+            <NotPrintedSubtab onPrinted={() => {}} resetToken={resetToken} fetchStats={fetchStats} />
           )}
           {subtab === "printed" && (
             <PrintedSubtab resetToken={resetToken} fetchStats={fetchStats} />
@@ -377,8 +376,7 @@ function NotPrintedSubtab({ onPrinted, resetToken, fetchStats }) {
     const params = {
       page,
       limit: per_page,
-      status: 'distributed',
-      labelPrinted: 'false'
+      status: 'distributed'
     };
 
     if (debouncedSearch) params.search = debouncedSearch;
@@ -545,8 +543,7 @@ function PrintedSubtab({ resetToken, fetchStats }) {
     const params = {
       page,
       limit: per_page,
-      status: 'printed',
-      labelPrinted: 'true'
+      status: 'printed'
     };
 
     if (debouncedSearch) params.search = debouncedSearch;

@@ -232,9 +232,19 @@ export default function WarehouseFlowPage() {
     ? activeSubtabFromUrl
     : (DEFAULT_SUBTABS[activeTab] || null);
 
-  const setActiveSubtab = useCallback((subtabId) => {
+  const setActiveSubtab = useCallback((subtabId, extra) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("subtab", subtabId);
+     if (extra) {
+      Object.entries(extra).forEach(([key, value]) => {
+        if (value === null || value === undefined || value === "") {
+          params.delete(key);
+        } else {
+          params.set(key, String(value));
+        }
+      });
+    }
+    
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   }, [router, pathname, searchParams]);
 

@@ -303,7 +303,7 @@ export default function DataTable({
 							<TableRow className="hover:bg-transparent">
 								{columns.map((col, idx) => (
 									<TableHead
-										key={col.key}
+										key={idx}
 										className={cn(
 											"!px-6 text-right text-xs font-bold uppercase tracking-wider",
 											"text-gray-700 dark:text-slate-300",
@@ -377,7 +377,7 @@ export default function DataTable({
 												bordered && "border-x border-gray-200 dark:border-slate-800"
 											)}
 										>
-											{columns.map((col) => {
+											{columns.map((col, idx) => {
 												const value = row[col.key];
 
 												if (col.type === "img") {
@@ -385,7 +385,7 @@ export default function DataTable({
 													const fullSrc = img
 
 													return (
-														<TableCell key={col.key} className={cn("!px-6", compact ? "py-3" : "py-5", col.className)}>
+														<TableCell key={idx} className={cn("!px-6", compact ? "py-3" : "py-5", col.className)}>
 															{fullSrc ? (
 																<motion.button
 																	whileHover={{ scale: 1.05 }}
@@ -411,7 +411,7 @@ export default function DataTable({
 													const images = normalizeImages(value, col.header ?? "images");
 
 													return (
-														<TableCell key={col.key} className={cn("!px-6", compact ? "py-3" : "py-5", col.className)}>
+														<TableCell key={idx} className={cn("!px-6", compact ? "py-3" : "py-5", col.className)}>
 															{images.length ? (
 																<div className="flex flex-row items-center">
 																	{images.length ? (
@@ -461,7 +461,7 @@ export default function DataTable({
 
 												return (
 													<TableCell
-														key={col.key}
+														key={idx}
 														className={cn(
 															"!px-6 ltr:text-left rtl:text-right text-sm text-gray-700 dark:text-slate-200 whitespace-nowrap",
 															compact ? "py-3" : "py-5",

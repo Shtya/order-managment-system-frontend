@@ -60,6 +60,7 @@ import {
   Receipt,
   AlertTriangle,
   Store,
+  FileSearch,
 } from "lucide-react";
 import { FaUserTie } from "react-icons/fa6";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -531,6 +532,11 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       permission: "orders.read",
       children: [
         { icon: Package, labelKey: "orders", permission: "orders.read", href: "/orders?tab=orders" },
+        {
+          icon: FileSearch,
+          labelKey: "ordersUnderReview",
+          href: "/orders?tab=ordersUnderReview",
+        },
         // {
         //   icon: Undo2,
         //   labelKey: "orderReplacement",

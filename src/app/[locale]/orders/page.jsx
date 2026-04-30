@@ -27,25 +27,48 @@ import {
 	ShoppingCart,
 	RefreshCcw,
 	ArrowLeftRight,
+	FileSearch,
 } from "lucide-react";
 
 import toast from "react-hot-toast";
 import api from "@/utils/api";
 
-
-
-import OrdersTab from "./tabs/OrderTab";
-import ReplacementTab from "./tabs/ReplacementTab";
+import OrdersTab, { OrderStatus } from "./tabs/OrderTab";
 import FailedOrdersTab from "./tabs/Failedorderstab";
-import { useAuth } from "@/context/AuthContext";
 import RejectedTab from "./tabs/RejectedTab";
 // import ReturnsTab from "./ReturnsTab";
+
+
+
 
 export default function Orders() {
 	const [stats, setStats] = useState([]);
 	const [statsLoading, setStatsLoading] = useState(true);
 
+	const mainStatuses = [
+		OrderStatus.NEW,
+		OrderStatus.UNDER_REVIEW,
 
+		OrderStatus.CONFIRMED,
+		OrderStatus.DISTRIBUTED,
+		OrderStatus.POSTPONED,
+
+		OrderStatus.NO_ANSWER,
+		OrderStatus.WRONG_NUMBER,
+		OrderStatus.OUT_OF_DELIVERY_AREA,
+		OrderStatus.DUPLICATE,
+
+	]
+	const WorkFlowOrderStatuses = [
+		OrderStatus.CONFIRMED, // Action to direct to distrebution page
+		OrderStatus.DISTRIBUTED, // Action to direct to print page
+		OrderStatus.PRINTED, // Action to direct to scan page
+		OrderStatus.PREPARING, // action to direct to scan page
+		OrderStatus.READY, // action to direct to outging to scan page
+		OrderStatus.PACKED, // action to direct to create manifest popup
+		OrderStatus.SHIPPED, // action to see shippment detials
+		OrderStatus.RETURN_PREPARING, // action to direct to create return manifest popup
+	]
 	const [retrySettingsOpen, setRetrySettingsOpen] = useState(false);
 
 	const t = useTranslations("orders");
@@ -57,6 +80,7 @@ export default function Orders() {
 			// { id: "replacement", label: t("tabs.replacement"), icon: ArrowLeftRight },
 			{ id: "failedOrders", label: t("tabs.failedOrders"), icon: XCircle },
 			{ id: "rejected", label: t("tabs.rejected"), icon: XCircle },
+			{ id: "ordersUnderReview", label: t("tabs.rejected"), icon: FileSearch },
 		],
 		[t]
 	);
@@ -105,6 +129,27 @@ export default function Orders() {
 							statsLoading={statsLoading}
 							retrySettingsOpen={retrySettingsOpen}
 							setRetrySettingsOpen={setRetrySettingsOpen}
+							readOnlyStatus={false}
+							restrictedStatuses={mainStatuses}
+							showCustom={true}
+							showTopActions={true}
+							showBulkUpload={true}
+						/>
+					)}
+
+					{activeTab === "ordersUnderReview" && (
+						<OrdersTab
+							stats={stats}
+							fetchStats={fetchStats}
+							statsLoading={statsLoading}
+							retrySettingsOpen={retrySettingsOpen}
+							setRetrySettingsOpen={setRetrySettingsOpen}
+							readOnlyStatus={true}
+							restrictedStatuses={WorkFlowOrderStatuses}
+							showCustom={false}
+							showTopActions={false}
+							showBulkUpload={false}
+							label={t('breadcrumb.ordersUnderReview')}
 						/>
 					)}
 

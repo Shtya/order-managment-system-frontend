@@ -46,6 +46,8 @@ import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import { useDebounce } from "@/hook/useDebounce";
 import api from "@/utils/api";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 const RETURN_CONDITIONS_KEYS = [
   "intact",
   "opened",
@@ -1748,9 +1750,9 @@ function OrdersList({
                         e.stopPropagation();
                         onSelectOrder?.(order);
                       }}
-                      	className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary/20 text-primary hover:bg-primary hover:text-white transition-all active:scale-95"
-										>
-											<ScanLine size={20} />
+                      className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary/20 text-primary hover:bg-primary hover:text-white transition-all active:scale-95"
+                    >
+                      <ScanLine size={20} />
                     </button>
                   </div>
                 </div>
@@ -1767,7 +1769,7 @@ function OrdersList({
                       <div className="border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20">
                         <div
                           className="grid text-[9px] font-extrabold uppercase tracking-[0.07em] px-5 py-2.5 border-b text-slate-400 border-slate-100 dark:border-slate-800"
-                         style={{ gridTemplateColumns: "3fr 2fr 1fr 1fr " }}
+                          style={{ gridTemplateColumns: "3fr 2fr 1fr 1fr " }}
                         >
                           <span>{t("scan.table.productName")}</span>
                           <span className="text-center">SKU</span>
@@ -1784,7 +1786,7 @@ function OrdersList({
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ delay: pi * 0.04 }}
                               className="grid items-center px-5 py-3 hover:bg-white/70 dark:hover:bg-slate-800/40 transition-colors"
-                             style={{ gridTemplateColumns: "3fr 2fr 1fr 1fr " }}
+                              style={{ gridTemplateColumns: "3fr 2fr 1fr 1fr " }}
                             >
                               <div className="flex items-center gap-2.5 min-w-0">
                                 <div
@@ -2162,7 +2164,7 @@ function ReturnsScanLogBoxes({ successCount, errorCount }) {
 // ─────────────────────────────────────────────────────────────
 // RETURNS ORDERS SLIDE PANEL
 // ─────────────────────────────────────────────────────────────
-function ReturnsOrdersSlidePanel({ open, onClose, orders,loading, selectedOrderIds,setSelectedOrderIds, onManifestCreated }) {
+function ReturnsOrdersSlidePanel({ open, onClose, orders, loading, selectedOrderIds, setSelectedOrderIds, onManifestCreated }) {
   const t = useTranslations("warehouse.returns");
   const locale = useLocale();
   const isRtl = locale !== "en";
@@ -2193,12 +2195,13 @@ function ReturnsOrdersSlidePanel({ open, onClose, orders,loading, selectedOrderI
 
     try {
       setCreatingManifest(true);
-      await api.post('/orders/manifests/return', {
+      const {data} = await api.post('/orders/manifests/return', {
         shippingCompanyId: firstCarrierId ? firstCarrierId : null,
         orderIds: selectedOrderIds,
       });
+      
       toast.success(t("scan.messages.returnSuccess", { code: "" }) || "Return manifest created successfully");
-      onManifestCreated();
+      onManifestCreated(data);
       onClose();
     } catch (error) {
       console.error("Failed to create return manifest", error);
@@ -2321,9 +2324,12 @@ export function ScanReturnsSubtab({
   fetchStats,
   setSubtab
 }) {
+  const searchParams = useSearchParams();
   const t = useTranslations("warehouse.returns");
 
+  const { shippingCompanies } = usePlatformSettings();
   const [selectedCarrier, setSelectedCarrier] = useState("all");
+
   const [scanInput, setInput] = useState("");
   const [activeOrder, setActiveOrder] = useState(null);
   const [localProducts, setLocalProducts] = useState([]);
@@ -2340,8 +2346,20 @@ export function ScanReturnsSubtab({
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [isFetchingOrder, setIsFetchingOrder] = useState(false);
   const [loadingOrders, setLoadingOrders] = useState(false);
-  const [panelOpen, setPanelOpen] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(() => {
+    return !!searchParams.get("manifest");
+  });
   const scanRef = useRef(null);
+  const selectedCompany = useMemo(() => {
+    if (!shippingCompanies || selectedCarrier === "all" || selectedCarrier === "none") {
+      return null;
+    }
+
+    return shippingCompanies.find(
+      (c) => c.providerId === selectedCarrier
+    );
+  }, [shippingCompanies, selectedCarrier]);
+
 
   const fetchAvailableOrders = useCallback(async () => {
     try {
@@ -2489,7 +2507,7 @@ export function ScanReturnsSubtab({
   const [loadingReturnOrders, setLoadingReturnOrders] = useState(false);
   const [selectedOrderIds, setSelectedOrderIds] = useState([]);
 
-    const fetchShippedOrders = useCallback(async () => {
+  const fetchShippedOrders = useCallback(async () => {
     try {
       setLoadingReturnOrders(true);
       const res = await api.get('/orders', {
@@ -2509,7 +2527,7 @@ export function ScanReturnsSubtab({
 
   useEffect(() => {
     fetchShippedOrders();
-  }, [ fetchShippedOrders]);
+  }, [fetchShippedOrders]);
 
   const handleSaveReturn = async () => {
     if (!activeOrder || Object.keys(selectedItems).length === 0) return;
@@ -2561,7 +2579,7 @@ export function ScanReturnsSubtab({
               <HeaderIconBtn onClick={() => setSoundEnabled(v => !v)}>
                 {soundEnabled ? <Volume2 size={13} className="text-white" /> : <VolumeX size={13} className="text-white/60" />}
               </HeaderIconBtn>
-              <HeaderBadge onClick={() => setPanelOpen(true)}><Layers size={12} />{t("scan.labels.returnOrders", {count: returnOrders?.length || 0})}</HeaderBadge>
+              <HeaderBadge onClick={() => setPanelOpen(true)}><Layers size={12} />{t("scan.labels.returnOrders", { count: returnOrders?.length || 0 })}</HeaderBadge>
               {isItemsMode && <HeaderBadge onClick={resetCurrentOrder}><X size={12} />{t("scan.actions.cancel")}</HeaderBadge>}
             </>
           }
@@ -2651,7 +2669,7 @@ export function ScanReturnsSubtab({
                     <RotateCcw size={13} style={{ color: meta?.color || DS.primary }} />
                   </div>
                   <p className="text-sm font-black text-slate-800 dark:text-slate-100">
-                    {selectedCarrier}
+                    {selectedCompany ? selectedCompany?.name : selectedCarrier}
                   </p>
                 </div>
               </div>
@@ -2710,12 +2728,14 @@ export function ScanReturnsSubtab({
         open={panelOpen}
         onClose={() => setPanelOpen(false)}
         selectedOrderIds={selectedOrderIds}
-				setSelectedOrderIds={setSelectedOrderIds}
-				orders={returnOrders}
-				loading={loadingReturnOrders}
-        onManifestCreated={() => {
+        setSelectedOrderIds={setSelectedOrderIds}
+        orders={returnOrders}
+        loading={loadingReturnOrders}
+        onManifestCreated={(manifest) => {
           fetchStats?.();
-          setSubtab("files");
+          setSubtab("files", {
+            manifestId: manifest?.id,
+          });
         }}
       />
     </div>
@@ -2726,7 +2746,7 @@ export function ScanReturnsSubtab({
 // FILES SUBTAB
 // ─────────────────────────────────────────────────────────────
 function FileSummaryCell({ row, t }) {
-  const totalOrders =row.orders?.length || 0;
+  const totalOrders = row.orders?.length || 0;
   const totalItems =
     row.orders?.reduce(
       (sum, order) =>
@@ -2862,10 +2882,10 @@ function ReturnsFilesSubtab({
     }
   };
 
-  const handleDownload = async (row) => {
-    setDownloading((p) => ({ ...p, [row.id]: true }));
+  const handleDownload = async (id) => {
+    setDownloading((p) => ({ ...p, [id]: true }));
     try {
-      const res = await api.get(`/orders/manifests/${row.id}`);
+      const res = await api.get(`/orders/manifests/${id}`);
       const manifest = res.data;
 
       const ordersSnapshot = manifest.orders.map(o => {
@@ -2908,6 +2928,25 @@ function ReturnsFilesSubtab({
       setDownloading((p) => ({ ...p, [row.id]: false }));
     }
   };
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const manifestId = searchParams.get("manifestId");
+
+    if (manifestId) {
+      handleDownload(manifestId);
+    }
+    // remove from URL after triggering
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("manifestId");
+
+    router.replace(
+      params.toString() ? `${pathname}?${params}` : pathname
+    );
+  }, []);
 
   const handleDownloadWrongLog = async (row) => {
     setDownloadingWrongLog((p) => ({ ...p, [row.id]: true }));
@@ -3011,7 +3050,7 @@ function ReturnsFilesSubtab({
                   <DownloadCloud size={13} />
                 ),
                 tooltip: t("files.tooltip.downloadReceipt"),
-                onClick: (r) => handleDownload(r),
+                onClick: (r) => handleDownload(r?.id),
                 variant: "primary",
                 disabled: !!downloading[row.id],
                 permission: "orders.read",

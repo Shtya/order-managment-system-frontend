@@ -395,6 +395,7 @@
     "settings": "الإعدادات",
     "order-replacement": "طلبات الاستبدال",
     "failedOrders": "طلبات تحتاج مراجعة",
+    "ordersUnderReview": "طلبات تحتاج مراجعة",
     "pendingOrders": "طلبات معلقة",
     "logout": "تسجيل الخروج",
     "collections": "التحصيلات",
@@ -2117,7 +2118,9 @@
           "ALREADY_FULLY_SCANNED": "تم مسحه بالكامل مسبقاً",
           "INVALID_STATUS": "حالة الطلب غير صالحة",
           "OTHER": "أخرى"
-        }
+        },
+        "readyOutgingOrders": "{count} طلب جاهزة للخروج",
+        "ordersOutgingBtn": "الطلبات جاهزة للخروج ({count})"
       },
       "files": {
         "searchPlaceholder": "ابحث برقم الملف أو شركة الشحن أو اسم الملف",
@@ -2256,10 +2259,11 @@
           "carrierMismatchError": "لا يمكن إنشاء ملف لطلبات تتبع شركات شحن مختلفة",
           "noShippedOrders": "لا توجد طلبات مشحونة",
           "errorLoadingFile": "حدث خطأ أثناء تحميل الملف",
-          "errorLoadingLogs": "حدث خطأ أثناء تحميل سجل الأخطاء"
+          "errorLoadingLogs": "حدث خطأ أثناء تحميل سجل الأخطاء",
+          "manifestCreated": "تم إنشاء الملف بنجاع "
         },
         "labels": {
-          "ordersWithCarrier": "{count} طلب مع شركة الشحن",
+          "ordersWithCarrier": "{count} طلب جاهزه للإرجاع",
           "loading": "جاري التحميل...",
           "products": "منتجات",
           "returnOrders": "طلبات المرتجعات ({count})\t",
@@ -4366,14 +4370,20 @@
       "saving": "جاري الحفظ...",
       "view": "عرض",
       "settings": "الإعدادات",
-      "trackShipment": "تتبع الشحنة"
+      "trackShipment": "تتبع الشحنة",
+      "startPreparing": "بدء التجهيز",
+      "continuePreparing": "متابعة التجهيز",
+      "scanOutgoing": "مسح للخروج",
+      "createManifest": "إنشاء ملف حمولة (مانيفست)",
+      "createReturnManifest": "إنشاء ملف مرتجعات"
     },
     "breadcrumb": {
       "home": "الرئيسية",
       "orders": "الطلبات",
       "createOrder": "إنشاء طلب جديد",
       "editOrder": "تعديل الطلب",
-      "duplicateOrder": "تكرار الطلب"
+      "duplicateOrder": "تكرار الطلب",
+      "ordersUnderReview": "طلبات تحتاج مراجعة"
     },
     "customColor": "لون مخصص",
     "emptySubtitle": "جرّب تغيير معايير البحث أو الفلترة",

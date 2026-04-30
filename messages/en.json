@@ -395,6 +395,7 @@
     "settings": "Settings",
     "order-replacement": "Replacement Orders",
     "failedOrders": "Orders Requiring Review",
+    "ordersUnderReview": "Orders Under Review",
     "pendingOrders": "Pending Orders",
     "logout": "Log Out",
     "collections": "Collections",
@@ -2100,7 +2101,9 @@
           "ALREADY_FULLY_SCANNED": "Already fully scanned",
           "INVALID_STATUS": "Invalid order status",
           "OTHER": "Other"
-        }
+        },
+        "readyOutgingOrders": "{count} Order ready for shipping",
+        "ordersOutgingBtn": "Ready Orders for Shipping ({count})"
       },
       "files": {
         "searchPlaceholder": "Search delivery files...",
@@ -2239,10 +2242,11 @@
           "carrierMismatchError": "Cannot create manifest for orders from different shipping companies",
           "noShippedOrders": "No shipped orders found",
           "errorLoadingFile": "An error occurred while loading the file",
-          "errorLoadingLogs": "An error occurred while loading the error log"
+          "errorLoadingLogs": "An error occurred while loading the error log",
+          "manifestCreated": "The file was created successfully"
         },
         "labels": {
-          "ordersWithCarrier": "{count} order(s) with the shipping company",
+          "ordersWithCarrier": "{count} Order ready for return",
           "loading": "Loading...",
           "products": "products",
           "returnOrders": "Return Orders ({count})\t",
@@ -4348,14 +4352,20 @@
       "saving": "Saving...",
       "view": "View",
       "settings": "Settings",
-      "trackShipment": "Shipment tracking"
+      "trackShipment": "Shipment tracking",
+      "startPreparing": "Start Preparing",
+      "continuePreparing": "Continue Preparing",
+      "scanOutgoing": "Scan for Outgoing",
+      "createManifest": "Create Manifest File",
+      "createReturnManifest": "Create Return Manifest File"
     },
     "breadcrumb": {
       "home": "Home",
       "orders": "Orders",
       "createOrder": "Create New Order",
       "editOrder": "Edit Order",
-      "duplicateOrder": "Duplicate Order"
+      "duplicateOrder": "Duplicate Order",
+      "ordersUnderReview": "Orders Under Review"
     },
     "customColor": "Custom Color",
     "emptySubtitle": "Try changing the search or filter criteria",

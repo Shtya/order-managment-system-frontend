@@ -38,6 +38,13 @@ import {
   MessageCircle,
   PhoneCall,
   LucideMessageCircle,
+  GitMerge,
+  Printer,
+  ScanBarcode,
+  ScanLine,
+  Send,
+  ClipboardList,
+  Undo2,
 
 } from "lucide-react";
 
@@ -90,6 +97,7 @@ import DateRangePicker from "@/components/atoms/DateRangePicker";
 // Delivered or failed deliver (for faield can be reassign to shipping compnay (Distrebuted) )
 
 // ✅ Order Status Constants (Mirroring your Enum)
+//
 export const OrderStatus = {
   NEW: "new",
   UNDER_REVIEW: "under_review",
@@ -97,13 +105,13 @@ export const OrderStatus = {
   CONFIRMED: "confirmed", // مؤكد
   DISTRIBUTED: "distributed",
   POSTPONED: "postponed", // مؤجل
+
   NO_ANSWER: "no_answer", // لا يوجد رد
   WRONG_NUMBER: "wrong_number", // الرقم غلط
   OUT_OF_DELIVERY_AREA: "out_of_area", // خارج نطاق التوصيل
   DUPLICATE: "duplicate", // طلب مكرر
-  //
-  PREPARING: "preparing",
 
+  PREPARING: "preparing",
   PRINTED: "printed",
   READY: "ready",
   PACKED: "packed",
@@ -116,113 +124,31 @@ export const OrderStatus = {
   RETURNED: "returned",
 };
 
-export const STATUS_TRANSITIONS = {
-  [OrderStatus.NEW]: [
-    OrderStatus.UNDER_REVIEW,
-    OrderStatus.CONFIRMED,
-    OrderStatus.NO_ANSWER,
-    OrderStatus.WRONG_NUMBER,
-    OrderStatus.OUT_OF_DELIVERY_AREA,
-    OrderStatus.DUPLICATE,
-    OrderStatus.CANCELLED,
-  ],
 
-  [OrderStatus.UNDER_REVIEW]: [
-    OrderStatus.CONFIRMED,
-    OrderStatus.NO_ANSWER,
-    OrderStatus.WRONG_NUMBER,
-    OrderStatus.OUT_OF_DELIVERY_AREA,
-    OrderStatus.DUPLICATE,
-    OrderStatus.CANCELLED,
-    OrderStatus.REJECTED,
-  ],
-
-  [OrderStatus.CONFIRMED]: [
-    OrderStatus.DISTRIBUTED,
-    OrderStatus.SHIPPED, // ✅ direct shipping allowed
-    OrderStatus.CANCELLED,
-    OrderStatus.REJECTED,
-  ],
-
-  [OrderStatus.DISTRIBUTED]: [
-    OrderStatus.PRINTED,
-    OrderStatus.PREPARING, // optional shortcut
-    OrderStatus.CANCELLED,
-  ],
-
-  [OrderStatus.PRINTED]: [
-    OrderStatus.PREPARING,
-    OrderStatus.CANCELLED,
-    OrderStatus.REJECTED,
-  ],
-
-  [OrderStatus.PREPARING]: [
-    OrderStatus.READY,
-    OrderStatus.CANCELLED,
-    OrderStatus.REJECTED,
-  ],
-
-  [OrderStatus.READY]: [
-    OrderStatus.PACKED,
-    OrderStatus.CANCELLED,
-  ],
-
-  [OrderStatus.PACKED]: [
-    OrderStatus.SHIPPED,
-    OrderStatus.CANCELLED,
-  ],
-
-  [OrderStatus.SHIPPED]: [
-    OrderStatus.DELIVERED,
-    OrderStatus.FAILED_DELIVERY,
-  ],
-
-  [OrderStatus.FAILED_DELIVERY]: [
-    OrderStatus.DISTRIBUTED, // 🔁 reassign to shipping company
-    OrderStatus.SHIPPED,     // 🔁 resend directly
-    OrderStatus.RETURN_PREPARING,
-  ],
-
-  [OrderStatus.RETURN_PREPARING]: [
-    OrderStatus.RETURNED,
-  ],
-
-  // ❌ TERMINAL STATES (no transitions)
-  [OrderStatus.DELIVERED]: [],
-  [OrderStatus.CANCELLED]: [],
-  [OrderStatus.REJECTED]: [],
-  [OrderStatus.RETURNED]: [],
-};
-
-const ALLOWED_CONFIRM_STATUSES = [
-  OrderStatus.NEW,
-  OrderStatus.CONFIRMED,
-  OrderStatus.UNDER_REVIEW,
-  OrderStatus.NO_ANSWER,
-  OrderStatus.POSTPONED,
-  OrderStatus.WRONG_NUMBER,
-  OrderStatus.OUT_OF_DELIVERY_AREA,
-  OrderStatus.DUPLICATE,
-  OrderStatus.CANCELLED,
-  OrderStatus.RETURNED,
-];
 
 
 // Main Orders Page Component
-export default function OrdersTab({ stats, fetchStats, statsLoading }) {
+export default function OrdersTab({
+  stats, fetchStats, statsLoading,
+  readOnlyStatus = false, restrictedStatuses = [],
+  showTopActions = true, showBulkUpload = true, showCustom = true,
+  label = "" }) {
   const t = useTranslations("orders");
   const { formatCurrency } = usePlatformSettings();
 
+  const restrictedSet = useMemo(() => {
+    return new Set(restrictedStatuses || []);
+  }, [restrictedStatuses]);
   const filteredStats = useMemo(() => {
-    return ALLOWED_CONFIRM_STATUSES.map((statusCode) => {
+    if (!stats) return [];
 
-      const statData = stats?.find((s) => s.code === statusCode);
+    return stats.filter((s) => {
+      const isRestricted = restrictedSet.has(s.code);
+      const isSystem = s.system === false;
 
-      return {
-        ...statData
-      };
+      return isRestricted || (showCustom && isSystem);
     });
-  }, [stats, t]);
+  }, [stats, restrictedSet, showCustom]);
 
   const router = useRouter();
   const [retrySettingsOpen, setRetrySettingsOpen] = useState(false);
@@ -291,8 +217,14 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
     };
 
     if (search) params.search = search;
-    if (filters.status && filters.status !== "all")
+    if (filters.status === "all" || !filters.status) {
+      if (restrictedStatuses?.length) {
+        params.status = restrictedStatuses.join(",");
+      }
+    } else {
       params.status = filters.status;
+    }
+
     if (filters.paymentStatus && filters.paymentStatus !== "all")
       params.paymentStatus = filters.paymentStatus;
     // if (filters.paymentMethod && filters.paymentMethod !== 'all') params.paymentMethod = filters.paymentMethod;
@@ -304,7 +236,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
       params.storeId = filters.store;
     if (filters.employee && filters.employee !== "all")
       params.userId = filters.employee;
-    params.forConfirm = 'true';
+
     return params;
   };
 
@@ -347,8 +279,9 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
   };
 
   const statsCards = useMemo(() => {
-    if (!stats.length) return [];
-    return stats
+    const final = readOnlyStatus ? filteredStats : stats;
+    if (!final.length) return [];
+    return final
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .map((stat) => {
         const Icon = getIconForStatus(stat.code);
@@ -372,7 +305,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
           fullData: stat,
         };
       });
-  }, [stats]);
+  }, [stats, readOnlyStatus, filteredStats]);
 
   // Create statusesMap for filters and dropdowns
   const statusesMap = useMemo(() => {
@@ -543,7 +476,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
         key: "address",
         header: t("table.address"),
         cell: (row) => (
-          <span className="text-sm text-gray-600 dark:text-slate-300 line-clamp-1">
+          <span title={row.address} className="text-sm text-gray-600 dark:text-slate-300 line-clamp-1 truncate max-w-[120px]">
             {row.address}
           </span>
         ),
@@ -604,6 +537,80 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
           );
         },
       },
+
+      readOnlyStatus ? {
+        key: "status",
+        header: t("table.status"),
+        cell: (row) => (
+          <Badge className={cn("rounded-xl", getStatusBadge(row.status))}>
+            {row.status.system
+              ? t(`statuses.${row.status.code}`)
+              : row.status.name || row.status.code}
+          </Badge>
+        ),
+      } :
+        {
+          key: "confirmStatus",
+          header: t("table.status"),
+          cell: (row) => {
+            const currentCode = row.status?.code;
+            const currentStatusId = row.status?.id;
+
+            return (
+              <div className="flex items-center gap-2">
+                <Select
+                  defaultValue={String(currentStatusId)}
+                  onValueChange={async (val) => {
+                    const statusId = val;
+                    if (!statusId || statusId === currentStatusId) return;
+
+                    const toastId = toast.loading(t("messages.statusUpdating"));
+                    try {
+                      setUpdating(row.id, true);
+                      await api.patch(`/orders/${row.id}/status`, { statusId });
+                      toast.success(t("messages.statusUpdated"), { id: toastId });
+                      await fetchOrders(pager.current_page, pager.per_page);
+                      await fetchStats();
+                    } catch (err) {
+                      console.error(err);
+                      toast.error(
+                        err.response?.data?.message ||
+                        t("messages.errorUpdatingStatus"),
+                        { id: toastId }
+                      );
+                    } finally {
+                      setUpdating(row.id, false);
+                    }
+                  }}
+                  disabled={
+                    updatingStatuses.includes(row.id) ||
+                    currentCode === OrderStatus.DELIVERED
+                  }
+                >
+                  <SelectTrigger className="w-[150px] h-8">
+                    <SelectValue />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    {(filteredStats || []).map((s) => {
+                      const isSame = s.code === currentCode;
+
+                      return (
+                        <SelectItem
+                          key={s.id}
+                          value={String(s.id)}
+                        // disabled={isSame} // 🔥 main logic
+                        >
+                          {s.system ? t(`statuses.${s.code}`) : s.name || s.code}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+            );
+          },
+        },
       {
         key: "products",
         header: t("table.products"),
@@ -618,80 +625,6 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
             ))}
           </div>
         ),
-      },
-
-      // {
-      //   key: "status",
-      //   header: t("table.status"),
-      //   cell: (row) => (
-      //     <Badge className={cn("rounded-xl", getStatusBadge(row.status))}>
-      //       {row.status.system
-      //         ? t(`statuses.${row.status.code}`)
-      //         : row.status.name || row.status.code}
-      //     </Badge>
-      //   ),
-      // },
-      {
-        key: "confirmStatus",
-        header: t("table.status"),
-        cell: (row) => {
-          const currentCode = row.status?.code;
-          const currentStatusId = row.status?.id;
-
-          return (
-            <div className="flex items-center gap-2">
-              <Select
-                defaultValue={String(currentStatusId)}
-                onValueChange={async (val) => {
-                  const statusId = val;
-                  if (!statusId || statusId === currentStatusId) return;
-
-                  const toastId = toast.loading(t("messages.statusUpdating"));
-                  try {
-                    setUpdating(row.id, true);
-                    await api.patch(`/orders/${row.id}/status`, { statusId });
-                    toast.success(t("messages.statusUpdated"), { id: toastId });
-                    await fetchOrders(pager.current_page, pager.per_page);
-                    await fetchStats();
-                  } catch (err) {
-                    console.error(err);
-                    toast.error(
-                      err.response?.data?.message ||
-                      t("messages.errorUpdatingStatus"),
-                      { id: toastId }
-                    );
-                  } finally {
-                    setUpdating(row.id, false);
-                  }
-                }}
-                disabled={
-                  updatingStatuses.includes(row.id) ||
-                  currentCode === OrderStatus.DELIVERED
-                }
-              >
-                <SelectTrigger className="w-[150px] h-8">
-                  <SelectValue />
-                </SelectTrigger>
-
-                <SelectContent>
-                  {(filteredStats || []).map((s) => {
-                    const isSame = s.code === currentCode;
-
-                    return (
-                      <SelectItem
-                        key={s.id}
-                        value={String(s.id)}
-                        // disabled={isSame} // 🔥 main logic
-                      >
-                        {s.system ? t(`statuses.${s.code}`) : s.name || s.code}
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
-            </div>
-          );
-        },
       },
       {
         key: "paymentMethod",
@@ -785,6 +718,76 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
           <ActionButtons
             row={row}
             actions={[
+              // --- WAREHOUSE ACTIONS ---
+              {
+                icon: <GitMerge size={18} />,
+                tooltip: t("actions.distribute"),
+                onClick: () => router.push(`/warehouse?tab=distribution&subtab=unassigned`),
+                variant: "primary",
+                permission: "orders.update",
+                hidden: row?.status?.code !== OrderStatus.CONFIRMED,
+              },
+              {
+                icon: <Printer size={18} />,
+                tooltip: t("actions.print"),
+                onClick: () => router.push(`/warehouse?tab=print`),
+                variant: "primary",
+                permission: "orders.update",
+                hidden: row?.status?.code !== OrderStatus.DISTRIBUTED,
+              },
+              {
+                icon: <ScanBarcode size={18} />,
+                tooltip: t("actions.startPreparing"),
+                onClick: (r) => router.push(`/warehouse?tab=preparation&subtab=scanning&order=${r.id}`),
+                variant: "primary",
+                permission: "orders.update",
+                hidden: row?.status?.code !== OrderStatus.PRINTED,
+              },
+              {
+                icon: <ScanLine size={18} />,
+                tooltip: t("actions.continuePreparing"),
+                onClick: (r) => router.push(`/warehouse?tab=preparation&subtab=scanning&order=${r.id}`),
+                variant: "primary",
+                permission: "orders.update",
+                hidden: row?.status?.code !== OrderStatus.PREPARING,
+              },
+              {
+                icon: <Send size={18} />,
+                tooltip: t("actions.scanOutgoing"),
+                onClick: (r) => router.push(`/warehouse?tab=outgoing&subtab=scan&order=${r.orderNumber}`),
+                variant: "primary",
+                permission: "orders.update",
+                hidden: row?.status?.code !== OrderStatus.READY,
+              },
+              {
+                icon: <ClipboardList size={18} />,
+                tooltip: t("actions.createManifest"),
+                onClick: () => router.push(`/warehouse?tab=outgoing&subtab=scan&manifest=open`),
+                variant: "primary",
+                permission: "orders.update",
+                hidden: row?.status?.code !== OrderStatus.PACKED,
+              },
+              {
+                icon: <Undo2 size={18} />,
+                tooltip: t("actions.createReturnManifest"),
+                onClick: () => router.push(`/warehouse?tab=returns&subtab=scan&manifest=open`),
+                variant: "primary",
+                permission: "orders.update",
+                hidden: row?.status?.code !== OrderStatus.RETURN_PREPARING,
+              },
+              {
+                icon: <Truck />,
+                tooltip: t("actions.trackShipment"), // "تتبع الشحنة"
+                onClick: (r) => {
+                  setTrackingOrder(r);
+                  setTrackShipmentModalOpen(true);
+                },
+                variant: "primary",
+                permission: "orders.read",
+                disabled: !row.trackingNumber,
+                hidden: row?.status?.code !== OrderStatus.SHIPPED && row?.status?.code !== OrderStatus.DELIVERED,
+              },
+              // -----------------------------
               {
                 icon: <Eye />,
                 tooltip: t("actions.view"),
@@ -806,17 +809,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
                 variant: "primary",
                 permission: "orders.update",
               },
-              {
-                icon: <Truck />,
-                tooltip: t("actions.trackShipment"), // "تتبع الشحنة"
-                onClick: (r) => {
-                  setTrackingOrder(r);
-                  setTrackShipmentModalOpen(true);
-                },
-                variant: "primary",
-                permission: "orders.read",
-                disabled: !row.trackingNumber,
-              },
+
               {
                 icon: <Trash2 />,
                 tooltip: t("actions.delete"),
@@ -826,23 +819,24 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
                 },
                 variant: "red",
                 permission: "orders.delete",
+                hidden: readOnlyStatus
               },
             ]}
           />
         ),
       },
     ];
-  }, [t, router, filteredStats, formatCurrency]);
+  }, [t, router, filteredStats, formatCurrency, readOnlyStatus]);
 
   return (
     <div className=" ">
       <PageHeader
         breadcrumbs={[
           { name: t("breadcrumb.home"), href: "/dashboard" },
-          { name: t("tabs.orders") },
+          { name: label ? label : t("tabs.orders") },
         ]}
         buttons={
-          <>
+          showTopActions ? <>
             <Button_
               href="/orders/new"
               size="sm"
@@ -859,7 +853,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
               icon={<Settings size={18} />}
               permission="order.updateSettings"
             />
-          </>
+          </> : null
         }
         statsLoading={statsLoading}
         statsCount={12}
@@ -875,7 +869,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
             onEdit: () => handleEditStatus(stat.fullData),
             onDelete: () => handleDeleteStatus(stat),
           })),
-          {
+          [...(!readOnlyStatus ? [{
             id: "add",
             name: t("actions.addStatus"),
             icon: Plus,
@@ -883,7 +877,7 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
             isAddCard: true,
             onClick: handleAddStatus,
             sortOrder: 9999,
-          },
+          }] : [])],
         ]}
       />
 
@@ -917,14 +911,16 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
             disabled: exportLoading,
             permission: "orders.read",
           },
-          {
-            key: "bulk",
-            label: t("toolbar.bulkUpload"),
-            icon: <Upload size={14} />,
-            color: "primary",
-            onClick: () => setBulkUploadOpen(true),
-            permission: "orders.create",
-          },
+          ...(showBulkUpload
+            ? [{
+              key: "bulk",
+              label: t("toolbar.bulkUpload"),
+              icon: <Upload size={14} />,
+              color: "primary",
+              onClick: () => setBulkUploadOpen(true),
+              permission: "orders.create",
+            }]
+            : []),
         ]}
         hasActiveFilters={Object.values(filters).some(
           (v) => v && v !== "all" && v !== null,
@@ -943,8 +939,8 @@ export default function OrdersTab({ stats, fetchStats, statsLoading }) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t("filters.all")}</SelectItem>
-                  {Array.isArray(stats) &&
-                    stats.map((s) => (
+                  {Array.isArray(filteredStats) &&
+                    filteredStats.map((s) => (
                       <SelectItem
                         key={s.code || s.id}
                         value={s.code || String(s.id)}

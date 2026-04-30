@@ -47,8 +47,8 @@ function MiniTable({ columns, data, maxH = "auto" }) {
       <table className="w-full text-right border-separate border-spacing-y-2">
         <thead>
           <tr>
-            {columns.map((col) => (
-              <th key={col.key} className="text-[10px] font-black uppercase tracking-wider text-muted-foreground px-2 py-1">
+            {columns.map((col, idx) => (
+              <th key={idx} className="text-[10px] font-black uppercase tracking-wider text-muted-foreground px-2 py-1">
                 {col.header}
               </th>
             ))}
@@ -57,8 +57,8 @@ function MiniTable({ columns, data, maxH = "auto" }) {
         <tbody>
           {data.map((row, idx) => (
             <tr key={idx} className="bg-muted/30 hover:bg-muted/50 transition-colors">
-              {columns.map((col) => (
-                <td key={col.key} className="px-2 py-2 first:rounded-r-xl last:rounded-l-xl border-y border-border/50 first:border-r last:border-l">
+              {columns.map((col, colIn) => (
+                <td key={colIn} className="px-2 py-2 first:rounded-r-xl last:rounded-l-xl border-y border-border/50 first:border-r last:border-l">
                   {col.cell ? col.cell(row) : row[col.key]}
                 </td>
               ))}

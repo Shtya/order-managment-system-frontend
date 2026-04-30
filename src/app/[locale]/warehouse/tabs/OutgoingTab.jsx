@@ -1499,7 +1499,7 @@ function OrdersList({
 			<div className="min-w-[800px]">
 				<div
 					className="grid text-[10px] font-extrabold uppercase tracking-[0.07em] text-slate-400 px-5 py-2.5 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/60 dark:bg-slate-800/30"
-					style={{ gridTemplateColumns: "3fr 2fr 1fr 1fr 1fr 1fr 1fr" }}
+					style={{ gridTemplateColumns: "1fr 2fr 1fr 1fr 1fr 1fr 1fr" }}
 				>
 					<span />
 					<span>{t("scan.table.order")}</span>
@@ -1533,7 +1533,7 @@ function OrdersList({
 											? "bg-emerald-50/60 dark:bg-emerald-950/10"
 											: "hover:bg-slate-50/70 dark:hover:bg-slate-800/30"
 									)}
-									style={{ gridTemplateColumns: "3fr 2fr 1fr 1fr 1fr 1fr 1fr" }}
+									style={{ gridTemplateColumns: "1fr 2fr 1fr 1fr 1fr 1fr 1fr" }}
 									onClick={() => prodCount > 0 && toggle(code)}
 								>
 									<AnimatePresence>

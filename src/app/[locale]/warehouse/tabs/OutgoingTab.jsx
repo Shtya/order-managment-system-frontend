@@ -2388,7 +2388,7 @@ export function ScanOutgoingSubtab({
 // ─────────────────────────────────────────────────────────────
 function FileSummaryCell({ row }) {
 	const t = useTranslations("warehouse.outgoing");
-	const totalOrders = row.totalOrders || 0;
+	const totalOrders = row.orders?.length || 0;
 	const totalItems =
 		row.orders?.reduce(
 			(sum, order) =>

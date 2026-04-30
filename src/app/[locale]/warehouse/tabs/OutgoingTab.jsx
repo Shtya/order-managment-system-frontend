@@ -1493,8 +1493,7 @@ function OrdersList({
 			</div>
 		);
 	}
-
-	return (
+		return (
 		<div className="overflow-x-auto scrollbar-none">
 			<div className="min-w-[800px]">
 				<div
@@ -1517,7 +1516,7 @@ function OrdersList({
 						const isFlash = lastHighlight?.code === code;
 						const isOpen = !!expanded[code];
 						const prodCount = order.items?.length ?? 0;
-
+						
 						return (
 							<motion.div
 								key={code}
@@ -1618,7 +1617,7 @@ function OrdersList({
 
 									<div className="flex justify-center">
 										<span className="text-[12px] font-black text-slate-800 dark:text-slate-100 tabular-nums">
-											{formatCurrency(order.totalPrice)}
+											{formatCurrency(order.finalTotal)}
 										</span>
 									</div>
 
@@ -2218,7 +2217,6 @@ export function ScanOutgoingSubtab({
 			}
 		}
 	};
-
 
 
 	return (

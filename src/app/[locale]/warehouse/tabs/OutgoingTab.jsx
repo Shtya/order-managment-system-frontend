@@ -45,6 +45,7 @@ import { useDebounce } from "@/hook/useDebounce";
 import api from "@/utils/api";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useClipboard } from "@/hook/useClipboard";
+import { useAuth } from "@/context/AuthContext";
 // ─────────────────────────────────────────────
 // ─────────────────────────────────────────────────────────────
 // DESIGN TOKENS
@@ -2430,6 +2431,7 @@ function FileSummaryCell({ row }) {
 function OutgoingFilesSubtab({
 	resetToken,
 }) {
+	const {user} = useAuth()
 	const t = useTranslations("warehouse.outgoing");
 	const [search, setSearch] = useState("");
 	const { debouncedValue: debouncedSearch } = useDebounce({ value: search, delay: 350 })
@@ -2578,12 +2580,12 @@ function OutgoingFilesSubtab({
 				orderNumber: l.order?.orderNumber || "-",
 				time: new Date(l.createdAt).toLocaleTimeString()
 			}));
-
+			
 			openPrintWindow(
 				buildWrongScanLogPDF(
 					logs,
 					row.shippingCompany?.name || "-",
-					row.order?.user?.name || "System",
+					user?.name || "System",
 					new Date().toLocaleString(),
 					wrongLogLabels
 				)

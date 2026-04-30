@@ -782,10 +782,12 @@ function GenericOpModal({ open, onClose, op, t, formatCurrency }) {
               {
                 label: t("genericModal.details"),
                 value: op.details || "—",
+                textWrap: true,
                 icon: Info,
+                
                 color: DS.primary,
               },
-            ].map(({ label, value, icon: Icon, color }) => (
+            ].map(({ label, value, icon: Icon, color,textWrap }) => (
               <div
                 key={label}
                 className={cn(
@@ -806,7 +808,7 @@ function GenericOpModal({ open, onClose, op, t, formatCurrency }) {
                   <p className="text-[10px] text-slate-400 mb-0.5 font-semibold uppercase tracking-wide">
                     {label}
                   </p>
-                  <p className="font-bold text-sm text-slate-800 dark:text-slate-100 truncate">
+                  <p className={`font-bold text-sm text-slate-800 dark:text-slate-100 ${textWrap ? "text-wrap" : "truncate"}`}>
                     {value}
                   </p>
                 </div>

@@ -518,7 +518,7 @@ export default function FailedOrderDetailsPage() {
             <PageHeader
                 breadcrumbs={[
                     { name: t("breadcrumb.home"), href: "/dashboard" },
-                    { name: t("breadcrumb.failedOrders"), href: "/orders?tab=failedOrders" },
+                    { name: t("breadcrumb.pendingOrders"), href: "/orders?tab=failedOrders" },
                     { name: `${payload?.fullName || id}` }
                 ]}
                 buttons={

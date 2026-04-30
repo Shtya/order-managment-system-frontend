@@ -4479,7 +4479,8 @@
       "returnsComingSoon": "الاسترجاع",
       "replacementComingSoon": "الاستبدال",
       "comingSoonDesc": "هذا القسم قيد التطوير، سيكون متاحاً قريباً.",
-      "rejected": "الطلبات المرفوضة"
+      "rejected": "الطلبات المرفوضة",
+      "pendingOrders": "طلبات معلقة"
     },
     "image": {
       "preview": "معاينة"
@@ -4679,7 +4680,8 @@
       },
       "breadcrumb": {
         "home": "الرئيسية",
-        "failedOrders": "طلبات تحتاج مراجعة"
+        "failedOrders": "طلبات تحتاج مراجعة",
+        "pendingOrders": "طلبات معلقة"
       }
     },
     "custom": "مخصص",

@@ -4461,7 +4461,8 @@
       "returnsComingSoon": "Return Requests",
       "replacementComingSoon": "Replacement Requests",
       "comingSoonDesc": "This section is under development and will be available soon.",
-      "rejected": "Rejected Orders"
+      "rejected": "Rejected Orders",
+      "pendingOrders": "Pending Orders"
     },
     "image": {
       "preview": "Preview"
@@ -4640,7 +4641,8 @@
       },
       "breadcrumb": {
         "home": "Home",
-        "failedOrders": "Orders Requiring Review"
+        "failedOrders": "Orders Requiring Review",
+        "pendingOrders": "Pending Orders"
       }
     },
     "custom": "Custom",

@@ -577,6 +577,7 @@ export default function DistributionModal({ isOpen, onClose, statuses = [], onSu
 		OrderStatus.FAILED_DELIVERY,
 		OrderStatus.REJECTED,
 		OrderStatus.NO_ANSWER,
+		OrderStatus.POSTPONED,
 		OrderStatus.NEW,
 		OrderStatus.UNDER_REVIEW,
 		OrderStatus.OUT_OF_DELIVERY_AREA,

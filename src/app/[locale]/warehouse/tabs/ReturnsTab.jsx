@@ -1748,9 +1748,9 @@ function OrdersList({
                         e.stopPropagation();
                         onSelectOrder?.(order);
                       }}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all active:scale-95"
-                    >
-                      <ScanLine size={16} />
+                      	className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary/20 text-primary hover:bg-primary hover:text-white transition-all active:scale-95"
+										>
+											<ScanLine size={20} />
                     </button>
                   </div>
                 </div>
@@ -2162,40 +2162,15 @@ function ReturnsScanLogBoxes({ successCount, errorCount }) {
 // ─────────────────────────────────────────────────────────────
 // RETURNS ORDERS SLIDE PANEL
 // ─────────────────────────────────────────────────────────────
-function ReturnsOrdersSlidePanel({ open, onClose, selectedCarrier, onManifestCreated }) {
+function ReturnsOrdersSlidePanel({ open, onClose, orders,loading, selectedOrderIds,setSelectedOrderIds, onManifestCreated }) {
   const t = useTranslations("warehouse.returns");
   const locale = useLocale();
   const isRtl = locale !== "en";
 
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedOrderIds, setSelectedOrderIds] = useState([]);
+
   const [creatingManifest, setCreatingManifest] = useState(false);
 
-  const fetchShippedOrders = useCallback(async () => {
-    try {
 
-
-      setLoading(true);
-      const res = await api.get('/orders', {
-        params: {
-          status: 'return_preparing',
-          // shippingCompanyId: selectedCarrier,
-          limit: 100
-        }
-      });
-      setOrders(res.data?.records || []);
-      setSelectedOrderIds([]);
-    } catch (error) {
-      console.error("Failed to fetch shipped orders", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedCarrier]);
-
-  useEffect(() => {
-    if (open) fetchShippedOrders();
-  }, [open, fetchShippedOrders]);
 
   const toggleSelect = (id) => {
     setSelectedOrderIds(prev =>
@@ -2510,6 +2485,32 @@ export function ScanReturnsSubtab({
 
   const unselectAll = () => setSelectedItems({});
 
+  const [returnOrders, setReturnOrders] = useState([]);
+  const [loadingReturnOrders, setLoadingReturnOrders] = useState(false);
+  const [selectedOrderIds, setSelectedOrderIds] = useState([]);
+
+    const fetchShippedOrders = useCallback(async () => {
+    try {
+      setLoadingReturnOrders(true);
+      const res = await api.get('/orders', {
+        params: {
+          status: 'return_preparing',
+          limit: 100
+        }
+      });
+      setReturnOrders(res.data?.records || []);
+      setSelectedOrderIds([]);
+    } catch (error) {
+      console.error("Failed to fetch shipped orders", error);
+    } finally {
+      setLoadingReturnOrders(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchShippedOrders();
+  }, [ fetchShippedOrders]);
+
   const handleSaveReturn = async () => {
     if (!activeOrder || Object.keys(selectedItems).length === 0) return;
     try {
@@ -2530,6 +2531,7 @@ export function ScanReturnsSubtab({
 
       if (soundEnabled) playBeep("success");
       fetchAvailableOrders();
+      fetchShippedOrders();
       fetchStats?.();
 
       setTimeout(() => {
@@ -2559,7 +2561,7 @@ export function ScanReturnsSubtab({
               <HeaderIconBtn onClick={() => setSoundEnabled(v => !v)}>
                 {soundEnabled ? <Volume2 size={13} className="text-white" /> : <VolumeX size={13} className="text-white/60" />}
               </HeaderIconBtn>
-              <HeaderBadge onClick={() => setPanelOpen(true)}><Layers size={12} />{t("scan.labels.returnOrders")}</HeaderBadge>
+              <HeaderBadge onClick={() => setPanelOpen(true)}><Layers size={12} />{t("scan.labels.returnOrders", {count: returnOrders?.length || 0})}</HeaderBadge>
               {isItemsMode && <HeaderBadge onClick={resetCurrentOrder}><X size={12} />{t("scan.actions.cancel")}</HeaderBadge>}
             </>
           }
@@ -2707,7 +2709,10 @@ export function ScanReturnsSubtab({
       <ReturnsOrdersSlidePanel
         open={panelOpen}
         onClose={() => setPanelOpen(false)}
-        selectedCarrier={selectedCarrier}
+        selectedOrderIds={selectedOrderIds}
+				setSelectedOrderIds={setSelectedOrderIds}
+				orders={returnOrders}
+				loading={loadingReturnOrders}
         onManifestCreated={() => {
           fetchStats?.();
           setSubtab("files");

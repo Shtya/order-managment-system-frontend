@@ -2380,11 +2380,11 @@ export function ScanOutgoingSubtab({
 // ─────────────────────────────────────────────────────────────
 function FileSummaryCell({ row }) {
 	const t = useTranslations("warehouse.outgoing");
-	const totalOrders = row.orderCodes?.length || 0;
+	const totalOrders = row.totalOrders || 0;
 	const totalItems =
-		row.ordersSnapshot?.reduce(
+		row.orders?.reduce(
 			(sum, order) =>
-				sum + (order.products?.reduce((itemSum, p) => itemSum + (Number(p.quantity) || 0), 0) || 0),
+				sum + (order.items?.reduce((itemSum, p) => itemSum + (Number(p.quantity) || 0), 0) || 0),
 			0
 		) || 0;
 
@@ -2636,8 +2636,8 @@ function OutgoingFilesSubtab({
 				cell: (row) => (
 					<FileSummaryCell
 						row={row}
-						totalOrders={row.totalOrders}
-						totalItems={row.orders?.reduce((acc, o) => acc + (o.items?.reduce((sum, i) => sum + i.quantity, 0) || 0), 0) || 0}
+						// totalOrders={row.totalOrders}
+						// totalItems={row.orders?.reduce((acc, o) => acc + (o.items?.reduce((sum, i) => sum + i.quantity, 0) || 0), 0) || 0}
 					/>
 				),
 			},

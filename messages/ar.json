@@ -1896,7 +1896,7 @@
         "correct": "صحيح",
         "wrong": "خطأ",
         "items": "عنصر",
-        "sku": "الرمز (SKU)",
+        "sku": "SKU",
         "scannedOrders": "الطلبات الممسوحة",
         "failedScans": "محاولات المسح الفاشلة",
         "successCount": "عدد الناجح",
@@ -2011,7 +2011,8 @@
       "tabs": {
         "inProgress": "قيد التحضير",
         "prepared": "جاهز للشحن"
-      }
+      },
+      "click-copy": "اضغط للنسخ"
     },
     "outgoing": {
       "breadcrumbs": {

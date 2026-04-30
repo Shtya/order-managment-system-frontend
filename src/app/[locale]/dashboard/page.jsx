@@ -387,6 +387,7 @@ export default function DashboardPage() {
         breadcrumbs={[
           { name: t("breadcrumb.dashboard") },
         ]}
+        itemsCompact={false}
         buttons={
           <Button_
             size="sm"

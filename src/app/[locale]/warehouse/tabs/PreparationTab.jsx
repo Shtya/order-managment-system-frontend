@@ -1124,12 +1124,16 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
 				<table className="w-full text-sm">
 					<thead>
 						<tr className="border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/60 dark:bg-slate-800/30">
-							{["#", t("table.productName"), "SKU", t("table.shelf"), t("table.qty"), t("table.status")].map((h, i) => (
-								<th key={i} className={cn(
-									"py-2 px-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.07em]",
-									i === 0 ? "w-8 text-right" : i >= 4 ? "text-center" : "text-right"
-								)}>{h}</th>
-							))}
+							{["#", t("table.productName"),
+								<div className="flex gap-2">
+									<span>{t("scan.sku")}</span>
+									<span className="text-primary">({t("click-copy")})</span>
+								</div>, t("table.shelf"), t("table.qty"), t("table.status")].map((h, i) => (
+									<th key={i} className={cn(
+										"py-2 px-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.07em]",
+										i === 0 ? "w-8 text-right" : i >= 4 ? "text-center" : "text-right"
+									)}>{h}</th>
+								))}
 						</tr>
 					</thead>
 					<tbody>
@@ -1463,7 +1467,7 @@ export function ScanLogBoxes({ successCount, errorCount }) {
 						</div>
 					</div>
 					<div className="flex-1 min-w-0" >
-						<p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-emerald-600/60 mb-1 leading-none">{t("scan.scannedOrders")}</p>
+						<p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-emerald-600/60 mb-2 leading-none">{t("scan.scannedOrders")}</p>
 						<AnimatePresence mode="wait">
 							<motion.span key={successCount} initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }}
 								transition={{ type: "spring", stiffness: 480, damping: 26 }}
@@ -1501,7 +1505,7 @@ export function ScanLogBoxes({ successCount, errorCount }) {
 						</div>
 					</div>
 					<div className="flex-1 min-w-0" >
-						<p className={cn("text-[10px] font-extrabold uppercase tracking-[0.1em] mb-1 leading-none transition-colors duration-300",
+						<p className={cn("text-[10px] font-extrabold uppercase tracking-[0.1em] mb-2 leading-none transition-colors duration-300",
 							errorCount > 0 ? "text-red-600/60" : "text-slate-400/65")}>{t("scan.failedScans")}</p>
 						<AnimatePresence mode="wait">
 							<motion.span key={errorCount} initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }}

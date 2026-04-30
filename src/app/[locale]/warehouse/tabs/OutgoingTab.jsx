@@ -1866,7 +1866,7 @@ function OutgoingScanLogBoxes({ successCount, errorCount }) {
 // ─────────────────────────────────────────────────────────────
 // OUTGOING ORDERS SLIDE PANEL (For Picked Orders -> Manifest)
 // ─────────────────────────────────────────────────────────────
-function OutgoingOrdersSlidePanel({ selectedOrderIds, loading, setSelectedOrderIds, open, onClose, orders, selectedCarrier, onManifestCreated }) {
+function OutgoingOrdersSlidePanel({ selectedOrderIds, loading, setSelectedOrderIds, open, onClose, orders,  onManifestCreated }) {
 	const t = useTranslations("warehouse.outgoing");
 	const locale = useLocale();
 	const isRtl = locale !== "en";
@@ -2370,7 +2370,6 @@ export function ScanOutgoingSubtab({
 			<OutgoingOrdersSlidePanel
 				open={panelOpen}
 				onClose={() => setPanelOpen(false)}
-				selectedCarrier={selectedCarrier}
 				selectedOrderIds={selectedOrderIds}
 				setSelectedOrderIds={setSelectedOrderIds}
 				orders={pickedOrders}

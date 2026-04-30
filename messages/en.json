@@ -2245,7 +2245,7 @@
           "ordersWithCarrier": "{count} order(s) with the shipping company",
           "loading": "Loading...",
           "products": "products",
-          "returnOrders": "Return Orders",
+          "returnOrders": "Return Orders ({count})\t",
           "availableOrders": "Available Orders",
           "totalItems": "Total Items",
           "orders": "Orders",

@@ -2262,7 +2262,7 @@
           "ordersWithCarrier": "{count} طلب مع شركة الشحن",
           "loading": "جاري التحميل...",
           "products": "منتجات",
-          "returnOrders": "طلبات المرتجعات",
+          "returnOrders": "طلبات المرتجعات ({count})\t",
           "availableOrders": "الطلبات المتاحة",
           "totalItems": "إجمالي القطع",
           "orders": "الطلبات",

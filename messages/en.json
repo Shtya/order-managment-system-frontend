@@ -395,6 +395,7 @@
     "settings": "Settings",
     "order-replacement": "Replacement Orders",
     "failedOrders": "Orders Requiring Review",
+    "pendingOrders": "Pending Orders",
     "logout": "Log Out",
     "collections": "Collections",
     "collectedOrders": "Collected Orders",

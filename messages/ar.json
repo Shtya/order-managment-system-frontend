@@ -395,6 +395,7 @@
     "settings": "الإعدادات",
     "order-replacement": "طلبات الاستبدال",
     "failedOrders": "طلبات تحتاج مراجعة",
+    "pendingOrders": "طلبات معلقة",
     "logout": "تسجيل الخروج",
     "collections": "التحصيلات",
     "collectedOrders": "الطلبات المحصلة",

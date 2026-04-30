@@ -1628,9 +1628,9 @@ function OrdersList({
 												e.stopPropagation();
 												onSelectOrder?.(order);
 											}}
-											className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all active:scale-95"
+											className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary/20 text-primary hover:bg-primary hover:text-white transition-all active:scale-95"
 										>
-											<ScanLine size={16} />
+											<ScanLine size={20} />
 										</button>
 									</div>
 								</div>
@@ -1752,10 +1752,13 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
 		<div className="overflow-hidden border-t border-slate-100 dark:border-slate-800">
 			<div
 				className="grid text-[10px] font-black uppercase tracking-widest text-slate-400 px-5 py-2.5 bg-slate-50/50 dark:bg-slate-900/30"
-				style={{ gridTemplateColumns: "2fr 120px 80px 80px" }}
+				style={{ gridTemplateColumns: "3fr 2fr 1fr 1fr " }}
 			>
 				<span>{t("table.products")}</span>
-				<span className="text-center">{t("scan.sku")}</span>
+				<span className="text-center flex justify-center gap-2">
+				<span>{t("scan.sku")}</span>
+					<span className="text-primary">({t("click-copy")})</span>
+				</span>
 				<span className="text-center">{t("table.qty")}</span>
 				<span className="text-center">{t("table.status")}</span>
 			</div>
@@ -1776,7 +1779,7 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
 								"grid items-center px-5 py-3 transition-colors",
 								isDone ? "bg-emerald-50/30 dark:bg-emerald-950/10" : "hover:bg-slate-50/50 dark:hover:bg-slate-800/30"
 							)}
-							style={{ gridTemplateColumns: "2fr 120px 80px 80px" }}
+							style={{ gridTemplateColumns: "3fr 2fr 1fr 1fr " }}
 						>
 							<div className="flex items-center gap-3 min-w-0">
 								<div className={cn(
@@ -1794,8 +1797,8 @@ function ScannedOrderTable({ order, localProducts, justScanned }) {
 							<div className="text-center">
 								<motion.button type="button" onClick={() => handleCopySku(p.sku)}
 									whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-									className={cn("inline-flex items-center gap-1 font-mono text-[10px] px-2 py-1 font-bold cursor-pointer rounded-md")}
-									style={{ backgroundColor: "#ff8b0014", color: "var(--primary)" }}>
+									className={cn("inline-flex items-center gap-1 font-mono text-[11px] px-2 py-1 font-bold cursor-pointer", DS.radiusSm)}
+									style={{ backgroundColor: "#6763af" + "14", color: "#6763af" }}>
 									{isCopied ? (
 										<motion.span key="copied" initial={{ opacity: 0, y: -3 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-1 text-emerald-600">
 											<CheckCircle2 size={9} /> {t("common.copied")}

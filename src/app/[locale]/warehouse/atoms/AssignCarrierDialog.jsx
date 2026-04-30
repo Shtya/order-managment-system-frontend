@@ -133,7 +133,6 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
 
         const allowedStatuses = [
             OrderStatus.CONFIRMED,
-            OrderStatus.FAILED_DELIVERY,
         ];
 
         return !allowedStatuses.includes(status);

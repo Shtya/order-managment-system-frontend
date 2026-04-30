@@ -1080,6 +1080,7 @@ export default function OrdersStatisticsPage() {
     <div className="min-h-screen p-5 space-y-5">
       {/* Page header */}
       <PageHeader
+      itemsCompact={false}
         breadcrumbs={[
           { name: t("breadcrumb.home"), href: "/dashboard" },
           { name: t("breadcrumb.orderAnalysis") },

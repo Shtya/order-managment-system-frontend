@@ -974,7 +974,7 @@ function UnassignedOrdersSubtab({ t, fetchStats, updateStatsAfterAssign }) {
     const params = {
       page,
       limit: per_page,
-      status: "confirmed,failed_delivery",
+      status: "confirmed",
     };
 
     if (debouncedSearch) params.search = debouncedSearch;

@@ -1994,7 +1994,8 @@
       "tabs": {
         "inProgress": "In Preparation",
         "prepared": "Prepared"
-      }
+      },
+      "click-copy": "Click to copy"
     },
     "outgoing": {
       "breadcrumbs": {
@@ -6893,7 +6894,7 @@
       "business_brand": "Brand / Manufacturer",
       "business_other": "Other",
       "other": "Other",
-       "fashion": "Fashion",
+      "fashion": "Fashion",
       "electronics": "Electronics",
       "home_appliances": "Home & Appliances",
       "beauty_personal_care": "Beauty & Personal Care",

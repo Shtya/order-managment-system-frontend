@@ -2325,6 +2325,8 @@ export function ScanReturnsSubtab({
   setSubtab
 }) {
   const searchParams = useSearchParams();
+  const router = useRouter();
+	const pathname = usePathname();
   const t = useTranslations("warehouse.returns");
 
   const { shippingCompanies } = usePlatformSettings();
@@ -2564,6 +2566,17 @@ export function ScanReturnsSubtab({
     }
   };
 
+useEffect(() => {
+		
+
+		const params = new URLSearchParams(searchParams.toString());
+		params.delete("manifest");
+
+		router.replace(
+			params.toString() ? `${pathname}?${params}` : pathname
+		);
+	}, []);
+
   const isItemsMode = !!activeOrder;
   const meta = selectedCarrier !== "all" ? getCarrierMeta(selectedCarrier) : null;
 
@@ -2732,9 +2745,10 @@ export function ScanReturnsSubtab({
         orders={returnOrders}
         loading={loadingReturnOrders}
         onManifestCreated={(manifest) => {
+          console.log(manifest)
           fetchStats?.();
           setSubtab("files", {
-            manifestId: manifest?.id,
+            manifestId: manifest?.id || manifest?.manifestId,
           });
         }}
       />
@@ -2919,13 +2933,13 @@ function ReturnsFilesSubtab({
         )
       );
 
-      await api.patch(`/orders/${row.id}/mark-manifest-printed`);
+      await api.patch(`/orders/${id}/mark-manifest-printed`);
       fetchManifests();
     } catch (error) {
       console.error("Error downloading return manifest", error);
       toast.error(t("scan.messages.errorLoadingFile"));
     } finally {
-      setDownloading((p) => ({ ...p, [row.id]: false }));
+      setDownloading((p) => ({ ...p, [id]: false }));
     }
   };
 

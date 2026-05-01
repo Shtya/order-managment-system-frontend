@@ -1964,6 +1964,12 @@ function OutgoingOrdersSlidePanel({ selectedOrderIds, loading, setSelectedOrderI
 												</div>
 												<p className="text-xs text-slate-600 dark:text-slate-300 font-medium truncate">{order.customerName}</p>
 												<p className="text-[10px] text-slate-400 truncate">{order.city} · {order.items?.length} {t("scan.table.products")}</p>
+												<>
+													<span className="text-[10px] text-slate-300">•</span>
+													<span className="text-[10px] font-bold text-primary/80 bg-primary/5 px-1.5 rounded-sm">
+														{order.shippingCompany?.name || t("common.unspecified")}
+													</span>
+												</>
 											</div>
 										</motion.div>
 									);

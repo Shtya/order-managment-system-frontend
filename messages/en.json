@@ -2026,7 +2026,8 @@
         "carrier": "Shipping Company",
         "allCarriers": "All Companies",
         "currency": "EGP",
-        "all": "All"
+        "all": "All",
+        "unspecified": "None"
       },
       "messages": {
         "errorDownloadingManifest": "Error downloading manifest",

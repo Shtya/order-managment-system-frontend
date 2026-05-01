@@ -457,7 +457,7 @@ export default function OrderConfirmationWorkPage() {
           <ProdTable color={HEX.orange} icon={ShoppingBag} title={t("mainProducts")} eyebrow={t("items")}
             items={mainItems} onQty={handleQty} onRemove={handleRemove} isAdditional={false}
             handleSelectSku={handleSelectSku} selectedSkus={selectedSkus} {...sh} />
-          <ProdTable color={HEX.green} icon={Package} title={t("additionalProducts")} eyebrow={t("items")}
+          <ProdTable color={HEX.orange} icon={Package} title={t("additionalProducts")} eyebrow={t("items")}
             items={addlItems} onQty={handleQty} onRemove={handleRemove} isAdditional={true}
             handleSelectSku={handleSelectSku} selectedSkus={selectedSkus} {...sh} />
           <UpsellSection order={originalOrder} items={editedOrder.items} onOpen={p => { setUpsellProd(p); setUpsellOpen(true); }} {...sh} />
@@ -795,14 +795,14 @@ function NotesSection({ order, t, isRtl }) {
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .15 }}>
       <div className="main-card !p-0 overflow-hidden">
-        <ColHead open={open} onToggle={() => setOpen(p => !p)} icon={StickyNote} color={HEX.sky}
+        <ColHead open={open} onToggle={() => setOpen(p => !p)} icon={StickyNote} color={HEX.orange}
           eyebrow={t("notes")} title={lbl}
-          right={<Tag color={HEX.sky} sm>{[order.customerNotes, order.notes].filter(Boolean).length}</Tag>} />
+          right={<Tag color={HEX.orange} sm>{[order.customerNotes, order.notes].filter(Boolean).length}</Tag>} />
         <AnimatePresence>
           {open && (
             <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} style={{ overflow: "hidden" }}>
               <div style={{ padding: "14px 18px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
-                {order.customerNotes && <NoteBlock icon={User} color={HEX.sky} label={t("customerNotes")} text={order.customerNotes} isRtl={isRtl} />}
+                {order.customerNotes && <NoteBlock icon={User} color={HEX.orange} label={t("customerNotes")} text={order.customerNotes} isRtl={isRtl} />}
                 {order.notes && <NoteBlock icon={Lock} color={HEX.violet} label={t("internalNotes")} text={order.notes} isRtl={isRtl} />}
               </div>
             </motion.div>
@@ -840,7 +840,7 @@ function HistSection({ order, t, isRtl }) {
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .2 }}>
       <div className="main-card !p-0 overflow-hidden">
-        <ColHead open={open} onToggle={() => setOpen(p => !p)} icon={Activity} color={HEX.green}
+        <ColHead open={open} onToggle={() => setOpen(p => !p)} icon={Activity} color={HEX.orange}
           eyebrow={isRtl ? "سجل النشاط" : "Activity"} title={t("statusHistory")}
           right={
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -850,7 +850,7 @@ function HistSection({ order, t, isRtl }) {
                   <span style={{ fontSize: 11, fontWeight: 700, color: latest.toStatus.color }}>{latest.toStatus.system ? t(`statuses.${latest.toStatus.code}`) : latest.toStatus.name}</span>
                 </div>
               )}
-              <Tag color={HEX.green} sm>{hist.length}</Tag>
+              <Tag color={HEX.orange} sm>{hist.length}</Tag>
             </div>
           } />
         <AnimatePresence>

@@ -281,6 +281,7 @@ export default function OrdersTab({
   const statsCards = useMemo(() => {
     const final = readOnlyStatus ? filteredStats : stats;
     if (!final.length) return [];
+    
     return final
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .map((stat) => {
@@ -869,7 +870,7 @@ export default function OrdersTab({
             onEdit: () => handleEditStatus(stat.fullData),
             onDelete: () => handleDeleteStatus(stat),
           })),
-          [...(!readOnlyStatus ? [{
+          ...(!readOnlyStatus ? [{
             id: "add",
             name: t("actions.addStatus"),
             icon: Plus,
@@ -877,7 +878,7 @@ export default function OrdersTab({
             isAddCard: true,
             onClick: handleAddStatus,
             sortOrder: 9999,
-          }] : [])],
+          }] : []),
         ]}
       />
 

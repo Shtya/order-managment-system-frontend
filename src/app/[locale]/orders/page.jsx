@@ -49,7 +49,7 @@ export default function Orders() {
 		OrderStatus.NEW,
 		OrderStatus.UNDER_REVIEW,
 
-		OrderStatus.CONFIRMED,
+		
 		OrderStatus.DISTRIBUTED,
 		OrderStatus.POSTPONED,
 

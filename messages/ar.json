@@ -3167,7 +3167,8 @@
     "messages": {
       "createSuccess": "تم إنشاء فاتورة المرتجع بنجاح",
       "createFailed": "فشل في إنشاء فاتورة المرتجع",
-      "creatingReturn": "جاري إنشاء فاتورة المرتجع..."
+      "creatingReturn": "جاري إنشاء فاتورة المرتجع...",
+      "loadDataFailed": "فشل تحميل البيانات"
     },
     "upload": {
       "receiptAlt": "فاتورة"
@@ -4267,7 +4268,8 @@
       "createSuccess": "تم إنشاء فاتورة المشتريات بنجاح",
       "createFailed": "فشل في إنشاء فاتورة المشتريات",
       "loadSuppliersFailed": "فشل في تحميل الموردين",
-      "creatingPurchase": "جاري إضافة عملية الشراء..."
+      "creatingPurchase": "جاري إضافة عملية الشراء...",
+      "loadDataFailed": "فشل تحميل البيانات"
     }
   },
   "common": {
@@ -8546,7 +8548,8 @@
         "amount": "المبلغ",
         "addedBy": "بواسطة",
         "actions": "الإجراءات",
-        "attachment": "صورة الفاتورة/الإيصال\t"
+        "attachment": "صورة الفاتورة/الإيصال\t",
+        "safe": "الخزينة/الحساب"
       },
       "categories": {
         "ads": "إعلانات",
@@ -8581,13 +8584,15 @@
         "amount": "المبلغ",
         "date": "التاريخ",
         "category": "التصنيف",
+        "safe": "الخزينة/الحساب",
         "description": "البيان/الوصف",
         "attachment": "صورة الفاتورة/الإيصال (اختياري)",
         "upload": "رفع صورة",
         "changeAttachment": "تغيير المرفق",
         "save": "حفظ",
         "cancel": "إلغاء",
-        "selectCategoryError": "يرجى اختيار تصنيف"
+        "selectCategoryError": "يرجى اختيار تصنيف",
+        "selectSafeError": "يرجى اختيار الخزينة/الحساب"
       },
       "validation": {
         "amountNumber": "يجب أن يكون المبلغ رقماً",

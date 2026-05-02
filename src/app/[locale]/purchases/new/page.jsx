@@ -32,6 +32,7 @@ export default function CreatePurchaseInvoicePage() {
 
 	const [receiptImage, setReceiptImage] = useState(null);
 	const [suppliers, setSuppliers] = useState([]);
+	const [safes, setSafes] = useState([]);
 	const [loading, setLoading] = useState(false);
 
 	const MAX_RECEIPT_MB = 5;
@@ -111,11 +112,15 @@ export default function CreatePurchaseInvoicePage() {
 	useEffect(() => {
 		(async () => {
 			try {
-				const res = await api.get("/lookups/suppliers", { params: { limit: 200 } });
-				setSuppliers(res.data || []);
+				const [suppliersRes, safesRes] = await Promise.all([
+					api.get("/lookups/suppliers", { params: { limit: 200 } }),
+					api.get("/safes/accounts", { params: { limit: 200 } })
+				]);
+				setSuppliers(suppliersRes.data || []);
+				setSafes(safesRes.data.records || []);
 			} catch (e) {
 				console.error(e);
-				toast.error(t("messages.loadSuppliersFailed"));
+				toast.error(t("messages.loadDataFailed") || "Failed to load data");
 			}
 		})();
 	}, [t]);
@@ -248,7 +253,9 @@ export default function CreatePurchaseInvoicePage() {
 			await toast.promise(apiPromise, {
 				loading: t("messages.creatingPurchase"), // AR: "جاري إنشاء عملية الشراء..."
 				success: t("messages.createSuccess"),    // AR: "تمت العملية بنجاح"
-				error: (err) => err.response?.data?.message || t("messages.createFailed"),
+				error: (err) => {
+					err.response?.data?.message || t("messages.createFailed")
+				},
 			});
 
 			// toast.success(t("messages.createSuccess"));
@@ -387,10 +394,11 @@ export default function CreatePurchaseInvoicePage() {
 													<SelectValue placeholder={t("placeholders.safe")} />
 												</SelectTrigger>
 												<SelectContent className="bg-card-select">
-													<SelectItem value="نقدي">{t("options.safe.cash")}</SelectItem>
-													<SelectItem value="الخزينة الرئيسية">{t("options.safe.main")}</SelectItem>
-													<SelectItem value="الخزينة الفرعية">{t("options.safe.sub")}</SelectItem>
-													<SelectItem value="الخزينة الإضافية">{t("options.safe.extra")}</SelectItem>
+													{safes.map((safe) => (
+														<SelectItem key={safe.id} value={safe.id}>
+															{safe.name}
+														</SelectItem>
+													))}
 												</SelectContent>
 											</Select>
 										)}

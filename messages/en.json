@@ -8484,7 +8484,8 @@
       },
       "actions": {
         "newClosing": "New Period Settlement",
-        "viewDetails": "View Settlement Details"
+        "viewDetails": "View Settlement Details",
+        "compare": "Compare Periods"
       },
       "details": {
         "title": "Financial Settlement Details",

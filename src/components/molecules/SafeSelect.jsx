@@ -18,7 +18,7 @@ import { cn } from "@/utils/cn";
 import AccountIcon from "@/components/atoms/AccountIcon";
 import { AccountModal } from "@/app/[locale]/accounts/tabs/SafesTab";
 
-export default function SafeSelect({ control, name, error, label, placeholder, required, className }) {
+export default function SafeSelect({ control, name, error, label, placeholder, required, className, onFetchSafes }) {
     const t = useTranslations("accounts");
     const [safes, setSafes] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
@@ -27,6 +27,7 @@ export default function SafeSelect({ control, name, error, label, placeholder, r
         try {
             const res = await api.get("/safes/accounts", { params: { limit: 200 } });
             setSafes(res.data.records || []);
+            onFetchSafes?.(res.data.records || []);
         } catch (err) {
             console.error("Error fetching safes:", err);
         }

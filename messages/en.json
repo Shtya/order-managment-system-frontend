@@ -2869,7 +2869,8 @@
       "edit": "Edit",
       "view": "View",
       "howToUse": "How to use",
-      "refresh": "Refresh Categories"
+      "refresh": "Refresh Categories",
+      "pay": "Pay to supplier"
     },
     "toolbar": {
       "searchPlaceholder": "Search for a supplier...",
@@ -2897,7 +2898,18 @@
       "dueBalance": "Due Balance",
       "purchaseValue": "Purchase Value"
     },
+    "fields": {
+      "safe": "Pay From Safe/Account"
+    },
+    "placeholders": {
+      "safe": "Select Account"
+    },
     "form": {
+      "paySupplier": "Pay Supplier",
+      "amount": "Amount",
+      "notes": "Notes",
+      "notesPlaceholder": "Optional reference...",
+      "confirmPayment": "Confirm Payment",
       "createTitle": "Add New Supplier",
       "editTitle": "Edit Supplier",
       "name": "Supplier Name",
@@ -2917,7 +2929,10 @@
       "create": "Add",
       "update": "Update",
       "saving": "Saving...",
-      "save": "Save"
+      "save": "Save",
+      "balance": "Balance",
+      "commission": "Commission",
+      "totalDeducted": "Total Deducted from Safe"
     },
     "validation": {
       "nameRequired": "Supplier name is required",
@@ -2927,11 +2942,15 @@
       "phoneInvalid": "Invalid phone number",
       "emailInvalid": "Invalid email address",
       "emailMax": "Email must not exceed 100 characters",
-      "categoryRequired": "At least one category must be selected"
+      "categoryRequired": "At least one category must be selected",
+      "required": "This field is required",
+      "minAmount": "Amount must be greater than 0",
+      "exceedsBalance": "Amount exceeds safe balance. Adjusted automatically."
     },
     "messages": {
       "created": "Supplier created successfully",
-      "updated": "Supplier updated successfully"
+      "updated": "Supplier updated successfully",
+      "paymentSuccessful": "Payment recorded successfully"
     },
     "view": {
       "title": "Supplier Details",

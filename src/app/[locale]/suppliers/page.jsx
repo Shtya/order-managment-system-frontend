@@ -27,6 +27,7 @@ import {
 	Wallet,
 	Info,
 	RefreshCw,
+	Banknote,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -54,6 +55,8 @@ import Table from "@/components/atoms/Table";
 import ActionButtons from "@/components/atoms/Actions";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { COUNTRIES } from "../settings/page";
+import SafeSelect from "../../../components/molecules/SafeSelect";
+import AccountIcon from "@/components/atoms/AccountIcon";
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -88,6 +91,8 @@ export default function SuppliersPage() {
 
 	const [deleteState, setDeleteState] = useState({ open: false, id: null });
 	const [deleting, setDeleting] = useState(false);
+
+	const [payState, setPayState] = useState({ open: false, supplier: null });
 
 
 
@@ -334,6 +339,13 @@ export default function SuppliersPage() {
 								permission: "suppliers.read",
 							},
 							{
+								icon: <Banknote />,
+								tooltip: t("actions.pay"),
+								onClick: (r) => setPayState({ open: true, supplier: r }),
+								variant: "primary",
+								permission: "suppliers.pay",
+							},
+							{
 								icon: <Trash2 />,
 								tooltip: t("actions.delete"),
 								onClick: (r) => setDeleteState({ open: true, id: r.id }),
@@ -479,6 +491,14 @@ export default function SuppliersPage() {
 				cancelText={t("delete.cancel")}
 				loading={deleting}
 				onConfirm={confirmDelete}
+			/>
+
+			<PaySupplierDialog
+				open={payState.open}
+				onOpenChange={(open) => setPayState(s => ({ ...s, open }))}
+				supplier={payState.supplier}
+				onSuccess={handleFormSuccess}
+				t={t}
 			/>
 		</div>
 	);
@@ -1067,5 +1087,180 @@ function FilterField({ label, children }) {
 			<Label>{label}</Label>
 			{children}
 		</div>
+	);
+}
+
+
+const createPaySupplierSchema = (t) =>
+	yup.object({
+		safeId: yup.string().required(t("validation.required")),
+		amount: yup
+			.number()
+			.transform((value) => (isNaN(value) ? 0 : value))
+			.required(t("validation.required"))
+			.min(0.01, t("validation.minAmount")),
+		notes: yup.string().nullable(),
+	});
+
+export function PaySupplierDialog({ open, onOpenChange, supplier, onSuccess }) {
+	const t = useTranslations("suppliers");
+	const [loading, setLoading] = useState(false);
+	const [safes, setSafes] = useState([]);
+
+	const {
+		register,
+		handleSubmit,
+		control,
+		reset,
+		watch,
+		setValue,
+		formState: { errors },
+	} = useForm({
+		resolver: yupResolver(createPaySupplierSchema(t)),
+		mode: "onBlur",
+		defaultValues: {
+			amount: 0,
+			safeId: "",
+			notes: ""
+		}
+	});
+
+	const amountValue = watch("amount");
+
+	const safeId = watch("safeId");
+	const selectedAccount = useMemo(() => safes.find((safe) => safe.id === safeId), [safes, safeId]);
+	
+	const commissionAmount = useMemo(() => {
+		if (!selectedAccount || !selectedAccount.commissionRate) return 0;
+		return Number(amountValue) * (Number(selectedAccount.commissionRate) / 100);
+	}, [selectedAccount, amountValue]);
+
+	const finalAmount = useMemo(() => {
+		return Number(amountValue) + commissionAmount;
+	}, [amountValue, commissionAmount]);
+
+	useEffect(() => {
+		if (selectedAccount) {
+			const currentCommRate = Number(selectedAccount.commissionRate || 0);
+			const totalNeeded = Number(amountValue) + (Number(amountValue) * (currentCommRate / 100));
+			if (totalNeeded > Number(selectedAccount.currentBalance || 0)) {
+				const maxAmount = Number(selectedAccount.currentBalance || 0) / (1 + (currentCommRate / 100));
+				if (Number(amountValue) > maxAmount) {
+					setValue("amount", Math.floor(maxAmount * 100) / 100, { shouldValidate: true });
+				}
+			}
+		}
+	}, [amountValue, selectedAccount, setValue]);
+
+	useEffect(() => {
+		if (open) {
+			reset({ amount: 0, safeId: "", notes: "" });
+		}
+	}, [open, reset]);
+
+	const onSubmit = async (data) => {
+		setLoading(true);
+		try {
+			await api.post(`/suppliers/${supplier.id}/pay`, {
+				amount: Number(data.amount),
+				accountId: data.safeId,
+				notes: data.notes,
+			});
+			toast.success(t("messages.paymentSuccessful"));
+			onSuccess();
+			onOpenChange(false);
+		} catch (error) {
+			toast.error(normalizeAxiosError(error));
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent className="sm:max-w-[450px]">
+				<DialogHeader>
+					<DialogTitle className="flex items-center gap-2">
+						<Banknote className="w-5 h-5 text-red-500" />
+						{t("form.paySupplier")}: {supplier?.name}
+					</DialogTitle>
+				</DialogHeader>
+
+				{selectedAccount && (
+					<div className="bg-gray-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 mb-2 grid grid-cols-2 gap-y-2">
+						<div className="flex items-center gap-3">
+							<AccountIcon type={selectedAccount?.type} size={20} />
+							<div className="flex flex-col">
+								<span className="text-[10px] text-gray-500 uppercase font-bold">{t("fields.safe")}</span>
+								<span className="text-sm font-bold truncate">{selectedAccount.name}</span>
+							</div>
+						</div>
+						<div className="flex flex-col items-end text-right">
+							<span className="text-[10px] text-gray-500 uppercase font-bold">{t("form.balance", "Balance")}</span>
+							<span className="text-sm font-black text-primary">{selectedAccount.currentBalance?.toLocaleString()} {selectedAccount.currency}</span>
+						</div>
+						<div className="flex flex-col">
+							<span className="text-[10px] text-gray-500 uppercase font-bold">{t("form.commission")}</span>
+							<span className="text-sm font-bold text-rose-500">%{selectedAccount.commissionRate || 0}</span>
+						</div>
+						{commissionAmount > 0 && (
+							<div className="flex flex-col items-end text-right">
+								<span className="text-[10px] text-gray-500 uppercase font-bold">{t("form.commission")}</span>
+								<span className="text-sm font-bold text-rose-500">-{commissionAmount.toLocaleString()} {selectedAccount.currency}</span>
+							</div>
+						)}
+					</div>
+				)}
+
+				<div className="p-4 rounded-xl border-2 border-primary/30 bg-primary/5 text-center mb-4">
+					<div className="text-3xl font-black font-mono text-primary">
+						{Number(finalAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+						<span className="text-xs ml-1 opacity-70 uppercase">{selectedAccount?.currency}</span>
+					</div>
+					<div className="text-xs text-gray-500 mt-1 uppercase tracking-wider font-bold">
+						{t("form.totalDeducted", "Total Deducted")}
+						{commissionAmount > 0 && <span className="block text-[10px] text-rose-400 mt-0.5 lowercase">(after commission)</span>}
+					</div>
+				</div>
+
+				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-0">
+					<SafeSelect
+						name="safeId"
+						control={control}
+						error={errors.safeId?.message}
+						label={t("fields.safe")}
+						placeholder={t("placeholders.safe")}
+						required
+						onFetchSafes={(accounts) => {
+							setSafes(accounts);
+						}}
+					/>
+
+					<div className="space-y-2">
+						<Label className="font-semibold">{t("form.amount")}</Label>
+						<Input type="number" step="0.01" disabled={!selectedAccount} {...register("amount")} />
+						{errors.amount && <p className="text-xs text-red-600">{errors.amount.message}</p>}
+					</div>
+
+					<div className="space-y-2">
+						<Label className="font-semibold">{t("form.notes")}</Label>
+						<Input {...register("notes")} placeholder={t("form.notesPlaceholder")} />
+					</div>
+
+					<div className="flex justify-end gap-3 pt-4 border-t mt-4">
+						<Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+							{t("form.cancel")}
+						</Button>
+						<Button
+							type="submit"
+							disabled={loading || !selectedAccount || Number(amountValue) <= 0}
+							className="bg-red-500 hover:bg-red-600 text-white"
+						>
+							{loading ? <Loader2 className="animate-spin w-4 h-4" /> : t("form.confirmPayment")}
+						</Button>
+					</div>
+				</form>
+			</DialogContent>
+		</Dialog>
 	);
 }

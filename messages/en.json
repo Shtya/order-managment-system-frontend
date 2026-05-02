@@ -8494,10 +8494,13 @@
       "apply": "Apply",
       "year": "Year",
       "selectYear": "Select Year",
-      "datePlaceholder": "ٍSelect date"
+      "datePlaceholder": "ٍSelect date",
+      "all": "All",
+      "selectDateRange": "Select date range"
     },
     "toolbar": {
-      "searchPlaceholder": "Search..."
+      "searchPlaceholder": "Search...",
+      "filter": "Filter"
     },
     "overview": {
       "viewOperetionalExpenses": "View Operating Expenses",

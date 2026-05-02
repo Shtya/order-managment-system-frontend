@@ -25,7 +25,7 @@ import {
 import Button_ from "@/components/atoms/Button";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
-import Table, { TablePagination, TableToolbar } from "@/components/atoms/Table";
+import Table, { FilterField, TablePagination, TableToolbar } from "@/components/atoms/Table";
 import { format } from "date-fns";
 import {
     Dialog,
@@ -44,6 +44,25 @@ import { useDebounce } from "@/hook/useDebounce";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import AccountIcon from "@/components/atoms/AccountIcon";
+import DateRangePicker from "@/components/atoms/DateRangePicker";
+
+const TX_REFERENCE_TYPES = [
+    "MANUAL_ADD",
+    "SHIPPING_COLLECTION",
+    "CUSTOMER_COLLECTION",
+    "PURCHASE_RETURN",
+    "TRANSFER_IN",
+    "DEPOSIT",
+    "EXPENSE_REFUND",
+    "OTHER_IN",
+    "PURCHASE_PAYMENT",
+    "OPERATING_EXPENSE",
+    "CASH_WITHDRAWAL",
+    "TRANSFER_OUT",
+    "VENDOR_PAYMENT",
+    "BANK_FEE",
+    "OTHER_OUT",
+];
 
 
 export default function SafesTab({ onRefresh }) {
@@ -62,6 +81,15 @@ export default function SafesTab({ onRefresh }) {
     const { debouncedValue: debouncedTxSearch } = useDebounce({ value: txSearch, delay: 300 });
     const [txPager, setTxPager] = useState({ total_records: 0, current_page: 1, per_page: 12 });
     const [allTransactions, setAllTransactions] = useState([]);
+    const defaultTxFilters = useMemo(() => ({
+        accountId: "all",
+        referenceType: "all",
+        direction: "all",
+        startDate: "",
+        endDate: "",
+    }), []);
+    const [txFilterDraft, setTxFilterDraft] = useState(defaultTxFilters);
+    const [txFilters, setTxFilters] = useState(defaultTxFilters);
 
     // --- All Transfers State ---
     const [trSearch, setTrSearch] = useState("");
@@ -106,12 +134,20 @@ export default function SafesTab({ onRefresh }) {
     const fetchAllTransactions = useCallback(async (page = txPager.current_page, limit = txPager.per_page, silent = false) => {
         if (!silent) setLoading(true);
         try {
+            const params = {
+                page,
+                limit,
+                search: debouncedTxSearch
+            };
+
+            if (txFilters.accountId && txFilters.accountId !== "all") params.accountId = txFilters.accountId;
+            if (txFilters.referenceType && txFilters.referenceType !== "all") params.referenceType = txFilters.referenceType;
+            if (txFilters.direction && txFilters.direction !== "all") params.direction = txFilters.direction;
+            if (txFilters.startDate) params.startDate = txFilters.startDate;
+            if (txFilters.endDate) params.endDate = txFilters.endDate;
+
             const res = await api.get('/safes/transactions', {
-                params: {
-                    page,
-                    limit,
-                    search: debouncedTxSearch
-                }
+                params
             });
             setAllTransactions(res.data.records || []);
             setTxPager({
@@ -125,7 +161,7 @@ export default function SafesTab({ onRefresh }) {
         } finally {
             if (!silent) setLoading(false);
         }
-    }, [debouncedTxSearch, t]);
+    }, [debouncedTxSearch, t, txFilters]);
 
     const fetchAllTransfers = useCallback(async (page = trPager.current_page, limit = trPager.per_page, silent = false) => {
         if (!silent) setLoading(true);
@@ -164,11 +200,30 @@ export default function SafesTab({ onRefresh }) {
         else if (activeSubTab === 'transfers') fetchAllTransfers(1);
     }, [activeSubTab, debouncedSearch, debouncedTxSearch, debouncedTrSearch, fetchAccounts, fetchAllTransactions, fetchAllTransfers]);
 
+    useEffect(() => {
+        if (activeSubTab === 'transactions' && accounts.length === 0) {
+            fetchAccounts(1, 200, true);
+        }
+    }, [activeSubTab, accounts.length, fetchAccounts]);
+
     const handlePageChange = ({ page, per_page }) => {
         if (activeSubTab === 'accounts') fetchAccounts(page, per_page);
         else if (activeSubTab === 'transactions') fetchAllTransactions(page, per_page);
         else if (activeSubTab === 'transfers') fetchAllTransfers(page, per_page);
     };
+
+    const hasActiveTxFilters = useMemo(() => (
+        txFilters.accountId !== "all" ||
+        txFilters.referenceType !== "all" ||
+        txFilters.direction !== "all" ||
+        Boolean(txFilters.startDate) ||
+        Boolean(txFilters.endDate)
+    ), [txFilters]);
+
+    const applyTransactionsFilters = useCallback(() => {
+        setTxFilters(txFilterDraft);
+        setTxPager((prev) => ({ ...prev, current_page: 1 }));
+    }, [txFilterDraft]);
 
     // ─────────────────────────────────────────────────────────────────────────
     // ACTION HANDLERS
@@ -403,7 +458,83 @@ export default function SafesTab({ onRefresh }) {
                         isLoading={loading}
                         searchValue={txSearch}
                         onSearchChange={setTxSearch}
-                        labels={{ searchPlaceholder: t("safes.transactions.searchPlaceholder") || "Search transactions..." }}
+                        labels={{
+                            searchPlaceholder: t("safes.transactions.searchPlaceholder") || "Search transactions...",
+                            filter: t("toolbar.filter") || "Filter",
+                            apply: t("filters.apply") || "Apply",
+                        }}
+                        hasActiveFilters={hasActiveTxFilters}
+                        onApplyFilters={applyTransactionsFilters}
+                        filters={
+                            <>
+                                <FilterField label={t("safes.transactions.account")}>
+                                    <Select
+                                        value={txFilterDraft.accountId}
+                                        onValueChange={(v) => setTxFilterDraft((f) => ({ ...f, accountId: v }))}
+                                    >
+                                        <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+                                            <SelectValue placeholder={t("safes.transactions.account")} />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-card-select">
+                                            <SelectItem value="all">{t("filters.all") || "All"}</SelectItem>
+                                            {accounts.map((acc) => (
+                                                <SelectItem key={acc.id} value={String(acc.id)}>
+                                                    {acc.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </FilterField>
+
+                                <FilterField label={t("safes.transactions.type")}>
+                                    <Select
+                                        value={txFilterDraft.referenceType}
+                                        onValueChange={(v) => setTxFilterDraft((f) => ({ ...f, referenceType: v }))}
+                                    >
+                                        <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+                                            <SelectValue placeholder={t("safes.transactions.type")} />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-card-select">
+                                            <SelectItem value="all">{t("filters.all") || "All"}</SelectItem>
+                                            {TX_REFERENCE_TYPES.map((type) => (
+                                                <SelectItem key={type} value={type}>
+                                                    {t(`safes.transactions.types.${type}`)}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </FilterField>
+
+                                <FilterField label={t("safes.transactions.direction")}>
+                                    <Select
+                                        value={txFilterDraft.direction}
+                                        onValueChange={(v) => setTxFilterDraft((f) => ({ ...f, direction: v }))}
+                                    >
+                                        <SelectTrigger className="h-10 rounded-xl border-border bg-background text-sm">
+                                            <SelectValue placeholder={t("safes.transactions.direction")} />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-card-select">
+                                            <SelectItem value="all">{t("filters.all") || "All"}</SelectItem>
+                                            <SelectItem value="IN">{t("safes.transactions.directions.IN")}</SelectItem>
+                                            <SelectItem value="OUT">{t("safes.transactions.directions.OUT")}</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </FilterField>
+
+                                <FilterField label={t("filters.dateRange") || "Date range"}>
+                                    <DateRangePicker
+                                        value={{
+                                            startDate: txFilterDraft.startDate,
+                                            endDate: txFilterDraft.endDate,
+                                        }}
+                                        onChange={(newDates) => setTxFilterDraft((f) => ({ ...f, ...newDates }))}
+                                        placeholder={t("filters.selectDateRange") || "تاريخ"}
+                                        dataSize="default"
+                                        maxDate="today"
+                                    />
+                                </FilterField>
+                            </>
+                        }
                         columns={[
                             {
                                 header: "ID",

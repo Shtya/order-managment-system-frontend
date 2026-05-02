@@ -199,3 +199,77 @@ reviews:
             suggestion: ''
             type: approve
             time: '2026-05-02T17:20:32.921Z'
+  accounts.toolbar.filter:
+    locales:
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: '-xp0iTahwlzuh6DEBIOjh'
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-05-02T17:59:36.293Z'
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: j5Otg3NiunnekvEc2RPx8
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-05-02T17:59:38.316Z'
+  accounts.filters.all:
+    locales:
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: tyOKuu5POlperkWyuTasQ
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-05-02T17:59:53.957Z'
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: lNfsvUi6A5YNUrT4gNONY
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-05-02T17:59:55.605Z'
+  accounts.filters.selectDateRange:
+    locales:
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: GiKl9cWA0TibtF41swCrj
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-05-02T18:00:50.003Z'
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: jQ1GorLPu4G4rtpgrQU-c
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-05-02T18:00:50.008Z'
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: SwhxtPA0JhEflfBTniqCD
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-05-02T18:01:34.081Z'

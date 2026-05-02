@@ -1036,7 +1036,7 @@ function TransactionModal({ open, onOpenChange, direction, initialAccountId, acc
                         <div className="flex items-center gap-3">
                             {/* Icon */}
                             <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
-                                <AccountIcon type={txnsViewerModal.account?.type} size={24} />
+                                <AccountIcon type={selectedAccount?.type} size={24} />
                             </div>
 
                             {/* Name + Balance */}

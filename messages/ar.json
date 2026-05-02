@@ -8291,7 +8291,142 @@
       "cityDeliveries": "التسليمات في المحافظات",
       "employeePerformance": "أداء الموظفين",
       "supplierAccounts": "حسابات الموردين",
-      "monthClosing": "تقفيل الشهر"
+      "monthClosing": "تقفيل الشهر",
+      "safes": "الخزائن والحسابات"
+    },
+    "safes": {
+      "title": "الخزائن والحسابات المالية",
+      "tabs": {
+        "accounts": "الحسابات",
+        "transactions": "الحركات المالية",
+        "transfers": "التحويلات"
+      },
+      "stats": {
+        "totalBalance": "إجمالي الأرصدة",
+        "totalIn": "إجمالي الإيداعات",
+        "totalOut": "إجمالي المسحوبات",
+        "accountsCount": "الحسابات النشطة"
+      },
+      "accounts": {
+        "add": "إضافة حساب جديد",
+        "edit": "تعديل بيانات الحساب",
+        "name": "اسم الحساب",
+        "type": "النوع",
+        "balance": "الرصيد الحالي",
+        "currency": "العملة",
+        "status": "الحالة",
+        "actions": "الإجراءات",
+        "bankName": "اسم البنك",
+        "accountOwnerName": "اسم صاحب الحساب",
+        "accountNumber": "رقم الحساب / المحفظة",
+        "iban": "IBAN",
+        "managedBy": "الموظف المسؤول",
+        "initialBalance": "الرصيد الافتتاحي",
+        "selectCurrency": "اختر العملة",
+        "types": {
+          "CASH": "خزينة كاش",
+          "BANK": "حساب بنكي",
+          "WALLET": "محفظة إلكترونية",
+          "EMPLOYEE_CUSTODY": "عهدة موظف",
+          "OTHER": "أخرى"
+        },
+        "validation": {
+          "nameRequired": "اسم الحساب مطلوب",
+          "typeRequired": "نوع الحساب مطلوب",
+          "currencyRequired": "العملة مطلوبة",
+          "managedByRequired": "يجب اختيار الموظف المسؤول",
+          "bankNameRequired": "اسم البنك مطلوب",
+          "accountOwnerNameRequired": "اسم صاحب الحساب مطلوب",
+          "accountNumberRequired": "رقم الحساب مطلوب"
+        },
+        "activeAccounts": "الحسابات النشطة",
+        "noOwner": "لا يوجد مالك",
+        "searchPlaceholder": "إبحث...",
+        "activate": "تنشيط",
+        "deactivate": "تعطيل",
+        "activateTitle": "تنشيط الحساب",
+        "activateDesc": "هل أنت متأكد من رغبتك في تنشيط هذا الحساب؟ سيكون متاحاً للاستخدام في العمليات المالية مرة أخرى.",
+        "deactivateTitle": "تعطيل الحساب",
+        "deactivateDesc": "هل أنت متأكد من رغبتك في تعطيل هذا الحساب؟ لن يكون متاحاً للاستخدام في العمليات المالية.",
+        "commissionRate": "نسبة العمولة"
+      },
+      "transactions": {
+        "deposit": "إيداع نقدي",
+        "withdraw": "سحب نقدي",
+        "number": "رقم الحركة",
+        "date": "التاريخ",
+        "account": "الحساب",
+        "direction": "الاتجاه",
+        "amount": "المبلغ",
+        "type": "النوع",
+        "counterparty": "الجهة",
+        "notes": "ملاحظات",
+        "referenceType": "نوع العملية",
+        "directions": {
+          "IN": "داخل",
+          "OUT": "خارج"
+        },
+        "types": {
+          "MANUAL_ADD": "إضافة رصيد يدوية",
+          "SHIPPING_COLLECTION": "تحصيل من شركة شحن",
+          "CUSTOMER_COLLECTION": "تحصيل من عميل",
+          "PURCHASE_RETURN": "مرتجع مشتريات",
+          "TRANSFER_IN": "تحويل وارد",
+          "DEPOSIT": "إيداع",
+          "EXPENSE_REFUND": "استرداد مصروف",
+          "OTHER_IN": "دخل آخر",
+          "PURCHASE_PAYMENT": "دفع فاتورة مشتريات",
+          "OPERATING_EXPENSE": "مصروف تشغيل",
+          "CASH_WITHDRAWAL": "سحب نقدي",
+          "TRANSFER_OUT": "تحويل صادر",
+          "VENDOR_PAYMENT": "سداد لمورد",
+          "BANK_FEE": "رسوم بنكية",
+          "OTHER_OUT": "مصروف آخر"
+        },
+        "validation": {
+          "accountRequired": "الحساب مطلوب",
+          "amountRequired": "المبلغ مطلوب",
+          "amountPositive": "يجب أن يكون المبلغ أكبر من صفر",
+          "dateRequired": "التاريخ مطلوب",
+          "typeRequired": "نوع العملية مطلوب",
+          "insufficientBalance": "المبلغ المدخل أكبر من رصيد الحساب الحالي"
+        },
+        "amountToDeposit": "المبلغ المراد إيداعه",
+        "amountToWithdraw": "المبلغ المراد سحبه",
+        "searchPlaceholder": "إبحث في الحركات المالية..."
+      },
+      "transfers": {
+        "new": "تحويل جديد",
+        "from": "من حساب",
+        "to": "إلى حساب",
+        "amount": "مبلغ التحويل",
+        "commission": "العمولة / الرسوم",
+        "date": "التاريخ",
+        "notes": "ملاحظات",
+        "success": "تم التحويل بنجاح",
+        "amountToTransfer": "المبلغ المراد تحويله",
+        "validation": {
+          "fromAccountRequired": "حساب المرسل مطلوب",
+          "toAccountRequired": "حساب المستلم مطلوب",
+          "amountRequired": "مبلغ التحويل مطلوب",
+          "amountPositive": "يجب أن يكون المبلغ أكبر من صفر",
+          "insufficientBalance": "المبلغ والعمولة يتجاوزان رصيد الحساب الحالي",
+          "sameAccount": "لا يمكن التحويل لنفس الحساب"
+        },
+        "searchPlaceholder": "إبحث في التحويلات..."
+      },
+      "messages": {
+        "accountCreated": "تم إنشاء الحساب بنجاح",
+        "accountUpdated": "تم تحديث بيانات الحساب بنجاح",
+        "accountToggled": "تم تغيير حالة الحساب",
+        "depositSuccess": "تم تسجيل الإيداع بنجاح",
+        "withdrawSuccess": "تم تسجيل السحب بنجاح",
+        "transferSuccess": "تمت عملية التحويل بنجاح",
+        "insufficientBalance": "رصيد الحساب غير كافٍ لإتمام العملية",
+        "fetchError": "فشل تحميل البيانات",
+        "accountDeactivated": "تم تعطيل الحساب بنجاح",
+        "accountActivated": "تم تفعيل الحساب بنجاح"
+      }
     },
     "stats": {
       "totalExpenses": "إجمالي المصروفات",
@@ -8322,7 +8457,8 @@
     "common": {
       "cancel": "الغاء",
       "none": "لا يوجد",
-      "all": "الكل"
+      "all": "الكل",
+      "close": "إلغاء"
     },
     "filters": {
       "supplier": "المورد",

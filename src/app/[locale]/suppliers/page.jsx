@@ -338,13 +338,13 @@ export default function SuppliersPage() {
 								variant: "primary",
 								permission: "suppliers.read",
 							},
-							{
-								icon: <Banknote />,
-								tooltip: t("actions.pay"),
-								onClick: (r) => setPayState({ open: true, supplier: r }),
-								variant: "primary",
-								permission: "suppliers.pay",
-							},
+							// {
+							// 	icon: <Banknote />,
+							// 	tooltip: t("actions.pay"),
+							// 	onClick: (r) => setPayState({ open: true, supplier: r }),
+							// 	variant: "primary",
+							// 	permission: "suppliers.pay",
+							// },
 							{
 								icon: <Trash2 />,
 								tooltip: t("actions.delete"),

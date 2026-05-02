@@ -83,15 +83,47 @@ reviews:
             suggestion: ''
             type: approve
             time: '2026-04-28T12:44:33.123Z'
-  accounts.safes.transactions.safeSearchPlaceholder:
+  accounts.supplierAccounts.filters.selectYear:
+    locales:
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: xv84MsiwRIJmyvtwIKbyM
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-05-02T16:23:49.583Z'
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: EXID5AaRdCZYWzt_diFid
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-05-02T16:23:51.534Z'
+  accounts.supplierAccounts.filters.year:
     locales:
       en:
         comments:
           - user:
               name: amagdykhalil
               email: am2592379@gmail.com
-            id: WQL329eykNHQtFfgOKj6P
+            id: te8jbO1rMJWOursCa0F7t
             comment: ''
             suggestion: ''
             type: approve
-            time: '2026-05-02T15:38:42.638Z'
+            time: '2026-05-02T16:24:08.999Z'
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: ozPfABIDiL2ZD8nxdlKZg
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-05-02T16:24:11.294Z'

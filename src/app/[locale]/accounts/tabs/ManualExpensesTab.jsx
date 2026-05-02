@@ -274,7 +274,6 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">{t("common.none")}</SelectItem>
                     {categories?.map((cat) => (
                       <SelectItem key={cat.id} value={String(cat.id)}>
                         <div className="flex items-center gap-2">
@@ -432,9 +431,12 @@ export default function ManualExpensesTab({
 
   // API Data State
   const [expenses, setExpenses] = useState([]);
-  const [totalRecords, setTotalRecords] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [perPage, setPerPage] = useState(12);
+  const [pager, setPager] = useState({
+    total_records: 0,
+    current_page: 1,
+    per_page: 12,
+  });
+
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
     categoryId: "none",
@@ -450,7 +452,8 @@ export default function ManualExpensesTab({
 
   const { handleExport, exportLoading } = useExport();
 
-  const fetchExpenses = async (page = currentPage, per_page = perPage,) => {
+  const fetchExpenses = async (page = pager.current_page, per_page = pager.per_page,) => {
+
     setLoading(true);
     try {
       const params = {
@@ -461,9 +464,13 @@ export default function ManualExpensesTab({
         startDate: filters.startDate || undefined,
         endDate: filters.endDate || undefined
       };
-      const res = await api.get("/expenses", { params });
-      setExpenses(res.data.records || []);
-      setTotalRecords(res.data.total_records || 0);
+      const { data } = await api.get("/expenses", { params });
+      setExpenses(data.records || []);
+      setPager({
+        total_records: data.total_records || 0,
+        current_page: data.current_page || page,
+        per_page: data.per_page || limit,
+      });
     } catch (err) {
       console.error("Error fetching expenses:", err);
       toast.error(t("manualExpenses.messages.fetchError"));
@@ -474,12 +481,12 @@ export default function ManualExpensesTab({
 
 
   const applyFilters = () => {
-    fetchExpenses(1, perPage);
+    fetchExpenses(1, pager.per_page);
   };
 
   useEffect(() => {
     fetchExpenses();
-  }, [debouncedSearch, currentPage, perPage]);
+  }, [debouncedSearch]);
 
   const handleAdd = () => {
     setEditingExpense(null);
@@ -494,6 +501,10 @@ export default function ManualExpensesTab({
   const handleDelete = (expense) => {
     setEditingExpense(expense);
     setDeleteAlertOpen(true);
+  };
+
+  const handlePageChange = ({ page, per_page }) => {
+    fetchExpenses(page, per_page);
   };
 
   const onExport = async () => {
@@ -618,12 +629,11 @@ export default function ManualExpensesTab({
         columns={columns}
         data={expenses}
         pagination={{
-          total_records: totalRecords,
-          current_page: currentPage,
-          per_page: perPage,
+          total_records: pager.total_records,
+          current_page: pager.current_page,
+          per_page: pager.per_page,
         }}
-        onPageChange={setCurrentPage}
-        onLimitChange={setPerPage}
+        onPageChange={handlePageChange}
         hasActiveFilters={Object.values(filters).some(
           (v) => v && v !== "all" && v !== null,
         )}

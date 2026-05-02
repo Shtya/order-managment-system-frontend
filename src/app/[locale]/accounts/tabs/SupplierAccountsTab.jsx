@@ -86,9 +86,11 @@ export default function SupplierAccountsTab() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [suppliers, setSuppliers] = useState([]);
-  const [totalRecords, setTotalRecords] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [perPage, setPerPage] = useState(12);
+  const [pager, setPager] = useState({
+    total_records: 0,
+    current_page: 1,
+    per_page: 12,
+  });
 
   const { debouncedValue: debouncedSearch } = useDebounce({
     value: search,
@@ -102,7 +104,7 @@ export default function SupplierAccountsTab() {
   const [closingSupplier, setClosingSupplier] = useState(null);
   const [historySupplier, setHistorySupplier] = useState(null);
 
-  const fetchSuppliers = async (page = currentPage, limit = perPage) => {
+  const fetchSuppliers = async (page = pager.current_page, limit = pager.per_page) => {
     setLoading(true);
     try {
       const params = {
@@ -112,7 +114,11 @@ export default function SupplierAccountsTab() {
       };
       const res = await api.get("/suppliers", { params });
       setSuppliers(res.data.records || []);
-      setTotalRecords(res.data.total_records || 0);
+      setPager({
+        total_records: res.data.total_records || 0,
+        current_page: res.data.current_page || page,
+        per_page: res.data.per_page || limit,
+      });
     } catch (err) {
       console.error("Error fetching suppliers:", err);
       toast.error(tCommon("manualExpenses.messages.fetchError"));
@@ -123,7 +129,11 @@ export default function SupplierAccountsTab() {
 
   useEffect(() => {
     fetchSuppliers();
-  }, [debouncedSearch, currentPage, perPage]);
+  }, [debouncedSearch]);
+
+  const handlePageChange = ({ page, per_page }) => {
+    fetchSuppliers(page, per_page);
+  };
 
   const onExport = async () => {
     await handleExport({
@@ -234,12 +244,11 @@ export default function SupplierAccountsTab() {
           },
         ]}
         pagination={{
-          total_records: totalRecords,
-          current_page: currentPage,
-          per_page: perPage
+          total_records: pager.total_records,
+          current_page: pager.current_page,
+          per_page: pager.per_page
         }}
-        onPageChange={setCurrentPage}
-        onLimitChange={setPerPage}
+        onPageChange={handlePageChange}
       />
 
       <AccountStatementModal
@@ -255,6 +264,7 @@ export default function SupplierAccountsTab() {
         onSuccess={() => fetchSuppliers()}
         t={t}
         tCommon={tCommon}
+        router={router}
       />
 
       <ClosingHistoryModal
@@ -271,6 +281,220 @@ export default function SupplierAccountsTab() {
 // ─────────────────────────────────────────────────────────────────────────
 
 
+// ─────────────────────────────────────────────────────────────────────────
+// Shared Supplier Statement View & Print Logic
+// ─────────────────────────────────────────────────────────────────────────
+
+const handlePrintSupplierStatement = (data, supplier, filters, t) => {
+  if (!data || !supplier) return;
+
+  // Generate rows for purchases
+  const purchaseRows = data.purchaseInvoices.length > 0
+    ? data.purchaseInvoices.map(inv => `
+        <tr>
+          <td>${inv.ref || '-'}</td>
+          <td>${inv.date}</td>
+          <td style="font-weight: bold;">${inv.amount.toLocaleString()} </td>
+        </tr>
+      `).join('')
+    : `<tr><td colspan="3" style="text-align:center; padding: 15px;">لا توجد فواتير مشتريات في هذه الفترة</td></tr>`;
+
+  // Generate rows for returns
+  const returnRows = data.returnInvoices.length > 0
+    ? data.returnInvoices.map(inv => `
+        <tr>
+          <td>${inv.ref || '-'}</td>
+          <td>${inv.date}</td>
+          <td style="font-weight: bold; color: #ef4444;">${inv.amount.toLocaleString()}</td>
+        </tr>
+      `).join('')
+    : `<tr><td colspan="3" style="text-align:center; padding: 15px;">لا توجد فواتير مرتجعات في هذه الفترة</td></tr>`;
+
+  const printContent = `
+    <html dir="rtl" lang="ar">
+      <head>
+        <title>${t("supplierAccounts.statement.title")} - ${supplier?.name}</title>
+        <style>
+          body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; color: #111827; direction: rtl; }
+          .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; }
+          .header h1 { margin: 0 0 10px 0; font-size: 24px; color: #1f2937; }
+          .header p { margin: 0; color: #6b7280; font-size: 14px; }
+          
+          .summary-grid { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 40px; }
+          .summary-box { flex: 1; min-width: 130px; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; text-align: center; background-color: #f9fafb; }
+          .summary-box .title { font-size: 13px; color: #6b7280; margin-bottom: 8px; }
+          .summary-box .value { font-size: 20px; font-weight: bold; color: #111827; }
+          .summary-box.final { border-color: #ef4444; background-color: #fef2f2; }
+          .summary-box.final .value { color: #ef4444; }
+
+          .section { margin-bottom: 40px; page-break-inside: avoid; }
+          .section h2 { font-size: 18px; margin-bottom: 15px; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; display: inline-block;}
+          
+          table { width: 100%; border-collapse: collapse; font-size: 14px; }
+          th, td { border: 1px solid #e5e7eb; padding: 12px; text-align: right; }
+          th { background-color: #f3f4f6; color: #374151; font-weight: bold; }
+          tbody tr:nth-child(even) { background-color: #f9fafb; }
+          
+          @media print {
+            body { padding: 0; }
+            @page { margin: 1cm; }
+            .summary-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>${t("supplierAccounts.statement.title")} - ${supplier?.name}</h1>
+          <p>${t("filters.dateRange")}: ${filters.startDate ? new Date(filters.startDate).toLocaleDateString() : ''} 
+             إلى 
+             ${filters.endDate ? new Date(filters.endDate).toLocaleDateString() : ''}</p>
+        </div>
+
+        <div class="summary-grid">
+          <div class="summary-box">
+            <div class="title">${t("supplierAccounts.statement.totalPurchases")}</div>
+            <div class="value">${data.summary.totalPurchases?.toLocaleString() || 0}</div>
+          </div>
+          <div class="summary-box">
+            <div class="title">${t("supplierAccounts.statement.totalReturns")}</div>
+            <div class="value">${data.summary.totalReturns?.toLocaleString() || 0}</div>
+          </div>
+          <div class="summary-box">
+            <div class="title">${t("supplierAccounts.statement.totalPaid")}</div>
+            <div class="value">${data.summary.totalPaid?.toLocaleString() || 0}</div>
+          </div>
+          <div class="summary-box final">
+            <div class="title">${t("supplierAccounts.statement.netBalance")}</div>
+            <div class="value">${data.summary.finalBalance?.toLocaleString() || 0}</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>${t("supplierAccounts.statement.detailedPurchases")}</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>${t("supplierAccounts.statement.invoiceRef")}</th>
+                <th>${t("supplierAccounts.statement.date")}</th>
+                <th>${t("supplierAccounts.statement.amount")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${purchaseRows}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section">
+          <h2>${t("supplierAccounts.statement.detailedReturns")}</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>${t("supplierAccounts.statement.invoiceRef")}</th>
+                <th>${t("supplierAccounts.statement.date")}</th>
+                <th>${t("supplierAccounts.statement.amount")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${returnRows}
+            </tbody>
+          </table>
+        </div>
+      </body>
+    </html>
+  `;
+
+  const printWindow = window.open('', '_blank');
+  if (printWindow) {
+    printWindow.document.open();
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+    };
+  } else {
+    toast.error("يرجى السماح بالنوافذ المنبثقة لطباعة التقرير");
+  }
+};
+
+function SupplierStatementReportView({ data, supplier, filters, onChangeDate, loading, t, router, extraActions }) {
+  const miniInvoiceColumns = [
+    { key: "ref", header: t("supplierAccounts.statement.invoiceRef"), cell: (row) => <span className="font-mono text-xs">{row.ref}</span> },
+    { key: "date", header: t("supplierAccounts.statement.date"), cell: (row) => <span className="tabular-nums text-[11px]">{row.date}</span> },
+    { key: "amount", header: t("supplierAccounts.statement.amount"), cell: (row) => <span className="font-black text-xs">{row.amount.toLocaleString()}</span> },
+    {
+      key: "actions",
+      header: "",
+      cell: (row) => (
+        <button
+          onClick={() => router.push(row.url)}
+          className="p-1 hover:bg-muted rounded-md transition-colors text-primary"
+          title={t("supplierAccounts.actions.viewInvoice")}
+        >
+          <Eye size={14} />
+        </button>
+      )
+    }
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-4 p-4 border border-border bg-muted/20 rounded-xl my-4">
+        <div className="flex items-end gap-3">
+          <FilterField label={t("filters.dateRange")} icon={Calendar} className="flex flex-col gap-3">
+            <DateRangePicker
+              value={filters}
+              closeOnSelect={false}
+              staticShow={true}
+              onChange={onChangeDate} // Disabled in this view since it's controlled by the modal
+              className="pointer-events-none"
+            />
+          </FilterField>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button_
+            size="sm"
+            variant="outline"
+            label={t("supplierAccounts.actions.printPdf")}
+            icon={<Download size={14} />}
+            className="text-blue-600 border-blue-200 hover:bg-blue-50"
+            onClick={() => handlePrintSupplierStatement(data, supplier, filters, t)}
+            disabled={loading || !data}
+          />
+          {extraActions}
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="h-64 flex items-center justify-center">
+          <Loader2 className="animate-spin text-primary" size={32} />
+        </div>
+      ) : data && (
+        <div className="space-y-6 py-2">
+          <div className="grid grid-cols-4 gap-3">
+            <MiniSummary title={t("supplierAccounts.statement.totalPurchases")} value={data.summary.totalPurchases} icon={Package} color="purple" />
+            <MiniSummary title={t("supplierAccounts.statement.totalReturns")} value={data.summary.totalReturns} icon={RefreshCw} color="red" />
+            <MiniSummary title={t("supplierAccounts.statement.totalPaid")} value={data.summary.totalPaid} icon={DollarSign} color="emerald" />
+            <MiniSummary title={t("supplierAccounts.statement.netBalance")} value={data.summary.finalBalance} icon={CheckCircle2} color="red" isFinal />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mt-6">
+            <Card title={t("supplierAccounts.statement.detailedPurchases")} icon={Package}>
+              <MiniTable columns={miniInvoiceColumns} data={data.purchaseInvoices} maxH="300px" />
+            </Card>
+            <Card title={t("supplierAccounts.statement.detailedReturns")} icon={RefreshCw} color="red">
+              <MiniTable columns={miniInvoiceColumns} data={data.returnInvoices} maxH="300px" />
+            </Card>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// MODALS FOR SUPPLIER ACCOUNTS
 function AccountStatementModal({ supplier, onClose, t, router }) {
   const [filters, setFilters] = useState({
     startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
@@ -326,165 +550,6 @@ function AccountStatementModal({ supplier, onClose, t, router }) {
     if (supplier) fetchStatement();
   }, [supplier, fetchStatement]);
 
-  // ==========================================
-  // PRINT LOGIC
-  // ==========================================
-  const handlePrint = () => {
-    if (!data) return;
-
-    // Generate rows for purchases
-    const purchaseRows = data.purchaseInvoices.length > 0
-      ? data.purchaseInvoices.map(inv => `
-          <tr>
-            <td>${inv.ref || '-'}</td>
-            <td>${inv.date}</td>
-            <td style="font-weight: bold;">${inv.amount.toLocaleString()} </td>
-          </tr>
-        `).join('')
-      : `<tr><td colspan="3" style="text-align:center; padding: 15px;">لا توجد فواتير مشتريات في هذه الفترة</td></tr>`;
-
-    // Generate rows for returns
-    const returnRows = data.returnInvoices.length > 0
-      ? data.returnInvoices.map(inv => `
-          <tr>
-            <td>${inv.ref || '-'}</td>
-            <td>${inv.date}</td>
-            <td style="font-weight: bold; color: #ef4444;">${inv.amount.toLocaleString()}</td>
-          </tr>
-        `).join('')
-      : `<tr><td colspan="3" style="text-align:center; padding: 15px;">لا توجد فواتير مرتجعات في هذه الفترة</td></tr>`;
-
-    // Build the HTML template
-    const printContent = `
-      <html dir="rtl" lang="ar">
-        <head>
-          <title>${t("supplierAccounts.statement.title")} - ${supplier?.name}</title>
-          <style>
-            body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; color: #111827; direction: rtl; }
-            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; }
-            .header h1 { margin: 0 0 10px 0; font-size: 24px; color: #1f2937; }
-            .header p { margin: 0; color: #6b7280; font-size: 14px; }
-            
-            .summary-grid { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 40px; }
-            .summary-box { flex: 1; min-width: 130px; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; text-align: center; background-color: #f9fafb; }
-            .summary-box .title { font-size: 13px; color: #6b7280; margin-bottom: 8px; }
-            .summary-box .value { font-size: 20px; font-weight: bold; color: #111827; }
-            .summary-box.final { border-color: #ef4444; background-color: #fef2f2; }
-            .summary-box.final .value { color: #ef4444; }
-
-            .section { margin-bottom: 40px; page-break-inside: avoid; }
-            .section h2 { font-size: 18px; margin-bottom: 15px; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; display: inline-block;}
-            
-            table { width: 100%; border-collapse: collapse; font-size: 14px; }
-            th, td { border: 1px solid #e5e7eb; padding: 12px; text-align: right; }
-            th { background-color: #f3f4f6; color: #374151; font-weight: bold; }
-            tbody tr:nth-child(even) { background-color: #f9fafb; }
-            
-            @media print {
-              body { padding: 0; }
-              @page { margin: 1cm; }
-              .summary-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>${t("supplierAccounts.statement.title")} - ${supplier?.name}</h1>
-            <p>${t("filters.dateRange")}: ${filters.startDate ? new Date(filters.startDate).toLocaleDateString() : ''} 
-               إلى 
-               ${filters.endDate ? new Date(filters.endDate).toLocaleDateString() : ''}</p>
-          </div>
-
-          <div class="summary-grid">
-            <div class="summary-box">
-              <div class="title">${t("supplierAccounts.statement.totalPurchases")}</div>
-              <div class="value">${data.summary.totalPurchases?.toLocaleString() || 0}</div>
-            </div>
-            <div class="summary-box">
-              <div class="title">${t("supplierAccounts.statement.totalReturns")}</div>
-              <div class="value">${data.summary.totalReturns?.toLocaleString() || 0}</div>
-            </div>
-            <div class="summary-box">
-              <div class="title">${t("supplierAccounts.statement.totalPaid")}</div>
-              <div class="value">${data.summary.totalPaid?.toLocaleString() || 0}</div>
-            </div>
-            <div class="summary-box final">
-              <div class="title">${t("supplierAccounts.statement.netBalance")}</div>
-              <div class="value">${data.summary.finalBalance?.toLocaleString() || 0}</div>
-            </div>
-          </div>
-
-          <div class="section">
-            <h2>${t("supplierAccounts.statement.detailedPurchases")}</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>${t("supplierAccounts.statement.invoiceRef")}</th>
-                  <th>${t("supplierAccounts.statement.date")}</th>
-                  <th>${t("supplierAccounts.statement.amount")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${purchaseRows}
-              </tbody>
-            </table>
-          </div>
-
-          <div class="section">
-            <h2>${t("supplierAccounts.statement.detailedReturns")}</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>${t("supplierAccounts.statement.invoiceRef")}</th>
-                  <th>${t("supplierAccounts.statement.date")}</th>
-                  <th>${t("supplierAccounts.statement.amount")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${returnRows}
-              </tbody>
-            </table>
-          </div>
-        </body>
-      </html>
-    `;
-
-    // Open print window, write HTML, and trigger print
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.open();
-      printWindow.document.write(printContent);
-      printWindow.document.close();
-
-      // Focus and print after ensuring the DOM is loaded
-      printWindow.onload = () => {
-        printWindow.focus();
-        printWindow.print();
-      };
-    } else {
-      toast.error("يرجى السماح بالنوافذ المنبثقة (Pop-ups) لطباعة التقرير");
-    }
-  };
-
-  const miniInvoiceColumns = [
-    { key: "ref", header: t("supplierAccounts.statement.invoiceRef"), cell: (row) => <span className="font-mono text-xs">{row.ref}</span> },
-    { key: "date", header: t("supplierAccounts.statement.date"), cell: (row) => <span className="tabular-nums text-[11px]">{row.date}</span> },
-    { key: "amount", header: t("supplierAccounts.statement.amount"), cell: (row) => <span className="font-black text-xs">{row.amount.toLocaleString()}</span> },
-    {
-      key: "actions",
-      header: "",
-      cell: (row) => (
-        <button
-          onClick={() => router.push(row.url)}
-          className="p-1 hover:bg-muted rounded-md transition-colors text-primary"
-          title={t("supplierAccounts.actions.viewInvoice")}
-        >
-          <Eye size={14} />
-        </button>
-      )
-    }
-  ];
-
   return (
     <Dialog open={!!supplier} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[850px] overflow-auto max-h-[90vh]">
@@ -495,67 +560,28 @@ function AccountStatementModal({ supplier, onClose, t, router }) {
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex items-center justify-between gap-4 p-4 border border-border bg-muted/20 rounded-xl my-4">
-          <div className="flex items-end gap-3">
-            <FilterField label={t("filters.dateRange")} icon={Calendar} className="flex flex-col gap-3">
-              <DateRangePicker
-                value={filters}
-                closeOnSelect={false}
-                staticShow={true}
-                onChange={(newDates) => setFilters(f => ({ ...f, ...newDates }))}
-              />
-            </FilterField>
-          </div>
-
-          {/* UPDATED PRINT BUTTON */}
-          <Button_
-            size="sm"
-            variant="outline"
-            label={t("supplierAccounts.actions.printPdf")}
-            icon={<Download size={14} />}
-            className="text-blue-600 border-blue-200 hover:bg-blue-50"
-            onClick={handlePrint}
-            disabled={loading || !data}
-          />
-        </div>
-
-        {loading ? (
-          <div className="h-64 flex items-center justify-center">
-            <Loader2 className="animate-spin text-primary" size={32} />
-          </div>
-        ) : data && (
-          <div className="space-y-6 py-2">
-            <div className="grid grid-cols-4 gap-3">
-              <MiniSummary title={t("supplierAccounts.statement.totalPurchases")} value={data.summary.totalPurchases} icon={Package} color="purple" />
-              <MiniSummary title={t("supplierAccounts.statement.totalReturns")} value={data.summary.totalReturns} icon={RefreshCw} color="red" />
-              <MiniSummary title={t("supplierAccounts.statement.totalPaid")} value={data.summary.totalPaid} icon={DollarSign} color="emerald" />
-              {/* <MiniSummary title={t("supplierAccounts.statement.prevBalance")} value={0} icon={Ban} color="orange" /> */}
-              <MiniSummary title={t("supplierAccounts.statement.netBalance")} value={data.summary.finalBalance} icon={CheckCircle2} color="red" isFinal />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mt-6">
-              <Card title={t("supplierAccounts.statement.detailedPurchases")} icon={Package}>
-                <MiniTable columns={miniInvoiceColumns} data={data.purchaseInvoices} maxH="300px" />
-              </Card>
-              <Card title={t("supplierAccounts.statement.detailedReturns")} icon={RefreshCw} color="red">
-                <MiniTable columns={miniInvoiceColumns} data={data.returnInvoices} maxH="300px" />
-              </Card>
-            </div>
-          </div>
-        )}
+        <SupplierStatementReportView
+          data={data}
+          supplier={supplier}
+          filters={filters}
+          loading={loading}
+          onChangeDate={(newDates) => setFilters(f => ({ ...f, ...newDates }))}
+          t={t}
+          router={router}
+        />
       </DialogContent>
     </Dialog>
   );
 }
 
-function CloseAccountPeriodModal({ supplier, onClose, onSuccess, t, tCommon }) {
+function CloseAccountPeriodModal({ supplier, onClose, onSuccess, t, tCommon, router }) {
   const [filters, setFilters] = useState({
     startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     endDate: new Date(),
   });
   const [loading, setLoading] = useState(false);
   const [closingLoading, setClosingLoading] = useState(false);
-  const [summary, setSummary] = useState(null);
+  const [data, setData] = useState(null);
 
   const fetchPreview = useCallback(async () => {
     if (!supplier) return;
@@ -566,8 +592,33 @@ function CloseAccountPeriodModal({ supplier, onClose, onSuccess, t, tCommon }) {
         startDate: filters.startDate ? filters.startDate : undefined,
         endDate: filters.endDate ? filters.endDate : undefined,
       };
-      const res = await api.get("/accounting/supplier-closings/supplier-preview", { params });
-      setSummary(res.data);
+
+      // 1. Fetch Summary Stats
+      const statsRes = await api.get("/accounting/supplier-closings/supplier-preview", { params });
+
+      // 2. Fetch Invoices & Returns (Detailed preview)
+      const [purchasesRes, returnsRes] = await Promise.all([
+        api.get("/purchases", { params: { ...params, status: "accepted", closed: "false" } }),
+        api.get("/purchases-return", { params: { ...params, status: "accepted", closed: "false" } }),
+      ]);
+
+      setData({
+        summary: statsRes.data,
+        purchaseInvoices: (purchasesRes.data.records || []).map(p => ({
+          id: p.id,
+          url: `/purchases?detials=${p.id}`,
+          ref: p.receiptNumber || p.invoiceNumber,
+          date: new Date(p.statusUpdateDate).toLocaleDateString(),
+          amount: Number(p.total)
+        })),
+        returnInvoices: (returnsRes.data.records || []).map(r => ({
+          id: r.id,
+          url: `/purchases-return?detials=${r.id}`,
+          ref: r.returnNumber,
+          date: new Date(r.statusUpdateDate).toLocaleDateString(),
+          amount: Number(r.totalReturn)
+        }))
+      });
     } catch (err) {
       console.error("Error fetching closing preview:", err);
       toast.error(t("manualExpenses.messages.fetchError"));
@@ -602,7 +653,7 @@ function CloseAccountPeriodModal({ supplier, onClose, onSuccess, t, tCommon }) {
 
   return (
     <Dialog open={!!supplier} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[850px] overflow-auto max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-danger">
             <Ban size={20} />
@@ -617,48 +668,30 @@ function CloseAccountPeriodModal({ supplier, onClose, onSuccess, t, tCommon }) {
               <span className="text-base font-bold text-foreground">{supplier.name}</span>
             </div>
 
-            <div className="p-4 border border-border bg-muted/10 rounded-xl">
-              <FilterField label={t("filters.dateRange")} icon={Calendar} className="flex flex-col gap-3">
-                <DateRangePicker
-                  value={filters}
-                  staticShow={true}
-                  closeOnSelect={false}
-                  onChange={(newDates) => setFilters(f => ({ ...f, ...newDates }))}
+
+            <SupplierStatementReportView
+              data={data}
+              supplier={supplier}
+              filters={filters}
+              onChangeDate={(newDates) => setFilters(f => ({ ...f, ...newDates }))}
+              loading={loading}
+              t={t}
+              router={router}
+              extraActions={
+                <Button_
+                  label={t("supplierAccounts.actions.confirmClosing")}
+                  tone="primary"
+                  variant="solid"
+                  size="sm"
+                  icon={closingLoading ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                  disabled={closingLoading || !data || (data.summary.pCount === 0 && data.summary.rCount === 0)}
+                  onClick={handleConfirmClosing}
                 />
-              </FilterField>
-              {/* <div className="mt-3 flex justify-end">
-                <Button_ size="xs" label={t("filters.apply")} onClick={fetchPreview} disabled={loading} />
-              </div> */}
-            </div>
-
-            {loading ? (
-              <div className="h-32 flex items-center justify-center">
-                <Loader2 className="animate-spin text-primary" size={24} />
-              </div>
-            ) : summary && (
-              <div className="space-y-3">
-                <DetailRow label={t("supplierAccounts.close.prevClosingBalance")} value={0} />
-                <DetailRow label={t("supplierAccounts.close.totalPurchasesThisPeriod")} value={summary.totalPurchases} iconColor="purple" />
-                <DetailRow label={t("supplierAccounts.close.totalReturnsThisPeriod")} value={-summary.totalReturns} iconColor="red" />
-                <DetailRow label={t("supplierAccounts.close.totalPaymentsThisPeriod")} value={-summary.totalPaid} iconColor="emerald" />
-
-                <div className="flex items-center justify-between p-4 rounded-xl bg-red-50/50 border border-red-100 mt-4">
-                  <span className="font-bold text-red-900">{t("supplierAccounts.close.finalAccumulatedBalance")}</span>
-                  <span className="font-black text-xl text-red-600 tab">{summary.finalBalance.toLocaleString()}ج</span>
-                </div>
-              </div>
-            )}
+              }
+            />
 
             <div className="pt-4 border-t border-dashed border-border flex items-center justify-end gap-3 mt-4">
               <Button_ label={tCommon("common.cancel")} variant="ghost" size="sm" onClick={onClose} />
-              <Button_
-                label={t("supplierAccounts.actions.confirmClosing")}
-                variant="default"
-                size="sm"
-                icon={closingLoading ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
-                disabled={closingLoading || !summary || (summary.pCount === 0 && summary.rCount === 0)}
-                onClick={handleConfirmClosing}
-              />
             </div>
           </div>
         )}
@@ -979,24 +1012,6 @@ function MiniSummary({ title, value, icon: Icon, color, isFinal = false }) {
         <span className="text-[10px] font-black uppercase tracking-wider opacity-70 truncate">{title}</span>
       </div>
       <span className={cn("tabular-nums font-black", isFinal ? "text-lg" : "text-sm")}>{value.toLocaleString()}ج</span>
-    </div>
-  );
-}
-
-function DetailRow({ label, value, iconColor }) {
-  return (
-    <div className="flex items-center justify-between py-2 border-b border-border last:border-0 border-dashed">
-      <span className="text-xs text-muted-foreground flex items-center gap-2">
-        <div className={cn("w-1.5 h-1.5 rounded-full",
-          iconColor === 'purple' ? "bg-purple-500" :
-            iconColor === 'red' ? "bg-red-500" :
-              iconColor === 'emerald' ? "bg-emerald-500" : "bg-orange-500"
-        )} />
-        {label}
-      </span>
-      <span className={cn("text-xs font-bold tabular-nums", value < 0 && iconColor === 'red' && "text-red-600")}>
-        {value.toLocaleString()}ج
-      </span>
     </div>
   );
 }

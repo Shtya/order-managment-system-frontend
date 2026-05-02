@@ -38,9 +38,11 @@ export default function CityDeliveriesTab() {
   });
 
   const [records, setRecords] = useState([]);
-  const [totalRecords, setTotalRecords] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [perPage, setPerPage] = useState(12);
+  const [pager, setPager] = useState({
+    total_records: 0,
+    current_page: 1,
+    per_page: 12,
+  });
 
   const { debouncedValue: debouncedSearch } = useDebounce({
     value: search,
@@ -49,7 +51,7 @@ export default function CityDeliveriesTab() {
 
   const { handleExport, exportLoading } = useExport();
 
-  const fetchCityReport = async (page = currentPage, per_page = perPage) => {
+  const fetchCityReport = async (page = pager.current_page, per_page = pager.per_page) => {
     setLoading(true);
     try {
       const params = {
@@ -61,7 +63,11 @@ export default function CityDeliveriesTab() {
       };
       const res = await api.get("/accounting/shipments-city-report", { params });
       setRecords(res.data.records || []);
-      setTotalRecords(res.data.total_records || 0);
+      setPager({
+        total_records: res.data.total_records || 0,
+        current_page: res.data.current_page || page,
+        per_page: res.data.per_page || per_page,
+      });
     } catch (err) {
       console.error("Error fetching city report:", err);
       toast.error(tCommon("manualExpenses.messages.fetchError"));
@@ -71,12 +77,16 @@ export default function CityDeliveriesTab() {
   };
 
   const applyFilters = () => {
-    fetchCityReport(1, perPage);
+    fetchCityReport(1, pager.per_page);
   };
 
   useEffect(() => {
     fetchCityReport();
-  }, [debouncedSearch, currentPage, perPage]);
+  }, [debouncedSearch]);
+
+  const handlePageChange = ({ page, per_page }) => {
+    fetchCityReport(page, per_page);
+  };
 
   const onExport = async () => {
     const params = {
@@ -205,12 +215,11 @@ export default function CityDeliveriesTab() {
         data={records}
         isLoading={loading}
         pagination={{
-          total_records: totalRecords,
-          current_page: currentPage,
-          per_page: perPage,
+          total_records: pager.total_records,
+          current_page: pager.current_page,
+          per_page: pager.per_page,
         }}
-        onPageChange={setCurrentPage}
-        onLimitChange={setPerPage}
+        onPageChange={handlePageChange}
       />
     </div>
   );

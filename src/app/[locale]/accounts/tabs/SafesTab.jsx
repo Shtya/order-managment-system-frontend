@@ -470,6 +470,11 @@ export default function SafesTab({ onRefresh }) {
                                 key: "counterparty",
                                 cell: (row) => <span className="text-xs font-semibold text-gray-600 dark:text-slate-300">{row.counterparty?.name || "-"}</span>
                             },
+                            {
+                                header: t("safes.transactions.notes"),
+                                key: "notes",
+                                cell: (row) => <span className="text-[11px] text-gray-500 dark:text-slate-400  block" title={row.notes}>{row.notes || "-"}</span>
+                            },
                         ]}
                         data={allTransactions}
                         pagination={{ total_records: txPager.total_records, current_page: txPager.current_page, per_page: txPager.per_page }}
@@ -535,6 +540,11 @@ export default function SafesTab({ onRefresh }) {
                                         {row.createdAt ? format(new Date(row.createdAt), "yyyy-MM-dd HH:mm") : "-"}
                                     </span>
                                 )
+                            },
+                            {
+                                header: t("safes.transfers.notes"),
+                                key: "notes",
+                                cell: (row) => <span className="text-[11px] text-gray-500 dark:text-slate-400  block" title={row.notes}>{row.notes || "-"}</span>
                             },
                         ]}
                         data={allTransfers}
@@ -747,6 +757,11 @@ function TransactionsViewerModal({ open, onOpenChange, account }) {
                                     header: t("safes.transactions.counterparty"),
                                     key: "counterparty",
                                     cell: (row) => <span className="text-xs font-semibold text-gray-600 dark:text-slate-300">{row.counterparty?.name || "-"}</span>
+                                },
+                                {
+                                    header: t("safes.transactions.notes"),
+                                    key: "notes",
+                                    cell: (row) => <span className="text-[11px] text-gray-500 dark:text-slate-400  block" title={row.notes}>{row.notes || "-"}</span>
                                 },
                             ]}
                             data={transactions}

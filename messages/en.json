@@ -3149,7 +3149,8 @@
     "messages": {
       "createSuccess": "Return invoice created successfully",
       "createFailed": "Failed to create return invoice",
-      "creatingReturn": "Creating return invoice..."
+      "creatingReturn": "Creating return invoice...",
+      "loadDataFailed": "Failed to load data"
     },
     "upload": {
       "receiptAlt": "invoice"
@@ -4249,7 +4250,8 @@
       "createSuccess": "Purchase invoice created successfully",
       "createFailed": "Failed to create purchase invoice",
       "loadSuppliersFailed": "Failed to load suppliers",
-      "creatingPurchase": "Adding purchase..."
+      "creatingPurchase": "Adding purchase...",
+      "loadDataFailed": "Failed to load data"
     }
   },
   "common": {
@@ -8521,7 +8523,8 @@
         "amount": "Amount",
         "addedBy": "Added By",
         "actions": "Actions",
-        "attachment": "Invoice/Receipt Image"
+        "attachment": "Invoice/Receipt Image",
+        "safe": "Safe"
       },
       "categories": {
         "ads": "Ads",
@@ -8556,13 +8559,15 @@
         "amount": "Amount",
         "date": "Date",
         "category": "Category",
+        "safe": "Safe",
         "description": "Description/Details",
         "attachment": "Invoice/Receipt Image (Optional)",
         "upload": "Upload Image",
         "changeAttachment": "Change Attachment",
         "save": "Save",
         "cancel": "Cancel",
-        "selectCategoryError": "Please select a category"
+        "selectCategoryError": "Please select a category",
+        "selectSafeError": "Please select a safe"
       },
       "validation": {
         "amountNumber": "Amount must be a number",

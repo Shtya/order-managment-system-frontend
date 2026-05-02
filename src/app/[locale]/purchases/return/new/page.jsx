@@ -44,7 +44,7 @@ export default function CreateReturnInvoicePage() {
 				supplierCodeSnapshot: yup.string().optional(),
 				invoiceNumber: yup.string().optional(),
 				returnReason: yup.string().optional(),
-				safeId: yup.string().optional(),
+				safeId: yup.string().required(tValidation("safeRequired")),
 				returnType: yup.string().optional().nullable(),
 				notes: yup.string().optional(),
 				paidAmount: yup
@@ -88,6 +88,7 @@ export default function CreateReturnInvoicePage() {
 	);
 
 	const [suppliers, setSuppliers] = useState([]);
+	const [safes, setSafes] = useState([]);
 	const [loading, setLoading] = useState(false);
 
 	const {
@@ -159,14 +160,18 @@ export default function CreateReturnInvoicePage() {
 	useEffect(() => {
 		(async () => {
 			try {
-				const res = await api.get("/lookups/suppliers", { params: { limit: 200 } });
-				setSuppliers(res.data);
+				const [suppliersRes, safesRes] = await Promise.all([
+					api.get("/lookups/suppliers", { params: { limit: 200 } }),
+					api.get("/safes/accounts", { params: { limit: 200 } })
+				]);
+				setSuppliers(suppliersRes.data || []);
+				setSafes(safesRes.data.records || []);
 			} catch (e) {
 				console.error(e);
-				toast.error("Failed to load suppliers");
+				toast.error(t("messages.loadDataFailed") || "Failed to load data");
 			}
 		})();
-	}, []);
+	}, [t]);
 
 	// Update supplier snapshots when supplier changes
 	useEffect(() => {
@@ -481,7 +486,7 @@ export default function CreateReturnInvoicePage() {
 
 									<div className="space-y-2">
 										<Label className="text-sm text-gray-600 dark:text-slate-300">
-											{t("fields.safe")}
+											{t("fields.safe")} *
 										</Label>
 										<Controller
 											name="safeId"
@@ -492,14 +497,18 @@ export default function CreateReturnInvoicePage() {
 														<SelectValue placeholder={t("placeholders.safe")} />
 													</SelectTrigger>
 													<SelectContent className="bg-card-select">
-														<SelectItem value="نقدي">{t("options.safe.cash")}</SelectItem>
-														<SelectItem value="الخزينة الرئيسية">{t("options.safe.main")}</SelectItem>
-														<SelectItem value="الخزينة الفرعية">{t("options.safe.sub")}</SelectItem>
-														<SelectItem value="الخزينة الإضافية">{t("options.safe.extra")}</SelectItem>
+														{safes.map((safe) => (
+															<SelectItem key={safe.id} value={safe.id}>
+																{safe.name}
+															</SelectItem>
+														))}
 													</SelectContent>
 												</Select>
 											)}
 										/>
+										{errors.safeId && (
+											<p className="text-xs text-red-500">{errors.safeId.message}</p>
+										)}
 									</div>
 								</div>
 							</motion.div>

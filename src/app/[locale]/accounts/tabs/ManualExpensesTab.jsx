@@ -89,6 +89,10 @@ const createManualExpenseSchema = (t) =>
       .string()
       .notOneOf(["none"], t("manualExpenses.form.selectCategoryError"))
       .required(t("manualExpenses.form.selectCategoryError")),
+    safeId: yup
+      .string()
+      .notOneOf(["none"], t("manualExpenses.form.selectSafeError") || "Please select a safe")
+      .required(t("manualExpenses.form.selectSafeError") || "Please select a safe"),
     description: yup.string().required(t("manualExpenses.validation.descriptionRequired")),
     attachment: yup.mixed().nullable(),
   });
@@ -98,6 +102,21 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
   const t = useTranslations("accounts");
   const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(false);
+  const [safes, setSafes] = useState([]);
+
+  useEffect(() => {
+    if (open) {
+      const fetchSafes = async () => {
+        try {
+          const res = await api.get('/safes/accounts', { params: { limit: 200 } });
+          setSafes(res.data.records || []);
+        } catch (err) {
+          console.error("Error fetching safes:", err);
+        }
+      };
+      fetchSafes();
+    }
+  }, [open]);
 
   const schema = useMemo(() => createManualExpenseSchema(t), [t]);
 
@@ -107,6 +126,7 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
         amount: Math.abs(editingExpense.amount),
         collectionDate: new Date(editingExpense.collectionDate),
         categoryId: String(editingExpense.categoryId || "none"),
+        safeId: String(editingExpense.safeId || "none"),
         description: editingExpense.description || "",
         attachment: editingExpense.attachment || null,
       };
@@ -115,6 +135,7 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
       amount: "",
       collectionDate: new Date(),
       categoryId: "none",
+      safeId: "none",
       description: "",
       attachment: null,
     };
@@ -147,6 +168,8 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
       const payload = new FormData();
       payload.append("amount", String(data.amount));
       payload.append("categoryId", String(data.categoryId));
+      if(data.safeId !== 'none')
+      payload.append("safeId", String(data.safeId));
       payload.append("collectionDate", data.collectionDate?.toISOString());
       payload.append("description", data.description || "");
 
@@ -263,30 +286,59 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
           </div>
 
           {/* Category */}
-          <div className="space-y-2">
-            <Label className="text-xs font-bold">{t("manualExpenses.form.category")}</Label>
-            <Controller
-              control={control}
-              name="categoryId"
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className={cn("theme-field", errors.categoryId && "border-red-500")}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories?.map((cat) => (
-                      <SelectItem key={cat.id} value={String(cat.id)}>
-                        <div className="flex items-center gap-2">
-                          <Plus size={14} className="text-primary" />
-                          <span>{cat.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            {errors.categoryId && <p className="text-xs text-red-500">{errors.categoryId.message}</p>}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-xs font-bold">{t("manualExpenses.form.category")}</Label>
+              <Controller
+                control={control}
+                name="categoryId"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className={cn("theme-field", errors.categoryId && "border-red-500")}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories?.map((cat) => (
+                        <SelectItem key={cat.id} value={String(cat.id)}>
+                          <div className="flex items-center gap-2">
+                            <Plus size={14} className="text-primary" />
+                            <span>{cat.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.categoryId && <p className="text-xs text-red-500">{errors.categoryId.message}</p>}
+            </div>
+
+            {/* Safe */}
+            <div className="space-y-2">
+              <Label className="text-xs font-bold">{t("manualExpenses.form.safe") || "Safe"}</Label>
+              <Controller
+                control={control}
+                name="safeId"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className={cn("theme-field", errors.safeId && "border-red-500")}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {safes?.map((safe) => (
+                        <SelectItem key={safe.id} value={String(safe.id)}>
+                          <div className="flex items-center gap-2">
+                            <Wallet size={14} className="text-primary" />
+                            <span>{safe.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.safeId && <p className="text-xs text-red-500">{errors.safeId.message}</p>}
+            </div>
           </div>
 
           {/* Description */}
@@ -561,6 +613,18 @@ export default function ManualExpensesTab({
       )
     },
     {
+      key: "safe",
+      header: t("manualExpenses.columns.safe") || "Safe",
+      cell: (row) => (
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-blue-50 text-blue-500">
+            <Wallet size={14} />
+          </div>
+          <span className="text-xs font-bold">{row.safe?.name || t("common.none")}</span>
+        </div>
+      )
+    },
+    {
       key: "createdByUserId",
       header: t("manualExpenses.columns.addedBy"),
       cell: (row) => (
@@ -743,6 +807,16 @@ export default function ManualExpensesTab({
                     <Tag size={12} className="text-primary" />
                     <span className="text-xs font-black">{selectedExpense.category?.name || t("common.none")}</span>
                   </div>
+                </div>
+
+                <div className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-background border border-border flex items-center justify-center text-muted-foreground">
+                      <Wallet size={14} />
+                    </div>
+                    <span className="text-xs font-bold text-muted-foreground">{t("manualExpenses.columns.safe") || "Safe"}</span>
+                  </div>
+                  <span className="text-xs font-black">{selectedExpense.safe?.name || t("common.none")}</span>
                 </div>
 
                 <div className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border">

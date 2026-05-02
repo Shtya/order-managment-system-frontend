@@ -1327,7 +1327,7 @@ export default function PurchasesPage() {
 			await toast.promise(statusPromise, {
 				loading: t("messages.updatingStatus"), // Or a generic "Processing..."
 				success: t("messages.statusUpdated"),
-				error: (err) => t("messages.statusFailed") // Or normalizeAxiosError(err)
+				error: (err) => err.response?.data?.message || t("messages.statusFailed") // Or normalizeAxiosError(err)
 			});
 
 			// 3. Refresh data only after the promise succeeds

@@ -5735,7 +5735,14 @@
       "title": "Order collection",
       "home": "Home",
       "notCollected": "Uncollected Orders",
-      "fullyCollected": "Fully Collected Orders"
+      "fullyCollected": "Fully Collected Orders",
+      "none": "None"
+    },
+    "fields": {
+      "safe": "Safe/Account"
+    },
+    "validation": {
+      "safeRequired": "Please select a safe/account"
     },
     "tabs": {
       "notCollected": "Not Collected",
@@ -5841,7 +5848,8 @@
       "source": "Payment Method",
       "currency": "Currency",
       "amount": "Amount",
-      "notes": "Notes"
+      "notes": "Notes",
+      "safe": "Safe"
     },
     "placeholders": {
       "shippingCompany": "Select shipping company",
@@ -5885,7 +5893,8 @@
       "sourceRequired": "Payment method is required",
       "currencyRequired": "Currency is required",
       "amountRequired": "Amount is required",
-      "amountMin": "Amount must be greater than zero"
+      "amountMin": "Amount must be greater than zero",
+      "safeRequired": "Please select a safe"
     },
     "messages": {
       "loading": "Loading...",
@@ -8362,6 +8371,7 @@
         "types": {
           "MANUAL_ADD": "Manual Balance Addition",
           "SHIPPING_COLLECTION": "Shipping Collection",
+          "ORDER_COLLECTION": "Order Collection",
           "CUSTOMER_COLLECTION": "Customer Collection",
           "PURCHASE_RETURN": "Purchase Return",
           "TRANSFER_IN": "Transfer In",
@@ -8386,7 +8396,8 @@
         },
         "amountToDeposit": "Amount to Deposit",
         "amountToWithdraw": "Amount to Withdraw",
-        "searchPlaceholder": "Search transactions..."
+        "searchPlaceholder": "Search transactions...",
+        "safeSearchPlaceholder": "Search the storage and accounts..."
       },
       "transfers": {
         "new": "New Transfer",
@@ -8794,5 +8805,14 @@
       "close": "Close",
       "view": "View Details"
     }
+  },
+  "timeline": {
+    "pending": "Pending"
+  },
+  "fields": {
+    "orderNumber": "Order Number"
+  },
+  "status": {
+    "delivered": "Delivered At"
   }
 }

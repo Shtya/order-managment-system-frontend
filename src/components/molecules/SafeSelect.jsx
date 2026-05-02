@@ -50,7 +50,7 @@ export default function SafeSelect({ control, name, error, label, placeholder, r
                 render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange}>
                         <SelectTrigger className={cn("w-full rounded-xl !h-[45px] bg-[#fafafa] dark:bg-slate-800/50", error && "border-red-500")}>
-                            <SelectValue placeholder={placeholder || t("safes.transactions.searchPlaceholder")} />
+                            <SelectValue placeholder={placeholder || t("safes.transactions.safeSearchPlaceholder")} />
                         </SelectTrigger>
                         <SelectContent className="bg-card-select">
                             <button

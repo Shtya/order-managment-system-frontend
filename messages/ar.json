@@ -5757,7 +5757,14 @@
       "title": "تحصيل الطلبات",
       "home": "الرئيسية",
       "notCollected": "طلبات غير محصلة",
-      "fullyCollected": "طلبات محصلة بالكامل"
+      "fullyCollected": "طلبات محصلة بالكامل",
+      "none": "لا يوجد"
+    },
+    "fields": {
+      "safe": "الخزينة/الحساب"
+    },
+    "validation": {
+      "safeRequired": "يرجى اختيار الخزينة/الحساب"
     },
     "tabs": {
       "notCollected": "طلبات غير محصلة",
@@ -5863,7 +5870,8 @@
       "source": "طريقة الدفع",
       "currency": "العملة",
       "amount": "المبلغ",
-      "notes": "ملاحظات"
+      "notes": "ملاحظات",
+      "safe": "خزنة"
     },
     "placeholders": {
       "shippingCompany": "اختر شركة الشحن",
@@ -5907,7 +5915,8 @@
       "sourceRequired": "طريقة الدفع مطلوبة",
       "currencyRequired": "العملة مطلوبة",
       "amountRequired": "المبلغ مطلوب",
-      "amountMin": "يجب أن يكون المبلغ أكبر من صفر"
+      "amountMin": "يجب أن يكون المبلغ أكبر من صفر",
+      "safeRequired": "يرجي إختيار خزنة"
     },
     "messages": {
       "loading": "جارٍ التحميل...",
@@ -8387,6 +8396,7 @@
         "types": {
           "MANUAL_ADD": "إضافة رصيد يدوية",
           "SHIPPING_COLLECTION": "تحصيل من شركة شحن",
+          "ORDER_COLLECTION": "تحصيل طلب",
           "CUSTOMER_COLLECTION": "تحصيل من عميل",
           "PURCHASE_RETURN": "مرتجع مشتريات",
           "TRANSFER_IN": "تحويل وارد",
@@ -8411,7 +8421,8 @@
         },
         "amountToDeposit": "المبلغ المراد إيداعه",
         "amountToWithdraw": "المبلغ المراد سحبه",
-        "searchPlaceholder": "إبحث في الحركات المالية..."
+        "searchPlaceholder": "إبحث في الحركات المالية...",
+        "safeSearchPlaceholder": "إبحث في الخزن و الحسابات..."
       },
       "transfers": {
         "new": "تحويل جديد",
@@ -8819,5 +8830,14 @@
       "close": "إلغاء",
       "view": "عرض التفاصيل"
     }
+  },
+  "timeline": {
+    "pending": "قيد الانتظار"
+  },
+  "fields": {
+    "orderNumber": "رقم الطلب"
+  },
+  "status": {
+    "delivered": "تاريخ التسليم"
   }
 }

@@ -48,6 +48,8 @@ import Flatpickr from "react-flatpickr";
 
 import PageHeader from "@/components/atoms/Pageheader";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import SafeSelect from "@/components/molecules/SafeSelect";
+import { useLocale } from "next-intl";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 
 // ── Payment Sources ───────────────────────────────────────────────────────────
@@ -412,18 +414,16 @@ export default function CollectOrderPage() {
   const params = useParams();
   const orderId = params?.orderId;
   const { formatCurrency, shippingCompanies, isShippingLoading, currency } = usePlatformSettings();
-
+  const locale = useLocale();
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [order, setOrder] = useState(null);
 
   const schema = yup.object({
-    shippingCompanyId: yup
-      .string()
-      .required(t("validation.shippingCompanyRequired")),
+    shippingCompanyId: yup.string().optional().nullable(),
     collectionDate: yup.date().required(t("validation.collectionDateRequired")),
     source: yup.string().required(t("validation.sourceRequired")),
-    // currency: yup.string().required(t("validation.currencyRequired")),
+    safeId: yup.string().required(t("validation.safeRequired") || "Please select a safe"),
     amount: yup
       .number()
       .required(t("validation.amountRequired"))
@@ -441,9 +441,9 @@ export default function CollectOrderPage() {
     resolver: yupResolver(schema),
     defaultValues: {
       shippingCompanyId: "",
-      collectionDate: new Date(),
+      collectionDate: new Date().toLocaleDateString(),
       source: "",
-      // currency: "EGP",
+      safeId: "",
       amount: 0,
       notes: "",
     },
@@ -465,6 +465,11 @@ export default function CollectOrderPage() {
         const orderRes = await api.get(`/orders/${orderId}`);
         const orderData = orderRes.data;
         setOrder(orderData);
+
+        const remaining = (orderData.finalTotal || 0) - (orderData.collectedAmount || 0);
+        if (remaining > 0) {
+          setValue("amount", remaining);
+        }
 
       } catch (error) {
         toast.error(t("errors.fetchFailed"));
@@ -494,11 +499,12 @@ export default function CollectOrderPage() {
       setLoading(true);
       await api.post("/collections", {
         orderId: orderId,
-        shippingCompanyId: data.shippingCompanyId,
+        shippingCompanyId: data.shippingCompanyId !== 'none' ? data.shippingCompanyId : undefined,
         source: data.source,
-        // currency: data.currency,
+        safeId: data.safeId,
         amount: Number(data.amount),
         notes: data.notes || undefined,
+        collectedAt: data.collectionDate?.toISOString(),
       });
       toast.success(t("messages.success"));
       router.push("/orders/collections");
@@ -654,11 +660,19 @@ export default function CollectOrderPage() {
               </div>
 
               <div className="pt-6 space-y-5">
-                {/* Shipping company */}
+                {/* Safe Selection */}
+                <SafeSelect
+                  name="safeId"
+                  control={control}
+                  error={errors.safeId?.message}
+                  label={t("fields.safe") || "Safe"}
+                  required
+                />
+
+                {/* Shipping company + Collection date */}
                 <div className="grid grid-cols-2 items-center gap-6 w-full ">
                   <FieldGroup
                     label={t("fields.shippingCompany")}
-                    required
                     icon={Truck}
                     error={errors.shippingCompanyId?.message}
                   >
@@ -676,6 +690,7 @@ export default function CollectOrderPage() {
                             />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="none">{tCollect("breadcrumb.none") || "None"}</SelectItem>
                             {shippingCompanies.map((c) => (
                               <SelectItem
                                 key={c.providerId}
@@ -690,7 +705,6 @@ export default function CollectOrderPage() {
                     />
                   </FieldGroup>
 
-                  {/* Collection date */}
                   <FieldGroup
                     label={t("fields.collectionDate")}
                     required
@@ -705,9 +719,9 @@ export default function CollectOrderPage() {
                           mode="single"
                           value={field.value}
                           onChange={(date) => field.onChange(date)}
-                          placeholder={t("placeholders.collectionDate")}
+                          staticShow={true}
                           dataSize="default"
-                          maxDate="today"
+                          className={cn("theme-field w-full! pl-9", errors.collectionDate && "border-red-500")}
                         />
                       )}
                     />

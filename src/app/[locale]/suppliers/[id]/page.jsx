@@ -31,15 +31,16 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Table from "@/components/atoms/Table";
 import ActionButtons from "@/components/atoms/Actions";
-import Flatpickr from "react-flatpickr";
-import "flatpickr/dist/themes/material_blue.css";
 import toast from "react-hot-toast";
 import { DetailsModal as PurchaseDetailsModal } from "@/app/[locale]/purchases/page";
 import { DetailsModal as ReturnDetailsModal } from "@/app/[locale]/purchases/return/page";
 import { cn } from "@/utils/cn";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useDebounce } from "@/hook/useDebounce";
 
 export default function SupplierDetailsPage() {
+    const [activeSubTab, setActiveSubTab] = useState('purchases');
     const params = useParams();
     const id = params.id;
     const tPurchases = useTranslations("purchases");
@@ -65,6 +66,34 @@ export default function SupplierDetailsPage() {
     // Modals State
     const [purchaseModal, setPurchaseModal] = useState({ isOpen: false, invoice: null, loading: false });
     const [returnModal, setReturnModal] = useState({ isOpen: false, invoice: null, loading: false });
+    const currentYear = new Date().getFullYear();
+    const years = useMemo(() => Array.from({ length: 10 }, (_, i) => (currentYear - i).toString()), [currentYear]);
+    const [selectedYear, setSelectedYear] = useState(currentYear.toString());
+    const [historyPager, setHistoryPager] = useState({
+        records: [],
+        total_records: 0,
+        current_page: 1,
+        per_page: 12,
+    });
+    const [historyLoading, setHistoryLoading] = useState(false);
+
+    const [Purchasesearch, setPurchaseSearch] = useState("");
+    const { debouncedValue: debouncedPurchaseSearch } = useDebounce({
+        value: Purchasesearch,
+        delay: 300,
+    });
+
+    const [Returnsearch, setReturnSearch] = useState("");
+    const { debouncedValue: debouncedReturnSearch } = useDebounce({
+        value: Returnsearch,
+        delay: 300,
+    });
+
+    const [Historysearch, setHistorySearch] = useState("");
+    const { debouncedValue: debouncedHistorySearch } = useDebounce({
+        value: Historysearch,
+        delay: 300,
+    });
 
     const fetchSupplier = useCallback(async () => {
         try {
@@ -77,13 +106,14 @@ export default function SupplierDetailsPage() {
         }
     }, [id]);
 
-    const fetchPurchases = useCallback(async (page = 1, limit = 10) => {
+    const fetchPurchases = useCallback(async (page = 1, limit = 10, search) => {
         setPurchasesLoading(true);
         try {
             const params = new URLSearchParams();
             params.set("page", String(page));
             params.set("limit", String(limit));
             params.set("supplierId", id);
+            if(search)  params.set("search", search);
             if (purchasesFilters.startDate) params.set("startDate", purchasesFilters.startDate);
             if (purchasesFilters.endDate) params.set("endDate", purchasesFilters.endDate);
 
@@ -101,13 +131,14 @@ export default function SupplierDetailsPage() {
         }
     }, [id, purchasesFilters]);
 
-    const fetchReturns = useCallback(async (page = 1, limit = 10) => {
+    const fetchReturns = useCallback(async (page = 1, limit = 10, search) => {
         setReturnsLoading(true);
         try {
             const params = new URLSearchParams();
             params.set("page", String(page));
             params.set("limit", String(limit));
             params.set("supplierId", id);
+            if(search)  params.set("search", search);
             if (returnsFilters.startDate) params.set("startDate", returnsFilters.startDate);
             if (returnsFilters.endDate) params.set("endDate", returnsFilters.endDate);
 
@@ -125,6 +156,38 @@ export default function SupplierDetailsPage() {
         }
     }, [id, returnsFilters]);
 
+    const fetchHistory = useCallback(async (page = 1, limit = 10, search) => {
+        if (!id) return;
+
+        setHistoryLoading(true);
+        try {
+            const params = new URLSearchParams();
+            params.set("page", String(page));
+            params.set("limit", String(limit));
+            params.set("supplierId", id);
+            if(search) params.set("search", search);
+            params.set("year", String(selectedYear));
+
+            const res = await api.get(`/accounting/supplier-closings/closings?${params.toString()}`);
+
+            setHistoryPager({
+                records: res.data.records || [],
+                total_records: res.data.total_records || 0,
+                current_page: res.data.current_page || 1,
+                per_page: res.data.per_page || 10,
+            });
+
+        } catch (err) {
+            console.error("Error fetching closing history:", err);
+        } finally {
+            setHistoryLoading(false);
+        }
+    }, [id, selectedYear, id]);
+
+    useEffect(() => {
+        fetchHistory();
+    }, [fetchHistory]);
+
     useEffect(() => {
         fetchSupplier();
     }, [fetchSupplier]);
@@ -136,6 +199,19 @@ export default function SupplierDetailsPage() {
     useEffect(() => {
         fetchReturns();
     }, [fetchReturns]);
+
+    useEffect(() => {
+        fetchReturns(1, 12, Returnsearch);
+    }, [Returnsearch]);
+
+    useEffect(() => {
+        fetchPurchases(1, 12, Purchasesearch);
+    }, [Purchasesearch]);
+
+    useEffect(() => {
+        fetchHistory(1, 12, Historysearch);
+    }, [Historysearch]);
+
 
     const handleViewPurchase = async (row) => {
         setPurchaseModal({ isOpen: true, invoice: null, loading: true });
@@ -255,49 +331,75 @@ export default function SupplierDetailsPage() {
         }
     ], [tReturns, formatCurrency]);
 
-    const historyColumns = [
-        { key: "closedAt", header: t("history.closedAt"), cell: (row) => <span className="tabular-nums text-xs">{row.closedAt}</span> },
-        { key: "period", header: t("history.period"), cell: (row) => <span className="text-xs font-medium">{row.period}</span> },
+    const historyColumns = useMemo(() => [
         {
-            key: "prevBalance",
-            header: t("close.prevClosingBalance"),
-            cell: (row) => <span className="tabular-nums text-xs">{formatCurrency(row.prevBalance)}</span>
+            key: "createdAt",
+            header: t("history.closedAt"),
+            cell: (row) => (
+                <span className="tabular-nums text-[11px]">
+                    {new Date(row.createdAt).toLocaleDateString()}
+                </span>
+            ),
         },
         {
-            key: "netPurchases",
+            key: "period",
+            header: t("history.period"),
+            cell: (row) => (
+                <span className="text-xs font-medium">
+                    {new Date(row.startDate).toLocaleDateString()} - {new Date(row.endDate).toLocaleDateString()}
+                </span>
+            ),
+        },
+        {
+            key: "totalPurchases",
             header: t("close.totalPurchases"),
-            cell: (row) => <span className="tabular-nums text-xs text-purple-600">{formatCurrency(row.netPurchases)}</span>
+            cell: (row) => (
+                <span className="tabular-nums text-xs text-purple-600">
+                    {Number(row.totalPurchases).toLocaleString()}
+                </span>
+            ),
         },
         {
-            key: "netReturns",
+            key: "totalReturns",
             header: t("close.totalReturns"),
-            cell: (row) => <span className="tabular-nums text-xs text-red-600">-{formatCurrency(row.netReturns)}</span>
+            cell: (row) => (
+                <span className="tabular-nums text-xs text-red-600">
+                    {(Number(row.totalReturns) * -1).toLocaleString()}
+                </span>
+            ),
         },
         {
             key: "totalPaid",
             header: t("close.totalPayments"),
-            cell: (row) => <span className="tabular-nums text-xs text-emerald-600">-{formatCurrency(row.totalPaid)}</span>
+            cell: (row) => (
+                <span className="tabular-nums text-xs text-emerald-600">
+                    {(Number(row.totalPaid) * -1).toLocaleString()}
+                </span>
+            ),
         },
         {
             key: "finalBalance",
             header: t("history.balance"),
-            cell: (row) => <span className="font-black text-xs text-red-600 tabular-nums">{formatCurrency(row.finalBalance)}</span>
+            cell: (row) => (
+                <span className="font-black text-xs text-red-600 tabular-nums">
+                    {Number(row.finalBalance).toLocaleString()}
+                </span>
+            ),
         },
         {
             key: "actions",
             header: "",
             cell: (row) => (
-                <button className="p-1 hover:bg-muted rounded-md transition-colors text-muted-foreground">
+                <button
+                    className="p-1 hover:bg-muted rounded-md transition-colors text-muted-foreground"
+                    title="طباعة التقرير"
+                >
                     <Download size={14} />
                 </button>
-            )
-        }
-    ];
+            ),
+        },
+    ], [t]);
 
-    const mockedHistory = [
-        { id: 1, closedAt: "2025-10-31", period: "1 - 31 أكتوبر", prevBalance: 8400, netPurchases: 12000, netReturns: 2000, totalPaid: 10000, finalBalance: 8400, status: "completed" },
-        { id: 2, closedAt: "2025-09-30", period: "1 - 30 سبتمبر", prevBalance: 10400, netPurchases: 15000, netReturns: 1000, totalPaid: 12000, finalBalance: 10400, status: "completed" },
-    ];
 
     if (loading) {
         return (
@@ -419,7 +521,7 @@ export default function SupplierDetailsPage() {
             </div>
 
             {/* Main Content Tabs */}
-            <Tabs defaultValue="purchases" className="w-full dir-force ">
+            <Tabs value={activeSubTab} onValueChange={setActiveSubTab} defaultValue="purchases" className="w-full dir-force ">
                 <TabsList className="grid w-full grid-cols-3 !h-auto mb-6 main-card">
                     <TabsTrigger value="purchases" className="flex items-center gap-2 py-2.5">
                         <ReceiptText size={18} />
@@ -437,8 +539,8 @@ export default function SupplierDetailsPage() {
 
                 <TabsContent value="purchases">
                     <Table
-                        searchValue=""
-                        onSearch={() => { }}
+                       searchValue={Purchasesearch}
+                        onSearchChange={setPurchaseSearch}
                         labels={{
                             searchPlaceholder: tCommon("search"),
                             filter: tCommon("filter"),
@@ -479,8 +581,9 @@ export default function SupplierDetailsPage() {
 
                 <TabsContent value="returns">
                     <Table
-                        searchValue=""
-                        onSearch={() => { }}
+                     searchValue={Returnsearch}
+                        onSearchChange={setReturnSearch}
+                        
                         labels={{
                             searchPlaceholder: tCommon("search"),
                             filter: tCommon("filter"),
@@ -522,9 +625,41 @@ export default function SupplierDetailsPage() {
                 <TabsContent value="history">
 
                     <Table
+                        searchValue={Historysearch}
+                        onSearchChange={setHistorySearch}
+                        labels={{
+                            searchPlaceholder: tCommon("search"),
+                            filter: tCommon("filter"),
+                            apply: tCommon("apply"),
+                            emptyTitle: tCommon("noData"),
+                        }}
+                        filters={
+                            <div className="flex items-center gap-3">
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-xs font-bold px-1">{t("filters.year")}</span>
+                                    <Select value={selectedYear} onValueChange={setSelectedYear}>
+                                        <SelectTrigger className="theme-field h-9 w-32">
+                                            <SelectValue placeholder={t("filters.selectYear")} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {years.map(y => (
+                                                <SelectItem key={y} value={y}>{y}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        }
+                        onApplyFilters={() => fetchHistory(1)}
                         columns={historyColumns}
-                        data={mockedHistory}
-                        isLoading={false}
+                        data={historyPager.records}
+                        isLoading={historyLoading}
+                        pagination={{
+                            total_records: historyPager.total_records,
+                            current_page: historyPager.current_page,
+                            per_page: historyPager.per_page,
+                        }}
+                        onPageChange={({ page, per_page }) => fetchHistory(page, per_page)}
                     />
 
                 </TabsContent>

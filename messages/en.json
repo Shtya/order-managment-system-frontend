@@ -8735,6 +8735,10 @@
         "closedAt": "Closed At",
         "period": "Period",
         "balance": "Approved Balance"
+      },
+      "filters": {
+        "selectYear": "Choose the year...",
+        "year": "Year"
       }
     },
     "history": "Previous Closes",

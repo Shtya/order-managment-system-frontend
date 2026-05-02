@@ -71,7 +71,7 @@ export default function SafesTab({ onRefresh }) {
     const [accountModalOpen, setAccountModalOpen] = useState(false);
     const [editingAccount, setEditingAccount] = useState(null);
     const [transactionModal, setTransactionModal] = useState({ open: false, direction: 'IN', accountId: null });
-    const [transferModalOpen, setTransferModalOpen] = useState(false);
+    const [transferModal, setTransferModal] = useState({ open: false, fromAccountId: null });
     const [txnsViewerModal, setTxnsViewerModal] = useState({ open: false, account: null });
 
     // Toggle Confirmation state
@@ -211,8 +211,8 @@ export default function SafesTab({ onRefresh }) {
         setTransactionModal({ open: true, direction: 'OUT', accountId });
     };
 
-    const handleNewTransfer = () => {
-        setTransferModalOpen(true);
+    const handleNewTransfer = (fromAccountId = null) => {
+        setTransferModal({ open: true, fromAccountId });
     };
     const locale = useLocale()
     return (
@@ -240,7 +240,7 @@ export default function SafesTab({ onRefresh }) {
                             icon={<ArrowLeftRight size={16} />}
                             variant="outline"
                             size="sm"
-                            onClick={handleNewTransfer}
+                            onClick={() => handleNewTransfer(null)}
                         />
                         <Button_
                             label={t("safes.accounts.add")}
@@ -350,7 +350,7 @@ export default function SafesTab({ onRefresh }) {
                                                     { icon: ClipboardList, label: t("safes.tabs.transactions"), onClick: () => handleOpenTransactions(acc), className: "" },
                                                     { icon: ArrowUpRight, label: t("safes.transactions.deposit"), onClick: () => handleDeposit(acc.id), className: "bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500" },
                                                     { icon: ArrowDownLeft, label: t("safes.transactions.withdraw"), onClick: () => handleWithdraw(acc.id), className: "bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white dark:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-500" },
-                                                    { icon: ArrowLeftRight, label: t("safes.tabs.transfers"), onClick: handleNewTransfer, className: "" },
+                                                    { icon: ArrowLeftRight, label: t("safes.tabs.transfers"), onClick: () => handleNewTransfer(acc.id), className: "" },
                                                 ].map((btn, idx) => (
                                                     <button
                                                         key={idx}
@@ -562,8 +562,9 @@ export default function SafesTab({ onRefresh }) {
             />
 
             <TransferModal
-                open={transferModalOpen}
-                onOpenChange={setTransferModalOpen}
+                open={transferModal.open}
+                onOpenChange={(open) => setTransferModal(prev => ({ ...prev, open }))}
+                initialAccountId={transferModal.fromAccountId}
                 accounts={accounts.filter(a => a.status === 'ACTIVE')}
                 onSave={handleRefreshAll}
             />
@@ -1116,13 +1117,17 @@ const createTransferSchema = (t, accounts) =>
         notes: yup.string().nullable(),
     });
 
-function TransferModal({ open, onOpenChange, accounts, onSave }) {
+function TransferModal({ open, onOpenChange, accounts, initialAccountId, onSave }) {
     const t = useTranslations("accounts");
     const [loading, setLoading] = useState(false);
 
     const { register, handleSubmit, control, reset, watch, setValue, formState: { errors } } = useForm({
         resolver: yupResolver(createTransferSchema(t, accounts)), mode: "onBlur",
-        defaultValues: { fromAccountId: "", toAccountId: "", amount: 0, notes: "" }
+        defaultValues: {
+            fromAccountId: initialAccountId || "",
+            toAccountId: initialAccountId && (initialAccountId === accounts?.[0]?.id ? accounts?.[1]?.id || "" : accounts?.[1]?.id || ""),
+            amount: 0, notes: ""
+        }
     });
 
     const fromAccountId = watch("fromAccountId");
@@ -1155,7 +1160,13 @@ function TransferModal({ open, onOpenChange, accounts, onSave }) {
         }
     }, [amountValue, sourceAccount, setValue]);
 
-    useEffect(() => { if (open) reset({ fromAccountId: accounts[0]?.id || "", toAccountId: accounts[1]?.id || "", amount: 0, notes: "" }); }, [open, accounts, reset]);
+    useEffect(() => {
+        if (open) reset({
+            fromAccountId: initialAccountId || "",
+            toAccountId: initialAccountId && (initialAccountId === accounts?.[0]?.id ? accounts?.[1]?.id || "" : accounts?.[0]?.id || ""),
+            amount: 0, notes: ""
+        });
+    }, [open, accounts, reset, initialAccountId]);
 
     const onSubmit = async (data) => {
         setLoading(true);

@@ -8705,7 +8705,9 @@
         "balance": "Approved Balance"
       }
     },
-    "history": "Previous Closes"
+    "history": "Previous Closes",
+    "confirm": "Confirm",
+    "transfer": "Transfer"
   },
   "syncFailures": {
     "title": "Product Sync Errors",

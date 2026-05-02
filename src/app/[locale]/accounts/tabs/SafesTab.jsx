@@ -44,6 +44,7 @@ import { useDebounce } from "@/hook/useDebounce";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 
+
 export default function SafesTab({ onRefresh }) {
     const t = useTranslations("accounts");
     const [loading, setLoading] = useState(false);
@@ -810,7 +811,7 @@ const createAccountSchema = (t) =>
         notes: yup.string().nullable(),
     });
 
-function AccountModal({ open, onOpenChange, editingAccount, onSave }) {
+export function AccountModal({ open, onOpenChange, editingAccount, onSave }) {
     const t = useTranslations("accounts");
     const [loading, setLoading] = useState(false);
     const [employees, setEmployees] = useState([]);

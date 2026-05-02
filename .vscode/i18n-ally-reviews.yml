@@ -171,3 +171,47 @@ reviews:
             suggestion: ''
             type: approve
             time: '2026-05-02T13:26:53.497Z'
+  common.purchase.addNewSupplier:
+    locales:
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: yCnsexpi9eUlZYCOifKkU
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-05-02T14:06:59.029Z'
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: TTlZLm17BISpdIusTBI3y
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-05-02T14:07:01.178Z'
+  suppliers.form.save:
+    locales:
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: pPlWITGEwrSeExmbslBf_
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-05-02T14:09:15.477Z'
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: LoGuBWhiUzwVMkeKdWXmV
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-05-02T14:09:17.307Z'

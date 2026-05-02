@@ -2886,7 +2886,8 @@
       "edit": "تعديل",
       "view": "عرض",
       "howToUse": "كيفية الإستخدام",
-      "refresh": "تحديث الفئات"
+      "refresh": "تحديث الفئات",
+      "pay": "إدفع للمورد"
     },
     "toolbar": {
       "searchPlaceholder": "ابحث عن مورد...",
@@ -2915,6 +2916,11 @@
       "purchaseValue": "قيمة المشتريات"
     },
     "form": {
+      "paySupplier": "دفع للمورد",
+      "amount": "المبلغ",
+      "notes": "ملاحظات",
+      "notesPlaceholder": "مرجع اختياري...",
+      "confirmPayment": "تأكيد الدفع",
       "createTitle": "إضافة مورد جديد",
       "editTitle": "تعديل المورد",
       "name": "اسم المورد",
@@ -2934,7 +2940,10 @@
       "create": "إضافة",
       "update": "تحديث",
       "saving": "جاري الحفظ...",
-      "save": "تأكيد"
+      "save": "تأكيد",
+      "balance": "الرصيد",
+      "commission": "العمولة",
+      "totalDeducted": "إجمالي المبلغ المخصوم من الخزنة"
     },
     "validation": {
       "nameRequired": "اسم المورد مطلوب",
@@ -2944,11 +2953,15 @@
       "phoneInvalid": "رقم الهاتف غير صحيح",
       "emailInvalid": "البريد الإلكتروني غير صحيح",
       "emailMax": "البريد الإلكتروني يجب أن لا يتجاوز 100 حرف",
-      "categoryRequired": "يجب اختيار فئة واحدة على الأقل"
+      "categoryRequired": "يجب اختيار فئة واحدة على الأقل",
+      "required": "هذا الحقل مطلوب",
+      "minAmount": "يجب أن يكون المبلغ أكبر من صفر",
+      "exceedsBalance": "المبلغ يتجاوز الرصيد الآمن. يتم تعديله تلقائياً."
     },
     "messages": {
       "created": "تم إنشاء المورد بنجاح",
-      "updated": "تم تحديث المورد بنجاح"
+      "updated": "تم تحديث المورد بنجاح",
+      "paymentSuccessful": "تم تسجيل الدفع بنجاح"
     },
     "view": {
       "title": "تفاصيل المورد",
@@ -2961,6 +2974,12 @@
       "dueBalance": "الرصيد المستحق",
       "createdAt": "تاريخ الإنشاء",
       "close": "إغلاق"
+    },
+    "fields": {
+      "safe": "الدفع من الخزنة/الحساب"
+    },
+    "placeholders": {
+      "safe": "اختر الحساب"
     },
     "delete": {
       "title": "تأكيد الحذف",

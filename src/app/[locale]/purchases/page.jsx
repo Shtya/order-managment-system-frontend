@@ -23,6 +23,7 @@ import {
 	Plus,
 	Info,
 	FileDown,
+	Wallet,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/navigation";
@@ -1453,6 +1454,18 @@ export default function PurchasesPage() {
 						{formatCurrency(row.remainingAmount || 0)}
 					</span>
 				),
+			},
+			{
+				key: "safe",
+				header: t("manualExpenses.columns.safe") || "Safe",
+				cell: (row) => (
+					<div className="flex items-center gap-2">
+						<div className="w-7 h-7 rounded-lg flex items-center justify-center bg-blue-50 text-blue-500">
+							<Wallet size={14} />
+						</div>
+						<span className="text-xs font-bold">{row.safe?.name || t("common.none")}</span>
+					</div>
+				)
 			},
 			{
 				key: "receiptAsset",

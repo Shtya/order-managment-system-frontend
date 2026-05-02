@@ -3857,7 +3857,8 @@
     },
     "common": {
       "total": "Total",
-      "limit": "Results per page"
+      "limit": "Results per page",
+      "none": "None"
     },
     "toolbar": {
       "searchPlaceholder": "Search purchases...",
@@ -3999,7 +4000,12 @@
       "exportFailed": "Export failed"
     },
     "empty": "No purchase invoices found",
-    "currency": "EGP"
+    "currency": "EGP",
+    "manualExpenses": {
+      "columns": {
+        "safe": "Safe"
+      }
+    }
   },
   "purchasesReturn": {
     "breadcrumb": {
@@ -4010,7 +4016,8 @@
       "total": "Total",
       "limit": "Limit",
       "save": "Save",
-      "notSpecified": "Not Specified"
+      "notSpecified": "Not Specified",
+      "none": "None"
     },
     "actions": {
       "createReturn": "Create New Return",
@@ -4185,6 +4192,11 @@
       "rejectWarning": "Are you sure you want to reject this return?",
       "suspendTitle": "Suspend Return",
       "suspendWarning": "This will move the return back to pending status. Are you sure?"
+    },
+    "manualExpenses": {
+      "columns": {
+        "safe": "Safe"
+      }
     }
   },
   "purchaseInvoice": {

@@ -83,47 +83,91 @@ reviews:
             suggestion: ''
             type: approve
             time: '2026-04-28T12:44:33.123Z'
-  purchaseInvoice.messages.loadDataFailed:
+  purchases.manualExpenses.columns.safe:
     locales:
       en:
         comments:
           - user:
               name: amagdykhalil
               email: am2592379@gmail.com
-            id: IDvrQsRTjzR3PaARL5p-Z
+            id: CafdLCNHVZ1-iWpiRhspq
             comment: ''
             suggestion: ''
             type: approve
-            time: '2026-05-02T12:52:42.233Z'
+            time: '2026-05-02T13:25:30.098Z'
       ar:
         comments:
           - user:
               name: amagdykhalil
               email: am2592379@gmail.com
-            id: k_G_jgYEI0RVM3w5el4ZO
+            id: 5dkm1qD41yiZAE0C6yv76
             comment: ''
             suggestion: ''
             type: approve
-            time: '2026-05-02T12:52:44.432Z'
-  returnInvoice.messages.loadDataFailed:
+            time: '2026-05-02T13:25:32.308Z'
+  purchasesReturn.manualExpenses.columns.safe:
     locales:
       en:
         comments:
           - user:
               name: amagdykhalil
               email: am2592379@gmail.com
-            id: sFlqTRrUEUUdi-zTrnaZA
+            id: fDP12c-mnVcoKOJGVJn8e
             comment: ''
             suggestion: ''
             type: approve
-            time: '2026-05-02T12:53:57.570Z'
+            time: '2026-05-02T13:25:50.961Z'
       ar:
         comments:
           - user:
               name: amagdykhalil
               email: am2592379@gmail.com
-            id: 3blx484DFxRUn33u6n0yq
+            id: nyguyJd4Bn65MBZaCK-dn
             comment: ''
             suggestion: ''
             type: approve
-            time: '2026-05-02T12:54:00.338Z'
+            time: '2026-05-02T13:25:53.297Z'
+  purchases.common.none:
+    locales:
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: pWz6NQBHYArnH8xmESVLe
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-05-02T13:26:31.833Z'
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: ii8-4MdkKMOlJs3tctSeW
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-05-02T13:26:34.226Z'
+  purchasesReturn.common.none:
+    locales:
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: qsTrVOFAt1a_ycCKt-0Yo
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-05-02T13:26:51.297Z'
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: bCE3rOPfCv0Gvxdi9ne9b
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-05-02T13:26:53.497Z'

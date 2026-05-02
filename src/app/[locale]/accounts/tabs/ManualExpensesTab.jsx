@@ -59,6 +59,7 @@ import {
 import { ActionButtons } from "@/components/atoms/Actions";
 import api from "@/utils/api";
 import SafeSelect from "@/components/molecules/SafeSelect";
+import SafeAmountPreviewCard from "@/components/molecules/SafeAmountPreviewCard";
 import { useExport } from "@/hook/useExport";
 import toast from "react-hot-toast";
 import { useForm, Controller } from "react-hook-form";
@@ -67,6 +68,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import { useDebounce } from "@/hook/useDebounce";
+import { useSafeAmountWithCommission } from "@/hook/useSafeAmountWithCommission";
 
 // Category configuration
 export const CATEGORY_CONFIG = {
@@ -103,6 +105,7 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
   const t = useTranslations("accounts");
   const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(false);
+  const [safes, setSafes] = useState([]);
 
   const schema = useMemo(() => createManualExpenseSchema(t), [t]);
 
@@ -119,7 +122,7 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
     }
     return {
       amount: "",
-      collectionDate: new Date(),
+      collectionDate: new Date().toLocaleDateString(),
       categoryId: "none",
       safeId: "none",
       description: "",
@@ -140,6 +143,16 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
   });
 
   const attachment = watch("attachment");
+  const safeId = watch("safeId");
+  const amountValue = watch("amount");
+  const { selectedAccount: selectedSafe, commissionAmount, finalAmount } = useSafeAmountWithCommission({
+    safeId,
+    accounts: safes,
+    amount: amountValue,
+    direction: "OUT",
+    onSetValue: setValue,
+    amountField: "amount",
+  });
 
 
   useEffect(() => {
@@ -306,8 +319,20 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
               error={errors.safeId?.message}
               label={t("manualExpenses.form.safe") || "Safe"}
               required
+              onFetchSafes={(allSafes) => {
+                setSafes(Array.isArray(allSafes) ? allSafes : []);
+              }}
             />
           </div>
+
+          <SafeAmountPreviewCard
+            account={selectedSafe}
+            amount={finalAmount}
+            commissionAmount={commissionAmount}
+            commissionRateLabel={t("safes.accounts.commissionRate")}
+            amountLabel={t("safes.transactions.amountToWithdraw")}
+            direction="OUT"
+          />
 
           {/* Description */}
           <div className="space-y-2">

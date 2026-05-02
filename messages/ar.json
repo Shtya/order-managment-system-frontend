@@ -8521,7 +8521,7 @@
       "selectYear": "إختر العام",
       "datePlaceholder": "إختر التاريخ",
       "all": "الكل",
-      "selectDateRange": "إختر ال"
+      "selectDateRange": "إختر الفترة الزمنية"
     },
     "toolbar": {
       "searchPlaceholder": "بحث...",
@@ -8865,5 +8865,8 @@
   },
   "status": {
     "delivered": "تاريخ التسليم"
+  },
+  "safes": {
+    "afterCommission": "بعد حساب العمولة"
   }
 }

@@ -49,6 +49,8 @@ import Flatpickr from "react-flatpickr";
 import PageHeader from "@/components/atoms/Pageheader";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import SafeSelect from "@/components/molecules/SafeSelect";
+import SafeAmountPreviewCard from "@/components/molecules/SafeAmountPreviewCard";
+import { useSafeAmountWithCommission } from "@/hook/useSafeAmountWithCommission";
 import { useLocale } from "next-intl";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 
@@ -410,6 +412,7 @@ function OrderHeroCard({ order, t }) {
 export default function CollectOrderPage() {
   const tCollect = useTranslations("orderCollection");
   const t = useTranslations("collectOrder");
+  const tAccounts = useTranslations("accounts");
   const router = useRouter();
   const params = useParams();
   const orderId = params?.orderId;
@@ -418,6 +421,7 @@ export default function CollectOrderPage() {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [order, setOrder] = useState(null);
+  const [safes, setSafes] = useState([]);
 
   const schema = yup.object({
     shippingCompanyId: yup.string().optional().nullable(),
@@ -449,7 +453,17 @@ export default function CollectOrderPage() {
     },
   });
 
+  const watchedSafeId = watch("safeId");
   const watchedAmount = watch("amount");
+
+  const { selectedAccount: selectedSafe, commissionAmount } = useSafeAmountWithCommission({
+    safeId: watchedSafeId,
+    accounts: safes,
+    amount: watchedAmount,
+    direction: "IN",
+    onSetValue: setValue,
+    amountField: "amount",
+  });
 
   useEffect(() => {
     if (!orderId) {
@@ -667,6 +681,18 @@ export default function CollectOrderPage() {
                   error={errors.safeId?.message}
                   label={t("fields.safe") || "Safe"}
                   required
+                  onFetchSafes={(allSafes) => {
+                    setSafes(Array.isArray(allSafes) ? allSafes : []);
+                  }}
+                />
+
+                <SafeAmountPreviewCard
+                  account={selectedSafe}
+                  amount={Number(watchedAmount) || 0}
+                  commissionAmount={commissionAmount}
+                  commissionRateLabel={tAccounts("safes.accounts.commissionRate")}
+                  amountLabel={tAccounts("safes.transactions.amountToDeposit")}
+                  direction="IN"
                 />
 
                 {/* Shipping company + Collection date */}

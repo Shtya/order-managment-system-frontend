@@ -41,10 +41,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, ArrowRight } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useDebounce } from "@/hook/useDebounce";
+import { useSafeAmountWithCommission } from "@/hook/useSafeAmountWithCommission";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import AccountIcon from "@/components/atoms/AccountIcon";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
+import SafeAmountPreviewCard from "@/components/molecules/SafeAmountPreviewCard";
 
 const TX_REFERENCE_TYPES = [
     "MANUAL_ADD",
@@ -635,7 +637,15 @@ export default function SafesTab({ onRefresh }) {
                             {
                                 header: "",
                                 key: "arrow",
-                                cell: () => <ArrowRight size={14} className="text-gray-400" />
+                                cell: (row) => (
+                                    //from inTransactionId?.currency
+                                    <div className="flex items-center gap-2">   
+                                    <span className="text-[10px] ml-1 opacity-70 uppercase">{row.inTransaction?.currency}</span>
+                                    <ArrowRight size={14} className="text-gray-400 rtl:scale-[-1]" />
+                                    <span className="text-[10px] ml-1 opacity-70 uppercase">{row.outTransaction?.currency}</span>
+                                    </div>
+                                )
+                            
                             },
                             {
                                 header: t("safes.transfers.to"),
@@ -661,7 +671,7 @@ export default function SafesTab({ onRefresh }) {
                                 key: "commission",
                                 cell: (row) => (
                                     <span className="text-xs font-medium tabular-nums text-rose-500">
-                                        {row.commission > 0 ? `-${row.commission?.toLocaleString()}` : "-"}
+                                        {row.commission > 0 ? `-${row.commission?.toLocaleString()} ${row?.outTransaction?.currency || ""}` : "-"}
                                     </span>
                                 )
                             },
@@ -1105,32 +1115,14 @@ function TransactionModal({ open, onOpenChange, direction, initialAccountId, acc
 
     const selectedAccountId = watch("accountId");
     const amountValue = watch("amount");
-    const selectedAccount = useMemo(() => accounts.find(a => a.id === selectedAccountId), [selectedAccountId, accounts]);
-
-    const commissionAmount = useMemo(() => {
-        if (!selectedAccount || !selectedAccount.commissionRate || direction !== 'OUT') return 0;
-        return (Number(amountValue) * (selectedAccount.commissionRate / 100));
-    }, [selectedAccount, amountValue, direction]);
-
-    const finalAmount = useMemo(() => {
-        return Number(amountValue) + commissionAmount;
-    }, [amountValue, commissionAmount]);
-
-    useEffect(() => {
-        if (
-            direction === 'OUT' &&
-            selectedAccount
-        ) {
-            const maxAllowedAmount =
-                Number(selectedAccount.currentBalance) - Number(commissionAmount);
-
-            if (Number(amountValue) + Number(commissionAmount) > Number(selectedAccount.currentBalance)) {
-                setValue("amount", Math.max(0, maxAllowedAmount), {
-                    shouldValidate: true,
-                });
-            }
-        }
-    }, [amountValue, commissionAmount, selectedAccount, direction, setValue]);
+    const { selectedAccount, commissionAmount, finalAmount } = useSafeAmountWithCommission({
+        safeId: selectedAccountId,
+        accounts,
+        amount: amountValue,
+        direction,
+        onSetValue: setValue,
+        amountField: "amount",
+    });
 
     useEffect(() => {
         if (open) {
@@ -1160,57 +1152,14 @@ function TransactionModal({ open, onOpenChange, direction, initialAccountId, acc
             <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader><DialogTitle >{direction === 'IN' ? t("safes.transactions.deposit") : t("safes.transactions.withdraw")}</DialogTitle></DialogHeader>
 
-                {selectedAccount && (
-                    <div className="bg-gray-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 flex items-center justify-between">
-
-                        {/* Left Section (Icon + Name + Balance) */}
-                        <div className="flex items-center gap-3">
-                            {/* Icon */}
-                            <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
-                                <AccountIcon type={selectedAccount?.type} size={24} />
-                            </div>
-
-                            {/* Name + Balance */}
-                            <div className="flex flex-col">
-                                <span className="text-sm font-bold truncate">
-                                    {selectedAccount.name}
-                                </span>
-                                <span className="text-xs text-primary font-black">
-                                    {selectedAccount.currentBalance?.toLocaleString()} {selectedAccount.currency}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Right Section (Commission) */}
-                        <div className="flex flex-col items-end text-right">
-                            <span className="text-[10px] text-gray-500 uppercase font-bold">
-                                {t("safes.accounts.commissionRate")}
-                            </span>
-                            <span className="text-sm font-bold text-rose-500">
-                                %{selectedAccount.commissionRate || 0}
-                            </span>
-
-                            {direction === 'OUT' && commissionAmount > 0 && (
-                                <span className="text-xs text-rose-500 font-bold">
-                                    -{commissionAmount.toLocaleString()} {selectedAccount.currency}
-                                </span>
-                            )}
-                        </div>
-
-                    </div>
-                )}
-
-                {/* Preview Box from HTML design */}
-                <div className={`p-4 rounded-xl border-2 text-center mb-2 ${direction === 'IN' ? 'border-teal-500/30 bg-teal-500/5' : 'border-red-500/30 bg-red-500/5'}`}>
-                    <div className={`text-3xl font-black font-mono ${direction === 'IN' ? 'text-teal-500' : 'text-red-500'}`}>
-                        {Number(finalAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        <span className="text-xs ml-1 opacity-70 uppercase">{selectedAccount?.currency}</span>
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1 uppercase tracking-wider font-bold">
-                        {direction === 'IN' ? t("safes.transactions.amountToDeposit") : t("safes.transactions.amountToWithdraw")}
-                        {direction === 'OUT' && commissionAmount > 0 && <span className="block text-[10px] text-rose-400 mt-0.5 lowercase">(after commission)</span>}
-                    </div>
-                </div>
+                <SafeAmountPreviewCard
+                    account={selectedAccount}
+                    amount={Number(amountValue)}
+                    commissionAmount={commissionAmount}
+                    commissionRateLabel={t("safes.accounts.commissionRate")}
+                    amountLabel={direction === 'IN' ? t("safes.transactions.amountToDeposit") : t("safes.transactions.amountToWithdraw")}
+                    direction={direction}
+                />
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
                     <Field label={t("safes.transactions.account")} error={errors.accountId?.message} required>

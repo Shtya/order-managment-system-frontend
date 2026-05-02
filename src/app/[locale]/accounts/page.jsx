@@ -4,7 +4,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useSearchParams, useRouter } from "next/navigation";
 import PageHeader from "@/components/atoms/Pageheader";
-import { Info, BarChart2, DollarSign, Wallet, CheckCircle, Plus, Building2, TrendingUp, Calendar, Package, Settings, RefreshCw } from "lucide-react";
+import { Info, BarChart2, DollarSign, Wallet, CheckCircle, Plus, Building2, TrendingUp, Calendar, Package, Settings, RefreshCw, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import Button_ from "@/components/atoms/Button";
 import api from "@/utils/api";
 import Flatpickr from "react-flatpickr";
@@ -16,6 +16,7 @@ import ManualExpensesTab, { ManualExpenseFormModal, DeleteManualExpenseAlert, CA
 import CityDeliveriesTab from "./tabs/CityDeliveriesTab";
 import SupplierAccountsTab from "./tabs/SupplierAccountsTab";
 import MonthClosingTab from "./tabs/MonthClosingTab";
+import SafesTab from "./tabs/SafesTab";
 import toast from "react-hot-toast";
 
 export default function Accounts() {
@@ -67,8 +68,8 @@ export default function Accounts() {
 
     useEffect(() => {
         const fetchStats = async () => {
-            // Add monthClosing to the condition
-            if (["overview", "monthlyExpenses", "cityDeliveries", "supplierAccounts", "monthClosing"].includes(activeTab)) {
+            // Add monthClosing and safes to the condition
+            if (["overview", "monthlyExpenses", "cityDeliveries", "supplierAccounts", "monthClosing", "safes"].includes(activeTab)) {
                 setLoadingStats(true);
                 try {
                     let endpoint = "/accounting/stats";
@@ -82,6 +83,9 @@ export default function Accounts() {
                         params = {};
                     } else if (activeTab === "monthClosing") {
                         endpoint = "/monthly-closings/stats";
+                        params = {};
+                    } else if (activeTab === "safes") {
+                        endpoint = "/safes/stats";
                         params = {};
                     }
 
@@ -129,6 +133,7 @@ export default function Accounts() {
         // { id: "employeePerformance", label: t("tabs.employeePerformance") },
         { id: "supplierAccounts", label: t("tabs.supplierAccounts") },
         { id: "monthClosing", label: t("tabs.monthClosing") },
+        { id: "safes", label: t("tabs.safes") },
     ], [t]);
 
     // Mock stats based on active tab
@@ -199,6 +204,15 @@ export default function Accounts() {
             ];
         }
 
+        if (activeTab === "safes") {
+            return [
+                { name: t("safes.stats.totalBalance"), value: stats?.totalBalance?.toLocaleString() || "0", icon: Wallet, color: "#8b5cf6" },
+                { name: t("safes.stats.totalIn"), value: stats?.totalIn?.toLocaleString() || "0", icon: ArrowUpRight, color: "#10b981" },
+                { name: t("safes.stats.totalOut"), value: stats?.totalOut?.toLocaleString() || "0", icon: ArrowDownLeft, color: "#ef4444" },
+                { name: t("safes.stats.accountsCount"), value: stats?.accountsCount || "0", icon: Building2, color: "#3b82f6" },
+            ];
+        }
+
         switch (activeTab) {
             default:
                 return [];
@@ -227,6 +241,8 @@ export default function Accounts() {
                 return <SupplierAccountsTab onRefresh={refreshStats} />;
             case "monthClosing":
                 return <MonthClosingTab onRefresh={refreshStats} />;
+            case "safes":
+                return <SafesTab onRefresh={refreshStats} />;
             default:
                 return <OverviewTab onRefresh={refreshStats} />;
         }

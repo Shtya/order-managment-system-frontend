@@ -8266,7 +8266,142 @@
       "cityDeliveries": "City Deliveries",
       "employeePerformance": "Employee Performance",
       "supplierAccounts": "Supplier Accounts",
-      "monthClosing": "Month Closing"
+      "monthClosing": "Month Closing",
+      "safes": "Treasury & Safes"
+    },
+    "safes": {
+      "title": "Treasury & Safes",
+      "tabs": {
+        "accounts": "Accounts",
+        "transactions": "Transactions",
+        "transfers": "Transfers"
+      },
+      "stats": {
+        "totalBalance": "Total Balance",
+        "totalIn": "Total Inflow",
+        "totalOut": "Total Outflow",
+        "accountsCount": "Active Accounts"
+      },
+      "accounts": {
+        "add": "Add Account",
+        "edit": "Edit Account",
+        "name": "Account Name",
+        "type": "Type",
+        "balance": "Balance",
+        "currency": "Currency",
+        "status": "Status",
+        "actions": "Actions",
+        "bankName": "Bank Name",
+        "accountOwnerName": "Account Owner Name",
+        "accountNumber": "Account / Wallet Number",
+        "iban": "IBAN",
+        "managedBy": "Managed By (Employee)",
+        "initialBalance": "Initial Balance",
+        "selectCurrency": "Select Currency",
+        "types": {
+          "CASH": "Cash / Safe",
+          "BANK": "Bank Account",
+          "WALLET": "Digital Wallet",
+          "EMPLOYEE_CUSTODY": "Employee Custody",
+          "OTHER": "Other"
+        },
+        "validation": {
+          "nameRequired": "Account name is required",
+          "typeRequired": "Account type is required",
+          "currencyRequired": "Currency is required",
+          "managedByRequired": "Responsible employee is required",
+          "bankNameRequired": "Bank name is required",
+          "accountOwnerNameRequired": "Account owner name is required",
+          "accountNumberRequired": "Account number is required"
+        },
+        "activeAccounts": "Active accounts",
+        "noOwner": "There is no owner",
+        "searchPlaceholder": "Search...",
+        "activate": "Activate",
+        "deactivate": "Deactivate",
+        "activateTitle": "Activate Account",
+        "activateDesc": "Are you sure you want to activate this account? It will be available for financial transactions again.",
+        "deactivateTitle": "Deactivate Account",
+        "deactivateDesc": "Are you sure you want to deactivate this account? It will no longer be available for transactions.",
+        "commissionRate": "Commission Rate"
+      },
+      "transactions": {
+        "deposit": "Deposit Money",
+        "withdraw": "Withdraw Money",
+        "number": "TRX #",
+        "date": "Date",
+        "account": "Account",
+        "direction": "Direction",
+        "amount": "Amount",
+        "type": "Type",
+        "counterparty": "Counterparty",
+        "notes": "Notes",
+        "referenceType": "Transaction Type",
+        "directions": {
+          "IN": "In",
+          "OUT": "Out"
+        },
+        "types": {
+          "MANUAL_ADD": "Manual Balance Addition",
+          "SHIPPING_COLLECTION": "Shipping Collection",
+          "CUSTOMER_COLLECTION": "Customer Collection",
+          "PURCHASE_RETURN": "Purchase Return",
+          "TRANSFER_IN": "Transfer In",
+          "DEPOSIT": "Deposit",
+          "EXPENSE_REFUND": "Expense Refund",
+          "OTHER_IN": "Other Inflow",
+          "PURCHASE_PAYMENT": "Purchase Payment",
+          "OPERATING_EXPENSE": "Operating Expense",
+          "CASH_WITHDRAWAL": "Cash Withdrawal",
+          "TRANSFER_OUT": "Transfer Out",
+          "VENDOR_PAYMENT": "Vendor Payment",
+          "BANK_FEE": "Bank Fee",
+          "OTHER_OUT": "Other Outflow"
+        },
+        "validation": {
+          "accountRequired": "Account is required",
+          "amountRequired": "Amount is required",
+          "amountPositive": "Amount must be greater than zero",
+          "dateRequired": "Date is required",
+          "typeRequired": "Transaction type is required",
+          "insufficientBalance": "Amount exceeds current account balance"
+        },
+        "amountToDeposit": "Amount to Deposit",
+        "amountToWithdraw": "Amount to Withdraw",
+        "searchPlaceholder": "Search transactions..."
+      },
+      "transfers": {
+        "new": "New Transfer",
+        "from": "From Account",
+        "to": "To Account",
+        "amount": "Transfer Amount",
+        "commission": "Commission / Fees",
+        "amountToTransfer": "Amount to Transfer",
+        "date": "Date",
+        "notes": "Notes",
+        "success": "Transfer completed successfully",
+        "validation": {
+          "fromAccountRequired": "Source account is required",
+          "toAccountRequired": "Destination account is required",
+          "amountRequired": "Transfer amount is required",
+          "amountPositive": "Amount must be greater than zero",
+          "insufficientBalance": "Amount plus commission exceeds source account balance",
+          "sameAccount": "Cannot transfer to the same account"
+        },
+        "searchPlaceholder": "Search transfers..."
+      },
+      "messages": {
+        "accountCreated": "Account created successfully",
+        "accountUpdated": "Account updated successfully",
+        "accountToggled": "Account status updated",
+        "depositSuccess": "Deposit recorded successfully",
+        "withdrawSuccess": "Withdrawal recorded successfully",
+        "transferSuccess": "Transfer completed successfully",
+        "insufficientBalance": "Insufficient balance in source account",
+        "fetchError": "Error fetching data",
+        "accountDeactivated": "Account has been deactivated successfully.",
+        "accountActivated": "Account has been activated successfully."
+      }
     },
     "stats": {
       "totalExpenses": "Total Expenses",
@@ -8297,7 +8432,8 @@
     "common": {
       "cancel": "Cancel",
       "none": "None",
-      "all": "All"
+      "all": "All",
+      "close": "Close"
     },
     "filters": {
       "supplier": "Supplier",

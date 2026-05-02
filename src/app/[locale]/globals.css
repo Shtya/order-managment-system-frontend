@@ -936,6 +936,9 @@ select:focus-visible {
   box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08) !important;
 }
 
+.flatpickr-wrapper {
+  @apply !w-full;
+}
 .flatpickr-calendar,
 .flatpickr-innerContainer {
   @apply !bg-popover/95 !backdrop-blur-sm !rounded-xl !transition-all !duration-300;

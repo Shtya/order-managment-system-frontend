@@ -105,3 +105,25 @@ reviews:
             suggestion: ''
             type: approve
             time: '2026-05-01T00:12:22.811Z'
+  accounts.stats.returns:
+    locales:
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: oGeCrcDA9oIvsAAJme_BH
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-05-02T04:11:52.988Z'
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: zgakwvQyaO292ra-TO8Qp
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-05-02T04:11:57.009Z'

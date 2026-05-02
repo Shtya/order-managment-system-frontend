@@ -16,7 +16,6 @@ import ManualExpensesTab, { ManualExpenseFormModal, DeleteManualExpenseAlert, CA
 import CityDeliveriesTab from "./tabs/CityDeliveriesTab";
 import SupplierAccountsTab from "./tabs/SupplierAccountsTab";
 import MonthClosingTab from "./tabs/MonthClosingTab";
-import { FilterField } from "@/components/atoms/Table";
 import toast from "react-hot-toast";
 
 export default function Accounts() {
@@ -36,6 +35,9 @@ export default function Accounts() {
     // Stats and Filters state
     const [stats, setStats] = useState(null);
     const [loadingStats, setLoadingStats] = useState(false);
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    const refreshStats = () => setRefreshKey(prev => prev + 1);
 
     // Default dates: this month
     const now = new Date();
@@ -43,8 +45,8 @@ export default function Accounts() {
     const endOfMonth = new Date();
 
     const [filters, setFilters] = useState({
-        startDate: startOfMonth,
-        endDate: endOfMonth,
+        startDate: null,
+        endDate: null,
     });
 
     const fetchCategories = async () => {
@@ -94,7 +96,7 @@ export default function Accounts() {
         };
 
         fetchStats();
-    }, [activeTab, filters]);
+    }, [activeTab, filters, refreshKey]);
 
     const handleTabChange = (tabId) => {
         const params = new URLSearchParams(searchParams);
@@ -207,7 +209,7 @@ export default function Accounts() {
     const renderTabContent = () => {
         switch (activeTab) {
             case "overview":
-                return <OverviewTab stats={stats} loadingStats={loadingStats} mainFilters={filters} onFiltersChange={setFilters} />;
+                return <OverviewTab stats={stats} loadingStats={loadingStats} mainFilters={filters} onFiltersChange={setFilters} onRefresh={refreshStats} />;
             case "monthlyExpenses":
                 return <MonthlyExpensesTab />;
             case "manualExpenses":
@@ -222,11 +224,11 @@ export default function Accounts() {
             // case "employeePerformance":
             //     return <EmployeePerformanceTab />;
             case "supplierAccounts":
-                return <SupplierAccountsTab />;
+                return <SupplierAccountsTab onRefresh={refreshStats} />;
             case "monthClosing":
-                return <MonthClosingTab />;
+                return <MonthClosingTab onRefresh={refreshStats} />;
             default:
-                return <OverviewTab />;
+                return <OverviewTab onRefresh={refreshStats} />;
         }
     };
 

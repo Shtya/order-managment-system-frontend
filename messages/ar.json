@@ -8519,10 +8519,13 @@
       "apply": "تطبيق",
       "year": "العام",
       "selectYear": "إختر العام",
-      "datePlaceholder": "إختر التاريخ"
+      "datePlaceholder": "إختر التاريخ",
+      "all": "الكل",
+      "selectDateRange": "إختر ال"
     },
     "toolbar": {
-      "searchPlaceholder": "بحث..."
+      "searchPlaceholder": "بحث...",
+      "filter": "فلتر"
     },
     "overview": {
       "viewOperetionalExpenses": "عرض المصروفات التشغيلية",
@@ -8862,5 +8865,8 @@
   },
   "status": {
     "delivered": "تاريخ التسليم"
+  }
+}
+م"
   }
 }

@@ -83,113 +83,47 @@ reviews:
             suggestion: ''
             type: approve
             time: '2026-04-28T12:44:33.123Z'
-  accounts.safes.transactions.searchPlaceholder:
+  accounts.confirm:
     locales:
       en:
         comments:
           - user:
               name: amagdykhalil
               email: am2592379@gmail.com
-            id: 5VZ6EnbIHTbzFT8MRyQ51
+            id: Qmvzgz1DsGXUVuZHj54ws
             comment: ''
             suggestion: ''
             type: approve
-            time: '2026-05-02T08:54:18.561Z'
+            time: '2026-05-02T11:03:31.048Z'
       ar:
         comments:
           - user:
               name: amagdykhalil
               email: am2592379@gmail.com
-            id: bITAQqDnu3xcWzQx57CnN
+            id: HYMhJVNUkXTGkDAZ2k87K
             comment: ''
             suggestion: ''
             type: approve
-            time: '2026-05-02T08:54:23.239Z'
-  accounts.safes.accounts.searchPlaceholder:
+            time: '2026-05-02T11:03:32.791Z'
+  accounts.transfer:
     locales:
       en:
         comments:
           - user:
               name: amagdykhalil
               email: am2592379@gmail.com
-            id: W3rGJRBNr-fRG8xGClPvz
+            id: DHzG-n0cGrp8kytrBiRPt
             comment: ''
             suggestion: ''
             type: approve
-            time: '2026-05-02T08:56:47.446Z'
+            time: '2026-05-02T11:04:54.385Z'
       ar:
         comments:
           - user:
               name: amagdykhalil
               email: am2592379@gmail.com
-            id: Qp8MgF2Cb8yeepPvsvcb3
+            id: IRb7N_aHVzSfjCndm58Rk
             comment: ''
             suggestion: ''
             type: approve
-            time: '2026-05-02T08:56:49.596Z'
-  accounts.safes.transfers.searchPlaceholder:
-    locales:
-      en:
-        comments:
-          - user:
-              name: amagdykhalil
-              email: am2592379@gmail.com
-            id: 54rlkoIK8Pic4DyzUhb0B
-            comment: ''
-            suggestion: ''
-            type: approve
-            time: '2026-05-02T08:57:42.741Z'
-      ar:
-        comments:
-          - user:
-              name: amagdykhalil
-              email: am2592379@gmail.com
-            id: ZlVQ5v8QnIZg2RFJyPOue
-            comment: ''
-            suggestion: ''
-            type: approve
-            time: '2026-05-02T08:57:46.821Z'
-  accounts.safes.messages.accountDeactivated:
-    locales:
-      en:
-        comments:
-          - user:
-              name: amagdykhalil
-              email: am2592379@gmail.com
-            id: 4NNebu943LORdaBgm1Hb5
-            comment: ''
-            suggestion: ''
-            type: approve
-            time: '2026-05-02T08:58:50.550Z'
-      ar:
-        comments:
-          - user:
-              name: amagdykhalil
-              email: am2592379@gmail.com
-            id: a0qwho0Do0k1NGOcWZ4WF
-            comment: ''
-            suggestion: ''
-            type: approve
-            time: '2026-05-02T08:58:52.630Z'
-  accounts.safes.messages.accountActivated:
-    locales:
-      en:
-        comments:
-          - user:
-              name: amagdykhalil
-              email: am2592379@gmail.com
-            id: PvxG8FTDll1ZVnHmVykZs
-            comment: ''
-            suggestion: ''
-            type: approve
-            time: '2026-05-02T08:59:20.382Z'
-      ar:
-        comments:
-          - user:
-              name: amagdykhalil
-              email: am2592379@gmail.com
-            id: kxOMJ0eymZNc1pyKcP9WW
-            comment: ''
-            suggestion: ''
-            type: approve
-            time: '2026-05-02T08:59:22.903Z'
+            time: '2026-05-02T11:04:56.416Z'

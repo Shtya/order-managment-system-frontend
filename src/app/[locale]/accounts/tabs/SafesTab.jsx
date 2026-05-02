@@ -1092,7 +1092,7 @@ function TransactionModal({ open, onOpenChange, direction, initialAccountId, acc
                     <Field label={t("safes.transactions.notes")} error={errors.notes?.message}><Textarea {...register("notes")} /></Field>
                     <DialogFooter>
                         <Button_ type="button" variant="outline" onClick={() => onOpenChange(false)} label={t("common.cancel") || "Cancel"} />
-                        <Button_ type="submit" disabled={loading || (direction === 'OUT' && (Number(amountValue) <= 0 || (selectedAccount && Number(amountValue) > Number(selectedAccount.currentBalance))))} label={loading ? <Loader2 className="animate-spin" size={18} /> : "Confirm"} className={direction === 'IN' ? 'bg-teal-500 hover:bg-teal-600 text-white' : 'bg-red-500 hover:bg-red-600 text-white'} />
+                        <Button_ type="submit" disabled={loading || (direction === 'OUT' && (Number(amountValue) <= 0 || (selectedAccount && Number(amountValue) > Number(selectedAccount.currentBalance))))} label={loading ? <Loader2 className="animate-spin" size={18} /> : t('confirm')} className={direction === 'IN' ? 'bg-teal-500 hover:bg-teal-600 text-white' : 'bg-red-500 hover:bg-red-600 text-white'} />
                     </DialogFooter>
                 </form>
             </DialogContent>
@@ -1230,7 +1230,7 @@ function TransferModal({ open, onOpenChange, accounts, onSave }) {
                     </Field>
                     <Field label={t("safes.transfers.notes")} error={errors.notes?.message}><Textarea {...register("notes")} /></Field>
                     <DialogFooter>
-                        <Button_ type="submit" disabled={loading || Number(amountValue) <= 0 || toAccountId === fromAccountId} label={loading ? <Loader2 className="animate-spin" size={18} /> : "Transfer"} className="bg-teal-500 hover:bg-teal-600 text-white w-full" />
+                        <Button_ type="submit" disabled={loading || Number(amountValue) <= 0 || toAccountId === fromAccountId} label={loading ? <Loader2 className="animate-spin" size={18} /> : t('transfer')} className="bg-teal-500 hover:bg-teal-600 text-white w-full" />
 
                     </DialogFooter>
                 </form>

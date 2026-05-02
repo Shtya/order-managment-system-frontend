@@ -36,7 +36,7 @@ import api from "@/utils/api";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 
-export default function OverviewTab({ stats, loadingStats, mainFilters, onFiltersChange }) {
+export default function OverviewTab({ stats, loadingStats, mainFilters, onFiltersChange, onRefresh }) {
   const [filters, setFilters] = useState({
     startDate: mainFilters?.startDate || null,
     endDate: mainFilters?.endDate || null,
@@ -76,7 +76,6 @@ export default function OverviewTab({ stats, loadingStats, mainFilters, onFilter
   //   fetchLookups();
   // }, []);
   useEffect(() => {
-    onFiltersChange(filters);
     fetchAccountingData();
   }, []);
 
@@ -103,6 +102,7 @@ export default function OverviewTab({ stats, loadingStats, mainFilters, onFilter
   };
 
   const [loadingClosingPreview, setLoadingClosingPreview] = useState(false);
+
   useEffect(() => {
     const fetchClosingPreview = async () => {
       try {
@@ -125,7 +125,13 @@ export default function OverviewTab({ stats, loadingStats, mainFilters, onFilter
   }, [closingMonth]);
 
   const handleApplyFilters = () => {
+    onFiltersChange(filters);
     fetchAccountingData();
+    onRefresh?.();
+  };
+
+  const handleRefresh = () => {
+    handleApplyFilters();
   };
 
   // Combine and sort last expenses
@@ -203,7 +209,7 @@ export default function OverviewTab({ stats, loadingStats, mainFilters, onFilter
       {/* Filters */}
       <TableFilters
         onApply={handleApplyFilters}
-        onRefresh={handleApplyFilters}
+        onRefresh={handleRefresh}
         applyLabel={t("filters.apply")}
       >
         <DateRangePicker

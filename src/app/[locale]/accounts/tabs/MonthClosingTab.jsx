@@ -37,7 +37,7 @@ import { useDebounce } from "@/hook/useDebounce";
 import { useExport } from "@/hook/useExport";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
-export default function MonthClosingTab() {
+export default function MonthClosingTab({ onRefresh }) {
   const tCommon = useTranslations("common");
   const t = useTranslations("accounts.monthClosing");
   const { formatCurrency } = usePlatformSettings();

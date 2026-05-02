@@ -48,9 +48,10 @@ import { baseImg } from '@/utils/axios';
 import { useAutoTranslate } from '@/utils/autoTranslate';
 import SlugInput, { FieldStatusInfo } from '@/components/atoms/SlugInput';
 import PageHeader from '@/components/atoms/Pageheader';
+import SafeSelect from '@/components/molecules/SafeSelect';
+import SupplierSelect from '@/components/molecules/SupplierSelect';
 import ProductFilter from '@/components/atoms/ProductFilter';
 import { InvoiceSummary, ReceiptImageUpload } from '../../purchases/new/page';
-import { SupplierFormDialog } from '../../suppliers/page';
 
 const MAX_RECEIPT_MB = 5;
 const ALLOWED_RECEIPT_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
@@ -412,8 +413,6 @@ function PurchaseDataForm({
 	control,
 	register,
 	errors,
-	suppliers,
-	setSuppliers,
 	totalPurchaseQuantity,
 	onTotalQuantityChange,
 	totalPurchaseQuantityError,
@@ -426,16 +425,6 @@ function PurchaseDataForm({
 }) {
 	const tValidation = useTranslations("validation");
 	const t = useTranslations('addProduct');
-	const [formOpen, setFormOpen] = useState(false);
-	async function handleFormSuccess() {
-		try {
-			const res = await api.get('/lookups/suppliers', { params: { limit: 200 } });
-			setSuppliers(Array.isArray(res.data) ? res.data : []);
-		} catch (e) {
-			console.error(e);
-		}
-	};
-
 
 	const handleImageUpload = (e) => {
 		const file = e.target.files?.[0];
@@ -490,90 +479,25 @@ function PurchaseDataForm({
 			</div> */}
 			<div className='flex max-lg:flex-col gap-6 '>
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 space-y-6 h-fit">
-					<Field label={t('purchase.supplier')}>
-						<Controller
-							control={control}
-							name="purchase.supplierId"
-							render={({ field }) => (
-								<Select
-									value={field.value || ''}
-									onValueChange={(value) => {
-										// Check if the user clicked the "Add New" option
-										if (value === "ADD_NEW_SUPPLIER") {
-											setFormOpen(true);
-										} else {
-											field.onChange(value);
-										}
-									}}
-								>
-									<SelectTrigger className="bg-white dark:bg-slate-900">
-										<SelectValue placeholder={t('purchase.supplierPlaceholder')} />
-									</SelectTrigger>
-									<SelectContent>
-										<button
-											type="button"
-											onClick={(e) => {
-												e.preventDefault();
-												setFormOpen(true);
-											}}
-											className={cn(
-												"group relative cusror-pointer",
-												"flex w-full  items-center justify-center gap-2.5",
-												"!rounded-md px-3 py-2.5 text-sm outline-none",
-												// Use primary color to distinguish the action
-												"text-[var(--primary)] font-semibold",
-												// Match the focus/hover tokens from your SelectItem
-												"hover:bg-[var(--primary)]/8 focus:bg-[var(--primary)]/8",
-												"transition-colors duration-150 text-center"
-											)}
-										>
-											<span className="truncate flex items-center gap-2">
-												<span className="text-lg leading-none">+</span>
-												{t('purchase.addNewSupplier')}
-											</span>
-
-										</button>
-										<div className="border-t border-slate-100 dark:border-slate-800 my-1" />
-										<SelectItem value="none">{t('common.none')}</SelectItem>
-
-										{suppliers.map((s) => (
-											<SelectItem key={s.id} value={String(s.id)}>
-												{s.name}
-											</SelectItem>
-										))}
-
-									</SelectContent>
-								</Select>
-							)}
-						/>
-						{errors?.purchase?.supplierId?.message && (
-							<p className="text-[11px] text-red-500 mt-1">{errors.purchase.supplierId.message}</p>
-						)}
-					</Field>
+					<SupplierSelect
+						name="purchase.supplierId"
+						control={control}
+						error={errors?.purchase?.supplierId?.message}
+						label={t('purchase.supplier')}
+						placeholder={t('purchase.supplierPlaceholder')}
+					/>
 					<Field label={t('purchase.invoiceNumber')}>
 						<Input {...register('purchase.receiptNumber')} placeholder="INV-000" className="bg-white dark:bg-slate-900" />
 						{errors?.purchase?.receiptNumber?.message && <p className="text-[11px] text-red-500">{errors.purchase.receiptNumber.message}</p>}
 					</Field>
-					<Field label={t('purchase.safe')}>
-						<Controller
-							control={control}
-							name="purchase.safeId"
-							render={({ field }) => (
-								<Select value={field.value || ''} onValueChange={field.onChange}>
-									<SelectTrigger className="bg-white dark:bg-slate-900">
-										<SelectValue placeholder={t('purchase.safePlaceholder')} />
-									</SelectTrigger>
-									<SelectContent className="bg-card-select">
-										<SelectItem value="نقدي">{tPurchase("options.safe.cash")}</SelectItem>
-										<SelectItem value="الخزينة الرئيسية">{tPurchase("options.safe.main")}</SelectItem>
-										<SelectItem value="الخزينة الفرعية">{tPurchase("options.safe.sub")}</SelectItem>
-										<SelectItem value="الخزينة الإضافية">{tPurchase("options.safe.extra")}</SelectItem>
-									</SelectContent>
-								</Select>
-							)}
-						/>
-						{errors?.purchase?.safeId?.message && <p className="text-[11px] text-red-500">{errors.purchase.safeId.message}</p>}
-					</Field>
+					<SafeSelect
+						name="purchase.safeId"
+						control={control}
+						error={errors?.purchase?.safeId?.message}
+						label={t('purchase.safe')}
+						placeholder={t('purchase.safePlaceholder')}
+						required
+					/>
 					<Field label={singleMode ? t('purchase.quantity') : t('purchase.totalQuantity')}>
 						<div className="relative">
 							<Input
@@ -616,7 +540,6 @@ function PurchaseDataForm({
 					/>
 				</div>
 			</div >
-			<SupplierFormDialog open={formOpen} onOpenChange={setFormOpen} onSuccess={handleFormSuccess} />
 		</motion.div >
 	);
 }
@@ -691,7 +614,6 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	const [removedImages, setRemovedImages] = useState([]);
 
 	const [hasPurchase, setHasPurchase] = useState(false);
-	const [suppliers, setSuppliers] = useState([]);
 	const [purchaseReceipt, setPurchaseReceipt] = useState(null);
 	const [totalPurchaseQuantity, setTotalPurchaseQuantity] = useState('');
 	const [totalPurchaseQuantityError, setTotalPurchaseQuantityError] = useState('');
@@ -713,15 +635,6 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	const salePrice = watch('salePrice');
 	const purchasePaidAmount = watch('purchase.paidAmount');
 
-	async function handleFormSuccess() {
-		try {
-			const res = await api.get('/lookups/suppliers', { params: { limit: 200 } });
-			setSuppliers(Array.isArray(res.data) ? res.data : []);
-		} catch (e) {
-			console.error(e);
-		}
-	};
-
 	useEffect(() => {
 		if (!upsellingEnabled) setValue('upsellingProducts', [], { shouldDirty: true });
 	}, [upsellingEnabled, setValue]);
@@ -735,11 +648,10 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		let mounted = true;
 		(async () => {
 			try {
-				const [catsRes, storesRes, whRes, suppliersRes] = await Promise.all([
+				const [catsRes, storesRes, whRes] = await Promise.all([
 					api.get('/lookups/categories', { params: { limit: 200 } }),
 					api.get('/lookups/stores', { params: { limit: 200, isActive: true } }),
 					api.get('/lookups/warehouses', { params: { limit: 200, isActive: true } }),
-					api.get('/lookups/suppliers', { params: { limit: 200 } }),
 				]);
 				if (!mounted) return;
 				let loadedCategories = Array.isArray(catsRes.data) ? catsRes.data : [];
@@ -777,7 +689,6 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				}
 
 				setWarehouses(Array.isArray(whRes.data) ? whRes.data : []);
-				setSuppliers(Array.isArray(suppliersRes.data) ? suppliersRes.data : []);
 			} catch (e) { toast.error(normalizeAxiosError(e)); }
 		})();
 		return () => { mounted = false; };
@@ -1520,13 +1431,11 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 									/>
 									<PurchaseDataForm
 										singleMode={productType === 'single'}
-										setSuppliers={setSuppliers}
 										tPurchase={tPurchase}
 										tValidation={tValidation}
 										control={control}
 										register={register}
 										errors={errors}
-										suppliers={suppliers}
 										totalPurchaseQuantity={totalPurchaseQuantity}
 										onTotalQuantityChange={handleTotalQuantityChange}
 										totalPurchaseQuantityError={totalPurchaseQuantityError}

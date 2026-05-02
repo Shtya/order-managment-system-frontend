@@ -19,18 +19,22 @@ import { useLocale, useTranslations } from "next-intl";
 import api from "@/utils/api";
 import { ProductSkuSearchPopover } from "@/components/molecules/ProductSkuSearchPopover";
 import PageHeader from "@/components/atoms/Pageheader";
+import SafeSelect from "@/components/molecules/SafeSelect";
+import SupplierSelect from "@/components/molecules/SupplierSelect";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { cn } from "@/utils/cn";
 
 export default function CreateReturnInvoicePage() {
 	const navigate = useRouter();
 	const locale = useLocale();
-	const isRTL = locale === "ar";
+
+	const isRTL = locale === 'ar';
 	const tValidation = useTranslations("validation");
 	const t = useTranslations("returnInvoice");
 	const { formatCurrency } = usePlatformSettings();
 
 	const [receiptImage, setReceiptImage] = useState(null);
+	const [loading, setLoading] = useState(false);
 
 	const MAX_RECEIPT_MB = 5;
 	const ALLOWED_RECEIPT_TYPES = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
@@ -87,9 +91,7 @@ export default function CreateReturnInvoicePage() {
 		[tValidation]
 	);
 
-	const [suppliers, setSuppliers] = useState([]);
-	const [safes, setSafes] = useState([]);
-	const [loading, setLoading] = useState(false);
+
 
 	const {
 		control,
@@ -156,22 +158,7 @@ export default function CreateReturnInvoicePage() {
 		setValue("receiptAsset", null, { shouldValidate: true });
 	};
 
-	// Fetch suppliers
-	useEffect(() => {
-		(async () => {
-			try {
-				const [suppliersRes, safesRes] = await Promise.all([
-					api.get("/lookups/suppliers", { params: { limit: 200 } }),
-					api.get("/safes/accounts", { params: { limit: 200 } })
-				]);
-				setSuppliers(suppliersRes.data || []);
-				setSafes(safesRes.data.records || []);
-			} catch (e) {
-				console.error(e);
-				toast.error(t("messages.loadDataFailed") || "Failed to load data");
-			}
-		})();
-	}, [t]);
+	const [suppliers, setSuppliers] = useState([]);
 
 	// Update supplier snapshots when supplier changes
 	useEffect(() => {
@@ -396,30 +383,14 @@ export default function CreateReturnInvoicePage() {
 										)}
 									</div>
 
-									<div className="space-y-2">
-										<Label className="text-sm text-gray-600 dark:text-slate-300">
-											{t("fields.supplierName")}
-										</Label>
-										<Controller
-											name="supplierId"
-											control={control}
-											render={({ field }) => (
-												<Select value={field.value} onValueChange={field.onChange}>
-													<SelectTrigger className="w-full rounded-xl !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
-														<SelectValue placeholder={t("placeholders.supplierName")} />
-													</SelectTrigger>
-													<SelectContent>
-														<SelectItem value="none">{t("placeholders.none") || "None"}</SelectItem>
-														{suppliers.map((s) => (
-															<SelectItem key={s.id} value={String(s.id)}>
-																{s.name}
-															</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
-											)}
-										/>
-									</div>
+									<SupplierSelect
+										name="supplierId"
+										control={control}
+										error={errors.supplierId?.message}
+										onFetchSuppliers={setSuppliers}
+										label={t("fields.supplierName")}
+										placeholder={t("placeholders.supplierName")}
+									/>
 
 									<div className="space-y-2">
 										<Label className="text-sm text-gray-600 dark:text-slate-300">
@@ -484,32 +455,15 @@ export default function CreateReturnInvoicePage() {
 									)}
 								</div> */}
 
-									<div className="space-y-2">
-										<Label className="text-sm text-gray-600 dark:text-slate-300">
-											{t("fields.safe")} *
-										</Label>
-										<Controller
-											name="safeId"
-											control={control}
-											render={({ field }) => (
-												<Select value={field.value} onValueChange={field.onChange}>
-													<SelectTrigger className="w-full rounded-full !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
-														<SelectValue placeholder={t("placeholders.safe")} />
-													</SelectTrigger>
-													<SelectContent className="bg-card-select">
-														{safes.map((safe) => (
-															<SelectItem key={safe.id} value={safe.id}>
-																{safe.name}
-															</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
-											)}
-										/>
-										{errors.safeId && (
-											<p className="text-xs text-red-500">{errors.safeId.message}</p>
-										)}
-									</div>
+									<SafeSelect
+										name="safeId"
+										control={control}
+										error={errors.safeId?.message}
+										label={t("fields.safe")}
+										placeholder={t("placeholders.safe")}
+										required
+										className="rounded-full"
+									/>
 								</div>
 							</motion.div>
 						</div>

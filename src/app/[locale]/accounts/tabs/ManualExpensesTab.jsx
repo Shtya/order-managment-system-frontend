@@ -58,6 +58,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ActionButtons } from "@/components/atoms/Actions";
 import api from "@/utils/api";
+import SafeSelect from "@/components/molecules/SafeSelect";
 import { useExport } from "@/hook/useExport";
 import toast from "react-hot-toast";
 import { useForm, Controller } from "react-hook-form";
@@ -102,21 +103,6 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
   const t = useTranslations("accounts");
   const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(false);
-  const [safes, setSafes] = useState([]);
-
-  useEffect(() => {
-    if (open) {
-      const fetchSafes = async () => {
-        try {
-          const res = await api.get('/safes/accounts', { params: { limit: 200 } });
-          setSafes(res.data.records || []);
-        } catch (err) {
-          console.error("Error fetching safes:", err);
-        }
-      };
-      fetchSafes();
-    }
-  }, [open]);
 
   const schema = useMemo(() => createManualExpenseSchema(t), [t]);
 
@@ -168,8 +154,8 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
       const payload = new FormData();
       payload.append("amount", String(data.amount));
       payload.append("categoryId", String(data.categoryId));
-      if(data.safeId !== 'none')
-      payload.append("safeId", String(data.safeId));
+      if (data.safeId !== 'none')
+        payload.append("safeId", String(data.safeId));
       payload.append("collectionDate", data.collectionDate?.toISOString());
       payload.append("description", data.description || "");
 
@@ -314,31 +300,13 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
             </div>
 
             {/* Safe */}
-            <div className="space-y-2">
-              <Label className="text-xs font-bold">{t("manualExpenses.form.safe") || "Safe"}</Label>
-              <Controller
-                control={control}
-                name="safeId"
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger className={cn("theme-field", errors.safeId && "border-red-500")}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {safes?.map((safe) => (
-                        <SelectItem key={safe.id} value={String(safe.id)}>
-                          <div className="flex items-center gap-2">
-                            <Wallet size={14} className="text-primary" />
-                            <span>{safe.name}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.safeId && <p className="text-xs text-red-500">{errors.safeId.message}</p>}
-            </div>
+            <SafeSelect
+              name="safeId"
+              control={control}
+              error={errors.safeId?.message}
+              label={t("manualExpenses.form.safe") || "Safe"}
+              required
+            />
           </div>
 
           {/* Description */}

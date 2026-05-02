@@ -2933,7 +2933,8 @@
       "cancel": "إلغاء",
       "create": "إضافة",
       "update": "تحديث",
-      "saving": "جاري الحفظ..."
+      "saving": "جاري الحفظ...",
+      "save": "تأكيد"
     },
     "validation": {
       "nameRequired": "اسم المورد مطلوب",
@@ -4333,7 +4334,10 @@
     "error": "خطأ",
     "warning": "تحذير",
     "info": "معلومات",
-    "loadMore": "تحميل المزيد"
+    "loadMore": "تحميل المزيد",
+    "purchase": {
+      "addNewSupplier": "إضافة مورد"
+    }
   },
   "orders": {
     "trackingStatus": {

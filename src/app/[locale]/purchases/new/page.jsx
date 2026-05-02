@@ -18,6 +18,8 @@ import api from "@/utils/api";
 import toast from "react-hot-toast";
 
 import { ProductSkuSearchPopover } from "../../../../components/molecules/ProductSkuSearchPopover";
+import SafeSelect from "@/components/molecules/SafeSelect";
+import SupplierSelect from "@/components/molecules/SupplierSelect";
 import PageHeader from "@/components/atoms/Pageheader";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,8 +33,6 @@ export default function CreatePurchaseInvoicePage() {
 	const { formatCurrency, currency } = usePlatformSettings();
 
 	const [receiptImage, setReceiptImage] = useState(null);
-	const [suppliers, setSuppliers] = useState([]);
-	const [safes, setSafes] = useState([]);
 	const [loading, setLoading] = useState(false);
 
 	const MAX_RECEIPT_MB = 5;
@@ -108,22 +108,8 @@ export default function CreatePurchaseInvoicePage() {
 	const watchedItems = watch("items");
 	const watchedPaidAmount = watch("paidAmount");
 
-	// Fetch suppliers
-	useEffect(() => {
-		(async () => {
-			try {
-				const [suppliersRes, safesRes] = await Promise.all([
-					api.get("/lookups/suppliers", { params: { limit: 200 } }),
-					api.get("/safes/accounts", { params: { limit: 200 } })
-				]);
-				setSuppliers(suppliersRes.data || []);
-				setSafes(safesRes.data.records || []);
-			} catch (e) {
-				console.error(e);
-				toast.error(t("messages.loadDataFailed") || "Failed to load data");
-			}
-		})();
-	}, [t]);
+	const locale = useLocale();
+	const isRTL = locale === "ar";
 
 	const handleImageUpload = (e) => {
 		const file = e.target.files?.[0];
@@ -334,33 +320,13 @@ export default function CreatePurchaseInvoicePage() {
 							transition={{ delay: 0.2 }}
 						>
 							<div className="grid md:grid-cols-[repeat(auto-fit,minmax(350px,1fr))] gap-2">
-								<div className="space-y-2">
-									<Label className="text-sm text-gray-600 dark:text-slate-300">
-										{t("fields.supplierName")}
-									</Label>
-									<Controller
-										name="supplierId"
-										control={control}
-										render={({ field }) => (
-											<Select value={field.value} onValueChange={field.onChange}>
-												<SelectTrigger className="w-full rounded-xl !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
-													<SelectValue placeholder={t("placeholders.supplierName")} />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectItem value="none">{t("placeholders.none") || "None"}</SelectItem>
-													{suppliers.map((c) => (
-														<SelectItem key={c.id} value={String(c.id)}>
-															{c.name}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
-										)}
-									/>
-									{errors.supplierId && (
-										<p className="text-xs text-red-500">{errors.supplierId.message}</p>
-									)}
-								</div>
+								<SupplierSelect
+									name="supplierId"
+									control={control}
+									error={errors.supplierId?.message}
+									label={t("fields.supplierName")}
+									placeholder={t("placeholders.supplierName")}
+								/>
 
 								<div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
@@ -381,33 +347,14 @@ export default function CreatePurchaseInvoicePage() {
 									)}
 								</div>
 
-								<div className="space-y-2">
-									<Label className="text-sm text-gray-600 dark:text-slate-300">
-										{t("fields.safe")} *
-									</Label>
-									<Controller
-										name="safeId"
-										control={control}
-										render={({ field }) => (
-											<Select value={field.value} onValueChange={field.onChange}>
-												<SelectTrigger className="w-full rounded-xl !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
-													<SelectValue placeholder={t("placeholders.safe")} />
-												</SelectTrigger>
-												<SelectContent className="bg-card-select">
-													{safes.map((safe) => (
-														<SelectItem key={safe.id} value={safe.id}>
-															{safe.name}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
-										)}
-									/>
-
-									{errors.safeId && (
-										<p className="text-xs text-red-500">{errors.safeId.message}</p>
-									)}
-								</div>
+								<SafeSelect
+									name="safeId"
+									control={control}
+									error={errors.safeId?.message}
+									label={t("fields.safe")}
+									placeholder={t("placeholders.safe")}
+									required
+								/>
 
 							</div>
 						</motion.div>

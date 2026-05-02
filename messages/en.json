@@ -2916,7 +2916,8 @@
       "cancel": "Cancel",
       "create": "Add",
       "update": "Update",
-      "saving": "Saving..."
+      "saving": "Saving...",
+      "save": "Save"
     },
     "validation": {
       "nameRequired": "Supplier name is required",
@@ -4315,7 +4316,10 @@
     "error": "Error",
     "warning": "Warning",
     "info": "Info",
-    "loadMore": "Load More"
+    "loadMore": "Load More",
+    "purchase": {
+      "addNewSupplier": "Add Supplier"
+    }
   },
   "orders": {
     "trackingStatus": {

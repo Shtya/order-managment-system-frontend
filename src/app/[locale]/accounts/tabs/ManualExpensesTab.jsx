@@ -215,7 +215,7 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
   const previewSrc = getPreviewSrc();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">

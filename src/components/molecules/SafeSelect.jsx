@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Controller } from "react-hook-form";
-import { Plus, Wallet } from "lucide-react";
+import { Plus } from "lucide-react";
 import {
     Select,
     SelectContent,
@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import api from "@/utils/api";
 
 import { cn } from "@/utils/cn";
+import AccountIcon from "@/components/atoms/AccountIcon";
 import { AccountModal } from "@/app/[locale]/accounts/tabs/SafesTab";
 
 export default function SafeSelect({ control, name, error, label, placeholder, required, className }) {
@@ -75,8 +76,11 @@ export default function SafeSelect({ control, name, error, label, placeholder, r
                             {activeSafes.map((safe) => (
                                 <SelectItem key={safe.id} value={safe.id}>
                                     <div className="flex items-center gap-2">
+                                        <span className="text-sm text-gray-500 dark:text-slate-400">
+                                            {safe.currentBalance} {safe.currency}
+                                        </span>
                                         <span>{safe.name}</span>
-                                        <Wallet size={14} className="text-primary/60" />
+                                        <AccountIcon type={safe.type} size={14} className="text-primary/60" />
                                     </div>
                                 </SelectItem>
                             ))}

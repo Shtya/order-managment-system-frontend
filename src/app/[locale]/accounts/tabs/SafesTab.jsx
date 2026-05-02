@@ -43,6 +43,7 @@ import { cn } from "@/utils/cn";
 import { useDebounce } from "@/hook/useDebounce";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
+import AccountIcon from "@/components/atoms/AccountIcon";
 
 
 export default function SafesTab({ onRefresh }) {
@@ -326,7 +327,7 @@ export default function SafesTab({ onRefresh }) {
                                                 {/* Info */}
                                                 <div className="mb-4">
                                                     <div className="mb-3 p-2 rounded-xl inline-block bg-[var(--muted)]" style={{ color: 'var(--primary)' }}>
-                                                        <Wallet size={24} />
+                                                        <AccountIcon type={acc.type} size={24} />
                                                     </div>
                                                     <h3 className="text-[16px] font-bold text-[var(--foreground)] mb-1 truncate">{acc.name}</h3>
                                                     <p className="text-[12px] text-[var(--muted-foreground)] truncate flex items-center gap-1">
@@ -1035,7 +1036,7 @@ function TransactionModal({ open, onOpenChange, direction, initialAccountId, acc
                         <div className="flex items-center gap-3">
                             {/* Icon */}
                             <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
-                                <Wallet size={24} />
+                                <AccountIcon type={txnsViewerModal.account?.type} size={24} />
                             </div>
 
                             {/* Name + Balance */}

@@ -3875,7 +3875,8 @@
     },
     "common": {
       "total": "الإجمالي",
-      "limit": "عدد النتائج"
+      "limit": "عدد النتائج",
+      "none": "لا يوجد"
     },
     "toolbar": {
       "searchPlaceholder": "البحث في المشتريات...",
@@ -4017,7 +4018,12 @@
       "exportFailed": "فشل التصدير"
     },
     "empty": "لا توجد فواتير مشتريات",
-    "currency": "ج.م"
+    "currency": "ج.م",
+    "manualExpenses": {
+      "columns": {
+        "safe": "الخزينة/الحساب"
+      }
+    }
   },
   "purchasesReturn": {
     "breadcrumb": {
@@ -4028,7 +4034,8 @@
       "total": "الإجمالي",
       "limit": "الحد",
       "save": "حفظ",
-      "notSpecified": "غير محدد"
+      "notSpecified": "غير محدد",
+      "none": "لا يوجد"
     },
     "actions": {
       "createReturn": "إنشاء مرتجع جديد",
@@ -4203,6 +4210,11 @@
       "rejectWarning": "هل أنت متأكد أنك تريد رفض هذا المرتجع؟",
       "suspendTitle": "تعليق المرتجع",
       "suspendWarning": "سيؤدي هذا إلى إعادة المرتجع إلى حالة قيد الانتظار. هل أنت متأكد؟"
+    },
+    "manualExpenses": {
+      "columns": {
+        "safe": "الخزينة/الحساب"
+      }
     }
   },
   "purchaseInvoice": {

@@ -9,7 +9,11 @@ export function useTrendLabelFormatter() {
     const now = new Date();
 
     const isCurrentYear = date.getFullYear() === now.getFullYear();
-
+    console.log("str: ", dateStr,"date: ", date, "formated: ", formatIntl.dateTime(date, {
+      day: "numeric",
+      month: "short",
+      year: isCurrentYear ? undefined : "numeric",
+    }))
     return formatIntl.dateTime(date, {
       day: "numeric",
       month: "short",

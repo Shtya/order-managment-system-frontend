@@ -8574,7 +8574,8 @@
         "addedBy": "Added By",
         "actions": "Actions",
         "attachment": "Invoice/Receipt Image",
-        "safe": "Safe"
+        "safe": "Safe",
+        "collectionDate": "Collection Date"
       },
       "categories": {
         "ads": "Ads",
@@ -8645,7 +8646,8 @@
         "description": "This action cannot be undone after deletion.",
         "confirm": "Delete",
         "cancel": "Cancel"
-      }
+      },
+      "oldAmount": "Old Amount"
     },
     "monthClosing": {
       "status": {

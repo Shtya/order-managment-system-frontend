@@ -52,13 +52,14 @@ import {
 import { Line, Doughnut } from "react-chartjs-2";
 import PageHeader, { StatsGrid } from "@/components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { generateBgColors, getIconForStatus } from "../../orders/page";
 import { useDebounce } from "@/hook/useDebounce";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import StoreFilter from "@/components/atoms/StoreFilter";
+import { useTrendLabelFormatter } from "@/hook/useTrendLabelFormatter";
 
 ChartJS.register(
   CategoryScale,
@@ -743,6 +744,9 @@ export default function OrdersStatisticsPage() {
     endDate: null,
     storeId: "all",
   });
+
+  
+const format = useFormatter();
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [exAreas, setExAreas] = useState(false);
@@ -751,7 +755,7 @@ export default function OrdersStatisticsPage() {
   const [statusData, setStatusData] = useState([]);
   const [areasData, setAreasData] = useState([]);
   const [searchValue, setSearchValue] = useState("");
-
+const { formatTrendLabel } = useTrendLabelFormatter();
   const { debouncedValue: debouncedSearch } = useDebounce({
     value: searchValue,
     delay: 300,
@@ -787,7 +791,12 @@ export default function OrdersStatisticsPage() {
       const getData = (r) =>
         Array.isArray(r.data) ? r.data : (r.data?.records ?? []);
       setSummary(sum.data);
-      setTrendData(getData(trd));
+         const formattedTrend = (getData(trd)).map((item) => ({
+        ...item,
+         label: formatTrendLabel(item.date),
+      }));
+
+      setTrendData(formattedTrend);
       setStatusData(getData(sts));
       setAreasData(getData(ars));
     } catch (err) {

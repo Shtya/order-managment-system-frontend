@@ -284,7 +284,7 @@ export default function OrdersTab({
   const statsCards = useMemo(() => {
     const final = readOnlyStatus ? filteredStats : stats;
     if (!final.length) return [];
-    
+
     return final
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .map((stat) => {
@@ -1548,18 +1548,20 @@ function DeleteStatusModal({ isOpen, onClose, status, onSuccess }) {
               </div>
               <div className="flex-1">
                 <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                  <motion.button type="button" onClick={() => handleCopyStatusName(status?.title)}
-									whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-									className={cn("inline-flex items-center gap-1 font-mono text-[11px] px-2 py-1 font-bold cursor-pointer rounded-md")}
-									style={{ backgroundColor: "#6763af" + "14", color: "#6763af" }}>
-									{isCopiedStatusName ? (
-										<motion.span key="copied" initial={{ opacity: 0, y: -3 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-1 text-emerald-600">
-											<CheckCircle2 size={9} /> {t("messages.copied")}
-										</motion.span>
-									) : (
-										<motion.span key="statusName" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{status?.title}</motion.span>
-									)}
-								</motion.button>
+                  <motion.button type="button" onClick={() => handleCopyStatusName(status?.title)}>
+                    <span className="flex items-center gap-1">
+                      {isCopiedStatusName ? (
+                        <motion.span key="copied" initial={{ opacity: 0, y: -3 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-1 text-emerald-600">
+                          <CheckCircle2 size={9} /> {t("messages.copied")}
+                        </motion.span>
+                      ) : (
+                        <span className="flex items-center gap-1">
+                          <Copy size={16} />
+                          <motion.span key="statusName" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{status?.title}</motion.span>
+                        </span>
+                      )}
+                    </span>
+                  </motion.button>
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   {status?.count} {t("deleteStatus.ordersWithStatus")}
@@ -1637,7 +1639,7 @@ function DeleteOrderModal({ isOpen, onClose, order, onSuccess }) {
   const [confirmText, setConfirmText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-	const { copied: isCopiedOrderNumber, handleCopy: handleCopyOrderNumber } = useClipboard();
+  const { copied: isCopiedOrderNumber, handleCopy: handleCopyOrderNumber } = useClipboard();
 
   const handleDelete = async (e) => {
     e.preventDefault();
@@ -1716,18 +1718,21 @@ function DeleteOrderModal({ isOpen, onClose, order, onSuccess }) {
                   {t("table.orderNumber")}
                 </p>
                 <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                  <motion.button type="button" onClick={() => handleCopyOrderNumber(order?.orderNumber)}
-									whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-									className={cn("inline-flex items-center gap-1 font-mono text-[11px] px-2 py-1 font-bold cursor-pointer rounded-md")}
-									style={{ backgroundColor: "#6763af" + "14", color: "#6763af" }}>
-									{isCopiedOrderNumber ? (
-										<motion.span key="copied" initial={{ opacity: 0, y: -3 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-1 text-emerald-600">
-											<CheckCircle2 size={9} /> {t("messages.copied")}
-										</motion.span>
-									) : (
-										<motion.span key="orderNumber" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{order?.orderNumber}</motion.span>
-									)}
-								</motion.button>
+                  <motion.button type="button" onClick={() => handleCopyOrderNumber(order?.orderNumber)}>
+                    <span className="flex items-center gap-1">
+                      {isCopiedOrderNumber ? (
+                        <motion.span key="copied" initial={{ opacity: 0, y: -3 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-1 text-emerald-600">
+                          <CheckCircle2 size={9} /> {t("messages.copied")}
+                        </motion.span>
+                      ) : (
+                        <span className="flex items-center gap-1">
+                          <Copy size={16} />
+                          <motion.span key="orderNumber" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{order?.orderNumber}</motion.span>
+                        </span>
+                      )}
+                    </span>
+                  </motion.button>
+
                 </p>
               </div>
               <div className="flex items-center justify-between">

@@ -10,12 +10,13 @@ export function useTrendLabelFormatter() {
 
     const isCurrentYear = date.getFullYear() === now.getFullYear();
     const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    
     console.log("str: ", dateStr,"date: ", date, "formated: ", formatIntl.dateTime(date, {
       day: "numeric",
       month: "short",
       year: isCurrentYear ? undefined : "numeric",
       timeZone: userTimeZone 
-    }))
+    }), "time zone: ", userTimeZone)
     return formatIntl.dateTime(date, {
       day: "numeric",
       month: "short",

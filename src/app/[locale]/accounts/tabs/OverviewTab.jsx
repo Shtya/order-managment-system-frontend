@@ -248,6 +248,7 @@ export default function OverviewTab({ stats, loadingStats, mainFilters, onFilter
                 <StatusDonut
                   loading={loading || loadingStats}
                   data={expensesBreakdownData}
+                  label={currency}
                   config={{ key: 'count', label: 'name' }}
                 />
               </div>

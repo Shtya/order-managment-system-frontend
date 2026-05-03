@@ -232,6 +232,7 @@ export function RangeTabs({ value, onChange }) {
 export function StatusDonut({
   data,
   loading,
+  label = "طلب",
   config = {
     key: "count",
     imageKey: "image",
@@ -371,7 +372,7 @@ export function StatusDonut({
                     {item[config.label]}
                   </p>
                   <p className="text-[10px] text-slate-400">
-                    {item[config.key]} طلب
+                    {item[config.key]} {label}
                   </p>
                 </div>
               </div>

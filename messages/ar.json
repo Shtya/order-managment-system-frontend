@@ -4778,7 +4778,8 @@
       "loading": "جاري التحميل...",
       "errorFetchingOrder": "فشل تحميل بيانات الطلب",
       "orderNotFound": "الطلب غير موجود",
-      "errorFetchingTracking": "فشل في جلب تفاصيل التتبع. يرجى المحاولة مرة أخرى لاحقاً."
+      "errorFetchingTracking": "فشل في جلب تفاصيل التتبع. يرجى المحاولة مرة أخرى لاحقاً.",
+      "copied": "تم النسخ"
     },
     "details": {
       "statusUpdated": "تم تحديث الحالة",

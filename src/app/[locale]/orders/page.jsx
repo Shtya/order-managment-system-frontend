@@ -49,7 +49,6 @@ export default function Orders() {
 		OrderStatus.NEW,
 		OrderStatus.UNDER_REVIEW,
 		
-		OrderStatus.DISTRIBUTED,
 		OrderStatus.POSTPONED,
 
 		OrderStatus.NO_ANSWER,

@@ -8643,7 +8643,8 @@
         "save": "حفظ",
         "cancel": "إلغاء",
         "selectCategoryError": "يرجى اختيار تصنيف",
-        "selectSafeError": "يرجى اختيار الخزينة/الحساب"
+        "selectSafeError": "يرجى اختيار الخزينة/الحساب",
+        "collectionDate": "تاريخ التحصيل"
       },
       "validation": {
         "amountNumber": "يجب أن يكون المبلغ رقماً",

@@ -83,25 +83,25 @@ reviews:
             suggestion: ''
             type: approve
             time: '2026-04-28T12:44:33.123Z'
-  accounts.manualExpenses.oldAmount:
+  accounts.manualExpenses.form.collectionDate:
     locales:
       en:
         comments:
           - user:
               name: amagdykhalil
               email: am2592379@gmail.com
-            id: 2KSRbgtFMUEeXWJkbKfcd
+            id: HFEZ2g_jgEKAsM0WBReyI
             comment: ''
             suggestion: ''
             type: approve
-            time: '2026-05-03T12:09:45.705Z'
+            time: '2026-05-03T12:38:27.585Z'
       ar:
         comments:
           - user:
               name: amagdykhalil
               email: am2592379@gmail.com
-            id: shYeGVdVoXojOz-3NIvZ_
+            id: bb5Z6sVl8eRWb2ow0oSqs
             comment: ''
             suggestion: ''
             type: approve
-            time: '2026-05-03T12:09:47.544Z'
+            time: '2026-05-03T12:38:29.641Z'

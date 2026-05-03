@@ -264,7 +264,7 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
 
             {/* Date */}
             <div className="space-y-2">
-              <Label className="text-xs font-bold">{t("manualExpenses.form.date")}</Label>
+              <Label className="text-xs font-bold">{t("manualExpenses.form.collectionDate")}</Label>
               <div className="relative">
                 <Controller
                   control={control}

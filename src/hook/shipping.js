@@ -53,32 +53,15 @@ export const PROVIDER_META = {
                     tip: null,
                 },
                 {
-                    image: "/guide/bosta/step-img-settings.png",
-                    tab: { en: "Settings", ar: "الإعدادات" },
-                    title: { en: "Open Settings from the top bar", ar: "افتح الإعدادات من الأعلى" },
-                    desc: {
-                        en: "From the dashboard, click the settings icon at the top to open Settings.",
-                        ar: "من لوحة التحكم اضغط على أيقونة الإعدادات بالأعلى لفتح صفحة الإعدادات.",
+                    image: "/guide/bosta/step-img-settings.png", // or keep a representative image
+                    tab: { en: "Settings & Integrations", ar: "الإعدادات وربط التطبيقات" },
+                    title: {
+                        en: "Open Settings, Integrations, and Request OTP",
+                        ar: "افتح الإعدادات وربط التطبيقات واطلب OTP",
                     },
-                    tip: null,
-                },
-                {
-                    image: "/guide/bosta/step-img-1.png",
-                    tab: { en: "Integrations", ar: "ربط التطبيقات" },
-                    title: { en: "Open the Integrations tab", ar: "افتح تبويب ربط التطبيقات" },
                     desc: {
-                        en: "In Settings, open the Integrations tab (ربط التطبيقات).",
-                        ar: "داخل الإعدادات افتح تبويب «ربط التطبيقات».",
-                    },
-                    tip: null,
-                },
-                {
-                    image: "/guide/bosta/step-img-otp.png",
-                    tab: { en: "OTP", ar: "OTP" },
-                    title: { en: "Request OTP", ar: "اطلب OTP" },
-                    desc: {
-                        en: "Click Request OTP then enter the code sent to your phone to enable API Integration options.",
-                        ar: "اضغط «طلب OTP» ثم أدخل الرمز المرسل إلى هاتفك لتفعيل خيارات التكامل.",
+                        en: "From the dashboard, open Settings from the top bar, then go to the Integrations tab. Click Request OTP and enter the code sent to your phone to enable API integration options.",
+                        ar: "من لوحة التحكم افتح الإعدادات من الأعلى، ثم انتقل إلى تبويب «ربط التطبيقات». اضغط «طلب OTP» وأدخل الرمز المرسل إلى هاتفك لتفعيل خيارات التكامل.",
                     },
                     tip: null,
                 },
@@ -87,8 +70,8 @@ export const PROVIDER_META = {
                     tab: { en: "API Key", ar: "مفتاح API" },
                     title: { en: "Create an API key", ar: "إنشاء مفتاح API" },
                     desc: {
-                        en: "Click Create API key, set a name and permissions, then copy the key (it will not be shown again).",
-                        ar: "اضغط «إنشاء مفتاح API»، اختر اسمًا وصلاحيات، ثم انسخ المفتاح (لن يظهر مرة أخرى).",
+                        en: "Click Create API key, set a name and select full permissions, then copy the key and paste it into our system Settings (it will not be shown again).",
+                        ar: "اضغط «إنشاء مفتاح API»، اختر اسمًا وصلاحية تحكم كامل، ثم انسخ المفتاح والصقه في إعدادات نظامنا (لن يظهر مرة أخرى).",
                     },
                     tip: null,
                 },
@@ -97,23 +80,9 @@ export const PROVIDER_META = {
                     tab: { en: "Webhook", ar: "Webhook" },
                     title: { en: "Add Webhook URL", ar: "إضافة رابط Webhook" },
                     desc: {
-                        en: "Scroll to Webhook section, paste the Webhook URL from your system, and (optionally) set a custom header name + secret.",
-                        ar: "انزل إلى قسم الـ Webhook، الصق رابط الـ Webhook من نظامك، ويمكنك إضافة اسم هيدر مخصص + Secret للأمان.",
+                        en: "Scroll down to the Webhook section and click Add Webhook URL. Copy the Webhook URL, authentication key, and header name from our system, then paste them into the required fields.",
+                        ar: "انزل لأسفل إلى قسم إضافة رابط Webhook واضغط على «إضافة رابط Webhook». انسخ رابط الـ Webhook ومفتاح التوثيق واسم الهيدر من نظامنا، ثم الصقهم في الحقول المطلوبة.",
                     },
-                    tip: {
-                        en: "Webhook triggers on status changes, not on order creation.",
-                        ar: "الـ Webhook يعمل عند تغيّر حالة الشحنة، وليس عند الإنشاء.",
-                    },
-                },
-                {
-                    image: null,
-                    tab: { en: "Paste & Save", ar: "اللصق والحفظ" },
-                    title: { en: "Paste API key here and Save", ar: "الصق المفتاح هنا واضغط حفظ" },
-                    desc: {
-                        en: "Return to this page, paste API key into Settings, click Save. Then open Webhook modal to copy webhook URL/secret to Bosta.",
-                        ar: "ارجع لهذه الصفحة، الصق مفتاح API واضغط حفظ. ثم افتح نافذة Webhook لنسخ الرابط/السر ووضعه في بوسطة.",
-                    },
-                    tip: null,
                 },
             ],
         },
@@ -255,9 +224,9 @@ export function useShippingSettings(companyCode, callbacks = {}) {
         setError(null);
         setSuccess(false);
     }, [companyCode, integrations]);
-    
+
     const fetchSetup = useCallback(async () => {
-        
+
         setLoading(true);
         setError(null);
         try {

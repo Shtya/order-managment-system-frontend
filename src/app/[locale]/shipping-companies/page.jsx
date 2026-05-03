@@ -443,14 +443,14 @@ export function WebhookModal({ company, onClose }) {
 							</p>
 						</div>)}
 
-						<div className={`grid gap-3 ${isFieldHidden("headerName") || isFieldHidden("headerValue") ? "grid-cols-1" : "md:grid-cols-2 grid-cols-1"}`}>
+						<div className={`grid gap-3 ${isFieldHidden("headerName") || isFieldHidden("headerValue") ? "grid-cols-1" : "md:grid-cols-2 grid-cols-1 gap-2"}`}>
 							{!isFieldHidden("headerName") && (<div className="space-y-1.5">
 								<label className="text-sm font-medium text-[var(--card-foreground)]">{t("webhook.headerName")}</label>
-								<div className="flex gap-2">
+								<div className="flex gap-1">
 									<input
 										readOnly
 										value={data.headerName || ""}
-										className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
+										className="flex-1 w-[150px] rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
 									/>
 									<button
 										onClick={() => handleCopy(data.headerName)}
@@ -464,11 +464,11 @@ export function WebhookModal({ company, onClose }) {
 
 							{!isFieldHidden("headerValue") && (<div className="space-y-1.5">
 								<label className="text-sm font-medium text-[var(--card-foreground)]">{t("webhook.headerValue")}</label>
-								<div className="flex gap-2">
+								<div className="flex gap-1">
 									<input
 										readOnly
 										value={data.headerValue || ""}
-										className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
+										className="flex-1  rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
 									/>
 									<button
 										onClick={() => handleCopy(data.headerValue)}

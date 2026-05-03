@@ -30,6 +30,7 @@ import {
   Landmark,
   ChevronRight,
   Info,
+  ArrowRight,
 } from "lucide-react";
 import {
   Home,
@@ -948,16 +949,22 @@ export function OrderDetailsPage({ order, loading }) {
                             </p>
                           )}
                           <p
-                            className="text-xs font-bold mb-1 leading-snug"
+                            className="text-xs font-bold mb-1 leading-snug flex gap-1 items-center"
                             style={{ color: isFirst ? P : "var(--foreground)" }}
                           >
-                            {history.fromStatus?.system
-                              ? t(`statuses.${history.fromStatus.code}`)
-                              : history.fromStatus?.name}
-                            {" → "}
-                            {history.toStatus?.system
-                              ? t(`statuses.${history.toStatus.code}`)
-                              : history.toStatus?.name}
+                            <span>
+                              {history.fromStatus?.system
+
+                                ? t(`statuses.${history.fromStatus.code}`)
+                                : history.fromStatus?.name}
+                            </span>
+                            <ArrowRight size={10}  className="rtl:scale-[-1]"/>
+                            <span>
+
+                              {history.toStatus?.system
+                                ? t(`statuses.${history.toStatus.code}`)
+                                : history.toStatus?.name}
+                            </span>
                           </p>
                           <div className="flex items-center gap-1 text-[10px] text-muted-foreground/80">
                             <Clock size={9} />

@@ -41,6 +41,32 @@ import RejectedTab from "./tabs/RejectedTab";
 
 
 
+// ✅ Order Status Enum
+// export enum OrderStatus {
+//   NEW = "new",   //
+//   UNDER_REVIEW = "under_review", //
+//   POSTPONED = "postponed", //
+//   NO_ANSWER = "no_answer", //
+//   WRONG_NUMBER = "wrong_number", //
+//   OUT_OF_DELIVERY_AREA = "out_of_area", //
+//   DUPLICATE = "duplicate", //
+//   FAILED_DELIVERY = "failed_delivery", //
+//   REJECTED = "rejected",//
+//   //DELIVERED = "delivered",//
+//   //RETURNED = "returned",  // 
+//   CANCELLED = "cancelled", //
+
+//   CONFIRMED = "confirmed",
+//   DISTRIBUTED = "distributed",
+//   PRINTED = "printed",
+//   PREPARING = "preparing",
+//   READY = "ready",
+//   PACKED = "packed",
+//   SHIPPED = "shipped",
+//   RETURN_PREPARING = "return_preparing",
+// }
+
+
 export default function Orders() {
 	const [stats, setStats] = useState([]);
 	const [statsLoading, setStatsLoading] = useState(true);
@@ -50,6 +76,7 @@ export default function Orders() {
 		OrderStatus.UNDER_REVIEW,
 		
 		OrderStatus.POSTPONED,
+		OrderStatus.FAILED_DELIVERY,
 
 		OrderStatus.NO_ANSWER,
 		OrderStatus.WRONG_NUMBER,

@@ -8618,7 +8618,8 @@
         "save": "Save",
         "cancel": "Cancel",
         "selectCategoryError": "Please select a category",
-        "selectSafeError": "Please select a safe"
+        "selectSafeError": "Please select a safe",
+        "collectionDate": "Collection Date"
       },
       "validation": {
         "amountNumber": "Amount must be a number",

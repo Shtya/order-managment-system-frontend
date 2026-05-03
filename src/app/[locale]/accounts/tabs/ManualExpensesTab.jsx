@@ -120,6 +120,7 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
         attachment: editingExpense.attachment || null,
       };
     }
+
     return {
       amount: "",
       collectionDate: new Date().toLocaleDateString(),
@@ -324,6 +325,20 @@ export function ManualExpenseFormModal({ open, onOpenChange, editingExpense, onS
               }}
             />
           </div>
+
+          {editingExpense && (
+            <div className="p-3 rounded-lg border bg-primary/10 dark:bg-amber-900/10 border-primary/50 dark:border-primary/80">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-foreground">
+                  {t("manualExpenses.oldAmount") || "Old Amount"}
+                </span>
+
+                <span className="text-sm font-bold text-foreground">
+                  {Math.abs(editingExpense.amount)} $
+                </span>
+              </div>
+            </div>
+          )}
 
           <SafeAmountPreviewCard
             account={selectedSafe}
@@ -570,7 +585,7 @@ export default function ManualExpensesTab({
   const columns = useMemo(() => [
     {
       key: "collectionDate",
-      header: t("manualExpenses.columns.date"),
+      header: t("manualExpenses.columns.collectionDate"),
       cell: (row) => <span className="text-xs font-medium">{new Date(row.collectionDate).toLocaleDateString()}</span>
     },
     {

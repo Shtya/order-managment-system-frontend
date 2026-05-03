@@ -48,7 +48,6 @@ export default function Orders() {
 	const mainStatuses = [
 		OrderStatus.NEW,
 		OrderStatus.UNDER_REVIEW,
-
 		
 		OrderStatus.DISTRIBUTED,
 		OrderStatus.POSTPONED,
@@ -57,6 +56,7 @@ export default function Orders() {
 		OrderStatus.WRONG_NUMBER,
 		OrderStatus.OUT_OF_DELIVERY_AREA,
 		OrderStatus.DUPLICATE,
+		OrderStatus.CANCELLED,
 
 	]
 	const WorkFlowOrderStatuses = [

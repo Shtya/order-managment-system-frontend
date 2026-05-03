@@ -12,7 +12,7 @@ import * as yup from "yup";
 import { toast } from "react-hot-toast";
 import api from "@/utils/api";
 import { OrderStatus } from "../../orders/tabs/OrderTab";
-
+//cityId - districtId - customerName - phoneNumber - address - packageType - size
 // --- Carrier Configuration ---
 const CARRIER_CONFIG = {
     BOSTA: {

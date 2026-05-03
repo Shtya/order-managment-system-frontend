@@ -31,6 +31,7 @@ import {
   ChevronRight,
   Info,
   ArrowRight,
+  Fingerprint,
 } from "lucide-react";
 import {
   Home,

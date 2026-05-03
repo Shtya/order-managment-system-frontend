@@ -54,6 +54,7 @@ import Button_ from "@/components/atoms/Button";
 import { cn } from "@/utils/cn";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import StoreFilter from "@/components/atoms/StoreFilter";
+import { useTrendLabelFormatter } from "@/hook/useTrendLabelFormatter";
 
 // ── FilterField wrapper (matches the one in OrdersStatisticsPage) ─────────────
 
@@ -111,7 +112,8 @@ export default function DashboardPage() {
   }, [quickRange, debouncedSearch, filters]);
 
   // ── Fetch all data ──────────────────────────────────────────────────────────
-
+const { formatTrendLabel } = useTrendLabelFormatter();
+const format = useFormatter();
   const fetchAll = useCallback(async () => {
     const p = buildParams();
     setLoading(true);
@@ -130,8 +132,14 @@ export default function DashboardPage() {
       ]);
       const getData = (r) =>
         Array.isArray(r.data) ? r.data : (r.data?.records ?? []);
+      const formattedTrend = (getData(trd)).map((item) => ({
+        ...item,
+         label: formatTrendLabel(item.date),
+      }));
+
       setSummary(sum.data);
-      setTrendData(getData(trd));
+
+      setTrendData(formattedTrend);
       setTopProductsData(getData(sts));
       setProfitTableData(getData(prf));
     } catch (err) {
@@ -269,7 +277,7 @@ export default function DashboardPage() {
       })),
     [summary],
   );
-  const format = useFormatter();
+  
   // ── Profit table columns ────────────────────────────────────────────────────
 
   const profitCols = [

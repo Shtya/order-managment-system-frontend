@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import {
   BarChart2,
   DollarSign,
@@ -35,6 +35,8 @@ import Button_ from "@/components/atoms/Button";
 import api from "@/utils/api";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
+import { useTrendLabelFormatter } from "@/hook/useTrendLabelFormatter";
+
 
 export default function OverviewTab({ stats, loadingStats, mainFilters, onFiltersChange, onRefresh }) {
   const [filters, setFilters] = useState({
@@ -78,7 +80,7 @@ export default function OverviewTab({ stats, loadingStats, mainFilters, onFilter
   useEffect(() => {
     fetchAccountingData();
   }, []);
-
+const { formatTrendLabel } = useTrendLabelFormatter();
   const fetchAccountingData = async () => {
     try {
       setLoading(true);
@@ -91,7 +93,11 @@ export default function OverviewTab({ stats, loadingStats, mainFilters, onFilter
       ]);
 
       setLastExpenses(expensesRes.data);
-      setTrend(trendRes.data);
+      const formattedTrend = trendRes.data.map((item) => ({
+        ...item,
+         label: formatTrendLabel(item.date),
+      }));
+      setTrend(formattedTrend);
       setSupplierBalances(balancesRes.data);
       setCityReport(cityRes.data?.records);
     } catch (err) {

@@ -4739,7 +4739,8 @@
       "loading": "Loading...",
       "errorFetchingOrder": "Failed to load order data",
       "orderNotFound": "Order not found",
-      "errorFetchingTracking": "Failed to fetch tracking details. Please try again later."
+      "errorFetchingTracking": "Failed to fetch tracking details. Please try again later.",
+      "copied": "Copied"
     },
     "details": {
       "statusUpdated": "Status updated successfully",

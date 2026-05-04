@@ -1518,7 +1518,36 @@
         "address": "العنوان",
         "city": "المدينة",
         "zone": "المنطقة",
-        "district": "الحي"
+        "district": "الحي",
+        "orderSize": "حجم الطلب",
+        "returnOrder": "استلام مرتجع",
+        "area": "المنطقة",
+        "store": "المتجر",
+        "carrier": "شركة الشحن",
+        "trackingCode": "رقم التتبع",
+        "paymentType": "نوع الدفع",
+        "total": "الإجمالي",
+        "shippingCost": "تكلفة الشحن",
+        "allowOpenPackage": "السماح بفتح الطرد",
+        "allowReturn": "السماح بالإرجاع",
+        "customer": "العميل",
+        "phone": "الهاتف",
+        "payment": "الدفع",
+        "orderDate": "تاريخ الطلب",
+        "actions": "الإجراءات",
+        "orderCode": "كود الطلب",
+        "region": "المنطقة",
+        "productName": "اسم المنتج",
+        "date": "التاريخ",
+        "distributedAt": "تاريخ التوزيع",
+        "status": "الحالة"
+      },
+      "orderSizes": {
+        "SMALL": "صغير (SMALL)",
+        "MEDIUM": "متوسط (MEDIUM)",
+        "LARGE": "كبير (LARGE)",
+        "Light Bulky": "ضخم خفيف (Light Bulky)",
+        "Heavy Bulky": "ضخم ثقيل (Heavy Bulky)"
       },
       "placeholders": {
         "customerName": "أدخل اسم العميل...",
@@ -1607,7 +1636,8 @@
         "firstLineTooShort": "العنوان قصير للغاية",
         "cityIdRequired": "المدينة مطلوبة",
         "districtIdRequired": "الحي مطلوب",
-        "zoneIdRequired": "المنطقة مطلوبة"
+        "zoneIdRequired": "المنطقة مطلوبة",
+        "orderSizeRequired": "حجم الطلب مطلوب"
       },
       "assign": {
         "noIneligible": "لا توجد طلبات غير مؤهلة للتعيين",
@@ -1810,15 +1840,24 @@
         "details": "عرض التفاصيل",
         "printLabel": "طباعة البوليصة",
         "reprint": "إعادة الطباعة",
-        "openPreparation": "فتح التحضير"
+        "openPreparation": "فتح التحضير",
+        "errorWaybill": "فشل طباعة بوليصية الشحن",
+        "printBostaWaybill": "طباعة بوليصة بوسطة",
+        "ReprintBostaWaybill": "إعادة طباعة بوليصة بوسطة "
       },
       "messages": {
         "printSuccess": "تم تحديد الملصقات كمطبوعة بنجاح",
-        "reprintSuccess": "تمت إعادة طباعة الملصقات بنجاح"
+        "reprintSuccess": "تمت إعادة طباعة الملصقات بنجاح",
+        "max50Orders": "عدد الطلبات في المره الواحده بحد أقصي 50 طلب"
       },
       "header": {
         "howItWorks": "كيف يعمل؟"
-      }
+      },
+      "action": {
+        "printBostaWaybillSelected": "طباعة بوليصة بوسطة ({count})",
+        "reprintBostaWaybillSelected": "إعادة طباعة بوليصة بوسطة ({count})\t"
+      },
+      "bostaWaybill": "بوليصية بوسطة"
     },
     "preparation": {
       "pdf": {

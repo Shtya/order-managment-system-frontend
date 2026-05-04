@@ -97,7 +97,7 @@ export default function PrintLabelsTab({ subtab, setSubtab, resetToken }) {
       <AnimatePresence mode="wait">
         <motion.div key={subtab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15 }}>
           {subtab === "not_printed" && (
-            <NotPrintedSubtab onPrinted={() => {}} resetToken={resetToken} fetchStats={fetchStats} />
+            <NotPrintedSubtab onPrinted={() => { }} resetToken={resetToken} fetchStats={fetchStats} />
           )}
           {subtab === "printed" && (
             <PrintedSubtab resetToken={resetToken} fetchStats={fetchStats} />
@@ -351,6 +351,80 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
   );
 }
 
+// ── Bosta Waybill Modal ───────────────────────────────────────────────────────
+function BostaWaybillModal({ open, onClose, pdfData, orders, onConfirmPrint }) {
+  const tCommon = useTranslations("common");
+  const t = useTranslations("warehouse.print");
+
+  if (!open || !pdfData) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="!max-w-4xl h-[90vh] flex flex-col p-0 overflow-hidden rounded-2xl border-0 shadow-2xl">
+        <div className="relative px-6 pt-6 pb-5 overflow-hidden shrink-0"
+          style={{
+            background: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)"
+          }}>
+          <div className="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-white/10" />
+          <div className="absolute -bottom-6 -right-2 w-28 h-28 rounded-full bg-white/10" />
+          <div className="relative flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                <Printer className="text-white" size={22} />
+              </div>
+              <div>
+                <p className="text-white/70 text-xs font-medium mb-0.5">{t('bostaWaybill')}</p>
+                <h2 className="text-white text-xl font-bold">{t("printPreview.title", { count: orders.length })}</h2>
+              </div>
+            </div>
+            <button onClick={onClose} className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
+              <X size={16} className="text-white" />
+            </button>
+          </div>
+        </div>
+
+        <div className="flex-1 bg-slate-100 dark:bg-slate-900 p-4 min-h-0">
+          <iframe
+            src={`data:application/pdf;base64,${pdfData}#toolbar=0&navpanes=0&scrollbar=0`}
+            className="w-full h-full rounded-xl border border-slate-200 dark:border-slate-800 shadow-inner bg-white"
+            title="Bosta Waybill"
+          />
+        </div>
+
+        <div className="p-5 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2 shrink-0 bg-white dark:bg-slate-950">
+          <Button variant="outline" onClick={onClose} className="rounded-xl">
+            {tCommon("cancel")}
+          </Button>
+          <Button
+            onClick={() => {
+              // 1. Trigger Download
+              const linkSource = `data:application/pdf;base64,${pdfData}`;
+              const downloadLink = document.createElement("a");
+              const fileName = orders.length === 1
+                ? `waybill_${orders[0].orderNumber}.pdf`
+                : `waybills_bulk_${Date.now()}.pdf`;
+
+              downloadLink.href = linkSource;
+              downloadLink.download = fileName;
+              downloadLink.click();
+
+              // 2. Confirm and Close
+              onConfirmPrint(orders.map(o => o.orderNumber));
+              onClose();
+            }}
+            className="rounded-xl  text-white font-bold"
+            style={{
+              background: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)"
+            }}
+          >
+            {t("printPreview.printNow", { count: orders.length })}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ── NOT-PRINTED SUBTAB ────────────────────────────────────────────────────────
 function NotPrintedSubtab({ onPrinted, resetToken, fetchStats }) {
   const { formatCurrency } = usePlatformSettings()
@@ -362,6 +436,8 @@ function NotPrintedSubtab({ onPrinted, resetToken, fetchStats }) {
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [detailModal, setDetailModal] = useState(null);
   const [printPreview, setPrintPreview] = useState({ open: false, orders: [] });
+  const [bostaPreview, setBostaPreview] = useState({ open: false, pdfData: null, orders: [] });
+  const [bostaLoading, setBostaLoading] = useState(false);
 
   const [pager, setPager] = useState({
     total_records: 0,
@@ -446,6 +522,37 @@ function NotPrintedSubtab({ onPrinted, resetToken, fetchStats }) {
     setSelectedOrders([]);
   };
 
+  const handlePrintBostaWaybills = async (ordersToPrint) => {
+    if (ordersToPrint.length === 0) return;
+    if (ordersToPrint.length > 50) {
+      toast.error(t("messages.max50Orders") || "Bosta supports a maximum of 50 orders at once.");
+      return;
+    }
+
+    setBostaLoading(true);
+    try {
+      const res = await api.post(`/shipping/providers/bosta/mass-awb`, {
+        orderIds: ordersToPrint.map(o => o.id),
+        requestedAwbType: 'A4',
+        lang: 'ar'
+      });
+
+      if (res.data.success) {
+        setBostaPreview({
+          open: true,
+          pdfData: res.data.data,
+          orders: ordersToPrint
+        });
+      } else {
+        toast.error(res.data.error || "Failed to fetch Bosta waybill");
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || t("common.errorWaybill"));
+    } finally {
+      setBostaLoading(false);
+    }
+  };
+
   const hasActiveFilters = filters.carrier !== "all" || filters.store !== "all" || !!filters.date || filters.productId !== "all";
 
   const columns = useMemo(() => [
@@ -471,15 +578,26 @@ function NotPrintedSubtab({ onPrinted, resetToken, fetchStats }) {
     { key: "orderDate", header: t("field.orderDate"), cell: (row) => <span className="text-sm text-slate-500">{new Date(row.created_at).toLocaleDateString("en-US")}</span> },
     {
       key: "actions", header: t("field.actions"),
-      cell: (row) => (
-        <ActionButtons
-          row={row}
-          actions={[
-            { icon: <Info />, tooltip: t("common.details"), onClick: (r) => setDetailModal(r), variant: "primary", permission: "orders.read" },
-            { icon: <Printer />, tooltip: t("common.printLabel"), onClick: (r) => setPrintPreview({ open: true, orders: [r] }), variant: "primary", permission: "orders.update" },
-          ]}
-        />
-      ),
+      cell: (row) => {
+        const isBosta = row.shippingCompany?.code?.toLowerCase() === 'bosta';
+        const actions = [
+          { icon: <Info />, tooltip: t("common.details"), onClick: (r) => setDetailModal(r), variant: "primary", permission: "orders.read" },
+          { icon: <Printer />, tooltip: t("common.printLabel"), onClick: (r) => setPrintPreview({ open: true, orders: [r] }), variant: "primary", permission: "orders.update" },
+        ];
+
+        if (isBosta) {
+          actions.push({
+            icon: bostaLoading ? <Loader2 className="animate-spin" size={16} /> : <Truck size={16} />,
+            tooltip: t("common.printBostaWaybill"),
+            onClick: (r) => handlePrintBostaWaybills([r]),
+            variant: "danger",
+            disabled: bostaLoading,
+            permission: "orders.update"
+          });
+        }
+
+        return <ActionButtons row={row} actions={actions} />;
+      },
     },
   ], [pager.records, selectedOrders, t]);
 
@@ -490,6 +608,19 @@ function NotPrintedSubtab({ onPrinted, resetToken, fetchStats }) {
         labels={{ searchPlaceholder: t("notPrinted.search"), filter: t("common.filter"), apply: t("common.apply"), total: t("common.total"), limit: t("common.limit"), emptyTitle: t("notPrinted.empty"), emptySubtitle: "" }}
         actions={[
           { key: "printSelected", label: selectedOrders.length > 0 ? t("notPrinted.printSelected", { count: selectedOrders.length }) : t("notPrinted.printSelectedDefault"), icon: <Printer size={14} />, color: "primary", onClick: () => selectedOrders.length > 0 && setPrintPreview({ open: true, orders: pager.records.filter((o) => selectedOrders.includes(o.orderNumber)) }), disabled: selectedOrders.length === 0, permission: "orders.update" },
+          {
+            key: "printBostaSelected",
+            label: selectedOrders.length > 0 ? t("action.printBostaWaybillSelected", { count: selectedOrders.filter(num => pager.records.find(r => r.orderNumber === num)?.shippingCompany?.code?.toLowerCase() === 'bosta').length }) : t("common.printBostaWaybill"),
+            icon: bostaLoading ? <Loader2 className="animate-spin" size={14} /> : <Truck size={14} />,
+            color: "primary",
+            onClick: () => {
+              const bostaOrders = pager.records.filter((o) => selectedOrders.includes(o.orderNumber) && o.shippingCompany?.code?.toLowerCase() === 'bosta');
+              if (bostaOrders.length > 0) handlePrintBostaWaybills(bostaOrders);
+              else toast.error("No Bosta orders selected");
+            },
+            disabled: bostaLoading || selectedOrders.filter(num => pager.records.find(r => r.orderNumber === num)?.shippingCompany?.code?.toLowerCase() === 'bosta').length === 0,
+            permission: "orders.update"
+          },
           { key: "export", label: t("common.export"), icon: exportLoading ? <Loader2 className="animate-spin" size={14} /> : <FileDown size={14} />, color: "primary", onClick: onExport, disabled: exportLoading, permission: "orders.read" },
         ]}
         hasActiveFilters={hasActiveFilters} onApplyFilters={applyFilters}
@@ -513,6 +644,7 @@ function NotPrintedSubtab({ onPrinted, resetToken, fetchStats }) {
         onPageChange={handlePageChange}
       />
       <PrintPreviewModal open={printPreview.open} onClose={() => setPrintPreview({ open: false, orders: [] })} orders={printPreview.orders} onConfirmPrint={handleConfirmPrint} />
+      <BostaWaybillModal open={bostaPreview.open} onClose={() => setBostaPreview({ open: false, pdfData: null, orders: [] })} pdfData={bostaPreview.pdfData} orders={bostaPreview.orders} onConfirmPrint={handleConfirmPrint} />
       <OrderDetailModal open={!!detailModal} onClose={() => setDetailModal(null)} order={detailModal} hideNotes={true} />
     </div>
   );
@@ -529,6 +661,9 @@ function PrintedSubtab({ resetToken, fetchStats }) {
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [detailModal, setDetailModal] = useState(null);
   const [printPreview, setPrintPreview] = useState({ open: false, orders: [] });
+
+  const [bostaPreview, setBostaPreview] = useState({ open: false, pdfData: null, orders: [] });
+  const [bostaLoading, setBostaLoading] = useState(false);
 
   const [pager, setPager] = useState({
     total_records: 0,
@@ -629,17 +764,61 @@ function PrintedSubtab({ resetToken, fetchStats }) {
     { key: "total", header: t("field.total"), cell: (row) => <span className="font-bold text-emerald-700 dark:text-emerald-400">{formatCurrency(row.finalTotal)}</span> },
     {
       key: "actions", header: t("field.actions"),
-      cell: (row) => (
-        <ActionButtons
-          row={row}
-          actions={[
-            { icon: <Info />, tooltip: t("common.details"), onClick: (r) => setDetailModal(r), variant: "primary", permission: "orders.read" },
-            { icon: <Printer />, tooltip: t("common.reprint"), onClick: (r) => setPrintPreview({ open: true, orders: [r] }), variant: "primary", permission: "orders.update" },
-          ]}
-        />
-      ),
+      cell: (row) => {
+        const isBosta = row.shippingCompany?.code?.toLowerCase() === 'bosta';
+        const actions = [
+          { icon: <Info />, tooltip: t("common.details"), onClick: (r) => setDetailModal(r), variant: "primary", permission: "orders.read" },
+
+          { icon: <Printer />, tooltip: t("common.reprint"), onClick: (r) => setPrintPreview({ open: true, orders: [r] }), variant: "primary", permission: "orders.update" },
+        ];
+
+        if (isBosta) {
+          actions.push({
+            icon: bostaLoading ? <Loader2 className="animate-spin" size={16} /> : <Truck size={16} />,
+            tooltip: t("common.ReprintBostaWaybill"),
+            onClick: (r) => handlePrintBostaWaybills([r]),
+            variant: "danger",
+            disabled: bostaLoading,
+            permission: "orders.update"
+          });
+        }
+
+        return <ActionButtons row={row} actions={actions} />;
+      },
+
     },
   ], [pager.records, selectedOrders, t]);
+
+  const handlePrintBostaWaybills = async (ordersToPrint) => {
+    if (ordersToPrint.length === 0) return;
+    if (ordersToPrint.length > 50) {
+      toast.error(t("messages.max50Orders") || "Bosta supports a maximum of 50 orders at once.");
+      return;
+    }
+
+    setBostaLoading(true);
+    try {
+      const res = await api.post(`/shipping/providers/bosta/mass-awb`, {
+        orderIds: ordersToPrint.map(o => o.id),
+        requestedAwbType: 'A4',
+        lang: 'ar'
+      });
+
+      if (res.data.success) {
+        setBostaPreview({
+          open: true,
+          pdfData: res.data.data,
+          orders: ordersToPrint
+        });
+      } else {
+        toast.error(res.data.error || "Failed to fetch Bosta waybill");
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || t("common.errorWaybill"));
+    } finally {
+      setBostaLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -648,6 +827,19 @@ function PrintedSubtab({ resetToken, fetchStats }) {
         labels={{ searchPlaceholder: t("printed.search"), filter: t("common.filter"), apply: t("common.apply"), total: t("common.total"), limit: t("common.limit"), emptyTitle: t("printed.empty"), emptySubtitle: "" }}
         actions={[
           { key: "reprintSelected", label: selectedOrders.length > 0 ? t("printed.printSelected", { count: selectedOrders.length }) : t("printed.printSelectedDefault"), icon: <Printer size={14} />, color: "primary", onClick: () => selectedOrders.length > 0 && setPrintPreview({ open: true, orders: pager.records.filter((o) => selectedOrders.includes(o.orderNumber)) }), disabled: selectedOrders.length === 0, permission: "orders.update" },
+          {
+            key: "printBostaSelected",
+            label: selectedOrders.length > 0 ? t("action.reprintBostaWaybillSelected", { count: selectedOrders.filter(num => pager.records.find(r => r.orderNumber === num)?.shippingCompany?.code?.toLowerCase() === 'bosta').length }) : t("common.printBostaWaybill"),
+            icon: bostaLoading ? <Loader2 className="animate-spin" size={14} /> : <Truck size={14} />,
+            color: "primary",
+            onClick: () => {
+              const bostaOrders = pager.records.filter((o) => selectedOrders.includes(o.orderNumber) && o.shippingCompany?.code?.toLowerCase() === 'bosta');
+              if (bostaOrders.length > 0) handlePrintBostaWaybills(bostaOrders);
+              else toast.error("No Bosta orders selected");
+            },
+            disabled: bostaLoading || selectedOrders.filter(num => pager.records.find(r => r.orderNumber === num)?.shippingCompany?.code?.toLowerCase() === 'bosta').length === 0,
+            permission: "orders.update"
+          },
           { key: "export", label: t("common.export"), icon: exportLoading ? <Loader2 className="animate-spin" size={14} /> : <FileDown size={14} />, color: "primary", onClick: onExport, disabled: exportLoading, permission: "orders.read" },
         ]}
         hasActiveFilters={hasActiveFilters} onApplyFilters={applyFilters}
@@ -671,6 +863,7 @@ function PrintedSubtab({ resetToken, fetchStats }) {
         onPageChange={handlePageChange}
       />
       <PrintPreviewModal open={printPreview.open} onClose={() => setPrintPreview({ open: false, orders: [] })} orders={printPreview.orders} onConfirmPrint={handleReprintConfirm} />
+      <BostaWaybillModal open={bostaPreview.open} onClose={() => setBostaPreview({ open: false, pdfData: null, orders: [] })} pdfData={bostaPreview.pdfData} orders={bostaPreview.orders} onConfirmPrint={handleReprintConfirm} />
       <OrderDetailModal open={!!detailModal} onClose={() => setDetailModal(null)} order={detailModal} />
     </div>
   );

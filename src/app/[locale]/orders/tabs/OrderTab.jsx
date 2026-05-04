@@ -134,6 +134,7 @@ export const OrderStatus = {
 export default function OrdersTab({
   stats, fetchStats, statsLoading,
   readOnlyStatus = false, restrictedStatuses = [],
+  restrictedSelectStatuses = [],
   showTopActions = true, showBulkUpload = true, showCustom = true,
   label = "" }) {
   const t = useTranslations("orders");
@@ -142,6 +143,11 @@ export default function OrdersTab({
   const restrictedSet = useMemo(() => {
     return new Set(restrictedStatuses || []);
   }, [restrictedStatuses]);
+
+  const restrictedSelectSet = useMemo(() => {
+    return new Set(restrictedSelectStatuses?.length ? restrictedSelectStatuses : restrictedStatuses || []);
+  }, [restrictedSelectStatuses, restrictedStatuses]);
+
   const filteredStats = useMemo(() => {
     if (!stats) return [];
 
@@ -152,6 +158,17 @@ export default function OrdersTab({
       return isRestricted || (showCustom && isSystem);
     });
   }, [stats, restrictedSet, showCustom]);
+
+  const filteredSelectStats = useMemo(() => {
+    if (!stats) return [];
+
+    return stats.filter((s) => {
+      const isRestricted = restrictedSelectSet.has(s.code);
+      const isSystem = s.system === false;
+
+      return isRestricted || (showCustom && isSystem);
+    });
+  }, [stats, restrictedSelectSet, showCustom]);
 
   const router = useRouter();
   const [retrySettingsOpen, setRetrySettingsOpen] = useState(false);
@@ -571,10 +588,23 @@ export default function OrdersTab({
                     const toastId = toast.loading(t("messages.statusUpdating"));
                     try {
                       setUpdating(row.id, true);
-                      await api.patch(`/orders/${row.id}/status`, { statusId });
+                      const res = await api.patch(`/orders/${row.id}/status`, { statusId });
+                      const newOrder = res.data || {};
+
                       toast.success(t("messages.statusUpdated"), { id: toastId });
-                      await fetchOrders(pager.current_page, pager.per_page);
-                      await fetchStats();
+                      await fetchStats(true);
+                      //await fetchOrders(pager.current_page, pager.per_page);
+                      // remove new  order  from records if its status is confirmed
+                      if (newOrder.status.code === OrderStatus.CONFIRMED) {
+                        setPager(p => ({
+                          ...p, records: p.records.filter((r) => r.id !== row.id)
+                        }));
+                      }
+                      setPager(p => ({
+                        ...p, records: p.records.map((r) => (r.id === row.id ?
+                          { ...r, statusId, status: newOrder.status }
+                          : r))
+                      }));
                     } catch (err) {
                       console.error(err);
                       toast.error(
@@ -596,7 +626,7 @@ export default function OrdersTab({
                   </SelectTrigger>
 
                   <SelectContent>
-                    {(filteredStats || []).map((s) => {
+                    {(filteredSelectStats || []).map((s) => {
                       const isSame = s.code === currentCode;
 
                       return (

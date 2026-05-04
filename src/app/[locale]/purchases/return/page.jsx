@@ -764,7 +764,7 @@ export default function PurchasesReturnPage() {
 			/>
 
 			{/* Modals */}
-			<DetailsModal
+			{detailsOpen && (<DetailsModal
 				isOpen={detailsOpen}
 				onClose={() => {
 					setDetailsOpen(false);
@@ -774,16 +774,16 @@ export default function PurchasesReturnPage() {
 				invoice={selectedInvoice}
 				isLoading={isDetailLoading}
 				formatCurrency={formatCurrency}
-			/>
+			/>)}
 
-			<LogsModal
+			{logsOpen && (<LogsModal
 				isOpen={logsOpen}
 				onClose={() => setLogsOpen(false)}
 				invoiceId={selectedInvoice?.id}
 				t={t}
-			/>
+			/>)}
 
-			<AcceptPreviewModal
+			{previewOpen && (<AcceptPreviewModal
 				isOpen={previewOpen}
 				formatCurrency={formatCurrency}
 				onClose={() => setPreviewOpen(false)}
@@ -793,24 +793,24 @@ export default function PurchasesReturnPage() {
 					await handleStatusChange(selectedInvoice?.id, "accepted")
 					setPreviewOpen(false)
 				}}
-			/>
+			/>)}
 
-			<EditPaidAmountModal
+			{paidAmountOpen && (<EditPaidAmountModal
 				isOpen={paidAmountOpen}
 				onClose={() => setPaidAmountOpen(false)}
 				invoice={selectedInvoice}
 				t={t}
 				onSave={handleUpdatePaidAmount}
-			/>
+			/>)}
 
-			<StatusChangeModal
+			{statusChangeModal.isOpen && (<StatusChangeModal
 				isOpen={statusChangeModal.isOpen}
 				onClose={() => setStatusChangeModal({ isOpen: false, invoice: null, newStatus: null })}
 				invoice={statusChangeModal.invoice}
 				newStatus={statusChangeModal.newStatus}
 				t={t}
 				onConfirm={handleStatusChange}
-			/>
+			/>)}
 		</div>
 	);
 }
@@ -1362,7 +1362,7 @@ export function DetailsModal({ isOpen, onClose, invoice, isLoading, formatCurren
 								</div>
 								<div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-800 border border-gray-200 dark:border-slate-700">
 									<Label className="text-xs text-gray-500 dark:text-slate-400 mb-1">{t("details.safe")}</Label>
-									<p className="text-sm font-bold text-gray-900 dark:text-white">{invoice.safeId ? String(invoice.safeId) : "-"}</p>
+									<p className="text-sm font-bold text-gray-900 dark:text-white">{invoice.safe?.name || "-"}</p>
 								</div>
 								<div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-800 border border-gray-200 dark:border-slate-700">
 									<Label className="text-xs text-gray-500 dark:text-slate-400 mb-1">{t("details.date")}</Label>

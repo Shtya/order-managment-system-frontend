@@ -832,7 +832,7 @@ export function DetailsModal({ isOpen, onClose, invoice, isLoading, formatCurren
 								</div>
 								<div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-800 border border-gray-200 dark:border-slate-700">
 									<Label className="text-xs text-gray-500 dark:text-slate-400 mb-1">{t("details.safe")}</Label>
-									<p className="text-sm font-bold text-gray-900 dark:text-white">{invoice.safeId ? String(invoice.safeId) : "-"}</p>
+									<p className="text-sm font-bold text-gray-900 dark:text-white">{invoice.safe?.name || "-"}</p>
 								</div>
 								<div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-800 border border-gray-200 dark:border-slate-700">
 									<Label className="text-xs text-gray-500 dark:text-slate-400 mb-1">{t("details.date")}</Label>

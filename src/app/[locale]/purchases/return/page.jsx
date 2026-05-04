@@ -178,7 +178,7 @@ export default function PurchasesReturnPage() {
 	useEffect(() => {
 		const invoiceId = searchParams.get("detials");
 		if (invoiceId && !detailsOpen) {
-			fetchInvoiceDetails(invoiceId);
+			fetchInvoiceDetails(invoiceId, true);
 		}
 	}, [searchParams]);
 
@@ -192,13 +192,17 @@ export default function PurchasesReturnPage() {
 		router.replace(`${pathname}?${params.toString()}`, { scroll: false });
 	};
 
-	const fetchInvoiceDetails = async (id) => {
+	const fetchInvoiceDetails = async (id, cleanupUrl = false) => {
 		setIsDetailLoading(true);
 		setDetailsOpen(true);
-		updateUrlWithId(id);
+		if (!cleanupUrl) updateUrlWithId(id);
 		try {
 			const res = await api.get(`/purchases-return/${id}`);
 			setSelectedInvoice(res.data);
+
+			if (cleanupUrl) {
+				updateUrlWithId(null);
+			}
 		} catch (error) {
 			console.error("Failed to fetch details:", error);
 			toast.error(t("messages.detailsFailed"));

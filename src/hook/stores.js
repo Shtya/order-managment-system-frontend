@@ -32,7 +32,7 @@ export const STORE_PROVIDERS = [
         key: 'woocommerce',
         code: 'woocommerce',
         label: { ar: 'WooCommerce', en: 'WooCommerce' },
-        img: "/integrate/woocommerce.png",
+        img: "/integrate/woocommerce1.png",
         emoji: '🛍️',
         desc: { ar: 'ربط متجر WooCommerce', en: 'Connect your WooCommerce store' },
     },
@@ -364,7 +364,7 @@ export const PROVIDER_CONFIG = {
     woocommerce: {
         showWebhook: true,
         label: "WooCommerce",
-        logo: "/integrate/woocommerce.png",
+        logo: "/integrate/woocommerce1.png",
         website: "woocommerce.com",
         description: "اربط متجر WooCommerce الخاص بك وأدر كل شيء بطريقة سهلة والأمان أولًا.",
         bg: "bg-[linear-gradient(300.09deg,#FAFAFA_74.95%,#FFF0F5_129.29%)]",

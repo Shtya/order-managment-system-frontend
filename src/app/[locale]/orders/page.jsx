@@ -74,7 +74,7 @@ export default function Orders() {
 	const mainStatuses = [
 		OrderStatus.NEW,
 		OrderStatus.UNDER_REVIEW,
-		
+
 		OrderStatus.POSTPONED,
 		OrderStatus.FAILED_DELIVERY,
 
@@ -124,8 +124,10 @@ export default function Orders() {
 		fetchStats();
 	}, []);
 
-	const fetchStats = async () => {
+	const fetchStats = async (silent = false) => {
 		try {
+
+			if(!silent)
 			setStatsLoading(true);
 			const response = await api.get("/orders/stats");
 			setStats(response.data || []);
@@ -133,6 +135,7 @@ export default function Orders() {
 			console.error("Error fetching stats:", error);
 			toast.error(t("messages.errorFetchingStats"));
 		} finally {
+			if(!silent)
 			setStatsLoading(false);
 		}
 	};
@@ -157,6 +160,7 @@ export default function Orders() {
 							setRetrySettingsOpen={setRetrySettingsOpen}
 							readOnlyStatus={false}
 							restrictedStatuses={mainStatuses}
+							restrictedSelectStatuses={[...mainStatuses, OrderStatus.CONFIRMED]}
 							showCustom={true}
 							showTopActions={true}
 							showBulkUpload={true}

@@ -8470,8 +8470,8 @@
         "metadata": {
           "title": "بيانات إضافية",
           "orderNumber": "رقم الطلب",
-          "purchaseReturnNumber": "رقم المرتجع",
-          "purchaseNumber": "رقم الشراء",
+          "purchaseReturnNumber": "رقم فاتورة المرتجع",
+          "purchaseNumber": "رقم فاتورة الشراء",
           "trackingNumber": "رقم التتبع",
           "shippingCompanyProvider": "شركة الشحن",
           "category": "الفئة",

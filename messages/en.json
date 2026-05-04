@@ -8427,8 +8427,8 @@
         "metadata": {
           "title": "Metadata",
           "orderNumber": "Order Number",
-          "purchaseReturnNumber": "Return Number",
-          "purchaseNumber": "Purchase Number",
+          "purchaseReturnNumber": "Purchase Return Number",
+          "purchaseNumber": "Purchase Invoice Number",
           "trackingNumber": "Tracking Number",
           "shippingCompanyProvider": "Shipping Company",
           "category": "Category",

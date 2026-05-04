@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect, useRef, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
   Eye,
@@ -481,6 +482,7 @@ export default function ManualExpensesTab({
 }) {
   const tOrders = useTranslations("orders");
   const t = useTranslations("accounts");
+  const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
   const [selectedExpense, setSelectedExpense] = useState(null);
 
@@ -548,6 +550,21 @@ export default function ManualExpensesTab({
     fetchExpenses();
   }, [debouncedSearch]);
 
+  useEffect(() => {
+    const expenseId = searchParams.get("detials");
+    if (expenseId && !selectedExpense) {
+      const loadExpense = async () => {
+        try {
+          const { data } = await api.get(`/expenses/${expenseId}`);
+          setSelectedExpense(data);
+        } catch (error) {
+          console.error("Failed to load expense details", error);
+        }
+      };
+      loadExpense();
+    }
+  }, [searchParams]);
+
   const handleAdd = () => {
     setEditingExpense(null);
     setAddEditModalOpen(true);
@@ -586,6 +603,7 @@ export default function ManualExpensesTab({
     {
       key: "collectionDate",
       header: t("manualExpenses.columns.collectionDate"),
+
       cell: (row) => <span className="text-xs font-medium">{new Date(row.collectionDate).toLocaleDateString()}</span>
     },
     {

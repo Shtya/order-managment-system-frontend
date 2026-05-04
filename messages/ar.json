@@ -8448,7 +8448,8 @@
         "activateDesc": "هل أنت متأكد من رغبتك في تنشيط هذا الحساب؟ سيكون متاحاً للاستخدام في العمليات المالية مرة أخرى.",
         "deactivateTitle": "تعطيل الحساب",
         "deactivateDesc": "هل أنت متأكد من رغبتك في تعطيل هذا الحساب؟ لن يكون متاحاً للاستخدام في العمليات المالية.",
-        "commissionRate": "نسبة العمولة"
+        "commissionRate": "نسبة العمولة",
+        "createdBy": "أنشأ بواسطة"
       },
       "transactions": {
         "deposit": "إيداع نقدي",
@@ -8462,12 +8463,27 @@
         "counterparty": "الجهة",
         "notes": "ملاحظات",
         "referenceType": "نوع العملية",
+        "balanceBefore": "الرصيد قبل",
+        "balanceAfter": "الرصيد بعد",
+        "commission": "العمولة",
+        "createdBy": "المنشئ",
+        "metadata": {
+          "title": "بيانات إضافية",
+          "orderNumber": "رقم الطلب",
+          "purchaseReturnNumber": "رقم المرتجع",
+          "purchaseNumber": "رقم الشراء",
+          "trackingNumber": "رقم التتبع",
+          "shippingCompanyProvider": "شركة الشحن",
+          "category": "الفئة",
+          "supplierName": "اسم المورد"
+        },
         "directions": {
           "IN": "داخل",
           "OUT": "خارج"
         },
         "types": {
           "MANUAL_ADD": "إضافة رصيد يدوية",
+          "INITIAL_DEPOSIT": "إيداع مبدئي",
           "SHIPPING_COLLECTION": "تحصيل من شركة شحن",
           "ORDER_COLLECTION": "تحصيل طلب",
           "CUSTOMER_COLLECTION": "تحصيل من عميل",
@@ -8560,7 +8576,8 @@
       "cancel": "الغاء",
       "none": "لا يوجد",
       "all": "الكل",
-      "close": "إلغاء"
+      "close": "إلغاء",
+      "view": "عرض"
     },
     "filters": {
       "supplier": "المورد",
@@ -8579,7 +8596,8 @@
     },
     "toolbar": {
       "searchPlaceholder": "بحث...",
-      "filter": "فلتر"
+      "filter": "فلتر",
+      "export": "تصدير"
     },
     "overview": {
       "viewOperetionalExpenses": "عرض المصروفات التشغيلية",

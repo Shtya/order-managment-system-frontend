@@ -1723,7 +1723,10 @@
       "sources": {
         "system": "النظام الداخلي",
         "bosta": "بوليصة بوسطة",
-        "all": "الكل (النظام وبوسطة)"
+        "all": "الكل (النظام وبوسطة)",
+        "systemDesc": "النظام الداخلي ({count} ملصق)",
+        "bostaDesc": "بوليصة بوسطة ({count} ملصق بوسطة فقط)",
+        "allDesc": "الكل ({count} نظام + {bostaCount} بوسطة)"
       },
       "breadcrumbs": {
         "home": "الرئيسية",
@@ -1783,12 +1786,17 @@
       "printPreview": {
         "subtitle": "معاينة البوالص",
         "title": "طباعة {count} بوليصة",
+        "note": "يمكن الطباعة من شركة الشحن فقط إذا كانت جميع الطلبات تابعة لنفس الشركة.",
         "tabTitle": "طباعة البوالص",
         "labels": "بوليصة",
         "orderCode": "رقم الطلب",
         "customerInfo": "معلومات العميل",
         "shippingInfo": "معلومات الشحن",
-        "printNow": "طباعة {count} بوليصة الآن"
+        "printNow": "طباعة {count} بوليصة الآن",
+        "loadErrorTitle": "فشل تحميل الملف",
+        "loadErrorSubtitle": "حدث خطأ غير متوقع أثناء معالجة الـ PDF",
+        "systemOnly": "النظام: {count}",
+        "bostaOnly": "بوسطة: {count}"
       },
       "labelFields": {
         "customer": "اسم العميل",

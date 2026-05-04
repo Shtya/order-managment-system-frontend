@@ -2,10 +2,13 @@
 
 import React, { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Document, Page, pdfjs } from 'react-pdf';
 import {
   Printer, CheckCircle2, Package, Truck, FileDown, Info, X,
   MapPin, Phone, User, Hash, ShoppingBag, TrendingUp, AlertCircle,
   CreditCard, Store, Clock, BarChart3, Loader2,
+  FileQuestion,
+  RefreshCw,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
@@ -32,7 +35,10 @@ import { OrderDetailModal } from "./DistributionTab";
 import BarcodeCell from "@/components/atoms/BarcodeCell";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
-
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url,
+).toString();
 function CarrierPill({ carrier }) {
   const s = CARRIER_STYLES[carrier?.toUpperCase()] || CARRIER_STYLES.NONE;
   return (
@@ -117,28 +123,34 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
   const [source, setSource] = useState("system");
   const [bostaPdf, setBostaPdf] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(null);
+  const [numPages, setNumPages] = useState(null);
 
-  const isAllBosta = useMemo(() => orders?.every(o => o.shippingCompany?.code?.toLowerCase() === 'bosta'), [orders]);
+  const bostaOrders = useMemo(() => orders?.filter(o => o.shippingCompany?.code?.toLowerCase() === 'bosta') || [], [orders]);
+  const bostaCount = bostaOrders.length;
+  const systemCount = orders?.length || 0;
 
   useEffect(() => {
     if (open) {
       setSource("system");
       setBostaPdf(null);
+      setLoadError(null);
     }
   }, [open]);
 
   const fetchBostaWaybill = async () => {
+    if (bostaCount === 0) return;
     setLoading(true);
     try {
       const res = await api.post(`/shipping/providers/bosta/mass-awb`, {
-        orderIds: orders.map(o => o.id),
+        orderIds: bostaOrders.map(o => o.id),
         requestedAwbType: 'A4',
         lang: 'ar'
       });
       if (res.data.success) {
         setBostaPdf(res.data.data);
       } else {
-        toast.error(res.data.error || "Failed to fetch Bosta waybill");
+        toast.error(res.data.error || t("common.errorWaybill"));
       }
     } catch (error) {
       toast.error(error.response?.data?.message || t("common.errorWaybill"));
@@ -148,10 +160,10 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
   };
 
   useEffect(() => {
-    if (open && (source === "bosta" || source === "all") && !bostaPdf) {
+    if (open && (source === "bosta" || source === "all") && !bostaPdf && bostaCount > 0) {
       fetchBostaWaybill();
     }
-  }, [source, open]);
+  }, [source, open, bostaCount]);
 
   const handlePrint = () => {
     if (source === "system" || source === "all") {
@@ -189,8 +201,8 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
     if ((source === "bosta" || source === "all") && bostaPdf) {
       const linkSource = `data:application/pdf;base64,${bostaPdf}`;
       const downloadLink = document.createElement("a");
-      const fileName = orders.length === 1
-        ? `waybill_${orders[0].orderNumber}.pdf`
+      const fileName = bostaCount === 1
+        ? `waybill_${bostaOrders[0].orderNumber}.pdf`
         : `waybills_bulk_${Date.now()}.pdf`;
       downloadLink.href = linkSource;
       downloadLink.download = fileName;
@@ -200,6 +212,10 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
     onConfirmPrint(orders.map((o) => o.orderNumber));
     onClose();
   };
+
+  function onDocumentLoadSuccess({ numPages }) {
+    setNumPages(numPages);
+  }
 
   if (!open || !orders?.length) return null;
 
@@ -221,19 +237,29 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
               <div>
                 <p className="text-white/70 text-xs font-medium mb-0.5">{t("printPreview.subtitle")}</p>
                 <h2 className="text-white text-xl font-bold">{t("printPreview.title", { count: orders.length })}</h2>
+                <div className="flex gap-2 mt-1">
+                  <Badge variant="outline" className="bg-white/10 text-white border-white/20 text-[10px]">
+                    {t("printPreview.systemOnly", { count: systemCount })}
+                  </Badge>
+                  {bostaCount > 0 && (
+                    <Badge variant="outline" className="bg-red-500/20 text-white border-red-500/30 text-[10px]">
+                      {t("printPreview.bostaOnly", { count: bostaCount })}
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex flex-col gap-1">
                 <p className="text-[10px] text-white/60 font-bold uppercase tracking-wider">{t("printSource")}</p>
                 <Select value={source} onValueChange={setSource}>
-                  <SelectTrigger className="w-[180px] h-9 bg-white/10 border-white/20 text-white rounded-lg backdrop-blur-md">
+                  <SelectTrigger className="w-[240px] h-9 bg-white/10 border-white/20 text-white rounded-lg backdrop-blur-md">
                     <SelectValue placeholder={t("printSource")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="system">{t("sources.system")}</SelectItem>
-                    <SelectItem value="bosta" disabled={!isAllBosta}>{t("sources.bosta")}</SelectItem>
-                    <SelectItem value="all" disabled={!isAllBosta}>{t("sources.all")}</SelectItem>
+                    <SelectItem value="system">{t("sources.systemDesc", { count: systemCount })}</SelectItem>
+                    <SelectItem value="bosta" disabled={bostaCount === 0}>{t("sources.bostaDesc", { count: bostaCount })}</SelectItem>
+                    <SelectItem value="all" disabled={bostaCount === 0}>{t("sources.allDesc", { count: systemCount, bostaCount: bostaCount })}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -341,11 +367,69 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
                     <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
                     {t("sources.bosta")}
                   </h3>
-                  <iframe
-                    src={`data:application/pdf;base64,${bostaPdf}#toolbar=0&navpanes=0&scrollbar=0`}
-                    className="flex-1 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white shadow-inner"
-                    title="Bosta Waybill"
-                  />
+                  <div className="flex-1 w-full bg-slate-100 flex flex-col items-center py-4 gap-4">
+                    <Document
+                      file={`data:application/pdf;base64,${bostaPdf}`}
+                      onLoadSuccess={onDocumentLoadSuccess}
+                      loading={
+                        <div className="h-64 flex flex-col items-center justify-center gap-3">
+                          <Loader2 className="animate-spin text-primary" size={32} />
+                          <p className="text-sm text-slate-500 font-medium">{tCommon("loading")}</p>
+                        </div>
+
+                      }
+                      noData={
+                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                          <div className="bg-red-50 dark:bg-red-950/30 p-4 rounded-full mb-4">
+                            <AlertCircle className="w-8 h-8 text-red-500" />
+                          </div>
+                          <p className="text-slate-800 dark:text-slate-200 font-bold text-lg">{t("printPreview.loadErrorTitle")}</p>
+                        </div>
+                      }
+
+                      // 2. UI: What to show if loading fails
+                      error={
+                        <div className="flex flex-col items-center justify-center py-12 text-center p-6">
+                          <div className="bg-red-50 dark:bg-red-950/30 p-4 rounded-full mb-4">
+                            <AlertCircle className="w-8 h-8 text-red-500" />
+                          </div>
+                          <p className="text-slate-800 dark:text-slate-200 font-bold text-lg">{t("printPreview.loadErrorTitle")}</p>
+                          <p className="text-slate-500 text-sm max-w-xs">{loadError?.message || t("printPreview.loadErrorSubtitle")}</p>
+                        </div>
+                      }
+
+                      // 3. LOGIC: Errors retrieving the source (e.g., base64 invalid)
+                      onSourceError={(err) => {
+                        console.error("Source Error:", err);
+                        setLoadError(err);
+                        // toast.error("خطأ في مصدر الملف");
+                      }}
+
+                      // 4. LOGIC: Errors loading the document (e.g., file corrupted)
+                      onLoadError={(err) => {
+                        console.error("Load Error:", err);
+                        setLoadError(err);
+                      }}
+
+                      className="flex flex-col items-center gap-4"
+                    >
+                      {/* Map through the total number of pages */}
+                      {Array.from(new Array(numPages), (el, index) => (
+                        <div
+                          key={`page_${index + 1}`}
+                          className="shadow-md border border-slate-200 dark:border-slate-800 rounded-sm overflow-hidden"
+                        >
+                          <Page
+                            pageNumber={index + 1}
+                            renderTextLayer={false}
+                            renderAnnotationLayer={false}
+                            // Optional: Adjust width to fit the dialog properly
+                            width={Math.min(window.innerWidth * 0.8, 800)}
+                          />
+                        </div>
+                      ))}
+                    </Document>
+                  </div>
                 </div>
               )}
             </div>

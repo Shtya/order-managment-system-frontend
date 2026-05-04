@@ -1689,7 +1689,10 @@
       "sources": {
         "system": "Internal System",
         "bosta": "Bosta Waybill",
-        "all": "All (System & Bosta)"
+        "all": "All (System & Bosta)",
+        "systemDesc": "Internal System ({count} labels)",
+        "bostaDesc": "Bosta Waybill (only {count} Bosta labels)",
+        "allDesc": "All ({count} System + {bostaCount} Bosta labels)"
       },
       "breadcrumbs": {
         "home": "Home",
@@ -1750,11 +1753,16 @@
         "subtitle": "Label Preview",
         "title": "Print Preview — {count} Label(s)",
         "tabTitle": "Print Labels",
+        "note": "Printing from the shipping company is allowed only if all orders belong to the same company.",
         "labels": "Labels",
         "orderCode": "Order Code",
         "customerInfo": "Customer Information",
         "shippingInfo": "Shipping Information",
-        "printNow": "Print Now ({count})"
+        "printNow": "Print Now ({count})",
+        "loadErrorTitle": "Failed to load file",
+        "loadErrorSubtitle": "An unexpected error occurred while processing the PDF",
+        "systemOnly": "System: {count}",
+        "bostaOnly": "Bosta: {count}"
       },
       "labelFields": {
         "customer": "Customer",

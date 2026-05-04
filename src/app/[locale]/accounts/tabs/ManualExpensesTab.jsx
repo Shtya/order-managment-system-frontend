@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect, useRef, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
   Eye,
@@ -483,6 +483,8 @@ export default function ManualExpensesTab({
   const tOrders = useTranslations("orders");
   const t = useTranslations("accounts");
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const [search, setSearch] = useState("");
   const [selectedExpense, setSelectedExpense] = useState(null);
 
@@ -557,13 +559,19 @@ export default function ManualExpensesTab({
         try {
           const { data } = await api.get(`/expenses/${expenseId}`);
           setSelectedExpense(data);
+
+          // Cleanup URL params
+          const params = new URLSearchParams(searchParams.toString());
+          params.delete("detials");
+          const query = params.toString();
+          router.replace(`${pathname}${query ? `?${query}` : ""}`, { scroll: false });
         } catch (error) {
           console.error("Failed to load expense details", error);
         }
       };
       loadExpense();
     }
-  }, [searchParams]);
+  }, [searchParams, pathname, router]);
 
   const handleAdd = () => {
     setEditingExpense(null);

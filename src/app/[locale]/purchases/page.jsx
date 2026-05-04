@@ -1199,7 +1199,7 @@ export default function PurchasesPage() {
 	useEffect(() => {
 		const invoiceId = searchParams.get("detials");
 		if (invoiceId && !detailsModal.isOpen) {
-			handleViewDetails({ id: invoiceId });
+			handleViewDetails({ id: invoiceId }, true);
 		}
 	}, [searchParams]);
 
@@ -1376,15 +1376,19 @@ export default function PurchasesPage() {
 		}
 	};
 
-	const handleViewDetails = async (row) => {
+	const handleViewDetails = async (row, cleanupUrl = false) => {
 		// Open modal immediately and set loading to true
 		setDetailsModal({ isOpen: true, invoice: null, isLoading: true });
-		updateUrlWithId(row.id);
+		if (!cleanupUrl) updateUrlWithId(row.id);
 
 		try {
 			const res = await api.get(`/purchases/${row.id}`);
 			// Update with data and stop loading
 			setDetailsModal(prev => ({ ...prev, invoice: res.data, isLoading: false }));
+
+			if (cleanupUrl) {
+				updateUrlWithId(null);
+			}
 		} catch (error) {
 			console.error(error);
 			toast.error(t("messages.fetchDetailsFailed"));

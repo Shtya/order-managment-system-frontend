@@ -83,25 +83,47 @@ reviews:
             suggestion: ''
             type: approve
             time: '2026-04-28T12:44:33.123Z'
-  accounts.toolbar.export:
+  purchases.actions.applying:
     locales:
       ar:
         comments:
           - user:
               name: amagdykhalil
               email: am2592379@gmail.com
-            id: Olb1oVxr9A2P_q9aM8EV4
+            id: m3BZpBn0hbtpOCuwdbv4K
             comment: ''
             suggestion: ''
             type: approve
-            time: '2026-05-04T15:34:51.198Z'
+            time: '2026-05-04T18:20:44.545Z'
       en:
         comments:
           - user:
               name: amagdykhalil
               email: am2592379@gmail.com
-            id: NZsJSblKHA9vXBzJEblX8
+            id: nASHrwof3LqlyoiOVufsA
             comment: ''
             suggestion: ''
             type: approve
-            time: '2026-05-04T15:34:53.157Z'
+            time: '2026-05-04T18:20:46.559Z'
+  purchases.actions.apply:
+    locales:
+      en:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: DsvY8jvrPFGRVgorvqPIx
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-05-04T18:21:00.907Z'
+      ar:
+        comments:
+          - user:
+              name: amagdykhalil
+              email: am2592379@gmail.com
+            id: RZIDUYrbEGu4wXKh_mPMM
+            comment: ''
+            suggestion: ''
+            type: approve
+            time: '2026-05-04T18:21:02.916Z'

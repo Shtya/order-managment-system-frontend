@@ -8405,7 +8405,8 @@
         "activateDesc": "Are you sure you want to activate this account? It will be available for financial transactions again.",
         "deactivateTitle": "Deactivate Account",
         "deactivateDesc": "Are you sure you want to deactivate this account? It will no longer be available for transactions.",
-        "commissionRate": "Commission Rate"
+        "commissionRate": "Commission Rate",
+        "createdBy": "Created By"
       },
       "transactions": {
         "deposit": "Deposit Money",
@@ -8418,13 +8419,28 @@
         "type": "Type",
         "counterparty": "Counterparty",
         "notes": "Notes",
-        "referenceType": "Transaction Type",
+        "referenceType": "Reference Type",
+        "balanceBefore": "Balance Before",
+        "balanceAfter": "Balance After",
+        "commission": "Commission",
+        "createdBy": "Created By",
+        "metadata": {
+          "title": "Metadata",
+          "orderNumber": "Order Number",
+          "purchaseReturnNumber": "Return Number",
+          "purchaseNumber": "Purchase Number",
+          "trackingNumber": "Tracking Number",
+          "shippingCompanyProvider": "Shipping Company",
+          "category": "Category",
+          "supplierName": "Supplier Name"
+        },
         "directions": {
           "IN": "In",
           "OUT": "Out"
         },
         "types": {
           "MANUAL_ADD": "Manual Balance Addition",
+          "INITIAL_DEPOSIT": "Initial Deposit",
           "SHIPPING_COLLECTION": "Shipping Collection",
           "ORDER_COLLECTION": "Order Collection",
           "CUSTOMER_COLLECTION": "Customer Collection",
@@ -8517,7 +8533,8 @@
       "cancel": "Cancel",
       "none": "None",
       "all": "All",
-      "close": "Close"
+      "close": "Close",
+      "view": "View"
     },
     "filters": {
       "supplier": "Supplier",
@@ -8536,7 +8553,8 @@
     },
     "toolbar": {
       "searchPlaceholder": "Search...",
-      "filter": "Filter"
+      "filter": "Filter",
+      "export": "Export"
     },
     "overview": {
       "viewOperetionalExpenses": "View Operating Expenses",

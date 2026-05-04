@@ -28,6 +28,7 @@ import {
 	Loader2,
 	ChevronDown,
 	Wallet,
+	ArrowRight,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/navigation";
@@ -160,18 +161,35 @@ export default function PurchasesReturnPage() {
 	const [logsOpen, setLogsOpen] = useState(false);
 	const [previewOpen, setPreviewOpen] = useState(false);
 	const [paidAmountOpen, setPaidAmountOpen] = useState(false);
+	const [statusChangeModal, setStatusChangeModal] = useState({ isOpen: false, invoice: null, newStatus: null });
 	const [isDetailLoading, setIsDetailLoading] = useState(false);
 
 	const handleStatusChange = async (id, status) => {
-		const loadingToast = toast.loading(t("messages.updatingStatus"));
+		const statusPromise = api.patch(`/purchases-return/${id}/status`, { status });
+
 		try {
-			await api.patch(`/purchases-return/${id}/status`, { status });
-			toast.success(t("messages.statusUpdated"), { id: loadingToast });
+			await toast.promise(statusPromise, {
+				loading: t("messages.updatingStatus"),
+				success: t("messages.statusUpdated"),
+				error: (err) => err.response?.data?.message || t("messages.statusUpdateFailed"),
+			});
+
 			fetchReturns(pager.current_page, pager.per_page);
 			fetchStats();
 		} catch (error) {
 			console.error("Failed to update status:", error);
-			toast.error(error?.response?.data?.message || t("messages.statusUpdateFailed"), { id: loadingToast });
+		}
+	};
+
+	const handleUpdatePaidAmount = async (id, paidAmount) => {
+		try {
+			await api.patch(`/purchases-return/${id}/paid-amount`, { paidAmount });
+			toast.success(t("messages.paidAmountUpdated"));
+			fetchReturns(pager.current_page, pager.per_page);
+			fetchStats();
+		} catch (error) {
+			console.error(error);
+			toast.error(error?.response?.data?.message || t("messages.paidAmountFailed"));
 		}
 	};
 
@@ -568,7 +586,7 @@ export default function PurchasesReturnPage() {
 							</DropdownMenuItem>
 
 							<DropdownMenuItem
-								onClick={() => handleStatusChange(row.id, "pending")}
+								onClick={() => setStatusChangeModal({ isOpen: true, invoice: row, newStatus: "pending" })}
 								className="flex items-center gap-2 cursor-pointer rounded-xl hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-colors"
 								disabled={row.status === "pending" || row.closingId !== null}
 								permission="purchase_returns.update"
@@ -578,7 +596,7 @@ export default function PurchasesReturnPage() {
 							</DropdownMenuItem>
 
 							<DropdownMenuItem
-								onClick={() => handleStatusChange(row.id, "rejected")}
+								onClick={() => setStatusChangeModal({ isOpen: true, invoice: row, newStatus: "rejected" })}
 								className="flex items-center gap-2 cursor-pointer rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
 								disabled={row.status === "rejected" || row.closingId !== null}
 								permission="purchase_returns.update"
@@ -782,10 +800,16 @@ export default function PurchasesReturnPage() {
 				onClose={() => setPaidAmountOpen(false)}
 				invoice={selectedInvoice}
 				t={t}
-				onApply={() => {
-					fetchReturns(pager.current_page, pager.per_page);
-					fetchStats();
-				}}
+				onSave={handleUpdatePaidAmount}
+			/>
+
+			<StatusChangeModal
+				isOpen={statusChangeModal.isOpen}
+				onClose={() => setStatusChangeModal({ isOpen: false, invoice: null, newStatus: null })}
+				invoice={statusChangeModal.invoice}
+				newStatus={statusChangeModal.newStatus}
+				t={t}
+				onConfirm={handleStatusChange}
 			/>
 		</div>
 	);
@@ -1012,14 +1036,26 @@ function LogsModalSkeleton() {
 function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply, formatCurrency }) {
 	const [loading, setLoading] = useState(false);
 	const [preview, setPreview] = useState(null);
+	const [safe, setSafe] = useState(null);
+	const [invoice, setInvoice] = useState(null);
 
 	useEffect(() => {
 		if (!isOpen || !invoiceId) return;
 		(async () => {
 			setLoading(true);
 			try {
-				const res = await api.get(`/purchases-return/${invoiceId}/accept-preview`);
-				setPreview(res.data);
+				const [previewRes, invoiceRes] = await Promise.all([
+					api.get(`/purchases-return/${invoiceId}/accept-preview`),
+					api.get(`/purchases-return/${invoiceId}`)
+				]);
+
+				setPreview(previewRes.data);
+				setInvoice(invoiceRes.data);
+
+				if (invoiceRes.data?.safeId) {
+					const safeRes = await api.get(`/safes/accounts/${invoiceRes.data.safeId}`);
+					setSafe(safeRes.data);
+				}
 			} catch (e) {
 				console.error(e);
 				toast.error(e?.response?.data?.message || t("messages.previewFailed"));
@@ -1031,6 +1067,7 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply, formatCurr
 
 	const rows = preview?.rows ?? [];
 	const hasErrors = rows.some((r) => r.error);
+	const paidAmount = Number(invoice?.paidAmount || 0);
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
@@ -1073,7 +1110,7 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply, formatCurr
 						</div>
 					) : (
 						<div className="space-y-4 sm:space-y-5">
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+							<div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
 								<motion.div
 									initial={{ opacity: 0, y: 20 }}
 									animate={{ opacity: 1, y: 0 }}
@@ -1098,16 +1135,37 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply, formatCurr
 								>
 									<div className="flex items-center gap-3">
 										<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-red-100 dark:bg-red-900/50 flex items-center justify-center flex-shrink-0">
-											<TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 dark:text-red-400" />
+											<TrendingDown className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 dark:text-red-400" />
 										</div>
 										<div>
 											<div className="text-2xl sm:text-3xl font-bold text-red-600 dark:text-red-400">
-												-{rows.reduce((sum, r) => sum + (r.removeQty || 0), 0)}
+												-{rows.reduce((sum, r) => sum + (r.returnedQuantity || 0), 0)}
 											</div>
 											<div className="text-[10px] sm:text-xs text-gray-600 dark:text-slate-400 font-semibold">{t("acceptPreview.totalQuantityToRemove")}</div>
 										</div>
 									</div>
 								</motion.div>
+
+								{paidAmount > 0 && safe && (
+									<motion.div
+										initial={{ opacity: 0, y: 20 }}
+										animate={{ opacity: 1, y: 0 }}
+										transition={{ delay: 0.2 }}
+										className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/30 dark:to-emerald-900/30 rounded-xl p-3 sm:p-4 border-2 border-emerald-200 dark:border-emerald-800"
+									>
+										<div className="flex items-center gap-3">
+											<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-200 dark:bg-emerald-900/50 flex items-center justify-center flex-shrink-0">
+												<Wallet className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 dark:text-emerald-400" />
+											</div>
+											<div>
+												<div className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+													+{formatCurrency(paidAmount)}
+												</div>
+												<div className="text-[10px] sm:text-xs text-gray-600 dark:text-slate-400 font-semibold">{t("deposit") || "Depositing"} ({safe.name})</div>
+											</div>
+										</div>
+									</motion.div>
+								)}
 							</div>
 
 							<motion.div
@@ -1526,63 +1584,329 @@ function DetailsModalSkeleton() {
 	);
 }
 
-function EditPaidAmountModal({ isOpen, onClose, invoice, t, onApply }) {
-	const [val, setVal] = useState(0);
+function EditPaidAmountModal({ isOpen, onClose, invoice, t, onSave }) {
+	const [paidAmount, setPaidAmount] = useState(0);
 	const [loading, setLoading] = useState(false);
+	const [safe, setSafe] = useState(null);
+	const [safeLoading, setSafeLoading] = useState(false);
+	const { formatCurrency } = usePlatformSettings();
 
 	useEffect(() => {
-		if (invoice) setVal(invoice.paidAmount || 0);
+		if (invoice) {
+			setPaidAmount(invoice.paidAmount || 0);
+			if (invoice.safeId) {
+				fetchSafe(invoice.safeId);
+			}
+		}
 	}, [invoice]);
 
-	const handleSubmit = async () => {
+	const fetchSafe = async (safeId) => {
+		setSafeLoading(true);
+		try {
+			const res = await api.get(`/safes/accounts/${safeId}`);
+			setSafe(res.data);
+		} catch (error) {
+			console.error(error);
+		} finally {
+			setSafeLoading(false);
+		}
+	};
+
+	const handleSave = async () => {
 		setLoading(true);
 		try {
-			await api.patch(`/purchases-return/${invoice.id}/paid-amount`, { paidAmount: Number(val) });
-			toast.success(t("messages.updatePaidAmountSuccess"));
-			onApply?.();
+			await onSave(invoice.id, paidAmount);
 			onClose();
-		} catch (e) {
-			console.error(e);
-			toast.error(e?.response?.data?.message || t("messages.updatePaidAmountFailed"));
 		} finally {
 			setLoading(false);
 		}
 	};
 
+	if (!invoice) return null;
+	const totalReturn = Number(invoice.totalReturn || 0);
+	const remaining = totalReturn - paidAmount;
+	const delta = paidAmount - (invoice.paidAmount || 0);
+
+	// In Purchase Return:
+	// If newPaidAmount < oldPaidAmount => We are returning money to supplier => WITHDRAW from safe
+	// If newPaidAmount > oldPaidAmount => We are taking more money from supplier => DEPOSIT to safe
+	const isWithdraw = delta < 0;
+	const absDelta = Math.abs(delta);
+
+	const commissionRate = safe?.commissionRate || 0;
+	const commissionAmount = isWithdraw ? (absDelta * (commissionRate / 100)) : 0;
+	const totalWithdrawal = absDelta + commissionAmount;
+
+	const isAccepted = invoice.status === 'accepted';
+	const canPerform = !isAccepted || (!isWithdraw || (safe && Number(safe.currentBalance) >= totalWithdrawal));
+
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle>{t("updatePaidAmount.title")}</DialogTitle>
-					<DialogDescription>{t("updatePaidAmount.description")}</DialogDescription>
+			<DialogContent className="!max-w-md">
+				<DialogHeader className="border-b border-gray-200 dark:border-slate-700 pb-4">
+					<DialogTitle className="flex items-center gap-3">
+						<div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+							<DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
+						</div>
+						{t("editPaidAmount.title")}
+					</DialogTitle>
+					<DialogDescription className="text-sm mt-2">{t("editPaidAmount.description")}</DialogDescription>
 				</DialogHeader>
-				<div className="py-4 space-y-4">
-					<div className="space-y-2">
-						<Label>{t("updatePaidAmount.paidAmount")}</Label>
+
+				<div className="space-y-4 py-4">
+					{safe && isAccepted && (
+						<div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 flex items-center justify-between">
+							<div className="flex items-center gap-2">
+								<Wallet className="w-4 h-4 text-blue-600" />
+								<div>
+									<p className="text-xs font-bold text-blue-700 dark:text-blue-300">{safe.name}</p>
+									{commissionRate > 0 && (
+										<p className="text-[9px] font-bold text-blue-500">{t("commissionRate") || "Commission"}: {commissionRate}%</p>
+									)}
+								</div>
+							</div>
+							<div className="text-right">
+								<p className="text-[10px] text-blue-600/70 dark:text-blue-400/70 uppercase font-black">{t("safeBalance") || "Safe Balance"}</p>
+								<p className="text-xs font-black text-blue-700 dark:text-blue-300">{formatCurrency(safe.currentBalance)}</p>
+							</div>
+						</div>
+					)}
+
+					<div className="p-4 space-y-2 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
+						<Label className="text-xs text-gray-500 dark:text-slate-400 mb-2">{t("table.totalReturn")}</Label>
+						<Input value={formatCurrency(totalReturn)} disabled className="bg-white dark:bg-slate-900 font-bold text-lg" />
+					</div>
+
+					<div className="space-y-2 ">
+						<Label className="mb-2">{t("table.paidAmount")}</Label>
 						<Input
 							type="number"
-							value={val}
-							onChange={(e) => setVal(e.target.value)}
-							placeholder="0.00"
-							className="rounded-xl"
+							value={paidAmount}
+							onChange={(e) => setPaidAmount(Number(e.target.value))}
+							min="0"
+							max={totalReturn}
+							className="text-lg font-semibold"
 						/>
 					</div>
-					<div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
-						<div className="flex justify-between text-sm">
-							<span>{t("summary.totalReturn")}</span>
-							<span className="font-bold">{invoice?.totalReturn}</span>
+
+					{absDelta > 0 && isAccepted && (
+						<div className={cn(
+							"p-4 rounded-xl border-2 flex flex-col gap-3",
+							isWithdraw ? "bg-rose-50 border-rose-200 dark:bg-rose-950/20 dark:border-rose-800" : "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800"
+						)}>
+							<div className="flex items-center justify-between">
+								<div>
+									<p className={cn("text-xs font-bold uppercase", isWithdraw ? "text-rose-600" : "text-emerald-600")}>
+										{isWithdraw ? t("withdrawing") || "Withdrawing" : t("depositing") || "Depositing"}
+									</p>
+									<p className={cn("text-lg font-black", isWithdraw ? "text-rose-700" : "text-emerald-700")}>
+										{isWithdraw ? "-" : "+"}{formatCurrency(absDelta)}
+									</p>
+								</div>
+								{!canPerform && isWithdraw && (
+									<div className="flex flex-col items-end">
+										<Badge variant="destructive" className="animate-pulse">{t("insufficientBalance") || "Insufficient Balance"}</Badge>
+									</div>
+								)}
+							</div>
+
+							{isWithdraw && commissionRate > 0 && (
+								<div className="pt-2 border-t border-rose-200 dark:border-rose-800 space-y-1">
+									<div className="flex justify-between text-[10px] font-bold text-rose-600/70 uppercase">
+										<span>{t("commissionAmount") || "Commission"} ({commissionRate}%)</span>
+										<span>{formatCurrency(commissionAmount)}</span>
+									</div>
+									<div className="flex justify-between text-xs font-black text-rose-700">
+										<span>{t("totalWithdrawn") || "Total Withdrawn"}</span>
+										<span>{formatCurrency(totalWithdrawal)}</span>
+									</div>
+								</div>
+							)}
 						</div>
-						<div className="flex justify-between text-sm mt-1">
-							<span>{t("summary.remainingAmount")}</span>
-							<span className="font-bold text-primary">{invoice ? (invoice.totalReturn - val) : 0}</span>
+					)}
+
+					<div className="p-4 rounded-xl bg-orange-50 dark:bg-orange-950/30 border-2 border-orange-200 dark:border-orange-800">
+						<Label className="text-xs text-orange-600 dark:text-orange-400 mb-2">{t("table.remainingAmount")}</Label>
+						<div className={cn(
+							"text-2xl font-bold",
+							remaining > 0 ? "text-orange-600 dark:text-orange-400" : "text-green-600 dark:text-green-400"
+						)}>
+							{formatCurrency(remaining)}
 						</div>
 					</div>
 				</div>
-				<DialogFooter>
-					<Button variant="outline" onClick={onClose} disabled={loading}>{t("actions.cancel")}</Button>
-					<Button onClick={handleSubmit} disabled={loading || val < 0}>
-						{loading ? <Loader2 className="w-4 h-4 animate-spin ltr:mr-2 rtl:ml-2" /> : <Check className="w-4 h-4 ltr:mr-2 rtl:ml-2" />}
-						{t("actions.save")}
+
+				<DialogFooter className="border-t border-gray-200 dark:border-slate-700 pt-4">
+					<Button variant="outline" onClick={onClose} className="px-6 rounded-xl">
+						{t("actions.cancel")}
+					</Button>
+					<Button onClick={handleSave} disabled={loading || !canPerform} className="px-8 rounded-xl">
+						{loading ? (
+							<>
+								<Loader2 className="w-4 h-4 ltr:mr-2 rtl:ml-2 animate-spin" />
+								{t("actions.saving")}
+							</>
+						) : (
+							t("actions.save")
+						)}
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+function StatusChangeModal({ isOpen, onClose, invoice, newStatus, t, onConfirm }) {
+	const [loading, setLoading] = useState(false);
+	const [safe, setSafe] = useState(null);
+	const [safeLoading, setSafeLoading] = useState(false);
+	const { formatCurrency } = usePlatformSettings();
+
+	useEffect(() => {
+		if (isOpen && invoice?.safeId) {
+			fetchSafe(invoice.safeId);
+		}
+	}, [isOpen, invoice]);
+
+	const fetchSafe = async (safeId) => {
+		setSafeLoading(true);
+		try {
+			const res = await api.get(`/safes/accounts/${safeId}`);
+			setSafe(res.data);
+		} catch (error) {
+			console.error(error);
+		} finally {
+			setSafeLoading(false);
+		}
+	};
+
+	if (!invoice) return null;
+
+	const isFromAccepted = invoice.status === "accepted";
+	const paidAmount = Number(invoice.paidAmount || 0);
+
+	// In Purchase Return:
+	// If rolling back an accepted return (to pending/rejected) => WITHDRAW the deposit we made
+	const isWithdraw = isFromAccepted && paidAmount > 0;
+	const absDelta = paidAmount;
+
+	const commissionRate = safe?.commissionRate || 0;
+	const commissionAmount = isWithdraw ? (absDelta * (commissionRate / 100)) : 0;
+	const totalWithdrawal = absDelta + commissionAmount;
+
+	const canPerform = !isWithdraw || (safe && Number(safe.currentBalance) >= totalWithdrawal);
+
+	return (
+		<Dialog open={isOpen} onOpenChange={onClose}>
+			<DialogContent className="!max-w-md">
+				<DialogHeader className="border-b border-gray-200 dark:border-slate-700 pb-4">
+					<DialogTitle className="flex items-center gap-3">
+						<div className={cn(
+							"w-10 h-10 rounded-xl flex items-center justify-center",
+							newStatus === "rejected" ? "bg-red-100 dark:bg-red-900/30" : "bg-yellow-100 dark:bg-yellow-900/30"
+						)}>
+							{newStatus === "rejected" ? (
+								<XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+							) : (
+								<Clock className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+							)}
+						</div>
+						{t(`statusChange.${newStatus}.title`) || t(`statuses.${newStatus}`)}
+					</DialogTitle>
+					<DialogDescription className="text-sm mt-2">
+						{t(`statusChange.${newStatus}.description`) || t("messages.updatingStatus")}
+					</DialogDescription>
+				</DialogHeader>
+
+				<div className="space-y-4 py-4">
+					{safe && (
+						<div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 flex items-center justify-between">
+							<div className="flex items-center gap-2">
+								<Wallet className="w-4 h-4 text-blue-600" />
+								<div>
+									<p className="text-xs font-bold text-blue-700 dark:text-blue-300">{safe.name}</p>
+									{commissionRate > 0 && isWithdraw && (
+										<p className="text-[9px] font-bold text-blue-500">{t("commissionRate") || "Commission"}: {commissionRate}%</p>
+									)}
+								</div>
+							</div>
+							<div className="text-right">
+								<p className="text-[10px] text-blue-600/70 dark:text-blue-400/70 uppercase font-black">{t("safeBalance") || "Safe Balance"}</p>
+								<p className="text-sm font-black text-blue-700 dark:text-blue-300">{formatCurrency(safe.currentBalance)}</p>
+							</div>
+						</div>
+					)}
+
+					{isWithdraw && (
+						<div className={cn(
+							"p-4 rounded-xl border-2 flex flex-col gap-3",
+							"bg-rose-50 border-rose-200 dark:bg-rose-950/20 dark:border-rose-800"
+						)}>
+							<div className="flex items-center justify-between">
+								<div>
+									<p className="text-xs font-bold uppercase text-rose-600">
+										{t("withdrawing") || "Withdrawing"}
+									</p>
+									<p className="text-lg font-black text-rose-700">
+										-{formatCurrency(absDelta)}
+									</p>
+								</div>
+								{!canPerform && (
+									<div className="flex flex-col items-end">
+										<Badge variant="destructive" className="animate-pulse">{t("insufficientBalance") || "Insufficient Balance"}</Badge>
+									</div>
+								)}
+							</div>
+
+							{commissionRate > 0 && (
+								<div className="pt-2 border-t border-rose-200 dark:border-rose-800 space-y-1">
+									<div className="flex justify-between text-[10px] font-bold text-rose-600/70 uppercase">
+										<span>{t("commissionAmount") || "Commission"} ({commissionRate}%)</span>
+										<span>{formatCurrency(commissionAmount)}</span>
+									</div>
+									<div className="flex justify-between text-xs font-black text-rose-700">
+										<span>{t("totalWithdrawn") || "Total Withdrawn"}</span>
+										<span>{formatCurrency(totalWithdrawal)}</span>
+									</div>
+								</div>
+							)}
+						</div>
+					)}
+
+					<div className="p-4 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
+						<div className="flex justify-between items-center mb-2">
+							<span className="text-xs text-gray-500 dark:text-slate-400">{t("table.status")}</span>
+							<div className="flex items-center gap-2">
+								<Badge variant="outline" className="opacity-50">{t(`statuses.${invoice.status}`)}</Badge>
+								<ArrowRight size={14} className="text-gray-400 rtl:rotate-180" />
+								<Badge className={cn(
+									newStatus === "rejected" ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700"
+								)}>
+									{t(`statuses.${newStatus}`)}
+								</Badge>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<DialogFooter className="border-t border-gray-200 dark:border-slate-700 pt-4">
+					<Button variant="outline" onClick={onClose} className="px-6 rounded-xl">
+						{t("actions.cancel")}
+					</Button>
+					<Button
+						onClick={() => onConfirm(invoice.id, newStatus)}
+						disabled={loading || !canPerform}
+						variant={newStatus === "rejected" ? "destructive" : "default"}
+						className="px-8 rounded-xl font-bold"
+					>
+						{loading ? (
+							<>
+								<Loader2 className="w-4 h-4 ltr:mr-2 rtl:ml-2 animate-spin" />
+								{t("actions.applying")}
+							</>
+						) : (
+							t("actions.apply")
+						)}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

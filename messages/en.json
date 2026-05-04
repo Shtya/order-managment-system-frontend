@@ -1685,6 +1685,12 @@
       "loading": "Loading..."
     },
     "print": {
+      "printSource": "Print Source",
+      "sources": {
+        "system": "Internal System",
+        "bosta": "Bosta Waybill",
+        "all": "All (System & Bosta)"
+      },
       "breadcrumbs": {
         "home": "Home",
         "warehouse": "Warehouse Management",

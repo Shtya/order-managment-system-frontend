@@ -765,6 +765,7 @@ export default function PurchasesReturnPage() {
 
 			{/* Modals */}
 			<DetailsModal
+				key={selectedInvoice?.id}
 				isOpen={detailsOpen}
 				onClose={() => {
 					setDetailsOpen(false);
@@ -777,6 +778,7 @@ export default function PurchasesReturnPage() {
 			/>
 
 			<LogsModal
+				key={selectedInvoice?.id}
 				isOpen={logsOpen}
 				onClose={() => setLogsOpen(false)}
 				invoiceId={selectedInvoice?.id}
@@ -784,6 +786,7 @@ export default function PurchasesReturnPage() {
 			/>
 
 			<AcceptPreviewModal
+				key={selectedInvoice?.id}
 				isOpen={previewOpen}
 				formatCurrency={formatCurrency}
 				onClose={() => setPreviewOpen(false)}
@@ -796,6 +799,7 @@ export default function PurchasesReturnPage() {
 			/>
 
 			<EditPaidAmountModal
+				key={selectedInvoice?.id}
 				isOpen={paidAmountOpen}
 				onClose={() => setPaidAmountOpen(false)}
 				invoice={selectedInvoice}
@@ -804,6 +808,7 @@ export default function PurchasesReturnPage() {
 			/>
 
 			<StatusChangeModal
+				key={selectedInvoice?.id}
 				isOpen={statusChangeModal.isOpen}
 				onClose={() => setStatusChangeModal({ isOpen: false, invoice: null, newStatus: null })}
 				invoice={statusChangeModal.invoice}

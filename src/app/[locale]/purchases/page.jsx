@@ -460,7 +460,7 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 										</div>
 										<div className="text-right">
 											<span className="text-blue-600/70 dark:text-blue-400/70 uppercase font-black">
-													{t("safeBalance") || "Safe Balance"}
+												{t("safeBalance") || "Safe Balance"}
 											</span>
 											<p className="text-lg font-black text-blue-700 dark:text-blue-300">{formatCurrency(safe.currentBalance)}</p>
 										</div>
@@ -1892,54 +1892,61 @@ export default function PurchasesPage() {
 				onPageChange={({ page, per_page }) => fetchPurchases(page, per_page)}
 			/>
 
-			<DetailsModal
-				isOpen={detailsModal.isOpen}
-				onClose={() => {
-					setDetailsModal({ isOpen: false, invoice: null });
-					updateUrlWithId(null);
-				}}
-				invoice={detailsModal.invoice}
-				isLoading={detailsModal.isLoading}
-				formatCurrency={formatCurrency}
-			// t={t}
-			/>
 
-			<LogsModal
-				isOpen={logsModal.isOpen}
-				onClose={() => setLogsModal({ isOpen: false, invoiceId: null })}
-				invoiceId={logsModal.invoiceId}
-				t={t}
-			/>
+			{detailsModal.isOpen && (
+				<DetailsModal
+					isOpen={detailsModal.isOpen}
+					onClose={() => {
+						setDetailsModal({ isOpen: false, invoice: null });
+						updateUrlWithId(null);
+					}}
+					invoice={detailsModal.invoice}
+					isLoading={detailsModal.isLoading}
+					formatCurrency={formatCurrency}
+				// t={t}
+				/>)}
 
-			<StatusChangeModal
-				isOpen={statusChangeModal.isOpen}
-				onClose={() => setStatusChangeModal({ isOpen: false, invoice: null, newStatus: null })}
-				invoice={statusChangeModal.invoice}
-				newStatus={statusChangeModal.newStatus}
-				t={t}
-				onConfirm={handleStatusChange}
-			/>
+			{logsModal.isOpen && (
+				<LogsModal
+					isOpen={logsModal.isOpen}
+					onClose={() => setLogsModal({ isOpen: false, invoiceId: null })}
+					invoiceId={logsModal.invoiceId}
+					t={t}
+				/>)}
 
-			<EditPaidAmountModal
-				isOpen={editModal.isOpen}
-				onClose={() => setEditModal({ isOpen: false, invoice: null })}
-				invoice={editModal.invoice}
-				t={t}
-				onSave={handleUpdatePaidAmount}
-				formatCurrency={formatCurrency}
-			/>
+			{statusChangeModal.isOpen && (
+				<StatusChangeModal
+					isOpen={statusChangeModal.isOpen}
+					onClose={() => setStatusChangeModal({ isOpen: false, invoice: null, newStatus: null })}
+					invoice={statusChangeModal.invoice}
+					newStatus={statusChangeModal.newStatus}
+					t={t}
+					onConfirm={handleStatusChange}
+				/>)}
 
-			<AcceptPreviewModal
-				isOpen={acceptModal.isOpen}
-				onClose={() => setAcceptModal({ isOpen: false, invoiceId: null })}
-				invoiceId={acceptModal.invoiceId}
-				t={t}
-				onApply={async () => {
-					if (!acceptModal.invoiceId) return;
-					await handleStatusChange(acceptModal.invoiceId, "accepted");
-					setAcceptModal({ isOpen: false, invoiceId: null });
-				}}
-			/>
+			{editModal.isOpen && (
+				<EditPaidAmountModal
+					isOpen={editModal.isOpen}
+					onClose={() => setEditModal({ isOpen: false, invoice: null })}
+					invoice={editModal.invoice}
+					t={t}
+					onSave={handleUpdatePaidAmount}
+					formatCurrency={formatCurrency}
+				/>
+			)}
+			{acceptModal.isOpen && (
+				<AcceptPreviewModal
+					isOpen={acceptModal.isOpen}
+					onClose={() => setAcceptModal({ isOpen: false, invoiceId: null })}
+					invoiceId={acceptModal.invoiceId}
+					t={t}
+					onApply={async () => {
+						if (!acceptModal.invoiceId) return;
+						await handleStatusChange(acceptModal.invoiceId, "accepted");
+						setAcceptModal({ isOpen: false, invoiceId: null });
+					}}
+				/>
+			)}
 		</div>
 	);
 }

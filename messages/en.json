@@ -3973,7 +3973,9 @@
       "editPaidAmount": "Edit Paid Amount",
       "createInvoice": "Create New Invoice",
       "howToUse": "How to Use",
-      "changeStatus": "Change Status"
+      "changeStatus": "Change Status",
+      "applying": "Updating",
+      "apply": "Apply"
     },
     "acceptPreview": {
       "title": "Acceptance Preview",
@@ -4006,6 +4008,30 @@
       "previewReady": "Preview is ready — review changes before accepting",
       "apply": "Apply Acceptance"
     },
+    "safeBalance": "Safe Balance",
+    "withdrawing": "Will withdraw",
+    "depositing": "Will deposit",
+    "insufficientBalance": "Insufficient safe balance",
+    "commissionRate": "Commission Rate",
+    "commissionAmount": "Commission Amount",
+    "totalWithdrawn": "Total Withdrawn Amount",
+    "statusChange": {
+      "pending": {
+        "title": "Suspend Invoice",
+        "description": "Are you sure you want to change the status to Pending? The paid amount will be refunded to the safe."
+      },
+      "rejected": {
+        "title": "Reject Invoice",
+        "description": "Are you sure you want to reject this invoice? The paid amount will be refunded to the safe."
+      }
+    },
+    "editPaidAmount": {
+      "title": "Edit Paid Amount",
+      "description": "Update the paid amount for this invoice. Safe balance will be updated automatically.",
+      "total": "Total",
+      "paidAmount": "Paid Amount",
+      "remaining": "Remaining"
+    },
     "details": {
       "title": "Invoice Details",
       "invoiceNumber": "Invoice Number",
@@ -4033,13 +4059,6 @@
       "empty": "No logs found for this invoice",
       "showChanges": "Show Changes",
       "showDetails": "Show Details"
-    },
-    "editPaidAmount": {
-      "title": "Edit Paid Amount",
-      "description": "Update the paid amount from the total invoice amount",
-      "total": "Total",
-      "paidAmount": "Paid Amount",
-      "remaining": "Remaining"
     },
     "messages": {
       "previewFailed": "Failed to load acceptance preview",

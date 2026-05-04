@@ -4009,7 +4009,9 @@
       "editPaidAmount": "تعديل المبلغ المدفوع",
       "createInvoice": "إنشاء فاتورة جديدة",
       "howToUse": "كيفية الاستخدام",
-      "changeStatus": "تغيير الحالة"
+      "changeStatus": "تغيير الحالة",
+      "applying": "جاري التحديث",
+      "apply": "تطبيق"
     },
     "acceptPreview": {
       "title": "معاينة القبول",
@@ -4042,6 +4044,30 @@
       "previewReady": "المعاينة جاهزة - راجع التغييرات قبل القبول",
       "apply": "تطبيق القبول"
     },
+    "safeBalance": "رصيد الخزنة",
+    "withdrawing": "سيتم سحب",
+    "depositing": "سيتم إيداع",
+    "insufficientBalance": "رصيد الخزنة غير كافٍ",
+    "commissionRate": "نسبة العمولة",
+    "commissionAmount": "مبلغ العمولة",
+    "totalWithdrawn": "إجمالي المبلغ المسحوب",
+    "statusChange": {
+      "pending": {
+        "title": "تعليق الفاتورة",
+        "description": "هل أنت متأكد من تغيير حالة الفاتورة إلى قيد الانتظار؟ سيتم استرداد المبلغ المدفوع إلى الخزنة."
+      },
+      "rejected": {
+        "title": "رفض الفاتورة",
+        "description": "هل أنت متأكد من رفض هذه الفاتورة؟ سيتم استرداد المبلغ المدفوع إلى الخزنة."
+      }
+    },
+    "editPaidAmount": {
+      "title": "تعديل المبلغ المدفوع",
+      "description": "قم بتحديث المبلغ المدفوع من إجمالي الفاتورة",
+      "total": "الإجمالي",
+      "paidAmount": "المبلغ المدفوع",
+      "remaining": "المبلغ المتبقي"
+    },
     "details": {
       "title": "تفاصيل الفاتورة",
       "invoiceNumber": "رقم الفاتورة",
@@ -4069,13 +4095,6 @@
       "empty": "لا توجد سجلات لهذه الفاتورة",
       "showChanges": "عرض التغييرات",
       "showDetails": "عرض التفاصيل"
-    },
-    "editPaidAmount": {
-      "title": "تعديل المبلغ المدفوع",
-      "description": "قم بتحديث المبلغ المدفوع من إجمالي الفاتورة",
-      "total": "الإجمالي",
-      "paidAmount": "المبلغ المدفوع",
-      "remaining": "المبلغ المتبقي"
     },
     "messages": {
       "previewFailed": "فشل في تحميل معاينة القبول",

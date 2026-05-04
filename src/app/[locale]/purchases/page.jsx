@@ -24,6 +24,7 @@ import {
 	Info,
 	FileDown,
 	Wallet,
+	ArrowRight,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/navigation";
@@ -101,127 +102,6 @@ function LoadingSpinner({ size = "default", text }) {
 				</p>
 			)}
 		</div>
-	);
-}
-
-function PurchasesTableToolbar({ t, searchValue, onSearchChange, onToggleFilters, isFiltersOpen }) {
-	return (
-		<div className="flex items-center justify-between gap-4">
-			<div className="relative w-[300px] focus-within:w-[350px] transition-all duration-300">
-				<Input
-					value={searchValue}
-					onChange={(e) => onSearchChange?.(e.target.value)}
-					placeholder={t("toolbar.searchPlaceholder")}
-					className="rtl:pr-10 h-[40px] ltr:pl-10 rounded-full bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700"
-				/>
-			</div>
-
-			<div className="flex items-center gap-2">
-				<Button
-					variant="outline"
-					className={cn(
-						"bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-100 flex items-center gap-2 px-4 rounded-full transition-all",
-						isFiltersOpen && "border-primary/50 bg-primary/5"
-					)}
-					onClick={onToggleFilters}
-				>
-					<Filter size={18} />
-					{t("toolbar.filter")}
-				</Button>
-			</div>
-		</div>
-	);
-}
-
-function FiltersPanel({ t, value, onChange, onApply, suppliers }) {
-	return (
-		<motion.div
-			initial={{ height: 0, opacity: 0, y: -6 }}
-			animate={{ height: "auto", opacity: 1, y: 0 }}
-			exit={{ height: 0, opacity: 0, y: -6 }}
-			transition={{ duration: 0.25 }}
-		>
-			<div className="main-card !p-4 mt-4">
-				<div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-					<div className="space-y-2">
-						<Label>{t("filters.supplier")}</Label>
-						<Select value={value.supplierId} onValueChange={(v) => onChange({ ...value, supplierId: v })}>
-							<SelectTrigger className="w-full rounded-full !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
-								<SelectValue placeholder={t("filters.supplierPlaceholder")} />
-							</SelectTrigger>
-							<SelectContent className="bg-card-select">
-								<SelectItem value="all">{t("filters.all")}</SelectItem>
-								<SelectItem value="none">{t("filters.noSupplier") || "No Supplier"}</SelectItem>
-								{suppliers.map((s) => (
-									<SelectItem key={s.id} value={String(s.id)}>
-										{s.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-
-					<div className="space-y-2">
-						<Label>{t("filters.status")}</Label>
-						<Select value={value.status} onValueChange={(v) => onChange({ ...value, status: v })}>
-							<SelectTrigger className="w-full rounded-full !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
-								<SelectValue placeholder={t("filters.statusPlaceholder")} />
-							</SelectTrigger>
-							<SelectContent className="bg-card-select">
-								<SelectItem value="all">{t("filters.all")}</SelectItem>
-								<SelectItem value="accepted">{t("status.accepted")}</SelectItem>
-								<SelectItem value="pending">{t("status.pending")}</SelectItem>
-								<SelectItem value="rejected">{t("status.rejected")}</SelectItem>
-							</SelectContent>
-						</Select>
-					</div>
-
-					<div className="space-y-2">
-						<Label>{t("filters.dateRange")}</Label>
-						<DateRangePicker
-							value={{
-								startDate: value.startDate,
-								endDate: value.endDate,
-							}}
-							onChange={(newDates) =>
-								onChange({
-									...value,
-									...newDates,
-								})
-							}
-							placeholder={t("filters.selectDateRange")}
-							dataSize="default"
-							maxDate="today"
-						/>
-					</div>
-
-					<div className="space-y-2">
-						<Label>{t("filters.hasReceipt")}</Label>
-						<Select value={value.hasReceipt} onValueChange={(v) => onChange({ ...value, hasReceipt: v })}>
-							<SelectTrigger className="w-full rounded-full !h-[45px] bg-[#fafafa] dark:bg-slate-800/50">
-								<SelectValue placeholder={t("filters.hasReceiptPlaceholder")} />
-							</SelectTrigger>
-							<SelectContent className="bg-card-select">
-								<SelectItem value="all">{t("filters.all")}</SelectItem>
-								<SelectItem value="yes">{t("filters.yes")}</SelectItem>
-								<SelectItem value="no">{t("filters.no")}</SelectItem>
-							</SelectContent>
-						</Select>
-					</div>
-
-					<div className="flex md:justify-end">
-						<Button_
-							onClick={onApply}
-							size="sm"
-							label={t("filters.apply")}
-							tone="primary"
-							variant="solid"
-							icon={<Filter size={18} />}
-						/>
-					</div>
-				</div>
-			</div>
-		</motion.div>
 	);
 }
 
@@ -490,6 +370,8 @@ function LogsModalSkeleton() {
 function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 	const [loading, setLoading] = useState(false);
 	const [preview, setPreview] = useState(null);
+	const [safe, setSafe] = useState(null);
+	const { formatCurrency } = usePlatformSettings();
 
 	useEffect(() => {
 		if (!isOpen || !invoiceId) return;
@@ -498,6 +380,7 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 			try {
 				const res = await api.get(`/purchases/${invoiceId}/accept-preview`);
 				setPreview(res.data);
+				setSafe(res.data.invoice?.safe);
 			} catch (e) {
 				console.error(e);
 				toast.error(e?.response?.data?.message || t("messages.previewFailed"));
@@ -507,9 +390,17 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 		})();
 	}, [isOpen, invoiceId, t]);
 
+
 	const rows = preview?.rows ?? [];
 	const hasErrors = rows.some((r) => r.error);
 	const hasPriceChanges = rows.some((r) => r.priceWillChange);
+	const paidAmount = Number(preview?.invoice?.paidAmount || 0);
+
+	const commissionRate = safe?.commissionRate || 0;
+	const commissionAmount = paidAmount * (commissionRate / 100);
+	const totalWithdrawal = paidAmount + commissionAmount;
+
+	const canWithdraw = !safe || Number(safe.currentBalance) >= totalWithdrawal;
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
@@ -552,6 +443,76 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 						</div>
 					) : (
 						<div className="space-y-4 sm:space-y-5">
+							{/* Safe & Payment Info */}
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+								{safe && (
+									<div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 flex items-center justify-between sm:col-span-2">
+										<div className="flex items-center gap-3">
+											<div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
+												<Wallet className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+											</div>
+											<div>
+												<p className="text-xs font-bold text-blue-700 dark:text-blue-300">{safe.name}</p>
+												<p className="text-[10px] text-blue-600/70 dark:text-blue-400/70 uppercase font-black">
+													{commissionRate > 0 && <span className="ml-1 text-blue-500">({t("commissionRate")}: {commissionRate}%)</span>}
+												</p>
+											</div>
+										</div>
+										<div className="text-right">
+											<span className="text-blue-600/70 dark:text-blue-400/70 uppercase font-black">
+													{t("safeBalance") || "Safe Balance"}
+											</span>
+											<p className="text-lg font-black text-blue-700 dark:text-blue-300">{formatCurrency(safe.currentBalance)}</p>
+										</div>
+									</div>
+								)}
+
+								{paidAmount > 0 && (
+									<div className={cn(
+										"p-4 rounded-xl border-2 flex flex-col gap-3 sm:col-span-2",
+										canWithdraw ? "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800" : "bg-rose-50 border-rose-200 dark:bg-rose-950/20 dark:border-rose-800"
+									)}>
+										<div className="flex items-center justify-between">
+											<div className="flex items-center gap-3">
+												<div className={cn(
+													"w-10 h-10 rounded-xl flex items-center justify-center",
+													canWithdraw ? "bg-emerald-100 dark:bg-emerald-900/50" : "bg-rose-100 dark:bg-rose-900/50"
+												)}>
+													<DollarSign className={cn("w-5 h-5", canWithdraw ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")} />
+												</div>
+												<div>
+													<p className={cn("text-xs font-bold uppercase", canWithdraw ? "text-emerald-600" : "text-rose-600")}>
+														{t("withdrawing") || "Withdrawing"}
+													</p>
+													<p className={cn("text-lg font-black", canWithdraw ? "text-emerald-700" : "text-rose-700")}>
+														-{formatCurrency(paidAmount)}
+													</p>
+												</div>
+											</div>
+											{!canWithdraw && (
+												<Badge variant="destructive" className="animate-pulse">{t("insufficientBalance") || "Insufficient Balance"}</Badge>
+											)}
+										</div>
+
+										{commissionRate > 0 && (
+											<div className={cn(
+												"pt-2 border-t space-y-1",
+												canWithdraw ? "border-emerald-200 dark:border-emerald-800" : "border-rose-200 dark:border-rose-800"
+											)}>
+												<div className={cn("flex justify-between text-[10px] font-bold uppercase", canWithdraw ? "text-emerald-600/70" : "text-rose-600/70")}>
+													<span>{t("commissionAmount")} ({commissionRate}%)</span>
+													<span>{formatCurrency(commissionAmount)}</span>
+												</div>
+												<div className={cn("flex justify-between text-xs font-black", canWithdraw ? "text-emerald-700" : "text-rose-700")}>
+													<span>{t("totalWithdrawn")}</span>
+													<span>{formatCurrency(totalWithdrawal)}</span>
+												</div>
+											</div>
+										)}
+									</div>
+								)}
+							</div>
+
 							{/* Stats Cards */}
 							<div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
 								<motion.div
@@ -801,7 +762,7 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 				<DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t-2 border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50">
 					<div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4 sm:gap-0">
 						<div className="text-[10px] sm:text-xs text-gray-500 dark:text-slate-400 order-2 sm:order-1">
-							{!loading && preview && !hasErrors && (
+							{!loading && preview && !hasErrors && canWithdraw && (
 								<span className="flex items-center gap-2">
 									<div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-green-500 animate-pulse"></div>
 									<span className="font-semibold">{t("acceptPreview.previewReady")}</span>
@@ -818,10 +779,10 @@ function AcceptPreviewModal({ isOpen, onClose, invoiceId, t, onApply }) {
 							</Button>
 							<Button
 								onClick={() => onApply?.()}
-								disabled={loading || !preview || hasErrors || !preview?.canApply}
+								disabled={loading || !preview || hasErrors || !preview?.canApply || !canWithdraw}
 								className={cn(
 									"flex-1 sm:flex-none px-4 sm:px-10 py-2 sm:py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs sm:text-sm font-bold shadow-lg shadow-primary/30 transition-all transform hover:scale-105 active:scale-95",
-									(loading || !preview || hasErrors || !preview?.canApply) && "opacity-50 cursor-not-allowed hover:scale-100"
+									(loading || !preview || hasErrors || !preview?.canApply || !canWithdraw) && "opacity-50 cursor-not-allowed hover:scale-100"
 								)}
 							>
 								<Check className="w-4 h-4 sm:w-5 sm:h-5 ltr:mr-1.5 sm:ltr:mr-2 rtl:ml-1.5 sm:rtl:ml-2" />
@@ -1084,10 +1045,30 @@ function DetailsModalSkeleton() {
 function EditPaidAmountModal({ isOpen, onClose, invoice, t, onSave }) {
 	const [paidAmount, setPaidAmount] = useState(0);
 	const [loading, setLoading] = useState(false);
+	const [safe, setSafe] = useState(null);
+	const [safeLoading, setSafeLoading] = useState(false);
 	const { formatCurrency } = usePlatformSettings();
+
 	useEffect(() => {
-		if (invoice) setPaidAmount(invoice.paidAmount || 0);
+		if (invoice) {
+			setPaidAmount(invoice.paidAmount || 0);
+			if (invoice.safeId) {
+				fetchSafe(invoice.safeId);
+			}
+		}
 	}, [invoice]);
+
+	const fetchSafe = async (safeId) => {
+		setSafeLoading(true);
+		try {
+			const res = await api.get(`/safes/accounts/${safeId}`);
+			setSafe(res.data);
+		} catch (error) {
+			console.error(error);
+		} finally {
+			setSafeLoading(false);
+		}
+	};
 
 	const handleSave = async () => {
 		setLoading(true);
@@ -1101,6 +1082,16 @@ function EditPaidAmountModal({ isOpen, onClose, invoice, t, onSave }) {
 
 	if (!invoice) return null;
 	const remaining = (invoice.total || 0) - paidAmount;
+	const delta = paidAmount - (invoice.paidAmount || 0);
+	const isWithdraw = delta > 0;
+	const absDelta = Math.abs(delta);
+
+	const commissionRate = safe?.commissionRate || 0;
+	const commissionAmount = isWithdraw ? (absDelta * (commissionRate / 100)) : 0;
+	const totalWithdrawal = absDelta + commissionAmount;
+
+	const isAccepted = invoice.status === 'accepted'
+	const canPerform = !isAccepted || (!isWithdraw || (safe && Number(safe.currentBalance) >= totalWithdrawal));
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
@@ -1116,12 +1107,30 @@ function EditPaidAmountModal({ isOpen, onClose, invoice, t, onSave }) {
 				</DialogHeader>
 
 				<div className="space-y-4 py-4">
-					<div className="p-4 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
+					{safe && isAccepted && (
+						<div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 flex items-center justify-between">
+							<div className="flex items-center gap-2">
+								<Wallet className="w-4 h-4 text-blue-600" />
+								<div>
+									<p className="text-xs font-bold text-blue-700 dark:text-blue-300">{safe.name}</p>
+									{commissionRate > 0 && (
+										<p className="text-[9px] font-bold text-blue-500">{t("commissionRate")}: {commissionRate}%</p>
+									)}
+								</div>
+							</div>
+							<div className="text-right">
+								<p className="text-[10px] text-blue-600/70 dark:text-blue-400/70 uppercase font-black">{t("safeBalance") || "Safe Balance"}</p>
+								<p className="text-xs font-black text-blue-700 dark:text-blue-300">{formatCurrency(safe.currentBalance)}</p>
+							</div>
+						</div>
+					)}
+
+					<div className="p-4 space-y-2 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
 						<Label className="text-xs text-gray-500 dark:text-slate-400 mb-2">{t("editPaidAmount.total")}</Label>
 						<Input value={invoice.total} disabled className="bg-white dark:bg-slate-900 font-bold text-lg" />
 					</div>
 
-					<div>
+					<div className="space-y-2 ">
 						<Label className="mb-2">{t("editPaidAmount.paidAmount")}</Label>
 						<Input
 							type="number"
@@ -1132,6 +1141,42 @@ function EditPaidAmountModal({ isOpen, onClose, invoice, t, onSave }) {
 							className="text-lg font-semibold"
 						/>
 					</div>
+
+					{absDelta > 0 && isAccepted && (
+						<div className={cn(
+							"p-4 rounded-xl border-2 flex flex-col gap-3",
+							isWithdraw ? "bg-rose-50 border-rose-200 dark:bg-rose-950/20 dark:border-rose-800" : "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800"
+						)}>
+							<div className="flex items-center justify-between">
+								<div>
+									<p className={cn("text-xs font-bold uppercase", isWithdraw ? "text-rose-600" : "text-emerald-600")}>
+										{isWithdraw ? t("withdrawing") || "Withdrawing" : t("depositing") || "Depositing"}
+									</p>
+									<p className={cn("text-lg font-black", isWithdraw ? "text-rose-700" : "text-emerald-700")}>
+										{isWithdraw ? "-" : "+"}{formatCurrency(absDelta)}
+									</p>
+								</div>
+								{!canPerform && isWithdraw && (
+									<div className="flex flex-col items-end">
+										<Badge variant="destructive" className="animate-pulse">{t("insufficientBalance") || "Insufficient Balance"}</Badge>
+									</div>
+								)}
+							</div>
+
+							{isWithdraw && commissionRate > 0 && (
+								<div className="pt-2 border-t border-rose-200 dark:border-rose-800 space-y-1">
+									<div className="flex justify-between text-[10px] font-bold text-rose-600/70 uppercase">
+										<span>{t("commissionAmount")} ({commissionRate}%)</span>
+										<span>{formatCurrency(commissionAmount)}</span>
+									</div>
+									<div className="flex justify-between text-xs font-black text-rose-700">
+										<span>{t("totalWithdrawn")}</span>
+										<span>{formatCurrency(totalWithdrawal)}</span>
+									</div>
+								</div>
+							)}
+						</div>
+					)}
 
 					<div className="p-4 rounded-xl bg-orange-50 dark:bg-orange-950/30 border-2 border-orange-200 dark:border-orange-800">
 						<Label className="text-xs text-orange-600 dark:text-orange-400 mb-2">{t("editPaidAmount.remaining")}</Label>
@@ -1148,7 +1193,7 @@ function EditPaidAmountModal({ isOpen, onClose, invoice, t, onSave }) {
 					<Button variant="outline" onClick={onClose} className="px-6 rounded-xl">
 						{t("actions.cancel")}
 					</Button>
-					<Button onClick={handleSave} disabled={loading} className="px-8 rounded-xl">
+					<Button onClick={handleSave} disabled={loading || !canPerform} className="px-8 rounded-xl">
 						{loading ? (
 							<>
 								<Loader2 className="w-4 h-4 ltr:mr-2 rtl:ml-2 animate-spin" />
@@ -1163,6 +1208,137 @@ function EditPaidAmountModal({ isOpen, onClose, invoice, t, onSave }) {
 		</Dialog>
 	);
 }
+function StatusChangeModal({ isOpen, onClose, invoice, newStatus, t, onConfirm }) {
+	const [loading, setLoading] = useState(false);
+	const [safe, setSafe] = useState(null);
+	const [safeLoading, setSafeLoading] = useState(false);
+	const { formatCurrency } = usePlatformSettings();
+	console.log(safe)
+	useEffect(() => {
+		if (isOpen && invoice?.safeId) {
+			fetchSafe(invoice.safeId);
+		}
+	}, [isOpen, invoice]);
+
+	const fetchSafe = async (safeId) => {
+		setSafeLoading(true);
+		try {
+			const res = await api.get(`/safes/accounts/${safeId}`);
+			setSafe(res.data);
+		} catch (error) {
+			console.error(error);
+		} finally {
+			setSafeLoading(false);
+		}
+	};
+
+	if (!invoice) return null;
+
+	const isFromAccepted = invoice.status === "accepted";
+	const paidAmount = Number(invoice.paidAmount || 0);
+	const willDeposit = isFromAccepted && paidAmount > 0;
+
+	const handleConfirm = async () => {
+		setLoading(true);
+		try {
+			await onConfirm(invoice.id, newStatus);
+			onClose();
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	return (
+		<Dialog open={isOpen} onOpenChange={onClose}>
+			<DialogContent className="!max-w-md">
+				<DialogHeader className="border-b border-gray-200 dark:border-slate-700 pb-4">
+					<DialogTitle className="flex items-center gap-3">
+						<div className={cn(
+							"w-10 h-10 rounded-xl flex items-center justify-center",
+							newStatus === "rejected" ? "bg-red-100 dark:bg-red-900/30" : "bg-yellow-100 dark:bg-yellow-900/30"
+						)}>
+							{newStatus === "rejected" ? (
+								<XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+							) : (
+								<Clock className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+							)}
+						</div>
+						{t(`statusChange.${newStatus}.title`)}
+					</DialogTitle>
+					<DialogDescription className="text-sm mt-2">
+						{t(`statusChange.${newStatus}.description`) || t("messages.updatingStatus")}
+					</DialogDescription>
+				</DialogHeader>
+
+				<div className="space-y-4 py-4">
+					{safe && (
+						<div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 flex items-center justify-between">
+							<div className="flex items-center gap-2">
+								<Wallet className="w-4 h-4 text-blue-600" />
+								<span className="text-xs font-bold text-blue-700 dark:text-blue-300">{safe.name}</span>
+							</div>
+							<div className="text-right">
+								<p className="text-[10px] text-blue-600/70 dark:text-blue-400/70 uppercase font-black">{t("safeBalance") || "Safe Balance"}</p>
+								<p className="text-sm font-black text-blue-700 dark:text-blue-300">{formatCurrency(safe.currentBalance)}</p>
+							</div>
+						</div>
+					)}
+
+					{willDeposit && (
+						<div className="p-4 rounded-xl bg-emerald-50 border-2 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800 flex items-center justify-between">
+							<div>
+								<p className="text-xs font-bold uppercase text-emerald-600">
+									{t("depositing") || "Depositing"}
+								</p>
+								<p className="text-lg font-black text-emerald-700">
+									+{formatCurrency(paidAmount)}
+								</p>
+							</div>
+							<div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center">
+								<TrendingUp className="w-5 h-5 text-emerald-600" />
+							</div>
+						</div>
+					)}
+
+					<div className="p-4 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
+						<div className="flex justify-between items-center mb-2">
+							<span className="text-xs text-gray-500 dark:text-slate-400">{t("table.status")}</span>
+							<div className="flex items-center gap-2">
+								<Badge variant="outline" className="opacity-50">{t(`status.${invoice.status}`)}</Badge>
+								<ArrowRight size={14} className="text-gray-400 rtl:rotate-180" />
+								<Badge variant={newStatus === "rejected" ? "destructive" : "warning"}>
+									{t(`status.${newStatus}`)}
+								</Badge>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<DialogFooter className="border-t border-gray-200 dark:border-slate-700 pt-4">
+					<Button variant="outline" onClick={onClose} className="px-6 rounded-xl">
+						{t("actions.cancel")}
+					</Button>
+					<Button
+						onClick={handleConfirm}
+						disabled={loading}
+						variant={newStatus === "rejected" ? "destructive" : "default"}
+						className="px-8 rounded-xl font-bold"
+					>
+						{loading ? (
+							<>
+								<Loader2 className="w-4 h-4 ltr:mr-2 rtl:ml-2 animate-spin" />
+								{t("actions.applying")}
+							</>
+						) : (
+							t("actions.apply")
+						)}
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
 function FilterField({ label, children }) {
 	return (
 		<div className="space-y-2">
@@ -1215,6 +1391,7 @@ export default function PurchasesPage() {
 	const [editModal, setEditModal] = useState({ isOpen: false, invoice: null });
 	const [logsModal, setLogsModal] = useState({ isOpen: false, invoiceId: null });
 	const [acceptModal, setAcceptModal] = useState({ isOpen: false, invoiceId: null });
+	const [statusChangeModal, setStatusChangeModal] = useState({ isOpen: false, invoice: null, newStatus: null });
 
 	const [stats, setStats] = useState({ accepted: 0, pending: 0, rejected: 0 });
 	const [pager, setPager] = useState({
@@ -1557,7 +1734,7 @@ export default function PurchasesPage() {
 							</DropdownMenuItem>
 
 							<DropdownMenuItem
-								onClick={() => handleStatusChange(row.id, "pending")}
+								onClick={() => setStatusChangeModal({ isOpen: true, invoice: row, newStatus: "pending" })}
 								className="flex items-center gap-2 cursor-pointer"
 								disabled={row.status === "pending" || row.closingId !== null}
 								permission="purchases.update"
@@ -1567,7 +1744,7 @@ export default function PurchasesPage() {
 							</DropdownMenuItem>
 
 							<DropdownMenuItem
-								onClick={() => handleStatusChange(row.id, "rejected")}
+								onClick={() => setStatusChangeModal({ isOpen: true, invoice: row, newStatus: "rejected" })}
 								className="flex items-center gap-2 cursor-pointer"
 								disabled={row.status === "rejected" || row.closingId !== null}
 								permission="purchases.update"
@@ -1617,7 +1794,6 @@ export default function PurchasesPage() {
 					total: t("common.total"),
 					limit: t("common.limit"),
 					emptyTitle: t("empty"),
-					emptySubtitle: t("empty.subtitle"),
 				}}
 				actions={[
 					{
@@ -1733,6 +1909,15 @@ export default function PurchasesPage() {
 				onClose={() => setLogsModal({ isOpen: false, invoiceId: null })}
 				invoiceId={logsModal.invoiceId}
 				t={t}
+			/>
+
+			<StatusChangeModal
+				isOpen={statusChangeModal.isOpen}
+				onClose={() => setStatusChangeModal({ isOpen: false, invoice: null, newStatus: null })}
+				invoice={statusChangeModal.invoice}
+				newStatus={statusChangeModal.newStatus}
+				t={t}
+				onConfirm={handleStatusChange}
 			/>
 
 			<EditPaidAmountModal

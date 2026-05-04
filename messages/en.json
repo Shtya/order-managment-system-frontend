@@ -4115,7 +4115,10 @@
       "makePendingDesc": "Send the return back to pending",
       "cancel": "Cancel",
       "save": "Save",
-      "close": "Close"
+      "close": "Close",
+      "saving": "Save",
+      "applying": "Updating",
+      "apply": "Apply"
     },
     "stats": {
       "acceptedInvoices": "Accepted Invoices",
@@ -4231,6 +4234,30 @@
       "openAsset": "Open Asset",
       "notes": "Notes"
     },
+    "editPaidAmount": {
+      "title": "Edit Refunded Amount",
+      "description": "Adjust the refunded amount and its impact on the safe",
+      "total": "Total Return",
+      "paidAmount": "Refunded Amount",
+      "remaining": "Remaining Amount"
+    },
+    "commissionRate": "Commission Rate",
+    "safeBalance": "Safe Balance",
+    "withdrawing": "Withdrawing from Safe",
+    "depositing": "Depositing to Safe",
+    "commissionAmount": "Commission Amount",
+    "totalWithdrawn": "Total Withdrawn",
+    "insufficientBalance": "Insufficient Balance",
+    "statusChange": {
+      "pending": {
+        "title": "Suspend Return",
+        "description": "The return will be moved back to pending and the deposited amount will be withdrawn from the safe"
+      },
+      "rejected": {
+        "title": "Reject Return",
+        "description": "The return will be rejected and the deposited amount will be withdrawn from the safe"
+      }
+    },
     "updatePaidAmount": {
       "title": "Update Refunded Amount",
       "description": "Enter the new refunded amount for this return.",
@@ -4271,7 +4298,8 @@
       "columns": {
         "safe": "Safe"
       }
-    }
+    },
+    "deposit": "The amount to be deposited"
   },
   "purchaseInvoice": {
     "current_price": "Current Price",

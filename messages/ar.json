@@ -4151,7 +4151,10 @@
       "makePendingDesc": "إعادة المرتجع إلى حالة قيد الانتظار",
       "cancel": "إلغاء",
       "save": "حفظ",
-      "close": "إغلاق"
+      "close": "إغلاق",
+      "saving": "حفظ",
+      "applying": "جاري التحديث",
+      "apply": "تحديث"
     },
     "stats": {
       "acceptedInvoices": "الفواتير المقبولة",
@@ -4267,6 +4270,30 @@
       "openAsset": "عرض الملف",
       "notes": "ملاحظات"
     },
+    "editPaidAmount": {
+      "title": "تعديل المبلغ المسترد",
+      "description": "تعديل قيمة المبلغ المسترد وتأثيره على الخزنة",
+      "total": "إجمالي المرتجع",
+      "paidAmount": "المبلغ المسترد",
+      "remaining": "المبلغ المتبقي"
+    },
+    "commissionRate": "نسبة العمولة",
+    "safeBalance": "رصيد الخزنة",
+    "withdrawing": "جاري السحب من الخزنة",
+    "depositing": "جاري الإيداع في الخزنة",
+    "commissionAmount": "مبلغ العمولة",
+    "totalWithdrawn": "إجمالي المسحوب",
+    "insufficientBalance": "رصيد غير كافٍ",
+    "statusChange": {
+      "pending": {
+        "title": "تعليق المرتجع",
+        "description": "سيتم إعادة المرتجع للحالة المعلقة وسحب المبلغ المودع من الخزنة"
+      },
+      "rejected": {
+        "title": "رفض المرتجع",
+        "description": "سيتم رفض المرتجع وسحب المبلغ المودع من الخزنة"
+      }
+    },
     "updatePaidAmount": {
       "title": "تحديث المبلغ المسترد",
       "description": "أدخل المبلغ المسترد الجديد لهذا المرتجع.",
@@ -4307,7 +4334,8 @@
       "columns": {
         "safe": "الخزينة/الحساب"
       }
-    }
+    },
+    "deposit": "المبلغ الذي سيتم إيداعة"
   },
   "purchaseInvoice": {
     "current_price": "السعر الحالي",

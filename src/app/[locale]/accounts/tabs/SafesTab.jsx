@@ -695,7 +695,7 @@ export default function SafesTab({ onRefresh }) {
                                 cell: (row) => (
                                     <span className="text-xs font-medium tabular-nums text-rose-500">
                                         {row.commission > 0 ? `-${row.commission?.toLocaleString()} ${row?.outTransaction?.currency || ""}` : "-"}
-                                        {row.commissionRate > 0 ? ` (${row.commissionRate?.toLocaleString()}%)` : ""}
+                                        {row.commissionRate > 0 && row.direction === 'OUT' ? ` (${row.commissionRate?.toLocaleString()}%)` : ""}
                                     </span>
                                 )
                             },
@@ -1109,7 +1109,7 @@ function TransactionsViewerModal({ open, onOpenChange, account }) {
                                     cell: (row) => (
                                         <span className="text-xs font-medium tabular-nums text-rose-500">
                                             {row.commission > 0 ? `-${row.commission?.toLocaleString()} ${row?.outTransaction?.currency || ""}` : "-"}
-                                            {row.commissionRate > 0 ? ` (${row.commissionRate?.toLocaleString()}%)` : ""}
+                                            {row.commissionRate > 0 && row.direction === 'OUT' ? ` (${row.commissionRate?.toLocaleString()}%)` : ""}
                                         </span>
                                     )
                                 },

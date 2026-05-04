@@ -17,7 +17,7 @@ import { OrderStatus } from "../../orders/tabs/OrderTab";
 const CARRIER_CONFIG = {
     BOSTA: {
         provider: "bosta",
-        requires: ["customerName", "phoneNumber", "firstLine", "cityId", "districtId"],
+        requires: ["customerName", "phoneNumber", "firstLine", "cityId", "districtId", "orderSize"],
         hasDistrict: true,
         hasZone: false,
     },
@@ -42,6 +42,7 @@ const getValidationSchema = (carrierCode, t) => {
     if (config.requires.includes("cityId")) shape.cityId = yup.string().required(t("validation.cityIdRequired"));
     if (config.requires.includes("districtId")) shape.districtId = yup.string().required(t("validation.districtIdRequired"));
     if (config.requires.includes("zoneId")) shape.zoneId = yup.string().required(t("validation.zoneIdRequired"));
+    if (config.requires.includes("orderSize")) shape.orderSize = yup.string().required(t("validation.orderSizeRequired"));
 
     return yup.object().shape(shape);
 };
@@ -154,7 +155,9 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
             cityId: meta.cityId,
             zoneId: meta.zoneId,
             districtId: meta.districtId,
-            firstLine: order.address
+            orderSize: meta.orderSize,
+            firstLine: order.address,
+
         };
 
         const isMissingField = config.requires.some(field => !dataToCheck[field]);
@@ -322,6 +325,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                     cityId: meta.cityId || "",
                     zoneId: meta.zoneId || "",
                     districtId: meta.districtId || "",
+                    orderSize: meta.orderSize || "MEDIUM",
                 };
             }
 
@@ -432,6 +436,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                         cityId: fixes[order.id].cityId,
                         zoneId: fixes[order.id].zoneId,
                         districtId: fixes[order.id].districtId,
+                        orderSize: fixes[order.id].orderSize,
                     }
                 }))
             };
@@ -674,7 +679,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                                 ) : (
                                     <div className="table-container border rounded-xl bg-white dark:bg-slate-950 overflow-hidden shadow-sm">
                                         <div className="max-h-[500px] overflow-y-auto">
-                                            <table className="w-full text-sm text-left">
+                                            <table className="w-full text-sm text-left overflow-y-auto">
                                                 <thead className="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 border-b">
                                                     <tr>
                                                         <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">
@@ -706,9 +711,12 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                                                                 {t("fields.district")}
                                                             </th>
                                                         )}
+                                                        {CARRIER_CONFIG[carrier]?.requires.includes("orderSize") && <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 min-w-[150px]">
+                                                            {t("fields.orderSize")}
+                                                        </th>}
                                                     </tr>
                                                 </thead>
-                                                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 ">
                                                     {needsFixOrders.map((order, idx) => {
                                                         const fix = fixes[order.id] || {};
                                                         const errs = fixErrors[order.id] || {};
@@ -724,7 +732,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                                                                 className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors"
                                                             >
                                                                 <td className="px-4 py-3 align-top">
-                                                                    <span className="font-bold text-primary block mt-2">{order.orderNumber}</span>
+                                                                    <span className="font-bold text-primary block mt-2 text-nowrap">{order.orderNumber}</span>
                                                                     {apiErr && <span className="text-[10px] text-red-600 bg-red-100 px-1.5 py-0.5 rounded mt-1 inline-block">{apiErr}</span>}
                                                                 </td>
                                                                 <td className="px-4 py-3 align-top">
@@ -800,6 +808,24 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                                                                             options={districtsMap[order.id] || []}
                                                                             onChange={(val) => handleFixChange(order.id, 'districtId', val)}
                                                                             placeholder={t("placeholders.district")}
+                                                                        />
+                                                                    </td>
+                                                                )}
+
+                                                                {/* Order Size Select */}
+                                                                {config?.requires.includes("orderSize") && (
+                                                                    <td className="px-4 py-3 align-top">
+                                                                        <TableSelect
+                                                                            value={fix.orderSize}
+                                                                            options={[
+                                                                                { id: "SMALL", name: t("orderSizes.SMALL") },
+                                                                                { id: "MEDIUM", name: t("orderSizes.MEDIUM") },
+                                                                                { id: "LARGE", name: t("orderSizes.LARGE") },
+                                                                                { id: "Light Bulky", name: t("orderSizes.Light Bulky") },
+                                                                                { id: "Heavy Bulky", name: t("orderSizes.Heavy Bulky") },
+                                                                            ]}
+                                                                            onChange={(val) => handleFixChange(order.id, 'orderSize', val)}
+                                                                            placeholder={t("fields.orderSize")}
                                                                         />
                                                                     </td>
                                                                 )}
@@ -939,7 +965,7 @@ function TableInput({ value, onChange, error, placeholder, dir }) {
                 onChange={onChange}
                 placeholder={placeholder}
                 dir={dir}
-                className={cn("h-9 text-sm", error && "border-red-500 focus-visible:ring-red-500")}
+                className={cn("h-9 text-sm min-w-[150px]", error && "border-red-500 focus-visible:ring-red-500")}
             />
             {error && <p className="text-[10px] text-red-500 leading-tight">{error}</p>}
         </div>
@@ -963,7 +989,7 @@ function TableSelect({
                 onChange={(e) => onChange(e.target.value)}
                 disabled={disabled || isLoading}
                 className={cn(
-                    "flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-sm ring-offset-background transition-colors",
+                    "min-w-[150px] flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-sm ring-offset-background transition-colors",
                     "disabled:cursor-not-allowed disabled:opacity-50",
                     error && "border-red-500 focus-visible:ring-red-500",
                     isLoading && "animate-pulse bg-slate-50 dark:bg-slate-900/50" // Adds a subtle visual pulse

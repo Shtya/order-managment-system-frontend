@@ -38,6 +38,8 @@ import { cn } from "@/utils/cn";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useDebounce } from "@/hook/useDebounce";
+import { MdOutlinePayment } from "react-icons/md";
+import SupplierPaymentsTable from "../../accounts/tabs/SupplierPaymentsTable";
 
 export default function SupplierDetailsPage() {
     const [activeSubTab, setActiveSubTab] = useState('purchases');
@@ -113,7 +115,7 @@ export default function SupplierDetailsPage() {
             params.set("page", String(page));
             params.set("limit", String(limit));
             params.set("supplierId", id);
-            if(search)  params.set("search", search);
+            if (search) params.set("search", search);
             if (purchasesFilters.startDate) params.set("startDate", purchasesFilters.startDate);
             if (purchasesFilters.endDate) params.set("endDate", purchasesFilters.endDate);
 
@@ -138,7 +140,7 @@ export default function SupplierDetailsPage() {
             params.set("page", String(page));
             params.set("limit", String(limit));
             params.set("supplierId", id);
-            if(search)  params.set("search", search);
+            if (search) params.set("search", search);
             if (returnsFilters.startDate) params.set("startDate", returnsFilters.startDate);
             if (returnsFilters.endDate) params.set("endDate", returnsFilters.endDate);
 
@@ -165,7 +167,7 @@ export default function SupplierDetailsPage() {
             params.set("page", String(page));
             params.set("limit", String(limit));
             params.set("supplierId", id);
-            if(search) params.set("search", search);
+            if (search) params.set("search", search);
             params.set("year", String(selectedYear));
 
             const res = await api.get(`/accounting/supplier-closings/closings?${params.toString()}`);
@@ -522,7 +524,7 @@ export default function SupplierDetailsPage() {
 
             {/* Main Content Tabs */}
             <Tabs value={activeSubTab} onValueChange={setActiveSubTab} defaultValue="purchases" className="w-full dir-force ">
-                <TabsList className="grid w-full grid-cols-3 !h-auto mb-6 main-card">
+                <TabsList className="grid w-full grid-cols-4 !h-auto mb-6 main-card">
                     <TabsTrigger value="purchases" className="flex items-center gap-2 py-2.5">
                         <ReceiptText size={18} />
                         {t("details.purchasesTab")}
@@ -535,11 +537,15 @@ export default function SupplierDetailsPage() {
                         <History size={18} />
                         {t("details.historyTab")}
                     </TabsTrigger>
+                    <TabsTrigger value="payments" className="flex items-center gap-2 py-2.5">
+                        <MdOutlinePayment size={18} />
+                        {t("details.paymentsTab")}
+                    </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="purchases">
                     <Table
-                       searchValue={Purchasesearch}
+                        searchValue={Purchasesearch}
                         onSearchChange={setPurchaseSearch}
                         labels={{
                             searchPlaceholder: tCommon("search"),
@@ -581,9 +587,9 @@ export default function SupplierDetailsPage() {
 
                 <TabsContent value="returns">
                     <Table
-                     searchValue={Returnsearch}
+                        searchValue={Returnsearch}
                         onSearchChange={setReturnSearch}
-                        
+
                         labels={{
                             searchPlaceholder: tCommon("search"),
                             filter: tCommon("filter"),
@@ -662,6 +668,10 @@ export default function SupplierDetailsPage() {
                         onPageChange={({ page, per_page }) => fetchHistory(page, per_page)}
                     />
 
+                </TabsContent>
+
+                <TabsContent value="payments">
+                    <SupplierPaymentsTable supplierId={params.id} />
                 </TabsContent>
             </Tabs>
 

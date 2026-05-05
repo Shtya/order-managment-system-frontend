@@ -88,6 +88,8 @@ const getLink = (row) => {
         case 'EXPENSE':
         case 'OPERATING_EXPENSE':
             return `/accounts?tab=manualExpenses&detials=${row.referenceId}`;
+        case 'VENDOR_PAYMENT':
+            return `/accounts?tab=supplierPayments&detials=${row.referenceId}`;
         default:
             return null;
     }

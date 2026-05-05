@@ -191,7 +191,8 @@ export default function SupplierAccountsTab() {
             {
               icon: <FileText />,
               tooltip: t("supplierAccounts.actions.statement"),
-              onClick: (r) => setStatementSupplier(r),
+              // onClick: (r) => setStatementSupplier(r),
+              onClick: (r) => router.push(`/suppliers/${r.id}`),
               variant: "primary",
             },
             {

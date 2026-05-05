@@ -8419,7 +8419,8 @@
         "shouldPay": "You owe the supplier",
         "shouldCollect": "Supplier owes you",
         "noBalance": "Zero Balance",
-        "noSupplierSelected": "No supplier selected"
+        "noSupplierSelected": "No supplier selected",
+        "paymentTitle": "Payment history"
       },
       "table": {
         "date": "Date",

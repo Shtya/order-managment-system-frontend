@@ -8462,7 +8462,8 @@
         "shouldPay": "مستحق للمورد",
         "shouldCollect": "مستحق من المورد",
         "noBalance": "رصيد صفري",
-        "noSupplierSelected": "لم يتم إختيار مورد بعد"
+        "noSupplierSelected": "لم يتم إختيار مورد بعد",
+        "paymentTitle": "سجل الدفعات"
       },
       "table": {
         "date": "التاريخ",

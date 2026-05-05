@@ -24,7 +24,7 @@ function FilterField({ label, children }) {
     );
 }
 
-export default function SupplierPaymentsTable({ supplierId: initialSupplierId, onRefresh }) {
+export default function SupplierPaymentsTable({ supplierId: initialSupplierId, onRefresh, flat = false, }) {
     const tCommon = useTranslations("common");
     const t = useTranslations("accounts.supplierPayments");
     const searchParams = useSearchParams();
@@ -270,6 +270,7 @@ export default function SupplierPaymentsTable({ supplierId: initialSupplierId, o
     return (
         <div className="space-y-4">
             <Table
+                flat={flat}
                 searchValue={search}
                 onSearchChange={setSearch}
                 actions={[

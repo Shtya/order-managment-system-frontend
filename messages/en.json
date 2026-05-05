@@ -8395,8 +8395,93 @@
       "cityDeliveries": "City Deliveries",
       "employeePerformance": "Employee Performance",
       "supplierAccounts": "Supplier Accounts",
+      "supplierPayments": "Cash Payments",
       "monthClosing": "Month Closing",
       "safes": "Treasury & Safes"
+    },
+    "supplierPayments": {
+      "title": "Supplier Payments",
+      "form": {
+        "title": "Register New Payment",
+        "supplier": "Supplier",
+        "safe": "Safe / Treasury",
+        "amount": "Payment Amount",
+        "paymentDate": "Payment Date",
+        "notes": "Notes",
+        "notesPlaceholder": "Add any notes here...",
+        "submit": "Confirm Payment",
+        "totalWithCommission": "Total to Deduct (incl. commission)",
+        "insufficientBalance": "Insufficient balance in safe",
+        "selectInvoice": "Select Invoice (Optional)",
+        "loadMoreInvoices": "Load More Invoices",
+        "unallocated": "General Payment (Unallocated)",
+        "supplierBalance": "Supplier Balance",
+        "shouldPay": "You owe the supplier",
+        "shouldCollect": "Supplier owes you",
+        "noBalance": "Zero Balance",
+        "noSupplierSelected": "No supplier selected"
+      },
+      "table": {
+        "date": "Date",
+        "supplier": "Supplier",
+        "amount": "Amount",
+        "safe": "Safe",
+        "notes": "Notes",
+        "createdBy": "Created By",
+        "balanceAfter": "Balance After",
+        "allocations": "Allocations",
+        "actions": "Actions",
+        "view": "View Details",
+        "empty": "No payments recorded yet",
+        "supplierBalanceAfter": "Supplier balance after"
+      },
+      "details": {
+        "title": "Payment Details",
+        "info": "Payment Information",
+        "allocations": "Allocations",
+        "invoiceNumber": "Invoice #",
+        "allocatedAmount": "Allocated Amount",
+        "remainingAfter": "Remaining After",
+        "createdBy": "Created By",
+        "createdAt": "Created At"
+      },
+      "stats": {
+        "totalSuppliers": "Total Suppliers",
+        "totalShouldPay": "Total Owed to Suppliers",
+        "totalShouldCollect": "Total Credits from Suppliers"
+      },
+      "validation": {
+        "supplierRequired": "Supplier is required",
+        "safeRequired": "Safe is required",
+        "invalidAmount": "Invalid amount",
+        "amountRequired": "Amount is required",
+        "minAmount": "Min amount is 0.01",
+        "dateRequired": "Date is required"
+      },
+      "messages": {
+        "fetchFailed": "Failed to fetch data",
+        "saveSuccess": "Payment recorded successfully",
+        "saveFailed": "Failed to save payment",
+        "exportFailed": "Failed to export data",
+        "commission": "Commission",
+        "export": "Export"
+      },
+      "common": {
+        "view": "View"
+      },
+      "safeBalance": "Safe balance",
+      "toolbar": {
+        "searchPlaceholder": "Search payments...",
+        "filter": "Filter"
+      },
+      "filters": {
+        "apply": "Apply",
+        "supplierPlaceholder": "Select supplier"
+      },
+      "all": "All",
+      "selectDateRange": "Date",
+      "total": "Total",
+      "limit": "Results per page\t"
     },
     "safes": {
       "title": "Treasury & Safes",
@@ -8479,7 +8564,10 @@
           "trackingNumber": "Tracking Number",
           "shippingCompanyProvider": "Shipping Company",
           "category": "Category",
-          "supplierName": "Supplier Name"
+          "supplierName": "Supplier Name",
+          "unallocatedAmount": "Unallocated Amount",
+          "invoicesCount": "Number of Paid Invoices",
+          "invoicesNumber": "Invoice Number"
         },
         "directions": {
           "IN": "In",
@@ -8818,7 +8906,8 @@
         "title": "Supplier Details",
         "purchasesTab": "Purchases",
         "returnsTab": "Returns",
-        "historyTab": "Closing History"
+        "historyTab": "Closing History",
+        "paymentsTab": "Payment history"
       },
       "columns": {
         "supplierName": "Supplier Name",
@@ -8947,5 +9036,8 @@
   },
   "safes": {
     "afterCommission": "After Commission"
+  },
+  "acceptPreview": {
+    "oldPrice": "Old price"
   }
 }

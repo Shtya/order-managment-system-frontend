@@ -17,6 +17,7 @@ import CityDeliveriesTab from "./tabs/CityDeliveriesTab";
 import SupplierAccountsTab from "./tabs/SupplierAccountsTab";
 import MonthClosingTab from "./tabs/MonthClosingTab";
 import SafesTab from "./tabs/SafesTab";
+import SupplierPaymentsTab from "./tabs/SupplierPaymentsTab";
 import toast from "react-hot-toast";
 
 export default function Accounts() {
@@ -69,7 +70,7 @@ export default function Accounts() {
     useEffect(() => {
         const fetchStats = async () => {
             // Add monthClosing and safes to the condition
-            if (["overview", "monthlyExpenses", "cityDeliveries", "supplierAccounts", "monthClosing", "safes"].includes(activeTab)) {
+            if (["overview", "monthlyExpenses", "cityDeliveries", "supplierAccounts", "supplierPayments", "monthClosing", "safes"].includes(activeTab)) {
                 setLoadingStats(true);
                 try {
                     let endpoint = "/accounting/stats";
@@ -80,6 +81,9 @@ export default function Accounts() {
                         params = {};
                     } else if (activeTab === "supplierAccounts") {
                         endpoint = "/accounting/supplier-closings/financial-stats";
+                        params = {};
+                    } else if (activeTab === "supplierPayments") {
+                        endpoint = "/supplier-payments/stats";
                         params = {};
                     } else if (activeTab === "monthClosing") {
                         endpoint = "/monthly-closings/stats";
@@ -132,6 +136,7 @@ export default function Accounts() {
         { id: "cityDeliveries", label: t("tabs.cityDeliveries") },
         // { id: "employeePerformance", label: t("tabs.employeePerformance") },
         { id: "supplierAccounts", label: t("tabs.supplierAccounts") },
+        { id: "supplierPayments", label: t("tabs.supplierPayments") },
         { id: "monthClosing", label: t("tabs.monthClosing") },
         { id: "safes", label: t("tabs.safes") },
     ], [t]);
@@ -213,6 +218,14 @@ export default function Accounts() {
             ];
         }
 
+        if (activeTab === "supplierPayments") {
+            return [
+                { name: t("supplierPayments.stats.totalSuppliers"), value: stats?.totalSuppliers || "0", icon: Building2, color: "#3b82f6" },
+                { name: t("supplierPayments.stats.totalShouldPay"), value: stats?.totalShouldPay?.toLocaleString() || "0", icon: ArrowUpRight, color: "#ef4444" },
+                { name: t("supplierPayments.stats.totalShouldCollect"), value: stats?.totalShouldCollect?.toLocaleString() || "0", icon: ArrowDownLeft, color: "#10b981" },
+            ];
+        }
+
         switch (activeTab) {
             default:
                 return [];
@@ -243,6 +256,8 @@ export default function Accounts() {
                 return <MonthClosingTab onRefresh={refreshStats} />;
             case "safes":
                 return <SafesTab onRefresh={refreshStats} />;
+            case "supplierPayments":
+                return <SupplierPaymentsTab onRefresh={refreshStats} />;
             default:
                 return <OverviewTab onRefresh={refreshStats} />;
         }

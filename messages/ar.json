@@ -8438,8 +8438,93 @@
       "cityDeliveries": "التسليمات في المحافظات",
       "employeePerformance": "أداء الموظفين",
       "supplierAccounts": "حسابات الموردين",
+      "supplierPayments": "دفع نقدية",
       "monthClosing": "تقفيل الشهر",
       "safes": "الخزائن والحسابات"
+    },
+    "supplierPayments": {
+      "title": "مدفوعات الموردين",
+      "form": {
+        "title": "تسجيل دفعة جديدة",
+        "supplier": "المورد",
+        "safe": "الخزينة / الحساب",
+        "amount": "مبلغ الدفعة",
+        "paymentDate": "تاريخ الدفع",
+        "notes": "ملاحظات",
+        "notesPlaceholder": "أضف أي ملاحظات هنا...",
+        "submit": "تأكيد الدفع",
+        "totalWithCommission": "إجمالي الخصم (شامل العمولة)",
+        "insufficientBalance": "رصيد الخزينة غير كافٍ",
+        "selectInvoice": "اختر الفاتورة (اختياري)",
+        "loadMoreInvoices": "تحميل المزيد من الفواتير",
+        "unallocated": "دفعة عامة (غير مخصصة)",
+        "supplierBalance": "رصيد المورد",
+        "shouldPay": "مستحق للمورد",
+        "shouldCollect": "مستحق من المورد",
+        "noBalance": "رصيد صفري",
+        "noSupplierSelected": "لم يتم إختيار مورد بعد"
+      },
+      "table": {
+        "date": "التاريخ",
+        "supplier": "المورد",
+        "amount": "المبلغ",
+        "safe": "الخزينة",
+        "notes": "ملاحظات",
+        "createdBy": "بواسطة",
+        "balanceAfter": "الرصيد بعد",
+        "allocations": "التخصيص",
+        "actions": "الإجراءات",
+        "view": "عرض التفاصيل",
+        "empty": "لا توجد مدفوعات مسجلة بعد",
+        "supplierBalanceAfter": "رصيد المورد بعد"
+      },
+      "details": {
+        "title": "تفاصيل الدفعة",
+        "info": "معلومات الدفع",
+        "allocations": "التوزيع على الفواتير",
+        "invoiceNumber": "رقم الفاتورة",
+        "allocatedAmount": "المبلغ المخصص",
+        "remainingAfter": "المتبقي بعد الدفع",
+        "createdBy": "أنشأ بواسطة",
+        "createdAt": "تاريخ الإنشاء"
+      },
+      "stats": {
+        "totalSuppliers": "إجمالي الموردين",
+        "totalShouldPay": "إجمالي المستحق للموردين",
+        "totalShouldCollect": "إجمالي المستحق من الموردين"
+      },
+      "validation": {
+        "supplierRequired": "يجب اختيار المورد",
+        "safeRequired": "يجب اختيار الخزينة",
+        "invalidAmount": "مبلغ غير صحيح",
+        "amountRequired": "المبلغ مطلوب",
+        "minAmount": "أقل مبلغ هو 0.01",
+        "dateRequired": "التاريخ مطلوب"
+      },
+      "messages": {
+        "fetchFailed": "فشل في جلب البيانات",
+        "saveSuccess": "تم تسجيل الدفعة بنجاح",
+        "saveFailed": "فشل في حفظ الدفعة",
+        "exportFailed": "فشل في تصدير البيانات",
+        "commission": "عمولة",
+        "export": "تصدير"
+      },
+      "common": {
+        "view": "عرض"
+      },
+      "safeBalance": "رصيد الخزنة ",
+      "toolbar": {
+        "searchPlaceholder": "البحث في المدفوعات...",
+        "filter": "تصفية"
+      },
+      "filters": {
+        "apply": "تطبيق",
+        "supplierPlaceholder": "اختر المورد"
+      },
+      "all": "الكل",
+      "selectDateRange": "التاريخ",
+      "total": "الإجمالي",
+      "limit": "عدد النتائج\t"
     },
     "safes": {
       "title": "الخزائن والحسابات المالية",
@@ -8522,7 +8607,10 @@
           "trackingNumber": "رقم التتبع",
           "shippingCompanyProvider": "شركة الشحن",
           "category": "الفئة",
-          "supplierName": "اسم المورد"
+          "supplierName": "اسم المورد",
+          "unallocatedAmount": "المبلغ غير المنتمي لفاتورة معينة",
+          "invoicesCount": "عدد الفاتير المدفوعة",
+          "invoicesNumber": "رقم الفاتورة"
         },
         "directions": {
           "IN": "داخل",
@@ -8861,7 +8949,8 @@
         "title": "تفاصيل المورد",
         "purchasesTab": "المشتريات",
         "returnsTab": "المرتجعات",
-        "historyTab": "سجل التقفيلات"
+        "historyTab": "سجل التقفيلات",
+        "paymentsTab": "سجل الدفعات"
       },
       "columns": {
         "supplierName": "اسم المورد",
@@ -8990,5 +9079,8 @@
   },
   "safes": {
     "afterCommission": "بعد حساب العمولة"
+  },
+  "acceptPreview": {
+    "oldPrice": "السعر القديم"
   }
 }

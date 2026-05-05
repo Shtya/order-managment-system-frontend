@@ -65,6 +65,7 @@ import {
   CheckSquare,
   Clock,
   Landmark,
+  DollarSign,
 } from "lucide-react";
 import { FaUserTie } from "react-icons/fa6";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -726,7 +727,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       ],
     },
     {
-      icon: Wallet,
+      icon: DollarSign,
       labelKey: "finance",
       href: "/wallet",
       children: [

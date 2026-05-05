@@ -61,6 +61,10 @@ import {
   AlertTriangle,
   Store,
   FileSearch,
+  Vault,
+  CheckSquare,
+  Clock,
+  Landmark,
 } from "lucide-react";
 import { FaUserTie } from "react-icons/fa6";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -700,22 +704,22 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       permission: "orders-collect.read",
       children: [
         {
-          icon: Receipt,
+          icon: Wallet, // 💼 accounts = money management
           labelKey: "accounts",
           href: "/accounts?tab=overview",
         },
         {
-          icon: Receipt,
+          icon: Landmark, // 🏦 safes = physical/secure storage
           labelKey: "safes",
           href: "/accounts?tab=safes",
         },
         {
-          icon: CheckCircle2,
+          icon: CheckSquare, // ✅ collected = done/confirmed
           labelKey: "collectedOrders",
           href: "/orders/collections?tab=collected",
         },
         {
-          icon: AlertCircle,
+          icon: Clock, // ⏳ uncollected = pending
           labelKey: "uncollectedOrders",
           href: "/orders/collections?tab=not_collected",
         },

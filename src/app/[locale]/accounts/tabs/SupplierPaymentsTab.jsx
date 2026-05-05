@@ -42,8 +42,8 @@ const createPaymentSchema = (t) =>
     });
 
 export default function SupplierPaymentsTab({ onRefresh }) {
-    const t = useTranslations("accounts.supplierPayments");
     const tCommon = useTranslations("common");
+    const t = useTranslations("accounts.supplierPayments");
 
     // Form states
     const [selectedSupplier, setSelectedSupplier] = useState(null);
@@ -134,13 +134,13 @@ export default function SupplierPaymentsTab({ onRefresh }) {
         <div className="space-y-6">
             {/* Form Card */}
             <Card className="rounded-2xl border-none shadow-sm overflow-hidden">
-                <CardHeader className="">
+                <CardHeader className="p-0!">
                     <CardTitle className="text-lg font-bold flex items-center gap-2">
                         <Plus className="w-5 h-5 text-primary" />
                         {t("form.title")}
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="p-6">
+                <CardContent className="p-0!">
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                         {/* Supplier Balance Cards */}
                         {selectedSupplier && (
@@ -311,9 +311,14 @@ export default function SupplierPaymentsTab({ onRefresh }) {
             </Card>
 
             {/* Table Card */}
-            <Card className="rounded-2xl border-none shadow-sm overflow-hidden">
-                <CardContent className="p-0">
-                    <SupplierPaymentsTable key={refreshKey} />
+            <Card className="rounded-2xl border-none shadow-sm overflow-hidden ">
+                <CardHeader className="">
+                    <CardTitle className="text-lg font-bold flex items-center gap-2">
+                        {t("form.paymentTitle")}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="p-0!">
+                    <SupplierPaymentsTable key={refreshKey} flat={true} />
                 </CardContent>
             </Card>
         </div>

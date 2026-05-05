@@ -705,6 +705,11 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           href: "/accounts?tab=overview",
         },
         {
+          icon: Receipt,
+          labelKey: "safes",
+          href: "/accounts?tab=safes",
+        },
+        {
           icon: CheckCircle2,
           labelKey: "collectedOrders",
           href: "/orders/collections?tab=collected",

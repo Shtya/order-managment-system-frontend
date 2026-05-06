@@ -649,7 +649,7 @@ function CompanyTab() {
               />
             </Field>
 
-            <Field label={t("company.form.country")} required error={errors.country?.message}>
+            <Field label={t("company.form.country")} required error={errors.name?.message}>
               <Controller
                 control={control}
                 name="country"
@@ -672,12 +672,12 @@ function CompanyTab() {
               />
             </Field>
 
-            <Field label={t("company.form.phone")} error={errors.phone?.message}>
+            <Field label={t("company.form.phone")} >
               <Input {...register("phone")} dir="ltr" className="h-11" />
             </Field>
 
             <Field
-              label={t("company.form.website") error={errors.website?.message}}
+              label={t("company.form.website") }
               error={errors.website?.message}
             >
               <Input
@@ -688,15 +688,15 @@ function CompanyTab() {
               />
             </Field>
 
-            <Field label={t("company.form.taxNumber")} error={errors.tax?.message}>
+            <Field label={t("company.form.taxNumber")} >
               <Input {...register("tax")} className="h-11" />
             </Field>
 
-            <Field label={t("company.form.commercialRegister")} error={errors.commercial?.message}>
+            <Field label={t("company.form.commercialRegister")} >
               <Input {...register("commercial")} className="h-11" />
             </Field>
 
-            <Field label={t("company.form.currency")} required error={errors.currency?.message}>
+            <Field label={t("company.form.currency")} required >
               <Controller
                 control={control}
                 name="currency"
@@ -719,7 +719,7 @@ function CompanyTab() {
               />
             </Field>
 
-            <Field label={t("company.form.address")} className="md:col-span-2" error={errors.address?.message}>
+            <Field label={t("company.form.address")} className="md:col-span-2" >
               <div className="relative">
                 <MapPin
                   size={14}

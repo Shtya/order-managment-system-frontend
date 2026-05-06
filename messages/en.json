@@ -3657,7 +3657,14 @@
       "active": "Active",
       "inactive": "Inactive",
       "selectedCount": "{count} selected",
-      "selectProducts": "Select products"
+      "selectProducts": "Select products",
+      "cancel": "Cancel",
+      "print": "Print"
+    },
+    "printSku": {
+      "title": "Print Product Labels",
+      "labelCount": "Label Count",
+      "selectedCount": "{count} SKUs selected"
     },
     "bundleModal": {
       "title": "Bundle Details",
@@ -3695,7 +3702,8 @@
       "edit": "Edit",
       "view": "View",
       "reactivate": "Reactivate",
-      "success": "Successfully completed"
+      "success": "Successfully completed",
+      "printSku": "Print  Skus"
     },
     "tabs": {
       "products": "Products",
@@ -4692,8 +4700,8 @@
       "actions": {
         "retryOrder": "Retry & Save Order",
         "markAsResolved": "Mark as Resolved",
-        "fetchExternalDetails": "Fetch External Product Data",
-        "createProduct": "Create Local Product",
+        "fetchExternalDetails": "View product data from the store",
+        "createProduct": "Create Product",
         "editProduct": "Edit Product Attributes",
         "includeInPurchaseOrder": "Select for Purchase Order",
         "createPOForSelected": "Create Purchase Order",
@@ -4772,7 +4780,11 @@
         "fetchFailed": "Failed to load orders, please try again",
         "retryStarted": "Retry request sent successfully",
         "retrySuccess": "Order has been successfully created!",
-        "retryFailed": "Failed to retry the order. Please check the problems and try again."
+        "retryFailed": "Failed to retry the order. Please check the problems and try again.",
+        "reviewIssuesTitle": "Action Required: Resolve Issues",
+        "reviewIssuesDescription": "This order cannot be retried yet because of problems with one or more items. Please scroll down to the items table to see and fix the issues.",
+        "orderReadyTitle": "Order Ready to Retry",
+        "orderReadyDescription": "All issues have been resolved. You can now click the 'Retry' button in the header to process this order."
       },
       "empty": {
         "title": "No orders requiring review",

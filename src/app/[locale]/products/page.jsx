@@ -21,7 +21,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 
-import useProductsTab, { ProductViewModal } from "./ProductsTab";
+import useProductsTab, { ProductViewModal, SkuPrintModal } from "./ProductsTab";
 import useBundlesTab, { BundleViewModal } from "./BundlesTab";
 import useIdleTab from "./IdleTab";
 import PageHeader from "@/components/atoms/Pageheader";
@@ -781,6 +781,12 @@ export default function ProductsPage() {
 			) : (
 				<ProductViewModal open={viewOpen} onOpenChange={(o) => (!o ? closeView() : null)} product={viewProduct} viewLoading={viewLoading} />
 			)}
+
+			<SkuPrintModal
+				open={productsLogic.printModal.open}
+				onClose={() => productsLogic.setPrintModal({ open: false, product: null })}
+				product={productsLogic.printModal.product}
+			/>
 		</div>
 	);
 }

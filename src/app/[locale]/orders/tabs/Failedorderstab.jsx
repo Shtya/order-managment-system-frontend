@@ -559,11 +559,11 @@ export function FailedOrdersTab() {
       },
 
       // Failure reason / error message
-      {
-        key: "errorReason",
-        header: t("failedOrders.columns.errorReason"),
-        cell: (row) => <ErrorReasonCell row={row} />,
-      },
+      // {
+      //   key: "errorReason",
+      //   header: t("failedOrders.columns.errorReason"),
+      //   cell: (row) => <ErrorReasonCell row={row} />,
+      // },
 
       // Last retry failed reason
       {

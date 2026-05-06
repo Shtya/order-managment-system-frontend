@@ -3692,7 +3692,14 @@
       "active": "نشط",
       "inactive": "غير نشط",
       "selectedCount": "{count} محدد",
-      "selectProducts": "اختر المنتجات"
+      "selectProducts": "اختر المنتجات",
+      "cancel": "إلغاء",
+      "print": "طباعة"
+    },
+    "printSku": {
+      "title": "طباعة ملصقات المنتجات",
+      "labelCount": "عدد الملصقات",
+      "selectedCount": "{count} SKU محدد"
     },
     "bundleModal": {
       "title": "تفاصيل الباندل",
@@ -3730,7 +3737,8 @@
       "edit": "تعديل",
       "view": "عرض",
       "reactivate": "إعادة التفعيل",
-      "success": "تمت بنجاح"
+      "success": "تمت بنجاح",
+      "printSku": "إطبع Skus"
     },
     "tabs": {
       "products": "المنتجات",
@@ -4747,8 +4755,8 @@
         "editProductAndAddVariant": "تعديل المنتج",
         "retryOrder": "إعادة المحاولة وحفظ الطلب",
         "markAsResolved": "تحديد كمحلول",
-        "fetchExternalDetails": "جلب بيانات المنتج الخارجية",
-        "createProduct": "إنشاء منتج محلي",
+        "fetchExternalDetails": "عرض بيانات المنتج من المتجر",
+        "createProduct": "إنشاء منتج",
         "editProduct": "تعديل خصائص المنتج",
         "includeInPurchaseOrder": "تحديد لإنشاء فاتورة مشتريات",
         "createPOForSelected": "إنشاء فاتورة مشتريات",
@@ -4829,7 +4837,11 @@
         "fetchFailed": "فشل تحميل الطلبات، يرجى المحاولة مجدداً",
         "retryStarted": "تمّ إرسال طلب إعادة المحاولة بنجاح",
         "retrySuccess": "تم إنشاء الطلب بنجاح!",
-        "retryFailed": "فشلت إعادة المحاولة. يرجى مراجعة المشاكل والمحاولة مرة أخرى."
+        "retryFailed": "فشلت إعادة المحاولة. يرجى مراجعة المشاكل والمحاولة مرة أخرى.",
+        "reviewIssuesTitle": "مطلوب اتخاذ إجراء: حل المشكلات",
+        "reviewIssuesDescription": "لا يمكن إعادة محاولة هذا الطلب بعد بسبب وجود مشكلات في عنصر واحد أو أكثر. يرجى التمرير لأسفل إلى جدول العناصر لمعرفة المشكلات وإصلاحها.",
+        "orderReadyTitle": "الطلب جاهز لإعادة المحاولة",
+        "orderReadyDescription": "تم حل جميع المشكلات. يمكنك الآن النقر فوق زر 'إعادة المحاولة' في الأعلى لمعالجة هذا الطلب."
       },
       "empty": {
         "title": "لا توجد طلبات تحتاج مراجعة",

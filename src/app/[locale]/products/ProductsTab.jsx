@@ -3,14 +3,14 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { CalendarDays, DollarSign, Edit2, Eye, QrCode, Tag, Trash2, Hash, Package, Boxes, Store, Warehouse, Image as ImageIcon, CheckCircle2, XCircle, RotateCcw } from "lucide-react";
+import { CalendarDays, DollarSign, Edit2, Eye, QrCode, Tag, Trash2, Hash, Package, Boxes, Store, Warehouse, Image as ImageIcon, CheckCircle2, XCircle, RotateCcw, Printer, Plus, Minus, X, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/utils/cn";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { useRouter } from "@/i18n/navigation";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { baseImg } from "@/utils/axios";
 import { useTranslations } from "next-intl";
@@ -18,14 +18,20 @@ import { BannerSkeleton, Bone } from "@/components/atoms/BannerSkeleton";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import ActionButtons from "@/components/atoms/Actions";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import BarcodeCell from "@/components/atoms/BarcodeCell";
+import { renderBarcode } from "@/utils/barcode";
+import { Input } from "@/components/ui/input";
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
 	return Array.isArray(msg) ? msg.join(", ") : String(msg);
 }
 
-export default function useProductsTab({ t, searchDebounced, filters, filtersOpen, onAskDelete, onOpenView, onExportRequest, activetab }) {
+export default function useProductsTab({ searchDebounced, filters, filtersOpen, onAskDelete, onOpenView, onExportRequest, activetab }) {
 	const router = useRouter();
+	const t = useTranslations("products");
 	const requestIdRef = useRef(0);
 	const { formatCurrency } = usePlatformSettings();
 
@@ -36,6 +42,8 @@ export default function useProductsTab({ t, searchDebounced, filters, filtersOpe
 		per_page: 6,
 		records: []
 	});
+
+	const [printModal, setPrintModal] = useState({ open: false, product: null });
 
 	function buildQueryParams({ page, per_page }) {
 		const params = new URLSearchParams();
@@ -277,6 +285,13 @@ export default function useProductsTab({ t, searchDebounced, filters, filtersOpe
 								permission: "products.read",
 							},
 							{
+								icon: <Printer />,
+								tooltip: t("actions.printSku"),
+								onClick: (r) => setPrintModal({ open: true, product: r }),
+								variant: "primary",
+								permission: "products.read",
+							},
+							{
 								icon: <RotateCcw />,
 								tooltip: t("actions.reactivate"),
 								hidden: activetab !== "deleted_products",
@@ -312,7 +327,278 @@ export default function useProductsTab({ t, searchDebounced, filters, filtersOpe
 		];
 	}, [router, t, onAskDelete, onOpenView, formatCurrency]);
 
-	return { loading, pager, columns, fetchData, buildQueryParams };
+	return { loading, pager, columns, fetchData, buildQueryParams, printModal, setPrintModal };
+}
+
+export function SkuPrintModal({ open, onClose, product }) {
+	const t = useTranslations("products");
+	const { formatCurrency } = usePlatformSettings();
+	const [selectedSkus, setSelectedSkus] = useState([]);
+	const [quantities, setQuantities] = useState({});
+
+	const skus = product?.skus || [];
+
+	useEffect(() => {
+		if (open && skus.length > 0) {
+			setSelectedSkus(skus.map(s => s.id));
+			const initialQuantities = {};
+			skus.forEach(s => {
+				initialQuantities[s.id] = 1;
+			});
+			setQuantities(initialQuantities);
+		}
+	}, [open, product]);
+
+	const toggleSku = (id) => {
+		setSelectedSkus(prev =>
+			prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+		);
+	};
+
+	const selectAll = () => {
+		setSelectedSkus(selectedSkus.length === skus.length ? [] : skus.map(s => s.id));
+	};
+
+	const updateQuantity = (id, val) => {
+		setQuantities(prev => ({
+			...prev,
+			[id]: Math.max(1, (prev[id] || 1) + val)
+		}));
+	};
+
+	const handlePrint = () => {
+		const selectedData = skus.filter(s => selectedSkus.includes(s.id));
+		if (selectedData.length === 0) return;
+
+		// Create a temporary container for barcode generation
+		const tempDiv = document.createElement('div');
+		tempDiv.style.display = 'none';
+		document.body.appendChild(tempDiv);
+
+		let labelsHtml = '';
+
+		selectedData.forEach(s => {
+			const attrs = s?.attributes ? Object.entries(s.attributes) : [];
+			const attrStr = attrs.map(([k, v]) => `${k}: ${v}`).join(" | ");
+			const qty = quantities[s.id] || 1;
+
+			// Generate barcode SVG string using our shared utility
+			const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+			renderBarcode(svg, s.sku);
+			const barcodeSvgStr = svg.outerHTML;
+
+			for (let i = 0; i < qty; i++) {
+				labelsHtml += `
+					<div class="label-item">
+						<div class="text-[10px] font-bold text-slate-800 mb-1 truncate w-full text-center">
+							${product?.name || ''}
+						</div>
+						<div class="text-[8px] text-slate-600 mb-1 truncate w-full text-center">
+							${attrStr}
+						</div>
+						<div class="barcode-container w-full flex justify-center">
+							${barcodeSvgStr}
+						</div>
+						<div class="text-[9px] font-mono mt-1 font-bold">
+							${s.sku}
+						</div>
+					</div>
+				`;
+			}
+		});
+
+		document.body.removeChild(tempDiv);
+
+		const w = window.open("", "_blank");
+		w.document.write(`
+      <html class="light">
+        <head>
+          <title>${t("printSku.title")}</title>
+          <script src="https://cdn.tailwindcss.com"></script>
+          <script>tailwind.config = { darkMode: 'class' }</script>
+          <style>
+            @page { size: auto; margin: 0mm; }
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { background: white !important; width: 100%; font-family: sans-serif; }
+            .print-container { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; }
+            .label-item { 
+                width: 50mm; 
+                height: 30mm; 
+                border: 1px dashed #ccc; 
+                display: flex; 
+                flex-direction: column; 
+                align-items: center; 
+                justify-content: center; 
+                padding: 5px;
+                page-break-inside: avoid;
+            }
+            .barcode-container svg {
+                width: 100%;
+                height: auto;
+                max-height: 40px;
+            }
+            @media print {
+              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+              .label-item { border: none !important; }
+              .no-print { display: none !important; }
+            }
+          </style>
+        </head>
+        <body class="bg-white">
+          <div class="print-container">
+            ${labelsHtml}
+          </div>
+          <script>setTimeout(function() { window.print(); window.close(); }, 1000);</script>
+        </body>
+      </html>
+    `);
+		w.document.close();
+		w.focus();
+	};
+
+	if (!open) return null;
+
+	return (
+		<Dialog open={open} onOpenChange={onClose}>
+			<DialogContent className="!max-w-4xl rounded-2xl max-h-[90vh] flex flex-col p-0 shadow-2xl border-0 overflow-hidden">
+				<div className="relative px-6 pt-6 pb-5 shrink-0 bg-gradient-to-br from-primary to-secondary">
+					<div className="relative flex items-center justify-between">
+						<div className="flex items-center gap-3">
+							<div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+								<Printer className="text-white" size={22} />
+							</div>
+							<div>
+								<p className="text-white/70 text-xs font-medium mb-0.5">{product?.name}</p>
+								<h2 className="text-white text-xl font-bold">{t("printSku.title")}</h2>
+							</div>
+						</div>
+						<button onClick={onClose} className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
+							<X size={16} className="text-white" />
+						</button>
+					</div>
+				</div>
+
+				<div className="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-slate-900/50">
+					<div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+						<div className="overflow-x-auto">
+							<table className="w-full text-sm min-w-[600px]">
+								<thead>
+									<tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+										<th className="px-4 py-3 text-center w-[50px]">
+											<Checkbox
+												checked={skus.length > 0 && selectedSkus.length === skus.length}
+												onCheckedChange={selectAll}
+											/>
+										</th>
+										<th className="px-4 py-3 text-start font-semibold text-slate-600 dark:text-slate-400">{t("common.sku")}</th>
+										<th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{t("common.attributes")}</th>
+										<th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{t("common.price")}</th>
+										<th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{t("common.stock")}</th>
+										<th className="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-400">{t("printSku.labelCount")}</th>
+									</tr>
+								</thead>
+								<tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+									{skus.map((s) => {
+										const attrs = s?.attributes ? Object.entries(s.attributes) : [];
+										return (
+											<tr key={s.id} className={cn(
+												"hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors",
+												!selectedSkus.includes(s.id) && "opacity-50"
+											)}>
+												<td className="px-4 py-3 text-center">
+													<Checkbox
+														checked={selectedSkus.includes(s.id)}
+														onCheckedChange={() => toggleSku(s.id)}
+													/>
+												</td>
+												<td className="px-4 py-3">
+													<div className="font-medium text-slate-900 dark:text-slate-100 text-nowrap">{s.sku}</div>
+												</td>
+												<td className="px-4 py-3">
+													<div className="flex flex-wrap gap-1 justify-center">
+														{attrs.map(([k, v]) => (
+															<Badge key={k} variant="outline" className="text-[10px] py-0 px-1.5 h-5 rounded-md bg-slate-50 dark:bg-slate-800">
+																{k}: {String(v)}
+															</Badge>
+														))}
+													</div>
+												</td>
+												<td className="px-4 py-3 text-center font-semibold text-emerald-600 text-nowrap">
+													{formatCurrency(s.price || 0)}
+												</td>
+												<td className="px-4 py-3 text-center">
+													<Badge variant="secondary" className="rounded-full text-[10px]">
+														{s.stockOnHand ?? 0}
+													</Badge>
+												</td>
+												<td className="px-4 py-3">
+													<div className="flex items-center justify-center gap-2">
+														<button
+															onClick={() => updateQuantity(s.id, -1)}
+															className="w-7 h-7 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+														>
+															<Minus size={12} />
+														</button>
+														<Input
+															type="number"
+															min="1"
+															value={quantities[s.id] || 1}
+															onChange={(e) => {
+																const val = parseInt(e.target.value);
+																setQuantities(prev => ({
+																	...prev,
+																	[s.id]: isNaN(val) ? "" : Math.max(1, val)
+																}));
+															}}
+															onBlur={(e) => {
+																const val = parseInt(e.target.value);
+																if (isNaN(val) || val < 1) {
+																	setQuantities(prev => ({
+																		...prev,
+																		[s.id]: 1
+																	}));
+																}
+															}}
+															className="w-10 text-center font-bold p-0!"
+														/>
+														<button
+															onClick={() => updateQuantity(s.id, 1)}
+															className="w-7 h-7 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+														>
+															<Plus size={12} />
+														</button>
+													</div>
+												</td>
+											</tr>
+										);
+									})}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+
+				<div className="px-6 py-4 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
+					<p className="text-sm text-slate-500">
+						{t("printSku.selectedCount", { count: selectedSkus.length })}
+					</p>
+					<div className="flex items-center gap-3">
+						<Button variant="ghost" onClick={onClose} className="rounded-xl">
+							{t("common.cancel")}
+						</Button>
+						<Button
+							disabled={selectedSkus.length === 0}
+							onClick={handlePrint}
+							className="rounded-xl px-8 bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all active:scale-95"
+						>
+							<Printer size={18} className="mr-2" />
+							{t("common.print")}
+						</Button>
+					</div>
+				</div>
+			</DialogContent >
+		</Dialog >
+	);
 }
 
 function formatDate(d, na) {
@@ -323,8 +609,6 @@ function formatDate(d, na) {
 		return String(d);
 	}
 }
-
-
 
 function toAbsUrl(url) {
 	if (!url) return null;

@@ -554,6 +554,7 @@ function CompanyTab() {
   }, []);
 
   const onSubmit = async (data) => {
+    console.log(data)
     try {
       await api.post("/users/company", data);
       toast.success(t("company.saveSuccess"));
@@ -562,7 +563,10 @@ function CompanyTab() {
       toast.error(Array.isArray(msg) ? msg[0] : msg);
     }
   };
+  function onErrors(errs) {
 
+    console.log(errs)
+  }
   return (
     <div>
       <SectionHead
@@ -610,7 +614,7 @@ function CompanyTab() {
           </div>
 
           <form
-            onSubmit={handleSubmit(onSubmit)}
+            onSubmit={handleSubmit(onSubmit, onErrors)}
             className="grid grid-cols-1 md:grid-cols-2 gap-4"
           >
             <Field
@@ -649,7 +653,7 @@ function CompanyTab() {
               />
             </Field>
 
-            <Field label={t("company.form.country")} required error={errors.name?.message}>
+            <Field label={t("company.form.country")} error={errors.country?.message} required>
               <Controller
                 control={control}
                 name="country"
@@ -672,12 +676,12 @@ function CompanyTab() {
               />
             </Field>
 
-            <Field label={t("company.form.phone")} >
+            <Field label={t("company.form.phone")} error={errors.phone?.message}>
               <Input {...register("phone")} dir="ltr" className="h-11" />
             </Field>
 
             <Field
-              label={t("company.form.website") }
+              label={t("company.form.website")}
               error={errors.website?.message}
             >
               <Input
@@ -688,15 +692,15 @@ function CompanyTab() {
               />
             </Field>
 
-            <Field label={t("company.form.taxNumber")} >
+            <Field label={t("company.form.taxNumber")} error={errors.tax?.message}>
               <Input {...register("tax")} className="h-11" />
             </Field>
 
-            <Field label={t("company.form.commercialRegister")} >
+            <Field label={t("company.form.commercialRegister")} error={errors.commercial?.message}>
               <Input {...register("commercial")} className="h-11" />
             </Field>
 
-            <Field label={t("company.form.currency")} required >
+            <Field label={t("company.form.currency")} error={errors.currency?.message} required>
               <Controller
                 control={control}
                 name="currency"
@@ -719,7 +723,7 @@ function CompanyTab() {
               />
             </Field>
 
-            <Field label={t("company.form.address")} className="md:col-span-2" >
+            <Field label={t("company.form.address")} className="md:col-span-2" error={errors.address?.message}>
               <div className="relative">
                 <MapPin
                   size={14}

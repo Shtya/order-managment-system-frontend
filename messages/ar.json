@@ -363,9 +363,14 @@
     "locked": "مغلق",
     "subscription_required": "الاشتراك مطلوب",
     "logo": "لوجو",
+    "whatsapp": "الواتساب",
     "users": "المستخدمون",
+    "whatsAppAccounts": "حساباتي",
     "roles": "الأدوار",
     "plans": "الخطط",
+    "overview": "نظرة عامة",
+    "templates": "القوالب",
+    "automations": "التشغيل التلقائي",
     "dashboard": "لوحة التحكم",
     "orders": "الطلبات",
     "employeeOrders": "طلبات الموظفين",
@@ -4435,6 +4440,8 @@
     "search": "بحث",
     "filter": "فلترة",
     "export": "تصدير",
+    "limit": "عدد النتائج",
+    "howToUse": "كيفية الاستخدام",
     "import": "استيراد",
     "delete": "حذف",
     "edit": "تعديل",
@@ -9084,5 +9091,56 @@
   },
   "acceptPreview": {
     "oldPrice": "السعر القديم"
+  },
+  "whatsApp": {
+    "accounts": {
+      "title": "حسابات الواتساب",
+      "breadcrumb": {
+        "home": "الرئيسية",
+        "whatsapp": "واتساب",
+        "accounts": "الحسابات"
+      },
+      "stats": {
+        "deliveryRate": "معدل التسليم",
+        "readRate": "معدل القراءة",
+        "responseRate": "معدل الاستجابة",
+        "conversionRate": "معدل التحويل",
+        "avgResponseTime": "متوسط وقت الاستجابة",
+        "blockRate": "معدل الحظر / الشكاوى"
+      },
+      "toolbar": {
+        "searchPlaceholder": "بحث بالاسم أو الرقم...",
+        "filter": "تصفية",
+        "export": "تصدير",
+        "addAccount": "إضافة حساب"
+      },
+      "table": {
+        "name": "اسم الحساب",
+        "number": "الرقم",
+        "connectDate": "تاريخ الربط",
+        "status": "الحالة",
+        "active": "نشط",
+        "disabled": "معطل",
+        "actions": "الإجراءات",
+        "empty": "لم يتم العور على حسابات واتساب"
+      },
+      "status": {
+        "connected": "متصل",
+        "disconnected": "غير متصل",
+        "connecting": "جاري الاتصال"
+      },
+      "actions": {
+        "enable": "تفعيل",
+        "disable": "تعطيل",
+        "delete": "حذف الربط",
+        "confirmDelete": "هل أنت متأكد من حذف هذا الربط؟"
+      },
+      "messages": {
+        "updateSuccess": "تم تحديث حالة الحساب بنجاح",
+        "deleteSuccess": "تم حذف ربط الواتساب بنجاح",
+        "exportStarted": "جاري تصدير بيانات الحسابات...",
+        "fetchFailed": "فشل في تحميل حسابات الواتساب"
+      }
+    }
   }
 }

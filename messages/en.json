@@ -361,12 +361,17 @@
     "team": "Team",
     "safes": "Safes",
     "locked": "Locked",
+    "whatsapp": "WhatsApp",
     "subscription_required": "Subscription Required",
     "logo": "Logo",
     "users": "Users",
     "roles": "Roles",
     "plans": "Plans",
     "dashboard": "Dashboard",
+    "whatsAppAccounts": "My Accounts",
+    "overview": "Overview",
+    "templates": "Templates",
+    "automations": "Automations",
     "orders": "Orders",
     "employeeOrders": "Employee Orders",
     "newPurchase": "New Purchase",
@@ -4398,6 +4403,8 @@
     "back": "Back",
     "search": "Search",
     "filter": "Filter",
+    "limit": "Number of Results",
+    "howToUse": "How to Use",
     "export": "Export",
     "import": "Import",
     "delete": "Delete",
@@ -9041,5 +9048,56 @@
   },
   "acceptPreview": {
     "oldPrice": "Old price"
+  },
+  "whatsApp": {
+    "accounts": {
+      "title": "WhatsApp Accounts",
+      "breadcrumb": {
+        "home": "Home",
+        "whatsapp": "WhatsApp",
+        "accounts": "Accounts"
+      },
+      "stats": {
+        "deliveryRate": "Delivery Rate",
+        "readRate": "Read Rate",
+        "responseRate": "Response Rate",
+        "conversionRate": "Conversion Rate",
+        "avgResponseTime": "Avg Response Time",
+        "blockRate": "Block / Complaint Rate"
+      },
+      "toolbar": {
+        "searchPlaceholder": "Search by name or number...",
+        "filter": "Filter",
+        "export": "Export",
+        "addAccount": "Add Account"
+      },
+      "table": {
+        "name": "Account Name",
+        "number": "Number",
+        "connectDate": "Connect Date",
+        "status": "Status",
+        "active": "Active",
+        "disabled": "Disabled",
+        "actions": "Actions",
+        "empty": "No WhatsApp accounts found"
+      },
+      "status": {
+        "connected": "Connected",
+        "disconnected": "Disconnected",
+        "connecting": "Connecting"
+      },
+      "actions": {
+        "enable": "Enable",
+        "disable": "Disable",
+        "delete": "Delete Connection",
+        "confirmDelete": "Are you sure you want to delete this connection?"
+      },
+      "messages": {
+        "updateSuccess": "Account status updated successfully",
+        "deleteSuccess": "WhatsApp connection deleted successfully",
+        "exportStarted": "Exporting account data...",
+        "fetchFailed": "Failed to load WhatsApp accounts"
+      }
+    }
   }
 }

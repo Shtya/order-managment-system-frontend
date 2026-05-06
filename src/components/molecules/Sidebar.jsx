@@ -74,6 +74,7 @@ import { useAuth } from "@/context/AuthContext";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import BrandLogo from "../atoms/BrandLogo";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
+import { FaBolt, FaChartPie, FaRegFileAlt, FaWhatsapp } from "react-icons/fa";
 
 /* ══════════════════════════════════════════════════════════════
    MENU DEFINITION
@@ -676,6 +677,33 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           href: "/store-integration/sync-failures",
         },
       ],
+    },
+    {
+      icon: FaWhatsapp,
+      labelKey: "whatsapp",
+      href: "/whatsapp",
+      children: [
+        {
+          labelKey: "overview",
+          href: "/whatsapp",
+          icon: FaChartPie, // أو أي أيقونة dashboard
+        },
+        {
+          labelKey: "whatsAppAccounts",
+          href: "/whatsapp/accounts",
+          icon: FaWhatsapp,
+        },
+        {
+          labelKey: "templates",
+          href: "/whatsapp/templates",
+          icon: FaRegFileAlt,
+        },
+        {
+          labelKey: "automations",
+          href: "/whatsapp/automations",
+          icon: FaBolt,
+        },
+      ]
     },
     {
       icon: BarChart3,

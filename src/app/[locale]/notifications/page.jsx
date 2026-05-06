@@ -55,7 +55,8 @@ export const NotificationType = Object.freeze({
   MARKETING_MESSAGE: 'marketing_message',
   SYSTEM_ERROR: 'system_error',
   ORDER_CREATED: 'order_created',
-  PRODUCT_SYNC_FAILED: 'product_sync_failed'
+  PRODUCT_SYNC_FAILED: 'product_sync_failed',
+  ORDER_CREATTION_FAILED: 'order_creation_failed'
 });
 
 // ─────────────────────────────────────────────
@@ -70,6 +71,10 @@ export function getNotificationLink(entity, id, type) {
   }
   if (type === NotificationType.PRODUCT_SYNC_FAILED) {
     return "/store-integration/sync-failures";
+  }
+
+  if (type === NotificationType.ORDER_CREATTION_FAILED) {
+    return id ? `/orders/failedOrders/${id}` : "/orders?tab=failedOrders";
   }
 
   if (entity === "subscription" || (type && type.startsWith("subscription"))) {

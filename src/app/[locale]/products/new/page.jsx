@@ -245,11 +245,11 @@ const makeSchema = (t, tValidation) =>
 			})
 		)
 			.default([])
-			.test('single-sku-required', t('validation.singleSkuRequired'), function (value) {
-				if (this.parent?.type !== 'single') return true;
-				const hasSku = !!((value?.[0]?.sku ?? '').toString().trim());
-				return hasSku || this.createError({ path: 'combinations[0].sku', message: t('validation.singleSkuRequired') });
-			})
+			// .test('single-sku-required', t('validation.singleSkuRequired'), function (value) {
+			// 	if (this.parent?.type !== 'single') return true;
+			// 	const hasSku = !!((value?.[0]?.sku ?? '').toString().trim());
+			// 	return hasSku || this.createError({ path: 'combinations[0].sku', message: t('validation.singleSkuRequired') });
+			// })
 			.test('unique-skus', t('validation.duplicateSku'), function (value) {
 				if (!value || value.length <= 1) return true;
 
@@ -624,7 +624,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 	});
 	const { fields: attributeFields, append: appendAttribute, remove: removeAttribute } = useFieldArray({ control, name: 'attributes', keyName: 'fieldId' });
 	const { fields: comboFields } = useFieldArray({ control, name: 'combinations', keyName: 'fieldId' });
-
+	console.log(errors)
 	const upsellingEnabled = watch('upsellingEnabled');
 	const productName = watch('name');
 	const productSlug = watch('slug');

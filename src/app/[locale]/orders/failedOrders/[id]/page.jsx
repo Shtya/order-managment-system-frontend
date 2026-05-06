@@ -23,7 +23,8 @@ import {
     Plus,
     Edit,
     Info,
-    Mail
+    Mail,
+    Eye
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
@@ -391,7 +392,7 @@ export default function FailedOrderDetailsPage() {
                 let actions = [];
 
                 actions.push({
-                    icon: <ExternalLink size={16} />,
+                    icon: <Eye size={16} />,
                     tooltip: t('actions.fetchExternalDetails'),
                     variant: "warning",
                     onClick: () => setExternalModal({ isOpen: true, remoteId, provider: failure?.store?.provider })
@@ -568,10 +569,31 @@ export default function FailedOrderDetailsPage() {
                             <p className="text-xs text-muted-foreground mb-1 font-semibold">{t('details.store')}</p>
                             <p className="font-bold text-sm flex items-center gap-1.5 truncate"><Store className="w-3.5 h-3.5 text-primary shrink-0" /> {failure.store?.name}</p>
                         </div>
-                        <div className="col-span-full p-3 rounded-xl border border-red-500 bg-red-50  dark:bg-red-950/10">
-                            <p className="text-xs text-red-700 dark:text-red-300 mb-1 font-semibold">{t('labels.failureReason')}</p>
-                            <p className="font-bold text-red-700 dark:text-red-300 text-wrap text-sm flex items-center gap-1.5 truncate"><Mail className="w-3.5 h-3.5 text-primary" /> {failure.reason || t('common.unknownError')}</p>
-                        </div>
+                        {isRetryDisabled && !isSuccess && !retrying ? (
+                            <div className="col-span-full p-4 rounded-xl border border-amber-200 bg-amber-50/50 dark:border-amber-900/30 dark:bg-amber-950/10 flex items-start gap-3 shadow-sm">
+                                <ShieldAlert className="w-5 h-5 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
+                                <div className="space-y-1">
+                                    <p className="text-sm font-bold text-amber-800 dark:text-amber-400">
+                                        {t('messages.reviewIssuesTitle')}
+                                    </p>
+                                    <p className="text-xs text-amber-700/80 dark:text-amber-500/80 leading-relaxed font-medium">
+                                        {t('messages.reviewIssuesDescription')}
+                                    </p>
+                                </div>
+                            </div>
+                        ) : !isSuccess && !retrying ? (
+                            <div className="col-span-full p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 dark:border-emerald-900/30 dark:bg-emerald-950/10 flex items-start gap-3 shadow-sm">
+                                <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-500 shrink-0 mt-0.5" />
+                                <div className="space-y-1">
+                                    <p className="text-sm font-bold text-emerald-800 dark:text-emerald-400">
+                                        {t('messages.orderReadyTitle')}
+                                    </p>
+                                    <p className="text-xs text-emerald-700/80 dark:text-emerald-500/80 leading-relaxed font-medium">
+                                        {t('messages.orderReadyDescription')}
+                                    </p>
+                                </div>
+                            </div>
+                        ) : null}
                     </CardContent>
                 </Card>
 

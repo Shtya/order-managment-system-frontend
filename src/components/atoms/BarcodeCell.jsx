@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import JsBarcode from "jsbarcode";
+import { renderBarcode } from "@/utils/barcode";
 import { useTranslations } from "next-intl";
 import { Package } from "lucide-react";
 import {
@@ -20,17 +20,12 @@ const LargeBarcodeDisplay = ({ value }) => {
     const ref = useRef(null);
 
     useEffect(() => {
-        if (ref.current && value) {
-            JsBarcode(ref.current, value, {
-                format: "CODE128",
-                width: 2,
-                height: 100,
-                displayValue: true,
-                fontSize: 16,
-                background: "transparent",
-                lineColor: "currentColor" // Adapts to Light/Dark mode
-            });
-        }
+        renderBarcode(ref.current, value, {
+            width: 2,
+            height: 100,
+            displayValue: true,
+            fontSize: 16,
+        });
     }, [value]);
 
     return <svg ref={ref} className="max-w-full" />;
@@ -43,16 +38,11 @@ const BarcodeCell = ({ value, className, height }) => {
 
     // Render small barcode for table row
     useEffect(() => {
-        if (smallSvgRef.current && value) {
-            JsBarcode(smallSvgRef.current, value, {
-                format: "CODE128",
-                width: 1,
-                height: height || 20,
-                displayValue: false,
-                margin: 0
-            });
-        }
-    }, [value]);
+        renderBarcode(smallSvgRef.current, value, {
+            width: 1,
+            height: height || 20,
+        });
+    }, [value, height]);
 
     return (
         <>

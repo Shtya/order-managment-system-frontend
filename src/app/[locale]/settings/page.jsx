@@ -390,11 +390,7 @@ const createCompanySchema = (t) =>
       .trim()
       .notRequired()
       .nullable()
-      .test(
-        "is-url-or-empty",
-        t("company.validation.invalidUrl"),
-        (v) => !v || /^https?:\/\//.test(v),
-      ),
+      .url(t("invalidURL")),
     address: yup.string().trim(),
   });
 

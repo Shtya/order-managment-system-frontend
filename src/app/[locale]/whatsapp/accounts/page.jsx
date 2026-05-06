@@ -129,19 +129,7 @@ export default function WhatsAppAccountsPage() {
       key: "connectDate",
       cell: (row) => new Date(row.connectDate).toLocaleDateString()
     },
-    {
-      header: t("table.status"),
-      key: "status",
-      cell: (row) => (
-        <div className={cn(
-          "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold",
-          row.status === "connected" ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
-        )}>
-          <span className={cn("w-2 h-2 rounded-full", row.status === "connected" ? "bg-emerald-500" : "bg-rose-500")} />
-          {t(`status.${row.status}`)}
-        </div>
-      )
-    },
+
     {
       header: t("table.status"), // active or disabled
       key: "isActive",

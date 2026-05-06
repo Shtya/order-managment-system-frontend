@@ -4435,6 +4435,7 @@
     "items": "عنصر",
     "save": "حفظ",
     "cancel": "إلغاء",
+    "all": "الكل",
     "close": "إغلاق",
     "back": "رجوع",
     "search": "بحث",
@@ -7438,7 +7439,8 @@
       "address": "العنوان",
       "address_placeholder": "الشارع، المدينة، المحافظة",
       "optional": "(اختياري)",
-      "required_note": "* الدولة والعملة مطلوبان"
+      "required_note": "* الدولة والعملة مطلوبان",
+      "invalidURL": "رابط الموقع غير صالح"
     },
     "store": {
       "subtitle": "أضف متجرك لاستقبال الطلبات تلقائياً — يمكن إضافة أكثر من متجر",
@@ -9140,6 +9142,72 @@
         "deleteSuccess": "تم حذف ربط الواتساب بنجاح",
         "exportStarted": "جاري تصدير بيانات الحسابات...",
         "fetchFailed": "فشل في تحميل حسابات الواتساب"
+      }
+    },
+    "templates": {
+      "title": "قوالب الواتساب",
+      "breadcrumb": {
+        "home": "الرئيسية",
+        "whatsapp": "واتساب",
+        "templates": "القوالب"
+      },
+      "stats": {
+        "total": "إجمالي القوالب",
+        "approved": "المعتمدة",
+        "lowQuality": "جودة منخفضة",
+        "usedLast48": "استخدمت (آخر 48 ساعة)",
+        "errorsLast48": "أخطاء (آخر 48 ساعة)"
+      },
+      "toolbar": {
+        "searchPlaceholder": "بحث في القوالب...",
+        "addTemplate": "إنشاء قالب"
+      },
+      "table": {
+        "name": "اسم القالب",
+        "language": "اللغة",
+        "category": "الفئة",
+        "status": "الحالة",
+        "createdAt": "تاريخ الإنشاء",
+        "account": "الحساب",
+        "quality": "الجودة",
+        "empty": "لم يتم العثور على قوالب"
+      },
+      "categories": {
+        "authentication": "المصادقة",
+        "marketing": "التسويق",
+        "utility": "الخدمات"
+      },
+      "statuses": {
+        "in_review": "قيد المراجعة",
+        "rejected": "مرفوض",
+        "approved": "معتمد",
+        "paused": "متوقف مؤقتاً",
+        "disabled": "معطل",
+        "appeal_requested": "تم طلب استئناف",
+        "pending_deletion": "قيد الحذف"
+      },
+      "quality": {
+        "high": "جودة عالية",
+        "medium": "جودة متوسطة",
+        "low": "جودة منخفضة",
+        "unknown": "غير معروف"
+      },
+      "actions": {
+        "preview": "معاينة",
+        "edit": "تعديل",
+        "delete": "حذف",
+        "appeal": "طلب استئناف",
+        "confirmDelete": "هل أنت متأكد من حذف هذا القالب؟"
+      },
+      "filters": {
+        "quality": "الجودة",
+        "status": "الحالة",
+        "account": "الحساب",
+        "category": "الفئة",
+        "language": "اللغة"
+      },
+      "messages": {
+        "exportStarted": "جاري تصدير القوالب..."
       }
     }
   }

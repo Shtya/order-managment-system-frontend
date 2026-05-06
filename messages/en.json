@@ -4397,6 +4397,7 @@
     "notSpecified": "Not Specified",
     "none": "None",
     "items": "Items",
+    "all": "All",
     "save": "Save",
     "cancel": "Cancel",
     "close": "Close",
@@ -7396,7 +7397,8 @@
       "address": "Address",
       "address_placeholder": "Street, city, governorate",
       "optional": "(Optional)",
-      "required_note": "* Country and currency are required"
+      "required_note": "* Country and currency are required",
+      "invalidURL": "Invalid website URL"
     },
     "store": {
       "subtitle": "Add your store to receive orders automatically — you can add more than one store",
@@ -9097,6 +9099,72 @@
         "deleteSuccess": "WhatsApp connection deleted successfully",
         "exportStarted": "Exporting account data...",
         "fetchFailed": "Failed to load WhatsApp accounts"
+      }
+    },
+    "templates": {
+      "title": "WhatsApp Templates",
+      "breadcrumb": {
+        "home": "Home",
+        "whatsapp": "WhatsApp",
+        "templates": "Templates"
+      },
+      "stats": {
+        "total": "Total Templates",
+        "approved": "Approved",
+        "lowQuality": "Low Quality",
+        "usedLast48": "Used (Last 48h)",
+        "errorsLast48": "Errors (Last 48h)"
+      },
+      "toolbar": {
+        "searchPlaceholder": "Search templates...",
+        "addTemplate": "Create Template"
+      },
+      "table": {
+        "name": "Template Name",
+        "language": "Language",
+        "category": "Category",
+        "status": "Status",
+        "createdAt": "Creation Time",
+        "account": "Account",
+        "quality": "Quality",
+        "empty": "No templates found"
+      },
+      "categories": {
+        "authentication": "Authentication",
+        "marketing": "Marketing",
+        "utility": "Utility"
+      },
+      "statuses": {
+        "in_review": "In-Review",
+        "rejected": "Rejected",
+        "approved": "Approved",
+        "paused": "Paused",
+        "disabled": "Disabled",
+        "appeal_requested": "Appeal Requested",
+        "pending_deletion": "Pending Deletion"
+      },
+      "quality": {
+        "high": "High Quality",
+        "medium": "Medium Quality",
+        "low": "Low Quality",
+        "unknown": "Unknown"
+      },
+      "actions": {
+        "preview": "Preview",
+        "edit": "Edit",
+        "delete": "Delete",
+        "appeal": "Request Appeal",
+        "confirmDelete": "Are you sure you want to delete this template?"
+      },
+      "filters": {
+        "quality": "Quality",
+        "status": "Status",
+        "account": "Account",
+        "category": "Category",
+        "language": "Language"
+      },
+      "messages": {
+        "exportStarted": "Exporting templates data..."
       }
     }
   }

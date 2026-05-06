@@ -2309,11 +2309,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
       .trim()
       .notRequired()
       .nullable()
-      .test(
-        "is-url-or-empty",
-        t("validation.invalid_url"),
-        (v) => !v || /^(https?:\/\/)/.test(v),
-      ),
+      .url(t("invalidURL")),
   });
 
   const {
@@ -2386,7 +2382,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
     }
   };
 
-  const onInvalid = (errs) => { };
+  const onInvalid = (errs) => { console.log(errs)};
 
   if (!open) return null;
 
@@ -2491,7 +2487,8 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
 
       {/* Row 2 */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-        <Field label={t("fields.tax")}>
+        <Field label={t("fields.tax")} 
+         error={errors.tax ? errors.tax?.message : null}>
           <InputWrap
             icon={<span style={{ fontSize: 13, fontWeight: 700 }}>%</span>}
           >
@@ -2504,7 +2501,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
           </InputWrap>
         </Field>
 
-        <Field label={t("fields.commercial")}>
+        <Field label={t("fields.commercial")} error={errors.commercial ? errors.commercial?.message : null}>
           <InputWrap icon="📋">
             <input
               className="ob-input"
@@ -2516,7 +2513,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
         </Field>
 
         <Field label={t("fields.phone")}>
-          <InputWrap icon={<IcPhone />}>
+          <InputWrap icon={<IcPhone />} error={errors.phone ? errors.phone?.message : null}>
             <input
               className="ob-input"
               placeholder="+20 xxx xxxx"
@@ -2526,7 +2523,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
           </InputWrap>
         </Field>
 
-        <Field label={t("fields.website")}>
+        <Field label={t("fields.website")} error={errors.website ? errors.website?.message : null}>
           <InputWrap icon={<IcGlobe />}>
             <input
               className="ob-input"
@@ -2539,7 +2536,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
       </div>
 
       {/* Address */}
-      <Field label={t("fields.address")}>
+      <Field label={t("fields.address")} error={errors.address ? errors.address?.message : null}>
         <div style={{ position: "relative" }}>
           <span
             style={{

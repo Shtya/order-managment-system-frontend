@@ -15,7 +15,7 @@ export default function DateRangePicker({
   mode = "range" // "single" or "range"
 }) {
   const t = useTranslations("accounts");
-
+  console.log(closeOnSelect)
   const dateValue = useMemo(() => {
     if (mode === "single") {
       return value ? new Date(value) : null;

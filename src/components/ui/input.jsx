@@ -54,8 +54,8 @@ function Input({
 					size={size}
 					error={error}
 					className={cn(
-						hasStart && " ltr:pe-11 rtl:ps-11 ",
-						hasEnd && "rtl:pe-11 ltr:ps-11 ",
+						hasStart && " ltr:pe-11! rtl:ps-11! ",
+						hasEnd && "rtl:pe-11! ltr:ps-11! ",
 						className
 					)}
 					{...props}

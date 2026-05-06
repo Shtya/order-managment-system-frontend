@@ -427,6 +427,7 @@ const format = useFormatter();
               setFilters(f => ({ ...f, ...newDates }))
               setQuickRange(null)
             }}
+            closeOnSelect={false}
           />
         </FilterField>
 

@@ -1138,6 +1138,7 @@ const { formatTrendLabel } = useTrendLabelFormatter();
               setFilters(f => ({ ...f, ...newDates }))
               setQuickRange(null)
             }}
+            closeOnSelect={false}
             placeholder={t("filters.dateRangePlaceholder")}
             dataSize="default"
             maxDate="today"

@@ -39,6 +39,19 @@ export default function DateRangePicker({
 
   };
 
+  const options = useMemo(() => ({
+    mode: mode,
+    dateFormat: "Y-m-d",
+    maxDate: "today",
+    altInput: true,
+    static: staticShow,
+    altFormat: "Y-m-d",
+    // Force stay open in range mode if only one date is picked
+    closeOnSelect: closeOnSelect,
+    altInputClass: "theme-field",
+    monthSelectorType: "dropdown",
+  }), [mode, staticShow, closeOnSelect]);
+
   return (
     <Flatpickr
       value={dateValue}
@@ -49,17 +62,7 @@ export default function DateRangePicker({
           instance.altInput.setAttribute('data-size', size);
         }
       }}
-      options={{
-        mode: mode,
-        dateFormat: "Y-m-d",
-        maxDate: "today",
-        altInput: true,
-        static: staticShow,
-        altFormat: "Y-m-d",
-        closeOnSelect: closeOnSelect,
-        altInputClass: "theme-field",
-        monthSelectorType: "dropdown",
-      }}
+      options={options}
       placeholder={placeholder || (mode === "single" ? t("filters.datePlaceholder") : t("filters.dateRangePlaceholder"))}
       data-size={dataSize}
       className={className}

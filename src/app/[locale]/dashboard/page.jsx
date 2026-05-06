@@ -75,8 +75,8 @@ function FilterField({ label, icon: FieldIcon, children }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
-  const t = useTranslations("dashboard");
   const tDates = useTranslations("orderAnalysis");
+  const t = useTranslations("dashboard");
 
   const [quickRange, setQuickRange] = useState("this_month");
   const [filters, setFilters] = useState({
@@ -427,7 +427,6 @@ const format = useFormatter();
               setFilters(f => ({ ...f, ...newDates }))
               setQuickRange(null)
             }}
-            closeOnSelect={false}
           />
         </FilterField>
 

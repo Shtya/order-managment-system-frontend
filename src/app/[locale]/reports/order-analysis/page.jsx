@@ -1118,7 +1118,7 @@ const { formatTrendLabel } = useTrendLabelFormatter();
         onRefresh={fetchAll}
         applyLabel={t("filters.apply")}
       >
-        <FilterField label={t("filters.search")} icon={Search}>
+        {/* <FilterField label={t("filters.search")} icon={Search}>
           <Input
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
@@ -1126,7 +1126,7 @@ const { formatTrendLabel } = useTrendLabelFormatter();
             startIcon={<Search size={15} />}
             className="w-full h-10 rounded-xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm"
           />
-        </FilterField>
+        </FilterField> */}
 
         <FilterField label={t("filters.dateRange")} icon={Calendar}>
           <DateRangePicker
@@ -1138,7 +1138,6 @@ const { formatTrendLabel } = useTrendLabelFormatter();
               setFilters(f => ({ ...f, ...newDates }))
               setQuickRange(null)
             }}
-            closeOnSelect={false}
             placeholder={t("filters.dateRangePlaceholder")}
             dataSize="default"
             maxDate="today"

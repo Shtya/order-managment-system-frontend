@@ -166,7 +166,7 @@ export function SettingsModal({ company, onClose, onFirstSetup, onSaved }) {
 export function GuideModal({ company, onClose }) {
 	const t = useTranslations("shipping");
 	const locale = useLocale();
-
+	const [imgLoaded, setImgLoaded] = useState(false);
 	const meta = PROVIDER_META[company.code];
 	const steps = meta?.guide?.steps || [];
 	const [activeStep, setActiveStep] = useState(0);
@@ -225,17 +225,40 @@ export function GuideModal({ company, onClose }) {
 						</div>
 
 						{current?.image && (
-							<div className="rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--muted)] relative">
+							<div
+								className="rounded-xl  overflow-hidden border border-[var(--border)] bg-[var(--muted)] relative"
+								// reserve vertical space and cap maximum height to viewport
+								style={{ minHeight: 160, maxHeight: "60vh" }}
+							>
+								{/* Skeleton / placeholder shown while image loads */}
+								{!imgLoaded && (
+									<div className="absolute inset-0 flex items-center justify-center p-4">
+										<div className="w-full h-full rounded-xl bg-[var(--muted)] animate-pulse" />
+									</div>
+								)}
+
 								<img
 									src={current.image}
 									alt={p(current.title)}
-									className="w-full h-auto object-cover block max-h-[270px]"
+									loading="lazy"
+									// reserve intrinsic size to avoid layout jump (adjust if you know the image size)
+									width={1200}
+									height={700}
+									onLoad={() => setImgLoaded(true)}
 									onError={(e) => {
 										e.currentTarget.style.display = "none";
-										e.currentTarget.nextElementSibling?.style.setProperty("display", "flex");
+										setImgLoaded(false);
+										// show fallback (next sibling placeholder already present)
 									}}
+									className={`w-full h-full max-h-[350px] object-contain block transition-opacity duration-200 ease-out ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+									style={{ display: "block" }}
 								/>
-								<div style={{ display: "none" }} className="h-44 flex-col items-center justify-center gap-2 text-[var(--muted-foreground)]">
+
+								{/* fallback UI (keeps same shape) */}
+								<div
+									style={{ display: "none" }}
+									className="h-44 flex-col items-center justify-center gap-2 text-[var(--muted-foreground)]"
+								>
 									<ImageIcon size={28} className="opacity-30" />
 									<p className="text-xs">{t("guide.imagePlaceholder")}</p>
 								</div>

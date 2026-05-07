@@ -543,7 +543,7 @@ export default function FailedOrderDetailsPage() {
                             {t('sections.failureDetails')}
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="pt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <CardContent className="p-0! grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="p-3 rounded-xl border bg-muted/5">
                             <p className="text-xs text-muted-foreground mb-1 font-semibold">{t('details.status')}</p>
                             <Badge
@@ -602,7 +602,7 @@ export default function FailedOrderDetailsPage() {
                             {t('sections.clientDetails')}
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="pt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <CardContent className="p-0! grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="p-3 rounded-xl border bg-muted/5">
                             <p className="text-xs text-muted-foreground mb-1 font-semibold">{t('labels.name')}</p>
                             <p className="font-bold text-sm truncate">{payload?.fullName || '—'}</p>
@@ -633,7 +633,7 @@ export default function FailedOrderDetailsPage() {
                             {t('sections.orderDetails')}
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="pt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <CardContent className="p-0! grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="p-3 rounded-xl border bg-muted/5">
                             <p className="text-xs text-muted-foreground mb-1 font-semibold">{t('labels.paymentMethod')}</p>
                             <Badge variant="outline" className="font-bold">
@@ -663,7 +663,7 @@ export default function FailedOrderDetailsPage() {
             </div>
 
             {/* Items Table Section */}
-            <Card className="shadow-sm gap-0">
+            <Card className="shadow-sm gap-0 p-0!">
                 <CardHeader className="flex flex-row items-center justify-between py-4 border-b border-border/50 bg-muted/10">
                     <CardTitle className="flex items-center gap-2 text-base">
                         <Package className="w-5 h-5 text-indigo-500" />

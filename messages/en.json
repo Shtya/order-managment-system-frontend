@@ -4653,6 +4653,11 @@
       }
     },
     "failedOrders": {
+      "breadcrumb": {
+        "home": "Home",
+        "failedOrders": "Orders Requiring Review",
+        "pendingOrders": "Pending Orders"
+      },
       "title": "Failed Order Details",
       "sections": {
         "clientDetails": "Client Details",
@@ -4675,7 +4680,9 @@
         "problem": "Detected Problem",
         "actions": "Actions",
         "options": "Selected Options",
-        "noOptions": "No Options"
+        "noOptions": "No Options",
+        "attributes": "Attributes",
+        "price": "Price"
       },
       "labels": {
         "failureReason": "Failure Reason",
@@ -4696,7 +4703,14 @@
         "externalId": "External Order Id",
         "orderStatus": "Order status",
         "description": "Description",
-        "sku": "SKU"
+        "sku": "SKU",
+        "variants": "Variants",
+        "selectVariant": "Select Variant",
+        "slug": "Slug",
+        "id": "ID",
+        "price": "Price",
+        "quantity": "Quantity",
+        "categories": "Categories"
       },
       "actions": {
         "retryOrder": "Retry & Save Order",
@@ -4715,7 +4729,23 @@
         "showAndFix": "View Details & retry",
         "editProductAndAddVariant": "Edit ",
         "reactivateProduct": "Reactivate Product",
-        "restored": "Product Reactivated Successfully"
+        "restored": "Product Reactivated Successfully",
+        "chooseDifferentSku": "Choose different SKU",
+        "select": "Select",
+        "selected": "Selected"
+      },
+      "messages": {
+        "fetchFailed": "Failed to load orders, please try again",
+        "retryStarted": "Retry request sent successfully",
+        "retrySuccess": "Order has been successfully created!",
+        "retryFailed": "Failed to retry the order. Please check the problems and try again.",
+        "reviewIssuesTitle": "Action Required: Resolve Issues",
+        "reviewIssuesDescription": "This order cannot be retried yet because of problems with one or more items. Please scroll down to the items table to see and fix the issues.",
+        "orderReadyTitle": "Order Ready to Retry",
+        "orderReadyDescription": "All issues have been resolved. You can now click the 'Retry' button in the header to process this order.",
+        "updatingPayload": "Order information is being updated...",
+        "payloadUpdated": "Order information has been updated",
+        "updatePayloadFailed": "Failed to update order data"
       },
       "problems": {
         "PRODUCT_NOT_FOUND": "Product Not Found",
@@ -4729,12 +4759,16 @@
         "notFound": "No data found for this record.",
         "externalFetchFailed": "Could not fetch data from the provider.",
         "failedToLoadData": "Failed to load product data.",
-        "noSkusSelected": "Please select at least one SKU to create a purchase order."
+        "noSkusSelected": "Please select at least one SKU to create a purchase order.",
+        "fetchProductFailed": "Failed to load request"
       },
       "common": {
         "loading": "Loading",
         "unknownError": "An unknown error occurred",
-        "close": "Cancel"
+        "close": "Cancel",
+        "items": "Items",
+        "reserved": "Reserved",
+        "na": "N/A"
       },
       "searchPlaceholder": "Search by store, customer name, or order number...",
       "stats": {
@@ -4777,24 +4811,9 @@
         "success": "Order {orderId} retried successfully",
         "error": "Retry failed: {message}"
       },
-      "messages": {
-        "fetchFailed": "Failed to load orders, please try again",
-        "retryStarted": "Retry request sent successfully",
-        "retrySuccess": "Order has been successfully created!",
-        "retryFailed": "Failed to retry the order. Please check the problems and try again.",
-        "reviewIssuesTitle": "Action Required: Resolve Issues",
-        "reviewIssuesDescription": "This order cannot be retried yet because of problems with one or more items. Please scroll down to the items table to see and fix the issues.",
-        "orderReadyTitle": "Order Ready to Retry",
-        "orderReadyDescription": "All issues have been resolved. You can now click the 'Retry' button in the header to process this order."
-      },
       "empty": {
         "title": "No orders requiring review",
         "subtitle": "All incoming orders from external stores were processed successfully"
-      },
-      "breadcrumb": {
-        "home": "Home",
-        "failedOrders": "Orders Requiring Review",
-        "pendingOrders": "Pending Orders"
       }
     },
     "custom": "Custom",

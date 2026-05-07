@@ -24,7 +24,14 @@ import {
     Edit,
     Info,
     Mail,
-    Eye
+    Eye,
+    Boxes,
+    Hash,
+    CalendarDays,
+    ImageIcon,
+    Tag,
+    Warehouse,
+    XCircle
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
@@ -36,7 +43,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 
 import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
@@ -44,6 +52,13 @@ import ActionButtons from "@/components/atoms/Actions";
 import { convert } from "html-to-text";
 import { normalizeAxiosError } from "@/utils/axios";
 import Button_ from "@/components/atoms/Button";
+import { avatarSrc } from "@/components/atoms/UserSelect";
+
+function toAbsUrl(url) {
+    if (!url) return null;
+    if (String(url).startsWith("http")) return url;
+    return url;
+}
 const WebhookOrderProblem = {
     PRODUCT_NOT_FOUND: 'PRODUCT_NOT_FOUND',
     SKU_NOT_FOUND: 'SKU_NOT_FOUND',
@@ -170,7 +185,7 @@ function ExternalProductModal({ isOpen, onClose, remoteId, provider, cache, onFe
                                             <thead className="bg-muted/50">
                                                 <tr>
                                                     <th className="px-3 py-2 text-start font-semibold">{t('table.attributes')}</th>
-                                                    <th className="px-3 py-2 text-start font-semibold">SKU</th>
+                                                    <th className="px-3 py-2 text-start font-semibold">{t('labels.sku')}</th>
                                                     <th className="px-3 py-2 text-end font-semibold">{t('table.price')}</th>
                                                     <th className="px-3 py-2 text-end font-semibold">{t('table.quantity')}</th>
                                                 </tr>
@@ -205,6 +220,163 @@ function ExternalProductModal({ isOpen, onClose, remoteId, provider, cache, onFe
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// SKU Selector Modal Component
+// ─────────────────────────────────────────────────────────────────────────────
+function SkuSelectorModal({ isOpen, onClose, product, loading, error, currentKey, onSelect }) {
+    const t = useTranslations('orders.failedOrders');
+    const { formatCurrency } = usePlatformSettings();
+    const na = t('common.na');
+
+    const skus = Array.isArray(product?.skus) ? product.skus.filter(s => s.isActive || s.sku === currentKey) : [];
+    const mainImage = toAbsUrl(product?.mainImage);
+
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="max-w-4xl! max-h-[85vh] overflow-hidden p-0 bg-white dark:bg-slate-950">
+                <DialogHeader className="px-6 pt-6 pb-4 border-b">
+                    <DialogTitle className="flex items-center gap-2 text-xl font-bold">
+                        <Boxes className="text-primary" size={20} />
+                        {t('labels.selectVariant')}
+                    </DialogTitle>
+                </DialogHeader>
+
+                <div className="p-6 overflow-y-auto max-h-[calc(85vh-80px)] space-y-6">
+                    {loading ? (
+                        <div className="flex flex-col items-center justify-center py-12 gap-3">
+                            <Loader2 size={32} className="animate-spin text-primary" />
+                            <span className="text-sm text-muted-foreground font-medium">{t('common.loading')}...</span>
+                        </div>
+                    ) : error ? (
+                        <div className="flex flex-col items-center justify-center py-12 gap-4 text-center">
+                            <AlertCircle size={40} className="text-red-500" />
+                            <p className="font-bold text-red-600">{error}</p>
+                        </div>
+                    ) : !product ? (
+                        <div className="py-10 text-center text-slate-500">{t('errors.notFound')}</div>
+                    ) : (
+                        <>
+                            <div className="rounded-xl border p-4 shadow-sm bg-muted/10">
+                                <div className="flex gap-4">
+                                    <div className="w-20 h-20 shrink-0 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border">
+                                        {mainImage ? (
+                                            <img src={avatarSrc(mainImage)} alt={product.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <ImageIcon className="text-slate-400" />
+                                        )}
+                                    </div>
+                                    <div>
+                                        <h4 className="text-lg font-bold">{product.name}</h4>
+                                        <div className="mt-2 flex flex-wrap gap-2">
+                                            <Badge variant="outline" className="text-[10px]">{t('labels.id')}: {product.id}</Badge>
+                                            <Badge variant="outline" className="text-[10px]">{t('labels.sku')}: {product.sku || na}</Badge>
+                                            <Badge variant="secondary" className="text-[10px]">{product?.category?.name || na}</Badge>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <h5 className="text-sm font-semibold flex items-center gap-2">
+                                    <Hash size={16} className="text-primary" />
+                                    {t('labels.variants')} ({skus.length})
+                                </h5>
+
+                                {skus.length === 0 ? (
+                                    <div className="text-sm text-muted-foreground py-4 text-center border rounded-lg border-dashed">
+                                        {t('errors.skuNotFoundInSystem')}
+                                    </div>
+                                ) : (
+                                    <div className="border rounded-xl overflow-hidden shadow-sm">
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm">
+                                                <thead className="bg-muted/50 border-b">
+                                                    <tr>
+                                                        <th className="px-4 py-3 text-start font-bold">{t('labels.sku')}</th>
+                                                        <th className="px-4 py-3 text-center font-bold">{t('table.attributes')}</th>
+                                                        <th className="px-4 py-3 text-center font-bold">{t('table.price')}</th>
+                                                        <th className="px-4 py-3 text-center font-bold">{t('table.quantity')}</th>
+                                                        <th className="px-4 py-3 text-end font-bold">{t('table.actions')}</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y">
+                                                    {skus.map((s) => {
+                                                        const attrs = s?.attributes ? Object.entries(s.attributes) : [];
+                                                        const avail = s?.available ?? Math.max(0, (s?.stockOnHand ?? 0) - (s?.reserved ?? 0));
+                                                        const isCurrent = s.key === currentKey;
+
+                                                        return (
+                                                            <tr key={s.id} className={cn(
+                                                                "hover:bg-muted/30 transition-colors",
+                                                                isCurrent && "bg-primary/5"
+                                                            )}>
+                                                                <td className="px-4 py-3">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <div className="font-bold text-slate-900 dark:text-slate-50">{s.sku || `#${s.id}`}</div>
+                                                                        {isCurrent && (
+                                                                            <Badge className="bg-primary/20 text-primary border-primary/30 text-[9px] h-4 px-1">
+                                                                                {t('actions.selected')}
+                                                                            </Badge>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="text-[10px] text-muted-foreground font-mono mt-0.5">{s.key || na}</div>
+                                                                </td>
+                                                                <td className="px-4 py-3">
+                                                                    <div className="flex flex-wrap gap-1 justify-center">
+                                                                        {attrs.length === 0 ? (
+                                                                            <span className="text-slate-400 text-xs">{na}</span>
+                                                                        ) : (
+                                                                            attrs.map(([k, v]) => (
+                                                                                <Badge key={k} variant="outline" className="text-[10px] bg-white dark:bg-slate-900 px-1.5 py-0">
+                                                                                    {k}: {String(v)}
+                                                                                </Badge>
+                                                                            ))
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-4 py-3 text-center">
+                                                                    <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200">
+                                                                        {formatCurrency(s?.price || 0)}
+                                                                    </Badge>
+                                                                </td>
+                                                                <td className="px-4 py-3 text-center">
+                                                                    <div className="flex flex-col gap-1 items-center">
+                                                                        <span className={cn("text-xs font-bold", avail > 0 ? "text-emerald-600" : "text-red-600")}>
+                                                                            {avail} {t('common.items')}
+                                                                        </span>
+                                                                        {s.reserved > 0 && <span className="text-[10px] text-orange-500 font-medium">({s.reserved} {t('common.reserved')})</span>}
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-4 py-3 text-end">
+                                                                    <Button
+                                                                        size="sm"
+                                                                        className={cn(
+                                                                            "h-8 font-bold",
+                                                                            isCurrent ? "bg-slate-200 text-slate-500 hover:bg-slate-200" : ""
+                                                                        )}
+                                                                        onClick={() => onSelect(s)}
+                                                                        disabled={!s.isActive || isCurrent}
+                                                                    >
+                                                                        {isCurrent ? t('actions.selected') : t('actions.select')}
+                                                                    </Button>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Main Page Component
 // ─────────────────────────────────────────────────────────────────────────────
 export default function FailedOrderDetailsPage() {
@@ -225,6 +397,19 @@ export default function FailedOrderDetailsPage() {
     // External Modal State
     const [externalModal, setExternalModal] = useState({ isOpen: false, remoteId: null, provider: null });
     const [externalCache, setExternalCache] = useState({});
+
+    // SKU Selector Modal State
+    const [skuSelectorModal, setSkuSelectorModal] = useState({
+        isOpen: false,
+        productId: null,
+        cartItemIdx: null,
+        currentKey: null,
+        loading: false,
+        product: null,
+        error: null
+    });
+
+    const [updatingPayload, setUpdatingPayload] = useState(false);
 
     // 1. Fetch Data
     const fetchData = useCallback(async () => {
@@ -289,6 +474,62 @@ export default function FailedOrderDetailsPage() {
         }
     };
 
+    const handleOpenSkuSelector = async (productId, cartItemIdx, currentKey) => {
+        setSkuSelectorModal({
+            isOpen: true,
+            productId,
+            cartItemIdx,
+            currentKey,
+            loading: true,
+            product: null,
+            error: null
+        });
+
+        try {
+            const res = await api.get(`/products/${productId}`);
+            setSkuSelectorModal(prev => ({ ...prev, loading: false, product: res.data }));
+        } catch (err) {
+            setSkuSelectorModal(prev => ({ ...prev, loading: false, error: normalizeAxiosError(err) }));
+            toast.error(normalizeAxiosError(err) || t('errors.fetchProductFailed'));
+        }
+    };
+
+    const handleSelectNewSku = async (variant) => {
+        const { cartItemIdx } = skuSelectorModal;
+        if (cartItemIdx === null || !payload) return;
+
+        setUpdatingPayload(true);
+        const toastId = toast.loading(t('messages.updatingPayload'));
+
+        try {
+            // Clone payload to avoid direct mutation
+            const newPayload = JSON.parse(JSON.stringify(payload));
+            const item = newPayload.cartItems[cartItemIdx];
+
+            // Update item with new variant details
+            item.variant = {
+                ...item.variant,
+                key: variant.key,
+                sku: variant.sku,
+                variation_props: Object.entries(variant.attributes || {}).map(([name, value]) => ({
+                    name,
+                    value
+                }))
+            };
+
+            // Send to backend
+            await api.patch(`/stores/failed-orders/${id}`, newPayload);
+
+            toast.success(t('messages.payloadUpdated'), { id: toastId });
+            setSkuSelectorModal({ isOpen: false, productId: null, cartItemIdx: null, loading: false, product: null, error: null });
+            fetchData();
+        } catch (err) {
+            toast.error(normalizeAxiosError(err) || t('messages.updatePayloadFailed'), { id: toastId });
+        } finally {
+            setUpdatingPayload(false);
+        }
+    };
+
     // 3. Table Columns Definition
     const itemColumns = useMemo(() => [
         {
@@ -298,7 +539,7 @@ export default function FailedOrderDetailsPage() {
                 <div>
                     <div className="font-bold text-slate-900 dark:text-white leading-tight">{row.name}</div>
                     <div className="text-[10px] text-slate-400 mt-1 uppercase tracking-wider flex items-center gap-1">
-                        <ExternalLink className="w-3 h-3" /> Slug: {row.productSlug}
+                        <ExternalLink className="w-3 h-3" /> {t('labels.slug')}: {row.productSlug}
                     </div>
                 </div>
             )
@@ -379,11 +620,13 @@ export default function FailedOrderDetailsPage() {
         {
             key: "actions",
             header: t('table.actions'),
-            cell: (row) => {
+            cell: (row, i) => {
                 const problem = problems.find(p => p.slug === row.productSlug && p.key === row.variant.key);
 
                 const remoteId = row?.remoteProductId || problem?.remoteId;
                 const provider = failure?.store?.provider;
+                const cartItemIdx = i;
+
                 // if (failure.status === 'success') return [];
                 // Build dynamic actions based on problem
                 let actions = [];
@@ -394,6 +637,7 @@ export default function FailedOrderDetailsPage() {
                     variant: "warning",
                     onClick: () => setExternalModal({ isOpen: true, remoteId, provider: failure?.store?.provider })
                 });
+
                 if (problem?.code === WebhookOrderProblem.PRODUCT_NOT_FOUND) {
                     actions.push({
                         icon: <Store size={16} />,
@@ -403,8 +647,21 @@ export default function FailedOrderDetailsPage() {
                         onClick: () => router.push(`/products/external/${provider}?id=${remoteId}`)
                     });
                 }
-
+                const localProductId = row.variant?.localProductId || problem?.productId;
+                if (localProductId) {
+                    actions.push({
+                        icon: <RefreshCw size={16} />,
+                        tooltip: t('actions.chooseDifferentSku'),
+                        variant: "info",
+                        disabled: isSuccess,
+                        permission: "orders.restoreFailed",
+                        onClick: () => handleOpenSkuSelector(localProductId, cartItemIdx, row.variant?.key)
+                    });
+                }
                 if (problem?.code === WebhookOrderProblem.SKU_NOT_FOUND || problem?.code === WebhookOrderProblem.SKU_INACTIVE) {
+                    // Option to choose a different SKU from the same product
+
+
                     actions.push({
                         icon: <Edit size={16} />,
                         tooltip: t('actions.editProductAndAddVariant'),
@@ -516,7 +773,7 @@ export default function FailedOrderDetailsPage() {
             <PageHeader
                 breadcrumbs={[
                     { name: t("breadcrumb.home"), href: "/dashboard" },
-                    { name: t("breadcrumb.pendingOrders"), href: "/orders?tab=failedOrders" },
+                    { name: t("breadcrumb.failedOrders"), href: "/orders?tab=failedOrders" },
                     { name: `${payload?.fullName || id}` }
                 ]}
                 buttons={
@@ -697,6 +954,17 @@ export default function FailedOrderDetailsPage() {
                 cache={externalCache[externalModal.remoteId]}
                 onFetch={handleFetchExternalProduct}
                 formatCurrency={formatCurrency}
+            />
+
+            {/* SKU Selector Modal */}
+            <SkuSelectorModal
+                isOpen={skuSelectorModal.isOpen}
+                onClose={() => setSkuSelectorModal(prev => ({ ...prev, isOpen: false }))}
+                product={skuSelectorModal.product}
+                loading={skuSelectorModal.loading}
+                error={skuSelectorModal.error}
+                currentKey={skuSelectorModal.currentKey}
+                onSelect={handleSelectNewSku}
             />
         </div>
     );

@@ -77,7 +77,7 @@ export function AuthInput({ icon, error, style, font, ...props }) {
 			)}
 			<input
 				className={`auth-input ${error ? ' error' : ''} ${font}`}
-				style={{ paddingRight: icon ? 44 : 14, ...style }}
+				style={{ paddingInlineStart: icon ? 44 : 14, ...style }}
 				{...props}
 			/>
 		</div>

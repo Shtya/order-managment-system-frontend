@@ -553,8 +553,8 @@
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
   font-size: 14px;
+  padding-inline-end: 14px;
   color: var(--foreground);
-  padding: 0 44px;
   width: 100%;
   outline: none;
   transition:

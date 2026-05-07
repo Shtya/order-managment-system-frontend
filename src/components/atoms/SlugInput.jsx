@@ -88,11 +88,6 @@ export default function SlugInput({ mainName, mainSlug, register, name, slug, er
                 />
 
                 {/* أيقونة حالة التحقق داخل الحقل (اختياري) */}
-                {slugStatus === 'checking' && (
-                    <div className="absolute inset-y-0 right-3 flex items-center">
-                        <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                    </div>
-                )}
             </div>
 
             {/* رسائل الخطأ والتحقق الأسفل */}

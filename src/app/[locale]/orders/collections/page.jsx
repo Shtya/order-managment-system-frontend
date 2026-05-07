@@ -542,9 +542,9 @@ export default function OrderCollectionPage() {
 					{ name: activeTab === "not_collected" ? t('breadcrumb.notCollected') : t("breadcrumb.fullyCollected") },
 				]}
 				buttons={
-					<div className="flex gap-2">
+					
 						<Button_ size="sm" label={t("actions.howToUse")} variant="ghost" icon={<Info size={18} />} />
-					</div>
+					
 				}
 				stats={allStats}
 			>

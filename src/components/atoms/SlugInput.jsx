@@ -26,7 +26,7 @@ export function useSlugify() {
             return result
                 .toLowerCase()
                 .trim()
-                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/[^a-zA-Z0-9\s-]/g, '')
                 .replace(/\s+/g, '-')
                 .replace(/-+/g, '-');
         } catch (error) {

@@ -50,7 +50,7 @@ const createCategorySchema = (t) =>
 			.required(t("validation.nameRequired")),
 		slug: yup
 			.string()
-			.trim()
+			.transform((value) => (value ? value.toLowerCase() : value)).trim()
 			.max(200, t("validation.slugMax", { max: 200 }))
 			.required(t("validation.slugRequired"))
 			.matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, t("validation.slugInvalid")),

@@ -233,7 +233,7 @@ function InfoCard({
 
 
 function SwitcherTabs({ items, activeId, onChange, variant = "default" }) {
-	
+
 	const scrollbarHideStyle = {
 		msOverflowStyle: 'none',
 		WebkitOverflowScrolling: 'touch',
@@ -332,7 +332,7 @@ function SwitcherTabs({ items, activeId, onChange, variant = "default" }) {
 	);
 }
 function SwitcherTabsCompact({ items, activeId, onChange, variant = "default" }) {
-		// ستايل مشترك لإخفاء شريط التمرير
+	// ستايل مشترك لإخفاء شريط التمرير
 	const scrollbarHideStyle = {
 		msOverflowStyle: 'none',
 		WebkitOverflowScrolling: 'touch',
@@ -683,8 +683,8 @@ export function PageHeader({
 				}
 			},
 			{
-				rootMargin: '0px',
-				threshold: 0.5,
+				rootMargin: '-1px 0px 0px 0px',
+				threshold: [1],
 			}
 		);
 
@@ -706,16 +706,22 @@ export function PageHeader({
 		}
 	}, [observeHeader, stacky]);
 
-	
+
 	/* ── COMPACT LAYOUT ── */
 	if (isCompact) {
 		return (
 			<motion.div
 				{...props}
+				ref={headerRef}
 				initial={{ opacity: 0, y: -6 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-				className={["relative main-card space-under", className].join(" ")}
+				className={cn(
+					"relative main-card space-under",
+					stacky && "sticky top-2.5 z-[20] transition-all duration-300",
+					stacky && isHeaderScrolled && "shadow-lg bg-card/90 backdrop-blur-md border-primary/20",
+					className
+				)}
 				style={{
 					borderRadius: "var(--radius)",
 					border: "1px solid var(--border)",
@@ -728,8 +734,9 @@ export function PageHeader({
 					alignItems: "center",
 					justifyContent: "space-between",
 					gap: 12,
-					padding: "10px 16px",
+					padding: isHeaderScrolled && stacky ? "8px 16px" : "10px 16px",
 					flexWrap: "wrap",
+					transition: "padding 0.3s ease",
 				}}>
 
 					{/* Breadcrumb */}
@@ -831,16 +838,24 @@ export function PageHeader({
 			initial={{ opacity: 0, y: -8 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-			className={[
+			className={cn(
 				"relative overflow-hidden main-card space-under",
 				hasTabs ? "!pb-[2px]" : "pb-5",
-				className,
-			].join(" ")}
+				stacky && "sticky top-2.5 z-[20] transition-all duration-300",
+				stacky && isHeaderScrolled && "shadow-lg bg-card/90 backdrop-blur-md border-primary/20",
+				className
+			)}
 		>
-			<div className="relative flex flex-col gap-5">
+			<div className={cn(
+				"relative flex flex-col transition-all duration-300",
+				stacky && isHeaderScrolled ? "gap-3" : "gap-5"
+			)}>
 
 				{/* ─── 1. Breadcrumb ←→ Buttons ─── */}
-				<div className="flex items-center justify-between gap-4 flex-wrap">
+				<div className={cn(
+					"flex items-center justify-between gap-4 flex-wrap transition-all duration-300",
+					stacky && isHeaderScrolled ? "px-4 pt-3" : ""
+				)}>
 					<nav aria-label="breadcrumb">
 						<ol className="flex items-center gap-2 flex-wrap list-none m-0 p-0">
 							{breadcrumbs.map((crumb, i) => {
@@ -860,9 +875,10 @@ export function PageHeader({
 												className="flex items-center gap-2.5"
 											>
 												<span style={{
-													fontSize: 18, fontWeight: 400,
+													fontSize: isHeaderScrolled && stacky ? 16 : 18, fontWeight: 400,
 													letterSpacing: "-0.025em",
 													color: "var(--card-foreground)",
+													transition: "font-size 0.3s ease"
 												}} className=" ">
 													{crumb.name}
 												</span>
@@ -896,12 +912,7 @@ export function PageHeader({
 							<motion.div
 								layout // This is the magic prop that animates the position change
 								transition={{ type: "spring", stiffness: 400, damping: 30 }}
-								className={cn(
-									"flex items-center gap-2 transition-shadow duration-300",
-									isHeaderScrolled
-										? "fixed end-12.5 top-16 shadow-md z-[10] bg-card/80 backdrop-blur-sm p-2 rounded-xl border border-slate-200 dark:border-slate-800"
-										: "relative"
-								)}
+								className="flex items-center gap-2 relative"
 							>
 								{buttons}
 							</motion.div>
@@ -911,12 +922,19 @@ export function PageHeader({
 
 				{/* ─── 2. Stats Grid ─── */}
 				{hasStats && (
-					<div>
+					<motion.div
+						animate={{
+							height: isHeaderScrolled && stacky ? 0 : "auto",
+							opacity: isHeaderScrolled && stacky ? 0 : 1,
+							marginBottom: isHeaderScrolled && stacky ? -20 : 0
+						}}
+						className="overflow-hidden"
+					>
 						{statsLoading
 							? <PageHeaderStatsSkeleton count={statsCount} />
 							: <StatsGrid stats={stats} />
 						}
-					</div>
+					</motion.div>
 				)}
 
 				{/* ─── 3. Full-width underline tabs ─── */}

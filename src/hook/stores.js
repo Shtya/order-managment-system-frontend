@@ -282,8 +282,8 @@ export const PROVIDER_CONFIG = {
                         {
                             title: { en: "Copy Client ID & Secret", ar: "نسخ Client ID و Secret" },
                             desc: {
-                                en: "After releasing the app, copy the Client ID and Client Secret and paste them into our store configuration form.",
-                                ar: "بعد إصدار التطبيق، انسخ Client ID و Client Secret والصقهما في نموذج إعداد المتجر لدينا."
+                                en: "After releasing the app, copy the Client ID and Client Secret and paste them into our store configuration form then save.",
+                                ar: "بعد إصدار التطبيق، انسخ Client ID و Client Secret والصقهما في نموذج إعداد المتجر لدينا و احفظ البيانات."
                             },
                             image: "/guide/shopify/step6.png",
                             tip: {

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import {
   Field,
   AuthInput,
@@ -81,6 +81,21 @@ const LockIcon = () => (
   >
     <rect x="3" y="11" width="18" height="11" rx="2" />
     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+  </svg>
+);
+
+const PhoneIcon = () => (
+  <svg
+    width="17"
+    height="17"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
   </svg>
 );
 
@@ -300,6 +315,8 @@ export const PRODUCT_CATEGORY_KEYS = [
 
 /* ── Step 1 ── */
 function Step1({ data, onChange, onNext, t, tCountries }) {
+  const locale = useLocale();
+  const isRtl = locale === "ar";
   const [touched, setTouched] = useState({});
   const [dial, setDial] = useState("+20");
   const touch = (k) => setTouched((p) => ({ ...p, [k]: true }));
@@ -436,15 +453,16 @@ function Step1({ data, onChange, onNext, t, tCountries }) {
             <span
               style={{
                 position: "absolute",
-                left: 8,
+                left: isRtl ? "unset" : 8,
+                right: isRtl ? 8 : "unset",
                 top: "50%",
                 transform: "translateY(-50%)",
                 color: "var(--text-3)",
                 display: "flex",
                 pointerEvents: "none",
                 zIndex: 1,
-                paddingRight: 8,
-                borderRight: "1px solid var(--border)",
+                paddingInlineEnd: 8,
+                borderInlineEnd: "1px solid var(--border)",
                 height: 20,
                 alignItems: "center",
               }}
@@ -458,6 +476,7 @@ function Step1({ data, onChange, onNext, t, tCountries }) {
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                className="rtl:rotate-0"
               >
                 <polyline points="6 9 12 15 18 9" />
               </svg>
@@ -473,7 +492,8 @@ function Step1({ data, onChange, onNext, t, tCountries }) {
                 fontFamily: "var(--font)",
                 fontSize: "clamp(12px, 3.5vw, 13px)",
                 color: "var(--text)",
-                padding: "0 10px 0 32px",
+                paddingInlineStart: 32,
+                paddingInlineEnd: 10,
                 cursor: "pointer",
                 outline: "none",
                 width: "100%",
@@ -488,19 +508,21 @@ function Step1({ data, onChange, onNext, t, tCountries }) {
             </select>
           </div>
 
-          <input
+          <AuthInput
             type="tel"
             placeholder={t("signup.phone_placeholder")}
             value={data.phone || ""}
             onChange={(e) => onChange({ phone: e.target.value })}
             onBlur={() => touch("phone")}
-            className={`auth-input${touched.phone && errs.phone ? " error" : ""}`}
+            error={touched.phone && errs.phone}
             style={{
+              paddingInlineStart: isRtl ? 14 : 44,
+              paddingInlineEnd: isRtl ? 44 : 14,
               flex: "2 1 180px",
               height: "clamp(44px, 12vw, 48px)",
-              paddingRight: 14,
-              textAlign: "left",
+              direction: "ltr",
             }}
+            icon={<PhoneIcon />}
           />
         </div>
       </Field>

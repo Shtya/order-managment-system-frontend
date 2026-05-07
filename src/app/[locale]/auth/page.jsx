@@ -54,24 +54,7 @@ const GLOBAL_CSS = `
   }
 
   /* ── Inputs ── */
-  .auth-input {
-    width: 100%; height: 48px;
-    padding-inline-start: 44px;
-    padding-inline-end: 14px;
-    background: var(--surface2);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-family: var(--font); font-size: 14px; color: var(--text);
-    outline: none;
-    transition: border-color .18s, box-shadow .18s, background .18s;
-  }
-  .auth-input:focus {
-    border-color: var(--p);
-    background: var(--surface);
-    box-shadow: 0 0 0 3px var(--p-glow);
-  }
-  .auth-input.error { border-color: #ef4444; background: #fff5f5; }
-  .auth-input::placeholder { color: var(--text-3); }
+
 
   .auth-select {
     width: 100%; height: 48px;

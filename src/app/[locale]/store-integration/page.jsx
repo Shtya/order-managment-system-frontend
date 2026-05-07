@@ -43,6 +43,8 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Controller } from "react-hook-form";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -655,90 +657,93 @@ export function StoreConfigDialog({
   }, [config.fields]);
 
   return (
-    <ModalShell
-      open={open}
-      onOpenChange={(v) => !v && onClose()}
-      maxWidth="max-w-2xl max-h-[90vh] overflow-auto!"
-    >
-      <ModalHeader
-        icon={Settings2}
-        title={t("dialog.title", { provider: config.label })}
-        subtitle={t("dialog.subtitle")}
-        onClose={onClose}
-      />
-      <div className="rounded-xl  max-h-[90vh] p-3">
-        {fetchingStore ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 size={28} className="animate-spin text-primary" />
-          </div>
-        ) : (
-          <>
-            <form className="space-y-5 mt-4">
-              {/* Store Info Section */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-0.5 h-5 bg-primary rounded-full" />
-                  <span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
-                    {t("form.storeInfoSection")}
-                  </span>
-                </div>
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden p-0!">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700">
+          <DialogTitle className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
+              <Settings2 size={20} />
+            </div>
+            {t("dialog.title", { provider: config.label })}
+          </DialogTitle>
+          <DialogDescription>
+            {t("dialog.subtitle")}
+          </DialogDescription>
+        </DialogHeader>
 
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
-                    {t("form.storeName")}
-                  </Label>
-                  <Input
-                    {...register("name")}
-                    placeholder={t("form.storeNamePlaceholder")}
+        <div className="overflow-y-auto max-h-[calc(90vh-110px)] p-6 pt-0!">
+          {fetchingStore ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 size={28} className="animate-spin text-primary" />
+            </div>
+          ) : (
+            <>
+              <form className="space-y-5 mt-4">
+                {/* Store Info Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-0.5 h-5 bg-primary rounded-full" />
+                    <span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
+                      {t("form.storeInfoSection")}
+                    </span>
+                  </div>
 
-                  />
-                  {errors?.name && (
-                    <div className="text-xs text-red-600">
-                      {errors.name.message}
-                    </div>
-                  )}
-                </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
+                      {t("form.storeName")}
+                    </Label>
+                    <Input
+                      {...register("name")}
+                      placeholder={t("form.storeNamePlaceholder")}
 
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
-                    {t("form.storeUrl")}
-                  </Label>
-                  <Input
-                    type="url"
-                    {...register("storeUrl")}
-                    placeholder="https://your-store.com"
-
-                  />
-                  {errors?.storeUrl && (
-                    <div className="text-xs text-red-600">
-                      {errors.storeUrl.message}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex gap-1.5">
-                  <Controller
-                    control={control}
-                    name="syncNewProducts"
-                    render={({ field }) => (
-                      <div className="flex items-center gap-2 h-[34px] px-2 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
-                        <Checkbox
-                          id="syncNewProducts"
-                          checked={field.value}
-                          onCheckedChange={(checked) => {
-                            field.onChange(checked);
-                          }}
-                          className="h-6 w-6 border-slate-300 dark:border-slate-600 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                        />
-                        <Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
-                          {t("form.syncNewProducts")}
-                        </Label>
+                    />
+                    {errors?.name && (
+                      <div className="text-xs text-red-600">
+                        {errors.name.message}
                       </div>
                     )}
-                  />
-                </div>
+                  </div>
 
-                {/* {!isEdit && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
+                      {t("form.storeUrl")}
+                    </Label>
+                    <Input
+                      type="url"
+                      {...register("storeUrl")}
+                      placeholder="https://your-store.com"
+
+                    />
+                    {errors?.storeUrl && (
+                      <div className="text-xs text-red-600">
+                        {errors.storeUrl.message}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex gap-1.5">
+                    <Controller
+                      control={control}
+                      name="syncNewProducts"
+                      render={({ field }) => (
+                        <div className="flex items-center gap-2 h-[34px] px-2 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
+                          <Checkbox
+                            id="syncNewProducts"
+                            checked={field.value}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked);
+                            }}
+                            className="h-6 w-6 border-slate-300 dark:border-slate-600 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                          />
+                          <Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
+                            {t("form.syncNewProducts")}
+                          </Label>
+                        </div>
+                      )}
+                    />
+                  </div>
+
+                  {/* {!isEdit && (
 									<div className="flex items-center gap-2.5 pt-1">
 										<Controller
 											control={control}
@@ -752,160 +757,164 @@ export function StoreConfigDialog({
 										</Label>
 									</div>
 								)} */}
-              </div>
-
-              {/* API Keys Section */}
-              {hasFields && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-0.5 h-5 bg-primary rounded-full" />
-                    <span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
-                      {t("form.apiKeysSection")}
-                    </span>
-                  </div>
-
-
-                  {/* Field Inputs */}
-                  <div className="grid grid-cols-1 gap-3">
-                    {Object.entries(config.fields).map(([fieldKey, fieldConfig]) => {
-                      if (fieldConfig.readonly) return null;
-
-                      return (
-                        <div key={fieldKey} className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
-                            {t(`form.${fieldKey}`)}
-                          </Label>
-                          <Input
-                            placeholder={
-                              isEdit && fieldConfig.masked
-                                ? masks[fieldKey] || t("form.maskedPlaceholder")
-                                : t(`form.${fieldKey}Placeholder`)
-                            }
-                            {...register(fieldKey)}
-                            className={cn(
-                              isEdit && fieldConfig.masked && masks?.[fieldKey] &&
-                              "placeholder:text-gray-950 dark:placeholder:text-gray-100",
-                            )}
-                          />
-                          {errors?.[fieldKey] && (
-                            <div className="text-xs text-red-600">
-                              {errors[fieldKey].message}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
                 </div>
-              )}
 
-              {/* Webhooks Section - only on first-time create; when edit use Webhook modal */}
-              {((config?.showWebhooksSectionEdit && isEdit) || (config?.showWebhooksSectionCreate && !isEdit)) && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-0.5 h-5 bg-primary rounded-full" />
-                    <span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
-                      {t("form.webhooksSection")}
-                    </span>
-                  </div>
+                {/* API Keys Section */}
+                {hasFields && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-0.5 h-5 bg-primary rounded-full" />
+                      <span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
+                        {t("form.apiKeysSection")}
+                      </span>
+                    </div>
 
-                  <div className="bg-[#FAFBFF] dark:bg-[#1E1E2E] border border-[#E8E8F0] dark:border-[#3A3A4A] rounded-xl p-3.5 space-y-3">
-                    <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 flex items-center gap-1.5">
-                      <Zap size={13} className="text-primary" />
-                      {t("instructions.webhooksTitle")}
-                    </p>
 
-                    {/* Webhook URLs (same style as webhook modal) */}
-                    <div className="space-y-3 pt-2">
-                      <div className="space-y-0.5">
-                        <p className="text-xs text-gray-500 dark:text-slate-400 font-semibold">
-                          {t("instructions.webhookCreateOrderLabel")}
-                        </p>
-                        <div className="flex gap-2">
-                          <input
-                            readOnly
-                            value={config.webhookEndpoints?.create?.(user?.id) || ""}
-                            className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
-                          />
-                          <button
-                            type="button"
-                            onClick={() =>
-                              navigator.clipboard.writeText(
-                                String(
-                                  config.webhookEndpoints?.create?.(user?.id) ||
-                                  "",
-                                ),
-                              )
-                            }
-                            className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
-                            title="Copy"
-                          >
-                            <Copy size={14} />
-                          </button>
-                        </div>
-                      </div>
+                    {/* Field Inputs */}
+                    <div className="grid grid-cols-1 gap-3">
+                      {Object.entries(config.fields).map(([fieldKey, fieldConfig]) => {
+                        if (fieldConfig.readonly) return null;
 
-                      <div className="space-y-0.5">
-                        <p className="text-xs text-gray-500 dark:text-slate-400 font-semibold">
-                          {t("instructions.webhookUpdateStatusLabel")}
-                        </p>
-                        <div className="flex gap-2">
-                          <input
-                            readOnly
-                            value={config.webhookEndpoints?.update?.(user?.id) || ""}
-                            className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
-                          />
-                          <button
-                            type="button"
-                            onClick={() =>
-                              navigator.clipboard.writeText(
-                                String(
-                                  config.webhookEndpoints?.update?.(user?.id) ||
-                                  "",
-                                ),
-                              )
-                            }
-                            className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
-                            title="Copy"
-                          >
-                            <Copy size={14} />
-                          </button>
-                        </div>
-                      </div>
-
-                      <p className="text-[11px] text-[var(--muted-foreground)]">
-                        {t("webhook.urlHint")}
-                      </p>
+                        return (
+                          <div key={fieldKey} className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
+                              {t(`form.${fieldKey}`)}
+                            </Label>
+                            <Input
+                              placeholder={
+                                isEdit && fieldConfig.masked
+                                  ? masks[fieldKey] || t("form.maskedPlaceholder")
+                                  : t(`form.${fieldKey}Placeholder`)
+                              }
+                              {...register(fieldKey)}
+                              className={cn(
+                                isEdit && fieldConfig.masked && masks?.[fieldKey] &&
+                                "placeholder:text-gray-950 dark:placeholder:text-gray-100",
+                              )}
+                            />
+                            {errors?.[fieldKey] && (
+                              <div className="text-xs text-red-600">
+                                {errors[fieldKey].message}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Form-level error */}
-              {error && (
-                <div className="flex items-center gap-2 rounded-xl border border-red-500/25 bg-red-500/8 px-3.5 py-2.5 text-sm text-red-600 dark:text-red-400">
-                  <AlertCircle size={14} />
-                  {error}
-                </div>
-              )}
+                {/* Webhooks Section - only on first-time create; when edit use Webhook modal */}
+                {((config?.showWebhooksSectionEdit && isEdit) || (config?.showWebhooksSectionCreate && !isEdit)) && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-0.5 h-5 bg-primary rounded-full" />
+                      <span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
+                        {t("form.webhooksSection")}
+                      </span>
+                    </div>
 
-              {/* Submit Button */}
-              <div className="flex justify-end gap-2 pt-4 border-t border-gray-200 dark:border-slate-800 mb-3">
-                <PrimaryBtn
-                  type="submit"
-                  onClick={handleSubmit(onSubmit)}
-                  disabled={isSubmitting}
-                  loading={isSubmitting}
-                  className="w-full"
-                >
-                  {isEdit ? t("form.update") : t("form.create")}
-                </PrimaryBtn>
-              </div>
-            </form>
-          </>
-        )}
-      </div>
-    </ModalShell>
+                    <div className="bg-[#FAFBFF] dark:bg-[#1E1E2E] border border-[#E8E8F0] dark:border-[#3A3A4A] rounded-xl p-3.5 space-y-3">
+                      <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 flex items-center gap-1.5">
+                        <Zap size={13} className="text-primary" />
+                        {t("instructions.webhooksTitle")}
+                      </p>
+
+                      {/* Webhook URLs (same style as webhook modal) */}
+                      <div className="space-y-3 pt-2">
+                        <div className="space-y-0.5">
+                          <p className="text-xs text-gray-500 dark:text-slate-400 font-semibold">
+                            {t("instructions.webhookCreateOrderLabel")}
+                          </p>
+                          <div className="flex gap-2">
+                            <input
+                              readOnly
+                              value={config.webhookEndpoints?.create?.(user?.id) || ""}
+                              className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                navigator.clipboard.writeText(
+                                  String(
+                                    config.webhookEndpoints?.create?.(user?.id) ||
+                                    "",
+                                  ),
+                                )
+                              }
+                              className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
+                              title="Copy"
+                            >
+                              <Copy size={14} />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="space-y-0.5">
+                          <p className="text-xs text-gray-500 dark:text-slate-400 font-semibold">
+                            {t("instructions.webhookUpdateStatusLabel")}
+                          </p>
+                          <div className="flex gap-2">
+                            <input
+                              readOnly
+                              value={config.webhookEndpoints?.update?.(user?.id) || ""}
+                              className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                navigator.clipboard.writeText(
+                                  String(
+                                    config.webhookEndpoints?.update?.(user?.id) ||
+                                    "",
+                                  ),
+                                )
+                              }
+                              className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
+                              title="Copy"
+                            >
+                              <Copy size={14} />
+                            </button>
+                          </div>
+                        </div>
+
+                        <p className="text-[11px] text-[var(--muted-foreground)]">
+                          {t("webhook.urlHint")}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Form-level error */}
+                {error && (
+                  <div className="flex items-center gap-2 rounded-xl border border-red-500/25 bg-red-500/8 px-3.5 py-2.5 text-sm text-red-600 dark:text-red-400">
+                    <AlertCircle size={14} />
+                    {error}
+                  </div>
+                )}
+
+                {/* Submit Button */}
+                <DialogFooter className="gap-3 pt-4 border-t border-border">
+                  <Button type="button" variant="ghost" onClick={() => onClose()} className="rounded-xl">
+                    {t("form.cancel")}
+                  </Button>
+                  <PrimaryBtn
+                    type="submit"
+                    onClick={handleSubmit(onSubmit)}
+                    disabled={isSubmitting}
+                    loading={isSubmitting}
+                    className=""
+                  >
+                    {isEdit ? t("form.update") : t("form.create")}
+                  </PrimaryBtn>
+                </DialogFooter>
+              </form>
+            </>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -925,182 +934,190 @@ export function StoreWebhookModal({ provider, store, onClose, open, fetchStores,
   const config = PROVIDER_CONFIG[provider];
 
   return (
-    <ModalShell onClose={onClose} maxWidth="max-w-lg">
-      <ModalHeader
-        icon={Webhook}
-        title={t("webhook.title")}
-        subtitle={t("webhook.subtitle")}
-        onClose={onClose}
-      />
-
-      <div className="p-6 space-y-5">
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--muted)] p-3">
-          <p className="text-sm font-semibold text-[var(--card-foreground)] mb-1">
-            {t("webhook.triggerTitle")}
-          </p>
-          <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-            {t("webhook.triggerDescription")}
-          </p>
-        </div>
-
-        {loading && (
-          <div className="flex justify-center py-8 text-[var(--muted-foreground)]">
-            <Loader2 size={22} className="animate-spin" />
-          </div>
-        )}
-
-        {!loading && config && (
-          <div className="space-y-4">
-            {/* Webhook URLs - create */}
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-[var(--card-foreground)]">
-                {t("instructions.webhookCreateOrderLabel")}
-              </label>
-              <div className="flex gap-2">
-                <input
-                  readOnly
-                  value={config.webhookEndpoints.create(user?.id)}
-                  className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
-                />
-                <button
-                  type="button"
-                  onClick={() =>
-                    copyToClipboard(config.webhookEndpoints.create(user?.id))
-                  }
-                  className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
-                  title="Copy"
-                >
-                  <Copy size={14} />
-                </button>
-              </div>
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden p-0!">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700">
+          <DialogTitle className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
+              <Webhook size={20} />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-[var(--card-foreground)]">
-                {t("instructions.webhookUpdateStatusLabel")}
-              </label>
-              <div className="flex gap-2">
-                <input
-                  readOnly
-                  value={config.webhookEndpoints.update(user?.id)}
-                  className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
-                />
-                <button
-                  type="button"
-                  onClick={() =>
-                    copyToClipboard(config.webhookEndpoints.update(user?.id))
-                  }
-                  className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
-                  title="Copy"
-                >
-                  <Copy size={14} />
-                </button>
-              </div>
-            </div>
-            <p className="text-[11px] text-[var(--muted-foreground)]">
-              {t("webhook.urlHint")}
+            {t("webhook.title")}
+          </DialogTitle>
+          <DialogDescription>
+            {t("webhook.subtitle")}
+          </DialogDescription>
+        </DialogHeader>
+
+
+        <div className="overflow-y-auto max-h-[calc(90vh-110px)] p-6 space-y-5 pt-0!">
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--muted)] p-3">
+            <p className="text-sm font-semibold text-[var(--card-foreground)] mb-1">
+              {t("webhook.triggerTitle")}
             </p>
+            <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+              {t("webhook.triggerDescription")}
+            </p>
+          </div>
 
-            {/* WooCommerce: system secrets (read-only + copy + regenerate) */}
-            {provider === "woocommerce" && (
-              <>
-                <div className="grid gap-3 md:grid-cols-2 grid-cols-1">
-                  {cred.webhookCreateOrderSecret && (
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-[var(--card-foreground)]">
-                        {t("form.webhookCreateOrderSecret")}
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          readOnly
-                          value={cred.webhookCreateOrderSecret}
-                          className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
-                        />
-                        <button
-                          type="button"
-                          onClick={() =>
-                            copyToClipboard(cred.webhookCreateOrderSecret)
-                          }
-                          className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
-                          title="Copy"
-                        >
-                          <Copy size={14} />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  {cred.webhookUpdateStatusSecret && (
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-[var(--card-foreground)]">
-                        {t("form.webhookUpdateStatusSecret")}
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          readOnly
-                          value={cred.webhookUpdateStatusSecret}
-                          className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
-                        />
-                        <button
-                          type="button"
-                          onClick={() =>
-                            copyToClipboard(cred.webhookUpdateStatusSecret)
-                          }
-                          className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
-                          title="Copy"
-                        >
-                          <Copy size={14} />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--muted)] p-3">
-                  <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-                    {t("webhook.securityHint")}
-                  </p>
+          {loading && (
+            <div className="flex justify-center py-8 text-[var(--muted-foreground)]">
+              <Loader2 size={22} className="animate-spin" />
+            </div>
+          )}
+
+          {!loading && config && (
+            <div className="space-y-4">
+              {/* Webhook URLs - create */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-[var(--card-foreground)]">
+                  {t("instructions.webhookCreateOrderLabel")}
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    readOnly
+                    value={config.webhookEndpoints.create(user?.id)}
+                    className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
+                  />
                   <button
                     type="button"
-                    onClick={rotateWooCommerce}
-                    disabled={rotating}
-                    className="flex items-center gap-2 text-nowrap px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all disabled:opacity-50"
+                    onClick={() =>
+                      copyToClipboard(config.webhookEndpoints.create(user?.id))
+                    }
+                    className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
+                    title="Copy"
                   >
-                    {rotating ? (
-                      <Loader2 size={14} className="animate-spin" />
-                    ) : (
-                      <RotateCcw size={14} />
-                    )}
-                    <span className="text-xs font-semibold">
-                      {t("webhook.rotate")}
-                    </span>
+                    <Copy size={14} />
                   </button>
                 </div>
-              </>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-[var(--card-foreground)]">
+                  {t("instructions.webhookUpdateStatusLabel")}
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    readOnly
+                    value={config.webhookEndpoints.update(user?.id)}
+                    className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      copyToClipboard(config.webhookEndpoints.update(user?.id))
+                    }
+                    className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
+                    title="Copy"
+                  >
+                    <Copy size={14} />
+                  </button>
+                </div>
+              </div>
+              <p className="text-[11px] text-[var(--muted-foreground)]">
+                {t("webhook.urlHint")}
+              </p>
+
+              {/* WooCommerce: system secrets (read-only + copy + regenerate) */}
+              {provider === "woocommerce" && (
+                <>
+                  <div className="grid gap-3 md:grid-cols-2 grid-cols-1">
+                    {cred.webhookCreateOrderSecret && (
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-[var(--card-foreground)]">
+                          {t("form.webhookCreateOrderSecret")}
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            readOnly
+                            value={cred.webhookCreateOrderSecret}
+                            className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              copyToClipboard(cred.webhookCreateOrderSecret)
+                            }
+                            className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
+                            title="Copy"
+                          >
+                            <Copy size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    {cred.webhookUpdateStatusSecret && (
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-[var(--card-foreground)]">
+                          {t("form.webhookUpdateStatusSecret")}
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            readOnly
+                            value={cred.webhookUpdateStatusSecret}
+                            className="flex-1 rounded-xl border border-[var(--input)] bg-[var(--background)] px-4 py-2.5 text-sm text-[var(--foreground)]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              copyToClipboard(cred.webhookUpdateStatusSecret)
+                            }
+                            className="px-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all"
+                            title="Copy"
+                          >
+                            <Copy size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--muted)] p-3">
+                    <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                      {t("webhook.securityHint")}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={rotateWooCommerce}
+                      disabled={rotating}
+                      className="flex items-center gap-2 text-nowrap px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--muted)] transition-all disabled:opacity-50"
+                    >
+                      {rotating ? (
+                        <Loader2 size={14} className="animate-spin" />
+                      ) : (
+                        <RotateCcw size={14} />
+                      )}
+                      <span className="text-xs font-semibold">
+                        {t("webhook.rotate")}
+                      </span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {error && (
+            <div className="flex items-center gap-2 rounded-xl border border-red-500/25 bg-red-500/8 px-3.5 py-2.5 text-sm text-red-600 dark:text-red-400">
+              <AlertCircle size={14} />
+              {error}
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2 pt-2">
+            <GhostBtn onClick={onClose}>{t("webhook.close")}</GhostBtn>
+            {config?.webhookDocsUrl && (
+              <a
+                href={config.webhookDocsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <PrimaryBtn type="button">
+                  <ExternalLink size={14} /> {t("webhook.docs")}
+                </PrimaryBtn>
+              </a>
             )}
           </div>
-        )}
-
-        {error && (
-          <div className="flex items-center gap-2 rounded-xl border border-red-500/25 bg-red-500/8 px-3.5 py-2.5 text-sm text-red-600 dark:text-red-400">
-            <AlertCircle size={14} />
-            {error}
-          </div>
-        )}
-
-        <div className="flex justify-end gap-2 pt-2">
-          <GhostBtn onClick={onClose}>{t("webhook.close")}</GhostBtn>
-          {config?.webhookDocsUrl && (
-            <a
-              href={config.webhookDocsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <PrimaryBtn type="button">
-                <ExternalLink size={14} /> {t("webhook.docs")}
-              </PrimaryBtn>
-            </a>
-          )}
         </div>
-      </div>
-    </ModalShell>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -1149,228 +1166,238 @@ export function StoreGuideModal({ provider, onClose }) {
   const p = (obj) => pick(obj, locale);
   const [imgLoaded, setImgLoaded] = useState(false);
   return (
-    <ModalShell onClose={onClose} maxWidth="max-w-xl">
-      <ModalHeader
-        icon={HelpCircle}
-        title={t("guide.title", { name: meta?.label })}
-        subtitle={t("guide.subtitle", { name: meta?.label })}
-        onClose={onClose}
-      />
-
-      {/* Tabs */}
-      <div className="flex border-b border-[var(--border)] px-6 gap-1 pt-3 overflow-x-auto scrollbar-none">
-        {tabs.map((tab, i) => (
-          <button
-            key={i}
-            onClick={() => {
-              setActiveTab(i);
-              setActiveStep(0);
-            }}
-            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-lg whitespace-nowrap border-b-2 transition-all ${activeTab === i
-              ? "border-[var(--primary)] text-[var(--primary)] bg-[var(--primary)]/5"
-              : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]"
-              }`}
-          >
-            {p(tab.label)}
-          </button>
-        ))}
-      </div>
-
-      {/* Steps */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab + "-" + activeStep}
-          initial={{ opacity: 0, x: locale?.startsWith("ar") ? -12 : 12 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: locale?.startsWith("ar") ? 12 : -12 }}
-          transition={{ duration: 0.2 }}
-          className="p-6 space-y-4"
-        >
-          <div className="flex items-start gap-3">
-            <span
-              className="flex-shrink-0 w-7 h-7 rounded-full text-xs font-bold text-white flex items-center justify-center mt-0.5"
-              style={{
-                background: `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))`,
-              }}
-            >
-              {activeStep + 1}
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-[var(--card-foreground)]">
-                {p(currentStep?.title)}
-              </p>
-              <p className="text-sm text-[var(--muted-foreground)] leading-relaxed mt-1">
-                {p(currentStep?.desc)}
-              </p>
-              {currentStep?.url && (
-                <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border bg-muted/40 px-3 py-2">
-                  {(() => {
-                    // If URL is a function, call it with store/admin ID (replace with your param)
-                    console.log(user)
-                    const url =
-                      typeof currentStep.url === "function"
-                        ? currentStep.url(user) // or any param needed
-                        : currentStep.url;
-
-                    return (
-                      <>
-                        <a
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-primary hover:underline break-all"
-                        >
-                          {url}
-                        </a>
-
-                        <button
-                          onClick={() => navigator.clipboard.writeText(url)}
-                          className="text-xs font-medium px-2 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 transition"
-                        >
-                          <Copy size={12} className="text-primary" />
-                        </button>
-                      </>
-                    );
-                  })()}
-                </div>
-              )}
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden p-0!">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700">
+          <DialogTitle className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
+              <HelpCircle size={20} />
             </div>
+            {t("guide.title", { name: meta?.label })}
+          </DialogTitle>
+          <DialogDescription>
+            {t("guide.subtitle", { name: meta?.label })}
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Tabs */}
+        <div className="overflow-y-auto max-h-[calc(90vh-110px)] p-6 pt-0!">
+          <div className="flex border-b border-[var(--border)] gap-1 overflow-x-auto scrollbar-none">
+            {tabs.map((tab, i) => (
+              <button
+                key={i}
+                onClick={() => {
+                  setActiveTab(i);
+                  setActiveStep(0);
+                }}
+                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-lg whitespace-nowrap border-b-2 transition-all ${activeTab === i
+                  ? "border-[var(--primary)] text-[var(--primary)] bg-[var(--primary)]/5"
+                  : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]"
+                  }`}
+              >
+                {p(tab.label)}
+              </button>
+            ))}
           </div>
 
-          {currentStep?.image && (
-            <div
-              className="rounded-xl  overflow-hidden border border-[var(--border)] bg-[var(--muted)] relative"
-              // reserve vertical space and cap maximum height to viewport
-              style={{ minHeight: 160, maxHeight: "60vh" }}
+          {/* Steps */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab + "-" + activeStep}
+              initial={{ opacity: 0, x: locale?.startsWith("ar") ? -12 : 12 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: locale?.startsWith("ar") ? 12 : -12 }}
+              transition={{ duration: 0.2 }}
+              className="p-6 space-y-4"
             >
-              {/* Skeleton / placeholder shown while image loads */}
-              {!imgLoaded && (
-                <div className="absolute inset-0 flex items-center justify-center p-4">
-                  <div className="w-full h-full rounded-xl bg-[var(--muted)] animate-pulse" />
+              <div className="flex items-start gap-3">
+                <span
+                  className="flex-shrink-0 w-7 h-7 rounded-full text-xs font-bold text-white flex items-center justify-center mt-0.5"
+                  style={{
+                    background: `linear-gradient(135deg, rgb(var(--primary-from)), rgb(var(--primary-to)))`,
+                  }}
+                >
+                  {activeStep + 1}
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-[var(--card-foreground)]">
+                    {p(currentStep?.title)}
+                  </p>
+                  <p className="text-sm text-[var(--muted-foreground)] leading-relaxed mt-1">
+                    {p(currentStep?.desc)}
+                  </p>
+                  {currentStep?.url && (
+                    <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border bg-muted/40 px-3 py-2">
+                      {(() => {
+                        // If URL is a function, call it with store/admin ID (replace with your param)
+                        console.log(user)
+                        const url =
+                          typeof currentStep.url === "function"
+                            ? currentStep.url(user) // or any param needed
+                            : currentStep.url;
+
+                        return (
+                          <>
+                            <a
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-primary hover:underline break-all"
+                            >
+                              {url}
+                            </a>
+
+                            <button
+                              onClick={() => navigator.clipboard.writeText(url)}
+                              className="text-xs font-medium px-2 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 transition"
+                            >
+                              <Copy size={12} className="text-primary" />
+                            </button>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
                 </div>
-              )}
-
-              <img
-                src={currentStep.image}
-                alt={p(currentStep.title)}
-                loading="lazy"
-                // reserve intrinsic size to avoid layout jump (adjust if you know the image size)
-                width={1200}
-                height={700}
-                onLoad={() => setImgLoaded(true)}
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                  setImgLoaded(false);
-                  // show fallback (next sibling placeholder already present)
-                }}
-                className={`w-full h-full max-h-[350px] object-contain block transition-opacity duration-200 ease-out ${imgLoaded ? "opacity-100" : "opacity-0"}`}
-                style={{ display: "block" }}
-              />
-
-              {/* fallback UI (keeps same shape) */}
-              <div
-                style={{ display: "none" }}
-                className="h-44 flex-col items-center justify-center gap-2 text-[var(--muted-foreground)]"
-              >
-                <ImageIcon size={28} className="opacity-30" />
-                <p className="text-xs">{t("guide.imagePlaceholder")}</p>
-              </div>
-            </div>
-          )}
-
-          {currentStep?.tip && (
-            <div className="flex flex-col gap-3 p-3 rounded-xl bg-[var(--primary)]/5 border border-[var(--primary)]/15">
-              <div className="flex gap-2.5">
-                <Info
-                  size={14}
-                  className="text-[var(--primary)] flex-shrink-0 mt-0.5"
-                />
-                <p className="text-xs text-[var(--foreground)] leading-relaxed">
-                  {p(currentStep.tip)}
-                </p>
               </div>
 
-              {currentStep.copyableTip && (
-                <div className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg bg-black/5 dark:bg-white/5 border border-dashed border-[var(--primary)]/20 ml-6">
-                  <span className="text-[10px] font-mono text-[var(--muted-foreground)] truncate">
-                    {p(currentStep.copyableTip)}
-                  </span>
+              {currentStep?.image && (
+                <div
+                  className="rounded-xl  overflow-hidden border border-[var(--border)] bg-[var(--muted)] relative"
+                  // reserve vertical space and cap maximum height to viewport
+                  style={{ minHeight: 160, maxHeight: "60vh" }}
+                >
+                  {/* Skeleton / placeholder shown while image loads */}
+                  {!imgLoaded && (
+                    <div className="absolute inset-0 flex items-center justify-center p-4">
+                      <div className="w-full h-full rounded-xl bg-[var(--muted)] animate-pulse" />
+                    </div>
+                  )}
 
-                  <button
-                    onClick={() => {
-                      const textToCopy = p(currentStep.copyableTip);
-                      navigator.clipboard.writeText(textToCopy);
+                  <img
+                    src={currentStep.image}
+                    alt={p(currentStep.title)}
+                    loading="lazy"
+                    // reserve intrinsic size to avoid layout jump (adjust if you know the image size)
+                    width={1200}
+                    height={700}
+                    onLoad={() => setImgLoaded(true)}
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                      setImgLoaded(false);
+                      // show fallback (next sibling placeholder already present)
                     }}
-                    className="text-xs font-medium px-2 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 transition flex-shrink-0"
+                    className={`w-full h-full max-h-[350px] object-contain block transition-opacity duration-200 ease-out ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+                    style={{ display: "block" }}
+                  />
+
+                  {/* fallback UI (keeps same shape) */}
+                  <div
+                    style={{ display: "none" }}
+                    className="h-44 flex-col items-center justify-center gap-2 text-[var(--muted-foreground)]"
                   >
-                    <Copy size={12} className="text-primary" />
-                  </button>
+                    <ImageIcon size={28} className="opacity-30" />
+                    <p className="text-xs">{t("guide.imagePlaceholder")}</p>
+                  </div>
                 </div>
               )}
+
+              {currentStep?.tip && (
+                <div className="flex flex-col gap-3 p-3 rounded-xl bg-[var(--primary)]/5 border border-[var(--primary)]/15">
+                  <div className="flex gap-2.5">
+                    <Info
+                      size={14}
+                      className="text-[var(--primary)] flex-shrink-0 mt-0.5"
+                    />
+                    <p className="text-xs text-[var(--foreground)] leading-relaxed">
+                      {p(currentStep.tip)}
+                    </p>
+                  </div>
+
+                  {currentStep.copyableTip && (
+                    <div className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg bg-black/5 dark:bg-white/5 border border-dashed border-[var(--primary)]/20 ml-6">
+                      <span className="text-[10px] font-mono text-[var(--muted-foreground)] truncate">
+                        {p(currentStep.copyableTip)}
+                      </span>
+
+                      <button
+                        onClick={() => {
+                          const textToCopy = p(currentStep.copyableTip);
+                          navigator.clipboard.writeText(textToCopy);
+                        }}
+                        className="text-xs font-medium px-2 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 transition flex-shrink-0"
+                      >
+                        <Copy size={12} className="text-primary" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Step Navigation */}
+          <div className="border-t border-[var(--border)] py-4 flex items-center justify-between gap-3">
+            <GhostBtn
+              onClick={() => setActiveStep((v) => Math.max(0, v - 1))}
+              className={activeStep === 0 ? "opacity-30 pointer-events-none" : ""}
+            >
+              <ChevronLeft
+                size={14}
+                className={
+                  "rtl:-rotate-180 rtl:transition-transform  ltr:transition-transform"
+                }
+              />{" "}
+              {t("guide.prev")}
+            </GhostBtn>
+
+            <div className="flex items-center gap-1.5">
+              {currentSteps.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveStep(i)}
+                  className="rounded-full transition-all duration-200"
+                  style={{
+                    width: i === activeStep ? "16px" : "6px",
+                    height: "6px",
+                    background:
+                      i === activeStep
+                        ? `rgb(var(--primary-from))`
+                        : "var(--border)",
+                  }}
+                />
+              ))}
             </div>
-          )}
-        </motion.div>
-      </AnimatePresence>
 
-      {/* Step Navigation */}
-      <div className="border-t border-[var(--border)] px-6 py-4 flex items-center justify-between gap-3">
-        <GhostBtn
-          onClick={() => setActiveStep((v) => Math.max(0, v - 1))}
-          className={activeStep === 0 ? "opacity-30 pointer-events-none" : ""}
-        >
-          <ChevronLeft
-            size={14}
-            className={
-              "rtl:-rotate-180 rtl:transition-transform  ltr:transition-transform"
-            }
-          />{" "}
-          {t("guide.prev")}
-        </GhostBtn>
-
-        <div className="flex items-center gap-1.5">
-          {currentSteps.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setActiveStep(i)}
-              className="rounded-full transition-all duration-200"
-              style={{
-                width: i === activeStep ? "16px" : "6px",
-                height: "6px",
-                background:
-                  i === activeStep
-                    ? `rgb(var(--primary-from))`
-                    : "var(--border)",
-              }}
-            />
-          ))}
+            {activeStep < currentSteps.length - 1 ? (
+              <PrimaryBtn
+                onClick={() =>
+                  setActiveStep((v) => Math.min(currentSteps.length - 1, v + 1))
+                }
+              >
+                {t("guide.next")}
+                <ChevronRight
+                  size={14}
+                  className={
+                    "rtl:rotate-180 rtl:transition-transform  ltr:transition-transform"
+                  }
+                />
+              </PrimaryBtn>
+            ) : meta?.guide?.docsUrl ? (
+              <a
+                href={meta.guide.docsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <PrimaryBtn>
+                  <ExternalLink size={13} /> {t("guide.docs")}
+                </PrimaryBtn>
+              </a>
+            ) : null}
+          </div>
         </div>
 
-        {activeStep < currentSteps.length - 1 ? (
-          <PrimaryBtn
-            onClick={() =>
-              setActiveStep((v) => Math.min(currentSteps.length - 1, v + 1))
-            }
-          >
-            {t("guide.next")}
-            <ChevronRight
-              size={14}
-              className={
-                "rtl:rotate-180 rtl:transition-transform  ltr:transition-transform"
-              }
-            />
-          </PrimaryBtn>
-        ) : meta?.guide?.docsUrl ? (
-          <a
-            href={meta.guide.docsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <PrimaryBtn>
-              <ExternalLink size={13} /> {t("guide.docs")}
-            </PrimaryBtn>
-          </a>
-        ) : null}
-      </div>
-    </ModalShell>
+      </DialogContent>
+    </Dialog>
   );
 }

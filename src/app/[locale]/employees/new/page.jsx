@@ -267,6 +267,7 @@ export default function AddEmployeePage() {
 					{ name: t("breadcrumb.employees"), href: "/employees" },
 					{ name: t("breadcrumb.addEmployee") }
 				]}
+				stacky
 				buttons={
 					<Button_
 						onClick={handleSubmit(onSubmit)}

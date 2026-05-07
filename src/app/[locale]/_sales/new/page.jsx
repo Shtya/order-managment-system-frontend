@@ -180,6 +180,7 @@ export default function CreateSalesInvoicePage() {
 		>
 
 			<PageHeader
+				stacky
 				breadcrumbs={[
 					{ name: t("breadcrumb.home"), href: "/dashboard" },
 					{ name: t("breadcrumb.salesInvoices"), href: "/sales" },

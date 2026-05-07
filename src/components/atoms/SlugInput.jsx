@@ -2,6 +2,7 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAutoTranslate } from '@/utils/autoTranslate';
+import { cn } from '@/utils/cn';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
@@ -64,27 +65,30 @@ export default function SlugInput({ mainName, mainSlug, register, name, slug, er
 
 
     return (
-        <div className="space-y-2">
-            <div className="flex justify-between items-center">
-                <Label className={labelClassName}>
-                    {t('fields.productSlug')}
-                </Label>
+        <Field
+            label={
+                <div className="flex justify-between items-center w-full">
+                    <span>{t('fields.productSlug')}</span>
 
-                {/* إظهار حالة الترجمة بجانب العنوان */}
-                {isTranslating && (
-                    <span className="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full animate-pulse">
-                        {t('status.translating')}
-                    </span>
-                )}
-            </div>
-
+                    {/* إظهار حالة الترجمة بجانب العنوان */}
+                    {isTranslating && (
+                        <span className="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full animate-pulse">
+                            {t('status.translating')}
+                        </span>
+                    )}
+                </div>
+            }
+            error={errors?.slug?.message}
+            className={className}
+        >
             <div className="relative">
                 <Input
                     {...register('slug')}
                     placeholder={t('placeholders.productSlug')}
-                    className={`${className} ${slugStatus === 'unique' ? 'border-green-500 focus:ring-green-500/20' :
-                        slugStatus === 'taken' ? 'border-red-500 focus:ring-red-500/20' : ''
-                        }`}
+                    className={cn(
+                        slugStatus === 'unique' ? 'border-green-500 focus:ring-green-500/20' :
+                            slugStatus === 'taken' ? 'border-red-500 focus:ring-red-500/20' : ''
+                    )}
                 />
 
                 {/* أيقونة حالة التحقق داخل الحقل (اختياري) */}
@@ -98,6 +102,23 @@ export default function SlugInput({ mainName, mainSlug, register, name, slug, er
                 status={slugStatus}
                 t={t}
             />
+        </Field>
+    );
+}
+
+// ─── Field wrapper ────────────────────────────────────────────────────────────
+function Field({ label, error, children, className }) {
+    return (
+        <div className={cn("space-y-1.5", className)}>
+            {label && (
+                <Label className="text-[13px] font-medium text-gray-500 dark:text-slate-400 tracking-wide">
+                    {label}
+                </Label>
+            )}
+            {children}
+            {error && (
+                <p className="text-[11px] text-red-500 font-medium mt-1">{error}</p>
+            )}
         </div>
     );
 }

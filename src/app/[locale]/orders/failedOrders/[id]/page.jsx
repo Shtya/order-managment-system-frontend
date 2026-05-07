@@ -241,7 +241,8 @@ export default function FailedOrderDetailsPage() {
                 .filter(Boolean);
             setSelectedSkus(oosSkus || []);
         } catch (err) {
-            toast.error(t('errors.fetchFailed'));
+            const message = error?.response?.data?.message || t('errors.fetchFailed');
+            toast.error(message);
         } finally {
             setLoading(false);
         }
@@ -264,7 +265,8 @@ export default function FailedOrderDetailsPage() {
             toast.success(t('messages.retrySuccess'));
             fetchData();
         } catch (error) {
-            toast.error(t('messages.retryFailed'));
+            const message = error?.response?.data?.message || t('messages.retryFailed');
+            toast.error(message);
         } finally {
             setRetrying(false);
         }
@@ -315,7 +317,7 @@ export default function FailedOrderDetailsPage() {
                             </span>
                         ) : (
                             <>
-                                {props.slice(0, 3).map((prop, idx) => (
+                                {props.map((prop, idx) => (
                                     <Badge
                                         key={idx}
                                         className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap font-medium text-[10px] border-none"
@@ -327,11 +329,6 @@ export default function FailedOrderDetailsPage() {
                                     </Badge>
                                 ))}
 
-                                {props.length > 3 && (
-                                    <Badge className="rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 text-[10px] border-none">
-                                        +{props.length - 3}
-                                    </Badge>
-                                )}
                             </>
                         )}
                     </div>

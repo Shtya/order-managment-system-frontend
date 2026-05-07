@@ -4717,7 +4717,7 @@
         "restored": "Product Reactivated Successfully"
       },
       "problems": {
-        "PRODUCT_NOT_FOUND": "Product Not Found Locally",
+        "PRODUCT_NOT_FOUND": "Product Not Found",
         "SKU_NOT_FOUND": "Selected options not found for this product",
         "INSUFFICIENT_STOCK": "Insufficient Stock",
         "PRODUCT_INACTIVE": "Product Deleted",

@@ -4771,7 +4771,7 @@
         "restored": "تم إعادة تنشيط المنتج"
       },
       "problems": {
-        "PRODUCT_NOT_FOUND": "المنتج غير موجود محلياً",
+        "PRODUCT_NOT_FOUND": "المنتج غير موجود",
         "SKU_NOT_FOUND": "الخيارات المختارة غير موجودة لهذا المنتج",
         "INSUFFICIENT_STOCK": "كمية المخزون غير كافية",
         "PRODUCT_INACTIVE": "المنتج ممسوح",

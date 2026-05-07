@@ -117,12 +117,12 @@ export const PROVIDER_META = {
                     },
                 },
                 {
-                    image: "/guide/turbo/step2.png",
+                    image: "/guide/turbo/step-2.1.png",
                     tab: { en: "Settings", ar: "الإعدادات" },
-                    title: { en: "Navigate to Settings", ar: "الانتقال إلى تبويب الإعدادات" },
+                    title: { en: "Open Shipping Integrations", ar: "فتح ربط الشحنات" },
                     desc: {
-                        en: "Go to the Settings tab to find your integration credentials.",
-                        ar: "انتقل إلى تبويب الإعدادات (Settings) للعثور على بيانات الربط الخاصة بك.",
+                        en: "From the Settings menu, click on Shipping Integrations to access your integration credentials and setup options.",
+                        ar: "من قائمة الإعدادات، اضغط على ربط الشحنات للوصول إلى بيانات الربط وخيارات الإعداد.",
                     },
                 },
                 {

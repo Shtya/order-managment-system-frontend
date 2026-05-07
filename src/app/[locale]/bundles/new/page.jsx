@@ -219,6 +219,7 @@ export default function AddBundlePage({ isEditMode = false, existingBundle = nul
 					{ name: t("breadcrumb.products"), href: "/products" },
 					{ name: isEditMode ? t('breadcrumb.editBundle') : t('breadcrumb.addBundle') }
 				]}
+				stacky
 				buttons={
 					<>
 						<Button_ onClick={() => navigate.push('/products')} size="sm" label={t('actions.back')} tone="cancel" variant="ghost" />

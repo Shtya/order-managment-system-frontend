@@ -411,8 +411,8 @@ function OrderHeroCard({ order, t }) {
 
 export default function CollectOrderPage() {
   const tCollect = useTranslations("orderCollection");
-  const t = useTranslations("collectOrder");
   const tAccounts = useTranslations("accounts");
+  const t = useTranslations("collectOrder");
   const router = useRouter();
   const params = useParams();
   const orderId = params?.orderId;
@@ -610,6 +610,7 @@ export default function CollectOrderPage() {
             { name: t("breadcrumb.home"), href: "/dashboard" },
             { name: t("breadcrumb.title") },
           ]}
+          stacky
           buttons={
             <Button_
               onClick={handleSubmit(onSubmit)}

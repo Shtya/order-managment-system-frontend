@@ -248,7 +248,7 @@ export default function CreatePurchaseInvoicePage() {
 			navigate.push("/purchases");
 		} catch (error) {
 			console.error("Failed to create purchase:", error);
-			// toast.error(error.response?.data?.message || t("messages.createFailed"));
+			toast.error(error.response?.data?.message || t("messages.createFailed"));
 		} finally {
 			setLoading(false);
 		}

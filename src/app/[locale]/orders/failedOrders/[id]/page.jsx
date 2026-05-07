@@ -285,7 +285,7 @@ export default function FailedOrderDetailsPage() {
             setExternalCache(prev => ({ ...prev, [remoteId]: { loading: false, data: res.data } }));
         } catch (err) {
             setExternalCache(prev => ({ ...prev, [remoteId]: { loading: false, error: true } }));
-            toast.error(t('errors.externalFetchFailed'));
+            toast.error(normalizeAxiosError(err) || t('errors.externalFetchFailed'));
         }
     };
 

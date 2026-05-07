@@ -113,17 +113,12 @@ export const FieldStatusInfo = ({
     const fieldError = errors?.[name];
 
     return (
-        <div className="min-h-[20px] px-1">
+        <div className=" px-1">
             {/* 1. Standard Validation Error (Regex, Required, etc.) */}
-            {fieldError?.message && (
-                <p className="text-xs text-red-600 font-medium">
-                    {fieldError.message}
-                </p>
-            )}
 
             {/* 2. Async Status Messages (Shows only if no standard error and value exists) */}
             {!fieldError && value && (
-                <div className="flex items-center gap-1 text-xs">
+                <div className="min-h-[20px] flex items-center gap-1 text-xs">
                     {status === 'checking' && (
                         <p className="text-gray-500 italic">
                             {t('status.checking')}

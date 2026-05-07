@@ -436,7 +436,7 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
           { name: ordersToPrep.length > 1 ? "تحضير الطلبات" : "تحضير الطلب" },
         ]}
         buttons={
-          <div className="flex items-center gap-1">
+          <>
             <Button_
               onClick={handleSaveAll} disabled={!allComplete || saving || savedOk}
               size="sm"
@@ -460,7 +460,7 @@ export default function MultiPrepareView({ ordersToPrep: _ordersToPrep, onBack, 
               icon={<ArrowLeft className=" " size={15} />}
 
             />
-          </div>
+          </>
         }
         stats={[
           { name: "الطلبات المكتملة", value: completedOrders, color: "#16a34a", icon: TrendingUp, note: `من ${ordersToPrep.length}` },

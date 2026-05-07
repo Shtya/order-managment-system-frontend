@@ -173,6 +173,7 @@
 ═══════════════════════════════════════════════════════════════ */
 
 @theme inline {
+   --breakpoint-xs: 30rem;
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius);
   --radius-lg: var(--radius-lg);

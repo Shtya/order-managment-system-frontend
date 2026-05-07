@@ -1167,7 +1167,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				]}
 				stacky
 				buttons={
-					<div className="flex items-center gap-2">
+					<>
 						<Button_
 							onClick={() => navigate.push('/products')}
 							size="sm"
@@ -1184,7 +1184,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 							icon={isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save size={16} />}
 
 						/>
-					</div>
+					</>
 				}
 			/>
 

@@ -1036,7 +1036,7 @@ export default function CreateOrderPageComplete({
 					},
 				]}
 				buttons={
-					<div className="flex items-center gap-4">
+					<>
 						{!isEditMode && (
 							<Button_ size="sm" label={t("actions.howToUse")} tone="ghost" icon={<Info size={18} />} />
 						)}
@@ -1054,7 +1054,7 @@ export default function CreateOrderPageComplete({
 
 							disabled={loading || initialLoading}
 						/>
-					</div>
+					</>
 				}
 
 			></PageHeader>

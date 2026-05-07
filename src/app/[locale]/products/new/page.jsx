@@ -740,16 +740,16 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		if (lastCombSigRef.current === sig) return;
 		lastCombSigRef.current = sig;
 
-		if (productType !== 'variable') {
-			if (isEditMode) {
-				const first = currentCombos?.[0] || {};
-				setValue('combinations', [first], { shouldDirty: true, shouldValidate: false });
+		// if (productType !== 'variable') {
+		// 	if (isEditMode) {
+		// 		const first = currentCombos?.[0] || {};
+		// 		setValue('combinations', [first], { shouldDirty: true, shouldValidate: false });
 
-			} else {
-				setValue('combinations', [], { shouldDirty: true, shouldValidate: false });
-			}
-			return;
-		}
+		// 	} else {
+		// 		setValue('combinations', [], { shouldDirty: true, shouldValidate: false });
+		// 	}
+		// 	return;
+		// }
 		if (!isAttrEdited.current) return;
 
 		const generated = buildCombinationsFromAttributes(attributes, currentSlug, currentPrice);
@@ -770,6 +770,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				reserved: old?.reserved ?? 0,
 			};
 		});
+
 		if (!isEditMode) {
 			setValue('combinations', activeGenerated, { shouldDirty: true, shouldValidate: false });
 			return;
@@ -778,7 +779,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		const generatedKeys = new Set(activeGenerated.map((x) => x.key));
 		const inactiveLegacy = currentCombos
 			.filter((c) => c?.isExisting && c?.key && !generatedKeys.has(c.key))
-			.map((c) => ({ ...c, isActive: false }));
+			.map((c) => ({ ...c, isActive: c.key === 'default' ? (c.isActive !== false) : false }));
 
 		setValue('combinations', [...activeGenerated, ...inactiveLegacy], { shouldDirty: true, shouldValidate: false });
 	}, [attributesWatch, productSlug, salePrice, isEditMode, productType]);
@@ -892,7 +893,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			remainingAmount: total,
 		};
 	}, [combinationsWatch, purchasePaidAmount, productType, totalPurchaseQuantity, salePrice]);
-
+	const isSingle = productType === 'single';
 	const onSubmit = async (data) => {
 		let toastId;
 		try {
@@ -910,10 +911,9 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				toast.error(t('validation.totalQuantityRequired'));
 				return;
 			}
+			console.log("combinations", data.combinations)
 			if (data.combinations && data.combinations.length > 0) {
-				const sourceCombos = productType === 'single'
-					? [{ ...(data.combinations?.[0] || {}), price: data.salePrice }]
-					: data.combinations;
+				const sourceCombos = data.combinations;
 				const missingPrices = sourceCombos.filter((c) => !c.price || c.price === '');
 				if (missingPrices.length > 0) { toast.error(t('errors.missingPrices')); return; }
 			}
@@ -967,7 +967,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			if (orphanIds.length) fd.append('imagesOrphanIds', JSON.stringify(orphanIds));
 			if (isEditMode && removedImages.length > 0) fd.append('removedImages', JSON.stringify(removedImages));
 
-			const combinationsPayload = productType == 'single'
+			const combinationsPayload = productType === 'single' && !isEditMode
 				? []
 				: [...(data.combinations || [])];
 
@@ -1430,7 +1430,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 										title={t('singleSku.purchase')}
 									/>
 									<PurchaseDataForm
-										singleMode={productType === 'single'}
+										singleMode={isSingle}
 										tPurchase={tPurchase}
 										tValidation={tValidation}
 										control={control}
@@ -1450,7 +1450,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 						)}
 
 						{/* Attributes Card */}
-						{!(productType === "single" && isEditMode) && <motion.div variants={fadeUp}>
+						{<motion.div variants={fadeUp}>
 							<Card>
 								<SectionHeader
 									title={t('attributes.title')}
@@ -1530,7 +1530,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 						</motion.div>}
 
 						{/* Combinations Card */}
-						{comboFields.length > 0 && !(isEditMode && productType === "single") && (
+						{!(isSingle && isEditMode && attributeFields.length === 0) && comboFields.length > 0 && (
 							<motion.div ref={combinationsSectionRef} variants={fadeUp} className="scroll-mt-24">
 								<Card>
 									<div className="flex items-center justify-between mb-5">
@@ -1570,18 +1570,28 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 														// حساب المتوفر: الكمية الفعلية - المحجوز
 														const onHand = isEditMode || hasPurchase ? current?.stockOnHand || 0 : 0;
 														const reserved = current?.reserved || 0;
+
 														const available = Math.max(0, onHand - reserved);
+														const isDefaultVariant = current?.key === 'default';
+														const isDefaultOnly = comboFields.length === 1 && isDefaultVariant;
+
 														return (
 															<tr key={c.fieldId} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition-colors">
 																<td className="px-4 py-3">
 																	<input type="hidden" {...register(`combinations.${idx}.key`)} />
 																	<input type="hidden" {...register(`combinations.${idx}.attributes`)} />
 																	<div className="flex items-center gap-1.5 flex-wrap">
-																		{Object.entries(attrs).map(([key, value]) => (
-																			<LANG key={key} className="px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-[12px] font-medium border border-primary/15">
-																				{value}
-																			</LANG>
-																		))}
+																		{isDefaultVariant ? (
+																			<span className="px-2 py-0.5 rounded-lg bg-slate-100 text-slate-500 text-[11px] font-bold border border-slate-200 uppercase tracking-tight">
+																				{t('combinations.default') || ''}
+																			</span>
+																		) : (
+																			Object.entries(attrs).map(([key, value]) => (
+																				<LANG key={key} className="px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-[12px] font-medium border border-primary/15">
+																					{value}
+																				</LANG>
+																			))
+																		)}
 																	</div>
 																</td>
 																<td className="px-4 py-3">
@@ -1605,13 +1615,20 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 																	<Controller
 																		control={control}
 																		name={`combinations.${idx}.isActive`}
-																		render={({ field }) => (
-																			<Checkbox
-																				checked={parseBooleanLike(field.value, true)}
-																				onCheckedChange={(v) => field.onChange(!!v)}
-																				className="rounded-md"
-																			/>
-																		)}
+																		render={({ field }) => {
+																			const isChecked = isDefaultOnly || parseBooleanLike(field.value, true);
+																			return (
+																				<Checkbox
+																					checked={isChecked}
+																					onCheckedChange={(v) => !isDefaultOnly && field.onChange(!!v)}
+																					disabled={isDefaultOnly}
+																					className={cn(
+																						"rounded-md",
+																						isDefaultOnly && "opacity-50 cursor-not-allowed"
+																					)}
+																				/>
+																			);
+																		}}
 																	/>
 																</td>
 																<td className="px-2 py-3 text-center">
@@ -1679,11 +1696,11 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 							</motion.div>
 						)}
 
-						{productType === 'single' && isEditMode && (
+						{isSingle && isEditMode && attributeFields.length === 0 && (
 							<motion.div variants={fadeUp}>
 								<Card>
 									<SectionHeader title={t('singleSku.title')} />
-									{isEditMode && productType === 'single' && (
+									{isEditMode && isSingle && (
 										<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
 											<Field label={t('combinations.onHand')}>
 												<Input value={String(combinationsWatch?.[0]?.stockOnHand || 0)} disabled />

@@ -173,7 +173,7 @@ const makeSchema = (t, tValidation) =>
 		hasPurchase: yup.boolean().default(false),
 		// type: yup.string().oneOf(['single', 'variable']).default('variable'),
 		name: yup.string().trim().required(t('validation.nameRequired')).max(200, t('validation.nameTooLong', { max: 200 })),
-		slug: yup.string().trim().required(t('validation.slugRequired')).matches(/^[a-z0-9-_]+$/, t('validation.slugInvalid')),
+		slug: yup.string().transform((value) => (value ? value.toLowerCase() : value)).trim().required(t('validation.slugRequired')).matches(/^[a-z0-9-_]+$/, t('validation.slugInvalid')),
 		wholesalePrice: yup.number().transform((value, originalValue) => originalValue === "" ? NaN : value).typeError(t('validation.requiredNumber')).required(t('validation.requiredNumber')).min(0, t('validation.noNegative')),
 		salePrice: yup.number().transform((value, originalValue) => originalValue === "" ? NaN : value).typeError(t('validation.requiredNumber')).required(t('validation.requiredNumber')).min(0, t('validation.noNegative')),
 		lowestPrice: yup.number().transform((value, originalValue) => originalValue === "" ? NaN : value).typeError(t('validation.requiredNumber')).required(t('validation.requiredNumber')).min(0, t('validation.noNegative')),

@@ -106,6 +106,7 @@ function SectionCard({ title, badge, children, delay = 0 }) {
 function GeoSelect({ label, required, value, onValueChange, items, isLoading, placeholder, disabled, hint, nameKey = "nameEn" }) {
 
 	const t = useTranslations("createOrder");
+
 	return (
 		<div className="space-y-2">
 			<div className="flex items-center gap-2">
@@ -188,8 +189,6 @@ function AddressSection({
 	// Bosta validation errors
 	providerErrors,
 }) {
-
-
 	const currentConfig = GEO_CONFIG[provider] || GEO_CONFIG.default;
 
 
@@ -203,10 +202,17 @@ function AddressSection({
 	const handleCityChange = useCallback(
 		(cityId, resetArea = true) => {
 			const cities = provider ? providerCities : normalCities;
+			// If cityId is empty, it might be an auto-reset from the Select component during loading.
+			// We only want to process actual selections.
 			if (!cityId) return;
+
+			// Prevent resetting children if the value hasn't changed (happens on initial load/re-render)
+			if (String(cityId) === String(providerMeta.cityId)) return;
+
 			const city = cities.find((c) => String(c.id) === cityId);
 
-			if (!city) return;
+			// If cities list is not yet loaded, don't trigger resets
+			if (!city && (providerLoading.cities || normalCitiesLoading)) return;
 
 			onMetaChange("cityId", cityId);
 			onMetaChange("zoneId", "");
@@ -214,39 +220,51 @@ function AddressSection({
 			if (city) setValue("city", city[nameKey] || city.nameEn, { shouldValidate: true });
 			if (resetArea) setValue("area", "", { shouldValidate: false });
 		},
-		[providerCities, normalCities, nameKey, onMetaChange, setValue, provider]
+		[providerCities, normalCities, nameKey, onMetaChange, setValue, provider, providerMeta.cityId, providerLoading.cities, normalCitiesLoading]
 	);
 
 	const handleZoneChange = useCallback(
 		(zoneId) => {
+			if (!zoneId) return; // Prevent auto-resets
+			// Prevent resetting children if the value hasn't changed
+			if (String(zoneId) === String(providerMeta.zoneId)) return;
+
+			const zone = providerZones.find((z) => String(z.id) === zoneId);
+			// If zones list is not yet loaded, don't trigger resets
+			if (!zone && providerLoading.zones) return;
+
 			onMetaChange("zoneId", zoneId);
 			onMetaChange("districtId", "");
 			// rebuild area: zone name (district will be appended later)
-			const zone = providerZones.find((z) => String(z.id) === zoneId);
 			if (zone) setValue("area", zone[nameKey] || zone.nameEn, { shouldValidate: false });
 		},
-		[providerZones, nameKey, onMetaChange, setValue]
+		[providerZones, nameKey, onMetaChange, setValue, providerMeta.zoneId, providerLoading.zones]
 	);
 
 	const handleDistrictChange = useCallback(
 		(districtId) => {
-			onMetaChange("districtId", districtId);
+			if (!districtId) return; // Prevent auto-resets
+			// Prevent resetting if the value hasn't changed
+			if (String(districtId) === String(providerMeta.districtId)) return;
+
 			const zone = providerZones.find((z) => String(z.id) === providerMeta.zoneId);
 			const district = filteredDistricts.find((d) => String(d.id) === districtId);
 
-			const zonePart = zone?.[nameKey] || zone?.nameEn
-			const distinctPart = district?.[nameKey] || district?.nameEn
-			if (distinctPart != zonePart) {
+			// If districts list is not yet loaded, don't trigger resets
+			if (!district && providerLoading.districts) return;
 
-				const parts = [zonePart, distinctPart]
-					.filter(Boolean)
-					.join(", ");
+			onMetaChange("districtId", districtId);
+
+			const zonePart = zone?.[nameKey] || zone?.nameEn;
+			const distinctPart = district?.[nameKey] || district?.nameEn;
+			if (distinctPart != zonePart) {
+				const parts = [zonePart, distinctPart].filter(Boolean).join(", ");
 				setValue("area", parts, { shouldValidate: false });
 			} else {
 				setValue("area", zonePart, { shouldValidate: false });
 			}
 		},
-		[providerZones, filteredDistricts, providerMeta.zoneId, nameKey, onMetaChange, setValue]
+		[providerZones, filteredDistricts, providerMeta.zoneId, providerMeta.districtId, nameKey, onMetaChange, setValue, providerLoading.districts]
 	);
 
 	// ── Bosta mode ──────────────────────────────────────────────────────────
@@ -454,6 +472,18 @@ export default function CreateOrderPageComplete({
 	orderId = null,
 }) {
 	const searchParams = useSearchParams();
+	const [providerLoading, setproviderLoading] = useState({
+		cities: false,
+		zones: false,
+		districts: false,
+		locations: false,
+	});
+	const [providerMeta, setProviderMeta] = useState({
+		cityId: "",
+		zoneId: "",
+		districtId: "",
+		locationId: "",
+	});
 	const fromId = searchParams.get("from");
 	const tValidation = useTranslations("validation");
 	const [existingOrder, setExistingOrder] = useState(propExistingOrder);
@@ -497,25 +527,13 @@ export default function CreateOrderPageComplete({
 	const [normalCitiesLoading, setNormalCitiesLoading] = useState(false);
 
 	// ── geo state ─────────────────────────────────────────────────────
-	const [providerMeta, setProviderMeta] = useState({
-		cityId: "",
-		zoneId: "",
-		districtId: "",
-		locationId: "",
-	});
+
 	const [providerErrors, setProviderErrors] = useState({});
 
 	const [providerCities, setproviderCities] = useState([]);
 	const [providerZones, setproviderZones] = useState([]);
 	const [providerDistricts, setproviderDistricts] = useState([]);
 	const [providerLocations, setproviderLocations] = useState([]);
-
-	const [providerLoading, setproviderLoading] = useState({
-		cities: false,
-		zones: false,
-		districts: false,
-		locations: false,
-	});
 
 	// ── Schema ──────────────────────────────────────────────────────────────
 	const schema = useMemo(() => createSchema(t), [t]);
@@ -637,6 +655,7 @@ export default function CreateOrderPageComplete({
 				);
 			}
 			if (existingOrder.shippingMetadata) {
+				console.log("existingOrder.shippingMetadata", existingOrder.shippingMetadata);
 				setProviderMeta({
 					cityId: existingOrder.shippingMetadata.cityId ?? "",
 					zoneId: existingOrder.shippingMetadata.zoneId ?? "",
@@ -723,6 +742,7 @@ export default function CreateOrderPageComplete({
 					requests.push(api.get(`/shipping/pickup-locations/${shippingProvider}`));
 				}
 				const [citiesRes, locationsRes] = await Promise.all(requests);
+
 				setproviderCities(citiesRes.data?.records ?? []);
 				setproviderLocations(locationsRes.data?.records ?? []);
 			} catch (e) {
@@ -755,6 +775,7 @@ export default function CreateOrderPageComplete({
 					requests.push(api.get(`/shipping/districts/${shippingProvider}/${providerMeta.cityId}`));
 				}
 				const [zonesRes, districtsRes] = await Promise.all(requests);
+
 				setproviderZones(zonesRes.data?.records ?? []);
 				setproviderDistricts(districtsRes.data?.records ?? []);
 			} catch (e) {
@@ -765,7 +786,7 @@ export default function CreateOrderPageComplete({
 		};
 
 		fetchGeography();
-	}, [config.needsGeo, config.showDistric, providerMeta.cityId, shippingProvider]);
+	}, [config.needsGeo, config.showDistrict, providerMeta.cityId, shippingProvider]);
 
 	// ── Bosta meta setter ────────────────────────────────────────────────────
 	const handleMetaChange = useCallback((field, value) => {

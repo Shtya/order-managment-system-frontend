@@ -1546,7 +1546,8 @@
         "productName": "اسم المنتج",
         "date": "التاريخ",
         "distributedAt": "تاريخ التوزيع",
-        "status": "الحالة"
+        "status": "الحالة",
+        "email": "إيميل"
       },
       "orderSizes": {
         "SMALL": "صغير (SMALL)",
@@ -1561,7 +1562,8 @@
         "address": "أدخل العنوان بالتفصيل...",
         "city": "اختر المدينة",
         "zone": "اختر المنطقة",
-        "district": "اختر الحي"
+        "district": "اختر الحي",
+        "email": "أدخل ايميل"
       },
       "header": {
         "howItWorks": "كيف يعمل"
@@ -1643,7 +1645,9 @@
         "cityIdRequired": "المدينة مطلوبة",
         "districtIdRequired": "الحي مطلوب",
         "zoneIdRequired": "المنطقة مطلوبة",
-        "orderSizeRequired": "حجم الطلب مطلوب"
+        "orderSizeRequired": "حجم الطلب مطلوب",
+        "invalidEmail": "أدخل ايميل صالح",
+        "emailRequired": "الايميل مطلوب"
       },
       "assign": {
         "noIneligible": "لا توجد طلبات غير مؤهلة للتعيين",

@@ -627,7 +627,7 @@ export default function OnboardingPage() {
     try {
       const { data } = await api.post(`/users/onboarding/next/${enumStep}`);
       const nextIndex = stepMap[data.nextStep];
-      
+
       setStep(() => nextIndex);
       setDbStep(() => nextIndex);
     } catch (err) {
@@ -746,7 +746,7 @@ export default function OnboardingPage() {
                 open={step === 0}
                 nextLoading={nextLoading}
               />
-             {step === 1 && <PlanStep
+              {step === 1 && <PlanStep
                 key="p"
                 onNext={next}
                 onBack={back}
@@ -2382,7 +2382,7 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
     }
   };
 
-  const onInvalid = (errs) => { console.log(errs)};
+  const onInvalid = (errs) => { console.log(errs) };
 
   if (!open) return null;
 
@@ -2487,8 +2487,8 @@ function CompanyStep({ onNext, onBack, open, nextLoading }) {
 
       {/* Row 2 */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-        <Field label={t("fields.tax")} 
-         error={errors.tax ? errors.tax?.message : null}>
+        <Field label={t("fields.tax")}
+          error={errors.tax ? errors.tax?.message : null}>
           <InputWrap
             icon={<span style={{ fontSize: 13, fontWeight: 700 }}>%</span>}
           >

@@ -1,3 +1,4 @@
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import api from "@/utils/api";
 import { normalizeAxiosError } from "@/utils/axios";
 import { useTranslations, useLocale } from "next-intl";
@@ -189,7 +190,7 @@ export function useShippingSettings(companyCode, callbacks = {}) {
     const { onSaved, onFirstSetup, onClose } = callbacks;
     const t = useTranslations("shipping");
     const locale = useLocale();
-
+ const {refreshShipping} = usePlatformSettings();
     const meta = PROVIDER_META[companyCode];
     const fields = meta?.configFields || [
         { key: "apiKey", type: "password", labelKey: "settings.fields.apiKey", required: true }
@@ -296,6 +297,7 @@ export function useShippingSettings(companyCode, callbacks = {}) {
             await api.post(`/shipping/providers/${companyCode}/credentials`, { credentials });
             setSuccess(true);
             onSaved?.(isEditMode);
+            await refreshShipping();
             fetchSetup()
             const providerLabel = provider?.label[locale] || provider?.label.en;
             const successMsg = isEditMode
@@ -394,7 +396,7 @@ export function useShippingWebhook(companyCode) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [rotating, setRotating] = useState(false);
-
+    const {refreshShipping} = usePlatformSettings();
     // Filter logic based on PROVIDER_META
     const hiddenFields = PROVIDER_META[companyCode]?.webhookHiddenFields || [];
     const isFieldHidden = (key) => hiddenFields.includes(key);
@@ -432,6 +434,7 @@ export function useShippingWebhook(companyCode) {
         try {
             await api.post(`/shipping/providers/${companyCode}/webhook-setup/rotate-secret`, {});
             await fetchSetup();
+            await refreshShipping();
             toast.success(t("webhook.rotateSuccess"));
         } catch (e) {
             toast.error(e?.response?.data?.message || t("webhook.errorRotate"));

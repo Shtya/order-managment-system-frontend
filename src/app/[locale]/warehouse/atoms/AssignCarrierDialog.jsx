@@ -17,7 +17,7 @@ import { OrderStatus } from "../../orders/tabs/OrderTab";
 const CARRIER_CONFIG = {
     BOSTA: {
         provider: "bosta",
-        requires: ["customerName", "phoneNumber", "firstLine", "cityId", "districtId", "orderSize"],
+        requires: ['email', "customerName", "phoneNumber", "firstLine", "cityId", "districtId", "orderSize"],
         hasDistrict: true,
         hasZone: false,
     },
@@ -32,23 +32,24 @@ const CARRIER_CONFIG = {
 
 const EG_PHONE_REGEX = /^01[0125][0-9]{8}$/;
 
-const getValidationSchema = (carrierCode, t) => {
-    const config = CARRIER_CONFIG[carrierCode] || CARRIER_CONFIG.NONE;
-    let shape = {
-        customerName: yup.string().required(t("validation.customerNameRequired")),
-        phoneNumber: yup.string().matches(EG_PHONE_REGEX, t("validation.invalidEgPhone")).required(t("validation.phoneNumberRequired")),
-    };
-    if (config.requires.includes("firstLine")) shape.firstLine = yup.string().required(t("validation.firstLineRequired")).min(5, t("validation.firstLineTooShort"));
-    if (config.requires.includes("cityId")) shape.cityId = yup.string().required(t("validation.cityIdRequired"));
-    if (config.requires.includes("districtId")) shape.districtId = yup.string().required(t("validation.districtIdRequired"));
-    if (config.requires.includes("zoneId")) shape.zoneId = yup.string().required(t("validation.zoneIdRequired"));
-    if (config.requires.includes("orderSize")) shape.orderSize = yup.string().required(t("validation.orderSizeRequired"));
-
-    return yup.object().shape(shape);
-};
 
 export default function AssignCarrierDialog({ open, onClose, orders, selectedOrderCodes, onConfirm, refetchOrders }) {
     const t = useTranslations("warehouse.distribution");
+    const getValidationSchema = (carrierCode, t) => {
+        const config = CARRIER_CONFIG[carrierCode] || CARRIER_CONFIG.NONE;
+        let shape = {
+            customerName: yup.string().required(t("validation.customerNameRequired")),
+            phoneNumber: yup.string().matches(EG_PHONE_REGEX, t("validation.invalidEgPhone")).required(t("validation.phoneNumberRequired")),
+        };
+        if (config.requires.includes("email")) shape.email = yup.string().email(t("validation.invalidEmail")).required(t("validation.emailRequired"));
+        if (config.requires.includes("firstLine")) shape.firstLine = yup.string().required(t("validation.firstLineRequired")).min(5, t("validation.firstLineTooShort"));
+        if (config.requires.includes("cityId")) shape.cityId = yup.string().required(t("validation.cityIdRequired"));
+        if (config.requires.includes("districtId")) shape.districtId = yup.string().required(t("validation.districtIdRequired"));
+        if (config.requires.includes("zoneId")) shape.zoneId = yup.string().required(t("validation.zoneIdRequired"));
+        if (config.requires.includes("orderSize")) shape.orderSize = yup.string().required(t("validation.orderSizeRequired"));
+
+        return yup.object().shape(shape);
+    };
     const { formatCurrency, shippingCompanies } = usePlatformSettings();
 
     // UI State
@@ -157,6 +158,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
             districtId: meta.districtId,
             orderSize: meta.orderSize,
             firstLine: order.address,
+            email: order.email
 
         };
 
@@ -322,6 +324,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                     customerName: order.customerName || "",
                     phoneNumber: order.phoneNumber || "",
                     firstLine: order.firstLine || order.address || "",
+                    email: order.email || "",
                     cityId: meta.cityId || "",
                     zoneId: meta.zoneId || "",
                     districtId: meta.districtId || "",
@@ -432,6 +435,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                     customerName: fixes[order.id].customerName,
                     phoneNumber: fixes[order.id].phoneNumber,
                     address: fixes[order.id].firstLine, // Backend expects "address"
+                    email: fixes[order.id].email || "",
                     shippingMetadata: {
                         cityId: fixes[order.id].cityId,
                         zoneId: fixes[order.id].zoneId,
@@ -691,6 +695,11 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                                                         <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 min-w-[140px]">
                                                             {t("fields.phoneNumber")}
                                                         </th>
+                                                        {CARRIER_CONFIG[carrier]?.requires.includes("email") && (
+                                                            <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 min-w-[200px]">
+                                                                {t("fields.email")}
+                                                            </th>
+                                                        )}
                                                         {CARRIER_CONFIG[carrier]?.requires.includes("firstLine") && (
                                                             <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 min-w-[200px]">
                                                                 {t("fields.address")}
@@ -753,7 +762,16 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                                                                         dir="ltr"
                                                                     />
                                                                 </td>
-
+                                                                {config?.requires.includes("email") && (
+                                                                    <td className="px-4 py-3 align-top">
+                                                                        <TableInput
+                                                                            value={fix.email}
+                                                                            error={errs.email}
+                                                                            onChange={(e) => handleFixChange(order.id, 'email', e.target.value)}
+                                                                            placeholder={t("placeholders.email")}
+                                                                        />
+                                                                    </td>
+                                                                )}
                                                                 {config?.requires.includes("firstLine") && (
                                                                     <td className="px-4 py-3 align-top">
                                                                         <TableInput

@@ -1609,7 +1609,9 @@
         "cityIdRequired": "City is required",
         "districtIdRequired": "District is required",
         "zoneIdRequired": "Zone is required",
-        "orderSizeRequired": "Order Size is required"
+        "orderSizeRequired": "Order Size is required",
+        "invalidEmail": "Enter a valid email",
+        "emailRequired": "Email is required"
       },
       "assign": {
         "noIneligible": "No ineligible orders selected. Please select orders that need fixing.",
@@ -1688,7 +1690,10 @@
         "saveMissingData": "Save missing data",
         "error": "Something went wrong. Please try again."
       },
-      "loading": "Loading..."
+      "loading": "Loading...",
+      "placeholders": {
+        "email": "Enter an email"
+      }
     },
     "print": {
       "printSource": "Print Source",

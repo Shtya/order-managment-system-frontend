@@ -7770,14 +7770,16 @@
       "updateSuccess": "Order updated successfully",
       "statusUpdated": "Order status updated successfully",
       "errorUpdatingStatus": "An error occurred while updating the status",
-      "errorFetchingStatuses": "An error occurred while fetching statuses"
+      "errorFetchingStatuses": "An error occurred while fetching statuses",
+      "errorFetchingProduct": "Failed to load product data"
     },
     "validation": {
       "customerNameRequired": "Customer name is required",
       "phoneRequired": "Phone number is required",
       "cityRequired": "City is required",
       "addressRequired": "Address is required",
-      "paymentMethodRequired": "Payment method is required"
+      "paymentMethodRequired": "Payment method is required",
+      "invalidEmail": "Email is invalid"
     },
     "statuses": {
       "new": "New",
@@ -7840,7 +7842,8 @@
     "product": "Product",
     "attrs": "Specifications",
     "qty": "Quantity",
-    "total": "Total"
+    "total": "Total",
+    "loading": "loading..."
   },
   "categories": {
     "breadcrumb": {

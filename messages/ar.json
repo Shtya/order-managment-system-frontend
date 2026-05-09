@@ -7805,14 +7805,16 @@
       "updateSuccess": "تم تحديث الطلب بنجاح",
       "statusUpdated": "تم تحديث الحالة بنجاح",
       "errorUpdatingStatus": "حدث خطأ أثناء تحديث الحالة",
-      "errorFetchingStatuses": "حدث خطأ أثناء جلب الحالات"
+      "errorFetchingStatuses": "حدث خطأ أثناء جلب الحالات",
+      "errorFetchingProduct": "فشل تحميل بيانات المنتج"
     },
     "validation": {
       "customerNameRequired": "اسم العميل مطلوب",
       "phoneRequired": "رقم الهاتف مطلوب",
       "cityRequired": "المدينة مطلوبة",
       "addressRequired": "العنوان مطلوب",
-      "paymentMethodRequired": "طريقة الدفع مطلوبة"
+      "paymentMethodRequired": "طريقة الدفع مطلوبة",
+      "invalidEmail": "الايميل غير صالح"
     },
     "statuses": {
       "new": "جديد",
@@ -7876,7 +7878,8 @@
     "product": "المنتج",
     "attrs": "المواصفات",
     "qty": "الكمية",
-    "total": "الإجمالي"
+    "total": "الإجمالي",
+    "loading": "جاري التحميل..."
   },
   "categories": {
     "breadcrumb": {

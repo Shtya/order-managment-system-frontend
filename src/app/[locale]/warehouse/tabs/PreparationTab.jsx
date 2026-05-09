@@ -1313,9 +1313,10 @@ export function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSu
 		prevIsError.current = isError;
 	}, [isError]);
 
-	const handleScan = useCallback(() => {
-		if (disabled || !value?.trim()) return;
-		onScan();
+	const handleScan = useCallback((newVal) => {
+		const val = newVal?.trim() || value?.trim();
+		if (disabled || !val) return;
+		onScan(val);
 	}, [disabled, value, onScan]);
 
 	const isActive = isFocused || !!value;
@@ -1395,9 +1396,17 @@ export function ScanInputBar({ inputRef, value, onChange, onScan, disabled, isSu
 
 				<input
 					ref={inputRef} value={value} onChange={onChange}
+					autoFocus
 					onKeyDown={e => { if (e.key === "Enter") handleScan(); }}
+					onPaste={(e) => {
+						e.preventDefault();
+						const pasted = e.clipboardData.getData("text");
+						if (pasted) {
+							handleScan(pasted);
+						}
+					}}
 					onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)}
-					placeholder={placeholder} autoFocus disabled={disabled}
+					placeholder={placeholder} disabled={disabled}
 					autoComplete="off" autoCorrect="off" spellCheck={false}
 					className="relative z-10 flex-1 h-full bg-transparent border-none !outline-none focus:ring-0 text-sm font-semibold text-foreground placeholder:text-muted-foreground/80px-1"
 				/>
@@ -1606,8 +1615,10 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 		setTimeout(() => scanInputRef.current?.focus(), 100);
 	}, []);
 
-	const handleScan = useCallback(async () => {
-		const val = scanValue.trim();
+	const handleScan = useCallback(async (value) => {
+		const val = value?.trim() || scanValue.trim();
+
+		setScanValue(val)
 		if (!val) return;
 
 		if (scanStep === "order") {

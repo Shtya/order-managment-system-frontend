@@ -1304,9 +1304,10 @@ function ReturnsScanInputBar({
     prevIsError.current = !!isError;
   }, [isError]);
 
-  const handleScan = useCallback(() => {
-    if (disabled || !value?.trim()) return;
-    onScan();
+  const handleScan = useCallback((newVal) => {
+    const val = newVal?.trim() || value?.trim();
+    if (disabled || !val) return;
+    onScan(val);
   }, [disabled, value, onScan]);
 
   const isActive = isFocused || !!value;
@@ -1479,6 +1480,13 @@ function ReturnsScanInputBar({
             onChange={onChange}
             onKeyDown={(e) => {
               if (e.key === "Enter") handleScan();
+            }}
+            onPaste={(e) => {
+              e.preventDefault();
+              const pasted = e.clipboardData.getData("text");
+              if (pasted) {
+                onScan(pasted);
+              }
             }}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
@@ -2195,11 +2203,11 @@ function ReturnsOrdersSlidePanel({ open, onClose, orders, loading, selectedOrder
 
     try {
       setCreatingManifest(true);
-      const {data} = await api.post('/orders/manifests/return', {
+      const { data } = await api.post('/orders/manifests/return', {
         shippingCompanyId: firstCarrierId ? firstCarrierId : null,
         orderIds: selectedOrderIds,
       });
-      
+
       toast.success(t("scan.messages.returnSuccess", { code: "" }) || "Return manifest created successfully");
       onManifestCreated(data);
       onClose();
@@ -2326,7 +2334,7 @@ export function ScanReturnsSubtab({
 }) {
   const searchParams = useSearchParams();
   const router = useRouter();
-	const pathname = usePathname();
+  const pathname = usePathname();
   const t = useTranslations("warehouse.returns");
 
   const { shippingCompanies } = usePlatformSettings();
@@ -2462,8 +2470,9 @@ export function ScanReturnsSubtab({
     setTimeout(() => scanRef.current?.focus(), 100);
   }, []);
 
-  const handleScan = async () => {
-    const val = scanInput.trim();
+  const handleScan = async (value) => {
+    const val = value?.trim() || scanInput.trim();
+    setInput(val);
     if (!val) return;
     await fetchActiveOrder(val);
   };
@@ -2566,16 +2575,16 @@ export function ScanReturnsSubtab({
     }
   };
 
-useEffect(() => {
-		
+  useEffect(() => {
 
-		const params = new URLSearchParams(searchParams.toString());
-		params.delete("manifest");
 
-		router.replace(
-			params.toString() ? `${pathname}?${params}` : pathname
-		);
-	}, []);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("manifest");
+
+    router.replace(
+      params.toString() ? `${pathname}?${params}` : pathname
+    );
+  }, []);
 
   const isItemsMode = !!activeOrder;
   const meta = selectedCarrier !== "all" ? getCarrierMeta(selectedCarrier) : null;

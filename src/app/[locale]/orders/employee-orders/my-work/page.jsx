@@ -6,7 +6,7 @@ import {
   Package, Phone, CheckCircle, Loader2, ArrowRight, ArrowLeft,
   Lock, ChevronDown, Zap, SkipForward, ShoppingBag, User, AlertCircle,
   TrendingUp, Activity, RefreshCw, Clock, Building2, RotateCcw,
-  BadgeCheck, Banknote, StickyNote, Mail, Receipt, Star,
+  BadgeCheck, Banknote, StickyNote, Mail, Receipt, Star, Boxes, Hash, ImageIcon,
   Navigation, Plus, Minus, X, Save, Info, Trash2, Truck, MapPin, CreditCard,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
@@ -21,6 +21,10 @@ import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/utils/cn";
 
 // ─── RAW HEX (for alpha only) ──────────────────────────────────────────────
 const HEX = {
@@ -48,7 +52,7 @@ const fmtDt = (d, loc = "ar-EG") => d ? new Date(d).toLocaleString(loc, { year: 
 // ─── SCHEMA ────────────────────────────────────────────────────────────────
 const mkSchema = t => yup.object({
   customerName: yup.string().trim().required(t("validation.customerNameRequired")),
-  email: yup.string().email(),
+  email: yup.string().nullable().email(t("validation.invalidEmail")),
   phoneNumber: yup.string().trim().required(t("validation.phoneRequired")),
   secondPhoneNumber: yup.string().trim(),
   city: yup.string().trim().required(t("validation.cityRequired")),
@@ -293,7 +297,7 @@ function Fld({ label, name, control, error, disabled = false, type = "text", sty
     <div className="field">
       <label className={foc ? "on" : ""}>{label}</label>
       <Controller name={name} control={control} render={({ field }) => (
-        <input {...field} type={type} disabled={disabled}
+        <input {...field} value={field.value ?? ""} type={type} disabled={disabled}
           onFocus={() => setFoc(true)} onBlur={() => setFoc(false)}
           className={error ? "err" : ""} style={{ ...st, opacity: disabled ? .6 : 1 }}
         />
@@ -395,7 +399,7 @@ export default function OrderConfirmationWorkPage() {
 
   const { control, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm({ resolver: yupResolver(mkSchema(t)), mode: "onChange" });
   const w = watch();
-
+  console.log(w)
   useEffect(() => {
     if (w && Object.keys(w).length > 0) setEditedOrder(prev => ({ ...prev, ...w }));
   }, [w?.customerName, w?.phoneNumber, w?.city, w?.address, w?.secondPhoneNumber,
@@ -453,8 +457,8 @@ export default function OrderConfirmationWorkPage() {
     if (!data) return;
     setOriginalOrder(data); setEditedOrder(JSON.parse(JSON.stringify(data)));
     reset({
-      customerName: data.customerName || "", email: data.email || null, phoneNumber: data.phoneNumber || "",
-      secondPhoneNumber: data.secondPhoneNumber || null, city: data.city || "", area: data.area || null,
+      customerName: data.customerName || "", email: data.email || "", phoneNumber: data.phoneNumber || "",
+      secondPhoneNumber: data.secondPhoneNumber || "", city: data.city || "", area: data.area || "",
       address: data.address || "", deposit: data.deposit || 0, shippingCost: data.shippingCost || 0,
       paymentMethod: data.paymentMethod || "cod", allowOpenPackage: data.allowOpenPackage ?? false, items: data.items || []
     });
@@ -510,7 +514,17 @@ export default function OrderConfirmationWorkPage() {
     setRemovedIds([]);
     setEditedOrder(JSON.parse(JSON.stringify(originalOrder)));
     setSelectedSkus(originalOrder.items.map(i => ({ id: i.variant?.id || i.variantId, label: i.variant?.product?.name || i.productName, productName: i.variant?.product?.name || i.productName, sku: i.variant?.sku || i.sku, attributes: i.variant?.attributes || i.attributes || {}, price: i.unitPrice || 0, cost: i.unitCost || i.unitPrice || 0 })));
-    reset({ customerName: originalOrder.customerName || null, email: originalOrder.email || null, phoneNumber: originalOrder.phoneNumber || "", secondPhoneNumber: originalOrder.secondPhoneNumber || null, city: originalOrder.city || "", area: originalOrder.area || null, address: originalOrder.address || "", paymentMethod: originalOrder.paymentMethod || null, shippingCost: originalOrder.shippingCost ?? 0, deposit: originalOrder.deposit ?? 0, allowOpenPackage: originalOrder.allowOpenPackage ?? 0 });
+    reset({
+      customerName: originalOrder.customerName || "",
+      email: originalOrder.email || "",
+      phoneNumber: originalOrder.phoneNumber || "",
+      secondPhoneNumber: originalOrder.secondPhoneNumber || "",
+      city: originalOrder.city || "", area: originalOrder.area || "",
+      address: originalOrder.address || "", paymentMethod: originalOrder.paymentMethod || "cod",
+      shippingCost: originalOrder.shippingCost ?? 0,
+      deposit: originalOrder.deposit ?? 0, allowOpenPackage:
+        originalOrder.allowOpenPackage ?? false
+    });
   };
 
   const changeStatus = async statusId => {
@@ -921,7 +935,15 @@ function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAddi
 
 // ─── UPSELL SECTION ────────────────────────────────────────────────────────
 function UpsellSection({ order, items, onOpen, t, isRtl }) {
-  const upItems = order?.items?.flatMap(i => i.variant?.product?.upsellingEnabled ? i.variant.product.upsellingProducts || [] : []) || [];
+  const upItems =
+    order?.items?.flatMap((i) =>
+      i.variant?.product?.upsellingEnabled
+        ? (i.upsellingProducts || []).filter(
+          (u) => !!u.product,
+        )
+        : [],
+    ) || [];
+
   if (!upItems.length) return null;
 
   const addedMap = useMemo(() => {
@@ -944,24 +966,52 @@ function UpsellSection({ order, items, onOpen, t, isRtl }) {
         <div style={{ padding: "12px 18px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
           {upItems.map((up, i) => {
             const added = Array.from(addedMap.get(up.productId) || new Set());
+            const prod = up.product || {};
+            const img = prod.mainImage;
+            const { formatCurrency } = usePlatformSettings();
 
             return (
               <div key={i} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, padding: "12px 14px", borderRadius: "var(--radius)", background: rgba(HEX.violet, .04), border: `1px solid ${rgba(HEX.violet, .14)}` }}>
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 10, flex: 1 }}>
-                  <div style={{ width: 28, height: 28, borderRadius: "var(--radius-sm)", background: rgba(HEX.violet, .12), border: `1px solid ${rgba(HEX.violet, .22)}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Zap size={12} style={{ color: HEX.violet }} />
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 12, flex: 1 }}>
+                  {/* Product Image */}
+                  <div style={{ width: 48, height: 48, borderRadius: "var(--radius-sm)", overflow: "hidden", background: "var(--muted)", border: "1px solid var(--border)", flexShrink: 0 }}>
+                    {img ? (
+                      <img src={avatarSrc(img)} alt={up.label} style={{ width: "100%", height: "100%", objectCover: "cover" }} />
+                    ) : (
+                      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <ImageIcon size={16} style={{ color: "var(--foreground)", opacity: .3 }} />
+                      </div>
+                    )}
                   </div>
-                  <div style={{ textAlign: isRtl ? "right" : "left" }}>
-                    <p style={{ fontSize: 12.5, fontWeight: 700, color: HEX.violet, marginBottom: 3 }}>{up.label}</p>
-                    {up.callCenterDescription && <p style={{ fontSize: 11, color: "var(--foreground)", lineHeight: 1.5 }}>{up.callCenterDescription}</p>}
-                    {added.length > 0 && <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 6 }}>{added.map(s => <Tag key={s} color={HEX.green} sm><CheckCircle size={8} style={{ marginInlineEnd: 3 }} />{s}</Tag>)}</div>}
+
+                  <div style={{ textAlign: isRtl ? "right" : "left", flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: HEX.violet }}>{up.label}</p>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        {prod.lowestPrice > 0 && prod.lowestPrice < prod.price && (
+                          <span style={{ fontSize: 11, color: "var(--foreground)", textDecoration: "line-through", opacity: .6 }}>{formatCurrency(prod.price)}</span>
+                        )}
+                        <span style={{ fontSize: 13, fontWeight: 800, color: HEX.green }}>{formatCurrency(prod.lowestPrice || prod.price || 0)}</span>
+                      </div>
+                    </div>
+                    {up.callCenterDescription && <p style={{ fontSize: 11, color: "var(--foreground)", lineHeight: 1.5, opacity: .8 }}>{up.callCenterDescription}</p>}
+                    {added.length > 0 && (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 8 }}>
+                        {added.map(s => (
+                          <Tag key={s} color={HEX.green} sm>
+                            <CheckCircle size={8} style={{ marginInlineEnd: 3 }} />
+                            {s}
+                          </Tag>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <button onClick={() => onOpen(up)}
-                  style={{ width: 32, height: 32, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--card)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "border-color .14s,background .14s" }}
+                  style={{ width: 34, height: 34, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--card)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all .14s", marginInlineStart: 8 }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = HEX.orange; e.currentTarget.style.background = rgba(HEX.orange, .06); }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.background = "var(--card)"; }}>
-                  <Plus size={14} style={{ color: "var(--foreground)" }} />
+                  <Plus size={16} style={{ color: "var(--foreground)" }} />
                 </button>
               </div>
             );
@@ -1324,27 +1374,192 @@ function ActionBar({ order, allowedStatuses, changingStatus, selStatusId, isLock
 }
 
 // ─── UPSELL MODAL ──────────────────────────────────────────────────────────
-function UpsellModal({ isOpen, onClose, product, handleSelectSku, selectedSkus, t, isRtl }) {
-  if (!isOpen) return null;
+function UpsellModal({ isOpen, onClose, product: upProduct, handleSelectSku, selectedSkus, isRtl }) {
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const { formatCurrency } = usePlatformSettings();
+  const t = useTranslations("orders-work");
+  useEffect(() => {
+    if (isOpen && upProduct) {
+      fetchProduct();
+    } else {
+      setProduct(null);
+      setError(null);
+    }
+  }, [isOpen, upProduct]);
+
+  const fetchProduct = async () => {
+    const pId = upProduct?.productId || upProduct?.id;
+    if (!pId) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await api.get(`/products/${pId}`);
+      setProduct(res.data);
+    } catch (err) {
+      const message = err?.response?.data?.message || t("messages.errorFetchingProduct");
+      console.error("Failed to fetch upselling product:", err);
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const skus = Array.isArray(product?.skus) ? product.skus.filter(s => s.isActive) : [];
+  const mainImage = product?.mainImage;
+
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,.46)", backdropFilter: "blur(5px)", padding: 16 }} dir={isRtl ? "rtl" : "ltr"}>
-      <motion.div initial={{ scale: .95, opacity: 0, y: 10 }} animate={{ scale: 1, opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 320, damping: 22 }}
-        style={{ background: "var(--card)", width: "100%", maxWidth: 520, borderRadius: "var(--radius-xl)", boxShadow: "var(--shadow-lg)", border: "1px solid var(--border)", display: "flex", flexDirection: "column", maxHeight: "80vh", overflow: "hidden" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px", borderBottom: "1px solid var(--border)" }}>
-          <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--card-foreground)" }}>{product ? product.label || product.name : t("addAdditionalProduct")}</h3>
-          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--muted)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <X size={15} style={{ color: "var(--foreground)" }} />
-          </button>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl! max-h-[85vh] overflow-hidden p-0 bg-white dark:bg-slate-950" dir={isRtl ? "rtl" : "ltr"}>
+        <DialogHeader className="px-6 pt-6 pb-4 border-b">
+          <DialogTitle className="flex items-center gap-2 text-xl font-bold">
+            <Boxes className="text-primary" size={20} />
+            {t("addAdditionalProduct")}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="p-6 overflow-y-auto max-h-[calc(85vh-80px)] space-y-6">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+              <Loader2 size={32} className="animate-spin text-primary" />
+              <span className="text-sm text-muted-foreground font-medium">{t("loading")}...</span>
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-4 text-center">
+              <AlertCircle size={40} className="text-red-500" />
+              <p className="font-bold text-red-600">{error}</p>
+              <Button variant="outline" onClick={fetchProduct}>{t("retry")}</Button>
+            </div>
+          ) : !product ? (
+            <div className="py-10 text-center text-slate-500">{t("noItems")}</div>
+          ) : (
+            <>
+              <div className="rounded-xl border p-4 shadow-sm bg-muted/10">
+                <div className="flex gap-4">
+                  <div className="w-20 h-20 shrink-0 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border">
+                    {mainImage ? (
+                      <img src={avatarSrc(mainImage)} alt={product.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <ImageIcon className="text-slate-400" />
+                    )}
+                  </div>
+                  <div style={{ textAlign: isRtl ? "right" : "left" }}>
+                    <h4 className="text-lg font-bold">{product.name}</h4>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <Badge variant="outline" className="text-[10px]">ID: {product.id}</Badge>
+                      <Badge variant="outline" className="text-[10px]">SKU: {product.sku || "—"}</Badge>
+                      {product.category && <Badge variant="secondary" className="text-[10px]">{product.category.name}</Badge>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <h5 className="text-sm font-semibold flex items-center gap-2">
+                  <Hash size={16} className="text-primary" />
+                  {isRtl ? "الأصناف المتاحة" : "Available Variants"} ({skus.length})
+                </h5>
+
+                {skus.length === 0 ? (
+                  <div className="text-sm text-muted-foreground py-4 text-center border rounded-lg border-dashed">
+                    {isRtl ? "لا توجد أصناف متاحة لهذا المنتج" : "No variants available for this product"}
+                  </div>
+                ) : (
+                  <div className="border rounded-xl overflow-hidden shadow-sm">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead className="bg-muted/50 border-b">
+                          <tr>
+                            <th className="px-4 py-3 text-start font-bold">{t("sku")}</th>
+                            <th className="px-4 py-3 text-center font-bold">{t("attributes")}</th>
+                            <th className="px-4 py-3 text-center font-bold">{t("unitPrice")}</th>
+                            <th className="px-4 py-3 text-center font-bold">{t("stock")}</th>
+                            <th className="px-4 py-3 text-end font-bold"></th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y">
+                          {skus.map((s) => {
+                            const attrs = s?.attributes ? Object.entries(s.attributes) : [];
+                            const avail = Math.max(0, (s?.stockOnHand ?? 0) - (s?.reserved ?? 0));
+                            const isAdded = selectedSkus.some(sel => sel.id === s.id);
+
+                            return (
+                              <tr key={s.id} className={cn(
+                                "hover:bg-muted/30 transition-colors",
+                                isAdded && "bg-primary/5"
+                              )}>
+                                <td className="px-4 py-3">
+                                  <div className="flex items-center gap-2">
+                                    <div className="font-bold text-slate-900 dark:text-slate-50">{s.sku || `#${s.id}`}</div>
+                                    {isAdded && (
+                                      <Badge className="bg-primary/20 text-primary border-primary/30 text-[9px] h-4 px-1">
+                                        {isRtl ? "تمت الإضافة" : "Added"}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <div className="text-[10px] text-muted-foreground font-mono mt-0.5">{s.key || "—"}</div>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <div className="flex flex-wrap gap-1 justify-center">
+                                    {attrs.length === 0 ? (
+                                      <span className="text-slate-400 text-xs">—</span>
+                                    ) : (
+                                      attrs.map(([k, v]) => (
+                                        <Badge key={k} variant="outline" className="text-[10px] bg-white dark:bg-slate-900 px-1.5 py-0">
+                                          {k}: {String(v)}
+                                        </Badge>
+                                      ))
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="px-4 py-3 text-center">
+                                  <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200">
+                                    {formatCurrency(s?.price || 0)}
+                                  </Badge>
+                                </td>
+                                <td className="px-4 py-3 text-center">
+                                  <div className="flex flex-col gap-1 items-center">
+                                    <span className={cn("text-xs font-bold", avail > 0 ? "text-emerald-600" : "text-red-600")}>
+                                      {avail} {t("items")}
+                                    </span>
+                                    {s.reserved > 0 && <span className="text-[10px] text-orange-500 font-medium">({s.reserved} {isRtl ? "محجوز" : "Reserved"})</span>}
+                                  </div>
+                                </td>
+                                <td className="px-4 py-3 text-end">
+                                  <Button
+                                    size="sm"
+                                    className={cn(
+                                      "h-8 font-bold",
+                                      isAdded ? "bg-slate-200 text-slate-500 hover:bg-slate-200" : ""
+                                    )}
+                                    onClick={() => handleSelectSku({
+                                      ...s,
+                                      productId: product.id,
+                                      productName: product.name,
+                                      label: product.name,
+                                      cost: s.cost || product.wholesalePrice || s.price
+                                    })}
+                                    disabled={!s.isActive || isAdded}
+                                  >
+                                    {isAdded ? (isRtl ? "تمت الإضافة" : "Added") : (isRtl ? "إضافة" : "Add")}
+                                  </Button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
-        <div style={{ padding: "12px 18px", flex: 1, overflowY: "auto" }}>
-          <ProductSkuSearchPopover closeOnSelect={false}
-            handleSelectSku={sku => { handleSelectSku(sku); onClose(); }}
-            selectedSkus={selectedSkus}
-            initialSearch={product?.label || product?.name}
-            productId={product?.id || product?.productId} />
-        </div>
-      </motion.div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

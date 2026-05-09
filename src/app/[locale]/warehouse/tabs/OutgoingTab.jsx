@@ -1182,9 +1182,10 @@ function OutgoingScanInputBar({
 		prevIsError.current = !!isError;
 	}, [isError]);
 
-	const handleScan = useCallback(() => {
-		if (disabled || !value?.trim()) return;
-		onScan();
+	const handleScan = useCallback((newVal) => {
+		const val = newVal?.trim() || value?.trim();
+		if (disabled || !val) return;
+		onScan(val);
 	}, [disabled, value, onScan]);
 
 	const isActive = isFocused || !!value;
@@ -1357,6 +1358,13 @@ function OutgoingScanInputBar({
 						onChange={onChange}
 						onKeyDown={(e) => {
 							if (e.key === "Enter") handleScan();
+						}}
+						onPaste={(e) => {
+							e.preventDefault();
+							const pasted = e.clipboardData.getData("text");
+							if (pasted) {
+								onScan(pasted);
+							}
 						}}
 						onFocus={() => setIsFocused(true)}
 						onBlur={() => setIsFocused(false)}
@@ -2194,8 +2202,9 @@ export function ScanOutgoingSubtab({
 		fetchPickedOrders();
 	}, [fetchPickedOrders]);
 
-	const handleScan = async () => {
-		const val = scanInput.trim();
+	const handleScan = async (value) => {
+		const val = value?.trim() || scanInput.trim();
+		setScanInput(val);
 		if (!val) return;
 
 		if (scanStep === "order") {

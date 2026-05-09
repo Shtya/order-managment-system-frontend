@@ -7731,6 +7731,7 @@
     "quantity": "Quantity",
     "stock": "Stock",
     "unitPrice": "Unit Price",
+    "price": "Price",
     "lineTotal": "Line total",
     "productsTotal": "Products Total",
     "noItems": "No products",

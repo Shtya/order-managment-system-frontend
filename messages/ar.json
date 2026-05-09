@@ -7744,6 +7744,7 @@
     }
   },
   "orders-work": {
+    "retries": "المحاولات",
     "orderNumber": "رقم الطلب",
     "replacement": "استبدال",
     "customer": "العميل",

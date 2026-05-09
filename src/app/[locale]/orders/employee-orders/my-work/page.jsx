@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Package, Phone, CheckCircle, Loader2, ArrowRight, ArrowLeft,
   Lock, ChevronDown, Zap, SkipForward, ShoppingBag, User,
-  TrendingUp, Activity, RefreshCw, Clock, Building2,
+  TrendingUp, Activity, RefreshCw, Clock, Building2, RotateCcw,
   BadgeCheck, Banknote, StickyNote, Mail, Receipt, Star,
   Navigation, Plus, Minus, X, Save, Info, Trash2, Truck, MapPin, CreditCard,
 } from "lucide-react";
@@ -344,10 +344,10 @@ export default function OrderConfirmationWorkPage() {
 
   useEffect(() => {
     if (w && Object.keys(w).length > 0) setEditedOrder(prev => ({ ...prev, ...w }));
-  }, [w?.customerName, w?.phoneNumber, w?.city, w?.address, w?.paymentMethod, w?.shippingCost, w?.deposit, w?.email]);
+  }, [w?.customerName, w?.phoneNumber, w?.city, w?.address, w?.secondPhoneNumber,
+  w?.paymentMethod, w?.shippingCost, w?.deposit, w?.email, w?.area, w?.allowOpenPackage]);
   const hasChanges = useMemo(() => {
     if (!editedOrder) return false;
-    console.log(JSON.stringify(originalOrder), JSON.stringify(editedOrder))
     return JSON.stringify(originalOrder) !== JSON.stringify(editedOrder);
   }, [originalOrder, editedOrder]);
 
@@ -383,8 +383,14 @@ export default function OrderConfirmationWorkPage() {
     setEditedOrder(prev => recalc({
       ...prev, items: [...prev.items, {
         isAdditional: true, variantId: sku.id,
-        variant: { id: sku.id, sku: sku.sku || sku.key, attributes: sku.attributes || {}, stockOnHand: sku.stockOnHand || 0, reserved: sku.reserved || 0, product: { id: sku.productId, name: sku.label || sku.productName } },
-        productName: sku.label || sku.productName, sku: sku.sku || sku.key, attributes: sku.attributes || {}, quantity: 1, unitPrice: sku.price || 0, unitCost: sku.cost || sku.price || 0
+        variant: {
+          id: sku.id, sku: sku.sku || sku.key, attributes: sku.attributes || {},
+          stockOnHand: sku.stockOnHand || 0, reserved: sku.reserved || 0,
+          product: { id: sku.productId, name: sku.label || sku.productName }
+        },
+        productName: sku.label || sku.productName, sku: sku.sku || sku.key,
+        attributes: sku.attributes || {}, quantity: 1, unitPrice: sku.price || 0,
+        unitCost: sku.cost || sku.price || 0
       }]
     }));
     toast.success(t("productAdded"));
@@ -489,9 +495,11 @@ export default function OrderConfirmationWorkPage() {
 
 // ─── HERO HEADER ───────────────────────────────────────────────────────────
 function Hero({ order, t, isRtl }) {
+  const tOrders = useTranslations("orders");
   if (!order) return null;
   const status = order.status;
   const { formatCurrency } = usePlatformSettings();
+  const assignment = order.assignments?.[0] || {};
   return (
     <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .4, ease: [.16, 1, .3, 1] }}>
       {/* Main card — no side padding to bleed full width */}
@@ -516,11 +524,71 @@ function Hero({ order, t, isRtl }) {
 
           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, paddingTop: 4 }}>
             {order.isReplacement && <Tag color={HEX.amber}><RefreshCw size={9} style={{ marginInlineEnd: 3 }} />{t("replacement")}</Tag>}
+            {assignment?.maxRetriesAtAssignment > 0 && (
+              <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: .15 }}
+                style={{
+                  display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: "var(--radius-xl)",
+
+                  background: rgba(HEX.orange, .06), border: `1.5px solid ${rgba(HEX.orange, .2)}`,
+                  boxShadow: `0 1px 4px ${rgba(HEX.orange, .05)}`
+                }}>
+                <RotateCcw size={12} style={{ color: HEX.orange }} />
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    justifyContent: "center",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: rgba(HEX.orange, 0.8),
+                      textTransform: "uppercase",
+                      letterSpacing: "0.02em",
+                    }}
+                  >
+                    {t("retries")}
+                  </span>
+
+                  <span
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 2,
+                      fontSize: 13,
+                      fontWeight: 800,
+                      color: HEX.orange,
+                      lineHeight: 1,
+                    }}
+                  >
+                    <span>{assignment.retriesUsed}</span>
+
+                    <span
+                      style={{
+                        opacity: 0.5,
+                        fontWeight: 400,
+                        fontSize: 11,
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      /
+                    </span>
+
+                    <span>{assignment.maxRetriesAtAssignment}</span>
+                  </span>
+                </div>
+              </motion.div>
+            )}
             {status && (
               <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: .12 }}
                 style={{ display: "flex", alignItems: "center", gap: 9, padding: "9px 18px", borderRadius: "var(--radius-xl)", background: rgba(status.color, .08), border: `1.5px solid ${rgba(status.color, .28)}`, boxShadow: `0 2px 14px ${rgba(status.color, .17)}` }}>
                 <Ping color={status.color} />
-                <span style={{ fontSize: 13, fontWeight: 700, color: status.color }}>{status.system ? t(`statuses.${status.code}`) : status.name}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: status.color }}>{status.system ? tOrders(`statuses.${status.code}`) : status.name}</span>
               </motion.div>
             )}
           </div>
@@ -750,7 +818,19 @@ function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAddi
 function UpsellSection({ order, items, onOpen, t, isRtl }) {
   const upItems = order?.items?.flatMap(i => i.variant?.product?.upsellingEnabled ? i.variant.product.upsellingProducts || [] : []) || [];
   if (!upItems.length) return null;
-  const addedMap = useMemo(() => { const m = new Map(); items.forEach(i => { const pId = i.variant?.product?.id || i.productId; const sku = i.variant?.sku || i.sku; if (pId && sku) { if (!m.has(pId)) m.set(pId, new Set()); m.get(pId).add(sku); } }); return m; }, [items]);
+
+  const addedMap = useMemo(() => {
+    const m = new Map();
+    items.forEach(i => {
+      const pId = i.variant?.product?.id || i.productId;
+      const sku = i.variant?.sku || i.sku;
+      if (pId && sku) {
+        if (!m.has(pId))
+          m.set(pId, new Set());
+        m.get(pId).add(sku);
+      }
+    }); return m;
+  }, [items]);
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .1 }}>
@@ -759,6 +839,7 @@ function UpsellSection({ order, items, onOpen, t, isRtl }) {
         <div style={{ padding: "12px 18px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
           {upItems.map((up, i) => {
             const added = Array.from(addedMap.get(up.productId) || new Set());
+
             return (
               <div key={i} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, padding: "12px 14px", borderRadius: "var(--radius)", background: rgba(HEX.violet, .04), border: `1px solid ${rgba(HEX.violet, .14)}` }}>
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 10, flex: 1 }}>
@@ -836,6 +917,7 @@ function HistSection({ order, t, isRtl }) {
   if (!hist?.length) return null;
   const sorted = [...hist].sort((a2, b) => new Date(a2.created_at) - new Date(b.created_at));
   const latest = sorted[sorted.length - 1];
+  const tOrders = useTranslations("orders");
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .2 }}>
@@ -872,9 +954,9 @@ function HistSection({ order, t, isRtl }) {
                       </div>
                       <div style={{ flex: 1, minWidth: 0, paddingBottom: last ? 0 : 16, textAlign: isRtl ? "right" : "left" }}>
                         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 5, marginBottom: 4 }}>
-                          {entry.fromStatus && <Tag color={fc} sm>{entry.fromStatus.system ? t(`statuses.${entry.fromStatus.code}`) : entry.fromStatus.name}</Tag>}
+                          {entry.fromStatus && <Tag color={fc} sm>{entry.fromStatus.system ? tOrders(`statuses.${entry.fromStatus.code}`) : entry.fromStatus.name}</Tag>}
                           {isRtl ? <ArrowLeft size={8} style={{ color: "var(--foreground)" }} /> : <ArrowRight size={8} style={{ color: "var(--foreground)" }} />}
-                          {entry.toStatus && <Tag color={tc} sm>{entry.toStatus.system ? t(`statuses.${entry.toStatus.code}`) : entry.toStatus.name}</Tag>}
+                          {entry.toStatus && <Tag color={tc} sm>{entry.toStatus.system ? tOrders(`statuses.${entry.toStatus.code}`) : entry.toStatus.name}</Tag>}
                         </div>
                         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
                           <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10.5, color: "var(--foreground)" }}><Clock size={9} />{fmtDt(entry.created_at, isRtl ? "ar-EG" : "en-US")}</span>

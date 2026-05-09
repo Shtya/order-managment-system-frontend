@@ -184,7 +184,7 @@ const TAB_IDS = ["distribution", "print", "preparation", "outgoing", "returns", 
 const DEFAULT_SUBTABS = {
   distribution: "unassigned",
   print: "not_printed",
-  preparation: "preparing",
+  preparation: "scanning",
   outgoing: "scan",
   returns: "scan",
 };
@@ -235,7 +235,7 @@ export default function WarehouseFlowPage() {
   const setActiveSubtab = useCallback((subtabId, extra) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("subtab", subtabId);
-     if (extra) {
+    if (extra) {
       Object.entries(extra).forEach(([key, value]) => {
         if (value === null || value === undefined || value === "") {
           params.delete(key);
@@ -244,7 +244,7 @@ export default function WarehouseFlowPage() {
         }
       });
     }
-    
+
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   }, [router, pathname, searchParams]);
 

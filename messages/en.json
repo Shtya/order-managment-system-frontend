@@ -7709,6 +7709,7 @@
     }
   },
   "orders-work": {
+    "retries": "Retries",
     "orderNumber": "Order Number",
     "replacement": "Replacement",
     "customer": "Customer",

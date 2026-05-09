@@ -472,7 +472,22 @@ export default function OrderConfirmationWorkPage() {
   const recalc = o => { const pt = o.items.reduce((s, i) => s + (i.unitPrice * i.quantity), 0); return { ...o, productsTotal: pt, finalTotal: pt + parseFloat(o.shippingCost || 0) - parseFloat(o.discount || 0) }; };
 
   const handleQty = (item, delta) =>
-    setEditedOrder(prev => recalc({ ...prev, items: prev.items.map(i => (i.id ? i.id === item.id : i.variantId === item.variantId) ? { ...i, quantity: Math.max(1, i.quantity + delta) } : i) }));
+    setEditedOrder(prev => recalc({
+      ...prev, items: prev.items.map(i => {
+        if (i.id ? i.id === item.id : i.variantId === item.variantId) {
+          const stock = (i.variant?.stockOnHand ?? 0) - (i.variant?.reserved ?? 0);
+          const currentQty = i.quantity || 0;
+          let nextQty = currentQty + delta;
+          if (nextQty < 1) nextQty = 1;
+          if (nextQty > stock && delta > 0) nextQty = stock; // Only cap if increasing or manually setting higher than stock
+          // If manually typing a value > stock, cap it
+          if (delta !== 1 && delta !== -1 && nextQty > stock) nextQty = stock;
+
+          return { ...i, quantity: nextQty };
+        }
+        return i;
+      })
+    }));
 
   const handleSelectSku = useCallback(sku => {
     if (selectedSkus.some(s => s.id === sku.id)) return;
@@ -861,7 +876,7 @@ function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAddi
                             <td style={{ textAlign: "center" }}>
                               <div className="qty" style={{ margin: "0 auto" }}>
                                 <button type="button" onClick={() => onQty(item, -1)}><Minus size={11} /></button>
-                                <input type="number" value={item.quantity} onChange={e => onQty(item, parseInt(e.target.value) - item.quantity)} />
+                                <input type="number" value={item.quantity} max={stock} onChange={e => onQty(item, parseInt(e.target.value) - item.quantity)} />
                                 <button type="button" onClick={() => onQty(item, 1)}><Plus size={11} /></button>
                               </div>
                             </td>

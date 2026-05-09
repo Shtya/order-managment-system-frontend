@@ -5370,7 +5370,8 @@
     "pagination": {
       "limit": "عدد النتائج",
       "total": "إجمالي النتائج"
-    }
+    },
+    "retriesExhausted": "إنتهت المحاولات"
   },
   "callCenter": {
     "breadcrumb": {
@@ -7745,6 +7746,7 @@
   },
   "orders-work": {
     "retries": "المحاولات",
+    "retriesExhausted": "انتهت جميع المحاولات",
     "orderNumber": "رقم الطلب",
     "replacement": "استبدال",
     "customer": "العميل",

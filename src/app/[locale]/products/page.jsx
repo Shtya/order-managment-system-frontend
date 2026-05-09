@@ -3,7 +3,7 @@
 
 import React, { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Box, ChevronLeft, FileDown, Filter, Layers, Package, RefreshCw, Loader2, Info, Plus, Truck, CheckCircle, Boxes, PackageSearch, Download, Trash2 } from "lucide-react";
+import { Box, ChevronLeft, FileDown, Filter, Layers, Package, RefreshCw, Loader2, Info, Plus, Truck, CheckCircle, Boxes, PackageSearch, Download, Trash2, Hash } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 
@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import Button_ from "@/components/atoms/Button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader } from "@/components/ui/dialog";
 
 import api from "@/utils/api";
 import toast from "react-hot-toast";
@@ -28,6 +28,12 @@ import PageHeader from "@/components/atoms/Pageheader";
 import Table, { FilterField } from "@/components/atoms/Table";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import { useSearchParams } from "next/navigation";
+import { useSocket } from "@/context/SocketContext";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Printer, Store as StoreIcon, Activity, CheckCircle2, AlertCircle, Clock } from "lucide-react";
+import { DialogDescription, DialogTitle } from "@radix-ui/react-dialog";
+import { Badge } from "@/components/ui/badge";
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -234,6 +240,9 @@ export default function ProductsPage() {
 	const [viewProduct, setViewProduct] = useState(null);
 	const [viewScope, setViewScope] = useState(null);
 	const [exportLoading, setExportLoading] = useState(null);
+
+	const [selectedProducts, setSelectedProducts] = useState([]);
+	const [exportToStoreModal, setExportToStoreModal] = useState(false);
 
 	const exportBuilderRef = useRef(null);
 
@@ -508,7 +517,9 @@ export default function ProductsPage() {
 		onAskDelete,
 		onOpenView: openView,
 		onExportRequest: (fn) => (exportBuilderRef.current = fn),
-		activetab: active
+		activetab: active,
+		selectedProducts,
+		setSelectedProducts
 	});
 
 	const bundlesLogic = useBundlesTab({
@@ -578,6 +589,16 @@ export default function ProductsPage() {
 					emptySubtitle: "",
 				}}
 				actions={[
+					{
+						key: "exportToStore",
+						label: selectedProducts.length > 0 ? t("toolbar.exportToStoreCount", { count: selectedProducts.length }) : t("toolbar.exportToStore"),
+						icon: <StoreIcon size={14} />,
+						color: "primary",
+						disabled: selectedProducts.length === 0,
+						onClick: () => setExportToStoreModal(true),
+						permission: "products.update",
+						hidden: active !== "products"
+					},
 					{
 						key: "export",
 						label: t("toolbar.export"),
@@ -787,7 +808,223 @@ export default function ProductsPage() {
 				onClose={() => productsLogic.setPrintModal({ open: false, product: null })}
 				product={productsLogic.printModal.product}
 			/>
+
+			<ExportToStoreModal
+				open={exportToStoreModal}
+				onOpenChange={setExportToStoreModal}
+				selectedProductIds={selectedProducts}
+				onSuccess={() => setSelectedProducts([])}
+			/>
 		</div>
+	);
+}
+
+function ExportToStoreModal({ open, onOpenChange, selectedProductIds, onSuccess }) {
+	const t = useTranslations("products");
+	const [stores, setStores] = useState([]);
+	const [loading, setLoading] = useState(false);
+	const [exporting, setExporting] = useState(false);
+	const [products, setProducts] = useState([]);
+	const [selectedStoreId, setSelectedStoreId] = useState(null);
+	const { subscribe } = useSocket();
+
+	useEffect(() => {
+		if (open) {
+			setSelectedStoreId(null);
+			fetchData();
+			const unsubscribe = subscribe("STORE_SYNC_STATUS", (payload) => {
+				if (payload) {
+					const { storeId, status, type } = payload;
+					if (type !== "local") return;
+					setStores((prev) =>
+						prev.map((s) =>
+							s.id === storeId ? { ...s, localSyncStatus: status } : s
+						)
+					);
+				}
+			});
+			return unsubscribe;
+		}
+	}, [open, subscribe]);
+
+	const fetchData = async () => {
+		setLoading(true);
+		try {
+			const [storesRes, productsRes] = await Promise.all([
+				api.get("/lookups/stores", { params: { limit: 200, isActive: true } }),
+				api.get("/products", { params: { ids: selectedProductIds.join(","), limit: 100 } })
+			]);
+			setStores(storesRes.data || []);
+			setProducts(productsRes.data?.records || []);
+		} catch (e) {
+			toast.error(normalizeAxiosError(e));
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const handleExport = async (storeId) => {
+		setExporting(true);
+		const toastId = toast.loading(t("messages.exportingToStore"));
+		try {
+			await api.post(`/stores/${storeId}/sync-products`, { productIds: selectedProductIds });
+			toast.success(t("messages.exportToStoreStarted"), { id: toastId });
+			// ✅ Update local state immediately
+			setStores((prev) =>
+				prev.map((s) =>
+					s.id === storeId ? { ...s, localSyncStatus: "syncing" } : s
+				)
+			);
+			onOpenChange(false);
+			onSuccess();
+		} catch (e) {
+			toast.error(normalizeAxiosError(e), { id: toastId });
+		} finally {
+			setExporting(false);
+		}
+	};
+
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent className="max-w-4xl! h-[85vh] overflow-hidden p-0 bg-white dark:bg-slate-950 flex flex-col">
+				<DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
+					<DialogTitle className="flex items-center gap-2 text-xl font-bold">
+						<StoreIcon className="text-primary" size={20} />
+						{t("exportModal.title")}
+					</DialogTitle>
+				</DialogHeader>
+
+				<div className="flex-1 overflow-y-auto p-6 space-y-6">
+					{loading ? (
+						<div className="flex flex-col items-center justify-center py-12 gap-3">
+							<Loader2 size={32} className="animate-spin text-primary" />
+							<span className="text-sm text-muted-foreground font-medium">{t("common.loading")}...</span>
+						</div>
+					) : (
+						<>
+							{/* Summary section like SkuSelectorModal */}
+							<div className="rounded-xl border p-4 shadow-sm bg-muted/10">
+								<div className="flex items-center gap-4">
+									<div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0">
+										<Package className="w-6 h-6 text-primary" />
+									</div>
+									<div>
+										<h4 className="text-lg font-bold">{t("exportModal.selectedProducts")}</h4>
+										<p className="text-sm text-slate-500 mt-0.5">
+											{t("exportModal.description", { count: selectedProductIds.length })}
+										</p>
+									</div>
+								</div>
+							</div>
+
+							<div className="space-y-3">
+								<h5 className="text-sm font-semibold flex items-center gap-2">
+									<Hash size={16} className="text-primary" />
+									{t("exportModal.selectedProducts")} ({products.length})
+								</h5>
+
+								<div className="border rounded-xl overflow-hidden shadow-sm">
+									<div className="overflow-x-auto">
+										<table className="w-full text-sm">
+											<thead className="bg-muted/50 border-b">
+												<tr>
+													<th className="px-4 py-3 text-start font-bold">{t("table.name")}</th>
+													<th className="px-4 py-3 text-center font-bold">{t("table.sku")}</th>
+													<th className="px-4 py-3 text-end font-bold">{t("table.wholesalePrice")}</th>
+												</tr>
+											</thead>
+											<tbody className="divide-y">
+												{products.map((p) => (
+													<tr key={p.id} className="hover:bg-muted/30 transition-colors">
+														<td className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">{p.name}</td>
+														<td className="px-4 py-3 text-center font-mono text-xs text-slate-500">{p.skus?.[0]?.sku || "N/A"}</td>
+														<td className="px-4 py-3 text-end font-bold text-primary">{p.wholesalePrice}</td>
+													</tr>
+												))}
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+
+							<div className="space-y-3">
+								<h5 className="text-sm font-semibold flex items-center gap-2">
+									<Activity size={16} className="text-primary" />
+									{t("exportModal.selectStore")}
+								</h5>
+
+								<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+									{stores.map((s) => {
+										const isSyncing = s.localSyncStatus === "syncing";
+										const isSelected = selectedStoreId === s.id;
+										return (
+											<button
+												key={s.id}
+												disabled={isSyncing || exporting}
+												onClick={() => setSelectedStoreId(s.id)}
+												className={cn(
+													"flex items-center justify-between p-4 rounded-2xl border transition-all group",
+													isSyncing
+														? "bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800 opacity-60 cursor-not-allowed"
+														: isSelected
+															? "bg-primary/5 border-primary shadow-md"
+															: "bg-white dark:bg-slate-950 border-gray-100 dark:border-slate-800 hover:border-primary/50 hover:bg-primary/5 shadow-sm hover:shadow-md"
+												)}
+											>
+												<div className="flex items-center gap-3">
+													<div className={cn(
+														"w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
+														isSyncing ? "bg-slate-200 dark:bg-slate-800" : isSelected ? "bg-primary text-white" : "bg-slate-100 dark:bg-slate-800 group-hover:bg-primary/20"
+													)}>
+														<StoreIcon className={cn("w-5 h-5", isSyncing ? "text-slate-400" : isSelected ? "text-white" : "text-slate-500 group-hover:text-primary")} />
+													</div>
+													<div className="text-left">
+														<p className="font-bold text-slate-900 dark:text-white text-sm">{s.name}</p>
+														<p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mt-0.5">{s.provider}</p>
+													</div>
+												</div>
+												{isSyncing ? (
+													<Badge variant="primary" className="bg-amber-100 text-amber-700 border-amber-200 animate-pulse text-[10px] font-black">
+														<RefreshCw className="w-3 h-3 mr-1 animate-spin" />
+														{t("common.syncing")}
+													</Badge>
+												) : isSelected ? (
+													<div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center border border-primary">
+														<CheckCircle2 className="w-4 h-4 text-white" />
+													</div>
+												) : (
+													<div className="w-8 h-8 rounded-full bg-gray-50 dark:bg-slate-900 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity border border-gray-100 dark:border-slate-800">
+														<Plus className="w-4 h-4 text-primary" />
+													</div>
+												)}
+											</button>
+										);
+									})}
+								</div>
+							</div>
+						</>
+					)}
+				</div>
+
+				<DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t-2 border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 shrink-0">
+					<Button
+						variant="ghost"
+						onClick={() => onOpenChange(false)}
+						className="rounded-xl font-bold text-slate-500 hover:text-slate-700"
+					>
+						{t("common.cancel")}
+					</Button>
+					<Button
+						disabled={!selectedStoreId || exporting}
+						onClick={() => handleExport(selectedStoreId)}
+						className="rounded-xl font-bold px-8"
+					>
+						{exporting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+						{t("toolbar.export")}
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
 	);
 }
 

@@ -29,7 +29,7 @@ function normalizeAxiosError(err) {
 	return Array.isArray(msg) ? msg.join(", ") : String(msg);
 }
 
-export default function useProductsTab({ searchDebounced, filters, filtersOpen, onAskDelete, onOpenView, onExportRequest, activetab }) {
+export default function useProductsTab({ searchDebounced, filters, filtersOpen, onAskDelete, onOpenView, onExportRequest, activetab, selectedProducts = [], setSelectedProducts }) {
 	const router = useRouter();
 	const t = useTranslations("products");
 	const requestIdRef = useRef(0);
@@ -44,6 +44,24 @@ export default function useProductsTab({ searchDebounced, filters, filtersOpen, 
 	});
 
 	const [printModal, setPrintModal] = useState({ open: false, product: null });
+
+	const toggleProduct = (id) => {
+		if (!setSelectedProducts) return;
+		setSelectedProducts(prev =>
+			prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+		);
+	};
+
+	const selectAll = () => {
+		if (!setSelectedProducts) return;
+		const allIds = pager.records.map(r => r.id);
+		const areAllSelected = allIds.length > 0 && allIds.every(id => selectedProducts.includes(id));
+		if (areAllSelected) {
+			setSelectedProducts(prev => prev.filter(id => !allIds.includes(id)));
+		} else {
+			setSelectedProducts(prev => [...new Set([...prev, ...allIds])]);
+		}
+	};
 
 	function buildQueryParams({ page, per_page }) {
 		const params = new URLSearchParams();
@@ -112,7 +130,30 @@ export default function useProductsTab({ searchDebounced, filters, filtersOpen, 
 
 	const columns = useMemo(() => {
 		const na = t("common.na");
+		const allIds = pager.records.map(r => r.id);
+		const areAllSelected = allIds.length > 0 && allIds.every(id => selectedProducts.includes(id));
+
 		return [
+			{
+				key: "select",
+				header: (
+					<div className="flex items-center justify-center">
+						<Checkbox
+							checked={areAllSelected}
+							onCheckedChange={selectAll}
+						/>
+					</div>
+				),
+				className: "w-[48px]",
+				cell: (row) => (
+					<div className="flex items-center justify-center">
+						<Checkbox
+							checked={selectedProducts.includes(row.id)}
+							onCheckedChange={() => toggleProduct(row.id)}
+						/>
+					</div>
+				),
+			},
 			// { key: "id", header: t("table.id"), className: "font-semibold text-primary w-[80px]" },
 			{ key: "name", header: t("table.name"), className: "text-gray-700 dark:text-slate-200 font-semibold min-w-[200px]" },
 			{

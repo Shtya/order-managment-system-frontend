@@ -789,7 +789,7 @@
       "editSettings": "Edit Settings",
       "configureSettings": "Configure Integration",
       "settings": "Settings",
-      "sync": "Sync",
+      "sync": "Sync from Store",
       "connected": "Connected",
       "notConnected": "Not Connected",
       "configured": "Configured",
@@ -824,7 +824,7 @@
       "viewDocs": "View Documentation"
     },
     "form": {
-      "syncNewProducts": "Sync New Products",
+      "syncNewProducts": "Automatically send new products to stores",
       "storeInfoSection": "Store Information",
       "storeName": "Store Name",
       "storeNamePlaceholder": "My Online Store",
@@ -3148,7 +3148,8 @@
     "breadcrumb": {
       "home": "Home",
       "returns": "Purchase Returns",
-      "createReturnInvoice": "Create Return Invoice"
+      "createReturnInvoice": "Create Return Invoice",
+      "editReturnInvoice": "Edit returns invoice"
     },
     "fields": {
       "returnNumber": "Return Number",
@@ -3207,7 +3208,8 @@
     },
     "actions": {
       "howToUse": "How to Use",
-      "save": "Save"
+      "save": "Save",
+      "saveAsDraft": "Save as draft"
     },
     "yes": "Yes",
     "no": "No",
@@ -3216,7 +3218,11 @@
       "createSuccess": "Return invoice created successfully",
       "createFailed": "Failed to create return invoice",
       "creatingReturn": "Creating return invoice...",
-      "loadDataFailed": "Failed to load data"
+      "loadDataFailed": "Failed to load data",
+      "updatingReturn": "Invoice is being updated...",
+      "updateSuccess": "The invoice has been updated",
+      "updateFailed": "Invoice update failed",
+      "fetchDetailsFailed": "Data upload failed"
     },
     "upload": {
       "receiptAlt": "invoice"
@@ -3623,7 +3629,15 @@
     "messages": {
       "exportStarted": "Exporting data...",
       "exportSuccess": "File exported successfully",
-      "exportFailed": "Failed to export file"
+      "exportFailed": "Failed to export file",
+      "exportingToStore": "Exporting products to store...",
+      "exportToStoreStarted": "Product export to store has started"
+    },
+    "exportModal": {
+      "title": "Export to Store",
+      "description": "Export {count} selected products to your integrated store",
+      "selectedProducts": "Selected Products",
+      "selectStore": "Select Store"
     },
     "common": {
       "allProducts": "All Products",
@@ -3665,7 +3679,8 @@
       "selectedCount": "{count} selected",
       "selectProducts": "Select products",
       "cancel": "Cancel",
-      "print": "Print"
+      "print": "Print",
+      "syncing": "Exporting"
     },
     "printSku": {
       "title": "Print Product Labels",
@@ -3732,7 +3747,9 @@
     "toolbar": {
       "searchPlaceholder": "Search products...",
       "filter": "Filter",
-      "export": "Export"
+      "export": "Export",
+      "exportToStoreCount": "Export to stores ({count})",
+      "exportToStore": "Export to stores"
     },
     "filters": {
       "storageRack": "Storage Rack",
@@ -3847,7 +3864,8 @@
     "status": {
       "accepted": "Accepted",
       "pending": "Pending",
-      "rejected": "Rejected"
+      "rejected": "Rejected",
+      "draft": "Draft"
     },
     "actions": {
       "print": "Print",
@@ -3995,7 +4013,8 @@
       "howToUse": "How to Use",
       "changeStatus": "Change Status",
       "applying": "Updating",
-      "apply": "Apply"
+      "apply": "Apply",
+      "edit": "Edit"
     },
     "acceptPreview": {
       "title": "Acceptance Preview",
@@ -4138,7 +4157,8 @@
       "close": "Close",
       "saving": "Save",
       "applying": "Updating",
-      "apply": "Apply"
+      "apply": "Apply",
+      "edit": "Edit"
     },
     "stats": {
       "acceptedInvoices": "Accepted Invoices",
@@ -4209,7 +4229,8 @@
     "statuses": {
       "pending": "Pending",
       "accepted": "Accepted",
-      "rejected": "Rejected"
+      "rejected": "Rejected",
+      "draft": "Draft"
     },
     "returnTypes": {
       "cashRefund": "Cash Refund",
@@ -4326,11 +4347,17 @@
     "breadcrumb": {
       "home": "Home",
       "purchases": "Purchases",
-      "createPurchaseInvoice": "Create Purchase Invoice"
+      "createPurchaseInvoice": "Create Purchase Invoice",
+      "editPurchaseInvoice": "Edit Purchase Invoice"
+    },
+    "titles": {
+      "create": "Create Purchase Invoice",
+      "edit": "Edit Purchase Invoice"
     },
     "actions": {
       "howToUse": "How to Use",
-      "save": "Save"
+      "save": "Save",
+      "saveAsDraft": "Save as draft"
     },
     "fields": {
       "supplierName": "Supplier Name",
@@ -4383,9 +4410,13 @@
     "messages": {
       "createSuccess": "Purchase invoice created successfully",
       "createFailed": "Failed to create purchase invoice",
+      "updateSuccess": "Purchase invoice updated successfully",
+      "updateFailed": "Failed to update purchase invoice",
       "loadSuppliersFailed": "Failed to load suppliers",
       "creatingPurchase": "Adding purchase...",
-      "loadDataFailed": "Failed to load data"
+      "updatingPurchase": "Updating purchase...",
+      "loadDataFailed": "Failed to load data",
+      "fetchPurchaseFailed": "Failed to load purchase data"
     }
   },
   "common": {
@@ -9017,8 +9048,10 @@
     },
     "stats": {
       "total": "Total Errors",
-      "create": "Create Errors",
-      "update": "Update Errors"
+      "create": "Create to Store Product Errors",
+      "update": "Update to Store Product Errors",
+      "pull": "Pull from Store Product Errors",
+      "bundle_sync": "Bundle Sync Errors"
     },
     "columns": {
       "remoteProductId": "Remote Product ID",
@@ -9029,8 +9062,9 @@
       "date": "Date",
       "error": "Error Message",
       "responseStatus": "Error code",
-      "create": "Create",
-      "update": "Update",
+      "create": "Create to Store",
+      "update": "Update to Store",
+      "pull": "Pull from Store",
       "actions": "Actions",
       "bundle": "Bundle",
       "bundle_sync": "Sync Bundle",
@@ -9039,8 +9073,10 @@
     "filters": {
       "action": "Action Type",
       "allActions": "All Actions",
-      "create": "Create",
-      "update": "Update",
+      "create": "Create to Store",
+      "update": "Update to Store",
+      "pull": "Pull from Store",
+      "bundle_sync": "Bundle Sync",
       "store": "Store",
       "allStores": "All Stores",
       "dateRange": "Date Range",

@@ -213,6 +213,8 @@ export default function SyncFailuresPage() {
         total: res.data.total || 0,
         create: res.data.create || 0,
         update: res.data.update || 0,
+        pull: res.data.pull || 0,
+        bundle_sync: res.data.bundle_sync || 0,
       });
     } catch (error) {
       console.error(error);
@@ -309,12 +311,14 @@ export default function SyncFailuresPage() {
         const styles = {
           create: "bg-blue-50 text-blue-700 border-blue-100",
           update: "bg-purple-50 text-purple-700 border-purple-100",
+          pull: "bg-teal-50 text-teal-700 border-teal-100",
           bundle_sync: "bg-orange-50 text-orange-700 border-orange-100",
         };
 
         const labels = {
           create: t("columns.create"),
           update: t("columns.update"),
+          pull: t("columns.pull"),
           bundle_sync: t("columns.bundle_sync"),
         };
 
@@ -340,11 +344,13 @@ export default function SyncFailuresPage() {
         const styles = {
           product: "bg-green-50 text-green-700 border-green-100",
           bundle: "bg-orange-50 text-orange-700 border-orange-100",
+          pull: "bg-slate-50 text-slate-700 border-slate-100",
         };
 
         const labels = {
           product: t("columns.product"),
           bundle: t("columns.bundle"),
+          pull: t("columns.pull"),
         };
 
         return (
@@ -371,12 +377,15 @@ export default function SyncFailuresPage() {
     },
     {
       key: "product",
-      header: t("columns.bundle"),
-      cell: (row) => (
-        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-          {row.bundle?.name || "N/A"}
-        </span>
-      ),
+      header: t("columns.product") + " / " + t("columns.bundle"),
+      cell: (row) => {
+        const name = row.product?.name || row.bundle?.name || "N/A";
+        return (
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+            {name}
+          </span>
+        );
+      },
     },
     {
       key: "remoteProductId",
@@ -457,6 +466,18 @@ export default function SyncFailuresPage() {
       value: stats.update,
       icon: RefreshCw,
       tone: "info"
+    },
+    {
+      name: t("stats.pull"),
+      value: stats.pull,
+      icon: FileDown,
+      tone: "success"
+    },
+    {
+      name: t("stats.bundle_sync"),
+      value: stats.bundle_sync,
+      icon: Package,
+      tone: "info"
     }
   ], [t, stats]);
 
@@ -515,6 +536,8 @@ export default function SyncFailuresPage() {
                   <SelectItem value="all">{t("filters.allActions")}</SelectItem>
                   <SelectItem value="create">{t("filters.create")}</SelectItem>
                   <SelectItem value="update">{t("filters.update")}</SelectItem>
+                  <SelectItem value="pull">{t("filters.pull")}</SelectItem>
+                  <SelectItem value="bundle_sync">{t("filters.bundle_sync")}</SelectItem>
                 </SelectContent>
               </Select>
             </FilterField>

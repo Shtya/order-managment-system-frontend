@@ -2651,10 +2651,17 @@ function StoreStep({ onNext, onBack, open, nextLoading }) {
   useEffect(() => {
     const unsubscribe = subscribe("STORE_SYNC_STATUS", (payload) => {
       if (payload) {
-        const { storeId, status } = payload;
+        const { storeId, status, type} = payload;
         setStores((prev) =>
           prev.map((store) =>
-            store.id === storeId ? { ...store, syncStatus: status } : store,
+            store.id === storeId ?
+              {
+                ...store,
+                ...(type === "local"
+                  ? { localSyncStatus: status }
+                  : { syncStatus: status }),
+              }
+              : store,
           ),
         );
       }

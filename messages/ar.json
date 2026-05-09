@@ -824,7 +824,7 @@
       "viewDocs": "عرض التوثيق"
     },
     "form": {
-      "syncNewProducts": "إرسال المنتجات الجديدة للمتاجر تلقائيا",
+      "syncNewProducts": "مزامنة المنتجات للمتاجر تلقائيا",
       "storeInfoSection": "معلومات المتجر",
       "storeName": "اسم المتجر",
       "storeNamePlaceholder": "متجري الإلكتروني",

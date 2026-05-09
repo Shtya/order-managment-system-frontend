@@ -1014,11 +1014,19 @@ function UpsellSection({ order, items, onOpen, t, isRtl }) {
                   <div style={{ textAlign: isRtl ? "right" : "left", flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
                       <p style={{ fontSize: 13, fontWeight: 700, color: HEX.violet }}>{up.label}</p>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        {prod.lowestPrice > 0 && prod.lowestPrice < prod.price && (
-                          <span style={{ fontSize: 11, color: "var(--foreground)", textDecoration: "line-through", opacity: .6 }}>{formatCurrency(prod.price)}</span>
-                        )}
-                        <span style={{ fontSize: 13, fontWeight: 800, color: HEX.green }}>{formatCurrency(prod.lowestPrice || prod.price || 0)}</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                          <span style={{ fontSize: 10, fontWeight: 600, color: "var(--foreground)", opacity: .5, textTransform: "uppercase" }}>{t("stock")}:</span>
+                          <Package size={11} style={{ color: "var(--foreground)", opacity: .5 }} />
+                          <span className="mono" style={{ fontSize: 11, fontWeight: 700, color: (prod.totalAvailable || 0) < 5 ? HEX.red : HEX.green }}>{prod.totalAvailable || 0}</span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "center" }}>
+                          <span style={{ fontSize: 10, fontWeight: 600, color: "var(--foreground)", opacity: .5, textTransform: "uppercase" }}>{t("price")}:</span>
+                          {/* {prod.lowestPrice > 0 && prod.lowestPrice < prod.price && (
+                            <span style={{ fontSize: 11, color: "var(--foreground)", textDecoration: "line-through", opacity: .6 }}>{formatCurrency(prod.price)}</span>
+                          )} */}
+                          <span className="mt-2" style={{ fontSize: 13, fontWeight: 800, color: HEX.green }}>{formatCurrency(prod.salePrice || 0)}</span>
+                        </div>
                       </div>
                     </div>
                     {up.callCenterDescription && <p style={{ fontSize: 11, color: "var(--foreground)", lineHeight: 1.5, opacity: .8 }}>{up.callCenterDescription}</p>}

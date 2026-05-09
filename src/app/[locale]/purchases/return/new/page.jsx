@@ -24,7 +24,11 @@ import SupplierSelect from "@/components/molecules/SupplierSelect";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { cn } from "@/utils/cn";
 
-export default function CreateReturnInvoicePage() {
+export function PurchaseReturnForm({ editedReturn }) {
+	const isEdit = editedReturn?.id !== undefined;
+	const id = editedReturn?.id;
+	const isEditable = !isEdit || (editedReturn?.status === "draft" && !editedReturn?.closingId);
+
 	const navigate = useRouter();
 	const locale = useLocale();
 
@@ -98,6 +102,7 @@ export default function CreateReturnInvoicePage() {
 		handleSubmit,
 		watch,
 		setValue,
+		reset,
 		formState: { errors },
 	} = useForm({
 		resolver: yupResolver(schema),
@@ -116,6 +121,45 @@ export default function CreateReturnInvoicePage() {
 			receiptAsset: null,
 		},
 	});
+
+	useEffect(() => {
+		if (isEdit) {
+			reset({
+				returnNumber: editedReturn.returnNumber || "",
+				supplierId: editedReturn.supplierId || "",
+				supplierNameSnapshot: editedReturn.supplierNameSnapshot || "",
+				supplierCodeSnapshot: editedReturn.supplierCodeSnapshot || "",
+				invoiceNumber: editedReturn.invoiceNumber || "",
+				returnReason: editedReturn.returnReason || "",
+				safeId: editedReturn.safeId || "",
+				returnType: editedReturn.returnType || null,
+				notes: editedReturn.notes || "",
+				paidAmount: editedReturn.paidAmount || 0,
+				items: editedReturn.items || [],
+				receiptAsset: editedReturn.receiptAsset || null,
+			});
+
+			if (editedReturn.receiptAsset && typeof editedReturn.receiptAsset === 'string') {
+				setReceiptImage({
+					file: null,
+					preview: editedReturn.receiptAsset,
+					name: editedReturn.receiptAsset.split('/').pop(),
+					isPdf: editedReturn.receiptAsset.toLowerCase().endsWith('.pdf')
+				});
+			}
+
+			if (editedReturn.items) {
+				setSelectSku(editedReturn.items.map(item => ({
+					id: item.variantId,
+					sku: item.sku,
+					name: item.productName,
+					wholesalePrice: item.unitCost,
+					available: item.availableQuantity,
+					attributes: item.attributes
+				})));
+			}
+		}
+	}, [isEdit, editedReturn, reset]);
 
 	const watchedItems = watch("items");
 	const watchedSupplier = watch("supplierId");
@@ -224,6 +268,7 @@ export default function CreateReturnInvoicePage() {
 
 
 	const handleProductFieldChange = (index, field, value) => {
+		if (!isEditable) return;
 		const newItems = [...watchedItems];
 		let finalValue = value;
 
@@ -241,7 +286,7 @@ export default function CreateReturnInvoicePage() {
 		setValue("items", newItems);
 	};
 
-	const onSubmit = async (data) => {
+	const onSubmit = async (data, isDraft = false) => {
 		setLoading(true);
 		try {
 			const fd = new FormData();
@@ -258,6 +303,7 @@ export default function CreateReturnInvoicePage() {
 			if (data.returnType) fd.append("returnType", data.returnType);
 			if (data.notes) fd.append("notes", data.notes);
 			fd.append("paidAmount", String(Number(data.paidAmount || 0)));
+			if (isDraft) fd.append("saveAsDraft", "true");
 
 			const items = (data.items || []).map((item) => ({
 				variantId: item.variantId,
@@ -270,16 +316,25 @@ export default function CreateReturnInvoicePage() {
 
 			if (receiptImage?.file) {
 				fd.append("receiptAsset", receiptImage.file);
+			} else if (isEdit) {
+				fd.append("receiptAsset", (receiptImage?.preview && typeof receiptImage.preview === 'string') ? receiptImage.preview : "");
 			}
 
-			const apiPromise = api.post("/purchases-return", fd, {
-				headers: { "Content-Type": "multipart/form-data" },
-			});
+			let apiPromise;
+			if (isEdit) {
+				apiPromise = api.patch(`/purchases-return/${id}`, fd, {
+					headers: { "Content-Type": "multipart/form-data" },
+				});
+			} else {
+				apiPromise = api.post("/purchases-return", fd, {
+					headers: { "Content-Type": "multipart/form-data" },
+				});
+			}
 
 			await toast.promise(apiPromise, {
-				loading: t("messages.creatingReturn"),
-				success: t("messages.createSuccess"),
-				error: (err) => err.response?.data?.message || t("messages.createFailed"),
+				loading: isEdit ? t("messages.updatingReturn") : t("messages.creatingReturn"),
+				success: isEdit ? t("messages.updateSuccess") : t("messages.createSuccess"),
+				error: (err) => err.response?.data?.message || (isEdit ? t("messages.updateFailed") : t("messages.createFailed")),
 			});
 
 			navigate.push("/purchases/return");
@@ -328,19 +383,30 @@ export default function CreateReturnInvoicePage() {
 				breadcrumbs={[
 					{ name: t("breadcrumb.home"), href: "/dashboard" },
 					{ name: t("breadcrumb.returns"), href: "/purchases/return" },
-					{ name: t("breadcrumb.createReturnInvoice") },
+					{ name: isEdit ? t("breadcrumb.editReturnInvoice") : t("breadcrumb.createReturnInvoice") },
 				]}
 				buttons={
 					<>
 						<Button_ size="sm" label={t("actions.howToUse")} tone="ghost" icon={<Info size={18} />} />
 
+						{/* {!isEdit && (
+							<Button_
+								onClick={handleSubmit((data) => onSubmit(data, true))}
+								size="sm"
+								label={t("actions.saveAsDraft") || "Save as Draft"}
+								tone="ghost"
+								icon={<FileText size={18} />}
+								disabled={loading}
+							/>
+						)} */}
+
 						<Button_
-							onClick={handleSubmit(onSubmit)}
+							onClick={handleSubmit((data) => onSubmit(data, false))}
 							size="sm"
 							label={t("actions.save")}
 							variant="solid"
 							icon={<Save size={18} />}
-							disabled={loading}
+							disabled={loading || !isEditable}
 						/>
 
 					</>
@@ -349,82 +415,83 @@ export default function CreateReturnInvoicePage() {
 
 
 			<form onSubmit={handleSubmit(onSubmit)}>
-				<div className="flex flex-col lg:flex-row gap-6">
-					{/* Left Column - Main Form */}
-					<div className="flex-1 space-y-6">
-						<div className="w-full space-y-6">
-							<motion.div
-								className="main-card"
-								initial={{ opacity: 0, x: -20 }}
-								animate={{ opacity: 1, x: 0 }}
-								transition={{ delay: 0.2 }}
-							>
-								<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
-									{t("sections.returnInfo")}
-								</h3>
+				<fieldset disabled={!isEditable} className="space-y-6 contents">
+					<div className="flex flex-col lg:flex-row gap-6">
+						{/* Left Column - Main Form */}
+						<div className="flex-1 space-y-6">
+							<div className="w-full space-y-6">
+								<motion.div
+									className="main-card"
+									initial={{ opacity: 0, x: -20 }}
+									animate={{ opacity: 1, x: 0 }}
+									transition={{ delay: 0.2 }}
+								>
+									<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
+										{t("sections.returnInfo")}
+									</h3>
 
-								<div className="grid md:grid-cols-[repeat(auto-fit,minmax(350px,1fr))] gap-2">
-									<div className="space-y-2">
-										<Label className="text-sm text-gray-600 dark:text-slate-300">
-											{t("fields.returnNumber")} *
-										</Label>
-										<Controller
-											name="returnNumber"
-											control={control}
-											render={({ field }) => (
-												<Input
-													{...field}
-													placeholder={t("placeholders.returnNumber")}
-												/>
+									<div className="grid md:grid-cols-[repeat(auto-fit,minmax(350px,1fr))] gap-2">
+										<div className="space-y-2">
+											<Label className="text-sm text-gray-600 dark:text-slate-300">
+												{t("fields.returnNumber")} *
+											</Label>
+											<Controller
+												name="returnNumber"
+												control={control}
+												render={({ field }) => (
+													<Input
+														{...field}
+														placeholder={t("placeholders.returnNumber")}
+													/>
+												)}
+											/>
+											{errors.returnNumber && (
+												<p className="text-xs text-red-500">{errors.returnNumber.message}</p>
 											)}
-										/>
-										{errors.returnNumber && (
-											<p className="text-xs text-red-500">{errors.returnNumber.message}</p>
-										)}
-									</div>
+										</div>
 
-									<SupplierSelect
-										name="supplierId"
-										control={control}
-										error={errors.supplierId?.message}
-										onFetchSuppliers={setSuppliers}
-										label={t("fields.supplierName")}
-										placeholder={t("placeholders.supplierName")}
-									/>
-
-									<div className="space-y-2">
-										<Label className="text-sm text-gray-600 dark:text-slate-300">
-											{t("fields.invoiceNumber")}
-										</Label>
-										<Controller
-											name="invoiceNumber"
+										<SupplierSelect
+											name="supplierId"
 											control={control}
-											render={({ field }) => (
-												<Input
-													{...field}
-													placeholder={t("placeholders.invoiceNumber")}
-												/>
-											)}
+											error={errors.supplierId?.message}
+											onFetchSuppliers={setSuppliers}
+											label={t("fields.supplierName")}
+											placeholder={t("placeholders.supplierName")}
 										/>
-									</div>
 
-									<div className="space-y-2">
-										<Label className="text-sm text-gray-600 dark:text-slate-300">
-											{t("fields.returnReason")}
-										</Label>
-										<Controller
-											name="returnReason"
-											control={control}
-											render={({ field }) => (
-												<Input
-													{...field}
-													placeholder={t("placeholders.returnReason")}
-												/>
-											)}
-										/>
-									</div>
+										<div className="space-y-2">
+											<Label className="text-sm text-gray-600 dark:text-slate-300">
+												{t("fields.invoiceNumber")}
+											</Label>
+											<Controller
+												name="invoiceNumber"
+												control={control}
+												render={({ field }) => (
+													<Input
+														{...field}
+														placeholder={t("placeholders.invoiceNumber")}
+													/>
+												)}
+											/>
+										</div>
 
-									{/* <div className="space-y-2">
+										<div className="space-y-2">
+											<Label className="text-sm text-gray-600 dark:text-slate-300">
+												{t("fields.returnReason")}
+											</Label>
+											<Controller
+												name="returnReason"
+												control={control}
+												render={({ field }) => (
+													<Input
+														{...field}
+														placeholder={t("placeholders.returnReason")}
+													/>
+												)}
+											/>
+										</div>
+
+										{/* <div className="space-y-2">
 									<Label className="text-sm text-gray-600 dark:text-slate-300">
 										{t("fields.returnType")} *
 									</Label>
@@ -455,235 +522,240 @@ export default function CreateReturnInvoicePage() {
 									)}
 								</div> */}
 
-									<SafeSelect
-										name="safeId"
-										control={control}
-										error={errors.safeId?.message}
-										label={t("fields.safe")}
-										placeholder={t("placeholders.safe")}
-										required
-										className="rounded-full"
-									/>
+										<SafeSelect
+											name="safeId"
+											control={control}
+											error={errors.safeId?.message}
+											label={t("fields.safe")}
+											placeholder={t("placeholders.safe")}
+											required
+											className="rounded-full"
+										/>
+									</div>
+								</motion.div>
+							</div>
+							<motion.div
+								className="main-card"
+								initial={{ opacity: 0, y: 20 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ delay: 0.35 }}
+							>
+								<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
+									{t("sections.notes")}
+								</h3>
+								<Controller
+									name="notes"
+									control={control}
+									render={({ field }) => (
+										<Textarea
+											{...field}
+											placeholder={t("placeholders.notes")}
+											className="min-h-[100px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 rounded-xl"
+										/>
+									)}
+								/>
+							</motion.div>
+							{/* Middle Column - Products */}
+							<motion.div
+								className="main-card"
+								initial={{ opacity: 0, y: 20 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ delay: 0.25 }}
+							>
+								<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
+									{t("sections.addProducts")}
+								</h3>
+
+								<ProductSkuSearchPopover handleSelectSku={handleSelectSku} selectedSkus={selectSku} closeOnSelect={false} />
+								{errors.items && <p className="text-xs text-red-500 mt-2">{errors.items.message}</p>}
+							</motion.div>
+
+							<motion.div
+								className="main-card"
+								initial={{ opacity: 0, y: 20 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ delay: 0.3 }}
+							>
+								<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
+									{t("sections.productsTable")}
+								</h3>
+
+								<div className="overflow-x-auto">
+									<table className="w-full">
+										<thead>
+											<tr className="border-b border-gray-200 dark:border-slate-700">
+												<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
+													{t("table.sku")}
+												</th>
+												<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
+													{t("table.name")}
+												</th>
+												<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
+													{t("table.unitCost")}
+												</th>
+												<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
+													{t("table.returnedQuantity")}
+												</th>
+												<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
+													{t("table.taxInclusive")}
+												</th>
+												<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
+													{t("table.taxRate")}
+												</th>
+												<th className="text-center p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
+													{t("table.actions")}
+												</th>
+											</tr>
+										</thead>
+										<tbody>
+											{watchedItems.map((product, index) => (
+												<tr
+													key={index}
+													className="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors"
+												>
+													<td className="p-3 text-sm text-gray-600 dark:text-slate-300">
+														{product.sku}
+													</td>
+													<td className="p-3 text-sm font-semibold text-gray-700 dark:text-slate-200">
+														{product.productName}
+														{Object.keys(product.attributes || {}).length > 0 && (
+															<div className="text-xs text-gray-500 font-normal mt-1">
+																{Object.entries(product.attributes).map(([key, value]) => (
+																	<span key={key} className="mr-2">
+																		{key}: {value}
+																	</span>
+																))}
+															</div>
+														)}
+													</td>
+													<td className="p-3">
+														<div className="flex flex-col gap-1">
+															<div className="flex items-center gap-1">
+																<Input
+																	type="number"
+																	value={product.unitCost}
+																	onChange={(e) =>
+																		handleProductFieldChange(index, "unitCost", e.target.value)
+																	}
+																	className="h-8 w-24"
+																/>
+
+																<div className="flex items-center gap-1 text-sm text-gray-600">
+																	<Tag size={14} className="text-green-600" />
+																	<span className="font-medium">{formatCurrency(product.originalUnitCost)}</span>
+																	<span className="text-xs text-gray-400">({t("current_price")})</span>
+																</div>
+															</div>
+
+															{errors.items?.[index]?.unitCost && (
+																<p className="text-[10px] text-red-500 font-medium">
+																	{errors.items[index].unitCost.message}
+																</p>
+															)}
+														</div>
+													</td>
+
+													<td className="p-3">
+														<div className="flex flex-col gap-1">
+															<div className="flex items-center gap-1">
+																<Input
+																	type="number"
+																	value={product.returnedQuantity}
+																	onChange={(e) =>
+																		handleProductFieldChange(index, "returnedQuantity", e.target.value)
+																	}
+																	max={product.availableQuantity}
+																	className={cn("h-8 w-20", errors.items?.[index]?.returnedQuantity && "border-red-500")}
+																/>
+																<div className="flex items-center gap-1 text-sm text-gray-600">
+																	<Package size={14} className="text-green-600" />
+																	<span className="font-medium">{product.availableQuantity}</span>
+																	<span className="text-xs text-gray-400">({t("table.available")})</span>
+																</div>
+															</div>
+
+															{errors.items?.[index]?.returnedQuantity && (
+																<p className="text-[10px] text-red-500 font-medium leading-tight">
+																	{errors.items[index].returnedQuantity.message}
+																</p>
+															)}
+														</div>
+													</td>
+
+													<td className="p-3">
+														<Select
+															value={product.taxInclusive ? "yes" : "no"}
+															onValueChange={(v) =>
+																handleProductFieldChange(index, "taxInclusive", v === "yes")
+															}
+														>
+															<SelectTrigger className="h-8 w-20">
+																<SelectValue />
+															</SelectTrigger>
+															<SelectContent>
+																<SelectItem value="yes">{t("yes")}</SelectItem>
+																<SelectItem value="no">{t("no")}</SelectItem>
+															</SelectContent>
+														</Select>
+													</td>
+													<td className="p-3">
+														<div className="flex flex-col gap-1">
+															<Input
+																type="number"
+																value={product.taxRate}
+																onChange={(e) =>
+																	handleProductFieldChange(index, "taxRate", e.target.value)
+																}
+																className="h-8 w-16"
+															/>
+															{errors.items?.[index]?.taxRate && (
+																<p className="text-[10px] text-red-500 font-medium">
+																	{errors.items[index].taxRate.message}
+																</p>
+															)}
+														</div>
+													</td>
+													<td className="p-3 text-center">
+														<motion.button
+															type="button"
+															whileHover={{ scale: 1.1 }}
+															whileTap={{ scale: 0.9 }}
+															onClick={() => handleDeleteProduct(index)}
+															className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
+														>
+															<Trash2 size={16} />
+														</motion.button>
+													</td>
+												</tr>
+											))}
+										</tbody>
+									</table>
 								</div>
 							</motion.div>
 						</div>
-						<motion.div
-							className="main-card"
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.35 }}
-						>
-							<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
-								{t("sections.notes")}
-							</h3>
-							<Controller
-								name="notes"
-								control={control}
-								render={({ field }) => (
-									<Textarea
-										{...field}
-										placeholder={t("placeholders.notes")}
-										className="min-h-[100px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 rounded-xl"
-									/>
-								)}
+
+						{/* Right Column - Summary */}
+						<div className="w-full lg:max-w-[350px] space-y-4">
+							<ReceiptImageUpload
+								t={t}
+								isRTL={isRTL}
+								image={receiptImage}
+								onImageChange={handleImageUpload}
+								onRemove={handleRemoveImage}
+								ALLOWED_RECEIPT_TYPES={ALLOWED_RECEIPT_TYPES}
+								tValidation={tValidation}
 							/>
-						</motion.div>
-						{/* Middle Column - Products */}
-						<motion.div
-							className="main-card"
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.25 }}
-						>
-							<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
-								{t("sections.addProducts")}
-							</h3>
-
-							<ProductSkuSearchPopover handleSelectSku={handleSelectSku} selectedSkus={selectSku} closeOnSelect={false} />
-							{errors.items && <p className="text-xs text-red-500 mt-2">{errors.items.message}</p>}
-						</motion.div>
-
-						<motion.div
-							className="main-card"
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.3 }}
-						>
-							<h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-4">
-								{t("sections.productsTable")}
-							</h3>
-
-							<div className="overflow-x-auto">
-								<table className="w-full">
-									<thead>
-										<tr className="border-b border-gray-200 dark:border-slate-700">
-											<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
-												{t("table.sku")}
-											</th>
-											<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
-												{t("table.name")}
-											</th>
-											<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
-												{t("table.unitCost")}
-											</th>
-											<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
-												{t("table.returnedQuantity")}
-											</th>
-											<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
-												{t("table.taxInclusive")}
-											</th>
-											<th className="text-right p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
-												{t("table.taxRate")}
-											</th>
-											<th className="text-center p-3 text-sm font-semibold text-gray-600 dark:text-slate-300">
-												{t("table.actions")}
-											</th>
-										</tr>
-									</thead>
-									<tbody>
-										{watchedItems.map((product, index) => (
-											<tr
-												key={index}
-												className="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors"
-											>
-												<td className="p-3 text-sm text-gray-600 dark:text-slate-300">
-													{product.sku}
-												</td>
-												<td className="p-3 text-sm font-semibold text-gray-700 dark:text-slate-200">
-													{product.productName}
-													{Object.keys(product.attributes || {}).length > 0 && (
-														<div className="text-xs text-gray-500 font-normal mt-1">
-															{Object.entries(product.attributes).map(([key, value]) => (
-																<span key={key} className="mr-2">
-																	{key}: {value}
-																</span>
-															))}
-														</div>
-													)}
-												</td>
-												<td className="p-3">
-													<div className="flex flex-col gap-1">
-														<div className="flex items-center gap-1">
-															<Input
-																type="number"
-																value={product.unitCost}
-																onChange={(e) =>
-																	handleProductFieldChange(index, "unitCost", e.target.value)
-																}
-																className="h-8 w-24"
-															/>
-
-															<div className="flex items-center gap-1 text-sm text-gray-600">
-																<Tag size={14} className="text-green-600" />
-																<span className="font-medium">{formatCurrency(product.originalUnitCost)}</span>
-																<span className="text-xs text-gray-400">({t("current_price")})</span>
-															</div>
-														</div>
-
-														{errors.items?.[index]?.unitCost && (
-															<p className="text-[10px] text-red-500 font-medium">
-																{errors.items[index].unitCost.message}
-															</p>
-														)}
-													</div>
-												</td>
-
-												<td className="p-3">
-													<div className="flex flex-col gap-1">
-														<div className="flex items-center gap-1">
-															<Input
-																type="number"
-																value={product.returnedQuantity}
-																onChange={(e) =>
-																	handleProductFieldChange(index, "returnedQuantity", e.target.value)
-																}
-																max={product.availableQuantity}
-																className={cn("h-8 w-20", errors.items?.[index]?.returnedQuantity && "border-red-500")}
-															/>
-															<div className="flex items-center gap-1 text-sm text-gray-600">
-																<Package size={14} className="text-green-600" />
-																<span className="font-medium">{product.availableQuantity}</span>
-																<span className="text-xs text-gray-400">({t("table.available")})</span>
-															</div>
-														</div>
-
-														{errors.items?.[index]?.returnedQuantity && (
-															<p className="text-[10px] text-red-500 font-medium leading-tight">
-																{errors.items[index].returnedQuantity.message}
-															</p>
-														)}
-													</div>
-												</td>
-
-												<td className="p-3">
-													<Select
-														value={product.taxInclusive ? "yes" : "no"}
-														onValueChange={(v) =>
-															handleProductFieldChange(index, "taxInclusive", v === "yes")
-														}
-													>
-														<SelectTrigger className="h-8 w-20">
-															<SelectValue />
-														</SelectTrigger>
-														<SelectContent>
-															<SelectItem value="yes">{t("yes")}</SelectItem>
-															<SelectItem value="no">{t("no")}</SelectItem>
-														</SelectContent>
-													</Select>
-												</td>
-												<td className="p-3">
-													<div className="flex flex-col gap-1">
-														<Input
-															type="number"
-															value={product.taxRate}
-															onChange={(e) =>
-																handleProductFieldChange(index, "taxRate", e.target.value)
-															}
-															className="h-8 w-16"
-														/>
-														{errors.items?.[index]?.taxRate && (
-															<p className="text-[10px] text-red-500 font-medium">
-																{errors.items[index].taxRate.message}
-															</p>
-														)}
-													</div>
-												</td>
-												<td className="p-3 text-center">
-													<motion.button
-														type="button"
-														whileHover={{ scale: 1.1 }}
-														whileTap={{ scale: 0.9 }}
-														onClick={() => handleDeleteProduct(index)}
-														className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
-													>
-														<Trash2 size={16} />
-													</motion.button>
-												</td>
-											</tr>
-										))}
-									</tbody>
-								</table>
-							</div>
-						</motion.div>
+							<ReturnSummary t={t} summary={summary} totalReturn={totalReturn} control={control} formatCurrency={formatCurrency} errors={errors} />
+						</div>
 					</div>
-
-					{/* Right Column - Summary */}
-					<div className="w-full lg:max-w-[350px] space-y-4">
-						<ReceiptImageUpload
-							t={t}
-							isRTL={isRTL}
-							image={receiptImage}
-							onImageChange={handleImageUpload}
-							onRemove={handleRemoveImage}
-							ALLOWED_RECEIPT_TYPES={ALLOWED_RECEIPT_TYPES}
-							tValidation={tValidation}
-						/>
-						<ReturnSummary t={t} summary={summary} totalReturn={totalReturn} control={control} formatCurrency={formatCurrency} errors={errors} />
-					</div>
-				</div>
+				</fieldset>
 			</form>
 		</motion.div>
 	);
+}
+
+export default function CreateReturnInvoicePage() {
+	return <PurchaseReturnForm />;
 }
 
 function ReceiptImageUpload({ image, onImageChange, onRemove, t, isRTL, ALLOWED_RECEIPT_TYPES, tValidation }) {
@@ -772,7 +844,7 @@ function ReceiptImageUpload({ image, onImageChange, onRemove, t, isRTL, ALLOWED_
 										<span className="text-sm text-gray-700 dark:text-slate-200">PDF</span>
 									</div>
 								) : (
-									<img src={image.preview} alt={t("upload.receiptAlt") || "Receipt"} className="w-full h-48 object-cover" />
+									<img src={image?.preview?.startsWith("data:image") ? image.preview : avatarSrc(image.preview)} alt={t("upload.receiptAlt")} className="w-full h-48 object-cover" />
 								)}
 							</div>
 
@@ -795,7 +867,7 @@ function ReceiptImageUpload({ image, onImageChange, onRemove, t, isRTL, ALLOWED_
 								onClick={onRemove}
 								whileHover={{ scale: 1.1 }}
 								whileTap={{ scale: 0.9 }}
-								className="w-8 h-8 rounded-xl bg-red-100 text-red-600 hover:bg-red-600 hover:text-white flex items-center justify-center transition-colors dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
+								className="w-8 h-8 shrink-0 rounded-xl bg-red-100 text-red-600 hover:bg-red-600 hover:text-white flex items-center justify-center transition-colors dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
 							>
 								<X size={16} />
 							</motion.button>

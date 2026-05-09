@@ -39,6 +39,7 @@ export default function SafeSelect({ control, name, error, label, placeholder, r
         fetchSafes();
     }, [fetchSafes]);
 
+
     return (
         <div className={cn("space-y-2", className)}>
             <Label className="text-sm text-gray-600 dark:text-slate-300">
@@ -49,7 +50,10 @@ export default function SafeSelect({ control, name, error, label, placeholder, r
                 name={name}
                 control={control}
                 render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
+                    <Select value={field.value} onValueChange={(value) => {
+                        if (!value) return;
+                        field.onChange(value);
+                    }}>
                         <SelectTrigger className={cn("w-full rounded-xl !h-[45px] bg-[#fafafa] dark:bg-slate-800/50", error && "border-red-500")}>
                             <SelectValue placeholder={placeholder || t("safes.transactions.safeSearchPlaceholder")} />
                         </SelectTrigger>

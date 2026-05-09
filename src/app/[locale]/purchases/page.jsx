@@ -1679,6 +1679,10 @@ export default function PurchasesPage() {
 							label: t("status.rejected"),
 							className: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-300 dark:border-red-700",
 						},
+						draft: {
+							label: t("status.draft") || "Draft",
+							className: "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700",
+						},
 					};
 					const config = statusConfig[row.status] || statusConfig.pending;
 
@@ -1710,6 +1714,11 @@ export default function PurchasesPage() {
 							<DropdownMenuItem onClick={() => setLogsModal({ isOpen: true, invoiceId: row.id })} className="flex items-center gap-2 cursor-pointer" permission="purchases.read">
 								<ScrollText size={16} className="text-purple-600" />
 								<span>{t("actions.logs")}</span>
+							</DropdownMenuItem>
+							{/* //add Edit invoice link */}
+							<DropdownMenuItem disabled={row.status !== "draft"} onClick={() => router.push(`/purchases/edit/${row.id}`)} className="flex items-center gap-2 cursor-pointer" permission="purchases.update">
+								<Edit size={16} className="text-gray-600" />
+								<span>{t("actions.edit")}</span>
 							</DropdownMenuItem>
 
 							<DropdownMenuItem disabled={row.closingId !== null} onClick={() => setEditModal({ isOpen: true, invoice: row })} className="flex items-center gap-2 cursor-pointer" permission="purchases.update">

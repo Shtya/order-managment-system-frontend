@@ -564,6 +564,11 @@ export default function PurchasesReturnPage() {
 								<span>{t("actions.logs")}</span>
 							</DropdownMenuItem>
 
+							{/* <DropdownMenuItem disabled={row.status !== "draft"} onClick={() => router.push(`/purchases/return/edit/${row.id}`)} className="flex items-center gap-2 cursor-pointer rounded-xl hover:bg-primary/5 transition-colors" permission="purchase_returns.update">
+								<Edit size={16} className="text-gray-600" />
+								<span>{t("actions.edit")}</span>
+							</DropdownMenuItem> */}
+
 							<DropdownMenuItem disabled={row.closingId !== null} onClick={() => { setSelectedInvoice(row); setPaidAmountOpen(true); }} className="flex items-center gap-2 cursor-pointer rounded-xl hover:bg-primary/5 transition-colors" permission="purchase_returns.update">
 								<Edit size={16} className="text-gray-600" />
 								<span>{t("actions.editPaidAmount")}</span>

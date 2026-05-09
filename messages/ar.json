@@ -789,7 +789,7 @@
       "editSettings": "تعديل الإعدادات",
       "configureSettings": "إعداد التكامل",
       "settings": "الإعدادات",
-      "sync": "مزامنة",
+      "sync": " مزامنة من المتجر",
       "connected": "متصل",
       "notConnected": "غير متصل",
       "configured": "تم الإعداد",
@@ -824,7 +824,7 @@
       "viewDocs": "عرض التوثيق"
     },
     "form": {
-      "syncNewProducts": "مزامنة المنتجات الجديدة",
+      "syncNewProducts": "إرسال المنتجات الجديدة للمتاجر تلقائيا",
       "storeInfoSection": "معلومات المتجر",
       "storeName": "اسم المتجر",
       "storeNamePlaceholder": "متجري الإلكتروني",
@@ -3183,7 +3183,8 @@
     "breadcrumb": {
       "home": "الرئيسية",
       "returns": "مرتجعات المشتريات",
-      "createReturnInvoice": "إنشاء فاتورة إرجاع"
+      "createReturnInvoice": "إنشاء فاتورة إرجاع",
+      "editReturnInvoice": "تعديل فاترورة المرتجعات"
     },
     "fields": {
       "returnNumber": "رقم الإرجاع",
@@ -3242,7 +3243,8 @@
     },
     "actions": {
       "howToUse": "كيفية الاستخدام",
-      "save": "حفظ"
+      "save": "حفظ",
+      "saveAsDraft": "حفظ كمسودة"
     },
     "yes": "نعم",
     "no": "لا",
@@ -3251,7 +3253,11 @@
       "createSuccess": "تم إنشاء فاتورة المرتجع بنجاح",
       "createFailed": "فشل في إنشاء فاتورة المرتجع",
       "creatingReturn": "جاري إنشاء فاتورة المرتجع...",
-      "loadDataFailed": "فشل تحميل البيانات"
+      "loadDataFailed": "فشل تحميل البيانات",
+      "updatingReturn": "جاري تحديث الفاتوره...\t",
+      "updateSuccess": "تم تحديث الفاتورة",
+      "updateFailed": "فشل تحديث الفاتورة",
+      "fetchDetailsFailed": "فشل تحميل البيانات"
     },
     "upload": {
       "receiptAlt": "فاتورة"
@@ -3657,7 +3663,15 @@
     "messages": {
       "exportStarted": "جاري تصدير البيانات...",
       "exportSuccess": "تم تصدير الملف بنجاح",
-      "exportFailed": "فشل في تصدير الملف"
+      "exportFailed": "فشل في تصدير الملف",
+      "exportingToStore": "جاري تصدير المنتجات للمتجر...",
+      "exportToStoreStarted": "بدأت عملية تصدير المنتجات للمتجر"
+    },
+    "exportModal": {
+      "title": "تصدير للمتجر",
+      "description": "تصدير {count} من المنتجات المختارة لمتجرك المربوط",
+      "selectedProducts": "المنتجات المختارة",
+      "selectStore": "اختر المتجر"
     },
     "common": {
       "allProducts": "كل المنتجات",
@@ -3699,7 +3713,8 @@
       "selectedCount": "{count} محدد",
       "selectProducts": "اختر المنتجات",
       "cancel": "إلغاء",
-      "print": "طباعة"
+      "print": "طباعة",
+      "syncing": "جاري التصدير"
     },
     "printSku": {
       "title": "طباعة ملصقات المنتجات",
@@ -3766,7 +3781,9 @@
     "toolbar": {
       "searchPlaceholder": "البحث عن المنتجات...",
       "filter": "تصفية",
-      "export": "تصدير"
+      "export": "تصدير",
+      "exportToStoreCount": "تصدير للمتاجر ({count})",
+      "exportToStore": "تصدير للمتاجر"
     },
     "filters": {
       "storageRack": "رف التخزين",
@@ -4012,7 +4029,8 @@
     "status": {
       "accepted": "مقبول",
       "pending": "قيد الانتظار",
-      "rejected": "مرفوض"
+      "rejected": "مرفوض",
+      "draft": "مسودة"
     },
     "actions": {
       "loading": "جاري التحميل...",
@@ -4030,7 +4048,8 @@
       "howToUse": "كيفية الاستخدام",
       "changeStatus": "تغيير الحالة",
       "applying": "جاري التحديث",
-      "apply": "تطبيق"
+      "apply": "تطبيق",
+      "edit": "تعديل"
     },
     "acceptPreview": {
       "title": "معاينة القبول",
@@ -4173,7 +4192,8 @@
       "close": "إغلاق",
       "saving": "حفظ",
       "applying": "جاري التحديث",
-      "apply": "تحديث"
+      "apply": "تحديث",
+      "edit": "تعديل"
     },
     "stats": {
       "acceptedInvoices": "الفواتير المقبولة",
@@ -4244,7 +4264,8 @@
     "statuses": {
       "pending": "قيد الانتظار",
       "accepted": "تمت الموافقة",
-      "rejected": "مرفوض"
+      "rejected": "مرفوض",
+      "draft": "مسودة"
     },
     "returnTypes": {
       "cashRefund": "استرداد نقدي",
@@ -4361,11 +4382,17 @@
     "breadcrumb": {
       "home": "الرئيسية",
       "purchases": "المشتريات",
-      "createPurchaseInvoice": "إنشاء فاتورة مشتريات"
+      "createPurchaseInvoice": "إنشاء فاتورة مشتريات",
+      "editPurchaseInvoice": "تعديل فاتورة مشتريات"
+    },
+    "titles": {
+      "create": "إنشاء فاتورة مشتريات",
+      "edit": "تعديل فاتورة مشتريات"
     },
     "actions": {
       "howToUse": "كيفية الاستخدام",
-      "save": "حفظ"
+      "save": "حفظ",
+      "saveAsDraft": "حفظ كمسودة"
     },
     "fields": {
       "supplierName": "اسم المورد",
@@ -4418,9 +4445,13 @@
     "messages": {
       "createSuccess": "تم إنشاء فاتورة المشتريات بنجاح",
       "createFailed": "فشل في إنشاء فاتورة المشتريات",
+      "updateSuccess": "تم تحديث فاتورة المشتريات بنجاح",
+      "updateFailed": "فشل في تحديث فاتورة المشتريات",
       "loadSuppliersFailed": "فشل في تحميل الموردين",
       "creatingPurchase": "جاري إضافة عملية الشراء...",
-      "loadDataFailed": "فشل تحميل البيانات"
+      "updatingPurchase": "جاري تحديث عملية الشراء...",
+      "loadDataFailed": "فشل تحميل البيانات",
+      "fetchPurchaseFailed": "فشل في تحميل بيانات الفاتورة"
     }
   },
   "common": {
@@ -9054,11 +9085,13 @@
     },
     "stats": {
       "total": "إجمالي الأخطاء",
-      "create": "أخطاء الإنشاء",
-      "update": "أخطاء التحديث"
+      "create": "أخطاء إنشاء المنتج للمتجر",
+      "update": "أخطاء تحديث المنتج للمتجر",
+      "pull": "أخطاء جلب المنتجات من المتاجر",
+      "bundle_sync": "أخطاء تكامل الباقات"
     },
     "columns": {
-      "remoteProductId": "معرف المنتج الخارجي",
+      "remoteProductId": "معرف المنتج علي المتجر",
       "product": "المنتج",
       "store": "المتجر",
       "action": "الإجراء",
@@ -9066,8 +9099,9 @@
       "date": "التاريخ",
       "error": "رسالة الخطأ",
       "responseStatus": "كود الخطأ",
-      "create": "إنشاء",
-      "update": "تحديث",
+      "create": "إنشاء المنتج للمتجر",
+      "update": "تحديث المنتج للمتجر",
+      "pull": "جلب من متجر",
       "actions": "الإجراءات",
       "bundle": "الباقة",
       "bundle_sync": "تكامل باقة",
@@ -9076,8 +9110,10 @@
     "filters": {
       "action": "نوع الإجراء",
       "allActions": "كل الإجراءات",
-      "create": "إنشاء",
-      "update": "تحديث",
+      "create": "إنشاء المنتج للمتجر",
+      "update": "تحديث المنتج للمتجر",
+      "pull": "جلب من متجر",
+      "bundle_sync": "تكامل باقة",
       "store": "المتجر",
       "allStores": "كل المتاجر",
       "dateRange": "الفترة الزمنية",
@@ -9101,7 +9137,7 @@
       "requestPayload": "بيانات الطلب (Payload)",
       "errorMessage": "رسالة الخطأ",
       "responseStatus": "حالة الاستجابة",
-      "remoteProductId": "معرف المنتج البعيد",
+      "remoteProductId": "معرف المنتج علي المتجر",
       "action": "الإجراء",
       "date": "وقت الحدوث"
     },

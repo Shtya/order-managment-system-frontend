@@ -46,7 +46,10 @@ export default function SupplierSelect({ control, name, error, label, placeholde
                 name={name}
                 control={control}
                 render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
+                    <Select value={field.value} onValueChange={(value) => {
+                        if (!value) return;
+                        field.onChange(value);
+                    }}>
                         <SelectTrigger className={cn("w-full rounded-xl !h-[45px] bg-[#fafafa] dark:bg-slate-800/50", error && "border-red-500")}>
                             <SelectValue placeholder={placeholder} />
                         </SelectTrigger>

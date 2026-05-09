@@ -101,11 +101,16 @@ export default function StoresIntegrationPage() {
     const unsubscribe = subscribe("STORE_SYNC_STATUS", (payload) => {
       console.log("Received socket event:", payload);
       if (payload) {
-        const { storeId, status } = payload;
+        const { storeId, status,type  } = payload;
 
         setStores((prev) =>
           prev.map((store) =>
-            store.id === storeId ? { ...store, syncStatus: status } : store,
+            store.id === storeId ? {
+              ...store,
+              ...(type === "local"
+                ? { localSyncStatus: status }
+                : { syncStatus: status }),
+            } : store,
           ),
         );
       }

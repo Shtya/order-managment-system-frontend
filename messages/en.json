@@ -5337,7 +5337,8 @@
     "pagination": {
       "limit": "Results per page",
       "total": "Total results"
-    }
+    },
+    "retriesExhausted": "The attempts are over"
   },
   "callCenter": {
     "breadcrumb": {
@@ -7710,6 +7711,7 @@
   },
   "orders-work": {
     "retries": "Retries",
+    "retriesExhausted": "All retries ended",
     "orderNumber": "Order Number",
     "replacement": "Replacement",
     "customer": "Customer",

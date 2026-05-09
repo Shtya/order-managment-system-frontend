@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Package, Phone, CheckCircle, Loader2, ArrowRight, ArrowLeft,
-  Lock, ChevronDown, Zap, SkipForward, ShoppingBag, User,
+  Lock, ChevronDown, Zap, SkipForward, ShoppingBag, User, AlertCircle,
   TrendingUp, Activity, RefreshCw, Clock, Building2, RotateCcw,
   BadgeCheck, Banknote, StickyNote, Mail, Receipt, Star,
   Navigation, Plus, Minus, X, Save, Info, Trash2, Truck, MapPin, CreditCard,
@@ -303,6 +303,60 @@ function Fld({ label, name, control, error, disabled = false, type = "text", sty
   );
 }
 
+
+function diffObjects(
+  before,
+  after,
+  basePath = "",
+  result = [],
+) {
+  const beforeIsObj = before && typeof before === "object";
+  const afterIsObj = after && typeof after === "object";
+
+  const beforeKeys = beforeIsObj ? Object.keys(before) : [];
+  const afterKeys = afterIsObj ? Object.keys(after) : [];
+  const keys = new Set([...beforeKeys, ...afterKeys]);
+
+  for (const key of keys) {
+    const path = basePath ? `${basePath}.${key}` : key;
+    const b = before?.[key];
+    const a = after?.[key];
+
+    const bIsObj = b && typeof b === "object" && !Array.isArray(b);
+    const aIsObj = a && typeof a === "object" && !Array.isArray(a);
+
+    if (bIsObj && aIsObj) {
+      diffObjects(b, a, path, result);
+      continue;
+    }
+
+    if (JSON.stringify(b) !== JSON.stringify(a)) {
+      result.push({ path, before: b, after: a });
+    }
+  }
+
+  return result;
+}
+
+function logOrderChanges(originalOrder, editedOrder) {
+  const diffs = diffObjects(originalOrder, editedOrder);
+
+  console.group("Order change diff");
+  if (diffs.length === 0) {
+    console.log("No differences found.");
+  } else {
+    diffs.forEach((item) => {
+      console.log(`${item.path}:`, {
+        before: item.before,
+        after: item.after,
+      });
+    });
+  }
+  console.groupEnd();
+
+  return diffs;
+}
+
 // ─── PAGE ROOT ─────────────────────────────────────────────────────────────
 export default function OrderConfirmationWorkPage() {
   const t = useTranslations("orders-work");
@@ -346,10 +400,49 @@ export default function OrderConfirmationWorkPage() {
     if (w && Object.keys(w).length > 0) setEditedOrder(prev => ({ ...prev, ...w }));
   }, [w?.customerName, w?.phoneNumber, w?.city, w?.address, w?.secondPhoneNumber,
   w?.paymentMethod, w?.shippingCost, w?.deposit, w?.email, w?.area, w?.allowOpenPackage]);
+
+  const normalize = (value) => {
+    // Treat all empty values as equal
+    if (
+      value === "" ||
+      value === undefined ||
+      value === null
+    ) {
+      return null;
+    }
+
+    // Normalize arrays
+    if (Array.isArray(value)) {
+      return value.map(normalize);
+    }
+
+    // Normalize objects recursively
+    if (typeof value === "object") {
+      return Object.keys(value).reduce((acc, key) => {
+        acc[key] = normalize(value[key]);
+        return acc;
+      }, {});
+    }
+
+    return value;
+  };
+
   const hasChanges = useMemo(() => {
     if (!editedOrder) return false;
-    return JSON.stringify(originalOrder) !== JSON.stringify(editedOrder);
+
+    return (
+      JSON.stringify(normalize(originalOrder)) !==
+      JSON.stringify(normalize(editedOrder))
+    );
   }, [originalOrder, editedOrder]);
+
+  // useEffect(() => {
+  //   if (!originalOrder || !editedOrder) return;
+
+  //   const diffs = logOrderChanges(originalOrder, editedOrder);
+
+  //   console.log("hasChanges:", diffs.length > 0);
+  // }, [originalOrder, editedOrder]);
 
   const wItems = watch("items"), wShip = watch("shippingCost"), wDisc = watch("discount");
   useEffect(() => {
@@ -497,6 +590,7 @@ export default function OrderConfirmationWorkPage() {
 function Hero({ order, t, isRtl }) {
   const tOrders = useTranslations("orders");
   if (!order) return null;
+
   const status = order.status;
   const { formatCurrency } = usePlatformSettings();
   const assignment = order.assignments?.[0] || {};
@@ -524,11 +618,10 @@ function Hero({ order, t, isRtl }) {
 
           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, paddingTop: 4 }}>
             {order.isReplacement && <Tag color={HEX.amber}><RefreshCw size={9} style={{ marginInlineEnd: 3 }} />{t("replacement")}</Tag>}
-            {assignment?.maxRetriesAtAssignment > 0 && (
+            {assignment?.maxRetriesAtAssignment > 0 ? (
               <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: .15 }}
                 style={{
                   display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: "var(--radius-xl)",
-
                   background: rgba(HEX.orange, .06), border: `1.5px solid ${rgba(HEX.orange, .2)}`,
                   boxShadow: `0 1px 4px ${rgba(HEX.orange, .05)}`
                 }}>
@@ -582,6 +675,18 @@ function Hero({ order, t, isRtl }) {
                     <span>{assignment.maxRetriesAtAssignment}</span>
                   </span>
                 </div>
+              </motion.div>
+            ) : (
+              <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: .15 }}
+                style={{
+                  display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: "var(--radius-xl)",
+                  background: rgba(HEX.red, .06), border: `1.5px solid ${rgba(HEX.red, .2)}`,
+                  boxShadow: `0 1px 4px ${rgba(HEX.red, .05)}`
+                }}>
+                <AlertCircle size={14} style={{ color: HEX.red }} />
+                <span style={{ fontSize: 11, fontWeight: 700, color: HEX.red, textTransform: "uppercase", letterSpacing: "0.02em" }}>
+                  {tOrders("retriesExhausted")}
+                </span>
               </motion.div>
             )}
             {status && (

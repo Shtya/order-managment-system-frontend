@@ -505,7 +505,8 @@ export default function OrderConfirmationWorkPage() {
       const { productsTotal, finalTotal, items: _, assignments, logs, ...rest } = data;
       await api.patch(`/orders/${editedOrder?.id}`, { ...rest, removedItems: removedIds, items: editedOrder?.items.map(i => ({ variantId: i.variant?.id || i.variantId, quantity: Number(i.quantity), unitPrice: i.unitPrice, isAdditional: i.isAdditional })) });
       toast.success(t("messages.updateSuccess"));
-      const r = await api.get(`/orders/${editedOrder?.id}`); initOrder(r.data);
+      const r = await api.get(`/orders/employee/orders/next`);
+      initOrder(r.data);
     } catch (e) { toast.error(e.response?.data?.message || "حدث خطأ"); }
     finally { setSaving(false); }
   };
@@ -798,8 +799,8 @@ function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAddi
                         <th>{t("productName") || "المنتج"}</th>
                         <th>{t("sku") || "SKU"}</th>
                         <th>{t("attributes") || "المواصفات"}</th>
+                        <th style={{ textAlign: "center" }}>{t("stock") || "المتاح"}</th>
                         <th style={{ textAlign: "center" }}>{t("quantity") || "الكمية"}</th>
-                        {/* <th style={{textAlign:"center"}}>{t("stock")||"المخزون"}</th> */}
                         <th style={{ textAlign: "end" }}>{t("unitPrice") || "السعر"}</th>
                         <th style={{ textAlign: "end", paddingInlineEnd: 18 }}>{t("lineTotal") || "الإجمالي"}</th>
                         <th>{/* actions */}</th>
@@ -842,6 +843,17 @@ function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAddi
                             <td style={{ minWidth: 80 }}>
                               <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
                                 {Object.entries(attrs).map(([k, v]) => <Tag key={k} color={color} sm>{k}: {v}</Tag>)}
+                              </div>
+                            </td>
+
+                            {/* Stock */}
+                            <td style={{ textAlign: "center" }}>
+                              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                                <div style={{ width: 44, height: 4, borderRadius: 99, background: "var(--muted)", overflow: "hidden" }}>
+                                  <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(100, (stock / 20) * 100)}%` }}
+                                    style={{ height: "100%", borderRadius: 99, background: low ? HEX.red : HEX.green }} />
+                                </div>
+                                <span className="mono" style={{ fontSize: 10, fontWeight: 700, color: low ? HEX.red : HEX.green }}>{stock}</span>
                               </div>
                             </td>
 
@@ -890,7 +902,7 @@ function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAddi
                     </tbody>
                     <tfoot>
                       <tr>
-                        <td colSpan={6} style={{ textAlign: "end" }}>
+                        <td colSpan={7} style={{ textAlign: "end" }}>
                           <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--foreground)" }}>{t("productsTotal") || "إجمالي المنتجات"}</span>
                         </td>
                         <td style={{ textAlign: "end", paddingInlineEnd: 18 }}>
@@ -1541,7 +1553,7 @@ function UpsellModal({ isOpen, onClose, product: upProduct, handleSelectSku, sel
                                       label: product.name,
                                       cost: s.cost || product.wholesalePrice || s.price
                                     })}
-                                    disabled={!s.isActive || isAdded}
+                                    disabled={!s.isActive || isAdded || !avail}
                                   >
                                     {isAdded ? (isRtl ? "تمت الإضافة" : "Added") : (isRtl ? "إضافة" : "Add")}
                                   </Button>

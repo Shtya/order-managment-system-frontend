@@ -2128,7 +2128,7 @@
         "retry": "إعادة",
         "scannedOrders": "الطلبات الممسوحة",
         "failedScans": "المحاولات الفاشلة",
-        "placeholder": "امسح كود الطلب لتسجيله ضمن الخروج",
+        "placeholder": "امسح كود الطلب أو رقم التتبع  لتسجيله ضمن الخروج",
         "scanItemsPlaceholder": "امسح القطع للطلب {code}",
         "readyOrders": "{count} طلب يحتاج مسح",
         "totalItemsCount": "{count} قطعة",

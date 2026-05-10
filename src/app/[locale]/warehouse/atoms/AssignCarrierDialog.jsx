@@ -13,11 +13,11 @@ import { toast } from "react-hot-toast";
 import api from "@/utils/api";
 import { OrderStatus } from "../../orders/tabs/OrderTab";
 //cityId - districtId - customerName - phoneNumber - address - packageType - size
-// --- Carrier Configuration ---
+// --- Carrier Configuration ---    
 const CARRIER_CONFIG = {
     BOSTA: {
         provider: "bosta",
-        requires: ['email', "customerName", "phoneNumber", "firstLine", "cityId", "districtId", "orderSize"],
+        requires: ["customerName", "phoneNumber", "firstLine", "cityId", "districtId", "orderSize"],
         hasDistrict: true,
         hasZone: false,
     },
@@ -435,7 +435,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                     customerName: fixes[order.id].customerName,
                     phoneNumber: fixes[order.id].phoneNumber,
                     address: fixes[order.id].firstLine, // Backend expects "address"
-                    email: fixes[order.id].email || "",
+                    // email: fixes[order.id].email || "",
                     shippingMetadata: {
                         cityId: fixes[order.id].cityId,
                         zoneId: fixes[order.id].zoneId,

@@ -2416,7 +2416,7 @@ export function ScanReturnsSubtab({
   const fetchActiveOrder = useCallback(async (idOrCode) => {
     try {
       setIsFetchingOrder(true);
-      const res = await api.get(`/orders/number/${idOrCode}`);
+      const res = await api.get(`/orders/${idOrCode}`);
       const order = res.data;
 
       // Validation: order must be shipped or delivered

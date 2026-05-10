@@ -2094,7 +2094,7 @@
         "retry": "Retry",
         "scannedOrders": "Scanned Orders",
         "failedScans": "Failed Attempts",
-        "placeholder": "Scan order code to register for outgoing",
+        "placeholder": "Scan order code or tracking number to register for outgoing",
         "scanItemsPlaceholder": "Scan items for order {code}",
         "readyOrders": "{count} orders need scanning",
         "totalItemsCount": "{count} item(s)",

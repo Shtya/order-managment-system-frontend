@@ -2107,7 +2107,7 @@ export function ScanOutgoingSubtab({
 	const fetchActiveOrder = useCallback(async (idOrCode) => {
 		try {
 			setIsFetchingOrder(true);
-			const res = await api.get(`/orders/number/${idOrCode}`);
+			const res = await api.get(`/orders/${idOrCode}`);
 			const order = res.data;
 
 			// Validation: order must be prepared and belong to selected carrier

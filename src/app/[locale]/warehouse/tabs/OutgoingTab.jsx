@@ -23,6 +23,7 @@ import {
 	ClipboardList,
 	Layers,
 	Ban,
+	Trash2,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/utils/cn";
@@ -34,6 +35,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import Table, { FilterField } from "@/components/atoms/Table";
 import PageHeader from "../../../../components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
@@ -333,8 +335,7 @@ const PDF_STYLE_WARM = `
   .header-brand {
     padding: 26px 32px;
     border-left: 1px solid var(--rule);
-    display: flex;
-    align-items: center;
+    display: flex; align-items: center;
     gap: 16px;
   }
 
@@ -443,14 +444,78 @@ const PDF_STYLE_WARM = `
   }
   .order-card:last-child { margin-bottom: 0; }
 
-  .order-head {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 16px;
-    background: var(--cream);
-    border-bottom: 1px solid var(--rule);
-  }
+.order-head {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px; /* Gap between the three sections */
+  padding: 8px 12px;
+  background: #f8fafc; /* Professional light background */
+  border-bottom: 1px solid #e2e8f0;
+}
 
-  .order-head-left { display: flex; align-items: center; gap: 10px; }
+.order-head-section {
+  display: flex;
+  align-items: center;
+  white-space: nowrap; /* Prevent internal wrapping */
+}
+
+/* Force Order ID and AWB to stay their full width */
+.identifiers, .tracking {
+  flex-shrink: 0;
+}
+
+/* Let the middle section grow and shrink */
+.info {
+  flex-grow: 1;
+  flex-shrink: 1;
+  min-width: 0; /* Critical for truncation to work in flexbox */
+  overflow: hidden;
+  gap: 6px;
+  color: #475569;
+  font-size: 12px;
+}
+
+/* Truncate customer name if too long */
+.order-customer {
+  font-weight: bold;
+  color: #000;
+  overflow: hidden;
+}
+
+/* Styling the IDs */
+.order-index {
+  background: #000;
+  color: #fff;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-size: 11px;
+  margin-right: 6px;
+}
+
+.order-code {
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.tracking-badge {
+  font-family: monospace;
+  font-size: 11px;
+  padding: 3px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.order-sep {
+  color: #cbd5e1;
+  margin: 0 2px;
+}
 
   .order-index {
     width: 22px; height: 22px;
@@ -582,21 +647,33 @@ function buildOutgoingPDF(orders, carrier, employee, now, labels) {
 
 		return `
       <div class="order-card">
-        <div class="order-head">
-          <div class="order-head-left">
-            <div class="order-index">${idx + 1}</div>
-            <span class="order-code">${o.code}</span>
-            <div class="order-sep"></div>
-            <span class="order-customer">${o.customer}</span>
-          </div>
-          <span class="order-city">${o.city}</span>
-        </div>
+       <div class="order-head">
+			
+			<div class="order-head-section identifiers">
+			<div class="order-index">${idx + 1}</div>
+			<span class="order-code">${o.code}</span>
+			</div>
+
+			<div class="order-head-section info">
+			<span class="order-customer">${o.customer}</span>
+			${o.phone ? `<span class="order-sep">|</span><span class="order-phone">${o.phone}</span>` : ""}
+			<span class="order-sep">|</span>
+			<span class="order-city">${o.city}</span>
+			</div>
+
+			<div class="order-head-section tracking">
+			<span class="tracking-badge">
+				${o.trackingNumber !== "-" ? `AWB: <strong>${o.trackingNumber}</strong>` : "No AWB"}
+			</span>
+			</div>
+
+		</div>
         <table>
           <thead>
             <tr>
-              <th>${labels.sku}</th>
-              <th>${labels.product}</th>
-              <th class="center">${labels.qty}</th>
+              <th>${labels.sku || 'SKU'}</th>
+              <th>${labels.product || 'Product'}</th>
+              <th class="center">${labels.qty || 'Qty'}</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
@@ -755,8 +832,7 @@ const WRONG_SCAN_PDF_STYLE = `
   .header-brand {
     padding: 24px 32px;
     border-left: 1px solid var(--rule);
-    display: flex;
-    align-items: center;
+    display: flex; align-items: center;
     gap: 16px;
   }
 
@@ -996,33 +1072,6 @@ const WRONG_SCAN_PDF_STYLE = `
     width: 9px; height: 9px;
     stroke: var(--cream); stroke-width: 2.2;
     fill: none; stroke-linecap: round;
-  }
-
-  .footer-text { font-family: var(--mono); font-size: 9px; color: var(--charcoal-muted); letter-spacing: 0.5px; }
-  .footer-divider { width: 1px; height: 10px; background: var(--rule); margin: 0 2px; }
-
-  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     PRINT OVERRIDES
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-  @media print {
-    body { background: white; }
-
-    /* show the alert banner only when printing */
-    .print-alert { display: block !important; }
-
-    /* force background colors to print */
-    .header-band,
-    .meta-strip,
-    .meta-cell,
-    thead tr,
-    .badge-error,
-    .doc-footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-
-    /* keep table rows together, avoid mid-row page breaks */
-    tbody tr { page-break-inside: avoid; }
-
-    /* no box-shadow on print */
-    .table-card { box-shadow: none; }
   }
 </style>`;
 
@@ -1477,12 +1526,10 @@ function OutgoingScanInputBar({
 }
 
 // ─────────────────────────────────────────────────────────────
-// OUTGOING SCAN LOG BOXES
-// ───────────────────────────────────────────────────────────
+// COMMENTED OUT COMPONENTS RELATED TO SCAN ITEMS AS REQUESTED
+// ─────────────────────────────────────────────────────────────
 
-// ─────────────────────────────────────────────────────────────
-// ORDERS LIST
-// ─────────────────────────────────────────────────────────────
+/*
 function OrdersList({
 	orders,
 	scannedOrders,
@@ -1873,9 +1920,6 @@ function OutgoingScanLogBoxes({ successCount, errorCount }) {
 	);
 }
 
-// ─────────────────────────────────────────────────────────────
-// OUTGOING ORDERS SLIDE PANEL (For Picked Orders -> Manifest)
-// ─────────────────────────────────────────────────────────────
 function OutgoingOrdersSlidePanel({ selectedOrderIds, loading, setSelectedOrderIds, open, onClose, orders, onManifestCreated }) {
 	const t = useTranslations("warehouse.outgoing");
 	const locale = useLocale();
@@ -2012,6 +2056,7 @@ function OutgoingOrdersSlidePanel({ selectedOrderIds, loading, setSelectedOrderI
 		</AnimatePresence>
 	);
 }
+*/
 
 // ─────────────────────────────────────────────────────────────
 // SCAN SUBTAB
@@ -2019,301 +2064,313 @@ function OutgoingOrdersSlidePanel({ selectedOrderIds, loading, setSelectedOrderI
 export function ScanOutgoingSubtab({
 	fetchStats,
 	setSubtab,
-
 }) {
 	const searchParams = useSearchParams();
 	const router = useRouter();
 	const pathname = usePathname();
 
-	const orderNumberFromUrl = searchParams.get("order");
 	const t = useTranslations("warehouse.outgoing");
-	const { shippingCompanies } = usePlatformSettings();
-	const [selectedCarrier, setSelectedCarrier] = useState("all");
-	const [scanStep, setScanStep] = useState("order"); // "order" | "items"
+	const { shippingCompanies, formatCurrency } = usePlatformSettings();
 	const [scanInput, setScanInput] = useState("");
-	const [activeOrder, setActiveOrder] = useState(null);
-	const [localProducts, setLocalProducts] = useState([]);
-	const [availableForCarrier, setAvailableForCarrier] = useState([]);
-	const [scannedOrdersCount, setScannedOrdersCount] = useState(0);
-	const [wrongScans, setWrongScans] = useState(0);
-	const [lastHighlight, setLastHighlight] = useState(null);
-	const [lastScanMsg, setLastScanMsg] = useState(null);
-	const [scanState, setScanState] = useState("idle");
+	const [isScanning, setIsScanning] = useState(false);
+	const [scanFeedback, setScanFeedback] = useState(null);
 	const [soundEnabled, setSoundEnabled] = useState(true);
-	const [isFetchingOrder, setIsFetchingOrder] = useState(false);
-	const [loadingOrders, setLoadingOrders] = useState(false);
-	const [panelOpen, setPanelOpen] = useState(() => {
-		return !!searchParams.get("manifest");
-	});
-
 	const scanRef = useRef(null);
 
-	const selectedCompany = useMemo(() => {
-		if (!shippingCompanies || selectedCarrier === "all" || selectedCarrier === "none") {
-			return null;
-		}
+	// Table State
+	const [search, setSearch] = useState("");
+	const { debouncedValue: debouncedSearch } = useDebounce({ value: search, delay: 350 });
+	const [carrierId, setCarrierId] = useState("all");
+	const [selectedOrders, setSelectedOrders] = useState([]);
+	const [pager, setPager] = useState({
+		total_records: 0,
+		current_page: 1,
+		per_page: 48,
+		records: [],
+	});
+	const [loading, setLoading] = useState(false);
 
-		return shippingCompanies.find(
-			(c) => c.providerId === selectedCarrier
-		);
-	}, [shippingCompanies, selectedCarrier]);
+	const selectedOrderIds = useMemo(() => selectedOrders.map(o => o.id), [selectedOrders]);
 
-	const fetchAvailableOrders = useCallback(async () => {
-		// if (selectedCarrier === "all" || selectedCarrier === "none") {
-		// 	setAvailableForCarrier([]);
-		// 	return;
-		// }
+	const fetchOrders = useCallback(async (page = pager.current_page, per_page = pager.per_page) => {
 		try {
-			setLoadingOrders(true);
-			const res = await api.get('/orders', {
-				params: {
-					status: 'ready',
-					shippingCompanyId: selectedCarrier,
-					limit: 100
-				}
-			});
-			setAvailableForCarrier(res.data?.records || []);
+			setLoading(true);
+			const params = {
+				page,
+				limit: per_page,
+				search: debouncedSearch,
+				shippingCompanyId: carrierId === "all" ? undefined : carrierId,
+				status: 'ready',
+			};
+			const res = await api.get('/orders', { params });
+			setPager(prev => ({
+				...prev,
+				total_records: res.data.total_records,
+				current_page: res.data.current_page || page,
+				per_page: res.data.per_page || per_page,
+				records: res.data.records,
+			}));
 		} catch (error) {
-			console.error("Failed to fetch available orders", error);
+			console.error("Error fetching orders", error);
 		} finally {
-			setLoadingOrders(false);
+			setLoading(false);
 		}
-	}, [selectedCarrier]);
+	}, [debouncedSearch, carrierId, pager.current_page, pager.per_page]);
 
 	useEffect(() => {
-		fetchAvailableOrders();
-	}, [fetchAvailableOrders]);
-
-	const availableItemsCount = useMemo(
-		() =>
-			availableForCarrier.reduce(
-				(sum, order) =>
-					sum +
-					(order.items?.reduce((itemSum, p) => itemSum + (Number(p.quantity) || 0), 0) || 0),
-				0
-			),
-		[availableForCarrier]
-	);
+		fetchOrders(1);
+	}, [debouncedSearch, carrierId]);
 
 	const showFeedback = useCallback((type, message) => {
-		setLastScanMsg({ success: type === "success", message });
-		setScanState(type);
-		setTimeout(() => {
-			setLastScanMsg(null);
-			setScanState("idle");
-		}, 2200);
+		setScanFeedback({ type, message });
+		setTimeout(() => setScanFeedback(null), 2500);
 	}, []);
-
-	const fetchActiveOrder = useCallback(async (idOrCode) => {
-		try {
-			setIsFetchingOrder(true);
-			const res = await api.get(`/orders/${idOrCode}`);
-			const order = res.data;
-
-			// Validation: order must be prepared and belong to selected carrier
-			if (!order || order.status?.code !== 'ready') {
-				if (soundEnabled) playBeep("error");
-				showFeedback("error", t("scan.errors.notFoundOrWrongCarrier"));
-				setScanInput("");
-				return;
-			}
-
-			setActiveOrder(order);
-			setWrongScans(order.failedScanCounts?.shipping || 0);
-			setLocalProducts((order.items || []).map((p) => ({
-				sku: p.variant?.sku || p.sku,
-				name: p.variant?.product?.name || p.name,
-				shippingScannedQuantity: p.shippingScannedQuantity || 0,
-				quantity: p.quantity
-			})));
-			setScanStep("items");
-			setScanInput("");
-			if (soundEnabled) playBeep("success");
-			showFeedback("success", t("scan.success.addedOrder", { code: order.orderNumber }));
-		} catch (error) {
-			if (soundEnabled) playBeep("error");
-			showFeedback("error", t("scan.errors.notFound", { code: idOrCode }));
-			setScanInput("");
-		} finally {
-			setIsFetchingOrder(false);
-		}
-	}, [selectedCarrier, soundEnabled, showFeedback, t]);
-
-	useEffect(() => {
-		if (orderNumberFromUrl) {
-			fetchActiveOrder(orderNumberFromUrl);
-		}
-
-		const params = new URLSearchParams(searchParams.toString());
-		params.delete("order");
-		params.delete("manifest");
-
-		router.replace(
-			params.toString() ? `${pathname}?${params}` : pathname
-		);
-	}, [orderNumberFromUrl]);
-
-	const handleCarrierChange = (val) => {
-		setSelectedCarrier(val);
-		setScanStep("order");
-		setActiveOrder(null);
-		setLocalProducts([]);
-		setLastScanMsg(null);
-		setLastHighlight(null);
-		setScanState("idle");
-	};
-
-	const resetCurrentOrder = useCallback(() => {
-		setScanStep("order");
-		setScanInput("");
-		setActiveOrder(null);
-		setLocalProducts([]);
-		setTimeout(() => scanRef.current?.focus(), 100);
-	}, []);
-
-
-	const isItemsMode = scanStep === "items";
-	const meta = selectedCarrier !== "all" ? getCarrierMeta(selectedCarrier) : null;
-
-	const [selectedOrderIds, setSelectedOrderIds] = useState([]);
-	const [pickedOrders, setPickedOrders] = useState([]);
-	const [loadingPickedOrders, setLoadingPickedOrders] = useState([]);
-	const fetchPickedOrders = useCallback(async () => {
-		// if (!selectedCarrier || selectedCarrier === "all") return;
-		try {
-			setLoadingPickedOrders(true);
-			const res = await api.get('/orders', {
-				params: {
-					status: 'packed',
-					// shippingCompanyId: selectedCarrier,
-					limit: 100
-				}
-			});
-			setPickedOrders(res.data?.records || []);
-			setSelectedOrderIds([]);
-		} catch (error) {
-			console.error("Failed to fetch picked orders", error);
-		} finally {
-			setLoadingPickedOrders(false);
-		}
-	}, []);
-
-	useEffect(() => {
-		fetchPickedOrders();
-	}, [fetchPickedOrders]);
 
 	const handleScan = async (value) => {
 		const val = value?.trim() || scanInput.trim();
-		setScanInput(val);
+		setScanInput("");
 		if (!val) return;
 
-		if (scanStep === "order") {
-			await fetchActiveOrder(val);
-		} else {
-			const productIndex = localProducts.findIndex((p) => p.sku === val);
-			// if (productIndex === -1) {
-			// 	if (soundEnabled) playBeep("error");
-			// 	setWrongScans((p) => p + 1);
-			// 	showFeedback("error", t("scan.errors.notFound", { code: val }));
-			// 	setScanInput("");
-			// 	return;
-			// }
+		try {
+			setIsScanning(true);
+			const res = await api.get(`/orders/${val}`);
+			const order = res.data;
 
-			// const product = localProducts[productIndex];
-			// if (product.shippingScannedQuantity >= product.quantity) {
-			// 	if (soundEnabled) playBeep("error");
-			// 	showFeedback("error", t("scan.errors.alreadyScannedWithCode", { code: product.sku }));
-			// 	setScanInput("");
-			// 	return;
-			// }
-
-			try {
-				const res = await api.post(`/orders/${activeOrder.id}/scan-shipping/${val}`);
-				const { scanned, success, message, isShippingReady } = res.data;
-
-				if (!success) {
-					if (soundEnabled) playBeep("error");
-					setWrongScans((p) => p + 1);
-					showFeedback("error", message || t("scan.errors.notFound", { code: val }));
-					setScanInput("");
-					return;
-				}
-
-				const updated = localProducts.map((p, i) =>
-					i === productIndex ? { ...p, shippingScannedQuantity: scanned } : p
-				);
-				setLocalProducts(updated);
-				setLastHighlight({ code: val, ok: true });
-				if (soundEnabled) playBeep("success");
-				showFeedback("success", t("scan.success.addedOrder", { code: val }));
-				setScanInput("");
-
-				if (isShippingReady) {
-					setScannedOrdersCount(prev => prev + 1);
-					toast.success(t("scan.success.orderComplete") || "Order fully scanned and ready for shipping");
-					fetchAvailableOrders();
-					fetchPickedOrders();
-					fetchStats?.();
-					setTimeout(() => {
-						resetCurrentOrder();
-					}, 1500);
-				}
-			} catch (error) {
+			if (!order) {
 				if (soundEnabled) playBeep("error");
-				setWrongScans((p) => p + 1);
-				showFeedback("error", error.response?.data?.message || t("scan.errors.notFound", { code: val }));
-				setScanInput("");
+				showFeedback("error", t("scan.errors.orderNotFound") || "Order not found or not ready");
+				return;
 			}
+
+			if (order.status?.code !== 'ready') {
+				if (soundEnabled) playBeep("error");
+				showFeedback("error", t("scan.errors.invalidStatus") || "Order not found or not ready");
+				return;
+			}
+
+			if (soundEnabled) playBeep("success");
+			showFeedback("success", t("scan.success.addedOrder", { code: order.orderNumber }));
+
+			// Add to selected orders if not present
+			if (!selectedOrderIds.includes(order.id)) {
+				setSelectedOrders(prev => [order, ...prev]);
+			}
+
+			// Check if already in table
+			const exists = pager.records.find(o => o.id === order.id);
+			if (!exists) {
+				setPager(prev => ({
+					...prev,
+					records: [order, ...prev.records],
+					total_records: prev.total_records + 1
+				}));
+			}
+
+		} catch (error) {
+			if (soundEnabled) playBeep("error");
+			showFeedback("error", t("scan.errors.notFound", { code: val }));
+		} finally {
+			setIsScanning(false);
+			scanRef.current?.focus();
 		}
 	};
 
+	const toggleSelect = (order) => {
+		if (selectedOrderIds.includes(order.id)) {
+			setSelectedOrders(prev => prev.filter(x => x.id !== order.id));
+		} else {
+			setSelectedOrders(prev => [order, ...prev]);
+		}
+	};
+
+	const toggleSelectAll = () => {
+		if (pager.records.every(r => selectedOrderIds.includes(r.id))) {
+			// Unselect only those on the current page
+			const pageIds = pager.records.map(r => r.id);
+			setSelectedOrders(prev => prev.filter(o => !pageIds.includes(o.id)));
+		} else {
+			// Select those on the current page that aren't selected
+			const pageOrdersToSelect = pager.records.filter(r => !selectedOrderIds.includes(r.id));
+			setSelectedOrders(prev => [...pageOrdersToSelect, ...prev]);
+		}
+	};
+	const handleRemoveCarrierOrders = (groupId) => {
+		setSelectedOrders(prev =>
+			prev.filter(order => {
+				const cId = order.shippingCompanyId ? String(order.shippingCompanyId) : "unspecified";
+				return cId !== groupId;
+			})
+		);
+		toast.success(t("scan.carrierOrdersRemoved"));
+	};
+
+	// Group selected orders by carrier
+	const selectedOrdersByCarrier = useMemo(() => {
+		const groups = {};
+
+		// 1. Initialize all known shipping companies from settings
+		shippingCompanies.forEach(company => {
+			// Use providerId if available, fallback to id
+			const cId = String(company.providerId || company.id);
+			groups[cId] = {
+				id: cId,
+				name: company.name,
+				orders: []
+			};
+		});
+
+		// 2. Initialize a bucket for orders with no specified shipping company
+		groups["unspecified"] = {
+			id: "unspecified",
+			name: t("common.unspecified"),
+			orders: []
+		};
+
+		// 3. Populate the groups with actual selected orders
+		selectedOrders.forEach(order => {
+			const cId = order.shippingCompanyId ? String(order.shippingCompanyId) : "unspecified";
+
+			// Fallback just in case an order has an old/deleted company ID
+			if (!groups[cId]) {
+				groups[cId] = {
+					id: cId,
+					name: order.shippingCompany?.name || t("common.unspecified"),
+					orders: []
+				};
+			}
+			groups[cId].orders.push(order);
+		});
+
+		// 4. Return as an array (Optional: filter out 'unspecified' if it's completely empty)
+		return Object.values(groups).filter(
+			group => group.id !== "unspecified" || group.orders.length > 0
+		);
+	}, [selectedOrders, shippingCompanies, t]);
+
+
+	const handleCreateManifest = async (group) => {
+		const orderIds = group.orders.map(o => o.id);
+		if (orderIds.length === 0) return;
+
+		try {
+			toast.loading(t("scan.messages.creatingManifest") || "Creating manifest...");
+			const { data } = await api.post('/orders/manifests', {
+				shippingCompanyId: group.id === "unspecified" ? null : group.id,
+				orderIds: orderIds
+			});
+			toast.dismiss();
+			toast.success(t("scan.messages.manifestCreated") || "Manifest created successfully");
+
+			// Clear selection for these orders
+			setSelectedOrders(prev => prev.filter(o => !orderIds.includes(o.id)));
+
+			// Refresh table
+			fetchOrders();
+			fetchStats?.();
+
+			// Optionally switch to files tab
+			setSubtab("files", { manifestId: data?.id });
+
+		} catch (error) {
+			toast.dismiss();
+			console.error("Failed to create manifest", error);
+			toast.error(error.response?.data?.message || t("scan.messages.errorOccurred"));
+		}
+	};
+
+	const columns = [
+		{
+			key: "select",
+			header: (
+				<div className="flex items-center justify-center">
+					<Checkbox
+						checked={pager.records.length > 0 && pager.records.every(r => selectedOrderIds.includes(r.id))}
+						onCheckedChange={toggleSelectAll}
+					/>
+				</div>
+			),
+			className: "w-[48px]",
+			cell: (row) => (
+				<div className="flex items-center justify-center">
+					<Checkbox
+						checked={selectedOrderIds.includes(row.id)}
+						onCheckedChange={() => toggleSelect(row)}
+					/>
+				</div>
+			),
+		},
+		{
+			header: t("scan.table.orderNumber"),
+			key: "orderNumber",
+			cell: (row) => <span className="font-mono font-bold text-primary">{row.orderNumber}</span>
+		},
+		{
+			header: t("scan.table.customer"),
+			key: "customerName",
+		},
+		{
+			header: t("scan.table.city"),
+			key: "city",
+		},
+		{
+			header: t("scan.table.products"),
+			key: "items",
+			cell: (row) => row.items?.length || 0
+		},
+		{
+			header: t("scan.table.carrier"),
+			key: "shippingCompany",
+			cell: (row) => (
+				<Badge variant="secondary" className="text-[10px]">
+					{row.shippingCompany?.name || t("common.unspecified")}
+				</Badge>
+			)
+		},
+		{
+			header: t("scan.table.date"),
+			key: "created_at",
+			cell: (row) => new Date(row.created_at).toLocaleDateString()
+		}
+	];
 
 	return (
-		<div className="space-y-4" >
+		<div className="space-y-4">
 			<Panel>
 				<PanelHeader
 					icon={ScanLine}
-					pretitle={!isItemsMode ? t("scan.subtitle") : `${t("scan.orderLabel")}: ${activeOrder?.orderNumber}`}
-					title={!isItemsMode ? t("scan.title") : t("scan.scanItemsTitle")}
+					title={t("scan.title")}
+					pretitle={t("scan.subtitle")}
 					right={
-						<>
-							<HeaderIconBtn onClick={() => setSoundEnabled(v => !v)}>
-								{soundEnabled ? <Volume2 size={13} className="text-white" /> : <VolumeX size={13} className="text-white/60" />}
-							</HeaderIconBtn>
-							<HeaderBadge onClick={() => setPanelOpen(true)}><Layers size={12} />{t("scan.ordersOutgingBtn", { count: pickedOrders?.length || 0 })}</HeaderBadge>
-							{isItemsMode && <HeaderBadge onClick={resetCurrentOrder}><X size={12} />{t("scan.cancelBtn")}</HeaderBadge>}
-						</>
+						<HeaderIconBtn onClick={() => setSoundEnabled(v => !v)}>
+							{soundEnabled ? <Volume2 size={13} className="text-white" /> : <VolumeX size={13} className="text-white/60" />}
+						</HeaderIconBtn>
 					}
 				>
-					<div className="flex items-center gap-2 flex-wrap">
+					<div className="flex items-center gap-2">
 						<HeaderBadge>
 							<ClipboardList size={11} />
-							{t("scan.readyOrders", { count: availableForCarrier.length })}
-						</HeaderBadge>
-						<HeaderBadge>
-							<Boxes size={11} />
-							{t("scan.totalItemsCount", { count: availableItemsCount })}
+							{t("scan.readyOrders", { count: pager.total_records })}
 						</HeaderBadge>
 					</div>
 				</PanelHeader>
 
-				<div className="px-4 pt-8 py-5 space-y-4">
+				<div className="px-4 pt-8 pb-5 space-y-6">
 					<div className="relative">
 						<OutgoingScanInputBar
 							inputRef={scanRef}
 							value={scanInput}
 							onChange={(e) => setScanInput(e.target.value)}
 							onScan={handleScan}
-							isSuccess={scanState === "success"}
-							isError={scanState === "error"}
-							placeholder={!isItemsMode ? t("scan.placeholder") : t("scan.scanItemsPlaceholder", { code: activeOrder?.orderNumber })}
-							selectedCarrier={selectedCarrier}
-							onCarrierChange={handleCarrierChange}
+							isSuccess={scanFeedback?.type === "success"}
+							isError={scanFeedback?.type === "error"}
+							placeholder={t("scan.placeholder")}
+							selectedCarrier={carrierId}
+							onCarrierChange={setCarrierId}
 							soundEnabled={soundEnabled}
-							onToggleSound={() => setSoundEnabled((v) => !v)}
-							disabled={isFetchingOrder}
+							onToggleSound={() => setSoundEnabled(v => !v)}
+							disabled={isScanning}
 						/>
-						{isFetchingOrder && (
+						{isScanning && (
 							<div className="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-slate-900/50 rounded-xl z-10">
 								<Loader2 className="animate-spin text-primary" size={24} />
 							</div>
@@ -2321,114 +2378,115 @@ export function ScanOutgoingSubtab({
 					</div>
 
 					<AnimatePresence>
-						{lastScanMsg && (
+						{scanFeedback && (
 							<motion.div
-								initial={{ opacity: 0, y: -6, scale: 0.97 }}
-								animate={{ opacity: 1, y: 0, scale: 1 }}
-								exit={{ opacity: 0, y: -6, scale: 0.97 }}
-								transition={{ duration: 0.18 }}
+								initial={{ opacity: 0, y: -6 }}
+								animate={{ opacity: 1, y: 0 }}
+								exit={{ opacity: 0, y: -6 }}
 								className={cn(
 									"flex items-center gap-3 px-4 py-2.5 border text-sm font-semibold",
 									DS.radius,
-									lastScanMsg.success
-										? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300"
-										: "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800 text-red-600 dark:text-red-300"
+									scanFeedback.type === "success"
+										? "bg-emerald-50 border-emerald-200 text-emerald-700"
+										: "bg-red-50 border-red-200 text-red-600"
 								)}
 							>
-								{lastScanMsg.success ? (
-									<CheckCircle2 size={14} className="flex-shrink-0" />
-								) : (
-									<AlertCircle size={14} className="flex-shrink-0" />
-								)}
-								{lastScanMsg.message}
+								{scanFeedback.type === "success" ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}
+								{scanFeedback.message}
 							</motion.div>
 						)}
 					</AnimatePresence>
 
-					<OutgoingScanLogBoxes successCount={scannedOrdersCount} errorCount={wrongScans} />
+					{/* Manifest Creation Actions */}
+					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+						{selectedOrdersByCarrier.map(group => {
+							const hasOrders = group.orders.length > 0;
+
+							return (
+								<div
+									key={group.id}
+									className={`relative overflow-hidden p-5 rounded-2xl flex flex-col gap-4 transition-all duration-200 border ${hasOrders
+										? "border-[var(--primary)]/20 bg-white dark:bg-slate-900 shadow-sm"
+										: "border-slate-200 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-800/20"
+										}`}
+								>
+									{/* Accent line */}
+									{hasOrders && (
+										<div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--primary)] to-[var(--secondary,var(--third))]" />
+									)}
+
+									<div className="flex items-start justify-between gap-3 mt-1">
+										<div className="flex flex-col min-w-0">
+											<span className={`text-sm font-bold truncate ${hasOrders ? "text-slate-800 dark:text-slate-100" : "text-slate-500 dark:text-slate-400"}`}>
+												{group.name}
+											</span>
+											<span className="text-xs text-slate-400 dark:text-slate-500 font-medium mt-1">
+												{hasOrders ? t("scan.readyToManifest") : t("scan.noOrdersSelected")}
+											</span>
+										</div>
+
+										{/* Actions Container */}
+										<div className="flex items-center gap-2">
+											{hasOrders && (
+												<button
+													onClick={() => handleRemoveCarrierOrders(group.id)}
+													className="p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+													title={t("common.remove")}
+												>
+													<Trash2 size={14} />
+												</button>
+											)}
+
+											<div className={`flex shrink-0 items-center justify-center min-w-[28px] h-7 px-2 rounded-lg font-bold text-xs tabular-nums ${hasOrders
+												? "bg-[var(--primary)]/10 text-[var(--primary)]"
+												: "bg-slate-200/50 dark:bg-slate-700/50 text-slate-400"
+												}`}>
+												{group.orders.length}
+											</div>
+										</div>
+									</div>
+
+									<Button_
+										size="sm"
+										tone={hasOrders ? "primary" : "neutral"}
+										variant={hasOrders ? "solid" : "outline"}
+										className="w-full mt-auto"
+										disabled={!hasOrders}
+										label={t("scan.createManifest") || "Create Manifest"}
+										onClick={() => handleCreateManifest(group)}
+									/>
+								</div>
+							);
+						})}
+					</div>
 				</div>
 			</Panel>
 
-			<>
-				<Panel>
-					<div
-						className="relative overflow-hidden px-4 py-3 border-b border-slate-100 dark:border-slate-700/60"
-						style={{ background: DS.cardGradient, ...DS.scanline }}
-					>
-						<div className="relative flex flex-wrap items-center gap-x-4 gap-y-2">
-							<div className="min-w-0">
-								<p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">
-									{t("scan.ordersCard.carrier")}
-								</p>
-								<div className="flex items-center gap-2">
-									<div
-										className={cn("w-7 h-7 rounded-lg flex items-center justify-center")}
-										style={{ background: meta?.color + "15" }}
-									>
-										<Truck size={13} style={{ color: meta?.color || DS.primary }} />
-									</div>
-									<p className="text-sm font-black text-slate-800 dark:text-slate-100">
-										{selectedCompany ? selectedCompany?.name : selectedCarrier}
-									</p>
-								</div>
-							</div>
-
-							<div className="min-w-0">
-								<p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">
-									{t("scan.ordersCard.orders")}
-								</p>
-								<p className="font-mono font-black text-sm" style={{ color: DS.primary }}>
-									{availableForCarrier.length}
-								</p>
-							</div>
-
-							<div className="min-w-0">
-								<p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">
-									{t("scan.ordersCard.items")}
-								</p>
-								<p className="font-mono font-black text-sm text-slate-700 dark:text-slate-200">
-									{availableItemsCount}
-								</p>
-							</div>
+			<Panel>
+				<Table
+					searchValue={search}
+					onSearchChange={setSearch}
+					data={pager.records}
+					columns={columns}
+					isLoading={loading}
+					pagination={{
+						total_records: pager.total_records,
+						per_page: pager.per_page,
+						current_page: pager.current_page
+					}}
+					onPageChange={({ page: p, per_page }) => fetchOrders(p, per_page)}
+					onSearch={(val) => setSearch(val)}
+					filters={[
+						<div key="carrier" className="w-48">
+							<ShippingCompanyFilter
+								value={carrierId}
+								onChange={setCarrierId}
+								hideLabel
+							/>
 						</div>
-					</div>
-
-					{loadingOrders ? (
-						<div className="flex flex-col items-center justify-center py-20 space-y-4">
-							<Loader2 className="animate-spin text-primary" size={32} />
-							<p className="text-sm font-bold text-slate-400 tracking-wide animate-pulse">{t("scan.loadingOrders")}</p>
-						</div>
-					) : isItemsMode && activeOrder ? (
-						<ScannedOrderTable
-							order={activeOrder}
-							localProducts={localProducts}
-							justScanned={lastHighlight?.ok ? lastHighlight.code : null}
-						/>
-					) : (
-						<OrdersList
-							orders={availableForCarrier}
-							scannedOrders={[]}
-							lastHighlight={lastHighlight}
-							onSelectOrder={(order) => fetchActiveOrder(order.orderNumber)}
-						/>
-					)}
-				</Panel>
-			</>
-
-			<OutgoingOrdersSlidePanel
-				open={panelOpen}
-				onClose={() => setPanelOpen(false)}
-				selectedOrderIds={selectedOrderIds}
-				setSelectedOrderIds={setSelectedOrderIds}
-				orders={pickedOrders}
-				loading={loadingPickedOrders}
-				onManifestCreated={(manifest) => {
-					setSubtab("files", {
-						manifestId: manifest?.id,
-					});
-					fetchStats?.();
-				}}
-			/>
+					]}
+				/>
+			</Panel>
 		</div>
 	);
 }
@@ -2605,14 +2663,15 @@ function OutgoingFilesSubtab({
 			const ordersSnapshot = manifest.orders.map(o => ({
 				code: o.orderNumber,
 				customer: o.customerName,
+				phone: o.phoneNumber || "", // Added phone number
 				city: o.city,
+				trackingNumber: o.trackingNumber || "-", // Fallback to "-" if no AWB
 				carrier: manifest.shippingCompany?.name,
 				products: o.items.map(i => ({
 					sku: i.variant?.sku || i.sku,
 					name: i.variant?.product?.name || i.name,
 					quantity: i.quantity
-				})),
-				trackingNumber: o.trackingNumber
+				}))
 			}));
 
 			openPrintWindow(
@@ -2714,13 +2773,7 @@ function OutgoingFilesSubtab({
 			{
 				key: "orderCodes",
 				header: t("files.th.orders"),
-				cell: (row) => (
-					<FileSummaryCell
-						row={row}
-					// totalOrders={row.totalOrders}
-					// totalItems={row.orders?.reduce((acc, o) => acc + (o.items?.reduce((sum, i) => sum + i.quantity, 0) || 0), 0) || 0}
-					/>
-				),
+				cell: (row) => (<FileSummaryCell row={row} />),
 			},
 			{
 				key: "createdAt",
@@ -2755,18 +2808,18 @@ function OutgoingFilesSubtab({
 						}
 					];
 
-					actionList.push({
-						icon: downloadingWrongLog[row.id] ? (
-							<Loader2 size={13} className="animate-spin" />
-						) : (
-							<FileText size={13} />
-						),
-						tooltip: t("files.downloadWrongLog"),
-						onClick: (r) => handleDownloadWrongLog(r),
-						variant: "red",
-						disabled: !!downloadingWrongLog[row.id] || !hasFailedScans,
-						permission: "orders.read",
-					});
+					// actionList.push({
+					// 	icon: downloadingWrongLog[row.id] ? (
+					// 		<Loader2 size={13} className="animate-spin" />
+					// 	) : (
+					// 		<FileText size={13} />
+					// 	),
+					// 	tooltip: t("files.downloadWrongLog"),
+					// 	onClick: (r) => handleDownloadWrongLog(r),
+					// 	variant: "red",
+					// 	disabled: !!downloadingWrongLog[row.id] || !hasFailedScans,
+					// 	permission: "orders.read",
+					// });
 
 					return (
 						<ActionButtons
@@ -2806,7 +2859,6 @@ function OutgoingFilesSubtab({
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="all">{t("common.all")}</SelectItem>
-								<SelectItem value="true">{t("files.status.printed")}</SelectItem>
 								<SelectItem value="false">{t("files.status.notPrinted")}</SelectItem>
 							</SelectContent>
 						</Select>

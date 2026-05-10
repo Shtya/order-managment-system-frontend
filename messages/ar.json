@@ -2107,7 +2107,8 @@
         "allCarriers": "كل شركات الشحن",
         "currency": "ر.س",
         "all": "الكل",
-        "unspecified": "غير محدد"
+        "unspecified": "غير محدد",
+        "remove": "إزالة الكل"
       },
       "messages": {
         "errorDownloadingManifest": "خطأ في تحميل الملف",
@@ -2152,7 +2153,8 @@
           "manifestUpdated": "تم تحديث بيان الشحن",
           "printSuccess": "بدأت عملية الطباعة",
           "errorOccurred": "حدث خطأ غير متوقع",
-          "carrierMismatch": "لا يمكن إنشاء ملف لطلبات تتبع شركات شحن مختلفة"
+          "carrierMismatch": "لا يمكن إنشاء ملف لطلبات تتبع شركات شحن مختلفة",
+          "creatingManifest": "جاري إنشاء الملف..."
         },
         "table": {
           "products": "المنتجات",
@@ -2165,7 +2167,10 @@
           "qty": "الكمية",
           "price": "السعر",
           "lineTotal": "الإجمالي",
-          "status": "الحالة"
+          "status": "الحالة",
+          "orderNumber": "رقم الطلب",
+          "carrier": "شركة الشحن",
+          "date": "تاريخ الطلب"
         },
         "success": {
           "addedOrder": "تمت إضافة الطلب {code}",
@@ -2175,7 +2180,9 @@
           "alreadyScanned": "تم مسحه مسبقاً",
           "alreadyScannedWithCode": "الطلب {code} تم مسحه مسبقاً",
           "notFound": "الطلب {code} غير موجود",
-          "notFoundOrWrongCarrier": "الطلب غير موجود أو لا ينتمي لهذه الشركة"
+          "notFoundOrWrongCarrier": "الطلب غير موجود أو لا يمكن شحنه حاليا",
+          "orderNotFound": "الطلب غير موجود",
+          "invalidStatus": "لا يمكن شحن هذا الطلب"
         },
         "reasons": {
           "SKU_NOT_IN_ORDER": "المنتج ليس في الطلب",
@@ -2184,7 +2191,11 @@
           "OTHER": "أخرى"
         },
         "readyOutgingOrders": "{count} طلب جاهزة للخروج",
-        "ordersOutgingBtn": "الطلبات جاهزة للخروج ({count})"
+        "ordersOutgingBtn": "الطلبات جاهزة للخروج ({count})",
+        "createManifest": "إنشاء الفايل",
+        "readyToManifest": "جاهز لإنشاء الملف",
+        "noOrdersSelected": "لا توجد طلبات مختارة",
+        "carrierOrdersRemoved": "تمت إزالة طلبات شركة الشحن هذه من الاختيار"
       },
       "files": {
         "searchPlaceholder": "ابحث برقم الملف أو شركة الشحن أو اسم الملف",

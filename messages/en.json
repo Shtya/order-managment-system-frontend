@@ -2073,7 +2073,8 @@
         "allCarriers": "All Companies",
         "currency": "EGP",
         "all": "All",
-        "unspecified": "None"
+        "unspecified": "None",
+        "remove": "Remove all"
       },
       "messages": {
         "errorDownloadingManifest": "Error downloading manifest",
@@ -2118,7 +2119,8 @@
           "manifestUpdated": "Manifest updated",
           "printSuccess": "Printing process started",
           "errorOccurred": "An unexpected error occurred",
-          "carrierMismatch": "Cannot create manifest for orders from different shipping companies"
+          "carrierMismatch": "Cannot create manifest for orders from different shipping companies",
+          "creatingManifest": "Creating manifest..."
         },
         "table": {
           "products": "Products",
@@ -2131,7 +2133,10 @@
           "qty": "Qty",
           "price": "Price",
           "lineTotal": "Total",
-          "status": "Status"
+          "status": "Status",
+          "orderNumber": "Order Number",
+          "carrier": "Shipping company",
+          "date": "Order date"
         },
         "success": {
           "addedOrder": "Order {code} added",
@@ -2141,7 +2146,9 @@
           "alreadyScanned": "Already scanned",
           "alreadyScannedWithCode": "Order {code} already scanned",
           "notFound": "Order {code} not found",
-          "notFoundOrWrongCarrier": "Order not found or doesn't belong to this carrier"
+          "notFoundOrWrongCarrier": "The order does not exist or cannot be shipped at this time",
+          "orderNotFound": "Order not found",
+          "invalidStatus": "This order cannot be shipped"
         },
         "reasons": {
           "SKU_NOT_IN_ORDER": "Product not in order",
@@ -2150,7 +2157,10 @@
           "OTHER": "Other"
         },
         "readyOutgingOrders": "{count} Order ready for shipping",
-        "ordersOutgingBtn": "Ready Orders for Shipping ({count})"
+        "ordersOutgingBtn": "Ready Orders for Shipping ({count})",
+        "createManifest": "Create Manifest",
+        "readyToManifest": "Ready for create manifest",
+        "carrierOrdersRemoved": "Orders for this carrier have been removed from selection"
       },
       "files": {
         "searchPlaceholder": "Search delivery files...",

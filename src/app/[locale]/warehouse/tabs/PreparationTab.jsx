@@ -1533,6 +1533,13 @@ export function ScanLogBoxes({ successCount, errorCount }) {
 	);
 }
 
+export const ScanReason = {
+	SKU_NOT_IN_ORDER: "SKU_NOT_IN_ORDER",
+	ALREADY_FULLY_SCANNED: "ALREADY_FULLY_SCANNED",
+	INVALID_STATUS: "INVALID_STATUS",
+	OTHER: "OTHER",
+};
+
 // ─────────────────────────────────────────────────────────────
 // SCAN WORKFLOW PANEL
 // ─────────────────────────────────────────────────────────────
@@ -1615,6 +1622,21 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 		setTimeout(() => scanInputRef.current?.focus(), 100);
 	}, []);
 
+	const handleSuccessFeedback = useCallback((productName, sku) => {
+		setSuccessCount((c) => c + 1);
+		setJustScanned(sku);
+		setTimeout(() => setJustScanned(null), 900);
+		if (soundEnabled) playBeep("success");
+		showFeedback("success", t("scan.itemScanned", { name: productName }));
+	}, [soundEnabled, showFeedback, t]);
+
+	const handleErrorFeedback = useCallback((errorMsg) => {
+		if (soundEnabled) playBeep("error");
+		setErrorCount((c) => c + 1);
+		showFeedback("error", errorMsg);
+	}, [soundEnabled, showFeedback]);
+	const pendingScansRef = useRef({});
+
 	const handleScan = useCallback(async (value) => {
 		const val = value?.trim() || scanValue.trim();
 
@@ -1623,61 +1645,91 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 
 		if (scanStep === "order") {
 			await fetchActiveOrder(val);
+			pendingScansRef.current = {};
 		} else {
+			const sku = val;
+			const previousLocalProducts = [...localProducts];
 			const productIndex = localProducts.findIndex((p) => p?.variant?.sku === val || p.barcode === val);
 			const product = localProducts[productIndex];
-			// if (productIndex === -1) {
-			// 	if (soundEnabled) playBeep("error");
-			// 	setErrorCount((c) => c + 1);
-			// 	showFeedback("error", t("scan.barcodeNotFound", { val }));
-			// 	setScanValue("");
-			// 	return;
-			// }
+			let didOptimisticUpdate = false;
+			let localErrorCode = null;
 
-			// const product = localProducts[productIndex];
-			// if (product.scannedQuantity >= product.quantity) {
-			// 	if (soundEnabled) playBeep("error");
-			// 	showFeedback("error", t("scan.alreadyScanned", { name: product.name }));
-			// 	setScanValue("");
-			// 	return;
-			// }
+			// Track concurrent scans for this SKU
+			if (!pendingScansRef.current[sku]) {
+				pendingScansRef.current[sku] = { pending: 0, serverScanned: product?.scannedQuantity || 0 };
+			}
+			pendingScansRef.current[sku].pending += 1;
+
+			// --- OPTIMISTIC HANDLING ---
+			if (!product) {
+				localErrorCode = "SKU_NOT_IN_ORDER";
+				handleErrorFeedback(t("scan.barcodeNotFound", { val }));
+			} else if (product.scannedQuantity < product.quantity) {
+				didOptimisticUpdate = true;
+				const optimisticProducts = localProducts.map((p, i) =>
+					i === productIndex ? { ...p, scannedQuantity: p.scannedQuantity + 1 } : p
+				);
+				setLocalProducts(optimisticProducts);
+				handleSuccessFeedback(product.name, product.sku || product.variant?.sku);
+			} else {
+				localErrorCode = "ALREADY_FULLY_SCANNED";
+				handleErrorFeedback(t("scan.alreadyScanned", { name: product.name }));
+			}
+			setScanValue("");
 
 			try {
 				const res = await api.post(`/orders/${activeOrder.id}/scan-preparation/${val}`);
-				const { scanned, success, message, total, isOrderComplete } = res.data;
+				const { scanned, success, message, code, isOrderComplete } = res.data;
+
+				// Update tracking state
+				pendingScansRef.current[sku].pending = Math.max(0, pendingScansRef.current[sku].pending - 1);
+				if (success) {
+					pendingScansRef.current[sku].serverScanned = Math.max(pendingScansRef.current[sku].serverScanned, scanned);
+				}
 
 				if (!success) {
-					if (soundEnabled) playBeep("error");
-					setErrorCount((c) => c + 1);
-					showFeedback("error", message || t("scan.errorScanning"));
-					setScanValue("");
+					// Rollback UI if we did an optimistic update
+					if (didOptimisticUpdate) {
+						setLocalProducts(prev => prev.map((p, i) =>
+							i === productIndex ? { ...p, scannedQuantity: Math.max(0, p.scannedQuantity - 1) } : p
+						));
+						setSuccessCount((c) => Math.max(0, c - 1));
+					}
+
+					// Final sync if no more pending scans for this SKU
+					if (pendingScansRef.current[sku].pending === 0 && productIndex !== -1) {
+						const finalScanned = pendingScansRef.current[sku].serverScanned;
+						setLocalProducts(prev => prev.map((p, i) =>
+							i === productIndex ? { ...p, scannedQuantity: finalScanned } : p
+						));
+					}
+
+					if (code !== localErrorCode) {
+						handleErrorFeedback(message || t("scan.errorScanning"));
+					}
 					return;
 				}
+
+				// Final synchronization only when all pending scans for this SKU are finished
+				if (productIndex !== -1 && pendingScansRef.current[sku].pending === 0) {
+					const finalScanned = pendingScansRef.current[sku].serverScanned;
+					setLocalProducts(prev => prev.map((p, i) =>
+						i === productIndex ? { ...p, scannedQuantity: finalScanned } : p
+					));
+
+					if (!didOptimisticUpdate) {
+						handleSuccessFeedback(product.name, product.sku || product.variant?.sku);
+					}
+				}
+
 				// Update stats if it was printed (first scan for this order)
 				if (activeOrder.status?.code === 'printed') {
 					updateStatsAfterScanStart?.();
-					// update local activeOrder status to prevent double stat update
 					setActiveOrder(prev => ({
 						...prev,
-						status: {
-							...prev.status,
-							code: 'preparing' // Specifically updating the code property
-						}
+						status: { ...prev.status, code: 'preparing' }
 					}));
 				}
-
-				const updated = localProducts.map((p, i) =>
-					i === productIndex ? { ...p, scannedQuantity: scanned } : p
-				);
-
-				setLocalProducts(updated);
-				setJustScanned(product.sku);
-				setTimeout(() => setJustScanned(null), 900);
-				setSuccessCount((c) => c + 1);
-
-				if (soundEnabled) playBeep("success");
-				showFeedback("success", t("scan.itemScanned", { name: product.name }));
-				setScanValue("");
 
 				if (isOrderComplete) {
 					const now = new Date().toISOString().slice(0, 16).replace("T", " ");
@@ -1698,14 +1750,33 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 					}, 900);
 				}
 			} catch (error) {
-				console.error(error)
-				if (soundEnabled) playBeep("error");
-				setErrorCount((c) => c + 1);
-				showFeedback("error", error.response?.data?.message || t("scan.errorScanning"));
-				setScanValue("");
+				// Update tracking state on error
+				pendingScansRef.current[sku].pending = Math.max(0, pendingScansRef.current[sku].pending - 1);
+
+				// Rollback if we did an optimistic update
+				if (didOptimisticUpdate) {
+					setLocalProducts(prev => prev.map((p, i) =>
+						i === productIndex ? { ...p, scannedQuantity: Math.max(0, p.scannedQuantity - 1) } : p
+					));
+					setSuccessCount((c) => Math.max(0, c - 1));
+				}
+
+				// Final sync on error if no more pending
+				if (pendingScansRef.current[sku].pending === 0 && productIndex !== -1) {
+					const finalScanned = pendingScansRef.current[sku].serverScanned;
+					setLocalProducts(prev => prev.map((p, i) =>
+						i === productIndex ? { ...p, scannedQuantity: finalScanned } : p
+					));
+				}
+
+				console.error(error);
+				const serverCode = error.response?.data?.code;
+				if (serverCode !== localErrorCode) {
+					handleErrorFeedback(error.response?.data?.message || t("scan.errorScanning"));
+				}
 			}
 		}
-	}, [scanValue, scanStep, localProducts, activeOrder, soundEnabled, fetchActiveOrder, updateStatsAfterScanStart, pushOp, showFeedback, resetCurrentOrder, fetchStats, t]);
+	}, [scanValue, scanStep, localProducts, activeOrder, soundEnabled, fetchActiveOrder, updateStatsAfterScanStart, pushOp, showFeedback, resetCurrentOrder, fetchStats, t, handleSuccessFeedback, handleErrorFeedback]);
 
 	const isItemsMode = scanStep === "items";
 

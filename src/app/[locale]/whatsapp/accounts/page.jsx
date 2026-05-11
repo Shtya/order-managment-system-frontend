@@ -15,7 +15,8 @@ import {
   Eye,
   BarChart3,
   Clock,
-  ShieldAlert
+  ShieldAlert,
+  Settings
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
@@ -24,6 +25,9 @@ import Button_ from "@/components/atoms/Button";
 import Table from "@/components/atoms/Table";
 import ActionButtons from "@/components/atoms/Actions";
 import ConfirmDialog from "@/components/molecules/ConfirmDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { WhatsAppTab } from "../../settings/page";
+import { Settings2 } from "lucide-react";
 // Mock Data
 const MOCK_ACCOUNTS = [
   {
@@ -69,6 +73,7 @@ export default function WhatsAppAccountsPage() {
   const [loading, setLoading] = useState(false);
   const [accounts, setAccounts] = useState(MOCK_ACCOUNTS);
   const [deleteState, setDeleteState] = useState({ open: false, id: null });
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Stats Configuration
   const statsCards = useMemo(() => [
@@ -177,13 +182,20 @@ export default function WhatsAppAccountsPage() {
         ]}
         buttons={
           <>
+            <Button_ size="sm" label={tCommon("howToUse")} tone="outline" variant="ghost" icon={<Info size={15} />} />
+            <Button_
+              size="sm"
+              label="الإعدادات"
+              variant="outline"
+              onClick={() => setSettingsOpen(true)}
+              icon={<Settings size={18} />}
+            />
             <Button_
               size="sm"
               label={t("toolbar.addAccount")}
               variant="solid"
               icon={<Plus size={18} />}
             />
-            <Button_ size="sm" label={tCommon("howToUse")} tone="outline" variant="ghost" icon={<Info size={15} />} />
           </>
         }
         stats={statsCards}
@@ -228,6 +240,21 @@ export default function WhatsAppAccountsPage() {
         cancelText={tCommon("cancel")}
         onConfirm={confirmDelete}
       />
+
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <DialogContent className="max-w-4xl min-w-[1000px] p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-slate-900">
+          <DialogHeader className="p-6 border-b dark:border-slate-800">
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Settings2 className="text-primary" />
+              إعدادات  الواتساب
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="p-6 max-h-[80vh] overflow-y-auto">
+            <WhatsAppTab hideAccount={false} />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -152,23 +152,26 @@ export default function OrdersTab({
     if (!stats) return [];
 
     return stats.filter((s) => {
-      const isRestricted = restrictedSet.has(s.code);
-      const isSystem = s.system === false;
+      // If no restrictions are passed, consider it restricted-pass (show all)
+      const isRestricted = restrictedStatuses.length === 0 || restrictedSet.has(s.code);
+      const isCustom = s.system === false;
 
-      return isRestricted || (showCustom && isSystem);
+      return isRestricted || (showCustom && isCustom);
     });
-  }, [stats, restrictedSet, showCustom]);
+  }, [stats, restrictedSet, showCustom, restrictedStatuses]);
 
   const filteredSelectStats = useMemo(() => {
     if (!stats) return [];
 
     return stats.filter((s) => {
-      const isRestricted = restrictedSelectSet.has(s.code);
-      const isSystem = s.system === false;
+      // Use the same logic for select statuses, considering both potential restriction sources
+      const hasAnyRestriction = restrictedSelectStatuses?.length > 0 || restrictedStatuses?.length > 0;
+      const isRestricted = !hasAnyRestriction || restrictedSelectSet.has(s.code);
+      const isCustom = s.system === false;
 
-      return isRestricted || (showCustom && isSystem);
+      return isRestricted || (showCustom && isCustom);
     });
-  }, [stats, restrictedSelectSet, showCustom]);
+  }, [stats, restrictedSelectSet, showCustom, restrictedSelectStatuses, restrictedStatuses]);
 
   const router = useRouter();
   const [retrySettingsOpen, setRetrySettingsOpen] = useState(false);

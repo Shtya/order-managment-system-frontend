@@ -40,6 +40,8 @@ import {
   MoreVertical,
   Eye,
   Archive,
+  MessageSquare,
+  Info,
 } from "lucide-react";
 
 import { useForm, Controller } from "react-hook-form";
@@ -96,6 +98,7 @@ import { IconArrow, OtpInput, PasswordStrength } from "../auth/tabs/AuthUi";
 import PageHeader from "@/components/atoms/Pageheader";
 import Button_ from "@/components/atoms/Button";
 import { useAuth } from "@/context/AuthContext";
+import WhatsAppAccountSelect from "../whatsapp/atoms/WhatsAppAccountSelect";
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 export const P_04 = "color-mix(in oklab, var(--primary)  4%, transparent)";
@@ -437,6 +440,12 @@ export default function SettingsPage() {
     { id: "account", label: t("tabs.account.label"), icon: User },
     { id: "security", label: t("tabs.security.label"), icon: Shield },
     { id: "notifications", label: t("tabs.notifications.label"), icon: Bell },
+    {
+      id: "whatsapp",
+      label: "إعدادات واتساب", // WhatsApp Settings
+      icon: <MessageSquare size={18} />,
+      description: "إعدادات الأرقام الافتراضية وصلاحية القوالب"
+    },
   ];
 
   const content = {
@@ -446,6 +455,7 @@ export default function SettingsPage() {
     account: <AccountTab />,
     security: <SecurityTab />,
     notifications: <NotificationsTab />,
+    whatsapp: <WhatsAppTab />,
   };
 
   return (
@@ -491,6 +501,123 @@ export default function SettingsPage() {
           </AnimatePresence>
         </div>
       </div>
+    </motion.div>
+  );
+}
+
+function TTLInput({ label, description, defaultValue, min, max }) {
+  const [value, setValue] = useState(defaultValue);
+  const [unit, setUnit] = useState(() => {
+    if (defaultValue >= 86400 && defaultValue % 86400 === 0) return "days";
+    if (defaultValue >= 3600 && defaultValue % 3600 === 0) return "hours";
+    if (defaultValue >= 60 && defaultValue % 60 === 0) return "minutes";
+    return "seconds";
+  });
+
+  const units = [
+    { label: "ثانية", value: "seconds", factor: 1 },
+    { label: "دقيقة", value: "minutes", factor: 60 },
+    { label: "ساعة", value: "hours", factor: 3600 },
+    { label: "يوم", value: "days", factor: 86400 },
+  ];
+
+  const currentFactor = units.find((u) => u.value === unit).factor;
+  const displayValue = Math.floor(value / currentFactor);
+
+  const handleValueChange = (e) => {
+    const newVal = parseInt(e.target.value) || 0;
+    setValue(newVal * currentFactor);
+  };
+
+  const handleUnitChange = (newUnit) => {
+    const newFactor = units.find((u) => u.value === newUnit).factor;
+    setUnit(newUnit);
+    // Keep the same absolute seconds value if possible, or adjust
+  };
+
+  const formatSeconds = (s) => {
+    if (s >= 86400) return `${(s / 86400).toFixed(1)} يوم`;
+    if (s >= 3600) return `${(s / 3600).toFixed(1)} ساعة`;
+    if (s >= 60) return `${(s / 60).toFixed(1)} دقيقة`;
+    return `${s} ثانية`;
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-1.5">
+        <Label className="text-xs font-bold">{label}</Label>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <Info size={12} className="text-slate-400" />
+            </TooltipTrigger>
+            <TooltipContent className="text-[10px]">{description}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+      <div className="flex gap-2">
+        <div className="relative flex-1 group">
+          <Input
+            type="number"
+            value={displayValue}
+            onChange={handleValueChange}
+            className="h-11 bg-slate-50/50 focus:bg-white transition-all rounded-xl border-slate-200 dark:border-slate-800"
+          />
+        </div>
+        <Select value={unit} onValueChange={handleUnitChange}>
+          <SelectTrigger className="w-[100px] h-11 rounded-xl border-slate-200 dark:border-slate-800 bg-slate-50/50">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {units.map((u) => (
+              <SelectItem key={u.value} value={u.value}>
+                {u.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex justify-between items-center px-1">
+        <p className="text-[9px] text-slate-400">
+          المسموح: {formatSeconds(min)} - {formatSeconds(max)}
+        </p>
+        {value < min || value > max ? (
+          <p className="text-[9px] text-rose-500 font-bold">خارج النطاق</p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+export function WhatsAppTab({ hideAccount = false }) {
+  const t = useTranslations("settings");
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      className={cn("space-y-6")}
+    >
+      {/* 1. Account Selection */}
+      {!hideAccount && (
+        <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+              <Phone size={20} />
+            </div>
+            <div>
+              <h3 className="text-base font-bold">إعدادات الحساب</h3>
+              <p className="text-xs text-slate-400">تحديد الرقم الافتراضي لعمليات الإرسال</p>
+            </div>
+          </div>
+
+          <WhatsAppAccountSelect label="الرقم الافتراضي للإرسال" />
+        </div>
+      )}
+
+
+
+      {!hideAccount && <SaveFooter label={t("common.saveChanges")} />}
     </motion.div>
   );
 }

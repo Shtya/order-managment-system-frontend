@@ -47,7 +47,8 @@ import {
   ClipboardList,
   Undo2,
   CheckCircle2,
-
+  History,
+  ArrowRight,
 } from "lucide-react";
 
 import { useTranslations } from "next-intl";
@@ -185,6 +186,9 @@ export default function OrdersTab({
 
   const [trackShipmentModalOpen, setTrackShipmentModalOpen] = useState(false);
   const [trackingOrder, setTrackingOrder] = useState(null);
+
+  const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [historyOrder, setHistoryOrder] = useState(null);
 
 
 
@@ -824,6 +828,16 @@ export default function OrdersTab({
                 disabled: !row.trackingNumber,
                 hidden: row?.status?.code !== OrderStatus.SHIPPED && row?.status?.code !== OrderStatus.DELIVERED,
               },
+              {
+                icon: <History />,
+                tooltip: t("actions.statusHistory"),
+                onClick: (r) => {
+                  setHistoryOrder(r);
+                  setHistoryModalOpen(true);
+                },
+                variant: "primary",
+                permission: "orders.read",
+              },
               // -----------------------------
               {
                 icon: <Eye />,
@@ -1147,6 +1161,15 @@ export default function OrdersTab({
           fetchOrders(pager.current_page, pager.per_page);
           fetchStats();
         }}
+      />
+
+      <OrderStatusHistoryModal
+        isOpen={historyModalOpen}
+        onClose={() => {
+          setHistoryModalOpen(false);
+          setHistoryOrder(null);
+        }}
+        order={historyOrder}
       />
     </div>
   );
@@ -1489,6 +1512,165 @@ function StatusFormModal({ isOpen, onClose, status, onSuccess }) {
             </Button>
           </div>
         </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function OrderStatusHistoryModal({ isOpen, onClose, order }) {
+  const [loading, setLoading] = useState(false);
+  const [history, setHistory] = useState([]);
+  const isRtl = useTranslations("header")("lang.lang") === "العربية";
+  const t = useTranslations("orders");
+
+  useEffect(() => {
+    if (!isOpen || !order?.id) return;
+
+    const fetchHistory = async () => {
+      setLoading(true);
+      try {
+        const response = await api.get(`/orders/${order.id}/history`);
+        setHistory(response.data || []);
+      } catch (err) {
+        console.error("Error fetching order history:", err);
+        toast.error(t("messages.errorFetchingHistory") || "Error fetching history");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHistory();
+  }, [isOpen, order]);
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "—";
+    return new Date(dateString).toLocaleString(isRtl ? 'ar-EG' : 'en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const P = "var(--primary)";
+  const P_15 = "color-mix(in oklab, var(--primary) 15%, transparent)";
+  const P_20 = "color-mix(in oklab, var(--primary) 20%, transparent)";
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-lg p-0 overflow-hidden rounded-3xl">
+        <DialogHeader className="p-6 border-b dark:border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+              <History size={24} />
+            </div>
+            <div>
+              <DialogTitle className="text-xl font-bold">
+                {t("details.statusHistory")}
+              </DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground">
+                {t("table.orderNumber")}: {order?.orderNumber}
+              </DialogDescription>
+            </div>
+          </div>
+        </DialogHeader>
+
+        <div className="p-6 max-h-[60vh] overflow-y-auto">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">{t("actions.loading")}</p>
+            </div>
+          ) : history.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-sm text-muted-foreground">{t("logs.empty")}</p>
+            </div>
+          ) : (
+            <div className="space-y-0 px-2">
+              {history
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                .map((item, idx, arr) => {
+                  const isFirst = idx === 0;
+                  const isLast = idx === arr.length - 1;
+                  return (
+                    <div key={item.id} className="relative flex gap-4">
+                      {/* Track */}
+                      <div className="relative flex flex-col items-center pt-1.5">
+                        <div
+                          className="w-3 h-3 rounded-full z-10 shrink-0 transition-all duration-200"
+                          style={{
+                            background: isFirst ? P : "var(--border)",
+                            boxShadow: isFirst ? `0 0 0 4px ${P_15}` : "none",
+                          }}
+                        />
+                        {!isLast && (
+                          <div
+                            className="w-0.5 flex-1 mt-1 min-h-[40px]"
+                            style={{
+                              background: isFirst
+                                ? `linear-gradient(to bottom, ${P_20}, var(--border))`
+                                : "var(--border)",
+                            }}
+                          />
+                        )}
+                      </div>
+
+                      {/* Content */}
+                      <div className={cn("flex-1 pb-6", isLast && "pb-0")}>
+                        <div className="flex flex-col gap-1">
+                          <p
+                            className="text-sm font-bold leading-snug flex gap-2 items-center flex-wrap"
+                            style={{ color: isFirst ? P : "var(--foreground)" }}
+                          >
+                            <span className="px-2 py-0.5 rounded-lg bg-muted border text-[11px] font-medium">
+                              {item.fromStatus?.system
+                                ? t(`statuses.${item.fromStatus.code}`)
+                                : item.fromStatus?.name || "—"}
+                            </span>
+                            <ArrowRight size={12} className="rtl:rotate-180 text-muted-foreground" />
+                            <span className="px-2 py-0.5 rounded-lg bg-primary/10 border border-primary/20 text-primary text-[11px] font-bold">
+                              {item.toStatus?.system
+                                ? t(`statuses.${item.toStatus.code}`)
+                                : item.toStatus?.name || "—"}
+                            </span>
+                          </p>
+
+                          {item.notes && (
+                            <p className="text-[12px] text-muted-foreground mt-1 bg-muted/30 p-2 rounded-lg border border-border/50">
+                              {item.notes}
+                            </p>
+                          )}
+
+                          <div className="flex flex-wrap items-center gap-3 mt-1.5">
+                            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium">
+                              <Clock size={12} />
+                              {formatDate(item.created_at)}
+                            </div>
+
+                            {(item.changedByUser || item.admin) && (
+                              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium border-s ps-3">
+                                <span className="opacity-70">{t("details.changedBy")}:</span>
+                                <span className="text-foreground font-semibold">
+                                  {item.changedByUser?.name || item.admin?.name}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
+        </div>
+
+        <div className="p-4 bg-muted/30 border-t dark:border-slate-800 flex justify-end">
+          <Button variant="outline" onClick={onClose} className="rounded-xl px-6">
+            {t("common.close")}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

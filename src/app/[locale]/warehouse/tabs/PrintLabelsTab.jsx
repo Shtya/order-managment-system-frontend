@@ -118,6 +118,7 @@ export default function PrintLabelsTab({ subtab, setSubtab, resetToken }) {
 function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
   const tCommon = useTranslations("common");
   const t = useTranslations("warehouse.print");
+  const { shippingCompanies } = usePlatformSettings();
   const printRef = useRef(null);
   const { formatCurrency } = usePlatformSettings()
   const [source, setSource] = useState("system");
@@ -129,7 +130,8 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
   const bostaOrders = useMemo(() => orders?.filter(o => o.shippingCompany?.code?.toLowerCase() === 'bosta') || [], [orders]);
   const bostaCount = bostaOrders.length;
   const systemCount = orders?.length || 0;
-
+  const hasBosta = useMemo(() => shippingCompanies?.some(c => c.provider?.toLowerCase() === 'bosta'), [shippingCompanies]);
+  const hasTurbo = useMemo(() => shippingCompanies?.some(c => c.provider?.toLowerCase() === 'turbo'), [shippingCompanies]);
   useEffect(() => {
     if (open) {
       setSource("system");
@@ -258,8 +260,8 @@ function PrintPreviewModal({ open, onClose, orders, onConfirmPrint }) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="system">{t("sources.systemDesc", { count: systemCount })}</SelectItem>
-                    <SelectItem value="bosta" disabled={bostaCount === 0}>{t("sources.bostaDesc", { count: bostaCount })}</SelectItem>
-                    <SelectItem value="all" disabled={bostaCount === 0}>{t("sources.allDesc", { count: systemCount, bostaCount: bostaCount })}</SelectItem>
+                    {hasBosta && <SelectItem value="bosta" disabled={bostaCount === 0}>{t("sources.bostaDesc", { count: bostaCount })}</SelectItem>}
+                    {hasBosta && <SelectItem value="all" disabled={bostaCount === 0}>{t("sources.allDesc", { count: systemCount, bostaCount: bostaCount })}</SelectItem>}
                   </SelectContent>
                 </Select>
               </div>

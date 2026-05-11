@@ -155,7 +155,7 @@ export function useShippingIntegration(company, integrationStatus, onRefreshStat
     const meta = PROVIDER_META[company?.code];
     const isConfigured = integrationStatus?.credentialsConfigured ?? false;
     const isActive = integrationStatus?.isActive ?? false;
-
+    const { refreshShipping } = usePlatformSettings();
     const handleToggle = async () => {
         const isConfigured = integrationStatus?.credentialsConfigured ?? false;
         if (!isConfigured) {
@@ -168,6 +168,7 @@ export function useShippingIntegration(company, integrationStatus, onRefreshStat
             const newStatus = !integrationStatus?.isActive;
             await api.post(`/shipping/providers/${company.code}/active`, { isActive: newStatus });
             onRefreshStatus?.();
+            refreshShipping?.();
         } catch (e) {
             toast.error(normalizeAxiosError(e));
         } finally {
@@ -190,7 +191,7 @@ export function useShippingSettings(companyCode, callbacks = {}) {
     const { onSaved, onFirstSetup, onClose } = callbacks;
     const t = useTranslations("shipping");
     const locale = useLocale();
- const {refreshShipping} = usePlatformSettings();
+    const { refreshShipping } = usePlatformSettings();
     const meta = PROVIDER_META[companyCode];
     const fields = meta?.configFields || [
         { key: "apiKey", type: "password", labelKey: "settings.fields.apiKey", required: true }
@@ -396,7 +397,7 @@ export function useShippingWebhook(companyCode) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [rotating, setRotating] = useState(false);
-    const {refreshShipping} = usePlatformSettings();
+    const { refreshShipping } = usePlatformSettings();
     // Filter logic based on PROVIDER_META
     const hiddenFields = PROVIDER_META[companyCode]?.webhookHiddenFields || [];
     const isFieldHidden = (key) => hiddenFields.includes(key);

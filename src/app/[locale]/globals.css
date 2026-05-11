@@ -1134,3 +1134,22 @@ html[dir="ltr"] .dir-force {
   opacity: 1;
   pointer-events: auto;
 }
+
+
+.tempalte-message::after {
+    content: "/";
+    background: url(/whatsapp/arrow-massage.png) 50% 50% no-repeat;
+    background-size: contain;
+    content: "";
+    height: 31px;
+    left: -12px;
+    position: absolute;
+    top: -6px;
+    width: 12px;
+}
+
+.tempalte-message-ar::after {
+    left: auto;
+    right: -12px;
+    transform: scaleX(-1);
+}

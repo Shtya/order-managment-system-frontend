@@ -11,6 +11,8 @@
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
+    "@emoji-mart/data": "^1.2.1",
+    "@emoji-mart/react": "^1.1.1",
     "@hookform/resolvers": "^5.2.1",
     "@huggingface/transformers": "^3.7.5",
     "@nestjs/mapped-types": "*",
@@ -40,6 +42,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
+    "emoji-mart": "^5.6.0",
     "firebase": "^12.7.0",
     "framer-motion": "^12.23.12",
     "gsap": "^3.13.0",

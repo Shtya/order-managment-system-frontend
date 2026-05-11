@@ -9236,6 +9236,11 @@
         "whatsapp": "واتساب",
         "templates": "القوالب"
       },
+      "preview": {
+        "title": "معاينة القالب",
+        "showExamples": "عرض الأمثلة",
+        "showTemplate": "عرض القالب"
+      },
       "stats": {
         "total": "إجمالي القوالب",
         "approved": "المعتمدة",

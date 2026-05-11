@@ -33,6 +33,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import TemplatePreview from "../atoms/TemplatePreview";
+import { useRouter } from "@/i18n/navigation";
 
 // Helper for filter fields
 function FilterField({ label, children }) {
@@ -64,9 +65,14 @@ const MOCK_TEMPLATES = [
     preview: {
       headerType: "TEXT",
       headerText: "Welcome!",
-      bodyText: "Hello {{1}}, welcome to our service. Your ID is {{2}}.",
+      bodyText:
+        "Hello {{first_name}} {{last_name}}, welcome to our service. Your ID is {{customer_id}}.",
       footerText: "Reply STOP to opt out.",
-      examples: { "1": "John Doe", "2": "CUST-99" }
+      examples: {
+        first_name: "John",
+        last_name: "Doe",
+        customer_id: "CUST-99"
+      }
     }
   },
   {
@@ -82,8 +88,11 @@ const MOCK_TEMPLATES = [
     preview: {
       headerType: "TEXT",
       headerText: "رمز التحقق",
-      bodyText: "كود التحقق الخاص بك هو {{1}}. لا تشاركه مع أحد.",
-      examples: { "1": "4829" }
+      bodyText:
+        "كود التحقق الخاص بك هو {{verification_code}}. لا تشاركه مع أحد.",
+      examples: {
+        verification_code: "4829"
+      }
     }
   },
   {
@@ -98,9 +107,13 @@ const MOCK_TEMPLATES = [
     quality: "unknown",
     preview: {
       headerType: "IMAGE",
-      bodyText: "Hi {{1}}, your order {{2}} has been confirmed!",
+      bodyText:
+        "Hi {{customer_name}}, your order {{order_number}} has been confirmed!",
       footerText: "Track it in our app.",
-      examples: { "1": "Sarah", "2": "#ORD-1029" }
+      examples: {
+        customer_name: "Sarah",
+        order_number: "#ORD-1029"
+      }
     }
   },
   {
@@ -115,8 +128,12 @@ const MOCK_TEMPLATES = [
     quality: "low",
     preview: {
       headerType: "VIDEO",
-      bodyText: "خصومات الصيف بدأت! استخدم الكود {{1}} للحصول على {{2}} خصم.",
-      examples: { "1": "SUMMER20", "2": "20%" }
+      bodyText:
+        "خصومات الصيف بدأت! استخدم الكود {{promo_code}} للحصول على {{discount_percentage}} خصم.",
+      examples: {
+        promo_code: "SUMMER20",
+        discount_percentage: "20%"
+      }
     }
   },
   {
@@ -131,8 +148,11 @@ const MOCK_TEMPLATES = [
     quality: "medium",
     preview: {
       headerType: "DOCUMENT",
-      bodyText: "Please find the requested report for {{1}}.",
-      examples: { "1": "April 2024" }
+      bodyText:
+        "Please find the requested report for {{report_period}}.",
+      examples: {
+        report_period: "April 2024"
+      }
     }
   }
 ];
@@ -146,6 +166,7 @@ const MOCK_STATS = {
 };
 
 export default function WhatsAppTemplatesPage() {
+  const router = useRouter();
   const tCommon = useTranslations("common");
   const t = useTranslations("whatsApp.templates");
 
@@ -308,7 +329,7 @@ export default function WhatsAppTemplatesPage() {
             {
               icon: <Eye size={16} />,
               tooltip: t("actions.preview"),
-              onClick: () => setPreviewState({ open: true, template: row.preview }),
+              onClick: () => setPreviewState({ open: true, template: row }),
               variant: "primary",
             },
             {
@@ -355,6 +376,7 @@ export default function WhatsAppTemplatesPage() {
               size="sm"
               label={t("toolbar.addTemplate")}
               variant="solid"
+              onClick={() => router.push("/whatsapp/templates/add")}
               icon={<Plus size={18} />}
             />
           </>
@@ -505,7 +527,7 @@ export default function WhatsAppTemplatesPage() {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="p-8 bg-slate-50 dark:bg-slate-950/50">
+          <div className="p-8 max-w-[400px] mx-auto">
             <TemplatePreview template={previewState.template} />
           </div>
         </DialogContent>

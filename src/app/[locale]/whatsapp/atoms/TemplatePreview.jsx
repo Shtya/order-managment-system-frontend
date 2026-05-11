@@ -1,14 +1,178 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
     FileText,
     Image as ImageIcon,
     Video,
     MapPin,
-    File as FileIcon
+    File as FileIcon,
+    Eye,
+    Phone,
+    Globe,
+    MessageSquare,
+    ExternalLink,
+    Reply,
+    List,
+    X,
+    ChevronDown,
+    Circle
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { useLocale, useTranslations } from "next-intl";
+import { AnimatePresence, motion } from "framer-motion";
+
+// --- Sub-components ---
+
+/**
+ * Reusable WhatsApp Button Menu (Bottom Sheet)
+ */
+export function WhatsAppButtonMenu({
+    isOpen,
+    onClose,
+    buttons = [],
+    locale = "en",
+    type = "BUTTONS", // "BUTTONS" | "RADIO"
+    title = "All Options",
+    subtitle = "",
+    radioOptions = []
+}) {
+    const [selectedIndex, setSelectedIndex] = useState(0);
+
+    if (!isOpen) return null;
+
+    const actionButtons = buttons.filter(btn => btn.type !== "CUSTOM");
+    const customButtons = buttons.filter(btn => btn.type === "CUSTOM");
+
+    return (
+        <div className="absolute inset-0 z-[100] flex flex-col justify-end bg-black/40 transition-opacity overflow-hidden">
+            <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="bg-white dark:bg-[#1f2c33] rounded-t-2xl p-4 shadow-2xl max-h-[80%] flex flex-col"
+            >
+                {/* Header */}
+                <div className="flex items-start justify-between mb-4 pb-2 border-b border-slate-100 dark:border-slate-800">
+                    <button onClick={onClose} className="p-1 mt-0.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors">
+                        <X size={20} className="text-slate-500" />
+                    </button>
+                    <div className="flex-1 px-4 text-center">
+                        <h3 className="font-bold text-slate-800 dark:text-slate-200 text-[15px] leading-tight">{title}</h3>
+                        {subtitle && <p className="text-[12.5px] text-slate-500 dark:text-slate-400 mt-1 leading-tight">{subtitle}</p>}
+                    </div>
+                    <div className="w-8" /> {/* Spacer */}
+                </div>
+
+                {/* Content */}
+                <div className="overflow-y-auto space-y-1 custom-scrollbar pb-2">
+                    {type === "BUTTONS" ? (
+                        <>
+                            {/* Action Buttons */}
+                            {actionButtons.map((btn, idx) => (
+                                <div key={btn.id || `action-${idx}`} className="flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg cursor-default transition-colors group">
+                                    <div className="text-slate-500 group-hover:text-[#00a884]">
+                                        {btn.type === "PHONE_NUMBER" && <Phone size={18} />}
+                                        {btn.type === "URL" && <ExternalLink size={18} />}
+                                        {btn.type === "WHATSAPP_CALL" && <Phone size={18} />}
+                                    </div>
+                                    <span className="text-[14px] text-slate-700 dark:text-slate-300 font-medium">{btn.text || "زر إجراء..."}</span>
+                                </div>
+                            ))}
+
+                            {/* Separator if both types exist */}
+                            {actionButtons.length > 0 && customButtons.length > 0 && (
+                                <div className="h-px bg-slate-100 dark:bg-slate-800 my-2 mx-2" />
+                            )}
+
+                            {/* Custom Buttons */}
+                            {customButtons.map((btn, idx) => (
+                                <div key={btn.id || `custom-${idx}`} className="flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg cursor-default transition-colors group">
+                                    <div className="text-slate-500 group-hover:text-[#00a884]">
+                                        <Reply size={18} className={cn(locale === "ar" ? "scale-x-[-1]" : "")} />
+                                    </div>
+                                    <span className="text-[14px] text-slate-700 dark:text-slate-300 font-medium">{btn.text || "رد سريع..."}</span>
+                                </div>
+                            ))}
+                        </>
+                    ) : (
+                        <div className="space-y-4 py-2">
+                            {radioOptions.map((option, idx) => (
+                                <div
+                                    key={idx}
+                                    onClick={() => setSelectedIndex(idx)}
+                                    className="flex items-center justify-between px-2 py-1 cursor-pointer group"
+                                >
+                                    <span className={cn(
+                                        "text-[15px] transition-colors",
+                                        selectedIndex === idx ? "text-[#00a884] font-medium" : "text-slate-700 dark:text-slate-200"
+                                    )}>
+                                        {option.label}
+                                    </span>
+                                    <div className={cn(
+                                        "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors",
+                                        selectedIndex === idx ? "border-[#00a884]" : "border-slate-300 dark:border-slate-600"
+                                    )}>
+                                        {selectedIndex === idx && <div className="w-2.5 h-2.5 rounded-full bg-[#00a884]" />}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Pull handle for UI look */}
+                <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-slate-200 dark:bg-slate-700 rounded-full" />
+            </motion.div>
+        </div>
+    );
+}
+
+/**
+ * Special Call Permissions Bubble
+ */
+export function WhatsAppCallPermissionsBubble({ locale = "en", bizName = "Business", onOpenMenu }) {
+    const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    return (
+        <div className={cn(
+            "bg-white dark:bg-[#1f2c33] rounded-sm shadow-sm p-1.5 pe-2 relative min-w-[200px] max-w-[95%] mt-2",
+        )}>
+            <div className="flex items-start gap-3 p-2" dir="ltr">
+                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0">
+                    <Phone size={20} className="text-slate-600 dark:text-slate-400" />
+                </div>
+                <div className="flex-1 space-y-1">
+                    <h4 className="font-bold text-[14px] text-slate-800 dark:text-white leading-tight">
+                        Can {bizName} call you?
+                    </h4>
+                    <p className="text-[12.5px] text-slate-500 dark:text-slate-400 leading-tight">
+                        You can update your preference anytime in the business profile.
+                    </p>
+                </div>
+                <span className="text-[10px] text-slate-400 self-end mb-[-4px]">
+                    {currentTime}
+                </span>
+            </div>
+
+            <button
+                onClick={onOpenMenu}
+                className="w-full border-t border-slate-100 dark:border-slate-800 mt-2 py-2 text-[#00a884] text-[13.5px] font-medium flex items-center justify-center gap-1 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+            >
+                Choose preference
+                <ChevronDown size={14} />
+            </button>
+        </div>
+    );
+}
+
+import {
+    isCorrectVariableFormat,
+    isPotentialVariable,
+    getVariableMatches,
+    replaceVariables
+} from "@/utils/whatsapp-healper";
 
 /**
  * Reusable WhatsApp Template Preview Component
@@ -19,78 +183,161 @@ import { cn } from "@/utils/cn";
  * @param {string} template.bodyText - Main template body text with {{1}}, {{2}}...
  * @param {string} template.footerText - Small footer text
  * @param {Object} template.examples - Object with mapping of variable index to example value { "1": "John", "2": "Order #123" }
+ * @param {Array} template.buttons - Array of button objects [{
+ *    type: "PHONE_NUMBER", | "URL" | "WHATSAPP_CALL" | "TEXT",
+ *    text: "Call Now",
+ *    phoneNumber: "+1234567890"
+ * }]
  */
 export default function TemplatePreview({ template }) {
-    const [hovered, setHovered] = useState(false);
-
+    const t = useTranslations("whatsApp.templates");
+    const [showExamples, setShowExamples] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isPermissionsMenuOpen, setIsPermissionsMenuOpen] = useState(false);
+    const locale = useLocale()
     const {
-        headerType = "TEXT",
+        language = "en",
+        subcategory = "",
+        headerType = "NONE",
         headerText = "",
-        bodyText = "Hello {{1}}, your order {{2}} is confirmed.",
+        headerUrl = "",
+        bodyText = "",
         footerText = "",
-        examples = { "1": "Valued Customer", "2": "#0000" }
+        buttons = [],
+        examples = {},
+        headerExample = ""
     } = template || {};
 
-    // Function to process body text for variables
-    const renderBody = () => {
-        // Regex to find {{number}}
-        const parts = bodyText.split(/(\{\{\d+\}\})/g);
+    const parsedBodyParts = useMemo(() => {
+        const text = bodyText || "سيظهر نص رسالتك هنا...";
 
-        return parts.map((part, index) => {
-            const match = part.match(/\{\{(\d+)\}\}/);
-            if (match) {
-                const varIndex = match[1];
-                const exampleValue = examples[varIndex] || `Variable ${varIndex}`;
+        // 1. Split by potential variables
+        const parts = text.split(/(\{[\w]*\}|\{\{[\w]*\}\})/g).map((part) => {
+            if (isCorrectVariableFormat(part)) {
+                const variableName = part.match(/\d+/)[0];
+                return {
+                    type: "variable",
+                    variableName,
+                    raw: part,
+                    isValid: true,
+                    exampleValue: examples?.[variableName] || `{{${variableName}}}`
+                };
+            } else if (isPotentialVariable(part)) {
+                return {
+                    type: "variable",
+                    raw: part,
+                    isValid: false
+                };
+            }
+            return { type: "text", value: part };
+        });
 
-                return (
-                    <span
-                        key={index}
-                        className={cn(
-                            "inline-block px-1 rounded mx-0.5 transition-all duration-300",
-                            hovered
-                                ? "bg-primary/10 text-primary font-bold"
-                                : "bg-slate-100 dark:bg-slate-800 text-[#282828] font-mono text-[10px]"
-                        )}
-                    >
-                        {hovered ? exampleValue : part}
-                    </span>
-                );
+        // 2. Formatting Logic
+        const formatText = (content) => {
+            if (typeof content !== 'string') return content;
+            let formatted = [content];
+
+            // Monospace
+            formatted = formatted.flatMap(p => {
+                if (typeof p !== 'string') return p;
+                const subParts = p.split(/(```[\s\S]*?```)/g);
+                return subParts.map(sp => {
+                    const m = sp.match(/```([\s\S]*?)```/);
+                    return m ? <code className="bg-slate-100 dark:bg-slate-800 px-1 rounded font-mono text-[12px]">{m[1]}</code> : sp;
+                });
+            });
+
+            // Bold
+            formatted = formatted.flatMap(p => {
+                if (typeof p !== 'string') return p;
+                const subParts = p.split(/(\*[\s\S]*?\*)/g);
+                return subParts.map(sp => {
+                    const m = sp.match(/\*([\s\S]*?)\*/);
+                    return m ? <strong className="font-bold text-[#111b21] dark:text-white">{m[1]}</strong> : sp;
+                });
+            });
+
+            // Italic
+            formatted = formatted.flatMap(p => {
+                if (typeof p !== 'string') return p;
+                const subParts = p.split(/(_[\s\S]*?_)/g);
+                return subParts.map(sp => {
+                    const m = sp.match(/_([\s\S]*?)_/);
+                    return m ? <em className="italic">{m[1]}</em> : sp;
+                });
+            });
+
+            // Strike
+            formatted = formatted.flatMap(p => {
+                if (typeof p !== 'string') return p;
+                const subParts = p.split(/(~[\s\S]*?~)/g);
+                return subParts.map(sp => {
+                    const m = sp.match(/~([\s\S]*?)~/);
+                    return m ? <span className="line-through opacity-70">{m[1]}</span> : sp;
+                });
+            });
+
+            return formatted;
+        };
+
+        return parts.map(part => {
+            if (part.type === 'text') {
+                return { ...part, formatted: formatText(part.value) };
             }
             return part;
         });
-    };
+    }, [bodyText, examples]);
 
     const renderHeader = () => {
+        const mediaClass = "aspect-video w-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center rounded-lg overflow-hidden border-b border-slate-100 dark:border-slate-800";
+
         switch (headerType) {
             case "IMAGE":
                 return (
-                    <div className="aspect-video w-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center rounded-t-sm border-b border-slate-100 dark:border-slate-800">
-                        <ImageIcon size={48} className="text-slate-400" />
+                    <div className={mediaClass}>
+                        {headerUrl ? (
+                            <img src={headerUrl} alt="Header" className="w-full h-full object-cover" />
+                        ) : (
+                            <ImageIcon size={48} className="text-slate-300" />
+                        )}
                     </div>
                 );
             case "VIDEO":
                 return (
-                    <div className="aspect-video w-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center rounded-t-sm border-b border-slate-100 dark:border-slate-800">
-                        <Video size={48} className="text-slate-400" />
+                    <div className={mediaClass}>
+                        {headerUrl ? (
+                            <video src={headerUrl} className="w-full h-full object-cover" />
+                        ) : (
+                            <Video size={48} className="text-slate-300" />
+                        )}
                     </div>
                 );
             case "DOCUMENT":
                 return (
-                    <div className="aspect-video w-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center rounded-t-sm border-b border-slate-100 dark:border-slate-800">
-                        <FileIcon size={48} className="text-slate-400" />
+                    <div className={mediaClass}>
+                        <div className="flex flex-col items-center gap-2">
+                            <FileIcon size={40} className="text-slate-300" />
+                            {headerUrl && <span className="text-[10px] text-slate-400 px-2 truncate max-w-full">{headerUrl.split('/').pop()}</span>}
+                        </div>
                     </div>
                 );
             case "LOCATION":
                 return (
-                    <div className="aspect-video w-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center rounded-t-sm border-b border-slate-100 dark:border-slate-800">
-                        <MapPin size={48} className="text-slate-400" />
+                    <div className={mediaClass}>
+                        <MapPin size={48} className="text-slate-300" />
                     </div>
                 );
             case "TEXT":
                 if (!headerText) return null;
+
+                // Process header variables using helper
+                const processedHeaderText = replaceVariables(headerText, (match, varName) => {
+                    return showExamples ? (headerExample || match) : match;
+                });
+
                 return (
-                    <div className="pt-2 pe-2 font-bold text-[13px] text-[#000000C2] ">
-                        {headerText}
+                    <div className="pb-2 font-bold text-[#111b21] dark:text-white leading-tight break-all">
+                        {processedHeaderText}
                     </div>
                 );
             default:
@@ -101,43 +348,226 @@ export default function TemplatePreview({ template }) {
     const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     return (
-        <div
-            className="w-full max-w-[300px] mx-auto bg-[#e5ddd5] dark:bg-[#0b141a] p-4  shadow-inner relative overflow-hidden"
-            dir={template?.language === "ar" ? "rtl" : "ltr"}
-            style={{
-                backgroundImage: "url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')",
-                backgroundSize: "contain"
-            }}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-        >
-            <div className="bg-white dark:bg-[#1f2c33] rounded-sm rounded-tl-none shadow-sm overflow-hidden relative min-w-[200px]">
-                {/* Pointer Arrow */}
-                <div className="absolute top-0 -left-2 w-0 h-0 border-t-[10px] border-t-white dark:border-t-[#1f2c33] border-l-[10px] border-l-transparent" />
+        <div className="w-full mx-auto bg-white dark:bg-[#111b21] rounded-md shadow-lg border  border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
+            {/* Template Header Bar */}
+            <div className="px-4 py-2 bg-white dark:bg-[#111b21] border-b border-slate-100 dark:border-slate-800">
+                <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">{t("preview.title")}</h3>
+            </div>
 
-                {/* Header Section */}
-                {renderHeader()}
+            {/* WhatsApp Chat Background */}
+            <div
+                className={cn(
+                    "relative flex-1 p-6 transition-all duration-300",
+                    isMenuOpen ? "min-h-[500px]!" : "min-h-[300px]!"
+                )}
+                style={{
+                    backgroundColor: "#efeae2",
+                    backgroundImage: "url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')",
+                    backgroundSize: "400px",
+                    backgroundRepeat: "repeat"
+                }}
+            >
+                <div className={cn(
+                    "relative group tempalte-message",
+                    locale === "ar" && "tempalte-message-ar"
+                )}>
+                    {/* Bubble Container */}
+                    <div className={cn(
+                        "bg-white dark:bg-[#1f2c33] rounded-sm shadow-sm p-1.5 pe-2 relative min-w-[200px] max-w-[95%]",
 
-                {/* Body Section */}
-                <div className="px-2 space-y-1">
-                    <div className="text-[13px] leading-relaxed break-words whitespace-pre-wrap dark:text-slate-200">
-                        {renderBody()}
-                    </div>
-
-                    {footerText && (
-                        <div className="text-[11px] text-[#00000073] dark:text-slate-500 mt-1">
-                            {footerText}
-                        </div>
+                        locale === "ar" ? "rounded-tr-none" : "rounded-tl-none"
                     )}
+                        dir={template?.language === "ar" ? "rtl" : "ltr"}
+                        style={{
+                            fontFamily: 'Segoe UI Historic, Segoe UI, Helvetica, Arial, sans-serif'
+                        }}>
 
-                    {/* Time Stamp */}
-                    <div className="flex justify-end mt-1">
-                        <span className="text-[9px] text-[#00000066] uppercase">
-                            {currentTime}
-                        </span>
+                        {/* Header Section */}
+                        {renderHeader()}
+
+                        {/* Body Section */}
+                        <div className="text-[13.5px] leading-[1.4] break-words whitespace-pre-wrap text-[#111b21] dark:text-[#d1d7db]">
+                            <div
+                                className="text-[13.5px] leading-[1.4] break-words whitespace-pre-wrap text-[#111b21] dark:text-[#d1d7db]"
+                                style={{
+                                    fontFamily:
+                                        "Segoe UI Historic, Segoe UI, Helvetica, Arial, sans-serif"
+                                }}
+                            >
+                                {parsedBodyParts.map((part, index) => {
+                                    if (part.type === "text") {
+                                        return (
+                                            <React.Fragment key={index}>
+                                                {part.formatted}
+                                            </React.Fragment>
+                                        );
+                                    }
+
+                                    // Variable Rendering
+                                    if (showExamples && part.isValid) {
+                                        return (
+                                            <React.Fragment key={index}>
+                                                {part.exampleValue}
+                                            </React.Fragment>
+                                        );
+                                    }
+
+                                    return (
+                                        <span
+                                            key={index}
+                                            className={cn(
+                                                "inline-block px-1 rounded mx-0.5 transition-all duration-300 align-baseline",
+                                                !part.isValid
+                                                    ? "bg-red-100 text-red-600 border border-red-200 font-mono text-[10px]"
+                                                    : "bg-slate-100 dark:bg-slate-800 text-[#282828] dark:text-slate-200 font-mono text-[10px]"
+                                            )}
+                                        >
+                                            {part.raw}
+                                        </span>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {footerText && (
+                            <div className="text-[11.5px] font-light text-[#00000073] dark:text-[#8696a0] mt-2.5 leading-tight">
+                                {footerText}
+                            </div>
+                        )}
+
+                        {/* Time Stamp */}
+                        <div className="flex justify-end mt-1 -mb-0.5 font-light">
+                            <span className="text-[10px] text-[#00000073] dark:text-[#8696a0]">
+                                {currentTime}
+                            </span>
+                        </div>
+
+                        {/* Buttons Section */}
+                        {buttons.length > 0 && (
+                            <div className="border-t border-slate-100 dark:border-slate-800 mt-2 -mx-1.5 -mb-1.5 overflow-hidden">
+                                {(() => {
+                                    const showMenuButton = buttons.length > 3;
+                                    const visibleButtons = showMenuButton ? buttons.slice(0, 2) : buttons;
+
+                                    return (
+                                        <>
+                                            {visibleButtons.map((btn, idx) => (
+                                                <div
+                                                    key={btn.id || idx}
+                                                    className={cn(
+                                                        "py-2.5 px-3 flex items-center justify-center gap-2 text-[#00a884] dark:text-[#00a884] font-medium text-[13px] hover:bg-slate-50 dark:hover:bg-white/5 cursor-default transition-colors",
+                                                        idx > 0 && "border-t border-slate-100 dark:border-slate-800"
+                                                    )}
+                                                >
+                                                    {btn.type === "CUSTOM" && (
+                                                        <Reply size={14} className={cn(locale === "ar" ? "scale-x-[-1]" : "")} />
+                                                    )}
+                                                    {btn.type === "PHONE_NUMBER" && <Phone
+                                                        size={14}
+                                                        fill="#00a884"
+                                                        color="#00a884"
+                                                        strokeWidth={1.8}
+                                                    />}
+                                                    {btn.type === "URL" && <ExternalLink size={14} />}
+                                                    {btn.type === "WHATSAPP_CALL" && <Phone
+                                                        size={14}
+                                                        fill="#00a884"
+                                                        color="#00a884"
+                                                        strokeWidth={1.8}
+                                                    />}
+                                                    {btn.text || (
+                                                        <span className="opacity-40 italic">زر الإجراء...</span>
+                                                    )}
+                                                </div>
+                                            ))}
+
+                                            {showMenuButton && (
+                                                <button
+                                                    onClick={() => setIsMenuOpen(true)}
+                                                    className="w-full py-2.5 px-3 flex items-center justify-center gap-2 text-[#00a884] dark:text-[#00a884] font-medium text-[13px] hover:bg-slate-50 dark:hover:bg-white/5 border-t border-slate-100 dark:border-slate-800 transition-colors"
+                                                >
+                                                    <List size={14} />
+                                                    See all options
+                                                </button>
+                                            )}
+                                        </>
+                                    );
+                                })()}
+                            </div>
+                        )}
                     </div>
+
+                    {/* Extra Message: Call Permissions */}
+                    {["MARKETING_CALL_PERMISSIONS", "UTILITY_CALL_PERMISSIONS"].includes(subcategory) && (
+                        <WhatsAppCallPermissionsBubble
+                            locale={locale}
+                            onOpenMenu={() => setIsPermissionsMenuOpen(true)}
+                        />
+                    )}
+                </div>
+
+                {/* Bottom Menu Sheet (Standard) */}
+                <AnimatePresence>
+                    {isMenuOpen && (
+                        <WhatsAppButtonMenu
+                            isOpen={isMenuOpen}
+                            onClose={() => setIsMenuOpen(false)}
+                            buttons={buttons}
+                            locale={locale}
+                        />
+                    )}
+                </AnimatePresence>
+
+                {/* Bottom Menu Sheet (Permissions Radio) */}
+                <AnimatePresence>
+                    {isPermissionsMenuOpen && (
+                        <WhatsAppButtonMenu
+                            isOpen={isPermissionsMenuOpen}
+                            onClose={() => setIsPermissionsMenuOpen(false)}
+                            type="RADIO"
+                            title="Can {BIZ_NAME} call you?"
+                            subtitle="You can update your preference anytime in the business profile."
+                            radioOptions={[
+                                { label: "Always allow calls" },
+                                { label: "Temporarily allow calls" },
+                                { label: "Not now." }
+                            ]}
+                            locale={locale}
+                        />
+                    )}
+                </AnimatePresence>
+            </div>
+
+            {/* Toggle Action Button - Segmented Control Style */}
+            <div className="p-4 bg-white dark:bg-[#0b141a] flex justify-center border-t border-slate-100 dark:border-slate-800">
+                <div className="flex p-1 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 w-full max-w-[240px]">
+                    <button
+                        type="button"
+                        onClick={() => setShowExamples(false)}
+                        className={cn(
+                            "flex-1 py-1.5 px-3 rounded-md text-xs font-bold transition-all duration-200",
+                            !showExamples
+                                ? "bg-white dark:bg-slate-800 text-primary shadow-sm"
+                                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                        )}
+                    >
+                        المتغيرات
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setShowExamples(true)}
+                        className={cn(
+                            "flex-1 py-1.5 px-3 rounded-md text-xs font-bold transition-all duration-200",
+                            showExamples
+                                ? "bg-white dark:bg-slate-800 text-primary shadow-sm"
+                                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                        )}
+                    >
+                        أمثلة
+                    </button>
                 </div>
             </div>
         </div>
     );
 }
+

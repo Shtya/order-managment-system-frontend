@@ -45,40 +45,7 @@ const INTERNAL_MOCK_TEMPLATES = [
             ]
         }
     },
-    {
-        id: "int-2",
-        name: "Confirm Order Actions",
-        category: "UTILITY",
-        language: "en",
-        template: {
-            headerType: "TEXT",
-            headerText: "Confirm Your Order 🛒",
-            bodyText:
-                "Hi {{1}}, your order #{{2}} is ready for confirmation. Please choose an action below.",
-            footerText: "You can change your choice anytime before processing.",
-            examples: {
-                "1": "Ahmed",
-                "2": "1001"
-            },
-            buttons: [
-                {
-                    type: "CUSTOM",
-                    text: "Confirm Order",
-                    payload: "CONFIRM_ORDER"
-                },
-                {
-                    type: "CUSTOM",
-                    text: "Cancel Order",
-                    payload: "CANCEL_ORDER"
-                },
-                {
-                    type: "CUSTOM",
-                    text: "Delay Order",
-                    payload: "DELAY_ORDER"
-                }
-            ]
-        }
-    },
+
     {
         id: "int-2",
         name: "Order Shipped",
@@ -86,7 +53,7 @@ const INTERNAL_MOCK_TEMPLATES = [
         language: "en",
         template: {
             headerType: "IMAGE",
-            headerUrl: "https://images.unsplash.com/photo-1566576721346-d4a3b4eaad5b?q=80&w=400&auto=format&fit=crop",
+            headerUrl: "https://ix-marketing.imgix.net/bg-remove_after.png?auto=format,compress&w=1946",
             bodyText: "Great news {{1}}! Your order #{{2}} has been shipped. Track your package using the button below.",
             footerText: "Expected delivery: 3-5 days.",
             examples: { "1": "Sara", "2": "1002" },
@@ -126,6 +93,40 @@ const INTERNAL_MOCK_TEMPLATES = [
                 { type: "URL", text: "عرض الطلب", url: "https://example.com/order/{{2}}" }
             ]
         }
+    },
+    {
+        id: "int-5-ar",
+        name: "تأكيد الطلب مع الإجراءات",
+        category: "UTILITY",
+        language: "ar",
+        template: {
+            headerType: "TEXT",
+            headerText: "تأكيد طلبك 🛒",
+            bodyText:
+                "مرحباً {{1}}، طلبك رقم #{{2}} جاهز للتأكيد. يرجى اختيار الإجراء المناسب أدناه.",
+            footerText: "يمكنك تغيير اختيارك في أي وقت قبل المعالجة.",
+            examples: {
+                "1": "أحمد",
+                "2": "1001"
+            },
+            buttons: [
+                {
+                    type: "CUSTOM",
+                    text: "تأكيد الطلب",
+                    payload: "CONFIRM_ORDER"
+                },
+                {
+                    type: "CUSTOM",
+                    text: "إلغاء الطلب",
+                    payload: "CANCEL_ORDER"
+                },
+                {
+                    type: "CUSTOM",
+                    text: "تأجيل الطلب",
+                    payload: "DELAY_ORDER"
+                }
+            ]
+        }
     }
 ];
 
@@ -143,7 +144,7 @@ export function InternalTemplateDialog({ open, onOpenChange, onSelectTemplate })
             return matchesSearch && matchesLang;
         });
     }, [searchTerm, selectedLanguage]);
-
+    console.log(filteredTemplates)
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[90vw] md:max-w-[1200px] h-[85vh] p-0 flex flex-col rounded-2xl overflow-hidden bg-background">

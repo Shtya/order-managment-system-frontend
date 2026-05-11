@@ -37,6 +37,7 @@ import PageHeader from "@/components/atoms/Pageheader";
 import StoreFilter from "@/components/atoms/StoreFilter";
 import { Store } from "lucide-react";
 import { useTranslations } from "next-intl";
+import WhatsAppAccountSelect from "./atoms/WhatsAppAccountSelect";
 
 // ── Custom Filter Field Wrapper ──────────────────────────────────────────────
 function FilterField({ label, icon: FieldIcon, children }) {
@@ -133,10 +134,10 @@ export default function WhatsAppStatisticsPage() {
 
   // Mock charts config
   const chartConfigs = [
-    { key: "sent", label: "تم الإرسال", color: "#10b981", fillOpacity: 0.1 },
-    { key: "delivered", label: "تم التسليم", color: "#34d399", fillOpacity: 0.1 },
-    { key: "read", label: "تمت القراءة", color: "#60a5fa", fillOpacity: 0.1 },
-    { key: "clicked", label: "تم النقر", color: "#c084fc", fillOpacity: 0.1 },
+    { key: "sent", label: "تم الإرسال", color: "#10b981", fillOpacity: 0.1, tension: 0.44, },
+    { key: "delivered", label: "تم التسليم", color: "#34d399", fillOpacity: 0.1, tension: 0.44, },
+    { key: "read", label: "تمت القراءة", color: "#60a5fa", fillOpacity: 0.1, tension: 0.44, },
+    { key: "clicked", label: "تم النقر", color: "#c084fc", fillOpacity: 0.1, tension: 0.44, },
   ];
 
   const QUICK_RANGES = [
@@ -165,13 +166,12 @@ export default function WhatsAppStatisticsPage() {
 
   // Mock Trend Data (Just shapes for UI display)
   const mockTrend = Array.from({ length: 15 }).map((_, i) => ({
-    date: `May ${i + 1}`,
+    label: `May ${i + 1}`,   // ← was "date", chart reads "label"
     sent: 1000 + Math.random() * 500,
     delivered: 900 + Math.random() * 400,
     read: 700 + Math.random() * 300,
     clicked: 200 + Math.random() * 100,
   }));
-
   // Table Columns Definitions
   const templatesCols = [
     { key: "template", header: "القالب", cell: (r) => <span className="font-semibold text-xs">{r.template}</span> },
@@ -244,34 +244,33 @@ export default function WhatsAppStatisticsPage() {
             maxDate="today"
           />
         </FilterField>
-
-        <StoreFilter
-          value={filters.storeId}
-          icon={Store}
-          iconClass={"text-orange-400!"}
-          onChange={(v) => setFilters((f) => ({ ...f, storeId: v }))}
-          none={false}
-          autoSelectIfSingle={true}
-        />
-
-        <div className="flex-1" />
-        <ExportBtn onClick={() => { }} label="تصدير" />
+        <WhatsAppAccountSelect label="إختر الحساب" />
       </TableFilters>
 
       {/* Row 2: Funnel, Trend, Category */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Messaging Funnel */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card title="قمع المراسلات" icon={Activity} action={<Button_ variant="ghost" size="xs" label="عرض التفاصيل" />}>
+          <Card title="تحليل التدفق" icon={Activity} action={<Button_
+            variant="ghost"
+            size="sm"
+            label={"عرض التفاصيل"}
+            className="text-[10px] h-6"
+            onClick={() => window.location.search = "?tab=manualExpenses"}
+          />}>
             <div className="flex flex-col gap-3 mt-4">
               {FUNNEL_DATA.map((item, i) => (
-                <div key={item.label} className="relative w-full h-8 bg-slate-100 dark:bg-slate-800 rounded overflow-hidden flex items-center px-3">
+                <div
+                  key={item.label}
+                  dir="rtl"
+                  className="relative w-full h-8 bg-slate-100 dark:bg-slate-800 rounded overflow-hidden flex items-center px-3"
+                >
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: item.width }}
-                    className={cn("absolute left-0 top-0 bottom-0 z-0", item.color)}
+                    className={cn("absolute right-0 top-0 bottom-0 z-0", item.color)}
                   />
-                  <div className="relative z-10 w-full flex justify-between text-xs font-semibold text-slate-800 dark:text-white mix-blend-difference">
+                  <div className="relative z-10 w-full flex justify-between text-xs font-semibold text-slate-800 dark:text-white">
                     <div className="flex gap-2">
                       <span>{item.value.toLocaleString()}</span>
                       <span className="font-normal opacity-80">{item.label}</span>
@@ -286,21 +285,28 @@ export default function WhatsAppStatisticsPage() {
 
         {/* Messages Over Time */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="lg:col-span-1">
-          <Card title="الرسائل بمرور الوقت" icon={TrendingUp} action={<select className="text-xs bg-background border border-border rounded px-2 py-1"><option>يومي</option></select>}>
+          <Card title="الرسائل بمرور الوقت" icon={TrendingUp} >
             <TrendChart data={mockTrend} loading={false} configs={chartConfigs} />
           </Card>
         </motion.div>
 
         {/* By Category */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <Card title="حسب الفئة" icon={PieIcon} action={<Button_ variant="ghost" size="xs" label="عرض التفاصيل" />}>
+          <Card title="الرسائل حسب الفئة" icon={PieIcon} action={<Button_
+            variant="ghost"
+            size="sm"
+            label={"عرض التفاصيل"}
+            className="text-[10px] h-6"
+            onClick={() => window.location.search = "?tab=manualExpenses"}
+          />}>
             <StatusDonut
               data={CATEGORY_DATA}
               loading={false}
+              label="رسالة"
               config={{
                 key: "count",
                 label: "name",
-                hasPercentage: true,
+                // hasPercentage: true,
               }}
             />
           </Card>
@@ -310,19 +316,37 @@ export default function WhatsAppStatisticsPage() {
       {/* Row 3: Tables */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <Card title="أفضل القوالب" action={<Button_ variant="ghost" size="xs" label="عرض الكل" />} icon={MessageSquare}>
+          <Card title="أفضل القوالب" action={<Button_
+            variant="ghost"
+            size="sm"
+            label={"عرض الكل"}
+            className="text-[10px] h-6"
+            onClick={() => window.location.search = "?tab=manualExpenses"}
+          />} icon={MessageSquare}>
             <MiniTable columns={templatesCols} data={TEMPLATES_DATA} loading={false} />
           </Card>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} >
-          <Card title="أداء التشغيل التلقائي" action={<Button_ variant="ghost" size="xs" label="عرض الكل" />} icon={CheckCircle}>
+          <Card title="أداء التشغيل التلقائي" action={<Button_
+            variant="ghost"
+            size="sm"
+            label={"عرض الكل"}
+            className="text-[10px] h-6"
+            onClick={() => window.location.search = "?tab=manualExpenses"}
+          />} icon={CheckCircle}>
             <MiniTable columns={automationCols} data={AUTOMATION_DATA} loading={false} />
           </Card>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} >
-          <Card title="أفضل نقرات الأزرار" action={<Button_ variant="ghost" size="xs" label="عرض الكل" />} icon={CheckCircle}>
+          <Card title="أفضل نقرات الأزرار" action={<Button_
+            variant="ghost"
+            size="sm"
+            label={"عرض الكل"}
+            className="text-[10px] h-6"
+            onClick={() => window.location.search = "?tab=manualExpenses"}
+          />} icon={CheckCircle}>
             <MiniTable columns={buttonCols} data={BUTTON_CLICKS_DATA} loading={false} />
           </Card>
         </motion.div>
@@ -363,7 +387,13 @@ export default function WhatsAppStatisticsPage() {
 
         {/* Geography */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
-          <Card title="التوزيع الجغرافي" icon={Globe} action={<Button_ variant="ghost" size="xs" label="عرض الكل" />}>
+          <Card title="توزيع إرسال الرسائل حسب الدولة" icon={Globe} action={<Button_
+            variant="ghost"
+            size="sm"
+            label={"عرض الكل"}
+            className="text-[10px] h-6"
+            onClick={() => window.location.search = "?tab=manualExpenses"}
+          />}>
             <div className="mt-4 space-y-4">
               {GEOGRAPHY_DATA.map(geo => (
                 <div key={geo.country} className="flex flex-col gap-1">
@@ -382,7 +412,13 @@ export default function WhatsAppStatisticsPage() {
 
         {/* Recent Alerts */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-          <Card title="تنبيهات حديثة" icon={Bell} action={<Button_ variant="ghost" size="xs" label="عرض الكل" />}>
+          <Card title="تنبيهات حديثة" icon={Bell} action={<Button_
+            variant="ghost"
+            size="sm"
+            label={"عرض الكل"}
+            className="text-[10px] h-6"
+            onClick={() => window.location.search = "?tab=manualExpenses"}
+          />}>
             <div className="flex flex-col gap-4 mt-4">
               {ALERTS_DATA.map((alert, i) => (
                 <div key={i} className="flex gap-3 items-start">

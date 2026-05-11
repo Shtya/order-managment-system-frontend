@@ -30,7 +30,8 @@ import {
     Smartphone,
     Copy,
     Ban,
-    Facebook
+    Facebook,
+    Layout
 } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/utils/cn";
@@ -51,6 +52,8 @@ import PageHeader from "@/components/atoms/Pageheader";
 import TemplatePreview from "../../atoms/TemplatePreview";
 import MediaUpload from "../../atoms/MediaUpload";
 import TemplateButtonBuilder from "../../atoms/TemplateButtonBuilder";
+import { MetaTemplateDialog } from "../../atoms/MetaTemplateDialog";
+import { InternalTemplateDialog } from "../../atoms/InternalTemplateDialog";
 import Script from "next/script";
 import data from '@emoji-mart/data'
 import Picker from '@emoji-mart/react'
@@ -61,7 +64,6 @@ import {
     replaceVariables,
     isCorrectVariableFormat
 } from "@/utils/whatsapp-healper";
-import { MetaTemplateDialog } from "../../atoms/MetaTemplateDialog";
 
 const MAX_BODY_LENGTH = 1024;
 
@@ -186,6 +188,8 @@ export default function CreateWhatsAppTemplatePage() {
     const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
     const textareaRef = useRef(null);
     const [variableSamples, setVariableSamples] = useState({ body: {}, header: {} });
+    const [isMetaDialogOpen, setIsMetaDialogOpen] = useState(false);
+    const [isInternalDialogOpen, setIsInternalDialogOpen] = useState(false);
 
     const { control, handleSubmit, watch, setValue, setError, clearErrors, formState: { errors } } = useForm({
         resolver: yupResolver(schema),
@@ -459,12 +463,57 @@ export default function CreateWhatsAppTemplatePage() {
         );
     }, [activeSubcategory?.sections]);
 
-    const [isMetaDialogOpen, setIsMetaDialogOpen] = useState(false);
 
     // 3. Handle selection
-    const handleMetaTemplateSelect = (template) => {
-        console.log("Selected Meta Template:", template);
-        // Here: Map the selected template to your form (e.g., react-hook-form reset() or setValue())
+    const handleMetaTemplateSelect = (selectedTpl) => {
+        const { template: tplData, name, category, subCategory, language } = selectedTpl;
+
+        // Ensure buttons have unique IDs for the builder
+        const buttonsWithIds = (tplData.buttons || []).map(btn => ({
+            ...btn,
+            id: btn.id || `btn-${Math.random().toString(36).substr(2, 9)}`
+        }));
+
+        // 1. Reset Form Values
+        setValue("name", name);
+        setValue("language", language === "en_US" ? "en" : language);
+        setValue("category", category);
+
+        // Map subcategory if it matches our internal IDs, otherwise fallback to default
+        const categoryObj = CATEGORIES.find(c => c.id === category);
+        const subExists = categoryObj?.subcategories.some(s => s.id === subCategory);
+        setValue("subcategory", subExists ? subCategory : categoryObj?.subcategories[0].id);
+
+        setValue("headerType", tplData.headerType || "NONE");
+        setValue("headerText", tplData.headerText || "");
+        setValue("headerUrl", tplData.headerUrl || "");
+        setValue("bodyText", tplData.bodyText || "");
+        setValue("footerText", tplData.footerText || "");
+        setValue("buttons", buttonsWithIds);
+
+        // 2. Update Samples State
+        const bodyMatches = getVariableMatches(tplData.bodyText || "");
+        const headerMatches = getVariableMatches(tplData.headerText || "");
+
+        const newBodySamples = {};
+        bodyMatches.forEach(m => {
+            const num = extractVariableNames(m)[0];
+            newBodySamples[num] = tplData.examples?.[num] || "";
+        });
+
+        const newHeaderSamples = {};
+        headerMatches.forEach(m => {
+            const num = extractVariableNames(m)[0];
+            newHeaderSamples[num] = tplData.examples?.[num] || "";
+        });
+
+        setVariableSamples({
+            body: newBodySamples,
+            header: newHeaderSamples
+        });
+
+        // 3. Clear any previous errors
+        clearErrors();
     };
 
     return (
@@ -486,6 +535,15 @@ export default function CreateWhatsAppTemplatePage() {
                     ]}
                     buttons={
                         <>
+                            <Button_
+                                size="sm"
+                                label="قوالب النظام"
+                                tone="secondary"
+                                variant="outline"
+                                onClick={() => setIsInternalDialogOpen(true)}
+                                icon={<Layout size={18} />}
+                                className="border-slate-200 dark:border-slate-800"
+                            />
                             <Button_
                                 size="sm"
                                 label="استيراد من Meta"
@@ -1071,6 +1129,12 @@ export default function CreateWhatsAppTemplatePage() {
                 <MetaTemplateDialog
                     open={isMetaDialogOpen}
                     onOpenChange={setIsMetaDialogOpen}
+                    onSelectTemplate={handleMetaTemplateSelect}
+                />
+
+                <InternalTemplateDialog
+                    open={isInternalDialogOpen}
+                    onOpenChange={setIsInternalDialogOpen}
                     onSelectTemplate={handleMetaTemplateSelect}
                 />
             </div>

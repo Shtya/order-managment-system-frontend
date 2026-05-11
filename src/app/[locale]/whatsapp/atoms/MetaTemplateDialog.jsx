@@ -8,6 +8,18 @@ import { Button } from "@/components/ui/button"; // Assuming standard shadcn/ui 
 import { Search, Globe, Tag, ChevronRight, Wand2 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import TemplatePreview from "./TemplatePreview";
+import { useLocale } from "next-intl";
+
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/FloatingSelect";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ChevronDown } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
 export const META_TEMPLATE_CONFIG = {
     CATEGORIES: [
@@ -17,18 +29,49 @@ export const META_TEMPLATE_CONFIG = {
     ],
     SUB_CATEGORIES: {
         MARKETING: [
-            { id: "PROMOTION", label: "عروض ترويجية" },
-            { id: "HOLIDAY", label: "مبيعات العطلات" },
-            { id: "PRODUCT_UPDATE", label: "تحديثات المنتجات" }
+            {
+                id: "ACCOUNT_PROTECTION",
+                label: "Account or product protection",
+                items: [
+                    { id: "FRAUD_AWARENESS", label: "Fraud awareness", count: 1 },
+                    { id: "PRODUCT_RECALLS", label: "Product recalls", count: 1 },
+                    { id: "WARRANTY_ALERTS", label: "Warranty alerts", count: 1 }
+                ]
+            },
+            {
+                id: "ACCOUNT_UPDATES",
+                label: "Account updates",
+                items: [
+                    { id: "ACCOUNT_INFO", label: "Account info", count: 2 },
+                    { id: "BILLING_UPDATE", label: "Billing update", count: 1 }
+                ]
+            },
+            {
+                id: "CALL_PERMISSIONS",
+                label: "Call permissions",
+                items: [
+                    { id: "CALL_OPT_IN", label: "Call opt-in", count: 1 }
+                ]
+            }
         ],
         UTILITY: [
-            { id: "ORDER_UPDATE", label: "تحديثات الطلب" },
-            { id: "ACCOUNT_ALERT", label: "تنبيهات الحساب" },
-            { id: "SHIPPING", label: "معلومات الشحن" }
+            {
+                id: "ORDER_MANAGEMENT",
+                label: "Order management",
+                items: [
+                    { id: "ORDER_CONFIRMATION", label: "Order confirmation", count: 5 },
+                    { id: "ORDER_STATUS", label: "Order status", count: 3 }
+                ]
+            }
         ],
         AUTHENTICATION: [
-            { id: "OTP", label: "كلمات مرور لمرة واحدة (OTP)" },
-            { id: "RECOVERY", label: "استرداد الحساب" }
+            {
+                id: "SECURITY",
+                label: "Security",
+                items: [
+                    { id: "OTP", label: "OTP", count: 10 }
+                ]
+            }
         ]
     },
     LANGUAGES: [
@@ -41,28 +84,179 @@ export const META_TEMPLATE_CONFIG = {
 export const MOCK_TEMPLATES = [
     {
         id: "1",
-        name: "ramadan_offer_01",
+        name: "fraud_alert_01",
+        category: "MARKETING",
+        subCategory: "FRAUD_AWARENESS",
+        language: "en_US",
+        template: {
+            headerType: "TEXT",
+            headerText: "Security Alert ⚠️",
+            bodyText:
+                "Hello {{1}}, we detected a login attempt from {{2}}. If this wasn't you, please reset your password.",
+            footerText: "Protect your account.",
+            examples: {
+                "1": "John Doe",
+                "2": "Cairo, Egypt"
+            },
+            buttons: [
+                {
+                    type: "URL",
+                    text: "Reset Password",
+                    url: "https://example.com/reset"
+                }
+            ]
+        }
+    },
+
+    {
+        id: "2",
+        name: "order_confirmation_v2",
+        category: "UTILITY",
+        subCategory: "ORDER_CONFIRMATION",
+        language: "en_US",
+        template: {
+            headerType: "IMAGE",
+            headerUrl:
+                "https://ix-marketing.imgix.net/autocompress.png?auto=format,compress&w=1946",
+            bodyText:
+                "Hi {{1}}, your order #{{2}} is confirmed! We will notify you when it ships.",
+            footerText: "Thank you for shopping with us.",
+            examples: {
+                "1": "John Doe",
+                "2": "ORD-12345"
+            },
+            buttons: [
+                {
+                    type: "URL",
+                    text: "View Order",
+                    url: "https://example.com/orders/{{2}}"
+                },
+                {
+                    type: "PHONE_NUMBER",
+                    text: "Support",
+                    phoneNumber: "+201234567890"
+                }
+            ]
+        }
+    },
+
+    {
+        id: "3",
+        name: "ramadan_greeting_ar",
         category: "MARKETING",
         subCategory: "PROMOTION",
         language: "ar",
-        components: [
-            { type: "HEADER", format: "TEXT", text: "عرض رمضان الحصري 🌙" },
-            { type: "BODY", text: "مرحباً {{1}}، استفد من خصم {{2}}% على جميع منتجاتنا بمناسبة الشهر الكريم!" },
-            { type: "FOOTER", text: "تطبق الشروط والأحكام" },
-            { type: "BUTTONS", buttons: [{ type: "URL", text: "تسوق الآن", url: "https://example.com" }] }
-        ]
+        template: {
+            headerType: "TEXT",
+            headerText: "مبارك عليكم الشهر 🌙",
+            bodyText:
+                "أهلاً {{1}}، يسعدنا أن نقدم لك خصم {{2}}% على كافة المنتجات بمناسبة شهر رمضان المبارك.",
+            footerText: "تطبق الشروط والأحكام.",
+            examples: {
+                "1": "أحمد محمد",
+                "2": "20"
+            },
+            buttons: [
+                {
+                    type: "URL",
+                    text: "تسوق الآن",
+                    url: "https://example.com"
+                }
+            ]
+        }
     },
+
+    // =========================
+    // AUTHENTICATION (EN)
+    // =========================
     {
-        id: "2",
-        name: "order_shipped_alert",
-        category: "UTILITY",
-        subCategory: "SHIPPING",
+        id: "4",
+        name: "auth_security_en",
+        category: "AUTHENTICATION",
+        subCategory: "SECURITY",
+        language: "en_US",
+        template: {
+            headerType: "TEXT",
+            headerText: "Security Verification Code 🔐",
+            bodyText:
+                "Hi {{1}}, your verification code is {{2}}. It will expire in {{3}} minutes.",
+            footerText: "Do not share this code with anyone.",
+            examples: {
+                "1": "John Doe",
+                "2": "482910",
+                "3": "5"
+            },
+            buttons: [
+                {
+                    type: "CUSTOM",
+                    text: "Resend Code"
+                }
+            ]
+        }
+    },
+
+    // =========================
+    // AUTHENTICATION (AR)
+    // =========================
+    {
+        id: "5",
+        name: "auth_security_ar",
+        category: "AUTHENTICATION",
+        subCategory: "SECURITY",
         language: "ar",
-        components: [
-            { type: "HEADER", format: "TEXT", text: "تم شحن طلبك 📦" },
-            { type: "BODY", text: "مرحباً {{1}}، طلبك رقم {{2}} في طريقه إليك. يمكنك تتبع الشحنة عبر الرابط أدناه." },
-            { type: "BUTTONS", buttons: [{ type: "URL", text: "تتبع الطلب", url: "https://example.com/track" }] }
-        ]
+        template: {
+            headerType: "TEXT",
+            headerText: "رمز التحقق الأمني 🔐",
+            bodyText:
+                "مرحباً {{1}}، رمز التحقق الخاص بك هو {{2}} وسينتهي خلال {{3}} دقائق.",
+            footerText: "لا تشارك هذا الرمز مع أي شخص.",
+            examples: {
+                "1": "أحمد محمد",
+                "2": "482910",
+                "3": "5"
+            },
+            buttons: [
+                {
+                    type: "CUSTOM",
+                    text: "إعادة إرسال الرمز"
+                }
+            ]
+        }
+    },
+
+    // =========================
+    // UTILITIES (AR)
+    // =========================
+    {
+        id: "6",
+        name: "invoice_reminder_ar",
+        category: "UTILITY",
+        subCategory: "BILLING",
+        language: "ar",
+        template: {
+            headerType: "TEXT",
+            headerText: "تذكير بالفاتورة 💳",
+            bodyText:
+                "مرحباً {{1}}، لديك فاتورة رقم {{2}} بقيمة {{3}} ريال مستحقة الدفع.",
+            footerText: "يرجى السداد في أقرب وقت.",
+            examples: {
+                "1": "أحمد علي",
+                "2": "INV-1029",
+                "3": "250"
+            },
+            buttons: [
+                {
+                    type: "URL",
+                    text: "دفع الفاتورة",
+                    url: "https://example.com/pay/{{2}}"
+                },
+                {
+                    type: "PHONE_NUMBER",
+                    text: "الدعم",
+                    phoneNumber: "+201234567890"
+                }
+            ]
+        }
     }
 ];
 
@@ -70,13 +264,27 @@ export const MOCK_TEMPLATES = [
 export function MetaTemplateDialog({ open, onOpenChange, onSelectTemplate }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("MARKETING");
-    const [selectedSubCategory, setSelectedSubCategory] = useState("ALL");
+    const [selectedSubCategories, setSelectedSubCategories] = useState([]); // Array of IDs
+    const [expandedGroups, setExpandedGroups] = useState({}); // { groupId: boolean }
     const [selectedLanguage, setSelectedLanguage] = useState("ar");
+    const locale = useLocale();
 
-    // Reset sub-category when category changes
+    // Reset filters when category changes
     const handleCategoryChange = (catId) => {
         setSelectedCategory(catId);
-        setSelectedSubCategory("ALL");
+        setSelectedSubCategories([]);
+    };
+
+    const toggleGroup = (groupId) => {
+        setExpandedGroups(prev => ({ ...prev, [groupId]: !prev[groupId] }));
+    };
+
+    const toggleSubCategory = (subId) => {
+        setSelectedSubCategories(prev =>
+            prev.includes(subId)
+                ? prev.filter(id => id !== subId)
+                : [...prev, subId]
+        );
     };
 
     // Filter templates based on selections
@@ -85,11 +293,15 @@ export function MetaTemplateDialog({ open, onOpenChange, onSelectTemplate }) {
             const matchesSearch = tpl.name.toLowerCase().includes(searchTerm.toLowerCase());
             const matchesLang = tpl.language === selectedLanguage;
             const matchesCat = tpl.category === selectedCategory;
-            const matchesSub = selectedSubCategory === "ALL" || tpl.subCategory === selectedSubCategory;
+            const matchesSub = selectedSubCategories.length === 0 || selectedSubCategories.includes(tpl.subCategory);
 
+            console.log(
+                tpl.category === selectedCategory, tpl.category, selectedCategory,
+                matchesSearch, matchesLang, matchesCat, matchesSub
+            )
             return matchesSearch && matchesLang && matchesCat && matchesSub;
         });
-    }, [searchTerm, selectedLanguage, selectedCategory, selectedSubCategory]);
+    }, [searchTerm, selectedLanguage, selectedCategory, selectedSubCategories]);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -109,22 +321,28 @@ export function MetaTemplateDialog({ open, onOpenChange, onSelectTemplate }) {
                                 placeholder="ابحث باسم القالب..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pr-10 rounded-xl h-[50px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20"
+                                className="rounded-xl h-[50px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20"
+                                style={{ paddingLeft: locale === "ar" ? "10px" : "45px", paddingRight: locale === "ar" ? "45px" : "10px" }}
                             />
                         </div>
 
                         {/* Language */}
-                        <div className="flex-shrink-0 flex items-center gap-2 bg-[#fafafa] dark:bg-slate-800/50 rounded-xl p-1 border border-gray-200 dark:border-slate-700 h-[50px]">
-                            <Globe className="w-4 h-4 text-slate-400 mr-2 ml-2" />
-                            <select
-                                value={selectedLanguage}
-                                onChange={(e) => setSelectedLanguage(e.target.value)}
-                                className="bg-transparent border-none outline-none text-sm font-medium pr-4 cursor-pointer text-foreground"
-                            >
-                                {META_TEMPLATE_CONFIG.LANGUAGES.map(lang => (
-                                    <option key={lang.id} value={lang.id}>{lang.label}</option>
-                                ))}
-                            </select>
+                        <div className="flex-shrink-0">
+                            <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+                                <SelectTrigger className="w-[180px] h-[50px] rounded-xl bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700">
+                                    <div className="flex items-center gap-2">
+                                        <Globe className="w-4 h-4 text-slate-400" />
+                                        <SelectValue placeholder="اختر اللغة" />
+                                    </div>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {META_TEMPLATE_CONFIG.LANGUAGES.map(lang => (
+                                        <SelectItem key={lang.id} value={lang.id}>
+                                            {lang.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         {/* Top Categories */}
@@ -151,23 +369,55 @@ export function MetaTemplateDialog({ open, onOpenChange, onSelectTemplate }) {
                 <div className="flex flex-1 overflow-hidden">
 
                     {/* SIDEBAR: Sub-categories */}
-                    <div className="w-64 border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f1117] flex-shrink-0 overflow-y-auto p-4 flex flex-col gap-2">
-                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2">الفئات الفرعية</h4>
-                        {META_TEMPLATE_CONFIG.SUB_CATEGORIES[selectedCategory].map(sub => (
-                            <button
-                                key={sub.id}
-                                onClick={() => setSelectedSubCategory(sub.id)}
-                                className={cn(
-                                    "flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-colors w-full text-right",
-                                    selectedSubCategory === sub.id
-                                        ? "bg-primary/10 text-primary border border-primary/20"
-                                        : "hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-300"
-                                )}
-                            >
-                                {sub.label}
-                                {selectedSubCategory === sub.id && <ChevronRight className="w-4 h-4" />}
-                            </button>
-                        ))}
+                    <div className="w-72 border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f1117] flex-shrink-0 overflow-y-auto p-4 flex flex-col gap-2">
+                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 px-2">الفئات الفرعية</h4>
+
+                        {META_TEMPLATE_CONFIG.SUB_CATEGORIES[selectedCategory].map(group => {
+                            const isExpanded = expandedGroups[group.id];
+                            return (
+                                <div key={group.id} className="flex flex-col gap-1">
+                                    {/* Group Header */}
+                                    <button
+                                        onClick={() => toggleGroup(group.id)}
+                                        className={cn(
+                                            "flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-bold transition-all w-full text-right bg-slate-50/50 dark:bg-slate-800/30 border border-transparent",
+                                            isExpanded && "border-slate-200 dark:border-slate-700"
+                                        )}
+                                    >
+                                        <span className="text-slate-800 dark:text-slate-200">{group.label}</span>
+                                        <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", isExpanded && "rotate-180")} />
+                                    </button>
+
+                                    {/* Sub-items (Checkboxes) */}
+                                    <AnimatePresence>
+                                        {isExpanded && (
+                                            <motion.div
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: "auto", opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                className="overflow-hidden flex flex-col gap-1 mt-1 pr-2"
+                                            >
+                                                {group.items.map(item => (
+                                                    <div
+                                                        key={item.id}
+                                                        onClick={() => toggleSubCategory(item.id)}
+                                                        className="flex items-center gap-3 px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg cursor-pointer transition-colors group"
+                                                    >
+                                                        <Checkbox
+                                                            checked={selectedSubCategories.includes(item.id)}
+                                                            className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                                                        />
+                                                        <span className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200">
+                                                            {item.label} ({item.count})
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            );
+                        })}
                     </div>
 
                     {/* PREVIEW GRID */}
@@ -180,14 +430,18 @@ export function MetaTemplateDialog({ open, onOpenChange, onSelectTemplate }) {
                         ) : (
                             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                                 {filteredTemplates.map(template => (
-                                    <div key={template.id} className="relative group flex flex-col bg-white dark:bg-card border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
+                                    <div key={template.id} className="relative group flex flex-col bg-white dark:bg-card border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
 
                                         {/* Template Preview Component Wrapper */}
-                                        <div className="p-4 bg-slate-50 dark:bg-slate-900/30 flex-1 flex justify-center border-b border-slate-100 dark:border-slate-800">
-                                            {/* Note: Pass data appropriately based on your TemplatePreview.jsx prop structure */}
+                                        <div className="flex-1 flex justify-center border-b border-slate-100 dark:border-slate-800 relative min-h-[400px]">
                                             <TemplatePreview
-                                                components={template.components}
-                                                locale={template.language}
+                                                flat
+                                                hasHeader={false}
+                                                template={{
+                                                    ...template.template,
+                                                    language: template.language,
+                                                    subcategory: template.subCategory
+                                                }}
                                             />
                                         </div>
 

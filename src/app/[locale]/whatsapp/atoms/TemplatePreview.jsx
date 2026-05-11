@@ -189,7 +189,7 @@ import {
  *    phoneNumber: "+1234567890"
  * }]
  */
-export default function TemplatePreview({ template }) {
+export default function TemplatePreview({ template, flat = false, hasHeader = true }) {
     const t = useTranslations("whatsApp.templates");
     const [showExamples, setShowExamples] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -348,12 +348,12 @@ export default function TemplatePreview({ template }) {
     const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     return (
-        <div className="w-full mx-auto bg-white dark:bg-[#111b21] rounded-md shadow-lg border  border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
+        <div className={`w-full mx-auto bg-white dark:bg-[#111b21] rounded-md ${!flat && "shadow-lg border  border-slate-200 dark:border-slate-800"} overflow-hidden flex flex-col`}>
             {/* Template Header Bar */}
-            <div className="px-4 py-2 bg-white dark:bg-[#111b21] border-b border-slate-100 dark:border-slate-800">
+            {hasHeader && <div className="px-4 py-2 bg-white dark:bg-[#111b21] border-b border-slate-100 dark:border-slate-800">
                 <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">{t("preview.title")}</h3>
             </div>
-
+            }
             {/* WhatsApp Chat Background */}
             <div
                 className={cn(

@@ -127,16 +127,16 @@ export default function Orders() {
 	const fetchStats = async (silent = false) => {
 		try {
 
-			if(!silent)
-			setStatsLoading(true);
+			if (!silent)
+				setStatsLoading(true);
 			const response = await api.get("/orders/stats");
 			setStats(response.data || []);
 		} catch (error) {
 			console.error("Error fetching stats:", error);
 			toast.error(t("messages.errorFetchingStats"));
 		} finally {
-			if(!silent)
-			setStatsLoading(false);
+			if (!silent)
+				setStatsLoading(false);
 		}
 	};
 

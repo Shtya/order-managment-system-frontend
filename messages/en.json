@@ -4537,11 +4537,13 @@
       "view": "View",
       "settings": "Settings",
       "trackShipment": "Shipment tracking",
+      "statusHistory": "View History",
       "startPreparing": "Start Preparing",
       "continuePreparing": "Continue Preparing",
       "scanOutgoing": "Scan for Outgoing",
       "createManifest": "Create Manifest File",
-      "createReturnManifest": "Create Return Manifest File"
+      "createReturnManifest": "Create Return Manifest File",
+      "loading": "Loading..."
     },
     "breadcrumb": {
       "home": "Home",
@@ -4909,7 +4911,8 @@
       "errorFetchingOrder": "Failed to load order data",
       "orderNotFound": "Order not found",
       "errorFetchingTracking": "Failed to fetch tracking details. Please try again later.",
-      "copied": "Copied"
+      "copied": "Copied",
+      "errorFetchingHistory": "Error fetching history"
     },
     "details": {
       "statusUpdated": "Status updated successfully",
@@ -4920,6 +4923,7 @@
       "storeInfo": "Store Information",
       "assignedEmployee": "Assigned Employee",
       "statusHistory": "Status Change History",
+      "changedBy": "Changed By",
       "notes": "Notes",
       "timestamps": "Timestamps",
       "createdAt": "Created At",
@@ -5348,7 +5352,10 @@
       "limit": "Results per page",
       "total": "Total results"
     },
-    "retriesExhausted": "The attempts are over"
+    "retriesExhausted": "The attempts are over",
+    "logs": {
+      "empty": "No history found"
+    }
   },
   "callCenter": {
     "breadcrumb": {

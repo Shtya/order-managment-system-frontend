@@ -4573,11 +4573,13 @@
       "view": "عرض",
       "settings": "الإعدادات",
       "trackShipment": "تتبع الشحنة",
+      "statusHistory": "عرض السجل",
       "startPreparing": "بدء التجهيز",
       "continuePreparing": "متابعة التجهيز",
       "scanOutgoing": "مسح للخروج",
       "createManifest": "إنشاء ملف حمولة (مانيفست)",
-      "createReturnManifest": "إنشاء ملف مرتجعات"
+      "createReturnManifest": "إنشاء ملف مرتجعات",
+      "loading": "جاري التحميل..."
     },
     "breadcrumb": {
       "home": "الرئيسية",
@@ -4960,7 +4962,8 @@
       "errorFetchingOrder": "فشل تحميل بيانات الطلب",
       "orderNotFound": "الطلب غير موجود",
       "errorFetchingTracking": "فشل في جلب تفاصيل التتبع. يرجى المحاولة مرة أخرى لاحقاً.",
-      "copied": "تم النسخ"
+      "copied": "تم النسخ",
+      "errorFetchingHistory": "فضل تحميل تاريخ الطلب"
     },
     "details": {
       "statusUpdated": "تم تحديث الحالة",
@@ -4971,6 +4974,7 @@
       "storeInfo": "معلومات المتجر",
       "assignedEmployee": "الموظف المسؤول",
       "statusHistory": "تاريخ تغيير الحالة",
+      "changedBy": "تم التغيير بواسطة",
       "notes": "الملاحظات",
       "timestamps": "التواريخ",
       "createdAt": "تاريخ الإنشاء",
@@ -5382,7 +5386,10 @@
       "limit": "عدد النتائج",
       "total": "إجمالي النتائج"
     },
-    "retriesExhausted": "إنتهت المحاولات"
+    "retriesExhausted": "إنتهت المحاولات",
+    "logs": {
+      "empty": "لا يوجد تاريخ"
+    }
   },
   "callCenter": {
     "breadcrumb": {

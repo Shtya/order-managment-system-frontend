@@ -159,8 +159,8 @@ export default function Orders() {
 							retrySettingsOpen={retrySettingsOpen}
 							setRetrySettingsOpen={setRetrySettingsOpen}
 							readOnlyStatus={false}
-							restrictedStatuses={mainStatuses}
-							restrictedSelectStatuses={[...mainStatuses, OrderStatus.CONFIRMED]}
+							// restrictedStatuses={mainStatuses}
+							// restrictedSelectStatuses={[...mainStatuses, OrderStatus.CONFIRMED]}
 							showCustom={true}
 							showTopActions={true}
 							showBulkUpload={true}

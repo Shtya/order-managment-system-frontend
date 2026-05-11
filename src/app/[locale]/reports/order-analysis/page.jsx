@@ -572,25 +572,29 @@ export function MiniTable({ columns, data, loading }) {
   const t = useTranslations("dashboard");
 
   return (
-    <div className="table-container">
-      <table className="w-full text-sm">
-        <thead className="table-header">
-          <tr>
-            {columns.map((c, idx) => (
-              <th
-                key={c.key}
-                className="table-header-cell"
+    <div className="table-container overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800">
+
+      {/* Added 'min-w-[500px]' (or any appropriate width) 
+          This ensures the table doesn't shrink smaller than this width, 
+          which triggers the overflow scroll.
+      */}
+      <table className="w-full text-sm min-w-[500px] border-collapse">
+        <thead className="table-header">   <tr>
+          {columns.map((c, idx) => (
+            <th
+              key={c.key}
+              className="table-header-cell"
+            >
+              <motion.span
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.035 }}
               >
-                <motion.span
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.035 }}
-                >
-                  {c.header}
-                </motion.span>
-              </th>
-            ))}
-          </tr>
+                {c.header}
+              </motion.span>
+            </th>
+          ))}
+        </tr>
         </thead>
         <tbody>
           {loading ? (
@@ -745,8 +749,8 @@ export default function OrdersStatisticsPage() {
     storeId: "all",
   });
 
-  
-const format = useFormatter();
+
+  const format = useFormatter();
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [exAreas, setExAreas] = useState(false);
@@ -755,7 +759,7 @@ const format = useFormatter();
   const [statusData, setStatusData] = useState([]);
   const [areasData, setAreasData] = useState([]);
   const [searchValue, setSearchValue] = useState("");
-const { formatTrendLabel } = useTrendLabelFormatter();
+  const { formatTrendLabel } = useTrendLabelFormatter();
   const { debouncedValue: debouncedSearch } = useDebounce({
     value: searchValue,
     delay: 300,
@@ -791,9 +795,9 @@ const { formatTrendLabel } = useTrendLabelFormatter();
       const getData = (r) =>
         Array.isArray(r.data) ? r.data : (r.data?.records ?? []);
       setSummary(sum.data);
-         const formattedTrend = (getData(trd)).map((item) => ({
+      const formattedTrend = (getData(trd)).map((item) => ({
         ...item,
-         label: formatTrendLabel(item.date),
+        label: formatTrendLabel(item.date),
       }));
 
       setTrendData(formattedTrend);
@@ -1090,7 +1094,7 @@ const { formatTrendLabel } = useTrendLabelFormatter();
     <div className="min-h-screen p-5 space-y-5">
       {/* Page header */}
       <PageHeader
-      itemsCompact={false}
+        itemsCompact={false}
         breadcrumbs={[
           { name: t("breadcrumb.home"), href: "/dashboard" },
           { name: t("breadcrumb.orderAnalysis") },
@@ -1144,8 +1148,8 @@ const { formatTrendLabel } = useTrendLabelFormatter();
           />
         </FilterField>
 
-      <StoreFilter  value={filters.storeId} icon={Store} iconClass={"text-orange-400!"}
-            onChange={(v) => setFilters((f) => ({ ...f, storeId: v }))} none={false} autoSelectIfSingle={true} />
+        <StoreFilter value={filters.storeId} icon={Store} iconClass={"text-orange-400!"}
+          onChange={(v) => setFilters((f) => ({ ...f, storeId: v }))} none={false} autoSelectIfSingle={true} />
 
 
       </TableFilters>

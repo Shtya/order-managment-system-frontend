@@ -9198,6 +9198,11 @@
         "whatsapp": "WhatsApp",
         "templates": "Templates"
       },
+      "preview": {
+        "title": "Template preview",
+        "showExamples": "Show Examples",
+        "showTemplate": "Show Template"
+      },
       "stats": {
         "total": "Total Templates",
         "approved": "Approved",

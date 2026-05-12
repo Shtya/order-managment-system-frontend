@@ -12,14 +12,16 @@ export default function middleware(req) {
   const { pathname } = req.nextUrl;
   const ua = req.headers.get("user-agent") || "";
 
-  const isFacebookBot =
-    ua.includes("facebookexternalhit") ||
-    ua.includes("Facebot");
-    // Allow Facebook crawler + metadata files
-    if (isFacebookBot) {
-    console.log("isFacebookBot", isFacebookBot)
+ if (isFacebookBot) {
+    // 1. Let robots.txt pass through to the public folder
+    if (pathname === "/robots.txt") {
+      return NextResponse.next();
+    }
+    
+    // 2. Rewrite everything else to the preview page
+    console.log("isFacebookBot", isFacebookBot, "rewriting path:", pathname);
     return NextResponse.rewrite(new URL("/og-preview.html", req.url));
-  } 
+  }
 
   const locale = pathname.startsWith("/en") ? "en" : "ar";
   const userCookie = req.cookies.get("user")?.value;

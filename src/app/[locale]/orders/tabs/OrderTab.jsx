@@ -51,7 +51,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import toast from "react-hot-toast";
 
@@ -1520,7 +1520,8 @@ function StatusFormModal({ isOpen, onClose, status, onSuccess }) {
 function OrderStatusHistoryModal({ isOpen, onClose, order }) {
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]);
-  const isRtl = useTranslations("header")("lang.lang") === "العربية";
+  const locale = useLocale();
+  const isRtl = locale === 'ar';
   const t = useTranslations("orders");
 
   useEffect(() => {

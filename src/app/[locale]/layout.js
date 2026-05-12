@@ -9,6 +9,7 @@ import { Inter, Open_Sans, Roboto_Mono, Sora } from 'next/font/google';
 import './globals.css';
 
 import LayoutShell from './LayoutShell';
+import Script from 'next/script';
 
 
 const sora = Sora({
@@ -16,7 +17,6 @@ const sora = Sora({
   weight: ["400", "500", "600", "700", "800"],
   variable: "--font-num",
 });
-
 
 export const robotoMono = Roboto_Mono({
   variable: '--font-roboto-mono',
@@ -69,6 +69,26 @@ export default async function RootLayout({ children, params }) {
       <body
         className={`${sora.variable} ${openSans.variable} ${robotoMono.variable} ${inter.variable}`}
       >
+
+        <Script id="facebook-init" strategy="beforeInteractive">
+          {`
+            window.fbAsyncInit = function () {
+               window.FB.init({
+                appId: '2083073232550708',
+                autoLogAppEvents: true,
+                xfbml: true,
+                version: 'v25.0'
+              });
+            };
+          `}
+        </Script>
+
+        <Script
+          src="https://connect.facebook.net/en_US/sdk.js"
+          strategy="afterInteractive"
+          crossOrigin="anonymous"
+        />
+
         <NextIntlClientProvider locale={locale} messages={messages}>
           <LayoutShell>{children}</LayoutShell>
         </NextIntlClientProvider>

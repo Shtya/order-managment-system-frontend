@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import {
   Plus,
@@ -172,6 +172,73 @@ export default function WhatsAppAccountsPage() {
     }
   ], [t]);
 
+  const authRef = useRef(null);
+  const wabaRef = useRef(null);
+
+  useEffect(() => {
+    const handler = (event) => {
+      // Security check (IMPORTANT)
+      if (event.origin !== "https://www.facebook.com") return;
+
+      try {
+        const data = JSON.parse(event.data);
+
+        if (data.type === "WA_EMBEDDED_SIGNUP") {
+          if (data.event === "FINISH") {
+            console.log("Signup finished:", data.data);
+            // Example:
+            // const { phone_number_id, waba_id,code } = data.data;
+            wabaRef.current = data.data;
+            trySend();
+          }
+
+          if (data.event === "CANCEL") {
+            console.log("Signup cancelled:", data.data);
+          }
+        }
+      } catch (err) {
+        console.log("Non-JSON message:", event.data);
+      }
+    };
+
+    // Add listener
+    window.addEventListener("message", handler);
+
+    // Cleanup (VERY IMPORTANT in React)
+    return () => {
+      window.removeEventListener("message", handler);
+    };
+  }, []);
+
+  const fbLoginCallback = (response) => {
+
+    console.log("response: ", response);
+    if (response.authResponse?.code) {
+      authRef.current = response.authResponse.code;
+      trySend();
+    }
+  };
+
+  const trySend = async () => {
+    if (!authRef.current || !wabaRef.current) return;
+
+    console.log("try geted: ", authRef.current, wabaRef.current.waba_id, wabaRef.current.phone_number_id)
+  };
+
+  const launchWhatsAppSignup = () => {
+    if (!window.FB) {
+      toast.error("Facebook SDK not initialized");
+      return;
+    }
+    // Launch Facebook login
+    window.FB.login(fbLoginCallback, {
+      config_id: '3417877861712815', // configuration ID goes here
+      response_type: 'code', // must be set to 'code' for System User access token
+      override_default_response_type: true, // when true, any response types passed in the "response_type" will take precedence over the default types
+      extras: { "version": "v4", }
+    });
+  }
+
   return (
     <div className="min-h-screen p-5 space-y-6">
       <PageHeader
@@ -192,9 +259,10 @@ export default function WhatsAppAccountsPage() {
             />
             <Button_
               size="sm"
-              label={t("toolbar.addAccount")}
+              label="إضافة حساب" // استبدال t("toolbar.addAccount") بالعربية بناءً على طلبك السابق
               variant="solid"
               icon={<Plus size={18} />}
+              onClick={launchWhatsAppSignup}
             />
           </>
         }

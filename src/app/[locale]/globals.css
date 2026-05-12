@@ -209,6 +209,7 @@
 ═══════════════════════════════════════════════════════════════ */
 
 @layer base {
+   @import "@xyflow/react/dist/style.css";
   *,
   *::before,
   *::after {

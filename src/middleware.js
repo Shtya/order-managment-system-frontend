@@ -15,16 +15,11 @@ export default function middleware(req) {
   const isFacebookBot =
     ua.includes("facebookexternalhit") ||
     ua.includes("Facebot");
-
-  // Allow Facebook crawler + metadata files
-  if (
-    isFacebookBot ||
-    pathname === "/robots.txt" ||
-    pathname === "/sitemap.xml" ||
-    pathname === "/favicon.ico"
-  ) {
-    return NextResponse.next();
-  }
+    // Allow Facebook crawler + metadata files
+    if (isFacebookBot) {
+    console.log("isFacebookBot", isFacebookBot)
+    return NextResponse.rewrite(new URL("/og-preview.html", req.url));
+  } 
 
   const locale = pathname.startsWith("/en") ? "en" : "ar";
   const userCookie = req.cookies.get("user")?.value;

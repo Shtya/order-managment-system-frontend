@@ -10,6 +10,22 @@ const intlMiddleware = createMiddleware({
 
 export default function middleware(req) {
   const { pathname } = req.nextUrl;
+  const ua = req.headers.get("user-agent") || "";
+
+  const isFacebookBot =
+    ua.includes("facebookexternalhit") ||
+    ua.includes("Facebot");
+
+  // Allow Facebook crawler + metadata files
+  if (
+    isFacebookBot ||
+    pathname === "/robots.txt" ||
+    pathname === "/sitemap.xml" ||
+    pathname === "/favicon.ico"
+  ) {
+    return NextResponse.next();
+  }
+
   const locale = pathname.startsWith("/en") ? "en" : "ar";
   const userCookie = req.cookies.get("user")?.value;
 

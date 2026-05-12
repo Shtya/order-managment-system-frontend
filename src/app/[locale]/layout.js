@@ -66,6 +66,11 @@ export default async function RootLayout({ children, params }) {
 
   return (
     <html lang={locale} dir={dir} translate="no" suppressHydrationWarning>
+      <head>
+        <meta name="facebook-domain-verification" content="tv61v5592fgxbg7icblxrfhspnom86" />
+      </head>
+
+
       <body
         className={`${sora.variable} ${openSans.variable} ${robotoMono.variable} ${inter.variable}`}
       >

@@ -132,19 +132,24 @@ const INTERNAL_MOCK_TEMPLATES = [
 
 export function InternalTemplateDialog({ open, onOpenChange, onSelectTemplate }) {
     const [searchTerm, setSearchTerm] = useState("");
-    // const [selectedCategory, setSelectedCategory] = useState("UTILITY");
+    const [selectedCategory, setSelectedCategory] = useState("ALL");
     const [selectedLanguage, setSelectedLanguage] = useState("ar");
     const locale = useLocale();
+
+    const categories = useMemo(() => [
+        { id: "ALL", label: "الكل" },
+        ...INTERNAL_CONFIG.CATEGORIES
+    ], []);
 
     const filteredTemplates = useMemo(() => {
         return INTERNAL_MOCK_TEMPLATES.filter(tpl => {
             const matchesSearch = tpl.name.toLowerCase().includes(searchTerm.toLowerCase());
             const matchesLang = tpl.language === selectedLanguage;
-            // const matchesCat = tpl.category === selectedCategory;
-            return matchesSearch && matchesLang;
+            const matchesCat = selectedCategory === "ALL" || tpl.category === selectedCategory;
+            return matchesSearch && matchesLang && matchesCat;
         });
-    }, [searchTerm, selectedLanguage]);
-    console.log(filteredTemplates)
+    }, [searchTerm, selectedLanguage, selectedCategory]);
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[90vw] md:max-w-[1200px] h-[85vh] p-0 flex flex-col rounded-2xl overflow-hidden bg-background">
@@ -182,13 +187,13 @@ export function InternalTemplateDialog({ open, onOpenChange, onSelectTemplate })
                             </Select>
                         </div>
 
-                        {/* <div className="flex bg-[#fafafa] dark:bg-slate-800/50 rounded-xl p-1 border border-gray-200 dark:border-slate-700">
-                            {INTERNAL_CONFIG.CATEGORIES.map(cat => (
+                        <div className="flex bg-[#fafafa] dark:bg-slate-800/50 rounded-xl p-1 border border-gray-200 dark:border-slate-700">
+                            {categories.map(cat => (
                                 <button
                                     key={cat.id}
                                     onClick={() => setSelectedCategory(cat.id)}
                                     className={cn(
-                                        "px-4 h-[40px] rounded-lg text-sm font-bold transition-all duration-200",
+                                        "px-4 h-[40px] rounded-lg text-[11px] font-bold transition-all duration-200",
                                         selectedCategory === cat.id
                                             ? "bg-white dark:bg-slate-700 text-primary shadow-sm"
                                             : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
@@ -197,7 +202,7 @@ export function InternalTemplateDialog({ open, onOpenChange, onSelectTemplate })
                                     {cat.label}
                                 </button>
                             ))}
-                        </div> */}
+                        </div>
                     </div>
                 </DialogHeader>
 

@@ -107,7 +107,6 @@ export const MOCK_TEMPLATES = [
             ]
         }
     },
-
     {
         id: "2",
         name: "order_confirmation_v2",
@@ -127,14 +126,16 @@ export const MOCK_TEMPLATES = [
             },
             buttons: [
                 {
-                    type: "URL",
-                    text: "View Order",
-                    url: "https://example.com/orders/{{2}}"
+                    type: "CUSTOM",
+                    text: "Confirm Order"
                 },
                 {
-                    type: "PHONE_NUMBER",
-                    text: "Support",
-                    phoneNumber: "+201234567890"
+                    type: "CUSTOM",
+                    text: "Cancel Order"
+                },
+                {
+                    type: "CUSTOM",
+                    text: "Delay Order"
                 }
             ]
         }

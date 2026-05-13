@@ -112,8 +112,8 @@ export default function DashboardPage() {
   }, [quickRange, debouncedSearch, filters]);
 
   // ── Fetch all data ──────────────────────────────────────────────────────────
-const { formatTrendLabel } = useTrendLabelFormatter();
-const format = useFormatter();
+  const { formatTrendLabel } = useTrendLabelFormatter();
+  const format = useFormatter();
   const fetchAll = useCallback(async () => {
     const p = buildParams();
     setLoading(true);
@@ -134,7 +134,7 @@ const format = useFormatter();
         Array.isArray(r.data) ? r.data : (r.data?.records ?? []);
       const formattedTrend = (getData(trd)).map((item) => ({
         ...item,
-         label: formatTrendLabel(item.date),
+        label: formatTrendLabel(item.date),
       }));
 
       setSummary(sum.data);
@@ -274,10 +274,11 @@ const format = useFormatter();
         icon: card.icon,
         color: card.color,
         sortOrder: i,
+        trend: { label: "خلال الشهر الماضي", isUp: i % 2 === 0 },
       })),
     [summary],
   );
-  
+
   // ── Profit table columns ────────────────────────────────────────────────────
 
   const profitCols = [
@@ -431,8 +432,8 @@ const format = useFormatter();
         </FilterField>
 
         {/* Store */}
-        <StoreFilter  value={filters.storeId} icon={Store}
-            onChange={(v) => setFilters((f) => ({ ...f, storeId: v }))} none={false} autoSelectIfSingle={true} />
+        <StoreFilter value={filters.storeId} icon={Store}
+          onChange={(v) => setFilters((f) => ({ ...f, storeId: v }))} none={false} autoSelectIfSingle={true} />
       </TableFilters>
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">

@@ -18,8 +18,6 @@ export default function middleware(req) {
       return NextResponse.next();
     }
 
-    // 2. Rewrite everything else to the preview page
-    console.log("isFacebookBot", isFacebookBot, "rewriting path:", pathname);
     return NextResponse.rewrite(new URL("/og-preview.html", req.url));
   }
 

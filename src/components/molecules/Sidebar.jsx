@@ -152,7 +152,7 @@ function IconBox({ Icon, active, collapsed, isLocked }) {
         />
       )}
       <Icon
-        className={`relative z-10 transition-colors duration-200 text-white`}
+        className={`relative z-10 transition-colors duration-200 ${active ? "text-primary" : "text-sidebar-foreground"}`}
         size={14}
         strokeWidth={active ? 2.4 : 1.9}
       />
@@ -190,13 +190,15 @@ function MenuItem({
     w-full group relative flex items-center overflow-hidden
     ${isOpen ? "gap-2.5 px-2 py-[6px]" : "py-[5px] justify-center"}
     rounded-xl select-none
-    transition-colors duration-150
+    transition-all duration-150
     ${item.isLocked ? "opacity-60 cursor-not-allowed grayscale pointer-events-none" : "cursor-pointer"}
+    ${!active && "hover:bg-sidebar-foreground/5"}
   `;
 
   const activeStyle = {
     background: "var(--sidebar-active-bg)",
-    color: "var(--sidebar-foreground)",
+    color: "var(--primary)",
+    fontWeight: 700,
   };
   const inactiveStyle = { color: "var(--sidebar-foreground)" };
 
@@ -319,13 +321,6 @@ function MenuItem({
         }}
         className={sharedClass}
         style={active ? activeStyle : inactiveStyle}
-        onMouseEnter={(e) => {
-          if (!active)
-            e.currentTarget.style.background = "rgba(255, 255, 255, 0.04)";
-        }}
-        onMouseLeave={(e) => {
-          if (!active) e.currentTarget.style.background = "transparent";
-        }}
       >
         {inner}
       </button>,
@@ -345,13 +340,6 @@ function MenuItem({
       }}
       className={sharedClass}
       style={active ? activeStyle : inactiveStyle}
-      onMouseEnter={(e) => {
-        if (!active)
-          e.currentTarget.style.background = "rgba(255, 255, 255, 0.04)";
-      }}
-      onMouseLeave={(e) => {
-        if (!active) e.currentTarget.style.background = "transparent";
-      }}
     >
       {inner}
     </Link>,
@@ -379,23 +367,17 @@ function SubItem({ child, isActive, isRTL, index }) {
           relative flex items-center gap-2 py-[5.5px] rounded-xl
           transition-all duration-150 group overflow-hidden
           ${isRTL ? "pr-2.5 pl-1.5" : "pl-2.5 pr-1.5"}
+          ${!active && "hover:bg-sidebar-foreground/5"}
         `}
         style={
           active
             ? {
               background: "var(--sidebar-active-bg)",
-              color: "var(--sidebar-foreground)",
-              fontWeight: 600,
+              color: "var(--primary)",
+              fontWeight: 700,
             }
             : { color: "var(--sidebar-foreground)" }
         }
-        onMouseEnter={(e) => {
-          if (!active)
-            e.currentTarget.style.background = "rgba(255, 255, 255, 0.04)";
-        }}
-        onMouseLeave={(e) => {
-          if (!active) e.currentTarget.style.background = "transparent";
-        }}
       >
         <span
           className={`absolute ${isRTL ? "right-0" : "left-0"} top-[20%] h-[60%] w-[2px] rounded-full transition-all duration-200`}
@@ -411,16 +393,15 @@ function SubItem({ child, isActive, isRTL, index }) {
           style={
             active
               ? {
-                background: "rgba(255, 255, 255, 0.1)",
-                // boxShadow: "0 2px 8px color-mix(in oklab, var(--primary) 30%, transparent)",
+                background: "var(--sidebar-active-bg)",
               }
               : {
-                background: "rgba(255, 255, 255, 0.05)",
+                background: "var(--sideIcon)",
               }
           }
         >
           <Icon
-            className={`transition-colors text-white`}
+            className={`transition-colors ${active ? "text-primary" : "text-sidebar-foreground"}`}
             size={11}
             strokeWidth={active ? 2.4 : 1.9}
           />
@@ -935,7 +916,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
               <Button
                 onClick={onOpenSidebar}
                 variant="ghost"
-                className={`p-0 rounded-xl bg-sideIcon text-white transition-all duration-300 hover:bg-white/10 hover:text-white ${isOpen ? "w-[30px] h-[30px]" : "w-[34px] h-[34px]"
+                className={`p-0 rounded-xl bg-sideIcon text-sidebar-foreground transition-all duration-300 hover:bg-sidebar-foreground/10 ${isOpen ? "w-[30px] h-[30px]" : "w-[34px] h-[34px]"
                   }`}
               >
                 <AnimatePresence mode="wait">
@@ -955,7 +936,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
 
             {(isOpen || isMobile) && (
               <div className={`flex items-center gap-2.5 `}>
-                <BrandLogo className="text-white" />
+                <BrandLogo className="text-[#672DAD]" />
               </div>
             )}
           </div>
@@ -964,7 +945,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
             <Button
               onClick={onOpenSidebar}
               variant="ghost"
-              className="h-8 w-8 p-0 rounded-xl text-white hover:text-white hover:bg-white/10 lg:hidden"
+              className="h-8 w-8 p-0 rounded-xl text-sidebar-foreground hover:bg-sidebar-foreground/10 lg:hidden"
             >
               <X size={18} />
             </Button>

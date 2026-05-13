@@ -1,4 +1,4 @@
-
+/* 
 @font-face {
     font-family: 'Lama Sans';
     font-style: normal;
@@ -60,7 +60,7 @@
     font-style: normal;
     font-weight: 900;
     src: local('Lama Sans'), url('https://fonts.cdnfonts.com/s/89696/LamaSans-BlackCondensed.woff') format('woff');
-}
+} */
 
 @import 'tailwindcss';
 @import 'tw-animate-css';
@@ -73,7 +73,7 @@
 ═══════════════════════════════════════════════════════════════ */
 
 :root {
-  --font-arabic: 'Lama Sans', sans-serif;
+  /* --font-arabic: 'Lama Sans', sans-serif; */
   /* ── Brand ── */
   --primary: #6763AF;
   --secondary: #5750a0;
@@ -94,10 +94,10 @@
 
   /* ── Surface / layout ── */
   --background: #f6f6f7;
-  --sidebar: #020024;
-  --sideIcon: #020024;
-  --sidebar-active-bg: #FFFFFF14;
-  --sidebar-foreground: #ffffff;
+  --sidebar: #f6f6f7;
+  --sideIcon: #f1f5f9;
+  --sidebar-active-bg: color-mix(in srgb, var(--primary) 10%, transparent);
+  --sidebar-foreground: #1e293b;
   --card: oklch(0.9999 0.001 240);
   --border: oklch(0.9 0.005 240);
   --input: oklch(0.922 0 0);
@@ -136,9 +136,9 @@
   --secondary: #5750a0;
   --third: #7672B9;
 
-  --sidebar: #020024;
-  --sideIcon: #020024;
-  --sidebar-active-bg: #FFFFFF14;
+  --sidebar: #13161f;
+  --sideIcon: #13161f;
+  --sidebar-active-bg: rgba(255, 255, 255, 0.08);
   --sidebar-foreground: #ffffff;
 
    --primary-from: 103 99 175;
@@ -146,7 +146,6 @@
   --primary-shadow: 118 114 185 / 0.32; 
 
   --background: #0f1117;
-  --sidebar: #13161f;
   --card: oklab(25.6% -0.00583 -0.04071);
   --border: oklch(1 0 0 / 9%);
   --input: oklch(1 0 0 / 12%);

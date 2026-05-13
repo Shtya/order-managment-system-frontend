@@ -96,7 +96,7 @@
   --background: #f6f6f7;
   --sidebar: #f6f6f7;
   --sideIcon: #f1f5f9;
-  --sidebar-active-bg: color-mix(in srgb, var(--primary) 10%, transparent);
+  --sidebar-active-bg: color-mix(in srgb, var(--primary) 20%, transparent);
   --sidebar-foreground: #1e293b;
   --card: oklch(0.9999 0.001 240);
   --border: oklch(0.9 0.005 240);

@@ -41,7 +41,7 @@ const INTERNAL_MOCK_TEMPLATES = [
             footerText: "Thank you for choosing us.",
             examples: { "1": "Ahmed", "2": "1001" },
             buttons: [
-                { type: "URL", text: "View Order", url: "https://example.com/order/{{2}}" }
+                { type: "VISIT_WEBSITE", text: "View Order", url: "https://example.com/order/{{2}}" }
             ]
         }
     },
@@ -58,7 +58,7 @@ const INTERNAL_MOCK_TEMPLATES = [
             footerText: "Expected delivery: 3-5 days.",
             examples: { "1": "Sara", "2": "1002" },
             buttons: [
-                { type: "URL", text: "Track Package", url: "https://example.com/track/{{2}}" }
+                { type: "VISIT_WEBSITE", text: "Track Package", url: "https://example.com/track/{{2}}" }
             ]
         }
     },
@@ -74,7 +74,7 @@ const INTERNAL_MOCK_TEMPLATES = [
             footerText: "Rate your experience.",
             examples: { "1": "Omar", "2": "1003" },
             buttons: [
-                { type: "URL", text: "Write a Review", url: "https://example.com/review/{{2}}" }
+                { type: "VISIT_WEBSITE", text: "Write a Review", url: "https://example.com/review/{{2}}" }
             ]
         }
     },
@@ -90,7 +90,7 @@ const INTERNAL_MOCK_TEMPLATES = [
             footerText: "شكراً لاختيارك لنا.",
             examples: { "1": "أحمد", "2": "1001" },
             buttons: [
-                { type: "URL", text: "عرض الطلب", url: "https://example.com/order/{{2}}" }
+                { type: "VISIT_WEBSITE", text: "عرض الطلب", url: "https://example.com/order/{{2}}" }
             ]
         }
     },

@@ -115,7 +115,7 @@ export default function BrandLogo({ className = "", size = "h-8" }) {
             <div className="relative flex items-center justify-center">
                 {/* The Logo Image */}
                 <div className={cn(size, "w-aut")}>
-                    {<img src='/logo-removebg-preview.png' className="h-[35px]!"/>}
+                    {<img src='/logo.png' className="h-[35px]!"/>}
                 </div>
 
 

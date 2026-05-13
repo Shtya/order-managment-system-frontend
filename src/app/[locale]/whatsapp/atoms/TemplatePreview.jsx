@@ -74,7 +74,7 @@ export function WhatsAppButtonMenu({
                                 <div key={btn.id || `action-${idx}`} className="flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg cursor-default transition-colors group">
                                     <div className="text-slate-500 group-hover:text-[#00a884]">
                                         {btn.type === "PHONE_NUMBER" && <Phone size={18} />}
-                                        {btn.type === "URL" && <ExternalLink size={18} />}
+                                        {btn.type === "VISIT_WEBSITE" && <ExternalLink size={18} />}
                                         {btn.type === "WHATSAPP_CALL" && <Phone size={18} />}
                                     </div>
                                     <span className="text-[14px] text-slate-700 dark:text-slate-300 font-medium">{btn.text || "زر إجراء..."}</span>
@@ -184,7 +184,7 @@ import {
  * @param {string} template.footerText - Small footer text
  * @param {Object} template.examples - Object with mapping of variable index to example value { "1": "John", "2": "Order #123" }
  * @param {Array} template.buttons - Array of button objects [{
- *    type: "PHONE_NUMBER", | "URL" | "WHATSAPP_CALL" | "TEXT",
+ *    type: "PHONE_NUMBER", | "VISIT_WEBSITE" | "WHATSAPP_CALL" | "TEXT",
  *    text: "Call Now",
  *    phoneNumber: "+1234567890"
  * }]
@@ -468,7 +468,7 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                                                         color="#00a884"
                                                         strokeWidth={1.8}
                                                     />}
-                                                    {btn.type === "URL" && <ExternalLink size={14} />}
+                                                    {btn.type === "VIEW_URL" && <ExternalLink size={14} />}
                                                     {btn.type === "WHATSAPP_CALL" && <Phone
                                                         size={14}
                                                         fill="#00a884"

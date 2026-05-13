@@ -4667,6 +4667,9 @@
       "title": "Employee Statistics",
       "usageGuide": "Usage Guide",
       "stats": {
+        "totalAssignments": "Total Assignments",
+        "confirmedPercent": "Confirmed %",
+        "cancelledPercent": "Cancelled %",
         "totalOrders": "Total Orders",
         "confirmedOrders": "Confirmed Orders",
         "shippedOrders": "Shipped Orders",
@@ -4687,8 +4690,8 @@
         "shippedRate": "Shipping Rate",
         "upsellOrders": "Upsell Orders",
         "upsellRate": "Upsell Rate",
-        "preparationFailedCount": "Prep. Failure",
-        "outgoingFailedCount": "Outg. Failure)"
+        "preparationFailedCount": "Number of Prep. Failure",
+        "outgoingFailedCount": "Number of Outg. Failure"
       },
       "searchPlaceholder": "Search by employee name...",
       "empty": {

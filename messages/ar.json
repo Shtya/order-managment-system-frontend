@@ -4703,12 +4703,15 @@
       "title": "إحصائيات الموظفين",
       "usageGuide": "شرح الاستخدام",
       "stats": {
+        "totalAssignments": "اجمالي التوزيعات",
+        "confirmedPercent": "نسبة التأكيد",
+        "cancelledPercent": "نسبة الإلغاء",
         "totalOrders": "إجمالي الطلبات",
         "confirmedOrders": "الطلبات المؤكدة",
         "shippedOrders": "الطلبات المشحونة",
         "deliveredOrders": "الطلبات المستلمة",
         "upsellOrders": "طلبات Upsell",
-        "preparationFailedCount": "فشل فحص التحضير",
+        "preparationFailedCount": "عدد فشل فحص التحضير",
         "outgoingFailedCount": "فشل فحص الخروج"
       },
       "columns": {

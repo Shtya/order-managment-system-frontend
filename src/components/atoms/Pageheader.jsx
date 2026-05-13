@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
 
+import { ArrowUpRight, ArrowDownRight, Edit3, Trash2, AlertCircle } from "lucide-react";
+
 /* ══════════════════════════════════════════════════════════════
 	 ANIMATED COUNTER
 ══════════════════════════════════════════════════════════════ */
@@ -43,12 +45,15 @@ function AnimatedCounter({ value, delay = 0 }) {
 	);
 }
 
+
+
 /* ══════════════════════════════════════════════════════════════
 	 INFO CARD
 ══════════════════════════════════════════════════════════════ */
 function InfoCard({
 	title, value, icon, editable,
 	isAddCard, onEdit, onDelete, onClick,
+	trend, // trend: { value: number|string, label: string, isUp: false }
 }) {
 	const t = useTranslations("orders");
 	const [hov, setHov] = useState(false);
@@ -69,7 +74,7 @@ function InfoCard({
 				whileTap={{ scale: 0.98 }}
 				className="group"
 				style={{
-					width: "100%", height: 88,
+					width: "100%", height: 110,
 					borderRadius: "var(--radius)",
 					border: "1.5px dashed var(--border)",
 					background: "var(--card)",
@@ -118,7 +123,7 @@ function InfoCard({
 			whileHover={{ y: -2 }}
 			transition={{ type: "spring", stiffness: 400, damping: 28 }}
 			style={{
-				position: "relative", width: "100%", height: 88,
+				position: "relative", width: "100%", height: 106,
 				borderRadius: "var(--radius)",
 				background: "var(--card)",
 				border: `1px solid ${hov ? accent : "var(--border)"}`,
@@ -130,7 +135,7 @@ function InfoCard({
 				transition: "border-color .2s, box-shadow .2s",
 			}}
 		>
-			<div style={{
+			{/* <div style={{
 				position: "absolute", left: 0, top: 12, bottom: 12, width: 3,
 				borderRadius: "0 3px 3px 0",
 				background: accent,
@@ -142,85 +147,119 @@ function InfoCard({
 				opacity: hov ? 1 : 0,
 				background: `radial-gradient(ellipse at 15% 15%, color-mix(in oklab, var(--primary) 6%, transparent), transparent 65%)`,
 				transition: "opacity .3s",
-			}} />
-			<div style={{
-				position: "relative",
-				display: "flex", alignItems: "center", gap: 12,
-				padding: "0 16px 0 22px", height: "100%",
-			}}>
-				<motion.div
-					animate={{ rotate: hov ? 6 : 0 }}
-					transition={{ type: "spring", stiffness: 300 }}
-					style={{
-						flexShrink: 0, width: 42, height: 42,
-						borderRadius: "calc(var(--radius) - 1px)",
-						background: iconBg, border: iconBorder,
-						display: "flex", alignItems: "center", justifyContent: "center",
-						boxShadow: hov ? `0 0 14px ${glowColor}` : "none",
-						transition: "box-shadow .2s",
-					}}
-				>
-					{Icon && <Icon size={17} style={{ color: accent }} />}
-				</motion.div>
-				<div style={{ flex: 1, minWidth: 0 }}>
-					<div style={{
-						fontFamily: "'Instrument Serif', serif",
-						fontSize: 28, fontWeight: 500, lineHeight: 1,
-						letterSpacing: "-0.025em",
-						color: hov ? accent : "var(--card-foreground)",
-						transition: "color .22s",
-					}}>
-						<AnimatedCounter value={value} />
+			}} /> */}
+			<div className="flex flex-col justify-between h-full" style={{ padding: "14px 16px 14px 22px" }}>
+				{/* السطر العلوي: العنوان + الأيقونة/أزرار التعديل */}
+				<div className="flex justify-between items-start w-full">
+
+
+					<div style={{ flex: 1, minWidth: 0 }} className="space-y-2">
+						<div className="text-gray-500" style={{
+							marginTop: 5, fontSize: 11, fontWeight: 700,
+							letterSpacing: "0.15em",
+							overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+						}}>
+							{title}
+						</div>
+						<div style={{
+							// fontFamily: "'Instrument Serif', serif",
+							fontSize: 24, fontWeight: 500, lineHeight: 1,
+							letterSpacing: "-0.025em",
+							color: hov ? accent : "var(--card-foreground)",
+							transition: "color .22s",
+						}}>
+							<AnimatedCounter value={value} />
+						</div>
 					</div>
-					<div style={{
-						marginTop: 5, fontSize: 9.5, fontWeight: 700,
-						letterSpacing: "0.15em", textTransform: "uppercase",
-						color: "var(--muted-foreground)",
-						overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-					}}>
-						{title}
-					</div>
+					<motion.div
+						animate={{ rotate: hov ? 6 : 0 }}
+						transition={{ type: "spring", stiffness: 300 }}
+						style={{
+							flexShrink: 0, width: 38, height: 38,
+							borderRadius: "calc(var(--radius) - 1px)",
+							background: iconBg, border: iconBorder, marginBottom: 4,
+							display: "flex", alignItems: "center", justifyContent: "center",
+							boxShadow: hov ? `0 0 14px ${glowColor}` : "none",
+							transition: "box-shadow .2s",
+						}}
+					>
+						{Icon && <Icon size={16} style={{ color: accent }} />}
+					</motion.div>
+					{editable && (
+						<>
+							<motion.div
+								animate={{ opacity: hov ? 0 : 1 }}
+								transition={{ duration: .15 }}
+								style={{
+									flexShrink: 0,
+									display: "flex", alignItems: "center", gap: 4,
+									padding: "3px 8px", borderRadius: 999,
+									background: badgeBg, border: badgeBdr,
+									fontSize: 9, fontWeight: 700,
+									letterSpacing: "0.13em", textTransform: "uppercase",
+									color: accent,
+								}}
+							>
+								<span style={{ width: 5, height: 5, borderRadius: "50%", background: accent, display: "inline-block" }} />
+								{t("custom")}
+							</motion.div>
+							<AnimatePresence>
+								{hov && (
+									<motion.div
+										initial={{ opacity: 0, x: 6 }}
+										animate={{ opacity: 1, x: 0 }}
+										exit={{ opacity: 0, x: 6 }}
+										transition={{ duration: .15 }}
+										style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 6 }}
+									>
+										<button onClick={(e) => { e.stopPropagation(); onEdit?.(); }} style={{ width: 28, height: 28, borderRadius: 8, outline: "none", background: "color-mix(in oklab, var(--primary) 10%, var(--card))", border: "1px solid color-mix(in oklab, var(--primary) 24%, var(--border))", color: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background .15s, color .15s, transform .1s" }} onMouseEnter={e => { e.currentTarget.style.background = "var(--primary)"; e.currentTarget.style.color = "var(--primary-foreground)"; e.currentTarget.style.transform = "scale(1.08)"; }} onMouseLeave={e => { e.currentTarget.style.background = "color-mix(in oklab, var(--primary) 10%, var(--card))"; e.currentTarget.style.color = "var(--primary)"; e.currentTarget.style.transform = "scale(1)"; }}>
+											<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
+										</button>
+										<button onClick={(e) => { e.stopPropagation(); onDelete?.(); }} style={{ width: 28, height: 28, borderRadius: 8, outline: "none", background: "color-mix(in oklab, var(--destructive) 10%, var(--card))", border: "1px solid color-mix(in oklab, var(--destructive) 24%, var(--border))", color: "var(--destructive)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background .15s, color .15s, transform .1s" }} onMouseEnter={e => { e.currentTarget.style.background = "var(--destructive)"; e.currentTarget.style.color = "var(--destructive-foreground)"; e.currentTarget.style.transform = "scale(1.08)"; }} onMouseLeave={e => { e.currentTarget.style.background = "color-mix(in oklab, var(--destructive) 10%, var(--card))"; e.currentTarget.style.color = "var(--destructive)"; e.currentTarget.style.transform = "scale(1)"; }}>
+											<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
+										</button>
+									</motion.div>
+								)}
+							</AnimatePresence>
+						</>
+					)}
 				</div>
-				{editable && (
-					<>
-						<motion.div
-							animate={{ opacity: hov ? 0 : 1 }}
-							transition={{ duration: .15 }}
-							style={{
-								flexShrink: 0,
-								display: "flex", alignItems: "center", gap: 4,
-								padding: "3px 8px", borderRadius: 999,
-								background: badgeBg, border: badgeBdr,
-								fontSize: 9, fontWeight: 700,
-								letterSpacing: "0.13em", textTransform: "uppercase",
-								color: accent,
-							}}
-						>
-							<span style={{ width: 5, height: 5, borderRadius: "50%", background: accent, display: "inline-block" }} />
-							{t("custom")}
-						</motion.div>
-						<AnimatePresence>
-							{hov && (
-								<motion.div
-									initial={{ opacity: 0, x: 6 }}
-									animate={{ opacity: 1, x: 0 }}
-									exit={{ opacity: 0, x: 6 }}
-									transition={{ duration: .15 }}
-									style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 6 }}
-								>
-									<button onClick={(e) => { e.stopPropagation(); onEdit?.(); }} style={{ width: 28, height: 28, borderRadius: 8, outline: "none", background: "color-mix(in oklab, var(--primary) 10%, var(--card))", border: "1px solid color-mix(in oklab, var(--primary) 24%, var(--border))", color: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background .15s, color .15s, transform .1s" }} onMouseEnter={e => { e.currentTarget.style.background = "var(--primary)"; e.currentTarget.style.color = "var(--primary-foreground)"; e.currentTarget.style.transform = "scale(1.08)"; }} onMouseLeave={e => { e.currentTarget.style.background = "color-mix(in oklab, var(--primary) 10%, var(--card))"; e.currentTarget.style.color = "var(--primary)"; e.currentTarget.style.transform = "scale(1)"; }}>
-										<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
-									</button>
-									<button onClick={(e) => { e.stopPropagation(); onDelete?.(); }} style={{ width: 28, height: 28, borderRadius: 8, outline: "none", background: "color-mix(in oklab, var(--destructive) 10%, var(--card))", border: "1px solid color-mix(in oklab, var(--destructive) 24%, var(--border))", color: "var(--destructive)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background .15s, color .15s, transform .1s" }} onMouseEnter={e => { e.currentTarget.style.background = "var(--destructive)"; e.currentTarget.style.color = "var(--destructive-foreground)"; e.currentTarget.style.transform = "scale(1.08)"; }} onMouseLeave={e => { e.currentTarget.style.background = "color-mix(in oklab, var(--destructive) 10%, var(--card))"; e.currentTarget.style.color = "var(--destructive)"; e.currentTarget.style.transform = "scale(1)"; }}>
-										<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
-									</button>
-								</motion.div>
+				{trend && (
+					<div style={{
+						display: "flex", alignItems: "center", gap: 6, marginTop: 8
+					}}>
+						{/* صندوق السهم */}
+						<div style={{
+							width: 18, height: 18, borderRadius: 5,
+							display: "flex", alignItems: "center", justifyContent: "center",
+							// استخدام color-mix ليعطي شفافية ناعمة من نفس لون الحالة
+							background: trend.isUp
+								? "color-mix(in oklab, #10b981 15%, transparent)"
+								: "color-mix(in oklab, var(--destructive) 15%, transparent)",
+							color: trend.isUp ? "#10b981" : "var(--destructive)",
+						}}>
+							{trend.isUp ? (
+								<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m7 17 10-10M7 7h10v10" /></svg>
+							) : (
+								<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m7 7 10 10M17 7v10H7" /></svg>
 							)}
-						</AnimatePresence>
-					</>
+						</div>
+
+						{/* النص المصاحب */}
+						<span className="space-x-1" style={{ fontSize: 10, fontWeight: 600, color: "var(--muted-foreground)" }}>
+							{trend.label}
+							<span style={{
+								// تلوين النسبة فقط بلون الحالة لسهولة القراءة
+								color: trend.isUp ? "#10b981" : "var(--destructive)",
+								marginRight: 4
+							}}>
+								{trend.value !== undefined ? trend.value : ""}
+							</span>
+						</span>
+					</div>
 				)}
 			</div>
-		</motion.div>
+		</motion.div >
 	);
 }
 
@@ -452,7 +491,7 @@ export function PageHeaderStatsSkeleton({ count = 6 }) {
 					animate={{ opacity: [0.5, 0.9, 0.5] }}
 					transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.1 }}
 					className="skeleton rounded-xl"
-					style={{ height: 88, border: "1px solid var(--border)" }}
+					style={{ height: 106, border: "1px solid var(--border)" }}
 				>
 					<div className="flex items-center gap-3 px-4 h-full">
 						<div className="rounded-xl shrink-0" style={{ width: 42, height: 42, background: "var(--border)" }} />
@@ -476,7 +515,7 @@ export function StatsGrid({ stats }) {
 	const [isOverflowing, setIsOverflowing] = useState(false);
 	const gridRef = useRef(null);
 
-	const COLLAPSED_HEIGHT = 200;
+	const COLLAPSED_HEIGHT = 240;
 	const MAX_ROWS = 2;
 
 	useEffect(() => {
@@ -552,6 +591,7 @@ export function StatsGrid({ stats }) {
 									onEdit={stat.onEdit}
 									onDelete={stat.onDelete}
 									onClick={stat.onClick}
+									trend={stat.trend}
 								/>
 							)}
 						</motion.div>

@@ -5,7 +5,7 @@ import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '../../i18n/routing';
 
-import { Inter, Open_Sans, Roboto_Mono, Sora } from 'next/font/google';
+import { Inter, Open_Sans, Roboto_Mono, Sora, Almarai } from 'next/font/google';
 import './globals.css';
 
 import LayoutShell from './LayoutShell';
@@ -39,12 +39,12 @@ const openSans = Open_Sans({
   display: 'swap'
 });
 
-// const arabicFont = Cairo({
-//   variable: '--font-arabic',
-//   subsets: ['arabic'],
-//   weight: ['300', '400', '500', '600', '700', '800'],
-//   display: 'swap'
-// });
+const arabicFont = Almarai({
+  variable: '--font-arabic',
+  subsets: ['arabic'],
+  weight: ['300', '400', '700', '800'],
+  display: 'swap'
+});
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -72,7 +72,7 @@ export default async function RootLayout({ children, params }) {
 
 
       <body
-        className={`${sora.variable} ${openSans.variable} ${robotoMono.variable} ${inter.variable}`}
+        className={`${sora.variable} ${openSans.variable} ${robotoMono.variable} ${inter.variable} ${arabicFont.variable}`}
       >
 
         <Script id="facebook-init" strategy="beforeInteractive">

@@ -64,7 +64,7 @@ const BUTTON_LIMITS = {
 
 const BUTTON_TYPES = [
     { id: "CUSTOM", label: "مخصص (رد سريع)", icon: MessageSquare, limit: null },
-    { id: "URL", label: "زيارة موقع ويب", icon: Globe, limit: BUTTON_LIMITS.URL },
+    { id: "VISIT_WEBSITE", label: "زيارة موقع ويب", icon: Globe, limit: BUTTON_LIMITS.URL },
     { id: "PHONE_NUMBER", label: "اتصال برقم هاتف", icon: Phone, limit: BUTTON_LIMITS.PHONE_NUMBER },
     { id: "WHATSAPP_CALL", label: "اتصال عبر واتساب", icon: MessageSquare, limit: BUTTON_LIMITS.WHATSAPP_CALL },
 ];
@@ -183,7 +183,7 @@ export default function TemplateButtonBuilder({ value = [], onChange }) {
             type: typeId,
             text: "",
             // Type specific defaults
-            ...(typeId === "URL" && { urlType: "STATIC", url: "", urlExample: "" }),
+            ...(typeId === "VISIT_WEBSITE" && { urlType: "STATIC", url: "", urlExample: "" }),
             ...(typeId === "PHONE_NUMBER" && { countryCode: "US +1", phoneNumber: "" }),
             ...(typeId === "WHATSAPP_CALL" && { activeDays: "7" }),
         };
@@ -252,7 +252,7 @@ export default function TemplateButtonBuilder({ value = [], onChange }) {
                 </div>
 
                 {/* 3. Type Specific Fields */}
-                {type === "URL" && (
+                {type === "VISIT_WEBSITE" && (
                     <>
                         <div className="md:col-span-2 space-y-1.5">
                             <Label className="text-[11px] text-slate-400">نوع الرابط</Label>

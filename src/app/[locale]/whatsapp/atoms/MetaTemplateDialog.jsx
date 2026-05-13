@@ -100,7 +100,7 @@ export const MOCK_TEMPLATES = [
             },
             buttons: [
                 {
-                    type: "URL",
+                    type: "VISIT_WEBSITE",
                     text: "Reset Password",
                     url: "https://example.com/reset"
                 }
@@ -159,7 +159,7 @@ export const MOCK_TEMPLATES = [
             },
             buttons: [
                 {
-                    type: "URL",
+                    type: "VISIT_WEBSITE",
                     text: "تسوق الآن",
                     url: "https://example.com"
                 }
@@ -247,7 +247,7 @@ export const MOCK_TEMPLATES = [
             },
             buttons: [
                 {
-                    type: "URL",
+                    type: "VISIT_WEBSITE",
                     text: "دفع الفاتورة",
                     url: "https://example.com/pay/{{2}}"
                 },

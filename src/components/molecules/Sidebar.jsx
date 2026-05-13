@@ -192,7 +192,7 @@ function MenuItem({
     rounded-xl select-none
     transition-all duration-150
     ${item.isLocked ? "opacity-60 cursor-not-allowed grayscale pointer-events-none" : "cursor-pointer"}
-    ${!active && "hover:bg-sidebar-foreground/5"}
+    ${!active && "hover:bg-sidebar-foreground/20"}
   `;
 
   const activeStyle = {

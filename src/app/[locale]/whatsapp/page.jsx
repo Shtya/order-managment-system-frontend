@@ -96,7 +96,7 @@ const AUTOMATION_DATA = [
 const BUTTON_CLICKS_DATA = [
   { button: "تأكيد الطلب", type: "CUSTOM", clicks: 1128, clickRate: 50.9 },
   { button: "تأجيل الطلب", type: "CUSTOM", clicks: 442, clickRate: 19.9 },
-  { button: "عرض الطلب", type: "URL", clicks: 402, clickRate: 18.1 },
+  { button: "عرض الطلب", type: "VISIT_WEBSITE", clicks: 402, clickRate: 18.1 },
   { button: "إلغاء الطلب", type: "CUSTOM", clicks: 189, clickRate: 8.5 },
   { button: "اتصل بالدعم", type: "PHONE", clicks: 53, clickRate: 2.4 },
 ];

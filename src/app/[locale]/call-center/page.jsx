@@ -109,22 +109,31 @@ export default function CallCenterPage() {
     /* fetch stats summary */
     const fetchStatsSummary = useCallback(async () => {
         try {
-            const res = await api.get("/dashboard/employees/stats/summary", {
-                params: {
-                    startDate: today,
-                    endDate: today,
-                    except: ["new"]
-                }
-            });
-            const data = Array.isArray(res.data) ? res.data : [];
+            const [employeesStats, ordersStats] = await Promise.all([
+                api.get("/dashboard/employees/stats/summary", {
+                    params: {
+                        startDate: today,
+                        endDate: today,
+                        except: ["new"]
+                    }
+                }),
+                api.get("/orders/stats"),
+            ]);
+            const employeesData = Array.isArray(employeesStats.data) ? employeesStats.data : [];
+            const ordersData = Array.isArray(ordersStats.data) ? ordersStats.data : [];
 
             const getCountByCode = (code) => {
-                const item = data.find(stat => stat.code === code);
+                const item = employeesData.find(stat => stat.code === code);
+                return item ? Number(item.count) : 0;
+            };
+
+            const getOrderCountByCode = (code) => {
+                const item = ordersData.find(stat => stat.code === code);
                 return item ? Number(item.count) : 0;
             };
 
             setStatsData({
-                new: getCountByCode('new'),
+                new: getOrderCountByCode('new'),
                 confirmed: getCountByCode('confirmed'),
                 cancelled: getCountByCode('cancelled'),
             });

@@ -4712,7 +4712,7 @@
         "deliveredOrders": "الطلبات المستلمة",
         "upsellOrders": "طلبات Upsell",
         "preparationFailedCount": "عدد فشل فحص التحضير",
-        "outgoingFailedCount": "فشل فحص الخروج"
+        "outgoingFailedCount": "عدد فشل فحص الخروج"
       },
       "columns": {
         "employeeName": "اسم الموظف",

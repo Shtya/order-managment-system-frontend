@@ -41,8 +41,8 @@ function formatPercent(value) {
 export const EMPLOYEE_STATS = [
     {
         id: 1,
-        code: "totalOrders", // Matches statsData.totalOrders
-        nameKey: "employeeStats.stats.totalOrders",
+        code: "totalAssignments", // Matches statsData.totalAssignments
+        nameKey: "employeeStats.stats.totalAssignments",
         color: "#ff8b00",
         darkColor: "#5b4bff",
         icon: ShoppingBag,
@@ -50,29 +50,31 @@ export const EMPLOYEE_STATS = [
     },
     {
         id: 2,
-        code: "confirmedOrders", // Matches statsData.confirmedOrders
-        nameKey: "employeeStats.stats.confirmedOrders",
+        code: "confirmedPercent", // Matches statsData.confirmedPercent
+        nameKey: "employeeStats.stats.confirmedPercent",
         color: "#3b82f6",
         darkColor: "#3b82f6",
         icon: CheckCircle,
         sortOrder: 2,
+        isPercent: true,
     },
     {
         id: 3,
+        code: "cancelledPercent", // Matches statsData.cancelledPercent
+        nameKey: "employeeStats.stats.cancelledPercent",
+        color: "#ef4444",
+        darkColor: "#ef4444",
+        icon: XCircle,
+        sortOrder: 3,
+        isPercent: true,
+    },
+    {
+        id: 4,
         code: "preparationFailedCount",
         nameKey: "employeeStats.stats.preparationFailedCount",
         color: "#f59e0b",
         darkColor: "#f59e0b",
         icon: AlertTriangle,
-        sortOrder: 3,
-    },
-    {
-        id: 4,
-        code: "outgoingFailedCount",
-        nameKey: "employeeStats.stats.outgoingFailedCount",
-        color: "#ef4444",
-        darkColor: "#ef4444",
-        icon: XCircle,
         sortOrder: 4,
     },
 ];
@@ -89,12 +91,10 @@ export function EmployeeStatisticsPage() {
 
     // تم تحديث الهيكل الافتراضي ليتماشى مع ملخص الإحصائيات
     const [statsData, setStatsData] = useState({
-        totalOrders: 0,
-        confirmedOrders: 0,
-        deliveredOrders: 0,
-        shippedOrders: 0,
+        totalAssignments: 0,
+        confirmedPercent: 0,
+        cancelledPercent: 0,
         preparationFailedCount: 0,
-        outgoingFailedCount: 0,
     });
 
     const [pager, setPager] = useState({
@@ -142,19 +142,15 @@ export function EmployeeStatisticsPage() {
             const res = await api.get("/dashboard/employees/stats/summary");
             const data = Array.isArray(res.data) ? res.data : [];
 
-            // استخراج القيم من المصفوفة بناءً على الكود (code)
-            const getCountByCode = (code) => {
-                const item = data.find(stat => stat.code === code);
-                return item ? Number(item.count) : 0;
-            };
+            const getStatByCode = (code) => data.find((stat) => stat.code === code) ?? null;
+            const getCountByCode = (code) => Number(getStatByCode(code)?.count ?? 0) || 0;
+            const getPercentByCode = (code) => Number(getStatByCode(code)?.percent ?? 0) || 0;
 
             setStatsData({
-                totalOrders: getCountByCode('total'),
-                confirmedOrders: getCountByCode('confirmed'),
-                shippedOrders: getCountByCode('shipped'),
-                deliveredOrders: getCountByCode('delivered'),
-                preparationFailedCount: getCountByCode('preparationFailedCount'),
-                outgoingFailedCount: getCountByCode('outgoingFailedCount'),
+                totalAssignments: getCountByCode("total"),
+                confirmedPercent: getPercentByCode("confirmed"),
+                cancelledPercent: getPercentByCode("cancelled"),
+                preparationFailedCount: getCountByCode("preparationFailedCount"),
             });
 
         } catch (e) {

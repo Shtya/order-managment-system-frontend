@@ -911,7 +911,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           className={`${(!isOpen && !isMobile) ? "mx-auto pe-[7px] " : "px-4 flex items-center justify-between gap-3 "} py-[11.6px]`}
           whileTap={{ scale: 0.92 }}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between gap-3 flex-1">
             {!isMobile && (
               <Button
                 onClick={onOpenSidebar}

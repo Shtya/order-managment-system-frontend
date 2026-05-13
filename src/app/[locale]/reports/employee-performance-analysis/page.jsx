@@ -140,6 +140,7 @@ export function EmployeeStatisticsPage() {
     const fetchStatsSummary = useCallback(async () => {
         try {
             const res = await api.get("/dashboard/employees/stats/summary");
+            
             const data = Array.isArray(res.data) ? res.data : [];
 
             const getStatByCode = (code) => data.find((stat) => stat.code === code) ?? null;

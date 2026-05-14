@@ -3746,13 +3746,18 @@
       "deleted_bundles": "Deleted Bundles"
     },
     "stats": {
-      "withShippingCompanies": "With Shipping Companies",
+      "withShippingCompanies": "Inventory in shipping companies",
       "returnedPieces": "Returned Pieces",
       "soldPieces": "Sold Pieces",
       "remainingPieces": "Remaining Pieces",
       "totalProducts": "Total Products",
-      "availableItems": "Available Items",
-      "reservedItems": "Reserved Items"
+      "availableItems": "Stock on shelf",
+      "reservedItems": "Reserved Items",
+      "acceptedPurchasePieces": "Purchased pieces (accepted)",
+      "acceptedReturnPieces": "Returned to supplier (accepted)",
+      "totalStockOnHand": "Total stock on hand",
+      "remaingStock": "Remaining stock",
+      "totalStock": "Total inventory"
     },
     "toolbar": {
       "searchPlaceholder": "Search products...",
@@ -4487,6 +4492,14 @@
     }
   },
   "orders": {
+    "shipmentStatuses": {
+      "created": "Created",
+      "submitted": "Submitted",
+      "in_transit": "In Transit",
+      "delivered": "Delivered",
+      "failed": "Delivery Failed",
+      "cancelled": "Cancelled"
+    },
     "trackingStatus": {
       "new": "New",
       "in_progress": "In Progress",
@@ -5133,7 +5146,8 @@
       "lastUpdate": "Last Update",
       "createdat": "Order Date",
       "actions": "Actions",
-      "finalTotal": "Final Total"
+      "finalTotal": "Final Total",
+      "shipmentStatus": "Shipment status"
     },
     "bulkUpload": {
       "clickToChangeFile": "Click to change file",

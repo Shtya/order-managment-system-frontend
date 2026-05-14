@@ -3781,13 +3781,18 @@
       "deleted_bundles": "الباقات المحذوفة"
     },
     "stats": {
-      "withShippingCompanies": "مع شركات الشحن",
+      "withShippingCompanies": "المخزون في شركات الشحن",
       "returnedPieces": "قطع مرتجعة",
       "soldPieces": "قطع مباعة",
       "remainingPieces": "قطع متبقية",
       "totalProducts": "إجمالي المنتجات",
-      "availableItems": "عناصر متاحة",
-      "reservedItems": "عناصر محجوزة"
+      "availableItems": "المخزون علي الرف",
+      "reservedItems": "عناصر محجوزة",
+      "acceptedPurchasePieces": "قطع مشتراة (مقبولة)",
+      "acceptedReturnPieces": "مرتجع للمورد (مقبول)",
+      "totalStockOnHand": "إجمالي المخزون الفعلي",
+      "remaingStock": "المتبقي من المخزون",
+      "totalStock": "إجمالي المخزون"
     },
     "toolbar": {
       "searchPlaceholder": "البحث عن المنتجات...",
@@ -4523,6 +4528,14 @@
     }
   },
   "orders": {
+    "shipmentStatuses": {
+"created": "تم الإنشاء",
+      "submitted": "تم التقديم",
+      "in_transit": "قيد النقل",
+      "delivered": "تم التوصيل",
+      "failed": "فشل التوصيل",
+      "cancelled": "تم الإلغاء"
+    },
     "trackingStatus": {
       "new": "جديد",
       "in_progress": "قيد التنفيذ",
@@ -5184,7 +5197,8 @@
       "lastUpdate": "آخر تحديث",
       "createdat": "تاريخ الطلب",
       "actions": "الإجراءات",
-      "finalTotal": "التكلفة الإجمالية"
+      "finalTotal": "التكلفة الإجمالية",
+      "shipmentStatus": "حالة الشحنه"
     },
     "bulkUpload": {
       "clickToChangeFile": "اضغط لتغيير الملف",

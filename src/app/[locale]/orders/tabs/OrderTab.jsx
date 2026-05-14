@@ -565,7 +565,6 @@ export default function OrdersTab({
           );
         },
       },
-
       readOnlyStatus ? {
         key: "status",
         header: t("table.status"),
@@ -652,6 +651,15 @@ export default function OrdersTab({
             );
           },
         },
+      {
+        key: "shipment",
+        header: t("table.shipmentStatus"),
+        cell: (row) => (
+          <Badge className={cn("rounded-xl", "bg-gray-100 text-gray-700 dark:bg-gray-950/30 dark:text-gray-400")}>
+            {row.shipments?.[0]?.status ? t(`shipmentStatuses.${row.shipments?.[0]?.status}`) : "-"}
+          </Badge>
+        ),
+      },
       {
         key: "products",
         header: t("table.products"),

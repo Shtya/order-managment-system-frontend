@@ -968,6 +968,7 @@ export default function OrdersTab({
                 icon: <Edit2 />,
                 tooltip: t("actions.edit"),
                 onClick: (r) => router.push(`/orders/edit/${r.id}`),
+                disabled: row?.status?.code === OrderStatus.SHIPPED || row?.status?.code === OrderStatus.DELIVERED, 
                 variant: "primary",
                 permission: "orders.update",
               },

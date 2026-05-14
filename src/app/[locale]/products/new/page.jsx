@@ -174,7 +174,16 @@ const makeSchema = (t, tValidation) =>
 		// type: yup.string().oneOf(['single', 'variable']).default('variable'),
 		name: yup.string().trim().required(t('validation.nameRequired')).max(200, t('validation.nameTooLong', { max: 200 })),
 		slug: yup.string().transform((value) => (value ? value.toLowerCase() : value)).trim().required(t('validation.slugRequired')).matches(/^[a-z0-9-_]+$/, t('validation.slugInvalid')),
-		wholesalePrice: yup.number().transform((value, originalValue) => originalValue === "" ? NaN : value).typeError(t('validation.requiredNumber')).required(t('validation.requiredNumber')).min(0, t('validation.noNegative')),
+		// wholesalePrice: yup.number().transform((value, originalValue) => originalValue === "" ? NaN : value).typeError(t('validation.requiredNumber')).required(t('validation.requiredNumber')).min(0, t('validation.noNegative')),
+		wholesalePrice: yup
+			.number()
+			.transform((value, originalValue) =>
+				originalValue === "" ? undefined : value
+			)
+			.typeError(t('validation.requiredNumber'))
+			.min(0, t('validation.noNegative'))
+			.nullable()
+			.notRequired(),
 		salePrice: yup.number().transform((value, originalValue) => originalValue === "" ? NaN : value).typeError(t('validation.requiredNumber')).required(t('validation.requiredNumber')).min(0, t('validation.noNegative')),
 		lowestPrice: yup.number().transform((value, originalValue) => originalValue === "" ? NaN : value).typeError(t('validation.requiredNumber')).required(t('validation.requiredNumber')).min(0, t('validation.noNegative')),
 		storageRack: yup.string().nullable(),
@@ -277,6 +286,7 @@ const makeSchema = (t, tValidation) =>
 			receiptNumber: yup.string().optional(),
 			safeId: yup.string().optional(),
 			notes: yup.string().optional(),
+			wholesalePrice: yup.number().transform((value, originalValue) => originalValue === "" ? NaN : value).typeError(t('validation.requiredNumber')).required(t('validation.requiredNumber')).min(0, t('validation.noNegative')),
 			paidAmount: yup
 				.number()
 				.transform((value, originalValue) => {
@@ -292,7 +302,8 @@ const makeSchema = (t, tValidation) =>
 				receiptNumber: '',
 				safeId: '',
 				notes: '',
-				paidAmount: 0
+				paidAmount: 0,
+				wholesalePrice: 0
 			})
 			// ✅ APPLY VALIDATION HERE
 			.when('hasPurchase', {
@@ -324,7 +335,8 @@ function getDefaultValues() {
 			receiptNumber: '',
 			safeId: '',
 			notes: '',
-			paidAmount: ''
+			paidAmount: '',
+			wholesalePrice: 0
 		}
 	};
 }
@@ -421,10 +433,13 @@ function PurchaseDataForm({
 	setValue,
 	clearErrors,
 	invoiceSummary,
-	singleMode = false
+	compinations,
+	singleMode = false,
 }) {
 	const tValidation = useTranslations("validation");
 	const t = useTranslations('addProduct');
+
+	const productCount = useMemo(() => singleMode ? 1 : compinations.filter(c => c.isActive).length, [singleMode, compinations]);
 
 	const handleImageUpload = (e) => {
 		const file = e.target.files?.[0];
@@ -519,6 +534,15 @@ function PurchaseDataForm({
 					<Field label={t('purchase.paidAmount')}>
 						<Input type="number"  {...register('purchase.paidAmount')} placeholder="0.00" className="bg-white dark:bg-slate-900" />
 					</Field>
+					<Field label={t('fields.wholesalePrice')} error={errors?.purchase?.wholesalePrice?.message}>
+						<Input
+							type="number"
+
+							{...register('purchase.wholesalePrice')}
+							placeholder={t('placeholders.wholesalePrice')}
+
+						/>
+					</Field>
 					<Field label={t('purchase.notes')} className="lg:col-span-2 ">
 						<Textarea {...register('purchase.notes')} placeholder="..." className="bg-white dark:bg-slate-900 !min-h-[120px]" />
 					</Field>
@@ -536,7 +560,7 @@ function PurchaseDataForm({
 						paidAmount={invoiceSummary.paidAmount}
 						remainingAmount={invoiceSummary.remainingAmount}
 						total={invoiceSummary.total}
-						summary={invoiceSummary.summary}
+						summary={{ ...invoiceSummary.summary, productCount }}
 					/>
 				</div>
 			</div >
@@ -642,7 +666,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 	const attributesWatch = useWatch({ control, name: 'attributes' });
 	const combinationsWatch = useWatch({ control, name: 'combinations' });
-
+	const purchaseWholesalePrice = useWatch({ control, name: 'purchase.wholesalePrice' });
 
 	useEffect(() => {
 		let mounted = true;
@@ -878,7 +902,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 		const stockRows = combos.filter((c) => Number(c?.stockOnHand || 0) > 0);
 		const subtotal = stockRows.reduce((sum, c) => {
 			const stock = Number(c?.stockOnHand || 0);
-			const price = Number(c?.price || 0);
+			const price = Number(purchaseWholesalePrice || 0);
 			return sum + (stock * price);
 		}, 0);
 		const paidAmount = Number(purchasePaidAmount || 0);
@@ -892,7 +916,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			total,
 			remainingAmount: total,
 		};
-	}, [combinationsWatch, purchasePaidAmount, productType, totalPurchaseQuantity, salePrice]);
+	}, [combinationsWatch, purchasePaidAmount, productType, totalPurchaseQuantity, salePrice, purchaseWholesalePrice]);
 	const isSingle = productType === 'single';
 	const onSubmit = async (data) => {
 		let toastId;
@@ -1014,6 +1038,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				const pData = {
 					notes: data.purchase.notes,
 					receiptNumber: data.purchase.receiptNumber,
+					wholesalePrice: Number(data.purchase.wholesalePrice || 0),
 					supplierId: data.purchase.supplierId && data.purchase.supplierId !== 'none' ? data.purchase.supplierId : undefined,
 					safeId: data.purchase.safeId && data.purchase.safeId !== 'none' ? data.purchase.safeId : undefined,
 					paidAmount: Number(data.purchase.paidAmount || 0),
@@ -1430,6 +1455,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 										title={t('singleSku.purchase')}
 									/>
 									<PurchaseDataForm
+										compinations={combinationsWatch}
 										singleMode={isSingle}
 										tPurchase={tPurchase}
 										tValidation={tValidation}

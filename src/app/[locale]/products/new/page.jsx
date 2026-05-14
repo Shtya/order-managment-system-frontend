@@ -439,7 +439,7 @@ function PurchaseDataForm({
 	const tValidation = useTranslations("validation");
 	const t = useTranslations('addProduct');
 
-	const productCount = useMemo(() => singleMode ? 1 : compinations.filter(c => c.isActive).length, [singleMode, compinations]);
+	const productCount = useMemo(() => singleMode ? 1 : compinations.length, [singleMode, compinations]);
 
 	const handleImageUpload = (e) => {
 		const file = e.target.files?.[0];

@@ -355,9 +355,9 @@
   "sidebar": {
     "stores": "Stores",
     "syncFailures": "Product Sync Errors",
-    "administration": "Administration",
+    "administration": "Purchases",
     "synchronization": "Synchronization",
-    "finance": "Finance",
+    "finance": "Plans & Subscriptions",
     "team": "Team",
     "safes": "Safes",
     "locked": "Locked",

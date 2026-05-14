@@ -272,9 +272,17 @@ export default function useProductsTab({ searchDebounced, filters, filtersOpen, 
 					if (!s) return <span className="text-slate-400 text-xs">{na}</span>;
 					const pur = Number(s.purchases?.acceptedQuantity ?? 0);
 					const ret = Number(s.purchaseReturns?.acceptedReturnedQuantity ?? 0);
-					return <span className="font-semibold tabular-nums text-slate-700 dark:text-slate-200">{pur - ret}</span>;
+					// return <span className="font-semibold tabular-nums text-slate-700 dark:text-slate-200"></span>;
+					return <Badge
+						className={cn(
+							"rounded-full font-semibold", "bg-slate-100 text-slate-700 border border-slate-200"
+						)}
+					>
+						{pur - ret}
+					</Badge>
 				},
 			},
+
 
 			{
 				key: "availableItems",
@@ -284,7 +292,15 @@ export default function useProductsTab({ searchDebounced, filters, filtersOpen, 
 					const s = row.stockSummary;
 					if (!s) return <span className="text-slate-400 text-xs">{na}</span>;
 					const oh = Number(s.inventory?.totalOnHand ?? 0);
-					return <span className="font-medium tabular-nums">{oh}</span>;
+					// return <span className="font-medium tabular-nums">{oh}</span>;
+
+					return <Badge
+						className={cn(
+							"rounded-full font-semibold", oh > 0 ? "bg-green-100 text-green-700 border border-green-200" : "bg-gray-100 text-gray-600 border border-gray-200"
+						)}
+					>
+						{oh}
+					</Badge>
 				},
 			},
 			{
@@ -295,7 +311,14 @@ export default function useProductsTab({ searchDebounced, filters, filtersOpen, 
 					const s = row.stockSummary;
 					if (!s) return <span className="text-slate-400 text-xs">{na}</span>;
 					const inTr = Number(s.orders?.inTransitQuantity ?? 0);
-					return <span className="font-medium tabular-nums text-blue-600 dark:text-blue-400">{inTr}</span>;
+					// return <span className="font-medium tabular-nums text-blue-600 dark:text-blue-400">{inTr}</span>;
+					return <Badge
+						className={cn(
+							"rounded-full font-semibold", inTr > 0 ? "bg-blue-100 text-blue-700 border border-blue-200" : "bg-gray-100 text-gray-600 border border-gray-200"
+						)}
+					>
+						{inTr}
+					</Badge>
 				},
 			},
 			{
@@ -306,7 +329,14 @@ export default function useProductsTab({ searchDebounced, filters, filtersOpen, 
 					const s = row.stockSummary;
 					if (!s) return <span className="text-slate-400 text-xs">{na}</span>;
 					const sold = Number(s.orders?.soldQuantity ?? 0);
-					return <span className="font-medium tabular-nums text-emerald-600 dark:text-emerald-400">{sold}</span>;
+					// return <span className="font-medium tabular-nums text-emerald-600 dark:text-emerald-400">{sold}</span>;
+					return <Badge
+						className={cn(
+							"rounded-full font-semibold", sold > 0 ? "bg-green-100 text-green-700 border border-green-200" : "bg-gray-100 text-gray-600 border border-gray-200"
+						)}
+					>
+						{sold}
+					</Badge>
 				},
 			},
 			{
@@ -317,7 +347,14 @@ export default function useProductsTab({ searchDebounced, filters, filtersOpen, 
 					const s = row.stockSummary;
 					if (!s) return <span className="text-slate-400 text-xs">{na}</span>;
 					const resv = Number(s.inventory?.reserved ?? 0);
-					return <span className="font-medium tabular-nums text-amber-600 dark:text-amber-400">{resv}</span>;
+					// return <span className="font-medium tabular-nums text-amber-600 dark:text-amber-400">{resv}</span>;
+					return <Badge
+						className={cn(
+							"rounded-full font-semibold", resv > 0 ? "bg-yellow-100 text-yellow-700 border border-yellow-200" : "bg-gray-100 text-gray-600 border border-gray-200"
+						)}
+					>
+						{resv}
+					</Badge>
 				},
 			},
 			{
@@ -329,7 +366,14 @@ export default function useProductsTab({ searchDebounced, filters, filtersOpen, 
 					if (!s) return <span className="text-slate-400 text-xs">{na}</span>;
 					const oh = Number(s.inventory?.totalOnHand ?? 0);
 					const inTr = Number(s.orders?.inTransitQuantity ?? 0);
-					return <span className="font-semibold tabular-nums text-slate-700 dark:text-slate-200">{inTr + oh}</span>;
+					// return <span className="font-semibold tabular-nums text-slate-700 dark:text-slate-200">{inTr + oh}</span>;
+					return <Badge
+						className={cn(
+							"rounded-full font-semibold", "bg-slate-100 text-slate-700 border border-slate-200"
+						)}
+					>
+						{inTr + oh}
+					</Badge>
 				},
 			},
 

@@ -610,7 +610,7 @@ export default function OrdersTab({
             return (
               <div className="flex items-center gap-2">
                 <Select
-                  defaultValue={String(currentStatusId)}
+                  value={currentStatusId ? String(currentStatusId) : undefined}
                   onValueChange={async (val) => {
                     const statusId = val;
                     if (!statusId || statusId === currentStatusId) return;
@@ -625,11 +625,7 @@ export default function OrdersTab({
                       await fetchStats(true);
                       //await fetchOrders(pager.current_page, pager.per_page);
                       // remove new  order  from records if its status is confirmed
-                      if (newOrder.status.code === OrderStatus.CONFIRMED) {
-                        setPager(p => ({
-                          ...p, records: p.records.filter((r) => r.id !== row.id)
-                        }));
-                      }
+
                       setPager(p => ({
                         ...p, records: p.records.map((r) => (r.id === row.id ?
                           { ...r, statusId, status: newOrder.status }
@@ -699,19 +695,48 @@ export default function OrdersTab({
                   const toastId = toast.loading(t("messages.shipmentStatusUpdating"));
                   try {
                     setShipmentUpdating(row.id, true);
-                    await api.patch(`/shipping/shipments/${ship.id}/status`, {
+                    const { data } = await api.patch(`/shipping/shipments/${ship.id}/status`, {
                       status: val,
                     });
                     toast.success(t("messages.shipmentStatusUpdated"), {
                       id: toastId,
                     });
+                    const newOrder = data.order || {};
+                    const newShipment = data.shipment || {};
                     await fetchStats(true);
-                    await fetchOrders(pager.current_page, pager.per_page);
+                    if (newOrder) {
+                      setPager((p) => ({
+                        ...p,
+                        records: p.records.map((r) => {
+                          if (r.id !== row.id) return r;
+
+                          return {
+                            ...r,
+
+                            // order status
+                            statusId: newOrder.status?.id,
+                            status: newOrder.status,
+
+                            // shipment update
+                            shipments: (r.shipments || []).map((s) =>
+                              s.id === ship.id
+                                ? {
+                                  ...s,
+                                  ...newShipment,
+                                  unifiedStatus:
+                                    newShipment.unifiedStatus || val,
+                                }
+                                : s
+                            ),
+                          };
+                        }),
+                      }));
+                    }
                   } catch (err) {
                     console.error(err);
                     toast.error(
                       err.response?.data?.message ||
-                        t("messages.shipmentStatusUpdateFailed"),
+                      t("messages.shipmentStatusUpdateFailed"),
                       { id: toastId },
                     );
                   } finally {
@@ -974,6 +999,7 @@ export default function OrdersTab({
     fetchOrders,
     pager.current_page,
     pager.per_page,
+    pager.records,
     fetchStats,
   ]);
 

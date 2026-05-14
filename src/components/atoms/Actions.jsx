@@ -232,7 +232,7 @@ export function ActionButton({
 	className,
 }) {
 	const v = VARIANTS[variant] || VARIANTS.slate;
-	const sz = size === "sm" ? "w-7 h-7" : size === "lg" ? "w-10 h-10" : "w-9 h-9";
+	const sz = size === "sm" ? "w-7 h-7" : size === "lg" ? "w-10 h-10" : size === "md" ? "w-9 h-9" : size === 'xl' ? "w-12 h-12" : size === "xxl" ? "w-14 h-14" : "";
 	const iconSz = size === "sm" ? 12 : size === "lg" ? 18 : 15;
 
 	const btn = (

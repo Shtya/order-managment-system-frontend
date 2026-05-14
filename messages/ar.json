@@ -3859,7 +3859,16 @@
       "options": "الخيارات",
       "items": "قطعة",
       "bundleItems": "المنتجات في الباقة",
-      "price": "السعر"
+      "price": "السعر",
+      "ordersShipped": "طلبات قيد الشحن",
+      "ordersDelivered": "طلبات تم تسليمها",
+      "stockInsights": "ملخص المخزون",
+      "productOrdersModalTitleShipped": "طلبات تتضمن هذا المنتج (شُحنت)",
+      "productOrdersModalTitleDelivered": "طلبات تتضمن هذا المنتج (تم التسليم)",
+      "productOrdersEmpty": "لا توجد طلبات مطابقة.",
+      "productOrdersShipmentStatus": "حالة الشحنة",
+      "productOrdersTotal": "إجمالي الطلب",
+      "ordersTracking": "تتبع الطلبات"
     },
     "yes": "نعم",
     "no": "لا",
@@ -4529,7 +4538,7 @@
   },
   "orders": {
     "shipmentStatuses": {
-"created": "تم الإنشاء",
+      "created": "تم الإنشاء",
       "submitted": "تم التقديم",
       "in_transit": "قيد النقل",
       "delivered": "تم التوصيل",
@@ -4974,6 +4983,9 @@
       "errorFetchingOrders": "حدث خطأ أثناء تحميل الطلبات",
       "errorUpdatingStatus": "خطأ أثناء تحديث الحالة",
       "statusUpdating": "جاري تحديث الحالة...",
+      "shipmentStatusUpdating": "جاري تحديث حالة الشحنة...",
+      "shipmentStatusUpdated": "تم تحديث حالة الشحنة",
+      "shipmentStatusUpdateFailed": "تعذر تحديث حالة الشحنة",
       "loading": "جاري التحميل...",
       "errorFetchingOrder": "فشل تحميل بيانات الطلب",
       "orderNotFound": "الطلب غير موجود",

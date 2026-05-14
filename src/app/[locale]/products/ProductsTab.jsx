@@ -276,7 +276,7 @@ export default function useProductsTab({ searchDebounced, filters, filtersOpen, 
 				className: "min-w-[100px]",
 				cell: (row) => (
 					<div className="flex items-center gap-1 text-green-600 dark:text-green-400 font-semibold">
-						{formatCurrency(row.wholesalePrice || 0)}
+						{row.wholesalePrice != undefined && row.wholesalePrice != null ?  formatCurrency(row.wholesalePrice || 0) : "—"}
 					</div>
 				)
 			},
@@ -743,7 +743,7 @@ export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 
 											<div className="mt-3 flex flex-wrap gap-2">
 												<Badge className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200">
-													{t("productModal.wholesale")}: {formatCurrency(product.wholesalePrice || 0)}
+													{t("productModal.wholesale")}:  {product.wholesalePrice != undefined && product.wholesalePrice != null ? formatCurrency(product.wholesalePrice || 0) : "—"}
 												</Badge>
 
 												<Badge className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200">

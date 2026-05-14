@@ -2,25 +2,26 @@
 
 import React, { useState, useMemo } from "react";
 import {
-    FileText,
     Image as ImageIcon,
     Video,
     MapPin,
     File as FileIcon,
-    Eye,
     Phone,
-    Globe,
-    MessageSquare,
     ExternalLink,
     Reply,
     List,
     X,
     ChevronDown,
-    Circle
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useLocale, useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "framer-motion";
+import {
+    isCorrectVariableFormat,
+    isPotentialVariable,
+    replaceVariables,
+} from "@/utils/whatsapp-healper";
+import { avatarSrc } from "@/components/atoms/UserSelect";
 
 // --- Sub-components ---
 
@@ -35,7 +36,8 @@ export function WhatsAppButtonMenu({
     type = "BUTTONS", // "BUTTONS" | "RADIO"
     title = "All Options",
     subtitle = "",
-    radioOptions = []
+    radioOptions = [],
+    seeAllOptionsLabel = "See all options",
 }) {
     const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -132,7 +134,8 @@ export function WhatsAppButtonMenu({
 /**
  * Special Call Permissions Bubble
  */
-export function WhatsAppCallPermissionsBubble({ locale = "en", bizName = "Business", onOpenMenu }) {
+export function WhatsAppCallPermissionsBubble({ locale = "en", onOpenMenu }) {
+    const t = useTranslations("whatsApp.templates");
     const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     return (
@@ -145,10 +148,10 @@ export function WhatsAppCallPermissionsBubble({ locale = "en", bizName = "Busine
                 </div>
                 <div className="flex-1 space-y-1">
                     <h4 className="font-bold text-[14px] text-slate-800 dark:text-white leading-tight">
-                        Can {bizName} call you?
+                        {t("preview.callBubbleHeading")}
                     </h4>
                     <p className="text-[12.5px] text-slate-500 dark:text-slate-400 leading-tight">
-                        You can update your preference anytime in the business profile.
+                        {t("preview.callBubbleBody")}
                     </p>
                 </div>
                 <span className="text-[10px] text-slate-400 self-end mb-[-4px]">
@@ -160,73 +163,97 @@ export function WhatsAppCallPermissionsBubble({ locale = "en", bizName = "Busine
                 onClick={onOpenMenu}
                 className="w-full border-t border-slate-100 dark:border-slate-800 mt-2 py-2 text-[#00a884] text-[13.5px] font-medium flex items-center justify-center gap-1 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
             >
-                Choose preference
+                {t("preview.callBubbleChoose")}
                 <ChevronDown size={14} />
             </button>
         </div>
     );
 }
 
-import {
-    isCorrectVariableFormat,
-    isPotentialVariable,
-    getVariableMatches,
-    replaceVariables
-} from "@/utils/whatsapp-healper";
-
 /**
  * Reusable WhatsApp Template Preview Component
- * 
- * @param {Object} template - The template data
- * @param {string} template.headerType - "TEXT" | "IMAGE" | "VIDEO" | "DOCUMENT" | "LOCATION"
- * @param {string} template.headerText - Text for TEXT header
- * @param {string} template.bodyText - Main template body text with {{1}}, {{2}}...
- * @param {string} template.footerText - Small footer text
- * @param {Object} template.examples - Object with mapping of variable index to example value { "1": "John", "2": "Order #123" }
- * @param {Array} template.buttons - Array of button objects [{
- *    type: "PHONE_NUMBER", | "VISIT_WEBSITE" | "WHATSAPP_CALL" | "TEXT",
- *    text: "Call Now",
- *    phoneNumber: "+1234567890"
- * }]
+ *
+ * @param {Object} template - Row shaped like WhatsappTemplateEntity (API) or a legacy flat preview object.
+ * @param {string} [template.language] - Template language ("ar" | "en").
+ * @param {string} [template.subCategory] - TemplateSubCategory value (e.g. "call_permissions_request").
+ * @param {Object} [template.templateConfig] - TemplateConfig JSON: headerType, headerText, headerExample, headerUrl,
+ *   bodyText, footerText, examples, buttons (CUSTOM | PHONE_NUMBER | VISIT_WEBSITE | WHATSAPP_CALL).
+ * @param {boolean} [flat]
+ * @param {boolean} [hasHeader]
  */
-export default function TemplatePreview({ template, flat = false, hasHeader = true }) {
+export default function TemplatePreview({ template, flat = false, hasHeader = true, seeAllOptionsLabel }) {
     const t = useTranslations("whatsApp.templates");
     const [showExamples, setShowExamples] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isPermissionsMenuOpen, setIsPermissionsMenuOpen] = useState(false);
-    const locale = useLocale()
+    const locale = useLocale();
+
+    const raw = template || {};
+    const cfgSource =
+        raw.templateConfig != null && typeof raw.templateConfig === "object"
+            ? raw.templateConfig
+            : raw.preview != null && typeof raw.preview === "object"
+                ? raw.preview
+                : typeof raw === "object" &&
+                    (raw.headerType != null ||
+                        raw.bodyText != null ||
+                        raw.footerText != null ||
+                        (Array.isArray(raw.buttons) && raw.buttons.length > 0) ||
+                        raw.headerText != null ||
+                        raw.headerUrl != null)
+                    ? raw
+                    : null;
+
+    const language = raw.language ?? "en";
+    const subCategory = raw.subCategory ?? raw.subcategory ?? "";
+
     const {
-        language = "en",
-        subcategory = "",
-        headerType = "NONE",
+        headerType = "TEXT",
         headerText = "",
+        headerExample = "",
         headerUrl = "",
         bodyText = "",
         footerText = "",
         buttons = [],
         examples = {},
-        headerExample = ""
-    } = template || {};
+    } = cfgSource != null
+        ? { bodyText: "", buttons: [], examples: {}, ...cfgSource }
+        : { bodyText: "", buttons: [], examples: {} };
 
     const parsedBodyParts = useMemo(() => {
-        const text = bodyText || "سيظهر نص رسالتك هنا...";
+        const text =
+            bodyText && String(bodyText).trim()
+                ? bodyText
+                : t("preview.bodyPlaceholder");
 
-        // 1. Split by potential variables
-        const parts = text.split(/(\{[\w]*\}|\{\{[\w]*\}\})/g).map((part) => {
-            if (isCorrectVariableFormat(part)) {
-                const variableName = part.match(/\d+/)[0];
+        const parts = text.split(/(\{[\w]*\}|\{\{[\w\d_]+\}\})/g).map((part) => {
+            if (isCorrectVariableFormat(part, "number")) {
+                const m = part.match(/\{\{(\d+)\}\}/);
+                const variableName = m?.[1];
                 return {
                     type: "variable",
                     variableName,
                     raw: part,
                     isValid: true,
-                    exampleValue: examples?.[variableName] || `{{${variableName}}}`
+                    exampleValue: examples?.[variableName] ?? `{{${variableName}}}`,
                 };
-            } else if (isPotentialVariable(part)) {
+            }
+            if (isCorrectVariableFormat(part, "named")) {
+                const m = part.match(/\{\{([\w_]+)\}\}/);
+                const variableName = m?.[1];
+                return {
+                    type: "variable",
+                    variableName,
+                    raw: part,
+                    isValid: true,
+                    exampleValue: examples?.[variableName] ?? part,
+                };
+            }
+            if (isPotentialVariable(part)) {
                 return {
                     type: "variable",
                     raw: part,
-                    isValid: false
+                    isValid: false,
                 };
             }
             return { type: "text", value: part };
@@ -286,7 +313,7 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
             }
             return part;
         });
-    }, [bodyText, examples]);
+    }, [bodyText, examples, t]);
 
     const renderHeader = () => {
         const mediaClass = "aspect-video w-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center rounded-lg overflow-hidden border-b border-slate-100 dark:border-slate-800";
@@ -296,7 +323,7 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                 return (
                     <div className={mediaClass}>
                         {headerUrl ? (
-                            <img src={headerUrl} alt="Header" className="w-full h-full object-cover" />
+                            <img src={avatarSrc(headerUrl)} alt="Header" className="w-full h-full object-cover" />
                         ) : (
                             <ImageIcon size={48} className="text-slate-300" />
                         )}
@@ -306,7 +333,7 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                 return (
                     <div className={mediaClass}>
                         {headerUrl ? (
-                            <video src={headerUrl} className="w-full h-full object-cover" />
+                            <video src={avatarSrc(headerUrl)} className="w-full h-full object-cover" />
                         ) : (
                             <Video size={48} className="text-slate-300" />
                         )}
@@ -330,10 +357,18 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
             case "TEXT":
                 if (!headerText) return null;
 
-                // Process header variables using helper
-                const processedHeaderText = replaceVariables(headerText, (match, varName) => {
-                    return showExamples ? (headerExample || match) : match;
-                });
+                const hasHeaderVars = /\{\{[\w\d_]+\}\}/.test(headerText);
+                const headerVarType = /\{\{\d+\}\}/.test(headerText) ? "number" : "named";
+                const processedHeaderText = hasHeaderVars
+                    ? replaceVariables(
+                        headerText,
+                        (match, varName) =>
+                            showExamples
+                                ? (examples?.[varName] ?? headerExample ?? match)
+                                : match,
+                        headerVarType
+                    )
+                    : headerText;
 
                 return (
                     <div className="pb-2 font-bold text-[#111b21] dark:text-white leading-tight break-all">
@@ -377,7 +412,7 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
 
                         locale === "ar" ? "rounded-tr-none" : "rounded-tl-none"
                     )}
-                        dir={template?.language === "ar" ? "rtl" : "ltr"}
+                        dir={language === "ar" ? "rtl" : "ltr"}
                         style={{
                             fontFamily: 'Segoe UI Historic, Segoe UI, Helvetica, Arial, sans-serif'
                         }}>
@@ -468,7 +503,7 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                                                         color="#00a884"
                                                         strokeWidth={1.8}
                                                     />}
-                                                    {btn.type === "VIEW_URL" && <ExternalLink size={14} />}
+                                                    {btn.type === "VISIT_WEBSITE" && <ExternalLink size={14} />}
                                                     {btn.type === "WHATSAPP_CALL" && <Phone
                                                         size={14}
                                                         fill="#00a884"
@@ -487,7 +522,7 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                                                     className="w-full py-2.5 px-3 flex items-center justify-center gap-2 text-[#00a884] dark:text-[#00a884] font-medium text-[13px] hover:bg-slate-50 dark:hover:bg-white/5 border-t border-slate-100 dark:border-slate-800 transition-colors"
                                                 >
                                                     <List size={14} />
-                                                    See all options
+                                                    {seeAllOptionsLabel}
                                                 </button>
                                             )}
                                         </>
@@ -498,7 +533,9 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                     </div>
 
                     {/* Extra Message: Call Permissions */}
-                    {["MARKETING_CALL_PERMISSIONS", "UTILITY_CALL_PERMISSIONS"].includes(subcategory) && (
+                    {["call_permissions_request", "MARKETING_CALL_PERMISSIONS", "UTILITY_CALL_PERMISSIONS"].includes(
+                        subCategory
+                    ) && (
                         <WhatsAppCallPermissionsBubble
                             locale={locale}
                             onOpenMenu={() => setIsPermissionsMenuOpen(true)}
@@ -514,6 +551,7 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                             onClose={() => setIsMenuOpen(false)}
                             buttons={buttons}
                             locale={locale}
+                            seeAllOptionsLabel={t("preview.seeAllOptions")}
                         />
                     )}
                 </AnimatePresence>
@@ -525,12 +563,12 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                             isOpen={isPermissionsMenuOpen}
                             onClose={() => setIsPermissionsMenuOpen(false)}
                             type="RADIO"
-                            title="Can {BIZ_NAME} call you?"
-                            subtitle="You can update your preference anytime in the business profile."
+                            title={t("preview.callPermissionTitle")}
+                            subtitle={t("preview.callPermissionSubtitle")}
                             radioOptions={[
-                                { label: "Always allow calls" },
-                                { label: "Temporarily allow calls" },
-                                { label: "Not now." }
+                                { label: t("preview.callPermissionAlways") },
+                                { label: t("preview.callPermissionTemporary") },
+                                { label: t("preview.callPermissionNotNow") },
                             ]}
                             locale={locale}
                         />
@@ -551,7 +589,7 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                                 : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                         )}
                     >
-                        المتغيرات
+                        {t("preview.variablesTab")}
                     </button>
                     <button
                         type="button"
@@ -563,7 +601,7 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                                 : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                         )}
                     >
-                        أمثلة
+                        {t("preview.examplesTab")}
                     </button>
                 </div>
             </div>

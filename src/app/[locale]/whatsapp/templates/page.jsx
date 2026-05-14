@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import {
   Plus,
@@ -10,16 +10,12 @@ import {
   Trash2,
   FileText,
   CheckCircle2,
-  XCircle,
   Clock,
   AlertTriangle,
-  BarChart3,
-  HelpCircle,
-  MessageSquare,
-  Globe,
-  Tag,
   History,
-  AlertCircle
+  AlertCircle,
+  Tag,
+  Globe,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
@@ -34,8 +30,17 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import TemplatePreview from "../atoms/TemplatePreview";
 import { useRouter } from "@/i18n/navigation";
+import api from "@/utils/api";
 
-// Helper for filter fields
+function normalizeAxiosError(err) {
+  const msg =
+    err?.response?.data?.message ??
+    err?.response?.data?.error ??
+    err?.message ??
+    "Unexpected error";
+  return Array.isArray(msg) ? msg.join(", ") : String(msg);
+}
+
 function FilterField({ label, children }) {
   return (
     <div className="space-y-2">
@@ -45,125 +50,69 @@ function FilterField({ label, children }) {
   );
 }
 
-// Constants
 const CATEGORIES = ["authentication", "marketing", "utility"];
-const STATUSES = ["in_review", "rejected", "approved", "paused", "disabled", "appeal_requested", "pending_deletion"];
+const STATUSES = [
+  "pending",
+  "in_review",
+  "rejected",
+  "approved",
+  "archived",
+  "unarchived",
+  "paused",
+  "disabled",
+  "locked",
+  "appeal_requested",
+  "pending_deletion",
+];
 const QUALITY = ["high", "medium", "low", "unknown"];
 
-// Mock Data
-const MOCK_TEMPLATES = [
-  {
-    id: "1",
-    name: "welcome_message",
-    language: "en",
-    category: "marketing",
-    status: "approved",
-    createdAt: "2024-05-01T10:00:00Z",
-    accountNumber: "+201234567890",
-    accountName: "Sales Department",
-    quality: "high",
-    preview: {
-      headerType: "TEXT",
-      headerText: "Welcome!",
-      bodyText:
-        "Hello {{first_name}} {{last_name}}, welcome to our service. Your ID is {{customer_id}}.",
-      footerText: "Reply STOP to opt out.",
-      examples: {
-        first_name: "John",
-        last_name: "Doe",
-        customer_id: "CUST-99"
-      }
-    }
-  },
-  {
-    id: "2",
-    name: "otp_code",
-    language: "ar",
-    category: "authentication",
-    status: "approved",
-    createdAt: "2024-04-25T14:30:00Z",
-    accountNumber: "+201234567890",
-    accountName: "Sales Department",
-    quality: "high",
-    preview: {
-      headerType: "TEXT",
-      headerText: "رمز التحقق",
-      bodyText:
-        "كود التحقق الخاص بك هو {{verification_code}}. لا تشاركه مع أحد.",
-      examples: {
-        verification_code: "4829"
-      }
-    }
-  },
-  {
-    id: "3",
-    name: "order_confirmation",
-    language: "en",
-    category: "utility",
-    status: "in_review",
-    createdAt: "2024-05-05T09:15:00Z",
-    accountNumber: "+201987654321",
-    accountName: "Customer Support",
-    quality: "unknown",
-    preview: {
-      headerType: "IMAGE",
-      bodyText:
-        "Hi {{customer_name}}, your order {{order_number}} has been confirmed!",
-      footerText: "Track it in our app.",
-      examples: {
-        customer_name: "Sarah",
-        order_number: "#ORD-1029"
-      }
-    }
-  },
-  {
-    id: "4",
-    name: "seasonal_promo",
-    language: "ar",
-    category: "marketing",
-    status: "rejected",
-    createdAt: "2024-03-10T11:45:00Z",
-    accountNumber: "+201112223334",
-    accountName: "Marketing Team",
-    quality: "low",
-    preview: {
-      headerType: "VIDEO",
-      bodyText:
-        "خصومات الصيف بدأت! استخدم الكود {{promo_code}} للحصول على {{discount_percentage}} خصم.",
-      examples: {
-        promo_code: "SUMMER20",
-        discount_percentage: "20%"
-      }
-    }
-  },
-  {
-    id: "5",
-    name: "feedback_survey",
-    language: "en",
-    category: "marketing",
-    status: "paused",
-    createdAt: "2024-02-15T16:20:00Z",
-    accountNumber: "+201234567890",
-    accountName: "Sales Department",
-    quality: "medium",
-    preview: {
-      headerType: "DOCUMENT",
-      bodyText:
-        "Please find the requested report for {{report_period}}.",
-      examples: {
-        report_period: "April 2024"
-      }
-    }
-  }
-];
+const EDITABLE_TEMPLATE_STATUSES = new Set(["approved", "rejected", "paused"]);
+
+export const TemplateStatus = {
+  PENDING: "pending",
+  IN_REVIEW: "in_review",
+  REJECTED: "rejected",
+  APPROVED: "approved",
+  PAUSED: "paused",
+  DISABLED: "disabled",
+  APPEAL_REQUESTED: "appeal_requested",
+  PENDING_DELETION: "pending_deletion",
+  ARCHIVED: "archived",
+  UNARCHIVED: "unarchived",
+  LOCKED: "locked",
+};
 
 const MOCK_STATS = {
   total: 24,
   approved: 18,
   lowQuality: 2,
   usedLast48: 156,
-  errorsLast48: 3
+  errorsLast48: 3,
 };
+
+function buildListQuery({ page, per_page, search, filters }) {
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  params.set("limit", String(per_page));
+  if (search?.trim()) params.set("search", search.trim());
+  if (filters.status && filters.status !== "all") params.set("status", filters.status);
+  if (filters.quality && filters.quality !== "all") params.set("quality", filters.quality);
+  if (filters.category && filters.category !== "all") params.set("category", filters.category);
+  if (filters.language && filters.language !== "all") params.set("language", filters.language);
+  if (filters.account && filters.account !== "all") params.set("accountId", filters.account);
+  return params.toString();
+}
+
+function buildExportQuery({ search, filters }) {
+  const params = new URLSearchParams();
+  if (search?.trim()) params.set("search", search.trim());
+  if (filters.status && filters.status !== "all") params.set("status", filters.status);
+  if (filters.quality && filters.quality !== "all") params.set("quality", filters.quality);
+  if (filters.category && filters.category !== "all") params.set("category", filters.category);
+  if (filters.language && filters.language !== "all") params.set("language", filters.language);
+  if (filters.account && filters.account !== "all") params.set("accountId", filters.account);
+  return params.toString();
+}
 
 export default function WhatsAppTemplatesPage() {
   const router = useRouter();
@@ -172,9 +121,18 @@ export default function WhatsAppTemplatesPage() {
 
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
-  const [templates, setTemplates] = useState(MOCK_TEMPLATES);
+  const [accounts, setAccounts] = useState([]);
+  const [pager, setPager] = useState({
+    total_records: 0,
+    current_page: 1,
+    per_page: 12,
+    records: [],
+  });
+
   const [deleteState, setDeleteState] = useState({ open: false, id: null });
+  const [deleting, setDeleting] = useState(false);
   const [previewState, setPreviewState] = useState({ open: false, template: null });
+
   const [filters, setFilters] = useState({
     quality: "all",
     status: "all",
@@ -183,184 +141,255 @@ export default function WhatsAppTemplatesPage() {
     language: "all",
   });
 
-  // Stats Configuration
-  const statsCards = useMemo(() => [
-    { name: t("stats.total"), value: MOCK_STATS.total, icon: FileText, color: "#8b5cf6" },
-    { name: t("stats.approved"), value: MOCK_STATS.approved, icon: CheckCircle2, color: "#10b981" },
-    { name: t("stats.lowQuality"), value: MOCK_STATS.lowQuality, icon: AlertTriangle, color: "#ef4444" },
-    { name: t("stats.usedLast48"), value: MOCK_STATS.usedLast48, icon: History, color: "#3b82f6" },
-    { name: t("stats.errorsLast48"), value: MOCK_STATS.errorsLast48, icon: AlertCircle, color: "#f59e0b" },
-  ], [t]);
+  const statsCards = useMemo(
+    () => [
+      { name: t("stats.total"), value: MOCK_STATS.total, icon: FileText, color: "#8b5cf6" },
+      { name: t("stats.approved"), value: MOCK_STATS.approved, icon: CheckCircle2, color: "#10b981" },
+      { name: t("stats.lowQuality"), value: MOCK_STATS.lowQuality, icon: AlertTriangle, color: "#ef4444" },
+      { name: t("stats.usedLast48"), value: MOCK_STATS.usedLast48, icon: History, color: "#3b82f6" },
+      { name: t("stats.errorsLast48"), value: MOCK_STATS.errorsLast48, icon: AlertCircle, color: "#f59e0b" },
+    ],
+    [t]
+  );
 
-  // Filtering Logic
-  const filteredTemplates = useMemo(() => {
-    return templates.filter(temp => {
-      const matchesSearch = temp.name.toLowerCase().includes(search.toLowerCase());
-      const matchesQuality = filters.quality === "all" || temp.quality === filters.quality;
-      const matchesStatus = filters.status === "all" || temp.status === filters.status;
-      const matchesCategory = filters.category === "all" || temp.category === filters.category;
-      const matchesLang = filters.language === "all" || temp.language === filters.language;
-      const matchesAccount = filters.account === "all" || temp.accountNumber === filters.account;
+  const fetchAccounts = useCallback(async () => {
+    try {
+      const res = await api.get("/whatsapp-accounts", { params: { limit: 200, page: 1 } });
+      const records = res.data?.records ?? [];
+      setAccounts(Array.isArray(records) ? records : []);
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
 
-      return matchesSearch && matchesQuality && matchesStatus && matchesCategory && matchesLang && matchesAccount;
-    });
-  }, [templates, search, filters]);
+  useEffect(() => {
+    fetchAccounts();
+  }, [fetchAccounts]);
+
+  const fetchTemplates = useCallback(
+    async ({ page = 1, per_page = 12 } = {}) => {
+      setLoading(true);
+      try {
+        const qs = buildListQuery({ page, per_page, search, filters });
+        const res = await api.get(`/whatsapp-templates?${qs}`);
+        setPager({
+          total_records: res.data?.total_records ?? 0,
+          current_page: res.data?.current_page ?? page,
+          per_page: res.data?.per_page ?? per_page,
+          records: res.data?.records ?? [],
+        });
+      } catch (e) {
+        toast.error(normalizeAxiosError(e));
+      } finally {
+        setLoading(false);
+      }
+    },
+    [search, filters]
+  );
+
+  useEffect(() => {
+    fetchTemplates({ page: 1, per_page: 12 });
+  }, [fetchTemplates]);
 
   const hasActiveFilters = useMemo(() => {
-    return filters.quality !== "all" ||
+    return (
+      filters.quality !== "all" ||
       filters.status !== "all" ||
       filters.category !== "all" ||
       filters.language !== "all" ||
-      filters.account !== "all";
+      filters.account !== "all"
+    );
   }, [filters]);
 
-  const resetFilters = () => {
-    setFilters({
-      quality: "all",
-      status: "all",
-      account: "all",
-      category: "all",
-      language: "all",
-    });
-  };
-
-  const confirmDelete = () => {
-    setTemplates(prev => prev.filter(t => t.id !== deleteState.id));
-    setDeleteState({ open: false, id: null });
-    toast.success(tCommon("messages.success"));
-  };
-
-  const columns = useMemo(() => [
-    {
-      header: t("table.name"),
-      key: "name",
-      className: "font-bold text-gray-700 dark:text-slate-200",
-      cell: (row) => (
-        <div className="flex items-center gap-2">
-          <FileText size={16} className="text-primary/60" />
-          <span>{row.name}</span>
-        </div>
-      )
-    },
-    {
-      header: t("table.language"),
-      key: "language",
-      cell: (row) => (
-        <div className="flex items-center gap-1.5 uppercase font-mono text-xs">
-          <Globe size={14} className="text-muted-foreground" />
-          {row.language}
-        </div>
-      )
-    },
-    {
-      header: t("table.category"),
-      key: "category",
-      cell: (row) => (
-        <div className="flex items-center gap-1.5 text-xs">
-          <Tag size={14} className="text-muted-foreground" />
-          {t(`categories.${row.category}`)}
-        </div>
-      )
-    },
-    {
-      header: t("table.status"),
-      key: "status",
-      cell: (row) => (
-        <div className={cn(
-          "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase",
-          row.status === "approved" ? "bg-emerald-100 text-emerald-700" :
-            row.status === "rejected" || row.status === "disabled" ? "bg-rose-100 text-rose-700" :
-              row.status === "in_review" ? "bg-blue-100 text-blue-700" :
-                "bg-amber-100 text-amber-700"
-        )}>
-          {t(`statuses.${row.status}`)}
-        </div>
-      )
-    },
-    {
-      header: t("table.quality"),
-      key: "quality",
-      cell: (row) => (
-        <div className={cn(
-          "flex items-center gap-1.5 font-bold text-xs",
-          row.quality === "high" ? "text-emerald-500" :
-            row.quality === "medium" ? "text-amber-500" :
-              row.quality === "low" ? "text-rose-500" :
-                "text-slate-400"
-        )}>
-          <div className={cn(
-            "w-2 h-2 rounded-full",
-            row.quality === "high" ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" :
-              row.quality === "medium" ? "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" :
-                row.quality === "low" ? "bg-rose-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]" :
-                  "bg-slate-400"
-          )} />
-          {t(`quality.${row.quality}`)}
-        </div>
-      )
-    },
-    {
-      header: t("table.account"),
-      key: "account",
-      cell: (row) => (
-        <div className="flex flex-col">
-          <span className="font-bold text-xs">{row.accountName}</span>
-          <span className="font-mono text-[10px] text-muted-foreground">{row.accountNumber}</span>
-        </div>
-      )
-    },
-    {
-      header: t("table.createdAt"),
-      key: "createdAt",
-      cell: (row) => (
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Clock size={14} />
-          {new Date(row.createdAt).toLocaleDateString()}
-        </div>
-      )
-    },
-    {
-      header: tCommon("actions"),
-      key: "actions",
-      cell: (row) => (
-        <ActionButtons
-          row={row}
-          actions={[
-            {
-              icon: <Eye size={16} />,
-              tooltip: t("actions.preview"),
-              onClick: () => setPreviewState({ open: true, template: row }),
-              variant: "primary",
-            },
-            {
-              icon: <Pencil size={16} />,
-              tooltip: t("actions.edit"),
-              onClick: () => toast.success("Editing..."),
-              variant: "purple",
-            },
-            {
-              icon: <Trash2 size={16} />,
-              tooltip: t("actions.delete"),
-              onClick: () => setDeleteState({ open: true, id: row.id }),
-              variant: "danger",
-              hidden: row.status === "disabled"
-            },
-            {
-              icon: <History size={16} />,
-              tooltip: t("actions.appeal"),
-              onClick: () => toast.success("Appeal Requested"),
-              variant: "orange",
-              hidden: row.status !== "rejected" && row.status !== "disabled"
-            }
-          ]}
-        />
-      )
+  const confirmDelete = async () => {
+    setDeleting(true);
+    try {
+      await api.delete(`/whatsapp-templates/${deleteState.id}`);
+      setDeleteState({ open: false, id: null });
+      toast.success(t("messages.deleteSuccess"));
+      await fetchTemplates({ page: pager.current_page, per_page: pager.per_page });
+    } catch (e) {
+      toast.error(normalizeAxiosError(e));
+    } finally {
+      setDeleting(false);
     }
-  ], [t, tCommon]);
-  const onExport = () => {
-    toast.success(t("messages.exportStarted"));
   };
 
+  const onExport = async () => {
+    try {
+      const qs = buildExportQuery({ search, filters });
+      const res = await api.get(`/whatsapp-templates/export?${qs}`, { responseType: "blob" });
+      const blob = new Blob([res.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = `whatsapp_templates_${Date.now()}.xlsx`;
+      link.click();
+      window.URL.revokeObjectURL(link.href);
+      toast.success(t("messages.exportSuccess"));
+    } catch (e) {
+      toast.error(normalizeAxiosError(e));
+    }
+  };
+
+  const statusLabel = (status) => t(`statuses.${status}`);
+
+  const columns = useMemo(
+    () => [
+      {
+        header: t("table.name"),
+        key: "name",
+        className: "font-bold text-gray-700 dark:text-slate-200",
+        cell: (row) => (
+          <div className="flex items-center gap-2">
+            <FileText size={16} className="text-primary/60" />
+            <span>{row.name}</span>
+          </div>
+        ),
+      },
+      {
+        header: t("table.language"),
+        key: "language",
+        cell: (row) => (
+          <div className="flex items-center gap-1.5 uppercase font-mono text-xs">
+            <Globe size={14} className="text-muted-foreground" />
+            {row.language}
+          </div>
+        ),
+      },
+      {
+        header: t("table.category"),
+        key: "category",
+        cell: (row) => (
+          <div className="flex items-center gap-1.5 text-xs">
+            <Tag size={14} className="text-muted-foreground" />
+            {t(`categories.${row.category}`)}
+          </div>
+        ),
+      },
+      {
+        header: t("table.status"),
+        key: "status",
+        cell: (row) => (
+          <div
+            className={cn(
+              "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase",
+              row.status === "approved"
+                ? "bg-emerald-100 text-emerald-700"
+                : row.status === "rejected" || row.status === "disabled"
+                  ? "bg-rose-100 text-rose-700"
+                  : row.status === "in_review" || row.status === "pending"
+                    ? "bg-blue-100 text-blue-700"
+                    : "bg-amber-100 text-amber-700"
+            )}
+          >
+            {statusLabel(row.status)}
+          </div>
+        ),
+      },
+      {
+        header: t("table.quality"),
+        key: "quality",
+        cell: (row) => (
+          <div
+            className={cn(
+              "flex items-center gap-1.5 font-bold text-xs",
+              row.quality === "high"
+                ? "text-emerald-500"
+                : row.quality === "medium"
+                  ? "text-amber-500"
+                  : row.quality === "low"
+                    ? "text-rose-500"
+                    : "text-slate-400"
+            )}
+          >
+            <div
+              className={cn(
+                "w-2 h-2 rounded-full",
+                row.quality === "high"
+                  ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                  : row.quality === "medium"
+                    ? "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"
+                    : row.quality === "low"
+                      ? "bg-rose-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]"
+                      : "bg-slate-400"
+              )}
+            />
+            {t(`quality.${row.quality}`)}
+          </div>
+        ),
+      },
+      {
+        header: t("table.account"),
+        key: "account",
+        cell: (row) => {
+          const acc = row.account;
+          const name = acc?.name ?? "—";
+          const num = acc?.mobileNumber ?? row.mobileNumber ?? "—";
+          return (
+            <div className="flex flex-col">
+              <span className="font-bold text-xs">{name}</span>
+              <span className="font-mono text-[10px] text-muted-foreground">{num}</span>
+            </div>
+          );
+        },
+      },
+      {
+        header: t("table.createdAt"),
+        key: "createdAt",
+        cell: (row) => (
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Clock size={14} />
+            {row.createdAt ? new Date(row.createdAt).toLocaleDateString() : "—"}
+          </div>
+        ),
+      },
+      {
+        header: tCommon("actions"),
+        key: "actions",
+        cell: (row) => (
+          <ActionButtons
+            row={row}
+            actions={[
+              {
+                icon: <Eye size={16} />,
+                tooltip: t("actions.preview"),
+                onClick: () => setPreviewState({ open: true, template: row }),
+                variant: "primary",
+                permission: "whatsapp.read",
+              },
+              {
+                icon: <Pencil size={16} />,
+                tooltip: t("actions.edit"),
+                disabled: !EDITABLE_TEMPLATE_STATUSES.has(row.status),
+                onClick: (r) => router.push(`/whatsapp/templates/edit/${r.id}`),
+                variant: "purple",
+                permission: "whatsapp.templates.update",
+              },
+              {
+                icon: <Trash2 size={16} />,
+                tooltip: t("actions.delete"),
+                onClick: () => setDeleteState({ open: true, id: row.id }),
+                variant: "red",
+                hidden: row.status === TemplateStatus.DISABLED,
+                permission: "whatsapp.templates.delete",
+              },
+              {
+                icon: <History size={16} />,
+                tooltip: t("actions.appeal"),
+                onClick: () => toast.success("Appeal requested"),
+                variant: "orange",
+                hidden: row.status !== "rejected" && row.status !== "disabled",
+                permission: "whatsapp.templates.update",
+              },
+            ]}
+          />
+        ),
+      },
+    ],
+    [t, tCommon]
+  );
 
   return (
     <div className="min-h-screen p-5 space-y-6">
@@ -368,7 +397,7 @@ export default function WhatsAppTemplatesPage() {
         breadcrumbs={[
           { name: t("breadcrumb.home"), href: "/dashboard" },
           { name: t("breadcrumb.whatsapp"), href: "/whatsapp" },
-          { name: t("breadcrumb.templates") }
+          { name: t("breadcrumb.templates") },
         ]}
         buttons={
           <>
@@ -378,6 +407,7 @@ export default function WhatsAppTemplatesPage() {
               variant="solid"
               onClick={() => router.push("/whatsapp/templates/add")}
               icon={<Plus size={18} />}
+              permission="whatsapp.templates.create"
             />
           </>
         }
@@ -387,8 +417,9 @@ export default function WhatsAppTemplatesPage() {
       <Table
         searchValue={search}
         onSearchChange={setSearch}
+        onSearch={() => {}}
         hasActiveFilters={hasActiveFilters}
-        onApplyFilters={() => { }} // Local filtering, no need to apply
+        onApplyFilters={() => fetchTemplates({ page: 1, per_page: pager.per_page })}
         labels={{
           searchPlaceholder: t("toolbar.searchPlaceholder"),
           filter: tCommon("filter"),
@@ -404,6 +435,7 @@ export default function WhatsAppTemplatesPage() {
             icon: <FileDown size={14} />,
             color: "primary",
             onClick: onExport,
+            permission: "whatsapp.read",
           },
         ]}
         filters={
@@ -411,15 +443,17 @@ export default function WhatsAppTemplatesPage() {
             <FilterField label={t("filters.status")}>
               <Select
                 value={filters.status}
-                onValueChange={(v) => setFilters(f => ({ ...f, status: v }))}
+                onValueChange={(v) => setFilters((f) => ({ ...f, status: v }))}
               >
                 <SelectTrigger className="h-10 rounded-xl bg-background border-border text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{tCommon("all")}</SelectItem>
-                  {STATUSES.map(s => (
-                    <SelectItem key={s} value={s}>{t(`statuses.${s}`)}</SelectItem>
+                  {STATUSES.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {statusLabel(s)}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -428,15 +462,17 @@ export default function WhatsAppTemplatesPage() {
             <FilterField label={t("filters.quality")}>
               <Select
                 value={filters.quality}
-                onValueChange={(v) => setFilters(f => ({ ...f, quality: v }))}
+                onValueChange={(v) => setFilters((f) => ({ ...f, quality: v }))}
               >
                 <SelectTrigger className="h-10 rounded-xl bg-background border-border text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{tCommon("all")}</SelectItem>
-                  {QUALITY.map(q => (
-                    <SelectItem key={q} value={q}>{t(`quality.${q}`)}</SelectItem>
+                  {QUALITY.map((q) => (
+                    <SelectItem key={q} value={q}>
+                      {t(`quality.${q}`)}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -445,15 +481,17 @@ export default function WhatsAppTemplatesPage() {
             <FilterField label={t("filters.category")}>
               <Select
                 value={filters.category}
-                onValueChange={(v) => setFilters(f => ({ ...f, category: v }))}
+                onValueChange={(v) => setFilters((f) => ({ ...f, category: v }))}
               >
                 <SelectTrigger className="h-10 rounded-xl bg-background border-border text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{tCommon("all")}</SelectItem>
-                  {CATEGORIES.map(c => (
-                    <SelectItem key={c} value={c}>{t(`categories.${c}`)}</SelectItem>
+                  {CATEGORIES.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {t(`categories.${c}`)}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -462,16 +500,18 @@ export default function WhatsAppTemplatesPage() {
             <FilterField label={t("filters.account")}>
               <Select
                 value={filters.account}
-                onValueChange={(v) => setFilters(f => ({ ...f, account: v }))}
+                onValueChange={(v) => setFilters((f) => ({ ...f, account: v }))}
               >
                 <SelectTrigger className="h-10 rounded-xl bg-background border-border text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{tCommon("all")}</SelectItem>
-                  <SelectItem value="+201234567890">Sales Department</SelectItem>
-                  <SelectItem value="+201987654321">Customer Support</SelectItem>
-                  <SelectItem value="+201112223334">Marketing Team</SelectItem>
+                  {accounts.map((a) => (
+                    <SelectItem key={a.id} value={String(a.id)}>
+                      {a.name} ({a.mobileNumber || a.id})
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </FilterField>
@@ -479,7 +519,7 @@ export default function WhatsAppTemplatesPage() {
             <FilterField label={t("filters.language")}>
               <Select
                 value={filters.language}
-                onValueChange={(v) => setFilters(f => ({ ...f, language: v }))}
+                onValueChange={(v) => setFilters((f) => ({ ...f, language: v }))}
               >
                 <SelectTrigger className="h-10 rounded-xl bg-background border-border text-sm">
                   <SelectValue />
@@ -494,16 +534,16 @@ export default function WhatsAppTemplatesPage() {
           </>
         }
         columns={columns}
-        data={filteredTemplates}
+        data={pager.records}
         isLoading={loading}
         pagination={{
-          total_records: filteredTemplates.length,
-          current_page: 1,
-          per_page: 10,
+          total_records: pager.total_records,
+          current_page: pager.current_page,
+          per_page: pager.per_page,
         }}
+        onPageChange={({ page, per_page }) => fetchTemplates({ page, per_page })}
       />
 
-      {/* Delete Confirmation */}
       <ConfirmDialog
         open={deleteState.open}
         onOpenChange={(open) => setDeleteState((s) => ({ ...s, open }))}
@@ -511,13 +551,13 @@ export default function WhatsAppTemplatesPage() {
         description={t("actions.confirmDelete")}
         confirmText={tCommon("delete")}
         cancelText={tCommon("cancel")}
+        loading={deleting}
         onConfirm={confirmDelete}
       />
 
-      {/* Template Preview Popup */}
       <Dialog
         open={previewState.open}
-        onOpenChange={(open) => setPreviewState(prev => ({ ...prev, open }))}
+        onOpenChange={(open) => setPreviewState((prev) => ({ ...prev, open }))}
       >
         <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-slate-900">
           <DialogHeader className="p-6 border-b dark:border-slate-800">
@@ -528,7 +568,7 @@ export default function WhatsAppTemplatesPage() {
           </DialogHeader>
 
           <div className="p-8 max-w-[400px] mx-auto">
-            <TemplatePreview template={previewState.template} />
+            {previewState.template ? <TemplatePreview template={previewState.template} /> : null}
           </div>
         </DialogContent>
       </Dialog>

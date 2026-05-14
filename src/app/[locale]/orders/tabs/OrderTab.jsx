@@ -440,6 +440,30 @@ export default function OrdersTab({
     });
   };
 
+  const [updatingShipments, setUpdatingShipments] = useState([]);
+  const setShipmentUpdating = (id, v) => {
+    setUpdatingShipments((prev) => {
+      if (v) return Array.from(new Set(prev.concat(id)));
+      return prev.filter((x) => x !== id);
+    });
+  };
+
+  const [unifiedShipmentStatuses, setUnifiedShipmentStatuses] = useState([]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await api.get("/shipping/statuses");
+        if (!cancelled) setUnifiedShipmentStatuses(r.data?.statuses ?? []);
+      } catch {
+        if (!cancelled) setUnifiedShipmentStatuses([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const getStatusBadge = (statusCode) => {
     const status = statusesMap[statusCode];
     if (!status) {
@@ -654,11 +678,65 @@ export default function OrdersTab({
       {
         key: "shipment",
         header: t("table.shipmentStatus"),
-        cell: (row) => (
-          <Badge className={cn("rounded-xl", "bg-gray-100 text-gray-700 dark:bg-gray-950/30 dark:text-gray-400")}>
-            {row.shipments?.[0]?.status ? t(`shipmentStatuses.${row.shipments?.[0]?.status}`) : "-"}
-          </Badge>
-        ),
+        cell: (row) => {
+          const ship = row.shipments?.[0];
+          const currentUnified = ship?.unifiedStatus || "";
+          const isDelivered =
+            currentUnified === "delivered" || ship?.status === "delivered";
+
+          if (!ship?.id) {
+            return (
+              <span className="text-muted-foreground text-sm">—</span>
+            );
+          }
+
+          return (
+            <div className="flex items-center gap-2">
+              <Select
+                value={currentUnified || undefined}
+                onValueChange={async (val) => {
+                  if (!val || val === currentUnified) return;
+                  const toastId = toast.loading(t("messages.shipmentStatusUpdating"));
+                  try {
+                    setShipmentUpdating(row.id, true);
+                    await api.patch(`/shipping/shipments/${ship.id}/status`, {
+                      status: val,
+                    });
+                    toast.success(t("messages.shipmentStatusUpdated"), {
+                      id: toastId,
+                    });
+                    await fetchStats(true);
+                    await fetchOrders(pager.current_page, pager.per_page);
+                  } catch (err) {
+                    console.error(err);
+                    toast.error(
+                      err.response?.data?.message ||
+                        t("messages.shipmentStatusUpdateFailed"),
+                      { id: toastId },
+                    );
+                  } finally {
+                    setShipmentUpdating(row.id, false);
+                  }
+                }}
+                disabled={
+                  isDelivered ||
+                  updatingShipments.includes(row.id)
+                }
+              >
+                <SelectTrigger className="w-[170px] h-8">
+                  <SelectValue placeholder="—" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(unifiedShipmentStatuses || []).map((code) => (
+                    <SelectItem key={code} value={code}>
+                      {t(`trackingStatus.${code}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          );
+        },
       },
       {
         key: "products",
@@ -885,7 +963,19 @@ export default function OrdersTab({
         ),
       },
     ];
-  }, [t, router, filteredStats, formatCurrency, readOnlyStatus]);
+  }, [
+    t,
+    router,
+    filteredStats,
+    formatCurrency,
+    readOnlyStatus,
+    unifiedShipmentStatuses,
+    updatingShipments,
+    fetchOrders,
+    pager.current_page,
+    pager.per_page,
+    fetchStats,
+  ]);
 
   return (
     <div className=" ">

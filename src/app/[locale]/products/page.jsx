@@ -21,7 +21,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader } from "@/components/
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 
-import useProductsTab, { ProductViewModal, SkuPrintModal } from "./ProductsTab";
+import useProductsTab, { ProductViewModal, SkuPrintModal, ProductOrdersByStatusModal } from "./ProductsTab";
 import useBundlesTab, { BundleViewModal } from "./BundlesTab";
 import useIdleTab from "./IdleTab";
 import PageHeader from "@/components/atoms/Pageheader";
@@ -820,6 +820,14 @@ export default function ProductsPage() {
 				open={productsLogic.printModal.open}
 				onClose={() => productsLogic.setPrintModal({ open: false, product: null })}
 				product={productsLogic.printModal.product}
+			/>
+
+			<ProductOrdersByStatusModal
+				open={productsLogic.productOrdersModal.open}
+				onOpenChange={(o) => productsLogic.setProductOrdersModal((m) => ({ ...m, open: o }))}
+				title={productsLogic.productOrdersModal.title}
+				loading={productsLogic.productOrdersModal.loading}
+				orders={productsLogic.productOrdersModal.orders}
 			/>
 
 			<ExportToStoreModal

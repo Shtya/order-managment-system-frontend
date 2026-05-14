@@ -1,9 +1,9 @@
 // --- File: ProductsTab.jsx ---
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { CalendarDays, DollarSign, Edit2, Eye, QrCode, Tag, Trash2, Hash, Package, Boxes, Store, Warehouse, Image as ImageIcon, CheckCircle2, XCircle, RotateCcw, Printer, Plus, Minus, X, Loader2 } from "lucide-react";
+import { CalendarDays, DollarSign, Edit2, Eye, QrCode, Tag, Trash2, Hash, Package, Boxes, Store, Warehouse, Image as ImageIcon, CheckCircle2, XCircle, RotateCcw, Printer, Plus, Minus, X, Loader2, Truck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/utils/cn";
@@ -29,6 +29,80 @@ function normalizeAxiosError(err) {
 	return Array.isArray(msg) ? msg.join(", ") : String(msg);
 }
 
+/** Orders list popup for a product (shipped / delivered filters). */
+export function ProductOrdersByStatusModal({ open, onOpenChange, title, loading, orders }) {
+	const to = useTranslations("orders");
+	const t = useTranslations("products");
+	const { formatCurrency } = usePlatformSettings();
+
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent className="!max-w-3xl max-h-[90vh] overflow-hidden p-0">
+				<DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700">
+					<DialogTitle className="flex items-center gap-2 text-lg font-bold">
+						<Package className="text-primary" size={20} />
+						{title}
+					</DialogTitle>
+					<DialogDescription className="sr-only">{title}</DialogDescription>
+				</DialogHeader>
+				<div className="p-6 overflow-y-auto max-h-[calc(90vh-100px)] space-y-4 bg-white dark:bg-slate-900">
+					{loading ? (
+						<div className="flex items-center justify-center gap-2 py-12 text-slate-500">
+							<Loader2 className="h-5 w-5 animate-spin" />
+							{t("common.loading")}
+						</div>
+					) : !orders?.length ? (
+						<div className="py-10 text-center text-slate-500">{t("table.productOrdersEmpty")}</div>
+					) : (
+						orders.map((ord) => {
+							const ship = ord.shipments?.[0];
+							const shipLabel = ship?.unifiedStatus
+								? to(`trackingStatus.${ship.unifiedStatus}`)
+								: ship?.status
+									? to(`shipmentStatuses.${ship.status}`)
+									: "—";
+							return (
+								<div
+									key={ord.id}
+									className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3 bg-slate-50/50 dark:bg-slate-950/30"
+								>
+									<div className="flex flex-wrap items-center justify-between gap-2">
+										<div className="font-semibold text-slate-900 dark:text-slate-100">
+											#{ord.orderNumber}
+										</div>
+										<div className="text-sm text-slate-600 dark:text-slate-300">
+											<span className="text-slate-500">{t("table.productOrdersShipmentStatus")}:</span>{" "}
+											{shipLabel}
+										</div>
+									</div>
+									{ord.trackingNumber && (
+										<div className="text-sm font-mono text-slate-700 dark:text-slate-200">
+											{ord.trackingNumber}
+										</div>
+									)}
+									<div className="text-sm space-y-1 border-t border-slate-200/80 dark:border-slate-700 pt-2">
+										{(ord.items || []).map((it) => (
+											<div key={it.id} className="flex flex-wrap gap-x-2 gap-y-0.5">
+												<span className="font-medium">{it?.variant?.product?.name ?? "—"}</span>
+												<span className="text-slate-500">·</span>
+												<span className="font-mono text-xs">{it?.variant?.sku ?? "—"}</span>
+												<span className="text-slate-500">×{it.quantity}</span>
+											</div>
+										))}
+									</div>
+									<div className="flex justify-end text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+										{t("table.productOrdersTotal")}: {formatCurrency(ord.finalTotal ?? 0)}
+									</div>
+								</div>
+							);
+						})
+					)}
+				</div>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
 export default function useProductsTab({ searchDebounced, filters, filtersOpen, onAskDelete, onOpenView, onExportRequest, activetab, selectedProducts = [], setSelectedProducts }) {
 	const router = useRouter();
 	const t = useTranslations("products");
@@ -44,6 +118,39 @@ export default function useProductsTab({ searchDebounced, filters, filtersOpen, 
 	});
 
 	const [printModal, setPrintModal] = useState({ open: false, product: null });
+
+	const [productOrdersModal, setProductOrdersModal] = useState({
+		open: false,
+		title: "",
+		loading: false,
+		orders: [],
+	});
+
+	const openProductOrders = useCallback(
+		async (product, statusCode) => {
+			const titleKey =
+				statusCode === "shipped"
+					? "productOrdersModalTitleShipped"
+					: "productOrdersModalTitleDelivered";
+			setProductOrdersModal({
+				open: true,
+				title: t(`table.${titleKey}`),
+				loading: true,
+				orders: [],
+			});
+			try {
+				const res = await api.get("/orders", {
+					params: { productId: product.id, status: statusCode, limit: 50, page: 1 },
+				});
+				const rec = Array.isArray(res.data?.records) ? res.data.records : [];
+				setProductOrdersModal((m) => ({ ...m, loading: false, orders: rec }));
+			} catch (e) {
+				toast.error(normalizeAxiosError(e));
+				setProductOrdersModal((m) => ({ ...m, loading: false, orders: [] }));
+			}
+		},
+		[t]
+	);
 
 	const toggleProduct = (id) => {
 		if (!setSelectedProducts) return;
@@ -157,60 +264,134 @@ export default function useProductsTab({ searchDebounced, filters, filtersOpen, 
 			// { key: "id", header: t("table.id"), className: "font-semibold text-primary w-[80px]" },
 			{ key: "name", header: t("table.name"), className: "text-gray-700 dark:text-slate-200 font-semibold min-w-[200px]" },
 			{
-				key: "stockCount",
-				header: t("table.totalStock"),
+				key: "totalStock",
+				header: t("stats.totalStock"),
 				className: "min-w-[120px]",
 				cell: (row) => {
-					const total = (row?.skus || []).reduce((sum, s) => sum + (s.stockOnHand || 0), 0);
-					return (
-						<Badge
-							className={cn(
-								"rounded-full font-semibold",
-								total > 0 ? "bg-green-100 text-green-700 border border-green-200" : "bg-gray-100 text-gray-600 border border-gray-200"
-							)}
-						>
-							{total} {t("table.items")}
-						</Badge>
-					);
-				}
+					const s = row.stockSummary;
+					if (!s) return <span className="text-slate-400 text-xs">{na}</span>;
+					const pur = Number(s.purchases?.acceptedQuantity ?? 0);
+					const ret = Number(s.purchaseReturns?.acceptedReturnedQuantity ?? 0);
+					return <span className="font-semibold tabular-nums text-slate-700 dark:text-slate-200">{pur - ret}</span>;
+				},
+			},
+
+			{
+				key: "availableItems",
+				header: t("stats.availableItems"),
+				className: "min-w-[120px]",
+				cell: (row) => {
+					const s = row.stockSummary;
+					if (!s) return <span className="text-slate-400 text-xs">{na}</span>;
+					const oh = Number(s.inventory?.totalOnHand ?? 0);
+					return <span className="font-medium tabular-nums">{oh}</span>;
+				},
 			},
 			{
-				key: "reservedCount",
-				header: t("table.totalReserved"),
-				className: "min-w-[120px]",
+				key: "withShippingCompanies",
+				header: t("stats.withShippingCompanies"),
+				className: "min-w-[140px]",
 				cell: (row) => {
-					const total = (row?.skus || []).reduce((sum, s) => sum + (Number(s?.reserved) || 0), 0);
-					return (
-						<Badge
-							className={cn(
-								"rounded-full font-semibold",
-								total > 0 ? "bg-amber-100 text-amber-700 border border-amber-200" : "bg-gray-100 text-gray-600 border border-gray-200"
-							)}
-						>
-							{total} {t("table.items")}
-						</Badge>
-					);
-				}
+					const s = row.stockSummary;
+					if (!s) return <span className="text-slate-400 text-xs">{na}</span>;
+					const inTr = Number(s.orders?.inTransitQuantity ?? 0);
+					return <span className="font-medium tabular-nums text-blue-600 dark:text-blue-400">{inTr}</span>;
+				},
 			},
 			{
-				key: "availableCount",
-				header: t("table.totalAvailable"),
+				key: "soldPieces",
+				header: t("stats.soldPieces"),
 				className: "min-w-[120px]",
 				cell: (row) => {
-					const total = (row?.skus || []).reduce((sum, s) => sum + (Number(s?.available) || 0), 0);
-					return (
-						<Badge
-							className={cn(
-								"rounded-full font-semibold",
-								total > 0 ? "bg-blue-100 text-blue-700 border border-blue-200" : "bg-gray-100 text-gray-600 border border-gray-200"
-							)}
-						>
-							{total} {t("table.items")}
-						</Badge>
-					);
-				}
+					const s = row.stockSummary;
+					if (!s) return <span className="text-slate-400 text-xs">{na}</span>;
+					const sold = Number(s.orders?.soldQuantity ?? 0);
+					return <span className="font-medium tabular-nums text-emerald-600 dark:text-emerald-400">{sold}</span>;
+				},
 			},
+			{
+				key: "reservedItems",
+				header: t("stats.reservedItems"),
+				className: "min-w-[120px]",
+				cell: (row) => {
+					const s = row.stockSummary;
+					if (!s) return <span className="text-slate-400 text-xs">{na}</span>;
+					const resv = Number(s.inventory?.reserved ?? 0);
+					return <span className="font-medium tabular-nums text-amber-600 dark:text-amber-400">{resv}</span>;
+				},
+			},
+			{
+				key: "remainingStock",
+				header: t("stats.remaingStock"),
+				className: "min-w-[120px]",
+				cell: (row) => {
+					const s = row.stockSummary;
+					if (!s) return <span className="text-slate-400 text-xs">{na}</span>;
+					const oh = Number(s.inventory?.totalOnHand ?? 0);
+					const inTr = Number(s.orders?.inTransitQuantity ?? 0);
+					return <span className="font-semibold tabular-nums text-slate-700 dark:text-slate-200">{inTr + oh}</span>;
+				},
+			},
+
 			{ key: "mainImage", header: t("table.mainImage"), className: "w-[100px]", type: "img" },
+			{
+				key: "shippedTracking",
+				header: t("table.ordersShipped"),
+				className: "w-[80px]",
+				cell: (row) => {
+					const s = row.stockSummary;
+					const shippedCount = s?.orders?.inTransitQuantity ?? 0;
+
+					return (
+						<ActionButtons
+							row={row}
+							actions={[
+								{
+									icon: (
+										<div className="flex items-center gap-1.5">
+											<Truck className="h-4 w-4" />
+											<span className="text-xs font-semibold tabular-nums">{shippedCount}</span>
+										</div>
+									),
+									size: "xl",
+									tooltip: `${t("table.ordersShipped")} (${shippedCount})`,
+									onClick: (r) => openProductOrders(r, "shipped"),
+									variant: "outline",
+								}
+							]}
+						/>
+					);
+				},
+			},
+			{
+				key: "deliveredTracking",
+				header: t("table.ordersDelivered"),
+				className: "w-[80px]",
+				cell: (row) => {
+					const s = row.stockSummary;
+					const deliveredCount = s?.orders?.soldQuantity ?? 0;
+
+					return (
+						<ActionButtons
+							row={row}
+							actions={[
+								{
+									icon: (
+										<div className="flex items-center gap-1.5">
+											<CheckCircle2 className="h-4 w-4 text-emerald-600" />
+											<span className="text-xs font-semibold tabular-nums text-emerald-600">{deliveredCount}</span>
+										</div>
+									),
+									size: "xl",
+									tooltip: `${t("table.ordersDelivered")} (${deliveredCount})`,
+									onClick: (r) => openProductOrders(r, "delivered"),
+									variant: "outline",
+								}
+							]}
+						/>
+					);
+				},
+			},
 			{ key: "images", header: t("table.imagesCount"), className: "w-[100px]", type: "imgs" },
 			// { 
 			// 	key: "slug", 
@@ -276,7 +457,7 @@ export default function useProductsTab({ searchDebounced, filters, filtersOpen, 
 				className: "min-w-[100px]",
 				cell: (row) => (
 					<div className="flex items-center gap-1 text-green-600 dark:text-green-400 font-semibold">
-						{row.wholesalePrice != undefined && row.wholesalePrice != null ?  formatCurrency(row.wholesalePrice || 0) : "—"}
+						{row.wholesalePrice != undefined && row.wholesalePrice != null ? formatCurrency(row.wholesalePrice || 0) : "—"}
 					</div>
 				)
 			},
@@ -366,9 +547,9 @@ export default function useProductsTab({ searchDebounced, filters, filtersOpen, 
 				)
 			}
 		];
-	}, [router, t, onAskDelete, onOpenView, formatCurrency]);
+	}, [router, t, onAskDelete, onOpenView, formatCurrency, activetab, pager.per_page, selectedProducts, openProductOrders]);
 
-	return { loading, pager, columns, fetchData, buildQueryParams, printModal, setPrintModal };
+	return { loading, pager, columns, fetchData, buildQueryParams, printModal, setPrintModal, productOrdersModal, setProductOrdersModal };
 }
 
 export function SkuPrintModal({ open, onClose, product }) {

@@ -9203,13 +9203,24 @@
         "responseRate": "معدل الاستجابة",
         "conversionRate": "معدل التحويل",
         "avgResponseTime": "متوسط وقت الاستجابة",
-        "blockRate": "معدل الحظر / الشكاوى"
+        "blockRate": "معدل الحظر / الشكاوى",
+        "totalAccounts": "إجمالي الحسابات"
       },
       "toolbar": {
-        "searchPlaceholder": "بحث بالاسم أو الرقم...",
+        "searchPlaceholder": "بحث بالاسم أو الرقم أو معرف WABA أو معرف رقم الهاتف...",
         "filter": "تصفية",
         "export": "تصدير",
         "addAccount": "إضافة حساب"
+      },
+      "filters": {
+        "apply": "تطبيق",
+        "isActive": "الحالة",
+        "isActivePlaceholder": "كل الحالات",
+        "isActiveAll": "الكل",
+        "isActiveActive": "نشط فقط",
+        "isActiveInactive": "معطل فقط",
+        "startDate": "تاريخ الإنشاء من",
+        "endDate": "تاريخ الإنشاء إلى"
       },
       "table": {
         "name": "اسم الحساب",
@@ -9219,7 +9230,7 @@
         "active": "نشط",
         "disabled": "معطل",
         "actions": "الإجراءات",
-        "empty": "لم يتم العور على حسابات واتساب"
+        "empty": "لم يتم العثور على حسابات واتساب"
       },
       "status": {
         "connected": "متصل",
@@ -9230,13 +9241,29 @@
         "enable": "تفعيل",
         "disable": "تعطيل",
         "delete": "حذف الربط",
-        "confirmDelete": "هل أنت متأكد من حذف هذا الربط؟"
+        "confirmDelete": "هل أنت متأكد من حذف هذا الربط؟",
+        "openSettings": "الإعدادات"
+      },
+      "delete": {
+        "title": "حذف حساب واتساب",
+        "description": "سيتم إزالة الربط من مساحة العمل. يمكنك إعادة ربط الحساب لاحقاً عند الحاجة."
+      },
+      "toggle": {
+        "enableTitle": "تفعيل هذا الحساب؟",
+        "enableDescription": "عند التفعيل يمكن استخدام هذا الرقم لرسائل الواتساب داخل النظام.",
+        "disableTitle": "تعطيل هذا الحساب؟",
+        "disableDescription": "عند التعطيل لن يُستخدم هذا الرقم لإجراءات الواتساب الصادرة حتى تعيد تفعيله."
+      },
+      "settingsDialog": {
+        "title": "إعدادات الواتساب"
       },
       "messages": {
         "updateSuccess": "تم تحديث حالة الحساب بنجاح",
         "deleteSuccess": "تم حذف ربط الواتساب بنجاح",
         "exportStarted": "جاري تصدير بيانات الحسابات...",
-        "fetchFailed": "فشل في تحميل حسابات الواتساب"
+        "exportSuccess": "تم تنزيل الملف بنجاح",
+        "fetchFailed": "فشل في تحميل حسابات الواتساب",
+        "facebookSdkNotInitialized": "لم يُحمّل Facebook SDK بعد. حدّث الصفحة ثم أعد المحاولة."
       }
     },
     "templates": {
@@ -9249,7 +9276,20 @@
       "preview": {
         "title": "معاينة القالب",
         "showExamples": "عرض الأمثلة",
-        "showTemplate": "عرض القالب"
+        "showTemplate": "عرض القالب",
+        "bodyPlaceholder": "سيظهر نص الرسالة هنا...",
+        "variablesTab": "المتغيرات",
+        "examplesTab": "أمثلة",
+        "seeAllOptions": "عرض كل الخيارات",
+        "callPermissionTitle": "هل يمكن لهذا النشاط الاتصال بك؟",
+        "callPermissionSubtitle": "يمكنك تغيير تفضيلك في أي وقت من ملف النشاط التجاري.",
+        "callPermissionChoose": "اختر التفضيل",
+        "callPermissionAlways": "السماح بالاتصال دائماً",
+        "callPermissionTemporary": "السماح بالاتصال مؤقتاً",
+        "callPermissionNotNow": "ليس الآن",
+        "callBubbleHeading": "هل يمكن لهذا النشاط الاتصال بك؟",
+        "callBubbleBody": "يمكنك تغيير تفضيلك في أي وقت من ملف النشاط التجاري.",
+        "callBubbleChoose": "اختر التفضيل"
       },
       "stats": {
         "total": "إجمالي القوالب",
@@ -9278,11 +9318,15 @@
         "utility": "الخدمات"
       },
       "statuses": {
+        "pending": "قيد الانتظار",
         "in_review": "قيد المراجعة",
         "rejected": "مرفوض",
         "approved": "معتمد",
+        "archived": "مؤرشف",
+        "unarchived": "غير مؤرشف",
         "paused": "متوقف مؤقتاً",
         "disabled": "معطل",
+        "locked": "مقفل",
         "appeal_requested": "تم طلب استئناف",
         "pending_deletion": "قيد الحذف"
       },
@@ -9306,8 +9350,56 @@
         "category": "الفئة",
         "language": "اللغة"
       },
+      "form": {
+        "breadcrumbs": {
+          "create": "إنشاء قالب",
+          "edit": "تعديل قالب"
+        },
+        "submitCreate": "إرسال للمراجعة",
+        "submitUpdate": "حفظ التغييرات",
+        "accountLabel": "حساب واتساب",
+        "accountPlaceholder": "اختر الحساب",
+        "internalTemplates": "قوالب النظام",
+        "importMeta": "استيراد من Meta",
+        "validation": {
+          "accountRequired": "يجب اختيار حساب واتساب",
+          "accountIdInvalid": "اختر حساباً صالحاً",
+          "nameRequired": "اسم القالب مطلوب",
+          "nameMax": "الاسم يجب ألا يتجاوز {max} حرفاً",
+          "categoryRequired": "الفئة مطلوبة",
+          "subcategoryRequired": "نوع القالب مطلوب",
+          "languageInvalid": "اللغة يجب أن تكون العربية أو الإنجليزية",
+          "headerTextMax": "نص الرأس يجب ألا يتجاوز 60 حرفاً",
+          "headerVarMax": "يُسمح بمتغير واحد فقط في الرأس",
+          "bodyRequired": "نص الرسالة مطلوب",
+          "bodyMax": "النص يجب ألا يتجاوز {max} حرفاً",
+          "bodyVarEdges": "لا يمكن أن تبدأ الرسالة أو تنتهي بمتغير",
+          "bodyVarDensity": "النص قصير جداً بالنسبة لعدد المتغيرات",
+          "footerMax": "التذييل يجب ألا يتجاوز 60 حرفاً",
+          "buttonsMax": "يُسمح بحد أقصى 10 أزرار",
+          "buttonTypeInvalid": "نوع الزر غير صالح",
+          "buttonTextRequired": "نص الزر مطلوب",
+          "buttonTextMax": "نص الزر يجب ألا يتجاوز 25 حرفاً",
+          "buttonUrlInvalid": "أدخل رابطاً صالحاً",
+          "visitWebsiteUrlRequired": "الرابط مطلوب لأزرار الموقع",
+          "phoneButtonNumberRequired": "رقم الهاتف مطلوب لأزرار الاتصال",
+          "whatsappCallDaysRequired": "مدة النشاط (1–30 يوماً) مطلوبة لأزرار مكالمة واتساب",
+          "activeForDaysMin": "يوم واحد على الأقل",
+          "activeForDaysMax": "30 يوماً كحد أقصى",
+          "mediaHeaderFileRequired": "ارفع ملفاً لهذا نوع الرأس (صورة أو فيديو أو PDF)",
+          "mediaHeaderMustReupload": "اختر ملف الرأس من جديد أو احتفظ بالوسائط المحفوظة مسبقاً"
+        }
+      },
       "messages": {
-        "exportStarted": "جاري تصدير القوالب..."
+        "exportStarted": "جاري تصدير القوالب...",
+        "exportSuccess": "تم تنزيل الملف بنجاح",
+        "deleteSuccess": "تم حذف القالب بنجاح",
+        "fetchFailed": "فشل تحميل القوالب",
+        "createSuccess": "تم إنشاء القالب وإرساله للمراجعة",
+        "updateSuccess": "تم تحديث القالب بنجاح",
+        "saveError": "تعذر حفظ القالب",
+        "loadingTemplate": "جاري تحميل القالب…",
+        "templateNotFound": "القالب غير موجود"
       }
     }
   }

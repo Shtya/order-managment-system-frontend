@@ -9165,13 +9165,24 @@
         "responseRate": "Response Rate",
         "conversionRate": "Conversion Rate",
         "avgResponseTime": "Avg Response Time",
-        "blockRate": "Block / Complaint Rate"
+        "blockRate": "Block / Complaint Rate",
+        "totalAccounts": "Total accounts"
       },
       "toolbar": {
-        "searchPlaceholder": "Search by name or number...",
+        "searchPlaceholder": "Search by name, number, WABA ID, or phone number ID...",
         "filter": "Filter",
         "export": "Export",
         "addAccount": "Add Account"
+      },
+      "filters": {
+        "apply": "Apply",
+        "isActive": "Status",
+        "isActivePlaceholder": "All statuses",
+        "isActiveAll": "All",
+        "isActiveActive": "Active only",
+        "isActiveInactive": "Inactive only",
+        "startDate": "Created from",
+        "endDate": "Created to"
       },
       "table": {
         "name": "Account Name",
@@ -9192,13 +9203,29 @@
         "enable": "Enable",
         "disable": "Disable",
         "delete": "Delete Connection",
-        "confirmDelete": "Are you sure you want to delete this connection?"
+        "confirmDelete": "Are you sure you want to delete this connection?",
+        "openSettings": "Settings"
+      },
+      "delete": {
+        "title": "Delete WhatsApp account",
+        "description": "This removes the account from your workspace. You can connect it again later if needed."
+      },
+      "toggle": {
+        "enableTitle": "Enable this account?",
+        "enableDescription": "When active, this number can be used for WhatsApp messaging in the system.",
+        "disableTitle": "Disable this account?",
+        "disableDescription": "When disabled, this number will not be used for outgoing WhatsApp actions until you enable it again."
+      },
+      "settingsDialog": {
+        "title": "WhatsApp settings"
       },
       "messages": {
         "updateSuccess": "Account status updated successfully",
         "deleteSuccess": "WhatsApp connection deleted successfully",
         "exportStarted": "Exporting account data...",
-        "fetchFailed": "Failed to load WhatsApp accounts"
+        "exportSuccess": "File downloaded successfully",
+        "fetchFailed": "Failed to load WhatsApp accounts",
+        "facebookSdkNotInitialized": "Facebook SDK is not ready. Refresh the page and try again."
       }
     },
     "templates": {
@@ -9211,7 +9238,20 @@
       "preview": {
         "title": "Template preview",
         "showExamples": "Show Examples",
-        "showTemplate": "Show Template"
+        "showTemplate": "Show Template",
+        "bodyPlaceholder": "Your message body will appear here.",
+        "variablesTab": "Variables",
+        "examplesTab": "Examples",
+        "seeAllOptions": "See all options",
+        "callPermissionTitle": "Can this business call you?",
+        "callPermissionSubtitle": "You can update your preference anytime in the business profile.",
+        "callPermissionChoose": "Choose preference",
+        "callPermissionAlways": "Always allow calls",
+        "callPermissionTemporary": "Temporarily allow calls",
+        "callPermissionNotNow": "Not now",
+        "callBubbleHeading": "Can this business call you?",
+        "callBubbleBody": "You can update your preference anytime in the business profile.",
+        "callBubbleChoose": "Choose preference"
       },
       "stats": {
         "total": "Total Templates",
@@ -9240,11 +9280,15 @@
         "utility": "Utility"
       },
       "statuses": {
+        "pending": "Pending",
         "in_review": "In-Review",
         "rejected": "Rejected",
         "approved": "Approved",
+        "archived": "Archived",
+        "unarchived": "Unarchived",
         "paused": "Paused",
         "disabled": "Disabled",
+        "locked": "Locked",
         "appeal_requested": "Appeal Requested",
         "pending_deletion": "Pending Deletion"
       },
@@ -9268,8 +9312,56 @@
         "category": "Category",
         "language": "Language"
       },
+      "form": {
+        "breadcrumbs": {
+          "create": "Create template",
+          "edit": "Edit template"
+        },
+        "submitCreate": "Submit for review",
+        "submitUpdate": "Save changes",
+        "accountLabel": "WhatsApp account",
+        "accountPlaceholder": "Select an account",
+        "internalTemplates": "System templates",
+        "importMeta": "Import from Meta",
+        "validation": {
+          "accountRequired": "WhatsApp account is required",
+          "accountIdInvalid": "Select a valid account",
+          "nameRequired": "Template name is required",
+          "nameMax": "Name must be at most {max} characters",
+          "categoryRequired": "Category is required",
+          "subcategoryRequired": "Template type is required",
+          "languageInvalid": "Language must be Arabic or English",
+          "headerTextMax": "Header text must be at most 60 characters",
+          "headerVarMax": "At most one variable is allowed in the header",
+          "bodyRequired": "Body text is required",
+          "bodyMax": "Body must be at most {max} characters",
+          "bodyVarEdges": "The message cannot start or end with a variable",
+          "bodyVarDensity": "The text is too short for the number of variables used",
+          "footerMax": "Footer must be at most 60 characters",
+          "buttonsMax": "At most 10 buttons are allowed",
+          "buttonTypeInvalid": "Invalid button type",
+          "buttonTextRequired": "Button label is required",
+          "buttonTextMax": "Button label must be at most 25 characters",
+          "buttonUrlInvalid": "Enter a valid URL",
+          "visitWebsiteUrlRequired": "URL is required for website buttons",
+          "phoneButtonNumberRequired": "Phone number is required for call buttons",
+          "whatsappCallDaysRequired": "Active days (1–30) are required for WhatsApp call buttons",
+          "activeForDaysMin": "Must be at least 1 day",
+          "activeForDaysMax": "Must be at most 30 days",
+          "mediaHeaderFileRequired": "Upload a file for this header type (image, video, or PDF)",
+          "mediaHeaderMustReupload": "Choose a header file again or keep the existing saved media"
+        }
+      },
       "messages": {
-        "exportStarted": "Exporting templates data..."
+        "exportStarted": "Exporting templates data...",
+        "exportSuccess": "File downloaded successfully",
+        "deleteSuccess": "Template deleted successfully",
+        "fetchFailed": "Failed to load templates",
+        "createSuccess": "Template created and sent for review",
+        "updateSuccess": "Template updated successfully",
+        "saveError": "Could not save the template",
+        "loadingTemplate": "Loading template…",
+        "templateNotFound": "Template not found"
       }
     }
   }

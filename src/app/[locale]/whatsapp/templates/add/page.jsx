@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
 import {
     ChevronLeft,
     Megaphone,
@@ -31,10 +30,14 @@ import {
     Copy,
     Ban,
     Facebook,
-    Layout
+    Layout,
+    Loader2,
 } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/utils/cn";
+import { useTranslations } from "next-intl";
+import toast from "react-hot-toast";
+import api from "@/utils/api";
 
 // UI Components (adjust paths to match your project)
 import { Input } from "@/components/ui/input";
@@ -65,11 +68,23 @@ import {
     isCorrectVariableFormat
 } from "@/utils/whatsapp-healper";
 
-const MAX_BODY_LENGTH = 1024;
+import {
+    createTemplateFormSchema,
+    buildTemplateConfigPayload,
+    mapUiCategoryToApi,
+    mapUiSubToApi,
+    apiCategoryToUi,
+    apiSubToUiSub,
+    MAX_BODY_LENGTH,
+} from "./templateFormSchema";
+
+function normalizeAxiosError(err) {
+    const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
+    return Array.isArray(msg) ? msg.join(", ") : String(msg);
+}
 
 const hasInvalidVariablePlacement = (text = "") => {
     const trimmed = text.trim();
-
     return (
         trimmed.startsWith("{{") ||
         trimmed.endsWith("}}")
@@ -78,42 +93,13 @@ const hasInvalidVariablePlacement = (text = "") => {
 
 const hasTooManyVariablesForText = (text = "") => {
     const varCount = getVariableMatches(text)?.length;
-
     const words = text
         .trim()
         .split(/\s+/)
         .filter((w) => !isCorrectVariableFormat(w))
         .length;
-
     return words < (3 * varCount) + 1;
 };
-
-// 1. Validation Schema
-const schema = yup.object().shape({
-    name: yup.string().required("اسم القالب مطلوب"),
-    language: yup.string().required("اللغة مطلوبة"),
-    category: yup.string().required("الفئة مطلوبة"),
-    headerType: yup.string(),
-    headerText: yup.string().test("header-var-count", "يمكنك إضافة متغير واحد فقط في الرأس", (val) => {
-        if (!val) return true;
-        const matches = getVariableMatches(val);
-        return matches.length <= 1;
-    }),
-    bodyText: yup.string()
-        .required("نص الرسالة مطلوب")
-        .max(MAX_BODY_LENGTH, `لا يمكن أن يتجاوز النص ${MAX_BODY_LENGTH} حرفًا`)
-        .test(
-            "no-start-end-var",
-            "لا يمكن أن تبدأ الرسالة أو تنتهي بمتغير",
-            (val) => !hasInvalidVariablePlacement(val)
-        )
-        .test(
-            "min-words",
-            "النص قصير جدًا بالنسبة لعدد المتغيرات المستخدمة",
-            (val) => !hasTooManyVariablesForText(val)
-        ),
-    footerText: yup.string(),
-});
 
 const CATEGORIES = [
     {
@@ -182,19 +168,29 @@ const CATEGORIES = [
     }
 ];
 
-export default function CreateWhatsAppTemplatePage() {
-    // const t = useTranslations("whatsApp"); // Uncomment if using next-intl
+export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialTemplate }) {
     const router = useRouter();
+    const tForm = useTranslations("whatsApp.templates.form");
+    const tMsg = useTranslations("whatsApp.templates.messages");
+    const tTpl = useTranslations("whatsApp.templates");
     const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
     const textareaRef = useRef(null);
     const [variableSamples, setVariableSamples] = useState({ body: {}, header: {} });
     const [isMetaDialogOpen, setIsMetaDialogOpen] = useState(false);
     const [isInternalDialogOpen, setIsInternalDialogOpen] = useState(false);
+    const [headerMediaFile, setHeaderMediaFile] = useState(null);
+    const [accounts, setAccounts] = useState([]);
+    const [accountsLoading, setAccountsLoading] = useState(false);
 
-    const { control, handleSubmit, watch, setValue, setError, clearErrors, formState: { errors } } = useForm({
+    const isEdit = mode === "edit";
+
+    const schema = useMemo(() => createTemplateFormSchema(tForm, isEdit ? "edit" : "create"), [tForm, isEdit]);
+
+    const { control, handleSubmit, watch, setValue, setError, clearErrors, reset, formState: { errors, isSubmitting } } = useForm({
         resolver: yupResolver(schema),
-        mode: "onSubmit", // Only validate on submit by default
+        mode: "onSubmit",
         defaultValues: {
+            accountId: "",
             name: "",
             language: "ar",
             category: "MARKETING",
@@ -205,19 +201,88 @@ export default function CreateWhatsAppTemplatePage() {
             bodyText: "",
             footerText: "",
             buttons: [],
-            // Auth specific
             authMethod: "COPY_CODE",
             addSecurityRecommendation: false,
             addExpirationTime: false,
             expirationMinutes: 10,
-            // Validity period
             useCustomValidity: false,
             validityPeriod: "10m"
-        }
+        }   
     });
 
-    // Watch all form fields to feed into the live preview
+    console.log(errors);
+    const fetchAccounts = useCallback(async () => {
+        setAccountsLoading(true);
+        try {
+            const res = await api.get("/whatsapp-accounts", { params: { limit: 200, page: 1 } });
+            setAccounts(Array.isArray(res.data?.records) ? res.data.records : []);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setAccountsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!isEdit) fetchAccounts();
+    }, [isEdit, fetchAccounts]);
+
+    useEffect(() => {
+        if (!isEdit || !initialTemplate) return;
+        const tpl = initialTemplate;
+        const cfg = tpl.templateConfig || {};
+        const uiCat = apiCategoryToUi(tpl.category);
+        const uiSub = apiSubToUiSub(tpl.subCategory, tpl.category);
+        const body = cfg.bodyText || "";
+        const bodyMatches = getVariableMatches(body);
+        const headerMatches = getVariableMatches(cfg.headerText || "");
+        const newBodySamples = {};
+        bodyMatches.forEach((m) => {
+            const num = extractVariableNames(m)[0];
+            newBodySamples[num] = cfg.examples?.[num] ?? "";
+        });
+        const newHeaderSamples = {};
+        headerMatches.forEach((m) => {
+            const num = extractVariableNames(m)[0];
+            newHeaderSamples[num] = cfg.examples?.[num] ?? "";
+        });
+        setVariableSamples({ body: newBodySamples, header: newHeaderSamples });
+        const buttonsWithIds = (cfg.buttons || []).map((btn, i) => ({
+            ...btn,
+            id: btn.id || `btn-${i}-${Math.random().toString(36).slice(2, 9)}`,
+        }));
+        reset({
+            accountId: tpl.accountId || "",
+            name: tpl.name || "",
+            language: tpl.language || "ar",
+            category: uiCat,
+            subcategory: uiSub,
+            headerType: cfg.headerType || "NONE",
+            headerText: cfg.headerText || "",
+            headerUrl: cfg.headerUrl || "",
+            bodyText: body,
+            footerText: cfg.footerText || "",
+            buttons: buttonsWithIds,
+            authMethod: "COPY_CODE",
+            addSecurityRecommendation: false,
+            addExpirationTime: false,
+            expirationMinutes: 10,
+            useCustomValidity: false,
+            validityPeriod: "10m",
+        });
+        setHeaderMediaFile(null);
+    }, [isEdit, initialTemplate, reset]);
+
     const templateData = watch();
+
+    const previewHeaderUrl = useMemo(() => {
+        const u = templateData.headerUrl;
+        if (!u || String(u).startsWith("blob:") || String(u).startsWith("http")) return u;
+        const root = (process.env.NEXT_PUBLIC_BASE_URL || "")
+            .replace(/\/api\/v1\/?$/i, "")
+            .replace(/\/$/, "");
+        return `${root}/${String(u).replace(/^\/+/, "")}`;
+    }, [templateData.headerUrl]);
 
     const headerHasVariable = React.useMemo(() => {
         const matches = getVariableMatches(templateData.headerText || "");
@@ -228,14 +293,13 @@ export default function CreateWhatsAppTemplatePage() {
         setValue("headerType", type);
         setValue("headerText", "");
         setValue("headerUrl", "");
-
+        setHeaderMediaFile(null);
     };
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            // In a real app, you might upload this to a server/S3
-            // For preview, we create a local object URL
+            setHeaderMediaFile(file);
             const url = URL.createObjectURL(file);
             setValue("headerUrl", url);
         }
@@ -287,13 +351,13 @@ export default function CreateWhatsAppTemplatePage() {
         if (hasInvalidVariablePlacement(text)) {
             setError("bodyText", {
                 type: "manual",
-                message: "لا يمكن أن تبدأ الرسالة أو تنتهي بمتغير"
+                message: tForm("validation.bodyVarEdges")
             });
             return false;
         } else if (hasTooManyVariablesForText(text)) {
             setError("bodyText", {
                 type: "manual",
-                message: "النص قصير جدًا بالنسبة لعدد المتغيرات المستخدمة"
+                message: tForm("validation.bodyVarDensity")
             });
             return false;
         } else {
@@ -423,9 +487,51 @@ export default function CreateWhatsAppTemplatePage() {
         return templateData.footerText;
     };
 
-    const onSubmit = (data) => {
-        console.log("Submitting for review:", data);
-        // api.post('/whatsapp/templates', data)...
+    const onSubmit = async (data) => {
+        const ht = data.headerType;
+        if (ht && ["IMAGE", "VIDEO", "DOCUMENT"].includes(ht)) {
+            const blob = data.headerUrl && String(data.headerUrl).startsWith("blob:");
+            if (!isEdit && !headerMediaFile) {
+                toast.error(tForm("validation.mediaHeaderFileRequired"));
+                return;
+            }
+            if (isEdit && blob && !headerMediaFile) {
+                toast.error(tForm("validation.mediaHeaderMustReupload"));
+                return;
+            }
+        }
+
+        try {
+            if (isEdit) {
+                let forcedUrl;
+                if (headerMediaFile) {
+                    const fdUp = new FormData();
+                    fdUp.append("headerMedia", headerMediaFile);
+                    const up = await api.post("/whatsapp-templates/upload-header-media", fdUp);
+                    forcedUrl = up.data?.headerUrl;
+                }
+                const templateConfig = buildTemplateConfigPayload(data, variableSamples, forcedUrl);
+                await api.patch(`/whatsapp-templates/${templateId}`, { templateConfig });
+                toast.success(tMsg("updateSuccess"));
+            } else {
+                const fd = new FormData();
+                fd.append("accountId", data.accountId);
+                fd.append("name", String(data.name || "").trim().toLowerCase().replace(/[^a-z0-9_]/g, "_"));
+                fd.append("category", mapUiCategoryToApi(data.category));
+                fd.append("subCategory", mapUiSubToApi(data.subcategory));
+                fd.append("language", data.language);
+                const templateConfig = buildTemplateConfigPayload(data, variableSamples);
+                fd.append("templateConfig", JSON.stringify(templateConfig));
+                if (headerMediaFile) {
+                    fd.append("headerMedia", headerMediaFile);
+                }
+                await api.post("/whatsapp-templates", fd);
+                toast.success(tMsg("createSuccess"));
+            }
+            router.push("/whatsapp/templates");
+        } catch (e) {
+            toast.error(normalizeAxiosError(e) || tMsg("saveError"));
+        }
     };
 
     const handleSubcategoryChange = (subId) => {
@@ -440,7 +546,7 @@ export default function CreateWhatsAppTemplatePage() {
             setValue("buttons", []);
         }
 
-        if (subId === "UTILITY_CALL_PERMISSIONS" || subId === "MARKETING_CALL_PERMISSIONSS") {
+        if (subId === "UTILITY_CALL_PERMISSIONS" || subId === "MARKETING_CALL_PERMISSIONS") {
             setValue("headerType", "NONE");
             setValue("headerText", "");
             setValue("headerUrl", "");
@@ -529,37 +635,43 @@ export default function CreateWhatsAppTemplatePage() {
                 <PageHeader
                     stacky
                     breadcrumbs={[
-                        { name: "الرئيسية", href: "/dashboard" },
-                        { name: "القوالب", href: "/whatsapp/templates" },
-                        { name: "إنشاء قالب" } // Current page
+                        { name: tTpl("breadcrumb.home"), href: "/dashboard" },
+                        { name: tTpl("breadcrumb.whatsapp"), href: "/whatsapp" },
+                        { name: tTpl("breadcrumb.templates"), href: "/whatsapp/templates" },
+                        { name: isEdit ? tForm("breadcrumbs.edit") : tForm("breadcrumbs.create") }
                     ]}
                     buttons={
                         <>
+                            {!isEdit && (
+                                <>
+                                    <Button_
+                                        size="sm"
+                                        label={tForm("internalTemplates")}
+                                        tone="secondary"
+                                        variant="outline"
+                                        onClick={() => setIsInternalDialogOpen(true)}
+                                        icon={<Layout size={18} />}
+                                        className="border-slate-200 dark:border-slate-800"
+                                    />
+                                    <Button_
+                                        size="sm"
+                                        label={tForm("importMeta")}
+                                        tone="secondary"
+                                        variant="outline"
+                                        onClick={() => setIsMetaDialogOpen(true)}
+                                        icon={<Facebook size={18} />}
+                                        className="border-slate-200 dark:border-slate-800"
+                                    />
+                                </>
+                            )}
                             <Button_
                                 size="sm"
-                                label="قوالب النظام"
-                                tone="secondary"
-                                variant="outline"
-                                onClick={() => setIsInternalDialogOpen(true)}
-                                icon={<Layout size={18} />}
-                                className="border-slate-200 dark:border-slate-800"
-                            />
-                            <Button_
-                                size="sm"
-                                label="استيراد من Meta"
-                                tone="secondary"
-                                variant="outline"
-                                onClick={() => setIsMetaDialogOpen(true)}
-                                icon={<Facebook size={18} />}
-                                className="border-slate-200 dark:border-slate-800"
-                            />
-                            <Button_
-                                size="sm"
-                                label={"إرسال للمراجعة"}
+                                label={isEdit ? tForm("submitUpdate") : tForm("submitCreate")}
                                 tone="primary"
                                 variant="solid"
+                                disabled={isSubmitting}
                                 onClick={handleSubmit(onSubmit)}
-                                icon={<Check size={18} />} // Added an icon to match your target theme
+                                icon={isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
                             />
                         </>
                     }
@@ -578,11 +690,39 @@ export default function CreateWhatsAppTemplatePage() {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+                                {!isEdit && (
+                                    <div className="space-y-1.5 md:col-span-2">
+                                        <Label>{tForm("accountLabel")}</Label>
+                                        <Controller
+                                            name="accountId"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <Select onValueChange={field.onChange} value={field.value || ""}>
+                                                    <SelectTrigger disabled={accountsLoading}>
+                                                        <SelectValue placeholder={tForm("accountPlaceholder")} />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {accounts.map((a) => (
+                                                            <SelectItem key={a.id} value={a.id}>
+                                                                {a.name}
+                                                                {a.mobileNumber ? ` (${a.mobileNumber})` : ""}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            )}
+                                        />
+                                        {errors.accountId && (
+                                            <p className="text-xs text-red-500">{errors.accountId.message}</p>
+                                        )}
+                                    </div>
+                                )}
                                 <div className="space-y-1.5">
                                     <Label>اسم القالب</Label>
                                     <Input
                                         placeholder="مثال: order_confirmation_v1"
                                         className="lowercase"
+                                        disabled={isEdit}
                                         onChange={(e) => setValue("name", e.target.value.replace(/[^a-z0-9_]/g, '_'))}
                                         value={templateData.name}
                                     />
@@ -594,7 +734,7 @@ export default function CreateWhatsAppTemplatePage() {
                                         name="language"
                                         control={control}
                                         render={({ field }) => (
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isEdit}>
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="اختر اللغة" />
                                                 </SelectTrigger>
@@ -611,13 +751,14 @@ export default function CreateWhatsAppTemplatePage() {
                             <div className="flex flex-col gap-2">
 
                                 <Label className="mb-3 block text-base mb-1.5">اختر الفئة</Label>
-                                <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-950 rounded-xl mb-6">
+                                <div className={cn("flex gap-2 p-1 bg-slate-100 dark:bg-slate-950 rounded-xl mb-6", isEdit && "opacity-60 pointer-events-none")}>
                                     {CATEGORIES.map((cat) => {
                                         const isSelected = templateData.category === cat.id;
                                         return (
                                             <button
                                                 key={cat.id}
                                                 type="button"
+                                                disabled={isEdit}
                                                 onClick={() => handleCategoryChange(cat.id)}
                                                 className={cn(
                                                     "flex-1 py-2.5 px-4 rounded-lg text-sm font-bold transition-all duration-200",
@@ -640,9 +781,10 @@ export default function CreateWhatsAppTemplatePage() {
                                     return (
                                         <div
                                             key={sub.id}
-                                            onClick={() => handleSubcategoryChange(sub.id)}
+                                            onClick={() => !isEdit && handleSubcategoryChange(sub.id)}
                                             className={cn(
-                                                "cursor-pointer rounded-md p-4 border-2 transition-all duration-200 flex items-start gap-4",
+                                                "rounded-md p-4 border-2 transition-all duration-200 flex items-start gap-4",
+                                                isEdit ? "opacity-60 cursor-default" : "cursor-pointer",
                                                 isSubSelected
                                                     ? "border-primary bg-primary/5 shadow-sm"
                                                     : "border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 bg-white dark:bg-slate-950"
@@ -741,7 +883,10 @@ export default function CreateWhatsAppTemplatePage() {
                                             <MediaUpload
                                                 type={templateData.headerType}
                                                 url={templateData.headerUrl}
-                                                onUrlChange={(url) => setValue("headerUrl", url)}
+                                                onUrlChange={(url) => {
+                                                    setValue("headerUrl", url);
+                                                    if (!url) setHeaderMediaFile(null);
+                                                }}
                                                 onFileChange={handleFileChange}
                                             />
                                         )}
@@ -813,7 +958,7 @@ export default function CreateWhatsAppTemplatePage() {
                                                         <Picker
                                                             data={data}
                                                             onEmojiSelect={addEmoji}
-                                                            theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
+                                                            theme={document?.documentElement.classList.contains('dark') ? 'dark' : 'light'}
                                                         />
                                                     </PopoverContent>
                                                 </Popover>
@@ -1083,10 +1228,10 @@ export default function CreateWhatsAppTemplatePage() {
                                     <TemplatePreview
                                         template={{
                                             language: templateData.language,
-                                            subcategory: templateData.subcategory,
+                                            subCategory: templateData.subcategory,
                                             headerType: templateData.headerType,
                                             headerText: templateData.headerText,
-                                            headerUrl: templateData.headerUrl,
+                                            headerUrl: previewHeaderUrl,
                                             bodyText: getPreviewBody(),
                                             footerText: getPreviewFooter(),
                                             buttons: templateData.buttons,
@@ -1140,6 +1285,10 @@ export default function CreateWhatsAppTemplatePage() {
             </div>
         </>
     );
+}
+
+export default function CreateWhatsAppTemplatePage() {
+    return <WhatsAppTemplateFormPage mode="create" />;
 }
 
 // Small sub-component for buttons

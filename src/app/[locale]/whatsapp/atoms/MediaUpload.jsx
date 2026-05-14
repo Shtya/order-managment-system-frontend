@@ -7,11 +7,11 @@ import { cn } from "@/utils/cn";
 /**
  * Reusable Media Upload component for WhatsApp Template creation
  */
-export default function MediaUpload({ 
-    type = "IMAGE", 
-    url = "", 
-    onUrlChange, 
-    onFileChange 
+export default function MediaUpload({
+    type = "IMAGE",
+    url = "",
+    onUrlChange,
+    onFileChange
 }) {
     const fileInputRef = useRef(null);
 
@@ -21,13 +21,19 @@ export default function MediaUpload({
 
     const getAcceptType = () => {
         switch (type) {
-            case "IMAGE": return "image/*";
-            case "VIDEO": return "video/*";
-            case "DOCUMENT": return ".pdf,.doc,.docx";
-            default: return "*/*";
+            case "IMAGE":
+                return "image/jpeg,image/jpg,image/png";
+
+            case "VIDEO":
+                return "video/mp4";
+
+            case "DOCUMENT":
+                return "application/pdf";
+
+            default:
+                return "*/*";
         }
     };
-
     const getTypeName = () => {
         switch (type) {
             case "IMAGE": return "صورة";
@@ -61,7 +67,7 @@ export default function MediaUpload({
                                 </span>
                             </div>
                         )}
-                        
+
                         <div className="absolute top-3 right-3 flex gap-2">
                             <button
                                 type="button"
@@ -87,7 +93,7 @@ export default function MediaUpload({
                         <p className="text-xs text-slate-500 mb-6">
                             أقصى حجم للملف: 5 ميجابايت
                         </p>
-                        
+
                         <div className="flex gap-3">
                             <button
                                 type="button"

@@ -666,7 +666,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
     const schema = useMemo(() => {
         const shape = {
             name: yup.string().trim().required(t("validation.nameRequired")),
-            syncNewProducts: yup.boolean().default(true),
+            syncNewProducts: yup.boolean().default(false),
             storeUrl: yup.string().trim().url(t("validation.invalidUrl")).required(t("validation.storeUrlRequired")),
             isActive: yup.boolean().default(true),
         };
@@ -698,7 +698,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
             name: existingStore?.name || "",
             storeUrl: existingStore?.storeUrl || "",
             isActive: existingStore?.isActive ?? true,
-            syncNewProducts: existingStore?.syncNewProducts ?? true,
+            syncNewProducts: existingStore?.syncNewProducts ?? false,
         };
 
         if (config?.fields) {
@@ -749,7 +749,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
                     const baseValues = {
                         name: d.name || "",
                         storeUrl: d.storeUrl || "",
-                        syncNewProducts: d.syncNewProducts ?? true,
+                        syncNewProducts: d.syncNewProducts ?? false,
                         isActive: d.isActive ?? true,
                     };
 
@@ -780,7 +780,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
                 }
             })();
         } else {
-            reset({ name: "", storeUrl: "", isActive: true, syncNewProducts: true });
+            reset({ name: "", storeUrl: "", isActive: true, syncNewProducts: false });
             setMasks({});
             setSystemSecrets({});
         }

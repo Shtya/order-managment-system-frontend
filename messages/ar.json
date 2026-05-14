@@ -355,10 +355,10 @@
   "sidebar": {
     "stores": "المتاجر",
     "syncFailures": "أخطاء مزامنة المنتجات",
-    "administration": "الإدارة",
+    "administration": "المشتريات",
     "synchronization": "المزامنة",
     "safes": "الخزائن",
-    "finance": "المالية",
+    "finance": "الخطط والاشتراكات",
     "team": "الفريق",
     "locked": "مغلق",
     "subscription_required": "الاشتراك مطلوب",

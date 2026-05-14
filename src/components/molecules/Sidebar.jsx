@@ -612,28 +612,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
         { icon: Package, labelKey: "categories", permission: "categories.read", href: "/products/categories" },
       ],
     },
-    {
-      icon: Factory,
-      labelKey: "administration",
-      href: "/suppliers",
-      children: [
-        {
-          icon: Factory,
-          labelKey: "suppliers",
-          permission: "suppliers.read",
-          href: "/suppliers",
-        },
-        {
-          icon: FileText,
-          labelKey: "purchases",
-          permission: "purchases.read",
-          href: "/purchases",
-        },
-        { icon: PackagePlus, labelKey: "newPurchase", permission: "purchases.read", href: "/purchases/new" },
-        { icon: Undo2, labelKey: "purchasesReturn", permission: "purchase_returns.read", href: "/purchases/return" },
-        { icon: PackagePlus, labelKey: "newPurchaseReturn", permission: "purchase_returns.read", href: "/purchases/return/new" },
-      ],
-    },
+   
     {
       icon: Plug,
       labelKey: "synchronization",
@@ -733,6 +712,28 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           labelKey: "uncollectedOrders",
           href: "/orders/collections?tab=not_collected",
         },
+      ],
+    },
+     {
+      icon: Factory,
+      labelKey: "administration",
+      href: "/suppliers",
+      children: [
+        {
+          icon: Factory,
+          labelKey: "suppliers",
+          permission: "suppliers.read",
+          href: "/suppliers",
+        },
+        {
+          icon: FileText,
+          labelKey: "purchases",
+          permission: "purchases.read",
+          href: "/purchases",
+        },
+        { icon: PackagePlus, labelKey: "newPurchase", permission: "purchases.read", href: "/purchases/new" },
+        { icon: Undo2, labelKey: "purchasesReturn", permission: "purchase_returns.read", href: "/purchases/return" },
+        { icon: PackagePlus, labelKey: "newPurchaseReturn", permission: "purchase_returns.read", href: "/purchases/return/new" },
       ],
     },
     {

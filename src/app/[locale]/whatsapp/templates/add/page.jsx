@@ -77,6 +77,7 @@ import {
     apiSubToUiSub,
     MAX_BODY_LENGTH,
 } from "./templateFormSchema";
+import WhatsAppAccountSelect from "../../atoms/WhatsAppAccountSelect";
 
 function normalizeAxiosError(err) {
     const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -176,11 +177,10 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
     const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
     const textareaRef = useRef(null);
     const [variableSamples, setVariableSamples] = useState({ body: {}, header: {} });
+    const [variableSamplesErrors, setVariableSamplesErrors] = useState({ header: "", body: "" });
     const [isMetaDialogOpen, setIsMetaDialogOpen] = useState(false);
     const [isInternalDialogOpen, setIsInternalDialogOpen] = useState(false);
     const [headerMediaFile, setHeaderMediaFile] = useState(null);
-    const [accounts, setAccounts] = useState([]);
-    const [accountsLoading, setAccountsLoading] = useState(false);
 
     const isEdit = mode === "edit";
 
@@ -206,33 +206,17 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
             addExpirationTime: false,
             expirationMinutes: 10,
             useCustomValidity: false,
-            validityPeriod: "10m"
-        }   
-    });
-
-    console.log(errors);
-    const fetchAccounts = useCallback(async () => {
-        setAccountsLoading(true);
-        try {
-            const res = await api.get("/whatsapp-accounts", { params: { limit: 200, page: 1 } });
-            setAccounts(Array.isArray(res.data?.records) ? res.data.records : []);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setAccountsLoading(false);
+            validityPeriod: "10m",
+            otpCopyButtonText: "",
         }
-    }, []);
-
-    useEffect(() => {
-        if (!isEdit) fetchAccounts();
-    }, [isEdit, fetchAccounts]);
+    });
 
     useEffect(() => {
         if (!isEdit || !initialTemplate) return;
         const tpl = initialTemplate;
         const cfg = tpl.templateConfig || {};
         const uiCat = apiCategoryToUi(tpl.category);
-        const uiSub = apiSubToUiSub(tpl.subCategory, tpl.category);
+        const uiSub = apiSubToUiSub(tpl.subCategory, tpl.category, cfg);
         const body = cfg.bodyText || "";
         const bodyMatches = getVariableMatches(body);
         const headerMatches = getVariableMatches(cfg.headerText || "");
@@ -247,6 +231,7 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
             newHeaderSamples[num] = cfg.examples?.[num] ?? "";
         });
         setVariableSamples({ body: newBodySamples, header: newHeaderSamples });
+        setVariableSamplesErrors({ header: "", body: "" });
         const buttonsWithIds = (cfg.buttons || []).map((btn, i) => ({
             ...btn,
             id: btn.id || `btn-${i}-${Math.random().toString(36).slice(2, 9)}`,
@@ -263,12 +248,13 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
             bodyText: body,
             footerText: cfg.footerText || "",
             buttons: buttonsWithIds,
-            authMethod: "COPY_CODE",
-            addSecurityRecommendation: false,
-            addExpirationTime: false,
-            expirationMinutes: 10,
-            useCustomValidity: false,
-            validityPeriod: "10m",
+            authMethod: cfg.authMethod || "COPY_CODE",
+            addSecurityRecommendation: !!cfg.addSecurityRecommendation,
+            addExpirationTime: !!cfg.addExpirationTime,
+            expirationMinutes: cfg.expirationMinutes ?? 10,
+            useCustomValidity: cfg.useCustomValidity ?? false,
+            validityPeriod: cfg.validityPeriod ?? "10m",
+            otpCopyButtonText: cfg.otpCopyButtonText ?? "",
         });
         setHeaderMediaFile(null);
     }, [isEdit, initialTemplate, reset]);
@@ -294,6 +280,7 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
         setValue("headerText", "");
         setValue("headerUrl", "");
         setHeaderMediaFile(null);
+        setVariableSamplesErrors((e) => ({ ...e, header: "" }));
     };
 
     const handleFileChange = (e) => {
@@ -373,6 +360,9 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
             setValue("bodyText", normalized);
             updateSamples(normalized, "body");
             validateBody(normalized);
+            if (getVariableMatches(normalized).length === 0) {
+                setVariableSamplesErrors((err) => ({ ...err, body: "" }));
+            }
         }
     };
 
@@ -383,6 +373,9 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
             const normalized = normalizeVariables(val);
             setValue("headerText", normalized);
             updateSamples(normalized, 'header');
+            if (getVariableMatches(normalized).length === 0) {
+                setVariableSamplesErrors((err) => ({ ...err, header: "" }));
+            }
         }
     };
 
@@ -487,6 +480,29 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
         return templateData.footerText;
     };
 
+    const validateVariableSamplesForSubmit = (data) => {
+        const sections = activeSubcategory?.sections || [];
+        let headerErr = "";
+        let bodyErr = "";
+
+        if (sections.includes("header") && data.headerType === "TEXT") {
+            const nums = [...new Set(extractVariableNames(data.headerText || ""))];
+            if (nums.some((n) => !(variableSamples.header?.[n] ?? "").toString().trim())) {
+                headerErr = tForm("validation.variableSampleRequired");
+            }
+        }
+
+        if (sections.includes("body") && data.subcategory !== "AUTHENTICATION_OTP") {
+            const nums = [...new Set(extractVariableNames(data.bodyText || ""))];
+            if (nums.some((n) => !(variableSamples.body?.[n] ?? "").toString().trim())) {
+                bodyErr = tForm("validation.variableSampleRequired");
+            }
+        }
+
+        setVariableSamplesErrors({ header: headerErr, body: bodyErr });
+        return !headerErr && !bodyErr;
+    };
+
     const onSubmit = async (data) => {
         const ht = data.headerType;
         if (ht && ["IMAGE", "VIDEO", "DOCUMENT"].includes(ht)) {
@@ -499,6 +515,10 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
                 toast.error(tForm("validation.mediaHeaderMustReupload"));
                 return;
             }
+        }
+
+        if (!validateVariableSamplesForSubmit(data)) {
+            return;
         }
 
         try {
@@ -536,6 +556,7 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
 
     const handleSubcategoryChange = (subId) => {
         setValue("subcategory", subId);
+        setVariableSamplesErrors({ header: "", body: "" });
 
         // Specific logic for Authentication OTP
         if (subId === "AUTHENTICATION_OTP") {
@@ -560,6 +581,10 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
         setValue("category", catId);
         if (cat?.subcategories.length > 0) {
             handleSubcategoryChange(cat.subcategories[0].id);
+        }
+
+        if (catId === "MARKETING") {
+            setValue("useCustomValidity", false);
         }
     };
 
@@ -620,6 +645,7 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
 
         // 3. Clear any previous errors
         clearErrors();
+        setVariableSamplesErrors({ header: "", body: "" });
     };
 
     return (
@@ -692,24 +718,15 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
                                 {!isEdit && (
                                     <div className="space-y-1.5 md:col-span-2">
-                                        <Label>{tForm("accountLabel")}</Label>
                                         <Controller
                                             name="accountId"
                                             control={control}
                                             render={({ field }) => (
-                                                <Select onValueChange={field.onChange} value={field.value || ""}>
-                                                    <SelectTrigger disabled={accountsLoading}>
-                                                        <SelectValue placeholder={tForm("accountPlaceholder")} />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {accounts.map((a) => (
-                                                            <SelectItem key={a.id} value={a.id}>
-                                                                {a.name}
-                                                                {a.mobileNumber ? ` (${a.mobileNumber})` : ""}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
+                                                <WhatsAppAccountSelect
+                                                    value={field.value || ""}
+                                                    onChange={field.onChange}
+                                                    label={tForm("accountLabel")}
+                                                />
                                             )}
                                         />
                                         {errors.accountId && (
@@ -771,7 +788,9 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
                                             </button>
                                         );
                                     })}
+
                                 </div>
+                                {errors.category && <p className="text-xs text-red-500">{errors.category.message}</p>}
                             </div>
 
                             {/* Subcategories List */}
@@ -805,6 +824,7 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
                                         </div>
                                     );
                                 })}
+                                {errors.subcategory && <p className="text-xs text-red-500">{errors.subcategory.message}</p>}
                             </div>
 
                             {/* Advice Alert Box was here, moved to preview column */}
@@ -871,11 +891,21 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
                                                 <VariableSamplesSection
                                                     type="header"
                                                     samples={variableSamples.header}
-                                                    onSampleChange={(num, val) => setVariableSamples(prev => ({
-                                                        ...prev,
-                                                        header: { ...prev.header, [num]: val }
-                                                    }))}
+                                                    onSampleChange={(num, val) => {
+                                                        const nextHeader = { ...variableSamples.header, [num]: val };
+                                                        setVariableSamples((prev) => ({
+                                                            ...prev,
+                                                            header: nextHeader
+                                                        }));
+                                                        const nums = [...new Set(extractVariableNames(templateData.headerText || ""))];
+                                                        if (nums.length && nums.every((n) => (nextHeader[n] ?? "").toString().trim())) {
+                                                            setVariableSamplesErrors((err) => ({ ...err, header: "" }));
+                                                        }
+                                                    }}
                                                 />
+                                                {variableSamplesErrors.header && (
+                                                    <p className="text-[11px] text-red-500 mt-1">{variableSamplesErrors.header}</p>
+                                                )}
                                             </motion.div>
                                         )}
 
@@ -994,11 +1024,21 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
                                         <VariableSamplesSection
                                             type="body"
                                             samples={variableSamples.body}
-                                            onSampleChange={(num, val) => setVariableSamples(prev => ({
-                                                ...prev,
-                                                body: { ...prev.body, [num]: val }
-                                            }))}
+                                            onSampleChange={(num, val) => {
+                                                const nextBody = { ...variableSamples.body, [num]: val };
+                                                setVariableSamples((prev) => ({
+                                                    ...prev,
+                                                    body: nextBody
+                                                }));
+                                                const nums = [...new Set(extractVariableNames(templateData.bodyText || ""))];
+                                                if (nums.length && nums.every((n) => (nextBody[n] ?? "").toString().trim())) {
+                                                    setVariableSamplesErrors((err) => ({ ...err, body: "" }));
+                                                }
+                                            }}
                                         />
+                                        {variableSamplesErrors.body && (
+                                            <p className="text-[11px] text-red-500 mt-1">{variableSamplesErrors.body}</p>
+                                        )}
                                     </div>
                                 )}
 
@@ -1045,11 +1085,23 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
                                                     <h4 className="font-bold text-sm">نسخ الرمز</h4>
                                                 </div>
                                                 <p className="text-xs text-slate-500">مصادقة أساسية مع إعداد سريع. يقوم عملاؤك بنسخ الرمز ولصقه في تطبيقك.</p>
+                                                {/* {templateData.authMethod === "COPY_CODE" && (
+                                                    <div className="mt-3 space-y-1.5">
+                                                        <Label className="text-[11px] text-slate-500">نص زر النسخ (اختياري)</Label>
+                                                        <Input
+                                                            placeholder="Copy code — افتراضي واتساب"
+                                                            maxLength={25}
+                                                            value={templateData.otpCopyButtonText || ""}
+                                                            onChange={(e) => setValue("otpCopyButtonText", e.target.value)}
+                                                            className="text-sm max-w-md"
+                                                        />
+                                                    </div>
+                                                )} */}
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div
+                                    {/* <div
                                         onClick={() => setValue("authMethod", "NO_ACTION")}
                                         className={cn(
                                             "cursor-pointer p-4 border-2 rounded-xl transition-all",
@@ -1068,7 +1120,7 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
                                                 <p className="text-xs text-slate-500">أرسل الرمز إلى عملائك في محتوى الرسالة. لا توجد إجراءات أخرى مطلوبة.</p>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> */}
                                 </div>
                             </div>
                         )}
@@ -1175,6 +1227,16 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
                                                     <SelectItem value="5m">5 دقائق</SelectItem>
                                                     <SelectItem value="10m">10 دقائق</SelectItem>
                                                     <SelectItem value="15m">15 دقيقة</SelectItem>
+                                                    //only those for not authentication
+                                                    {templateData.category?.toLowerCase() !== "authentication" && (
+                                                        <>
+                                                            <SelectItem value="30m">30 دقيقة</SelectItem>
+                                                            <SelectItem value="1h">1 ساعة</SelectItem>
+                                                            <SelectItem value="3h">3 ساعات</SelectItem>
+                                                            <SelectItem value="6h">6 ساعات</SelectItem>
+                                                            <SelectItem value="12h">12 ساعة</SelectItem>
+                                                        </>
+                                                    )}
                                                 </SelectContent>
                                             </Select>
                                         </motion.div>
@@ -1200,12 +1262,12 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
                                     control={control}
                                     render={({ field }) => (
                                         <TemplateButtonBuilder
+                                            errors={errors}
                                             value={field.value || []}
                                             onChange={field.onChange}
                                         />
                                     )}
                                 />
-                                {errors.buttons && <p className="text-xs text-red-500 mt-2">{errors.buttons.message}</p>}
                             </div>
                         )}
                     </div>
@@ -1236,6 +1298,10 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
                                             footerText: getPreviewFooter(),
                                             buttons: templateData.buttons,
                                             headerExample: variableSamples.header["1"],
+                                            useCustomValidity: templateData.useCustomValidity,
+                                            validityPeriod: templateData.validityPeriod,
+                                            otpCopyButtonText: templateData.otpCopyButtonText,
+                                            authMethod: templateData.authMethod,
                                             examples: {
                                                 ...variableSamples.body,
                                                 // Fallbacks for auth

@@ -19,10 +19,11 @@ export const UI_CATEGORY_TO_API = {
 export const UI_SUB_TO_API = {
   MARKETING_DEFAULT: "order_details",
   MARKETING_CALL_PERMISSIONS: "call_permissions_request",
-  UTILITY_DEFAULT: "order_status",
+  UTILITY_DEFAULT: "order_details",
   UTILITY_CALL_PERMISSIONS: "call_permissions_request",
   AUTHENTICATION_OTP: "fraud_alert",
 };
+
 
 export function apiCategoryToUi(apiCat) {
   const m = {
@@ -33,11 +34,17 @@ export function apiCategoryToUi(apiCat) {
   return m[String(apiCat || "").toLowerCase()] || "MARKETING";
 }
 
-export function apiSubToUiSub(apiSub, apiCategory) {
+export function apiSubToUiSub(apiSub, apiCategory, templateConfig) {
+  const cfg = templateConfig && typeof templateConfig === "object" ? templateConfig : {};
+  if (cfg.uiSubcategory) return cfg.uiSubcategory;
+
   const sub = String(apiSub || "").toLowerCase();
   const cat = String(apiCategory || "").toLowerCase();
   if (sub === "call_permissions_request") {
     return cat === "utility" ? "UTILITY_CALL_PERMISSIONS" : "MARKETING_CALL_PERMISSIONS";
+  }
+  if (cat === "utility" && (sub === "order_status" || sub === "order_details")) {
+    return "UTILITY_DEFAULT";
   }
   const map = {
     order_details: "MARKETING_DEFAULT",
@@ -86,21 +93,38 @@ function buttonSchema(t) {
         .string()
         .required(t("validation.buttonTextRequired"))
         .max(25, t("validation.buttonTextMax")),
-      url: yup
-        .string()
-        .transform((v) => (v === "" || v == null ? undefined : v))
-        .optional()
-        .url(t("validation.buttonUrlInvalid")),
-      urlType: yup.mixed().oneOf(["Static", "Dynamic", undefined, null]).optional().nullable(),
-      urlExample: yup.string().optional().nullable(),
+      // if type is VISIT_WEBSITE, url is required
+      url: yup.string().when("type", {
+        is: "VISIT_WEBSITE",
+        then: (s) => s.required(t("validation.visitWebsiteUrlRequired")),
+        otherwise: (s) => s.optional().nullable(),
+      }).optional().nullable(),
+      // if type is PHONE_NUMBER, countryCode and phoneNumber are required
+      countryCode: yup.string().when("type", {
+        is: "PHONE_NUMBER",
+        then: (s) => s.required(t("validation.phoneNumberCountryCodeRequired")).max(10, t("validation.countryCodeMax")),
+        otherwise: (s) => s.optional().nullable(),
+      }).optional().nullable(),
+      phoneNumber: yup.string().when("type", {
+        is: "PHONE_NUMBER",
+        then: (s) => s.required(t("validation.phoneNumberRequired")).max(20, t("validation.phoneNumberMax")),
+        otherwise: (s) => s.optional().nullable(),
+      }).optional().nullable(),
+      urlType: yup.mixed().oneOf(["Static", "Dynamic", "STATIC", "DYNAMIC", undefined, null]).optional().nullable(),
+      // if type is VISIT_WEBSITE and urlType is Dynamic, urlExample is required
+      urlExample: yup.string()
+        .when(["type", "urlType"], {
+          is: (type, urlType) =>
+            type === "VISIT_WEBSITE" && String(urlType || "").toLowerCase() === "dynamic",
+          then: (s) => s.required(t("validation.urlExampleRequired")).url(t("validation.urlExampleInvalid")),
+          otherwise: (s) => s.optional().nullable(),
+        }).optional().nullable(),
       activeForDays: yup
         .number()
         .min(1, t("validation.activeForDaysMin"))
         .max(30, t("validation.activeForDaysMax"))
         .optional()
         .nullable(),
-      countryCode: yup.string().max(10).optional().nullable(),
-      phoneNumber: yup.string().max(20).optional().nullable(),
     })
     .test("btn-url", t("validation.visitWebsiteUrlRequired"), (val) => {
       if (!val || val.type !== "VISIT_WEBSITE") return true;
@@ -112,8 +136,9 @@ function buttonSchema(t) {
     })
     .test("btn-call-days", t("validation.whatsappCallDaysRequired"), (val) => {
       if (!val || val.type !== "WHATSAPP_CALL") return true;
-      const d = val.activeForDays;
-      return d != null && d >= 1 && d <= 30;
+      const raw = val.activeForDays ?? val.activeDays;
+      const d = raw != null && raw !== "" ? Number(raw) : NaN;
+      return Number.isFinite(d) && d >= 1 && d <= 30;
     });
 }
 
@@ -126,8 +151,9 @@ function sharedTemplateFields(t) {
       .test("header-var-count", t("validation.headerVarMax"), (val) => {
         if (!val) return true;
         const n = getVariableMatches(val, "number").length;
-        const nm = getVariableMatches(val, "named").length;
-        return n + nm <= 1;
+        // const nm = getVariableMatches(val, "named").length;
+
+        return n <= 1;
       })
       .optional()
       .nullable(),
@@ -150,7 +176,21 @@ function sharedTemplateFields(t) {
     addExpirationTime: yup.boolean().optional(),
     expirationMinutes: yup.number().optional(),
     useCustomValidity: yup.boolean().optional(),
-    validityPeriod: yup.string().optional(),
+    validityPeriod: yup
+      .string()
+      .oneOf(
+        ["30s", "1m", "2m", "3m", "5m", "10m", "15m", "30m", "1h", "3h", "6h", "12h"],
+        t("validation.validityPeriodInvalid")
+      )
+      .optional(),
+    otpCopyButtonText: yup
+      .string()
+      .max(25, t("validation.buttonTextMax"))
+      .when("subcategory", {
+        is: "AUTHENTICATION_OTP",
+        then: (s) => s.optional().nullable(),
+        otherwise: (s) => s.strip().optional().nullable(),
+      }),
   };
 }
 
@@ -181,7 +221,16 @@ export function createTemplateFormSchema(t, mode = "create") {
 }
 
 export function stripButtonIds(buttons = []) {
-  return (Array.isArray(buttons) ? buttons : []).map(({ id: _id, ...rest }) => rest);
+  return (Array.isArray(buttons) ? buttons : []).map(({ id: _id, activeDays, ...rest }) => {
+    const out = { ...rest };
+    if (out.urlType === "STATIC") out.urlType = "Static";
+    if (out.urlType === "DYNAMIC") out.urlType = "Dynamic";
+    if (out.activeForDays == null && activeDays != null) {
+      const n = Number(activeDays);
+      if (Number.isFinite(n)) out.activeForDays = n;
+    }
+    return out;
+  });
 }
 
 export function buildExamplesMap(variableSamples) {
@@ -201,6 +250,7 @@ export function buildExamplesMap(variableSamples) {
  * @param {string} [forcedHeaderUrl] — server path after upload
  */
 export function buildTemplateConfigPayload(data, variableSamples, forcedHeaderUrl) {
+  console.log(data)
   const examples = buildExamplesMap(variableSamples);
   const headerType =
     data.headerType === "NONE" || !data.headerType ? undefined : data.headerType;
@@ -220,10 +270,13 @@ export function buildTemplateConfigPayload(data, variableSamples, forcedHeaderUr
         : undefined,
     headerUrl:
       headerType && ["IMAGE", "VIDEO", "DOCUMENT"].includes(headerType) ? headerUrl : undefined,
-    bodyText: data.subcategory === "AUTHENTICATION_OTP" ? undefined : data.bodyText?.trim(),
+    bodyText: data.category?.toLowerCase() === "authentication" ? undefined : data.bodyText?.trim(),
     footerText: data.footerText?.trim() || undefined,
     examples: Object.keys(examples).length ? examples : undefined,
     buttons: stripButtonIds(data.buttons || []).filter((b) => b?.text),
+    uiSubcategory: data.subcategory || undefined,
+    useCustomValidity: !!data.useCustomValidity,
+    validityPeriod: data.validityPeriod || "10m",
   };
 
   if (headerType === "TEXT" && data.headerText) {
@@ -237,12 +290,21 @@ export function buildTemplateConfigPayload(data, variableSamples, forcedHeaderUr
   }
 
   if (data.subcategory === "AUTHENTICATION_OTP") {
-    let body = "{{1}} هو رمز التحقق الخاص بك.";
-    if (data.addSecurityRecommendation) body += " لحمايتك، لا تشارك هذا الرمز.";
-    cfg.bodyText = body;
-    if (data.addExpirationTime) {
-      cfg.footerText = `تنتهي صلاحية الرمز خلال ${data.expirationMinutes} دقائق.`;
-    }
+    cfg.bodyText = undefined;
+    cfg.footerText = undefined;
+    cfg.authMethod = data.authMethod || "COPY_CODE";
+    const otpLabel = data.otpCopyButtonText?.trim();
+    if (otpLabel) cfg.otpCopyButtonText = otpLabel;
+    cfg.addSecurityRecommendation = !!data.addSecurityRecommendation;
+    cfg.addExpirationTime = !!data.addExpirationTime;
+    cfg.expirationMinutes =
+      data.addExpirationTime ? Number(data.expirationMinutes) || 10 : undefined;
+  } else {
+    delete cfg.authMethod;
+    delete cfg.otpCopyButtonText;
+    delete cfg.addSecurityRecommendation;
+    delete cfg.addExpirationTime;
+    delete cfg.expirationMinutes;
   }
 
   Object.keys(cfg).forEach((k) => {

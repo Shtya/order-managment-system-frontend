@@ -130,7 +130,7 @@ const BackBtn = ({ onClick }) => (
   </button>
 );
 
-const PHONE_CODES = [
+export const PHONE_CODES = [
   { code: "+20", flag: "🇪🇬", key: "EG" },
   { code: "+966", flag: "🇸🇦", key: "SA" },
   { code: "+971", flag: "🇦🇪", key: "AE" },

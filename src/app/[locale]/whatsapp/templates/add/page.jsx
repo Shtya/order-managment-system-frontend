@@ -169,6 +169,17 @@ const CATEGORIES = [
     }
 ];
 
+/*
+⚠ ⚠ ⚠ To access Authentication Message templates, businesses must satisfy the following two requirements:
+
+Complete a Scaling Path: business need to successfully complete one of Meta’s scaling paths, 
+such as Meta Business Verification or Partner-led Business Verification.
+https://docs.360dialog.com/docs/resources/meta-business-verification#verification-paths
+
+Messaging Limit: WABAs must have a minimum daily messaging limit of 2,000 business-initiated conversations.
+https://docs.360dialog.com/docs/resources/wabas/messaging-limits#default-messaging-limit
+ */
+
 export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialTemplate }) {
     const router = useRouter();
     const tForm = useTranslations("whatsApp.templates.form");
@@ -193,8 +204,8 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
             accountId: "",
             name: "",
             language: "ar",
-            category: "MARKETING",
-            subcategory: "MARKETING_DEFAULT",
+            category: "UTILITY",
+            subcategory: "UTILITY_DEFAULT",
             headerType: "NONE",
             headerText: "",
             headerUrl: "",

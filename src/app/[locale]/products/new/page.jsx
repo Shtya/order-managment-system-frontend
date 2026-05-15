@@ -286,7 +286,7 @@ const makeSchema = (t, tValidation) =>
 			receiptNumber: yup.string().optional(),
 			safeId: yup.string().optional(),
 			notes: yup.string().optional(),
-			wholesalePrice: yup.number().transform((value, originalValue) => originalValue === "" ? NaN : value).typeError(t('validation.requiredNumber')).required(t('validation.requiredNumber')).min(0, t('validation.noNegative')),
+			wholesalePrice: yup.number().transform((value, originalValue) => originalValue === "" ? NaN : value).typeError(t('validation.requiredNumber')).required(t('validation.requiredNumber')).min(0, t('validation.noNegative')).optional(),
 			paidAmount: yup
 				.number()
 				.transform((value, originalValue) => {

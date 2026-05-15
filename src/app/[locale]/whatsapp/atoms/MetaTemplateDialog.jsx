@@ -296,10 +296,7 @@ export function MetaTemplateDialog({ open, onOpenChange, onSelectTemplate }) {
             const matchesCat = tpl.category === selectedCategory;
             const matchesSub = selectedSubCategories.length === 0 || selectedSubCategories.includes(tpl.subCategory);
 
-            console.log(
-                tpl.category === selectedCategory, tpl.category, selectedCategory,
-                matchesSearch, matchesLang, matchesCat, matchesSub
-            )
+
             return matchesSearch && matchesLang && matchesCat && matchesSub;
         });
     }, [searchTerm, selectedLanguage, selectedCategory, selectedSubCategories]);

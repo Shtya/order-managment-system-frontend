@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import {
     GripVertical,
     Trash2,
@@ -9,9 +9,6 @@ import {
     Globe,
     MessageSquare,
     Info,
-    ExternalLink,
-    AlertCircle,
-    ChevronDown
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import {
@@ -40,6 +37,7 @@ import {
     SelectValue
 } from "@/components/ui/select";
 import { useLocale } from "next-intl";
+import { PHONE_CODES } from "../../auth/tabs/Signup";
 
 // --- Constants & Types ---
 // =========================
@@ -70,9 +68,51 @@ const BUTTON_TYPES = [
 ];
 
 const URL_TYPES = [
-    { id: "STATIC", label: "ثابت" },
-    { id: "DYNAMIC", label: "ديناميكي" },
+    { id: "Static", label: "ثابت" },
+    { id: "Dynamic", label: "ديناميكي" },
 ];
+
+/** Align legacy / API values with form schema (Static | Dynamic). */
+function normalizeUrlTypeForUi(urlType) {
+    if (urlType === "STATIC" || urlType === "Static") return "Static";
+    if (urlType === "DYNAMIC" || urlType === "Dynamic") return "Dynamic";
+    return urlType || "Static";
+}
+
+/**
+ * Per-button errors from react-hook-form + yup (array index matches `value` index).
+ * Root-level `.test()` failures use `{ message, type }` (e.g. btn-url, btn-phone, btn-call-days).
+ */
+function normalizeButtonFieldErrors(btnErr) {
+    const out = {
+        text: "",
+        url: "",
+        urlType: "",
+        urlExample: "",
+        phone: "",
+        callDays: "",
+    };
+    if (!btnErr || typeof btnErr !== "object") return out;
+
+    const pick = (node) => (node && typeof node === "object" && "message" in node ? String(node.message || "") : "");
+
+    out.text = pick(btnErr.text);
+    out.url = pick(btnErr.url);
+    out.urlType = pick(btnErr.urlType);
+    out.urlExample = pick(btnErr.urlExample);
+    out.phone = pick(btnErr.phoneNumber);
+    out.callDays = pick(btnErr.activeForDays);
+
+    const rootMsg = "message" in btnErr && typeof btnErr.message === "string" ? btnErr.message : "";
+    const rootType = btnErr.type;
+    if (rootMsg) {
+        if (rootType === "btn-url") out.url = out.url || rootMsg;
+        else if (rootType === "btn-phone") out.phone = out.phone || rootMsg;
+        else if (rootType === "btn-call-days") out.callDays = out.callDays || rootMsg;
+    }
+
+    return out;
+}
 
 // --- Sub-components ---
 
@@ -150,14 +190,22 @@ function SortableButtonCard({
 /**
  * Main TemplateButtonBuilder Component
  */
-export default function TemplateButtonBuilder({ value = [], onChange }) {
+export default function TemplateButtonBuilder({ value = [], onChange, errors }) {
     const sensors = useSensors(
         useSensor(PointerSensor),
         useSensor(KeyboardSensor, {
             coordinateGetter: sortableKeyboardCoordinates,
         })
     );
-    const locale = useLocale()
+    const locale = useLocale();
+
+    const rawButtonsErrors = errors?.buttons;
+    const buttonsItemErrors = Array.isArray(rawButtonsErrors) ? rawButtonsErrors : [];
+    const buttonsArrayMessage =
+        rawButtonsErrors && !Array.isArray(rawButtonsErrors) && rawButtonsErrors.message
+            ? String(rawButtonsErrors.message)
+            : "";
+
     // --- State Logic ---
 
     const currentCounts = useMemo(() => {
@@ -183,9 +231,9 @@ export default function TemplateButtonBuilder({ value = [], onChange }) {
             type: typeId,
             text: "",
             // Type specific defaults
-            ...(typeId === "VISIT_WEBSITE" && { urlType: "STATIC", url: "", urlExample: "" }),
-            ...(typeId === "PHONE_NUMBER" && { countryCode: "US +1", phoneNumber: "" }),
-            ...(typeId === "WHATSAPP_CALL" && { activeDays: "7" }),
+            ...(typeId === "VISIT_WEBSITE" && { urlType: "Static", url: "", urlExample: "" }),
+            ...(typeId === "PHONE_NUMBER" && { countryCode: "+20", phoneNumber: "" }),
+            ...(typeId === "WHATSAPP_CALL" && { activeForDays: 7 }),
         };
 
         onChange([...value, newButton]);
@@ -211,8 +259,11 @@ export default function TemplateButtonBuilder({ value = [], onChange }) {
 
     // --- Rendering Helpers ---
 
-    const renderButtonForm = (btn) => {
+    const renderButtonForm = (btn, index) => {
         const { type } = btn;
+        const fe = normalizeButtonFieldErrors(buttonsItemErrors[index]);
+        const urlTypeUi = normalizeUrlTypeForUi(btn.urlType);
+        const callDaysUi = String(btn.activeForDays ?? btn.activeDays ?? 7);
 
         return (
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
@@ -239,16 +290,17 @@ export default function TemplateButtonBuilder({ value = [], onChange }) {
                     <div className="relative ">
                         <Input
                             placeholder="أدخل نص الزر..."
-                            maxLength={40}
+                            maxLength={25}
                             value={btn.text}
                             onChange={(e) => handleUpdate(btn.id, { text: e.target.value })}
                             style={{ paddingLeft: locale === 'ar' ? 45 : 10, paddingRight: locale === 'ar' ? 10 : 45 }}
-                            className="text-sm"
+                            className={cn("text-sm", fe.text && "border-red-500 focus-visible:ring-red-500")}
                         />
                         <span className="absolute end-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">
-                            40/{btn.text.length}
+                            25/{btn.text.length}
                         </span>
                     </div>
+                    {fe.text ? <p className="text-[11px] text-red-500 mt-1">{fe.text}</p> : null}
                 </div>
 
                 {/* 3. Type Specific Fields */}
@@ -257,10 +309,10 @@ export default function TemplateButtonBuilder({ value = [], onChange }) {
                         <div className="md:col-span-2 space-y-1.5">
                             <Label className="text-[11px] text-slate-400">نوع الرابط</Label>
                             <Select
-                                value={btn.urlType}
+                                value={urlTypeUi}
                                 onValueChange={(val) => handleUpdate(btn.id, { urlType: val })}
                             >
-                                <SelectTrigger className="text-sm h-10">
+                                <SelectTrigger className={cn("text-sm h-10", fe.urlType && "border-red-500")}>
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -269,24 +321,27 @@ export default function TemplateButtonBuilder({ value = [], onChange }) {
                                     ))}
                                 </SelectContent>
                             </Select>
+                            {fe.urlType ? <p className="text-[11px] text-red-500 mt-1">{fe.urlType}</p> : null}
                         </div>
                         <div className="md:col-span-4 space-y-1.5">
                             <Label className="text-[11px] text-slate-400">رابط الموقع</Label>
                             <Input
-                                placeholder={btn.urlType === "DYNAMIC" ? "https://example.com/{{1}}" : "https://example.com"}
+                                placeholder={urlTypeUi === "Dynamic" ? "https://example.com/{{1}}" : "https://example.com"}
                                 value={btn.url}
                                 onChange={(e) => handleUpdate(btn.id, { url: e.target.value })}
                                 className={cn(
                                     "text-sm",
-                                    btn.urlType === "DYNAMIC" && !btn.url.includes("{{1}}") && "border-amber-400 focus:ring-amber-400"
+                                    fe.url && "border-red-500 focus-visible:ring-red-500",
+                                    urlTypeUi === "Dynamic" && !btn.url.includes("{{1}}") && "border-amber-400 focus:ring-amber-400"
                                 )}
                             />
-                            {btn.urlType === "DYNAMIC" && !btn.url.includes("{{1}}") && (
+                            {fe.url ? <p className="text-[11px] text-red-500 mt-1">{fe.url}</p> : null}
+                            {urlTypeUi === "Dynamic" && !btn.url.includes("{{1}}") && (
                                 <p className="text-[10px] text-amber-600 font-medium">يجب أن يتضمن الرابط المتغير {"{{1}}"}</p>
                             )}
                         </div>
 
-                        {btn.urlType === "DYNAMIC" && (
+                        {urlTypeUi === "Dynamic" && (
                             <div className="md:col-span-12 mt-2">
                                 <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-3">
                                     <div className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-200">
@@ -304,10 +359,17 @@ export default function TemplateButtonBuilder({ value = [], onChange }) {
                                             placeholder="أدخل الرابط الكامل مع المثال..."
                                             value={btn.urlExample}
                                             onChange={(e) => handleUpdate(btn.id, { urlExample: e.target.value })}
-                                            className="h-10 text-sm border-red-200 focus:border-red-400"
+                                            className={cn(
+                                                "h-10 text-sm border-red-200 focus:border-red-400",
+                                                fe.urlExample && "border-red-500 focus-visible:ring-red-500"
+                                            )}
                                         />
                                     </div>
-                                    {!btn.urlExample && <p className="text-[10px] text-red-500 font-medium">يرجى إدخال رابط موقع ويب صالح</p>}
+                                    {fe.urlExample ? (
+                                        <p className="text-[11px] text-red-500 font-medium">{fe.urlExample}</p>
+                                    ) : !btn.urlExample ? (
+                                        <p className="text-[10px] text-red-500 font-medium">يرجى إدخال رابط موقع ويب صالح</p>
+                                    ) : null}
                                 </div>
                             </div>
                         )}
@@ -326,10 +388,9 @@ export default function TemplateButtonBuilder({ value = [], onChange }) {
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="US +1">US +1</SelectItem>
-                                    <SelectItem value="EG +20">EG +20</SelectItem>
-                                    <SelectItem value="SA +966">SA +966</SelectItem>
-                                    <SelectItem value="AE +971">AE +971</SelectItem>
+                                {PHONE_CODES.map((code) => (
+                                    <SelectItem key={code.key} value={code.code}>{code.flag} {code.code}</SelectItem>
+                                ))}
                                 </SelectContent>
                             </Select>
                         </div>
@@ -339,9 +400,13 @@ export default function TemplateButtonBuilder({ value = [], onChange }) {
                                 placeholder="000 000 000"
                                 value={btn.phoneNumber}
                                 onChange={(e) => handleUpdate(btn.id, { phoneNumber: e.target.value })}
-                                className="text-sm border-red-200"
+                                className={cn("text-sm", fe.phone ? "border-red-500 focus-visible:ring-red-500" : "border-red-200")}
                             />
-                            {!btn.phoneNumber && <p className="text-[10px] text-red-500">تحتاج لإدخال رقم هاتف. يرجى إضافة رقم هاتف صالح.</p>}
+                            {fe.phone ? (
+                                <p className="text-[11px] text-red-500 mt-1">{fe.phone}</p>
+                            ) : !btn.phoneNumber ? (
+                                <p className="text-[10px] text-red-500">تحتاج لإدخال رقم هاتف. يرجى إضافة رقم هاتف صالح.</p>
+                            ) : null}
                         </div>
                     </>
                 )}
@@ -354,10 +419,10 @@ export default function TemplateButtonBuilder({ value = [], onChange }) {
                                 <Info size={12} className="text-slate-400" />
                             </Label>
                             <Select
-                                value={btn.activeDays}
-                                onValueChange={(val) => handleUpdate(btn.id, { activeDays: val })}
+                                value={callDaysUi}
+                                onValueChange={(val) => handleUpdate(btn.id, { activeForDays: Number(val) })}
                             >
-                                <SelectTrigger className="text-sm h-10">
+                                <SelectTrigger className={cn("text-sm h-10", fe.callDays && "border-red-500")}>
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -366,6 +431,7 @@ export default function TemplateButtonBuilder({ value = [], onChange }) {
                                     ))}
                                 </SelectContent>
                             </Select>
+                            {fe.callDays ? <p className="text-[11px] text-red-500 mt-1">{fe.callDays}</p> : null}
                         </div>
                         {/* <div className="md:col-span-12 mt-2">
                             <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 rounded-xl flex gap-3">
@@ -442,20 +508,22 @@ export default function TemplateButtonBuilder({ value = [], onChange }) {
                     strategy={verticalListSortingStrategy}
                 >
                     <div className="space-y-4">
-                        {value.map((btn) => (
+                        {value.map((btn, index) => (
                             <SortableButtonCard
                                 key={btn.id}
                                 id={btn.id}
                                 onRemove={() => handleRemove(btn.id)}
                             >
-                                {renderButtonForm(btn)}
+                                {renderButtonForm(btn, index)}
                             </SortableButtonCard>
                         ))}
                     </div>
                 </SortableContext>
             </DndContext>
 
-            {/* Add Button Dropdown/Grid */}
+            {buttonsArrayMessage ? (
+                <p className="text-xs text-red-500">{buttonsArrayMessage}</p>
+            ) : null}
 
         </div>
     );

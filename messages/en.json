@@ -9375,7 +9375,14 @@
           "activeForDaysMin": "Must be at least 1 day",
           "activeForDaysMax": "Must be at most 30 days",
           "mediaHeaderFileRequired": "Upload a file for this header type (image, video, or PDF)",
-          "mediaHeaderMustReupload": "Choose a header file again or keep the existing saved media"
+          "mediaHeaderMustReupload": "Choose a header file again or keep the existing saved media",
+          "variableSampleRequired": "Example values are required for every variable in this section",
+          "countryCodeMax": "Country code must be at most 10 characters",
+          "phoneNumberMax": "Phone number must be at most 20 characters",
+          "buttonUrlRequired": "URL is required for website buttons",
+          "urlExampleRequired": "URL example is required",
+          "urlExampleInvalid": "URL example is invalid",
+          "validityPeriodInvalid": "Select a valid message validity period"
         }
       },
       "messages": {

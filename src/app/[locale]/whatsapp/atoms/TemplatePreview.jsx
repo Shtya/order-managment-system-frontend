@@ -12,6 +12,7 @@ import {
     List,
     X,
     ChevronDown,
+    Copy,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useLocale, useTranslations } from "next-intl";
@@ -216,6 +217,11 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
         footerText = "",
         buttons = [],
         examples = {},
+        uiSubcategory = "",
+        useCustomValidity = false,
+        validityPeriod = "10m",
+        otpCopyButtonText = "",
+        authMethod = "COPY_CODE",
     } = cfgSource != null
         ? { bodyText: "", buttons: [], examples: {}, ...cfgSource }
         : { bodyText: "", buttons: [], examples: {} };
@@ -382,6 +388,10 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
 
     const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+    const otpPreviewLabel =
+        (otpCopyButtonText && String(otpCopyButtonText).trim()) ||
+        (locale === "ar" ? "انسخ الرمز" : "Copy code");
+
     return (
         <div className={`w-full mx-auto bg-white dark:bg-[#111b21] rounded-md ${!flat && "shadow-lg border  border-slate-200 dark:border-slate-800"} overflow-hidden flex flex-col`}>
             {/* Template Header Bar */}
@@ -477,6 +487,13 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                             </span>
                         </div>
 
+                        {useCustomValidity && validityPeriod && (
+                            <div className="text-[10px] text-[#00000073] dark:text-[#8696a0] px-2 pb-1 text-center leading-tight">
+                                {locale === "ar" ? "نافذة التسليم:" : "Send TTL:"}{" "}
+                                {validityPeriod}
+                            </div>
+                        )}
+
                         {/* Buttons Section */}
                         {buttons.length > 0 && (
                             <div className="border-t border-slate-100 dark:border-slate-800 mt-2 -mx-1.5 -mb-1.5 overflow-hidden">
@@ -530,11 +547,20 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                                 })()}
                             </div>
                         )}
+
+                        {subCategory === "AUTHENTICATION_OTP" && authMethod === "COPY_CODE" && (
+                            <div className="border-t border-slate-100 dark:border-slate-800 mt-2 -mx-1.5 -mb-1.5 overflow-hidden">
+                                <div className="py-2.5 px-3 flex items-center justify-center gap-2 text-[#00a884] dark:text-[#00a884] font-medium text-[13px]">
+                                    <Copy size={14} />
+                                    {otpPreviewLabel}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Extra Message: Call Permissions */}
-                    {["call_permissions_request", "MARKETING_CALL_PERMISSIONS", "UTILITY_CALL_PERMISSIONS"].includes(
-                        subCategory
+                    {["MARKETING_CALL_PERMISSIONS", "UTILITY_CALL_PERMISSIONS", "call_permissions_request"].includes(
+                        String(uiSubcategory || subCategory || "").trim()
                     ) && (
                         <WhatsAppCallPermissionsBubble
                             locale={locale}

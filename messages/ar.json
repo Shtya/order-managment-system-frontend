@@ -9405,15 +9405,22 @@
           "buttonsMax": "يُسمح بحد أقصى 10 أزرار",
           "buttonTypeInvalid": "نوع الزر غير صالح",
           "buttonTextRequired": "نص الزر مطلوب",
+          "countryCodeMax": "الرمز الدولي يجب ألا يتجاوز 10 حرفاً",
+          "phoneNumberMax": "رقم الهاتف يجب ألا يتجاوز 20 حرفاً",
           "buttonTextMax": "نص الزر يجب ألا يتجاوز 25 حرفاً",
           "buttonUrlInvalid": "أدخل رابطاً صالحاً",
+          "buttonUrlRequired": "الرابط مطلوب",
           "visitWebsiteUrlRequired": "الرابط مطلوب لأزرار الموقع",
           "phoneButtonNumberRequired": "رقم الهاتف مطلوب لأزرار الاتصال",
           "whatsappCallDaysRequired": "مدة النشاط (1–30 يوماً) مطلوبة لأزرار مكالمة واتساب",
           "activeForDaysMin": "يوم واحد على الأقل",
           "activeForDaysMax": "30 يوماً كحد أقصى",
-          "mediaHeaderFileRequired": "ارفع ملفاً لهذا نوع الرأس (صورة أو فيديو أو PDF)",
-          "mediaHeaderMustReupload": "اختر ملف الرأس من جديد أو احتفظ بالوسائط المحفوظة مسبقاً"
+          "mediaHeaderFileRequired": "ارفع ملفاً لهذا النوع من الرأس (صورة أو فيديو أو PDF)",
+          "mediaHeaderMustReupload": "اختر ملف الرأس من جديد أو احتفظ بالوسائط المحفوظة مسبقاً",
+          "variableSampleRequired": "قيم العيّنات مطلوبة لكل المتغيرات في هذا القسم",
+          "urlExampleRequired": "الرابط المثالي مطلوب",
+          "urlExampleInvalid": "الرابط المثالي غير صالح",
+          "validityPeriodInvalid": "اختر فترة صلاحية صالحة للرسالة"
         }
       },
       "messages": {

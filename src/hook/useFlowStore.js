@@ -9,12 +9,19 @@ export const useFlowStore = create(
       edges: [],
       selectedNodeId: null,
       pendingConnection: null, // { nodeId, type }
-      deleteConfirm: null, // { type: 'node' | 'edge', id, downstreamCount }
+      deleteConfirm: null, // { type: 'node' | 'edge' | 'clear', id, downstreamCount }
+      skipDeleteConfirmation: typeof window !== 'undefined' ? localStorage.getItem('skip_delete') === 'true' : false,
 
       setNodes: (nodes) => set({ nodes }),
       setEdges: (edges) => set({ edges }),
       setPendingConnection: (conn) => set({ pendingConnection: conn }),
       setDeleteConfirm: (confirm) => set({ deleteConfirm: confirm }),
+      setSkipDeleteConfirmation: (skip) => {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('skip_delete', skip ? 'true' : 'false');
+        }
+        set({ skipDeleteConfirmation: skip });
+      },
 
       onNodesChange: (changes) => {
         set({ nodes: applyNodeChanges(changes, get().nodes) });
@@ -37,6 +44,7 @@ export const useFlowStore = create(
         // Auto-connect and position if there's a pending connection
         if (pendingConnection) {
           const sourceNode = nodes.find(n => n.id === pendingConnection.nodeId);
+          console.log("sourceNode: ", sourceNode)
           if (sourceNode) {
             let offsetX = 0;
             const offsetY = 250; // Vertical spacing
@@ -69,6 +77,7 @@ export const useFlowStore = create(
             };
           }
 
+          console.log(pendingConnection, newNode)
           const newEdge = {
             id: `edge_${pendingConnection.nodeId}_${newNode.id}`,
             source: pendingConnection.nodeId,
@@ -96,15 +105,56 @@ export const useFlowStore = create(
       },
 
       updateNodeData: (id, data) => {
+        const { nodes, edges } = get();
+        const currentNode = nodes.find(n => n.id === id);
+        let updatedEdges = [...edges];
+
+        // If branches are changing, we just disconnect edges from removed branches
+        if (data?.config?.branches && currentNode?.data?.config?.branches) {
+          const oldBranches = currentNode.data.config.branches;
+          const newBranches = data.config.branches;
+
+          // 1. Find handles (branch IDs) that were removed entirely
+          const removedHandleIds = oldBranches
+            .filter(ob => !newBranches.some(nb => nb.id === ob.id))
+            .map(ob => ob.id);
+
+          // 2. Handle ID migration
+          const edgesToMigrate = updatedEdges.filter(e => e.source === id);
+          edgesToMigrate.forEach(edge => {
+            const oldBranchIndex = oldBranches.findIndex(b => b.id === edge.sourceHandle);
+            if (oldBranchIndex !== -1 && oldBranchIndex < newBranches.length) {
+              const newBranch = newBranches[oldBranchIndex];
+              if (newBranch.id !== edge.sourceHandle) {
+                updatedEdges = updatedEdges.map(e =>
+                  e.id === edge.id ? { ...e, sourceHandle: newBranch.id } : e
+                );
+              }
+            }
+          });
+
+          if (removedHandleIds.length > 0) {
+            // Just filter out the edges from removed handles
+            updatedEdges = updatedEdges.filter(e => !(e.source === id && removedHandleIds.includes(e.sourceHandle)));
+          }
+        }
+
         set({
-          nodes: get().nodes.map((node) =>
+          nodes: nodes.map((node) =>
             node.id === id ? { ...node, data: { ...node.data, ...data } } : node
-          )
+          ),
+          edges: updatedEdges
+        });
+      },
+
+      disconnectEdge: (edgeId) => {
+        set({
+          edges: get().edges.filter(e => e.id !== edgeId)
         });
       },
 
       deleteNode: (id) => {
-        const { nodes, edges, setDeleteConfirm } = get();
+        const { nodes, edges, setDeleteConfirm, skipDeleteConfirmation, executeDeletion } = get();
 
         // Find all nodes that are downstream from this node
         const getDownstreamNodeIds = (nodeId) => {
@@ -120,6 +170,11 @@ export const useFlowStore = create(
         };
 
         const downstreamIds = getDownstreamNodeIds(id);
+
+        if (skipDeleteConfirmation) {
+          executeDeletion(id, downstreamIds);
+          return;
+        }
 
         if (downstreamIds.length > 0) {
           setDeleteConfirm({ type: 'node', id, downstreamCount: downstreamIds.length });
@@ -139,8 +194,21 @@ export const useFlowStore = create(
         deleteNode(edge.target);
       },
 
+      executeDeletion: (id, downstreamIds) => {
+        const { nodes, edges } = get();
+        const allIdsToDelete = [id, ...downstreamIds];
+
+        set({
+          nodes: nodes.filter((node) => !allIdsToDelete.includes(node.id)),
+          edges: edges.filter((edge) => !allIdsToDelete.includes(edge.source) && !allIdsToDelete.includes(edge.target)),
+          selectedNodeId: allIdsToDelete.includes(get().selectedNodeId) ? null : get().selectedNodeId,
+          pendingConnection: allIdsToDelete.includes(get().pendingConnection?.nodeId) ? null : get().pendingConnection,
+          deleteConfirm: null
+        });
+      },
+
       confirmDelete: () => {
-        const { nodes, edges, deleteConfirm, setDeleteConfirm } = get();
+        const { nodes, edges, deleteConfirm, executeDeletion } = get();
         if (!deleteConfirm) return;
 
         if (deleteConfirm.type === 'clear') {
@@ -164,15 +232,7 @@ export const useFlowStore = create(
         };
 
         const downstreamIds = getDownstreamNodeIds(id);
-        const allIdsToDelete = [id, ...downstreamIds];
-
-        set({
-          nodes: nodes.filter((node) => !allIdsToDelete.includes(node.id)),
-          edges: edges.filter((edge) => !allIdsToDelete.includes(edge.source) && !allIdsToDelete.includes(edge.target)),
-          selectedNodeId: allIdsToDelete.includes(get().selectedNodeId) ? null : get().selectedNodeId,
-          pendingConnection: allIdsToDelete.includes(get().pendingConnection?.nodeId) ? null : get().pendingConnection,
-          deleteConfirm: null
-        });
+        executeDeletion(id, downstreamIds);
       },
 
       clearFlow: () => set({ nodes: [], edges: [], selectedNodeId: null, pendingConnection: null }),
@@ -191,6 +251,10 @@ export const useFlowStore = create(
     {
       name: 'whatsapp-automation-flow',
       storage: createJSONStorage(() => localStorage),
+      partialize: (state) => {
+        const { skipDeleteConfirmation, ...rest } = state;
+        return rest;
+      }
     }
   )
 );

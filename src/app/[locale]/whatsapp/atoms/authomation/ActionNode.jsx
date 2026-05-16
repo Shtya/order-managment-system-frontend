@@ -1,4 +1,5 @@
-import { Position } from '@xyflow/react';
+import React, { useEffect } from 'react';
+import { Position, useUpdateNodeInternals } from '@xyflow/react';
 import { MessageSquare, RefreshCw, Zap, Bell, Send } from 'lucide-react';
 import { BaseNode } from './BaseNode';
 import { CustomHandle } from './CustomHandle';
@@ -10,10 +11,16 @@ const ACTION_TYPES = {
 };
 
 export function ActionNode({ id, data, selected }) {
+    const updateNodeInternals = useUpdateNodeInternals();
     const action = ACTION_TYPES[data.type] || ACTION_TYPES.SEND_WHATSAPP_TEMPLATE;
     const Icon = action.icon;
     const hasBranches = data.config?.branches?.length > 0;
     const edges = useFlowStore((s) => s.edges);
+
+    // Force React Flow to recalculate handle positions and edge paths when branches change
+    useEffect(() => {
+        updateNodeInternals(id);
+    }, [id, data.config?.branches?.length, updateNodeInternals]);
 
     return (
         <BaseNode
@@ -46,7 +53,7 @@ export function ActionNode({ id, data, selected }) {
                 {data.type === 'UPDATE_ORDER_STATUS' && (
                     <div className="flex items-center justify-between">
                         <span className="font-black text-blue-700 dark:text-blue-400 uppercase tracking-tight">{data.config?.newStatus || '—'}</span>
-                        <span className="opacity-50 font-bold">تغيير الحالة</span>
+                        <span className="opacity-50 font-bold">تغيير الحالة الي</span>
                     </div>
                 )}
             </div>

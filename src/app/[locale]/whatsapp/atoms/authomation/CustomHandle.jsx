@@ -25,7 +25,7 @@ export function CustomHandle({ isConnected, position, noOffset, className, nodeI
                     // Glowing effect if connected
                     isConnected ? "!bg-primary !ring-4 !ring-primary/20" : "!bg-slate-400",
                     isHandlePending && "!bg-primary !ring-4 !ring-primary/40 !scale-125",
-                    showPlus && "!opacity-0 !pointer-events-none", // Hide the handle dot if we are showing the plus icon
+                    showPlus && "!opacity-0", // Hide the handle dot visually if showing plus, but keep it interactive
                     className
                 )}
                 style={{ ...props.style }}

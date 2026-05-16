@@ -12,6 +12,7 @@ export function StepConfigModal({ isOpen, onClose, step, mode = "create", initia
     const [errors, setErrors] = useState({});
     const { nodes, edges } = useFlowStore();
 
+    const [disabled, setDisabled] = useState(true);
     useEffect(() => {
         if (isOpen) {
             setConfig(initialData || {});
@@ -22,17 +23,17 @@ export function StepConfigModal({ isOpen, onClose, step, mode = "create", initia
     if (!step) return null;
 
     const ConfigComponent = Configs[step.configComponent];
-
+    const className = step.className || "max-w-7xl!";
     const handleSave = () => {
         // Basic validation could be here or inside the config component
         if (Object.keys(errors).length > 0) return;
-        
+
         onClose(config);
     };
 
     return (
         <Dialog open={isOpen} onOpenChange={() => onClose(null)}>
-            <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-slate-900">
+            <DialogContent className={`${className} p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-slate-900`}>
                 <DialogHeader className="p-6 border-b dark:border-slate-800">
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
@@ -55,6 +56,7 @@ export function StepConfigModal({ isOpen, onClose, step, mode = "create", initia
                             context={{ step, mode }}
                             errors={errors}
                             setErrors={setErrors}
+                            setDisabled={setDisabled}
                             flowData={{ nodes, edges }}
                         />
                     ) : (
@@ -70,7 +72,7 @@ export function StepConfigModal({ isOpen, onClose, step, mode = "create", initia
                         <Button variant="ghost" onClick={() => onClose(null)} className="rounded-xl px-6">
                             إلغاء
                         </Button>
-                        <Button onClick={handleSave} className="rounded-xl px-8 bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20">
+                        <Button disabled={disabled} onClick={handleSave} className="rounded-xl px-8 bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20">
                             {mode === "create" ? "إضافة الخطوة" : "حفظ التغييرات"}
                         </Button>
                     </div>

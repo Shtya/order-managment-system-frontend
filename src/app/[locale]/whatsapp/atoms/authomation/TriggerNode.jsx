@@ -9,6 +9,7 @@ const TRIGGER_TYPES = {
 };
 
 export function TriggerNode({ id, data, selected }) {
+
     const trigger = TRIGGER_TYPES[data.type] || { label: 'محفز غير معروف', icon: Play, color: 'text-emerald-600', bg: 'bg-emerald-50' };
     const Icon = trigger.icon;
 
@@ -36,7 +37,7 @@ export function TriggerNode({ id, data, selected }) {
                 {data.type === 'ORDER_STATUS_UPDATED' && (
                     <div className="flex items-center justify-between">
                         <span className="font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-tight">{data.config?.status || '—'}</span>
-                        <span className="opacity-50 font-bold">عند تغيير</span>
+                        <span className="opacity-50 font-bold">عند تغيير الحالة إلي</span>
                     </div>
                 )}
                 {data.type === 'WHATSAPP_INCOMING' && (

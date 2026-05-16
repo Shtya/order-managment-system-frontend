@@ -101,7 +101,7 @@ export default function StoresIntegrationPage() {
     const unsubscribe = subscribe("STORE_SYNC_STATUS", (payload) => {
       console.log("Received socket event:", payload);
       if (payload) {
-        const { storeId, status,type  } = payload;
+        const { storeId, status, type } = payload;
 
         setStores((prev) =>
           prev.map((store) =>
@@ -726,7 +726,7 @@ export function StoreConfigDialog({
                     )}
                   </div>
 
-                  <div className="flex gap-1.5">
+                  <div className="flex gap-1.5 flex-wrap">
                     <Controller
                       control={control}
                       name="syncNewProducts"
@@ -742,6 +742,26 @@ export function StoreConfigDialog({
                           />
                           <Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
                             {t("form.syncNewProducts")}
+                          </Label>
+                        </div>
+                      )}
+                    />
+
+                    <Controller
+                      control={control}
+                      name="syncRemoteProducts"
+                      render={({ field }) => (
+                        <div className="flex items-center gap-2 h-[34px] px-2 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
+                          <Checkbox
+                            id="syncRemoteProducts"
+                            checked={field.value}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked);
+                            }}
+                            className="h-6 w-6 border-slate-300 dark:border-slate-600 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                          />
+                          <Label className="text-xs font-semibold text-gray-600 dark:text-slate-300">
+                            {t("form.syncRemoteProducts")}
                           </Label>
                         </div>
                       )}

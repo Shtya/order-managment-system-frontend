@@ -825,6 +825,7 @@
     },
     "form": {
       "syncNewProducts": "Automatically sync products to stores",
+      "syncRemoteProducts": "Get products from store locally after integate",
       "storeInfoSection": "Store Information",
       "storeName": "Store Name",
       "storeNamePlaceholder": "My Online Store",
@@ -3734,7 +3735,8 @@
       "view": "View",
       "reactivate": "Reactivate",
       "success": "Successfully completed",
-      "printSku": "Print  Skus"
+      "printSku": "Print  Skus",
+      "fetchExternalDetails": "View product data from the stor"
     },
     "tabs": {
       "products": "Products",
@@ -5265,7 +5267,17 @@
         "automation": "Automation",
         "shipping": "Shipping",
         "notifications": "Notifications",
-        "warehouse": "Warehouse"
+        "warehouse": "Warehouse",
+        "sync": "Store sync"
+      },
+      "sync": {
+        "skuFallbackTitle": "Match products by SKU when not linked",
+        "skuFallbackDesc": "When an order arrives from a connected store and no sync mapping exists for the product, the system attempts to find a local variant by SKU before moving the order to pending orders.",
+        "storesTitle": "Connected stores",
+        "storesSubtitle": "Control automatic product sync for each integrated store. Changes apply immediately.",
+        "noConnectedStores": "No connected stores yet. Connect a store from Store Integrations first.",
+        "storeInactive": "Inactive",
+        "storeSyncUpdated": "Store sync setting updated"
       },
       "warehouse": {
         "flowTitle": "Order Processing Flow",
@@ -5353,7 +5365,10 @@
       "notifyAdmin": "Notify Admin",
       "notifyAdminDesc": "A notification is sent to the admin when all attempts end with no response — to follow up on delayed orders",
       "notificationPreview": "Notification Message Example",
-      "notificationPreviewText": "Reminder: Order #12345 has not been confirmed yet — please follow up with the customer"
+      "notificationPreviewText": "Reminder: Order #12345 has not been confirmed yet — please follow up with the customer",
+      "messages": {
+        "loading": "Loading..."
+      }
     },
     "fields": {
       "status": "Status",
@@ -5384,6 +5399,10 @@
     "retriesExhausted": "The attempts are over",
     "logs": {
       "empty": "No history found"
+    },
+    "sync": {
+      "storeInactive": "The store is not activated",
+      "noConnectedStores": "There are no online stores"
     }
   },
   "callCenter": {

@@ -9,6 +9,7 @@ import {
   Background,
   Controls,
   Panel,
+  MiniMap,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 // Components
@@ -21,6 +22,7 @@ import CustomEdge from "../atoms/authomation/CustomEdge";
 import { LeftSidebar } from "../atoms/authomation/LeftSidebar";
 import { TriggerNode } from "../atoms/authomation/TriggerNode";
 import { StepConfigModal } from "../atoms/authomation/StepConfigModal";
+import { ConfirmDeleteDialog } from "../atoms/authomation/ConfirmDeleteDialog";
 import { AUTOMATION_CONFIG } from "../atoms/authomation/automation-config";
 import toast from "react-hot-toast";
 
@@ -32,6 +34,19 @@ const nodeTypes = {
 
 const edgeTypes = {
   custom: CustomEdge,
+};
+
+const getMiniMapNodeColor = (node) => {
+  switch (node.type) {
+    case 'trigger':
+      return '#10b981'; // emerald-500
+    case 'action':
+      return '#3b82f6'; // blue-500
+    case 'condition':
+      return '#a855f7'; // purple-500
+    default:
+      return '#cbd5e1'; // slate-300
+  }
 };
 
 function BuilderCanvas() {
@@ -59,7 +74,7 @@ function BuilderCanvas() {
       let foundStep = null;
       Object.values(AUTOMATION_CONFIG).forEach(section => {
         section.categories.forEach(cat => {
-          const item = cat.items.find(i => i.id === data.triggerType || i.id === data.actionType || i.id === data.conditionType);
+          const item = cat.items.find(i => i.id === data.type || i.id === data.type || i.id === data.type);
           if (item) foundStep = item;
         });
       });
@@ -95,12 +110,12 @@ function BuilderCanvas() {
       const newNode = {
         id,
         type: configModal.step.type,
-        position: { x: nodes.length * 50 + 100, y: nodes.length * 50 + 100 },
+        position: { x: 250, y: 100 }, // Default position, store will override if pending connection exists
         data: {
           label: configModal.step.label,
-          triggerType: configModal.step.type === 'trigger' ? configModal.step.id : undefined,
-          actionType: configModal.step.type === 'action' ? configModal.step.id : undefined,
-          conditionType: configModal.step.type === 'condition' ? configModal.step.id : undefined,
+          type: configModal.step.type === 'trigger' ? configModal.step.id : undefined,
+          type: configModal.step.type === 'action' ? configModal.step.id : undefined,
+          type: configModal.step.type === 'condition' ? configModal.step.id : undefined,
           config
         },
       };
@@ -125,13 +140,22 @@ function BuilderCanvas() {
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         onSelectionChange={handleSelectionChange}
-        fitView
+        defaultViewport={{ x: 600, y: 0, zoom: 0.7 }}
         snapToGrid
-        fitViewOptions={{ padding: 0.25, minZoom: 0.5, maxZoom: 1, duration: 600 }}
+        nodesConnectable={false}
+        elementsSelectable={true}
         snapGrid={[15, 15]}
       >
         <Background color="#94a3b8" variant="dots" gap={20} size={1} />
         <Controls position="bottom-right" className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl shadow-lg" />
+        <MiniMap
+          nodeColor={getMiniMapNodeColor}
+          // maskColor="rgba(241, 245, 249, 0.2)"
+          className=" !rounded-lg !border-slate-200 dark:!border-slate-800 !shadow-lg"
+          nodeStrokeWidth={3}
+          zoomable
+          pannable
+        />
         <Panel position="top-right" className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm">
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">مساحة العمل v1.0</span>
         </Panel>
@@ -144,6 +168,8 @@ function BuilderCanvas() {
         mode={configModal.mode}
         initialData={configModal.initialData}
       />
+
+      <ConfirmDeleteDialog />
 
       {/* Expose sidebar trigger to parent */}
       <SidebarBridge onSelect={handleSelectStepFromSidebar} />
@@ -163,7 +189,7 @@ const SidebarBridge = ({ onSelect }) => {
 
 export default function AutomationBuilderPage() {
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-slate-50 dark:bg-[#050505]">
+    <div className="flex h-screen flex-col  overflow-hidden bg-slate-50 dark:bg-[#050505] relative">
       <TopToolbar />
       <div className="flex flex-1 overflow-hidden">
         <LeftSidebar onSelectStep={(step) => window.dispatchEvent(new CustomEvent('select-automation-step', { detail: step }))} />

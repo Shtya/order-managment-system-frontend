@@ -83,7 +83,7 @@ function formatDate(dateStr) {
 // ─────────────────────────────────────────────────────────────────────────────
 // External Product Modal Component
 // ─────────────────────────────────────────────────────────────────────────────
-function ExternalProductModal({ isOpen, onClose, remoteId, provider, cache, onFetch, formatCurrency }) {
+export function ExternalProductModal({ isOpen, onClose, remoteId, provider, cache, onFetch, formatCurrency }) {
     const t = useTranslations('orders.failedOrders');
     useEffect(() => {
         if (isOpen && remoteId && provider && !cache?.data && !cache?.loading) {
@@ -545,7 +545,7 @@ export default function FailedOrderDetailsPage() {
             )
         },
         {
-            key: "options",
+            key: "variants",
             header: t('table.options'),
             cell: (row) => {
                 const props = row.variant?.variation_props || [];
@@ -575,6 +575,15 @@ export default function FailedOrderDetailsPage() {
                     </div>
                 );
             }
+        },
+        {
+            key: "sku",
+            header: "SKU",
+            cell: (row) => (
+                <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800">
+                    {row.variant?.sku || "-"}
+                </span>
+            )
         },
         {
             key: "quantity",

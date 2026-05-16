@@ -1167,3 +1167,13 @@ select {
   /* padding so text doesn't go under the arrow */
   padding-right: 44px;
 }
+
+
+.layout-content .min-h-screen {
+  min-height: calc(100vh - 56px);
+}
+
+
+.layout-content .h-screen {
+  height: calc(100vh - 56px);
+}

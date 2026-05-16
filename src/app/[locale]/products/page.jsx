@@ -34,6 +34,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Printer, Store as StoreIcon, Activity, CheckCircle2, AlertCircle, Clock } from "lucide-react";
 import { DialogDescription, DialogTitle } from "@radix-ui/react-dialog";
 import { Badge } from "@/components/ui/badge";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { ExternalProductModal } from "../orders/failedOrders/[id]/page";
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -210,13 +212,14 @@ function subMonths(date, months) {
 
 
 export default function ProductsPage() {
+	const tFailed = useTranslations('orders.failedOrders');
 	const t = useTranslations("products");
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const pathname = usePathname();
 	const viewId = searchParams.get("id");
 	const [active, setActive] = useState("products");
-
+	const { formatCurrency } = usePlatformSettings();
 	const [search, setSearch] = useState("");
 	const [searchDebounced, setSearchDebounced] = useState("");
 
@@ -522,6 +525,8 @@ export default function ProductsPage() {
 		}
 	}, [t, active]);
 
+	const [externalModal, setExternalModal] = useState({ isOpen: false, remoteId: null, provider: null });
+	const [externalCache, setExternalCache] = useState({});
 	const productsLogic = useProductsTab({
 		t,
 		searchDebounced,
@@ -532,7 +537,8 @@ export default function ProductsPage() {
 		onExportRequest: (fn) => (exportBuilderRef.current = fn),
 		activetab: active,
 		selectedProducts,
-		setSelectedProducts
+		setSelectedProducts,
+		setExternalModal
 	});
 
 	const bundlesLogic = useBundlesTab({
@@ -555,6 +561,20 @@ export default function ProductsPage() {
 		onExportRequest: (fn) => (exportBuilderRef.current = fn),
 		activetab: active
 	});
+
+
+	const handleFetchExternalProduct = async (remoteId, provider) => {
+		if (externalCache[remoteId]?.data || externalCache[remoteId]?.loading) return;
+		try {
+			setExternalCache(prev => ({ ...prev, [remoteId]: { loading: true } }));
+			const res = await api.get(`/stores/external/${provider}?id=${remoteId}`);
+			setExternalCache(prev => ({ ...prev, [remoteId]: { loading: false, data: res.data } }));
+		} catch (err) {
+			setExternalCache(prev => ({ ...prev, [remoteId]: { loading: false, error: true } }));
+			toast.error(normalizeAxiosError(err) || tFailed('errors.externalFetchFailed'));
+		}
+	};
+
 
 	const current = ["bundles", "deleted_bundles"]?.includes(active) ? bundlesLogic : active === "idle" ? idleLogic : productsLogic;
 
@@ -835,6 +855,16 @@ export default function ProductsPage() {
 				onOpenChange={setExportToStoreModal}
 				selectedProductIds={selectedProducts}
 				onSuccess={() => setSelectedProducts([])}
+			/>
+
+			<ExternalProductModal
+				isOpen={externalModal.isOpen}
+				onClose={() => setExternalModal({ isOpen: false, remoteId: null, provider: null })}
+				remoteId={externalModal.remoteId}
+				provider={externalModal.provider}
+				cache={externalCache[externalModal.remoteId]}
+				onFetch={handleFetchExternalProduct}
+				formatCurrency={formatCurrency}
 			/>
 		</div>
 	);

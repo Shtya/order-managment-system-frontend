@@ -87,7 +87,8 @@ import {
   GeneralTab,
   ShippingTab,
   WarehouseTab,
-  NotificationsSettingsTab
+  NotificationsSettingsTab,
+  SyncSettingsTab,
 } from "../orders/atoms/SettingsModal";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { useTheme } from "next-themes";
@@ -200,9 +201,9 @@ function SubTabBar({ tabs, active, setActive }) {
 }
 
 // ── Save footer ───────────────────────────────────────────────────────────────
-function SaveFooter({ onSave, saving, label }) {
+function SaveFooter({ onSave, saving, label, hasBorder = true}) {
   return (
-    <div className="flex justify-end pt-5 mt-5 border-t border-border/40">
+    <div className={`flex justify-end pt-5 ${hasBorder && "mt-5 border-t border-border/40"}`}>
       <motion.button
         whileHover={{ scale: 1.02, y: -1 }}
         whileTap={{ scale: 0.97 }}
@@ -413,6 +414,11 @@ const SETTINGS_TABS = [
     key: "notifications",
     icon: Bell,
     labelKey: "retrySettings.tabs.notifications",
+  },
+  {
+    key: "sync",
+    icon: RefreshCw,
+    labelKey: "retrySettings.tabs.sync",
   },
 ];
 
@@ -967,9 +973,13 @@ function SettingsTab() {
             {activeTab === "notifications" && (
               <NotificationsSettingsTab settings={settings} patch={patch} t={tOrders} />
             )}
+            {activeTab === "sync" && (
+              <SyncSettingsTab settings={settings} patch={patch} t={tOrders} />
+            )}
           </motion.div>
           <SaveFooter
             onSave={handleSave}
+            hasBorder={activeTab !== "sync"}
             saving={saving}
             label={tSettings("common.saveChanges")}
           />

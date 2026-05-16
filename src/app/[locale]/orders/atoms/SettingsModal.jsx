@@ -33,6 +33,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -71,6 +73,11 @@ const TABS = [
     key: "notifications",
     icon: Bell,
     labelKey: "retrySettings.tabs.notifications",
+  },
+  {
+    key: "sync",
+    icon: RefreshCw,
+    labelKey: "retrySettings.tabs.sync",
   },
 ];
 
@@ -242,6 +249,10 @@ export default function GlobalRetrySettingsModal({
 
                 {activeTab === "notifications" && (
                   <NotificationsSettingsTab settings={settings} patch={patch} t={t} />
+                )}
+
+                {activeTab === "sync" && (
+                  <SyncSettingsTab settings={settings} patch={patch} t={t} />
                 )}
               </motion.div>
             </AnimatePresence>
@@ -1385,6 +1396,199 @@ export function NotificationsSettingsTab({ settings, patch, t }) {
 
 // ═══════════════════════════════════════════════════════════════════════════
 // MAIN SETTINGS MODAL
+
+/* ══════════════════════════════════════════════════════════════
+   SYNC / STORE SETTINGS TAB
+══════════════════════════════════════════════════════════════ */
+const STORE_PROVIDER_LABELS = {
+  easyorder: "EasyOrder",
+  shopify: "Shopify",
+  woocommerce: "WooCommerce",
+};
+
+export function SyncSettingsTab({ settings, patch }) {
+  const tStores = useTranslations("storeIntegrations");
+  const t = useTranslations("orders.retrySettings");
+  const [stores, setStores] = useState([]);
+  const [storesLoading, setStoresLoading] = useState(true);
+  const [storeSavingId, setStoreSavingId] = useState(null);
+
+  const fetchStores = useCallback(async () => {
+    try {
+      setStoresLoading(true);
+      const res = await api.get("/stores");
+      const records = res.data?.records || [];
+      setStores(Array.isArray(records) ? records : []);
+    } catch (e) {
+      toast.error(normalizeAxiosError(e));
+    } finally {
+      setStoresLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStores();
+  }, [fetchStores]);
+
+  const connectedStores = useMemo(
+    () => stores.filter((s) => s.isIntegrated),
+    [stores],
+  );
+
+  const handleStoreSyncToggle = async (store, checked, field = "syncNewProducts") => {
+    setStoreSavingId(store.id);
+    try {
+      await api.patch(`/stores/${store.id}`, { [field]: !!checked });
+      setStores((prev) =>
+        prev.map((s) =>
+          s.id === store.id ? { ...s, [field]: !!checked } : s,
+        ),
+      );
+      toast.success(t("sync.storeSyncUpdated"));
+    } catch (e) {
+      toast.error(normalizeAxiosError(e));
+    } finally {
+      setStoreSavingId(null);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
+
+      <div className="space-y-3">
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3"
+        >
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: P_12, border: `1px solid ${P_20}` }}
+          >
+            <Layers size={16} style={{ color: "var(--primary)" }} />
+          </div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <p className="text-sm font-bold text-foreground">
+              {t("sync.storesTitle")}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {t("sync.storesSubtitle")}
+            </p>
+          </motion.div>
+        </motion.div>
+
+        {storesLoading ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center justify-center py-10 gap-2 text-muted-foreground"
+          >
+            <Loader2 size={18} className="animate-spin text-[var(--primary)]" />
+            <span className="text-sm">{t("messages.loading")}</span>
+          </motion.div>
+        ) : connectedStores.length === 0 ? (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-sm text-muted-foreground py-6 text-center rounded-xl border border-dashed border-border bg-muted/20"
+          >
+            {t("sync.noConnectedStores")}
+          </motion.p>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-2"
+          >
+            {connectedStores.map((store) => {
+              const busy = storeSavingId === store.id;
+              const providerLabel =
+                STORE_PROVIDER_LABELS[store.provider] || store.provider;
+
+              return (
+                <motion.div
+                  key={store.id}
+                  layout
+                  className={cn(
+                    "flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl border border-border bg-muted/10",
+                    busy && "opacity-70 pointer-events-none",
+                  )}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-foreground truncate">
+                      {store.name}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                      <Badge variant="secondary" className="text-[10px] font-semibold">
+                        {providerLabel}
+                      </Badge>
+                      {!store.isActive && (
+                        <Badge variant="outline" className="text-[10px]">
+                          {t("sync.storeInactive")}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    <motion.div className="flex items-center gap-2 h-[34px] px-2 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
+                      <Checkbox
+                        id={`sync-new-${store.id}`}
+                        checked={!!store.syncNewProducts}
+                        disabled={busy}
+                        onCheckedChange={(checked) =>
+                          handleStoreSyncToggle(store, checked, "syncNewProducts")
+                        }
+                        className="h-6 w-6 border-slate-300 dark:border-slate-600 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                      />
+                      <Label
+                        htmlFor={`sync-new-${store.id}`}
+                        className="text-xs font-semibold text-gray-600 dark:text-slate-300 cursor-pointer"
+                      >
+                        {tStores("form.syncNewProducts")}
+                      </Label>
+                    </motion.div>
+
+                    <motion.div className="flex items-center gap-2 h-[34px] px-2 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
+                      <Checkbox
+                        id={`sync-remote-${store.id}`}
+                        checked={!!store.syncRemoteProducts}
+                        disabled={busy}
+                        onCheckedChange={(checked) =>
+                          handleStoreSyncToggle(store, checked, "syncRemoteProducts")
+                        }
+                        className="h-6 w-6 border-slate-300 dark:border-slate-600 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                      />
+                      <Label
+                        htmlFor={`sync-remote-${store.id}`}
+                        className="text-xs font-semibold text-gray-600 dark:text-slate-300 cursor-pointer"
+                      >
+                        {tStores("form.syncRemoteProducts")}
+                      </Label>
+                    </motion.div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        )}
+      </div>
+      <div className="mt-5 pt-5 border-t border-border/60">
+        <ToggleRow
+          label={t("sync.skuFallbackTitle")}
+          description={t("sync.skuFallbackDesc")}
+          checked={settings.storeOrderSkuFallback !== false}
+          onCheckedChange={(v) => patch({ storeOrderSkuFallback: v })}
+        />
+      </div>
+
+    </motion.div>
+  );
+}
 
 /* ══════════════════════════════════════════════════════════════
    MAIN COMPONENT

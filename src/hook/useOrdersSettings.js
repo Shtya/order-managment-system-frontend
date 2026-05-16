@@ -30,6 +30,7 @@ export function OrdersSettingsProvider({ children }) {
     stockDeductionStrategy: "on_shipment",
     workingHours: { enabled: true, start: "09:00", end: "18:00" },
     orderFlowPath: "warehouse", // Options: 'warehouse' or 'shipping'
+    storeOrderSkuFallback: true,
     shipping: {
       shippingCompanyId: "",
       triggerStatus: "",
@@ -90,6 +91,8 @@ export function OrdersSettingsProvider({ children }) {
           stockDeductionStrategy:
             data.stockDeductionStrategy ?? prev.stockDeductionStrategy,
           orderFlowPath: data.orderFlowPath ?? prev.orderFlowPath,
+          storeOrderSkuFallback:
+            data.storeOrderSkuFallback ?? prev.storeOrderSkuFallback ?? true,
 
           // تحديث الكائنات المتداخلة (Nested Objects)
           workingHours: {

@@ -667,6 +667,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
         const shape = {
             name: yup.string().trim().required(t("validation.nameRequired")),
             syncNewProducts: yup.boolean().default(false),
+            syncRemoteProducts: yup.boolean().default(false),
             storeUrl: yup.string().trim().url(t("validation.invalidUrl")).required(t("validation.storeUrlRequired")),
             isActive: yup.boolean().default(true),
         };
@@ -699,6 +700,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
             storeUrl: existingStore?.storeUrl || "",
             isActive: existingStore?.isActive ?? true,
             syncNewProducts: existingStore?.syncNewProducts ?? false,
+            syncRemoteProducts: existingStore?.syncRemoteProducts ?? false,
         };
 
         if (config?.fields) {
@@ -750,6 +752,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
                         name: d.name || "",
                         storeUrl: d.storeUrl || "",
                         syncNewProducts: d.syncNewProducts ?? false,
+                        syncRemoteProducts: d.syncRemoteProducts ?? false,
                         isActive: d.isActive ?? true,
                     };
 
@@ -780,7 +783,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
                 }
             })();
         } else {
-            reset({ name: "", storeUrl: "", isActive: true, syncNewProducts: false });
+            reset({ name: "", storeUrl: "", isActive: true, syncNewProducts: false, syncRemoteProducts: false });
             setMasks({});
             setSystemSecrets({});
         }
@@ -822,6 +825,7 @@ export function useStoreConfig({ open, onClose, provider, existingStore, fetchSt
                 name: data.name.trim(),
                 storeUrl: data.storeUrl.trim(),
                 syncNewProducts: data.syncNewProducts,
+                syncRemoteProducts: data.syncRemoteProducts,
             };
 
             if (provider === "easyorder") {

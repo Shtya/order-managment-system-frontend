@@ -825,6 +825,7 @@
     },
     "form": {
       "syncNewProducts": "مزامنة المنتجات للمتاجر تلقائيا",
+      "syncRemoteProducts": "جلب المنتجات البعيدة محلياً بعد المزامنة",
       "storeInfoSection": "معلومات المتجر",
       "storeName": "اسم المتجر",
       "storeNamePlaceholder": "متجري الإلكتروني",
@@ -3769,7 +3770,8 @@
       "view": "عرض",
       "reactivate": "إعادة التفعيل",
       "success": "تمت بنجاح",
-      "printSku": "إطبع Skus"
+      "printSku": "إطبع Skus",
+      "fetchExternalDetails": "عرض بيانات المنتج من المتجر"
     },
     "tabs": {
       "products": "المنتجات",
@@ -5299,7 +5301,17 @@
         "automation": "الأتمتة",
         "shipping": "الشحن",
         "notifications": "الإشعارات",
-        "warehouse": "المستودع"
+        "warehouse": "المستودع",
+        "sync": "مزامنة المتاجر"
+      },
+      "sync": {
+        "skuFallbackTitle": "مطابقة المنتجات برمز SKU عند عدم الربط",
+        "skuFallbackDesc": "عند وصول طلب من متجر متصل ولا يوجد ربط مزامنة للمنتج، يحاول النظام إيجاد المتغير المحلي برمز SKU قبل نقل الطلب للطلبات المعلقة.",
+        "storesTitle": " المتاجر المتصلة",
+        "storesSubtitle": "تحكم في مزامنة المنتجات التلقائية لكل متجر متكامل. التغييرات تُطبّق فوراً.",
+        "noConnectedStores": "لا توجد متاجر متصلة بعد. اربط متجراً من صفحة تكامل المتاجر أولاً.",
+        "storeInactive": "غير نشط",
+        "storeSyncUpdated": "تم تحديث إعداد مزامنة المتجر"
       },
       "warehouse": {
         "flowTitle": "مسار معالجة الطلبات",
@@ -5387,7 +5399,10 @@
       "notifyAdmin": "إشعار المشرف",
       "notifyAdminDesc": "يُرسل إشعار للمشرف عندما تنتهي جميع المحاولات دون استجابة — لمتابعة الطلبات المتعثرة",
       "notificationPreview": "مثال على رسالة الإشعار",
-      "notificationPreviewText": "تذكير: الطلب رقم #١٢٣٤٥ لم يتم تأكيده حتى الآن — يرجى متابعة العميل"
+      "notificationPreviewText": "تذكير: الطلب رقم #١٢٣٤٥ لم يتم تأكيده حتى الآن — يرجى متابعة العميل",
+      "messages": {
+        "loading": "جاري التحميل"
+      }
     },
     "fields": {
       "status": "الحالة",
@@ -5418,6 +5433,10 @@
     "retriesExhausted": "إنتهت المحاولات",
     "logs": {
       "empty": "لا يوجد تاريخ"
+    },
+    "sync": {
+      "storeInactive": "المتجر غير مفعل",
+      "noConnectedStores": "لا يوجد متاجر متصله"
     }
   },
   "callCenter": {

@@ -1,27 +1,44 @@
 // components/flow/CustomEdge.tsx
-import { BaseEdge, EdgeLabelRenderer, getBezierPath, useReactFlow } from '@xyflow/react';
-import { X } from 'lucide-react';
+import { useState } from 'react';
+import { BaseEdge, EdgeLabelRenderer, getBezierPath } from '@xyflow/react';
+import { Trash2 } from 'lucide-react';
+import { useFlowStore } from '@/hook/useFlowStore';
+import { cn } from '@/utils/cn';
 
 export default function CustomEdge({
-    id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style = {}, markerEnd,
+    id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style = {}, markerEnd, selected
 }) {
-    const { setEdges } = useReactFlow();
+    const deleteEdge = useFlowStore((s) => s.deleteEdge);
+    const [isHovered, setIsHovered] = useState(false);
 
     const [edgePath, labelX, labelY] = getBezierPath({
         sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition,
     });
 
-    const onEdgeClick = () => {
-        setEdges((edges) => edges.filter((e) => e.id !== id));
+    const onEdgeClick = (e) => {
+        e.stopPropagation();
+        deleteEdge(id);
     };
 
     return (
-        <>
+        <g
+            className="group"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
             <BaseEdge
                 path={edgePath}
                 markerEnd={markerEnd}
-                style={{ ...style, strokeWidth: 2, stroke: '#94a3b8' }}
-                className="react-flow__edge-path group-hover:stroke-primary transition-colors"
+                style={{ ...style, strokeWidth: 2, stroke: (isHovered || selected) ? '#2563eb' : '#cbd5e1' }}
+                className="react-flow__edge-path transition-colors cursor-pointer"
+            />
+            {/* Hidden wider path to make it easier to hover */}
+            <path
+                d={edgePath}
+                fill="none"
+                stroke="transparent"
+                strokeWidth={20}
+                className="cursor-pointer"
             />
             <EdgeLabelRenderer>
                 <div
@@ -34,12 +51,18 @@ export default function CustomEdge({
                 >
                     <button
                         onClick={onEdgeClick}
-                        className="w-6 h-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-full flex items-center justify-center text-slate-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-all shadow-sm opacity-0 group-hover:opacity-100 hover:scale-110"
+                        onMouseEnter={() => setIsHovered(true)}
+                        onMouseLeave={() => setIsHovered(false)}
+                        className={cn(
+                            "w-7 h-7 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50 transition-all shadow-lg",
+                            (isHovered || selected) ? "opacity-100 scale-110" : "opacity-0 scale-50"
+                        )}
+                        title="حذف المسار وما بعده"
                     >
-                        <X size={12} strokeWidth={3} />
+                        <Trash2 size={14} strokeWidth={2.5} />
                     </button>
                 </div>
             </EdgeLabelRenderer>
-        </>
+        </g>
     );
 }

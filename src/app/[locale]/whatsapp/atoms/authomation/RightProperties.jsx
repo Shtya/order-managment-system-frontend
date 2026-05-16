@@ -55,8 +55,8 @@ export function RightProperties() {
                   <FormGroup label="حدث المحفز" description="اختر الحدث الذي يبدأ هذه الأتمتة">
                     <select
                       className="w-full h-11 rounded-xl border-slate-200 bg-slate-50 px-4 text-sm focus:ring-2 focus:ring-primary/20 dark:bg-slate-900 dark:border-slate-800 appearance-none"
-                      value={selectedNode.data.triggerType || ''}
-                      onChange={(e) => updateNodeData(selectedNode.id, { triggerType: e.target.value })}
+                      value={selectedNode.data.type || ''}
+                      onChange={(e) => updateNodeData(selectedNode.id, { type: e.target.value })}
                     >
                       <option value="">اختر حدثاً...</option>
                       <option value="order_created">إنشاء طلب جديد</option>
@@ -125,17 +125,17 @@ export function RightProperties() {
                   <FormGroup label="نوع المنطق">
                     <div className="grid grid-cols-2 gap-2">
                       <button
-                        onClick={() => updateNodeData(selectedNode.id, { conditionType: 'filter' })}
+                        onClick={() => updateNodeData(selectedNode.id, { type: 'filter' })}
                         className={cn("p-3 rounded-xl border text-[10px] font-bold uppercase transition-all",
-                          selectedNode.data.conditionType !== 'button_click' ? "bg-primary text-white border-primary shadow-md" : "bg-slate-50 border-slate-100 text-slate-500 dark:bg-slate-900 dark:border-slate-800"
+                          selectedNode.data.type !== 'button_click' ? "bg-primary text-white border-primary shadow-md" : "bg-slate-50 border-slate-100 text-slate-500 dark:bg-slate-900 dark:border-slate-800"
                         )}
                       >
                         تصفية الحقول
                       </button>
                       <button
-                        onClick={() => updateNodeData(selectedNode.id, { conditionType: 'button_click' })}
+                        onClick={() => updateNodeData(selectedNode.id, { type: 'button_click' })}
                         className={cn("p-3 rounded-xl border text-[10px] font-bold uppercase transition-all",
-                          selectedNode.data.conditionType === 'button_click' ? "bg-primary text-white border-primary shadow-md" : "bg-slate-50 border-slate-100 text-slate-500 dark:bg-slate-900 dark:border-slate-800"
+                          selectedNode.data.type === 'button_click' ? "bg-primary text-white border-primary shadow-md" : "bg-slate-50 border-slate-100 text-slate-500 dark:bg-slate-900 dark:border-slate-800"
                         )}
                       >
                         تفرع الأزرار
@@ -143,7 +143,7 @@ export function RightProperties() {
                     </div>
                   </FormGroup>
 
-                  {selectedNode.data.conditionType === 'button_click' ? (
+                  {selectedNode.data.type === 'button_click' ? (
                     <div className="p-4 rounded-2xl bg-purple-50/50 dark:bg-purple-500/5 border border-purple-100 dark:border-purple-500/20">
                       <p className="text-[11px] text-purple-700 dark:text-purple-300 leading-relaxed italic">
                         سيتم ملء هذا التفرع تلقائياً بالأزرار من عنصر رسالة الواتساب السابق بمجرد توصيله.
@@ -188,7 +188,7 @@ export function RightProperties() {
               )}
 
               {/* Action Update Order Configuration */}
-              {selectedNode.type === 'action' && selectedNode.data.actionType === 'update_order' && (
+              {selectedNode.type === 'action' && selectedNode.data.type === 'update_order' && (
                 <div className="space-y-6">
                   <FormGroup label="الحالة المستهدفة" description="تغيير حالة الطلب إلى هذه القيمة">
                     <select

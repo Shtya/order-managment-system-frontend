@@ -3,7 +3,7 @@
 
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { CalendarDays, DollarSign, Edit2, Eye, QrCode, Tag, Trash2, Hash, Package, Boxes, Store, Warehouse, Image as ImageIcon, CheckCircle2, XCircle, RotateCcw, Printer, Plus, Minus, X, Loader2, Truck } from "lucide-react";
+import { CalendarDays, DollarSign, Edit2, Eye, QrCode, Tag, Trash2, Hash, Package, Boxes, Store, Warehouse, Image as ImageIcon, CheckCircle2, XCircle, RotateCcw, Printer, Plus, Minus, X, Loader2, Truck, RefreshCcw, Link } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/utils/cn";
@@ -103,7 +103,7 @@ export function ProductOrdersByStatusModal({ open, onOpenChange, title, loading,
 	);
 }
 
-export default function useProductsTab({ searchDebounced, filters, filtersOpen, onAskDelete, onOpenView, onExportRequest, activetab, selectedProducts = [], setSelectedProducts }) {
+export default function useProductsTab({ setExternalModal, searchDebounced, filters, filtersOpen, onAskDelete, onOpenView, onExportRequest, activetab, selectedProducts = [], setSelectedProducts }) {
 	const router = useRouter();
 	const t = useTranslations("products");
 	const requestIdRef = useRef(0);
@@ -232,6 +232,7 @@ export default function useProductsTab({ searchDebounced, filters, filtersOpen, 
 		fetchData({ page: 1, per_page: pager.per_page });
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [searchDebounced, activetab]);
+
 
 
 
@@ -522,7 +523,7 @@ export default function useProductsTab({ searchDebounced, filters, filtersOpen, 
 				className: "min-w-[120px]",
 				cell: (row) => (
 					<div className="inline-flex items-center gap-2 text-gray-500 dark:text-slate-300 text-sm">
-						<CalendarDays size={14} className="text-gray-400 dark:text-slate-500" />
+						<CalendarDays size={14} className="text-gray-400 dark:text-slate-500" />	
 						{row.created_at ? new Date(row.created_at).toLocaleDateString("en-US") : na}
 					</div>
 				)
@@ -535,6 +536,14 @@ export default function useProductsTab({ searchDebounced, filters, filtersOpen, 
 					<ActionButtons
 						row={row}
 						actions={[
+							{
+								icon: <Link size={16} />,
+								tooltip: t('actions.fetchExternalDetails'),
+								variant: "warning",
+								disabled: row?.syncStates?.[0]?.status !== 'synced' || !row.store?.isActive || !row.store.isIntegrated,
+								permission: "products.read",
+								onClick: () => setExternalModal({ isOpen: true, remoteId: row?.syncStates?.[0]?.remoteProductId, provider: row?.store?.provider })
+							},
 							{
 								icon: <Edit2 />,
 								tooltip: t("actions.edit"),
@@ -586,6 +595,7 @@ export default function useProductsTab({ searchDebounced, filters, filtersOpen, 
 								variant: "red",
 								permission: "products.delete",
 							},
+
 						]}
 					/>
 				)

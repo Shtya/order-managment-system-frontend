@@ -825,7 +825,7 @@
     },
     "form": {
       "syncNewProducts": "Automatically sync products to stores",
-      "syncRemoteProducts": "Get products from store locally after integate",
+      "syncRemoteProducts": "Get products from store after integate",
       "storeInfoSection": "Store Information",
       "storeName": "Store Name",
       "storeNamePlaceholder": "My Online Store",

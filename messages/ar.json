@@ -825,7 +825,7 @@
     },
     "form": {
       "syncNewProducts": "مزامنة المنتجات للمتاجر تلقائيا",
-      "syncRemoteProducts": "جلب المنتجات البعيدة محلياً بعد المزامنة",
+      "syncRemoteProducts": "جلب المنتجات من المتجر بعد التكامل",
       "storeInfoSection": "معلومات المتجر",
       "storeName": "اسم المتجر",
       "storeNamePlaceholder": "متجري الإلكتروني",

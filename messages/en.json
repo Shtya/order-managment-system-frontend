@@ -372,6 +372,7 @@
     "overview": "Overview",
     "templates": "Templates",
     "automations": "Automations",
+    "addAutomation": "Add Automation",
     "orders": "Orders",
     "employeeOrders": "Employee Orders",
     "newPurchase": "New Purchase",
@@ -9414,6 +9415,49 @@
         "saveError": "Could not save the template",
         "loadingTemplate": "Loading template…",
         "templateNotFound": "Template not found"
+      }
+    },
+    "automations": {
+      "breadcrumb": {
+        "home": "Home",
+        "whatsapp": "WhatsApp",
+        "automations": "Automations"
+      },
+      "toolbar": {
+        "addAutomation": "Add Automation",
+        "searchPlaceholder": "Search by name..."
+      },
+      "stats": {
+        "executing": "Executing",
+        "published": "Published",
+        "paused": "Paused (Problems)",
+        "done": "Completed"
+      },
+      "filters": {
+        "status": "Status",
+        "triggerType": "Trigger Type",
+        "date": "Date"
+      },
+      "table": {
+        "name": "Name",
+        "triggerType": "Trigger",
+        "status": "Status",
+        "createdAt": "Created At",
+        "empty": "No automations found"
+      },
+      "actions": {
+        "view": "View",
+        "edit": "Edit"
+      },
+      "triggers": {
+        "order_created": "New Order Created",
+        "order_updated": "Order Status Updated"
+      },
+      "statuses": {
+        "published": "Published",
+        "draft": "Draft",
+        "paused": "Paused",
+        "archived": "Archived"
       }
     }
   }

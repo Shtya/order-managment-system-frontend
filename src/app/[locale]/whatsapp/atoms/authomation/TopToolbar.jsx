@@ -18,10 +18,6 @@ export function TopToolbar() {
     const nodes = useFlowStore((s) => s.nodes);
     const setDeleteConfirm = useFlowStore((s) => s.setDeleteConfirm);
 
-    const handleSave = () => {
-        toast.success("تم حفظ سير عمل الأتمتة بنجاح!");
-    };
-
     const handleClear = () => {
         if (nodes.length === 0) return;
         setDeleteConfirm({ type: 'clear' });

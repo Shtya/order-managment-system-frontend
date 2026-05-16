@@ -371,6 +371,7 @@
     "overview": "نظرة عامة",
     "templates": "القوالب",
     "automations": "التشغيل التلقائي",
+    "addAutomation": "إضافة تشغيل تلقائي جديد",
     "dashboard": "لوحة التحكم",
     "orders": "الطلبات",
     "employeeOrders": "طلبات الموظفين",
@@ -9452,6 +9453,49 @@
         "saveError": "تعذر حفظ القالب",
         "loadingTemplate": "جاري تحميل القالب…",
         "templateNotFound": "القالب غير موجود"
+      }
+    },
+    "automations": {
+      "breadcrumb": {
+        "home": "الرئيسية",
+        "whatsapp": "واتساب",
+        "automations": "الأتمتة"
+      },
+      "toolbar": {
+        "addAutomation": "إضافة أتمتة",
+        "searchPlaceholder": "البحث بالاسم..."
+      },
+      "stats": {
+        "executing": "قيد التنفيذ",
+        "published": "منشورة",
+        "paused": "متوقفة (مشاكل)",
+        "done": "مكتملة"
+      },
+      "filters": {
+        "status": "الحالة",
+        "triggerType": "نوع المحفز",
+        "date": "التاريخ"
+      },
+      "table": {
+        "name": "الاسم",
+        "triggerType": "المحفز",
+        "status": "الحالة",
+        "createdAt": "تاريخ الإنشاء",
+        "empty": "لم يتم العثور على أتمتة"
+      },
+      "actions": {
+        "view": "عرض",
+        "edit": "تعديل"
+      },
+      "triggers": {
+        "order_created": "إنشاء طلب جديد",
+        "order_updated": "تحديث حالة الطلب"
+      },
+      "statuses": {
+        "published": "نشط",
+        "draft": "مسودة",
+        "paused": "متوقف",
+        "archived": "مؤرشف"
       }
     }
   }

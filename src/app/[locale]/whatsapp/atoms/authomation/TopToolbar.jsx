@@ -44,11 +44,11 @@ export function TopToolbar() {
                     onClick={() => { }}
                 />
 
-                <ToolbarButton
+                {/* <ToolbarButton
                     icon={<Save size={18} />}
                     label="حفظ التغييرات"
                     onClick={handleSave}
-                />
+                /> */}
 
                 <ToolbarButton
                     icon={<Trash2 size={18} />}

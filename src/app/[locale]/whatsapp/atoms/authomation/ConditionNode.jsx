@@ -32,14 +32,29 @@ export function ConditionNode({ id, data, selected }) {
         >
             <div className="text-[10px] text-slate-600 dark:text-slate-400 bg-purple-50/20 dark:bg-purple-500/5 p-2.5 rounded-xl border border-purple-100/30 dark:border-purple-500/10 text-right rtl">
                 {data.type === 'ORDER_CHECK' && (
-                    <div className="flex flex-col gap-1">
-                        <div className="flex items-center justify-between font-black text-purple-700 dark:text-purple-400">
-                            <span className="truncate">{data.config?.field || '—'}</span>
-                            <span className="text-slate-400 font-medium px-1.5">{data.config?.operator || '=='}</span>
-                            <span className="truncate">{data.config?.targetValue || '—'}</span>
-                        </div>
+                    <div className="flex flex-col gap-1.5">
+                        {data.config?.checks?.length > 0 ? (
+                            <>
+                                <div className="flex flex-col gap-1">
+                                    {data.config.checks.slice(0, 2).map((check, idx) => (
+                                        <div key={idx} className="flex items-center justify-between font-black text-purple-700 dark:text-purple-400 border-b border-purple-500/5 last:border-0 pb-1 last:pb-0">
+                                            <span className="truncate max-w-[60px]">{check.fieldLabel || check.field}</span>
+                                            <span className="text-slate-400 font-medium px-1">{check.operator}</span>
+                                            <span className="truncate max-w-[60px]">{check.targetLabel || check.targetValue}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                {data.config.checks.length > 2 && (
+                                    <div className="text-[8px] text-slate-400 font-bold mt-0.5 text-center bg-slate-100 dark:bg-slate-800 rounded py-0.5">
+                                        + {data.config.checks.length - 2} شروط أخرى
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <div className="text-slate-400 italic text-center">لا توجد شروط</div>
+                        )}
                         <div className="flex items-center justify-end mt-0.5 opacity-50 font-bold text-[9px]">
-                            <span>التحقق من البيانات</span>
+                            <span>فحص بيانات الطلب</span>
                         </div>
                     </div>
                 )}

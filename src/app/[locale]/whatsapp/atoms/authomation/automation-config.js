@@ -19,30 +19,32 @@ export const AUTOMATION_CONFIG = {
                         label: 'إنشاء طلب جديد',
                         icon: ShoppingCart,
                         type: 'trigger',
-                        configComponent: 'OrderCreatedConfig'
+                        configComponent: 'OrderCreatedConfig',
+                        className: 'max-w-xl!'
                     },
                     {
                         id: 'ORDER_STATUS_UPDATED',
                         label: 'تحديث حالة الطلب',
                         icon: RefreshCw,
                         type: 'trigger',
-                        configComponent: 'OrderStatusUpdatedConfig'
+                        configComponent: 'OrderStatusUpdatedConfig',
+                        className: 'max-w-xl!'
                     }
                 ]
             },
-            {
-                id: 'WHATSAPP',
-                label: 'واتساب',
-                items: [
-                    {
-                        id: 'WHATSAPP_INCOMING',
-                        label: 'رسالة واردة جديدة',
-                        icon: MessageSquare,
-                        type: 'trigger',
-                        configComponent: 'WhatsappIncomingConfig'
-                    }
-                ]
-            }
+            // {
+            //     id: 'WHATSAPP',
+            //     label: 'واتساب',
+            //     items: [
+            //         {
+            //             id: 'WHATSAPP_INCOMING',
+            //             label: 'رسالة واردة جديدة',
+            //             icon: MessageSquare,
+            //             type: 'trigger',
+            //             configComponent: 'WhatsappIncomingConfig'
+            //         }
+            //     ]
+            // }
         ]
     },
     ACTIONS: {
@@ -57,7 +59,8 @@ export const AUTOMATION_CONFIG = {
                         label: 'تحديث حالة الطلب',
                         icon: RefreshCw,
                         type: 'action',
-                        configComponent: 'UpdateOrderStatusConfig'
+                        configComponent: 'UpdateOrderStatusConfig',
+                        className: 'max-w-xl!'
                     }
                 ]
             },
@@ -70,7 +73,8 @@ export const AUTOMATION_CONFIG = {
                         label: 'إرسال قالب واتساب',
                         icon: MessageSquare,
                         type: 'action',
-                        configComponent: 'SendWhatsappTemplateConfig'
+                        configComponent: 'SendWhatsappTemplateConfig',
+                        className: 'max-w-2xl!'
                     }
                 ]
             }
@@ -88,14 +92,16 @@ export const AUTOMATION_CONFIG = {
                         label: 'فحص بيانات الطلب',
                         icon: GitBranch,
                         type: 'condition',
-                        configComponent: 'OrderCheckConfig'
+                        configComponent: 'OrderCheckConfig',
+                        className: 'max-w-7xl!'
                     },
                     {
                         id: 'QUICK_ORDER_STATUS',
                         label: 'فحص سريع للحالة',
                         icon: Zap,
                         type: 'condition',
-                        configComponent: 'QuickOrderStatusConfig'
+                        configComponent: 'QuickOrderStatusConfig',
+                        className: 'max-w-xl!'
                     }
                 ]
             }

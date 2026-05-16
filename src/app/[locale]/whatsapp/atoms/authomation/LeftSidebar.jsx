@@ -49,12 +49,13 @@ export function LeftSidebar({ onSelectStep }) {
             className={cn(
                 "border-r z-10 flex flex-col h-full bg-white dark:bg-slate-950 dark:border-slate-800 overflow-hidden",
                 "transition-all duration-300 ease-out",
-                hiddenSidebar
-                    ? cn(
-                        "w-0 opacity-0 pointer-events-none",
-                        isRTL ? "translate-x-full" : "-translate-x-full"
-                    )
-                    : "w-[340px] translate-x-0 opacity-100"
+                // hiddenSidebar
+                //     ? cn(
+                //         "w-0 opacity-0 pointer-events-none",
+                //         isRTL ? "translate-x-full" : "-translate-x-full"
+                //     )
+                //     : 
+                "w-[340px] translate-x-0 opacity-100"
             )}
         >
             <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950">

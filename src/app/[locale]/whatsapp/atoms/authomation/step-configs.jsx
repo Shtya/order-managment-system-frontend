@@ -1,15 +1,25 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/FloatingSelect";
 import { Button } from "@/components/ui/button";
-import { Search, MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw } from "lucide-react";
+import { Search, MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, AlertCircle, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { MOCK_TEMPLATES } from "../MetaTemplateDialog"; // Reusing mock templates for now
 import TemplatePreview from "../TemplatePreview";
 import { InternalTemplateDialog } from "../InternalTemplateDialog";
+import api from "@/utils/api";
+import toast from "react-hot-toast";
+import { useTranslations } from "next-intl";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import Button_ from "@/components/atoms/Button";
+
+function normalizeAxiosError(err) {
+    const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
+    return Array.isArray(msg) ? msg.join(", ") : String(msg);
+}
 
 /**
  * Shared Form Group Wrapper
@@ -28,18 +38,59 @@ function FormGroup({ label, description, children, error }) {
 /**
  * Trigger: Order Created
  */
-export function OrderCreatedConfig({ value, onChange, errors }) {
+export function OrderCreatedConfig({ value, onChange, errors, setDisabled }) {
+    const [stores, setStores] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStores = async () => {
+            try {
+                setLoading(true);
+                const res = await api.get("/lookups/stores", { params: { limit: 200, isActive: true } });
+                setStores(res.data || []);
+            } catch (e) {
+                toast.error(normalizeAxiosError(e));
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchStores();
+    }, []);
+
+    useEffect(() => {
+        // Prevent save until select store or all
+        const isValid = !!value.store;
+        setDisabled(!isValid);
+    }, [value.store, setDisabled]);
+
+    const handleStoreChange = (v) => {
+        if (v === "all") {
+            onChange({ ...value, store: "all", storeId: undefined });
+        } else {
+            const selectedStore = stores.find(s => s.id === v);
+            onChange({ ...value, store: selectedStore?.name, storeId: v });
+        }
+    };
+
     return (
         <div className="space-y-4">
             <FormGroup label="المتجر" description="اختر المتجر الذي سيتم مراقبة الطلبات فيه" error={errors.store}>
-                <Select value={value.store || "all"} onValueChange={(v) => onChange({ ...value, store: v })}>
+                <Select value={value.storeId || (value.store === "all" ? "all" : "")} onValueChange={handleStoreChange}>
                     <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
-                        <SelectValue placeholder="جميع المتاجر" />
+                        {loading ? (
+                            <div className="flex items-center gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span>جاري التحميل...</span>
+                            </div>
+                        ) : (
+                            <SelectValue placeholder="اختر المتجر..." />
+                        )}
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">جميع المتاجر</SelectItem>
-                        <SelectItem value="main">المتجر الرئيسي</SelectItem>
-                        <SelectItem value="dubai">فرع دبي</SelectItem>
+                        {stores.map(store => (
+                            <SelectItem key={store.id} value={store.id}>{store.name}</SelectItem>
+                        ))}
                     </SelectContent>
                 </Select>
             </FormGroup>
@@ -50,18 +101,55 @@ export function OrderCreatedConfig({ value, onChange, errors }) {
 /**
  * Trigger: Order Status Updated
  */
-export function OrderStatusUpdatedConfig({ value, onChange, errors }) {
+export function OrderStatusUpdatedConfig({ value, onChange, errors, setDisabled }) {
+    const [statuses, setStatuses] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const t = useTranslations("orders");
+    useEffect(() => {
+        const fetchStatuses = async () => {
+            try {
+                setLoading(true);
+                const { data } = await api.get("/orders/statuses");
+                setStatuses(Array.isArray(data) ? data : data.records || []);
+            } catch (error) {
+                console.error("Failed to fetch statuses:", error);
+                toast.error(normalizeAxiosError(error));
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchStatuses();
+    }, []);
+
+    useEffect(() => {
+        // Prevent save until a status is selected
+        const isValid = !!value.statusId;
+        setDisabled(!isValid);
+    }, [value.statusId, setDisabled]);
+
+    const handleStatusChange = (v) => {
+        const selectedStatus = statuses.find(s => s.id.toString() === v);
+        onChange({ ...value, status: selectedStatus?.system ? t(`statuses.${selectedStatus?.code}`) : selectedStatus?.name, statusId: v });
+    };
+
     return (
         <div className="space-y-4">
             <FormGroup label="الحالة المستهدفة" description="تفعيل الأتمتة عند تغيير الطلب إلى هذه الحالة" error={errors.status}>
-                <Select value={value.status || ""} onValueChange={(v) => onChange({ ...value, status: v })}>
+                <Select value={value.statusId?.toString() || ""} onValueChange={handleStatusChange}>
                     <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
-                        <SelectValue placeholder="اختر الحالة..." />
+                        {loading ? (
+                            <div className="flex items-center gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span>جاري التحميل...</span>
+                            </div>
+                        ) : (
+                            <SelectValue placeholder="اختر الحالة..." />
+                        )}
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="PENDING">قيد الانتظار</SelectItem>
-                        <SelectItem value="CONFIRMED">تم التأكيد</SelectItem>
-                        <SelectItem value="CANCELLED">ملغي</SelectItem>
+                        {statuses.map(status => (
+                            <SelectItem key={status.id} value={status.id.toString()}>  {status.system ? t(`statuses.${status.code}`) : status.name}</SelectItem>
+                        ))}
                     </SelectContent>
                 </Select>
             </FormGroup>
@@ -72,7 +160,7 @@ export function OrderStatusUpdatedConfig({ value, onChange, errors }) {
 /**
  * Trigger: Whatsapp Incoming Message
  */
-export function WhatsappIncomingConfig({ value, onChange, errors }) {
+export function WhatsappIncomingConfig({ value, onChange, errors, setDisabled }) {
     return (
         <div className="space-y-4">
             <FormGroup label="حساب الواتساب" description="اختر الحساب الذي سيستقبل الرسائل" error={errors.account}>
@@ -93,18 +181,62 @@ export function WhatsappIncomingConfig({ value, onChange, errors }) {
 /**
  * Action: Update Order Status
  */
-export function UpdateOrderStatusConfig({ value, onChange, errors }) {
+export function UpdateOrderStatusConfig({ value, onChange, errors, setDisabled }) {
+    const [statuses, setStatuses] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const t = useTranslations("orders");
+
+    useEffect(() => {
+        const fetchStatuses = async () => {
+            try {
+                setLoading(true);
+                const { data } = await api.get("/orders/statuses");
+                setStatuses(Array.isArray(data) ? data : data.records || []);
+            } catch (error) {
+                console.error("Failed to fetch statuses:", error);
+                toast.error(normalizeAxiosError(error));
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchStatuses();
+    }, []);
+
+    useEffect(() => {
+        // Prevent save until a new status is selected
+        const isValid = !!value.newStatusId;
+        setDisabled(!isValid);
+    }, [value.newStatusId, setDisabled]);
+
+    const handleStatusChange = (v) => {
+        const selectedStatus = statuses.find(s => s.id.toString() === v);
+        onChange({
+            ...value,
+            newStatus: selectedStatus?.system ? t(`statuses.${selectedStatus?.code}`) : selectedStatus?.name,
+            newStatusId: v
+        });
+    };
+
     return (
         <div className="space-y-4">
             <FormGroup label="تغيير الحالة إلى" description="الحالة الجديدة التي سيتم تعيينها للطلب" error={errors.newStatus}>
-                <Select value={value.newStatus || ""} onValueChange={(v) => onChange({ ...value, newStatus: v })}>
+                <Select value={value.newStatusId?.toString() || ""} onValueChange={handleStatusChange}>
                     <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
-                        <SelectValue placeholder="اختر الحالة الجديدة..." />
+                        {loading ? (
+                            <div className="flex items-center gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span>جاري التحميل...</span>
+                            </div>
+                        ) : (
+                            <SelectValue placeholder="اختر الحالة الجديدة..." />
+                        )}
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="CONFIRMED">تم التأكيد</SelectItem>
-                        <SelectItem value="CANCELLED">ملغي</SelectItem>
-                        <SelectItem value="PROCESSING">قيد المعالجة</SelectItem>
+                        {statuses.map(status => (
+                            <SelectItem key={status.id} value={status.id.toString()}>
+                                {status.system ? t(`statuses.${status.code}`) : status.name}
+                            </SelectItem>
+                        ))}
                     </SelectContent>
                 </Select>
             </FormGroup>
@@ -115,18 +247,25 @@ export function UpdateOrderStatusConfig({ value, onChange, errors }) {
 /**
  * Action: Send Whatsapp Template
  */
-export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData }) {
+export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, setDisabled }) {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+    useEffect(() => {
+        // Prevent save until a template is selected
+        const isValid = !!value.templateId;
+        setDisabled(!isValid);
+    }, [value.templateId, setDisabled]);
+
     const handleSelectTemplate = (template) => {
+        const config = template.templateConfig || {};
         onChange({
             ...value,
             templateId: template.id,
             templateName: template.name,
-            templateData: template.template,
+            templateData: config,
             // Automatically detect buttons for branching
-            branches: template.template.buttons?.map((btn, i) => ({
-                id: `branch_${Date.now()}_${i}`,
+            branches: config.buttons?.map((btn, i) => ({
+                id: `btn_${i}`, // Stable ID based on index
                 label: btn.text,
                 sourceButton: btn,
                 condition: `button_click_${i}`
@@ -207,75 +346,480 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData }
 /**
  * Condition: Order Check
  */
-export function OrderCheckConfig({ value, onChange, errors }) {
+export function OrderCheckConfig({ value, onChange, errors, setDisabled }) {
+    const { shippingCompanies } = usePlatformSettings();
+    const [stores, setStores] = useState([]);
+    const [statuses, setStatuses] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [activeIndex, setActiveIndex] = useState(null);
+    
+    const [checks, setChecks] = useState(Array.isArray(value?.checks) ? value.checks : []);
+
+    // Sync from parent if needed
+    useEffect(() => {
+        setChecks(Array.isArray(value?.checks) ? value.checks : []);
+    }, [value?.checks]);
+
+    // Validation logic
+    useEffect(() => {
+        const hasChecks = checks.length > 0;
+        const allValid = checks.every(c => c.field && c.operator && (c.targetValue !== "" && c.targetValue !== undefined && c.targetValue !== null));
+        if (setDisabled) setDisabled(!hasChecks || !allValid || activeIndex !== null);
+    }, [checks, setDisabled, activeIndex]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const [storesRes, statusesRes] = await Promise.all([
+                    api.get("/lookups/stores", { params: { limit: 200, isActive: true } }),
+                    api.get("/orders/statuses")
+                ]);
+                setStores(storesRes.data || []);
+                setStatuses(Array.isArray(statusesRes.data) ? statusesRes.data : statusesRes.data.records || []);
+            } catch (error) {
+                console.error("Failed to fetch order check data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
     const fields = [
-        { id: "total", label: "إجمالي الطلب", type: "number" },
-        { id: "items_count", label: "عدد المنتجات", type: "number" },
-        { id: "payment_method", label: "طريقة الدفع", type: "string" },
-        { id: "city", label: "المدينة", type: "string" },
+        { id: "orderNumber", label: "رقم الطلب", type: "string", icon: Hash, color: "text-blue-500", bg: "bg-blue-50" },
+        // { id: "store", label: "المتجر", type: "select", icon: Store, color: "text-emerald-500", bg: "bg-emerald-50", options: stores.map(s => ({ id: s.id, label: s.name })) },
+        { id: "shippingCompany", label: "شركة الشحن", type: "select", icon: Truck, color: "text-orange-500", bg: "bg-orange-50", options: shippingCompanies.map(c => ({ id: c.id, label: c.name })) },
+        {
+            id: "paymentStatus", label: "حالة الدفع", type: "select", icon: CreditCard, color: "text-purple-500", bg: "bg-purple-50", options: [
+                { id: "pending", label: "قيد الانتظار" },
+                { id: "paid", label: "مدفوع" },
+                { id: "partial", label: "مدفوع جزئياً" },
+                { id: "refunded", label: "مرتجع" },
+                { id: "partially_refunded", label: "مرتجع جزئياً" },
+            ]
+        },
+        { id: "productsTotal", label: "إجمالي الطلب", type: "number", icon: DollarSign, color: "text-green-500", bg: "bg-green-50" },
+        { id: "items_count", label: "عدد المنتجات", type: "number", icon: Package, color: "text-amber-500", bg: "bg-amber-50" },
+        {
+            id: "paymentMethod", label: "طريقة الدفع", type: "select", icon: CreditCard, color: "text-indigo-500", bg: "bg-indigo-50", options: [
+                { id: "cash", label: "نقدي" },
+                { id: "card", label: "بطاقة" },
+                { id: "bank_transfer", label: "تحويل بنكي" },
+                { id: "cod", label: "دفع عند الاستلام" },
+                { id: "wallet", label: "محفظة" },
+                { id: "other", label: "أخرى" },
+                { id: "unknown", label: "غير معروف" },
+            ]
+        },
+        { id: "city", label: "المدينة", type: "string", icon: Activity, color: "text-rose-500", bg: "bg-rose-50" },
+        { id: "discount", label: "كود الخصم", type: "string", icon: Tag, color: "text-pink-500", bg: "bg-pink-50" },
+        { id: "status", label: "حالة الطلب", type: "select", icon: Activity, color: "text-cyan-500", bg: "bg-cyan-50", options: statuses.map(s => ({ id: s.id, label: s.name })) },
+        { id: "allowOpenPackage", label: "فتح الشحنة", type: "boolean", icon: PackageOpen, color: "text-slate-500", bg: "bg-slate-50" },
+        { id: "deposit", label: "العربون", type: "number", icon: DollarSign, color: "text-yellow-500", bg: "bg-yellow-50" },
     ];
 
-    const operators = [
-        { id: "==", label: "يساوي", types: ["number", "string"] },
-        { id: "!=", label: "لا يساوي", types: ["number", "string"] },
-        { id: ">", label: "أكبر من", types: ["number"] },
-        { id: "<", label: "أصغر من", types: ["number"] },
-        { id: "contains", label: "يحتوي على", types: ["string"] },
-    ];
+    const operatorsByType = {
+        number: [
+            { id: "==", label: "يساوي" },
+            { id: "!=", label: "لا يساوي" },
+            { id: ">", label: "أكبر من" },
+            { id: "<", label: "أصغر من" },
+            { id: ">=", label: "أكبر من أو يساوي" },
+            { id: "<=", label: "أصغر من أو يساوي" },
+        ],
+        string: [
+            { id: "==", label: "يساوي" },
+            { id: "!=", label: "لا يساوي" },
+            { id: "contains", label: "يحتوي على" },
+            { id: "not_contains", label: "لا يحتوي على" },
+            { id: "starts_with", label: "يبدأ بـ" },
+        ],
+        boolean: [
+            { id: "==", label: "يساوي" },
+            { id: "!=", label: "لا يساوي" },
+        ],
+        select: [
+            { id: "==", label: "يساوي" },
+            { id: "!=", label: "لا يساوي" },
+        ],
+    };
+
+    const handleAddCheck = () => {
+        if (checks.length < 20) {
+            const initialField = "orderNumber";
+            const fieldDef = fields.find(f => f.id === initialField);
+            const newChecks = [...checks, {
+                field: initialField,
+                fieldLabel: fieldDef?.label || initialField,
+                operator: "==",
+                targetValue: ""
+            }];
+            setChecks(newChecks);
+            setActiveIndex(newChecks.length - 1);
+        } else {
+            toast.error("لا يمكن إضافة أكثر من 20 تحقق");
+        }
+    };
+
+    const handleConfirm = () => {
+        const currentCheck = activeIndex !== null ? checks[activeIndex] : null;
+        if (!currentCheck?.targetValue) return;
+        onChange({ ...value, checks });
+        setActiveIndex(null);
+    };
+
+    const handleUpdateCheck = (index, updates) => {
+        const newChecks = [...checks];
+        const currentCheck = { ...newChecks[index], ...updates };
+
+        if (updates.field) {
+            const fieldDef = fields.find(f => f.id === updates.field);
+            currentCheck.fieldLabel = fieldDef.label;
+            currentCheck.operator = operatorsByType[fieldDef.type][0].id;
+            currentCheck.targetValue = fieldDef.type === "boolean" ? "true" : "";
+            currentCheck.targetLabel = fieldDef.type === "boolean" ? "نعم" : "";
+        }
+
+        newChecks[index] = currentCheck;
+        setChecks(newChecks);
+    };
+
+    const handleRemoveCheck = (index) => {
+        const newChecks = checks.filter((_, i) => i !== index);
+        setChecks(newChecks);
+
+        // If we are in the list view, make the removal real immediately
+        if (activeIndex === null) {
+            onChange({ ...value, checks: newChecks });
+        }
+
+        if (newChecks.length === 0) {
+            setActiveIndex(null);
+        } else if (activeIndex >= newChecks.length) {
+            setActiveIndex(newChecks.length - 1);
+        }
+    };
+
+    const currentCheck = activeIndex !== null ? checks[activeIndex] : null;
+    const fieldDef = useMemo(() => {
+        if (!currentCheck) return null;
+        return fields.find(f => f.id === currentCheck.field) || fields[0];
+    }, [currentCheck, fields]);
+
+
+    const operators = fieldDef ? operatorsByType[fieldDef.type] : [];
+
+
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                <Loader2 className="w-10 h-10 animate-spin text-primary" />
+                <p className="text-sm text-slate-500 font-bold">جاري تجهيز محرر الشروط...</p>
+            </div>
+        );
+    }
 
     return (
-        <div className="space-y-6">
-            <FormGroup label="الحقل المراد فحصه" description="اختر حقل البيانات من الطلب">
-                <Select value={value.field || ""} onValueChange={(v) => onChange({ ...value, field: v })}>
-                    <SelectTrigger className="h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none px-6">
-                        <SelectValue placeholder="اختر الحقل..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {fields.map(f => <SelectItem key={f.id} value={f.id}>{f.label}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-            </FormGroup>
-
-            <div className="grid grid-cols-2 gap-4">
-                <FormGroup label="المعامل">
-                    <Select value={value.operator || "=="} onValueChange={(v) => onChange({ ...value, operator: v })}>
-                        <SelectTrigger className="h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none px-6">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {operators.map(o => <SelectItem key={o.id} value={o.id}>{o.label}</SelectItem>)}
-                        </SelectContent>
-                    </Select>
-                </FormGroup>
-
-                <FormGroup label="القيمة">
-                    <Input
-                        className="h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none px-6"
-                        value={value.targetValue || ""}
-                        onChange={(e) => onChange({ ...value, targetValue: e.target.value })}
-                        placeholder="أدخل القيمة..."
+        <div className="flex flex-col gap-8 -m-8 p-8 bg-slate-50 dark:bg-slate-900/50 min-h-[600px] overflow-y-auto custom-scrollbar">
+            {/* Header */}
+            <div className="flex items-center justify-between bg-white dark:bg-slate-900 p-6 rounded-3xl border dark:border-slate-800 shadow-sm">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center text-purple-600">
+                        <GitBranch size={24} />
+                    </div>
+                    <div>
+                        <h2 className="text-lg font-black text-slate-800 dark:text-slate-100">فحص بيانات الطلب</h2>
+                        <p className="text-xs text-slate-400 font-medium">سيتم تنفيذ الخطوة إذا تحققت جميع الشروط التالية معاً</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-3">
+                    <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-2xl text-[11px] font-black text-slate-500 uppercase tracking-widest">
+                        {checks.length} / 20 شروط
+                    </div>
+                    <Button_
+                        onClick={handleAddCheck}
+                        size="sm"
+                        label="إضافة شرط جديد"
+                        disabled={activeIndex !== null}
+                        variant="solid"
+                        icon={<Plus size={18} />}
+                        className="h-12 px-6 rounded-2xl font-black text-xs shadow-lg shadow-primary/20 transition-all hover:scale-105"
                     />
-                </FormGroup>
+                </div>
             </div>
-        </div>
+
+            {/* List of conditions if none selected */}
+            {checks.length > 0 && activeIndex === null && (
+                <div className="grid grid-cols-2 gap-4">
+                    {checks.map((check, i) => {
+                        const f = fields.find(fd => fd.id === check.field) || fields[0];
+                        return (
+                            <div
+                                key={i}
+                                onClick={() => setActiveIndex(i)}
+                                className="group flex items-center gap-4 p-5 rounded-3xl bg-white dark:bg-slate-900 border dark:border-slate-800 hover:border-primary/30 transition-all cursor-pointer shadow-sm hover:shadow-md"
+                            >
+                                <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm", f.bg, f.color)}>
+                                    <f.icon size={22} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-black text-slate-700 dark:text-slate-200">{check.fieldLabel || f.label}</p>
+                                    <p className="text-xs text-slate-400 font-bold mt-1">
+                                        {operatorsByType[f.type]?.find(o => o.id === check.operator)?.label} <span className="text-slate-600 dark:text-slate-300">{check.targetLabel || check.targetValue || '—'}</span>
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleRemoveCheck(i); }}
+                                        className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all"
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                    <ChevronLeft size={20} className="text-slate-300 group-hover:text-primary transition-colors" />
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+
+            {/* Empty State */}
+            {checks.length === 0 && (
+                <div className="flex-1 flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-900 rounded-3xl border-2 border-dashed dark:border-slate-800">
+                    <div className="w-20 h-20 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300 mb-6">
+                        <GitBranch size={40} />
+                    </div>
+                    <h3 className="text-lg font-black text-slate-700 dark:text-slate-200 mb-2">لا توجد شروط محددة</h3>
+                    <p className="text-sm text-slate-400 font-medium mb-8">ابدأ بإضافة أول شرط لفحص بيانات الطلب</p>
+                </div>
+            )}
+
+            {/* Active Editor */}
+            {activeIndex !== null && (
+                <div className="flex flex-col gap-8 bg-white dark:bg-slate-900 p-8 rounded-3xl border dark:border-slate-800 shadow-sm relative">
+                    <div className="absolute top-6 end-6 flex flex-row items-center justify-between gap-2">
+                        <button
+                            onClick={() => {
+                                setChecks(Array.isArray(value?.checks) ? value.checks : []);
+                                setActiveIndex(null);
+                            }}
+                            className=" flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-[11px] font-black text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                        >
+                            <ChevronLeft size={14} className="rotate-180" />
+                            العودة للقائمة
+                        </button>
+                    </div>
+
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xs font-black">1</div>
+                            <h4 className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase">اختر الحقل من بيانات الطلب</h4>
+                        </div>
+                        <div className="grid grid-cols-6 gap-3">
+                            {fields.map(f => {
+                                const isSelected = currentCheck.field === f.id;
+                                return (
+                                    <button
+                                        key={f.id}
+                                        onClick={() => handleUpdateCheck(activeIndex, { field: f.id })}
+                                        className={cn(
+                                            "flex flex-col items-center justify-center gap-3 p-4 rounded-2xl border transition-all relative group",
+                                            isSelected
+                                                ? "bg-white dark:bg-slate-800 border-primary shadow-md ring-4 ring-primary/5 scale-[1.02] z-10"
+                                                : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+                                        )}
+                                    >
+                                        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm transition-transform group-hover:scale-110", f.bg, f.color)}>
+                                            <f.icon size={20} />
+                                        </div>
+                                        <p className="text-[10px] font-black text-slate-700 dark:text-slate-200 text-center leading-tight">{f.label}</p>
+                                        {isSelected && (
+                                            <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center shadow-md border-2 border-white dark:border-slate-900">
+                                                <Check size={12} strokeWidth={4} />
+                                            </div>
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col gap-10 pt-8 border-t dark:border-slate-800">
+                        {/* Step 2: Operator Selection */}
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xs font-black">2</div>
+                                <h4 className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase">اختر المعامل (الشرط)</h4>
+                            </div>
+                            <div className="grid grid-cols-4 gap-3">
+                                {operators.map(o => {
+                                    const isSelected = currentCheck.operator === o.id;
+                                    return (
+                                        <button
+                                            key={o.id}
+                                            onClick={() => handleUpdateCheck(activeIndex, { operator: o.id })}
+                                            className={cn(
+                                                "flex flex-col items-center justify-center p-4 rounded-2xl border transition-all",
+                                                isSelected
+                                                    ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
+                                                    : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                                            )}
+                                        >
+                                            <span className="text-xs font-black">{o.label}</span>
+                                            <span className={cn("text-[10px] font-bold opacity-60 mt-1", isSelected ? "text-white" : "text-slate-400")}>{o.id}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Step 3: Value Entry */}
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xs font-black">3</div>
+                                <h4 className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase">أدخل القيمة</h4>
+                            </div>
+                            <div className="space-y-4 max-w-2xl">
+                                {fieldDef.type === "select" || fieldDef.type === "boolean" ? (
+                                    <Select
+                                        value={String(currentCheck.targetValue)}
+                                        onValueChange={(v) => {
+                                            const options = fieldDef.type === "boolean" ? [
+                                                { id: "true", label: "نعم" },
+                                                { id: "false", label: "لا" }
+                                            ] : fieldDef.options;
+                                            const label = options.find(o => String(o.id) === v)?.label;
+                                            handleUpdateCheck(activeIndex, { targetValue: v, targetLabel: label });
+                                        }}
+                                    >
+                                        <SelectTrigger className="h-14 rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-sm px-6">
+                                            <SelectValue placeholder="اختر القيمة المطلوبة..." />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {(fieldDef.type === "boolean" ? [
+                                                { id: "true", label: "نعم" },
+                                                { id: "false", label: "لا" }
+                                            ] : fieldDef.options).map(opt => (
+                                                <SelectItem key={opt.id} value={String(opt.id)}>{opt.label}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                ) : (
+                                    <Input
+                                        type={fieldDef.type === "number" ? "number" : "text"}
+                                        className="h-14 rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-sm px-6"
+                                        value={currentCheck.targetValue || ""}
+                                        onChange={(e) => handleUpdateCheck(activeIndex, { targetValue: e.target.value, targetLabel: e.target.value })}
+                                        placeholder="أدخل القيمة المطلوبة..."
+                                    />
+                                )}
+                                {/* <div className="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-500/5 border border-blue-100 dark:border-blue-500/10 flex gap-3">
+                                    <Info size={16} className="text-blue-500 shrink-0" />
+                                    <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 leading-relaxed">
+                                        يجب أن تكون القيمة من نوع <span className="uppercase">{fieldDef.type}</span>.
+                                        <br />
+                                        سيتم التحقق من صحة هذا الحقل قبل الحفظ.
+                                    </p>
+                                </div> */}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Preview in Editor */}
+                    <div className="mt-8 p-6 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                        <div className="flex flex-col gap-1.5">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">معاينة الشرط الحالي</span>
+                            <div className="flex items-center gap-2">
+                                <div className="px-4 py-2 rounded-xl bg-white dark:bg-slate-900 text-[11px] font-black text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 shadow-sm">
+                                    {fieldDef.label}
+                                </div>
+                                <div className="px-3 py-2 rounded-xl bg-primary/10 text-[11px] font-black text-primary border border-primary/20">
+                                    {operators.find(o => o.id === currentCheck.operator)?.id}
+                                </div>
+                                <div className={cn(
+                                    "px-4 py-2 rounded-xl text-[11px] font-black border transition-all",
+                                    currentCheck.targetValue
+                                        ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border-emerald-100 dark:border-emerald-500/20"
+                                        : "bg-white dark:bg-slate-900 text-slate-300 border-slate-200 dark:border-slate-800 border-dashed"
+                                )}>
+                                    {currentCheck.targetLabel || currentCheck.targetValue || "أدخل القيمة"}
+                                </div>
+                            </div>
+                        </div>
+                        <Button_
+                            onClick={handleConfirm}
+                            size="sm"
+                            disabled={!currentCheck?.targetValue}
+                            label="تأكيد وإضافة للقائمة"
+                            variant="solid"
+                            className="h-12 px-8 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-xs shadow-xl shadow-slate-200 dark:shadow-none"
+                        />
+                    </div>
+                </div>
+            )}        </div>
     );
 }
 
 /**
  * Condition: Quick Order Status
  */
-export function QuickOrderStatusConfig({ value, onChange, errors }) {
+export function QuickOrderStatusConfig({ value, onChange, errors, setDisabled }) {
+    const [statuses, setStatuses] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const t = useTranslations("orders");
+
+    useEffect(() => {
+        const fetchStatuses = async () => {
+            try {
+                setLoading(true);
+                const { data } = await api.get("/orders/statuses");
+                setStatuses(Array.isArray(data) ? data : data.records || []);
+            } catch (error) {
+                console.error("Failed to fetch statuses:", error);
+                toast.error(normalizeAxiosError(error));
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchStatuses();
+    }, []);
+
+    useEffect(() => {
+        // Prevent save until a status is selected
+        const isValid = !!value.statusId;
+        setDisabled(!isValid);
+    }, [value.statusId, setDisabled]);
+
+    const handleStatusChange = (v) => {
+        const selectedStatus = statuses.find(s => s.id.toString() === v);
+        onChange({
+            ...value,
+            status: selectedStatus?.system ? t(`statuses.${selectedStatus?.code}`) : selectedStatus?.name,
+            statusId: v
+        });
+    };
+
     return (
         <div className="space-y-4">
             <FormGroup label="التحقق من الحالة" description="توجيه التدفق بناءً على حالة الطلب الحالية" error={errors.status}>
-                <Select value={value.status || ""} onValueChange={(v) => onChange({ ...value, status: v })}>
+                <Select value={value.statusId?.toString() || ""} onValueChange={handleStatusChange}>
                     <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none px-6">
-                        <SelectValue placeholder="اختر الحالة..." />
+                        {loading ? (
+                            <div className="flex items-center gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span>جاري التحميل...</span>
+                            </div>
+                        ) : (
+                            <SelectValue placeholder="اختر الحالة..." />
+                        )}
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="PENDING">قيد الانتظار</SelectItem>
-                        <SelectItem value="CONFIRMED">تم التأكيد</SelectItem>
-                        <SelectItem value="CANCELLED">ملغي</SelectItem>
+                        {statuses.map(status => (
+                            <SelectItem key={status.id} value={status.id.toString()}>
+                                {status.system ? t(`statuses.${status.code}`) : status.name}
+                            </SelectItem>
+                        ))}
                     </SelectContent>
                 </Select>
             </FormGroup>

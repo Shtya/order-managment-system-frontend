@@ -96,6 +96,7 @@ function BuilderCanvas() {
   }, [selectedNodeId, setSelectedNode]);
 
   const handleSelectStepFromSidebar = (step) => {
+
     setConfigModal({ open: true, step, mode: 'create', initialData: {} });
   };
 
@@ -113,12 +114,11 @@ function BuilderCanvas() {
         position: { x: 250, y: 100 }, // Default position, store will override if pending connection exists
         data: {
           label: configModal.step.label,
-          type: configModal.step.type === 'trigger' ? configModal.step.id : undefined,
-          type: configModal.step.type === 'action' ? configModal.step.id : undefined,
-          type: configModal.step.type === 'condition' ? configModal.step.id : undefined,
+          type: configModal.step.id ? configModal.step.id : undefined,
           config
         },
       };
+
       addNode(newNode);
       toast.success("تمت إضافة الخطوة بنجاح");
     } else {
@@ -129,6 +129,28 @@ function BuilderCanvas() {
     setConfigModal({ open: false, step: null, mode: 'create', initialData: null });
   };
 
+  const isValidConnection = useCallback((connection) => {
+    const { source, target, sourceHandle, targetHandle } = connection;
+
+    // 1. Do not allow self-connections
+    if (source === target) return false;
+
+    // 2. Each handle should have only one connection
+    // Check if source handle already has an outgoing edge
+    const isSourceHandleOccupied = edges.some(
+      (edge) => edge.source === source && edge.sourceHandle === sourceHandle
+    );
+    if (isSourceHandleOccupied) return false;
+
+    // Check if target handle already has an incoming edge
+    const isTargetHandleOccupied = edges.some(
+      (edge) => edge.target === target && edge.targetHandle === targetHandle
+    );
+    if (isTargetHandleOccupied) return false;
+
+    return true;
+  }, [edges]);
+
   return (
     <div className="flex-1 relative h-full w-full" ref={reactFlowWrapper}>
       <ReactFlow
@@ -137,12 +159,13 @@ function BuilderCanvas() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        isValidConnection={isValidConnection}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         onSelectionChange={handleSelectionChange}
         defaultViewport={{ x: 600, y: 0, zoom: 0.7 }}
         snapToGrid
-        nodesConnectable={false}
+        nodesConnectable={true}
         elementsSelectable={true}
         snapGrid={[15, 15]}
       >

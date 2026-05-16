@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -11,18 +11,25 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Trash2, AlertTriangle } from 'lucide-react';
 import { useFlowStore } from '@/hook/useFlowStore';
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import toast from 'react-hot-toast';
 
 export function ConfirmDeleteDialog() {
     const deleteConfirm = useFlowStore((s) => s.deleteConfirm);
     const setDeleteConfirm = useFlowStore((s) => s.setDeleteConfirm);
     const confirmDelete = useFlowStore((s) => s.confirmDelete);
+    const setSkipDeleteConfirmation = useFlowStore((s) => s.setSkipDeleteConfirmation);
+    const [dontAskAgain, setDontAskAgain] = useState(false);
 
     if (!deleteConfirm) return null;
 
     const { type, downstreamCount } = deleteConfirm;
 
     const handleConfirm = () => {
+        if (dontAskAgain) {
+            setSkipDeleteConfirmation(true);
+        }
         confirmDelete();
         toast.success(
             type === 'clear' ? "تم مسح مسار العمل بنجاح" : "تم حذف الخطوات بنجاح",
@@ -32,7 +39,12 @@ export function ConfirmDeleteDialog() {
     return (
         <AlertDialog
             open={!!deleteConfirm}
-            onOpenChange={(open) => !open && setDeleteConfirm(null)}
+            onOpenChange={(open) => {
+                if (!open) {
+                    setDeleteConfirm(null);
+                    setDontAskAgain(false);
+                }
+            }}
         >
             <AlertDialogContent className="rounded-xl">
                 <AlertDialogHeader>
@@ -68,10 +80,29 @@ export function ConfirmDeleteDialog() {
                     </AlertDialogDescription>
                 </AlertDialogHeader>
 
-                <div className="mt-4 flex items-center justify-end gap-2">
+                {type !== 'clear' && (
+                    <div className="mt-4 flex items-center gap-2 px-1">
+                        <Checkbox
+                            id="dont-ask-again"
+                            checked={dontAskAgain}
+                            onCheckedChange={setDontAskAgain}
+                        />
+                        <Label
+                            htmlFor="dont-ask-again"
+                            className="text-xs font-medium text-slate-500 cursor-pointer select-none"
+                        >
+                            لا تسألني مرة أخرى عند الحذف
+                        </Label>
+                    </div>
+                )}
+
+                <div className="mt-6 flex items-center justify-end gap-2">
                     <AlertDialogCancel
                         className="rounded-full"
-                        onClick={() => setDeleteConfirm(null)}
+                        onClick={() => {
+                            setDeleteConfirm(null);
+                            setDontAskAgain(false);
+                        }}
                     >
                         إلغاء
                     </AlertDialogCancel>

@@ -1,7 +1,6 @@
-// components/flow/CustomEdge.tsx
 import { useState } from 'react';
 import { BaseEdge, EdgeLabelRenderer, getBezierPath } from '@xyflow/react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Link2Off } from 'lucide-react';
 import { useFlowStore } from '@/hook/useFlowStore';
 import { cn } from '@/utils/cn';
 
@@ -9,15 +8,21 @@ export default function CustomEdge({
     id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style = {}, markerEnd, selected
 }) {
     const deleteEdge = useFlowStore((s) => s.deleteEdge);
+    const disconnectEdge = useFlowStore((s) => s.disconnectEdge);
     const [isHovered, setIsHovered] = useState(false);
 
     const [edgePath, labelX, labelY] = getBezierPath({
         sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition,
     });
 
-    const onEdgeClick = (e) => {
+    const onEdgeDelete = (e) => {
         e.stopPropagation();
         deleteEdge(id);
+    };
+
+    const onEdgeDisconnect = (e) => {
+        e.stopPropagation();
+        disconnectEdge(id);
     };
 
     return (
@@ -47,10 +52,22 @@ export default function CustomEdge({
                         transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
                         pointerEvents: 'all',
                     }}
-                    className="nodrag nopan"
+                    className="nodrag nopan flex gap-2"
                 >
                     <button
-                        onClick={onEdgeClick}
+                        onClick={onEdgeDisconnect}
+                        onMouseEnter={() => setIsHovered(true)}
+                        onMouseLeave={() => setIsHovered(false)}
+                        className={cn(
+                            "w-7 h-7 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-amber-500 hover:border-amber-200 hover:bg-amber-50 transition-all shadow-lg",
+                            (isHovered || selected) ? "opacity-100 scale-110" : "opacity-0 scale-50"
+                        )}
+                        title="قطع الاتصال فقط"
+                    >
+                        <Link2Off size={14} strokeWidth={2.5} />
+                    </button>
+                    <button
+                        onClick={onEdgeDelete}
                         onMouseEnter={() => setIsHovered(true)}
                         onMouseLeave={() => setIsHovered(false)}
                         className={cn(

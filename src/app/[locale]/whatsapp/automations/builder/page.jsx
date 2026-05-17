@@ -51,7 +51,6 @@ const getMiniMapNodeColor = (node) => {
 
 function BuilderCanvas() {
   const reactFlowWrapper = useRef(null);
-  const { screenToFlowPosition, setViewport } = useReactFlow();
 
   const nodes = useFlowStore((s) => s.nodes);
   const edges = useFlowStore((s) => s.edges);
@@ -211,6 +210,15 @@ const SidebarBridge = ({ onSelect }) => {
 };
 
 export default function AutomationBuilderPage() {
+  const automationId = useFlowStore((s) => s.automationId);
+  const resetFlow = useFlowStore((s) => s.resetFlow);
+
+  useEffect(() => {
+    if (automationId) {
+      resetFlow();
+    }
+  }, [automationId, resetFlow]);
+
   return (
     <div className="flex h-screen flex-col  overflow-hidden bg-slate-50 dark:bg-[#050505] relative">
       <TopToolbar />

@@ -5442,7 +5442,9 @@
     "sync": {
       "storeInactive": "المتجر غير مفعل",
       "noConnectedStores": "لا يوجد متاجر متصله"
-    }
+    },
+    "other": "اخري",
+    "unknown": "غير معروف"
   },
   "callCenter": {
     "breadcrumb": {
@@ -9489,7 +9491,10 @@
       },
       "actions": {
         "view": "عرض",
-        "edit": "تعديل"
+        "edit": "تعديل",
+        "publish": "نشر",
+        "pause": "إيقاف مؤقت",
+        "delete": "حذف"
       },
       "triggers": {
         "order_created": "إنشاء طلب جديد",
@@ -9500,6 +9505,16 @@
         "draft": "مسودة",
         "paused": "متوقف",
         "archived": "مؤرشف"
+      },
+      "messages": {
+        "updateSuccess": "تم تحديث الحالة بنجاح",
+        "deleteSuccess": "تم حذف الأتمتة بنجاح",
+        "confirmDelete": "هل أنت متأكد من حذف هذه الأتمتة؟",
+        "loading": "جاري التحديث..."
+      },
+      "delete": {
+        "title": "حذف الأتمتة",
+        "desc": "سيتم حذف هذه الأتمتة بشكل نهائي، هل أنت متأكد؟"
       }
     }
   }

@@ -9,7 +9,10 @@ export default function CustomEdge({
 }) {
     const deleteEdge = useFlowStore((s) => s.deleteEdge);
     const disconnectEdge = useFlowStore((s) => s.disconnectEdge);
+    const mode = useFlowStore((s) => s.mode);
     const [isHovered, setIsHovered] = useState(false);
+
+    const isViewMode = mode === 'view';
 
     const [edgePath, labelX, labelY] = getBezierPath({
         sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition,
@@ -54,30 +57,34 @@ export default function CustomEdge({
                     }}
                     className="nodrag nopan flex gap-2"
                 >
-                    <button
-                        onClick={onEdgeDisconnect}
-                        onMouseEnter={() => setIsHovered(true)}
-                        onMouseLeave={() => setIsHovered(false)}
-                        className={cn(
-                            "w-7 h-7 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-amber-500 hover:border-amber-200 hover:bg-amber-50 transition-all shadow-lg",
-                            (isHovered || selected) ? "opacity-100 scale-110" : "opacity-0 scale-50"
-                        )}
-                        title="قطع الاتصال فقط"
-                    >
-                        <Link2Off size={14} strokeWidth={2.5} />
-                    </button>
-                    <button
-                        onClick={onEdgeDelete}
-                        onMouseEnter={() => setIsHovered(true)}
-                        onMouseLeave={() => setIsHovered(false)}
-                        className={cn(
-                            "w-7 h-7 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50 transition-all shadow-lg",
-                            (isHovered || selected) ? "opacity-100 scale-110" : "opacity-0 scale-50"
-                        )}
-                        title="حذف المسار وما بعده"
-                    >
-                        <Trash2 size={14} strokeWidth={2.5} />
-                    </button>
+                    {!isViewMode && (
+                        <>
+                            <button
+                                onClick={onEdgeDisconnect}
+                                onMouseEnter={() => setIsHovered(true)}
+                                onMouseLeave={() => setIsHovered(false)}
+                                className={cn(
+                                    "w-7 h-7 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-full flex items-center justify-center text-slate-400 hover:text-amber-500 hover:border-amber-200 hover:bg-amber-50 transition-all shadow-lg",
+                                    (isHovered || selected) ? "opacity-100 scale-110" : "opacity-0 scale-50"
+                                )}
+                                title="قطع الاتصال فقط"
+                            >
+                                <Link2Off size={14} strokeWidth={2.5} />
+                            </button>
+                            <button
+                                onClick={onEdgeDelete}
+                                onMouseEnter={() => setIsHovered(true)}
+                                onMouseLeave={() => setIsHovered(false)}
+                                className={cn(
+                                    "w-7 h-7 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50 transition-all shadow-lg",
+                                    (isHovered || selected) ? "opacity-100 scale-110" : "opacity-0 scale-50"
+                                )}
+                                title="حذف المسار وما بعده"
+                            >
+                                <Trash2 size={14} strokeWidth={2.5} />
+                            </button>
+                        </>
+                    )}
                 </div>
             </EdgeLabelRenderer>
         </g>

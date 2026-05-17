@@ -15,6 +15,7 @@ import {
   CheckCircle,
   Clock,
   Search,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
@@ -27,6 +28,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { useRouter } from "@/i18n/navigation";
 import api from "@/utils/api";
+import { useDebounce } from "@/hook/useDebounce";
+import { useExport } from "@/hook/useExport";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 function normalizeAxiosError(err) {
   const msg =
@@ -82,6 +95,8 @@ export default function AutomationsPage() {
   const t = useTranslations("whatsApp.automations");
 
   const [search, setSearch] = useState("");
+  const { debouncedValue: debouncedSearch } = useDebounce({ value: search });
+
   const [loading, setLoading] = useState(false);
   const [pager, setPager] = useState({
     total_records: 0,
@@ -95,6 +110,12 @@ export default function AutomationsPage() {
     triggerType: "all",
   });
 
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [selectedAutomation, setSelectedAutomation] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const { handleExport, exportLoading } = useExport();
+
   const statsCards = useMemo(
     () => [
       { name: t("stats.executing"), value: MOCK_STATS.executing, icon: Play, color: "#3b82f6" },
@@ -105,30 +126,27 @@ export default function AutomationsPage() {
     [t]
   );
 
-  const fetchAutomations = useCallback(
-    async ({ page = 1, per_page = 12 } = {}) => {
-      setLoading(true);
-      try {
-        const qs = buildListQuery({ page, per_page, search, filters });
-        const res = await api.get(`/automation?${qs}`);
-        setPager({
-          total_records: res.data?.total_records ?? 0,
-          current_page: res.data?.current_page ?? page,
-          per_page: res.data?.per_page ?? per_page,
-          records: res.data?.records ?? [],
-        });
-      } catch (e) {
-        toast.error(normalizeAxiosError(e));
-      } finally {
-        setLoading(false);
-      }
-    },
-    [search, filters]
-  );
+  const fetchAutomations = async ({ page = 1, per_page = 12 } = {}) => {
+    setLoading(true);
+    try {
+      const qs = buildListQuery({ page, per_page, search: debouncedSearch, filters });
+      const res = await api.get(`/automation?${qs}`);
+      setPager({
+        total_records: res.data?.total_records ?? 0,
+        current_page: res.data?.current_page ?? page,
+        per_page: res.data?.per_page ?? per_page,
+        records: res.data?.records ?? [],
+      });
+    } catch (e) {
+      toast.error(normalizeAxiosError(e));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchAutomations({ page: 1, per_page: 12 });
-  }, [fetchAutomations]);
+    fetchAutomations({ page: 1, per_page: pager.per_page });
+  }, [debouncedSearch]);
 
   const hasActiveFilters = useMemo(() => {
     return (
@@ -136,6 +154,48 @@ export default function AutomationsPage() {
       filters.triggerType !== "all"
     );
   }, [filters]);
+
+
+  const handlePageChange = ({ page, per_page }) => {
+    fetchAutomations({ page, per_page });
+  };
+
+  const handleStatusToggle = async (row) => {
+    const nextStatus = row.status === 'published' ? 'paused' : 'published';
+    const toastId = toast.loading(t("messages.loading"));
+    try {
+      await api.post(`/automation/${row.id}/${nextStatus}`);
+      toast.success(t("messages.updateSuccess"), { id: toastId });
+      fetchAutomations({ page: pager.current_page, per_page: pager.per_page });
+    } catch (error) {
+      toast.error(normalizeAxiosError(error), { id: toastId });
+    }
+  };
+
+  const onExport = async () => {
+    const qs = buildListQuery({ page: 1, per_page: pager.per_page, search: debouncedSearch, filters });
+    await handleExport({
+      endpoint: "/automation/export",
+      params: { qs },
+      filename: `automations_export_${Date.now()}.xlsx`,
+    });
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedAutomation) return;
+    setDeleting(true);
+    const toastId = toast.loading(t("messages.loading"));
+    try {
+      await api.delete(`/automation/${selectedAutomation.id}`);
+      toast.success(t("messages.deleteSuccess"), { id: toastId });
+      setDeleteOpen(false);
+      fetchAutomations();
+    } catch (err) {
+      toast.error(normalizeAxiosError(err), { id: toastId });
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const columns = useMemo(
     () => [
@@ -199,7 +259,7 @@ export default function AutomationsPage() {
               {
                 icon: <Eye size={16} />,
                 tooltip: t("actions.view"),
-                onClick: (r) => router.push(`/whatsapp/automations/edit/${r.id}`),
+                onClick: (r) => router.push(`/whatsapp/automations/detail/${r.id}`),
                 variant: "primary",
                 permission: "automation.read",
               },
@@ -210,14 +270,33 @@ export default function AutomationsPage() {
                 variant: "purple",
                 permission: "automation.update",
               },
+              {
+                icon: row.status === 'published' ? <Pause size={16} /> : <Play size={16} />,
+                tooltip: row.status === 'published' ? t("actions.pause") : t("actions.publish"),
+                onClick: () => handleStatusToggle(row),
+                variant: "purple",
+                permission: "automation.update",
+              },
+              {
+                icon: <Trash2 size={16} />,
+                tooltip: t("actions.delete"),
+                onClick: (r) => {
+                  setSelectedAutomation(r);
+                  setDeleteOpen(true);
+                },
+                variant: "red",
+                permission: "automation.delete",
+              },
             ]}
           />
         ),
       },
     ],
-    [t, tCommon, router]
+    [t, tCommon, router, handleStatusToggle]
   );
-
+  const applyFilters = () => {
+    fetchAutomations({ page: 1, per_page: pager.per_page });
+  };
   return (
     <div className="min-h-screen p-5 space-y-6 bg-slate-50/50 dark:bg-transparent">
       <PageHeader
@@ -242,17 +321,21 @@ export default function AutomationsPage() {
       />
 
       <Table
-        loading={loading}
+        isLoading={loading}
         data={pager.records}
         columns={columns}
-        pager={pager}
-        onPageChange={(p) => fetchAutomations({ page: p, per_page: pager.per_page })}
-        onLimitChange={(l) => fetchAutomations({ page: 1, per_page: l })}
+        onPageChange={handlePageChange}
+        // onLimitChange={(l) => fetchAutomations({ page: 1, per_page: l })}
         searchValue={search}
         onSearchChange={setSearch}
-        onSearch={() => fetchAutomations({ page: 1, per_page: pager.per_page })}
+        onSearch={applyFilters}
         hasActiveFilters={hasActiveFilters}
-        onApplyFilters={() => fetchAutomations({ page: 1, per_page: pager.per_page })}
+        onApplyFilters={applyFilters}
+        pagination={{
+          total_records: pager.total_records,
+          current_page: pager.current_page,
+          per_page: pager.per_page,
+        }}
         labels={{
           searchPlaceholder: t("toolbar.searchPlaceholder"),
           filter: tCommon("filter"),
@@ -261,6 +344,17 @@ export default function AutomationsPage() {
           limit: tCommon("limit"),
           emptyTitle: t("table.empty"),
         }}
+        actions={[
+          {
+            key: "export",
+            label: tCommon("export"),
+            icon: exportLoading ? <Loader2 size={14} className="animate-spin" /> : <FileDown size={14} />,
+            color: "primary",
+            onClick: onExport,
+            disabled: exportLoading,
+            permission: "automation.read",
+          },
+        ]}
         filters={
           <>
             <FilterField label={t("filters.status")}>
@@ -303,6 +397,53 @@ export default function AutomationsPage() {
           </>
         }
       />
+
+      <ConfirmDeleteDialog
+        t={t}
+        tCommon={tCommon}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        automation={selectedAutomation}
+        onConfirm={confirmDelete}
+        loading={deleting}
+      />
     </div>
+  );
+}
+
+function ConfirmDeleteDialog({ t, tCommon, open, onOpenChange, automation, onConfirm, loading }) {
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent className="rounded-xl">
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t("delete.title") || t("actions.delete")}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {automation ? `${automation.name}` : ""}
+            <div className="mt-2 text-sm">
+              {t("delete.desc") || "This will delete the automation permanently."}
+            </div>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+
+        <div className="mt-4 flex items-center justify-end gap-2">
+          <AlertDialogCancel className="rounded-full" disabled={loading}>
+            {tCommon("cancel") || "Cancel"}
+          </AlertDialogCancel>
+          <AlertDialogAction
+            className="rounded-full bg-red-600 hover:bg-red-700 text-white"
+            onClick={(e) => {
+              e.preventDefault();
+              onConfirm();
+            }}
+            disabled={loading}
+          >
+            <span className="flex items-center gap-2">
+              {loading ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
+              {t("actions.delete") || "Delete"}
+            </span>
+          </AlertDialogAction>
+        </div>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

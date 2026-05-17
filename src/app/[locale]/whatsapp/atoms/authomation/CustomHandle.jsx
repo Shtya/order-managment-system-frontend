@@ -7,10 +7,12 @@ import { useFlowStore } from '@/hook/useFlowStore';
 export function CustomHandle({ isConnected, position, noOffset, className, nodeId, ...props }) {
     const setPendingConnection = useFlowStore((s) => s.setPendingConnection);
     const pendingConnection = useFlowStore((s) => s.pendingConnection);
+    const mode = useFlowStore((s) => s.mode);
 
     // Check if THIS specific handle on this node is currently pending
     const isHandlePending = pendingConnection?.nodeId === nodeId && pendingConnection?.handleId === props.id;
-    const showPlus = props.type === 'source' && !isConnected;
+    const isViewMode = mode === 'view';
+    const showPlus = props.type === 'source' && !isConnected && !isViewMode;
 
     return (
         <div className={cn(
@@ -20,6 +22,7 @@ export function CustomHandle({ isConnected, position, noOffset, className, nodeI
             <Handle
                 position={position}
                 {...props}
+                isConnectable={props.isConnectable ?? !isConnected}
                 className={cn(
                     "!w-3 !h-3 !border-2 !border-white transition-all duration-200 !static !translate-x-0 !translate-y-0",
                     // Glowing effect if connected

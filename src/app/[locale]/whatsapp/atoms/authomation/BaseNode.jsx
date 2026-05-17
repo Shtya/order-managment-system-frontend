@@ -39,8 +39,13 @@ export function BaseNode({
     const hydration = useFlowStore((s) => s.nodeHydration[id]);
     const loading = useFlowStore((s) => s.nodeLoading[id]);
     const updateNodeData = useFlowStore((s) => s.updateNodeData);
+    const mode = useFlowStore((s) => s.mode);
     const changes = hydration?.changes || [];
+
+    const isViewMode = mode === 'view';
+
     useEffect(() => {
+
         const hydrate = async () => {
             try {
                 setNodeLoading(id, true);
@@ -61,12 +66,14 @@ export function BaseNode({
         };
 
         hydrate();
-    }, []);
+    }, [data]);
+
+
 
 
     // Delete node with keyboard when selected
     useEffect(() => {
-        if (!selected) return;
+        if (!selected || isViewMode) return;
 
         const handleKeyDown = (e) => {
             const isTyping =
@@ -132,28 +139,30 @@ export function BaseNode({
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-1">
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onEdit?.();
-                            }}
-                            className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-                            title="تعديل"
-                        >
-                            <Edit3 className="h-4 w-4" />
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                deleteNode(id);
-                            }}
-                            className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all"
-                            title="حذف"
-                        >
-                            <Trash2 className="h-4 w-4" />
-                        </button>
-                    </div>
+                    {!isViewMode && (
+                        <div className="flex items-center gap-1">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onEdit?.();
+                                }}
+                                className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+                                title="تعديل"
+                            >
+                                <Edit3 className="h-4 w-4" />
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteNode(id);
+                                }}
+                                className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all"
+                                title="حذف"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Validation Error */}

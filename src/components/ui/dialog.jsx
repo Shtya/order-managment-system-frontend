@@ -51,6 +51,7 @@ function DialogContent({
 	showCloseButton = true,
 	...props
 }) {
+
 	return (
 		<DialogPortal data-slot="dialog-portal ">
 			<DialogOverlay />

@@ -14,6 +14,7 @@ import {
   Eye,
   BarChart3,
   Clock,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
@@ -29,6 +30,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { WhatsAppTab } from "../../settings/page";
 import { Settings2 } from "lucide-react";
 import api from "@/utils/api";
+import { useDebounce } from "@/hook/useDebounce";
+import { useExport } from "@/hook/useExport";
 
 function normalizeAxiosError(err) {
   const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -64,6 +67,7 @@ export default function WhatsAppAccountsPage() {
   const t = useTranslations("whatsApp.accounts");
 
   const [search, setSearch] = useState("");
+  const { debouncedValue: debouncedSearch } = useDebounce({ value: search });
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
     isActive: "all",
@@ -79,6 +83,8 @@ export default function WhatsAppAccountsPage() {
 
   const [deleteState, setDeleteState] = useState({ open: false, id: null });
   const [deleting, setDeleting] = useState(false);
+
+  const { handleExport, exportLoading } = useExport();
 
   const [toggleState, setToggleState] = useState({ open: false, row: null });
   const [toggling, setToggling] = useState(false);
@@ -102,30 +108,35 @@ export default function WhatsAppAccountsPage() {
     { name: t("stats.avgResponseTime"), value: MOCK_STATS.avgResponseTime, icon: Clock, color: "#6366f1" },
   ], [t]);
 
-  const fetchAccounts = useCallback(
-    async ({ page = 1, per_page = 12 } = {}) => {
-      setLoading(true);
-      try {
-        const qs = buildListQuery({ page, per_page, search, filters });
-        const res = await api.get(`/whatsapp-accounts?${qs}`);
-        setPager({
-          total_records: res.data?.total_records ?? 0,
-          current_page: res.data?.current_page ?? page,
-          per_page: res.data?.per_page ?? per_page,
-          records: res.data?.records ?? [],
-        });
-      } catch (e) {
-        toast.error(normalizeAxiosError(e));
-      } finally {
-        setLoading(false);
-      }
-    },
-    [search, filters]
-  );
+  const fetchAccounts = async ({ page = 1, per_page = 12 } = {}) => {
+    setLoading(true);
+    try {
+      const qs = buildListQuery({ page, per_page, search: debouncedSearch, filters });
+      const res = await api.get(`/whatsapp-accounts?${qs}`);
+      setPager({
+        total_records: res.data?.total_records ?? 0,
+        current_page: res.data?.current_page ?? page,
+        per_page: res.data?.per_page ?? per_page,
+        records: res.data?.records ?? [],
+      });
+    } catch (e) {
+      toast.error(normalizeAxiosError(e));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchAccounts({ page: 1, per_page: 12 });
-  }, [fetchAccounts]);
+    fetchAccounts({ page: 1, per_page: pager.per_page });
+  }, [debouncedSearch]);
+
+  const applyFilters = () => {
+    fetchAccounts({ page: 1, per_page: pager.per_page });
+  };
+
+  const handlePageChange = ({ page, per_page }) => {
+    fetchAccounts({ page, per_page });
+  };
 
   const hasActiveFilters = useMemo(() => {
     return (
@@ -169,21 +180,11 @@ export default function WhatsAppAccountsPage() {
   };
 
   const onExport = async () => {
-    try {
-      const qs = buildExportQuery({ search, filters });
-      const res = await api.get(`/whatsapp-accounts/export?${qs}`, { responseType: "blob" });
-      const blob = new Blob([res.data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const link = document.createElement("a");
-      link.href = window.URL.createObjectURL(blob);
-      link.download = `whatsapp_accounts_${Date.now()}.xlsx`;
-      link.click();
-      window.URL.revokeObjectURL(link.href);
-      toast.success(t("messages.exportSuccess"));
-    } catch (error) {
-      toast.error(normalizeAxiosError(error));
-    }
+    await handleExport({
+      endpoint: "/whatsapp-accounts/export",
+      params: { search: search.trim() || undefined, ...filters },
+      filename: `whatsapp_accounts_${Date.now()}.xlsx`,
+    });
   };
 
   const columns = useMemo(
@@ -349,9 +350,13 @@ export default function WhatsAppAccountsPage() {
       />
 
       <Table
+        isLoading={loading}
+        data={pager.records}
+        columns={columns}
+        onPageChange={handlePageChange}
         searchValue={search}
         onSearchChange={setSearch}
-        onSearch={() => { }}
+        onSearch={applyFilters}
         labels={{
           searchPlaceholder: t("toolbar.searchPlaceholder"),
           filter: t("toolbar.filter"),
@@ -364,14 +369,20 @@ export default function WhatsAppAccountsPage() {
           {
             key: "export",
             label: t("toolbar.export"),
-            icon: <FileDown size={14} />,
+            icon: exportLoading ? <Loader2 size={14} className="animate-spin" /> : <FileDown size={14} />,
             color: "primary",
             onClick: onExport,
+            disabled: exportLoading,
             permission: "whatsapp.read",
           },
         ]}
         hasActiveFilters={hasActiveFilters}
-        onApplyFilters={() => fetchAccounts({ page: 1, per_page: pager.per_page })}
+        onApplyFilters={applyFilters}
+        pagination={{
+          total_records: pager.total_records,
+          current_page: pager.current_page,
+          per_page: pager.per_page,
+        }}
         filters={
           <>
             <FilterField label={t("filters.isActive")}>
@@ -409,15 +420,6 @@ export default function WhatsAppAccountsPage() {
             </FilterField> */}
           </>
         }
-        columns={columns}
-        data={pager.records}
-        isLoading={loading}
-        pagination={{
-          total_records: pager.total_records,
-          current_page: pager.current_page,
-          per_page: pager.per_page,
-        }}
-        onPageChange={({ page, per_page }) => fetchAccounts({ page, per_page })}
       />
 
       <ConfirmDialog

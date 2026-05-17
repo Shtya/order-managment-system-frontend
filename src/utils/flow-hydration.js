@@ -35,7 +35,7 @@ export async function hydrateNodeConfig(type, config) {
                     result.newConfig.store = freshStore.name;
                 } catch (e) {
                     result.isValid = false;
-                    result.error = "المتجر المحدد غير موجود أو غير مفعل حالياً. يرجى اختيار مخزن آخر.";
+                    result.error = `المتجر المحدد (${config.store || config.storeId}) لم يعد موجوداً أو غير مفعل حالياً.`;
                 }
                 break;
 
@@ -60,7 +60,7 @@ export async function hydrateNodeConfig(type, config) {
                     }
                 } catch (e) {
                     result.isValid = false;
-                    result.error = "حالة الطلب المحددة لم تعد موجودة. يرجى اختيار حالة جديدة.";
+                    result.error = `حالة الطلب المحددة (${config.status || config.newStatus || statusId}) لم تعد موجودة.`;
                 }
                 break;
             }
@@ -69,8 +69,9 @@ export async function hydrateNodeConfig(type, config) {
                 if (!config.templateId) break;
 
                 try {
-                    const res = await api.get(`/whatsapp-template/${config.templateId}`);
+                    const res = await api.get(`/whatsapp-templates/${config.templateId}`);
                     const freshTemplate = res.data;
+
 
                     if (!freshTemplate || freshTemplate?.status !== 'approved') throw new Error("Template not found");
 
@@ -81,24 +82,58 @@ export async function hydrateNodeConfig(type, config) {
                     }
 
                     // 2. Check buttons/branches (Breaking Change)
-                    const freshButtons = freshTemplate.config?.buttons || [];
+                    const freshButtons = freshTemplate.templateConfig?.buttons || [];
                     const currentBranches = config.branches || [];
+
 
                     if (freshButtons.length !== currentBranches.length) {
                         result.isValid = false;
-                        result.error = "تغير عدد الأزرار في القالب. يرجى إعادة ضبط المسارات المتفرعة.";
+                        result.error = `تغير عدد الأزرار في القالب (${config.templateName}). يرجى إعادة ضبط المسارات المتفرعة.`;
                     } else {
-                        // Check if button text changed (Non-breaking but good to know)
                         freshButtons.forEach((btn, idx) => {
-                            if (btn.text !== currentBranches[idx]?.label) {
-                                result.changes.push(`تم تحديث نص الزر من "${currentBranches[idx]?.label}" إلى "${btn.text}"`);
-                                result.newConfig.branches[idx].label = btn.text;
+                            // لتفادي أي خطأ إذا تغير عدد الأزرار
+                            const currentBranch = currentBranches[idx]?.sourceButton
+
+                            if (!currentBranch) return;
+
+                            // 1️⃣ التحقق من نوع الزر (تغيير كاسر - Breaking Change)
+                            if (btn.type !== currentBranch.type) {
+                                result.changes.push(`تم تغيير نوع الزر "${currentBranch.label || currentBranch.text}" إلى ${btn.type}`);
+                                result.newConfig.branches[idx].type = btn.type;
+                                currentBranch.type = btn.type;
+                            }
+
+                            // 2️⃣ التحقق من النص (تغيير مرئي - Visual Change)
+                            if (btn.text !== currentBranch.text) {
+                                result.changes.push(`تم تحديث نص الزر من "${currentBranch.text}" إلى "${btn.text}"`);
+                                result.newConfig.branches[idx].text = btn.text;
+                                currentBranch.text = btn.text;
+                            }
+
+                            // 3️⃣ التحقق من بيانات الرابط (إذا كان الزر من نوع رابط)
+                            if (btn.type === 'VISIT_WEBSITE') {
+                                if (btn.url !== currentBranch.url) {
+                                    result.changes.push(`تم تحديث الرابط الخاص بالزر "${btn.text}"`);
+                                    currentBranch.url = btn.url;
+                                }
+                                if (btn.urlType !== currentBranch.urlType) {
+                                    currentBranch.urlType = btn.urlType;
+                                }
+                            }
+
+                            // 4️⃣ التحقق من بيانات رقم الهاتف (إذا كان الزر من نوع اتصال)
+                            if (btn.type === 'PHONE_NUMBER') {
+                                if (btn.phoneNumber !== currentBranch.phoneNumber) {
+                                    result.changes.push(`تم تحديث رقم الهاتف للزر "${btn.text}"`);
+                                    currentBranch.phoneNumber = btn.phoneNumber;
+                                    currentBranch.countryCode = btn.countryCode;
+                                }
                             }
                         });
                     }
                 } catch (e) {
                     result.isValid = false;
-                    result.error = "قالب واتساب المحدد لم يعد موجوداً أو غير مقبول . يرجى اختيار قالب آخر.";
+                    result.error = `قالب واتساب المحدد (${config.templateName || config.templateId}) لم يعد موجوداً أو غير مقبول.`;
                 }
                 break;
             }
@@ -109,18 +144,69 @@ export async function hydrateNodeConfig(type, config) {
 
                 const updatedChecks = [...config.checks];
                 let hasErrors = false;
+                let hasChanges = false;
 
-                for (let i = 0; i < updatedChecks.length; i++) {
-                    const check = updatedChecks[i];
-                    if (check.field === 'shippingCompany') {
-                        // Validation logic for shipping companies could go here
-                        // For now, we assume if it was there, it's valid or will be caught by general error handling
+                try {
+                    // Fetch all required data for validation in parallel
+                    const [statusesRes, integrationsRes] = await Promise.all([
+                        // api.get("/lookups/stores", { params: { limit: 200, isActive: true } }),
+                        api.get("/orders/statuses"),
+                        api.get("/shipping/integrations/active")
+                    ]);
+
+                    // const stores = storesRes.data || [];
+                    const statuses = Array.isArray(statusesRes.data) ? statusesRes.data : statusesRes.data.records || [];
+                    const integrations = integrationsRes.data?.integrations || integrationsRes.data || [];
+
+                    for (let i = 0; i < updatedChecks.length; i++) {
+                        const check = updatedChecks[i];
+                        let freshItem = null;
+                        let fieldName = "";
+
+                        if (check.field === 'shippingCompany') {
+                            freshItem = integrations.find(c => String(c.id) === String(check.targetValue));
+                            fieldName = "شركة الشحن";
+                        }
+
+                        if (check.field === 'status') {
+                            freshItem = statuses.find(s => String(s.id) === String(check.targetValue));
+                            fieldName = "حالة الطلب";
+                        }
+
+                        if (check.field === 'shippingCompany') {
+                            if (!freshItem) {
+                                hasErrors = true;
+
+                                result.error = `شركة الشحن  (${check.targetLabel}) لم تعد موجودة أو غير مفعلة حالياً..`;
+                                break;
+                            }
+                        }
+
+                        if (check.field === 'status') {
+                            if (!freshItem) {
+                                hasErrors = true;
+                                result.error = `حالة الطلب  (${check.targetLabel}) لم تعد موجودة..`;
+                                break;
+                            }
+                        }
+                        const isStatusCheck = check.field === 'status' || check.field === 'shippingCompany';
+                        if (isStatusCheck && freshItem?.name !== check.targetLabel) {
+                            hasChanges = true;
+                            result.changes.push(`تم تحديث ${fieldName} من "${check.targetLabel}" إلى "${freshItem.name}"`);
+                            updatedChecks[i] = { ...check, targetLabel: freshItem.name };
+                        }
                     }
-                }
 
-                if (hasErrors) {
+                    if (hasErrors) {
+                        result.isValid = false;
+                    } else if (hasChanges) {
+                        result.newConfig.checks = updatedChecks;
+                    }
+
+                } catch (e) {
+                    console.error("Order Check Hydration Error:", e);
                     result.isValid = false;
-                    result.error = "بعض القيم في شروط التحقق لم تعد صالحة.";
+                    result.error = "فشل التحقق من صحة شروط الطلب. يرجى المحاولة مرة أخرى.";
                 }
                 break;
             }

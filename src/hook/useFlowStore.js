@@ -2,6 +2,38 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { Node, Edge, addEdge, applyNodeChanges, applyEdgeChanges, Connection } from '@xyflow/react';
 
+const calculatePosition = (sourceNode, handleId) => {
+  let offsetX = 0;
+  const offsetY = 280; // Vertical spacing
+
+  // Smart X-positioning based on branches
+  if (sourceNode.type === 'condition') {
+    // Conditions usually have 2 branches: true/false
+    offsetX = handleId === 'true' ? -180 : 180;
+  } else if (sourceNode.type === 'action') {
+    const branches = sourceNode.data?.config?.branches || [];
+    if (branches.length === 2) {
+      // If exactly 2 branches, spread them left and right
+      const branchIndex = branches.findIndex(b => b.id === handleId);
+      offsetX = branchIndex === 0 ? -180 : 180;
+    } else if (branches.length > 2) {
+      const branchIndex = branches.findIndex(
+        b => b.id === handleId
+      );
+
+      const spacing = 280;
+
+      // Center all branches around 0
+      offsetX = (branchIndex - (branches.length - 1) / 2) * spacing;
+    }
+  }
+
+  return {
+    x: sourceNode.position.x + offsetX,
+    y: sourceNode.position.y + offsetY
+  };
+};
+
 export const useFlowStore = create(
   persist(
     (set, get) => ({
@@ -12,6 +44,8 @@ export const useFlowStore = create(
       nodeErrors: {}, // { nodeId: "error message" }
       nodeHydration: {}, // { nodeId: { isHydrated: bool, changes: [] } }
       nodeLoading: {}, // { nodeId: bool }
+      mode: 'create', // 'create' | 'edit' | 'view'
+      automationId: null,
       selectedNodeId: null,
       pendingConnection: null, // { nodeId, type }
       deleteConfirm: null, // { type: 'node' | 'edge' | 'clear', id, downstreamCount }
@@ -21,6 +55,18 @@ export const useFlowStore = create(
       setEdges: (edges) => set({ edges }),
       setName: (name) => set({ name, nameError: null }),
       setNameError: (error) => set({ nameError: error }),
+      setMode: (mode) => set({ mode }),
+      setAutomationId: (id) => set({ automationId: id }),
+      setFlowData: ({ nodes, edges, name, id }) => set({
+        nodes: nodes || [],
+        edges: edges || [],
+        name: name || '',
+        automationId: id || null,
+        mode: id ? 'edit' : 'create',
+        nodeErrors: {},
+        nodeHydration: {},
+        nodeLoading: {}
+      }),
       setNodeError: (nodeId, error) => set((s) => ({
         nodeErrors: { ...s.nodeErrors, [nodeId]: error }
       })),
@@ -41,6 +87,8 @@ export const useFlowStore = create(
         nodeErrors: {},
         nodeHydration: {},
         nodeLoading: {},
+        mode: 'create',
+        automationId: null,
         selectedNodeId: null,
         pendingConnection: null,
         deleteConfirm: null
@@ -59,7 +107,9 @@ export const useFlowStore = create(
       onEdgesChange: (changes) => {
         set({ edges: applyEdgeChanges(changes, get().edges) });
       },
+
       onConnect: (connection) => {
+        console.log("connection add edge: ", connection)
         set({
           edges: addEdge({ ...connection, animated: true, type: 'custom' }, get().edges),
           pendingConnection: null
@@ -70,44 +120,17 @@ export const useFlowStore = create(
       addNode: (node) => {
         const { pendingConnection, edges, nodes } = get();
         let newNode = { ...node };
+        console.log(newNode)
 
         // Auto-connect and position if there's a pending connection
         if (pendingConnection) {
           const sourceNode = nodes.find(n => n.id === pendingConnection.nodeId);
-          console.log("sourceNode: ", sourceNode)
+
           if (sourceNode) {
-            let offsetX = 0;
-            const offsetY = 250; // Vertical spacing
-
-            // Smart X-positioning based on branches
-            if (sourceNode.type === 'condition') {
-              // Conditions usually have 2 branches: true/false
-              offsetX = pendingConnection.handleId === 'true' ? -180 : 180;
-            } else if (sourceNode.type === 'action') {
-              const branches = sourceNode.data?.config?.branches || [];
-              if (branches.length === 2) {
-                // If exactly 2 branches, spread them left and right
-                const branchIndex = branches.findIndex(b => b.id === pendingConnection.handleId);
-                offsetX = branchIndex === 0 ? -180 : 180;
-              } else {
-                const branchIndex = branches.findIndex(
-                  b => b.id === pendingConnection.handleId
-                );
-
-                const spacing = 280;
-
-                // Center all branches around 0
-                offsetX = (branchIndex - (branches.length - 1) / 2) * spacing;
-              }
-            }
-
-            newNode.position = {
-              x: sourceNode.position.x + offsetX,
-              y: sourceNode.position.y + offsetY
-            };
+            const position = calculatePosition(sourceNode, pendingConnection.handleId);
+            newNode.position = position;
           }
 
-          console.log(pendingConnection, newNode)
           const newEdge = {
             id: `edge_${pendingConnection.nodeId}_${newNode.id}`,
             source: pendingConnection.nodeId,
@@ -127,7 +150,43 @@ export const useFlowStore = create(
         }
       },
 
+      reorderFlow: () => {
+        const { nodes, edges } = get();
+        const triggerNode = nodes.find(n => n.type === 'trigger');
+        if (!triggerNode) return;
+
+        const newNodes = [...nodes];
+        const positionedNodeIds = new Set();
+
+        const updatePosition = (nodeId, x, y) => {
+          const nodeIndex = newNodes.findIndex(n => n.id === nodeId);
+          if (nodeIndex === -1 || positionedNodeIds.has(nodeId)) return;
+
+          newNodes[nodeIndex] = {
+            ...newNodes[nodeIndex],
+            position: { x, y }
+          };
+          positionedNodeIds.add(nodeId);
+
+          // Find children and sort them by handleId to maintain order if possible
+          const outgoingEdges = edges.filter(e => e.source === nodeId);
+
+          outgoingEdges.forEach(edge => {
+            const childNode = nodes.find(n => n.id === edge.target);
+            if (!childNode) return;
+
+            const newPos = calculatePosition(newNodes[nodeIndex], edge.sourceHandle);
+            updatePosition(edge.target, newPos.x, newPos.y);
+          });
+        };
+
+        // Start trigger at its current X, but reset Y to 100 for a clean start
+        updatePosition(triggerNode.id, triggerNode.position.x, 100);
+        set({ nodes: newNodes });
+      },
+
       addEdge: (edge) => {
+        console.log("add edge: ", edge)
         set({
           edges: [...get().edges, { ...edge, animated: true, type: 'custom' }],
           pendingConnection: null
@@ -176,11 +235,11 @@ export const useFlowStore = create(
           edges: updatedEdges
         });
 
-        console.log("update node auto: ", auto)
-        if (!auto) {
-          setNodeError(id, '');
-          setNodeHydration(id, { isHydrated: true, changes: [] });
-        }
+
+        // if (!auto) {
+        //   setNodeError(id, '');
+        //   setNodeHydration(id, { isHydrated: true, changes: [] });
+        // }
       },
 
       disconnectEdge: (edgeId) => {
@@ -307,7 +366,16 @@ export const useFlowStore = create(
       name: 'whatsapp-automation-flow',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => {
-        const { skipDeleteConfirmation, ...rest } = state;
+        const {
+          skipDeleteConfirmation,
+          nameError,
+          nodeErrors,
+          nodeHydration,
+          nodeLoading,
+          deleteConfirm,
+          pendingConnection,
+          ...rest
+        } = state;
         return rest;
       }
     }

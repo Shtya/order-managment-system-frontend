@@ -5408,7 +5408,9 @@
     "sync": {
       "storeInactive": "The store is not activated",
       "noConnectedStores": "There are no online stores"
-    }
+    },
+    "other": "Other",
+    "unknown": "unknown"
   },
   "callCenter": {
     "breadcrumb": {
@@ -9451,7 +9453,10 @@
       },
       "actions": {
         "view": "View",
-        "edit": "Edit"
+        "edit": "Edit",
+        "publish": "Publish",
+        "pause": "Pause",
+        "delete": "Delete"
       },
       "triggers": {
         "order_created": "New Order Created",
@@ -9462,6 +9467,16 @@
         "draft": "Draft",
         "paused": "Paused",
         "archived": "Archived"
+      },
+      "messages": {
+        "updateSuccess": "Status updated successfully",
+        "deleteSuccess": "Automation deleted successfully",
+        "confirmDelete": "Are you sure you want to delete this automation?",
+        "loading": "Updating..."
+      },
+      "delete": {
+        "title": "Delete Automation",
+        "desc": "This will delete the automation permanently. Are you sure?"
       }
     }
   }

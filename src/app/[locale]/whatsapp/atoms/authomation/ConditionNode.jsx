@@ -1,13 +1,13 @@
 import React from 'react';
 import { Position } from '@xyflow/react';
-import { GitBranch, Zap, Check, Loader2 } from 'lucide-react';
+import { GitBranch, Zap, Check, Loader2, X } from 'lucide-react';
 import { BaseNode } from './BaseNode';
 import { CustomHandle } from './CustomHandle';
 import { useFlowStore } from '@/hook/useFlowStore';
 
 const CONDITION_TYPES = {
     'order_check': { label: 'فحص بيانات الطلب', icon: GitBranch, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-500/10' },
-    'quick_order_status': { label: 'تحقق быстрый للحالة', icon: Zap, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-500/10' },
+    'quick_order_status': { label: 'فحص سريع للحالة', icon: Zap, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-500/10' },
 };
 
 export function ConditionNode({ id, data, selected }) {
@@ -19,6 +19,7 @@ export function ConditionNode({ id, data, selected }) {
 
     const isTrueConnected = edges.some(e => e.source === id && e.sourceHandle === 'true');
     const isFalseConnected = edges.some(e => e.source === id && e.sourceHandle === 'false');
+
 
     return (
         <BaseNode
@@ -42,7 +43,7 @@ export function ConditionNode({ id, data, selected }) {
                     </div>
                 ) : (
                     <>
-                        {data.type === 'ORDER_CHECK' && (
+                        {data.type === 'order_check' && (
                             <div className="flex flex-col gap-1.5">
                                 {data.config?.checks?.length > 0 ? (
                                     <>

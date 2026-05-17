@@ -16,6 +16,7 @@ import {
   AlertCircle,
   Tag,
   Globe,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
@@ -31,6 +32,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import TemplatePreview from "../atoms/TemplatePreview";
 import { useRouter } from "@/i18n/navigation";
 import api from "@/utils/api";
+import { useDebounce } from "@/hook/useDebounce";
+import { useExport } from "@/hook/useExport";
 
 function normalizeAxiosError(err) {
   const msg =
@@ -120,7 +123,8 @@ export default function WhatsAppTemplatesPage() {
   const t = useTranslations("whatsApp.templates");
 
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { debouncedValue: debouncedSearch } = useDebounce({ value: search });
+  const [loading, setLoading] = useState(true);
   const [accounts, setAccounts] = useState([]);
   const [pager, setPager] = useState({
     total_records: 0,
@@ -132,6 +136,8 @@ export default function WhatsAppTemplatesPage() {
   const [deleteState, setDeleteState] = useState({ open: false, id: null });
   const [deleting, setDeleting] = useState(false);
   const [previewState, setPreviewState] = useState({ open: false, template: null });
+
+  const { handleExport, exportLoading } = useExport();
 
   const [filters, setFilters] = useState({
     quality: "all",
@@ -166,30 +172,35 @@ export default function WhatsAppTemplatesPage() {
     fetchAccounts();
   }, [fetchAccounts]);
 
-  const fetchTemplates = useCallback(
-    async ({ page = 1, per_page = 12 } = {}) => {
-      setLoading(true);
-      try {
-        const qs = buildListQuery({ page, per_page, search, filters });
-        const res = await api.get(`/whatsapp-templates?${qs}`);
-        setPager({
-          total_records: res.data?.total_records ?? 0,
-          current_page: res.data?.current_page ?? page,
-          per_page: res.data?.per_page ?? per_page,
-          records: res.data?.records ?? [],
-        });
-      } catch (e) {
-        toast.error(normalizeAxiosError(e));
-      } finally {
-        setLoading(false);
-      }
-    },
-    [search, filters]
-  );
+  const fetchTemplates = async ({ page = 1, per_page = 12 } = {}) => {
+    setLoading(true);
+    try {
+      const qs = buildListQuery({ page, per_page, search: debouncedSearch, filters });
+      const res = await api.get(`/whatsapp-templates?${qs}`);
+      setPager({
+        total_records: res.data?.total_records ?? 0,
+        current_page: res.data?.current_page ?? page,
+        per_page: res.data?.per_page ?? per_page,
+        records: res.data?.records ?? [],
+      });
+    } catch (e) {
+      toast.error(normalizeAxiosError(e));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchTemplates({ page: 1, per_page: 12 });
-  }, [fetchTemplates]);
+    fetchTemplates({ page: 1, per_page: pager.per_page });
+  }, [debouncedSearch]);
+
+  const applyFilters = () => {
+    fetchTemplates({ page: 1, per_page: pager.per_page });
+  };
+
+  const handlePageChange = ({ page, per_page }) => {
+    fetchTemplates({ page, per_page });
+  };
 
   const hasActiveFilters = useMemo(() => {
     return (
@@ -216,21 +227,12 @@ export default function WhatsAppTemplatesPage() {
   };
 
   const onExport = async () => {
-    try {
-      const qs = buildExportQuery({ search, filters });
-      const res = await api.get(`/whatsapp-templates/export?${qs}`, { responseType: "blob" });
-      const blob = new Blob([res.data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const link = document.createElement("a");
-      link.href = window.URL.createObjectURL(blob);
-      link.download = `whatsapp_templates_${Date.now()}.xlsx`;
-      link.click();
-      window.URL.revokeObjectURL(link.href);
-      toast.success(t("messages.exportSuccess"));
-    } catch (e) {
-      toast.error(normalizeAxiosError(e));
-    }
+    const qs = buildListQuery({ page: 1, per_page: pager.per_page, search: debouncedSearch, filters });
+    await handleExport({
+      endpoint: "/whatsapp-templates/export",
+      params: { qs },
+      filename: `whatsapp_templates_${Date.now()}.xlsx`,
+    });
   };
 
   const statusLabel = (status) => t(`statuses.${status}`);
@@ -415,11 +417,20 @@ export default function WhatsAppTemplatesPage() {
       />
 
       <Table
+        isLoading={loading}
+        data={pager.records}
+        columns={columns}
+        onPageChange={handlePageChange}
         searchValue={search}
         onSearchChange={setSearch}
-        onSearch={() => {}}
+        onSearch={applyFilters}
         hasActiveFilters={hasActiveFilters}
-        onApplyFilters={() => fetchTemplates({ page: 1, per_page: pager.per_page })}
+        onApplyFilters={applyFilters}
+        pagination={{
+          total_records: pager.total_records,
+          current_page: pager.current_page,
+          per_page: pager.per_page,
+        }}
         labels={{
           searchPlaceholder: t("toolbar.searchPlaceholder"),
           filter: tCommon("filter"),
@@ -432,9 +443,10 @@ export default function WhatsAppTemplatesPage() {
           {
             key: "export",
             label: tCommon("export"),
-            icon: <FileDown size={14} />,
+            icon: exportLoading ? <Loader2 size={14} className="animate-spin" /> : <FileDown size={14} />,
             color: "primary",
             onClick: onExport,
+            disabled: exportLoading,
             permission: "whatsapp.read",
           },
         ]}
@@ -533,15 +545,6 @@ export default function WhatsAppTemplatesPage() {
             </FilterField>
           </>
         }
-        columns={columns}
-        data={pager.records}
-        isLoading={loading}
-        pagination={{
-          total_records: pager.total_records,
-          current_page: pager.current_page,
-          per_page: pager.per_page,
-        }}
-        onPageChange={({ page, per_page }) => fetchTemplates({ page, per_page })}
       />
 
       <ConfirmDialog

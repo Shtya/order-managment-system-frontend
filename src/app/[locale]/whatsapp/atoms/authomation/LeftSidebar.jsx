@@ -2,18 +2,24 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ChevronDown, Play,
-    GitBranch, Zap, Search, Info, Plus
+    GitBranch, Zap, Search, Info, Plus,
+    ChevronRight
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { AUTOMATION_CONFIG } from './automation-config';
 import { useFlowStore } from '@/hook/useFlowStore';
+import { useRouter } from '@/i18n/navigation';
 
 
 export function LeftSidebar({ onSelectStep }) {
+    const router = useRouter();
     const [search, setSearch] = useState('');
     const nodes = useFlowStore((s) => s.nodes);
     const pendingConnection = useFlowStore((s) => s.pendingConnection);
     const hasTrigger = nodes.some(n => n.type === 'trigger');
+    const name = useFlowStore((s) => s.name);
+    const setName = useFlowStore((s) => s.setName);
+    const nameError = useFlowStore((s) => s.nameError);
 
     const isRTL =
         typeof document !== 'undefined' &&
@@ -65,6 +71,35 @@ export function LeftSidebar({ onSelectStep }) {
                 <p className="text-[11px] text-slate-500 mt-1 font-medium">
                     اسحب العناصر لبناء مسار عملك
                 </p>
+
+                <div className="space-y-1 mt-4">
+                    <div className={cn(
+                        "flex items-center gap-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-1 rounded-xl border transition-all duration-300 pointer-events-auto",
+                        nameError
+                            ? "border-rose-500 shadow-[0_0_0_4px_rgba(244,63,94,0.1)] bg-rose-50/50 dark:bg-rose-500/5"
+                            : "border-slate-200 dark:border-slate-800"
+                    )}>
+                        <button
+                            onClick={() => router.back()}
+                            className="h-7 w-7 flex items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                        >
+                            <ChevronRight size={16} />
+                        </button>
+                        <div className="w-[1px] h-5 bg-slate-200 dark:bg-slate-800" />
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="اسم الأتمتة..."
+                            className="text-xs bg-transparent border-none outline-none font-bold text-slate-700 dark:text-slate-200 px-1.5 min-w-[200px] focus:outline-none focus:ring-0 focus-visible:outline-none! focus-visible:ring-0"
+                        />
+                    </div>
+                    {nameError && (
+                        <p className="text-[9px] font-black text-rose-500 px-2 animate-in fade-in slide-in-from-top-1 duration-300 uppercase tracking-widest">
+                            {nameError}
+                        </p>
+                    )}
+                </div>
 
                 <div className="relative mt-4">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={12} />

@@ -6,9 +6,11 @@ import { useEffect } from 'react';
 import { cn } from '@/utils/cn';
 import { useFlowStore } from '@/hook/useFlowStore';
 import { CustomHandle } from './CustomHandle';
+import { hydrateNodeConfig } from '@/utils/flow-hydration';
 
 export function BaseNode({
     id,
+    data,
     selected,
     title,
     subtitle,
@@ -25,9 +27,42 @@ export function BaseNode({
 }) {
     const deleteNode = useFlowStore((s) => s.deleteNode);
     const edges = useFlowStore((s) => s.edges);
+    const nodeErrors = useFlowStore((s) => s.nodeErrors);
+    const actualErrorMessage = errorMessage || nodeErrors[id];
+    const isInvalid = !isValid || !!actualErrorMessage;
 
     const isInputConnected = edges.some(e => e.target === id);
     const isOutputConnected = edges.some(e => e.source === id);
+    const setNodeError = useFlowStore((s) => s.setNodeError);
+    const setNodeHydration = useFlowStore((s) => s.setNodeHydration);
+    const setNodeLoading = useFlowStore((s) => s.setNodeLoading);
+    const hydration = useFlowStore((s) => s.nodeHydration[id]);
+    const loading = useFlowStore((s) => s.nodeLoading[id]);
+    const updateNodeData = useFlowStore((s) => s.updateNodeData);
+    const changes = hydration?.changes || [];
+    useEffect(() => {
+        const hydrate = async () => {
+            try {
+                setNodeLoading(id, true);
+                const result = await hydrateNodeConfig(data.type, data.config);
+
+                setNodeHydration(id, { isHydrated: true, changes: result?.changes || [] });
+                setNodeError(id, result?.error || '');
+
+                if (result?.changes?.length > 0) {
+                    updateNodeData(id, { config: result?.newConfig }, true);
+                }
+            } catch (e) {
+                console.error(e);
+                setNodeError(id, e.message);
+            } finally {
+                setNodeLoading(id, false);
+            }
+        };
+
+        hydrate();
+    }, []);
+
 
     // Delete node with keyboard when selected
     useEffect(() => {
@@ -62,7 +97,8 @@ export function BaseNode({
             className={cn(
                 "relative min-w-[260px] max-w-[320px] rounded-[24px] border bg-white shadow-sm transition-all duration-300 dark:bg-slate-900",
                 selected ? "border-primary ring-[4px] ring-primary/5 shadow-lg scale-[1.01]" : "border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-md",
-                !isValid && "border-rose-500 ring-[4px] ring-rose-500/5 shadow-rose-500/10",
+                isInvalid && "border-rose-500 ring-[4px] ring-rose-500/5 shadow-rose-500/10",
+                !isInvalid && changes.length > 0 && "border-emerald-500 ring-[4px] ring-emerald-500/5",
                 className
             )}
         >
@@ -74,6 +110,13 @@ export function BaseNode({
                     isConnected={isInputConnected}
                     nodeId={id}
                 />
+            )}
+
+            {/* Change Indicators */}
+            {!isInvalid && changes.length > 0 && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg z-10 whitespace-nowrap uppercase tracking-widest border-2 border-white dark:border-slate-900">
+                    تم تحديث البيانات تلقائياً
+                </div>
             )}
 
             {/* Header */}
@@ -98,7 +141,7 @@ export function BaseNode({
                             className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
                             title="تعديل"
                         >
-                            <Edit3 size={14} />
+                            <Edit3 className="h-4 w-4" />
                         </button>
                         <button
                             onClick={(e) => {
@@ -108,23 +151,37 @@ export function BaseNode({
                             className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all"
                             title="حذف"
                         >
-                            <Trash2 size={14} />
+                            <Trash2 className="h-4 w-4" />
                         </button>
                     </div>
                 </div>
 
-                {/* Content */}
-                <div className="space-y-3">
-                    {children}
-                </div>
-
-                {/* Error Message */}
-                {!isValid && (
-                    <div className="mt-3 flex items-center gap-2 text-[9px] font-bold text-rose-500 bg-rose-50 dark:bg-rose-500/5 p-2 rounded-xl border border-rose-100 dark:border-rose-500/10 animate-pulse">
-                        <AlertCircle size={12} className="shrink-0" />
-                        <span>{errorMessage || "يرجى إكمال التكوين"}</span>
+                {/* Validation Error */}
+                {actualErrorMessage && (
+                    <div className="mb-3 p-2 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 flex items-start gap-2 animate-in fade-in slide-in-from-top-1">
+                        <AlertCircle className="h-3 w-3 text-rose-500 shrink-0 mt-0.5" />
+                        <p className="text-[9px] font-bold text-rose-600 dark:text-rose-400 leading-normal">{actualErrorMessage}</p>
                     </div>
                 )}
+
+                {/* Changes List */}
+                {!actualErrorMessage && changes.length > 0 && (
+                    <div className="mb-3 p-2 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 space-y-1">
+                        {changes.map((change, i) => (
+                            <div key={i} className="flex items-end gap-2">
+                                <div className="h-1 w-1 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                                <p className="text-[8px] font-bold text-emerald-700 dark:text-emerald-400 leading-tight">
+                                    {change}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* Content */}
+                <div className="relative">
+                    {children}
+                </div>
             </div>
 
             {/* Output Handle */}

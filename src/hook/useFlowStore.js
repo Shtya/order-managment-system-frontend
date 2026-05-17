@@ -7,6 +7,11 @@ export const useFlowStore = create(
     (set, get) => ({
       nodes: [],
       edges: [],
+      name: '',
+      nameError: null,
+      nodeErrors: {}, // { nodeId: "error message" }
+      nodeHydration: {}, // { nodeId: { isHydrated: bool, changes: [] } }
+      nodeLoading: {}, // { nodeId: bool }
       selectedNodeId: null,
       pendingConnection: null, // { nodeId, type }
       deleteConfirm: null, // { type: 'node' | 'edge' | 'clear', id, downstreamCount }
@@ -14,8 +19,33 @@ export const useFlowStore = create(
 
       setNodes: (nodes) => set({ nodes }),
       setEdges: (edges) => set({ edges }),
+      setName: (name) => set({ name, nameError: null }),
+      setNameError: (error) => set({ nameError: error }),
+      setNodeError: (nodeId, error) => set((s) => ({
+        nodeErrors: { ...s.nodeErrors, [nodeId]: error }
+      })),
+      setNodeHydration: (nodeId, hydration) => set((s) => ({
+        nodeHydration: { ...s.nodeHydration, [nodeId]: hydration }
+      })),
+      setNodeLoading: (nodeId, isLoading) => set((s) => ({
+        nodeLoading: { ...s.nodeLoading, [nodeId]: isLoading }
+      })),
       setPendingConnection: (conn) => set({ pendingConnection: conn }),
       setDeleteConfirm: (confirm) => set({ deleteConfirm: confirm }),
+
+      resetFlow: () => set({
+        nodes: [],
+        edges: [],
+        name: '',
+        nameError: null,
+        nodeErrors: {},
+        nodeHydration: {},
+        nodeLoading: {},
+        selectedNodeId: null,
+        pendingConnection: null,
+        deleteConfirm: null
+      }),
+
       setSkipDeleteConfirmation: (skip) => {
         if (typeof window !== 'undefined') {
           localStorage.setItem('skip_delete', skip ? 'true' : 'false');
@@ -104,8 +134,8 @@ export const useFlowStore = create(
         });
       },
 
-      updateNodeData: (id, data) => {
-        const { nodes, edges } = get();
+      updateNodeData: (id, data, auto = false) => {
+        const { nodes, edges, setNodeError, setNodeHydration } = get();
         const currentNode = nodes.find(n => n.id === id);
         let updatedEdges = [...edges];
 
@@ -145,6 +175,12 @@ export const useFlowStore = create(
           ),
           edges: updatedEdges
         });
+
+        console.log("update node auto: ", auto)
+        if (!auto) {
+          setNodeError(id, '');
+          setNodeHydration(id, { isHydrated: true, changes: [] });
+        }
       },
 
       disconnectEdge: (edgeId) => {
@@ -195,12 +231,25 @@ export const useFlowStore = create(
       },
 
       executeDeletion: (id, downstreamIds) => {
-        const { nodes, edges } = get();
+        const { nodes, edges, nodeErrors, nodeHydration, nodeLoading } = get();
         const allIdsToDelete = [id, ...downstreamIds];
+
+        const newNodeErrors = { ...nodeErrors };
+        const newNodeHydration = { ...nodeHydration };
+        const newNodeLoading = { ...nodeLoading };
+
+        allIdsToDelete.forEach(toDeleteId => {
+          delete newNodeErrors[toDeleteId];
+          delete newNodeHydration[toDeleteId];
+          delete newNodeLoading[toDeleteId];
+        });
 
         set({
           nodes: nodes.filter((node) => !allIdsToDelete.includes(node.id)),
           edges: edges.filter((edge) => !allIdsToDelete.includes(edge.source) && !allIdsToDelete.includes(edge.target)),
+          nodeErrors: newNodeErrors,
+          nodeHydration: newNodeHydration,
+          nodeLoading: newNodeLoading,
           selectedNodeId: allIdsToDelete.includes(get().selectedNodeId) ? null : get().selectedNodeId,
           pendingConnection: allIdsToDelete.includes(get().pendingConnection?.nodeId) ? null : get().pendingConnection,
           deleteConfirm: null
@@ -212,7 +261,7 @@ export const useFlowStore = create(
         if (!deleteConfirm) return;
 
         if (deleteConfirm.type === 'clear') {
-          set({ nodes: [], edges: [], selectedNodeId: null, pendingConnection: null, deleteConfirm: null });
+          set({ nodes: [], edges: [], name: '', nameError: null, nodeErrors: {}, nodeHydration: {}, nodeLoading: {}, selectedNodeId: null, pendingConnection: null, deleteConfirm: null });
           return;
         }
 
@@ -235,7 +284,13 @@ export const useFlowStore = create(
         executeDeletion(id, downstreamIds);
       },
 
-      clearFlow: () => set({ nodes: [], edges: [], selectedNodeId: null, pendingConnection: null }),
+      clearFlow: () => set({ nodes: [], edges: [], name: '', selectedNodeId: null, pendingConnection: null, nameError: null, nodeErrors: {}, nodeHydration: {}, nodeLoading: {} }),
+
+      saveDraft: () => {
+        // Since persist middleware auto-saves on every state change, 
+        // we just provide a timestamp to confirm to the user that a "checkpoint" was reached.
+        set({ lastDraftAt: new Date().toISOString() });
+      },
 
       isValidFlow: () => {
         const { nodes, edges } = get();

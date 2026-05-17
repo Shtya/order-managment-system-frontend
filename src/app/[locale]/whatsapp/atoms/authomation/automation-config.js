@@ -15,7 +15,7 @@ export const AUTOMATION_CONFIG = {
                 label: 'نظام داخلي',
                 items: [
                     {
-                        id: 'ORDER_CREATED',
+                        id: 'order_created',
                         label: 'إنشاء طلب جديد',
                         icon: ShoppingCart,
                         type: 'trigger',
@@ -23,7 +23,7 @@ export const AUTOMATION_CONFIG = {
                         className: 'max-w-xl!'
                     },
                     {
-                        id: 'ORDER_STATUS_UPDATED',
+                        id: 'order_updated',
                         label: 'تحديث حالة الطلب',
                         icon: RefreshCw,
                         type: 'trigger',
@@ -55,7 +55,7 @@ export const AUTOMATION_CONFIG = {
                 label: 'نظام داخلي',
                 items: [
                     {
-                        id: 'UPDATE_ORDER_STATUS',
+                        id: 'update_order_status',
                         label: 'تحديث حالة الطلب',
                         icon: RefreshCw,
                         type: 'action',
@@ -69,7 +69,7 @@ export const AUTOMATION_CONFIG = {
                 label: 'واتساب',
                 items: [
                     {
-                        id: 'SEND_WHATSAPP_TEMPLATE',
+                        id: 'send_whatsapp_template',
                         label: 'إرسال قالب واتساب',
                         icon: MessageSquare,
                         type: 'action',
@@ -88,7 +88,7 @@ export const AUTOMATION_CONFIG = {
                 label: 'منطق',
                 items: [
                     {
-                        id: 'ORDER_CHECK',
+                        id: 'order_check',
                         label: 'فحص بيانات الطلب',
                         icon: GitBranch,
                         type: 'condition',
@@ -96,7 +96,7 @@ export const AUTOMATION_CONFIG = {
                         className: 'max-w-7xl!'
                     },
                     {
-                        id: 'QUICK_ORDER_STATUS',
+                        id: 'quick_order_status',
                         label: 'فحص سريع للحالة',
                         icon: Zap,
                         type: 'condition',

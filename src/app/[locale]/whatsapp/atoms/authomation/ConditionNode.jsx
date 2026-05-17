@@ -1,18 +1,21 @@
+import React from 'react';
 import { Position } from '@xyflow/react';
-import { GitBranch, Zap, ChevronRight, Check, X } from 'lucide-react';
+import { GitBranch, Zap, Check, Loader2 } from 'lucide-react';
 import { BaseNode } from './BaseNode';
 import { CustomHandle } from './CustomHandle';
 import { useFlowStore } from '@/hook/useFlowStore';
 
 const CONDITION_TYPES = {
-    'ORDER_CHECK': { label: 'فحص بيانات الطلب', icon: GitBranch, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-500/10' },
-    'QUICK_ORDER_STATUS': { label: 'فحص سريع للحالة', icon: Zap, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-500/10' },
+    'order_check': { label: 'فحص بيانات الطلب', icon: GitBranch, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-500/10' },
+    'quick_order_status': { label: 'تحقق быстрый للحالة', icon: Zap, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-500/10' },
 };
 
 export function ConditionNode({ id, data, selected }) {
-    const condition = CONDITION_TYPES[data.type] || CONDITION_TYPES.ORDER_CHECK;
+
+    const condition = CONDITION_TYPES[data.type] || CONDITION_TYPES['order_check'];
     const Icon = condition.icon;
     const edges = useFlowStore((s) => s.edges);
+    const loading = useFlowStore((s) => s.nodeLoading[id]);
 
     const isTrueConnected = edges.some(e => e.source === id && e.sourceHandle === 'true');
     const isFalseConnected = edges.some(e => e.source === id && e.sourceHandle === 'false');
@@ -20,6 +23,7 @@ export function ConditionNode({ id, data, selected }) {
     return (
         <BaseNode
             id={id}
+            data={data}
             selected={selected}
             title={condition.label}
             subtitle="التحقق المنطقي"
@@ -30,39 +34,48 @@ export function ConditionNode({ id, data, selected }) {
             onEdit={() => window.dispatchEvent(new CustomEvent('edit-automation-step', { detail: { id, data } }))}
             className="border-t-[6px] border-t-purple-500"
         >
-            <div className="text-[10px] text-slate-600 dark:text-slate-400 bg-purple-50/20 dark:bg-purple-500/5 p-2.5 rounded-xl border border-purple-100/30 dark:border-purple-500/10 text-right rtl">
-                {data.type === 'ORDER_CHECK' && (
-                    <div className="flex flex-col gap-1.5">
-                        {data.config?.checks?.length > 0 ? (
-                            <>
-                                <div className="flex flex-col gap-1">
-                                    {data.config.checks.slice(0, 2).map((check, idx) => (
-                                        <div key={idx} className="flex items-center justify-between font-black text-purple-700 dark:text-purple-400 border-b border-purple-500/5 last:border-0 pb-1 last:pb-0">
-                                            <span className="truncate max-w-[60px]">{check.fieldLabel || check.field}</span>
-                                            <span className="text-slate-400 font-medium px-1">{check.operator}</span>
-                                            <span className="truncate max-w-[60px]">{check.targetLabel || check.targetValue}</span>
+            <div className="text-[10px] text-slate-600 dark:text-slate-400 bg-purple-50/20 dark:bg-purple-500/5 p-2.5 rounded-xl border border-purple-100/30 dark:border-purple-500/10 text-right rtl min-h-[50px] flex flex-col justify-center">
+                {loading ? (
+                    <div className="flex items-center justify-center gap-2 py-1">
+                        <Loader2 size={12} className="animate-spin text-purple-500" />
+                        <span className="font-bold opacity-50">جاري التحقق...</span>
+                    </div>
+                ) : (
+                    <>
+                        {data.type === 'ORDER_CHECK' && (
+                            <div className="flex flex-col gap-1.5">
+                                {data.config?.checks?.length > 0 ? (
+                                    <>
+                                        <div className="flex flex-col gap-1">
+                                            {data.config.checks.slice(0, 2).map((check, idx) => (
+                                                <div key={idx} className="flex items-center justify-between font-black text-purple-700 dark:text-purple-400 border-b border-purple-500/5 last:border-0 pb-1 last:pb-0">
+                                                    <span className="truncate max-w-[60px]">{check.fieldLabel || check.field}</span>
+                                                    <span className="text-slate-400 font-medium px-1">{check.operator}</span>
+                                                    <span className="truncate max-w-[60px]">{check.targetLabel || check.targetValue}</span>
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
-                                </div>
-                                {data.config.checks.length > 2 && (
-                                    <div className="text-[8px] text-slate-400 font-bold mt-0.5 text-center bg-slate-100 dark:bg-slate-800 rounded py-0.5">
-                                        + {data.config.checks.length - 2} شروط أخرى
-                                    </div>
+                                        {data.config.checks.length > 2 && (
+                                            <div className="text-[8px] text-slate-400 font-bold mt-0.5 text-center bg-slate-100 dark:bg-slate-800 rounded py-0.5">
+                                                + {data.config.checks.length - 2} شروط أخرى
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <div className="text-slate-400 italic text-center">لا توجد شروط</div>
                                 )}
-                            </>
-                        ) : (
-                            <div className="text-slate-400 italic text-center">لا توجد شروط</div>
+                                <div className="flex items-center justify-end mt-0.5 opacity-50 font-bold text-[9px]">
+                                    <span>فحص بيانات الطلب</span>
+                                </div>
+                            </div>
                         )}
-                        <div className="flex items-center justify-end mt-0.5 opacity-50 font-bold text-[9px]">
-                            <span>فحص بيانات الطلب</span>
-                        </div>
-                    </div>
-                )}
-                {data.type === 'QUICK_ORDER_STATUS' && (
-                    <div className="flex items-center justify-between">
-                        <span className="font-black text-purple-700 dark:text-purple-400 uppercase tracking-tight">{data.config?.status || '—'}</span>
-                        <span className="opacity-50 font-bold">فحص الحالة</span>
-                    </div>
+                        {data.type === 'quick_order_status' && (
+                            <div className="flex items-center justify-between">
+                                <span className="font-black text-purple-700 dark:text-purple-400 uppercase tracking-tight">{data.config?.status || '—'}</span>
+                                <span className="opacity-50 font-bold">فحص الحالة</span>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
 

@@ -656,23 +656,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                                         </h3>
                                     )}
 
-                                    {needsFixOrders.length > 0 && (
-                                        <motion.button
-                                            whileHover={{ scale: 1.02 }}
-                                            whileTap={{ scale: 0.97 }}
-                                            onClick={submitFixes}
-                                            disabled={updating}
-                                            type="button"
-                                            className="h-10 px-5 flex items-center gap-2 text-xs font-bold text-white rounded-xl transition-all duration-200 shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
-                                            style={{
-                                                background: `linear-gradient(135deg, rgb(var(--primary-from, 103, 99, 175)), rgb(var(--primary-to, 80, 76, 144)))`,
-                                                boxShadow: `0 4px 14px rgb(var(--primary-shadow, 103, 99, 175) / 0.4)`,
-                                            }}
-                                        >
-                                            {updating ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                                            {updating ? t("common.saving") : t("common.saveMissingData")}
-                                        </motion.button>
-                                    )}
+
                                 </div>
 
                                 {/* Table Container */}
@@ -688,6 +672,15 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                                                     <tr>
                                                         <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">
                                                             {t("fields.orderNumber")}
+                                                        </th>
+                                                        <th className="text-nowrap px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 min-w-[150px] bg-slate-100/50 dark:bg-slate-800/50">
+                                                            {t("fields.address")} ({t("common.original")})
+                                                        </th>
+                                                        <th className="text-nowrap px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 min-w-[100px] bg-slate-100/50 dark:bg-slate-800/50">
+                                                            {t("fields.city")} ({t("common.original")})
+                                                        </th>
+                                                        <th className="text-nowrap px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 min-w-[100px] bg-slate-100/50 dark:bg-slate-800/50">
+                                                            {t("fields.area")} ({t("common.original")})
                                                         </th>
                                                         <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 min-w-[150px]">
                                                             {t("fields.customerName")}
@@ -743,6 +736,21 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                                                                 <td className="px-4 py-3 align-top">
                                                                     <span className="font-bold text-primary block mt-2 text-nowrap">{order.orderNumber}</span>
                                                                     {apiErr && <span className="text-[10px] text-red-600 bg-red-100 px-1.5 py-0.5 rounded mt-1 inline-block">{apiErr}</span>}
+                                                                </td>
+                                                                <td className="px-4 py-3 align-top bg-slate-50/30 dark:bg-slate-900/30">
+                                                                    <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 bg-slate-100/50 dark:bg-slate-800/50 px-2 py-1.5 rounded-lg border border-slate-200/50 dark:border-slate-700/50 mt-1">
+                                                                        {order.address || "-"}
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-4 py-3 align-top bg-slate-50/30 dark:bg-slate-900/30">
+                                                                    <div className="text-[11px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-950/50 px-2 py-1.5 rounded-lg border border-slate-100 dark:border-slate-800 mt-1">
+                                                                        {order.city || "-"}
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-4 py-3 align-top bg-slate-50/30 dark:bg-slate-900/30">
+                                                                    <div className="text-[11px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-950/50 px-2 py-1.5 rounded-lg border border-slate-100 dark:border-slate-800 mt-1">
+                                                                        {order.area || "-"}
+                                                                    </div>
                                                                 </td>
                                                                 <td className="px-4 py-3 align-top">
                                                                     <TableInput
@@ -905,6 +913,23 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                         <Button variant="outline" onClick={onClose} disabled={loading || updating} className="w-full sm:w-auto">
                             {t("common.cancel")}
                         </Button>
+
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={submitFixes}
+                            disabled={updating || needsFixOrders.length === 0}
+                            type="button"
+                            className="h-10 px-5 flex items-center gap-2 text-xs font-bold text-white rounded-xl transition-all duration-200 shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
+                            style={{
+                                background: `linear-gradient(135deg, rgb(var(--primary-from, 103, 99, 175)), rgb(var(--primary-to, 80, 76, 144)))`,
+                                boxShadow: `0 4px 14px rgb(var(--primary-shadow, 103, 99, 175) / 0.4)`,
+                            }}
+                        >
+                            {updating ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                            {updating ? t("common.saving") : t("common.saveMissingData")}
+                        </motion.button>
+
                         <Button
                             onClick={handleAssign}
                             disabled={loading || updating || !carrier || selectedReadyOrders.length === 0 || needsFixOrders.length > 0}

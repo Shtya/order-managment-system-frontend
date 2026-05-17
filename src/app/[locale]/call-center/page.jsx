@@ -140,7 +140,7 @@ export default function CallCenterPage() {
 
         } catch (e) {
             console.error("Error fetching stats summary:", e);
-            toast.error(t("common.api.error"));
+            toast.error(t("common.api.errorEmployee"));
         }
     }, [t]);
 
@@ -159,7 +159,7 @@ export default function CallCenterPage() {
                 });
             } catch (e) {
                 console.error(e);
-                toast.error(t("common.api.error"));
+                toast.error(t("common.api.errorEmployeeStatus"));
             } finally {
                 setLoading(false);
             }

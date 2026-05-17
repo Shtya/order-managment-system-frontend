@@ -66,12 +66,12 @@ export const CARRIER_STYLES = {
 };
 
 export const CARRIER_META = {
-  ARAMEX: { icon: Truck, color: "#ef4444", ...CARRIER_STYLES.ARAMEX },
-  SMSA: { icon: Truck, color: "#3b82f6", ...CARRIER_STYLES.SMSA },
-  DHL: { icon: Truck, color: "#eab308", ...CARRIER_STYLES.DHL },
+  // ARAMEX: { icon: Truck, color: "#ef4444", ...CARRIER_STYLES.ARAMEX },
+  // SMSA: { icon: Truck, color: "#3b82f6", ...CARRIER_STYLES.SMSA },
+  // DHL: { icon: Truck, color: "#eab308", ...CARRIER_STYLES.DHL },
   BOSTA: { icon: Truck, color: "#f97316", ...CARRIER_STYLES.BOSTA },
   TURBO: { icon: Truck, color: "#6366f1", ...CARRIER_STYLES.TURBO },
-  JT: { icon: Truck, color: "#f43f5e", ...CARRIER_STYLES.JT },
+  // JT: { icon: Truck, color: "#f43f5e", ...CARRIER_STYLES.JT },
 };
 export const PAYMENT_TYPES = ['code', 'paid'];
 export const PRODUCT_CONDITIONS = ['سليم', 'تالف', 'مفقود جزء'];

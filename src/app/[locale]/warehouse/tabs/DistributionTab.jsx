@@ -76,9 +76,9 @@ import AssignCarrierDialog from "../atoms/AssignCarrierDialog";
 // MAIN TAB
 // ─────────────────────────────────────────────
 export default function DistributionTab({ subtab, setSubtab }) {
-  const t = useTranslations("warehouse.distribution");
   const tCommon = useTranslations("common");
   const tStats = useTranslations("warehouse.distribution.stats");
+  const t = useTranslations("warehouse.distribution");
 
   const [statsData, setStatsData] = useState({
     lifecycle: { confirmed: 0, distributed: 0, distributedNotPrinted: 0 },
@@ -86,7 +86,7 @@ export default function DistributionTab({ subtab, setSubtab }) {
   });
   const [loading, setLoading] = useState(true);
 
-  const updateStatsAfterAssign = useCallback(() => {
+  const updateStatsAfterAssign = useCallback(async () => {
     setStatsData((prev) => ({
       ...prev,
       lifecycle: {
@@ -95,6 +95,12 @@ export default function DistributionTab({ subtab, setSubtab }) {
         distributed: prev.lifecycle.distributed + 1,
         distributedNotPrinted: prev.lifecycle.distributedNotPrinted + 1,
       },
+    }));
+
+    const { data: companiesData } = await api.get("/shipping/stats/companies-workload")
+    setStatsData(prev => ({
+      lifecycle: prev.lifecycle,
+      companies: companiesData,
     }));
   }, []);
 
@@ -201,26 +207,26 @@ export default function DistributionTab({ subtab, setSubtab }) {
             count: statsData.lifecycle.confirmed,
             icon: AlertCircle,
           },
-          // {
-          //   id: "assigned",
-          //   label: t("tabs.assigned"),
-          //   count: statsData.lifecycle.distributed,
-          //   icon: Truck,
-          // },
+          {
+            id: "assigned",
+            label: t("tabs.assigned"),
+            count: statsData.lifecycle.distributed,
+            icon: Truck,
+          },
         ]}
         active={subtab}
         setActive={setSubtab}
       />
 
       {/* <AssignCarrierDialog
-				t={t}
-				open={assignAllOpen}
-				onClose={() => setAssignAllOpen(false)}
-				orders={orders}
-				selectedOrderCodes={unassigned.map((o) => o.code)}
-				updateOrder={updateOrder}
-				pushOp={pushOp}
-			/> */}
+        t={t}
+        open={assignAllOpen}
+        onClose={() => setAssignAllOpen(false)}
+        orders={orders}
+        selectedOrderCodes={unassigned.map((o) => o.code)}
+        updateOrder={updateOrder}
+        pushOp={pushOp}
+      /> */}
 
       <AnimatePresence mode="wait">
         <motion.div
@@ -237,13 +243,13 @@ export default function DistributionTab({ subtab, setSubtab }) {
               updateStatsAfterAssign={updateStatsAfterAssign}
             />
           )}
-          {/* {subtab === "assigned" && (
+          {subtab === "assigned" && (
             <AssignedOrdersSubtab
               t={t}
               fetchStats={fetchStats}
               updateStatsAfterAssign={updateStatsAfterAssign}
             />
-          )} */}
+          )}
         </motion.div>
       </AnimatePresence>
     </div>
@@ -1420,11 +1426,12 @@ function UnassignedOrdersSubtab({ t, fetchStats, updateStatsAfterAssign }) {
 // ASSIGNED SUBTAB
 // ─────────────────────────────────────────────
 function AssignedOrdersSubtab({
-  t,
   pushOp,
   fetchStats,
   updateStatsAfterAssign,
 }) {
+  const tOrder = useTranslations("orders");
+  const t = useTranslations("warehouse.distribution");
   const { currency } = usePlatformSettings();
   const [search, setSearch] = useState("");
   const { debouncedValue: debouncedSearch } = useDebounce({
@@ -1494,7 +1501,8 @@ function AssignedOrdersSubtab({
     const params = {
       page,
       limit: per_page,
-      status: "distributed",
+      excludeStatus: "cancelled,delivered",
+      activeIntegration: true,
     };
 
     if (debouncedSearch) params.search = debouncedSearch;
@@ -1571,6 +1579,35 @@ function AssignedOrdersSubtab({
     filters.paymentType !== "all" ||
     !!filters.date ||
     filters.productId !== "all";
+
+  const getStatusBadge = (status) => {
+    if (!status) {
+      return "bg-gray-100 text-gray-700 dark:bg-gray-950/30 dark:text-gray-400";
+    }
+
+    // Generate badge colors from status color
+    const hexToRgb = (hex) => {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result
+        ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16),
+        }
+        : null;
+    };
+
+    const rgb = hexToRgb(status.color);
+    return {
+      style: rgb
+        ? {
+          backgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`,
+          color: status.color,
+        }
+        : {},
+      className: "rounded-xl",
+    };
+  }
 
   const columns = useMemo(
     () => [
@@ -1660,6 +1697,17 @@ function AssignedOrdersSubtab({
           ),
       },
       {
+        key: "status",
+        header: t("table.status"),
+        cell: (row) => (
+          <Badge className={cn("rounded-xl", getStatusBadge(row.status))}>
+            {row.status.system
+              ? tOrder(`statuses.${row.status.code}`)
+              : row.status.name || row.status.code}
+          </Badge>
+        ),
+      },
+      {
         key: "distributedAt",
         header: t("field.distributedAt"),
         cell: (row) => (
@@ -1693,25 +1741,25 @@ function AssignedOrdersSubtab({
                 variant: "primary",
                 permission: "orders.read",
               },
-              {
-                icon: <Truck />,
-                tooltip: row.isAssigning
-                  ? t("tooltip.assigning")
-                  : t("tooltip.changeAssign"),
-                onClick: (r) =>
-                  setAssignDialog({ open: true, codes: [r.orderNumber] }),
-                variant: "primary",
-                disabled: row.isAssigning,
-                permission: "order.assign",
-              },
-              {
-                icon: <Ban />,
-                tooltip: t("tooltip.reject"),
-                onClick: (r) => setCancelModal({ open: true, order: r }),
-                variant: "red",
-                disabled: row.isAssigning,
-                permission: "order.update",
-              },
+              // {
+              //   icon: <Truck />,
+              //   tooltip: row.isAssigning
+              //     ? t("tooltip.assigning")
+              //     : t("tooltip.changeAssign"),
+              //   onClick: (r) =>
+              //     setAssignDialog({ open: true, codes: [r.orderNumber] }),
+              //   variant: "primary",
+              //   disabled: row.isAssigning,
+              //   permission: "order.assign",
+              // },
+              // {
+              //   icon: <Ban />,
+              //   tooltip: t("tooltip.reject"),
+              //   onClick: (r) => setCancelModal({ open: true, order: r }),
+              //   variant: "red",
+              //   disabled: row.isAssigning,
+              //   permission: "order.update",
+              // },
             ]}
           />
         ),

@@ -1660,7 +1660,8 @@
         "searchUnassigned": "Search unassigned orders...",
         "emptyUnassignedTitle": "No unassigned orders",
         "searchAssigned": "Search assigned orders...",
-        "emptyAssignedTitle": "No assigned orders"
+        "emptyAssignedTitle": "No assigned orders",
+        "status": "the condition"
       },
       "action": {
         "assignSelected": "Assign Selected ({count})"
@@ -1690,7 +1691,8 @@
         "allCarriers": "All Shipping Companies",
         "saving": "Saving...",
         "saveMissingData": "Save missing data",
-        "error": "Something went wrong. Please try again."
+        "error": "Something went wrong. Please try again.",
+        "original": "Current"
       },
       "loading": "Loading...",
       "placeholders": {
@@ -4450,7 +4452,9 @@
     "api": {
       "error": "Request failed",
       "exportStarted": "Export started",
-      "exportSuccess": "Exported successfully"
+      "exportSuccess": "Exported successfully",
+      "errorEmployee": "Failed to get employees ",
+      "errorEmployeeStatus": "Failed to load statistics"
     },
     "copy": {
       "success": "Copied",

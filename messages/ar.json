@@ -1696,7 +1696,8 @@
         "searchUnassigned": "ابحث في الطلبات غير الموزعة...",
         "emptyUnassignedTitle": "لا توجد طلبات غير موزعة",
         "searchAssigned": "ابحث في الطلبات الموزعة...",
-        "emptyAssignedTitle": "لا توجد طلبات موزعة"
+        "emptyAssignedTitle": "لا توجد طلبات موزعة",
+        "status": "الحالة"
       },
       "action": {
         "assignSelected": "تعيين المحدد ({count})"
@@ -1726,7 +1727,8 @@
         "allCarriers": "كل شركات الشحن",
         "saving": "جارٍ الحفظ...",
         "saveMissingData": "حفظ البيانات الناقصة",
-        "error": "حدث خطأ. يرجى المحاولة مرة أخرى."
+        "error": "حدث خطأ. يرجى المحاولة مرة أخرى.",
+        "original": "الحاليه"
       },
       "loading": "جاري التحميل..."
     },
@@ -4486,7 +4488,9 @@
     "api": {
       "error": "فشل الطلب",
       "exportStarted": "بدأ التصدير",
-      "exportSuccess": "تم التصدير بنجاح"
+      "exportSuccess": "تم التصدير بنجاح",
+      "errorEmployee": "فشل تحميل بيانات لموظفين",
+      "errorEmployeeStatus": "فشل تحميل الإحصائيات"
     },
     "copy": {
       "success": "تم النسخ",

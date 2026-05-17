@@ -15,6 +15,7 @@ import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import Button_ from "@/components/atoms/Button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 function normalizeAxiosError(err) {
     const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -129,7 +130,7 @@ export function OrderStatusUpdatedConfig({ value, onChange, errors, setDisabled 
 
     const handleStatusChange = (v) => {
         const selectedStatus = statuses.find(s => s.id.toString() === v);
-        onChange({ ...value, status: selectedStatus?.system ? t(`statuses.${selectedStatus?.code}`) : selectedStatus?.name, statusId: v });
+        onChange({ ...value, status: selectedStatus?.name, statusId: v });
     };
 
     return (
@@ -212,7 +213,7 @@ export function UpdateOrderStatusConfig({ value, onChange, errors, setDisabled }
         const selectedStatus = statuses.find(s => s.id.toString() === v);
         onChange({
             ...value,
-            newStatus: selectedStatus?.system ? t(`statuses.${selectedStatus?.code}`) : selectedStatus?.name,
+            newStatus: selectedStatus?.name,
             newStatusId: v
         });
     };
@@ -352,7 +353,7 @@ export function OrderCheckConfig({ value, onChange, errors, setDisabled }) {
     const [statuses, setStatuses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeIndex, setActiveIndex] = useState(null);
-    
+    const t = useTranslations("orders");
     const [checks, setChecks] = useState(Array.isArray(value?.checks) ? value.checks : []);
 
     // Sync from parent if needed
@@ -408,13 +409,13 @@ export function OrderCheckConfig({ value, onChange, errors, setDisabled }) {
                 { id: "bank_transfer", label: "تحويل بنكي" },
                 { id: "cod", label: "دفع عند الاستلام" },
                 { id: "wallet", label: "محفظة" },
-                { id: "other", label: "أخرى" },
-                { id: "unknown", label: "غير معروف" },
+                { id: "other", label: t("other") },
+                { id: "unknown", label: t("unknown") },
             ]
         },
         { id: "city", label: "المدينة", type: "string", icon: Activity, color: "text-rose-500", bg: "bg-rose-50" },
         { id: "discount", label: "كود الخصم", type: "string", icon: Tag, color: "text-pink-500", bg: "bg-pink-50" },
-        { id: "status", label: "حالة الطلب", type: "select", icon: Activity, color: "text-cyan-500", bg: "bg-cyan-50", options: statuses.map(s => ({ id: s.id, label: s.name })) },
+        { id: "status", label: "حالة الطلب", type: "select", icon: Activity, color: "text-cyan-500", bg: "bg-cyan-50", options: statuses.map(s => ({ id: s.id, label: s.system ? t(`statuses.${s.code}`) : s.name })) },
         { id: "allowOpenPackage", label: "فتح الشحنة", type: "boolean", icon: PackageOpen, color: "text-slate-500", bg: "bg-slate-50" },
         { id: "deposit", label: "العربون", type: "number", icon: DollarSign, color: "text-yellow-500", bg: "bg-yellow-50" },
     ];
@@ -476,9 +477,9 @@ export function OrderCheckConfig({ value, onChange, errors, setDisabled }) {
         if (updates.field) {
             const fieldDef = fields.find(f => f.id === updates.field);
             currentCheck.fieldLabel = fieldDef.label;
-            currentCheck.operator = operatorsByType[fieldDef.type][0].id;
-            currentCheck.targetValue = fieldDef.type === "boolean" ? "true" : "";
-            currentCheck.targetLabel = fieldDef.type === "boolean" ? "نعم" : "";
+            currentCheck.operator = operatorsByType[fieldDef?.type][0].id;
+            currentCheck.targetValue = fieldDef?.type === "boolean" ? "true" : "";
+            currentCheck.targetLabel = fieldDef?.type === "boolean" ? "نعم" : "";
         }
 
         newChecks[index] = currentCheck;
@@ -502,262 +503,257 @@ export function OrderCheckConfig({ value, onChange, errors, setDisabled }) {
     };
 
     const currentCheck = activeIndex !== null ? checks[activeIndex] : null;
+    console.log(currentCheck)
     const fieldDef = useMemo(() => {
         if (!currentCheck) return null;
-        return fields.find(f => f.id === currentCheck.field) || fields[0];
+        return fields.find(f => f?.id === currentCheck?.field) || fields[0];
     }, [currentCheck, fields]);
 
 
-    const operators = fieldDef ? operatorsByType[fieldDef.type] : [];
-
-
-    if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center py-20 space-y-4">
-                <Loader2 className="w-10 h-10 animate-spin text-primary" />
-                <p className="text-sm text-slate-500 font-bold">جاري تجهيز محرر الشروط...</p>
-            </div>
-        );
-    }
+    const operators = fieldDef ? operatorsByType[fieldDef?.type] : [];
 
     return (
         <div className="flex flex-col gap-8 -m-8 p-8 bg-slate-50 dark:bg-slate-900/50 min-h-[600px] overflow-y-auto custom-scrollbar">
             {/* Header */}
-            <div className="flex items-center justify-between bg-white dark:bg-slate-900 p-6 rounded-3xl border dark:border-slate-800 shadow-sm">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center text-purple-600">
-                        <GitBranch size={24} />
-                    </div>
-                    <div>
-                        <h2 className="text-lg font-black text-slate-800 dark:text-slate-100">فحص بيانات الطلب</h2>
-                        <p className="text-xs text-slate-400 font-medium">سيتم تنفيذ الخطوة إذا تحققت جميع الشروط التالية معاً</p>
-                    </div>
+            <div className="absolute top-8 end-18 flex items-center gap-3">
+                <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-2xl text-[11px] font-black text-slate-500 uppercase tracking-widest">
+                    {checks.length} / 20 شروط
                 </div>
-                <div className="flex items-center gap-3">
-                    <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-2xl text-[11px] font-black text-slate-500 uppercase tracking-widest">
-                        {checks.length} / 20 شروط
-                    </div>
-                    <Button_
-                        onClick={handleAddCheck}
-                        size="sm"
-                        label="إضافة شرط جديد"
-                        disabled={activeIndex !== null}
-                        variant="solid"
-                        icon={<Plus size={18} />}
-                        className="h-12 px-6 rounded-2xl font-black text-xs shadow-lg shadow-primary/20 transition-all hover:scale-105"
-                    />
-                </div>
-            </div>
+                {activeIndex === null ?
 
-            {/* List of conditions if none selected */}
-            {checks.length > 0 && activeIndex === null && (
-                <div className="grid grid-cols-2 gap-4">
-                    {checks.map((check, i) => {
-                        const f = fields.find(fd => fd.id === check.field) || fields[0];
-                        return (
-                            <div
-                                key={i}
-                                onClick={() => setActiveIndex(i)}
-                                className="group flex items-center gap-4 p-5 rounded-3xl bg-white dark:bg-slate-900 border dark:border-slate-800 hover:border-primary/30 transition-all cursor-pointer shadow-sm hover:shadow-md"
+                    <>
+                        <Button_
+                            onClick={handleAddCheck}
+                            size="sm"
+                            label="إضافة شرط جديد"
+                            disabled={activeIndex !== null}
+                            variant="solid"
+                            icon={<Plus size={18} />}
+                            className="h-12 px-6 rounded-2xl font-black text-xs shadow-lg shadow-primary/20 transition-all hover:scale-105"
+                        />
+                    </> : (
+                        <>
+
+                            <button
+                                onClick={() => {
+                                    setChecks(Array.isArray(value?.checks) ? value.checks : []);
+                                    setActiveIndex(null);
+                                }}
+                                className=" flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-[11px] font-black text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
                             >
-                                <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm", f.bg, f.color)}>
-                                    <f.icon size={22} />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-black text-slate-700 dark:text-slate-200">{check.fieldLabel || f.label}</p>
-                                    <p className="text-xs text-slate-400 font-bold mt-1">
-                                        {operatorsByType[f.type]?.find(o => o.id === check.operator)?.label} <span className="text-slate-600 dark:text-slate-300">{check.targetLabel || check.targetValue || '—'}</span>
-                                    </p>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); handleRemoveCheck(i); }}
-                                        className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all"
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
-                                    <ChevronLeft size={20} className="text-slate-300 group-hover:text-primary transition-colors" />
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
-
-            {/* Empty State */}
-            {checks.length === 0 && (
-                <div className="flex-1 flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-900 rounded-3xl border-2 border-dashed dark:border-slate-800">
-                    <div className="w-20 h-20 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300 mb-6">
-                        <GitBranch size={40} />
-                    </div>
-                    <h3 className="text-lg font-black text-slate-700 dark:text-slate-200 mb-2">لا توجد شروط محددة</h3>
-                    <p className="text-sm text-slate-400 font-medium mb-8">ابدأ بإضافة أول شرط لفحص بيانات الطلب</p>
-                </div>
-            )}
-
-            {/* Active Editor */}
-            {activeIndex !== null && (
-                <div className="flex flex-col gap-8 bg-white dark:bg-slate-900 p-8 rounded-3xl border dark:border-slate-800 shadow-sm relative">
-                    <div className="absolute top-6 end-6 flex flex-row items-center justify-between gap-2">
-                        <button
-                            onClick={() => {
-                                setChecks(Array.isArray(value?.checks) ? value.checks : []);
-                                setActiveIndex(null);
-                            }}
-                            className=" flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-[11px] font-black text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
-                        >
-                            <ChevronLeft size={14} className="rotate-180" />
-                            العودة للقائمة
-                        </button>
-                    </div>
-
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xs font-black">1</div>
-                            <h4 className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase">اختر الحقل من بيانات الطلب</h4>
-                        </div>
-                        <div className="grid grid-cols-6 gap-3">
-                            {fields.map(f => {
-                                const isSelected = currentCheck.field === f.id;
+                                <ChevronLeft size={14} className="rotate-180" />
+                                العودة للقائمة
+                            </button>
+                            <Button_
+                                onClick={handleConfirm}
+                                size="sm"
+                                disabled={!currentCheck?.targetValue}
+                                label="تأكيد وإضافة للقائمة"
+                                variant="solid"
+                                className="h-12 px-8 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-xs shadow-xl shadow-slate-200 dark:shadow-none"
+                            />
+                        </>
+                    )
+                }
+            </div>
+            <div className="flex-1 bg-[#f6f6f7] dark:bg-[#13161f] p-6 overflow-y-auto relative">
+                {loading ? (<div className="flex flex-col items-center justify-center py-20 space-y-4">
+                    <Loader2 className="w-10 h-10 animate-spin text-primary" />
+                    <p className="text-sm text-slate-500 font-bold">جاري تجهيز محرر الشروط...</p>
+                </div>) : <>
+                    {/* List of conditions if none selected */}
+                    {checks.length > 0 && activeIndex === null && (
+                        <div className="grid grid-cols-2 gap-4">
+                            {checks.map((check, i) => {
+                                const f = fields.find(fd => fd.id === check.field) || fields[0];
                                 return (
-                                    <button
-                                        key={f.id}
-                                        onClick={() => handleUpdateCheck(activeIndex, { field: f.id })}
-                                        className={cn(
-                                            "flex flex-col items-center justify-center gap-3 p-4 rounded-2xl border transition-all relative group",
-                                            isSelected
-                                                ? "bg-white dark:bg-slate-800 border-primary shadow-md ring-4 ring-primary/5 scale-[1.02] z-10"
-                                                : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
-                                        )}
+                                    <div
+                                        key={i}
+                                        onClick={() => setActiveIndex(i)}
+                                        className="group flex items-center gap-4 p-5 rounded-3xl bg-white dark:bg-slate-900 border dark:border-slate-800 hover:border-primary/30 transition-all cursor-pointer shadow-sm hover:shadow-md"
                                     >
-                                        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm transition-transform group-hover:scale-110", f.bg, f.color)}>
-                                            <f.icon size={20} />
+                                        <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm", f.bg, f.color)}>
+                                            <f.icon size={22} />
                                         </div>
-                                        <p className="text-[10px] font-black text-slate-700 dark:text-slate-200 text-center leading-tight">{f.label}</p>
-                                        {isSelected && (
-                                            <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center shadow-md border-2 border-white dark:border-slate-900">
-                                                <Check size={12} strokeWidth={4} />
-                                            </div>
-                                        )}
-                                    </button>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-black text-slate-700 dark:text-slate-200">{check.fieldLabel || f.label}</p>
+                                            <p className="text-xs text-slate-400 font-bold mt-1">
+                                                {operatorsByType[f.type]?.find(o => o.id === check.operator)?.label} <span className="text-slate-600 dark:text-slate-300">{check.targetLabel || check.targetValue || '—'}</span>
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handleRemoveCheck(i); }}
+                                                className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                            <ChevronLeft size={20} className="text-slate-300 group-hover:text-primary transition-colors" />
+                                        </div>
+                                    </div>
                                 );
                             })}
                         </div>
-                    </div>
+                    )}
 
-                    <div className="flex flex-col gap-10 pt-8 border-t dark:border-slate-800">
-                        {/* Step 2: Operator Selection */}
-                        <div className="space-y-6">
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xs font-black">2</div>
-                                <h4 className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase">اختر المعامل (الشرط)</h4>
+                    {/* Empty State */}
+                    {checks.length === 0 && (
+                        <div className="flex-1 flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-900 rounded-3xl border-2 border-dashed dark:border-slate-800">
+                            <div className="w-20 h-20 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300 mb-6">
+                                <GitBranch size={40} />
                             </div>
-                            <div className="grid grid-cols-4 gap-3">
-                                {operators.map(o => {
-                                    const isSelected = currentCheck.operator === o.id;
-                                    return (
-                                        <button
-                                            key={o.id}
-                                            onClick={() => handleUpdateCheck(activeIndex, { operator: o.id })}
-                                            className={cn(
-                                                "flex flex-col items-center justify-center p-4 rounded-2xl border transition-all",
-                                                isSelected
-                                                    ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
-                                                    : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300"
-                                            )}
-                                        >
-                                            <span className="text-xs font-black">{o.label}</span>
-                                            <span className={cn("text-[10px] font-bold opacity-60 mt-1", isSelected ? "text-white" : "text-slate-400")}>{o.id}</span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
+                            <h3 className="text-lg font-black text-slate-700 dark:text-slate-200 mb-2">لا توجد شروط محددة</h3>
+                            <p className="text-sm text-slate-400 font-medium mb-8">ابدأ بإضافة أول شرط لفحص بيانات الطلب</p>
                         </div>
+                    )}
 
-                        {/* Step 3: Value Entry */}
-                        <div className="space-y-6">
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xs font-black">3</div>
-                                <h4 className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase">أدخل القيمة</h4>
+                    {/* Active Editor */}
+                    {activeIndex !== null && (
+                        <div className="flex flex-col gap-8 bg-white dark:bg-slate-900 p-8 rounded-3xl border dark:border-slate-800 shadow-sm relative">
+
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xs font-black">1</div>
+                                    <h4 className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase">اختر الحقل من بيانات الطلب</h4>
+                                </div>
+                                <div className="grid grid-cols-6 gap-3">
+                                    {fields.map(f => {
+                                        const isSelected = currentCheck?.field === f?.id;
+                                        return (
+                                            <button
+                                                key={f.id}
+                                                onClick={() => handleUpdateCheck(activeIndex, { field: f.id })}
+                                                className={cn(
+                                                    "flex flex-col items-center justify-center gap-3 p-4 rounded-2xl border transition-all relative group",
+                                                    isSelected
+                                                        ? "bg-white dark:bg-slate-800 border-primary shadow-md ring-4 ring-primary/5 scale-[1.02] z-10"
+                                                        : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+                                                )}
+                                            >
+                                                <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm transition-transform group-hover:scale-110", f.bg, f.color)}>
+                                                    <f.icon size={20} />
+                                                </div>
+                                                <p className="text-[10px] font-black text-slate-700 dark:text-slate-200 text-center leading-tight">{f.label}</p>
+                                                {isSelected && (
+                                                    <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center shadow-md border-2 border-white dark:border-slate-900">
+                                                        <Check size={12} strokeWidth={4} />
+                                                    </div>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
                             </div>
-                            <div className="space-y-4 max-w-2xl">
-                                {fieldDef.type === "select" || fieldDef.type === "boolean" ? (
-                                    <Select
-                                        value={String(currentCheck.targetValue)}
-                                        onValueChange={(v) => {
-                                            const options = fieldDef.type === "boolean" ? [
-                                                { id: "true", label: "نعم" },
-                                                { id: "false", label: "لا" }
-                                            ] : fieldDef.options;
-                                            const label = options.find(o => String(o.id) === v)?.label;
-                                            handleUpdateCheck(activeIndex, { targetValue: v, targetLabel: label });
-                                        }}
-                                    >
-                                        <SelectTrigger className="h-14 rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-sm px-6">
-                                            <SelectValue placeholder="اختر القيمة المطلوبة..." />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {(fieldDef.type === "boolean" ? [
-                                                { id: "true", label: "نعم" },
-                                                { id: "false", label: "لا" }
-                                            ] : fieldDef.options).map(opt => (
-                                                <SelectItem key={opt.id} value={String(opt.id)}>{opt.label}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                ) : (
-                                    <Input
-                                        type={fieldDef.type === "number" ? "number" : "text"}
-                                        className="h-14 rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-sm px-6"
-                                        value={currentCheck.targetValue || ""}
-                                        onChange={(e) => handleUpdateCheck(activeIndex, { targetValue: e.target.value, targetLabel: e.target.value })}
-                                        placeholder="أدخل القيمة المطلوبة..."
-                                    />
-                                )}
-                                {/* <div className="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-500/5 border border-blue-100 dark:border-blue-500/10 flex gap-3">
+
+                            <div className="flex flex-col gap-10 pt-8 border-t dark:border-slate-800">
+                                {/* Step 2: Operator Selection */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xs font-black">2</div>
+                                        <h4 className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase">اختر المعامل (الشرط)</h4>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-3">
+                                        {operators.map(o => {
+                                            const isSelected = currentCheck.operator === o.id;
+                                            return (
+                                                <button
+                                                    key={o.id}
+                                                    onClick={() => handleUpdateCheck(activeIndex, { operator: o.id })}
+                                                    className={cn(
+                                                        "flex flex-col items-center justify-center p-4 rounded-2xl border transition-all",
+                                                        isSelected
+                                                            ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
+                                                            : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                                                    )}
+                                                >
+                                                    <span className="text-xs font-black">{o.label}</span>
+                                                    <span className={cn("text-[10px] font-bold opacity-60 mt-1", isSelected ? "text-white" : "text-slate-400")}>{o.id}</span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* Step 3: Value Entry */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xs font-black">3</div>
+                                        <h4 className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase">أدخل القيمة</h4>
+                                    </div>
+                                    <div className="space-y-4 max-w-2xl">
+                                        {fieldDef?.type === "select" || fieldDef?.type === "boolean" ? (
+                                            <Select
+                                                value={String(currentCheck.targetValue)}
+                                                onValueChange={(v) => {
+                                                    const options = fieldDef?.type === "boolean" ? [
+                                                        { id: "true", label: "نعم" },
+                                                        { id: "false", label: "لا" }
+                                                    ] : fieldDef?.options;
+                                                    const label = options.find(o => String(o.id) === v)?.label;
+                                                    handleUpdateCheck(activeIndex, { targetValue: v, targetLabel: label });
+                                                }}
+                                            >
+                                                <SelectTrigger className="h-14 rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-sm px-6">
+                                                    <SelectValue placeholder="اختر القيمة المطلوبة..." />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {(fieldDef?.type === "boolean" ? [
+                                                        { id: "true", label: "نعم" },
+                                                        { id: "false", label: "لا" }
+                                                    ] : fieldDef?.options).map(opt => (
+                                                        <SelectItem key={opt.id} value={String(opt.id)}>{opt.label}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        ) : (
+                                            <Input
+                                                type={fieldDef?.type === "number" ? "number" : "text"}
+                                                className="h-14 rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-sm px-6"
+                                                value={currentCheck.targetValue || ""}
+                                                maxLength={300}
+                                                onChange={(e) => handleUpdateCheck(activeIndex, { targetValue: e.target.value, targetLabel: e.target.value })}
+                                                placeholder="أدخل القيمة المطلوبة..."
+                                            />
+                                        )}
+                                        {/* <div className="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-500/5 border border-blue-100 dark:border-blue-500/10 flex gap-3">
                                     <Info size={16} className="text-blue-500 shrink-0" />
                                     <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 leading-relaxed">
-                                        يجب أن تكون القيمة من نوع <span className="uppercase">{fieldDef.type}</span>.
+                                        يجب أن تكون القيمة من نوع <span className="uppercase">{fieldDef?.type}</span>.
                                         <br />
                                         سيتم التحقق من صحة هذا الحقل قبل الحفظ.
                                     </p>
                                 </div> */}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
 
-                    {/* Preview in Editor */}
-                    <div className="mt-8 p-6 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                        <div className="flex flex-col gap-1.5">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">معاينة الشرط الحالي</span>
-                            <div className="flex items-center gap-2">
-                                <div className="px-4 py-2 rounded-xl bg-white dark:bg-slate-900 text-[11px] font-black text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 shadow-sm">
-                                    {fieldDef.label}
+                            {/* Preview in Editor */}
+                            <div className="mt-8 p-6 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                                <div className="flex flex-col gap-1.5">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">معاينة الشرط الحالي</span>
+                                    <div className="flex items-center gap-2">
+                                        <div className="px-4 py-2 rounded-xl bg-white dark:bg-slate-900 text-[11px] font-black text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 shadow-sm">
+                                            {fieldDef.label}
+                                        </div>
+                                        <div className="px-3 py-2 rounded-xl bg-primary/10 text-[11px] font-black text-primary border border-primary/20">
+                                            {operators.find(o => o.id === currentCheck.operator)?.id}
+                                        </div>
+                                        <div className={cn(
+                                            "px-4 py-2 rounded-xl text-[11px] font-black border transition-all",
+                                            currentCheck.targetValue
+                                                ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border-emerald-100 dark:border-emerald-500/20"
+                                                : "bg-white dark:bg-slate-900 text-slate-300 border-slate-200 dark:border-slate-800 border-dashed"
+                                        )}>
+                                            {currentCheck.targetLabel || currentCheck.targetValue || "أدخل القيمة"}
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="px-3 py-2 rounded-xl bg-primary/10 text-[11px] font-black text-primary border border-primary/20">
-                                    {operators.find(o => o.id === currentCheck.operator)?.id}
-                                </div>
-                                <div className={cn(
-                                    "px-4 py-2 rounded-xl text-[11px] font-black border transition-all",
-                                    currentCheck.targetValue
-                                        ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border-emerald-100 dark:border-emerald-500/20"
-                                        : "bg-white dark:bg-slate-900 text-slate-300 border-slate-200 dark:border-slate-800 border-dashed"
-                                )}>
-                                    {currentCheck.targetLabel || currentCheck.targetValue || "أدخل القيمة"}
-                                </div>
+
                             </div>
                         </div>
-                        <Button_
-                            onClick={handleConfirm}
-                            size="sm"
-                            disabled={!currentCheck?.targetValue}
-                            label="تأكيد وإضافة للقائمة"
-                            variant="solid"
-                            className="h-12 px-8 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-xs shadow-xl shadow-slate-200 dark:shadow-none"
-                        />
-                    </div>
-                </div>
-            )}        </div>
+                    )} </>}
+            </div>
+        </div>
     );
 }
 
@@ -795,7 +791,7 @@ export function QuickOrderStatusConfig({ value, onChange, errors, setDisabled })
         const selectedStatus = statuses.find(s => s.id.toString() === v);
         onChange({
             ...value,
-            status: selectedStatus?.system ? t(`statuses.${selectedStatus?.code}`) : selectedStatus?.name,
+            status: selectedStatus?.name,
             statusId: v
         });
     };

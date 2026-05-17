@@ -5,7 +5,9 @@ import {
     Rocket,
     ChevronRight,
     Trash2,
-    Loader2
+    Loader2,
+    Edit3,
+    Layout
 } from 'lucide-react';
 import { useRouter } from "@/i18n/navigation";
 import toast from 'react-hot-toast';
@@ -23,7 +25,15 @@ export function TopToolbar() {
     const setNameError = useFlowStore((s) => s.setNameError);
     const setDeleteConfirm = useFlowStore((s) => s.setDeleteConfirm);
     const saveDraft = useFlowStore((s) => s.saveDraft);
+    const resetFlow = useFlowStore((s) => s.resetFlow);
+    const reorderFlow = useFlowStore((s) => s.reorderFlow);
+    const mode = useFlowStore((s) => s.mode);
+    const automationId = useFlowStore((s) => s.automationId);
     const [saving, setSaving] = useState(false);
+    const router = useRouter();
+
+    const isEditMode = mode === 'edit';
+    const isViewMode = mode === 'view';
 
     const handleClear = () => {
         if (nodes.length === 0) return;
@@ -87,10 +97,15 @@ export function TopToolbar() {
                         targetHandle: e.targetHandle
                     }))
                 },
-                publish
+                ...(!isEditMode && { publish }),
             };
 
-            await api.post('/automation', payload);
+            if (isEditMode && automationId) {
+                await api.put(`/automation/${automationId}`, payload);
+            } else {
+                await api.post('/automation', payload);
+            }
+            resetFlow();
             toast.success(publish ? "تم نشر الأتمتة بنجاح!" : "تم حفظ الأتمتة بنجاح!");
             router.push('/whatsapp/automations');
         } catch (error) {
@@ -101,42 +116,56 @@ export function TopToolbar() {
         }
     };
 
-    const handlePublish = () => {
-        handleSave(true);
-    };
 
     return (
         <div className="absolute top-[15px] inset-x-[15px] z-50 flex items-center justify-end pointer-events-none">
-
-
             <div className="flex items-center gap-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl pointer-events-auto">
                 <ToolbarButton
-                    icon={<Play size={18} />}
-                    label="معاينة المسار"
-                    onClick={() => { }}
-                />
-
-                <ToolbarButton
-                    icon={<Save size={18} />}
-                    label="حفظ مسودة"
-                    onClick={handleLocalSave}
-                />
-
-                <ToolbarButton
-                    icon={<Trash2 size={18} />}
-                    label="مسح الكل"
-                    onClick={handleClear}
-                    danger
+                    icon={<Layout size={18} />}
+                    label="إعادة ترتيب"
+                    onClick={reorderFlow}
                 />
                 <div className="w-[1px] h-6 bg-slate-200 dark:bg-slate-800 mx-1" />
-                <ToolbarButton
-                    icon={saving ? <Loader2 size={18} className="animate-spin" /> : <Rocket size={18} />}
-                    label="حفظ ونشر"
-                    onClick={() => handleSave(true)}
-                    primary
-                    disabled={saving}
-                />
+                {isViewMode ? (
+                    <ToolbarButton
+                        icon={<Edit3 size={18} />}
+                        label="تعديل الأتمتة"
+                        onClick={() => router.push(`/whatsapp/automations/edit/${automationId}`)}
+                        primary
+                    />
+                ) : (
+                    <>
+                        <ToolbarButton
+                            icon={<Play size={18} />}
+                            label="معاينة المسار"
+                            onClick={() => { }}
+                        />
 
+                        {!isEditMode && (
+                            <ToolbarButton
+                                icon={<Save size={18} />}
+                                label="حفظ مسودة"
+                                onClick={() => handleSave(false)}
+                                disabled={saving}
+                            />
+                        )}
+
+                        <ToolbarButton
+                            icon={<Trash2 size={18} />}
+                            label="مسح الكل"
+                            onClick={handleClear}
+                            danger
+                        />
+                        <div className="w-[1px] h-6 bg-slate-200 dark:bg-slate-800 mx-1" />
+                        <ToolbarButton
+                            icon={<Rocket size={18} />}
+                            label="حفظ ونشر"
+                            onClick={() => handleSave(true)}
+                            primary
+                            disabled={saving}
+                        />
+                    </>
+                )}
             </div>
         </div>
     );

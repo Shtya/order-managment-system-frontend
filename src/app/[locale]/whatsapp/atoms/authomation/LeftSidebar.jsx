@@ -20,10 +20,13 @@ export function LeftSidebar({ onSelectStep }) {
     const name = useFlowStore((s) => s.name);
     const setName = useFlowStore((s) => s.setName);
     const nameError = useFlowStore((s) => s.nameError);
+    const mode = useFlowStore((s) => s.mode);
 
     const isRTL =
         typeof document !== 'undefined' &&
         document.documentElement.dir === 'rtl';
+
+    const isEditMode = mode === 'edit';
 
     const hiddenSidebar = hasTrigger && !pendingConnection;
 
@@ -90,8 +93,13 @@ export function LeftSidebar({ onSelectStep }) {
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
+                            disabled={isEditMode}
+                            maxLength={300}
                             placeholder="اسم الأتمتة..."
-                            className="text-xs bg-transparent border-none outline-none font-bold text-slate-700 dark:text-slate-200 px-1.5 min-w-[200px] focus:outline-none focus:ring-0 focus-visible:outline-none! focus-visible:ring-0"
+                            className={cn(
+                                "text-xs bg-transparent border-none outline-none font-bold px-1.5 min-w-[200px] focus:outline-none focus:ring-0 focus-visible:outline-none! focus-visible:ring-0",
+                                isEditMode ? "text-slate-400 cursor-not-allowed" : "text-slate-700 dark:text-slate-200"
+                            )}
                         />
                     </div>
                     {nameError && (

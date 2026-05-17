@@ -680,28 +680,28 @@ export default function FailedOrderDetailsPage() {
                     });
                 }
 
-                if (problem?.code === WebhookOrderProblem.PRODUCT_INACTIVE) {
-                    actions.push({
-                        icon: <Edit size={16} />,
-                        tooltip: t('actions.reactivateProduct'),
-                        variant: "primary",
-                        permission: "orders.restoreFailed",
-                        onClick: async (r) => {
-                            const toastId = toast.loading(t("common.loading"));
+                // if (problem?.code === WebhookOrderProblem.PRODUCT_INACTIVE) {
+                //     actions.push({
+                //         icon: <Edit size={16} />,
+                //         tooltip: t('actions.reactivateProduct'),
+                //         variant: "primary",
+                //         permission: "orders.restoreFailed",
+                //         onClick: async (r) => {
+                //             const toastId = toast.loading(t("common.loading"));
 
-                            try {
-                                await api.patch(`/products/${r.id}/restore`);
+                //             try {
+                //                 await api.patch(`/products/${r.id}/restore`);
 
-                                toast.success(t("actions.restored"), { id: toastId });
+                //                 toast.success(t("actions.restored"), { id: toastId });
 
-                                // reload products
-                                await fetchData();
-                            } catch (e) {
-                                toast.error(normalizeAxiosError(e), { id: toastId });
-                            }
-                        },
-                    });
-                }
+                //                 // reload products
+                //                 await fetchData();
+                //             } catch (e) {
+                //                 toast.error(normalizeAxiosError(e), { id: toastId });
+                //             }
+                //         },
+                //     });
+                // }
 
                 return (
                     <div className="flex items-center gap-3">

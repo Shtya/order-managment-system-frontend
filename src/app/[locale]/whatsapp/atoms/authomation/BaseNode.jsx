@@ -70,9 +70,6 @@ export function BaseNode({
         hydrate();
     }, [data]);
 
-
-    console.log(data)
-
     // Delete node with keyboard when selected
     useEffect(() => {
         if (!selected || isViewMode || data?.type === 'trigger') return;

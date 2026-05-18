@@ -5,16 +5,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/FloatingSelect";
 import { Button } from "@/components/ui/button";
-import { Search, MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, AlertCircle, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X } from "lucide-react";
+import { Search, MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, AlertCircle, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { MOCK_TEMPLATES } from "../MetaTemplateDialog"; // Reusing mock templates for now
 import TemplatePreview from "../TemplatePreview";
 import { InternalTemplateDialog } from "../InternalTemplateDialog";
+import { OrderPropertySelector } from "./OrderPropertySelector";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import Button_ from "@/components/atoms/Button";
+import { useFlowStore } from "@/hook/useFlowStore";
 
 function normalizeAxiosError(err) {
     const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -247,25 +249,68 @@ export function UpdateOrderStatusConfig({ value, onChange, errors, setDisabled }
 /**
  * Action: Send Whatsapp Template
  */
+/**
+ * Action: Send Whatsapp Template
+ */
 export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, setDisabled }) {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isOrderSelectorOpen, setIsOrderSelectorOpen] = useState(false);
+    const [activeVar, setActiveVar] = useState(null); // { type: 'header' | 'body', num: string }
+
+    const nodes = useFlowStore((s) => s.nodes);
+    const triggerNode = nodes.find(n => n.type === 'trigger');
+    const isOrderTrigger = triggerNode?.data?.type?.startsWith('order_');
 
     useEffect(() => {
-        // Prevent save until a template is selected
-        const isValid = !!value.templateId;
-        setDisabled(!isValid);
-    }, [value.templateId, setDisabled]);
+        // Prevent save until a template is selected and all variables are filled
+        const hasTemplate = !!value.templateId;
+        const headerVars = extractVariables(value.templateData?.headerText);
+        const bodyVars = extractVariables(value.templateData?.bodyText);
+
+        const headerVarsSafe = Array.isArray(headerVars) ? headerVars : [];
+        const bodyVarsSafe = Array.isArray(bodyVars) ? bodyVars : [];
+
+        const allVarsFilled = [
+            ...(headerVarsSafe || [])?.map(n => (value.headerVariables || {})?.[n]),
+            ...(bodyVarsSafe || [])?.map(n => (value.bodyVariables || {})?.[n])
+        ].every(v => v?.value || v?.variablePath);
+
+        setDisabled(!hasTemplate || !allVarsFilled);
+    }, [value.templateId, value.headerVariables, value.bodyVariables, value.templateData, setDisabled]);
+
+    function extractVariables(text) {
+        if (!text) return [];
+        const matches = text.match(/{{(\d+)}}/g) || [];
+        return [...new Set(matches.map(m => m.replace(/{{|}}/g, "")))].sort((a, b) => Number(a) - Number(b));
+    }
 
     const handleSelectTemplate = (template) => {
         const config = template.templateConfig || {};
+        console.log("template", template)
+        const headerVars = extractVariables(config.headerText);
+        const bodyVars = extractVariables(config.bodyText);
+
+        // Initialize variables with examples if available
+        const headerVariables = {};
+        headerVars.forEach(num => {
+            headerVariables[num] = { type: 'direct', value: '', label: '', example: config.headerVariables?.[num] || '' };
+        });
+
+        const bodyVariables = {};
+        bodyVars.forEach(num => {
+            bodyVariables[num] = { type: 'direct', value: '', label: '', example: config.bodyVariables?.[num] || '' };
+        });
+
         onChange({
             ...value,
             templateId: template.id,
             templateName: template.name,
             templateData: config,
+            headerVariables,
+            bodyVariables,
             // Automatically detect buttons for branching
             branches: config.buttons?.map((btn, i) => ({
-                id: `btn_${i}`, // Stable ID based on index
+                id: `btn_${i}`,
                 label: btn.text,
                 sourceButton: btn,
                 condition: `button_click_${i}`
@@ -274,8 +319,91 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
         setIsDialogOpen(false);
     };
 
+    const handleVariableChange = (type, num, updates) => {
+        const key = type === 'header' ? 'headerVariables' : 'bodyVariables';
+        onChange({
+            ...value,
+            [key]: {
+                ...value?.[key],
+                [num]: { ...value?.[key]?.[num], ...updates }
+            }
+        });
+    };
+
+    const openOrderSelector = (type, num) => {
+        setActiveVar({ type, num });
+        setIsOrderSelectorOpen(true);
+    };
+
+    const handleOrderPropSelect = (prop) => {
+        if (activeVar) {
+            handleVariableChange(activeVar.type, activeVar.num, {
+                type: 'variable',
+                variablePath: prop.path,
+                label: prop.label,
+                example: prop.example
+            });
+        }
+        setIsOrderSelectorOpen(false);
+        setActiveVar(null);
+    };
+
+    const renderVariableInput = (type, num) => {
+        const varData = (type === 'header' ? value.headerVariables : value.bodyVariables)?.[num] || {};
+        const isDynamic = varData.type === 'variable';
+
+        return (
+            <div key={num} className="flex gap-3 items-start group">
+                <div className="w-[60px] h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 flex items-center justify-center text-xs font-black text-slate-400 shrink-0 shadow-sm">
+                    {`{{${num}}}`}
+                </div>
+                <div className="flex-1 flex gap-2">
+                    <div className="flex-1 relative">
+                        {isDynamic ? (
+                            <div className="h-12 rounded-2xl bg-primary/5 border border-primary/20 px-4 flex items-center justify-between group/var">
+                                <div className="flex flex-col min-w-0">
+                                    <span className="text-[10px] font-black text-primary uppercase tracking-widest">متغير ديناميكي</span>
+                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{varData.label}</span>
+                                </div>
+                                <button
+                                    onClick={() => handleVariableChange(type, num, { type: 'direct', value: '', label: '', variablePath: '' })}
+                                    className="p-1.5 rounded-lg hover:bg-rose-50 text-rose-500 opacity-0 group-hover/var:opacity-100 transition-all"
+                                >
+                                    <Trash2 size={14} />
+                                </button>
+                            </div>
+                        ) : (
+                            <Input
+                                placeholder={varData.example ? `مثال: ${varData.example}` : "أدخل قيمة ثابتة..."}
+                                value={varData.value || ""}
+                                onChange={(e) => handleVariableChange(type, num, { value: e.target.value, type: 'direct' })}
+                                className="h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none px-4 text-sm"
+                            />
+                        )}
+                    </div>
+                    {isOrderTrigger && (
+                        <Button
+                            variant="outline"
+                            onClick={() => openOrderSelector(type, num)}
+                            className={cn(
+                                "h-12 w-12 rounded-2xl p-0 shrink-0 transition-all",
+                                isDynamic ? "border-primary text-primary bg-primary/5" : "border-slate-200 text-slate-400 hover:text-primary hover:border-primary/50"
+                            )}
+                            title="اختيار من بيانات الطلب"
+                        >
+                            <Database size={18} />
+                        </Button>
+                    )}
+                </div>
+            </div>
+        );
+    };
+
+    const headerVars = extractVariables(value.templateData?.headerText);
+    const bodyVars = extractVariables(value.templateData?.bodyText);
+
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             <FormGroup label="رقم المستلم" description="الرقم الذي سيتم إرسال الرسالة إليه">
                 <Input
                     placeholder="أدخل الرقم أو اترك فارغاً لاستخدام رقم العميل من الطلب"
@@ -297,7 +425,7 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
                         <span className="text-xs font-bold text-slate-500 group-hover:text-primary">اضغط لاختيار قالب...</span>
                     </button>
                 ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         <div className="flex items-center justify-between p-4 rounded-2xl border border-primary/20 bg-primary/5">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
@@ -319,6 +447,34 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
                             </Button>
                         </div>
 
+                        {/* Variables Section */}
+                        {(headerVars.length > 0 || bodyVars.length > 0) && (
+                            <div className="space-y-6 p-6 rounded-3xl bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800">
+                                <div>
+                                    <h4 className="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest mb-1">تعبئة المتغيرات</h4>
+                                    <p className="text-[10px] text-slate-400 font-bold">أدخل قيم ثابتة أو اختر حقول ديناميكية من الطلب</p>
+                                </div>
+
+                                {headerVars.length > 0 && (
+                                    <div className="space-y-4">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                            <Layout size={12} /> رأس الرسالة
+                                        </p>
+                                        {headerVars.map(num => renderVariableInput('header', num))}
+                                    </div>
+                                )}
+
+                                {bodyVars.length > 0 && (
+                                    <div className="space-y-4">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                            <MessageSquare size={12} /> نص الرسالة
+                                        </p>
+                                        {bodyVars.map(num => renderVariableInput('body', num))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {value.templateData && (
                             <div className="p-6 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 relative group">
                                 <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
@@ -337,6 +493,12 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
                     open={isDialogOpen}
                     onOpenChange={setIsDialogOpen}
                     onSelectTemplate={handleSelectTemplate}
+                />
+
+                <OrderPropertySelector
+                    open={isOrderSelectorOpen}
+                    onOpenChange={setIsOrderSelectorOpen}
+                    onSelect={handleOrderPropSelect}
                 />
             </FormGroup>
         </div>

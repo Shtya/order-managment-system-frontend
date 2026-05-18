@@ -21,12 +21,12 @@ export function LeftSidebar({ onSelectStep }) {
     const setName = useFlowStore((s) => s.setName);
     const nameError = useFlowStore((s) => s.nameError);
     const mode = useFlowStore((s) => s.mode);
+    const isEditMode = mode === 'edit';
 
     const isRTL =
         typeof document !== 'undefined' &&
         document.documentElement.dir === 'rtl';
 
-    const isEditMode = mode === 'edit';
 
     const hiddenSidebar = hasTrigger && !pendingConnection;
 

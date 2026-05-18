@@ -120,7 +120,6 @@ export const useFlowStore = create(
       addNode: (node) => {
         const { pendingConnection, edges, nodes } = get();
         let newNode = { ...node };
-        console.log(newNode)
 
         // Auto-connect and position if there's a pending connection
         if (pendingConnection) {
@@ -249,8 +248,13 @@ export const useFlowStore = create(
       },
 
       deleteNode: (id) => {
-        const { nodes, edges, setDeleteConfirm, skipDeleteConfirmation, executeDeletion } = get();
+        const { nodes, edges, setDeleteConfirm, skipDeleteConfirmation, executeDeletion, mode } = get();
+        const isEditMode = mode === 'edit';
+        const node = nodes.find(n => n.id === id);
 
+        if (isEditMode && node?.type === 'trigger') {
+          return;
+        }
         // Find all nodes that are downstream from this node
         const getDownstreamNodeIds = (nodeId) => {
           let connectedNodeIds = [];
@@ -316,11 +320,25 @@ export const useFlowStore = create(
       },
 
       confirmDelete: () => {
-        const { nodes, edges, deleteConfirm, executeDeletion } = get();
+        const { nodes, edges, deleteConfirm, executeDeletion, mode, name } = get();
+        const isEditMode = mode === 'edit';
+
         if (!deleteConfirm) return;
 
         if (deleteConfirm.type === 'clear') {
-          set({ nodes: [], edges: [], name: '', nameError: null, nodeErrors: {}, nodeHydration: {}, nodeLoading: {}, selectedNodeId: null, pendingConnection: null, deleteConfirm: null });
+          const triggerNode = nodes.find(n => n.type === 'trigger');
+          set({
+            nodes: triggerNode && isEditMode ? [triggerNode] : [],
+            edges: [],
+            name: isEditMode ? name : '',
+            nameError: null,
+            nodeErrors: {},
+            nodeHydration: {},
+            nodeLoading: {},
+            selectedNodeId: null,
+            pendingConnection: null,
+            deleteConfirm: null
+          });
           return;
         }
 
@@ -343,7 +361,23 @@ export const useFlowStore = create(
         executeDeletion(id, downstreamIds);
       },
 
-      clearFlow: () => set({ nodes: [], edges: [], name: '', selectedNodeId: null, pendingConnection: null, nameError: null, nodeErrors: {}, nodeHydration: {}, nodeLoading: {} }),
+      clearFlow: () => {
+        const { nodes, name, mode } = get();
+        const triggerNode = nodes.find(n => n.type === 'trigger');
+        const isEditMode = mode === 'edit';
+
+        set({
+          nodes: triggerNode && isEditMode ? [triggerNode] : [],
+          edges: [],
+          name: isEditMode ? name : '',
+          selectedNodeId: null,
+          pendingConnection: null,
+          nameError: null,
+          nodeErrors: {},
+          nodeHydration: {},
+          nodeLoading: {}
+        });
+      },
 
       saveDraft: () => {
         // Since persist middleware auto-saves on every state change, 

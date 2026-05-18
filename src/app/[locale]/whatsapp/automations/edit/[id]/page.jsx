@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { Loader2, ChevronRight, Layout } from "lucide-react";
 import { ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -40,7 +40,7 @@ const getMiniMapNodeColor = (node) => {
   }
 };
 
-function BuilderCanvas() {
+function BuilderCanvas({ version }) {
   const reactFlowWrapper = useRef(null);
   const { setViewport } = useReactFlow();
 
@@ -146,7 +146,11 @@ function BuilderCanvas() {
         <Controls position="bottom-right" className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl shadow-lg" />
         <MiniMap nodeColor={getMiniMapNodeColor} className="!rounded-lg !border-slate-200 dark:!border-slate-800 !shadow-lg" nodeStrokeWidth={3} zoomable pannable />
         <Panel position="top-right" className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm">
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">تعديل الأتمتة</span>
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+            {
+              version ? `تعديل الأتمتة إصدار ${version}` : 'تعديل الأتمتة أحدث إصدار'
+            }
+          </span>
         </Panel>
       </ReactFlow>
 
@@ -170,7 +174,8 @@ export default function EditAutomationPage() {
   const params = useParams();
   const automationId = params?.id;
   const setFlowData = useFlowStore((s) => s.setFlowData);
-  const resetFlow = useFlowStore((s) => s.resetFlow);
+  const searchParams = useSearchParams();
+  const version = searchParams.get('v');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -180,14 +185,15 @@ export default function EditAutomationPage() {
     const fetchAutomation = async () => {
       setLoading(true);
       try {
-        const res = await api.get(`/automation/${automationId}`);
+        const res = await api.get(`/automation/${automationId}${version ? `?version=${version}` : ''}`);
         const data = res.data;
+        const versionToUse = data.versions?.[0];
 
         setFlowData({
           id: data.id,
           name: data.name,
-          nodes: data.flow?.nodes || [],
-          edges: data.flow?.edges.map(edge => ({ ...edge, type: "custom" })) || []
+          nodes: versionToUse?.flow?.nodes || [],
+          edges: versionToUse?.flow?.edges.map(edge => ({ ...edge, type: "custom" })) || []
         });
 
         setError(null);
@@ -240,11 +246,11 @@ export default function EditAutomationPage() {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-slate-50 dark:bg-[#050505] relative">
-      <TopToolbar />
+      <TopToolbar version={version} />
       <div className="flex flex-1 overflow-hidden">
         <LeftSidebar onSelectStep={(step) => window.dispatchEvent(new CustomEvent('select-automation-step', { detail: step }))} />
         <ReactFlowProvider>
-          <BuilderCanvas />
+          <BuilderCanvas version={version} />
         </ReactFlowProvider>
       </div>
     </div>

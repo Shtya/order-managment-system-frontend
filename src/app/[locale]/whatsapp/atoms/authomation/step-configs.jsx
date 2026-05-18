@@ -15,7 +15,6 @@ import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import Button_ from "@/components/atoms/Button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 function normalizeAxiosError(err) {
     const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";

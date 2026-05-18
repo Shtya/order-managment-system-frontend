@@ -37,13 +37,15 @@ export function BaseNode({
     const setNodeHydration = useFlowStore((s) => s.setNodeHydration);
     const setNodeLoading = useFlowStore((s) => s.setNodeLoading);
     const hydration = useFlowStore((s) => s.nodeHydration[id]);
-    const loading = useFlowStore((s) => s.nodeLoading[id]);
     const updateNodeData = useFlowStore((s) => s.updateNodeData);
     const mode = useFlowStore((s) => s.mode);
     const changes = hydration?.changes || [];
 
+    const isEditMode = mode === 'edit';
     const isViewMode = mode === 'view';
 
+    const node = useFlowStore((s) => s.nodes.find(n => n.id === id));
+    const nodeType = node?.type;
     useEffect(() => {
 
         const hydrate = async () => {
@@ -69,11 +71,11 @@ export function BaseNode({
     }, [data]);
 
 
-
+    console.log(data)
 
     // Delete node with keyboard when selected
     useEffect(() => {
-        if (!selected || isViewMode) return;
+        if (!selected || isViewMode || data?.type === 'trigger') return;
 
         const handleKeyDown = (e) => {
             const isTyping =
@@ -151,16 +153,18 @@ export function BaseNode({
                             >
                                 <Edit3 className="h-4 w-4" />
                             </button>
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    deleteNode(id);
-                                }}
-                                className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all"
-                                title="حذف"
-                            >
-                                <Trash2 className="h-4 w-4" />
-                            </button>
+                            {!(isEditMode && nodeType === 'trigger') && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        deleteNode(id);
+                                    }}
+                                    className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all"
+                                    title="حذف"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>

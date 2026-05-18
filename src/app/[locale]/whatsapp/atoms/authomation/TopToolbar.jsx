@@ -17,10 +17,11 @@ import api from "@/utils/api";
 
 import { useFlowStore } from '@/hook/useFlowStore';
 
-export function TopToolbar() {
+export function TopToolbar({ version }) {
     const edges = useFlowStore((s) => s.edges);
     const nodes = useFlowStore((s) => s.nodes);
     const name = useFlowStore((s) => s.name);
+
     const nodeErrors = useFlowStore((s) => s.nodeErrors);
     const setNameError = useFlowStore((s) => s.setNameError);
     const setDeleteConfirm = useFlowStore((s) => s.setDeleteConfirm);
@@ -80,8 +81,7 @@ export function TopToolbar() {
             const triggerNode = nodes.find(n => n.type === 'trigger');
 
             const payload = {
-                name: name.trim(),
-                triggerType: triggerNode.data.type,
+
                 flow: {
                     nodes: nodes.map(n => ({
                         id: n.id,
@@ -97,7 +97,14 @@ export function TopToolbar() {
                         targetHandle: e.targetHandle
                     }))
                 },
-                ...(!isEditMode && { publish }),
+                ...(!isEditMode && {
+                    publish,
+                    triggerType: triggerNode.data.type,
+                    name: name.trim(),
+                }),
+                ...(isEditMode && version && {
+                    version
+                }),
             };
 
             if (isEditMode && automationId) {
@@ -130,7 +137,7 @@ export function TopToolbar() {
                     <ToolbarButton
                         icon={<Edit3 size={18} />}
                         label="تعديل الأتمتة"
-                        onClick={() => router.push(`/whatsapp/automations/edit/${automationId}`)}
+                        onClick={() => router.push(`/whatsapp/automations/edit/${automationId}?${version ? `v=${version}` : ''}`)}
                         primary
                     />
                 ) : (

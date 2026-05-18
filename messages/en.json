@@ -9476,7 +9476,7 @@
       },
       "delete": {
         "title": "Delete Automation",
-        "desc": "This will delete the automation permanently. Are you sure?"
+        "desc": "When deleted, the automation will immediately stop receiving new executions, while currently running executions will continue. Are you sure?"
       }
     }
   }

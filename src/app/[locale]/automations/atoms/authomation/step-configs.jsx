@@ -308,8 +308,9 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
             templateData: config,
             headerVariables,
             bodyVariables,
+            //only reply buttons
             // Automatically detect buttons for branching
-            branches: config.buttons?.map((btn, i) => ({
+            branches: config.buttons?.filter(btn => btn.type === 'CUSTOM')?.map((btn, i) => ({
                 id: `btn_${i}`,
                 label: btn.text,
                 sourceButton: btn,

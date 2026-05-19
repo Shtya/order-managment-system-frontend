@@ -13,6 +13,7 @@ import {
     Loader2,
     Calendar,
     Activity,
+    RefreshCw,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
@@ -297,6 +298,11 @@ export default function AutomationLogsPage() {
         fetchLogs({ page: 1, per_page: pager.per_page });
     };
 
+    const handleRefresh = () => {
+        fetchLogs({ page: pager.current_page, per_page: pager.per_page });
+        toast.success(tCommon("refreshed") || "Data refreshed");
+    };
+
     return (
         <div className="min-h-screen p-5 space-y-6 bg-slate-50/50 dark:bg-transparent">
             <PageHeader
@@ -306,13 +312,24 @@ export default function AutomationLogsPage() {
                     { name: t("breadcrumb.logs") },
                 ]}
                 buttons={
-                    <Button_
-                        size="sm"
-                        label={tAutomations("runningAutomations") || "Running Automations"}
-                        variant="outline"
-                        onClick={() => router.push("/automations/running")}
-                        icon={<Activity size={18} />}
-                    />
+                    <div className="flex items-center gap-2">
+                        <Button_
+                            variant="outline"
+                            tone="primary"
+                            size="sm"
+                            onClick={handleRefresh}
+                            disabled={loading}
+                            icon={<RefreshCw size={16} className={cn(loading && "animate-spin")} />}
+                            label={tCommon("refresh") || "Refresh"}
+                        />
+                        <Button_
+                            size="sm"
+                            label={tAutomations("runningAutomations") || "Running Automations"}
+                            variant="outline"
+                            onClick={() => router.push("/automations/running")}
+                            icon={<Activity size={18} />}
+                        />
+                    </div>
                 }
                 stats={statsCards}
             />

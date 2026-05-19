@@ -29,6 +29,7 @@ import {
   ChevronDown,
   ExternalLink,
   Info,
+  RefreshCw,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import api from "@/utils/api";
@@ -312,6 +313,14 @@ function RunningAutomationsContent() {
     }
   };
 
+  const handleRefresh = async () => {
+    await fetchRuns({ page: pager.current_page, per_page: pager.per_page, search: debouncedSearch });
+    // if (selectedRun) {
+    //   await loadRunDetail(selectedRun.id);
+    // }
+    toast.success("تم تحديث البيانات");
+  };
+
   const handleReorder = () => {
     reorderFlow();
     toast.success("تمت إعادة ترتيب المسار");
@@ -539,15 +548,25 @@ function RunningAutomationsContent() {
             <div className="w-full space-y-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex flex-1 items-center gap-3">
-                  <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl">
+                  {/* <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl">
                     <Zap size={18} className="text-slate-500" />
-                  </div>
+                  </div> */}
                   <h2 className="text-[13px] font-black">جميع عمليات التشغيل</h2>
                   <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-[10px] font-black">{pager.total_records}</span>
                 </div>
-                <button onClick={() => setSidebarCollapsed(true)} className="text-slate-400 hover:text-slate-600 bg-white dark:bg-slate-800 rounded-xl p-2 border border-slate-100 dark:border-slate-800">
-                  <ChevronLeft size={20} />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleRefresh}
+                    disabled={loading}
+                    className="text-slate-400 hover:text-primary bg-white dark:bg-slate-800 rounded-xl p-2 border border-slate-100 dark:border-slate-800 transition-all hover:scale-110 disabled:opacity-50"
+                    title="تحديث"
+                  >
+                    <RefreshCw size={18} className={cn(loading && "animate-spin")} />
+                  </button>
+                  <button onClick={() => setSidebarCollapsed(true)} className="text-slate-400 hover:text-slate-600 bg-white dark:bg-slate-800 rounded-xl p-2 border border-slate-100 dark:border-slate-800">
+                    <ChevronLeft size={20} />
+                  </button>
+                </div>
               </div>
             </div>
 

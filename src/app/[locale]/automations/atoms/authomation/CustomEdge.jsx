@@ -13,6 +13,7 @@ export default function CustomEdge({
     const [isHovered, setIsHovered] = useState(false);
 
     const isViewMode = mode === 'view';
+    const isRunMode = mode === 'run';
 
     const [edgePath, labelX, labelY] = getBezierPath({
         sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition,
@@ -57,7 +58,7 @@ export default function CustomEdge({
                     }}
                     className="nodrag nopan flex gap-2"
                 >
-                    {!isViewMode && (
+                    {!isViewMode && !isRunMode && (
                         <>
                             <button
                                 onClick={onEdgeDisconnect}

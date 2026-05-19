@@ -82,7 +82,7 @@ export async function hydrateNodeConfig(type, config) {
                     }
 
                     // 2. Check buttons/branches (Breaking Change)
-                    const freshButtons = freshTemplate.templateConfig?.buttons || [];
+                    const freshButtons = freshTemplate.templateConfig?.buttons?.filter(btn => btn.type === 'CUSTOM') || [];
                     const currentBranches = config.branches || [];
 
 

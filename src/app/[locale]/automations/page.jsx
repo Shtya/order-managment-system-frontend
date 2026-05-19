@@ -16,6 +16,7 @@ import {
   Clock,
   Search,
   Loader2,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
@@ -40,6 +41,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AutomationsTab } from "../settings/page";
+import { OrdersSettingsProvider } from "@/hook/useOrdersSettings";
 
 function normalizeAxiosError(err) {
   const msg =
@@ -110,6 +114,7 @@ export default function AutomationsPage() {
     triggerType: "all",
   });
 
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedAutomation, setSelectedAutomation] = useState(null);
   const [deleting, setDeleting] = useState(false);
@@ -313,6 +318,13 @@ export default function AutomationsPage() {
           <>
             <Button_
               size="sm"
+              label={t("actions.openSettings") || "Settings"}
+              variant="outline"
+              onClick={() => setSettingsOpen(true)}
+              icon={<Settings size={18} />}
+            />
+            <Button_
+              size="sm"
               label={t("toolbar.addAutomation")}
               variant="solid"
               onClick={() => router.push("/automations/builder")}
@@ -411,6 +423,23 @@ export default function AutomationsPage() {
         onConfirm={confirmDelete}
         loading={deleting}
       />
+
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <DialogContent className="max-w-4xl min-w-[1000px] p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-slate-900">
+          <DialogHeader className="p-6 border-b dark:border-slate-800">
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Settings className="text-primary" />
+              {t("actions.openSettings") || "Automation Settings"}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="p-6 max-h-[80vh] overflow-y-auto">
+            <OrdersSettingsProvider>
+              <AutomationsTab onSave={() => setSettingsOpen(false)} />
+            </OrdersSettingsProvider>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

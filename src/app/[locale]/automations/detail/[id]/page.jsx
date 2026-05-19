@@ -29,6 +29,7 @@ const edgeTypes = {
 };
 
 const getMiniMapNodeColor = (node) => {
+
   switch (node.type) {
     case 'trigger': return '#10b981';
     case 'action': return '#3b82f6';
@@ -64,10 +65,10 @@ function BuilderCanvas({ version }) {
         onSelectionChange={handleSelectionChange}
         defaultViewport={{ x: 600, y: 0, zoom: 0.7 }}
         snapToGrid
+        snapGrid={[15, 15]}
         nodesConnectable={false}
         nodesDraggable={false}
         elementsSelectable={true}
-        snapGrid={[15, 15]}
       >
         <Background color="#94a3b8" variant="dots" gap={20} size={1} />
         <Controls position="bottom-right" className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl shadow-lg" />

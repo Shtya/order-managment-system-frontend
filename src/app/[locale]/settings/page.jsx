@@ -80,6 +80,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/utils/cn";
 import SlugInput, { useSlugify } from "@/components/atoms/SlugInput";
 import {
@@ -201,7 +202,7 @@ function SubTabBar({ tabs, active, setActive }) {
 }
 
 // ── Save footer ───────────────────────────────────────────────────────────────
-function SaveFooter({ onSave, saving, label, hasBorder = true}) {
+function SaveFooter({ onSave, saving, label, hasBorder = true }) {
   return (
     <div className={`flex justify-end pt-5 ${hasBorder && "mt-5 border-t border-border/40"}`}>
       <motion.button
@@ -452,6 +453,12 @@ export default function SettingsPage() {
       icon: <MessageSquare size={18} />,
       description: "إعدادات الأرقام الافتراضية وصلاحية القوالب"
     },
+    {
+      id: "automations",
+      label: "إعدادات التشغيل التلقائي", // Automation Settings
+      icon: <Zap size={18} />,
+      description: "تهيئة كيفية تعامل التشغيل التلقائي"
+    },
   ];
 
   const content = {
@@ -462,6 +469,7 @@ export default function SettingsPage() {
     security: <SecurityTab />,
     notifications: <NotificationsTab />,
     whatsapp: <WhatsAppTab />,
+    automations: <AutomationsTab />,
   };
 
   return (
@@ -595,8 +603,14 @@ function TTLInput({ label, description, defaultValue, min, max }) {
   );
 }
 
-export function WhatsAppTab({ hideAccount = false }) {
-  const t = useTranslations("settings");
+export function WhatsAppTab({ hideAccount = false, onSave }) {
+  const tSettings = useTranslations("settings");
+  const {
+    settings,
+    patch,
+    saving,
+    handleSave,
+  } = useOrdersSettings();
 
   return (
     <motion.div
@@ -605,25 +619,102 @@ export function WhatsAppTab({ hideAccount = false }) {
       className={cn("space-y-6")}
     >
       {/* 1. Account Selection */}
-      {!hideAccount && (
-        <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-              <Phone size={20} />
-            </div>
-            <div>
-              <h3 className="text-base font-bold">إعدادات الحساب</h3>
-              <p className="text-xs text-slate-400">تحديد الرقم الافتراضي لعمليات الإرسال</p>
-            </div>
+      <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <Phone size={20} />
           </div>
-
-          <WhatsAppAccountSelect label="الرقم الافتراضي للإرسال" />
+          <div>
+            <h3 className="text-base font-bold">إعدادات الحساب</h3>
+            <p className="text-xs text-slate-400">تحديد الرقم الافتراضي لعمليات الإرسال</p>
+          </div>
         </div>
-      )}
 
+        <WhatsAppAccountSelect
+          label="الرقم الافتراضي للإرسال"
+          value={settings?.defaultWhatsAppAccountId}
+          onChange={(val) => patch({ defaultWhatsAppAccountId: val })}
+        />
+      </div>
 
+      {!hideAccount && <SaveFooter onSave={() => handleSave(onSave)} saving={saving} label={tSettings("common.saveChanges")} />}
+    </motion.div>
+  );
+}
 
-      {!hideAccount && <SaveFooter label={t("common.saveChanges")} />}
+export function AutomationsTab({ hideAccount = false, onSave }) {
+  const tSettings = useTranslations("settings");
+  const t = useTranslations("settings.automationSettings");
+  const {
+    settings,
+    patch,
+    saving,
+    handleSave,
+  } = useOrdersSettings();
+
+  const migrationOptions = [
+    { id: "latest_patch", key: "latest_patch" },
+    { id: "latest_major", key: "latest_major" },
+    { id: "manual", key: "manual" },
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      className={cn("space-y-6")}
+    >
+      <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <Zap size={20} />
+          </div>
+          <div>
+            <h3 className="text-base font-bold">{t("title")}</h3>
+            <p className="text-xs text-slate-400">{t("subtitle")}</p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <Label className="text-sm font-bold text-foreground">
+            {t("migrationStrategy.title")}
+          </Label>
+          <p className="text-xs text-muted-foreground mb-4">
+            {t("migrationStrategy.description")}
+          </p>
+
+          <RadioGroup
+            value={settings?.automationMigrationStrategy}
+            onValueChange={(val) => patch({ automationMigrationStrategy: val })}
+            className="flex flex-col-reverse text-end gap-4"
+          >
+            {migrationOptions.map((opt) => (
+              <Label
+                key={opt.id}
+                htmlFor={opt.id}
+                className={cn(
+                  "flex items-start gap-4 p-4 rounded-2xl border cursor-pointer transition-all duration-200",
+                  settings?.automationMigrationStrategy === opt.id
+                    ? "border-primary bg-primary/[0.02] ring-1 ring-primary/20"
+                    : "border-border/40 bg-background/60 hover:bg-muted/50"
+                )}
+              >
+                <div className="flex-1 space-y-1">
+                  <p className="text-sm font-bold leading-none">
+                    {t(`migrationStrategy.options.${opt.key}.label`)}
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {t(`migrationStrategy.options.${opt.key}.description`)}
+                  </p>
+                </div>
+                <RadioGroupItem value={opt.id} id={opt.id} className="mt-1" />
+              </Label>
+            ))}
+          </RadioGroup>
+        </div>
+      </div>
+
+      {!hideAccount && <SaveFooter onSave={() => handleSave(onSave)} saving={saving} label={tSettings("common.saveChanges")} />}
     </motion.div>
   );
 }

@@ -12,6 +12,7 @@ import {
     Clock,
     Loader2,
     Calendar,
+    Activity,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
@@ -19,6 +20,7 @@ import toast from "react-hot-toast";
 import PageHeader from "@/components/atoms/Pageheader";
 import Table from "@/components/atoms/Table";
 import ActionButtons from "@/components/atoms/Actions";
+import Button_ from "@/components/atoms/Button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "@/i18n/navigation";
@@ -276,6 +278,15 @@ export default function AutomationLogsPage() {
                     { name: tAutomations("breadcrumb.automations"), href: "/automations" },
                     { name: t("breadcrumb.logs") },
                 ]}
+                buttons={
+                    <Button_
+                        size="sm"
+                        label={tAutomations("runningAutomations") || "Running Automations"}
+                        variant="outline"
+                        onClick={() => router.push("/automations/running")}
+                        icon={<Activity size={18} />}
+                    />
+                }
                 stats={statsCards}
             />
 

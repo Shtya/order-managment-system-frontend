@@ -26,7 +26,10 @@ export default function WhatsAppAccountSelect({
             const res = await api.get("/whatsapp-accounts", { params: { limit: 200, page: 1 } });
             const values = Array.isArray(res.data?.records) ? res.data.records : []
             setAccounts(values);
-            if (values.length > 0) onChange(values[0].id);
+            // Only set default if no value is currently selected
+            if (values.length > 0 && !value) {
+                onChange?.(values[0].id);
+            }
         } catch (e) {
             console.error(e);
         } finally {
@@ -45,7 +48,7 @@ export default function WhatsAppAccountSelect({
             <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">
                 {label}
             </Label>
-            <Select value={value} onValueChange={onChange} defaultValue="acc_1">
+            <Select value={value} onValueChange={onChange}>
                 <SelectTrigger disabled={accountsLoading} className="h-[52px] bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl">
                     <SelectValue placeholder="اختر رقم الهاتف" />
                 </SelectTrigger>

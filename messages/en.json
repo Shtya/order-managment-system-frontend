@@ -9480,6 +9480,44 @@
         "title": "Delete Automation",
         "desc": "When deleted, the automation will immediately stop receiving new executions, while currently running executions will continue. Are you sure?"
       }
+    },
+    "automationLogs": {
+      "breadcrumb": {
+        "logs": "Execution Logs"
+      },
+      "stats": {
+        "running": "Currently Running",
+        "problems": "Has Problems",
+        "completed": "Completed Count",
+        "total": "Total Runs"
+      },
+      "toolbar": {
+        "searchPlaceholder": "Search by Entity ID..."
+      },
+      "table": {
+        "automation": "Automation",
+        "trigger": "Trigger / Entity",
+        "status": "Status",
+        "progress": "Progress",
+        "steps": "Steps",
+        "atNode": "At Node",
+        "startedAt": "Started At",
+        "empty": "No execution logs found"
+      },
+      "filters": {
+        "status": "Run Status",
+        "startDate": "Start Date"
+      },
+      "statuses": {
+        "pending": "Pending",
+        "running": "Running",
+        "completed": "Completed",
+        "failed": "Failed",
+        "paused": "Paused"
+      },
+      "actions": {
+        "view": "View Execution"
+      }
     }
   }
 }

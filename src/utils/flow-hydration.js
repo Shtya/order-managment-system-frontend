@@ -164,7 +164,7 @@ export async function hydrateNodeConfig(type, config) {
                         let fieldName = "";
 
                         if (check.field === 'shippingCompany') {
-                            freshItem = integrations.find(c => String(c.id) === String(check.targetValue));
+                            freshItem = integrations.find(c => String(c.providerId) === String(check.targetValue));
                             fieldName = "شركة الشحن";
                         }
 

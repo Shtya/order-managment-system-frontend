@@ -181,7 +181,7 @@ export default function AutomationLogsPage() {
                 cell: (row) => (
                     <div className="flex flex-col gap-0.5">
                         <span className="text-xs">{tAutomations(`triggers.${row.automationFlow?.triggerType}`)}</span>
-                        <span className="text-[10px] font-mono text-muted-foreground">#{row.triggerEntityId}</span>
+                        {/* <span className="text-[10px] font-mono text-muted-foreground">#{row.triggerEntityId}</span> */}
                     </div>
                 ),
             },

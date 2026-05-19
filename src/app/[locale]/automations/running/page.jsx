@@ -164,7 +164,7 @@ function RunningAutomationsContent() {
   });
 
   const [selectedRun, setSelectedRun] = useState(null);
-  console.log(selectedRun)
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
   const [search, setSearch] = useState("");
@@ -254,8 +254,18 @@ function RunningAutomationsContent() {
     return () => window.removeEventListener('show-step-info', handleShowStepInfo);
   }, []);
 
-  const handleRestart = () => {
-    toast.success("تم إرسال طلب إعادة التشغيل");
+  const handleRestart = async () => {
+    if (!selectedRun) return;
+    const toastId = toast.loading("جار إعادة التشغيل...");
+    try {
+      //show toast
+      await api.post(`/automation/runs/${selectedRun.id}/retry`);
+      toast.success("تم إرسال طلب إعادة التشغيل بنجاح", { id: toastId });
+      loadRunDetail(selectedRun.id);
+    } catch (error) {
+      toast.error("فشل في طلب إعادة التشغيل", { id: toastId });
+      console.error(error);
+    }
   };
 
   const handleReorder = () => {
@@ -341,7 +351,13 @@ function RunningAutomationsContent() {
           </button>
           <button
             onClick={handleRestart}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-[11px] font-black hover:bg-primary/90 transition-all shadow-md shadow-primary/20"
+            disabled={selectedRun?.status !== 'failed'}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-black transition-all shadow-md",
+              selectedRun?.status === 'failed'
+                ? "bg-primary text-white hover:bg-primary/90 shadow-primary/20"
+                : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none border border-slate-200"
+            )}
           >
             <RotateCcw size={14} />
             إعادة المحاولة الآن

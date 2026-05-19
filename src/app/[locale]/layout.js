@@ -79,7 +79,7 @@ export default async function RootLayout({ children, params }) {
           {`
             window.fbAsyncInit = function () {
                window.FB.init({
-                appId: '2083073232550708',
+                appId: '1652049926070186',
                 autoLogAppEvents: true,
                 xfbml: true,
                 version: 'v25.0'

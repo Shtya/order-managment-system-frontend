@@ -78,6 +78,7 @@ import {
     MAX_BODY_LENGTH,
 } from "./templateFormSchema";
 import WhatsAppAccountSelect from "../../atoms/WhatsAppAccountSelect";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
 
 function normalizeAxiosError(err) {
     const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -185,6 +186,8 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
     const tForm = useTranslations("whatsApp.templates.form");
     const tMsg = useTranslations("whatsApp.templates.messages");
     const tTpl = useTranslations("whatsApp.templates");
+    const { settings } = useOrdersSettings();
+    const defaultWhatsAppAccountId = settings?.defaultWhatsAppAccountId || "";
     const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
     const textareaRef = useRef(null);
     const [variableSamples, setVariableSamples] = useState({ body: {}, header: {} });
@@ -222,6 +225,10 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
         }
     });
 
+    useEffect(() => {
+        if (isEdit) return;
+        setValue("accountId", defaultWhatsAppAccountId);
+    }, [defaultWhatsAppAccountId]);
     useEffect(() => {
         if (!isEdit || !initialTemplate) return;
         const tpl = initialTemplate;

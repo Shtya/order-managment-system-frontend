@@ -454,7 +454,7 @@ export default function WhatsAppAccountsPage() {
           </DialogHeader>
 
           <div className="p-6 max-h-[80vh] overflow-y-auto">
-            <WhatsAppTab hideAccount={false} />
+            <WhatsAppTab hideAccount={false} onSave={() => setSettingsOpen(false)} />
           </div>
         </DialogContent>
       </Dialog>

@@ -44,7 +44,8 @@ export const useFlowStore = create(
       nodeErrors: {}, // { nodeId: "error message" }
       nodeHydration: {}, // { nodeId: { isHydrated: bool, changes: [] } }
       nodeLoading: {}, // { nodeId: bool }
-      mode: 'create', // 'create' | 'edit' | 'view'
+      mode: 'create', // 'create' | 'edit' | 'view' | 'run'
+      currentRun: null, // AutomationRunEntity
       automationId: null,
       selectedNodeId: null,
       pendingConnection: null, // { nodeId, type }
@@ -56,6 +57,7 @@ export const useFlowStore = create(
       setName: (name) => set({ name, nameError: null }),
       setNameError: (error) => set({ nameError: error }),
       setMode: (mode) => set({ mode }),
+      setCurrentRun: (run) => set({ currentRun: run }),
       setAutomationId: (id) => set({ automationId: id }),
       setFlowData: ({ nodes, edges, name, id }) => set({
         nodes: nodes || [],

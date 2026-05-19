@@ -1,7 +1,7 @@
 import { Position } from '@xyflow/react';
 import { motion } from 'framer-motion';
-import { Trash2, AlertCircle, Edit3 } from 'lucide-react';
-import { useEffect } from 'react';
+import { Trash2, AlertCircle, Edit3, Info, CheckCircle2, XCircle } from 'lucide-react';
+import { useEffect, useMemo } from 'react';
 
 import { cn } from '@/utils/cn';
 import { useFlowStore } from '@/hook/useFlowStore';
@@ -39,15 +39,29 @@ export function BaseNode({
     const hydration = useFlowStore((s) => s.nodeHydration[id]);
     const updateNodeData = useFlowStore((s) => s.updateNodeData);
     const mode = useFlowStore((s) => s.mode);
+    const currentRun = useFlowStore((s) => s.currentRun);
     const changes = hydration?.changes || [];
 
     const isEditMode = mode === 'edit';
     const isViewMode = mode === 'view';
+    const isRunMode = mode === 'run';
+
+    // Execution status for run mode
+    const executionState = useMemo(() => {
+        if (!isRunMode || !currentRun?.executionState?.steps) return null;
+        return currentRun.executionState.steps[id];
+    }, [isRunMode, currentRun, id]);
+
+    const status = useMemo(() => {
+        if (!isRunMode) return null;
+        if (!executionState) return 'not_reached';
+        return executionState.success ? 'success' : 'failed';
+    }, [isRunMode, executionState]);
 
     const node = useFlowStore((s) => s.nodes.find(n => n.id === id));
     const nodeType = node?.type;
     useEffect(() => {
-
+        if (isRunMode) return; // Skip hydration in run mode
         const hydrate = async () => {
             try {
                 setNodeLoading(id, true);
@@ -105,6 +119,9 @@ export function BaseNode({
                 selected ? "border-primary ring-[4px] ring-primary/5 shadow-lg scale-[1.01]" : "border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-md",
                 isInvalid && "border-rose-500 ring-[4px] ring-rose-500/5 shadow-rose-500/10",
                 !isInvalid && changes.length > 0 && "border-emerald-500 ring-[4px] ring-emerald-500/5",
+                status === 'success' && "border-emerald-500 ring-[4px] ring-emerald-500/10 bg-emerald-200/50 dark:bg-emerald-200/5",
+                status === 'failed' && "border-rose-500 ring-[4px] ring-rose-500/10 bg-rose-200/50 dark:bg-rose-200/5",
+                status == 'not_reached' && nodeType !== 'trigger' && "opacity-60 grayscale-[0.5] bg-gray-200 dark:bg-gray-200/50",
                 className
             )}
         >
@@ -138,7 +155,7 @@ export function BaseNode({
                         </div>
                     </div>
 
-                    {!isViewMode && (
+                    {!isViewMode && !isRunMode && (
                         <div className="flex items-center gap-1">
                             <button
                                 onClick={(e) => {
@@ -164,7 +181,42 @@ export function BaseNode({
                             )}
                         </div>
                     )}
+
+                    {isRunMode && executionState && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                window.dispatchEvent(new CustomEvent('show-step-info', { detail: { id, executionState } }));
+                            }}
+                            className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+                            title="معلومات الخطوة"
+                        >
+                            <Info className="h-4 w-4" />
+                        </button>
+                    )}
                 </div>
+
+                {/* Run Status Indicators */}
+                {isRunMode && status === 'success' && (
+                    <div className="mb-3 flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                        <CheckCircle2 className="h-4 w-4" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider">مكتمل</span>
+                        <span className="text-[9px] text-muted-foreground ml-auto">{new Date(executionState.executedAt).toLocaleTimeString()}</span>
+                    </div>
+                )}
+
+                {isRunMode && status === 'failed' && (
+                    <div className="mb-3 flex flex-col gap-1.5">
+                        <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
+                            <XCircle className="h-4 w-4" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">فشل</span>
+                            <span className="text-[9px] text-muted-foreground ml-auto">{new Date(executionState.executedAt).toLocaleTimeString()}</span>
+                        </div>
+                        <p className="text-[9px] font-bold text-rose-500 leading-tight bg-rose-50 dark:bg-rose-500/10 p-2 rounded-lg border border-rose-100 dark:border-rose-500/20">
+                            {executionState.error}
+                        </p>
+                    </div>
+                )}
 
                 {/* Validation Error */}
                 {actualErrorMessage && (

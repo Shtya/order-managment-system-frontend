@@ -373,6 +373,7 @@
     "templates": "Templates",
     "automations": "Automations",
     "addAutomation": "Add Automation",
+    "addTemplate": "Add Template",
     "automationLogs": "Automation Logs",
     "runningAutomations": "Running Automations",
     "orders": "Orders",
@@ -8305,6 +8306,28 @@
         }
       }
     },
+    "automationSettings": {
+      "title": "Automation Settings",
+      "subtitle": "Configure how automation handles",
+      "migrationStrategy": {
+        "title": "Migration Strategy",
+        "description": "Choose how to handle version updates for active or failed runs",
+        "options": {
+          "latest_major": {
+            "label": "Auto-update to latest major version",
+            "description": "Automatically migrates the system from the current version to the latest active version (e.g., from 2.0 to 5.0) to apply new structural changes to failed workflows."
+          },
+          "latest_patch": {
+            "label": "Auto-update to patch versions only (Recommended)",
+            "description": "Automatically migrates the system within the same major version (e.g., from 2.0 to 2.4) to fix minor issues like missing templates without changing the core flow sequence."
+          },
+          "manual": {
+            "label": "Manual intervention",
+            "description": "Keeps all processes on their current original version. In case of failure, you can review the log and manually update each execution individually."
+          }
+        }
+      }
+    },
     "quickStats": {
       "title": "Quick Stats",
       "totalCategories": "Total Categories",
@@ -9426,6 +9449,7 @@
       }
     },
     "automations": {
+      "runningAutomations": "Running Automations",
       "breadcrumb": {
         "home": "Home",
         "whatsapp": "WhatsApp",
@@ -9458,7 +9482,8 @@
         "edit": "Edit",
         "publish": "Publish",
         "pause": "Pause",
-        "delete": "Delete"
+        "delete": "Delete",
+        "openSettings": "Autoplay settings"
       },
       "triggers": {
         "order_created": "New Order Created",

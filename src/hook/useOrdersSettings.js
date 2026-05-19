@@ -31,6 +31,8 @@ export function OrdersSettingsProvider({ children }) {
     workingHours: { enabled: true, start: "09:00", end: "18:00" },
     orderFlowPath: "warehouse", // Options: 'warehouse' or 'shipping'
     storeOrderSkuFallback: true,
+    automationMigrationStrategy: "latest_patch",
+    defaultWhatsAppAccountId: "",
     shipping: {
       shippingCompanyId: "",
       triggerStatus: "",
@@ -64,7 +66,7 @@ export function OrdersSettingsProvider({ children }) {
   const isOnboarding = getOnboardingStatus();
   /* ── fetch settings on open ─── */
   useEffect(() => {
-    if(isOnboarding) {
+    if (isOnboarding) {
       setLoading(false);
       return;
     }
@@ -93,6 +95,10 @@ export function OrdersSettingsProvider({ children }) {
           orderFlowPath: data.orderFlowPath ?? prev.orderFlowPath,
           storeOrderSkuFallback:
             data.storeOrderSkuFallback ?? prev.storeOrderSkuFallback ?? true,
+          automationMigrationStrategy:
+            data.automationMigrationStrategy ?? prev.automationMigrationStrategy ?? "latest_patch",
+          defaultWhatsAppAccountId:
+            data.defaultWhatsAppAccountId ?? prev.defaultWhatsAppAccountId ?? "",
 
           // تحديث الكائنات المتداخلة (Nested Objects)
           workingHours: {

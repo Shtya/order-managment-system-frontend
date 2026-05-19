@@ -56,7 +56,11 @@ export const NotificationType = Object.freeze({
   SYSTEM_ERROR: 'system_error',
   ORDER_CREATED: 'order_created',
   PRODUCT_SYNC_FAILED: 'product_sync_failed',
-  ORDER_CREATTION_FAILED: 'order_creation_failed'
+  ORDER_CREATTION_FAILED: 'order_creation_failed',
+  AUTOMATION_RUN_STARTED: 'automation_run_started',
+  AUTOMATION_RUN_FAILED: 'automation_run_failed',
+  AUTOMATION_RUN_COMPLETED: 'automation_run_completed',
+  AUTOMATION_RUN_RESUMED: 'automation_run_resumed'
 });
 
 // ─────────────────────────────────────────────
@@ -96,6 +100,10 @@ export function getNotificationLink(entity, id, type) {
     return id ? `/products?id=${id}` : "/products";
   }
 
+  if (type && type.startsWith("automation_run")) {
+    return id ? `/automations/running?id=${id}` : "/automations/running";
+  }
+
   return null;
 }
 
@@ -108,6 +116,7 @@ function getNotificationIcon(type) {
     payment: "💳",
     alert: "⚠️",
     subscription: "🔔",
+    automation_run: "🤖",
   };
   return icons[type?.toLowerCase()] ?? "🔔";
 }

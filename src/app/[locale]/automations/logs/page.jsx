@@ -29,6 +29,8 @@ import { useDebounce } from "@/hook/useDebounce";
 import { useExport } from "@/hook/useExport";
 import { Input } from "@/components/ui/input";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
+import { useNotification } from "@/context/NotificationContext";
+import { useSocket } from "@/context/SocketContext";
 
 function normalizeAxiosError(err) {
     const msg =
@@ -137,6 +139,31 @@ export default function AutomationLogsPage() {
     useEffect(() => {
         fetchLogs({ page: 1, per_page: pager.per_page });
     }, [debouncedSearch]);
+
+    const { subscribe } = useSocket();
+
+    useEffect(() => {
+        const unsubscribe = subscribe("AUTOMATION_RUN_UPDATE", (payload) => {
+            if (!payload) return;
+            setPager((prev) => {
+                const updatedRecords = prev.records.map((run) => {
+                    if (run.id === payload.runId) {
+                        return {
+                            ...run,
+                            status: payload.status,
+                            currentNodeId: payload.currentNodeId,
+                            completedNodeIds: payload.completedNodeIds,
+                            errorMessage: payload.errorMessage,
+                            executionState: payload.executionState,
+                        };
+                    }
+                    return run;
+                });
+                return { ...prev, records: updatedRecords };
+            });
+        });
+        return unsubscribe;
+    }, [subscribe]);
 
     const hasActiveFilters = useMemo(() => {
         return (

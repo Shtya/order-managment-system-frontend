@@ -35,6 +35,7 @@ import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDebounce } from "@/hook/useDebounce";
+import { useNotification } from "@/context/NotificationContext";
 
 import PageHeader from "@/components/atoms/Pageheader";
 import { useFlowStore } from "@/hook/useFlowStore";
@@ -54,6 +55,7 @@ import { ConditionNode } from "../atoms/authomation/ConditionNode";
 import CustomEdge from "../atoms/authomation/CustomEdge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FaBolt } from "react-icons/fa";
+import { useSocket } from "@/context/SocketContext";
 
 const nodeTypes = {
   trigger: TriggerNode,
@@ -254,11 +256,53 @@ function RunningAutomationsContent() {
     return () => window.removeEventListener('show-step-info', handleShowStepInfo);
   }, []);
 
+  const { subscribe } = useSocket();
+
+  useEffect(() => {
+    const unsubscribe = subscribe("AUTOMATION_RUN_UPDATE", (payload) => {
+      if (!payload) return;
+
+      // Update the main runs list
+      setRuns((prev) =>
+        prev.map((run) =>
+          run.id === payload.runId
+            ? {
+              ...run,
+              status: payload.status,
+              currentNodeId: payload.currentNodeId,
+              completedNodeIds: payload.completedNodeIds,
+              errorMessage: payload.errorMessage,
+              executionState: payload.executionState,
+            }
+            : run
+        )
+      );
+
+      // Update the selected run if it's the one being updated
+      setSelectedRun((prev) => {
+        if (prev?.id === payload.runId) {
+          const updated = {
+            ...prev,
+            status: payload.status,
+            currentNodeId: payload.currentNodeId,
+            completedNodeIds: payload.completedNodeIds,
+            errorMessage: payload.errorMessage,
+            executionState: payload.executionState,
+          };
+          setCurrentRun(updated); // Also update the flow store
+          return updated;
+        }
+        return prev;
+      });
+    });
+
+    return unsubscribe;
+  }, [subscribe, setCurrentRun]);
+
   const handleRestart = async () => {
     if (!selectedRun) return;
     const toastId = toast.loading("جار إعادة التشغيل...");
     try {
-      //show toast
       await api.post(`/automation/runs/${selectedRun.id}/retry`);
       toast.success("تم إرسال طلب إعادة التشغيل بنجاح", { id: toastId });
       loadRunDetail(selectedRun.id);
@@ -351,10 +395,10 @@ function RunningAutomationsContent() {
           </button>
           <button
             onClick={handleRestart}
-            disabled={selectedRun?.status !== 'failed'}
+            disabled={selectedRun?.status !== 'failed' || detailLoading}
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-black transition-all shadow-md",
-              selectedRun?.status === 'failed'
+              selectedRun?.status === 'failed' && !detailLoading
                 ? "bg-primary text-white hover:bg-primary/90 shadow-primary/20"
                 : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none border border-slate-200"
             )}
@@ -543,12 +587,20 @@ function RunningAutomationsContent() {
                   )}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-black text-slate-900 dark:text-slate-100">طلب #{run.triggerEntityId}</span>
+                    <span className="text-[11px] font-black text-slate-900 dark:text-slate-100">
+                      {tAutomations(`triggers.${run.automationFlow?.triggerType}`)}
+                    </span>
                     <StatusBadge status={run.status} t={t} />
                   </div>
-                  <div className="flex items-center gap-2 text-slate-500 mb-2">
-                    <Zap size={10} className="text-primary/60" />
-                    <span className="text-[10px] font-bold">{run.automationFlow?.name}</span>
+                  <div className="flex flex-col gap-1 mb-2">
+                    <div className="flex items-center gap-2 text-slate-500">
+                      <Zap size={10} className="text-primary/60" />
+                      <span className="text-[10px] font-bold">{run.automationFlow?.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[9px] text-slate-400">
+                      <Activity size={10} className="text-slate-400" />
+                      <span>{run.completedNodeIds?.length || 0} خطوة مكتملة</span>
+                    </div>
                   </div>
                   <div className="flex items-center justify-between text-[9px] text-slate-400">
                     <div className="flex items-center gap-1">

@@ -301,7 +301,7 @@ export default function WhatsAppAccountsPage() {
       return;
     }
     window.FB.login(fbLoginCallback, {
-      config_id: "3417877861712815",
+      config_id: "1017662671067783",
       response_type: "code",
       override_default_response_type: true,
       extras: { version: "v4" },

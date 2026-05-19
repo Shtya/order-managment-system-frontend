@@ -204,9 +204,14 @@ export default function AutomationsPage() {
         key: "name",
         className: "font-bold text-gray-700 dark:text-slate-200",
         cell: (row) => (
-          <div className="flex items-center gap-2">
-            <GitBranch size={16} className="text-primary/60" />
-            <span>{row.name}</span>
+          <div className="flex flex-col">
+            <span className="font-bold text-gray-700 dark:text-slate-200">
+              {row.name || "—"}
+            </span>
+            <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+              <GitBranch size={10} />
+              v{row.latestVersion?.versionString || "1.0"}
+            </span>
           </div>
         ),
       },
@@ -226,7 +231,7 @@ export default function AutomationsPage() {
           <div
             className={cn(
               "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase",
-              row.status === "active"
+              row.status === "published"
                 ? "bg-emerald-100 text-emerald-700"
                 : row.status === "draft"
                   ? "bg-slate-100 text-slate-700"

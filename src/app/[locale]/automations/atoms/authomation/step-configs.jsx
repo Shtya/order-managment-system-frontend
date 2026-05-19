@@ -551,7 +551,7 @@ export function OrderCheckConfig({ value, onChange, errors, setDisabled }) {
     const fields = [
         { id: "orderNumber", label: "رقم الطلب", type: "string", icon: Hash, color: "text-blue-500", bg: "bg-blue-50" },
         // { id: "store", label: "المتجر", type: "select", icon: Store, color: "text-emerald-500", bg: "bg-emerald-50", options: stores.map(s => ({ id: s.id, label: s.name })) },
-        { id: "shippingCompany", label: "شركة الشحن", type: "select", icon: Truck, color: "text-orange-500", bg: "bg-orange-50", options: shippingCompanies.map(c => ({ id: c.id, label: c.name })) },
+        { id: "shippingCompany", label: "شركة الشحن", type: "select", icon: Truck, color: "text-orange-500", bg: "bg-orange-50", options: shippingCompanies.map(c => ({ id: c.providerId, label: c.name })) },
         {
             id: "paymentStatus", label: "حالة الدفع", type: "select", icon: CreditCard, color: "text-purple-500", bg: "bg-purple-50", options: [
                 { id: "pending", label: "قيد الانتظار" },

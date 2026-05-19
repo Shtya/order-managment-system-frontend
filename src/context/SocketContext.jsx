@@ -170,6 +170,13 @@ export const SocketProvider = ({ children }) => {
       });
     });
 
+    socket.on("automation:run-status", (payload) => {
+      publish({
+        type: "AUTOMATION_RUN_UPDATE",
+        payload,
+      });
+    });
+
     // Cleanup listeners
     return () => {
       socket.off("connect");
@@ -180,6 +187,7 @@ export const SocketProvider = ({ children }) => {
       socket.off("store:sync-status");
       socket.off("failed-order:update");
       socket.off("shipment:status");
+      socket.off("automation:run-status");
     };
   }, [user?.id]);
 

@@ -259,14 +259,14 @@ export default function AutomationsPage() {
               {
                 icon: <Eye size={16} />,
                 tooltip: t("actions.view"),
-                onClick: (r) => router.push(`/whatsapp/automations/detail/${r.id}`),
+                onClick: (r) => router.push(`/automations/detail/${r.id}`),
                 variant: "primary",
                 permission: "automation.read",
               },
               {
                 icon: <Pencil size={16} />,
                 tooltip: t("actions.edit"),
-                onClick: (r) => router.push(`/whatsapp/automations/edit/${r.id}`),
+                onClick: (r) => router.push(`/automations/edit/${r.id}`),
                 variant: "purple",
                 permission: "automation.update",
               },
@@ -302,7 +302,6 @@ export default function AutomationsPage() {
       <PageHeader
         breadcrumbs={[
           { name: t("breadcrumb.home"), href: "/dashboard" },
-          { name: t("breadcrumb.whatsapp"), href: "/whatsapp" },
           { name: t("breadcrumb.automations") },
         ]}
         buttons={
@@ -311,7 +310,7 @@ export default function AutomationsPage() {
               size="sm"
               label={t("toolbar.addAutomation")}
               variant="solid"
-              onClick={() => router.push("/whatsapp/automations/builder")}
+              onClick={() => router.push("/automations/builder")}
               icon={<Plus size={18} />}
               permission="automation.create"
             />

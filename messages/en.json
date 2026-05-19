@@ -373,6 +373,8 @@
     "templates": "Templates",
     "automations": "Automations",
     "addAutomation": "Add Automation",
+    "automationLogs": "Automation Logs",
+    "runningAutomations": "Running Automations",
     "orders": "Orders",
     "employeeOrders": "Employee Orders",
     "newPurchase": "New Purchase",

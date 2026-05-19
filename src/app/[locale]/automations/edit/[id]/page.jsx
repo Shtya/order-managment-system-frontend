@@ -2,20 +2,23 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
-import { Loader2, Layout } from "lucide-react";
+import { Loader2, ChevronRight, Layout } from "lucide-react";
 import { ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { useFlowStore } from "@/hook/useFlowStore";
-import { TopToolbar } from "../../../atoms/authomation/TopToolbar";
-import { TriggerNode } from "../../../atoms/authomation/TriggerNode";
-import { ActionNode } from "../../../atoms/authomation/ActionNode";
-import { ConditionNode } from "../../../atoms/authomation/ConditionNode";
-import CustomEdge from "../../../atoms/authomation/CustomEdge";
-import { ConfirmDeleteDialog } from "../../../atoms/authomation/ConfirmDeleteDialog";
-import { ReactFlow, Background, Controls, MiniMap, Panel } from "@xyflow/react";
+import { TopToolbar } from "../../atoms/authomation/TopToolbar";
+import { LeftSidebar } from "../../atoms/authomation/LeftSidebar";
+import { TriggerNode } from "../../atoms/authomation/TriggerNode";
+import { ActionNode } from "../../atoms/authomation/ActionNode";
+import { ConditionNode } from "../../atoms/authomation/ConditionNode";
+import CustomEdge from "../../atoms/authomation/CustomEdge";
+import { StepConfigModal } from "../../atoms/authomation/StepConfigModal";
+import { ConfirmDeleteDialog } from "../../atoms/authomation/ConfirmDeleteDialog";
+import { AUTOMATION_CONFIG } from "../../atoms/authomation/automation-config";
+import { useReactFlow, ReactFlow, Background, Controls, MiniMap, Panel } from "@xyflow/react";
 import { useRef, useCallback } from "react";
 
 const nodeTypes = {
@@ -39,18 +42,87 @@ const getMiniMapNodeColor = (node) => {
 
 function BuilderCanvas({ version }) {
   const reactFlowWrapper = useRef(null);
+  const { setViewport } = useReactFlow();
+
   const nodes = useFlowStore((s) => s.nodes);
   const edges = useFlowStore((s) => s.edges);
-  const name = useFlowStore((s) => s.name);
   const onNodesChange = useFlowStore((s) => s.onNodesChange);
   const onEdgesChange = useFlowStore((s) => s.onEdgesChange);
+  const onConnect = useFlowStore((s) => s.onConnect);
+  const addNode = useFlowStore((s) => s.addNode);
+  const updateNodeData = useFlowStore((s) => s.updateNodeData);
   const setSelectedNode = useFlowStore((s) => s.setSelectedNode);
   const selectedNodeId = useFlowStore((s) => s.selectedNodeId);
+
+  const [configModal, setConfigModal] = useState({ open: false, step: null, mode: 'create', initialData: null });
+
+  useEffect(() => {
+    const handleEdit = (e) => {
+      const { id, data } = e.detail;
+      let foundStep = null;
+      Object.values(AUTOMATION_CONFIG).forEach(section => {
+        section.categories.forEach(cat => {
+          const item = cat.items.find(i => i.id === data.type);
+          if (item) foundStep = item;
+        });
+      });
+
+      if (foundStep) {
+        setConfigModal({ open: true, step: foundStep, mode: 'edit', initialData: data.config, nodeId: id });
+      }
+    };
+
+    window.addEventListener('edit-automation-step', handleEdit);
+    return () => window.removeEventListener('edit-automation-step', handleEdit);
+  }, []);
 
   const handleSelectionChange = useCallback((params) => {
     const newId = params.nodes[0]?.id || null;
     if (newId !== selectedNodeId) setSelectedNode(newId);
   }, [selectedNodeId, setSelectedNode]);
+
+  const handleSelectStepFromSidebar = (step) => {
+    setConfigModal({ open: true, step, mode: 'create', initialData: {} });
+  };
+
+  const handleConfigSave = (config) => {
+    if (!config) {
+      setConfigModal({ open: false, step: null, mode: 'create', initialData: null });
+      return;
+    }
+
+    if (configModal.mode === 'create') {
+      const id = `node_${Date.now()}`;
+      const newNode = {
+        id,
+        type: configModal.step.type,
+        position: { x: 250, y: 100 },
+        data: {
+          label: configModal.step.label,
+          type: configModal.step.id,
+          config
+        },
+      };
+      addNode(newNode);
+    } else {
+      updateNodeData(configModal.nodeId, { config });
+    }
+
+    setConfigModal({ open: false, step: null, mode: 'create', initialData: null });
+  };
+
+  const isValidConnection = useCallback((connection) => {
+    const { source, target, sourceHandle, targetHandle } = connection;
+    if (source === target) return false;
+
+    const isSourceHandleOccupied = edges.some(edge => edge.source === source && edge.sourceHandle === sourceHandle);
+    if (isSourceHandleOccupied) return false;
+
+    const isTargetHandleOccupied = edges.some(edge => edge.target === target && edge.targetHandle === targetHandle);
+    if (isTargetHandleOccupied) return false;
+
+    return true;
+  }, [edges]);
 
   return (
     <div className="flex-1 relative h-full w-full" ref={reactFlowWrapper}>
@@ -59,13 +131,14 @@ function BuilderCanvas({ version }) {
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        isValidConnection={isValidConnection}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         onSelectionChange={handleSelectionChange}
         defaultViewport={{ x: 600, y: 0, zoom: 0.7 }}
         snapToGrid
-        nodesConnectable={false}
-        nodesDraggable={false}
+        nodesConnectable={true}
         elementsSelectable={true}
         snapGrid={[15, 15]}
       >
@@ -75,23 +148,34 @@ function BuilderCanvas({ version }) {
         <Panel position="top-right" className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm">
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
             {
-              version ? `عرض الأتمتة إصدار ${version}` : 'عرض الأتمتة أحدث إصدار'
+              version ? `تعديل الأتمتة إصدار ${version}` : 'تعديل الأتمتة أحدث إصدار'
             }
           </span>
         </Panel>
       </ReactFlow>
 
+      <StepConfigModal isOpen={configModal.open} onClose={handleConfigSave} step={configModal.step} mode={configModal.mode} initialData={configModal.initialData} />
       <ConfirmDeleteDialog />
+      <SidebarBridge onSelect={handleSelectStepFromSidebar} />
     </div>
   );
 }
 
-export default function ViewAutomationPage() {
+const SidebarBridge = ({ onSelect }) => {
+  useEffect(() => {
+    const handle = (e) => onSelect(e.detail);
+    window.addEventListener('select-automation-step', handle);
+    return () => window.removeEventListener('select-automation-step', handle);
+  }, [onSelect]);
+  return null;
+};
+
+export default function EditAutomationPage() {
   const params = useParams();
-  const searchParams = useSearchParams();
-  const version = searchParams.get('v');
   const automationId = params?.id;
   const setFlowData = useFlowStore((s) => s.setFlowData);
+  const searchParams = useSearchParams();
+  const version = searchParams.get('v');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -101,19 +185,16 @@ export default function ViewAutomationPage() {
     const fetchAutomation = async () => {
       setLoading(true);
       try {
-
         const res = await api.get(`/automation/${automationId}${version ? `?version=${version}` : ''}`);
         const data = res.data;
         const versionToUse = data.versions?.[0];
+
         setFlowData({
           id: data.id,
           name: data.name,
           nodes: versionToUse?.flow?.nodes || [],
           edges: versionToUse?.flow?.edges.map(edge => ({ ...edge, type: "custom" })) || []
         });
-
-        // Manually set mode to view since setFlowData defaults to edit/create
-        useFlowStore.setState({ mode: 'view' });
 
         setError(null);
       } catch (err) {
@@ -126,6 +207,9 @@ export default function ViewAutomationPage() {
     };
 
     fetchAutomation();
+
+    // Cleanup store on unmount if needed, or just let it be
+    // return () => resetFlow();
   }, [automationId, setFlowData]);
 
   if (loading) {
@@ -164,6 +248,7 @@ export default function ViewAutomationPage() {
     <div className="flex h-screen flex-col overflow-hidden bg-slate-50 dark:bg-[#050505] relative">
       <TopToolbar version={version} />
       <div className="flex flex-1 overflow-hidden">
+        <LeftSidebar onSelectStep={(step) => window.dispatchEvent(new CustomEvent('select-automation-step', { detail: step }))} />
         <ReactFlowProvider>
           <BuilderCanvas version={version} />
         </ReactFlowProvider>

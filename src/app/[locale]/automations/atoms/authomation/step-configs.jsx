@@ -7,9 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Search, MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, AlertCircle, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database } from "lucide-react";
 import { cn } from "@/utils/cn";
-import { MOCK_TEMPLATES } from "../MetaTemplateDialog"; // Reusing mock templates for now
-import TemplatePreview from "../TemplatePreview";
-import { InternalTemplateDialog } from "../InternalTemplateDialog";
+import { MOCK_TEMPLATES } from "../../../whatsapp/atoms/MetaTemplateDialog"; // Reusing mock templates for now
+import TemplatePreview from "../../../whatsapp/atoms/TemplatePreview";
+import { InternalTemplateDialog } from "../../../whatsapp/atoms/InternalTemplateDialog";
 import { OrderPropertySelector } from "./OrderPropertySelector";
 import api from "@/utils/api";
 import toast from "react-hot-toast";

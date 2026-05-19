@@ -114,7 +114,7 @@ export function TopToolbar({ version }) {
             }
             resetFlow();
             toast.success(publish ? "تم نشر الأتمتة بنجاح!" : "تم حفظ الأتمتة بنجاح!");
-            router.push('/whatsapp/automations');
+            router.push('/automations');
         } catch (error) {
             const message = error.response?.data?.message;
             toast.error(Array.isArray(message) ? message[0] : (message || "فشل في حفظ الأتمتة."));
@@ -137,7 +137,7 @@ export function TopToolbar({ version }) {
                     <ToolbarButton
                         icon={<Edit3 size={18} />}
                         label="تعديل الأتمتة"
-                        onClick={() => router.push(`/whatsapp/automations/edit/${automationId}?${version ? `v=${version}` : ''}`)}
+                        onClick={() => router.push(`/automations/edit/${automationId}?${version ? `v=${version}` : ''}`)}
                         primary
                     />
                 ) : (

@@ -15,15 +15,15 @@ import "@xyflow/react/dist/style.css";
 // Components
 
 import { useFlowStore } from "@/hook/useFlowStore";
-import { TopToolbar } from "../../atoms/authomation/TopToolbar";
-import { ActionNode } from "../../atoms/authomation/ActionNode";
-import { ConditionNode } from "../../atoms/authomation/ConditionNode";
-import CustomEdge from "../../atoms/authomation/CustomEdge";
-import { LeftSidebar } from "../../atoms/authomation/LeftSidebar";
-import { TriggerNode } from "../../atoms/authomation/TriggerNode";
-import { StepConfigModal } from "../../atoms/authomation/StepConfigModal";
-import { ConfirmDeleteDialog } from "../../atoms/authomation/ConfirmDeleteDialog";
-import { AUTOMATION_CONFIG } from "../../atoms/authomation/automation-config";
+import { TopToolbar } from "../atoms/authomation/TopToolbar";
+import { ActionNode } from "../atoms/authomation/ActionNode";
+import { ConditionNode } from "../atoms/authomation/ConditionNode";
+import CustomEdge from "../atoms/authomation/CustomEdge";
+import { LeftSidebar } from "../atoms/authomation/LeftSidebar";
+import { TriggerNode } from "../atoms/authomation/TriggerNode";
+import { StepConfigModal } from "../atoms/authomation/StepConfigModal";
+import { ConfirmDeleteDialog } from "../atoms/authomation/ConfirmDeleteDialog";
+import { AUTOMATION_CONFIG } from "../atoms/authomation/automation-config";
 import toast from "react-hot-toast";
 
 const nodeTypes = {

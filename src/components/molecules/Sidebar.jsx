@@ -74,7 +74,7 @@ import { useAuth } from "@/context/AuthContext";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import BrandLogo from "../atoms/BrandLogo";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
-import { FaBolt, FaChartPie, FaPlus, FaRegFileAlt, FaWhatsapp } from "react-icons/fa";
+import { FaBolt, FaChartPie, FaClock, FaListAlt, FaPlus, FaRegFileAlt, FaWhatsapp } from "react-icons/fa";
 
 /* ══════════════════════════════════════════════════════════════
    MENU DEFINITION
@@ -658,16 +658,34 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           href: "/whatsapp/templates",
           icon: FaRegFileAlt,
         },
+
+      ]
+    },
+    {
+      icon: FaBolt,
+      labelKey: "automations",
+      href: "/automations",
+      children: [
         {
           labelKey: "automations",
-          href: "/whatsapp/automations",
+          href: "/automations",
           icon: FaBolt,
         },
         {
           labelKey: "addAutomation",
-          href: "/whatsapp/automations/builder",
+          href: "/automations/builder",
           icon: FaPlus,
         },
+        {
+          labelKey: "automationLogs",
+          href: "/automations/logs",
+          icon: FaListAlt,
+        },
+        {
+          labelKey: "runningAutomations",
+          href: "/automations/running",
+          icon: FaClock,
+        }
       ]
     },
     {

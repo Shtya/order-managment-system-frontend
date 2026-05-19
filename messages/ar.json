@@ -372,6 +372,8 @@
     "templates": "القوالب",
     "automations": "التشغيل التلقائي",
     "addAutomation": "إضافة تشغيل تلقائي جديد",
+    "automationLogs": "سجل التشغيل",
+    "runningAutomations": "قيد التشغيل",
     "dashboard": "لوحة التحكم",
     "orders": "الطلبات",
     "employeeOrders": "طلبات الموظفين",

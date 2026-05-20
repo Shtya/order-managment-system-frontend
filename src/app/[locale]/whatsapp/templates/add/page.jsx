@@ -615,7 +615,8 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
 
     // 3. Handle selection
     const handleMetaTemplateSelect = (selectedTpl) => {
-        const { template: tplData, name, category, subCategory, language } = selectedTpl;
+        console.log(selectedTpl);
+        const { templateConfig: tplData, name, category, subCategory, language } = selectedTpl;
 
         // Ensure buttons have unique IDs for the builder
         const buttonsWithIds = (tplData?.buttons || []).map(btn => ({
@@ -633,7 +634,7 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
         const subExists = categoryObj?.subcategories.some(s => s.id === subCategory);
         setValue("subcategory", subExists ? subCategory : categoryObj?.subcategories[0].id);
 
-        setValue("headerType", tplData?.headerType || "NONE");
+        setValue("headerType", tplData?.headerType || "TEXT");
         setValue("headerText", tplData?.headerText || "");
         setValue("headerUrl", tplData?.headerUrl || "");
         setValue("bodyText", tplData?.bodyText || "");

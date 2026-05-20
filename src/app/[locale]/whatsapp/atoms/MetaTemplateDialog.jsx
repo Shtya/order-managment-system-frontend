@@ -21,10 +21,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import api from "@/utils/api";
 
 // ─── STATIC STRUCTURE (Source of Truth) ───
+// replace with E_COMMERCE
+// FINANCIAL_SERVICES
+
 export const STATIC_CATEGORIES = [
     { id: "ALL", label: "الكل (All)" },
-    { id: "UTILITY", label: "خدمية (Utility)" },
-    { id: "AUTHENTICATION", label: "مصادقة (Authentication)" }
+    { id: "E_COMMERCE", label: "التجارة الإلكترونية" },
+    { id: "FINANCIAL_SERVICES", label: "الخدمات المالية" }
 ];
 
 export const STATIC_LANGUAGES = [
@@ -123,7 +126,7 @@ export default function MetaTemplateDialog({ open, onOpenChange, onSelectTemplat
                     if (parentIndustry) params.append("industry", parentIndustry.id);
                 }
                 if (selectedCategory !== "ALL") {
-                    params.append("category", selectedCategory);
+                    params.append("industry", selectedCategory);
                 }
 
 
@@ -193,10 +196,7 @@ export default function MetaTemplateDialog({ open, onOpenChange, onSelectTemplat
 
     // ─── 4. FINAL FILTERED DATA FOR GRID ───
     const displayTemplates = useMemo(() => {
-        return templates.filter(tpl => {
-            if (selectedCategory !== "ALL" && tpl.category !== selectedCategory) return false;
-            return true;
-        });
+        return templates;
     }, [templates, selectedCategory]);
 
     // ─── UI HANDLERS ───
@@ -400,9 +400,9 @@ export default function MetaTemplateDialog({ open, onOpenChange, onSelectTemplat
                                                     <span className="text-[10px] uppercase font-bold text-primary bg-primary/5 px-2 py-0.5 rounded">
                                                         {template.category}
                                                     </span>
-                                                    <span className="text-[10px] text-slate-400 truncate">
+                                                    {/* <span className="text-[10px] text-slate-400 truncate">
                                                         {template.usecase?.replace(/_/g, ' ')}
-                                                    </span>
+                                                    </span> */}
                                                 </div>
                                             </div>
                                             <Button

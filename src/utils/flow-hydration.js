@@ -85,7 +85,6 @@ export async function hydrateNodeConfig(type, config) {
                     const freshButtons = freshTemplate.templateConfig?.buttons?.filter(btn => btn.type === 'CUSTOM') || [];
                     const currentBranches = config.branches || [];
 
-
                     if (freshButtons.length !== currentBranches.length) {
                         result.isValid = false;
                         result.error = `تغير عدد الأزرار في القالب (${config.templateName}). يرجى إعادة ضبط المسارات المتفرعة.`;

@@ -178,7 +178,15 @@ function RunningAutomationsContent() {
   const reorderFlow = useFlowStore((s) => s.reorderFlow);
   const setCurrentRun = useFlowStore((s) => s.setCurrentRun);
   const [error, setError] = useState(null);
+  const clearFlow = useFlowStore((state) => state.clearFlow);
 
+  useEffect(() => {
+    // سيتم تنفيذ هذه الدالة فقط عند مغادرة المستخدم للصفحة
+    return () => {
+      console.log('clearFlow')
+      clearFlow();
+    };
+  }, [clearFlow]);
 
   const fetchRuns = async ({ page = 1, per_page = 10, search = "" } = {}) => {
     setLoading(true);

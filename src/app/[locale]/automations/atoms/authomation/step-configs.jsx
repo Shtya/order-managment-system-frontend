@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/FloatingSelect";
 import { Button } from "@/components/ui/button";
-import { Search, MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, AlertCircle, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database } from "lucide-react";
+import { Search, MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, AlertCircle, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database, Link } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { MOCK_TEMPLATES } from "../../../whatsapp/atoms/MetaTemplateDialog"; // Reusing mock templates for now
 import TemplatePreview from "../../../whatsapp/atoms/TemplatePreview";
@@ -17,6 +17,7 @@ import { useTranslations } from "next-intl";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import Button_ from "@/components/atoms/Button";
 import { useFlowStore } from "@/hook/useFlowStore";
+import { extractVariableNames } from "@/utils/whatsapp-healper";
 
 function normalizeAxiosError(err) {
     const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -269,24 +270,31 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
 
         const headerVarsSafe = Array.isArray(headerVars) ? headerVars : [];
         const bodyVarsSafe = Array.isArray(bodyVars) ? bodyVars : [];
+        const dynamicButtonIndexesSafe = value?.templateData?.buttons
+            ?.map((btn, idx) => btn.type === 'VISIT_WEBSITE' && btn.urlType === 'Dynamic' ? String(idx) : null)
+            .filter(Boolean) || [];
 
         const allVarsFilled = [
             ...(headerVarsSafe || [])?.map(n => (value.headerVariables || {})?.[n]),
-            ...(bodyVarsSafe || [])?.map(n => (value.bodyVariables || {})?.[n])
+            ...(bodyVarsSafe || [])?.map(n => (value.bodyVariables || {})?.[n]),
+            ...(dynamicButtonIndexesSafe || [])?.map(idx => (value.buttonVariables || {})?.[idx])
         ].every(v => v?.value || v?.variablePath);
 
-        setDisabled(!hasTemplate || !allVarsFilled);
-    }, [value.templateId, value.headerVariables, value.bodyVariables, value.templateData, setDisabled]);
+        console.log(allVarsFilled, headerVarsSafe, bodyVarsSafe, dynamicButtonIndexesSafe)
 
-    function extractVariables(text) {
+        setDisabled(!hasTemplate || !allVarsFilled);
+    }, [value.templateId, value.headerVariables, value.bodyVariables, value.buttonVariables, value.templateData, setDisabled]);
+
+    // 1. تثبيت دالة استخراج المتغيرات لمنع إعادة تعريفها مع كل Re-render
+    const extractVariables = useCallback((text) => {
         if (!text) return [];
-        const matches = text.match(/{{(\d+)}}/g) || [];
-        return [...new Set(matches.map(m => m.replace(/{{|}}/g, "")))].sort((a, b) => Number(a) - Number(b));
-    }
+        const matches = extractVariableNames(text, 'number');
+        return [...new Set(matches)].sort((a, b) => Number(a) - Number(b));
+    }, []);
 
     const handleSelectTemplate = (template) => {
         const config = template.templateConfig || {};
-        
+
         const headerVars = extractVariables(config.headerText);
         const bodyVars = extractVariables(config.bodyText);
 
@@ -301,6 +309,18 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
             bodyVariables[num] = { type: 'direct', value: '', label: '', example: config.bodyVariables?.[num] || '' };
         });
 
+        const buttonVariables = {};
+        config.buttons?.forEach((btn, idx) => {
+            if (btn.type === 'VISIT_WEBSITE' && btn.urlType === 'Dynamic') {
+                buttonVariables[String(idx)] = {
+                    type: 'direct',
+                    value: '',
+                    label: '',
+                    example: `أدخل قيمة {{1}} ل ${btn.url}`
+                };
+            }
+        });
+
         onChange({
             ...value,
             templateId: template.id,
@@ -308,6 +328,7 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
             templateData: config,
             headerVariables,
             bodyVariables,
+            buttonVariables,
             //only reply buttons
             // Automatically detect buttons for branching
             branches: config.buttons?.filter(btn => btn.type === 'CUSTOM')?.map((btn, i) => ({
@@ -321,7 +342,8 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
     };
 
     const handleVariableChange = (type, num, updates) => {
-        const key = type === 'header' ? 'headerVariables' : 'bodyVariables';
+        // 🚀 إضافة خيار الـ button لتحديد المسار الصحيح للمغير داخل كائن الحفظ
+        const key = type === 'header' ? 'headerVariables' : type === 'body' ? 'bodyVariables' : 'buttonVariables';
         onChange({
             ...value,
             [key]: {
@@ -349,21 +371,28 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
         setActiveVar(null);
     };
 
-    const renderVariableInput = (type, num) => {
-        const varData = (type === 'header' ? value.headerVariables : value.bodyVariables)?.[num] || {};
+    const renderVariableInput = (type, num, buttonLabel) => {
+        
+        const varData = (
+            type === 'header' ? value.headerVariables :
+                type === 'body' ? value.bodyVariables :
+                    value.buttonVariables
+        )?.[num] || {};
         const isDynamic = varData.type === 'variable';
 
+        const badgeLabel = type === 'header' ? 'عنوان' : type === 'body' ? 'متن الرسالة' : buttonLabel || `رابط الزر ${num}`;
+        const isButtonType = type === 'button';
         return (
             <div key={num} className="flex gap-3 items-start group">
-                <div className="w-[60px] h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 flex items-center justify-center text-xs font-black text-slate-400 shrink-0 shadow-sm">
-                    {`{{${num}}}`}
+                <div className="w-[60px] h-12 text-center rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 flex items-center justify-center text-xs font-black text-slate-400 shrink-0 shadow-sm">
+                    {isButtonType ? buttonLabel : `{{${num}}}`}
                 </div>
                 <div className="flex-1 flex gap-2">
                     <div className="flex-1 relative">
                         {isDynamic ? (
                             <div className="h-12 rounded-2xl bg-primary/5 border border-primary/20 px-4 flex items-center justify-between group/var">
                                 <div className="flex flex-col min-w-0">
-                                    <span className="text-[10px] font-black text-primary uppercase tracking-widest">متغير ديناميكي</span>
+                                    <span className="text-[10px] font-black text-primary uppercase tracking-widest">متغير ديناميكي ({badgeLabel})</span>
                                     <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{varData.label}</span>
                                 </div>
                                 <button
@@ -375,7 +404,7 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
                             </div>
                         ) : (
                             <Input
-                                placeholder={varData.example ? `مثال: ${varData.example}` : "أدخل قيمة ثابتة..."}
+                                placeholder={varData.example  ? isButtonType ? varData.example :  `مثال: ${varData.example}` : "أدخل قيمة ثابتة..."}
                                 value={varData.value || ""}
                                 onChange={(e) => handleVariableChange(type, num, { value: e.target.value, type: 'direct' })}
                                 className="h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none px-4 text-sm"
@@ -400,8 +429,34 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
         );
     };
 
-    const headerVars = extractVariables(value.templateData?.headerText);
-    const bodyVars = extractVariables(value.templateData?.bodyText);
+
+    // 2. Memoize متغيرات رأس الرسالة (Header Variables)
+    const headerVars = useMemo(() => {
+        return extractVariables(value.templateData?.headerText);
+    }, [value.templateData?.headerText, extractVariables]);
+
+    // 3. Memoize متغيرات متن الرسالة (Body Variables)
+    const bodyVars = useMemo(() => {
+        return extractVariables(value.templateData?.bodyText);
+    }, [value.templateData?.bodyText, extractVariables]);
+
+    // 4. Memoize وتعديل بناء ماب متغيرات الأزرار (Button Dynamic Variables Map)
+    // الآن أصبحت عبارة عن Map (Object) جاهزة للاستخدام المباشر في الـ Loop وفي الـ React State
+    const buttonVarsMap = useMemo(() => {
+        const buttons = value.templateData?.buttons || value.buttons || [];
+
+        return buttons.reduce((acc, btn, idx) => {
+            if (btn.type === 'VISIT_WEBSITE' && btn.urlType === 'Dynamic') {
+                acc[String(idx)] = {
+                    type: 'direct',
+                    value: '',
+                    label: btn.text || '',
+                    example: btn.urlExample || 'كود التتبع / التوثيق'
+                };
+            }
+            return acc;
+        }, {});
+    }, [value.templateData?.buttons, value.buttons]);
 
     return (
         <div className="space-y-8">
@@ -473,6 +528,16 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
                                         {bodyVars.map(num => renderVariableInput('body', num))}
                                     </div>
                                 )}
+                                {Object.keys(buttonVarsMap).length > 0 && (
+                                    <div className="space-y-4">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                            <Link size={12} /> أزرار الروابط المتغيرة
+                                        </p>
+                                        {Object.keys(buttonVarsMap).map((buttonIndex) =>
+                                            renderVariableInput('button', buttonIndex, buttonVarsMap[buttonIndex]?.label)
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -490,11 +555,12 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
                     </div>
                 )}
 
-                <InternalTemplateDialog
+                {isDialogOpen && (<InternalTemplateDialog
+                
                     open={isDialogOpen}
                     onOpenChange={setIsDialogOpen}
                     onSelectTemplate={handleSelectTemplate}
-                />
+                /> )}
 
                 <OrderPropertySelector
                     open={isOrderSelectorOpen}

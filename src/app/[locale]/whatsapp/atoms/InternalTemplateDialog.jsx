@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/FloatingSelect";
 import api from "@/utils/api";
 import { toast } from "react-hot-toast";
+import { useDebounce } from "@/hook/useDebounce";
 
 const INTERNAL_CONFIG = {
     CATEGORIES: [
@@ -33,6 +34,7 @@ const INTERNAL_CONFIG = {
 
 export function InternalTemplateDialog({ open, onOpenChange, onSelectTemplate }) {
     const [searchTerm, setSearchTerm] = useState("");
+    const {debouncedValue: debouncedSearchTerm} = useDebounce({value: searchTerm});
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [selectedLanguage, setSelectedLanguage] = useState("all");
     const [selectedAccountId, setSelectedAccountId] = useState("all");
@@ -58,7 +60,7 @@ export function InternalTemplateDialog({ open, onOpenChange, onSelectTemplate })
                 status: "approved",
                 page: 1,
                 limit: 100,
-                search: searchTerm,
+                search: debouncedSearchTerm,
                 language: selectedLanguage !== "all" ? selectedLanguage : undefined,
                 category: selectedCategory !== "all" ? selectedCategory : undefined,
                 accountId: selectedAccountId !== "all" ? selectedAccountId : undefined,
@@ -71,7 +73,7 @@ export function InternalTemplateDialog({ open, onOpenChange, onSelectTemplate })
         } finally {
             setLoading(false);
         }
-    }, [open, searchTerm, selectedLanguage, selectedCategory, selectedAccountId]);
+    }, [open, debouncedSearchTerm, selectedLanguage, selectedCategory, selectedAccountId]);
 
     useEffect(() => {
         if (open) {
@@ -80,10 +82,7 @@ export function InternalTemplateDialog({ open, onOpenChange, onSelectTemplate })
     }, [open, fetchAccounts]);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            fetchTemplates();
-        }, 500);
-        return () => clearTimeout(timer);
+        fetchTemplates();
     }, [fetchTemplates]);
 
     const categories = useMemo(() => [

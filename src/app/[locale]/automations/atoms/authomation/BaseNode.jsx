@@ -62,10 +62,19 @@ export function BaseNode({
     const nodeType = node?.type;
     useEffect(() => {
         if (isRunMode) return; // Skip hydration in run mode
+
+        // 1. تعريف متغير يراقب حالة وجود المكون في الشاشة
+        let isMounted = true;
+
         const hydrate = async () => {
             try {
+                // مسموح هنا لأن المكون بدأ للتو
                 setNodeLoading(id, true);
+
                 const result = await hydrateNodeConfig(data.type, data.config);
+
+                // 2. 🛑 نقطة التفتيش: إذا غادر المستخدم الصفحة أثناء الـ await، أوقف التنفيذ فوراً!
+                if (!isMounted) return;
 
                 setNodeHydration(id, { isHydrated: true, changes: result?.changes || [] });
                 setNodeError(id, result?.error || '');
@@ -75,14 +84,26 @@ export function BaseNode({
                 }
             } catch (e) {
                 console.error(e);
-                setNodeError(id, e.message);
+
+                // 3. التحقق قبل إرسال الخطأ
+                if (isMounted) {
+                    setNodeError(id, e.message);
+                }
             } finally {
-                setNodeLoading(id, false);
+                // 4. التحقق قبل إيقاف التحميل
+                if (isMounted) {
+                    setNodeLoading(id, false);
+                }
             }
         };
 
         hydrate();
-    }, [data]);
+
+        // 5. دالة التنظيف (Cleanup Function): تعمل تلقائياً عند مغادرة الصفحة
+        return () => {
+            isMounted = false;
+        };
+    }, [data, id, isRunMode]); // يُفضل إضافة id و isRunMode للمصفوفة لضمان عمل React بشكل سليم
 
     // Delete node with keyboard when selected
     useEffect(() => {

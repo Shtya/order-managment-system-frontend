@@ -61,7 +61,14 @@ function BuilderCanvas() {
   const updateNodeData = useFlowStore((s) => s.updateNodeData);
   const setSelectedNode = useFlowStore((s) => s.setSelectedNode);
   const selectedNodeId = useFlowStore((s) => s.selectedNodeId);
+  const clearFlow = useFlowStore((state) => state.clearFlow);
 
+  useEffect(() => {
+    // سيتم تنفيذ هذه الدالة فقط عند مغادرة المستخدم للصفحة
+    return () => {
+      clearFlow();
+    };
+  }, [clearFlow]);
   // Modal State
   const [configModal, setConfigModal] = useState({ open: false, step: null, mode: 'create', initialData: null });
 

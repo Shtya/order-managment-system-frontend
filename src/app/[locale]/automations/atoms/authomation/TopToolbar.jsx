@@ -45,9 +45,10 @@ export function TopToolbar({ version }) {
         saveDraft();
         toast.success("تم حفظ المسودة محلياً بنجاح");
     };
-
+    console.log('hasNodeErrors: ', nodeErrors)
     const validateFlow = () => {
         const hasNodeErrors = Object.values(nodeErrors).some(err => !!err);
+        console.log(nodeErrors)
         if (hasNodeErrors) {
             toast.error("يرجى حل جميع أخطاء العقد قبل الحفظ.");
             return false;
@@ -212,3 +213,4 @@ function ToolbarButton({ icon, label, onClick, className, primary, danger, disab
         </div>
     );
 }
+

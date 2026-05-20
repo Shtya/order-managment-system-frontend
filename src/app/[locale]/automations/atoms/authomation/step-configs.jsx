@@ -286,7 +286,7 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
 
     const handleSelectTemplate = (template) => {
         const config = template.templateConfig || {};
-        console.log("template", template)
+        
         const headerVars = extractVariables(config.headerText);
         const bodyVars = extractVariables(config.bodyText);
 

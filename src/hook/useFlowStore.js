@@ -376,8 +376,12 @@ export const useFlowStore = create(
           pendingConnection: null,
           nameError: null,
           nodeErrors: {},
+          currentRun: null,
           nodeHydration: {},
-          nodeLoading: {}
+          nodeLoading: {},
+          mode: 'create', // إرجاع الوضع الافتراضي
+          automationId: null,
+          deleteConfirm: null,
         });
       },
 
@@ -406,6 +410,7 @@ export const useFlowStore = create(
           skipDeleteConfirmation,
           nameError,
           nodeErrors,
+          currentRun,
           nodeHydration,
           nodeLoading,
           deleteConfirm,

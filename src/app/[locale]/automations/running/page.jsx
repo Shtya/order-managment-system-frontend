@@ -50,10 +50,10 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
-import { TriggerNode } from "../atoms/authomation/TriggerNode";
-import { ActionNode } from "../atoms/authomation/ActionNode";
-import { ConditionNode } from "../atoms/authomation/ConditionNode";
-import CustomEdge from "../atoms/authomation/CustomEdge";
+import { TriggerNode } from "../atoms/TriggerNode";
+import { ActionNode } from "../atoms/ActionNode";
+import { ConditionNode } from "../atoms/ConditionNode";
+import CustomEdge from "../atoms/CustomEdge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FaBolt } from "react-icons/fa";
 import { useSocket } from "@/context/SocketContext";

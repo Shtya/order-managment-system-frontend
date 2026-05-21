@@ -19,7 +19,7 @@ function DataCard({ title, data }) {
 }
 
 export default function StepExecutionDialog({ stepInfo, onClose }) {
-  console.log(stepInfo);
+  
   return (
     <Dialog open={!!stepInfo} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl rounded-3xl">

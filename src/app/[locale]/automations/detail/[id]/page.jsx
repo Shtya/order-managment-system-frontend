@@ -9,12 +9,12 @@ import "@xyflow/react/dist/style.css";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { useFlowStore } from "@/hook/useFlowStore";
-import { TopToolbar } from "../../atoms/authomation/TopToolbar";
-import { TriggerNode } from "../../atoms/authomation/TriggerNode";
-import { ActionNode } from "../../atoms/authomation/ActionNode";
-import { ConditionNode } from "../../atoms/authomation/ConditionNode";
-import CustomEdge from "../../atoms/authomation/CustomEdge";
-import { ConfirmDeleteDialog } from "../../atoms/authomation/ConfirmDeleteDialog";
+import { TopToolbar } from "../../atoms/TopToolbar";
+import { TriggerNode } from "../../atoms/TriggerNode";
+import { ActionNode } from "../../atoms/ActionNode";
+import { ConditionNode } from "../../atoms/ConditionNode";
+import CustomEdge from "../../atoms/CustomEdge";
+import { ConfirmDeleteDialog } from "../../atoms/ConfirmDeleteDialog";
 import { ReactFlow, Background, Controls, MiniMap, Panel } from "@xyflow/react";
 import { useRef, useCallback } from "react";
 

@@ -15,15 +15,15 @@ import "@xyflow/react/dist/style.css";
 // Components
 
 import { useFlowStore } from "@/hook/useFlowStore";
-import { TopToolbar } from "../atoms/authomation/TopToolbar";
-import { ActionNode } from "../atoms/authomation/ActionNode";
-import { ConditionNode } from "../atoms/authomation/ConditionNode";
-import CustomEdge from "../atoms/authomation/CustomEdge";
-import { LeftSidebar } from "../atoms/authomation/LeftSidebar";
-import { TriggerNode } from "../atoms/authomation/TriggerNode";
-import { StepConfigModal } from "../atoms/authomation/StepConfigModal";
-import { ConfirmDeleteDialog } from "../atoms/authomation/ConfirmDeleteDialog";
-import { AUTOMATION_CONFIG } from "../atoms/authomation/automation-config";
+import { TopToolbar } from "../atoms/TopToolbar";
+import { ActionNode } from "../atoms/ActionNode";
+import { ConditionNode } from "../atoms/ConditionNode";
+import CustomEdge from "../atoms/CustomEdge";
+import { LeftSidebar } from "../atoms/LeftSidebar";
+import { TriggerNode } from "../atoms/TriggerNode";
+import { StepConfigModal } from "../atoms/StepConfigModal";
+import { ConfirmDeleteDialog } from "../atoms/ConfirmDeleteDialog";
+import { AUTOMATION_CONFIG } from "../atoms/automation-config";
 import RunDetailsPanel, { StatusRunBadge } from "../atoms/RunDetailsPanel";
 import toast from "react-hot-toast";
 

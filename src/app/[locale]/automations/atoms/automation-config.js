@@ -101,7 +101,8 @@ export const AUTOMATION_CONFIG = {
                         icon: GitBranch,
                         type: 'condition',
                         configComponent: 'OrderCheckConfig',
-                        className: 'max-w-7xl!'
+                        className: 'max-w-7xl!',
+                        hasCustom: true
                     },
                     {
                         id: 'quick_order_status',

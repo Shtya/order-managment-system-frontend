@@ -375,7 +375,7 @@
     "addAutomation": "Add Automation",
     "addTemplate": "Add Template",
     "automationLogs": "Automation Logs",
-    "runningAutomations": "Running Automations",
+    "runningAutomations": "Automation Activities",
     "orders": "Orders",
     "employeeOrders": "Employee Orders",
     "newPurchase": "New Purchase",
@@ -9450,7 +9450,7 @@
       }
     },
     "automations": {
-      "runningAutomations": "Running Automations",
+      "runningAutomations": "Automation Activities",
       "breadcrumb": {
         "home": "Home",
         "whatsapp": "WhatsApp",

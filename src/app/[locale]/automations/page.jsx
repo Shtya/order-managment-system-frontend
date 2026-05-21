@@ -316,13 +316,13 @@ export default function AutomationsPage() {
         ]}
         buttons={
           <>
-            <Button_
+            {/* <Button_
               size="sm"
               label={t("actions.openSettings") || "Settings"}
               variant="outline"
               onClick={() => setSettingsOpen(true)}
               icon={<Settings size={18} />}
-            />
+            /> */}
             <Button_
               size="sm"
               label={t("toolbar.addAutomation")}

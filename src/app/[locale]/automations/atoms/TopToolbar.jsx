@@ -69,6 +69,17 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
     const setFlowData = useFlowStore((s) => s.setFlowData);
     const [savedSnapshot, setSavedSnapshot] = useState(null);
 
+    // Recovery logic for inconsistent 'run' mode on initialization (e.g., after reload)
+    useEffect(() => {
+        const state = useFlowStore.getState();
+        if (state.mode === 'run' && (!state.currentRun || !state.currentRun.id)) {
+            useFlowStore.setState({
+                mode: state.automationId ? 'edit' : 'create',
+                currentRun: null
+            });
+            if (setExternalIsPreviewMode) setExternalIsPreviewMode(false);
+        }
+    }, []);
 
     const triggerNode = useMemo(
         () => nodes.find((n) => n.type === 'trigger'),

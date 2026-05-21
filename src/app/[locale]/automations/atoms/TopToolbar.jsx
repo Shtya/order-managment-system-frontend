@@ -35,7 +35,7 @@ import RunDetailsPanel from './RunDetailsPanel';
 import StepExecutionDialog from './StepExecutionDialog';
 
 export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setIsPreviewMode: setExternalIsPreviewMode }) {
-    const { isSuperAdmin } = useAuth();
+    const { isSuperAdmin, user } = useAuth();
     const edges = useFlowStore((s) => s.edges);
     const nodes = useFlowStore((s) => s.nodes);
     const name = useFlowStore((s) => s.name);
@@ -53,7 +53,6 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
     const isEditMode = mode === 'edit';
     const isViewMode = mode === 'view';
     const { subscribe } = useSocket();
-    const { user } = useAuth();
     const adminId = user?.id;
     const [previewRun, setPreviewRun] = useState(null);
     const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
@@ -81,7 +80,7 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
 
     const handleSelectOrder = async (order) => {
         const snapshot = useFlowStore.getState();
-
+        const now = new Date().toISOString();
         setSavedSnapshot({
             nodes: snapshot.nodes,
             edges: snapshot.edges,
@@ -129,9 +128,43 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
                 },
                 initialPayload: {}
             }
+
+            const prev = {
+                ...payload,
+                  previewId,
+                      adminId: null,
+                      userId: user.id,
+                      versionId: payload.version.id,
+                      versionString: payload.version.versionString,
+                      status: 'running',
+                      currentNodeId: null,
+                      completedNodeIds: [],
+                      errorMessage: null,
+                      flow: payload.version.flow,
+                      automationFlow: {
+                        id: payload.automationFlowId,
+                        name: payload.name,
+                      },
+                      executionState: {
+                        trigger: payload.trigger,
+                        steps: {},
+                      },
+                      triggerEntityType: payload.trigger.type === 'order_created' || payload.trigger.type === 'order_updated' ? 'order'
+                        : 'order',
+                      triggerEntityId: payload.trigger.output?.__mock ? null : payload.trigger.output?.id,
+                      waitingForInteraction: null,
+                      startedAt: now,
+                      createdAt: now,
+                      updatedAt: now,
+                      lastHeartbeatAt: now,
+
+            }
+            setPreviewRun(prev);
+            setCurrentRun(prev);
             const response = await api.post('/automation/preview', payload);
             setPreviewId(response.data?.previewId);
             setPreviewRun(response.data);
+            setCurrentRun(response.data);
         } catch (error) {
             console.error(error);
         }

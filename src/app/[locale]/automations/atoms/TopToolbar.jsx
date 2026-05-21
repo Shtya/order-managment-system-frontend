@@ -31,8 +31,8 @@ import PreviewSidebar from './PreviewSidebar';
 import { useSocket } from '@/context/SocketContext';
 import { randomUUID } from 'crypto';
 import { useAuth } from '@/context/AuthContext';
-import RunDetailsPanel from '../RunDetailsPanel';
-import StepExecutionDialog from '../StepExecutionDialog';
+import RunDetailsPanel from './RunDetailsPanel';
+import StepExecutionDialog from './StepExecutionDialog';
 
 export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setIsPreviewMode: setExternalIsPreviewMode }) {
     const edges = useFlowStore((s) => s.edges);

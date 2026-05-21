@@ -9,15 +9,15 @@ import "@xyflow/react/dist/style.css";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { useFlowStore } from "@/hook/useFlowStore";
-import { TopToolbar } from "../../atoms/authomation/TopToolbar";
-import { LeftSidebar } from "../../atoms/authomation/LeftSidebar";
-import { TriggerNode } from "../../atoms/authomation/TriggerNode";
-import { ActionNode } from "../../atoms/authomation/ActionNode";
-import { ConditionNode } from "../../atoms/authomation/ConditionNode";
-import CustomEdge from "../../atoms/authomation/CustomEdge";
-import { StepConfigModal } from "../../atoms/authomation/StepConfigModal";
-import { ConfirmDeleteDialog } from "../../atoms/authomation/ConfirmDeleteDialog";
-import { AUTOMATION_CONFIG } from "../../atoms/authomation/automation-config";
+import { TopToolbar } from "../../atoms/TopToolbar";
+import { LeftSidebar } from "../../atoms/LeftSidebar";
+import { TriggerNode } from "../../atoms/TriggerNode";
+import { ActionNode } from "../../atoms/ActionNode";
+import { ConditionNode } from "../../atoms/ConditionNode";
+import CustomEdge from "../../atoms/CustomEdge";
+import { StepConfigModal } from "../../atoms/StepConfigModal";
+import { ConfirmDeleteDialog } from "../../atoms/ConfirmDeleteDialog";
+import { AUTOMATION_CONFIG } from "../../atoms/automation-config";
 import { useReactFlow, ReactFlow, Background, Controls, MiniMap, Panel } from "@xyflow/react";
 import { useRef, useCallback } from "react";
 
@@ -218,7 +218,7 @@ export default function EditAutomationPage() {
     // Cleanup store on unmount if needed, or just let it be
     // return () => resetFlow();
   }, [automationId, setFlowData]);
-
+ const [isPreviewMode, setIsPreviewMode] = useState(false);
   if (loading) {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-[#050505]">
@@ -253,9 +253,11 @@ export default function EditAutomationPage() {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-slate-50 dark:bg-[#050505] relative">
-      <TopToolbar version={version} />
       <div className="flex flex-1 overflow-hidden">
-        <LeftSidebar onSelectStep={(step) => window.dispatchEvent(new CustomEvent('select-automation-step', { detail: step }))} />
+      <TopToolbar version={version}  isPreviewMode={isPreviewMode} setIsPreviewMode={setIsPreviewMode}/>
+         {!isPreviewMode && (
+          <LeftSidebar onSelectStep={(step) => window.dispatchEvent(new CustomEvent('select-automation-step', { detail: step }))} />
+         )}
         <ReactFlowProvider>
           <BuilderCanvas version={version} />
         </ReactFlowProvider>

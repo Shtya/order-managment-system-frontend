@@ -23,7 +23,7 @@ export function CustomHandle({ isConnected, position, noOffset, className, nodeI
     // Check if this handle is for the current node in paused preview mode
     const isCurrentNode = currentRun?.currentNodeId === nodeId;
     const isPaused = currentRun?.status === 'paused';
-    const showPlayButton = isRunMode && isCurrentNode && isPaused && props.type === 'source';
+    const showPlayButton = isRunMode && isCurrentNode && isPaused && props.type === 'source' && currentRun?.previewId;
 
     return (
         <div className={cn(
@@ -67,6 +67,7 @@ export function CustomHandle({ isConnected, position, noOffset, className, nodeI
                         e.stopPropagation();
                         setPreviewResumeLoading(true);
                         try {
+                            console.log('Resuming preview with button:', currentRun);
                             await api.post(`/automation/preview/${currentRun?.previewId}/resume`, {
                                 buttonText: props.id,
                                 buttonId: props.id,

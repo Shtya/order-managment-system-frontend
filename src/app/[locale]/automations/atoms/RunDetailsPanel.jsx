@@ -114,13 +114,13 @@ export default function RunDetailsPanel({
 
             <InfoSection title="معلومات إضافية" icon={<Box size={14} />}>
               <InfoItem label="الكيان المخفز" value={selectedRun.triggerEntityType} />
-              <InfoItem
+              {selectedRun.triggerEntityId && <InfoItem
                 label="الطلب"
                 value={`#${selectedRun.triggerEntityId}`}
                 onClick={selectedRun.triggerEntityType === 'order' ? () => {
                   router.push(`/orders/details/${selectedRun.triggerEntityId}`)
                 } : null}
-              />
+              />}
             </InfoSection>
 
             {selectedRun.status === 'failed' && (

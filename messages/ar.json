@@ -372,6 +372,7 @@
     "templates": "القوالب",
     "automations": "التشغيل التلقائي",
     "addAutomation": "إضافة تشغيل تلقائي جديد",
+    "systemErrors": "تسجيلات الأخطاء",
     "addTemplate": "إضافة قوالب جديدة",
     "automationLogs": "سجل التشغيل",
     "runningAutomations": "عمليات التشغيل",
@@ -9586,5 +9587,92 @@
         "view": "عرض التنفيذ"
       }
     }
-  }
+  },
+  "systemErrors": {
+    "title": "أخطاء النظام",
+    "breadcrumb": {
+      "dashboard": "لوحة التحكم",
+      "monitoring": "مراقبة النظام",
+      "errors": "أخطاء السيرفر"
+    },
+    "stats": {
+      "mostFrequent": "المسار الأكثر تكراراً",
+      "last48h": "أخطاء (آخر 48 ساعة)",
+      "total30d": "إجمالي الأخطاء (30 يوم)",
+      "fatal48h": "أخطاء خطيرة (48 ساعة)"
+    },
+    "table": {
+      "severity": "مستوى الخطورة",
+      "methodPath": "الطريقة/المسار",
+      "status": "الحالة",
+      "message": "رسالة الخطأ",
+      "user": "المستخدم",
+      "admin": "المسؤول",
+      "environment": "البيئة",
+      "context": "السياق",
+      "performance": "الأداء",
+      "frontendRoute": "رابط الواجهة الأمامية",
+      "time": "الوقت",
+      "empty": "لم يتم العثور على أخطاء نظام"
+    },
+    "filters": {
+      "dateRange": "نطاق التاريخ",
+      "severity": "الخطورة",
+      "status": "حالة HTTP",
+      "exception": "الاستثناء",
+      "environment": "البيئة",
+      "controller": "المتحكم",
+      "method": "الطريقة",
+      "routePath": "مسار الرابط",
+      "searchPlaceholder": "بحث بالرسالة، الرابط، كود الخطأ..."
+    },
+    "details": {
+      "title": "تفاصيل الخطأ",
+      "general": "معلومات عامة",
+      "userAdmin": "تفاصيل المستخدم والمسؤول",
+      "technical": "السياق التقني",
+      "payloads": "البيانات والبيانات الوصفية",
+      "stackTrace": "تتبع الخطأ (Stack Trace)",
+      "labels": {
+        "errorMessage": "رسالة الخطأ",
+        "endpoint": "endpoint",
+        "routePath": "المسار",
+        "httpStatus": "حالة HTTP",
+        "severity": "مستوى الخطورة",
+        "environment": "البيئة",
+        "errorCode": "رمز الخطأ",
+        "duration": "المدة",
+        "createdAt": "وقت الإنشاء",
+        "userId": "معرف المستخدم",
+        "userName": "اسم المستخدم",
+        "userEmail": "إيميل المستخدم",
+        "adminId": "معرف المسؤول",
+        "adminName": "اسم المسؤول",
+        "adminEmail": "إيميل المسؤول",
+        "controller": "المتحكم",
+        "handler": "المعالج",
+        "exceptionName": "اسم الاستثناء",
+        "frontendRoute": "رابط الواجهة الأمامية",
+        "referer": "المرجع (Referer)",
+        "userAgent": "وكيل المستخدم",
+        "ipAddress": "عنوان IP",
+        "contentType": "نوع المحتوى",
+        "originalUrl": "الرابط الأصلي",
+        "requestPayload": "بيانات الطلب",
+        "headers": "الرؤوس (Headers)",
+        "pathParams": "معاملات المسار",
+        "searchParams": "معاملات البحث",
+        "responseData": "بيانات الرد",
+        "validationErrors": "أخطاء التحقق",
+        "externalContext": "السياق الخارجي",
+        "dbContext": "سياق قاعدة البيانات",
+        "additionalDetails": "تفاصيل إضافية",
+        "requestSize": "حجم الطلب",
+        "responseSize": "حجم الرد",
+        "userReporter": "المستخدم (المبلغ)",
+        "adminContext": "سياق المسؤول"
+      }
+    }
+  },
+  "error": {}
 }

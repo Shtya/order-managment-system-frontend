@@ -373,6 +373,7 @@
     "templates": "Templates",
     "automations": "Automations",
     "addAutomation": "Add Automation",
+    "systemErrors": "Error Logs",
     "addTemplate": "Add Template",
     "automationLogs": "Automation Logs",
     "runningAutomations": "Automation Activities",
@@ -9546,5 +9547,92 @@
         "view": "View Execution"
       }
     }
-  }
+  },
+  "systemErrors": {
+    "title": "System Errors",
+    "breadcrumb": {
+      "dashboard": "Dashboard",
+      "monitoring": "System Monitoring",
+      "errors": "Server Errors"
+    },
+    "stats": {
+      "mostFrequent": "Most Frequent Route",
+      "last48h": "Errors (Last 48h)",
+      "total30d": "Total Errors (30d)",
+      "fatal48h": "Fatal Errors (48h)"
+    },
+    "table": {
+      "severity": "Severity",
+      "methodPath": "Method/Path",
+      "status": "Status",
+      "message": "Error Message",
+      "user": "User",
+      "admin" :"Admin",
+      "environment": "Environment",
+      "context": "Context",
+      "performance": "Performance",
+      "frontendRoute": "Frontend Route",
+      "time": "Time",
+      "empty": "No system errors found"
+    },
+    "filters": {
+      "dateRange": "Date Range",
+      "severity": "Severity",
+      "status": "HTTP Status",
+      "exception": "Exception",
+      "environment": "Environment",
+      "controller": "Controller",
+      "method": "Method",
+      "routePath": "Route Path",
+      "searchPlaceholder": "Search by message, endpoint, error code..."
+    },
+    "details": {
+      "title": "Bug Details",
+      "general": "General Information",
+      "userAdmin": "User & Admin Details",
+      "technical": "Technical Context",
+      "payloads": "Payloads & Metadata",
+      "stackTrace": "Stack Trace",
+      "labels": {
+        "errorMessage": "Error Message",
+        "endpoint": "Endpoint",
+        "routePath": "Route Path",
+        "httpStatus": "HTTP Status",
+        "severity": "Severity",
+        "environment": "Environment",
+        "errorCode": "Error Code",
+        "duration": "Duration",
+        "createdAt": "Created At",
+        "userId": "User ID",
+        "userName": "User Name",
+        "userEmail": "User Email",
+        "adminId": "Admin ID",
+        "adminName": "Admin Name",
+        "adminEmail": "Admin Email",
+        "controller": "Controller",
+        "handler": "Handler",
+        "exceptionName": "Exception Name",
+        "frontendRoute": "Frontend Route",
+        "referer": "Referer",
+        "userAgent": "User Agent",
+        "ipAddress": "IP Address",
+        "contentType": "Content Type",
+        "originalUrl": "Original URL",
+        "requestPayload": "Request Payload",
+        "headers": "Headers",
+        "pathParams": "Path Params",
+        "searchParams": "Search Params",
+        "responseData": "Response Data",
+        "validationErrors": "Validation Errors",
+        "externalContext": "External Context",
+        "dbContext": "DB Context",
+        "additionalDetails": "Additional Details",
+        "requestSize": "Request Size",
+        "responseSize": "Response Size",
+        "userReporter": "User (Reporter)",
+        "adminContext": "Admin Context"
+      }
+    }
+  },
+  "error": {}
 }

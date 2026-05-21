@@ -340,9 +340,9 @@ export function OrderDetailModal({ open, onClose, order, hideNotes }) {
     },
     {
       label: t("field.status"),
-      value: order.status.code,
+      value: order?.status?.code,
       icon: Info,
-      accent: order.status.code === "confirmed" ? "#10b981" : "#ef4444",
+      accent: order.status?.code === "confirmed" ? "#10b981" : "#ef4444",
     }
     // {
     //   label: t("field.returnOrder"),
@@ -1597,12 +1597,12 @@ function AssignedOrdersSubtab({
         : null;
     };
 
-    const rgb = hexToRgb(status.color);
+    const rgb = hexToRgb(status?.color);
     return {
       style: rgb
         ? {
           backgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`,
-          color: status.color,
+          color: status?.color,
         }
         : {},
       className: "rounded-xl",
@@ -1701,9 +1701,9 @@ function AssignedOrdersSubtab({
         header: t("table.status"),
         cell: (row) => (
           <Badge className={cn("rounded-xl", getStatusBadge(row.status))}>
-            {row.status.system
-              ? tOrder(`statuses.${row.status.code}`)
-              : row.status.name || row.status.code}
+            {row.status?.system
+              ? tOrder(`statuses.${row.status?.code}`)
+              : row.status?.name || row.status?.code}
           </Badge>
         ),
       },

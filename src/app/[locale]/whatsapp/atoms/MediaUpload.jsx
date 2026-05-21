@@ -3,6 +3,7 @@
 import React, { useRef } from "react";
 import { UploadCloud, Trash2, FileText, Info } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { avatarSrc } from "@/components/atoms/UserSelect";
 
 /**
  * Reusable Media Upload component for WhatsApp Template creation
@@ -56,9 +57,9 @@ export default function MediaUpload({
                 {url ? (
                     <div className="relative aspect-video w-full flex items-center justify-center bg-slate-950/5">
                         {type === "IMAGE" ? (
-                            <img src={url} alt="Preview" className="w-full h-full object-contain" />
+                            <img src={avatarSrc(url)} alt="Preview" className="w-full h-full object-contain" />
                         ) : type === "VIDEO" ? (
-                            <video src={url} controls className="w-full h-full object-contain" />
+                            <video src={avatarSrc(url)} controls className="w-full h-full object-contain" />
                         ) : (
                             <div className="flex flex-col items-center gap-3">
                                 <FileText size={48} className="text-primary" />

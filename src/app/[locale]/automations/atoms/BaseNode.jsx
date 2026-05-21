@@ -7,6 +7,7 @@ import { cn } from '@/utils/cn';
 import { useFlowStore } from '@/hook/useFlowStore';
 import { CustomHandle } from './CustomHandle';
 import { hydrateNodeConfig } from '@/utils/flow-hydration';
+import { useAuth } from '@/context/AuthContext';
 
 export function BaseNode({
     id,
@@ -49,24 +50,24 @@ export function BaseNode({
 
     // Execution status for run mode
     const executionState = useMemo(() => {
-        if(nodeType === 'trigger') {
+        if (nodeType === 'trigger') {
             return currentRun?.executionState?.trigger;
-        } 
+        }
         if (!isRunMode || !currentRun?.executionState?.steps) return null;
         return currentRun.executionState.steps[id];
-    }, [isRunMode, currentRun, id,nodeType]);
+    }, [isRunMode, currentRun, id, nodeType]);
     const currentNodeId = currentRun?.currentNodeId;
     const runStatus = currentRun?.status;
 
     const status = useMemo(() => {
         if (!isRunMode) return null;
         if (!executionState) return 'not_reached';
-        if(nodeType === 'trigger') return '';
-        if(currentNodeId === id && runStatus === 'running') return 'running';
-        if(currentNodeId === id && runStatus === 'paused') return 'paused';
+        if (nodeType === 'trigger') return '';
+        if (currentNodeId === id && runStatus === 'running') return 'running';
+        if (currentNodeId === id && runStatus === 'paused') return 'paused';
         return executionState.success ? 'success' : 'failed';
     }, [isRunMode, executionState, nodeType, currentNodeId, runStatus]);
-
+    const { isSuperAdmin } = useAuth();
     useEffect(() => {
         if (isRunMode) return; // Skip hydration in run mode
 
@@ -78,7 +79,7 @@ export function BaseNode({
                 // مسموح هنا لأن المكون بدأ للتو
                 setNodeLoading(id, true);
 
-                const result = await hydrateNodeConfig(data.type, data.config);
+                const result = await hydrateNodeConfig(data.type, data.config, isSuperAdmin);
 
                 // 2. 🛑 نقطة التفتيش: إذا غادر المستخدم الصفحة أثناء الـ await، أوقف التنفيذ فوراً!
                 if (!isMounted) return;
@@ -138,6 +139,8 @@ export function BaseNode({
         };
     }, [selected, id, deleteNode]);
 
+    const preventEdit = isSuperAdmin && nodeType === 'trigger' && data.type === 'order_created';
+
     return (
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -187,7 +190,7 @@ export function BaseNode({
 
                     {!isViewMode && !isRunMode && (
                         <div className="flex items-center gap-1">
-                            <button
+                            {!preventEdit && <button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onEdit?.();
@@ -196,7 +199,7 @@ export function BaseNode({
                                 title="تعديل"
                             >
                                 <Edit3 className="h-4 w-4" />
-                            </button>
+                            </button>}
                             {!(isEditMode && nodeType === 'trigger') && (
                                 <button
                                     onClick={(e) => {

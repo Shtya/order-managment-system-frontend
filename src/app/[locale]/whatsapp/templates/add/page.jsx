@@ -103,6 +103,35 @@ const hasTooManyVariablesForText = (text = "") => {
     return words < (3 * varCount) + 1;
 };
 
+// دالة خاصة مساعدة لمعالجة وتحويل الفئات الفرعية القادمة من Meta إلى المعرفات المحلية
+const mapMetaSubCategory = (category, subCategory) => {
+    const normalizedCat = String(category || "").toUpperCase();
+    const normalizedSub = String(subCategory || "").toUpperCase();
+
+    // 1. معالجة الحالات الخاصة لـ call_permissions_request بناءً على الـ Category الأب
+    if (normalizedSub === "CALL_PERMISSIONS_REQUEST") {
+        if (normalizedCat === "UTILITY") {
+            return "UTILITY_CALL_PERMISSIONS";
+        }
+        if (normalizedCat === "MARKETING") {
+            return "MARKETING_CALL_PERMISSIONS";
+        }
+    }
+
+    // 2. الفحص التلقائي العادي للتأكد من مطابقة المعرف المحلي
+    const categoryObj = CATEGORIES.find(
+        (c) => c.id?.toLowerCase() === category?.toLowerCase()
+    );
+    
+    const subExists = categoryObj?.subcategories.some(
+        (s) => s.id?.toLowerCase() === subCategory?.toLowerCase()
+    );
+
+    // إذا كانت الفئة الفرعية مدعومة محلياً نرسلها كما هي، وإلا نأخذ أول فئة فرعية افتراضية كـ Fallback
+    return subExists ? subCategory : categoryObj?.subcategories[0]?.id;
+};
+
+
 const CATEGORIES = [
     {
         id: "MARKETING",
@@ -181,11 +210,11 @@ Messaging Limit: WABAs must have a minimum daily messaging limit of 2,000 busine
 https://docs.360dialog.com/docs/resources/wabas/messaging-limits#default-messaging-limit
  */
 
-export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialTemplate }) {
+export default function WhatsAppTemplateFormPage({ mode = "create", templateId, initialTemplate, superAdmin = false }) {
     const router = useRouter();
-    const tForm = useTranslations("whatsApp.templates.form");
     const tMsg = useTranslations("whatsApp.templates.messages");
     const tTpl = useTranslations("whatsApp.templates");
+    const tForm = useTranslations("whatsApp.templates.form");
     const { settings } = useOrdersSettings();
     const defaultWhatsAppAccountId = settings?.defaultWhatsAppAccountId || "";
     const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
@@ -198,7 +227,7 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
 
     const isEdit = mode === "edit";
 
-    const schema = useMemo(() => createTemplateFormSchema(tForm, isEdit ? "edit" : "create"), [tForm, isEdit]);
+    const schema = useMemo(() => createTemplateFormSchema(tForm, isEdit ? "edit" : "create", superAdmin), [tForm, isEdit]);
 
     const { control, handleSubmit, watch, setValue, setError, clearErrors, reset, formState: { errors, isSubmitting } } = useForm({
         resolver: yupResolver(schema),
@@ -525,11 +554,15 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
         const ht = data.headerType;
         if (ht && ["IMAGE", "VIDEO", "DOCUMENT"].includes(ht)) {
             const blob = data.headerUrl && String(data.headerUrl).startsWith("blob:");
-            if (!isEdit && !headerMediaFile) {
+            const isUrl = data.headerUrl && (String(data.headerUrl).startsWith("http://") || String(data.headerUrl).startsWith("https://"));
+            const isRelativePath = data.headerUrl && (String(data.headerUrl).startsWith("uploads/") || String(data.headerUrl).startsWith("/uploads/"));
+            
+            // Allow URL or relative path without requiring file upload
+            if (!isEdit && !headerMediaFile && !isUrl && !isRelativePath) {
                 toast.error(tForm("validation.mediaHeaderFileRequired"));
                 return;
             }
-            if (isEdit && blob && !headerMediaFile) {
+            if (isEdit && blob && !headerMediaFile && !isUrl && !isRelativePath) {
                 toast.error(tForm("validation.mediaHeaderMustReupload"));
                 return;
             }
@@ -541,32 +574,76 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
 
         try {
             if (isEdit) {
-                let forcedUrl;
-                if (headerMediaFile) {
-                    const fdUp = new FormData();
-                    fdUp.append("headerMedia", headerMediaFile);
-                    const up = await api.post("/whatsapp-templates/upload-header-media", fdUp);
-                    forcedUrl = up.data?.headerUrl;
+                const fdUp = new FormData();
+
+                // 1. إذا كان سوبر أدمن، نرسل البيانات الأساسية المسموح له بتعديلها
+                if (superAdmin) {
+                    fdUp.append("name", String(data.name || "").trim().toLowerCase().replace(/[^a-z0-9_]/g, "_"));
+                    fdUp.append("category", mapUiCategoryToApi(data.category));
+                    fdUp.append("subCategory", mapUiSubToApi(data.subcategory));
+                    fdUp.append("language", data.language);
                 }
+
+                let forcedUrl;
+                const isUrl = data.headerUrl && (String(data.headerUrl).startsWith("http://") || String(data.headerUrl).startsWith("https://"));
+                const isRelativePath = data.headerUrl && (String(data.headerUrl).startsWith("uploads/") || String(data.headerUrl).startsWith("/uploads/"));
+                
+                // 2. معالجة رفع الملفات إن وجدت قبل تحديث القالب
+                if (headerMediaFile) {
+                    const fdMedia = new FormData();
+                    fdMedia.append("headerMedia", headerMediaFile);
+                    const up = await api.post("/whatsapp-templates/upload-header-media", fdMedia);
+                    forcedUrl = up.data?.headerUrl;
+                } else if (isUrl || isRelativePath) {
+                    // Pass URL or relative path to backend
+                    forcedUrl = data.headerUrl;
+                }
+
+                // 3. بناء الـ templateConfig وإضافته كـ stringified JSON داخل الـ FormData
                 const templateConfig = buildTemplateConfigPayload(data, variableSamples, forcedUrl);
-                await api.patch(`/whatsapp-templates/${templateId}`, { templateConfig });
-                toast.success(tMsg("updateSuccess"));
+                fdUp.append("templateConfig", JSON.stringify(templateConfig));
+
+                // 4. إرسال طلب التحديث كـ FormData ليتعامل معه الـ Backend بسلاسة
+                await api.patch(`/whatsapp-templates/${templateId}`, fdUp, {
+                    headers: { "Content-Type": "multipart/form-data" }
+                });
+
+                toast.success(superAdmin ? "تم تحديث القالب" : tMsg("updateSuccess"));
             } else {
+                // منطق الإنشاء (Create) كما هو بدون تغيير
                 const fd = new FormData();
-                fd.append("accountId", data.accountId);
+                if (!superAdmin) {
+                    fd.append("accountId", data.accountId);
+                }
                 fd.append("name", String(data.name || "").trim().toLowerCase().replace(/[^a-z0-9_]/g, "_"));
                 fd.append("category", mapUiCategoryToApi(data.category));
                 fd.append("subCategory", mapUiSubToApi(data.subcategory));
                 fd.append("language", data.language);
-                const templateConfig = buildTemplateConfigPayload(data, variableSamples);
-                fd.append("templateConfig", JSON.stringify(templateConfig));
+
+                const isUrl = data.headerUrl && (String(data.headerUrl).startsWith("http://") || String(data.headerUrl).startsWith("https://"));
+                const isRelativePath = data.headerUrl && (String(data.headerUrl).startsWith("uploads/") || String(data.headerUrl).startsWith("/uploads/"));
+
+                let templateConfig;
                 if (headerMediaFile) {
                     fd.append("headerMedia", headerMediaFile);
+                    templateConfig = buildTemplateConfigPayload(data, variableSamples);
+                } else if (isUrl || isRelativePath) {
+                    // Pass URL or relative path to backend
+                    templateConfig = buildTemplateConfigPayload(data, variableSamples, data.headerUrl);
+                } else {
+                    templateConfig = buildTemplateConfigPayload(data, variableSamples);
                 }
-                await api.post("/whatsapp-templates", fd);
-                toast.success(tMsg("createSuccess"));
+                
+                fd.append("templateConfig", JSON.stringify(templateConfig));
+
+                await api.post("/whatsapp-templates", fd, {
+                    headers: { "Content-Type": "multipart/form-data" }
+                });
+
+                toast.success(superAdmin ? "تم إنشاء القالب" : tMsg("createSuccess"));
             }
-            router.push("/whatsapp/templates");
+
+            router.push(superAdmin ? "/dashboard/whatsapp/templates" : "/whatsapp/templates");
         } catch (e) {
             toast.error(normalizeAxiosError(e) || tMsg("saveError"));
         }
@@ -627,13 +704,11 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
         // 1. Reset Form Values
         setValue("name", name);
         setValue("language", language === "en_US" ? "en" : language);
-        setValue("category", category);
-
+        setValue("category", category?.toUpperCase());
+        
         // Map subcategory if it matches our internal IDs, otherwise fallback to default
-        const categoryObj = CATEGORIES.find(c => c.id === category);
-        const subExists = categoryObj?.subcategories.some(s => s.id === subCategory);
-        setValue("subcategory", subExists ? subCategory : categoryObj?.subcategories[0].id);
-
+        const mappedSubCategory = mapMetaSubCategory(category, subCategory);
+        setValue("subcategory", mappedSubCategory);
         setValue("headerType", tplData?.headerType || "TEXT");
         setValue("headerText", tplData?.headerText || "");
         setValue("headerUrl", tplData?.headerUrl || "");
@@ -681,13 +756,13 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
                     stacky
                     breadcrumbs={[
                         { name: tTpl("breadcrumb.home"), href: "/dashboard" },
-                        { name: tTpl("breadcrumb.whatsapp"), href: "/whatsapp" },
-                        { name: tTpl("breadcrumb.templates"), href: "/whatsapp/templates" },
+                        ...(!superAdmin ? [{ name: tTpl("breadcrumb.whatsapp"), href: "/whatsapp" }] : []),
+                        { name: tTpl("breadcrumb.templates"), href: superAdmin ? "/dashboard/whatsapp/templates" : "/whatsapp/templates" },
                         { name: isEdit ? tForm("breadcrumbs.edit") : tForm("breadcrumbs.create") }
                     ]}
                     buttons={
                         <>
-                            {!isEdit && (
+                            {!isEdit && !superAdmin && (
                                 <>
                                     <Button_
                                         size="sm"
@@ -711,7 +786,7 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
                             )}
                             <Button_
                                 size="sm"
-                                label={isEdit ? tForm("submitUpdate") : tForm("submitCreate")}
+                                label={superAdmin ? (isEdit ? "تحديث" : "إنشاء") : (isEdit ? tForm("submitUpdate") : tForm("submitCreate"))}
                                 tone="primary"
                                 variant="solid"
                                 disabled={isSubmitting}
@@ -735,7 +810,7 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
-                                {!isEdit && (
+                                {!isEdit && !superAdmin && (
                                     <div className="space-y-1.5 md:col-span-2">
                                         <Controller
                                             name="accountId"
@@ -758,7 +833,7 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
                                     <Input
                                         placeholder="مثال: order_confirmation_v1"
                                         className="lowercase"
-                                        disabled={isEdit}
+                                        disabled={isEdit && !superAdmin}
                                         onChange={(e) => setValue("name", e.target.value.replace(/[^a-z0-9_]/g, '_'))}
                                         value={templateData.name}
                                     />
@@ -770,7 +845,7 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
                                         name="language"
                                         control={control}
                                         render={({ field }) => (
-                                            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isEdit}>
+                                            <Select onValueChange={field.onChange} value={field.value} disabled={isEdit && !superAdmin}>
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="اختر اللغة" />
                                                 </SelectTrigger>
@@ -787,14 +862,14 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
                             <div className="flex flex-col gap-2">
 
                                 <Label className="mb-3 block text-base mb-1.5">اختر الفئة</Label>
-                                <div className={cn("flex gap-2 p-1 bg-slate-100 dark:bg-slate-950 rounded-xl mb-6", isEdit && "opacity-60 pointer-events-none")}>
+                                <div className={cn("flex gap-2 p-1 bg-slate-100 dark:bg-slate-950 rounded-xl mb-6", isEdit && !superAdmin && "opacity-60 pointer-events-none")}>
                                     {CATEGORIES.map((cat) => {
                                         const isSelected = templateData.category === cat.id;
                                         return (
                                             <button
                                                 key={cat.id}
                                                 type="button"
-                                                disabled={isEdit}
+                                                disabled={isEdit && !superAdmin}
                                                 onClick={() => handleCategoryChange(cat.id)}
                                                 className={cn(
                                                     "flex-1 py-2.5 px-4 rounded-lg text-sm font-bold transition-all duration-200",
@@ -819,10 +894,10 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
                                     return (
                                         <div
                                             key={sub.id}
-                                            onClick={() => !isEdit && handleSubcategoryChange(sub.id)}
+                                            onClick={() => (!isEdit || superAdmin) && handleSubcategoryChange(sub.id)}
                                             className={cn(
                                                 "rounded-md p-4 border-2 transition-all duration-200 flex items-start gap-4",
-                                                isEdit ? "opacity-60 cursor-default" : "cursor-pointer",
+                                                isEdit && !superAdmin ? "opacity-60 cursor-default" : "cursor-pointer",
                                                 isSubSelected
                                                     ? "border-primary bg-primary/5 shadow-sm"
                                                     : "border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 bg-white dark:bg-slate-950"
@@ -1246,7 +1321,6 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
                                                     <SelectItem value="5m">5 دقائق</SelectItem>
                                                     <SelectItem value="10m">10 دقائق</SelectItem>
                                                     <SelectItem value="15m">15 دقيقة</SelectItem>
-                                                    //only those for not authentication
                                                     {templateData.category?.toLowerCase() !== "authentication" && (
                                                         <>
                                                             <SelectItem value="30m">30 دقيقة</SelectItem>
@@ -1366,15 +1440,14 @@ export function WhatsAppTemplateFormPage({ mode = "create", templateId, initialT
                     open={isInternalDialogOpen}
                     onOpenChange={setIsInternalDialogOpen}
                     onSelectTemplate={handleMetaTemplateSelect}
+                    library={true}
                 />
             </div>
         </>
     );
 }
 
-export default function CreateWhatsAppTemplatePage() {
-    return <WhatsAppTemplateFormPage mode="create" />;
-}
+
 
 // Small sub-component for buttons
 function ToolbarButton({ icon, onClick, tooltip }) {

@@ -643,11 +643,11 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       labelKey: "whatsapp",
       href: "/whatsapp",
       children: [
-        {
-          labelKey: "overview",
-          href: "/whatsapp",
-          icon: FaChartPie, // أو أي أيقونة dashboard
-        },
+        // {
+        //   labelKey: "overview",
+        //   href: "/whatsapp",
+        //   icon: FaChartPie, // أو أي أيقونة dashboard
+        // },
         {
           labelKey: "whatsAppAccounts",
           href: "/whatsapp/accounts",
@@ -834,6 +834,45 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       labelKey: "platformSettings",
       href: "/dashboard/settings",
       roles: ["SUPER_ADMIN"],
+    },
+    {
+      icon: FaWhatsapp,
+      labelKey: "whatsapp",
+      href: "/dashboard/whatsapp",
+      roles: ["SUPER_ADMIN"],
+      children: [
+        {
+          labelKey: "templates",
+          href: "/dashboard/whatsapp/templates",
+          icon: FaRegFileAlt,
+          roles: ["SUPER_ADMIN"],
+        },
+        {
+          labelKey: "addTemplate",
+          href: "/dashboard/whatsapp/templates/add",
+          icon: FaPlus,
+          roles: ["SUPER_ADMIN"],
+        }]
+    },
+    {
+      icon: FaBolt,
+      labelKey: "automations",
+      href: "/dashboard/automations",
+      roles: ["SUPER_ADMIN"],
+      children: [
+        {
+          labelKey: "automations",
+          href: "/dashboard/automations",
+          icon: FaBolt,
+          roles: ["SUPER_ADMIN"],
+        },
+        {
+          labelKey: "addAutomation",
+          href: "/dashboard/automations/builder",
+          icon: FaPlus,
+          roles: ["SUPER_ADMIN"],
+        }
+      ]
     },
 
   ], [shippingCompanies, isDirectShippingEnabled]);

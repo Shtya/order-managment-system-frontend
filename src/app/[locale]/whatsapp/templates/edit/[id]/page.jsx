@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
-import { WhatsAppTemplateFormPage } from "../../add/page";
+import WhatsAppTemplateFormPage  from "../../add/page";
 
 function normalizeAxiosError(err) {
 	const msg =
@@ -17,7 +17,7 @@ function normalizeAxiosError(err) {
 	return Array.isArray(msg) ? msg.join(", ") : String(msg);
 }
 
-export default function EditWhatsAppTemplatePage() {
+export default function EditWhatsAppTemplatePage({superAdmin}) {
 	const params = useParams();
 	const templateId = params?.id;
 	const t = useTranslations("whatsApp.templates");
@@ -57,5 +57,5 @@ export default function EditWhatsAppTemplatePage() {
 		);
 	}
 
-	return <WhatsAppTemplateFormPage mode="edit" templateId={String(templateId)} initialTemplate={template} />;
+	return <WhatsAppTemplateFormPage mode="edit" templateId={String(templateId)} initialTemplate={template} superAdmin={superAdmin}/>;
 }

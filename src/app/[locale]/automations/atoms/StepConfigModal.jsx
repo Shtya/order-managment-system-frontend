@@ -55,6 +55,7 @@ export function StepConfigModal({ isOpen, onClose, step, mode = "create", initia
                             onChange={setConfig}
                             context={{ step, mode }}
                             errors={errors}
+                            onClose={(config) => onClose(config || null)}
                             setErrors={setErrors}
                             setDisabled={setDisabled}
                             flowData={{ nodes, edges }}

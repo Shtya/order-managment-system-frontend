@@ -22,7 +22,7 @@ export function LeftSidebar({ onSelectStep }) {
     const nameError = useFlowStore((s) => s.nameError);
     const mode = useFlowStore((s) => s.mode);
     const isEditMode = mode === 'edit';
-
+    
     const isRTL =
         typeof document !== 'undefined' &&
         document.documentElement.dir === 'rtl';

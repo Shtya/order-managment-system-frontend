@@ -18,6 +18,7 @@ import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import Button_ from "@/components/atoms/Button";
 import { useFlowStore } from "@/hook/useFlowStore";
 import { extractVariableNames } from "@/utils/whatsapp-healper";
+import { useAuth } from "@/context/AuthContext";
 
 function normalizeAxiosError(err) {
     const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -41,9 +42,16 @@ function FormGroup({ label, description, children, error }) {
 /**
  * Trigger: Order Created
  */
-export function OrderCreatedConfig({ value, onChange, errors, setDisabled }) {
+export function OrderCreatedConfig({ value, onChange, errors, setDisabled, onClose }) {
     const [stores, setStores] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { isSuperAdmin } = useAuth();
+
+    useEffect(() => {
+        if (isSuperAdmin) {
+            onClose({ ...value, store: "all", storeId: undefined });
+        }
+    }, [isSuperAdmin]);
 
     useEffect(() => {
         const fetchStores = async () => {
@@ -80,7 +88,7 @@ export function OrderCreatedConfig({ value, onChange, errors, setDisabled }) {
             <FormGroup label="المتجر" description="اختر المتجر الذي سيتم مراقبة الطلبات فيه" error={errors.store}>
                 <Select value={value.storeId || (value.store === "all" ? "all" : "")} onValueChange={handleStoreChange}>
                     <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
-                        {loading ? (
+                        {loading && !isSuperAdmin ? (
                             <div className="flex items-center gap-2">
                                 <Loader2 className="h-4 w-4 animate-spin" />
                                 <span>جاري التحميل...</span>
@@ -254,6 +262,7 @@ export function UpdateOrderStatusConfig({ value, onChange, errors, setDisabled }
  * Action: Send Whatsapp Template
  */
 export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, setDisabled }) {
+    const { isSuperAdmin } = useAuth();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isOrderSelectorOpen, setIsOrderSelectorOpen] = useState(false);
     const [activeVar, setActiveVar] = useState(null); // { type: 'header' | 'body', num: string }
@@ -280,7 +289,7 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
             ...(dynamicButtonIndexesSafe || [])?.map(idx => (value.buttonVariables || {})?.[idx])
         ].every(v => v?.value || v?.variablePath);
 
-        
+
 
         setDisabled(!hasTemplate || !allVarsFilled);
     }, [value.templateId, value.headerVariables, value.bodyVariables, value.buttonVariables, value.templateData, setDisabled]);
@@ -372,7 +381,7 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
     };
 
     const renderVariableInput = (type, num, buttonLabel) => {
-        
+
         const varData = (
             type === 'header' ? value.headerVariables :
                 type === 'body' ? value.bodyVariables :
@@ -404,7 +413,7 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
                             </div>
                         ) : (
                             <Input
-                                placeholder={varData.example  ? isButtonType ? varData.example :  `مثال: ${varData.example}` : "أدخل قيمة ثابتة..."}
+                                placeholder={varData.example ? isButtonType ? varData.example : `مثال: ${varData.example}` : "أدخل قيمة ثابتة..."}
                                 value={varData.value || ""}
                                 onChange={(e) => handleVariableChange(type, num, { value: e.target.value, type: 'direct' })}
                                 className="h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none px-4 text-sm"
@@ -556,11 +565,11 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
                 )}
 
                 {isDialogOpen && (<InternalTemplateDialog
-                
+                    library={isSuperAdmin}
                     open={isDialogOpen}
                     onOpenChange={setIsDialogOpen}
                     onSelectTemplate={handleSelectTemplate}
-                /> )}
+                />)}
 
                 <OrderPropertySelector
                     open={isOrderSelectorOpen}

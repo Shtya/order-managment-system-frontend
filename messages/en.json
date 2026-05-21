@@ -9464,7 +9464,8 @@
         "executing": "Executing",
         "published": "Published",
         "paused": "Paused (Problems)",
-        "done": "Completed"
+        "done": "Completed",
+        "pausedAll": "Stopped"
       },
       "filters": {
         "status": "Status",

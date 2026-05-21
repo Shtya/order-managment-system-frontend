@@ -1,50 +1,52 @@
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Layout, 
-  ChevronRight, 
-  Zap, 
-  Activity, 
-  Clock, 
-  Box, 
-  XCircle, 
+import {
+  Layout,
+  ChevronRight,
+  Zap,
+  Activity,
+  Clock,
+  Box,
+  XCircle,
   CheckCircle2,
   AlertCircle,
   Play,
-  ExternalLink
+  ExternalLink,
+  X
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { cn } from '@/utils/cn';
 
- const formatDuration = (start, end) => {
-    if (!end) return "-";
+const formatDuration = (start, end) => {
+  if (!end) return "-";
 
-    const diffMs = new Date(end).getTime() - new Date(start).getTime();
+  const diffMs = new Date(end).getTime() - new Date(start).getTime();
 
-    const totalSeconds = Math.floor(diffMs / 1000);
+  const totalSeconds = Math.floor(diffMs / 1000);
 
-    const days = Math.floor(totalSeconds / 86400);
-    const hours = Math.floor((totalSeconds % 86400) / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
 
-    const parts = [];
+  const parts = [];
 
-    if (days) parts.push(`${days} يوم`);
-    if (hours) parts.push(`${hours} ساعة`);
-    if (minutes) parts.push(`${minutes} دقيقة`);
-    if (seconds || parts.length === 0) parts.push(`${seconds || 0} ثانية`);
+  if (days) parts.push(`${days} يوم`);
+  if (hours) parts.push(`${hours} ساعة`);
+  if (minutes) parts.push(`${minutes} دقيقة`);
+  if (seconds || parts.length === 0) parts.push(`${seconds || 0} ثانية`);
 
-    return parts.join(" و ");
-  };
+  return parts.join(" و ");
+};
 
 
-  
+
 export default function RunDetailsPanel({
   rightPanelCollapsed,
   setRightPanelCollapsed,
   selectedRun,
+  onStopPreview
 }) {
 
   const currentNodeLabel = useMemo(() => {
@@ -73,12 +75,23 @@ export default function RunDetailsPanel({
               </div>
               <h2 className="text-[13px] font-black">معلومات التشغيل</h2>
             </div>
-            <button 
-              onClick={() => setRightPanelCollapsed(true)} 
-              className="text-slate-400 hover:text-slate-600 bg-white dark:bg-slate-800 rounded-xl p-2 border border-slate-100 dark:border-slate-800"
-            >
-              <ChevronRight size={20} />
-            </button>
+            <div className="flex items-center gap-2">
+              {onStopPreview && (
+                <button
+                  onClick={onStopPreview}
+                  className="text-rose-500 hover:text-rose-600 bg-rose-50 dark:bg-rose-500/10 rounded-xl p-2 border border-rose-100 dark:border-rose-500/20 transition-all active:scale-95"
+                  title="إيقاف المعاينة"
+                >
+                  <X size={18} />
+                </button>
+              )}
+              <button
+                onClick={() => setRightPanelCollapsed(true)}
+                className="text-slate-400 hover:text-slate-600 bg-white dark:bg-slate-800 rounded-xl p-2 border border-slate-100 dark:border-slate-800 transition-all active:scale-95"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-6 space-y-8">
@@ -105,7 +118,7 @@ export default function RunDetailsPanel({
             </InfoSection>
 
             <InfoSection title="التوقيت" icon={<Clock size={14} />}>
-              <InfoItem label="وقت البدء" value={new Date(selectedRun.startedAt ).toLocaleString()} />
+              <InfoItem label="وقت البدء" value={new Date(selectedRun.startedAt).toLocaleString()} />
               {selectedRun.completedAt && (
                 <InfoItem label="وقت الانتهاء" value={new Date(selectedRun.completedAt).toLocaleString()} />
               )}

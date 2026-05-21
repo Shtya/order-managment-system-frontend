@@ -917,9 +917,9 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
                 />
 
                 <motion.div
-                    initial={{ y: '100%' }}
-                    animate={{ y: 0 }}
-                    exit={{ y: '100%' }}
+                    initial={{ x: '-100%' }}
+                    animate={{ x: 0 }}
+                    exit={{ x: '-100%' }}
                     transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                     className="fixed top-0 end-0 h-full w-[320px] bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 z-50 shadow-2xl"
                 >
@@ -949,9 +949,9 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
             />
 
             <motion.div
-                initial={{ y: '100%' }}
-                animate={{ y: 0 }}
-                exit={{ y: '100%' }}
+                initial={{ x: '-100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '-100%' }}
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                 className="fixed top-0 end-0 h-full w-[360px] bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 z-50 shadow-2xl flex flex-col"
             >

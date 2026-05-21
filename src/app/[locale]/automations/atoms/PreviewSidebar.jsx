@@ -24,6 +24,7 @@ import { OrderDetailModal } from '@/app/[locale]/warehouse/tabs/DistributionTab'
 import api from '@/utils/api';
 import { cn } from '@/utils/cn';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAuth } from '@/context/AuthContext';
 
 
 const CREATE_STORE_OPTION = '__create_preview_store__';
@@ -349,6 +350,7 @@ function buildMockOrder({
     store,
     status,
     pinnedLabel,
+    adminId
 }) {
     faker.seed(seed);
 
@@ -394,7 +396,7 @@ function buildMockOrder({
         returnedBy: null,
         returnedById: null,
 
-        adminId: store?.adminId || null,
+        adminId: adminId,
         admin: null,
 
         orderNumber,
@@ -417,7 +419,7 @@ function buildMockOrder({
         shippingCompany: null,
         shippingCompanyId: null,
 
-        store,
+        store: store || null,
         storeId: store?.id || null,
 
         trackingNumber: faker.datatype.boolean() ? `TRK-${faker.string.alphanumeric(9).toUpperCase()}` : null,
@@ -491,19 +493,19 @@ function buildPresetMockOrders({
     statuses,
     triggerStoreId,
     triggerStatusId,
+    adminId
 }) {
     if (triggerType !== 'order_created' && triggerType !== 'order_updated') {
         return [];
     }
-    
+
     const primaryStore =
         resolveStoreFromId({
             selectedId: triggerStoreId,
             stores,
             triggerStoreId,
-        }) ||
-        stores[0];
-        // || getFallbackStores()[0];
+        });
+    // || getFallbackStores()[0];
 
     let triggerAlignedStatus = null;
 
@@ -529,9 +531,10 @@ function buildPresetMockOrders({
             seed: 101,
             index: 0,
             triggerType,
-            store: primaryStore,
+            store: primaryStore || null,
             status: triggerAlignedStatus,
             pinnedLabel: 'Pinned preview order',
+            adminId,
         }),
         buildMockOrder({
             seed: 102,
@@ -540,6 +543,7 @@ function buildPresetMockOrders({
             store: primaryStore,
             status: triggerAlignedStatus,
             pinnedLabel: 'Pinned preview order',
+            adminId
         }),
     ];
 }
@@ -763,27 +767,28 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
 
     useEffect(() => {
         // if (!draftStoreId) {
-            if (triggerStoreId && availableStores.some((s) => String(s?.id) === String(triggerStoreId))) {
-                setDraftStoreId(triggerStoreId);
-            } 
+        if (triggerStoreId && availableStores.some((s) => String(s?.id) === String(triggerStoreId))) {
+            setDraftStoreId(triggerStoreId);
+        }
         // }
     }, [availableStores, draftStoreId, triggerStoreId]);
 
     useEffect(() => {
         // if (!draftStatusId) {
-            if (
-                triggerType === 'order_updated' &&
-                triggerStatusId &&
-                availableStatuses.some((s) => String(s?.id) === String(triggerStatusId))
-            ) {
-                setDraftStatusId(triggerStatusId);
-            } else if (triggerType === 'order_created') {
-                const newStatus = availableStatuses.find((s) => s.code === 'new');
-                setDraftStatusId(newStatus?.id || availableStatuses?.[0]?.id || CREATE_STATUS_OPTION);
-            }
+        if (
+            triggerType === 'order_updated' &&
+            triggerStatusId &&
+            availableStatuses.some((s) => String(s?.id) === String(triggerStatusId))
+        ) {
+            setDraftStatusId(triggerStatusId);
+        } else if (triggerType === 'order_created') {
+            const newStatus = availableStatuses.find((s) => s.code === 'new');
+            setDraftStatusId(newStatus?.id || availableStatuses?.[0]?.id || CREATE_STATUS_OPTION);
+        }
         // }
     }, [availableStatuses, draftStatusId, triggerStatusId, triggerType]);
-
+    const { user } = useAuth();
+    const adminId = user?.id;
     const presetMockOrders = useMemo(() => {
         if (!relevantTrigger) return [];
         return buildPresetMockOrders({
@@ -792,6 +797,7 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
             statuses: availableStatuses,
             triggerStoreId,
             triggerStatusId,
+            adminId
         });
     }, [
         relevantTrigger,
@@ -800,6 +806,7 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
         availableStatuses,
         triggerStoreId,
         triggerStatusId,
+        adminId
     ]);
 
     const combinedMockOrders = useMemo(() => {
@@ -830,7 +837,7 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
 
     const handleUseOrder = (order, e) => {
         e.stopPropagation();
-        
+
         // setSelectedOrder(order);
         if (typeof onSelectOrder === 'function') {
             onSelectOrder(order);
@@ -843,7 +850,7 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
         let finalStoreId = draftStoreId;
         let finalStatusId = draftStatusId;
 
-        if (draftStoreId === CREATE_STORE_OPTION || !draftStoreId) {
+        if (draftStoreId === CREATE_STORE_OPTION) {
             chosenStore = makeMockStore();
             setExtraStores((prev) => [chosenStore, ...prev]);
             finalStoreId = chosenStore?.id;
@@ -854,8 +861,7 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
                     selectedId: draftStoreId,
                     stores: availableStores,
                     triggerStoreId,
-                }) ||
-                makeMockStore({ id: draftStoreId, name: `Store ${String(draftStoreId).slice(0, 6)}` });
+                });
         }
 
         if (draftStatusId === CREATE_STATUS_OPTION || !draftStatusId) {
@@ -884,6 +890,7 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
             store: chosenStore,
             status: chosenStatus,
             pinnedLabel: 'Dynamic preview order',
+            adminId
         });
 
         newOrder.storeId = finalStoreId;
@@ -992,7 +999,7 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
                         <div className="grid grid-cols-1 gap-2">
                             <div className="grid grid-cols-2 gap-2">
                                 {/* اختيارات المتجر */}
-                                <div>
+                                {/* <div>
                                     <label className="block text-[9px] font-black text-slate-500 mb-1">
                                         المتجر
                                     </label>
@@ -1015,7 +1022,7 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
                                     </Select>
                                 </div>
 
-                                {/* اختيارات الحالة */}
+                                
                                 <div>
                                     <label className="block text-[9px] font-black text-slate-500 mb-1">
                                         الحالة
@@ -1037,7 +1044,7 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                </div>
+                                </div> */}
                             </div>
 
                             <button

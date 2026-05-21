@@ -49,10 +49,13 @@ export function ConditionNode({ id, data, selected }) {
                                     <>
                                         <div className="flex flex-col gap-1">
                                             {data.config.checks.slice(0, 2).map((check, idx) => (
-                                                <div key={idx} className="flex items-center justify-between font-black text-purple-700 dark:text-purple-400 border-b border-purple-500/5 last:border-0 pb-1 last:pb-0">
-                                                    <span className="truncate max-w-[60px]">{check.fieldLabel || check.field}</span>
-                                                    <span className="text-slate-400 font-medium px-1">{check.operator}</span>
-                                                    <span className="truncate max-w-[60px]">{check.targetLabel || check.targetValue}</span>
+                                                <div key={idx} className="flex items-center justify-between font-black text-purple-700 dark:text-purple-400 border-b border-purple-500/5 last:border-0 pb-1 last:pb-0 gap-2">
+                                                    {/* تم استبدال word-break بـ block break-all لضمان احترام العرض الأقصى والكسر الصارم عند الحاجة */}
+                                                    <span className="block break-all max-w-[60px]">{check.targetLabel || check.targetValue}</span>
+
+                                                    <span className="text-slate-400 font-medium px-1 shrink-0">{check.operator}</span>
+
+                                                    <span className="block break-all max-w-[60px]">{check.fieldLabel || check.field}</span>
                                                 </div>
                                             ))}
                                         </div>

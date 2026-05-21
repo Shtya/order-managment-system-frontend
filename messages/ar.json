@@ -374,7 +374,7 @@
     "addAutomation": "إضافة تشغيل تلقائي جديد",
     "addTemplate": "إضافة قوالب جديدة",
     "automationLogs": "سجل التشغيل",
-    "runningAutomations": "قيد التشغيل",
+    "runningAutomations": "عمليات التشغيل",
     "dashboard": "لوحة التحكم",
     "orders": "الطلبات",
     "employeeOrders": "طلبات الموظفين",
@@ -9488,7 +9488,7 @@
       }
     },
     "automations": {
-      "runningAutomations": "قيد التشغيل",
+      "runningAutomations": "عمليات التشغيل",
       "breadcrumb": {
         "home": "الرئيسية",
         "whatsapp": "واتساب",

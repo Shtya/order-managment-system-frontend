@@ -762,17 +762,11 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
             <DialogContent className="max-w-4xl! p-0 overflow-hidden rounded-[30px] border-none shadow-2xl bg-[#f8f9fc] dark:bg-slate-950">
                 <div className="flex flex-col h-[85vh] overflow-hidden">
                     {/* Header */}
-                    <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 me-[50px]">
+                    <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 pe-[60px]">
                         <div className="flex items-center justify-between">
                             {activeIndex !== null ? (
-                                <>
-                                    <button
-                                        onClick={() => setActiveIndex(null)}
-                                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 transition-all shrink-0"
-                                    >
-                                        <X size={20} />
-                                    </button>
-                                    <div className="flex-1 px-6">
+                                <div className="flex justify-between flex-1">
+                                    <div className="px-6">
                                         <div className="flex items-center justify-end gap-3">
                                             <span className="text-[13px] font-black text-slate-900 dark:text-slate-100 ml-2">معاينة:</span>
                                             <div className="px-4 py-2 rounded-xl bg-primary/10 text-primary text-[12px] font-black border border-primary/20 shadow-sm">
@@ -786,10 +780,17 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                             </div>
                                         </div>
                                     </div>
+                                    <button
+                                        onClick={() => setActiveIndex(null)}
+                                        className="px-4 h-10 flex items-center gap-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 transition-all shrink-0"
+                                    >
+                                        <X size={20} />
+                                        <span className="text-[12px] font-black">الرجوع للرئيسية</span>
+                                    </button>
                                     {/* <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
                                         <GitBranch size={20} />
                                     </div> */}
-                                </>
+                                </div>
                             ) : (
                                 <>
                                     <div className="text-right flex-1 px-4">
@@ -805,9 +806,10 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                         </div>
                                         <button
                                             onClick={handleAddCheck}
-                                            className="w-10 h-10 flex items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95"
+                                            className="text-sm px-4 py-2.5 flex items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95"
                                         >
                                             <Plus size={20} />
+                                            <span className="text-[12px] font-black">إضافة شرط جديد</span>
                                         </button>
                                     </div>
                                 </>
@@ -816,7 +818,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                     </div>
 
                     {/* Content Area */}
-                    <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-slate-50/50 dark:bg-slate-950/50">
+                    <div className="flex-1 overflow-y-auto p-6 pb-0 mb-6 custom-scrollbar bg-slate-50/50 dark:bg-slate-950/50">
                         {loading ? (
                             <div className="flex flex-col items-center justify-center py-20 gap-3">
                                 <Loader2 className="w-10 h-10 animate-spin text-primary" />
@@ -825,7 +827,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                         ) : (
                             <>
                                 {activeIndex === null ? (
-                                    <div className="space-y-4">
+                                    <div className="space-y-4 h-full">
                                         {checks.length > 0 ? (
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 {checks.map((check, i) => {
@@ -870,7 +872,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                                 })}
                                             </div>
                                         ) : (
-                                            <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-900 rounded-[30px] border-2 border-dashed border-slate-100 dark:border-slate-800">
+                                            <div className="h-full flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-900 rounded-[30px] border-2 border-dashed border-slate-100 dark:border-slate-800">
                                                 <div className="w-20 h-20 rounded-3xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300 mb-6">
                                                     <GitBranch size={40} />
                                                 </div>
@@ -880,7 +882,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                         )}
                                     </div>
                                 ) : (
-                                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-3xl">
+                                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-3xl ">
                                         {/* Step 1: Field Selection */}
                                         <div className="flex gap-6">
                                             <div className="flex flex-col items-center gap-2 shrink-0">

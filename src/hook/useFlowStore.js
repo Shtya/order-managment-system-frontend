@@ -51,6 +51,7 @@ export const useFlowStore = create(
       pendingConnection: null, // { nodeId, type }
       deleteConfirm: null, // { type: 'node' | 'edge' | 'clear', id, downstreamCount }
       skipDeleteConfirmation: typeof window !== 'undefined' ? localStorage.getItem('skip_delete') === 'true' : false,
+      previewResumeLoading: false, // Loading state for resume preview API call
 
       setNodes: (nodes) => set({ nodes }),
       setEdges: (edges) => set({ edges }),
@@ -67,7 +68,8 @@ export const useFlowStore = create(
         mode: id ? 'edit' : 'create',
         nodeErrors: {},
         nodeHydration: {},
-        nodeLoading: {}
+        nodeLoading: {},
+        previewResumeLoading: false 
       }),
       setNodeError: (nodeId, error) => set((s) => ({
         nodeErrors: { ...s.nodeErrors, [nodeId]: error }
@@ -80,7 +82,27 @@ export const useFlowStore = create(
       })),
       setPendingConnection: (conn) => set({ pendingConnection: conn }),
       setDeleteConfirm: (confirm) => set({ deleteConfirm: confirm }),
+      setPreviewResumeLoading: (loading) => set({ previewResumeLoading: loading }),
 
+
+      restoreFlow: (snapshot) => set({
+        nodes: snapshot.nodes || [],
+        edges: snapshot.edges || [],
+        name: snapshot.name || '',
+        nameError: snapshot.nameError ?? null,
+        nodeErrors: snapshot.nodeErrors || {},
+        nodeHydration: snapshot.nodeHydration || {},
+        nodeLoading: snapshot.nodeLoading || {},
+        mode: snapshot.mode || 'create',
+        currentRun: snapshot.currentRun || null,
+        automationId: snapshot.automationId || null,
+        selectedNodeId: snapshot.selectedNodeId || null,
+        pendingConnection: snapshot.pendingConnection || null,
+        deleteConfirm: snapshot.deleteConfirm || null,
+        skipDeleteConfirmation: snapshot.skipDeleteConfirmation ?? false,
+        previewResumeLoading:  false
+      }),
+      
       resetFlow: () => set({
         nodes: [],
         edges: [],
@@ -93,7 +115,8 @@ export const useFlowStore = create(
         automationId: null,
         selectedNodeId: null,
         pendingConnection: null,
-        deleteConfirm: null
+        deleteConfirm: null,
+        previewResumeLoading: false
       }),
 
       setSkipDeleteConfirmation: (skip) => {
@@ -339,7 +362,8 @@ export const useFlowStore = create(
             nodeLoading: {},
             selectedNodeId: null,
             pendingConnection: null,
-            deleteConfirm: null
+            deleteConfirm: null,
+            previewResumeLoading: false
           });
           return;
         }
@@ -382,7 +406,7 @@ export const useFlowStore = create(
           mode: 'create', // إرجاع الوضع الافتراضي
           automationId: null,
           deleteConfirm: null,
-        });
+          });
       },
 
       saveDraft: () => {

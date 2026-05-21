@@ -67,14 +67,14 @@ import {
   Landmark,
   DollarSign,
 } from "lucide-react";
-import { FaUserTie } from "react-icons/fa6";
+import { FaBugs, FaUserTie } from "react-icons/fa6";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "../ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import BrandLogo from "../atoms/BrandLogo";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
-import { FaBolt, FaChartPie, FaClock, FaListAlt, FaPlus, FaRegFileAlt, FaWhatsapp } from "react-icons/fa";
+import { FaBolt, FaBug, FaChartPie, FaClock, FaListAlt, FaPlus, FaRegFileAlt, FaWhatsapp } from "react-icons/fa";
 
 /* ══════════════════════════════════════════════════════════════
    MENU DEFINITION
@@ -874,6 +874,12 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
         }
       ]
     },
+    {
+      icon: FaBugs,
+      labelKey: "systemErrors",
+      href: "/dashboard/errors",
+      roles: ["SUPER_ADMIN"],
+    }
 
   ], [shippingCompanies, isDirectShippingEnabled]);
 

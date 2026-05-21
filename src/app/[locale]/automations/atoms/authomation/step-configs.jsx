@@ -280,7 +280,7 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
             ...(dynamicButtonIndexesSafe || [])?.map(idx => (value.buttonVariables || {})?.[idx])
         ].every(v => v?.value || v?.variablePath);
 
-        console.log(allVarsFilled, headerVarsSafe, bodyVarsSafe, dynamicButtonIndexesSafe)
+        
 
         setDisabled(!hasTemplate || !allVarsFilled);
     }, [value.templateId, value.headerVariables, value.bodyVariables, value.buttonVariables, value.templateData, setDisabled]);

@@ -41,25 +41,32 @@ export function BaseNode({
     const mode = useFlowStore((s) => s.mode);
     const currentRun = useFlowStore((s) => s.currentRun);
     const changes = hydration?.changes || [];
-
     const isEditMode = mode === 'edit';
     const isViewMode = mode === 'view';
     const isRunMode = mode === 'run';
+    const node = useFlowStore((s) => s.nodes.find(n => n.id === id));
+    const nodeType = node?.type;
 
     // Execution status for run mode
     const executionState = useMemo(() => {
+        if(nodeType === 'trigger') {
+            return currentRun?.executionState?.trigger;
+        } 
         if (!isRunMode || !currentRun?.executionState?.steps) return null;
         return currentRun.executionState.steps[id];
-    }, [isRunMode, currentRun, id]);
+    }, [isRunMode, currentRun, id,nodeType]);
+    const currentNodeId = currentRun?.currentNodeId;
+    const runStatus = currentRun?.status;
 
     const status = useMemo(() => {
         if (!isRunMode) return null;
         if (!executionState) return 'not_reached';
+        if(nodeType === 'trigger') return '';
+        if(currentNodeId === id && runStatus === 'running') return 'running';
+        if(currentNodeId === id && runStatus === 'paused') return 'paused';
         return executionState.success ? 'success' : 'failed';
-    }, [isRunMode, executionState]);
+    }, [isRunMode, executionState, nodeType, currentNodeId, runStatus]);
 
-    const node = useFlowStore((s) => s.nodes.find(n => n.id === id));
-    const nodeType = node?.type;
     useEffect(() => {
         if (isRunMode) return; // Skip hydration in run mode
 
@@ -142,6 +149,8 @@ export function BaseNode({
                 !isInvalid && changes.length > 0 && "border-emerald-500 ring-[4px] ring-emerald-500/5",
                 status === 'success' && "border-emerald-500 ring-[4px] ring-emerald-500/10 bg-emerald-200/50 dark:bg-emerald-200/5",
                 status === 'failed' && "border-rose-500 ring-[4px] ring-rose-500/10 bg-rose-200/50 dark:bg-rose-200/5",
+                status === 'running' && "border-blue-500 ring-[4px] ring-blue-500/10 bg-blue-200/50 dark:bg-blue-200/5",
+                status === 'paused' && "border-yellow-500 ring-[4px] ring-yellow-500/10 bg-yellow-200/50 dark:bg-yellow-200/5",
                 status == 'not_reached' && nodeType !== 'trigger' && "opacity-60 grayscale-[0.5] bg-gray-200 dark:bg-gray-200/50",
                 className
             )}

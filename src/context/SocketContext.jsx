@@ -177,6 +177,14 @@ export const SocketProvider = ({ children }) => {
       });
     });
 
+    socket.on("automation:preview:update", (payload) => {
+      console.log("socket", payload)
+      publish({
+        type: "AUTOMATION_PREVIEW_UPDATE",
+        payload,
+      });
+    });
+
     // Cleanup listeners
     return () => {
       socket.off("connect");

@@ -24,6 +24,7 @@ import { TriggerNode } from "../atoms/authomation/TriggerNode";
 import { StepConfigModal } from "../atoms/authomation/StepConfigModal";
 import { ConfirmDeleteDialog } from "../atoms/authomation/ConfirmDeleteDialog";
 import { AUTOMATION_CONFIG } from "../atoms/authomation/automation-config";
+import RunDetailsPanel, { StatusRunBadge } from "../atoms/RunDetailsPanel";
 import toast from "react-hot-toast";
 
 const nodeTypes = {
@@ -219,6 +220,7 @@ const SidebarBridge = ({ onSelect }) => {
 export default function AutomationBuilderPage() {
   const automationId = useFlowStore((s) => s.automationId);
   const resetFlow = useFlowStore((s) => s.resetFlow);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
 
   useEffect(() => {
     if (automationId) {
@@ -228,9 +230,14 @@ export default function AutomationBuilderPage() {
 
   return (
     <div className="flex h-screen flex-col  overflow-hidden bg-slate-50 dark:bg-[#050505] relative">
-      <TopToolbar />
       <div className="flex flex-1 overflow-hidden">
-        <LeftSidebar onSelectStep={(step) => window.dispatchEvent(new CustomEvent('select-automation-step', { detail: step }))} />
+      <TopToolbar
+        isPreviewMode={isPreviewMode}
+        setIsPreviewMode={setIsPreviewMode}
+      />
+        {!isPreviewMode && (
+          <LeftSidebar onSelectStep={(step) => window.dispatchEvent(new CustomEvent('select-automation-step', { detail: step }))} />
+        )}
         <ReactFlowProvider>
           <BuilderCanvas />
         </ReactFlowProvider>

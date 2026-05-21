@@ -257,7 +257,7 @@ export default function DistributionTab({ subtab, setSubtab }) {
 }
 
 // ─────────────────────────────────────────────
-// ORDER DETAIL MODAL — REDESIGNED
+// ORDER DETAIL MODA
 // ─────────────────────────────────────────────
 export function OrderDetailModal({ open, onClose, order, hideNotes }) {
   const tCommon = useTranslations("common");

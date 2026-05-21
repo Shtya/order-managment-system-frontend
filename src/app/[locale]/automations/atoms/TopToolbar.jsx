@@ -131,32 +131,32 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
 
             const prev = {
                 ...payload,
-                  previewId,
-                      adminId: null,
-                      userId: user.id,
-                      versionId: payload.version.id,
-                      versionString: payload.version.versionString,
-                      status: 'running',
-                      currentNodeId: null,
-                      completedNodeIds: [],
-                      errorMessage: null,
-                      flow: payload.version.flow,
-                      automationFlow: {
-                        id: payload.automationFlowId,
-                        name: payload.name,
-                      },
-                      executionState: {
-                        trigger: payload.trigger,
-                        steps: {},
-                      },
-                      triggerEntityType: payload.trigger.type === 'order_created' || payload.trigger.type === 'order_updated' ? 'order'
-                        : 'order',
-                      triggerEntityId: payload.trigger.output?.__mock ? null : payload.trigger.output?.id,
-                      waitingForInteraction: null,
-                      startedAt: now,
-                      createdAt: now,
-                      updatedAt: now,
-                      lastHeartbeatAt: now,
+                previewId,
+                adminId: null,
+                userId: user.id,
+                versionId: payload.version.id,
+                versionString: payload.version.versionString,
+                status: 'running',
+                currentNodeId: null,
+                completedNodeIds: [],
+                errorMessage: null,
+                flow: payload.version.flow,
+                automationFlow: {
+                    id: payload.automationFlowId,
+                    name: payload.name,
+                },
+                executionState: {
+                    trigger: payload.trigger,
+                    steps: {},
+                },
+                triggerEntityType: payload.trigger.type === 'order_created' || payload.trigger.type === 'order_updated' ? 'order'
+                    : 'order',
+                triggerEntityId: payload.trigger.output?.__mock ? null : payload.trigger.output?.id,
+                waitingForInteraction: null,
+                startedAt: now,
+                createdAt: now,
+                updatedAt: now,
+                lastHeartbeatAt: now,
 
             }
             setPreviewRun(prev);
@@ -394,6 +394,7 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
                     rightPanelCollapsed={rightPanelCollapsed}
                     setRightPanelCollapsed={setRightPanelCollapsed}
                     selectedRun={previewRun}
+                    onStopPreview={handleSwitchToPreview}
                 />
             )}
 

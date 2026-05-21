@@ -23,6 +23,23 @@ export function StepConfigModal({ isOpen, onClose, step, mode = "create", initia
     if (!step) return null;
 
     const ConfigComponent = Configs[step.configComponent];
+
+    if (step.hasCustom && ConfigComponent) {
+        return (
+            <ConfigComponent
+                isOpen={isOpen}
+                value={config}
+                onChange={setConfig}
+                context={{ step, mode }}
+                errors={errors}
+                onClose={(config) => onClose(config || null)}
+                setErrors={setErrors}
+                setDisabled={setDisabled}
+                flowData={{ nodes, edges }}
+            />
+        );
+    }
+
     const className = step.className || "max-w-7xl!";
     const handleSave = () => {
         // Basic validation could be here or inside the config component

@@ -198,7 +198,7 @@ function sharedTemplateFields(t) {
  * @param {(key: string, values?: Record<string, string | number>) => string} t
  * @param {"create" | "edit"} mode
  */
-export function createTemplateFormSchema(t, mode = "create") {
+export function createTemplateFormSchema(t, mode = "create", superAdmin) {
   const shared = sharedTemplateFields(t);
 
   if (mode === "edit") {
@@ -208,7 +208,9 @@ export function createTemplateFormSchema(t, mode = "create") {
   }
 
   return yup.object({
-    accountId: yup.string().uuid(t("validation.accountIdInvalid")).required(t("validation.accountRequired")),
+    ...(!superAdmin ? {
+      accountId: yup.string().uuid(t("validation.accountIdInvalid")).required(t("validation.accountRequired")),
+    } : {}),
     name: yup
       .string()
       .required(t("validation.nameRequired"))

@@ -35,6 +35,7 @@ import RunDetailsPanel from './RunDetailsPanel';
 import StepExecutionDialog from './StepExecutionDialog';
 
 export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setIsPreviewMode: setExternalIsPreviewMode }) {
+    const { isSuperAdmin } = useAuth();
     const edges = useFlowStore((s) => s.edges);
     const nodes = useFlowStore((s) => s.nodes);
     const name = useFlowStore((s) => s.name);
@@ -249,7 +250,7 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
             }
             resetFlow();
             toast.success(publish ? "تم نشر الأتمتة بنجاح!" : "تم حفظ الأتمتة بنجاح!");
-            router.push('/automations');
+            router.push(isSuperAdmin ? '/dashboard/automations' : '/automations');
         } catch (error) {
             const message = error.response?.data?.message;
             toast.error(Array.isArray(message) ? message[0] : (message || "فشل في حفظ الأتمتة."));
@@ -287,6 +288,7 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
         return () => window.removeEventListener('show-step-info', handleShowStepInfo);
     }, []);
 
+    console.log(isSuperAdmin, isSuperAdmin ? `/dashboard/automations/edit/${automationId}?${version ? `v=${version}` : ''}` : `/automations/edit/${automationId}?${version ? `v=${version}` : ''}`);
 
     return (
         <>
@@ -302,7 +304,7 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
                         <ToolbarButton
                             icon={<Edit3 size={18} />}
                             label="تعديل الأتمتة"
-                            onClick={() => router.push(`/automations/edit/${automationId}?${version ? `v=${version}` : ''}`)}
+                            onClick={() => router.push(isSuperAdmin ? `/dashboard/automations/edit/${automationId}?${version ? `v=${version}` : ''}` : `/automations/edit/${automationId}?${version ? `v=${version}` : ''}`)}
                             primary
                         />
                     ) : (

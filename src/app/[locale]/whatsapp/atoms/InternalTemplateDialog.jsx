@@ -32,9 +32,10 @@ const INTERNAL_CONFIG = {
     ]
 };
 
-export function InternalTemplateDialog({ open, onOpenChange, onSelectTemplate }) {
+
+export function InternalTemplateDialog({ open, onOpenChange, onSelectTemplate, library }) {
     const [searchTerm, setSearchTerm] = useState("");
-    const {debouncedValue: debouncedSearchTerm} = useDebounce({value: searchTerm});
+    const { debouncedValue: debouncedSearchTerm } = useDebounce({ value: searchTerm });
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [selectedLanguage, setSelectedLanguage] = useState("all");
     const [selectedAccountId, setSelectedAccountId] = useState("all");
@@ -57,7 +58,7 @@ export function InternalTemplateDialog({ open, onOpenChange, onSelectTemplate })
         setLoading(true);
         try {
             const params = {
-                status: "approved",
+                ...(!library && { status: "approved" }),
                 page: 1,
                 limit: 100,
                 search: debouncedSearchTerm,
@@ -65,7 +66,7 @@ export function InternalTemplateDialog({ open, onOpenChange, onSelectTemplate })
                 category: selectedCategory !== "all" ? selectedCategory : undefined,
                 accountId: selectedAccountId !== "all" ? selectedAccountId : undefined,
             };
-            const res = await api.get("/whatsapp-templates", { params });
+            const res = await api.get(library ? "/whatsapp-templates/library" : "/whatsapp-templates", { params });
             setTemplates(Array.isArray(res.data?.records) ? res.data.records : []);
         } catch (e) {
             console.error(e);
@@ -111,7 +112,7 @@ export function InternalTemplateDialog({ open, onOpenChange, onSelectTemplate })
                             />
                         </div>
 
-                        <div className="flex-shrink-0">
+                        {!library && <div className="flex-shrink-0">
                             <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
                                 <SelectTrigger className="w-[220px] h-[50px] rounded-xl bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700">
                                     <div className="flex items-center gap-2">
@@ -128,7 +129,7 @@ export function InternalTemplateDialog({ open, onOpenChange, onSelectTemplate })
                                     ))}
                                 </SelectContent>
                             </Select>
-                        </div>
+                        </div>}
 
                         <div className="flex-shrink-0">
                             <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>

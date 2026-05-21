@@ -8,7 +8,7 @@ import api from "@/utils/api";
  * @param {object} config - The current configuration stored in the node
  * @returns {Promise<{ isValid: boolean, error?: string, changes: string[], newConfig: object }>}
  */
-export async function hydrateNodeConfig(type, config) {
+export async function hydrateNodeConfig(type, config, isSuperAdmin) {
     const result = {
         isValid: true,
         error: null,
@@ -73,7 +73,7 @@ export async function hydrateNodeConfig(type, config) {
                     const freshTemplate = res.data;
 
 
-                    if (!freshTemplate || freshTemplate?.status !== 'approved') throw new Error("Template not found");
+                    if (!freshTemplate || (!isSuperAdmin && freshTemplate?.status !== 'approved')) throw new Error("Template not found");
 
                     // 1. Check template name
                     if (freshTemplate.name !== config.templateName) {
@@ -132,6 +132,7 @@ export async function hydrateNodeConfig(type, config) {
                     }
                 } catch (e) {
                     result.isValid = false;
+
                     result.error = `قالب واتساب المحدد (${config.templateName || config.templateId}) لم يعد موجوداً أو غير مقبول.`;
                 }
                 break;

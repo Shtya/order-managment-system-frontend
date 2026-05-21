@@ -61,13 +61,7 @@ export const AUTOMATION_CONFIG = {
                         type: 'action',
                         configComponent: 'UpdateOrderStatusConfig',
                         className: 'max-w-xl!'
-                    }
-                ]
-            },
-            {
-                id: 'WHATSAPP',
-                label: 'واتساب',
-                items: [
+                    },
                     {
                         id: 'send_whatsapp_template',
                         label: 'إرسال قالب واتساب',
@@ -78,6 +72,20 @@ export const AUTOMATION_CONFIG = {
                     }
                 ]
             }
+            // {
+            //     id: 'WHATSAPP',
+            //     label: 'واتساب',
+            //     items: [
+            //         {
+            //             id: 'send_whatsapp_template',
+            //             label: 'إرسال قالب واتساب',
+            //             icon: MessageSquare,
+            //             type: 'action',
+            //             configComponent: 'SendWhatsappTemplateConfig',
+            //             className: 'max-w-2xl!'
+            //         }
+            //     ]
+            // }
         ]
     },
     CONDITIONS: {

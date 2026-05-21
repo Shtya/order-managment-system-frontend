@@ -8,7 +8,7 @@ export function getOnboardingStatus() {
   if (!accessToken) return true;
   try {
     const decoded = jwtDecode(accessToken);
-    
+
     return decoded.isOnboarding;
   } catch (error) {
     console.log(error);
@@ -30,6 +30,8 @@ api.interceptors.request.use(config => {
       config.headers = config.headers ?? {};
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    config.headers['x-frontend-route'] = window.location.href;
   }
   return config;
 });

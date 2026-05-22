@@ -1101,6 +1101,7 @@ export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 											<div className="grid grid-cols-12 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-200 px-4 py-3">
 												<div className="col-span-4">{t("common.sku")}</div>
 												<div className="col-span-2 text-center">{t("productModal.salePrice")}</div>
+												<div className="col-span-2 text-center">{t("productModal.unitCost")}</div>
 												<div className="col-span-3 text-center">{t("common.attributes")}</div>
 												<div className="col-span-3 text-center">{t("common.stock")}</div>
 											</div>
@@ -1135,6 +1136,12 @@ export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 
 																<Badge className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200">
 																	{formatCurrency(s?.price || 0)}
+																</Badge>
+															</div>
+															<div className="col-span-2 flex flex-wrap items-center justify-center gap-1.5">
+
+																<Badge className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200">
+																	{formatCurrency(s?.unitCost || 0)}
 																</Badge>
 															</div>
 

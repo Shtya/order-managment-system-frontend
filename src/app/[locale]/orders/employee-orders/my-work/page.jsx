@@ -1574,7 +1574,7 @@ function UpsellModal({ isOpen, onClose, product: upProduct, handleSelectSku, sel
                                       productId: product.id,
                                       productName: product.name,
                                       label: product.name,
-                                      cost: s.cost || product.wholesalePrice || s.price
+                                      cost: s.cost || s.unitCost || product.wholesalePrice || s.price
                                     })}
                                     disabled={!s.isActive || isAdded || !avail}
                                   >

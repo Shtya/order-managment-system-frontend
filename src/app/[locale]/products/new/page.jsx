@@ -248,6 +248,7 @@ const makeSchema = (t, tValidation) =>
 					}),
 				attributes: yup.object().required(t('validation.combinationAttrsRequired')),
 				stockOnHand: yup.number().typeError(t('validation.invalidNumber')).min(0, t('validation.stockNonNegative')).default(0),
+				unitCost: yup.number().default(0),
 				price: yup.number().typeError(t('validation.invalidNumber')).required(t('validation.priceRequired')).min(0, t('validation.noNegative')),
 				isActive: yup.boolean().default(true),
 				isExisting: yup.boolean().default(false)
@@ -794,6 +795,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 				sku: old?.sku && old.sku !== '' ? old.sku : g.sku,
 				stockOnHand: old?.stockOnHand ?? g.stockOnHand ?? 0,
 				price: old?.price && old.price !== '' ? old.price : g.price,
+				unitCost: old?.unitCost || 0,
 				isActive: old?.isActive ?? true,
 				isExisting: !!old?.isExisting,
 				variantId: old?.variantId,
@@ -1084,6 +1086,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 			sku: sku.sku || '',
 			attributes: sku.attributes || {},
 			stockOnHand: sku.stockOnHand || 0,
+			unitCost: sku.unitCost || 0,
 			reserved: sku.reserved || 0,
 			price: sku.price?.toString() || existingProduct.salePrice?.toString() || '',
 			isActive: parseBooleanLike(sku.isActive ?? sku.active, true),
@@ -1585,7 +1588,8 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 														<th className="text-center px-2 py-3 font-semibold text-slate-500 dark:text-slate-400 w-[80px]">{t('combinations.onHand')}</th>
 														<th className="text-center px-2 py-3 font-semibold text-slate-500 dark:text-slate-400 w-[80px]">{t('combinations.reserved')}</th>
 														<th className="text-center px-2 py-3 font-semibold text-slate-500 dark:text-slate-400 w-[80px]">{t('combinations.available')}</th>
-														<th className="text-right px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 w-[130px]">
+														<th className="text-center text-nowrap px-2 py-3 font-semibold text-slate-500 dark:text-slate-400 w-[80px]">{t('combinations.unitCost')}</th>
+														<th className="text-right text-nowrap px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 w-[130px]">
 															{t('combinations.price')} <span className="text-red-400">*</span>
 														</th>
 													</tr>
@@ -1601,6 +1605,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 
 														// حساب المتوفر: الكمية الفعلية - المحجوز
 														const onHand = isEditMode || hasPurchase ? current?.stockOnHand || 0 : 0;
+														const unitCost = current?.unitCost ?? 0;
 														const reserved = current?.reserved || 0;
 
 														const available = Math.max(0, onHand - reserved);
@@ -1686,10 +1691,13 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 																		{available}
 																	</span>
 																</td>
+																<td className="px-2 py-3 text-center">
+																	<span className="font-medium text-slate-700 dark:text-slate-300">{unitCost}</span>
+																</td>
 																<td className="px-4 py-3">
 																	<Controller
-																		control={control}
 																		name={`combinations.${idx}.price`}
+																		control={control}
 																		render={({ field }) => (
 																			<Input
 																				{...field}
@@ -1733,7 +1741,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 								<Card>
 									<SectionHeader title={t('singleSku.title')} />
 									{isEditMode && isSingle && (
-										<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+										<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
 											<Field label={t('combinations.onHand')}>
 												<Input value={String(combinationsWatch?.[0]?.stockOnHand || 0)} disabled />
 											</Field>
@@ -1742,6 +1750,9 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 											</Field>
 											<Field label={t('combinations.available')}>
 												<Input value={String(Math.max(0, Number(combinationsWatch?.[0]?.stockOnHand || 0) - Number(combinationsWatch?.[0]?.reserved || 0)))} disabled />
+											</Field>
+											<Field label={t('combinations.unitCost')}>
+												<Input value={String(Math.max(0, Number(combinationsWatch?.[0]?.unitCost || 0) - Number(combinationsWatch?.[0]?.reserved || 0)))} disabled />
 											</Field>
 										</div>)}
 								</Card>

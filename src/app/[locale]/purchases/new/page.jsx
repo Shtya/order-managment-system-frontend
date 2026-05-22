@@ -119,7 +119,7 @@ export function PurchaseInvoiceForm({ editedPurchase }) {
 				sku: item?.variant?.sku || "",
 				availableQuantity: Number(item?.variant?.stockOnHand || 0) - Number(item?.variant?.reserved || 0),
 				productName: item?.variant?.product?.name || "",
-				price: item?.variant?.product?.wholesalePrice,
+				price: item?.variant?.unitCost,
 				attributes: {},
 			})) : [];
 
@@ -221,19 +221,20 @@ export function PurchaseInvoiceForm({ editedPurchase }) {
 		});
 
 		if (newUniqueSkus.length === 0) return;
-
+		console.log(newUniqueSkus)
 		// 3. تحديث قائمة الـ Skus المختارة (للعرض)
 		setSelectSku((prev) => [...prev, ...newUniqueSkus]);
-
+		
 		// 4. تحويل الـ Skus الجديدة إلى تنسيق Items الخاص بالنموذج
 		const newItems = newUniqueSkus.map((sku) => ({
 			variantId: sku.id,
 			quantity: 1,
-			purchaseCost: sku.wholesalePrice,
+			purchaseCost: sku.unitCost || sku.wholesalePrice,
+			wholesalePrice: sku.wholesalePrice,
 			sku: sku.sku,
 			availableQuantity: sku.available || 0,
 			productName: sku.name,
-			price: sku.wholesalePrice,
+			price: sku.unitCost,
 			attributes: sku.attributes || {},
 		}));
 
@@ -542,7 +543,7 @@ export function PurchaseInvoiceForm({ editedPurchase }) {
 																	{/* Current Price Display */}
 																	<div className="flex items-center gap-1 text-sm text-gray-600">
 																		<Tag size={14} className="text-green-600" />
-																		<span className="font-medium">{formatCurrency(product.price)}</span>
+																		<span className="font-medium">{formatCurrency(product.price || product.wholesalePrice)}</span>
 																		<span className="text-xs text-gray-400">({t("current_price")})</span>
 																	</div>
 																</div>

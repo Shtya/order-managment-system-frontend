@@ -257,8 +257,8 @@ export function PurchaseReturnForm({ editedReturn }) {
 			attributes: sku.attributes || {},
 			returnedQuantity: 1,
 			availableQuantity: sku.available || 0, // Store available quantity
-			unitCost: sku.wholesalePrice || 0,
-			originalUnitCost: sku.wholesalePrice || 0,
+			unitCost: sku.unitCost || 0,
+			originalUnitCost: sku.unitCost || 0,
 			taxInclusive: false,
 			taxRate: 5,
 		};

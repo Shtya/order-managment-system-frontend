@@ -3567,7 +3567,7 @@
       "empty": "No variants found",
       "combinationName": "Variant Name",
       "isActive": "Active",
-      "price": "Price",
+      "price": "selling price",
       "salePrice": "Sale Price",
       "quantity": "Quantity",
       "placeholders": {
@@ -3575,7 +3575,8 @@
         "sku": "Auto-generated",
         "price": "Enter price"
       },
-      "default": "Default"
+      "default": "Default",
+      "unitCost": "wholesale price"
     },
     "types": {
       "single": "Single",
@@ -3727,7 +3728,8 @@
       "skusEmpty": "No SKUs found.",
       "upsellingEmpty": "No upselling products.",
       "salePrice": "Sale Price",
-      "sku": "SKU"
+      "sku": "SKU",
+      "unitCost": "selling price"
     },
     "breadcrumb": {
       "home": "Home",

@@ -3602,7 +3602,7 @@
       "empty": "لا توجد متغيرات",
       "combinationName": "اسم المتغير",
       "isActive": "نشط",
-      "price": "سعر",
+      "price": "سعر البيع",
       "salePrice": "سعر البيع",
       "quantity": "الكمية",
       "placeholders": {
@@ -3610,7 +3610,8 @@
         "sku": "يتم توليده تلقائيًا",
         "price": "أدخل السعر"
       },
-      "default": "الافتراضي"
+      "default": "الافتراضي",
+      "unitCost": "سعر التكلفة"
     },
     "types": {
       "single": "مفرد",
@@ -3762,7 +3763,8 @@
       "imagesEmpty": "لا توجد صور إضافية.",
       "skusEmpty": "لا يوجد SKUs.",
       "upsellingEmpty": "لا يوجد Upselling.",
-      "sku": "SKU"
+      "sku": "SKU",
+      "unitCost": "سعر التكلفة"
     },
     "breadcrumb": {
       "home": "الرئيسية",

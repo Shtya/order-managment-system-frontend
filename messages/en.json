@@ -500,6 +500,7 @@
       "name": "Name",
       "email": "Email",
       "phone": "Phone Number",
+      "password": "Password",
       "role": "Type",
       "status": "Status",
       "active": "Active",
@@ -521,7 +522,8 @@
       "title": "Employee Details"
     },
     "edit": {
-      "title": "Edit Employee Information"
+      "title": "Edit Employee Information",
+      "leaveEmpty": "Leave empty to keep current password"
     },
     "delete": {
       "title": "Delete Employee",
@@ -6554,6 +6556,7 @@
       "custom": "Custom"
     },
     "card": {
+      "includedFeatures": "What's included: ",
       "currency": "EGP",
       "users": "User",
       "shippingCompanies": "Shipping Company",

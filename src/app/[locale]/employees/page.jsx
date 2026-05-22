@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import {
 	Trash2,
 	Eye,
+	EyeOff,
 	Phone,
 	Mail,
 	ChevronLeft,
@@ -323,11 +324,16 @@ export default function EmployeesPage() {
 		setApiMsg("");
 
 		try {
-			await api.patch(`/users/${selected.id}`, {
+			const body = {
 				name: payload.name?.trim(),
 				email: payload.email?.trim(),
 				phone: payload.phone?.trim(),
-			});
+			};
+			if (payload.password?.trim()) {
+				body.password = payload.password.trim();
+			}
+
+			await api.patch(`/users/${selected.id}`, body);
 			setApiMsg(t("messages.updated") || "Updated successfully");
 			setEditOpen(false);
 			await fetchEmployees({
@@ -816,7 +822,8 @@ function ViewEmployeeDialog({ t, open, onOpenChange, data, loading }) {
 }
 
 function EditEmployeeDialog({ t, open, onOpenChange, initial, onSave, saving }) {
-	const [form, setForm] = useState({ name: "", email: "", phone: "" });
+	const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
+	const [showPass, setShowPass] = useState(false);
 
 	useEffect(() => {
 		if (open && initial) {
@@ -824,9 +831,13 @@ function EditEmployeeDialog({ t, open, onOpenChange, initial, onSave, saving }) 
 				name: initial.name || "",
 				email: initial.email || "",
 				phone: initial.phone || "",
+				password: "",
 			});
 		}
-		if (!open) setForm({ name: "", email: "", phone: "" });
+		if (!open) {
+			setForm({ name: "", email: "", phone: "", password: "" });
+			setShowPass(false);
+		}
 	}, [open, initial]);
 
 	return (
@@ -857,7 +868,7 @@ function EditEmployeeDialog({ t, open, onOpenChange, initial, onSave, saving }) 
 						/>
 					</div>
 
-					<div className="md:col-span-2">
+					<div>
 						<Label className="text-xs text-gray-500 dark:text-slate-400">{t("table.phone")}</Label>
 						<Input
 							value={form.phone}
@@ -865,6 +876,26 @@ function EditEmployeeDialog({ t, open, onOpenChange, initial, onSave, saving }) 
 							className="rounded-full h-[42px] font-en bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 mt-1"
 							dir="ltr"
 						/>
+					</div>
+
+					<div>
+						<Label className="text-xs text-gray-500 dark:text-slate-400">{t("table.password")}</Label>
+						<div className="relative mt-1">
+							<Input
+								type={showPass ? "text" : "password"}
+								value={form.password}
+								onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
+								placeholder={t("edit.leaveEmpty") || "Leave empty to keep current password"}
+								className="rounded-full h-[42px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 pe-10"
+							/>
+							<button
+								type="button"
+								onClick={() => setShowPass(!showPass)}
+								className="absolute inset-y-0 end-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+							>
+								{showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+							</button>
+						</div>
 					</div>
 				</div>
 

@@ -35,14 +35,38 @@ import { useAuth } from "@/context/AuthContext";
    DESIGN TOKENS
 ───────────────────────────────────────────────────────── */
 const T = {
-  inkCard: "#0f0e0d",
-  onInk: "rgba(255,255,255,1)",
-  onInkSoft: "rgba(255,255,255,0.72)",
-  onInkMuted: "rgba(255,255,255,0.38)",
-  onInkRule: "rgba(255,255,255,0.08)",
   accent: "var(--primary)",
   accentGrad: "linear-gradient(90deg, var(--primary), var(--third, var(--secondary)))",
 };
+
+/* ─────────────────────────────────────────────────────────
+   CUSTOM COMPONENTS (Matching Website Theme)
+───────────────────────────────────────────────────────── */
+function SectionHeader({ title, action }) {
+  return (
+    <div className="flex items-center justify-between mb-6">
+      <h3 className="text-[15px] font-semibold text-gray-800 dark:text-slate-100 flex items-center gap-3">
+        <span className="w-[3px] h-5 bg-primary rounded-full block shrink-0" />
+        {title}
+      </h3>
+      {action && <div>{action}</div>}
+    </div>
+  );
+}
+
+function Card({ children, className, ...props }) {
+  return (
+    <div
+      className={cn(
+        "bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 shadow-[0_1px_4px_rgba(0,0,0,0.06)]",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
 
 /* ─────────────────────────────────────────────────────────
    CUSTOM HOOK FOR SUBSCRIPTION API
@@ -174,27 +198,27 @@ function PlanCardSkeleton({ idx = 0 }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: idx * 0.07 }}
-      className="rounded-2xl border border-border main-card overflow-hidden animate-pulse"
+      className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.06)]"
     >
-      <div className="p-7 space-y-6">
-        <div className="space-y-2">
-          <div className="h-2.5 w-14 rounded-full bg-muted/70" />
-          <div className="h-16 w-32 rounded-xl bg-muted/60" />
-          <div className="h-2.5 w-20 rounded-full bg-muted/50" />
+      <div className="p-6 space-y-6">
+        <div className="space-y-3">
+          <div className="h-3 w-16 rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse" />
+          <div className="h-10 w-32 rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse" />
+          <div className="h-3 w-24 rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse" />
         </div>
-        <div className="h-px bg-border/60" />
-        <div className="space-y-3.5">
+        <div className="h-px bg-slate-50 dark:bg-slate-800" />
+        <div className="space-y-4">
           {[70, 85, 60, 75].map((w, i) => (
             <div key={i} className="flex items-center gap-3">
-              <div className="w-5 h-5 rounded-full bg-muted/60 shrink-0" />
+              <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse shrink-0" />
               <div
-                className="h-2.5 rounded-full bg-muted/50"
+                className="h-2.5 rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse"
                 style={{ width: `${w}%` }}
               />
             </div>
           ))}
         </div>
-        <div className="h-11 w-full rounded-xl bg-muted/60" />
+        <div className="h-11 w-full rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse mt-4" />
       </div>
     </motion.div>
   );
@@ -272,16 +296,7 @@ function PlanCard({
     }
 
     return (
-      <span
-        style={{
-          fontFamily: "'Instrument Serif', 'DM Serif Display', Georgia, serif",
-          fontSize: 68,
-          lineHeight: 1,
-          letterSpacing: "-0.04em",
-          fontWeight: 400,
-          color: isCurrentPlan ? T.onInk : "var(--foreground)",
-        }}
-      >
+      <span className="text-5xl font-black tracking-tight text-slate-900 dark:text-white">
         {plan.price}
       </span>
     );
@@ -304,32 +319,12 @@ function PlanCard({
         }}
         whileHover={{ y: -5, transition: { duration: 0.22 } }}
         className={cn(
-          "relative rounded-2xl overflow-hidden flex flex-col transition-shadow duration-300",
+          "relative rounded-2xl overflow-hidden flex flex-col transition-all duration-300 group bg-white dark:bg-slate-900",
           isCurrentPlan
-            ? "border-2 border-transparent shadow-[0_20px_60px_-12px_rgba(0,0,0,0.45)]"
-            : "border border-border shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_40px_-8px_rgba(255,106,30,0.16)] hover:border-[var(--primary)]/25",
+            ? "border-2 border-primary/60 shadow-[0_20px_50px_-12px_rgba(var(--primary-rgb),0.15)]"
+            : "border border-slate-100 dark:border-slate-800 shadow-[0_1px_4px_rgba(0,0,0,0.06)] hover:shadow-lg hover:border-primary/20",
         )}
-        style={{ background: isCurrentPlan ? T.inkCard : "var(--card)" }}
       >
-        {/* Top gradient bar (current plan only) */}
-        {isCurrentPlan && (
-          <div
-            className="absolute inset-x-0 top-0 h-[3px]"
-            style={{ background: T.accentGrad }}
-          />
-        )}
-
-        {/* Left/right accent bar (non-current) */}
-        {!isCurrentPlan && (
-          <div
-            className={cn(
-              "absolute top-10 bottom-10 w-[3px] rounded-full",
-              isRTL ? "right-0" : "left-0",
-            )}
-            style={{ background: T.accentGrad, opacity: 0.45 }}
-          />
-        )}
-
         {/* Popular badge */}
         {plan.isPopular && !isCurrentPlan && (
           <motion.div
@@ -339,14 +334,10 @@ function PlanCard({
             className={cn("absolute top-5 z-10", isRTL ? "left-5" : "right-5")}
           >
             <span
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full
-                text-[10px] font-black uppercase tracking-[0.14em] text-white"
-              style={{
-                background: T.accent,
-                boxShadow: "0 2px 10px -2px rgba(255,106,30,0.5)",
-              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full
+                text-[10px] font-black uppercase tracking-wider text-white bg-primary shadow-lg shadow-primary/20"
             >
-              <Crown size={8} strokeWidth={2.5} />
+              <Crown size={10} strokeWidth={2.5} />
               {t("card.popular")}
             </span>
           </motion.div>
@@ -358,362 +349,155 @@ function PlanCard({
             className={cn("absolute top-5 z-10", isRTL ? "left-5" : "right-5")}
           >
             <span
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full
-                text-[10px] font-black uppercase tracking-[0.14em]"
-              style={{
-                background: "rgba(255,255,255,0.09)",
-                color: T.onInkSoft,
-                border: "1px solid rgba(255,255,255,0.12)",
-              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full
+                text-[10px] font-black uppercase tracking-wider bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               {t("card.active")}
             </span>
           </div>
         )}
 
         {/* Card body */}
-        <div className="relative z-10 flex flex-col flex-1 gap-5 p-7">
+        <div className="relative z-10 flex flex-col flex-1 gap-6 p-6">
           {/* Plan name */}
-          <p
-            className="text-[10.5px] font-black uppercase tracking-[0.2em]"
-            style={{
-              color: isCurrentPlan ? T.onInkMuted : "var(--muted-foreground)",
-            }}
-          >
-            {plan.name}
-          </p>
-
-          {/* Price */}
-          <div className="flex items-end gap-2 -mt-2">
-            {getPriceDisplay()}
-            {plan.type !== "negotiated" && (
-              <div className="flex flex-col mb-2 gap-1">
-                <span
-                  className="text-[13px] font-bold leading-none"
-                  style={{
-                    color: isCurrentPlan
-                      ? T.onInkMuted
-                      : "var(--muted-foreground)",
-                  }}
-                >
-                  {t("card.currency")}
-                </span>
-                <span
-                  className="text-[10.5px] font-semibold leading-none"
-                  style={{
-                    color: isCurrentPlan
-                      ? "rgba(255,255,255,0.28)"
-                      : "var(--muted-foreground)",
-                  }}
-                >
-                  / {getDurationLabel()}
-                </span>
-              </div>
+          <div className="space-y-1">
+            <p className="text-[11px] font-black uppercase tracking-[0.15em] text-primary">
+              {plan.name}
+            </p>
+            {plan.description && (
+              <p className="text-[13px] leading-relaxed font-medium text-slate-400 dark:text-slate-500">
+                {plan.description}
+              </p>
             )}
           </div>
 
-          {/* Description */}
-          {plan.description ? (
-            <p
-              className="text-[12.5px] leading-relaxed -mt-2"
-              style={{
-                color: isCurrentPlan ? T.onInkMuted : "var(--muted-foreground)",
-              }}
-            >
-              {plan.description}
-            </p>
-          ) : null}
+          {/* Price */}
+          <div className="flex items-baseline gap-1.5">
+            {plan.type === "negotiated" ? (
+              <span className="text-3xl font-black text-slate-900 dark:text-white">
+                {t("card.negotiated")}
+              </span>
+            ) : (
+              <>
+                <span className="text-5xl font-black tracking-tighter text-slate-900 dark:text-white">
+                  {plan.price}
+                </span>
+                <div className="flex flex-col">
+                  <span className="text-[12px] font-bold uppercase text-slate-400 dark:text-slate-500">
+                    {t("card.currency")}
+                  </span>
+                  <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">
+                    / {getDurationLabel()}
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
 
           {/* Divider */}
-          <div
-            className="h-px"
-            style={{
-              background: isCurrentPlan
-                ? T.onInkRule
-                : "linear-gradient(to left, transparent, var(--border) 40%, transparent)",
-            }}
-          />
+          <div className="h-px bg-slate-50 dark:bg-slate-800" />
 
           {/* Limits Display */}
-          <div className="space-y-2.5">
-            <div className="flex items-center justify-between text-sm">
-              <span
-                style={{
-                  color: isCurrentPlan
-                    ? T.onInkMuted
-                    : "var(--muted-foreground)",
-                }}
-              >
-                <Users size={13} className="inline mr-1.5" />
-                {t("limits.users")}
-              </span>
-              <span
-                className="font-semibold"
-                style={{ color: isCurrentPlan ? T.onInk : "var(--foreground)" }}
-              >
-                {plan.usersLimit === null
-                  ? t("limits.unlimited")
-                  : plan.usersLimit}
-              </span>
-            </div>
+          <div className="grid grid-cols-1 gap-3">
+            {[
+              { icon: Users, label: t("limits.users"), value: plan.usersLimit === null ? t("limits.unlimited") : plan.usersLimit },
+              { icon: Store, label: t("limits.stores"), value: plan.storesLimit === null ? t("limits.unlimited") : plan.storesLimit },
+              { icon: Truck, label: t("limits.shipping"), value: plan.shippingCompaniesLimit === null ? t("limits.unlimited") : plan.shippingCompaniesLimit },
+              { icon: Package, label: t("limits.orders"), value: plan.includedOrders === null ? t("limits.unlimited") : plan.includedOrders },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center justify-between group/item">
+                <div className="flex items-center gap-2.5">
+                  <div className={cn(
+                    "w-8 h-8 rounded-lg flex items-center justify-center transition-colors bg-slate-50 dark:bg-slate-800 text-slate-400 group-hover/item:text-primary",
+                    isCurrentPlan && "text-primary bg-primary/5 dark:bg-primary/10"
+                  )}>
+                    <item.icon size={14} />
+                  </div>
+                  <span className="text-[13px] font-bold text-slate-500 dark:text-slate-400">{item.label}</span>
+                </div>
+                <span className="text-[13px] font-black text-slate-900 dark:text-white">{item.value}</span>
+              </div>
+            ))}
 
-            <div className="flex items-center justify-between text-sm">
-              <span
-                style={{
-                  color: isCurrentPlan
-                    ? T.onInkMuted
-                    : "var(--muted-foreground)",
-                }}
-              >
-                <Store size={13} className="inline mr-1.5" />
-                {t("limits.stores")}
-              </span>
-              <span
-                className="font-semibold"
-                style={{ color: isCurrentPlan ? T.onInk : "var(--foreground)" }}
-              >
-                {plan.storesLimit === null
-                  ? t("limits.unlimited")
-                  : plan.storesLimit}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between text-sm">
-              <span
-                style={{
-                  color: isCurrentPlan
-                    ? T.onInkMuted
-                    : "var(--muted-foreground)",
-                }}
-              >
-                <Truck size={13} className="inline mr-1.5" />
-                {t("limits.shipping")}
-              </span>
-              <span
-                className="font-semibold"
-                style={{ color: isCurrentPlan ? T.onInk : "var(--foreground)" }}
-              >
-                {plan.shippingCompaniesLimit === null
-                  ? t("limits.unlimited")
-                  : plan.shippingCompaniesLimit}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between text-sm">
-              <span
-                style={{
-                  color: isCurrentPlan
-                    ? T.onInkMuted
-                    : "var(--muted-foreground)",
-                }}
-              >
-                <Package size={13} className="inline mr-1.5" />
-                {t("limits.orders")}
-              </span>
-              <span
-                className="font-semibold"
-                style={{ color: isCurrentPlan ? T.onInk : "var(--foreground)" }}
-              >
-                {plan.includedOrders === null
-                  ? t("limits.unlimited")
-                  : plan.includedOrders}
-              </span>
-            </div>
-
-            {plan.extraOrderFee !== null && (
-              <div className="flex items-center justify-between text-sm">
-                <span
-                  style={{
-                    color: isCurrentPlan
-                      ? T.onInkMuted
-                      : "var(--muted-foreground)",
-                  }}
-                >
-                  {t("limits.extraFee")}
-                </span>
-                <span
-                  className="font-semibold"
-                  style={{
-                    color: isCurrentPlan ? T.onInk : "var(--foreground)",
-                  }}
-                >
+            {plan.extraOrderFee !== null ? (
+              <div className="flex items-center justify-between p-3 rounded-xl border transition-colors bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-800">
+                <span className="text-[12px] font-bold text-slate-500 dark:text-slate-400">{t("limits.extraFee")}</span>
+                <span className="text-[12px] font-black text-primary">
                   {plan.extraOrderFee} {t("card.currency")}
                 </span>
               </div>
-            )}
-
-            {plan.extraOrderFee === null && (
-              <div className="flex items-center justify-between text-sm">
-                <span
-                  style={{
-                    color: isCurrentPlan
-                      ? T.onInkMuted
-                      : "var(--muted-foreground)",
-                  }}
-                >
-                  {t("limits.extraFee")}
-                </span>
-                <span className="text-xs font-medium text-red-500 dark:text-red-400">
-                  {t("limits.notAllowed")}
-                </span>
-              </div>
-            )}
-
-            {plan.bulkUploadPerMonth > 0 && (
-              <div className="flex items-center justify-between text-sm">
-                <span
-                  style={{
-                    color: isCurrentPlan
-                      ? T.onInkMuted
-                      : "var(--muted-foreground)",
-                  }}
-                >
-                  <Upload size={13} className="inline mr-1.5" />
-                  {t("limits.bulkUpload")}
-                </span>
-                <span
-                  className="font-semibold"
-                  style={{
-                    color: isCurrentPlan ? T.onInk : "var(--foreground)",
-                  }}
-                >
-                  {plan.bulkUploadPerMonth}
-                </span>
+            ) : (
+              <div className="flex items-center justify-between p-3 rounded-xl border transition-colors bg-rose-50/50 dark:bg-rose-500/5 border-rose-100/50 dark:border-rose-500/10">
+                <span className="text-[12px] font-bold text-rose-500/70">{t("limits.extraFee")}</span>
+                <span className="text-[11px] font-black text-rose-500 uppercase">{t("limits.notAllowed")}</span>
               </div>
             )}
           </div>
 
           {/* Features */}
           {plan.features && plan.features.length > 0 && (
-            <>
-              <div
-                className="h-px"
-                style={{
-                  background: isCurrentPlan
-                    ? T.onInkRule
-                    : "linear-gradient(to left, transparent, var(--border) 40%, transparent)",
-                }}
-              />
-              <ul className="space-y-3 flex-1">
+            <div className="space-y-4 pt-2">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                {t("card.includedFeatures")}
+              </p>
+              <ul className="space-y-3">
                 {plan.features.map((label, i) => (
                   <motion.li
-                    key={i}
-                    initial={{ opacity: 0, x: isRTL ? 6 : -6 }}
+                    key={label}
+                    initial={{ opacity: 0, x: isRTL ? 10 : -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: idx * 0.09 + i * 0.04 + 0.14 }}
-                    className={cn(
-                      "flex items-center gap-3",
-                      isRTL ? "flex-row-reverse" : "flex-row",
-                    )}
+                    className="flex items-start gap-3"
                   >
-                    <div
-                      className="shrink-0 w-[22px] h-[22px] rounded-full flex items-center justify-center"
-                      style={{
-                        background: isCurrentPlan
-                          ? "rgba(255,255,255,0.12)"
-                          : "color-mix(in oklab, var(--primary) 12%, transparent)",
-                      }}
-                    >
-                      <Check
-                        size={11}
-                        strokeWidth={3}
-                        style={{ color: isCurrentPlan ? T.onInk : T.accent }}
-                      />
+                    <div className="shrink-0 mt-0.5 w-5 h-5 rounded-full flex items-center justify-center border bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20">
+                      <Check size={10} strokeWidth={4} className="text-emerald-500" />
                     </div>
-                    <span
-                      className="text-[13.5px] leading-[1.5] tracking-[-0.005em]"
-                      style={{
-                        color: isCurrentPlan
-                          ? T.onInkSoft
-                          : "var(--foreground)",
-                        fontWeight: 500,
-                      }}
-                    >
+                    <span className="text-[13px] font-bold leading-tight text-slate-600 dark:text-slate-300">
                       {label}
                     </span>
                   </motion.li>
                 ))}
               </ul>
-            </>
+            </div>
           )}
 
           {/* Action Button */}
-          <div className="mt-auto pt-4">
+          <div className="mt-auto pt-6">
             {isCurrentPlan ? (
-              // ── زر الإلغاء (الخطة الحالية) ──────────────────────────────
               <button
                 onClick={() => setShowCancelConfirm(true)}
-                className={cn(
-                  "group relative w-full h-11 rounded-xl font-semibold text-sm tracking-wide",
-                  "transition-all duration-200 overflow-hidden",
-                  "border border-white/20 hover:border-red-400/40",
-                )}
-                style={{
-                  background: "rgba(255,255,255,0.08)",
-                  color: T.onInk,
-                }}
+                className="group relative w-full h-11 rounded-xl font-black text-[13px] tracking-wide transition-all duration-300 bg-rose-50 dark:bg-rose-500/5 text-rose-600 border border-rose-100 dark:border-rose-500/20 hover:bg-rose-600 hover:text-white hover:border-rose-600"
               >
-                <span className="relative z-10 flex items-center justify-center gap-2">
-                  <X size={16} />
+                <span className="flex items-center justify-center gap-2">
+                  <X size={16} strokeWidth={2.5} />
                   {t("actions.cancel")}
                 </span>
-                <div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, rgba(239,68,68,0.15), rgba(220,38,38,0.15))",
-                  }}
-                />
               </button>
             ) : plan.type === "negotiated" ? (
-              // ── زر الواتساب (لخطط التفاوض) ──────────────────────────────
               <a
-                href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(
-                  t("messages.whatsappInterested", { planName: plan.name })
-                )}`}
-                disabled={isSettingsLoading}
+                href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(t("messages.whatsappInterested", { planName: plan.name }))}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={cn(
-                  "group relative flex items-center justify-center w-full h-11 rounded-xl font-semibold text-sm tracking-wide",
-                  "transition-all duration-200 overflow-hidden",
-                  "hover:scale-[1.02] active:scale-[0.98]",
-                )}
-                style={{
-                  background: "#25D366", // لون واتساب الرسمي
-                  color: "white",
-                }}
+                className="flex items-center justify-center w-full h-11 rounded-xl font-black text-[13px] tracking-wide transition-all duration-300 bg-[#25D366] text-white shadow-lg shadow-[#25D366]/20 hover:scale-[1.02] active:scale-[0.98]"
               >
-                <span className="relative z-10 flex items-center justify-center gap-2">
-                  {/* يمكنك استخدام أيقونة واتساب إذا كانت متوفرة لديك، أو MessageCircle من lucide-react */}
-                  <MessageCircle size={16} />
+                <span className="flex items-center justify-center gap-2">
+                  <MessageCircle size={18} fill="currentColor" />
                   {t("actions.contactToSubscribe")}
                 </span>
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/10" />
               </a>
             ) : (
-              // ── زر الاشتراك العادي (الخطط القياسية والتجريبية) ────────────
               <button
                 onClick={() => !isSubscribeDisabled && onSubscribe(plan.id)}
                 disabled={isSubscribeDisabled}
                 className={cn(
-                  "group relative w-full h-11 rounded-xl font-semibold text-sm tracking-wide",
-                  "transition-all duration-200 overflow-hidden",
+                  "group relative w-full h-11 rounded-xl font-black text-[13px] tracking-wide transition-all duration-300",
                   isSubscribeDisabled
-                    ? "cursor-not-allowed opacity-50"
-                    : "hover:scale-[1.02] active:scale-[0.98]",
+                    ? "bg-slate-50 dark:bg-slate-800 text-slate-300 dark:text-slate-600 cursor-not-allowed border border-slate-100 dark:border-slate-700"
+                    : "bg-primary text-white shadow-lg shadow-primary/25 hover:scale-[1.02] active:scale-[0.98] hover:shadow-xl hover:shadow-primary/30"
                 )}
-                style={{
-                  background: isSubscribeDisabled
-                    ? "var(--muted)"
-                    : T.accentGrad,
-                  color: isSubscribeDisabled
-                    ? "var(--muted-foreground)"
-                    : "white",
-                }}
               >
-                <span className="relative z-10 flex items-center justify-center gap-2">
+                <span className="flex items-center justify-center gap-2">
                   {cannotSubscribeToTrial ? (
                     <>
                       <AlertCircle size={16} />
@@ -728,16 +512,13 @@ function PlanCard({
                     <>
                       {t("actions.subscribe")}
                       {isLoading ? (
-                        <Loader2 className="animate-spin" />
+                        <Loader2 className="animate-spin size-4" />
                       ) : (
-                        <ArrowRight size={16} />
+                        <ArrowRight size={16} className={isRTL ? "rotate-180" : ""} />
                       )}
                     </>
                   )}
                 </span>
-                {!isSubscribeDisabled && (
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/10" />
-                )}
               </button>
             )}
           </div>
@@ -745,46 +526,50 @@ function PlanCard({
       </motion.article>
 
       {/* Cancel Confirmation Dialog */}
-      {showCancelConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-md w-full border-2 border-red-200 dark:border-red-800"
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                <AlertCircle
-                  size={24}
-                  className="text-red-600 dark:text-red-400"
-                />
+      <AnimatePresence>
+        {showCancelConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white dark:bg-slate-900 rounded-3xl p-8 max-w-md w-full border border-slate-100 dark:border-slate-800 shadow-2xl"
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className="w-16 h-16 rounded-2xl bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center mb-6">
+                  <AlertCircle
+                    size={32}
+                    className="text-rose-600 dark:text-rose-400"
+                  />
+                </div>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">
+                  {t("cancel.title")}
+                </h3>
+                <p className="text-slate-500 dark:text-slate-400 font-medium mb-8">
+                  {t("cancel.message")}
+                </p>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                {t("cancel.title")}
-              </h3>
-            </div>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              {t("cancel.message")}
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowCancelConfirm(false)}
-                className="flex-1 px-4 py-3 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
-              >
-                {t("cancel.no")}
-              </button>
-              <button
-                onClick={() => {
-                  handleCancel(activeSubscription.id);
-                }}
-                className="flex-1 px-4 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl font-semibold hover:opacity-90 transition-opacity"
-              >
-                {t("cancel.yes")}
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowCancelConfirm(false)}
+                  className="flex-1 h-12 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-black text-[13px] hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                >
+                  {t("cancel.no")}
+                </button>
+                <button
+                  onClick={() => {
+                    handleCancel(activeSubscription.id);
+                  }}
+                  className="flex-1 h-12 bg-rose-600 text-white rounded-xl font-black text-[13px] hover:bg-rose-700 shadow-lg shadow-rose-600/20 transition-all active:scale-[0.98]"
+                >
+                  {t("cancel.yes")}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
@@ -849,39 +634,37 @@ export default function SubscriptionsPage() {
             transition={{ duration: 0.2 }}
           >
             {/* Active Subscription Alert */}
-            {hasActiveSubscription && (
+            {/* {hasActiveSubscription && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-6 p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-xl flex items-start gap-3"
+                className="mb-8 p-4 bg-emerald-50 dark:bg-emerald-500/5 border border-emerald-100 dark:border-emerald-500/20 rounded-2xl flex items-start gap-4"
               >
-                <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
                   <Check
-                    size={20}
-                    className="text-blue-600 dark:text-blue-400"
+                    size={24}
+                    className="text-emerald-500"
                   />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-blue-900 dark:text-blue-100 mb-1">
+                <div className="flex-1 pt-1">
+                  <h3 className="font-black text-[15px] text-emerald-900 dark:text-emerald-400 mb-0.5">
                     {t("activeAlert.title")}
                   </h3>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                  <p className="text-[13px] font-medium text-emerald-700/70 dark:text-emerald-500/70">
                     {t("activeAlert.message")}
                   </p>
                 </div>
               </motion.div>
-            )}
+            )} */}
 
             {/* Plans Grid */}
-            {isLoading ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {[0, 1, 2].map((i) => (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {isLoading ? (
+                [0, 1, 2].map((i) => (
                   <PlanCardSkeleton key={i} idx={i} />
-                ))}
-              </div>
-            ) : (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {plans.map((plan, idx) => (
+                ))
+              ) : (
+                plans.map((plan, idx) => (
                   <PlanCard
                     key={plan.id}
                     plan={plan}
@@ -895,9 +678,9 @@ export default function SubscriptionsPage() {
                     isLoading={loading === plan.id}
                     idx={idx}
                   />
-                ))}
-              </div>
-            )}
+                ))
+              )}
+            </div>
           </motion.div>
         )}
 

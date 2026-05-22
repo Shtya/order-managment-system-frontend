@@ -75,7 +75,6 @@ export default function ServerErrorsPage() {
         routePaths: [],
         exceptionNames: [],
         environments: [],
-        controllers: [],
     });
     const [pager, setPager] = useState({
         total_records: 0,
@@ -94,7 +93,6 @@ export default function ServerErrorsPage() {
         httpStatus: "all",
         exceptionName: "all",
         environment: "all",
-        controllerName: "all",
         startDate: null,
         endDate: null,
     });
@@ -136,7 +134,7 @@ export default function ServerErrorsPage() {
                 api.get("/system-erorrs/meta"),
                 api.get("/system-erorrs/stats"),
             ]);
-            setMeta(metaRes.data || { routePaths: [], exceptionNames: [], environments: [], controllers: [] });
+            setMeta(metaRes.data || { routePaths: [], exceptionNames: [], environments: [] });
             setStats(statsRes.data || {});
         } catch (e) {
             console.error(e);
@@ -310,24 +308,7 @@ export default function ServerErrorsPage() {
                         </div>
                     </div>
                 )
-            },
-            {
-                header: t("table.context"),
-                key: "context",
-                cell: (row) => (
-                    <div className="flex flex-col max-w-[180px]">
-                        <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-900 dark:text-slate-100">
-                            <Terminal size={11} className="text-primary" />
-                            <span className="truncate">{row.controllerName || "Unknown Controller"}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-[10px] text-slate-600 dark:text-slate-400 font-bold mt-1.5">
-                            <Fingerprint size={11} className="text-slate-400" />
-                            <span className="truncate">{row.handlerName || "Unknown Handler"}</span>
-                        </div>
-                    </div>
-                )
-            },
-            {
+            },            {
                 header: t("table.frontendRoute"),
                 key: "frontendRoute",
                 cell: (row) => (
@@ -529,24 +510,6 @@ export default function ServerErrorsPage() {
                                 </SelectContent>
                             </Select>
                         </FilterField>
-
-                        <FilterField label={t("filters.controller")}>
-                            <Select
-                                value={filters.controllerName}
-                                onValueChange={(v) => setFilters((f) => ({ ...f, controllerName: v }))}
-                            >
-                                <SelectTrigger className="h-10 rounded-xl bg-background border-border text-sm">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">{tCommon("all")}</SelectItem>
-                                    {meta.controllers.map((c) => (
-                                        <SelectItem key={c} value={c}>{c}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </FilterField>
-
                         <FilterField label={t("filters.method")}>
                             <Select
                                 value={filters.method}
@@ -670,8 +633,6 @@ export default function ServerErrorsPage() {
                                 </h3>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <DetailItem label={t("details.labels.controller")} value={viewState.error.controllerName} isMono />
-                                    <DetailItem label={t("details.labels.handler")} value={viewState.error.handlerName} isMono />
                                     <DetailItem label={t("details.labels.exceptionName")} value={viewState.error.exceptionName} isMono />
                                     <DetailItem label={t("details.labels.frontendRoute")} value={viewState.error.frontendRoute} className="md:col-span-3" isMono />
                                     <DetailItem label={t("details.labels.referer")} value={viewState.error.referer} className="md:col-span-3" isMono />

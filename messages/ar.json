@@ -4058,7 +4058,8 @@
       "name": "الاسم",
       "unitCost": "تكلفة الوحدة",
       "quantityCount": "عدد الكمية",
-      "invoiceTotal": "إجمالي الفاتورة"
+      "invoiceTotal": "إجمالي الفاتورة",
+      "products": "المنتجات"
     },
     "status": {
       "accepted": "مقبول",
@@ -4293,7 +4294,8 @@
       "options": "خيارات",
       "noReceipt": "لا يوجد إيصال",
       "actions": "الإجراءات",
-      "remainingAmount": "المبلغ المتبقي"
+      "remainingAmount": "المبلغ المتبقي",
+      "products": "المنتجات"
     },
     "statuses": {
       "pending": "قيد الانتظار",
@@ -9599,7 +9601,8 @@
       "mostFrequent": "المسار الأكثر تكراراً",
       "last48h": "أخطاء (آخر 48 ساعة)",
       "total30d": "إجمالي الأخطاء (30 يوم)",
-      "fatal48h": "أخطاء خطيرة (48 ساعة)"
+      "fatal48h": "أخطاء خطيرة (48 ساعة)",
+      "errorsCount": "{count} أخطاء"
     },
     "table": {
       "severity": "مستوى الخطورة",
@@ -9672,6 +9675,16 @@
         "userReporter": "المستخدم (المبلغ)",
         "adminContext": "سياق المسؤول"
       }
+    },
+    "delete": {
+      "title": "حذف الخطأ",
+      "confirm": "هل أنت متأكد من حذف هذا الخطأ؟ لا يمكن التراجع عن هذا الإجراء.",
+      "bulkTitle": "حذف الأخطاء المختارة",
+      "bulkConfirm": "هل أنت متأكد من حذف {count} من الأخطاء المختارة؟ لا يمكن التراجع عن هذا الإجراء."
+    },
+    "messages": {
+      "deleteSuccess": "تم حذف الخطأ بنجاح",
+      "bulkDeleteSuccess": "تم حذف {count} خطأ بنجاح"
     }
   },
   "error": {}

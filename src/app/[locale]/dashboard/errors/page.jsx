@@ -22,6 +22,7 @@ import {
     Shield,
     Terminal,
     Fingerprint,
+    Trash2,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
@@ -32,10 +33,12 @@ import ActionButtons from "@/components/atoms/Actions";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import api from "@/utils/api";
 import { useDebounce } from "@/hook/useDebounce";
 import { useExport } from "@/hook/useExport";
+import { Checkbox } from "@/components/ui/checkbox";
 
 function normalizeAxiosError(err) {
     const msg =
@@ -85,6 +88,10 @@ export default function ServerErrorsPage() {
 
     const [viewState, setViewState] = useState({ open: false, error: null });
     const { handleExport, exportLoading } = useExport();
+    const [selectedErrors, setSelectedErrors] = useState([]);
+    const [deleteDialog, setDeleteDialog] = useState({ open: false, id: null });
+    const [bulkDeleteDialog, setBulkDeleteDialog] = useState({ open: false });
+    const [deleteLoading, setDeleteLoading] = useState(false);
 
     const [filters, setFilters] = useState({
         severity: "all",
@@ -102,7 +109,7 @@ export default function ServerErrorsPage() {
             // {
             //     name: t("stats.mostFrequent"),
             //     value: stats.mostFrequentRoute?.routePath || "N/A",
-            //     subValue: `${stats.mostFrequentRoute?.count || 0} errors`,
+            //     subValue: t("stats.errorsCount", { count: stats.mostFrequentRoute?.count || 0 }),
             //     icon: Activity,
             //     color: "#8b5cf6"
             // },
@@ -178,6 +185,51 @@ export default function ServerErrorsPage() {
         fetchErrors({ page, per_page });
     };
 
+    const handleDelete = async (id) => {
+        setDeleteLoading(true);
+        try {
+            await api.delete(`/system-erorrs/${id}`);
+            fetchErrors({ page: pager.current_page, per_page: pager.per_page });
+            fetchMeta();
+            toast.success(t("messages.deleteSuccess"));
+        } catch (e) {
+            toast.error(normalizeAxiosError(e));
+        } finally {
+            setDeleteLoading(false);
+            setDeleteDialog({ open: false, id: null });
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        setDeleteLoading(true);
+        try {
+            await api.delete("/system-erorrs/bulk", { data: { ids: selectedErrors } });
+            fetchErrors({ page: pager.current_page, per_page: pager.per_page });
+            fetchMeta();
+            toast.success(t("messages.bulkDeleteSuccess", { count: selectedErrors.length }));
+            setSelectedErrors([]);
+        } catch (e) {
+            toast.error(normalizeAxiosError(e));
+        } finally {
+            setDeleteLoading(false);
+            setBulkDeleteDialog({ open: false });
+        }
+    };
+
+    const toggleError = (id) => {
+        setSelectedErrors(prev =>
+            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+        );
+    };
+
+    const selectAllErrors = () => {
+        if (selectedErrors.length === pager.records.length) {
+            setSelectedErrors([]);
+        } else {
+            setSelectedErrors(pager.records.map(r => r.id));
+        }
+    };
+
     const onExport = async () => {
         const params = {
             search: debouncedSearch,
@@ -193,90 +245,113 @@ export default function ServerErrorsPage() {
     };
 
     const columns = useMemo(
-        () => [
-            {
-                header: t("table.severity"),
-                key: "severity",
-                cell: (row) => (
-                    <div
-                        className={cn(
-                            "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase",
-                            row.severity === "fatal"
-                                ? "bg-rose-100 text-rose-700 shadow-[0_0_8px_rgba(225,29,72,0.2)]"
-                                : row.severity === "error"
-                                    ? "bg-orange-100 text-orange-700"
-                                    : "bg-amber-100 text-amber-700"
-                        )}
-                    >
-                        {row.severity || "error"}
-                    </div>
-                ),
-            },
-            {
-                header: t("table.methodPath"),
-                key: "endpoint",
-                cell: (row) => (
-                    <div className="flex flex-col max-w-[250px]">
-                        <div className="flex items-center gap-2">
-                            <span className={cn(
-                                "text-[10px] font-black px-1.5 py-0.5 rounded border",
-                                row.method === 'GET' ? "text-blue-600 border-blue-200 bg-blue-50" :
-                                    row.method === 'POST' ? "text-emerald-600 border-emerald-200 bg-emerald-50" :
-                                        "text-slate-600 border-slate-200 bg-slate-50"
-                            )}>{row.method}</span>
-                            <span className="font-bold text-xs truncate">{row.routePath || row.endpoint}</span>
+        () => {
+            const allIds = pager.records.map(r => r.id);
+            const areAllSelected = allIds.length > 0 && allIds.every(id => selectedErrors.includes(id));
+            return [
+                {
+                    key: "select",
+                    header: (
+                        <div className="flex items-center justify-center">
+                            <Checkbox
+                                checked={areAllSelected}
+                                onCheckedChange={selectAllErrors}
+                            />
                         </div>
-                        <span className="text-[10px] text-muted-foreground truncate mt-1">{row.originalUrl}</span>
-                    </div>
-                ),
-            },
-            {
-                header: t("table.status"),
-                key: "httpStatus",
-                cell: (row) => (
-                    <span className={cn(
-                        "font-mono font-bold",
-                        row.httpStatus >= 500 ? "text-rose-500" : "text-orange-500"
-                    )}>{row.httpStatus}</span>
-                )
-            },
-            {
-                header: t("table.message"),
-                key: "errorMessage",
-                cell: (row) => (
-                    <div className="flex flex-col max-w-[300px]">
-                        <span className="text-xs font-bold line-clamp-1 text-rose-600">{row.exceptionName}</span>
-                        <span className="text-[10px] text-slate-500 line-clamp-2 mt-0.5 leading-relaxed">{row.errorMessage}</span>
-                    </div>
-                ),
-            },
-            {
-                header: t("table.user"),
-                key: "user",
-                cell: (row) => (
-                    <div className="flex flex-col gap-3 min-w-[180px]">
-                        {/* User Section */}
-                        <div className="flex flex-col">
-                            <div className="flex items-center gap-1.5 overflow-hidden">
-                                <UserIcon size={12} className="text-slate-900 shrink-0" />
-                                <span className="text-[11px] font-black truncate" title={row.user?.name}>{row.user?.name || "Guest"}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5 overflow-hidden mt-0.5">
-                                <Mail size={12} className="text-slate-400 shrink-0" />
-                                <span className="text-[10px] text-slate-500 truncate" title={row.user?.email}>{row.user?.email || "—"}</span>
-                            </div>
+                    ),
+                    className: "w-[48px]",
+                    cell: (row) => (
+                        <div className="flex items-center justify-center">
+                            <Checkbox
+                                checked={selectedErrors.includes(row.id)}
+                                onCheckedChange={() => toggleError(row.id)}
+                            />
                         </div>
+                    ),
+                },
+                {
+                    header: t("table.severity"),
+                    key: "severity",
+                    cell: (row) => (
+                        <div
+                            className={cn(
+                                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase",
+                                row.severity === "fatal"
+                                    ? "bg-rose-100 text-rose-700 shadow-[0_0_8px_rgba(225,29,72,0.2)]"
+                                    : row.severity === "error"
+                                        ? "bg-orange-100 text-orange-700"
+                                        : "bg-amber-100 text-amber-700"
+                            )}
+                        >
+                            {row.severity || "error"}
+                        </div>
+                    ),
+                },
+                {
+                    header: t("table.methodPath"),
+                    key: "endpoint",
+                    cell: (row) => (
+                        <div className="flex flex-col max-w-[250px]">
+                            <div className="flex items-center gap-2">
+                                <span className={cn(
+                                    "text-[10px] font-black px-1.5 py-0.5 rounded border",
+                                    row.method === 'GET' ? "text-blue-600 border-blue-200 bg-blue-50" :
+                                        row.method === 'POST' ? "text-emerald-600 border-emerald-200 bg-emerald-50" :
+                                            "text-slate-600 border-slate-200 bg-slate-50"
+                                )}>{row.method}</span>
+                                <span className="font-bold text-xs truncate">{row.routePath || row.endpoint}</span>
+                            </div>
+                            <span className="text-[10px] text-muted-foreground truncate mt-1">{row.originalUrl}</span>
+                        </div>
+                    ),
+                },
+                {
+                    header: t("table.status"),
+                    key: "httpStatus",
+                    cell: (row) => (
+                        <span className={cn(
+                            "font-mono font-bold",
+                            row.httpStatus >= 500 ? "text-rose-500" : "text-orange-500"
+                        )}>{row.httpStatus}</span>
+                    )
+                },
+                {
+                    header: t("table.message"),
+                    key: "errorMessage",
+                    cell: (row) => (
+                        <div className="flex flex-col max-w-[300px]">
+                            <span className="text-xs font-bold line-clamp-1 text-rose-600">{row.exceptionName}</span>
+                            <span className="text-[10px] text-slate-500 line-clamp-2 mt-0.5 leading-relaxed">{row.errorMessage}</span>
+                        </div>
+                    ),
+                },
+                {
+                    header: t("table.user"),
+                    key: "user",
+                    cell: (row) => (
+                        <div className="flex flex-col gap-3 min-w-[180px]">
+                            {/* User Section */}
+                            <div className="flex flex-col">
+                                <div className="flex items-center gap-1.5 overflow-hidden">
+                                    <UserIcon size={12} className="text-slate-900 shrink-0" />
+                                    <span className="text-[11px] font-black truncate" title={row.user?.name}>{row.user?.name || "Guest"}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 overflow-hidden mt-0.5">
+                                    <Mail size={12} className="text-slate-400 shrink-0" />
+                                    <span className="text-[10px] text-slate-500 truncate" title={row.user?.email}>{row.user?.email || "—"}</span>
+                                </div>
+                            </div>
 
-                    </div>
-                ),
-            },
-            {
-                header: t("table.admin"),
-                key: "admin",
-                cell: (row) => (
-                    <div className="flex flex-col gap-3 min-w-[180px]">
-                        {/* Admin Section */}
-                        
+                        </div>
+                    ),
+                },
+                {
+                    header: t("table.admin"),
+                    key: "admin",
+                    cell: (row) => (
+                        <div className="flex flex-col gap-3 min-w-[180px]">
+                            {/* Admin Section */}
+
                             <div className="flex flex-col pt-2 border-t border-slate-100 dark:border-slate-800">
                                 <div className="flex items-center gap-1.5 overflow-hidden">
                                     <Shield size={12} className="text-primary shrink-0" />
@@ -287,96 +362,104 @@ export default function ServerErrorsPage() {
                                     <span className="text-[10px] text-primary/60 truncate" title={row.admin?.email}>{row.admin?.email || "—"}</span>
                                 </div>
                             </div>
-                        
-                    </div>
-                ),
-            },
-            {
-                header: t("table.environment"),
-                key: "environment",
-                cell: (row) => (
-                    <div className="flex flex-col gap-1">
-                        <span className={cn(
-                            "text-[10px] font-black px-2 py-0.5 rounded border self-start",
-                            row.environment === 'production'
-                                ? "text-rose-700 border-rose-200 bg-rose-50 dark:bg-rose-500/10"
-                                : "text-amber-700 border-amber-200 bg-amber-50 dark:bg-amber-500/10"
-                        )}>{row.environment || "N/A"}</span>
-                        <div className="flex items-center gap-1 text-[10px] text-slate-500 font-bold">
-                            <Globe size="10" className="text-slate-400" />
-                            <span>{row.ipAddress || "0.0.0.0"}</span>
+
                         </div>
-                    </div>
-                )
-            },            {
-                header: t("table.frontendRoute"),
-                key: "frontendRoute",
-                cell: (row) => (
-                    <div className="max-w-[150px]">
-                        {row.frontendRoute ? (
-                            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                                <Globe size={11} className="text-slate-900 dark:text-slate-100 shrink-0" />
-                                <span className="text-[10px] font-black text-slate-900 dark:text-slate-100 truncate" title={row.frontendRoute}>
-                                    {row.frontendRoute}
-                                </span>
-                            </div>
-                        ) : (
-                            <span className="text-[10px] text-slate-300 dark:text-slate-700 font-bold">—</span>
-                        )}
-                    </div>
-                )
-            },
-            {
-                header: t("table.performance"),
-                key: "durationMs",
-                cell: (row) => (
-                    <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-1.5 font-mono text-xs">
-                            <Clock size={12} className="text-muted-foreground" />
+                    ),
+                },
+                {
+                    header: t("table.environment"),
+                    key: "environment",
+                    cell: (row) => (
+                        <div className="flex flex-col gap-1">
                             <span className={cn(
-                                "font-bold",
-                                (row.durationMs || 0) > 1000 ? "text-rose-500" : "text-emerald-500"
-                            )}>{row.durationMs || 0}ms</span>
+                                "text-[10px] font-black px-2 py-0.5 rounded border self-start",
+                                row.environment === 'production'
+                                    ? "text-rose-700 border-rose-200 bg-rose-50 dark:bg-rose-500/10"
+                                    : "text-amber-700 border-amber-200 bg-amber-50 dark:bg-amber-500/10"
+                            )}>{row.environment || "N/A"}</span>
+                            <div className="flex items-center gap-1 text-[10px] text-slate-500 font-bold">
+                                <Globe size="10" className="text-slate-400" />
+                                <span>{row.ipAddress || "0.0.0.0"}</span>
+                            </div>
                         </div>
-                        <span className="text-[9px] text-muted-foreground truncate max-w-[120px]" title={row.userAgent}>
-                            {row.userAgent}
-                        </span>
-                    </div>
-                )
-            },
-            {
-                header: t("table.time"),
-                key: "createdAt",
-                cell: (row) => (
-                    <div className="flex flex-col text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                            <Clock size={12} />
-                            <span>{new Date(row.createdAt).toLocaleDateString()}</span>
+                    )
+                }, {
+                    header: t("table.frontendRoute"),
+                    key: "frontendRoute",
+                    cell: (row) => (
+                        <div className="max-w-[150px]">
+                            {row.frontendRoute ? (
+                                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                                    <Globe size={11} className="text-slate-900 dark:text-slate-100 shrink-0" />
+                                    <span className="text-[10px] font-black text-slate-900 dark:text-slate-100 truncate" title={row.frontendRoute}>
+                                        {row.frontendRoute}
+                                    </span>
+                                </div>
+                            ) : (
+                                <span className="text-[10px] text-slate-300 dark:text-slate-700 font-bold">—</span>
+                            )}
                         </div>
-                        <span className="text-[10px] ml-4">{new Date(row.createdAt).toLocaleTimeString()}</span>
-                    </div>
-                ),
-            },
-            {
-                header: tCommon("actions"),
-                key: "actions",
-                cell: (row) => (
-                    <ActionButtons
-                        row={row}
-                        actions={[
-                            {
-                                icon: <Bug size={16} />,
-                                tooltip: t("details.title"),
-                                onClick: () => setViewState({ open: true, error: row }),
-                                variant: "red",
-                                permission: "system.errors.view",
-                            },
-                        ]}
-                    />
-                ),
-            },
-        ],
-        [tCommon, t]
+                    )
+                },
+                {
+                    header: t("table.performance"),
+                    key: "durationMs",
+                    cell: (row) => (
+                        <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-1.5 font-mono text-xs">
+                                <Clock size={12} className="text-muted-foreground" />
+                                <span className={cn(
+                                    "font-bold",
+                                    (row.durationMs || 0) > 1000 ? "text-rose-500" : "text-emerald-500"
+                                )}>{row.durationMs || 0}ms</span>
+                            </div>
+                            <span className="text-[9px] text-muted-foreground truncate max-w-[120px]" title={row.userAgent}>
+                                {row.userAgent}
+                            </span>
+                        </div>
+                    )
+                },
+                {
+                    header: t("table.time"),
+                    key: "createdAt",
+                    cell: (row) => (
+                        <div className="flex flex-col text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                                <Clock size={12} />
+                                <span>{new Date(row.createdAt).toLocaleDateString()}</span>
+                            </div>
+                            <span className="text-[10px] ml-4">{new Date(row.createdAt).toLocaleTimeString()}</span>
+                        </div>
+                    ),
+                },
+                {
+                    header: tCommon("actions"),
+                    key: "actions",
+                    cell: (row) => (
+                        <ActionButtons
+                            row={row}
+                            actions={[
+                                {
+                                    icon: <Bug size={16} />,
+                                    tooltip: t("details.title"),
+                                    onClick: () => setViewState({ open: true, error: row }),
+                                    variant: "primary",
+                                    permission: "system.errors.view",
+                                },
+                                {
+                                    icon: <Trash2 />,
+                                    tooltip: tCommon("delete"),
+                                    onClick: () => setDeleteDialog({ open: true, id: row.id }),
+                                    variant: "red",
+                                    permission: "system.errors.delete",
+                                },
+                            ]}
+                        />
+                    ),
+                },
+            ]
+        },
+        [tCommon, t, pager, selectedErrors]
     );
 
     return (
@@ -410,6 +493,15 @@ export default function ServerErrorsPage() {
                     emptyTitle: t("table.empty"),
                 }}
                 actions={[
+                    {
+                        key: "bulkDelete",
+                        label: tCommon("delete"),
+                        icon: deleteLoading ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />,
+                         color: "primary",
+                        onClick: () => setBulkDeleteDialog({ open: true }),
+                        disabled: deleteLoading || selectedErrors.length === 0,
+                        permission: "system.errors.delete",
+                    },
                     {
                         key: "export",
                         label: tCommon("export"),
@@ -675,6 +767,27 @@ export default function ServerErrorsPage() {
                 </DialogContent>
             </Dialog>
 
+            <ConfirmDialog
+                open={deleteDialog.open}
+                onOpenChange={(open) => setDeleteDialog({ open, id: null })}
+                title={t("delete.title")}
+                description={t("delete.confirm")}
+                confirmText={tCommon("delete")}
+                cancelText={tCommon("cancel")}
+                onConfirm={() => handleDelete(deleteDialog.id)}
+                loading={deleteLoading}
+            />
+
+            <ConfirmDialog
+                open={bulkDeleteDialog.open}
+                onOpenChange={(open) => setBulkDeleteDialog({ open })}
+                title={t("delete.bulkTitle")}
+                description={t("delete.bulkConfirm", { count: selectedErrors.length })}
+                confirmText={tCommon("delete")}
+                cancelText={tCommon("cancel")}
+                onConfirm={handleBulkDelete}
+                loading={deleteLoading}
+            />
 
         </div>
     );
@@ -724,5 +837,29 @@ function JsonBlock({ label, data }) {
                 </pre>
             </div>
         </div>
+    );
+}
+
+{/* Component: ConfirmDialog */ }
+function ConfirmDialog({ open, onOpenChange, title, description, confirmText, cancelText, onConfirm, loading = false }) {
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="!max-w-md rounded-xl border">
+                <div className="space-y-2">
+                    <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100">{title}</h3>
+                    {description ? <p className="text-sm text-gray-500 dark:text-slate-400">{description}</p> : null}
+                </div>
+
+                <div className="mt-6 flex items-center justify-end gap-2">
+                    <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+                        {cancelText}
+                    </Button>
+
+                    <Button variant="destructive" onClick={onConfirm} disabled={loading}>
+                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : confirmText}
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
     );
 }

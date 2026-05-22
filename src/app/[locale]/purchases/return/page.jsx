@@ -126,7 +126,7 @@ function JsonBlock({ value }) {
 
 export default function PurchasesReturnPage() {
 	const t = useTranslations("purchasesReturn");
-	const { formatCurrency } = usePlatformSettings();
+	const { formatCurrency,currency } = usePlatformSettings();
 	const router = useRouter();
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
@@ -518,6 +518,23 @@ export default function PurchasesReturnPage() {
 						</span>
 					);
 				},
+			},
+			{
+				key: "products",
+				header: t("table.products"),
+				cell: (row) => (
+					<div className="text-sm">
+						{row.items.map((item, i) => (
+							<div key={i} className="flex gap-2">
+								<span>{item.variant.product.name}</span> -
+								<span>{item.variant.sku}</span> -
+								<span> (x{item.returnedQuantity})</span>
+								<span> (x{item.unitCost} {currency})</span>
+								<span> (Tax {item.taxInclusive ? item.taxRate : 0}%)</span>
+							</div>
+						))}
+					</div>
+				),
 			},
 			{
 				key: "receiptAsset",

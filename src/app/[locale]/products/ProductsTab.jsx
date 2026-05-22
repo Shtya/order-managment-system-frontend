@@ -1100,7 +1100,7 @@ export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 											{/* Header */}
 											<div className="grid grid-cols-12 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-200 px-4 py-3">
 												<div className="col-span-4">{t("common.sku")}</div>
-												<div className="col-span-2 text-center">{t("common.price")}</div>
+												<div className="col-span-2 text-center">{t("productModal.salePrice")}</div>
 												<div className="col-span-3 text-center">{t("common.attributes")}</div>
 												<div className="col-span-3 text-center">{t("common.stock")}</div>
 											</div>

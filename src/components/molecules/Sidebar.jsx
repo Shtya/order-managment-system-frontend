@@ -658,11 +658,6 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           href: "/whatsapp/templates",
           icon: FaRegFileAlt,
         },
-        {
-          labelKey: "addTemplate",
-          href: "/whatsapp/templates/add",
-          icon: FaPlus,
-        }
 
       ]
     },
@@ -675,11 +670,6 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           labelKey: "automations",
           href: "/automations",
           icon: FaBolt,
-        },
-        {
-          labelKey: "addAutomation",
-          href: "/automations/builder",
-          icon: FaPlus,
         },
         {
           labelKey: "automationLogs",

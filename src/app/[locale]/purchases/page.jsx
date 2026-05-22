@@ -1349,7 +1349,7 @@ function FilterField({ label, children }) {
 }
 export default function PurchasesPage() {
 	const t = useTranslations("purchases");
-	const { formatCurrency } = usePlatformSettings();
+	const { formatCurrency, currency } = usePlatformSettings();
 	const router = useRouter();
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
@@ -1637,6 +1637,22 @@ export default function PurchasesPage() {
 				),
 			},
 			{
+				key: "products",
+				header: t("table.products"),
+				cell: (row) => (
+					<div className="text-sm">
+						{row.items.map((item, i) => (
+							<div key={i} className="flex gap-2">
+								<span>{item.variant.product.name}</span> -
+								<span>{item.variant.sku}</span> -
+								<span> (x{item.quantity})</span>
+								<span> (x{item.purchaseCost} {currency})</span>
+							</div>
+						))}
+					</div>
+				),
+			},
+			{
 				key: "safe",
 				header: t("manualExpenses.columns.safe") || "Safe",
 				cell: (row) => (
@@ -1766,7 +1782,7 @@ export default function PurchasesPage() {
 				),
 			},
 		];
-	}, [t]);
+	}, [t,currency]);
 
 	return (
 		<div className="min-h-screen p-5">

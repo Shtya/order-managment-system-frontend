@@ -4023,7 +4023,8 @@
       "name": "Name",
       "unitCost": "Unit Cost",
       "quantityCount": "Quantity Count",
-      "invoiceTotal": "Invoice Total"
+      "invoiceTotal": "Invoice Total",
+      "products": "Products"
     },
     "status": {
       "accepted": "Accepted",
@@ -4257,7 +4258,8 @@
       "options": "Options",
       "noReceipt": "No Receipt",
       "actions": "Actions",
-      "remainingAmount": "Remaining Amount"
+      "remainingAmount": "Remaining Amount",
+      "products": "Products"
     },
     "statuses": {
       "pending": "Pending",
@@ -9559,7 +9561,8 @@
       "mostFrequent": "Most Frequent Route",
       "last48h": "Errors (Last 48h)",
       "total30d": "Total Errors (30d)",
-      "fatal48h": "Fatal Errors (48h)"
+      "fatal48h": "Fatal Errors (48h)",
+      "errorsCount": "{count} errors"
     },
     "table": {
       "severity": "Severity",
@@ -9567,7 +9570,7 @@
       "status": "Status",
       "message": "Error Message",
       "user": "User",
-      "admin" :"Admin",
+      "admin": "Admin",
       "environment": "Environment",
       "context": "Context",
       "performance": "Performance",
@@ -9632,6 +9635,16 @@
         "userReporter": "User (Reporter)",
         "adminContext": "Admin Context"
       }
+    },
+    "delete": {
+      "title": "Delete Error",
+      "confirm": "Are you sure you want to delete this error? This action cannot be undone.",
+      "bulkTitle": "Delete Selected Errors",
+      "bulkConfirm": "Are you sure you want to delete {count} selected errors? This action cannot be undone."
+    },
+    "messages": {
+      "deleteSuccess": "Error deleted successfully",
+      "bulkDeleteSuccess": "{count} errors deleted successfully"
     }
   },
   "error": {}

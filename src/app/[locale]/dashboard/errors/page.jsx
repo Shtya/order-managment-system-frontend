@@ -387,17 +387,6 @@ export default function ServerErrorsPage() {
                     { name: t("breadcrumb.monitoring") },
                     { name: t("breadcrumb.errors") },
                 ]}
-                buttons={
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={fetchMeta}
-                            className="p-2 rounded-xl bg-background border border-border hover:bg-muted transition-colors"
-                            title="Refresh Stats"
-                        >
-                            <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
-                        </button>
-                    </div>
-                }
                 stats={statsCards}
             />
 

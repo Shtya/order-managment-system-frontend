@@ -700,6 +700,11 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           labelKey: "employee-performance-analysis",
           href: "/reports/employee-performance-analysis",
         },
+        {
+          icon: Truck,
+          labelKey: "shippingReport",
+          href: "/reports/shipping",
+        }
       ],
     },
 

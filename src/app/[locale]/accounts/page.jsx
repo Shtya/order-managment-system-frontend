@@ -13,7 +13,6 @@ import DateRangePicker from "@/components/atoms/DateRangePicker";
 import OverviewTab from "./tabs/OverviewTab";
 import MonthlyExpensesTab from "./tabs/MonthlyExpensesTab";
 import ManualExpensesTab, { ManualExpenseFormModal, DeleteManualExpenseAlert, CATEGORY_CONFIG, CategoryFormModal, DeleteCategoryAlert } from "./tabs/ManualExpensesTab";
-import CityDeliveriesTab from "./tabs/CityDeliveriesTab";
 import SupplierAccountsTab from "./tabs/SupplierAccountsTab";
 import MonthClosingTab from "./tabs/MonthClosingTab";
 import SafesTab from "./tabs/SafesTab";
@@ -70,16 +69,13 @@ export default function Accounts() {
     useEffect(() => {
         const fetchStats = async () => {
             // Add monthClosing and safes to the condition
-            if (["overview", "monthlyExpenses", "cityDeliveries", "supplierAccounts", "supplierPayments", "monthClosing", "safes"].includes(activeTab)) {
+            if (["overview", "monthlyExpenses",  "supplierAccounts", "supplierPayments", "monthClosing", "safes"].includes(activeTab)) {
                 setLoadingStats(true);
                 try {
                     let endpoint = "/accounting/stats";
                     let params = { ...filters };
 
-                    if (activeTab === "cityDeliveries") {
-                        endpoint = "/accounting/shipments-summary";
-                        params = {};
-                    } else if (activeTab === "supplierAccounts") {
+                    if (activeTab === "supplierAccounts") {
                         endpoint = "/accounting/supplier-closings/financial-stats";
                         params = {};
                     } else if (activeTab === "supplierPayments") {
@@ -133,7 +129,7 @@ export default function Accounts() {
         { id: "overview", label: t("tabs.overview") },
         // { id: "monthlyExpenses", label: t("tabs.monthlyExpenses") },
         { id: "manualExpenses", label: t("tabs.manualExpenses") },
-        { id: "cityDeliveries", label: t("tabs.cityDeliveries") },
+        // { id: "cityDeliveries", label: t("tabs.cityDeliveries") },
         // { id: "employeePerformance", label: t("tabs.employeePerformance") },
         { id: "supplierAccounts", label: t("tabs.supplierAccounts") },
         { id: "supplierPayments", label: t("tabs.supplierPayments") },
@@ -177,13 +173,13 @@ export default function Accounts() {
             ];
         }
 
-        if (activeTab === "cityDeliveries") {
-            return [
-                { name: t("cityDeliveries.stats.topCity"), value: stats?.highestCity?.city && stats?.highestCity?.count !== undefined ? `${stats.highestCity.city} (${stats.highestCity.count})` : "N/A", icon: CheckCircle, color: "#10b981" },
-                { name: t("cityDeliveries.stats.lowestCity"), value: stats?.lowestCity?.city && stats?.lowestCity?.count !== undefined ? `${stats.lowestCity.city} (${stats.lowestCity.count})` : "N/A", icon: Info, color: "#ef4444" },
-                { name: t("cityDeliveries.stats.avgDeliveries"), value: stats?.deliveriesRate !== undefined ? `${stats.deliveriesRate}%` : "0%", icon: BarChart2, color: "#3b82f6" },
-            ];
-        }
+        // if (activeTab === "cityDeliveries") {
+        //     return [
+        //         { name: t("cityDeliveries.stats.topCity"), value: stats?.highestCity?.city && stats?.highestCity?.count !== undefined ? `${stats.highestCity.city} (${stats.highestCity.count})` : "N/A", icon: CheckCircle, color: "#10b981" },
+        //         { name: t("cityDeliveries.stats.lowestCity"), value: stats?.lowestCity?.city && stats?.lowestCity?.count !== undefined ? `${stats.lowestCity.city} (${stats.lowestCity.count})` : "N/A", icon: Info, color: "#ef4444" },
+        //         { name: t("cityDeliveries.stats.avgDeliveries"), value: stats?.deliveriesRate !== undefined ? `${stats.deliveriesRate}%` : "0%", icon: BarChart2, color: "#3b82f6" },
+        //     ];
+        // }
 
         if (activeTab === "supplierAccounts") {
             return [
@@ -246,8 +242,6 @@ export default function Accounts() {
                         refreshCategories={fetchCategories}
                     />
                 );
-            case "cityDeliveries":
-                return <CityDeliveriesTab />;
             // case "employeePerformance":
             //     return <EmployeePerformanceTab />;
             case "supplierAccounts":

@@ -9137,7 +9137,7 @@
       "columns": {
         "supplierName": "اسم المورد",
         "lastClosing": "تاريخ آخر تقفيل",
-        "pendingBalance": "الرصيد المعلق"
+        "pendingBalance": "مستحقات المورد"
       },
       "actions": {
         "statement": "كشف حساب",

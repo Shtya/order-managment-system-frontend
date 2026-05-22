@@ -9099,7 +9099,7 @@
       "columns": {
         "supplierName": "Supplier Name",
         "lastClosing": "Last Closing Date",
-        "pendingBalance": "Pending Balance"
+        "pendingBalance": "Supplier Dues"
       },
       "actions": {
         "statement": "Account Statement",

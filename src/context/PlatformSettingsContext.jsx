@@ -45,7 +45,7 @@ export function PlatformSettingsProvider({ children }) {
 
 
   const fetchShippingCompanies = useCallback(async () => {
-
+     if (!accessToken) return;
     setIsShippingLoading(true);
     try {
       const res = await api.get("/shipping/integrations/active");
@@ -63,7 +63,7 @@ export function PlatformSettingsProvider({ children }) {
     } finally {
       setIsShippingLoading(false);
     }
-  }, []);
+  }, [accessToken]);
 
 
   useEffect(() => {

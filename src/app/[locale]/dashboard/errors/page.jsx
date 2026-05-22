@@ -384,7 +384,6 @@ export default function ServerErrorsPage() {
             <PageHeader
                 breadcrumbs={[
                     { name: t("breadcrumb.dashboard"), href: "/dashboard" },
-                    { name: t("breadcrumb.monitoring") },
                     { name: t("breadcrumb.errors") },
                 ]}
                 stats={statsCards}

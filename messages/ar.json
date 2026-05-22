@@ -394,6 +394,7 @@
     "purchases": "المشتريات",
     "purchasesReturn": "مرتجع المشتريات",
     "order-analysis": "تحليل الطلبات",
+    "shippingReport": "تقارير شركات الشحن",
     "employee-performance-analysis": "تحليل أداء الموظفين",
     "sales": "المبيعات",
     "employees": "الموظفون",
@@ -2902,7 +2903,8 @@
         "title": "الخزينة"
       },
       "reports": {
-        "title": "التقارير"
+        "title": "التقارير",
+        "shippingReport": "تقارير شركات الشحن"
       },
       "analytics": {
         "title": "التحليلات"
@@ -3833,7 +3835,7 @@
       "wholesalePriceTo": "سعر الجملة إلى",
       "wholesalePriceFromPlaceholder": "أدخل سعر الجملة من",
       "wholesalePriceToPlaceholder": "أدخل سعر الجملة إلى",
-      "any": "أي",
+      "any": "الكل",
       "apply": "تطبيق",
       "reset": "إعادة تعيين",
       "salePriceFrom": "سعر البيع من",
@@ -8620,7 +8622,7 @@
     "tabs": {
       "overview": "نظرة عامة",
       "monthlyExpenses": "المصروفات الشهرية",
-      "manualExpenses": "المصاريف التشغيلية",
+      "manualExpenses": "مصروفات التشغيل",
       "cityDeliveries": "التسليمات في المحافظات",
       "employeePerformance": "أداء الموظفين",
       "supplierAccounts": "حسابات الموردين",
@@ -8870,10 +8872,10 @@
     },
     "stats": {
       "totalExpenses": "إجمالي المصروفات",
-      "productPurchases": "شراء منتجات",
-      "totalPaid": "إجمالي المدفوعات",
+      "productPurchases": "إجمالي مشتريات المنتجات",
+      "totalPaid": "إجمالي المدفوع للموردين",
       "manualExpenses": "مصروفات تشغيلية",
-      "returns": "مرتجع المنتجات",
+      "returns": "مرتجع مشتريات",
       "netResult": "صافي النتيجة",
       "shippingCost": "تكلفة الشحن",
       "totalSuppliers": "إجمالي الموردين",
@@ -8885,8 +8887,8 @@
       "totalHistorySales": "إجمالي مبيعات الشهر",
       "totalHistoryCosts": "إجمالي تكاليف الشهر",
       "totalNetProfit": "إجمالي الأرباح",
-      "totalReceived": "إجمالي المستلم",
-      "finalBalance": "الرصيد النهائي",
+      "totalReceived": "المحصل من مرتجعات المشتريات",
+      "finalBalance": "صافي المستحق للموردين",
       "lastMonthProfit": "ربح الشهر الماضي",
       "currentRevenue": "إيرادات الشهر الحالي",
       "currentTotalCosts": "إجمالي تكاليف الشهر",
@@ -9113,6 +9115,7 @@
     },
     "cityDeliveries": {
       "title": "التسليمات في المحافظات",
+      "shippingReport": "تقارير شركات الشحن",
       "stats": {
         "topCity": "أعلى محافظة تسليماً",
         "lowestCity": "أقل محافظة تسليماً",

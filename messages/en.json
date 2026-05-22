@@ -394,6 +394,7 @@
     "purchases": "Purchases",
     "purchasesReturn": "Purchase Returns",
     "order-analysis": "Order Analysis",
+    "shippingReport": "Shipping Report",
     "employee-performance-analysis": "Employee Performance Analysis",
     "sales": "Sales",
     "employees": "Employees",
@@ -2867,7 +2868,8 @@
         "title": "Treasury"
       },
       "reports": {
-        "title": "Reports"
+        "title": "Reports",
+        "shippingReport": "Shipping Report"
       },
       "analytics": {
         "title": "Analytics"
@@ -3798,7 +3800,7 @@
       "wholesalePriceTo": "Wholesale Price To",
       "wholesalePriceFromPlaceholder": "Enter wholesale price from",
       "wholesalePriceToPlaceholder": "Enter wholesale price to",
-      "any": "Any",
+      "any": "All",
       "apply": "Apply",
       "reset": "Reset",
       "salePriceFrom": "Sale price from",
@@ -8832,10 +8834,10 @@
     },
     "stats": {
       "totalExpenses": "Total Expenses",
-      "productPurchases": "Product Purchases",
-      "totalPaid": "Total Paid",
+      "productPurchases": "Total product purchases",
+      "totalPaid": "Total paid to suppliers",
       "manualExpenses": "Operating Expenses",
-      "returns": "Return products",
+      "returns": "Purchase returns",
       "netResult": "Net Result",
       "shippingCost": "Shipping Cost",
       "totalSuppliers": "Total Suppliers",
@@ -8845,8 +8847,8 @@
       "totalHistorySales": "Total Monthly Sales",
       "totalHistoryCosts": "Total Monthly Costs",
       "totalNetProfit": "Total Net Profit",
-      "totalReceived": "Total Received",
-      "finalBalance": "Final Balance",
+      "totalReceived": "Collection from purchase returns",
+      "finalBalance": "Net due to suppliers",
       "lastMonthProfit": "Last Month Profit",
       "currentRevenue": "Current Month Revenue",
       "currentTotalCosts": "Total Monthly Costs",
@@ -9075,6 +9077,7 @@
     },
     "cityDeliveries": {
       "title": "City Deliveries",
+      "shippingReport": "Shipping Report",
       "stats": {
         "topCity": "Top City Deliveries",
         "lowestCity": "Lowest City Deliveries",

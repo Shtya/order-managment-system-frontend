@@ -174,6 +174,7 @@ export default function WalletPage() {
               PaymentPurposeEnum.WALLET_TOP_UP,
               PaymentPurposeEnum.WALLET_WITHDRAWAL,
             ]}
+            showRelations={false}
             onTransactionUpdate={handleTransactionUpdate}
           />
         </div>

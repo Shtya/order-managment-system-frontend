@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Package, Phone, CheckCircle, Loader2, ArrowRight, ArrowLeft,
-  Lock, ChevronDown, Zap, SkipForward, ShoppingBag, User, AlertCircle,
+  Lock, ChevronDown, ChevronUp, Zap, SkipForward, ShoppingBag, User, AlertCircle,
   TrendingUp, Activity, RefreshCw, Clock, Building2, RotateCcw,
   BadgeCheck, Banknote, StickyNote, Mail, Receipt, Star, Boxes, Hash, ImageIcon,
   Navigation, Plus, Minus, X, Save, Info, Trash2, Truck, MapPin, CreditCard,
@@ -242,7 +242,15 @@ function CardHead({ icon: Icon, color, title, eyebrow, right, py = "14px" }) {
 // Collapsible trigger
 function ColHead({ open, onToggle, icon: Icon, color, title, eyebrow, right }) {
   return (
-    <button type="button" onClick={onToggle}
+    <button type="button" onClick={(e) => {
+
+      // Ignore clicks coming from popover trigger
+      if (e.target.closest("[data-sku-trigger]")) {
+        return;
+      }
+
+      onToggle();
+    }}
       style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 20px", background: open ? `color-mix(in srgb, ${color}, transparent 75%)` : "transparent", border: "none", borderBottom: open ? "1px solid var(--border)" : "none", cursor: "pointer", outline: "none", transition: "background .2s" }} >
       <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
         {/* <div style={{width:4,alignSelf:"stretch",borderRadius:"0 3px 3px 0",background:open?color:rgba(color,.3),flexShrink:0,minHeight:24,marginInlineEnd:14,transition:"background .2s"}} /> */}
@@ -586,9 +594,9 @@ export default function OrderConfirmationWorkPage() {
           <ProdTable color={HEX.orange} icon={ShoppingBag} title={t("mainProducts")} eyebrow={t("items")}
             items={mainItems} onQty={handleQty} onRemove={handleRemove} isAdditional={false}
             handleSelectSku={handleSelectSku} selectedSkus={selectedSkus} {...sh} />
-          <ProdTable color={HEX.orange} icon={Package} title={t("additionalProducts")} eyebrow={t("items")}
+          {addlItems?.length > 0 && <ProdTable color={HEX.orange} icon={Package} title={t("additionalProducts")} eyebrow={t("items")}
             items={addlItems} onQty={handleQty} onRemove={handleRemove} isAdditional={true}
-            handleSelectSku={handleSelectSku} selectedSkus={selectedSkus} {...sh} />
+            handleSelectSku={handleSelectSku} selectedSkus={selectedSkus} {...sh} />}
           <UpsellSection order={originalOrder} items={editedOrder.items} onOpen={p => { setUpsellProd(p); setUpsellOpen(true); }} {...sh} />
           <NotesSection order={editedOrder} {...sh} />
           <HistSection order={editedOrder} {...sh} />
@@ -638,7 +646,7 @@ function Hero({ order, t, isRtl }) {
             </motion.div>
             <div style={{ textAlign: isRtl ? "right" : "left" }}>
               <div style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: rgba(HEX.orange, .65), marginBottom: 4 }}>{t("orderNumber")}</div>
-              <div className="serif" style={{ fontSize: 44, fontStyle: "italic", lineHeight: .88, letterSpacing: "-0.015em", color: "var(--foreground)" }}>{order.orderNumber}</div>
+              <div className="" style={{ fontSize: 30, lineHeight: .88, letterSpacing: "-0.015em", color: "var(--foreground)" }}>{order.orderNumber}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 7 }}>
                 <Clock size={10} style={{ color: "var(--foreground)" }} />
                 <span style={{ fontSize: 11, color: "var(--foreground)" }}>{fmtDt(order.created_at, isRtl ? "ar-EG" : "en-US")}</span>
@@ -735,7 +743,6 @@ function Hero({ order, t, isRtl }) {
             { icon: User, label: t("customer"), value: order.customerName || "—", color: HEX.violet, delay: .06, plain: true },
             { icon: Phone, label: t("phone"), value: order.phoneNumber || "—", color: HEX.sky, delay: .1, plain: true },
             { icon: Banknote, label: t("finalTotal"), value: formatCurrency(order.finalTotal), color: HEX.orange, delay: .14 },
-            { icon: TrendingUp, label: t("profit"), value: formatCurrency(order.profit), color: HEX.green, delay: .18 },
           ].map(p => <MetTile key={p.label} {...p} />)}
         </div>
 
@@ -784,22 +791,62 @@ function Hero({ order, t, isRtl }) {
 // ─── PRODUCT TABLE ─────────────────────────────────────────────────────────
 function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAdditional, t, isRtl, handleSelectSku, selectedSkus }) {
   const [open, setOpen] = useState(true);
+  const [expandedDescs, setExpandedDescs] = useState({});
+  const tableContainerRef = useRef(null);
+  const [tableWidth, setTableWidth] = useState(0);
+
+  useEffect(() => {
+    if (!tableContainerRef.current) return;
+    const ro = new ResizeObserver((entries) => {
+      for (const e of entries) setTableWidth(e.contentRect.width);
+    });
+    ro.observe(tableContainerRef.current);
+    return () => ro.disconnect();
+  }, []);
+
   if (!items?.length && !isAdditional) return null;
   const { formatCurrency } = usePlatformSettings();
   const totalQty = items?.reduce((s, i) => s + (parseInt(i.quantity) || 0), 0) || 0;
   const totalAmt = items?.reduce((s, i) => s + (i.unitPrice * i.quantity), 0) || 0;
 
+  const toggleDesc = (id) => {
+    setExpandedDescs(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .3 }}>
-      <div className="main-card !p-0 overflow-hidden">
+      <div className="main-card !p-0 overflow-hidden" ref={tableContainerRef}>
 
-        <ColHead open={open} onToggle={() => setOpen(p => !p)} icon={icon} color={color} eyebrow={eyebrow} title={title}
-          right={
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span className="mono" style={{ fontSize: 11, color: "var(--foreground)" }}>{totalQty} × {formatCurrency(totalAmt)}</span>
-              <Tag color={color} sm>{items?.length || 0}</Tag>
+        <ProductSkuSearchPopover
+          closeOnSelect={false}
+          handleSelectSku={handleSelectSku}
+          selectedSkus={selectedSkus}
+          width={tableWidth}
+          trigger={() => (
+            <div onClick={(e) => {
+              if (!e.target.closest("[data-sku-trigger]"))
+                e.stopPropagation()
+            }}>
+              <ColHead open={open} onToggle={() => setOpen(p => !p)} icon={icon} color={color} eyebrow={eyebrow} title={title}
+                right={
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    {!isAdditional && (
+                      <button data-sku-trigger type="button" className="text-xs rounded-xs px-1.5 py-1"
+                        style={{
+                          background: color, color: "#fff", borderRadius: "var(--radius)",
+                          border: "none", cursor: "pointer", marginRight: 4,
+                          boxShadow: `0 2px 6px ${rgba(color, .3)}`
+                        }}
+                      >
+                        + {t("addProduct") || "اضافة المنتج"}
+                      </button>
+                    )}
+                    <span className="mono" style={{ fontSize: 11, color: "var(--foreground)" }}>{totalQty} × {formatCurrency(totalAmt)}</span>
+                    <Tag color={color} sm>{items?.length || 0}</Tag>
+                  </div>
+                } />
             </div>
-          } />
+          )} />
 
         <AnimatePresence initial={false}>
           {open && (
@@ -812,6 +859,7 @@ function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAddi
                       <tr  >
                         <th style={{ width: 50 }}>{/* img */}</th>
                         <th>{t("productName") || "المنتج"}</th>
+                        <th style={{ minWidth: 200 }}>{t("description") || "الوصف"}</th>
                         <th>{t("sku") || "SKU"}</th>
                         <th>{t("attributes") || "المواصفات"}</th>
                         <th style={{ textAlign: "center" }}>{t("stock") || "المتاح"}</th>
@@ -844,8 +892,51 @@ function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAddi
                             {/* Name */}
                             <td style={{ minWidth: 140 }}>
                               <p style={{ fontSize: 12.5, fontWeight: 700, color: "var(--card-foreground)", lineHeight: 1.3, marginBottom: 2 }}>{prod?.name || item.productName || "—"}</p>
-                              {prod?.callCenterProductDescription && (
-                                <p style={{ fontSize: 10.5, color: "var(--foreground)", lineHeight: 1.4 }}>{prod.callCenterProductDescription.slice(0, 55)}{prod.callCenterProductDescription.length > 55 ? "…" : ""}</p>
+                            </td>
+
+                            {/* Description */}
+                            <td style={{ minWidth: 250, maxWidth: 250 }}>
+                              {prod?.callCenterProductDescription ? (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                                  <p style={{
+                                    fontSize: 10.5,
+                                    color: "var(--foreground)",
+                                    lineHeight: 1.4,
+                                    whiteSpace: expandedDescs[item.id || idx] ? "normal" : "nowrap",
+                                    overflow: expandedDescs[item.id || idx] ? "visible" : "hidden",
+                                    textOverflow: expandedDescs[item.id || idx] ? "clip" : "ellipsis"
+                                  }}>
+                                    {prod.callCenterProductDescription}
+                                  </p>
+                                  {prod.callCenterProductDescription.length > 55 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleDesc(item.id || idx)}
+                                      style={{
+                                        alignSelf: "flex-start",
+                                        fontSize: 9,
+                                        fontWeight: 800,
+                                        color,
+                                        background: "none",
+                                        border: "none",
+                                        padding: 0,
+                                        cursor: "pointer",
+                                        textTransform: "uppercase",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 2
+                                      }}
+                                    >
+                                      {expandedDescs[item.id || idx] ? (
+                                        <>{t("showLess") || "عرض أقل"} <ChevronUp size={10} /></>
+                                      ) : (
+                                        <>{t("showMore") || "عرض المزيد"} <ChevronDown size={10} /></>
+                                      )}
+                                    </button>
+                                  )}
+                                </div>
+                              ) : (
+                                <span style={{ color: "var(--foreground)", opacity: 0.5, fontSize: 10 }}>—</span>
                               )}
                             </td>
 
@@ -917,7 +1008,7 @@ function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAddi
                     </tbody>
                     <tfoot>
                       <tr>
-                        <td colSpan={7} style={{ textAlign: "end" }}>
+                        <td colSpan={8} style={{ textAlign: "end" }}>
                           <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--foreground)" }}>{t("productsTotal") || "إجمالي المنتجات"}</span>
                         </td>
                         <td style={{ textAlign: "end", paddingInlineEnd: 18 }}>
@@ -934,23 +1025,6 @@ function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAddi
                     {t("noItems") || "لا توجد منتجات"}
                   </div>
                 )
-              )}
-
-              {/* Add product CTA */}
-              {isAdditional && (
-                <div style={{ padding: "12px 18px 16px", borderTop: items?.length ? "1px dashed var(--border)" : "none" }}>
-                  <Rule color={color}>{t("addAdditionalProduct")}</Rule>
-                  <ProductSkuSearchPopover closeOnSelect={false} handleSelectSku={handleSelectSku} selectedSkus={selectedSkus}
-                    trigger={() => (
-                      <button type="button"
-                        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 9, padding: "11px", borderRadius: "var(--radius)", border: `1.5px dashed ${rgba(color, .4)}`, background: rgba(color, .04), fontSize: 12.5, fontWeight: 700, color, transition: "background .15s" }}
-                        onMouseEnter={e => e.currentTarget.style.background = rgba(color, .1)}
-                        onMouseLeave={e => e.currentTarget.style.background = rgba(color, .04)}>
-                        <span style={{ width: 22, height: 22, borderRadius: "50%", background: color, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, lineHeight: 1, flexShrink: 0 }}>+</span>
-                        {t("addProduct")}
-                      </button>
-                    )} />
-                </div>
               )}
             </motion.div>
           )}

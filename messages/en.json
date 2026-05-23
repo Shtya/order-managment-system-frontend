@@ -7809,6 +7809,9 @@
     }
   },
   "orders-work": {
+    "description": "Description",
+    "showMore": "Show More",
+    "showLess": "Show Less",
     "retries": "Retries",
     "retriesExhausted": "All retries ended",
     "orderNumber": "Order Number",

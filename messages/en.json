@@ -1950,7 +1950,8 @@
           "waiting": "Orders awaiting preparation",
           "totalItems": "Total Items",
           "prepared": "Prepared Items"
-        }
+        },
+        "scanItemNotOrder": "You already scanned an Order Number. Please scan an items barcode."
       },
       "panel": {
         "subtitle": "Processing",

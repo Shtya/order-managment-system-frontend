@@ -632,18 +632,18 @@ function HeaderIconBtn({ onClick, children }) {
 // ─────────────────────────────────────────────────────────────
 // SOUND
 // ─────────────────────────────────────────────────────────────
-function playBeep(type = "success") {
+const successAudio = new Audio("/scan.m4a");
+
+export function playBeep(type = "success") {
 	try {
 		const ctx = new (window.AudioContext || (window).webkitAudioContext)();
 		const osc = ctx.createOscillator();
 		const gain = ctx.createGain();
 		osc.connect(gain); gain.connect(ctx.destination);
 		if (type === "success") {
-			osc.frequency.setValueAtTime(880, ctx.currentTime);
-			osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.08);
-			gain.gain.setValueAtTime(0.3, ctx.currentTime);
-			gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
-			osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.25);
+			successAudio.currentTime = 0;
+			successAudio.play().catch(() => { });
+			return;
 		} else {
 			osc.frequency.setValueAtTime(220, ctx.currentTime);
 			osc.frequency.setValueAtTime(160, ctx.currentTime + 0.1);
@@ -1023,10 +1023,31 @@ function OrdersSlidePanel({ open, onClose, activeOrderCode, onSelectOrder }) {
 function ScannedOrderTable({ order, localProducts, justScanned }) {
 	const t = useTranslations("warehouse.preparation");
 
-	const totalScanned = localProducts.reduce((s, p) => s + (p.scannedQuantity || 0), 0);
-	const totalQty = localProducts.reduce((s, p) => s + p.quantity, 0);
-	const pct = totalQty === 0 ? 0 : Math.round((totalScanned / totalQty) * 100);
-	const isAllDone = pct === 100 && totalQty > 0;
+	const { totalScanned, totalQty, pct, isAllDone } = useMemo(() => {
+		const totalScanned = localProducts.reduce(
+			(s, p) => s + (p.scannedQuantity || 0),
+			0
+		);
+
+		const totalQty = localProducts.reduce(
+			(s, p) => s + p.quantity,
+			0
+		);
+
+		const pct =
+			totalQty === 0
+				? 0
+				: Math.round((totalScanned / totalQty) * 100);
+
+		const isAllDone = pct === 100 && totalQty > 0;
+
+		return {
+			totalScanned,
+			totalQty,
+			pct,
+			isAllDone,
+		};
+	}, [localProducts]);
 
 	const [showBurst, setShowBurst] = useState(false);
 	const prevPct = useRef(pct);
@@ -1567,6 +1588,34 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 		setTimeout(() => { setFeedback(null); setScanState("idle"); }, 2200);
 	}, []);
 
+
+	const { isAllDone } = useMemo(() => {
+		if(!localProducts || !localProducts?.length > 0 || !activeOrder){
+			return {isAllDone: false}
+		}  
+		const totalScanned = localProducts.reduce(
+			(s, p) => s + (p.scannedQuantity || 0),
+			0
+		);
+
+		const totalQty = localProducts.reduce(
+			(s, p) => s + p.quantity,
+			0
+		);
+
+		const pct =
+			totalQty === 0
+				? 0
+				: Math.round((totalScanned / totalQty) * 100);
+
+		const isAllDone = pct === 100 && totalQty > 0;
+
+		return {
+			isAllDone
+		};
+	}, [localProducts, activeOrder?.orderNumber]);
+
+
 	const fetchActiveOrder = useCallback(async (idOrCode) => {
 		try {
 			setIsFetchingOrder(true);
@@ -1643,16 +1692,48 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 		setScanValue(val)
 		if (!val) return;
 
-		if (scanStep === "order") {
+		if (scanStep === "order" || isAllDone) {
 			await fetchActiveOrder(val);
 			pendingScansRef.current = {};
 		} else {
+
+			const orderNumberRegex = /^ORD[A-Z0-9]{7}$/;
+
+			if (orderNumberRegex.test(val)) {
+				setScanValue(""); // Clear the input field
+				toast.error(t("scan.scanItemNotOrder"));
+
+				return; // Exit early! Do not run the rest of the function.
+			}
+
 			const sku = val;
-			const previousLocalProducts = [...localProducts];
 			const productIndex = localProducts.findIndex((p) => p?.variant?.sku === val || p.barcode === val);
 			const product = localProducts[productIndex];
 			let didOptimisticUpdate = false;
 			let localErrorCode = null;
+
+			// --- OPTIMISTIC HANDLING ---
+			let errorMessage = "";
+			if (!product) {
+				localErrorCode = "SKU_NOT_IN_ORDER";
+				errorMessage = t("scan.barcodeNotFound", { val });
+			} else if (product.scannedQuantity >= product.quantity) {
+				localErrorCode = "ALREADY_FULLY_SCANNED";
+				errorMessage = t("scan.alreadyScanned", { name: product.name });
+			}
+
+			if (localErrorCode) {
+				setScanValue("");
+				handleErrorFeedback(errorMessage); // Instant Toast!
+
+				api.post(`/orders/${activeOrder.id}/log-failed-scan`, {
+					sku: val,
+					reasonCode: localErrorCode
+				}).catch(console.error);
+
+				return;
+			}
+
 
 			// Track concurrent scans for this SKU
 			if (!pendingScansRef.current[sku]) {
@@ -1660,32 +1741,43 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 			}
 			pendingScansRef.current[sku].pending += 1;
 
-			// --- OPTIMISTIC HANDLING ---
-			if (!product) {
-				localErrorCode = "SKU_NOT_IN_ORDER";
-				handleErrorFeedback(t("scan.barcodeNotFound", { val }));
-			} else if (product.scannedQuantity < product.quantity) {
-				didOptimisticUpdate = true;
-				const optimisticProducts = localProducts.map((p, i) =>
-					i === productIndex ? { ...p, scannedQuantity: p.scannedQuantity + 1 } : p
-				);
-				setLocalProducts(optimisticProducts);
-				handleSuccessFeedback(product.name, product.sku || product.variant?.sku);
-			} else {
-				localErrorCode = "ALREADY_FULLY_SCANNED";
-				handleErrorFeedback(t("scan.alreadyScanned", { name: product.name }));
-			}
+
+			didOptimisticUpdate = true;
+			const optimisticProducts = localProducts.map((p, i) =>
+				i === productIndex ? { ...p, scannedQuantity: p.scannedQuantity + 1 } : p
+			);
+			setLocalProducts(optimisticProducts);
+			handleSuccessFeedback(product.name, product.sku || product.variant?.sku);
+
+
 			setScanValue("");
 
 			try {
 				const res = await api.post(`/orders/${activeOrder.id}/scan-preparation/${val}`);
 				const { scanned, success, message, code, isOrderComplete } = res.data;
 
+				if (isOrderComplete) {
+					showFeedback("success", t("scan.orderComplete", { code: activeOrder.orderNumber }));
+					resetCurrentOrder();
+					fetchStats?.();
+					return;
+				}
+
 				// Update tracking state
 				pendingScansRef.current[sku].pending = Math.max(0, pendingScansRef.current[sku].pending - 1);
 				if (success) {
 					pendingScansRef.current[sku].serverScanned = Math.max(pendingScansRef.current[sku].serverScanned, scanned);
 				}
+
+
+				// Final synchronization only when all pending scans for this SKU are finished
+				if (productIndex !== -1 && pendingScansRef.current[sku].pending === 0) {
+					const finalScanned = pendingScansRef.current[sku].serverScanned;
+					setLocalProducts(prev => prev.map((p, i) =>
+						i === productIndex ? { ...p, scannedQuantity: finalScanned } : p
+					));
+				}
+
 
 				if (!success) {
 					// Rollback UI if we did an optimistic update
@@ -1696,30 +1788,16 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 						setSuccessCount((c) => Math.max(0, c - 1));
 					}
 
-					// Final sync if no more pending scans for this SKU
-					if (pendingScansRef.current[sku].pending === 0 && productIndex !== -1) {
-						const finalScanned = pendingScansRef.current[sku].serverScanned;
-						setLocalProducts(prev => prev.map((p, i) =>
-							i === productIndex ? { ...p, scannedQuantity: finalScanned } : p
-						));
-					}
-
-					if (code !== localErrorCode) {
+					if (code) {
 						handleErrorFeedback(message || t("scan.errorScanning"));
+					} else if (!code) {
+						toast.error(message)
 					}
 					return;
 				}
 
-				// Final synchronization only when all pending scans for this SKU are finished
-				if (productIndex !== -1 && pendingScansRef.current[sku].pending === 0) {
-					const finalScanned = pendingScansRef.current[sku].serverScanned;
-					setLocalProducts(prev => prev.map((p, i) =>
-						i === productIndex ? { ...p, scannedQuantity: finalScanned } : p
-					));
-
-					if (!didOptimisticUpdate) {
-						handleSuccessFeedback(product.name, product.sku || product.variant?.sku);
-					}
+				if (!didOptimisticUpdate) {
+					handleSuccessFeedback(product.name, product.sku || product.variant?.sku);
 				}
 
 				// Update stats if it was printed (first scan for this order)
@@ -1731,24 +1809,7 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 					}));
 				}
 
-				if (isOrderComplete) {
-					const now = new Date().toISOString().slice(0, 16).replace("T", " ");
-					pushOp({
-						id: `OP-${Date.now()}`,
-						operationType: "PREPARE_ORDER",
-						orderCode: activeOrder.orderNumber,
-						carrier: activeOrder.shippingCompany?.name || "-",
-						employee: "System",
-						result: "SUCCESS",
-						details: t("scan.orderPreparedLog"),
-						createdAt: now
-					});
-					setTimeout(() => {
-						showFeedback("success", t("scan.orderComplete", { code: activeOrder.orderNumber }));
-						fetchStats?.();
-						resetCurrentOrder();
-					}, 900);
-				}
+
 			} catch (error) {
 				// Update tracking state on error
 				pendingScansRef.current[sku].pending = Math.max(0, pendingScansRef.current[sku].pending - 1);
@@ -1787,7 +1848,7 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 				<PanelHeader
 					icon={ScanLine}
 					pretitle={!isItemsMode ? t("scan.step1of2") : `${t("scan.orderLabel")}: ${activeOrder?.orderNumber}`}
-					title={!isItemsMode ? t("scan.scanOrderTitle") : t("scan.scanItemsTitle")}
+					title={isItemsMode && !isAllDone ?  t("scan.scanItemsTitle") : t("scan.scanOrderTitle") }
 					right={
 						<>
 							<HeaderIconBtn onClick={() => setSoundEnabled(v => !v)}>
@@ -1811,7 +1872,7 @@ function ScanWorkflowPanel({ pushOp, onOpenPanel, jumpToOrder, fetchStats, updat
 						<ScanInputBar
 							inputRef={scanInputRef} value={scanValue} onChange={(e) => setScanValue(e.target.value)}
 							onScan={handleScan} isSuccess={scanState === "success"} isError={scanState === "error"}
-							placeholder={!isItemsMode ? t("scan.scanOrderPlaceholder") : t("scan.scanItemsPlaceholder", { code: activeOrder?.orderNumber })}
+							placeholder={isItemsMode && !isAllDone  ? t("scan.scanItemsPlaceholder", { code: activeOrder?.orderNumber }) : t("scan.scanOrderPlaceholder") }
 							disabled={isFetchingOrder}
 						/>
 						{isFetchingOrder && (

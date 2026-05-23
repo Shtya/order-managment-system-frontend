@@ -5389,7 +5389,7 @@
         "deductionStrategy": "Stock Deduction Strategy",
         "deductionStrategyDesc": "Choose the exact point in the order lifecycle when items should be removed from available stock",
         "onConfirmation": "On Order Confirmation",
-        "onShipment": "On Shipment Creation"
+        "onShipment": "Upon shipment"
       },
       "notifyEmployee": "Notify Assigned Employee",
       "notifyEmployeeDesc": "The assigned employee receives a notification every time the system tries to contact the customer",

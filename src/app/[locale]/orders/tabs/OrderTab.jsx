@@ -190,8 +190,46 @@ export default function OrdersTab({
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [historyOrder, setHistoryOrder] = useState(null);
 
+  const [postponedOrder, setPostponedOrder] = useState(null); // { id, statusId }
+  const [postponedDate, setPostponedDate] = useState(null);
+  const [reminderDaysBefore, setReminderDaysBefore] = useState("");
+
+  const tomorrow = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + 1);
+    return d;
+  }, []);
+
+  const reminderOptions = useMemo(() => {
+    if (!postponedDate) return [];
+    const postDate = new Date(postponedDate);
+    postDate.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const diffTime = postDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 0) return [];
+
+    const options = [];
+    for (let i = 1; i <= diffDays; i++) {
+      options.push({ value: String(i), label: String(i) });
+    }
+    return options;
+  }, [postponedDate]);
+
+  useEffect(() => {
+    if (reminderOptions.length === 1) {
+      setReminderDaysBefore("0");
+    } else {
+      setReminderDaysBefore("");
+    }
+  }, [postponedDate, reminderOptions]);
 
 
+  console.log(postponedDate)
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [distributionOpen, setDistributionOpen] = useState(false);
@@ -234,6 +272,16 @@ export default function OrdersTab({
     handlePageChange(1, pager.per_page);
   }, [debouncedSearch]);
 
+  useEffect(() => {
+    if (filters.status !== OrderStatus.POSTPONED) {
+      setFilters(prev => ({
+        ...prev,
+        postponedStartDate: null,
+        postponedEndDate: null
+      }));
+    }
+  }, [filters.status]);
+
   const buildParams = (
     page = pager.current_page,
     per_page = pager.per_page,
@@ -257,6 +305,11 @@ export default function OrdersTab({
     // if (filters.paymentMethod && filters.paymentMethod !== 'all') params.paymentMethod = filters.paymentMethod;
     if (filters.startDate) params.startDate = filters.startDate;
     if (filters.endDate) params.endDate = filters.endDate;
+
+    if (filters.status === OrderStatus.POSTPONED) {
+      if (filters.postponedStartDate) params.postponedStartDate = filters.postponedStartDate;
+      if (filters.postponedEndDate) params.postponedEndDate = filters.postponedEndDate;
+    }
     if (filters.shippingCompany && filters.shippingCompany !== "all")
       params.shippingCompanyId = filters.shippingCompany;
     if (filters.store && filters.store !== "all")
@@ -589,6 +642,7 @@ export default function OrdersTab({
           );
         },
       },
+
       readOnlyStatus ? {
         key: "status",
         header: t("table.status"),
@@ -614,6 +668,12 @@ export default function OrdersTab({
                   onValueChange={async (val) => {
                     const statusId = val;
                     if (!statusId || statusId === currentStatusId) return;
+
+                    const newStatus = filteredSelectStats.find(s => String(s.id) === statusId);
+                    if (newStatus?.code === OrderStatus.POSTPONED) {
+                      setPostponedOrder({ id: row.id, statusId });
+                      return;
+                    }
 
                     const toastId = toast.loading(t("messages.statusUpdating"));
                     try {
@@ -671,6 +731,15 @@ export default function OrdersTab({
             );
           },
         },
+      {
+        key: "postponedDate",
+        header: t("table.postponedDate"),
+        cell: (row) => (
+          <span className="text-gray-600 dark:text-slate-200">
+            {row.postponedDate ? new Date(row.postponedDate).toLocaleDateString("en-US") : "-"}
+          </span>
+        ),
+      },
       {
         key: "shipment",
         header: t("table.shipmentStatus"),
@@ -763,6 +832,7 @@ export default function OrdersTab({
           );
         },
       },
+
       {
         key: "products",
         header: t("table.products"),
@@ -1195,6 +1265,27 @@ export default function OrdersTab({
               />
             </FilterField>
 
+            {filters.status === OrderStatus.POSTPONED && (
+              <FilterField label={t("postponed.date")}>
+                <DateRangePicker
+                  value={{
+                    startDate: filters.postponedStartDate,
+                    endDate: filters.postponedEndDate,
+                  }}
+                  onChange={(newDates) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      postponedStartDate: newDates.startDate,
+                      postponedEndDate: newDates.endDate,
+                    }))
+                  }
+                  placeholder={t("postponed.datePlaceholder")}
+                  dataSize="default"
+                  maxDate={null}
+                />
+              </FilterField>
+            )}
+
             <StoreFilter
               value={filters.store}
               onChange={(v) => setFilters((f) => ({ ...f, store: v }))}
@@ -1287,6 +1378,122 @@ export default function OrdersTab({
           fetchStats();
         }}
       />
+
+      <Dialog
+        open={!!postponedOrder}
+        onOpenChange={() => {
+          setPostponedOrder(null);
+          setPostponedDate(null);
+        }}
+      >
+        <DialogContent className="max-w-md p-0 overflow-hidden rounded-[30px] border-none shadow-2xl bg-[#f8f9fc] dark:bg-slate-950">
+          <div className="flex flex-col overflow-hidden">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 pe-[60px]">
+              <DialogTitle className="text-xl font-bold">
+                {t("postponed.dialogTitle")}
+              </DialogTitle>
+              <DialogDescription className="mt-1 text-slate-500">
+                {t("postponed.dialogDescription")}
+              </DialogDescription>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="space-y-2">
+                <Label>
+                  {t("postponed.date")}
+                  <span className="text-red-500">*</span>
+                </Label>
+                <DateRangePicker
+                  mode="single"
+                  value={postponedDate}
+                  onChange={(date) => setPostponedDate(date)}
+                  placeholder={t("postponed.datePlaceholder")}
+                  dataSize="default"
+                  maxDate={null}
+                  minDate={tomorrow}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>
+                  {t("postponed.reminderDays")}
+                  <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  value={reminderDaysBefore}
+                  onValueChange={(val) => setReminderDaysBefore(val)}
+                  disabled={!postponedDate || reminderOptions.length <= 1}
+                >
+                  <SelectTrigger className="rounded-xl h-10 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                    <SelectValue placeholder={t("postponed.reminderDaysPlaceholder")} />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    {reminderOptions.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {t("postponed.daysBefore", { days: opt.label })}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setPostponedOrder(null);
+                  setPostponedDate(null);
+                }}
+                className="rounded-xl"
+              >
+                {t("postponed.cancel")}
+              </Button>
+              <Button
+                disabled={!postponedDate || (reminderDaysBefore !== 0 && !reminderDaysBefore) || updatingStatuses.includes(postponedOrder?.id)}
+
+                onClick={async () => {
+                  if (!postponedDate || !postponedOrder) return;
+                  const { id, statusId } = postponedOrder;
+                  const toastId = toast.loading(t("messages.statusUpdating"));
+                  try {
+                    setUpdating(id, true);
+                    const res = await api.patch(`/orders/${id}/status`, {
+                      statusId,
+                      postponedDate: postponedDate.toISOString(),
+                      reminderDaysBefore: reminderDaysBefore ? Number(reminderDaysBefore) : null,
+                    });
+                    const newOrder = res.data || {};
+
+                    toast.success(t("messages.statusUpdated"), { id: toastId });
+                    await fetchStats(true);
+                    setPager(p => ({
+                      ...p, records: p.records.map((r) => (r.id === id ?
+                        { ...r, statusId, status: newOrder.status, postponedDate: newOrder.postponedDate, reminderDaysBefore: newOrder.reminderDaysBefore }
+                        : r))
+                    }));
+                    setPostponedOrder(null);
+                    setPostponedDate(null);
+                    setReminderDaysBefore("");
+                  } catch (err) {
+                    console.error(err);
+                    toast.error(
+                      err.response?.data?.message ||
+                      t("messages.errorUpdatingStatus"),
+                      { id: toastId }
+                    );
+                  } finally {
+                    setUpdating(id, false);
+                  }
+                }}
+                className="rounded-xl bg-primary hover:bg-primary/90 text-white"
+              >
+                {t("postponed.confirm")}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <OrderStatusHistoryModal
         isOpen={historyModalOpen}

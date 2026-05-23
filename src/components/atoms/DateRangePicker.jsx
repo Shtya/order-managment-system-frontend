@@ -12,10 +12,12 @@ export default function DateRangePicker({
   className = "hidden",
   staticShow = false,
   closeOnSelect = true,
-  mode = "range" // "single" or "range"
+  mode = "range", // "single" or "range"
+  minDate,
+  maxDate = "today",
 }) {
   const t = useTranslations("accounts");
-  
+
   const dateValue = useMemo(() => {
     if (mode === "single") {
       return value ? new Date(value) : null;
@@ -42,7 +44,8 @@ export default function DateRangePicker({
   const options = useMemo(() => ({
     mode: mode,
     dateFormat: "Y-m-d",
-    maxDate: "today",
+    minDate: minDate,
+    maxDate: maxDate,
     altInput: true,
     static: staticShow,
     altFormat: "Y-m-d",
@@ -50,7 +53,7 @@ export default function DateRangePicker({
     closeOnSelect: closeOnSelect,
     altInputClass: "theme-field",
     monthSelectorType: "dropdown",
-  }), [mode, staticShow, closeOnSelect]);
+  }), [mode, staticShow, closeOnSelect, minDate, maxDate]);
 
   return (
     <Flatpickr

@@ -4595,6 +4595,17 @@
       "updatedAt": "تاريخ أخر تحديث"
     },
     "invalidOrderId": "معرّف الطلب غير صحيح",
+    "postponed": {
+      "date": "تاريخ التأجيل",
+      "datePlaceholder": "اختر تاريخ التأجيل",
+      "reminderDays": "التذكير (أيام قبل)",
+      "reminderDaysPlaceholder": "اختر متى يتم تذكيرك",
+      "daysBefore": "قبل {days} أيام",
+      "confirm": "تأكيد التأجيل",
+      "cancel": "إلغاء",
+      "dialogTitle": "تأجيل الطلب",
+      "dialogDescription": "يرجى اختيار التاريخ الذي تريد تأجيل الطلب إليه."
+    },
     "actions": {
       "duplicate": "تكرار الطلب",
       "addStatus": "إضافة حالة",
@@ -5231,7 +5242,8 @@
       "createdat": "تاريخ الطلب",
       "actions": "الإجراءات",
       "finalTotal": "التكلفة الإجمالية",
-      "shipmentStatus": "حالة الشحنه"
+      "shipmentStatus": "حالة الشحنه",
+      "postponedDate": "تاريخ التأجيل"
     },
     "bulkUpload": {
       "clickToChangeFile": "اضغط لتغيير الملف",

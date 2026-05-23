@@ -4530,6 +4530,17 @@
       "failed": "Delivery Failed",
       "cancelled": "Cancelled"
     },
+    "postponed": {
+      "date": "Postponed Date",
+      "datePlaceholder": "Select postponed date",
+      "reminderDays": "Reminder (Days Before)",
+      "reminderDaysPlaceholder": "Select when to remind",
+      "daysBefore": "before {days} days",
+      "confirm": "Confirm Postpone",
+      "cancel": "Cancel",
+      "dialogTitle": "Postpone Order",
+      "dialogDescription": "Please select the date to postpone this order to."
+    },
     "trackingStatus": {
       "new": "New",
       "in_progress": "In Progress",
@@ -5180,7 +5191,8 @@
       "createdat": "Order Date",
       "actions": "Actions",
       "finalTotal": "Final Total",
-      "shipmentStatus": "Shipment status"
+      "shipmentStatus": "Shipment status",
+      "postponedDate": "Postponed Date"
     },
     "bulkUpload": {
       "clickToChangeFile": "Click to change file",

@@ -42,9 +42,6 @@ export default function Accounts() {
 
     // Default dates: this month
     const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date();
-
     const [filters, setFilters] = useState({
         startDate: null,
         endDate: null,
@@ -69,7 +66,7 @@ export default function Accounts() {
     useEffect(() => {
         const fetchStats = async () => {
             // Add monthClosing and safes to the condition
-            if (["overview", "monthlyExpenses",  "supplierAccounts", "supplierPayments", "monthClosing", "safes"].includes(activeTab)) {
+            if (["overview", "monthlyExpenses", "supplierAccounts", "supplierPayments", "monthClosing", "safes"].includes(activeTab)) {
                 setLoadingStats(true);
                 try {
                     let endpoint = "/accounting/stats";
@@ -136,6 +133,17 @@ export default function Accounts() {
         { id: "monthClosing", label: t("tabs.monthClosing") },
         { id: "safes", label: t("tabs.safes") },
     ], [t]);
+
+    // Memoized valid tab ids
+    const validTabIds = useMemo(
+        () => new Set(ACCOUNTS_TABS.map(tab => tab.id)),
+        [ACCOUNTS_TABS]
+    );
+
+    // Fallback to overview if invalid
+    const currentTab = validTabIds.has(activeTab)
+        ? activeTab
+        : "overview";
 
     // Mock stats based on active tab
     const statsData = useMemo(() => {
@@ -228,35 +236,12 @@ export default function Accounts() {
         }
     }, [activeTab, stats, t, categories]);
 
-
-    const renderTabContent = () => {
-        switch (activeTab) {
-            case "overview":
-                return <OverviewTab stats={stats} loadingStats={loadingStats} mainFilters={filters} onFiltersChange={setFilters} onRefresh={refreshStats} />;
-            case "monthlyExpenses":
-                return <MonthlyExpensesTab />;
-            case "manualExpenses":
-                return (
-                    <ManualExpensesTab
-                        categories={categories}
-                        refreshCategories={fetchCategories}
-                    />
-                );
-            // case "employeePerformance":
-            //     return <EmployeePerformanceTab />;
-            case "supplierAccounts":
-                return <SupplierAccountsTab onRefresh={refreshStats} />;
-            case "monthClosing":
-                return <MonthClosingTab onRefresh={refreshStats} />;
-            case "safes":
-                return <SafesTab onRefresh={refreshStats} />;
-            case "supplierPayments":
-                return <SupplierPaymentsTab onRefresh={refreshStats} />;
-            default:
-                return <OverviewTab onRefresh={refreshStats} />;
-        }
-    };
-
+    useEffect(() => {
+        setFilters({
+            startDate: null,
+            endDate: null,
+        });
+    }, [activeTab])
     return (
         <div className="min-h-screen p-4 md:p-5 space-y-5">
             <PageHeader
@@ -281,7 +266,44 @@ export default function Accounts() {
 
 
             <div className="mt-6">
-                {renderTabContent()}
+
+                {currentTab === "overview" && (
+                    <OverviewTab
+                        stats={stats}
+                        loadingStats={loadingStats}
+                        mainFilters={filters}
+                        onFiltersChange={setFilters}
+                        onRefresh={refreshStats}
+                    />
+                )}
+
+                {currentTab === "monthlyExpenses" && (
+                    <MonthlyExpensesTab />
+                )}
+
+                {currentTab === "manualExpenses" && (
+                    <ManualExpensesTab
+                        categories={categories}
+                        refreshCategories={fetchCategories}
+                    />
+                )}
+
+                {currentTab === "supplierAccounts" && (
+                    <SupplierAccountsTab onRefresh={refreshStats} />
+                )}
+
+                {currentTab === "supplierPayments" && (
+                    <SupplierPaymentsTab onRefresh={refreshStats} />
+                )}
+
+                {currentTab === "monthClosing" && (
+                    <MonthClosingTab onRefresh={refreshStats} />
+                )}
+
+                {currentTab === "safes" && (
+                    <SafesTab onRefresh={refreshStats} />
+                )}
+
             </div>
 
             <CategoryFormModal

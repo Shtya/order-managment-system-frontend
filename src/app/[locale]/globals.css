@@ -1177,3 +1177,12 @@ select {
 .layout-content .h-screen {
   height: calc(100vh - 56px);
 }
+
+html[dir="rtl"] .date-field {
+  direction: ltr;
+  text-align: right;
+}
+html[dir="ltr"] .date-field {
+  direction: ltr;
+  text-align: left;
+}

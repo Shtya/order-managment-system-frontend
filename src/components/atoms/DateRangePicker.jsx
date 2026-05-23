@@ -51,7 +51,7 @@ export default function DateRangePicker({
     altFormat: "Y-m-d",
     // Force stay open in range mode if only one date is picked
     closeOnSelect: closeOnSelect,
-    altInputClass: "theme-field",
+    altInputClass: "theme-field date-field",
     monthSelectorType: "dropdown",
   }), [mode, staticShow, closeOnSelect, minDate, maxDate]);
 

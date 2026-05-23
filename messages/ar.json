@@ -7845,6 +7845,9 @@
     }
   },
   "orders-work": {
+      "description": "الوصف",
+    "showMore": "عرض المزيد",
+    "showLess": "عرض أقل",
     "retries": "المحاولات",
     "retriesExhausted": "انتهت جميع المحاولات",
     "orderNumber": "رقم الطلب",

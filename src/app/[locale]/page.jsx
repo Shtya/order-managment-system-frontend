@@ -357,3 +357,5 @@ export default function TalbatiLanding({ heroImage }) {
     </div>
   );
 }
+
+

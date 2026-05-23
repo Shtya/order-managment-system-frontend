@@ -48,7 +48,7 @@ export const PaymentPurposeEnum = {
     FEATURE_PURCHASE: 'feature_purchase'
 };
 
-export default function TransactionTab({ defaultPurpose, allowedPurposes }) {
+export default function TransactionTab({ defaultPurpose, allowedPurposes, showRelations = true }) {
     const t = useTranslations("plans")
     const router = useRouter()
 
@@ -202,7 +202,7 @@ export default function TransactionTab({ defaultPurpose, allowedPurposes }) {
                 );
             },
         },
-        {
+      ...(showRelations ? [{
             key: "subscription",
             header: t("columns.subscription"),
             cell: (row) => (
@@ -224,7 +224,7 @@ export default function TransactionTab({ defaultPurpose, allowedPurposes }) {
                     )}
                 </div>
             ),
-        },
+        }] : []),
         {
             key: "amount",
             header: t("columns.amount"),

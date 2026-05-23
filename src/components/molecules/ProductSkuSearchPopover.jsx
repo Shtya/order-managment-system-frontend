@@ -263,6 +263,8 @@ export function ProductSkuSearchPopover({
   productId,
   initialSearch,
   trigger,
+  width,
+  className = "",
 }) {
   const t = useTranslations("productSearch");
 
@@ -412,7 +414,7 @@ export function ProductSkuSearchPopover({
   const showIdle = !isSearching && debounced.length < 2;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={setOpen} className={className}>
       {/* ── Trigger ───────────────────────────────────────────────────── */}
       <PopoverTrigger asChild>
         {trigger ? (
@@ -449,9 +451,8 @@ export function ProductSkuSearchPopover({
 
       {/* ── Panel ─────────────────────────────────────────────────────── */}
       <PopoverContent
-        className="p-0 border-0 shadow-none"
-        align="start"
-        style={{ width: Math.max(triggerWidth + 24, 380) }}
+        className={`p-0 border-0 shadow-none`}
+        style={{ width: width || Math.max(triggerWidth + 24, 380) }}
         onInteractOutside={() => closeOnOutsideClick && setOpen(false)}
         onEscapeKeyDown={() => setOpen(false)}
       >

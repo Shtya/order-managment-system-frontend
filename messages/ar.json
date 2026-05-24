@@ -6347,7 +6347,8 @@
       "createdAt": "تاريخ الإنشاء",
       "lastUpdate": "آخر تحديث",
       "feature": "الميزة المشتراة",
-      "subscription": "باقة الاشتراك"
+      "subscription": "باقة الاشتراك",
+      "amountInDollar": "اللمبلغ بالدولار"
     },
     "purposes": {
       "wallet_top_up": "شحن محفظة",
@@ -7727,10 +7728,12 @@
     "deposit": {
       "title": "شحن المحفظة",
       "subtitle": "أضف رصيد إلى محفظتك",
-      "amountLabel": "المبلغ المراد شحنه",
-      "amountPlaceholder": "أدخل المبلغ",
-      "quickAmounts": "مبالغ سريعة",
+      "amountLabel": "المبلغ (بالجنيه)",
+      "amountPlaceholder": "أدخل المبلغ بالجنيه",
+      "usdEquivalentLabel": "ما يعادل بالدولار",
+      "quickAmounts": "اختيار سريع (بناءً على الدولار)",
       "info": "سيتم تحويلك إلى صفحة الدفع لإتمام عملية الشحن بشكل آمن",
+      "convertedInfo": "سوف تدفع {amount} {currency} ({result} {targetCurrency} بناءً على سعر الصرف الحالي)",
       "cta": "إيداع الآن"
     },
     "errors": {
@@ -7845,7 +7848,7 @@
     }
   },
   "orders-work": {
-      "description": "الوصف",
+    "description": "الوصف",
     "showMore": "عرض المزيد",
     "showLess": "عرض أقل",
     "retries": "المحاولات",

@@ -11,3 +11,6 @@ export function tenantId(me) {
 
 
 export const platformCurrency = `${process.env.NEXT_PUBLIC_PLATFOMR_CURRENCY}`;
+
+export const dollor = "USD"
+export const dollorSign = "$"

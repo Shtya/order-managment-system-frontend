@@ -86,7 +86,7 @@ export function PlatformSettingsProvider({ children }) {
   }, [company, isCompanyLoading]);
 
 
-  const formatCurrency = useCallback((amount, defaultCurrency) => {
+  const formatCurrency = useCallback((amount, defaultCurrency, sign) => {
     if (amount === undefined || amount === null) return "—";
 
     const formatted = Number(amount).toLocaleString("en-US", {
@@ -94,7 +94,7 @@ export function PlatformSettingsProvider({ children }) {
       maximumFractionDigits: 2,
     });
 
-    return `${formatted} ${(defaultCurrency || currency).trim()}`;
+    return `${formatted} ${(sign || defaultCurrency || currency).trim()}`;
   }, [currency]);
 
   return (

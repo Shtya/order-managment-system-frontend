@@ -20,7 +20,7 @@ import { useDebounce } from "@/hook/useDebounce";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/utils/cn";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
-import { platformCurrency } from "@/utils/healpers";
+import { dollor, dollorSign, platformCurrency } from "@/utils/healpers";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 
 
@@ -48,7 +48,7 @@ export const PaymentPurposeEnum = {
     FEATURE_PURCHASE: 'feature_purchase'
 };
 
-export default function TransactionTab({ defaultPurpose, allowedPurposes, showRelations = true }) {
+export default function TransactionTab({ defaultPurpose, allowedPurposes, showRelations = true, showDollar = false }) {
     const t = useTranslations("plans")
     const router = useRouter()
 
@@ -234,6 +234,15 @@ export default function TransactionTab({ defaultPurpose, allowedPurposes, showRe
                 </span>
             ),
         },
+        ...(showDollar ? [{
+            key: "amount",
+            header: t("columns.amountInDollar"),
+            cell: (row) => (
+                <span className="font-semibold text-blue-600 dark:text-blue-400 tabular-nums">
+                    {formatCurrency(row.amountInDollars, dollor, dollorSign)}
+                </span>
+            ),
+        }] : []),
         {
             key: "status",
             header: t("columns.status"),

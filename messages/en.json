@@ -6313,7 +6313,8 @@
       "createdAt": "Created At",
       "lastUpdate": "Last Update",
       "feature": "Purchased feature",
-      "subscription": "Subscription"
+      "subscription": "Subscription",
+      "amountInDollar": "The amount is in dollars"
     },
     "purposes": {
       "wallet_top_up": "Wallet top-up",
@@ -7689,12 +7690,14 @@
       "subtitle": "Track all deposits and withdrawals"
     },
     "deposit": {
-      "title": "Deposit Balance",
-      "subtitle": "Add funds instantly to your wallet",
-      "amountLabel": "Amount (Egyptian Pound)",
-      "amountPlaceholder": "Enter amount",
-      "quickAmounts": "Quick amounts",
-      "info": "You will be redirected to the payment page to complete your deposit securely",
+      "title": "Deposit Funds",
+      "subtitle": "Add balance to your wallet",
+      "amountLabel": "Amount (EGP)",
+      "amountPlaceholder": "Enter amount in EGP",
+      "usdEquivalentLabel": "Equivalent in USD",
+      "quickAmounts": "Quick Select (USD based)",
+      "info": "Funds will be added to your balance after successful payment.",
+      "convertedInfo": "You will pay {{mount} {currency} ({result} {targetCurrency} based on current rate)",
       "cta": "Deposit Now"
     },
     "errors": {

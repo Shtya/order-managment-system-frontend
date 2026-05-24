@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import PageHeader from "@/components/atoms/Pageheader";
@@ -10,6 +10,8 @@ import toast from "react-hot-toast";
 import { Loader2, Plus } from "lucide-react";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import TransactionTab from "../dashboard/plans/tabs/transactionTab";
+import { dollor, dollorSign, platformCurrency } from "@/utils/healpers";
+import { convertEgpToUsd, convertUsdToEgp, useCurrencyRate } from "@/hook/useCurrencyRate";
 
 // ─── Payment Purpose Enum ─────────────────────────────────────────────────────
 const PaymentPurposeEnum = {
@@ -46,18 +48,21 @@ const ArrowUpIcon = ({ size = 16 }) => (
   </svg>
 );
 
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function WalletPage() {
   const t = useTranslations("wallet");
-  const { formatCurrency, currency } = usePlatformSettings();
+  const { formatCurrency } = usePlatformSettings();
   const [wallet, setWallet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const { rate, fetchRate } = useCurrencyRate();
 
   // Fetch wallet data
   useEffect(() => {
     fetchWallet();
+    fetchRate("USD", "EGP", 1);
   }, [refreshKey]);
 
   const fetchWallet = async () => {
@@ -99,21 +104,21 @@ export default function WalletPage() {
     {
       id: "currentBalance",
       name: t("stats.currentBalance"),
-      value: formatCurrency(wallet?.currentBalance || 0),
+      value: formatCurrency(wallet?.currentBalance || 0, dollor, dollorSign),
       icon: WalletIcon,
       color: "#8b5cf6",
     },
     {
       id: "totalCharged",
       name: t("stats.totalCharged"),
-      value: formatCurrency(wallet?.totalCharged || 0),
+      value: formatCurrency(wallet?.totalCharged || 0, dollor, dollorSign),
       icon: TrendingUpIcon,
       color: "#10b981",
     },
     {
       id: "totalWithdrawn",
       name: t("stats.totalWithdrawn"),
-      value: formatCurrency(wallet?.totalWithdrawn || 0),
+      value: formatCurrency(wallet?.totalWithdrawn || 0, dollor, dollorSign),
       icon: TrendingDownIcon,
       color: "#ef4444",
     },
@@ -174,6 +179,7 @@ export default function WalletPage() {
               PaymentPurposeEnum.WALLET_TOP_UP,
               PaymentPurposeEnum.WALLET_WITHDRAWAL,
             ]}
+            showDollar={true}
             showRelations={false}
             onTransactionUpdate={handleTransactionUpdate}
           />
@@ -186,8 +192,9 @@ export default function WalletPage() {
           <DepositModal
             onClose={() => setShowDepositModal(false)}
             onDeposit={handleDeposit}
+            rate={rate}
             t={t}
-            currency={currency}
+            currency={platformCurrency}
           />
         )}
       </AnimatePresence>
@@ -195,10 +202,34 @@ export default function WalletPage() {
   );
 }
 
-function DepositModal({ onClose, onDeposit, t, currency }) {
-  const [amount, setAmount] = useState("");
+function DepositModal({ onClose, onDeposit, t, currency, rate: usdToEgp }) {
+  const [amount, setAmount] = useState(300);
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState("");
+
+  // Set default amount to $5 in EGP
+  // useEffect(() => {
+  //   if (usdToEgp && !amount) {
+  //     const usd = 5;
+
+  //     const result = convertUsdToEgp(usd, usdToEgp);
+      
+  //     setAmount(result.toString());
+  //   }
+  // }, [usdToEgp]);
+
+  const convertedToUsd = useMemo(() => {
+    if (!amount || !usdToEgp) return null;
+
+    const amt = parseFloat(amount);
+
+    if (isNaN(amt)) return null;
+
+    const result = convertEgpToUsd(amt, usdToEgp);
+
+    return result;
+  }, [amount, usdToEgp]);
+
 
   async function submit(e) {
     e.preventDefault();
@@ -213,7 +244,7 @@ function DepositModal({ onClose, onDeposit, t, currency }) {
     setErr("");
 
     try {
-      await onDeposit(amt);
+      await onDeposit(amount);
     } catch (error) {
       setErr(error?.response?.data?.message || t("errors.depositFailed"));
     } finally {
@@ -270,6 +301,7 @@ function DepositModal({ onClose, onDeposit, t, currency }) {
               <input
                 type="number"
                 min="0"
+                step="0.01"
                 value={amount}
                 onChange={(e) => {
                   setAmount(e.target.value);
@@ -281,6 +313,24 @@ function DepositModal({ onClose, onDeposit, t, currency }) {
               />
               <span className="absolute end-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-gray-500 dark:text-gray-400">
                 {currency}
+              </span>
+            </div>
+          </div>
+
+          {/* USD Equivalent (Disabled) */}
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-400 dark:text-gray-500">
+              {t("deposit.usdEquivalentLabel")}
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={convertedToUsd || "0.00"}
+                readOnly
+                className="w-full h-12 px-4 pe-16 rounded-xl border-2 border-dashed border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/50 text-gray-400 dark:text-gray-500 cursor-not-allowed outline-none"
+              />
+              <span className="absolute end-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-gray-400 dark:text-gray-500">
+                {dollorSign}
               </span>
             </div>
             {err && (
@@ -295,18 +345,22 @@ function DepositModal({ onClose, onDeposit, t, currency }) {
             <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
               {t("deposit.quickAmounts")}
             </p>
-            <div className="grid grid-cols-4 gap-2">
-              {[100, 500, 1000, 5000].map((quick) => (
-                <button
-                  key={quick}
-                  type="button"
-                  onClick={() => setAmount(String(quick))}
-                  disabled={submitting}
-                  className="px-3 py-2 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-primary/10 dark:hover:bg-primary/20 border border-gray-200 dark:border-slate-700 hover:border-primary text-sm font-bold text-gray-700 dark:text-gray-300 transition-all disabled:opacity-50"
-                >
-                  {quick}
-                </button>
-              ))}
+            <div className="grid grid-cols-5 gap-2">
+              {[5, 10, 25, 50, 100].map((usdAmount) => {
+                  const egpVal = convertUsdToEgp(usdAmount, usdToEgp);
+
+                return (
+                  <button
+                    key={usdAmount}
+                    type="button"
+                    onClick={() => setAmount(String(egpVal))}
+                    disabled={submitting || !usdToEgp}
+                    className="px-1 py-2 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-primary/10 dark:hover:bg-primary/20 border border-gray-200 dark:border-slate-700 hover:border-primary text-[10px] font-bold text-gray-700 dark:text-gray-300 transition-all disabled:opacity-50 flex flex-col items-center justify-center gap-0.5"
+                  >
+                    <span>{usdAmount}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 

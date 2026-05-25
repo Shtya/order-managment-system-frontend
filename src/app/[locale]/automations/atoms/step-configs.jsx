@@ -582,6 +582,44 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
 }
 
 /**
+ * Action: Send Upsell
+ */
+export function SendUpsellConfig({ value, onChange, onClose }) {
+    useEffect(() => {
+        const branches = [
+            {
+                id: "skipped",
+                label: "لا يوجد عرض",
+                condition: "skipped"
+            },
+            {
+                id: "accept",
+                label: "قبول أي عرض",
+                condition: "accept"
+            },
+            {
+                id: "reject",
+                label: "رفض أي عرض",
+                condition: "reject"
+            }
+        ];
+
+        // We only update if branches are not already set correctly to avoid infinite loops
+        const currentBranchIds = value.branches?.map(b => b.id).join(',');
+        const targetBranchIds = branches.map(b => b.id).join(',');
+
+        if (currentBranchIds !== targetBranchIds) {
+            onClose({
+                ...value,
+                branches
+            });
+        }
+    }, [value, onClose]);
+
+    return null; // This component doesn't render any UI, it just sets the branches
+}
+
+/**
  * Condition: Order Check
  * onClose(config to set and save or null to just close)
  */

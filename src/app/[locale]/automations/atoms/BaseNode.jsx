@@ -12,6 +12,7 @@ import { useAuth } from '@/context/AuthContext';
 export function BaseNode({
     id,
     data,
+    noEdit = false,
     selected,
     title,
     subtitle,
@@ -139,7 +140,7 @@ export function BaseNode({
         };
     }, [selected, id, deleteNode]);
 
-    const preventEdit = isSuperAdmin && nodeType === 'trigger' && data.type === 'order_created';
+    const preventEdit = noEdit || (isSuperAdmin && nodeType === 'trigger' && data.type === 'order_created');
 
     return (
         <motion.div

@@ -5,11 +5,7 @@ import { PlusCircle, Trash2, Smile, Bold, Italic, Strikethrough, Code, Info } fr
 import { cn } from "@/utils/cn";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useTranslations } from "next-intl";
-import data from '@emoji-mart/data'
-import Picker from '@emoji-mart/react'
 import WhatsAppMessageBodyBuilder from "./WhatsAppMessageBodyBuilder";
 import MediaUpload from "@/app/[locale]/whatsapp/atoms/MediaUpload";
 
@@ -17,6 +13,7 @@ export default function InteractiveMessageBuilder({
   value,
   onChange,
   errors = {},
+  setHeaderMediaFile,
   config = {
     minButtons: 1,
     maxButtons: 3,
@@ -34,6 +31,17 @@ export default function InteractiveMessageBuilder({
     footerText = "",
     buttons = []
   } = value || {};
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setHeaderMediaFile(file);
+      const url = URL.createObjectURL(file);
+      onChange({ ...value, headerUrl: url });
+    }
+    e.target.value = "";
+  };
+
 
   const handleUpdate = (updates) => {
     onChange({ ...value, ...updates });
@@ -76,7 +84,10 @@ export default function InteractiveMessageBuilder({
               <button
                 key={type}
                 type="button"
-                onClick={() => handleUpdate({ headerType: type, headerText: "", headerUrl: "" })}
+                onClick={() => {
+                  setHeaderMediaFile?.(null);
+                  handleUpdate({ headerType: type, headerText: "", headerUrl: "" });
+                }}
                 className={cn(
                   "px-4 py-2 rounded-lg text-sm font-medium transition-colors border",
                   headerType === type
@@ -108,6 +119,7 @@ export default function InteractiveMessageBuilder({
                 type={headerType}
                 url={headerUrl}
                 onUrlChange={(url) => handleUpdate({ headerUrl: url })}
+                onFileChange={(file) => handleFileChange(file)}
               />
               {errors.headerUrl && <p className="text-[11px] text-red-500">{errors.headerUrl.message || errors.headerUrl}</p>}
             </div>

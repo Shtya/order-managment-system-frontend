@@ -140,10 +140,11 @@ function SkuSelectorModal({ isOpen, onClose, product, onSelect, selectedSkus = [
 }
 
 export default function UpsellsAddPage() {
+  const isEdit = false;
   const router = useRouter();
   const tCommon = useTranslations("common");
-  const t = useTranslations("upsells");
   const tValidation = useTranslations("validation");
+  const t = useTranslations("upsells");
   const { formatCurrency, currency } = usePlatformSettings();
   const locale = useLocale();
   const isRtl = locale === 'ar';
@@ -151,6 +152,7 @@ export default function UpsellsAddPage() {
   const [submitting, setSubmitting] = useState(false);
   const [upsellProduct, setUpsellProduct] = useState(null);
   const [skuModalOpen, setSkuModalOpen] = useState(false);
+  const [headerMediaFile, setHeaderMediaFile] = useState(null);
 
   const schema = useMemo(() => yup.object({
     triggerProductId: yup.string().notOneOf(["all"], tValidation("productRequired")).required(tValidation("productRequired")),
@@ -196,8 +198,8 @@ export default function UpsellsAddPage() {
         bodyText: "",
         footerText: "هل تريد اضافتة لطلبك؟",
         buttons: [
-          { text: "أضف للطلب" },
-          { text: "لا شكرا" }
+          { text: "✅ أضف للطلب" },
+          { text: "❌ لا شكرا" }
         ]
       }
     }
@@ -228,34 +230,66 @@ export default function UpsellsAddPage() {
       api.get(`/products/${upsellProductId}`).then(res => {
         setUpsellProduct(res.data);
         setValue("messageConfig.headerUrl", res.data.mainImage || "");
-        setValue("messageConfig.bodyText", `لأنك إشتريت من عندنا ليك العرض ده\n${res.data.name}\n\nالسعر: ${price || res.data.skus?.[0]?.price || 0} ${currency}`);
+        setValue("messageConfig.bodyText", `لأنك إشتريت من عندنا ليك العرض ده\n\n${res.data.name}\n\nالسعر: ${price || res.data.skus?.[0]?.price || 0} ${currency}`);
       });
     }
   }, [upsellProductId, setValue, currency]);
 
   // Sync price to message body
+
   useEffect(() => {
     if (upsellProduct) {
-      setValue("messageConfig.bodyText", `لأنك إشتريت من عندنا ليك العرض ده\n${upsellProduct.name}\n\nالسعر: ${price || upsellProduct.skus?.[0]?.price || 0} ${currency}`);
+      setValue("messageConfig.bodyText", `لأنك إشتريت من عندنا ليك العرض ده\n\n🎁${upsellProduct.name}\n\n⚡ السعر: ${price || upsellProduct.skus?.[0]?.price || 0} ${currency}`);
     }
   }, [price, upsellProduct, setValue, currency]);
 
   const onSubmit = async (data) => {
     setSubmitting(true);
     try {
+      const headerUrl = data.messageConfig.headerUrl;
+      const blob = headerUrl && String(headerUrl).startsWith("blob:");
+      const isUrl = headerUrl && (String(headerUrl).startsWith("http://") || String(headerUrl).startsWith("https://"));
+      const isRelativePath = headerUrl && (String(headerUrl).startsWith("uploads/") || String(headerUrl).startsWith("/uploads/"));
+
+      // Allow URL or relative path without requiring file upload
+      if (!isEdit && !headerMediaFile && !isUrl && !isRelativePath) {
+        toast.error(t("validation.mediaHeaderFileRequired"));
+        return;
+      }
+      if (isEdit && blob && !headerMediaFile && !isUrl && !isRelativePath) {
+        toast.error(t("validation.mediaHeaderMustReupload"));
+        return;
+      }
+
+      let forcedUrl = "";
+      // 2. معالجة رفع الملفات إن وجدت قبل تحديث القالب
+      if (headerMediaFile) {
+        const fdMedia = new FormData();
+        fdMedia.append("headerMedia", headerMediaFile);
+        const up = await api.post("/upsells/upload-header-media", fdMedia);
+        forcedUrl = up.data?.headerUrl;
+      } else if (isUrl || isRelativePath) {
+        // Pass URL or relative path to backend
+        forcedUrl = headerUrl;
+      }
+
       const payload = {
         triggerProductId: data.triggerProductId,
         upsellProductId: data.upsellProductId,
         upsellSkuId: data.selectedSku.id,
         upsellPrice: Number(data.price),
-        expireTimeMs: data.expireTimeEnabled ? Number(data.expireTime) * 60 * 1000 : null,
-        messageConfig: data.messageConfig
+        expireTimeM: data.expireTimeEnabled ? Number(data.expireTime) : null,
+        messageConfig: {
+          ...data.messageConfig,
+          headerUrl: forcedUrl
+        }
       };
 
       await api.post("/upsells", payload);
       toast.success(t("messages.createSuccess"));
       router.push("/upsells");
     } catch (err) {
+      console.log(err);
       toast.error(err?.response?.data?.message || tCommon("error"));
     } finally {
       setSubmitting(false);
@@ -300,6 +334,7 @@ export default function UpsellsAddPage() {
                     control={control}
                     render={({ field }) => (
                       <ProductFilter
+                        showAllOption={false}
                         label={t("table.triggerProduct")}
                         value={field.value}
                         onChange={field.onChange}
@@ -317,6 +352,7 @@ export default function UpsellsAddPage() {
                     control={control}
                     render={({ field }) => (
                       <ProductFilter
+                        showAllOption={false}
                         label={t("table.upsellProduct")}
                         value={field.value}
                         onChange={field.onChange}
@@ -433,6 +469,7 @@ export default function UpsellsAddPage() {
                   <InteractiveMessageBuilder
                     value={field.value}
                     onChange={field.onChange}
+                    setHeaderMediaFile={setHeaderMediaFile}
                     errors={errors.messageConfig}
                     config={{
                       minButtons: 2,

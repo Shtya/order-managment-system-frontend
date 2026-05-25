@@ -92,7 +92,7 @@ export default function MediaUpload({
                             اسحب ال{getTypeName()} وأفلته أو اختر ملفًا
                         </p>
                         <p className="text-xs text-slate-500 mb-6">
-                            أقصى حجم للملف: 5 ميجابايت
+                            أقصى حجم للملف: 50 ميجابايت
                         </p>
 
                         <div className="flex gap-3">

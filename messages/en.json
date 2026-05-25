@@ -9697,7 +9697,7 @@
     "table": {
       "triggerProduct": "Trigger Product",
       "upsellProduct": "Upsell Product",
-      "time": "Time (ms)",
+      "time": "Time (minute)",
       "status": "Status",
       "price": "Upsell Price",
       "empty": "No upsells found",
@@ -9722,14 +9722,18 @@
     "messages": {
       "deleteSuccess": "Upsell deleted successfully",
       "statusUpdateSuccess": "Upsell status updated successfully",
-      "statsFailed": "Failed to load statistics"
+      "statsFailed": "Failed to load statistics",
+      "createSuccess": "Upsell created successfully",
+      "loading": "Loading..."
     },
     "validation": {
       "skuRequired": "SKU selection is required",
       "expireTimeRequired": "Expiration time is required",
       "bodyTextRequired": "Message body text is required",
       "buttonTextRequired": "Button text is required",
-      "buttonsRequired": "At least 2 buttons are required"
+      "buttonsRequired": "At least 2 buttons are required",
+      "mediaHeaderFileRequired": "Upload a file for this header type (Image, Video, or Document)",
+      "mediaHeaderMustReupload": "You must re-upload the file or provide a valid link"
     },
     "builder": {
       "header": "Header",

@@ -357,6 +357,7 @@
     "syncFailures": "Product Sync Errors",
     "administration": "Purchases",
     "synchronization": "Synchronization",
+    "upsell": "Upsells",
     "finance": "Plans & Subscriptions",
     "team": "Team",
     "safes": "Safes",
@@ -9674,5 +9675,80 @@
       "bulkDeleteSuccess": "{count} errors deleted successfully"
     }
   },
-  "error": {}
+  "error": {},
+  "upsells": {
+    "pageTitle": "Upsells Management",
+    "pageSubtitle": "Manage and track product upsell offers",
+    "breadcrumb": {
+      "home": "Home",
+      "upsells": "Upsells"
+    },
+    "toolbar": {
+      "addUpsell": "Add New Upsell",
+      "searchPlaceholder": "Search upsells..."
+    },
+    "stats": {
+      "sent": "Sent Upsells",
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "noAnswer": "No Answer",
+      "acceptedAfterTime": "Accepted after the offer ends"
+    },
+    "table": {
+      "triggerProduct": "Trigger Product",
+      "upsellProduct": "Upsell Product",
+      "time": "Time (ms)",
+      "status": "Status",
+      "price": "Upsell Price",
+      "empty": "No upsells found",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "filters": {
+      "status": "Status",
+      "product": "Product",
+      "date": "Date Range"
+    },
+    "actions": {
+      "preview": "Preview Upsell",
+      "edit": "Edit Upsell",
+      "delete": "Delete Upsell",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "confirmDelete": "Are you sure you want to delete this upsell?",
+      "accept": "Accept Offer",
+      "reject": "No Thanks"
+    },
+    "messages": {
+      "deleteSuccess": "Upsell deleted successfully",
+      "statusUpdateSuccess": "Upsell status updated successfully",
+      "statsFailed": "Failed to load statistics"
+    },
+    "validation": {
+      "skuRequired": "SKU selection is required",
+      "expireTimeRequired": "Expiration time is required",
+      "bodyTextRequired": "Message body text is required",
+      "buttonTextRequired": "Button text is required",
+      "buttonsRequired": "At least 2 buttons are required"
+    },
+    "builder": {
+      "header": "Header",
+      "optional": "Optional",
+      "body": "Body",
+      "footer": "Footer",
+      "buttons": "Buttons",
+      "buttonPlaceholder": "Button text...",
+      "addButton": "Add Button",
+      "headerPlaceholder": "Enter header text (max 60 characters)",
+      "footerPlaceholder": "Enter small text at bottom (max 60 characters)",
+      "bodyPlaceholder": "Enter main message text...",
+      "headerTypes": {
+        "NONE": "None",
+        "TEXT": "Text",
+        "IMAGE": "Image",
+        "VIDEO": "Video",
+        "DOCUMENT": "Document"
+      }
+    }
+  }
 }

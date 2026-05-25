@@ -1782,7 +1782,7 @@ export default function PurchasesPage() {
 				),
 			},
 		];
-	}, [t,currency]);
+	}, [t, currency]);
 
 	return (
 		<div className="min-h-screen p-5">

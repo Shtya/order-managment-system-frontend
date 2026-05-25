@@ -271,7 +271,9 @@ function DepositModal({ onClose, onDeposit, t, currency, rate: usdToEgp }) {
         {/* Header */}
         <div className="relative overflow-hidden px-6 py-5 bg-gradient-to-br from-primary/10 to-primary/5 border-b border-gray-200 dark:border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
+            <div className="w
+            
+            -12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
               <Plus size={24} className="text-white" />
             </div>
             <div className="flex-1">

@@ -1483,7 +1483,7 @@ function ActionBar({ order, allowedStatuses, changingStatus, selStatusId, isLock
 }
 
 // ─── UPSELL MODAL ──────────────────────────────────────────────────────────
-function UpsellModal({ isOpen, onClose, product: upProduct, handleSelectSku, selectedSkus, isRtl }) {
+export function UpsellModal({ isOpen, onClose, product: upProduct, handleSelectSku, selectedSkus, isRtl }) {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);

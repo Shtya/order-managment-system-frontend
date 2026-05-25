@@ -26,6 +26,8 @@ export default function ProductFilter({
 	title,
 	showAllOption = true,
 	excludeIds = [],
+	mode,
+	triggerId,
 }) {
 	const t = useTranslations("products.common");
 	const fieldLabel = label ?? t("productName");
@@ -97,6 +99,10 @@ export default function ProductFilter({
 
 	useEffect(() => {
 		const fetchProducts = async () => {
+			if (mode === "upsell" && !triggerId) {
+				setProducts([]);
+				return;
+			}
 			setLoading(true);
 			try {
 				const res = await api.get("/products", {
@@ -104,6 +110,8 @@ export default function ProductFilter({
 						type: "PRODUCT",
 						search: debouncedTerm || undefined,
 						limit: multiple ? 50 : 5,
+						mode,
+						triggerId,
 					},
 				});
 				const data = Array.isArray(res.data) ? res.data : res.data?.records || [];
@@ -115,7 +123,7 @@ export default function ProductFilter({
 			}
 		};
 		fetchProducts();
-	}, [debouncedTerm, multiple]);
+	}, [debouncedTerm, multiple, mode, triggerId]);
 
 	const triggerPlaceholderSingle = title ?? t("allProducts");
 	const triggerPlaceholderMulti = title ?? t("selectProducts");
@@ -137,7 +145,7 @@ export default function ProductFilter({
 			count > 0 ? t("selectedCount", { count }) : triggerPlaceholderMulti;
 
 		return (
-			<FilterField label={fieldLabel} lableClass={multiple ? "text-[13px] font-medium text-gray-500 dark:text-slate-400 tracking-wide" : null }>
+			<FilterField label={fieldLabel} lableClass={multiple ? "text-[13px] font-medium text-gray-500 dark:text-slate-400 tracking-wide" : null}>
 				<Popover open={open} onOpenChange={setOpen}>
 					<PopoverTrigger asChild>
 						<Button

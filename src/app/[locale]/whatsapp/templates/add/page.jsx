@@ -53,7 +53,7 @@ import {
 import Button_ from "@/components/atoms/Button";
 import PageHeader from "@/components/atoms/Pageheader";
 import TemplatePreview from "../../atoms/TemplatePreview";
-import MediaUpload from "../../atoms/MediaUpload";
+import WhatsAppMessageBodyBuilder from "@/components/molecules/WhatsAppMessageBodyBuilder";
 import TemplateButtonBuilder from "../../atoms/TemplateButtonBuilder";
 import MetaTemplateDialog from "../../atoms/MetaTemplateDialog";
 import { InternalTemplateDialog } from "../../atoms/InternalTemplateDialog";
@@ -122,7 +122,7 @@ const mapMetaSubCategory = (category, subCategory) => {
     const categoryObj = CATEGORIES.find(
         (c) => c.id?.toLowerCase() === category?.toLowerCase()
     );
-    
+
     const subExists = categoryObj?.subcategories.some(
         (s) => s.id?.toLowerCase() === subCategory?.toLowerCase()
     );
@@ -556,7 +556,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
             const blob = data.headerUrl && String(data.headerUrl).startsWith("blob:");
             const isUrl = data.headerUrl && (String(data.headerUrl).startsWith("http://") || String(data.headerUrl).startsWith("https://"));
             const isRelativePath = data.headerUrl && (String(data.headerUrl).startsWith("uploads/") || String(data.headerUrl).startsWith("/uploads/"));
-            
+
             // Allow URL or relative path without requiring file upload
             if (!isEdit && !headerMediaFile && !isUrl && !isRelativePath) {
                 toast.error(tForm("validation.mediaHeaderFileRequired"));
@@ -587,7 +587,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                 let forcedUrl;
                 const isUrl = data.headerUrl && (String(data.headerUrl).startsWith("http://") || String(data.headerUrl).startsWith("https://"));
                 const isRelativePath = data.headerUrl && (String(data.headerUrl).startsWith("uploads/") || String(data.headerUrl).startsWith("/uploads/"));
-                
+
                 // 2. معالجة رفع الملفات إن وجدت قبل تحديث القالب
                 if (headerMediaFile) {
                     const fdMedia = new FormData();
@@ -633,7 +633,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                 } else {
                     templateConfig = buildTemplateConfigPayload(data, variableSamples);
                 }
-                
+
                 fd.append("templateConfig", JSON.stringify(templateConfig));
 
                 await api.post("/whatsapp-templates", fd, {
@@ -705,7 +705,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
         setValue("name", name);
         setValue("language", language === "en_US" ? "en" : language);
         setValue("category", category?.toUpperCase());
-        
+
         // Map subcategory if it matches our internal IDs, otherwise fallback to default
         const mappedSubCategory = mapMetaSubCategory(category, subCategory);
         setValue("subcategory", mappedSubCategory);
@@ -1036,104 +1036,16 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
 
                                 {/* Body Settings */}
                                 {activeSubcategory?.sections.includes("body") && (
-                                    <div className="space-y-3 mb-8 relative">
-                                        <div className="flex justify-between items-center">
-                                            <Label className="text-base">النص <span className="text-red-500">*</span></Label>
-                                            <div className="flex items-center gap-3">
-                                                <span className="text-xs text-slate-400">أضف متغيرات مثل {'{{1}}'}</span>
-                                                <span className={cn(
-                                                    "text-xs font-mono px-2 py-0.5 rounded-full",
-                                                    (templateData.bodyText?.length || 0) > MAX_BODY_LENGTH * 0.9
-                                                        ? "bg-red-50 text-red-500"
-                                                        : "bg-slate-100 text-slate-500"
-                                                )}>
-                                                    {templateData.bodyText?.length || 0} / {MAX_BODY_LENGTH}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <Textarea
-                                            {...control.register("bodyText")}
-                                            ref={(e) => {
-                                                control.register("bodyText").ref(e);
-                                                textareaRef.current = e;
-                                            }}
-                                            id="template-body-textarea"
-                                            placeholder="أدخل نص الرسالة الرئيسي..."
-                                            className={cn(
-                                                "min-h-[140px] resize-y bg-white dark:bg-slate-950 border-slate-200 focus:ring-primary/20",
-                                                errors.bodyText && "border-red-500 focus:ring-red-500"
-                                            )}
-                                            value={templateData.bodyText}
-                                            onChange={handleBodyChange}
-                                        />
-                                        {errors.bodyText && <p className="text-xs text-red-500">{errors.bodyText.message}</p>}
-
-                                        {/* 2. Actions Toolbar Under Input */}
-                                        <div className="flex items-center justify-between px-2 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm">
-                                            <div className="flex items-center gap-1">
-                                                {/* Emoji Picker */}
-                                                <Popover open={emojiPickerOpen} onOpenChange={setEmojiPickerOpen}>
-                                                    <PopoverTrigger asChild>
-                                                        <button type="button" className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md text-slate-600 transition-colors">
-                                                            <Smile size={18} />
-                                                        </button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0 border-none shadow-xl" side="top" align="start">
-                                                        <Picker
-                                                            data={data}
-                                                            onEmojiSelect={addEmoji}
-                                                            theme={document?.documentElement.classList.contains('dark') ? 'dark' : 'light'}
-                                                        />
-                                                    </PopoverContent>
-                                                </Popover>
-
-                                                <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1" />
-
-                                                {/* Formatting Buttons */}
-                                                <ToolbarButton icon={<Bold size={16} />} onClick={() => insertText("bold")} tooltip="عريض" />
-                                                <ToolbarButton icon={<Italic size={16} />} onClick={() => insertText("italic")} tooltip="مائل" />
-                                                <ToolbarButton icon={<Strikethrough size={16} />} onClick={() => insertText("strike")} tooltip="يتوسطه خط" />
-                                                <ToolbarButton icon={<Code size={16} />} onClick={() => insertText("mono")} tooltip="عرض ثابت" />
-
-                                                <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1" />
-
-                                                {/* Variable Button */}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => insertText("variable")}
-                                                    className="flex items-center gap-1.5 px-2 py-1 hover:bg-primary/10 text-primary rounded-md transition-colors text-xs font-bold"
-                                                >
-                                                    <PlusCircle size={16} />
-                                                    إضافة متغير
-                                                </button>
-                                            </div>
-
-                                            <div className="flex items-center gap-2 text-slate-400">
-                                                <Info size={14} />
-                                            </div>
-                                        </div>
-
-
-                                        {/* Variable Samples for Body */}
-                                        <VariableSamplesSection
-                                            type="body"
-                                            samples={variableSamples.body}
-                                            onSampleChange={(num, val) => {
-                                                const nextBody = { ...variableSamples.body, [num]: val };
-                                                setVariableSamples((prev) => ({
-                                                    ...prev,
-                                                    body: nextBody
-                                                }));
-                                                const nums = [...new Set(extractVariableNames(templateData.bodyText || ""))];
-                                                if (nums.length && nums.every((n) => (nextBody[n] ?? "").toString().trim())) {
-                                                    setVariableSamplesErrors((err) => ({ ...err, body: "" }));
-                                                }
-                                            }}
-                                        />
-                                        {variableSamplesErrors.body && (
-                                            <p className="text-[11px] text-red-500 mt-1">{variableSamplesErrors.body}</p>
-                                        )}
-                                    </div>
+                                    <WhatsAppMessageBodyBuilder
+                                        value={templateData.bodyText}
+                                        onChange={handleBodyChange}
+                                        label="النص"
+                                        placeholder="أدخل نص الرسالة الرئيسي..."
+                                        allowVariables={true}
+                                        onInsertVariable={() => insertText("variable")}
+                                        error={errors.bodyText?.message}
+                                        className="mb-8"
+                                    />
                                 )}
 
                                 <div className="h-px bg-slate-100 dark:bg-slate-800 my-6" />

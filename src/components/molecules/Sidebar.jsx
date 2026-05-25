@@ -639,6 +639,12 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       ],
     },
     {
+      labelKey: "upsell",
+      href: "/upsells",
+      icon: FaChartPie,
+      permission: "upsells.read",
+    },
+    {
       icon: FaWhatsapp,
       labelKey: "whatsapp",
       href: "/whatsapp",

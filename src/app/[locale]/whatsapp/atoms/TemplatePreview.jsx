@@ -182,7 +182,7 @@ export function WhatsAppCallPermissionsBubble({ locale = "en", onOpenMenu }) {
  * @param {boolean} [flat]
  * @param {boolean} [hasHeader]
  */
-export default function TemplatePreview({ template, flat = false, hasHeader = true, seeAllOptionsLabel }) {
+export default function TemplatePreview({ template, flat = false, hasHeader = true, seeAllOptionsLabel, isInteractive = false }) {
     const t = useTranslations("whatsApp.templates");
     const [showExamples, setShowExamples] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -223,8 +223,8 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
         otpCopyButtonText = "",
         authMethod = "COPY_CODE",
     } = cfgSource != null
-        ? { bodyText: "", buttons: [], examples: {}, ...cfgSource }
-        : { bodyText: "", buttons: [], examples: {} };
+            ? { bodyText: "", buttons: [], examples: {}, ...cfgSource }
+            : { bodyText: "", buttons: [], examples: {} };
 
     const parsedBodyParts = useMemo(() => {
         const text =
@@ -508,25 +508,33 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                                                     key={btn.id || idx}
                                                     className={cn(
                                                         "py-2.5 px-3 flex items-center justify-center gap-2 text-[#00a884] dark:text-[#00a884] font-medium text-[13px] hover:bg-slate-50 dark:hover:bg-white/5 cursor-default transition-colors",
-                                                        idx > 0 && "border-t border-slate-100 dark:border-slate-800"
+                                                        idx > 0 && "border-t border-slate-100 dark:border-slate-800",
+                                                        isInteractive && btn.text === "أضف للطلب" && "text-emerald-600",
+                                                        isInteractive && btn.text === "لا شكرا" && "text-rose-500"
                                                     )}
                                                 >
-                                                    {btn.type === "CUSTOM" && (
+                                                    {isInteractive ? (
                                                         <Reply size={14} className={cn(locale === "ar" ? "scale-x-[-1]" : "")} />
+                                                    ) : (
+                                                        <>
+                                                            {btn.type === "CUSTOM" && (
+                                                                <Reply size={14} className={cn(locale === "ar" ? "scale-x-[-1]" : "")} />
+                                                            )}
+                                                            {btn.type === "PHONE_NUMBER" && <Phone
+                                                                size={14}
+                                                                fill="#00a884"
+                                                                color="#00a884"
+                                                                strokeWidth={1.8}
+                                                            />}
+                                                            {btn.type === "VISIT_WEBSITE" && <ExternalLink size={14} />}
+                                                            {btn.type === "WHATSAPP_CALL" && <Phone
+                                                                size={14}
+                                                                fill="#00a884"
+                                                                color="#00a884"
+                                                                strokeWidth={1.8}
+                                                            />}
+                                                        </>
                                                     )}
-                                                    {btn.type === "PHONE_NUMBER" && <Phone
-                                                        size={14}
-                                                        fill="#00a884"
-                                                        color="#00a884"
-                                                        strokeWidth={1.8}
-                                                    />}
-                                                    {btn.type === "VISIT_WEBSITE" && <ExternalLink size={14} />}
-                                                    {btn.type === "WHATSAPP_CALL" && <Phone
-                                                        size={14}
-                                                        fill="#00a884"
-                                                        color="#00a884"
-                                                        strokeWidth={1.8}
-                                                    />}
                                                     {btn.text || (
                                                         <span className="opacity-40 italic">زر الإجراء...</span>
                                                     )}
@@ -562,11 +570,11 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                     {["MARKETING_CALL_PERMISSIONS", "UTILITY_CALL_PERMISSIONS", "call_permissions_request"].includes(
                         String(uiSubcategory || subCategory || "").trim()
                     ) && (
-                        <WhatsAppCallPermissionsBubble
-                            locale={locale}
-                            onOpenMenu={() => setIsPermissionsMenuOpen(true)}
-                        />
-                    )}
+                            <WhatsAppCallPermissionsBubble
+                                locale={locale}
+                                onOpenMenu={() => setIsPermissionsMenuOpen(true)}
+                            />
+                        )}
                 </div>
 
                 {/* Bottom Menu Sheet (Standard) */}
@@ -603,7 +611,7 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
             </div>
 
             {/* Toggle Action Button - Segmented Control Style */}
-            <div className="p-4 bg-white dark:bg-[#0b141a] flex justify-center border-t border-slate-100 dark:border-slate-800">
+            {!isInteractive && <div className="p-4 bg-white dark:bg-[#0b141a] flex justify-center border-t border-slate-100 dark:border-slate-800">
                 <div className="flex p-1 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 w-full max-w-[240px]">
                     <button
                         type="button"
@@ -630,7 +638,7 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                         {t("preview.examplesTab")}
                     </button>
                 </div>
-            </div>
+            </div>}
         </div>
     );
 }

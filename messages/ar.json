@@ -357,6 +357,7 @@
     "syncFailures": "أخطاء مزامنة المنتجات",
     "administration": "المشتريات",
     "synchronization": "المزامنة",
+    "upsell": "Upsells",
     "safes": "الخزائن",
     "finance": "الخطط والاشتراكات",
     "team": "الفريق",
@@ -9714,5 +9715,80 @@
       "bulkDeleteSuccess": "تم حذف {count} خطأ بنجاح"
     }
   },
-  "error": {}
+  "error": {},
+  "upsells": {
+    "pageTitle": "إدارة العروض الإضافية (Upsells)",
+    "pageSubtitle": "إدارة وتتبع عروض المنتجات الإضافية",
+    "breadcrumb": {
+      "home": "الرئيسية",
+      "upsells": "العروض الإضافية"
+    },
+    "toolbar": {
+      "addUpsell": "إضافة عرض جديد",
+      "searchPlaceholder": "بحث في العروض..."
+    },
+    "stats": {
+      "sent": "العروض المرسلة",
+      "accepted": "المقبولة",
+      "rejected": "المرفوضة",
+      "noAnswer": "بدون رد",
+      "acceptedAfterTime": "مقبولة بعد انتهاء العرض"
+    },
+    "table": {
+      "triggerProduct": "المنتج المحفز",
+      "upsellProduct": "المنتج الإضافي",
+      "time": "الوقت (ملي ثانية)",
+      "status": "الحالة",
+      "price": "سعر العرض",
+      "empty": "لم يتم العثور على عروض",
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "filters": {
+      "status": "الحالة",
+      "product": "المنتج",
+      "date": "النطاق الزمني"
+    },
+    "actions": {
+      "preview": "معاينة العرض",
+      "edit": "تعديل العرض",
+      "delete": "حذف العرض",
+      "activate": "تنشيط",
+      "deactivate": "تعطيل",
+      "confirmDelete": "هل أنت متأكد من حذف هذا العرض؟",
+      "accept": "قبول العرض",
+      "reject": "لا شكراً"
+    },
+    "messages": {
+      "deleteSuccess": "تم حذف العرض بنجاح",
+      "statusUpdateSuccess": "تم تحديث حالة العرض بنجاح",
+      "statsFailed": "فشل تحميل الاحصائيات"
+    },
+    "validation": {
+      "skuRequired": "يجب اختيار الصنف",
+      "expireTimeRequired": "وقت الانتهاء مطلوب",
+      "bodyTextRequired": "نص الرسالة مطلوب",
+      "buttonTextRequired": "نص الزر مطلوب",
+      "buttonsRequired": "يجب إضافة زرين على الأقل"
+    },
+    "builder": {
+      "header": "الرأس",
+      "optional": "اختياري",
+      "body": "النص",
+      "footer": "التذييل",
+      "buttons": "الأزرار",
+      "buttonPlaceholder": "نص الزر...",
+      "addButton": "إضافة زر",
+      "headerPlaceholder": "أدخل نص الرأس (بحد أقصى 60 حرفًا)",
+      "footerPlaceholder": "أدخل نصًا صغيرًا في الأسفل (بحد أقصى 60 حرفًا)",
+      "bodyPlaceholder": "أدخل نص الرسالة الرئيسي...",
+      "headerTypes": {
+        "NONE": "بلا",
+        "TEXT": "نص",
+        "IMAGE": "صورة",
+        "VIDEO": "فيديو",
+        "DOCUMENT": "مستند"
+      }
+    }
+  }
 }

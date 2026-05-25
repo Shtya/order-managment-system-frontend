@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useCallback, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   Plus,
   FileDown,
@@ -39,6 +39,7 @@ import ProductFilter from "@/components/atoms/ProductFilter";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { avatarSrc } from "@/components/atoms/UserSelect";
+import TemplatePreview from "../whatsapp/atoms/TemplatePreview";
 
 function normalizeAxiosError(err) {
   const msg =
@@ -58,11 +59,26 @@ function FilterField({ label, children }) {
   );
 }
 
+function buildListQuery({ page, per_page, search, filters }) {
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  params.set("limit", String(per_page));
+  if (search?.trim()) params.set("search", search.trim());
+  if (filters.status && filters.status !== "all") params.set("status", filters.status);
+
+  if (filters.productId && filters.productId !== "all") params.set("productId", filters.productId);
+  if (filters.startDate && filters.startDate !== "all") params.set("startDate", filters.startDate);
+  if (filters.endDate && filters.endDate !== "all") params.set("endDate", filters.endDate);
+  return params.toString();
+}
+
 export default function UpsellsPage() {
   const router = useRouter();
   const tCommon = useTranslations("common");
   const t = useTranslations("upsells");
   const { formatCurrency } = usePlatformSettings();
+  const locale = useLocale();
+  const isRtl = locale === 'ar';
 
   const [search, setSearch] = useState("");
   const { debouncedValue: debouncedSearch } = useDebounce({ value: search });
@@ -122,16 +138,9 @@ export default function UpsellsPage() {
   const fetchUpsells = async ({ page = 1, per_page = 12 } = {}) => {
     setLoading(true);
     try {
-      const params = {
-        page,
-        limit: per_page,
-        search: debouncedSearch || undefined,
-        status: filters.status !== "all" ? filters.status : undefined,
-        productId: filters.productId !== "all" ? filters.productId : undefined,
-        startDate: filters.startDate || undefined,
-        endDate: filters.endDate || undefined,
-      };
-      const res = await api.get("/upsells", { params });
+      const params = buildListQuery({ page, per_page, search: debouncedSearch, filters });
+
+      const res = await api.get(`/upsells?${params}`);
       setPager({
         total_records: res.data?.total_records ?? 0,
         current_page: res.data?.current_page ?? page,
@@ -139,9 +148,8 @@ export default function UpsellsPage() {
         records: res.data?.records ?? [],
       });
     } catch (e) {
-      // For now, we don't have a backend mock, so we might get 404.
-      // toast.error(normalizeAxiosError(e));
-      setPager(p => ({ ...p, records: [] }));
+      console.error(e)
+      toast.error(normalizeAxiosError(e));
     } finally {
       setLoading(false);
     }
@@ -170,39 +178,36 @@ export default function UpsellsPage() {
 
   const confirmDelete = async () => {
     setDeleting(true);
+    const toastId = toast.loading(t("messages.loading"));
     try {
       await api.delete(`/upsells/${deleteState.id}`);
       setDeleteState({ open: false, id: null });
-      toast.success(t("messages.deleteSuccess"));
+      toast.success(t("messages.deleteSuccess"), { id: toastId });
       fetchUpsells({ page: pager.current_page, per_page: pager.per_page });
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      toast.error(normalizeAxiosError(e), { id: toastId });
     } finally {
       setDeleting(false);
     }
   };
 
   const toggleStatus = async (row) => {
+    const toastId = toast.loading(t("messages.loading"));
     try {
-      const newStatus = row.isActive ? false : true;
-      await api.patch(`/upsells/${row.id}/status`, { isActive: newStatus });
-      toast.success(t("messages.statusUpdateSuccess"));
+      await api.patch(`/upsells/${row.id}/toggle-active`);
+      toast.success(t("messages.statusUpdateSuccess"), { id: toastId });
       fetchUpsells({ page: pager.current_page, per_page: pager.per_page });
     } catch (e) {
-      toast.error(normalizeAxiosError(e));
+      toast.error(normalizeAxiosError(e), { id: toastId });
     }
   };
 
   const onExport = async () => {
+    const params = buildListQuery({ page, per_page, search: debouncedSearch, filters });
+
     await handleExport({
       endpoint: "/upsells/export",
-      params: {
-        search: debouncedSearch || undefined,
-        status: filters.status !== "all" ? filters.status : undefined,
-        productId: filters.productId !== "all" ? filters.productId : undefined,
-        startDate: filters.startDate || undefined,
-        endDate: filters.endDate || undefined,
-      },
+      params,
       filename: `upsells_${Date.now()}.xlsx`,
     });
   };
@@ -225,7 +230,7 @@ export default function UpsellsPage() {
             </div>
             <div className="flex flex-col min-w-0">
               <span className="font-bold text-xs truncate">{row.triggerProduct?.name || "—"}</span>
-              <span className="text-[10px] text-muted-foreground font-mono">#{row.triggerProduct?.id?.slice(0, 8)}</span>
+              {/* <span className="text-[10px] text-muted-foreground font-mono">#{row.triggerProduct?.id?.slice(0, 8)}</span> */}
             </div>
           </div>
         ),
@@ -246,18 +251,18 @@ export default function UpsellsPage() {
             </div>
             <div className="flex flex-col min-w-0">
               <span className="font-bold text-xs truncate">{row.upsellProduct?.name || "—"}</span>
-              <span className="text-[10px] text-muted-foreground font-mono">SKU: {row.upsellProduct?.sku || "—"}</span>
+              <span className="text-[10px] text-muted-foreground font-mono">SKU: {row.upsellSku?.sku || "—"}</span>
             </div>
           </div>
         ),
       },
       {
         header: t("table.time"),
-        key: "timeMs",
+        key: "expireTimeM",
         cell: (row) => (
           <div className="flex items-center gap-1.5 text-xs font-mono">
             <Clock size={14} className="text-muted-foreground" />
-            {row.timeMs}ms
+            {row.expireTimeM ? row.expireTimeM + "m" : "-"}
           </div>
         ),
       },
@@ -425,6 +430,7 @@ export default function UpsellsPage() {
         onConfirm={confirmDelete}
       />
 
+
       <Dialog
         open={previewState.open}
         onOpenChange={(open) => setPreviewState((prev) => ({ ...prev, open }))}
@@ -438,48 +444,18 @@ export default function UpsellsPage() {
           </DialogHeader>
 
           <div className="p-8 max-w-[400px] mx-auto">
-            {previewState.upsell && (
-              <div className="flex flex-col rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 overflow-hidden shadow-sm">
-                {/* Product Image Header */}
-                <div className="aspect-video w-full bg-slate-200 dark:bg-slate-800 overflow-hidden relative">
-                  {previewState.upsell.upsellProduct?.mainImage ? (
-                    <img
-                      src={previewState.upsell.upsellProduct.mainImage}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-400">
-                      <Tag size={48} />
-                    </div>
-                  )}
-                </div>
-
-                {/* Body Content */}
-                <div className="p-4 space-y-3">
-                  <div className="space-y-1">
-                    <h4 className="font-bold text-sm text-gray-900 dark:text-gray-100 uppercase tracking-tight">
-                      Special Offer!
-                    </h4>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                      Would you like to add <span className="font-bold text-primary">{previewState.upsell.upsellProduct?.name}</span> to your order for only <span className="font-bold text-emerald-600">{formatCurrency(previewState.upsell.upsellPrice)}</span>?
-                    </p>
-                  </div>
-
-                  {/* WhatsApp-style Buttons */}
-                  <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                    <button className="w-full py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-primary text-xs font-bold hover:bg-slate-50 transition-colors flex items-center justify-center gap-2">
-                      <CheckCircle2 size={14} />
-                      {t("actions.accept")}
-                    </button>
-                    <button className="w-full py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-rose-500 text-xs font-bold hover:bg-slate-50 transition-colors flex items-center justify-center gap-2">
-                      <XCircle size={14} />
-                      {t("actions.reject")}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+            {previewState.upsell ? <TemplatePreview
+              isInteractive={true}
+              template={{
+                headerType: previewState.upsell?.messageConfig.headerType,
+                headerText: previewState.upsell?.messageConfig.headerText,
+                headerUrl: previewState.upsell?.messageConfig.headerUrl,
+                bodyText: previewState.upsell?.messageConfig.bodyText,
+                footerText: previewState.upsell?.messageConfig.footerText,
+                buttons: previewState.upsell?.messageConfig.buttons,
+                language: isRtl ? "ar" : "en"
+              }}
+            /> : null}
           </div>
         </DialogContent>
       </Dialog>

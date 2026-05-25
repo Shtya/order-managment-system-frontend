@@ -9737,7 +9737,7 @@
     "table": {
       "triggerProduct": "المنتج المحفز",
       "upsellProduct": "المنتج الإضافي",
-      "time": "الوقت (ملي ثانية)",
+      "time": "الوقت (بالدقيقه)",
       "status": "الحالة",
       "price": "سعر العرض",
       "empty": "لم يتم العثور على عروض",
@@ -9762,14 +9762,18 @@
     "messages": {
       "deleteSuccess": "تم حذف العرض بنجاح",
       "statusUpdateSuccess": "تم تحديث حالة العرض بنجاح",
-      "statsFailed": "فشل تحميل الاحصائيات"
+      "statsFailed": "فشل تحميل الاحصائيات",
+      "createSuccess": "تم إنشاء العرض بنجاح",
+      "loading": "جاري التحميل..."
     },
     "validation": {
       "skuRequired": "يجب اختيار الصنف",
       "expireTimeRequired": "وقت الانتهاء مطلوب",
       "bodyTextRequired": "نص الرسالة مطلوب",
       "buttonTextRequired": "نص الزر مطلوب",
-      "buttonsRequired": "يجب إضافة زرين على الأقل"
+      "buttonsRequired": "يجب إضافة زرين على الأقل",
+      "mediaHeaderFileRequired": "ارفع ملفاً لهذا النوع من الرأس (صورة أو فيديو أو مستند)",
+      "mediaHeaderMustReupload": "يجب إعادة رفع الملف أو اختيار رابط صالح"
     },
     "builder": {
       "header": "الرأس",

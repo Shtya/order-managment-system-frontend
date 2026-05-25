@@ -322,7 +322,7 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
     }, [bodyText, examples, t]);
 
     const renderHeader = () => {
-        const mediaClass = "aspect-video w-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center rounded-lg overflow-hidden border-b border-slate-100 dark:border-slate-800";
+        const mediaClass = "aspect-video w-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center rounded-sm overflow-hidden border-b border-slate-100 dark:border-slate-800 mb-2";
 
         switch (headerType) {
             case "IMAGE":
@@ -339,7 +339,9 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                 return (
                     <div className={mediaClass}>
                         {headerUrl ? (
-                            <video src={avatarSrc(headerUrl)} className="w-full h-full object-cover" />
+                            <video src={avatarSrc(headerUrl)} className="w-full h-full object-cover" controls
+                                preload="metadata"
+                                playsInline />
                         ) : (
                             <Video size={48} className="text-slate-300" />
                         )}
@@ -347,12 +349,22 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                 );
             case "DOCUMENT":
                 return (
-                    <div className={mediaClass}>
-                        <div className="flex flex-col items-center gap-2">
+                    <a
+                        href={headerUrl ? avatarSrc(headerUrl) : "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={mediaClass}
+                    >
+                        <div className="flex flex-col items-center gap-2 cursor-pointer">
                             <FileIcon size={40} className="text-slate-300" />
-                            {headerUrl && <span className="text-[10px] text-slate-400 px-2 truncate max-w-full">{headerUrl.split('/').pop()}</span>}
+
+                            {headerUrl && (
+                                <span className="text-[10px] text-slate-400 px-2 truncate max-w-full">
+                                    {headerUrl.split('/').pop()}
+                                </span>
+                            )}
                         </div>
-                    </div>
+                    </a>
                 );
             case "LOCATION":
                 return (
@@ -509,8 +521,7 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                                                     className={cn(
                                                         "py-2.5 px-3 flex items-center justify-center gap-2 text-[#00a884] dark:text-[#00a884] font-medium text-[13px] hover:bg-slate-50 dark:hover:bg-white/5 cursor-default transition-colors",
                                                         idx > 0 && "border-t border-slate-100 dark:border-slate-800",
-                                                        isInteractive && btn.text === "أضف للطلب" && "text-emerald-600",
-                                                        isInteractive && btn.text === "لا شكرا" && "text-rose-500"
+
                                                     )}
                                                 >
                                                     {isInteractive ? (

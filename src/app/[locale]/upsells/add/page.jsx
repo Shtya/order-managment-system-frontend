@@ -139,8 +139,8 @@ function SkuSelectorModal({ isOpen, onClose, product, onSelect, selectedSkus = [
   );
 }
 
-export default function UpsellsAddPage() {
-  const isEdit = false;
+export default function UpsellsAddPage({ mode = "add", upsellId = null, initialUpsell = null }) {
+  const isEdit = mode === "edit";
   const router = useRouter();
   const tCommon = useTranslations("common");
   const tValidation = useTranslations("validation");
@@ -150,7 +150,7 @@ export default function UpsellsAddPage() {
   const isRtl = locale === 'ar';
 
   const [submitting, setSubmitting] = useState(false);
-  const [upsellProduct, setUpsellProduct] = useState(null);
+  const [upsellProduct, setUpsellProduct] = useState(initialUpsell?.upsellProduct || null);
   const [skuModalOpen, setSkuModalOpen] = useState(false);
   const [headerMediaFile, setHeaderMediaFile] = useState(null);
 
@@ -185,13 +185,13 @@ export default function UpsellsAddPage() {
   const { control, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      triggerProductId: "all",
-      upsellProductId: "all",
-      selectedSku: null,
-      price: "",
-      expireTimeEnabled: true,
-      expireTime: "30",
-      messageConfig: {
+      triggerProductId: initialUpsell?.triggerProductId || "all",
+      upsellProductId: initialUpsell?.upsellProductId || "all",
+      selectedSku: initialUpsell?.upsellSku || null,
+      price: initialUpsell?.upsellPrice || "",
+      expireTimeEnabled: initialUpsell ? initialUpsell.expireTimeM !== null : true,
+      expireTime: initialUpsell?.expireTimeM || "30",
+      messageConfig: initialUpsell?.messageConfig || {
         headerType: "IMAGE",
         headerUrl: "",
         headerText: "",
@@ -212,39 +212,45 @@ export default function UpsellsAddPage() {
   const expireTimeEnabled = watch("expireTimeEnabled");
   const messageConfig = watch("messageConfig");
 
-  // Reset upsell and sku when trigger changes
+  // Reset upsell and sku when trigger changes (only in add mode or if trigger actually changed)
   useEffect(() => {
-    setValue("upsellProductId", "all");
-    setValue("selectedSku", null);
-    setUpsellProduct(null);
-  }, [triggerProductId, setValue]);
+    if (!initialUpsell || triggerProductId !== initialUpsell.triggerProductId) {
+      setValue("upsellProductId", "all");
+      setValue("selectedSku", null);
+      setUpsellProduct(null);
+    }
+  }, [triggerProductId, setValue, initialUpsell]);
 
   // Reset SKU when upsell product changes
   useEffect(() => {
-    setValue("selectedSku", null);
-  }, [upsellProductId, setValue]);
+    if (!initialUpsell || upsellProductId !== initialUpsell.upsellProductId) {
+      setValue("selectedSku", null);
+    }
+  }, [upsellProductId, setValue, initialUpsell]);
 
   // Fetch upsell product details
   useEffect(() => {
     if (upsellProductId && upsellProductId !== "all") {
       api.get(`/products/${upsellProductId}`).then(res => {
         setUpsellProduct(res.data);
-        setValue("messageConfig.headerUrl", res.data.mainImage || "");
-        setValue("messageConfig.bodyText", `لأنك إشتريت من عندنا ليك العرض ده\n\n${res.data.name}\n\nالسعر: ${price || res.data.skus?.[0]?.price || 0} ${currency}`);
+        if (!initialUpsell || upsellProductId !== initialUpsell.upsellProductId) {
+          setValue("messageConfig.headerUrl", res.data.mainImage || "");
+          setValue("messageConfig.bodyText", `لأنك إشتريت من عندنا ليك العرض ده\n\n${res.data.name}\n\nالسعر: ${price || res.data.skus?.[0]?.price || 0} ${currency}`);
+        }
       });
     }
-  }, [upsellProductId, setValue, currency]);
+  }, [upsellProductId, setValue, currency, initialUpsell]);
 
   // Sync price to message body
-
   useEffect(() => {
-    if (upsellProduct) {
+    if (upsellProduct && (!initialUpsell || price !== initialUpsell.upsellPrice)) {
       setValue("messageConfig.bodyText", `لأنك إشتريت من عندنا ليك العرض ده\n\n🎁${upsellProduct.name}\n\n⚡ السعر: ${price || upsellProduct.skus?.[0]?.price || 0} ${currency}`);
     }
-  }, [price, upsellProduct, setValue, currency]);
+  }, [price, upsellProduct, setValue, currency, initialUpsell]);
 
   const onSubmit = async (data) => {
     setSubmitting(true);
+    const toastId = toast.loading(tCommon("loading"));
     try {
       const headerUrl = data.messageConfig.headerUrl;
       const blob = headerUrl && String(headerUrl).startsWith("blob:");
@@ -253,24 +259,23 @@ export default function UpsellsAddPage() {
 
       // Allow URL or relative path without requiring file upload
       if (!isEdit && !headerMediaFile && !isUrl && !isRelativePath) {
-        toast.error(t("validation.mediaHeaderFileRequired"));
+        toast.error(t("validation.mediaHeaderFileRequired"), { id: toastId });
+        setSubmitting(false);
         return;
       }
       if (isEdit && blob && !headerMediaFile && !isUrl && !isRelativePath) {
-        toast.error(t("validation.mediaHeaderMustReupload"));
+        toast.error(t("validation.mediaHeaderMustReupload"), { id: toastId });
+        setSubmitting(false);
         return;
       }
 
-      let forcedUrl = "";
+      let forcedUrl = data.messageConfig.headerUrl;
       // 2. معالجة رفع الملفات إن وجدت قبل تحديث القالب
       if (headerMediaFile) {
         const fdMedia = new FormData();
         fdMedia.append("headerMedia", headerMediaFile);
         const up = await api.post("/upsells/upload-header-media", fdMedia);
         forcedUrl = up.data?.headerUrl;
-      } else if (isUrl || isRelativePath) {
-        // Pass URL or relative path to backend
-        forcedUrl = headerUrl;
       }
 
       const payload = {
@@ -285,12 +290,17 @@ export default function UpsellsAddPage() {
         }
       };
 
-      await api.post("/upsells", payload);
-      toast.success(t("messages.createSuccess"));
+      if (isEdit) {
+        await api.patch(`/upsells/${upsellId}`, payload);
+        toast.success(t("messages.statusUpdateSuccess"), { id: toastId });
+      } else {
+        await api.post("/upsells", payload);
+        toast.success(t("messages.createSuccess"), { id: toastId });
+      }
       router.push("/upsells");
     } catch (err) {
       console.log(err);
-      toast.error(err?.response?.data?.message || tCommon("error"));
+      toast.error(err?.response?.data?.message || tCommon("error"), { id: toastId });
     } finally {
       setSubmitting(false);
     }
@@ -302,8 +312,9 @@ export default function UpsellsAddPage() {
         breadcrumbs={[
           { name: t("breadcrumb.home"), href: "/dashboard" },
           { name: t("breadcrumb.upsells"), href: "/upsells" },
-          { name: t("toolbar.addUpsell") },
+          { name: isEdit ? t("actions.edit") : t("toolbar.addUpsell") },
         ]}
+        title={isEdit ? t("actions.edit") : t("toolbar.addUpsell")}
         buttons={
           <div className="flex items-center gap-3">
             <Button_

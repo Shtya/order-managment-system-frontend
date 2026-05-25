@@ -9724,7 +9724,8 @@
       "statusUpdateSuccess": "Upsell status updated successfully",
       "statsFailed": "Failed to load statistics",
       "createSuccess": "Upsell created successfully",
-      "loading": "Loading..."
+      "loading": "Loading...",
+      "notFound": "Upsell not found"
     },
     "validation": {
       "skuRequired": "SKU selection is required",

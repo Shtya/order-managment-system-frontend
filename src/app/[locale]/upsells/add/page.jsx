@@ -393,7 +393,7 @@ export default function UpsellsAddPage() {
                     />
                     <Label htmlFor="expireTimeEnabled" className="flex items-center gap-2 cursor-pointer">
                       <Clock size={16} className="text-slate-400" />
-                      {isRtl ? "تحديد وقت انتهاء لعرض هذا العرض" : "Set expiration time for this offer"}
+                      {isRtl ? "تحديد وقت انتهاء العرض" : "Set expiration time for this offer"}
                     </Label>
                   </div>
                   {expireTimeEnabled && (

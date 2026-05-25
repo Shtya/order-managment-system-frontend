@@ -89,7 +89,7 @@ export default function UpsellsPage() {
     per_page: 12,
     records: [],
   });
-
+  
   const [stats, setStats] = useState({
     sent: 0,
     accepted: 0,

@@ -9764,7 +9764,8 @@
       "statusUpdateSuccess": "تم تحديث حالة العرض بنجاح",
       "statsFailed": "فشل تحميل الاحصائيات",
       "createSuccess": "تم إنشاء العرض بنجاح",
-      "loading": "جاري التحميل..."
+      "loading": "جاري التحميل...",
+      "notFound": "العرض غير موجود"
     },
     "validation": {
       "skuRequired": "يجب اختيار الصنف",

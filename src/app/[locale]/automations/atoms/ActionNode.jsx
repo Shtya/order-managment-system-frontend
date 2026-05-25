@@ -1,13 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Position, useUpdateNodeInternals } from '@xyflow/react';
-import { MessageSquare, RefreshCw, Send, Loader2 } from 'lucide-react';
+import { MessageSquare, RefreshCw, Send, Loader2, Zap } from 'lucide-react';
 import { BaseNode } from './BaseNode';
 import { CustomHandle } from './CustomHandle';
 import { useFlowStore } from '@/hook/useFlowStore';
+import { AUTOMATION_CONFIG } from './automation-config';
 
 const ACTION_TYPES = {
     'send_whatsapp_template': { label: 'إرسال قالب واتساب', subtitle: 'المراسلة', icon: MessageSquare, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
     'update_order_status': { label: 'تحديث حالة الطلب', subtitle: 'إدارة الطلبات', icon: RefreshCw, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+    'send_upsell': { label: 'إرسال عرض', subtitle: 'العروض الإضافية', icon: Zap, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
 };
 
 export function ActionNode({ id, data, selected }) {
@@ -18,10 +20,21 @@ export function ActionNode({ id, data, selected }) {
     const edges = useFlowStore((s) => s.edges);
     const loading = useFlowStore((s) => s.nodeLoading[id]);
 
+    const config = useMemo(() => {
+        for (const category of AUTOMATION_CONFIG.ACTIONS.categories) {
+            const item = category.items.find(i => i.id === data.type);
+            if (item) return item;
+        }
+        return null;
+    }, [data.type]);
+
+    const noEdit = config?.noEdit || false;
+
     // Force React Flow to recalculate handle positions and edge paths when branches change
     useEffect(() => {
         updateNodeInternals(id);
     }, [id, data.config?.branches?.length, updateNodeInternals]);
+
 
     return (
         <BaseNode
@@ -34,6 +47,7 @@ export function ActionNode({ id, data, selected }) {
             colorClass={action.color}
             bgClass={action.bg}
             hasOutput={!hasBranches} // If it has branches, we use custom handles below
+            noEdit={noEdit}
             onEdit={() => window.dispatchEvent(new CustomEvent('edit-automation-step', { detail: { id, data } }))}
             className="border-t-[6px] border-t-blue-500"
         >
@@ -63,6 +77,12 @@ export function ActionNode({ id, data, selected }) {
                             <div className="flex items-center justify-between">
                                 <span className="font-black text-blue-700 dark:text-blue-400 uppercase tracking-tight">{data.config?.newStatus || '—'}</span>
                                 <span className="opacity-50 font-bold">تغيير الحالة الي</span>
+                            </div>
+                        )}
+                        {data.type === 'send_upsell' && (
+                            <div className="flex items-center justify-between">
+                                <span className="font-black text-blue-700 dark:text-blue-400 uppercase tracking-tight">المقترحة للطلب</span>
+                                <span className="opacity-50 font-bold">إرسال العروض</span>
                             </div>
                         )}
                     </>

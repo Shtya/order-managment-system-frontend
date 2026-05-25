@@ -69,6 +69,15 @@ export const AUTOMATION_CONFIG = {
                         type: 'action',
                         configComponent: 'SendWhatsappTemplateConfig',
                         className: 'max-w-2xl!'
+                    },
+                    {
+                        id: "send_upsell",
+                        label: "إرسال عرض",
+                        icon: Zap,
+                        type: "action",
+                        noEdit: true,
+                        configComponent: "SendUpsellConfig",
+                        className: "max-w-xl!"
                     }
                 ]
             }

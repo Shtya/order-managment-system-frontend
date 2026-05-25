@@ -173,13 +173,13 @@ export default function InteractiveMessageBuilder({
                   <div className={cn("relative border-s-4 rounded-md", borderClass)}>
                     <Input
                       placeholder={t("buttonPlaceholder")}
-                      maxLength={256}
+                      maxLength={20}
                       value={btn.text}
                       onChange={(e) => handleButtonChange(idx, e.target.value)}
                       className={cn("h-11 ps-4 pe-14", btnError && "border-red-500")}
                     />
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">
-                      {btn.text?.length || 0}/256
+                      {btn.text?.length || 0}/20
                     </span>
                   </div>
                   {btnError && <p className="text-[11px] text-red-500">{btnError.message || btnError}</p>}

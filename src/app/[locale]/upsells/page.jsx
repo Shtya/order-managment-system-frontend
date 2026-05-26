@@ -203,11 +203,11 @@ export default function UpsellsPage() {
   };
 
   const onExport = async () => {
-    const params = buildListQuery({ page, per_page, search: debouncedSearch, filters });
+    const params = buildListQuery({ page: 1, per_page: pager.per_page, search: debouncedSearch, filters });
 
     await handleExport({
       endpoint: "/upsells/export",
-      params,
+      params: {params},
       filename: `upsells_${Date.now()}.xlsx`,
     });
   };

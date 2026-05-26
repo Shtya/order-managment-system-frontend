@@ -41,7 +41,7 @@ import InteractiveMessageBuilder from "@/components/molecules/InteractiveMessage
 import TemplatePreview from "@/app/[locale]/whatsapp/atoms/TemplatePreview";
 
 // ─── UPSELL SKU SELECTOR MODAL ──────────────────────────────────────────────
-function SkuSelectorModal({ isOpen, onClose, product, onSelect, selectedSkus = [], isRtl, t, formatCurrency }) {
+function SkuSelectorModal({ isOpen, onClose, product, onSelect, selectedSkus = [], isRtl, formatCurrency, shouldHaveStock = true }) {
   if (!product) return null;
   const skus = Array.isArray(product.skus) ? product.skus.filter(s => s.isActive) : [];
 
@@ -96,7 +96,7 @@ function SkuSelectorModal({ isOpen, onClose, product, onSelect, selectedSkus = [
                   <tbody className="divide-y">
                     {skus.map((s) => {
                       const attrs = s?.attributes ? Object.entries(s.attributes) : [];
-                      const avail = Math.max(0, (s?.stockOnHand ?? 0) - (s?.reserved ?? 0));
+                      const avail = !shouldHaveStock || Math.max(0, (s?.stockOnHand ?? 0) - (s?.reserved ?? 0));
                       const isSelected = selectedSkus.some(sel => sel.id === s.id);
 
                       return (
@@ -524,6 +524,7 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
 
       <SkuSelectorModal
         isOpen={skuModalOpen}
+        shouldHaveStock={false}
         onClose={() => setSkuModalOpen(false)}
         product={upsellProduct}
         onSelect={(sku) => {

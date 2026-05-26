@@ -633,6 +633,7 @@ function HeaderIconBtn({ onClick, children }) {
 // SOUND
 // ─────────────────────────────────────────────────────────────
 const successAudio = new Audio("/scan.m4a");
+const errorAudio = new Audio("/wrong-sound.m4a");
 
 export function playBeep(type = "success") {
 	try {
@@ -645,11 +646,8 @@ export function playBeep(type = "success") {
 			successAudio.play().catch(() => { });
 			return;
 		} else {
-			osc.frequency.setValueAtTime(220, ctx.currentTime);
-			osc.frequency.setValueAtTime(160, ctx.currentTime + 0.1);
-			gain.gain.setValueAtTime(0.35, ctx.currentTime);
-			gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-			osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.35);
+			errorAudio.currentTime = 0;
+			errorAudio.play().catch(() => { });
 		}
 	} catch (_) { }
 }

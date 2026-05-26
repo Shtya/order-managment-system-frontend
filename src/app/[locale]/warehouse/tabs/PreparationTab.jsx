@@ -642,10 +642,12 @@ export function playBeep(type = "success") {
 		const gain = ctx.createGain();
 		osc.connect(gain); gain.connect(ctx.destination);
 		if (type === "success") {
+			if (!successAudio) return;
 			successAudio.currentTime = 0;
 			successAudio.play().catch(() => { });
 			return;
 		} else {
+			if (!errorAudio) return;
 			errorAudio.currentTime = 0;
 			errorAudio.play().catch(() => { });
 		}

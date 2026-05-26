@@ -96,7 +96,8 @@ function SkuSelectorModal({ isOpen, onClose, product, onSelect, selectedSkus = [
                   <tbody className="divide-y">
                     {skus.map((s) => {
                       const attrs = s?.attributes ? Object.entries(s.attributes) : [];
-                      const avail = !shouldHaveStock || Math.max(0, (s?.stockOnHand ?? 0) - (s?.reserved ?? 0));
+                      const shouldEnable = !shouldHaveStock || Math.max(0, (s?.stockOnHand ?? 0) - (s?.reserved ?? 0));
+                      const avail = Math.max(0, (s?.stockOnHand ?? 0) - (s?.reserved ?? 0));
                       const isSelected = selectedSkus.some(sel => sel.id === s.id);
 
                       return (
@@ -121,7 +122,7 @@ function SkuSelectorModal({ isOpen, onClose, product, onSelect, selectedSkus = [
                             <Button_
                               size="sm"
                               label={isSelected ? (isRtl ? "تم الاختيار" : "Selected") : (isRtl ? "اختيار" : "Select")}
-                              disabled={!s.isActive || isSelected || !avail}
+                              disabled={!s.isActive || isSelected || !shouldEnable}
                               onClick={() => onSelect(s)}
                             />
                           </td>

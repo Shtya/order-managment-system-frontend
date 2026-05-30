@@ -67,7 +67,7 @@ import {
   Landmark,
   DollarSign,
 } from "lucide-react";
-import { FaBugs, FaUserTie } from "react-icons/fa6";
+import { FaBugs, FaMessage, FaUserTie } from "react-icons/fa6";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "../ui/button";
 import { useAuth } from "@/context/AuthContext";
@@ -664,6 +664,11 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
           href: "/whatsapp/templates",
           icon: FaRegFileAlt,
         },
+        {
+          labelKey: "chats",
+          href: "/whatsapp/chats",
+          icon: FaMessage,
+        }
 
       ]
     },

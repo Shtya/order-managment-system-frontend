@@ -420,8 +420,8 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                 style={{
                     backgroundColor: "#efeae2",
                     backgroundImage: "url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')",
-                    backgroundSize: "400px",
-                    backgroundRepeat: "repeat"
+                    backgroundRepeat: "repeat",
+                    backgroundSize: "400px"
                 }}
             >
                 <div className={cn(

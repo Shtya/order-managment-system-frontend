@@ -370,6 +370,7 @@
     "plans": "Plans",
     "dashboard": "Dashboard",
     "whatsAppAccounts": "My Accounts",
+    "chats": "Conversations",
     "overview": "Overview",
     "templates": "Templates",
     "automations": "Automations",
@@ -9754,6 +9755,60 @@
         "VIDEO": "Video",
         "DOCUMENT": "Document"
       }
+    }
+  },
+  "chats": {
+    "title": "Conversations",
+    "search": "Search conversations...",
+    "filter": "Filter",
+    "tabs": {
+      "all": "All",
+      "unread": "Unread",
+      "open": "Open",
+      "closed": "Closed"
+    },
+    "loadMore": "Load more",
+    "online": "Online",
+    "offline": "Offline",
+    "closeChat": "Close Chat",
+    "customerDetails": "Customer Details",
+    "conversationDetails": "Conversation Details",
+    "notes": "Notes",
+    "addNote": "Add Note",
+    "noNotes": "No notes yet",
+    "blockContact": "Block Contact",
+    "deleteConversation": "Delete Conversation",
+    "editClient": "Edit Client Data",
+    "addCustomer": "Add New Customer",
+    "customerName": "Customer Name",
+    "phoneNumber": "Phone Number",
+    "profilePicture": "Profile Picture",
+    "cancel": "Cancel",
+    "save": "Save",
+    "typeMessage": "Type a message...",
+    "send": "Send",
+    "status": "Status",
+    "assignedTo": "Assigned To",
+    "openedAt": "Opened At",
+    "channel": "Channel",
+    "customerSince": "Customer Since",
+    "viewFullProfile": "View Full Profile",
+    "email": "Email",
+    "country": "Country",
+    "language": "Language",
+    "messageTypes": {
+      "text": "Text",
+      "image": "Image",
+      "video": "Video",
+      "document": "Document",
+      "audio": "Audio",
+      "location": "Location",
+      "contact": "Contact",
+      "list": "List",
+      "interactive": "Interactive Buttons",
+      "template": "Template Message",
+      "requestLocation": "Location Request",
+      "sendLocation": "Submit location"
     }
   }
 }

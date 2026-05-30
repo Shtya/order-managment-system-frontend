@@ -58,8 +58,6 @@ import TemplateButtonBuilder from "../../atoms/TemplateButtonBuilder";
 import MetaTemplateDialog from "../../atoms/MetaTemplateDialog";
 import { InternalTemplateDialog } from "../../atoms/InternalTemplateDialog";
 import Script from "next/script";
-import data from '@emoji-mart/data'
-import Picker from '@emoji-mart/react'
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
     getVariableMatches,

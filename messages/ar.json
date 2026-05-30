@@ -367,6 +367,7 @@
     "whatsapp": "الواتساب",
     "users": "المستخدمون",
     "whatsAppAccounts": "حساباتي",
+    "chats": "المحادثات",
     "roles": "الأدوار",
     "plans": "الخطط",
     "overview": "نظرة عامة",
@@ -9794,6 +9795,60 @@
         "VIDEO": "فيديو",
         "DOCUMENT": "مستند"
       }
+    }
+  },
+  "chats": {
+    "title": "المحادثات",
+    "search": "البحث في المحادثات...",
+    "filter": "تصفية",
+    "tabs": {
+      "all": "الكل",
+      "unread": "غير مقروء",
+      "open": "مفتوح",
+      "closed": "مغلق"
+    },
+    "loadMore": "تحميل المزيد",
+    "online": "متصل",
+    "offline": "غير متصل",
+    "closeChat": "إغلاق المحادثة",
+    "customerDetails": "تفاصيل العميل",
+    "conversationDetails": "تفاصيل المحادثة",
+    "notes": "ملاحظات",
+    "addNote": "إضافة ملاحظة",
+    "noNotes": "لا توجد ملاحظات بعد",
+    "blockContact": "حظر جهة الاتصال",
+    "deleteConversation": "حذف المحادثة",
+    "editClient": "تعديل بيانات العميل",
+    "addCustomer": "إضافة عميل جديد",
+    "customerName": "اسم العميل",
+    "phoneNumber": "رقم الهاتف",
+    "profilePicture": "صورة الملف الشخصي",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "typeMessage": "اكتب رسالة...",
+    "send": "إرسال",
+    "status": "الحالة",
+    "assignedTo": "مخصص لـ",
+    "openedAt": "فتحت في",
+    "channel": "القناة",
+    "customerSince": "عميل منذ",
+    "viewFullProfile": "عرض الملف الشخصي الكامل",
+    "email": "البريد الإلكتروني",
+    "country": "البلد",
+    "language": "اللغة",
+    "messageTypes": {
+      "text": "نص",
+      "image": "صورة",
+      "video": "فيديو",
+      "document": "مستند",
+      "audio": "صوت",
+      "location": "موقع",
+      "contact": "جهة اتصال",
+      "list": "قائمة",
+      "interactive": "أزرار تفاعلية",
+      "template": "رسالة قالب",
+      "requestLocation": "طلب الموقع",
+      "sendLocation": "إرسال الموقع"
     }
   }
 }

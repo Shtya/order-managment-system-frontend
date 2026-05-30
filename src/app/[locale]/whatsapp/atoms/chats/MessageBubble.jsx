@@ -92,6 +92,39 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
             case "text":
                 return <p className="text-sm whitespace-pre-wrap">{content.text?.body || content.body}</p>;
 
+            case "image":
+                return (
+                    <div className="space-y-2 max-w-sm">
+                        <img src={content.image?.url || content.url} alt="image" className="rounded-lg w-full h-auto cursor-pointer" />
+                        {content.caption && <p className="text-sm">{content.caption}</p>}
+                    </div>
+                );
+
+            case "video":
+                return (
+                    <div className="space-y-2 max-w-sm">
+                        <video src={content.video?.url || content.url} controls className="rounded-lg w-full h-auto" />
+                        {content.caption && <p className="text-sm">{content.caption}</p>}
+                    </div>
+                );
+
+            case "document":
+                return (
+                    <div className="space-y-2">
+                        <div className={cn(
+                            "flex items-center gap-3 p-3 rounded-lg border",
+                            isOutbound ? "bg-black/5 border-black/10" : "bg-gray-50 border-gray-100"
+                        )}>
+                            <FileText size={32} className="text-blue-500" />
+                            <div className="min-w-0">
+                                <p className="text-sm font-medium truncate">{content.document?.name || "Document"}</p>
+                                <p className="text-[10px] opacity-60 uppercase">PDF • 1.2 MB</p>
+                            </div>
+                        </div>
+                        {content.caption && <p className="text-sm">{content.caption}</p>}
+                    </div>
+                );
+
             case "audio":
                 return (
                     <div className="flex items-center gap-3 py-1 min-w-[200px]">
@@ -156,7 +189,68 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                     </div>
                 );
 
+            case "location":
+                return (
+                    <div className="space-y-2 min-w-[240px]">
+                        <div
+                            className="h-32 rounded-lg overflow-hidden relative cursor-pointer group"
+                            onClick={() => window.open(`https://www.google.com/maps?q=${content.location.latitude},${content.location.longitude}`, "_blank")}
+                        >
+                            <img
+                                src={`https://static-maps.yandex.ru/1.x/?lang=en_US&ll=${content.location.longitude},${content.location.latitude}&z=13&l=map&size=300,150`}
+                                alt="map"
+                                className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                <MapPin size={32} className="text-red-500 drop-shadow-md" />
+                            </div>
+                        </div>
+                        <div className="min-w-0 px-1 pb-1">
+                            <p className="text-sm font-bold truncate">{content.location.name}</p>
+                            <p className="text-[11px] text-muted-foreground line-clamp-1">{content.location.address}</p>
+                        </div>
+                    </div>
+                );
+
+            case "contact":
+                const contact = content.contacts?.[0];
+                return (
+                    <div className="space-y-3 min-w-[240px]">
+                        <div className="flex items-center gap-3 border-b pb-3">
+                            <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                                <User size={24} />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-sm font-bold truncate">
+                                    {contact?.name?.formatted_name || contact?.name?.first_name}
+                                </p>
+                                <p className="text-[11px] text-muted-foreground">
+                                    {contact?.phones?.[0]?.phone}
+                                </p>
+                            </div>
+                        </div>
+                        <button className="w-full py-2 text-sm font-bold text-primary hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors">
+                            Message
+                        </button>
+                    </div>
+                );
+
             case "interactive":
+                if (content.interactive?.type === "list") {
+                    return (
+                        <div className="space-y-3">
+                            {content.interactive.header && (
+                                <div className="font-bold text-sm">{content.interactive.header.text}</div>
+                            )}
+                            <p className="text-sm">{content.interactive.body?.text}</p>
+                            <button className="w-full py-2.5 px-3 flex items-center justify-center gap-2 text-[#00a884] font-medium text-[13px] hover:bg-black/5 dark:hover:bg-white/5 border-t border-black/5 dark:border-white/5 transition-colors">
+                                <List size={14} />
+                                {content.interactive.action?.button || "View Options"}
+                            </button>
+                        </div>
+                    );
+                }
+
                 return (
                     <div className="space-y-3">
                         {content.interactive?.header && (

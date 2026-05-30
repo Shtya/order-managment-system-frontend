@@ -20,9 +20,19 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useConversation } from "./ConversationContext";
 
 export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollToMessage }) {
     const t = useTranslations("chats");
+    const {
+        setPendingMedia,
+        setShowInteractiveModal,
+        setShowLocationRequestModal,
+        setShowContactModal,
+        setShowLocationModal,
+        setShowListModal,
+        setShowTemplateModal
+    } = useConversation();
     const [text, setText] = useState("");
     const [showEmoji, setShowEmoji] = useState(false);
     const [accounts, setAccounts] = useState([]);
@@ -33,6 +43,46 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
     const recordingTimeRef = useRef(0);
     const timerRef = useRef(null);
     const textareaRef = useRef(null);
+    const fileInputRef = useRef(null);
+    const [fileType, setFileType] = useState("");
+
+    const handleActionClick = (type) => {
+        if (["image", "video", "document"].includes(type)) {
+            setFileType(type);
+            if (fileInputRef.current) {
+                fileInputRef.current.accept = type === "image" ? "image/*" : type === "video" ? "video/*" : "*/*";
+                fileInputRef.current.click();
+            }
+        } else if (type === "interactive") {
+            setShowInteractiveModal(true);
+        } else if (type === "location_request") {
+            setShowLocationRequestModal(true);
+        } else if (type === "contact") {
+            setShowContactModal(true);
+        } else if (type === "location") {
+            setShowLocationModal(true);
+        } else if (type === "list") {
+            setShowListModal(true);
+        } else if (type === "template") {
+            setShowTemplateModal(true);
+        }
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPendingMedia({
+                    file,
+                    preview: reader.result,
+                    type: fileType
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+        e.target.value = null; // Reset for same file re-selection
+    };
 
     const fetchAccounts = useCallback(async () => {
         try {
@@ -148,16 +198,16 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
     };
 
     const actions = [
-        { icon: ImageIcon, label: t("messageTypes.image"), color: "text-purple-500" },
-        { icon: Video, label: t("messageTypes.video"), color: "text-red-500" },
-        { icon: FileText, label: t("messageTypes.document"), color: "text-orange-500" },
-        // { icon: Music, label: t("messageTypes.audio"), color: "text-pink-500" },
-        { icon: MapPin, label: t("messageTypes.sendLocation"), color: "text-green-500" },
-        { icon: MapIcon, label: t("messageTypes.requestLocation"), color: "text-green-500" },
-        { icon: UserCircle, label: t("messageTypes.contact"), color: "text-teal-500" },
-        { icon: List, label: t("messageTypes.list"), color: "text-blue-600" },
-        { icon: LayoutGrid, label: t("messageTypes.interactive"), color: "text-green-600" },
-        { icon: MessageSquareQuote, label: t("messageTypes.template"), color: "text-gray-600" },
+        // { icon: ImageIcon, label: t("messageTypes.image"), color: "text-purple-500", type: "image" },
+        // { icon: Video, label: t("messageTypes.video"), color: "text-red-500", type: "video" },
+        { icon: FileText, label: t("messageTypes.document"), color: "text-orange-500", type: "document" },
+        // { icon: Music, label: t("messageTypes.audio"), color: "text-pink-500", type: "audio" },
+        { icon: MapPin, label: t("messageTypes.sendLocation"), color: "text-green-500", type: "location" },
+        { icon: MapIcon, label: t("messageTypes.requestLocation"), color: "text-green-500", type: "location_request" },
+        { icon: UserCircle, label: t("messageTypes.contact"), color: "text-teal-500", type: "contact" },
+        { icon: List, label: t("messageTypes.list"), color: "text-blue-600", type: "list" },
+        { icon: LayoutGrid, label: t("messageTypes.interactive"), color: "text-green-600", type: "interactive" },
+        { icon: MessageSquareQuote, label: t("messageTypes.template"), color: "text-gray-600", type: "template" },
     ];
 
     return (
@@ -206,6 +256,12 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                 <div className="flex items-center gap-1 mb-1">
                     {!isRecording && (
                         <>
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                className="hidden"
+                                onChange={handleFileChange}
+                            />
                             <button
                                 onClick={() => setShowEmoji(!showEmoji)}
                                 className={cn("p-2 hover:bg-gray-100 rounded-full transition-colors", showEmoji && "text-green-600 bg-gray-100")}
@@ -224,6 +280,7 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                                         {actions.map((action, idx) => (
                                             <DropdownMenuItem
                                                 key={idx}
+                                                onClick={() => handleActionClick(action.type)}
                                                 className="flex items-center gap-3 w-full p-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
                                             >
                                                 <action.icon className={cn("w-5 h-5", action.color)} />

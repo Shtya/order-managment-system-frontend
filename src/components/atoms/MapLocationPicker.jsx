@@ -177,7 +177,7 @@ export default function MapLocationPicker({
 		<div style={{ height, width, position: "relative" }}>
 			{/* ✅ Search UI (compact for 600x300) */}
 			{enableSearch && !readOnly && (
-				<div className="absolute top-3 left-3 right-3 z-[1000]">
+				<div className="absolute top-3 end-20 start-3 z-[1000]">
 					<div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900/90 backdrop-blur shadow-xl">
 						<div className="p-2">
 							<div className="flex items-center gap-2">

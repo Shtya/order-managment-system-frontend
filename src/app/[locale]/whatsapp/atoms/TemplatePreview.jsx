@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
     Image as ImageIcon,
     Video,
@@ -23,6 +23,7 @@ import {
     replaceVariables,
 } from "@/utils/whatsapp-healper";
 import { avatarSrc } from "@/components/atoms/UserSelect";
+import { FaLocationDot } from "react-icons/fa6";
 
 // --- Sub-components ---
 
@@ -34,10 +35,11 @@ export function WhatsAppButtonMenu({
     onClose,
     buttons = [],
     locale = "en",
-    type = "BUTTONS", // "BUTTONS" | "RADIO"
+    type = "BUTTONS", // "BUTTONS" | "RADIO" | "LIST"
     title = "All Options",
     subtitle = "",
     radioOptions = [],
+    sections = [],
     seeAllOptionsLabel = "See all options",
 }) {
     const [selectedIndex, setSelectedIndex] = useState(0);
@@ -70,7 +72,29 @@ export function WhatsAppButtonMenu({
 
                 {/* Content */}
                 <div className="overflow-y-auto space-y-1 custom-scrollbar pb-2">
-                    {type === "BUTTONS" ? (
+                    {type === "LIST" ? (
+                        <div className="flex flex-col">
+                            {sections.map((section, sIdx) => (
+                                <div key={sIdx} className="flex flex-col mb-4 last:mb-0">
+                                    {section.title && (
+                                        <div className="px-2 py-1.5 text-[13px] font-bold text-[#00a884] uppercase tracking-wider">
+                                            {section.title}
+                                        </div>
+                                    )}
+                                    <div className="space-y-1">
+                                        {section.rows?.map((row, rIdx) => (
+                                            <div key={rIdx} className="px-2 py-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg transition-colors cursor-default group">
+                                                <p className="text-[15px] text-slate-700 dark:text-slate-200 font-medium group-hover:text-[#00a884]">{row.title}</p>
+                                                {row.description && (
+                                                    <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5">{row.description}</p>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : type === "BUTTONS" ? (
                         <>
                             {/* Action Buttons */}
                             {actionButtons.map((btn, idx) => (
@@ -182,12 +206,16 @@ export function WhatsAppCallPermissionsBubble({ locale = "en", onOpenMenu }) {
  * @param {boolean} [flat]
  * @param {boolean} [hasHeader]
  */
-export default function TemplatePreview({ template, flat = false, hasHeader = true, seeAllOptionsLabel, isInteractive = false }) {
+export default function TemplatePreview({ template, flat = false, hasHeader = true, seeAllOptionsLabel, isInteractive = false, isList = false, forceShowExamples = false }) {
     const t = useTranslations("whatsApp.templates");
-    const [showExamples, setShowExamples] = useState(false);
+    const [showExamples, setShowExamples] = useState(forceShowExamples);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isPermissionsMenuOpen, setIsPermissionsMenuOpen] = useState(false);
     const locale = useLocale();
+
+    useEffect(() => {
+        if (forceShowExamples) setShowExamples(true);
+    }, [forceShowExamples]);
 
     const raw = template || {};
     const cfgSource =
@@ -507,11 +535,11 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                         )}
 
                         {/* Buttons Section */}
-                        {buttons.length > 0 && (
+                        {(buttons.length > 0 || isList) && (
                             <div className="border-t border-slate-100 dark:border-slate-800 mt-2 -mx-1.5 -mb-1.5 overflow-hidden">
                                 {(() => {
-                                    const showMenuButton = buttons.length > 3;
-                                    const visibleButtons = showMenuButton ? buttons.slice(0, 2) : buttons;
+                                    const showMenuButton = buttons.length > 3 || isList;
+                                    const visibleButtons = showMenuButton ? (isList ? [] : buttons.slice(0, 2)) : buttons;
 
                                     return (
                                         <>
@@ -524,28 +552,25 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
 
                                                     )}
                                                 >
-                                                    {isInteractive ? (
+
+                                                    {btn.type === "CUSTOM" || btn.type === "QUICK_REPLY" || !btn.type && (
                                                         <Reply size={14} className={cn(locale === "ar" ? "scale-x-[-1]" : "")} />
-                                                    ) : (
-                                                        <>
-                                                            {btn.type === "CUSTOM" && (
-                                                                <Reply size={14} className={cn(locale === "ar" ? "scale-x-[-1]" : "")} />
-                                                            )}
-                                                            {btn.type === "PHONE_NUMBER" && <Phone
-                                                                size={14}
-                                                                fill="#00a884"
-                                                                color="#00a884"
-                                                                strokeWidth={1.8}
-                                                            />}
-                                                            {btn.type === "VISIT_WEBSITE" && <ExternalLink size={14} />}
-                                                            {btn.type === "WHATSAPP_CALL" && <Phone
-                                                                size={14}
-                                                                fill="#00a884"
-                                                                color="#00a884"
-                                                                strokeWidth={1.8}
-                                                            />}
-                                                        </>
                                                     )}
+                                                    {btn.type === "PHONE_NUMBER" && <Phone
+                                                        size={14}
+                                                        fill="#00a884"
+                                                        color="#00a884"
+                                                        strokeWidth={1.8}
+                                                    />}
+                                                    {btn.type === "LOCATION_REQUEST" && <FaLocationDot size={14} />}
+                                                    {btn.type === "VISIT_WEBSITE" && <ExternalLink size={14} />}
+                                                    {btn.type === "WHATSAPP_CALL" && <Phone
+                                                        size={14}
+                                                        fill="#00a884"
+                                                        color="#00a884"
+                                                        strokeWidth={1.8}
+                                                    />}
+
                                                     {btn.text || (
                                                         <span className="opacity-40 italic">زر الإجراء...</span>
                                                     )}
@@ -558,7 +583,7 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                                                     className="w-full py-2.5 px-3 flex items-center justify-center gap-2 text-[#00a884] dark:text-[#00a884] font-medium text-[13px] hover:bg-slate-50 dark:hover:bg-white/5 border-t border-slate-100 dark:border-slate-800 transition-colors"
                                                 >
                                                     <List size={14} />
-                                                    {seeAllOptionsLabel}
+                                                    {seeAllOptionsLabel || t("preview.seeAllOptions")}
                                                 </button>
                                             )}
                                         </>
@@ -588,15 +613,17 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                         )}
                 </div>
 
-                {/* Bottom Menu Sheet (Standard) */}
                 <AnimatePresence>
                     {isMenuOpen && (
                         <WhatsAppButtonMenu
                             isOpen={isMenuOpen}
                             onClose={() => setIsMenuOpen(false)}
                             buttons={buttons}
+                            sections={template.sections || []}
+                            type={isList ? "LIST" : "BUTTONS"}
+                            title={seeAllOptionsLabel || (isList ? "Select an option" : "All Options")}
                             locale={locale}
-                            seeAllOptionsLabel={t("preview.seeAllOptions")}
+                            seeAllOptionsLabel={seeAllOptionsLabel || t("preview.seeAllOptions")}
                         />
                     )}
                 </AnimatePresence>

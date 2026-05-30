@@ -331,7 +331,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setHeaderMediaFile(file);
+            setHeaderMediaFile?.(file);
             const url = URL.createObjectURL(file);
             setValue("headerUrl", url);
         }

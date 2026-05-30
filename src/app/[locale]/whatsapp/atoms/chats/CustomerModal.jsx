@@ -7,12 +7,13 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogFooter
+    DialogFooter,
+    DialogDescription
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import Button_ from "@/components/atoms/Button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Camera } from "lucide-react";
+import { User, Camera, UserPlus, UserCog } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function CustomerModal({ open, onOpenChange, customer, onSave }) {
@@ -47,7 +48,12 @@ export default function CustomerModal({ open, onOpenChange, customer, onSave }) 
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[425px] overflow-hidden">
                 <DialogHeader className="pb-4">
-                    <DialogTitle className="text-center">{customer ? t("editClient") : t("addCustomer")}</DialogTitle>
+                    <DialogTitle className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300">
+                            {customer ? <UserCog size={20} /> : <UserPlus size={20} />}
+                        </div>
+                        {customer ? t("editClient") : t("addCustomer")}
+                    </DialogTitle>
                 </DialogHeader>
 
                 <div className="flex flex-col items-center justify-center py-4 space-y-3">
@@ -110,13 +116,18 @@ export default function CustomerModal({ open, onOpenChange, customer, onSave }) 
                         />
                     </div>
 
-                    <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                            {t("cancel")}
-                        </Button>
-                        <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white">
-                            {t("save")}
-                        </Button>
+                    <DialogFooter className="gap-2">
+                        <Button_
+                            type="button"
+                            variant="outline"
+                            onClick={() => onOpenChange(false)}
+                            label={t("cancel")}
+                        />
+                        <Button_
+                            type="submit"
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                            label={t("save")}
+                        />
                     </DialogFooter>
                 </form>
             </DialogContent>

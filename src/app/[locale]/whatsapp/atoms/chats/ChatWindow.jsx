@@ -24,6 +24,13 @@ import {
 } from "@/components/ui/select";
 import WhatsAppAccountSelect from "../WhatsAppAccountSelect";
 import CustomerModal from "./CustomerModal";
+import MediaPreviewOverlay from "./MediaPreviewOverlay";
+import InteractiveMessageModal from "./InteractiveMessageModal";
+import LocationRequestModal from "./LocationRequestModal";
+import ContactModal from "./ContactModal";
+import LocationModal from "./LocationModal";
+import ListMessageModal from "./ListMessageModal";
+import TemplateMessageModal from "./TemplateMessageModal";
 
 export default function ChatWindow({ conversation, messages = [], onSendMessage, onReaction, onToggleDetails }) {
     const t = useTranslations("chats");
@@ -79,6 +86,14 @@ export default function ChatWindow({ conversation, messages = [], onSendMessage,
 
     return (
         <div className="flex-1 flex flex-col h-full bg-[#F2F2F2] overflow-hidden relative">
+            <MediaPreviewOverlay />
+            <InteractiveMessageModal />
+            <LocationRequestModal />
+            <ContactModal />
+            <LocationModal />
+            <ListMessageModal />
+            <TemplateMessageModal />
+
             {/* Filter Bar (Animated) */}
             {isFilterOpen && (
                 <div className="absolute top-16 left-0 right-0 bg-white border-b p-4 z-20 shadow-md animate-in slide-in-from-top duration-300 flex items-center gap-4">

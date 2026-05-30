@@ -35,7 +35,7 @@ export default function InteractiveMessageBuilder({
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setHeaderMediaFile(file);
+      setHeaderMediaFile?.(file);
       const url = URL.createObjectURL(file);
       onChange({ ...value, headerUrl: url });
     }

@@ -9852,7 +9852,6 @@
     "city": "المدينة",
     "state": "المحافظة",
     "zip": "الرمز البريدي",
-    "sendLocation": "إرسال الموقع",
     "locationName": "اسم الموقع",
     "locationAddress": "عنوان الموقع",
     "latitude": "خط العرض",
@@ -9879,7 +9878,7 @@
       "interactive": "أزرار تفاعلية",
       "template": "رسالة قالب",
       "requestLocation": "طلب الموقع",
-      "sendLocation": "إرسال الموقع"
+      "sendLocation": "الموقع"
     },
     "address": "العنوان",
     "viewOptions": "عرض الخيارات",

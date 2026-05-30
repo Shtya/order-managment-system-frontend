@@ -9812,7 +9812,6 @@
     "city": "City",
     "state": "State",
     "zip": "Zip Code",
-    "sendLocation": "Send Location",
     "locationName": "Location Name",
     "locationAddress": "Location Address",
     "latitude": "Latitude",
@@ -9839,7 +9838,7 @@
       "interactive": "Interactive Buttons",
       "template": "Template Message",
       "requestLocation": "Location Request",
-      "sendLocation": "Submit location"
+      "sendLocation": "location"
     },
     "address": "Address",
     "viewOptions": "View Options",

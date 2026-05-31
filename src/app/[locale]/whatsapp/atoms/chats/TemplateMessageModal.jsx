@@ -79,8 +79,11 @@ export default function TemplateMessageModal() {
 
         setTemplateMessage({
             templateId: template.id,
+            language: template?.language,
             templateName: template.name,
             templateData: config,
+            category: template.category,
+            subCategory: template.subCategory,
             headerVariables,
             bodyVariables,
             buttonVariables
@@ -125,11 +128,13 @@ export default function TemplateMessageModal() {
     }, [templateMessage, headerVars, bodyVars, buttonVarsIndices]);
 
     const handleSend = () => {
+        const lang = templateMessage.language;
+
         handleSendMessage({
             type: "template",
             template: {
                 name: templateMessage.templateName,
-                language: { code: templateMessage.templateData?.language || "en" },
+                language: { code: lang ? lang === 'en' ? 'en_US' : lang : "en_US" },
                 components: [
                     ...(headerVars.length > 0 ? [{
                         type: "header",
@@ -156,7 +161,17 @@ export default function TemplateMessageModal() {
                     }] : [])
                 ]
             }
-        });
+
+        },
+            {
+                template: {
+                    templateConfig: templateMessage.templateData,
+                    language: templateMessage.language,
+                    category: templateMessage.category,
+                    subCategory: templateMessage.subCategory
+                },
+            });
+
         setShowTemplateModal(false);
         setTemplateMessage({
             templateId: null,

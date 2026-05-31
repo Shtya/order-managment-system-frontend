@@ -10,6 +10,7 @@ import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
 
 export default function WhatsAppMessageBodyBuilder({
+  ref,
   value = "",
   onChange,
   label = "Body",
@@ -23,6 +24,7 @@ export default function WhatsAppMessageBodyBuilder({
   const textareaRef = useRef(null);
 
   const insertText = (type) => {
+
     if (!textareaRef.current) return;
     const start = textareaRef.current.selectionStart;
     const end = textareaRef.current.selectionEnd;
@@ -38,6 +40,7 @@ export default function WhatsAppMessageBodyBuilder({
       case "strike": wrapped = `~${selection}~`; break;
       case "mono": wrapped = `\`\`\`${selection}\`\`\``; break;
       case "variable":
+
         if (onInsertVariable) {
           onInsertVariable();
           return;
@@ -48,6 +51,7 @@ export default function WhatsAppMessageBodyBuilder({
     }
 
     const nextValue = before + wrapped + after;
+
     onChange(nextValue);
 
     // Reset focus and selection
@@ -78,9 +82,12 @@ export default function WhatsAppMessageBodyBuilder({
           </span>
         </div>
       </div>
-      
+
       <Textarea
-        ref={textareaRef}
+        ref={(el) => {
+          textareaRef.current = el;
+          ref.current = el;
+        }}
         placeholder={placeholder}
         className={cn(
           "min-h-[140px] resize-y bg-white dark:bg-slate-950 border-slate-200 focus:ring-primary/20",
@@ -90,7 +97,7 @@ export default function WhatsAppMessageBodyBuilder({
         onChange={(e) => onChange(e.target.value)}
         maxLength={maxLength}
       />
-      
+
       <div className="flex items-center justify-between px-2 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm">
         <div className="flex items-center gap-1">
           <Popover>

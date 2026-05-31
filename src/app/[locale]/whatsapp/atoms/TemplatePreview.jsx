@@ -206,9 +206,20 @@ export function WhatsAppCallPermissionsBubble({ locale = "en", onOpenMenu }) {
  * @param {boolean} [flat]
  * @param {boolean} [hasHeader]
  */
-export default function TemplatePreview({ template, flat = false, hasHeader = true, seeAllOptionsLabel, isInteractive = false, isList = false, forceShowExamples = false }) {
+export default function TemplatePreview({
+    template,
+    flat = false,
+    hasHeader = true,
+    seeAllOptionsLabel,
+    isInteractive = false,
+    isList = false,
+    forceShowExamples = false,
+    hideToggleAction = false,
+    bgTransparent = false,
+    isChatBubble = false,
+}) {
     const t = useTranslations("whatsApp.templates");
-    const [showExamples, setShowExamples] = useState(forceShowExamples);
+    const [showExamples, setShowExamples] = useState(forceShowExamples || isChatBubble);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isPermissionsMenuOpen, setIsPermissionsMenuOpen] = useState(false);
     const locale = useLocale();
@@ -433,7 +444,12 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
         (locale === "ar" ? "انسخ الرمز" : "Copy code");
 
     return (
-        <div className={`w-full mx-auto bg-white dark:bg-[#111b21] rounded-md ${!flat && "shadow-lg border  border-slate-200 dark:border-slate-800"} overflow-hidden flex flex-col`}>
+        <div className={cn(
+            "w-full mx-auto overflow-hidden flex flex-col",
+            bgTransparent ? "bg-transparent" : "bg-white dark:bg-[#111b21]",
+            (!flat && !isChatBubble) && "shadow-lg border border-slate-200 dark:border-slate-800",
+            isChatBubble ? "rounded-none" : "rounded-md"
+        )}>
             {/* Template Header Bar */}
             {hasHeader && <div className="px-4 py-2 bg-white dark:bg-[#111b21] border-b border-slate-100 dark:border-slate-800">
                 <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">{t("preview.title")}</h3>
@@ -442,25 +458,27 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
             {/* WhatsApp Chat Background */}
             <div
                 className={cn(
-                    "relative flex-1 p-6 transition-all duration-300",
-                    isMenuOpen ? "min-h-[500px]!" : "min-h-[300px]!"
+                    "relative flex-1 transition-all duration-300",
+                    isChatBubble ? "p-0" : "p-6",
+                    isMenuOpen ? "min-h-[500px]!" : (isChatBubble ? "min-h-0" : "min-h-[300px]!")
                 )}
-                style={{
+                style={!isChatBubble ? {
                     backgroundColor: "#efeae2",
                     backgroundImage: "url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')",
                     backgroundRepeat: "repeat",
                     backgroundSize: "400px"
-                }}
+                } : {}}
             >
                 <div className={cn(
                     "relative group tempalte-message",
-                    locale === "ar" && "tempalte-message-ar"
+                    locale === "ar" && "tempalte-message-ar",
+                    isChatBubble && "w-full"
                 )}>
                     {/* Bubble Container */}
                     <div className={cn(
-                        "bg-white dark:bg-[#1f2c33] rounded-sm shadow-sm p-1.5 pe-2 relative min-w-[200px] max-w-[95%]",
-
-                        locale === "ar" ? "rounded-tr-none" : "rounded-tl-none"
+                        "relative min-w-[200px] max-w-[95%]",
+                        !isChatBubble && "bg-white dark:bg-[#1f2c33] rounded-sm shadow-sm p-1.5 pe-2",
+                        !isChatBubble && (locale === "ar" ? "rounded-tr-none" : "rounded-tl-none")
                     )}
                         dir={language === "ar" ? "rtl" : "ltr"}
                         style={{
@@ -471,9 +489,15 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                         {renderHeader()}
 
                         {/* Body Section */}
-                        <div className="text-[13.5px] leading-[1.4] break-words whitespace-pre-wrap text-[#111b21] dark:text-[#d1d7db]">
+                        <div className={cn(
+                            "text-[13.5px] leading-[1.4] break-words whitespace-pre-wrap",
+                            isChatBubble ? "" : "text-[#111b21] dark:text-[#d1d7db]"
+                        )}>
                             <div
-                                className="text-[13.5px] leading-[1.4] break-words whitespace-pre-wrap text-[#111b21] dark:text-[#d1d7db]"
+                                className={cn(
+                                    "text-[13.5px] leading-[1.4] break-words whitespace-pre-wrap",
+                                    isChatBubble ? "" : "text-[#111b21] dark:text-[#d1d7db]"
+                                )}
                                 style={{
                                     fontFamily:
                                         "Segoe UI Historic, Segoe UI, Helvetica, Arial, sans-serif"
@@ -521,11 +545,12 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
                         )}
 
                         {/* Time Stamp */}
-                        <div className="flex justify-end mt-1 -mb-0.5 font-light">
-                            <span className="text-[10px] text-[#00000073] dark:text-[#8696a0]">
-                                {currentTime}
-                            </span>
-                        </div>
+                        {!isChatBubble && (
+                            <div className="flex justify-end mt-1 -mb-0.5 font-light">
+                                <span className="text-[10px] text-[#00000073] dark:text-[#8696a0]">
+                                    {currentTime}
+                                </span>
+                            </div>)}
 
                         {useCustomValidity && validityPeriod && (
                             <div className="text-[10px] text-[#00000073] dark:text-[#8696a0] px-2 pb-1 text-center leading-tight">
@@ -649,7 +674,7 @@ export default function TemplatePreview({ template, flat = false, hasHeader = tr
             </div>
 
             {/* Toggle Action Button - Segmented Control Style */}
-            {!isInteractive && <div className="p-4 bg-white dark:bg-[#0b141a] flex justify-center border-t border-slate-100 dark:border-slate-800">
+            {(!isInteractive && !hideToggleAction) && <div className="p-4 bg-white dark:bg-[#0b141a] flex justify-center border-t border-slate-100 dark:border-slate-800">
                 <div className="flex p-1 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 w-full max-w-[240px]">
                     <button
                         type="button"

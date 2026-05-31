@@ -9785,6 +9785,9 @@
     "profilePicture": "Profile Picture",
     "cancel": "Cancel",
     "save": "Save",
+    "customerAdded": "Customer added successfully",
+    "customerUpdated": "Customer updated successfully",
+    "loadingMessages": "Loading messages...",
     "typeMessage": "Type a message...",
     "send": "Send",
     "status": "Status",
@@ -9818,10 +9821,11 @@
     "longitude": "Longitude",
     "selectLocationOnMap": "Select Location on Map",
     "validation": {
+      "customerNameRequired": "Customer name is required",
+      "phoneNumberRequired": "Phone number is required",
       "firstNameRequired": "First name is required",
       "lastNameRequired": "Last name is required",
       "formattedNameRequired": "Formatted name is required",
-      "phoneNumberRequired": "Phone number is required",
       "invalidEmail": "Invalid email address"
     },
     "sendMessage": "Send Message",
@@ -9864,6 +9868,9 @@
     "dynamicButtons": "Dynamic Buttons",
     "button": "Button",
     "header": "Header",
-    "body": "Body Text"
+    "body": "Body Text",
+    "noResults": "There are no conversations",
+    "noMessagesFound": "No messages found",
+    "noResultsFound": "No results found matching your filters"
   }
 }

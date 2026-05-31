@@ -1,47 +1,129 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import toast from "react-hot-toast";
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
     DialogFooter,
-    DialogDescription
 } from "@/components/ui/dialog";
 import Button_ from "@/components/atoms/Button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Camera, UserPlus, UserCog } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { User, Camera, UserPlus, UserCog, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { avatarSrc } from "@/components/atoms/UserSelect";
+import api from "@/utils/api";
+
+const createSchema = (t) =>
+    yup.object({
+        name: yup.string().required(t("validation.customerNameRequired")),
+        phoneNumber: yup.string().required(t("validation.phoneNumberRequired")),
+        email: yup.string().email(t("validation.invalidEmail")).nullable().transform((curr, orig) => orig === "" ? null : curr).optional(),
+        notes: yup.string().nullable().optional(),
+    });
 
 export default function CustomerModal({ open, onOpenChange, customer, onSave }) {
     const t = useTranslations("chats");
     const fileInputRef = useRef(null);
-    const [formData, setFormData] = useState(customer || {
-        name: "",
-        phoneNumber: "",
-        email: "",
-        profilePicture: ""
+    const [isSaving, setIsSaving] = useState(false);
+    const [previewImage, setPreviewImage] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(null);
+
+    const schema = useMemo(() => createSchema(t), [t]);
+
+    const {
+        control,
+        handleSubmit,
+        reset,
+        formState: { errors },
+    } = useForm({
+        resolver: yupResolver(schema),
+        defaultValues: {
+            name: "",
+            phoneNumber: "",
+            email: "",
+            notes: "",
+        },
     });
+
+    useEffect(() => {
+        if (open) {
+            if (customer) {
+                reset({
+                    name: customer.name || "",
+                    phoneNumber: customer.phoneNumber || "",
+                    email: customer.email || "",
+                    notes: customer.notes || "",
+                });
+                setPreviewImage(customer.profilePicture || null);
+            } else {
+                reset({
+                    name: "",
+                    phoneNumber: "",
+                    email: "",
+                    notes: "",
+                });
+                setPreviewImage(null);
+            }
+            setSelectedFile(null);
+        }
+    }, [open, customer, reset]);
 
     const handleFileChange = (e) => {
         const file = e.target.files?.[0];
         if (file) {
-            // Create a local preview URL
+            setSelectedFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
-                setFormData({ ...formData, profilePicture: reader.result });
+                setPreviewImage(reader.result);
             };
             reader.readAsDataURL(file);
         }
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        onSave(formData);
-        onOpenChange(false);
+    const onSubmit = async (data) => {
+        setIsSaving(true);
+        try {
+            const formData = new FormData();
+            formData.append("name", data.name);
+            formData.append("phoneNumber", data.phoneNumber);
+            if (data.email) formData.append("email", data.email);
+            if (data.notes) formData.append("notes", data.notes);
+            if (selectedFile) {
+                formData.append("profilePicture", selectedFile);
+            }
+
+            let response;
+            if (customer) {
+                // Edit mode
+                response = await api.patch(`/customer/${customer.id}`, formData, {
+                    headers: { "Content-Type": "multipart/form-data" },
+                });
+                toast.success(t("customerUpdated"));
+            } else {
+                // Add mode
+                response = await api.post("/conversation", formData, {
+                    headers: { "Content-Type": "multipart/form-data" },
+                });
+                toast.success(t("customerAdded"));
+            }
+
+            if (onSave) onSave(response.data);
+            onOpenChange(false);
+        } catch (error) {
+            const message = error.response?.data?.message || error.message || "Failed to save customer";
+            toast.error(Array.isArray(message) ? message[0] : message);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -66,7 +148,7 @@ export default function CustomerModal({ open, onOpenChange, customer, onSave }) 
                             onChange={handleFileChange}
                         />
                         <Avatar className="w-24 h-24 border-4 border-white shadow-lg">
-                            <AvatarImage src={formData.profilePicture} alt={formData.name} />
+                            <AvatarImage src={avatarSrc(previewImage)} alt="Preview" />
                             <AvatarFallback className="bg-slate-100 text-slate-400">
                                 <User size={48} strokeWidth={1.5} />
                             </AvatarFallback>
@@ -79,54 +161,104 @@ export default function CustomerModal({ open, onOpenChange, customer, onSave }) 
                             <Camera size={14} />
                         </button>
                     </div>
-                    {formData.name && (
-                        <div className="text-center">
-                            <h3 className="font-bold text-lg text-slate-900">{formData.name}</h3>
-                            <p className="text-xs text-slate-500">{formData.phoneNumber}</p>
-                        </div>
-                    )}
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="name">{t("customerName")}</Label>
-                        <Input
-                            id="name"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            required
+                        <Controller
+                            name="name"
+                            control={control}
+                            render={({ field }) => (
+                                <Input
+                                    {...field}
+                                    id="name"
+                                    placeholder={t("customerName")}
+                                    className={errors.name ? "border-red-500" : ""}
+                                />
+                            )}
                         />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="phone">{t("phoneNumber")}</Label>
-                        <Input
-                            id="phone"
-                            value={formData.phoneNumber}
-                            onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                            required
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="email">{t("email")}</Label>
-                        <Input
-                            id="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        />
+                        {errors.name && (
+                            <p className="text-xs text-red-500">{errors.name.message}</p>
+                        )}
                     </div>
 
-                    <DialogFooter className="gap-2">
+                    <div className="space-y-2">
+                        <Label htmlFor="phoneNumber">{t("phoneNumber")}</Label>
+                        <Controller
+                            name="phoneNumber"
+                            control={control}
+                            render={({ field }) => (
+                                <Input
+                                    {...field}
+                                    id="phoneNumber"
+                                    placeholder={t("phoneNumber")}
+                                    className={errors.phoneNumber ? "border-red-500" : ""}
+                                />
+                            )}
+                        />
+                        {errors.phoneNumber && (
+                            <p className="text-xs text-red-500">{errors.phoneNumber.message}</p>
+                        )}
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="email">{t("email")}</Label>
+                        <Controller
+                            name="email"
+                            control={control}
+                            render={({ field }) => (
+                                <Input
+                                    {...field}
+                                    id="email"
+                                    type="email"
+                                    placeholder={t("email")}
+                                    className={errors.email ? "border-red-500" : ""}
+                                />
+                            )}
+                        />
+                        {errors.email && (
+                            <p className="text-xs text-red-500">{errors.email.message}</p>
+                        )}
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="notes">{t("notes")}</Label>
+                        <Controller
+                            name="notes"
+                            control={control}
+                            render={({ field }) => (
+                                <Textarea
+                                    {...field}
+                                    id="notes"
+                                    placeholder={t("notes")}
+                                    className={errors.notes ? "border-red-500 min-h-[100px]" : "min-h-[100px]"}
+                                />
+                            )}
+                        />
+                        {errors.notes && (
+                            <p className="text-xs text-red-500">{errors.notes.message}</p>
+                        )}
+                    </div>
+
+                    <DialogFooter className="gap-2 pt-4">
                         <Button_
                             type="button"
                             variant="outline"
                             onClick={() => onOpenChange(false)}
                             label={t("cancel")}
+                            disabled={isSaving}
                         />
                         <Button_
                             type="submit"
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                            label={t("save")}
+                            className="bg-green-600 hover:bg-green-700 text-white min-w-[80px]"
+                            disabled={isSaving}
+                            label={isSaving ? (
+                                <div className="flex items-center gap-2">
+                                    <Loader2 size={16} className="animate-spin" />
+                                    {t("save")}
+                                </div>
+                            ) : t("save")}
                         />
                     </DialogFooter>
                 </form>

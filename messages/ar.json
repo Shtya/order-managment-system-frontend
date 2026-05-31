@@ -9825,6 +9825,9 @@
     "profilePicture": "صورة الملف الشخصي",
     "cancel": "إلغاء",
     "save": "حفظ",
+    "customerAdded": "تم إضافة العميل بنجاح",
+    "customerUpdated": "تم تحديث بيانات العميل بنجاح",
+    "loadingMessages": "جاري تحميل الرسائل...",
     "typeMessage": "اكتب رسالة...",
     "send": "إرسال",
     "status": "الحالة",
@@ -9858,10 +9861,11 @@
     "longitude": "خط الطول",
     "selectLocationOnMap": "اختر الموقع على الخريطة",
     "validation": {
+      "customerNameRequired": "اسم العميل مطلوب",
+      "phoneNumberRequired": "رقم الهاتف مطلوب",
       "firstNameRequired": "الاسم الأول مطلوب",
       "lastNameRequired": "اسم العائلة مطلوب",
       "formattedNameRequired": "الاسم بالكامل مطلوب",
-      "phoneNumberRequired": "رقم الهاتف مطلوب",
       "invalidEmail": "بريد إلكتروني غير صالح"
     },
     "sendMessage": "إرسال الرسالة",
@@ -9904,6 +9908,9 @@
     "dynamicButtons": "أزرار ديناميكية",
     "button": "زر",
     "header": "رأس الرسالة",
-    "body": "نص الرسالة"
+    "body": "نص الرسالة",
+    "noResults": "لا توجد محادثات",
+    "noMessagesFound": "لم يتم العثور على رسائل",
+    "noResultsFound": "لا توجد نتائج تطابق عوامل التصفية"
   }
 }

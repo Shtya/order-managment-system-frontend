@@ -185,6 +185,36 @@ export const SocketProvider = ({ children }) => {
       });
     });
 
+    // ------------------ WHATSAPP ------------------
+
+    socket.on("whatsapp:message-new", (payload) => {
+      publish({
+        type: "WHATSAPP_MESSAGE_NEW",
+        payload,
+      });
+    });
+
+    socket.on("whatsapp:message-updated", (payload) => {
+      publish({
+        type: "WHATSAPP_MESSAGE_UPDATED",
+        payload,
+      });
+    });
+
+    socket.on("whatsapp:conversation-new", (payload) => {
+      publish({
+        type: "WHATSAPP_CONVERSATION_NEW",
+        payload,
+      });
+    });
+
+    socket.on("whatsapp:customer-new", (payload) => {
+      publish({
+        type: "WHATSAPP_CUSTOMER_NEW",
+        payload,
+      });
+    });
+
     // Cleanup listeners
     return () => {
       socket.off("connect");
@@ -196,6 +226,10 @@ export const SocketProvider = ({ children }) => {
       socket.off("failed-order:update");
       socket.off("shipment:status");
       socket.off("automation:run-status");
+      socket.off("whatsapp:message-new");
+      socket.off("whatsapp:message-updated");
+      socket.off("whatsapp:conversation-new");
+      socket.off("whatsapp:customer-new");
     };
   }, [user?.id]);
 

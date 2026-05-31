@@ -18,7 +18,8 @@ const PAGE_SIZE = 10;
 
 export function avatarSrc(url) {
 	if (!url) return "";
-	if(url.startsWith("blob")) return url;
+	if (url.startsWith("blob")) return url;
+	if (url.startsWith("data:")) return url;
 	if (url.startsWith("http")) return url;
 	const base = process.env.NEXT_PUBLIC_BASE_URL || "";
 	return `${base.replace(/\/+$/, "")}/${url.replace(/^\/+/, "")}`;

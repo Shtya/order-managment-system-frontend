@@ -25,6 +25,7 @@ import { useConversation } from "./ConversationContext";
 export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollToMessage }) {
     const t = useTranslations("chats");
     const {
+        selectedConversation,
         setPendingMedia,
         setShowInteractiveModal,
         setShowLocationRequestModal,
@@ -98,6 +99,13 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
     useEffect(() => {
         fetchAccounts();
     }, [fetchAccounts]);
+
+    // Focus textarea when conversation or reply changes
+    useEffect(() => {
+        if ((selectedConversation?.id || replyTo) && textareaRef.current) {
+            textareaRef.current.focus();
+        }
+    }, [selectedConversation?.id, replyTo]);
 
     useEffect(() => {
         if (isRecording) {
@@ -195,13 +203,16 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
 
     const addEmoji = (emoji) => {
         setText(text + emoji.native);
+        // Focus back to textarea after picking emoji
+        setTimeout(() => {
+            textareaRef.current?.focus();
+        }, 0);
     };
 
     const actions = [
-        // { icon: ImageIcon, label: t("messageTypes.image"), color: "text-purple-500", type: "image" },
-        // { icon: Video, label: t("messageTypes.video"), color: "text-red-500", type: "video" },
+        { icon: ImageIcon, label: t("messageTypes.image"), color: "text-purple-500", type: "image" },
+        { icon: Video, label: t("messageTypes.video"), color: "text-red-500", type: "video" },
         { icon: FileText, label: t("messageTypes.document"), color: "text-orange-500", type: "document" },
-        // { icon: Music, label: t("messageTypes.audio"), color: "text-pink-500", type: "audio" },
         { icon: MapPin, label: t("messageTypes.sendLocation"), color: "text-green-500", type: "location" },
         { icon: MapIcon, label: t("messageTypes.requestLocation"), color: "text-green-500", type: "location_request" },
         { icon: UserCircle, label: t("messageTypes.contact"), color: "text-teal-500", type: "contact" },
@@ -231,6 +242,7 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                         onClick={(e) => {
                             e.stopPropagation();
                             onCancelReply();
+                            textareaRef.current?.focus();
                         }}
                         className="p-1 hover:bg-gray-200 rounded-full"
                     >
@@ -319,6 +331,7 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                             ref={textareaRef}
                             rows={1}
                             value={text}
+                            autoFocus
                             onChange={(e) => setText(e.target.value)}
                             placeholder={t("typeMessage")}
                             className="w-full bg-transparent border-none focus:ring-0 resize-none text-sm max-h-32 py-1 outline-none focus-visible:outline-none!"
@@ -345,19 +358,19 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                                 accounts.length > 1 && !isRecording && "border-e border-green-500/30"
                             )}
                         >
-                            {isRecording ? (
+                            {/* {isRecording ? (
                                 <>
                                     <span className="text-white text-sm font-medium mr-2">Send</span>
                                     <Send className="w-4 h-4 text-white" />
                                 </>
                             ) : text.trim() ? (
-                                <>
-                                    <span className="text-white text-sm font-medium mr-2">{t("send")}</span>
-                                    <Send className="w-4 h-4 text-white" />
-                                </>
+                                <> */}
+                            <span className="text-white text-sm font-medium mr-2">{t("send")}</span>
+                            <Send className="w-4 h-4 text-white" />
+                            {/* </>
                             ) : (
                                 <Mic className="w-5 h-5 text-gray-500" />
-                            )}
+                            )} */}
                         </button>
                         {accounts.length > 1 && !isRecording && (
                             <DropdownMenu>

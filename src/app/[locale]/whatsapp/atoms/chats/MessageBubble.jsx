@@ -2,7 +2,7 @@
 
 import { cn } from "@/utils/cn";
 import { format } from "date-fns";
-import { Check, CheckCheck, Reply, Smile, Play, Pause, Mic } from "lucide-react";
+import { Check, CheckCheck, Reply, Smile, Play, Pause, Mic, FileText, Clock, AlertCircle, Loader2, RotateCcw } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import data from '@emoji-mart/data'
 import Picker from '@emoji-mart/react'
@@ -11,15 +11,59 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
+import { BASE_URL } from "@/utils/api";
 
-export default function MessageBubble({ id, message, isOutbound, onReply, onReaction, isHighlighted }) {
+export default function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, isHighlighted }) {
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const [audioProgress, setAudioProgress] = useState(0);
     const [currentTime, setCurrentTime] = useState(0);
+    const [mediaLoading, setMediaLoading] = useState(true);
+    const [audioLoading, setAudioLoading] = useState(true);
+    const [mediaError, setMediaError] = useState(false);
+    const [audioError, setAudioError] = useState(false);
     const audioRef = useRef(null);
     const progressRef = useRef(null);
     const time = message.createdAt ? format(new Date(message.createdAt), "hh:mm a") : "";
+
+    const getMediaUrl = (content, type) => {
+        const media = content[type];
+        // const rawUrl = media?.url || content.url;
+        // if (!rawUrl) return null;
+        // if (rawUrl.startsWith('blob:') || rawUrl.startsWith('data:')) return rawUrl;
+
+        const token = localStorage.getItem('accessToken');
+        const accountId = message.accountId;
+        const mediaId = media?.id || content.id;
+
+        const params = new URLSearchParams();
+        if (token) params.append('token', token);
+        if (accountId) params.append('accountId', accountId);
+        if (mediaId) params.append('mediaId', mediaId);
+        else if (rawUrl) params.append('url', rawUrl);
+
+        return `${BASE_URL}/whatsapp/media?${params.toString()}`;
+    };
+
+    const handleMediaClick = (type, content) => {
+        const url = getMediaUrl(content, type);
+        if (url) {
+            window.open(url, "_blank");
+        }
+    };
+
+    useEffect(() => {
+        const handleScrollToMsg = (e) => {
+            if (e.detail?.id === message.id) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+            }
+        };
+        window.addEventListener("whatsapp:scroll-to-message", handleScrollToMsg);
+        return () => window.removeEventListener("whatsapp:scroll-to-message", handleScrollToMsg);
+    }, [id, message.id]);
 
     useEffect(() => {
         const handleGlobalPlay = (e) => {
@@ -49,18 +93,31 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
 
     const handleAudioTimeUpdate = () => {
         if (audioRef.current) {
-            const progress = (audioRef.current.currentTime / audioRef.current.duration) * 100;
-            setAudioProgress(progress);
+            const duration = audioRef.current.duration;
+            // Use metadata duration as fallback if browser returns Infinity
+            const metadataDuration = message.content?.audio?.duration || 0;
+            const safeDuration = (duration && duration !== Infinity) ? duration : metadataDuration;
+
+            if (safeDuration > 0) {
+                const progress = (audioRef.current.currentTime / safeDuration) * 100;
+                setAudioProgress(progress);
+            }
             setCurrentTime(audioRef.current.currentTime);
         }
     };
 
     const handleSeek = (e) => {
         if (audioRef.current && progressRef.current) {
+            const duration = audioRef.current.duration;
+            const metadataDuration = message.content?.audio?.duration || 0;
+            const safeDuration = (duration && duration !== Infinity) ? duration : metadataDuration;
+
+            if (safeDuration <= 0) return;
+
             const rect = progressRef.current.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const clickedValue = (x / rect.width);
-            const newTime = clickedValue * audioRef.current.duration;
+            const newTime = clickedValue * safeDuration;
             audioRef.current.currentTime = newTime;
             setAudioProgress(clickedValue * 100);
             setCurrentTime(newTime);
@@ -80,8 +137,10 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
 
     // Status icons mapping
     const StatusIcon = ({ status }) => {
-        if (status === "READ" || status === "PLAYED") return <CheckCheck className="w-3.5 h-3.5 text-blue-500" />;
-        if (status === "DELIVERED") return <CheckCheck className="w-3.5 h-3.5 text-gray-400" />;
+        if (status === "pending") return <Clock className="w-3 h-3 text-gray-400 animate-pulse" />;
+        if (status === "failed") return <AlertCircle className="w-3.5 h-3.5 text-red-500" />;
+        if (status === "read" || status === "played") return <CheckCheck className="w-3.5 h-3.5 text-blue-500" />;
+        if (status === "delivered") return <CheckCheck className="w-3.5 h-3.5 text-gray-400" />;
         return <Check className="w-3.5 h-3.5 text-gray-400" />;
     };
 
@@ -95,16 +154,73 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
             case "image":
                 return (
                     <div className="space-y-2 max-w-sm">
-                        <img src={content.image?.url || content.url} alt="image" className="rounded-lg w-full h-auto cursor-pointer" />
-                        {content.caption && <p className="text-sm">{content.caption}</p>}
+                        <div className={cn(
+                            "relative w-full min-h-[150px] flex items-center justify-center bg-black/5 rounded-lg overflow-hidden group/media",
+                            mediaLoading && "md:min-w-[150px]"
+                        )}>
+                            {mediaLoading && !mediaError && (
+                                <div className="absolute inset-0 flex items-center justify-center z-10">
+                                    <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                                </div>
+                            )}
+                            {mediaError ? (
+                                <div className="flex flex-col items-center gap-2 p-6 text-gray-400">
+                                    <AlertCircle size={32} />
+                                    <span className="text-xs font-medium">Failed to load image</span>
+                                </div>
+                            ) : (
+                                <img
+                                    src={getMediaUrl(content, "image")}
+                                    alt="image"
+                                    className={cn(
+                                        "rounded-lg w-full h-auto cursor-pointer transition-opacity duration-300",
+                                        mediaLoading ? "opacity-0" : "opacity-100"
+                                    )}
+                                    loading="lazy"
+                                    onLoad={() => setMediaLoading(false)}
+                                    onError={() => {
+                                        setMediaLoading(false);
+                                        setMediaError(true);
+                                    }}
+                                    onClick={() => handleMediaClick("image", content)}
+                                />
+                            )}
+                        </div>
+                        {content?.image?.caption && <p className="text-sm">{content?.image?.caption}</p>}
                     </div>
                 );
 
             case "video":
                 return (
                     <div className="space-y-2 max-w-sm">
-                        <video src={content.video?.url || content.url} controls className="rounded-lg w-full h-auto" />
-                        {content.caption && <p className="text-sm">{content.caption}</p>}
+                        <div className="relative w-full min-h-[180px] flex items-center justify-center bg-black/5 rounded-lg overflow-hidden group/media">
+                            {mediaLoading && !mediaError && (
+                                <div className="absolute inset-0 flex items-center justify-center z-10">
+                                    <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                                </div>
+                            )}
+                            {mediaError ? (
+                                <div className="flex flex-col items-center gap-2 p-6 text-gray-400">
+                                    <AlertCircle size={32} />
+                                    <span className="text-xs font-medium">Failed to load video</span>
+                                </div>
+                            ) : (
+                                <video
+                                    src={getMediaUrl(content, "video")}
+                                    controls
+                                    className={cn(
+                                        "rounded-lg w-full h-auto transition-opacity duration-300",
+                                        mediaLoading ? "opacity-0" : "opacity-100"
+                                    )}
+                                    onLoadedData={() => setMediaLoading(false)}
+                                    onError={() => {
+                                        setMediaLoading(false);
+                                        setMediaError(true);
+                                    }}
+                                />
+                            )}
+                        </div>
+                        {content?.video?.caption && <p className="text-sm">{content?.video?.caption}</p>}
                     </div>
                 );
 
@@ -115,13 +231,18 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                             "flex items-center gap-3 p-3 rounded-lg border",
                             isOutbound ? "bg-black/5 border-black/10" : "bg-gray-50 border-gray-100"
                         )}>
-                            <FileText size={32} className="text-blue-500" />
-                            <div className="min-w-0">
-                                <p className="text-sm font-medium truncate">{content.document?.name || "Document"}</p>
-                                <p className="text-[10px] opacity-60 uppercase">PDF • 1.2 MB</p>
+                            <div
+                                onClick={() => handleMediaClick("document", content)}
+                                className="flex items-center gap-3 flex-1 cursor-pointer"
+                            >
+                                <FileText size={32} className="text-blue-500" />
+                                <div className="min-w-0">
+                                    <p className="text-sm font-medium truncate">{content.document?.filename || content.document?.name || "Document"}</p>
+                                    <p className="text-[10px] opacity-60 uppercase">{content.document?.mime_type || "PDF"}</p>
+                                </div>
                             </div>
                         </div>
-                        {content.caption && <p className="text-sm">{content.caption}</p>}
+                        {content?.document?.caption && <p className="text-sm">{content.document?.caption}</p>}
                     </div>
                 );
 
@@ -130,47 +251,67 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                     <div className="flex items-center gap-3 py-1 min-w-[200px]">
                         <audio
                             ref={audioRef}
-                            src={content.audio?.url || content.url}
+                            src={getMediaUrl(content, "audio")}
                             onTimeUpdate={handleAudioTimeUpdate}
                             onEnded={handleAudioEnded}
+                            onCanPlayThrough={() => setAudioLoading(false)}
+                            onError={() => {
+                                setAudioLoading(false);
+                                setAudioError(true);
+                            }}
                             className="hidden"
                         />
                         <button
                             onClick={toggleAudio}
+                            disabled={audioLoading || audioError}
                             className={cn(
-                                "w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors",
-                                isOutbound ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                "w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors relative",
+                                isOutbound ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-100 text-gray-600 hover:bg-gray-200",
+                                (audioLoading || audioError) && "opacity-80 cursor-not-allowed",
+                                audioError && "bg-red-50 text-red-500 hover:bg-red-50"
                             )}
                         >
-                            {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />}
+                            {audioLoading ? (
+                                <Loader2 size={20} className="animate-spin" />
+                            ) : audioError ? (
+                                <AlertCircle size={20} />
+                            ) : (
+                                isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />
+                            )}
                         </button>
 
                         <div className="flex-1 space-y-1.5">
                             <div
                                 ref={progressRef}
-                                onClick={handleSeek}
-                                className="relative h-2 bg-black/10 rounded-full cursor-pointer group/progress"
+                                onClick={(!audioLoading && !audioError) ? handleSeek : undefined}
+                                className={cn(
+                                    "relative h-2 bg-black/10 rounded-full group/progress",
+                                    (!audioLoading && !audioError) ? "cursor-pointer" : "cursor-not-allowed opacity-50"
+                                )}
                             >
                                 <div
                                     className={cn(
                                         "absolute top-0 left-0 h-full transition-all duration-100 rounded-full",
-                                        isOutbound ? "bg-green-600" : "bg-gray-400"
+                                        isOutbound ? "bg-green-600" : "bg-gray-400",
+                                        audioError && "bg-red-400"
                                     )}
                                     style={{ width: `${audioProgress}%` }}
                                 />
-                                <div
-                                    className={cn(
-                                        "absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 rounded-full opacity-0 group-hover/progress:opacity-100 transition-opacity shadow-sm",
-                                        isOutbound ? "border-green-600" : "border-gray-400"
-                                    )}
-                                    style={{ left: `calc(${audioProgress}% - 6px)` }}
-                                />
+                                {!audioLoading && !audioError && (
+                                    <div
+                                        className={cn(
+                                            "absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 rounded-full opacity-0 group-hover/progress:opacity-100 transition-opacity shadow-sm",
+                                            isOutbound ? "border-green-600" : "border-gray-400"
+                                        )}
+                                        style={{ left: `calc(${audioProgress}% - 6px)` }}
+                                    />
+                                )}
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-[10px] opacity-60 font-medium">
-                                    {formatAudioTime(isPlaying ? currentTime : (content.audio?.duration || 0))}
+                                    {audioLoading ? "Loading..." : audioError ? "Failed to load audio" : formatAudioTime(isPlaying ? currentTime : (content.audio?.duration || 0))}
                                 </span>
-                                <Mic size={12} className={cn(isOutbound ? "text-green-600" : "text-gray-400")} />
+                                <Mic size={12} className={cn(isOutbound ? "text-green-600" : "text-gray-400", audioError && "text-red-400")} />
                             </div>
                         </div>
                     </div>
@@ -298,13 +439,13 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
     return (
         <div id={id} className={cn(
             "flex w-full mb-4 group",
-            isOutbound ? "justify-end" : "justify-start"
+            isOutbound ? "justify-start" : "justify-end"
         )}>
             <div className="relative flex items-center">
                 {/* Hover Actions - Positioned absolute to avoid layout shift */}
                 <div className={cn(
                     "absolute top-1/2 -translate-y-1/2 flex items-center gap-0.5 transition-all duration-200 z-10",
-                    isOutbound ? "end-full me-2" : "start-full ms-2",
+                    isOutbound ? "start-full ms-2" : "end-full me-2",
                     "opacity-0 group-hover:opacity-100",
                     isPopoverOpen && "opacity-100"
                 )}>
@@ -327,7 +468,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                         </PopoverTrigger>
                         <PopoverContent
                             side="top"
-                            align={isOutbound ? "end" : "start"}
+                            align={isOutbound ? "start" : "end"}
                             className="p-0 border-none bg-transparent shadow-none w-auto"
                         >
                             <div className="animate-in fade-in zoom-in-95 duration-200">
@@ -350,11 +491,53 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                 <div className={cn(
                     "max-w-[450px] px-4 py-2.5 rounded-2xl relative shadow-sm transition-all duration-500",
                     isOutbound
-                        ? "bg-green-100 text-green-900 rtl:rounded-tl-none ltr:rounded-tr-none"
-                        : "bg-white text-gray-800 rtl:rounded-tr-none ltr:rounded-tl-none border border-gray-100",
+                        ? "bg-green-100 text-green-900rtl:rounded-tr-none ltr:rounded-tl-none "
+                        : "bg-white text-gray-800 rtl:rounded-tl-none ltr:rounded-tr-none  border border-gray-100",
                     isHighlighted && (isOutbound ? "bg-green-200 ring-4 ring-green-400/20" : "bg-blue-50 ring-4 ring-blue-400/20")
                 )}>
+                    {/* Reply Preview */}
+                    {message.replyTo && (
+                        <div
+                            onClick={() => message.replyTo && window.dispatchEvent(new CustomEvent("whatsapp:scroll-to-message", { detail: { id: message.replyTo.id } }))}
+                            className={cn(
+                                "mb-2 p-2 rounded-lg border-s-4 bg-black/5 cursor-pointer hover:bg-black/10 transition-colors",
+                                isOutbound ? "border-green-500" : "border-blue-500"
+                            )}
+                        >
+                            <p className="text-[10px] font-bold opacity-60 uppercase mb-0.5">
+                                {message.replyTo.direction === "inbound" ? "Customer" : "You"}
+                            </p>
+                            <p className="text-xs italic line-clamp-2 opacity-80">
+                                {message.replyTo.messageType === "text"
+                                    ? (message.replyTo.content?.text?.body || message.replyTo.content?.body)
+                                    : `[${message.replyTo.messageType.toUpperCase()}]`}
+                            </p>
+                        </div>
+                    )}
+
                     {renderContent()}
+
+                    {/* Error Display for Failed Messages */}
+                    {message.status === "failed" && (
+                        <div className="mt-2 space-y-2 animate-in fade-in slide-in-from-top-1 duration-300">
+                            <div className="flex items-start gap-2 p-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
+                                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[11px] font-bold uppercase tracking-wider mb-0.5">Message failed to send</p>
+                                    <p className="text-xs opacity-90 line-clamp-2">{message.error || "Unknown error occurred"}</p>
+                                </div>
+                            </div>
+                            {onRetry && (
+                                <button
+                                    onClick={() => onRetry(message)}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-red-200 text-red-600 rounded-lg text-xs font-bold hover:bg-red-50 transition-colors shadow-sm w-full justify-center"
+                                >
+                                    <RotateCcw className="w-3.5 h-3.5" />
+                                    Retry Sending
+                                </button>
+                            )}
+                        </div>
+                    )}
 
                     <div className={cn(
                         "flex items-center gap-1 justify-end mt-1",
@@ -365,13 +548,38 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                     </div>
 
                     {/* Reactions Display */}
-                    {message.reaction && (
-                        <div className={cn(
-                            "absolute -bottom-3 flex items-center justify-center w-6 h-6 bg-white border border-gray-100 rounded-full shadow-sm text-sm",
-                            isOutbound ? "end-2" : "start-2"
-                        )}>
-                            <span>{message.reaction}</span>
-                        </div>
+                    {message.reactions && message.reactions.length > 0 && (
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <button className={cn(
+                                    "absolute -bottom-3 flex items-center gap-1 bg-white border border-gray-100 rounded-full shadow-sm px-1.5 py-0.5 z-10 hover:bg-gray-50 transition-colors cursor-pointer",
+                                    isOutbound ? "start-2" : "end-2"
+                                )}>
+                                    {message.reactions.map((r, idx) => (
+                                        <span key={r.id || idx} className="text-xs">
+                                            {r.content?.reaction?.emoji || r.reaction}
+                                        </span>
+                                    ))}
+                                </button>
+                            </PopoverTrigger>
+                            <PopoverContent side="top" align="center" className="w-auto p-2 bg-white/95 backdrop-blur shadow-lg border border-gray-100 rounded-xl animate-in zoom-in-95 duration-200">
+                                <div className="space-y-1.5">
+                                    {message.reactions.map((r, idx) => (
+                                        <div key={r.id || idx} className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-black/5 transition-colors">
+                                            <span className="text-lg">{r.content?.reaction?.emoji || r.reaction}</span>
+                                            <div className="flex flex-col">
+                                                <span className="text-xs font-bold text-gray-900">
+                                                    {r.direction === "outbound" ? "You" : "Customer"}
+                                                </span>
+                                                <span className="text-[10px] text-gray-400">
+                                                    {r.createdAt ? format(new Date(r.createdAt), "hh:mm a") : "Just now"}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </PopoverContent>
+                        </Popover>
                     )}
                 </div>
             </div>

@@ -292,7 +292,7 @@ export const ConversationProvider = ({ children }) => {
         }
     };
 
-    const handleSendMessage = async (msg) => {
+    const handleSendMessage = async (msg, metadata) => {
         if (!selectedConversation) return;
 
         let content = {};
@@ -320,7 +320,8 @@ export const ConversationProvider = ({ children }) => {
         }
         let replyToWamid = null;
         let repMsg = null;
-        if (replyTo) {
+        // Template messages do not support 'context' (replying to a message) in Meta API
+        if (replyTo && msg.type !== "template") {
             repMsg = messages.find(m => m.id === replyTo.id);
             replyToWamid = repMsg?.messageId || repMsg?.id;
         }
@@ -334,7 +335,7 @@ export const ConversationProvider = ({ children }) => {
             status: "pending", // Initial status for optimistic UI
             conversationId: selectedConversation.id,
             accountId: msg.accountId,
-            metadata: { localId },
+            metadata: { localId, ...metadata },
             replyTo: repMsg,
         };
 
@@ -401,7 +402,7 @@ export const ConversationProvider = ({ children }) => {
             msgPayload[msgType] = failedMessage.content[msgType];
         }
 
-        await handleSendMessage(msgPayload, failedMessage.replyTo);
+        await handleSendMessage(msgPayload, failedMessage.metadata);
     };
 
     const handleReaction = async (messageId, emoji) => {

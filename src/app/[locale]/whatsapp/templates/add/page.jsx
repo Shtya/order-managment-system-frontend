@@ -77,6 +77,7 @@ import {
 } from "./templateFormSchema";
 import WhatsAppAccountSelect from "../../atoms/WhatsAppAccountSelect";
 import { useOrdersSettings } from "@/hook/useOrdersSettings";
+import MediaUpload from "../../atoms/MediaUpload";
 
 function normalizeAxiosError(err) {
     const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -398,8 +399,9 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
         }
     };
 
-    const handleBodyChange = (e) => {
-        const val = e.target.value;
+    const handleBodyChange = (value) => {
+        const val = value;
+
         if (val.length <= MAX_BODY_LENGTH) {
             const normalized = normalizeVariables(val);
             setValue("bodyText", normalized);
@@ -426,6 +428,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
 
     const insertText = (type, target = 'body') => {
         const textarea = target === 'body' ? textareaRef.current : document.getElementById("header-text-input");
+
         if (!textarea) return;
 
         const start = textarea.selectionStart;
@@ -1034,16 +1037,36 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
 
                                 {/* Body Settings */}
                                 {activeSubcategory?.sections.includes("body") && (
-                                    <WhatsAppMessageBodyBuilder
-                                        value={templateData.bodyText}
-                                        onChange={handleBodyChange}
-                                        label="النص"
-                                        placeholder="أدخل نص الرسالة الرئيسي..."
-                                        allowVariables={true}
-                                        onInsertVariable={() => insertText("variable")}
-                                        error={errors.bodyText?.message}
-                                        className="mb-8"
-                                    />
+                                    <>
+                                        <WhatsAppMessageBodyBuilder
+                                            ref={textareaRef}
+                                            value={templateData.bodyText}
+                                            onChange={handleBodyChange}
+                                            label="النص"
+                                            placeholder="أدخل نص الرسالة الرئيسي..."
+                                            allowVariables={true}
+                                            onInsertVariable={() => insertText("variable")}
+                                            error={errors.bodyText?.message}
+                                            className="mb-8"
+                                        />
+
+                                        <VariableSamplesSection
+                                            type="body"
+                                            samples={variableSamples.body}
+                                            onSampleChange={(num, val) => {
+                                                const nextBody = { ...variableSamples.body, [num]: val };
+                                                setVariableSamples((prev) => ({
+                                                    ...prev,
+                                                    body: nextBody
+                                                }));
+                                                const nums = [...new Set(extractVariableNames(templateData.bodyText || ""))];
+                                                if (nums.length && nums.every((n) => (nextBody[n] ?? "").toString().trim())) {
+                                                    setVariableSamplesErrors((err) => ({ ...err, body: "" }));
+                                                }
+                                            }}
+                                        />
+
+                                    </>
                                 )}
 
                                 <div className="h-px bg-slate-100 dark:bg-slate-800 my-6" />

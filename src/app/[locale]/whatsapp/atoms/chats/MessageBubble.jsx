@@ -12,6 +12,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { BASE_URL } from "@/utils/api";
+import TemplatePreview from "../TemplatePreview";
 
 export default function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, isHighlighted }) {
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -155,16 +156,16 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                 return (
                     <div className="space-y-2 max-w-sm">
                         <div className={cn(
-                            "relative w-full min-h-[150px] flex items-center justify-center bg-black/5 rounded-lg overflow-hidden group/media",
-                            mediaLoading && "md:min-w-[150px]"
+                            "relative w-full flex items-center justify-center  rounded-lg overflow-hidden group/media",
+                            (mediaLoading || mediaError) && "md:min-w-[150px] md:min-h-[150px]"
                         )}>
                             {mediaLoading && !mediaError && (
-                                <div className="absolute inset-0 flex items-center justify-center z-10">
+                                <div className="absolute  bg-black/5 inset-0 flex items-center justify-center z-10">
                                     <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
                                 </div>
                             )}
                             {mediaError ? (
-                                <div className="flex flex-col items-center gap-2 p-6 text-gray-400">
+                                <div className="flex flex-col  bg-black/5  items-center gap-2 p-6 text-gray-400">
                                     <AlertCircle size={32} />
                                     <span className="text-xs font-medium">Failed to load image</span>
                                 </div>
@@ -318,15 +319,39 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                 );
 
             case "template":
+                const templateMetadata = message.metadata?.template || {};
+                const templateConfig = templateMetadata.templateConfig || {};
+
+                // Map actual values from components to examples for the preview
+                const dynamicExamples = {};
+                if (content.template?.components) {
+                    content.template.components.forEach(comp => {
+                        if (comp.type === "header" && comp.parameters) {
+                            comp.parameters.forEach((param, idx) => {
+                                dynamicExamples[idx + 1] = param.text;
+                            });
+                        } else if (comp.type === "body" && comp.parameters) {
+                            comp.parameters.forEach((param, idx) => {
+                                dynamicExamples[idx + 1] = param.text;
+                            });
+                        }
+                    });
+                }
+
                 return (
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                            Template: {content.template?.name}
-                        </div>
-                        <p className="text-sm">
-                            {/* In a real app, we'd fetch the template body and inject variables */}
-                            [Template Message Content]
-                        </p>
+                    <div className="space-y-2 min-w-[300px]">
+                        <TemplatePreview
+                            isChatBubble
+                            bgTransparent
+                            hideToggleAction
+                            hasHeader={false}
+                            template={{
+                                ...templateConfig,
+                                language: templateMetadata.language || "en",
+                                subCategory: templateMetadata.subCategory,
+                                examples: dynamicExamples // Use the actual sent values as "examples"
+                            }}
+                        />
                     </div>
                 );
 
@@ -443,50 +468,51 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
         )}>
             <div className="relative flex items-center">
                 {/* Hover Actions - Positioned absolute to avoid layout shift */}
-                <div className={cn(
-                    "absolute top-1/2 -translate-y-1/2 flex items-center gap-0.5 transition-all duration-200 z-10",
-                    isOutbound ? "start-full ms-2" : "end-full me-2",
-                    "opacity-0 group-hover:opacity-100",
-                    isPopoverOpen && "opacity-100"
-                )}>
-                    <button
-                        onClick={() => onReply && onReply(message)}
-                        className="p-1.5 hover:bg-black/5 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
-                        title="Reply"
-                    >
-                        <Reply className="w-3.5 h-3.5" />
-                    </button>
-
-                    <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-                        <PopoverTrigger asChild>
-                            <button
-                                className="p-1.5 hover:bg-black/5 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
-                                title="React"
-                            >
-                                <Smile className="w-3.5 h-3.5" />
-                            </button>
-                        </PopoverTrigger>
-                        <PopoverContent
-                            side="top"
-                            align={isOutbound ? "start" : "end"}
-                            className="p-0 border-none bg-transparent shadow-none w-auto"
+                {message.status !== "failed" && (
+                    <div className={cn(
+                        "absolute top-1/2 -translate-y-1/2 flex items-center gap-0.5 transition-all duration-200 z-10",
+                        isOutbound ? "start-full ms-2" : "end-full me-2",
+                        "opacity-0 group-hover:opacity-100",
+                        isPopoverOpen && "opacity-100"
+                    )}>
+                        <button
+                            onClick={() => onReply && onReply(message)}
+                            className="p-1.5 hover:bg-black/5 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
+                            title="Reply"
                         >
-                            <div className="animate-in fade-in zoom-in-95 duration-200">
-                                <Picker
-                                    data={data}
-                                    onEmojiSelect={(emoji) => {
-                                        onReaction && onReaction(message.id, emoji.native);
-                                        setIsPopoverOpen(false);
-                                    }}
-                                    theme="light"
-                                    set="native"
-                                    previewPosition="none"
-                                    skinTonePosition="none"
-                                />
-                            </div>
-                        </PopoverContent>
-                    </Popover>
-                </div>
+                            <Reply className="w-3.5 h-3.5" />
+                        </button>
+
+                        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                            <PopoverTrigger asChild>
+                                <button
+                                    className="p-1.5 hover:bg-black/5 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
+                                    title="React"
+                                >
+                                    <Smile className="w-3.5 h-3.5" />
+                                </button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                                side="top"
+                                align={isOutbound ? "start" : "end"}
+                                className="p-0 border-none bg-transparent shadow-none w-auto"
+                            >
+                                <div className="animate-in fade-in zoom-in-95 duration-200">
+                                    <Picker
+                                        data={data}
+                                        onEmojiSelect={(emoji) => {
+                                            onReaction && onReaction(message.id, emoji.native);
+                                            setIsPopoverOpen(false);
+                                        }}
+                                        theme="light"
+                                        set="native"
+                                        previewPosition="none"
+                                        skinTonePosition="none"
+                                    />
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+                    </div>)}
 
                 <div className={cn(
                     "max-w-[450px] px-4 py-2.5 rounded-2xl relative shadow-sm transition-all duration-500",

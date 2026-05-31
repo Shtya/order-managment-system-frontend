@@ -18,7 +18,8 @@ export const VAR_REGEX = {
 // type =  'number' | 'named' | 'any'
 export const getVariableMatches = (text = "", type = 'number') => {
     const regex = VAR_REGEX[type];
-    return text.match(regex) || [];
+
+    return text?.match(regex) || [];
 };
 
 /**
@@ -53,7 +54,7 @@ export const replaceVariables = (
 export const isCorrectVariableFormat = (part, type = 'number') => {
     const regex = new RegExp(`^${VAR_REGEX[type].source}$`);
     return regex.test(part);
-};  
+};
 
 /**
  * Validate if a part is any kind of bracketed text (potentially malformed var)

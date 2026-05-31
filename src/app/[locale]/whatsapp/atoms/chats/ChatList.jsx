@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Search, Filter, MoreVertical, Check, CheckCheck, Plus, UserPlus, X } from "lucide-react";
+import { Search, Filter, MoreVertical, Check, CheckCheck, Plus, UserPlus, X, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/utils/cn";
 import {
@@ -12,29 +12,41 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import CustomerModal from "./CustomerModal";
+import { useConversation } from "./ConversationContext";
+import { useDebounce } from "@/hook/useDebounce";
+import { avatarSrc } from "@/components/atoms/UserSelect";
 
-export default function ChatList({
-    conversations = [],
-    activeId,
-    onSelect,
-    activeTab,
-    setActiveTab
-}) {
+export default function ChatList() {
     const t = useTranslations("chats");
+    const {
+        conversations,
+        isLoading,
+        hasMore,
+        loadMoreConversations,
+        setSearch,
+        selectedConversation,
+        setSelectedConversation,
+        activeTab,
+        setActiveTab
+    } = useConversation();
+
+    const activeId = selectedConversation?.id;
+    const onSelect = setSelectedConversation;
+
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
+    // Debounce search
+    useDebounce({
+        value: searchQuery,
+        onDebounce: (val) => setSearch(val)
+    });
+
     const tabs = [
         { id: "all", label: t("tabs.all") },
-        { id: "unread", label: t("tabs.unread"), count: conversations.filter(c => (c.unreadCount || 0) > 0).length },
+        { id: "unread", label: t("tabs.unread") },
     ];
-
-    const filteredConversations = conversations.filter(conv => {
-        const nameMatch = (conv.customer?.name || "").toLowerCase().includes(searchQuery.toLowerCase());
-        const phoneMatch = (conv.phoneNumber || "").includes(searchQuery);
-        return nameMatch || phoneMatch;
-    });
 
     return (
         <div className="flex flex-col h-full border-e bg-white w-80 lg:w-96">
@@ -121,13 +133,19 @@ export default function ChatList({
             </div>
 
             {/* List */}
-            <div className="flex-1 overflow-y-auto">
-                {filteredConversations.map((conv) => (
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+                {conversations.length === 0 && !isLoading && (
+                    <div className="p-8 text-center text-gray-400 text-sm">
+                        {t("noResults")}
+                    </div>
+                )}
+
+                {conversations.map((conv) => (
                     <button
                         key={conv.id}
                         onClick={() => onSelect(conv)}
                         className={cn(
-                            "w-full p-4 flex gap-3 hover:bg-gray-50 transition-colors text-start relative",
+                            "w-full p-4 flex gap-3 hover:bg-gray-50 transition-colors text-start relative group",
                             activeId === conv.id && "bg-green-50/50"
                         )}
                     >
@@ -135,7 +153,7 @@ export default function ChatList({
                         <div className="relative flex-shrink-0">
                             <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border">
                                 {conv.customer?.profilePicture ? (
-                                    <img src={conv.customer.profilePicture} alt="" className="w-full h-full object-cover" />
+                                    <img src={avatarSrc(conv.customer.profilePicture)} alt="" className="w-full h-full object-cover" />
                                 ) : (
                                     <span className="text-lg font-bold text-gray-400">
                                         {conv.customer?.name?.charAt(0) || "?"}
@@ -168,15 +186,30 @@ export default function ChatList({
                     </button>
                 ))}
 
-                <button className="w-full p-4 text-sm text-green-600 font-medium hover:bg-gray-50 transition-colors">
-                    {t("loadMore")}
-                </button>
+                {hasMore && (
+                    <button
+                        onClick={loadMoreConversations}
+                        disabled={isLoading}
+                        className="w-full p-4 text-sm text-green-600 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                    >
+                        {isLoading ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                            t("loadMore")
+                        )}
+                    </button>
+                )}
+
+                {isLoading && conversations.length === 0 && (
+                    <div className="flex justify-center p-8">
+                        <Loader2 className="w-6 h-6 animate-spin text-green-500" />
+                    </div>
+                )}
             </div>
 
             <CustomerModal
                 open={isAddModalOpen}
                 onOpenChange={setIsAddModalOpen}
-                onSave={(data) => console.log("New Customer:", data)}
             />
         </div>
     );

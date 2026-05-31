@@ -61,3 +61,22 @@ export const isCorrectVariableFormat = (part, type = 'number') => {
 export const isPotentialVariable = (part) => {
     return /^\{.*\}$/.test(part) || /^\{\{.*\}\}$/.test(part);
 };
+
+export const MESSAGE_STATUS = {
+    ACCEPTED: 'accepted',
+    SENT: 'sent',
+    DELIVERED: 'delivered',
+    READ: 'read',
+    PLAYED: 'played',
+    FAILED: 'failed',
+    RECEIVED: 'received',
+    DELETED: 'deleted',
+    UNSUPPORTED: 'unsupported',
+};
+
+export const MESSAGE_STATUS_LIST = [
+    { value: MESSAGE_STATUS.SENT, label: "Sent", color: "text-gray-400" },
+    { value: MESSAGE_STATUS.DELIVERED, label: "Delivered", color: "text-blue-400" },
+    { value: MESSAGE_STATUS.READ, label: "Read", color: "text-green-500" },
+    { value: MESSAGE_STATUS.FAILED, label: "Failed", color: "text-red-500" },
+];

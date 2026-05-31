@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/utils/cn";
+import { avatarSrc } from "@/components/atoms/UserSelect";
 
 export default function ChatSidebar({ conversation, onClose }) {
     const t = useTranslations("chats");
@@ -32,7 +33,7 @@ export default function ChatSidebar({ conversation, onClose }) {
             <div className="p-6 flex flex-col items-center text-center border-b">
                 <div className="w-24 h-24 rounded-full bg-gray-200 mb-4 border overflow-hidden">
                     {customer?.profilePicture ? (
-                        <img src={customer.profilePicture} alt="" className="w-full h-full object-cover" />
+                        <img src={avatarSrc(customer?.profilePicture)} alt="" className="w-full h-full object-cover" />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-gray-400">
                             {customer?.name?.charAt(0) || "?"}
@@ -59,8 +60,8 @@ export default function ChatSidebar({ conversation, onClose }) {
             <div className="p-6 space-y-6">
                 <div className="space-y-4">
                     <InfoRow icon={Mail} label={t("email")} value={customer?.email || "---"} />
-                    <InfoRow icon={Globe} label={t("country")} value={customer?.country || "Egypt"} />
-                    <InfoRow icon={Languages} label={t("language")} value={customer?.language || "Arabic"} />
+                    {/* <InfoRow icon={Globe} label={t("country")} value={customer?.country || "Egypt"} />
+                    <InfoRow icon={Languages} label={t("language")} value={customer?.language || "Arabic"} /> */}
                     <InfoRow icon={Calendar} label={t("customerSince")} value={customer?.createdAt ? format(new Date(customer.createdAt), "MMM dd, yyyy") : "---"} />
                 </div>
                 {/* 
@@ -94,13 +95,16 @@ export default function ChatSidebar({ conversation, onClose }) {
                 <div className="pt-6 border-t">
                     <div className="flex items-center justify-between mb-4">
                         <h4 className="font-semibold text-gray-900">{t("notes")}</h4>
-                        <button className="text-green-600 hover:text-green-700">
-                            <Plus className="w-5 h-5" />
-                        </button>
                     </div>
-                    <div className="text-sm text-gray-500 py-4 text-center bg-gray-50 rounded-lg border-dashed border-2">
-                        {t("noNotes")}
-                    </div>
+                    {customer?.notes ? (
+                        <div className="text-sm text-gray-700 p-4 bg-gray-50 rounded-lg border border-gray-100 whitespace-pre-wrap">
+                            {customer.notes}
+                        </div>
+                    ) : (
+                        <div className="text-sm text-gray-500 py-4 text-center bg-gray-50 rounded-lg border-dashed border-2">
+                            {t("noNotes")}
+                        </div>
+                    )}
                 </div>
 
                 {/* Destructive Actions */}

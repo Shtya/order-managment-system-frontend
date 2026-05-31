@@ -6,36 +6,22 @@ import ChatSidebar from "../atoms/chats/ChatSidebar";
 import { ConversationProvider, useConversation } from "../atoms/chats/ConversationContext";
 
 function ChatsContent() {
-    const { 
-        selectedConversation, 
-        setSelectedConversation, 
-        showDetails, 
+    const {
+        selectedConversation,
+        showDetails,
         toggleDetails,
-        activeTab, 
-        setActiveTab, 
-        conversations, 
-        messages, 
-        handleSendMessage, 
-        handleReaction 
+        handleSendMessage,
+        handleReaction,
     } = useConversation();
 
     return (
         <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-white">
             {/* Left Sidebar */}
-            <ChatList
-                conversations={conversations}
-                activeId={selectedConversation?.id}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                onSelect={(conv) => setSelectedConversation(conv)}
-            />
+            <ChatList />
 
             {/* Main Chat Area */}
             <ChatWindow
-                conversation={selectedConversation}
-                messages={messages}
                 onSendMessage={handleSendMessage}
-                onReaction={handleReaction}
                 onToggleDetails={toggleDetails}
             />
 

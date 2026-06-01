@@ -17,6 +17,7 @@ import {
   Loader2,
   AlertCircle,
   X,
+  RefreshCw,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
@@ -26,8 +27,6 @@ import Table, { FilterField } from "@/components/atoms/Table";
 import ActionButtons from "@/components/atoms/Actions";
 import ConfirmDialog from "@/components/molecules/ConfirmDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { WhatsAppTab } from "../../settings/page";
 import { Settings2 } from "lucide-react";
@@ -54,16 +53,6 @@ function buildListQuery({ page, per_page, search, filters }) {
   return params.toString();
 }
 
-function buildExportQuery({ search, filters }) {
-  const params = new URLSearchParams();
-  params.set("sortBy", "createdAt");
-  params.set("sortDir", "DESC");
-  if (search?.trim()) params.set("search", search.trim());
-  if (filters?.isActive && filters.isActive !== "all") params.set("isActive", filters.isActive);
-  if (filters?.startDate) params.set("startDate", filters.startDate);
-  if (filters?.endDate) params.set("endDate", filters.endDate);
-  return params.toString();
-}
 
 // --- Integration Progress Modal ---
 const IntegrationProgressModal = ({ isOpen, onClose, steps }) => {
@@ -160,9 +149,8 @@ const IntegrationProgressModal = ({ isOpen, onClose, steps }) => {
 
         {(isCompleted || isFailed) && (
           <DialogFooter>
-            <Button_ variant="outline" onClick={onClose} className="w-full">
-              {t("close")}
-            </Button_>
+            <Button_ size="sm" label={t("close")} tone="primary" variant="solid" onClick={onClose} className="w-full" />
+
           </DialogFooter>
         )}
       </DialogContent>
@@ -287,6 +275,24 @@ export default function WhatsAppAccountsPage() {
     }
   };
 
+  const handleSyncTemplates = async (accountId) => {
+    setShowProgress(true);
+    setSignupSteps({
+      EXCHANGING_TOKEN: { status: 'completed' },
+      FETCHING_PHONE_DATA: { status: 'completed' },
+      SUBSCRIBING_APP: { status: 'completed' },
+      REGISTERING_PHONE: { status: 'completed' },
+      CREATING_ACCOUNT: { status: 'completed' },
+    });
+
+    try {
+      await api.post(`/whatsapp/accounts/${accountId}/sync-templates`);
+    } catch (e) {
+      console.error("Manual sync failed", e);
+      // Errors are handled via socket
+    }
+  };
+
   const onExport = async () => {
     await handleExport({
       endpoint: "/whatsapp-accounts/export",
@@ -344,6 +350,13 @@ export default function WhatsAppAccountsPage() {
           <ActionButtons
             row={row}
             actions={[
+              {
+                icon: <RefreshCw size={16} />,
+                tooltip: t("actions.syncTemplates"),
+                onClick: () => handleSyncTemplates(row.id),
+                variant: "primary",
+                permission: "whatsapp.manage",
+              },
               {
                 icon: <Power size={16} />,
                 tooltip: row.isActive ? t("actions.disable") : t("actions.enable"),

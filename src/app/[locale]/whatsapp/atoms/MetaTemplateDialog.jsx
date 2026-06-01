@@ -32,7 +32,8 @@ export const STATIC_CATEGORIES = [
 
 export const STATIC_LANGUAGES = [
     { id: "ar", label: "العربية (Arabic)" },
-    { id: "en", label: "English (US)" }
+    { id: "en", label: "English" },
+    { id: "en_US", label: "English (US)" }
 ];
 
 export const STATIC_INDUSTRIES = [

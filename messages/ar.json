@@ -9352,7 +9352,8 @@
         "disable": "تعطيل",
         "delete": "حذف الربط",
         "confirmDelete": "هل أنت متأكد من حذف هذا الربط؟",
-        "openSettings": "الإعدادات"
+        "openSettings": "الإعدادات",
+        "syncTemplates": "مزامنة القوالب"
       },
       "delete": {
         "title": "حذف حساب واتساب",

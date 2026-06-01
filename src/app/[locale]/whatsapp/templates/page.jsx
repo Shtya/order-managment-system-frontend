@@ -539,6 +539,7 @@ export default function WhatsAppTemplatesPage() {
                 <SelectContent>
                   <SelectItem value="all">{tCommon("all")}</SelectItem>
                   <SelectItem value="en">English (EN)</SelectItem>
+                  <SelectItem value="en_US">English (US)</SelectItem>
                   <SelectItem value="ar">Arabic (AR)</SelectItem>
                 </SelectContent>
               </Select>

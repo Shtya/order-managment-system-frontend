@@ -9314,7 +9314,8 @@
         "disable": "Disable",
         "delete": "Delete Connection",
         "confirmDelete": "Are you sure you want to delete this connection?",
-        "openSettings": "Settings"
+        "openSettings": "Settings",
+        "syncTemplates": "Sync Templates"
       },
       "delete": {
         "title": "Delete WhatsApp account",

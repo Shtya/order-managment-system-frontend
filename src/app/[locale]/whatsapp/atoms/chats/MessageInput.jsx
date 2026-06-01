@@ -26,6 +26,9 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
     const t = useTranslations("chats");
     const {
         selectedConversation,
+        selectedAccount,
+        setSelectedAccount,
+        accounts,
         setPendingMedia,
         setShowInteractiveModal,
         setShowLocationRequestModal,
@@ -36,8 +39,6 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
     } = useConversation();
     const [text, setText] = useState("");
     const [showEmoji, setShowEmoji] = useState(false);
-    const [accounts, setAccounts] = useState([]);
-    const [selectedAccount, setSelectedAccount] = useState(null);
     const [isRecording, setIsRecording] = useState(false);
     const [recordingTime, setRecordingTime] = useState(0);
     const [mediaRecorder, setMediaRecorder] = useState(null);
@@ -84,21 +85,6 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
         }
         e.target.value = null; // Reset for same file re-selection
     };
-
-    const fetchAccounts = useCallback(async () => {
-        try {
-            const res = await api.get("/whatsapp-accounts", { params: { limit: 200, page: 1 } });
-            const values = Array.isArray(res.data?.records) ? res.data.records : []
-            setAccounts(values);
-            if (values.length > 0) setSelectedAccount(values[0]);
-        } catch (e) {
-            console.error(e);
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchAccounts();
-    }, [fetchAccounts]);
 
     // Focus textarea when conversation or reply changes
     useEffect(() => {
@@ -351,26 +337,25 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                         (text.trim() || isRecording) ? "bg-green-600" : "bg-gray-200"
                     )}>
                         <button
-                            onClick={text.trim() || isRecording ? handleSend : startRecording}
+                            // onClick={text.trim() || isRecording ? handleSend : startRecording}
+                            onClick={handleSend}
                             className={cn(
                                 "px-4 flex items-center justify-center min-w-[80px] transition-colors",
                                 (text.trim() || isRecording) ? "hover:bg-green-700" : "hover:bg-gray-300",
                                 accounts.length > 1 && !isRecording && "border-e border-green-500/30"
                             )}
                         >
-                            {/* {isRecording ? (
-                                <>
-                                    <span className="text-white text-sm font-medium mr-2">Send</span>
+                            <div className="flex flex-col items-center">
+                                <div className="flex items-center">
+                                    <span className="text-white text-sm font-medium mr-2">{t("send")}</span>
                                     <Send className="w-4 h-4 text-white" />
-                                </>
-                            ) : text.trim() ? (
-                                <> */}
-                            <span className="text-white text-sm font-medium mr-2">{t("send")}</span>
-                            <Send className="w-4 h-4 text-white" />
-                            {/* </>
-                            ) : (
-                                <Mic className="w-5 h-5 text-gray-500" />
-                            )} */}
+                                </div>
+                                {selectedAccount && (
+                                    <span className="text-[10px] text-white/80 font-bold truncate max-w-[100px]">
+                                        {selectedAccount.name}
+                                    </span>
+                                )}
+                            </div>
                         </button>
                         {accounts.length > 1 && !isRecording && (
                             <DropdownMenu>

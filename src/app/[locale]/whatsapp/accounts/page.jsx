@@ -387,7 +387,7 @@ export default function WhatsAppAccountsPage() {
       if (event.origin !== "https://www.facebook.com") return;
 
       try {
-        console.log("event", event);
+
         const data = JSON.parse(event.data);
 
         if (data.type === "WA_EMBEDDED_SIGNUP") {
@@ -409,7 +409,7 @@ export default function WhatsAppAccountsPage() {
   }, []);
 
   const fbLoginCallback = (response) => {
-    console.log("response", response);
+
     if (response.authResponse?.code) {
       authRef.current = response.authResponse.code;
       trySend();
@@ -516,7 +516,7 @@ export default function WhatsAppAccountsPage() {
             />
           </>
         }
-        stats={statsCards}
+      // stats={statsCards}
       />
 
       <Table

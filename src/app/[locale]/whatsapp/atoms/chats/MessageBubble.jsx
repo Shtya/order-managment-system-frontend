@@ -47,9 +47,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
 
     const getMediaUrl = (content, type) => {
         const media = content[type];
-        // const rawUrl = media?.url || content.url;
-        // if (!rawUrl) return null;
-        // if (rawUrl.startsWith('blob:') || rawUrl.startsWith('data:')) return rawUrl;
+        if (media?.localUrl) return media.localUrl;
 
         const token = localStorage.getItem('accessToken');
         const accountId = message.accountId;
@@ -59,7 +57,6 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
         if (token) params.append('token', token);
         if (accountId) params.append('accountId', accountId);
         if (mediaId) params.append('mediaId', mediaId);
-        else if (rawUrl) params.append('url', rawUrl);
 
         return `${BASE_URL}/whatsapp/media?${params.toString()}`;
     };
@@ -156,6 +153,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
 
     // Status icons mapping
     const StatusIcon = ({ status }) => {
+        if (status === "uploading") return <Loader2 className="w-3 h-3 text-gray-400 animate-spin" />;
         if (status === "pending") return <Clock className="w-3 h-3 text-gray-400 animate-pulse" />;
         if (status === "failed") return <AlertCircle className="w-3.5 h-3.5 text-red-500" />;
         if (status === "read" || status === "played") return <CheckCheck className="w-3.5 h-3.5 text-blue-500" />;
@@ -177,9 +175,10 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                             "relative w-full flex items-center justify-center  rounded-lg overflow-hidden group/media",
                             (mediaLoading || mediaError) && "md:min-w-[150px] md:min-h-[150px]"
                         )}>
-                            {mediaLoading && !mediaError && (
-                                <div className="absolute  bg-black/5 inset-0 flex items-center justify-center z-10">
+                            {(mediaLoading || message.status === "uploading") && !mediaError && (
+                                <div className="absolute  bg-black/5 inset-0 flex flex-col items-center justify-center z-10 backdrop-blur-[2px]">
                                     <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                                    {message.status === "uploading" && <span className="text-[10px] text-gray-500 font-bold mt-2 uppercase tracking-widest">Uploading...</span>}
                                 </div>
                             )}
                             {mediaError ? (
@@ -193,7 +192,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                                     alt="image"
                                     className={cn(
                                         "rounded-lg w-full h-auto cursor-pointer transition-opacity duration-300",
-                                        mediaLoading ? "opacity-0" : "opacity-100"
+                                        (mediaLoading && message.status !== "uploading") ? "opacity-0" : "opacity-100"
                                     )}
                                     loading="lazy"
                                     onLoad={() => setMediaLoading(false)}
@@ -213,9 +212,10 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                 return (
                     <div className="space-y-2 max-w-sm">
                         <div className="relative w-full min-h-[180px] flex items-center justify-center bg-black/5 rounded-lg overflow-hidden group/media">
-                            {mediaLoading && !mediaError && (
-                                <div className="absolute inset-0 flex items-center justify-center z-10">
+                            {(mediaLoading || message.status === "uploading") && !mediaError && (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center z-10 backdrop-blur-[2px]">
                                     <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                                    {message.status === "uploading" && <span className="text-[10px] text-gray-500 font-bold mt-2 uppercase tracking-widest">Uploading...</span>}
                                 </div>
                             )}
                             {mediaError ? (
@@ -229,7 +229,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                                     controls
                                     className={cn(
                                         "rounded-lg w-full h-auto transition-opacity duration-300",
-                                        mediaLoading ? "opacity-0" : "opacity-100"
+                                        (mediaLoading && message.status !== "uploading") ? "opacity-0" : "opacity-100"
                                     )}
                                     onLoadedData={() => setMediaLoading(false)}
                                     onError={() => {
@@ -247,9 +247,15 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                 return (
                     <div className="space-y-2">
                         <div className={cn(
-                            "flex items-center gap-3 p-3 rounded-lg border",
+                            "flex items-center gap-3 p-3 rounded-lg border relative overflow-hidden",
                             isOutbound ? "bg-black/5 border-black/10" : "bg-gray-50 border-gray-100"
                         )}>
+                            {message.status === "uploading" && (
+                                <div className="absolute inset-0 bg-white/60 dark:bg-black/40 flex items-center justify-center z-10 backdrop-blur-[1px]">
+                                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                                    <span className="text-[10px] font-bold ms-2 text-primary">UPLOADING...</span>
+                                </div>
+                            )}
                             <div
                                 onClick={() => handleMediaClick("document", content)}
                                 className="flex items-center gap-3 flex-1 cursor-pointer"

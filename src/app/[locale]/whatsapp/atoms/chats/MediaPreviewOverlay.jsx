@@ -12,10 +12,12 @@ export default function MediaPreviewOverlay() {
     if (!pendingMedia) return null;
 
     const handleSend = () => {
+
         handleSendMessage({
             type: pendingMedia.type,
             [pendingMedia.type]: { url: pendingMedia.preview, name: pendingMedia.file.name },
-            caption: caption.trim()
+            caption: caption.trim(),
+            file: pendingMedia.file
         });
         setPendingMedia(null);
         setCaption("");

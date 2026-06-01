@@ -413,7 +413,7 @@ export default function WhatsAppTemplatesPage() {
             />
           </>
         }
-        stats={statsCards}
+      // stats={statsCards}
       />
 
       <Table

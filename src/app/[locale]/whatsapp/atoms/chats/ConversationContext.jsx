@@ -322,6 +322,8 @@ export const ConversationProvider = ({ children }) => {
         if (!selectedConversation) return;
 
         let content = {};
+        const isMedia = ["image", "video", "document"].includes(msg.type);
+
         switch (msg.type) {
             case "text":
                 content = { text: { body: msg.text } };
@@ -330,13 +332,13 @@ export const ConversationProvider = ({ children }) => {
                 content = { audio: msg.audio };
                 break;
             case "image":
-                content = { image: msg.image, caption: msg.caption };
+                content = { image: { ...msg.image, localUrl: msg.image?.url }, caption: msg.caption };
                 break;
             case "video":
-                content = { video: msg.video, caption: msg.caption };
+                content = { video: { ...msg.video, localUrl: msg.video?.url }, caption: msg.caption };
                 break;
             case "document":
-                content = { document: msg.document, caption: msg.caption };
+                content = { document: { ...msg.document, localUrl: msg.document?.url }, caption: msg.caption };
                 break;
             case "template":
                 content = { template: msg.template };
@@ -358,7 +360,7 @@ export const ConversationProvider = ({ children }) => {
             messageType: msg.type,
             content,
             createdAt: new Date().toISOString(),
-            status: "pending", // Initial status for optimistic UI
+            status: isMedia && msg.file ? "uploading" : "pending", // Initial status for optimistic UI
             conversationId: selectedConversation.id,
             accountId: msg.accountId || selectedAccount?.id,
             metadata: { localId, ...metadata },
@@ -383,26 +385,53 @@ export const ConversationProvider = ({ children }) => {
 
         // 2. Send to API
         try {
-            // Find the parent message wamid if it's a reply
+            let mediaId = null;
+            const currentAccountId = msg.accountId || selectedAccount?.id;
 
+            // Handle Media Upload if file is provided
+            if (isMedia && msg.file) {
+                const formData = new FormData();
+                formData.append("file", msg.file);
+
+                const uploadRes = await api.post("/whatsapp/messages/upload-media", formData, {
+                    params: { accountId: currentAccountId },
+                    headers: { "Content-Type": "multipart/form-data" }
+                });
+
+                mediaId = uploadRes.data?.id;
+
+                if (!mediaId) throw new Error("Failed to get media ID from upload");
+
+                // Update content with real media ID and clear localUrl for sending
+                content[msg.type].id = mediaId;
+                delete content[msg.type].localUrl;
+
+                // Update status to pending after upload
+                setMessages(prev => prev.map(m =>
+                    m.id === localId ? { ...m, status: "pending" } : m
+                ));
+            }
 
             const payload = {
                 messaging_product: "whatsapp",
                 recipient_type: "individual",
                 to: selectedConversation.customer?.phoneNumber,
                 type: msg.type,
-                [msg.type]: msg.type === "text" ? { body: msg.text } : content[msg.type],
+                [msg.type]: msg.type === "text"
+                    ? { body: msg.text }
+                    : isMedia
+                        ? { id: mediaId, caption: msg.caption }
+                        : content[msg.type],
                 context: replyToWamid ? { message_id: replyToWamid } : undefined
             };
 
             await api.post("/whatsapp/messages/send", payload, {
                 params: {
-                    accountId: msg.accountId || selectedAccount?.id,
+                    accountId: currentAccountId,
                     localId: localId
                 }
             });
         } catch (error) {
-
             console.error("Failed to send message:", error);
             // Mark as failed in UI
             setMessages(prev => prev.map(m =>

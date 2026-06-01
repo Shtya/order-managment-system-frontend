@@ -261,10 +261,12 @@ export default function WhatsAppAccountsPage() {
   const wabaRef = useRef(null);
 
   useEffect(() => {
+
     const handler = (event) => {
       if (event.origin !== "https://www.facebook.com") return;
 
       try {
+        console.log("event", event);
         const data = JSON.parse(event.data);
 
         if (data.type === "WA_EMBEDDED_SIGNUP") {
@@ -273,7 +275,8 @@ export default function WhatsAppAccountsPage() {
             trySend();
           }
         }
-      } catch {
+      } catch (error) {
+        console.log(error);
         // non-JSON postMessage
       }
     };
@@ -285,6 +288,7 @@ export default function WhatsAppAccountsPage() {
   }, []);
 
   const fbLoginCallback = (response) => {
+    console.log("response", response);
     if (response.authResponse?.code) {
       authRef.current = response.authResponse.code;
       trySend();
@@ -293,6 +297,9 @@ export default function WhatsAppAccountsPage() {
 
   const trySend = async () => {
     if (!authRef.current || !wabaRef.current) return;
+
+    console.log("authRef.current: ", authRef.current);
+    console.log("wabaRef.current: ", wabaRef.current);
   };
 
   const launchWhatsAppSignup = () => {
@@ -301,10 +308,10 @@ export default function WhatsAppAccountsPage() {
       return;
     }
     window.FB.login(fbLoginCallback, {
-      config_id: "1017662671067783",
+      config_id: process.env.NEXT_PUBLIC_FB_CONFIG_ID,
       response_type: "code",
       override_default_response_type: true,
-      extras: { version: "v4" },
+      extras: { version: process.env.NEXT_PUBLIC_FB_EMBEDDED_ACCOUNT_SIGNUP_VERSION },
     });
   };
 
@@ -461,3 +468,4 @@ export default function WhatsAppAccountsPage() {
     </div>
   );
 }
+

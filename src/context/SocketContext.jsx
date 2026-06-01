@@ -215,6 +215,13 @@ export const SocketProvider = ({ children }) => {
       });
     });
 
+    socket.on("whatsapp:signup-status", (payload) => {
+      publish({
+        type: "WHATSAPP_SIGNUP_STATUS",
+        payload,
+      });
+    });
+
     // Cleanup listeners
     return () => {
       socket.off("connect");

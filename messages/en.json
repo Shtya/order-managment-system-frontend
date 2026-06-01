@@ -9330,12 +9330,39 @@
         "title": "WhatsApp settings"
       },
       "messages": {
-        "updateSuccess": "Account status updated successfully",
-        "deleteSuccess": "WhatsApp connection deleted successfully",
+        "integrating": "Integrating WhatsApp Account...",
+        "integrationSuccess": "WhatsApp account integrated successfully!",
+        "deleteSuccess": "Account deleted successfully",
+        "updateSuccess": "Account updated successfully",
         "exportStarted": "Exporting account data...",
         "exportSuccess": "File downloaded successfully",
         "fetchFailed": "Failed to load WhatsApp accounts",
         "facebookSdkNotInitialized": "Facebook SDK is not ready. Refresh the page and try again."
+      },
+      "signupProgress": {
+        "title": "Account Integration",
+        "steps": {
+          "EXCHANGING_TOKEN": "Exchanging temporary code for access token",
+          "FETCHING_PHONE_DATA": "Fetching phone number metadata from Meta",
+          "SUBSCRIBING_APP": "Subscribing app to business webhooks",
+          "REGISTERING_PHONE": "Formally registering phone number",
+          "CREATING_ACCOUNT": "Creating account record in system",
+          "SYNCING_TEMPLATES": "Syncing templates from Meta",
+          "COMPLETED": "Integration completed successfully",
+          "FAILED": "Integration failed"
+        },
+        "status": {
+          "pending": "Waiting...",
+          "in_progress": "Processing...",
+          "completed": "Done",
+          "failed": "Failed",
+          "warning": "Partial Success"
+        },
+        "errors": {
+          "templates": "Account integrated but failed to sync templates. You can sync them manually later.",
+          "general": "Something went wrong during integration."
+        },
+        "close": "Close"
       }
     },
     "templates": {

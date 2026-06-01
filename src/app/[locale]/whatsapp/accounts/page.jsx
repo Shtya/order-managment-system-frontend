@@ -15,6 +15,8 @@ import {
   BarChart3,
   Clock,
   Loader2,
+  AlertCircle,
+  X,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
@@ -23,7 +25,7 @@ import Button_ from "@/components/atoms/Button";
 import Table, { FilterField } from "@/components/atoms/Table";
 import ActionButtons from "@/components/atoms/Actions";
 import ConfirmDialog from "@/components/molecules/ConfirmDialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -32,6 +34,7 @@ import { Settings2 } from "lucide-react";
 import api from "@/utils/api";
 import { useDebounce } from "@/hook/useDebounce";
 import { useExport } from "@/hook/useExport";
+import { useSocket } from "@/context/SocketContext";
 
 function normalizeAxiosError(err) {
   const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -61,6 +64,111 @@ function buildExportQuery({ search, filters }) {
   if (filters?.endDate) params.set("endDate", filters.endDate);
   return params.toString();
 }
+
+// --- Integration Progress Modal ---
+const IntegrationProgressModal = ({ isOpen, onClose, steps }) => {
+  const t = useTranslations("whatsApp.accounts.signupProgress");
+
+  // Sort steps for display
+  const stepKeys = [
+    'EXCHANGING_TOKEN',
+    'FETCHING_PHONE_DATA',
+    'SUBSCRIBING_APP',
+    'REGISTERING_PHONE',
+    'CREATING_ACCOUNT',
+    'SYNCING_TEMPLATES'
+  ];
+
+  const isFailed = steps.FAILED?.status === 'failed';
+  const isCompleted = steps.COMPLETED?.status === 'completed';
+
+  return (
+    <Dialog open={isOpen} onOpenChange={!isCompleted && !isFailed ? undefined : onClose}>
+      <DialogContent className="sm:max-w-[450px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Loader2 className={cn("w-5 h-5 animate-spin text-primary", (isCompleted || isFailed) && "hidden")} />
+            {t("title")}
+          </DialogTitle>
+          <DialogDescription>
+            {isFailed ? t("steps.FAILED") : isCompleted ? t("steps.COMPLETED") : t("status.in_progress")}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-4">
+          {stepKeys.map((key) => {
+            const step = steps[key] || { status: 'pending' };
+            return (
+              <div key={key} className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className={cn(
+                    "w-6 h-6 rounded-full flex items-center justify-center shrink-0 border",
+                    step.status === 'completed' && "bg-green-500 border-green-500 text-white",
+                    step.status === 'in_progress' && "bg-primary/10 border-primary text-primary",
+                    step.status === 'failed' && "bg-red-500 border-red-500 text-white",
+                    step.status === 'warning' && "bg-amber-500 border-amber-500 text-white",
+                    step.status === 'pending' && "bg-gray-50 border-gray-200 text-gray-400"
+                  )}>
+                    {step.status === 'completed' && <CheckCircle2 className="w-4 h-4" />}
+                    {step.status === 'in_progress' && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    {step.status === 'failed' && <X className="w-4 h-4" />}
+                    {step.status === 'warning' && <AlertCircle className="w-4 h-4" />}
+                    {step.status === 'pending' && <Clock className="w-3.5 h-3.5" />}
+                  </div>
+                  <span className={cn(
+                    "text-sm font-medium truncate",
+                    step.status === 'pending' && "text-gray-400",
+                    step.status === 'failed' && "text-red-600"
+                  )}>
+                    {t(`steps.${key}`)}
+                  </span>
+                </div>
+                <span className={cn(
+                  "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border",
+                  step.status === 'completed' && "bg-green-50 text-green-700 border-green-100",
+                  step.status === 'in_progress' && "bg-blue-50 text-blue-700 border-blue-100",
+                  step.status === 'failed' && "bg-red-50 text-red-700 border-red-100",
+                  step.status === 'warning' && "bg-amber-50 text-amber-700 border-amber-100",
+                  step.status === 'pending' && "bg-gray-50 text-gray-400 border-gray-100"
+                )}>
+                  {t(`status.${step.status}`)}
+                </span>
+              </div>
+            );
+          })}
+
+          {isFailed && (
+            <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-100 flex gap-3 animate-in fade-in slide-in-from-top-2">
+              <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-red-800">{t("steps.FAILED")}</p>
+                <p className="text-xs text-red-600 leading-relaxed">{steps.FAILED?.error || t("errors.general")}</p>
+              </div>
+            </div>
+          )}
+
+          {steps.SYNCING_TEMPLATES?.status === 'warning' && (
+            <div className="mt-4 p-3 rounded-lg bg-amber-50 border border-amber-100 flex gap-3 animate-in fade-in slide-in-from-top-2">
+              <Info className="w-5 h-5 text-amber-500 shrink-0" />
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-amber-800">{t("status.warning")}</p>
+                <p className="text-xs text-amber-600 leading-relaxed">{steps.SYNCING_TEMPLATES?.error || t("errors.templates")}</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {(isCompleted || isFailed) && (
+          <DialogFooter>
+            <Button_ variant="outline" onClick={onClose} className="w-full">
+              {t("close")}
+            </Button_>
+          </DialogFooter>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 export default function WhatsAppAccountsPage() {
   const tCommon = useTranslations("common");
@@ -295,11 +403,53 @@ export default function WhatsAppAccountsPage() {
     }
   };
 
+  const { subscribe } = useSocket();
+
+  // Integration Progress State
+  const [showProgress, setShowProgress] = useState(false);
+  const [signupSteps, setSignupSteps] = useState({});
+
+  useEffect(() => {
+    const unsubscribe = subscribe("WHATSAPP_SIGNUP_STATUS", (payload) => {
+      if (!payload) return;
+      setSignupSteps(prev => ({
+        ...prev,
+        [payload.step]: {
+          status: payload.status,
+          message: payload.message,
+          error: payload.error
+        }
+      }));
+    });
+
+    return unsubscribe;
+  }, [subscribe]);
+
   const trySend = async () => {
     if (!authRef.current || !wabaRef.current) return;
 
-    console.log("authRef.current: ", authRef.current);
-    console.log("wabaRef.current: ", wabaRef.current);
+    setShowProgress(true);
+    setSignupSteps({}); // Reset steps
+
+    const signupPromise = api.post("/whatsapp/embedded-signup", {
+      code: authRef.current,
+      wabaId: wabaRef.current?.waba_id,
+      phoneNumberId: wabaRef.current?.phone_number_id,
+      businessId: wabaRef.current?.business_id
+    });
+
+    try {
+      await signupPromise;
+      authRef.current = null;
+      wabaRef.current = null;
+      setSearch("");
+      await fetchAccounts({ page: 1, per_page: pager.per_page });
+    } catch (err) {
+      authRef.current = null;
+      wabaRef.current = null;
+      // Error is handled via socket status updates as well
+      console.error("Signup failed", err);
+    }
   };
 
   const launchWhatsAppSignup = () => {
@@ -449,6 +599,12 @@ export default function WhatsAppAccountsPage() {
         cancelText={tCommon("cancel")}
         loading={toggling}
         onConfirm={confirmToggle}
+      />
+
+      <IntegrationProgressModal
+        isOpen={showProgress}
+        onClose={() => setShowProgress(false)}
+        steps={signupSteps}
       />
 
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>

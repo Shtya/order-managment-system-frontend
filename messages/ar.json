@@ -9368,12 +9368,39 @@
         "title": "إعدادات الواتساب"
       },
       "messages": {
-        "updateSuccess": "تم تحديث حالة الحساب بنجاح",
-        "deleteSuccess": "تم حذف ربط الواتساب بنجاح",
+        "integrating": "جاري ربط حساب الواتساب...",
+        "integrationSuccess": "تم ربط حساب الواتساب بنجاح!",
+        "deleteSuccess": "تم حذف الحساب بنجاح",
+        "updateSuccess": "تم تحديث الحساب بنجاح",
         "exportStarted": "جاري تصدير بيانات الحسابات...",
         "exportSuccess": "تم تنزيل الملف بنجاح",
         "fetchFailed": "فشل في تحميل حسابات الواتساب",
         "facebookSdkNotInitialized": "لم يُحمّل Facebook SDK بعد. حدّث الصفحة ثم أعد المحاولة."
+      },
+      "signupProgress": {
+        "title": "ربط الحساب",
+        "steps": {
+          "EXCHANGING_TOKEN": "استبدال الرمز المؤقت برمز الوصول",
+          "FETCHING_PHONE_DATA": "جلب بيانات رقم الهاتف من Meta",
+          "SUBSCRIBING_APP": "ربط التطبيق بإشعارات الأعمال",
+          "REGISTERING_PHONE": "تسجيل رقم الهاتف رسمياً",
+          "CREATING_ACCOUNT": "إنشاء سجل الحساب في النظام",
+          "SYNCING_TEMPLATES": "مزامنة القوالب من Meta",
+          "COMPLETED": "تم الربط بنجاح",
+          "FAILED": "فشل الربط"
+        },
+        "status": {
+          "pending": "في الانتظار...",
+          "in_progress": "جاري المعالجة...",
+          "completed": "تم",
+          "failed": "فشل",
+          "warning": "نجاح جزئي"
+        },
+        "errors": {
+          "templates": "تم ربط الحساب ولكن فشلت مزامنة القوالب. يمكنك مزامنتها يدوياً لاحقاً.",
+          "general": "حدث خطأ ما أثناء الربط."
+        },
+        "close": "إغلاق"
       }
     },
     "templates": {

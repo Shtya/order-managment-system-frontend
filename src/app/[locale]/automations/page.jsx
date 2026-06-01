@@ -333,7 +333,7 @@ export default function AutomationsPage() {
             />
           </>
         }
-        stats={statsCards}
+      // stats={statsCards}
       />
 
       <Table

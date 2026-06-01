@@ -331,7 +331,7 @@ export default function AutomationLogsPage() {
                         />
                     </div>
                 }
-                stats={statsCards}
+            // stats={statsCards}
             />
 
             <Table

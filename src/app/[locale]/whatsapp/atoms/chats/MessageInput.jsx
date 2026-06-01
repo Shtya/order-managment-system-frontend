@@ -196,9 +196,9 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
     };
 
     const actions = [
-        // { icon: ImageIcon, label: t("messageTypes.image"), color: "text-purple-500", type: "image" },
-        // { icon: Video, label: t("messageTypes.video"), color: "text-red-500", type: "video" },
-        // { icon: FileText, label: t("messageTypes.document"), color: "text-orange-500", type: "document" },
+        { icon: ImageIcon, label: t("messageTypes.image"), color: "text-purple-500", type: "image" },
+        { icon: Video, label: t("messageTypes.video"), color: "text-red-500", type: "video" },
+        { icon: FileText, label: t("messageTypes.document"), color: "text-orange-500", type: "document" },
         // { icon: MapPin, label: t("messageTypes.sendLocation"), color: "text-green-500", type: "location" },
         // { icon: MapIcon, label: t("messageTypes.requestLocation"), color: "text-green-500", type: "location_request" },
         // { icon: UserCircle, label: t("messageTypes.contact"), color: "text-teal-500", type: "contact" },

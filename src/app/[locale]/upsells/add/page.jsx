@@ -368,8 +368,8 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
                         label={t("table.upsellProduct")}
                         value={field.value}
                         onChange={field.onChange}
-                        mode="upsell"
-                        triggerId={triggerProductId}
+                        // mode="upsell"
+                        excludeIds={[triggerProductId]}
                       />
                     )}
                   />

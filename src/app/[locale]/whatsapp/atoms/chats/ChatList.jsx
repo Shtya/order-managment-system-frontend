@@ -15,6 +15,59 @@ import CustomerModal from "./CustomerModal";
 import { useConversation } from "./ConversationContext";
 import { useDebounce } from "@/hook/useDebounce";
 import { avatarSrc } from "@/components/atoms/UserSelect";
+import { formatText } from "@/utils/whatsapp-healper";
+import { useMemo } from "react";
+
+const ChatListItem = ({ conv, activeId, onSelect }) => {
+    const formattedPreview = useMemo(() => {
+        return formatText(conv.lastMessagePreview) || "...";
+    }, [conv.lastMessagePreview]);
+
+    return (
+        <button
+            onClick={() => onSelect(conv)}
+            className={cn(
+                "w-full p-4 flex gap-3 hover:bg-gray-50 transition-colors text-start relative group",
+                activeId === conv.id && "bg-green-50/50"
+            )}
+        >
+            {/* Avatar */}
+            <div className="relative flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border">
+                    {conv.customer?.profilePicture ? (
+                        <img src={avatarSrc(conv.customer.profilePicture)} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                        <span className="text-lg font-bold text-gray-400">
+                            {conv.customer?.name?.charAt(0) || "?"}
+                        </span>
+                    )}
+                </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                    <h3 className="font-semibold text-gray-900 truncate">
+                        {conv.customer?.name || conv.phoneNumber}
+                    </h3>
+                    <span className="text-[10px] text-gray-400">
+                        {conv.lastMessageAt ? format(new Date(conv.lastMessageAt), "hh:mm a") : ""}
+                    </span>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs text-gray-500 truncate flex-1 whitespace-pre-wrap">
+                        {formattedPreview}
+                    </p>
+                    {conv.unreadCount > 0 && (
+                        <span className="bg-green-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
+                            {conv.unreadCount}
+                        </span>
+                    )}
+                </div>
+            </div>
+        </button>
+    );
+};
 
 export default function ChatList() {
     const t = useTranslations("chats");
@@ -32,6 +85,11 @@ export default function ChatList() {
 
     const activeId = selectedConversation?.id;
     const onSelect = setSelectedConversation;
+
+    const formatTime = (date) => {
+        if (!date) return "";
+        return format(new Date(date), "hh:mm a");
+    };
 
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -141,49 +199,12 @@ export default function ChatList() {
                 )}
 
                 {conversations.map((conv) => (
-                    <button
+                    <ChatListItem
                         key={conv.id}
-                        onClick={() => onSelect(conv)}
-                        className={cn(
-                            "w-full p-4 flex gap-3 hover:bg-gray-50 transition-colors text-start relative group",
-                            activeId === conv.id && "bg-green-50/50"
-                        )}
-                    >
-                        {/* Avatar */}
-                        <div className="relative flex-shrink-0">
-                            <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border">
-                                {conv.customer?.profilePicture ? (
-                                    <img src={avatarSrc(conv.customer.profilePicture)} alt="" className="w-full h-full object-cover" />
-                                ) : (
-                                    <span className="text-lg font-bold text-gray-400">
-                                        {conv.customer?.name?.charAt(0) || "?"}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between mb-1">
-                                <h3 className="font-semibold text-gray-900 truncate">
-                                    {conv.customer?.name || conv.phoneNumber}
-                                </h3>
-                                <span className="text-[10px] text-gray-400">
-                                    {conv.lastMessageAt ? format(new Date(conv.lastMessageAt), "hh:mm a") : ""}
-                                </span>
-                            </div>
-                            <div className="flex items-center justify-between gap-2">
-                                <p className="text-xs text-gray-500 truncate flex-1">
-                                    {conv.lastMessagePreview || "..."}
-                                </p>
-                                {conv.unreadCount > 0 && (
-                                    <span className="bg-green-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
-                                        {conv.unreadCount}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    </button>
+                        conv={conv}
+                        activeId={activeId}
+                        onSelect={onSelect}
+                    />
                 ))}
 
                 {hasMore && (

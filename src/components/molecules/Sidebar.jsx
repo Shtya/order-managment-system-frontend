@@ -1015,9 +1015,12 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
             )}
 
             {(isOpen || isMobile) && (
-              <div className={`flex items-center gap-2.5 `}>
-                <BrandLogo className="text-[#672DAD]" />
-              </div>
+              <>
+                <div className={`flex items-center justify-center gap-2.5 flex-1`}>
+                  <BrandLogo className="text-[#672DAD]" />
+                </div>
+                {/* <span></span> */}
+              </>
             )}
           </div>
 

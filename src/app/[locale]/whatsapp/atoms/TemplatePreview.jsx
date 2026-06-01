@@ -21,6 +21,7 @@ import {
     isCorrectVariableFormat,
     isPotentialVariable,
     replaceVariables,
+    formatText,
 } from "@/utils/whatsapp-healper";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { FaLocationDot } from "react-icons/fa6";
@@ -303,54 +304,6 @@ export default function TemplatePreview({
             }
             return { type: "text", value: part };
         });
-
-        // 2. Formatting Logic
-        const formatText = (content) => {
-            if (typeof content !== 'string') return content;
-            let formatted = [content];
-
-            // Monospace
-            formatted = formatted.flatMap(p => {
-                if (typeof p !== 'string') return p;
-                const subParts = p.split(/(```[\s\S]*?```)/g);
-                return subParts.map(sp => {
-                    const m = sp.match(/```([\s\S]*?)```/);
-                    return m ? <code className="bg-slate-100 dark:bg-slate-800 px-1 rounded font-mono text-[12px]">{m[1]}</code> : sp;
-                });
-            });
-
-            // Bold
-            formatted = formatted.flatMap(p => {
-                if (typeof p !== 'string') return p;
-                const subParts = p.split(/(\*[\s\S]*?\*)/g);
-                return subParts.map(sp => {
-                    const m = sp.match(/\*([\s\S]*?)\*/);
-                    return m ? <strong className="font-bold text-[#111b21] dark:text-white">{m[1]}</strong> : sp;
-                });
-            });
-
-            // Italic
-            formatted = formatted.flatMap(p => {
-                if (typeof p !== 'string') return p;
-                const subParts = p.split(/(_[\s\S]*?_)/g);
-                return subParts.map(sp => {
-                    const m = sp.match(/_([\s\S]*?)_/);
-                    return m ? <em className="italic">{m[1]}</em> : sp;
-                });
-            });
-
-            // Strike
-            formatted = formatted.flatMap(p => {
-                if (typeof p !== 'string') return p;
-                const subParts = p.split(/(~[\s\S]*?~)/g);
-                return subParts.map(sp => {
-                    const m = sp.match(/~([\s\S]*?)~/);
-                    return m ? <span className="line-through opacity-70">{m[1]}</span> : sp;
-                });
-            });
-
-            return formatted;
-        };
 
         return parts.map(part => {
             if (part.type === 'text') {

@@ -3,7 +3,7 @@
 import { cn } from "@/utils/cn";
 import { format } from "date-fns";
 import { Check, CheckCheck, Reply, Smile, Play, Pause, Mic, FileText, Clock, AlertCircle, Loader2, RotateCcw } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import data from '@emoji-mart/data'
 import Picker from '@emoji-mart/react'
 import {
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/popover";
 import { BASE_URL } from "@/utils/api";
 import TemplatePreview from "../TemplatePreview";
+import { formatText } from "@/utils/whatsapp-healper";
 
 export default function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, isHighlighted }) {
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -26,6 +27,23 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
     const audioRef = useRef(null);
     const progressRef = useRef(null);
     const time = message.createdAt ? format(new Date(message.createdAt), "hh:mm a") : "";
+
+    const formattedBody = useMemo(() => {
+        const body = message.content?.text?.body || message.content?.body || "";
+        return formatText(body);
+    }, [message.content?.text?.body, message.content?.body]);
+
+    const formattedImageCaption = useMemo(() => {
+        return formatText(message.content?.image?.caption || "");
+    }, [message.content?.image?.caption]);
+
+    const formattedVideoCaption = useMemo(() => {
+        return formatText(message.content?.video?.caption || "");
+    }, [message.content?.video?.caption]);
+
+    const formattedDocumentCaption = useMemo(() => {
+        return formatText(message.content?.document?.caption || "");
+    }, [message.content?.document?.caption]);
 
     const getMediaUrl = (content, type) => {
         const media = content[type];
@@ -150,7 +168,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
 
         switch (messageType) {
             case "text":
-                return <p className="text-sm whitespace-pre-wrap">{content.text?.body || content.body}</p>;
+                return <p className="text-sm whitespace-pre-wrap">{formattedBody}</p>;
 
             case "image":
                 return (
@@ -187,7 +205,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                                 />
                             )}
                         </div>
-                        {content?.image?.caption && <p className="text-sm">{content?.image?.caption}</p>}
+                        {content?.image?.caption && <p className="text-sm whitespace-pre-wrap">{formattedImageCaption}</p>}
                     </div>
                 );
 
@@ -221,7 +239,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                                 />
                             )}
                         </div>
-                        {content?.video?.caption && <p className="text-sm">{content?.video?.caption}</p>}
+                        {content?.video?.caption && <p className="text-sm whitespace-pre-wrap">{formattedVideoCaption}</p>}
                     </div>
                 );
 
@@ -243,7 +261,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                                 </div>
                             </div>
                         </div>
-                        {content?.document?.caption && <p className="text-sm">{content.document?.caption}</p>}
+                        {content?.document?.caption && <p className="text-sm whitespace-pre-wrap">{formattedDocumentCaption}</p>}
                     </div>
                 );
 

@@ -1,3 +1,5 @@
+import React from 'react';
+
 /**
  * WhatsApp Template Variable Helpers
  * 
@@ -46,6 +48,74 @@ export const replaceVariables = (
 ) => {
     const regex = new RegExp(VAR_REGEX[type].source, 'g');
     return text.replace(regex, callback);
+};
+
+/**
+ * WhatsApp Message Text Formatter
+ * Handles: *bold*, _italic_, ~strike~, ```monospace```
+ */
+const formatCache = new Map();
+
+export const formatText = (content) => {
+    if (typeof content !== 'string') return content;
+
+    // Check cache
+    if (formatCache.has(content)) {
+        return formatCache.get(content);
+    }
+
+    let formatted = [content];
+
+    // Monospace
+    formatted = formatted.flatMap(p => {
+        if (typeof p !== 'string') return p;
+        const subParts = p.split(/(```[\s\S]*?```)/g);
+        return subParts.map((sp, idx) => {
+            const m = sp.match(/```([\s\S]*?)```/);
+            return m ? <code key={`mono-${idx}`} className="bg-slate-100 dark:bg-slate-800 px-1 rounded font-mono text-[12px]">{m[1]}</code> : sp;
+        });
+    });
+
+    // Bold
+    formatted = formatted.flatMap(p => {
+        if (typeof p !== 'string') return p;
+        const subParts = p.split(/(\*[\s\S]*?\*)/g);
+        return subParts.map((sp, idx) => {
+            const m = sp.match(/\*([\s\S]*?)\*/);
+            return m ? <strong key={`bold-${idx}`} className="font-bold text-[#111b21] dark:text-white">{m[1]}</strong> : sp;
+        });
+    });
+
+    // Italic
+    formatted = formatted.flatMap(p => {
+        if (typeof p !== 'string') return p;
+        const subParts = p.split(/(_[\s\S]*?_)/g);
+        return subParts.map((sp, idx) => {
+            const m = sp.match(/_([\s\S]*?)_/);
+            return m ? <em key={`italic-${idx}`} className="italic">{m[1]}</em> : sp;
+        });
+    });
+
+    // Strike
+    formatted = formatted.flatMap(p => {
+        if (typeof p !== 'string') return p;
+        const subParts = p.split(/(~[\s\S]*?~)/g);
+        return subParts.map((sp, idx) => {
+            const m = sp.match(/~([\s\S]*?)~/);
+            return m ? <span key={`strike-${idx}`} className="line-through opacity-70">{m[1]}</span> : sp;
+        });
+    });
+
+    // Cache result
+    formatCache.set(content, formatted);
+
+    // Limit cache size
+    if (formatCache.size > 500) {
+        const firstKey = formatCache.keys().next().value;
+        formatCache.delete(firstKey);
+    }
+
+    return formatted;
 };
 
 /**

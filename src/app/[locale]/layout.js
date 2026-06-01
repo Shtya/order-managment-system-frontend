@@ -79,10 +79,10 @@ export default async function RootLayout({ children, params }) {
           {`
             window.fbAsyncInit = function () {
                window.FB.init({
-                appId: '1652049926070186',
+                appId: '${process.env.NEXT_PUBLIC_FB_APP_ID}',
                 autoLogAppEvents: true,
                 xfbml: true,
-                version: 'v25.0'
+                version: '${process.env.NEXT_PUBLIC_FB_API_VERSION}'
               });
             };
           `}

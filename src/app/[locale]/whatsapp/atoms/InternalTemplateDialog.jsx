@@ -8,6 +8,7 @@ import { Search, Globe, Tag, Layout, Check, Loader2, Phone } from "lucide-react"
 import { cn } from "@/utils/cn";
 import TemplatePreview from "./TemplatePreview";
 import { useLocale } from "next-intl";
+import { useConversation } from "./chats/ConversationContext";
 import {
     Select,
     SelectContent,
@@ -28,21 +29,28 @@ const INTERNAL_CONFIG = {
     LANGUAGES: [
         { id: "all", label: "كل" },
         { id: "ar", label: "العربية (Arabic)" },
-        { id: "en", label: "English" }
+        { id: "en", label: "English" },
+        { id: "en_US", label: "English (US)" }
     ]
 };
 
 
-export function InternalTemplateDialog({ open, onOpenChange, onSelectTemplate, library }) {
+export function InternalTemplateDialog({ open, onOpenChange, defaultAccountId, onSelectTemplate, library }) {
     const [searchTerm, setSearchTerm] = useState("");
     const { debouncedValue: debouncedSearchTerm } = useDebounce({ value: searchTerm });
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [selectedLanguage, setSelectedLanguage] = useState("all");
-    const [selectedAccountId, setSelectedAccountId] = useState("all");
+    const [selectedAccountId, setSelectedAccountId] = useState(defaultAccountId || "all");
     const [accounts, setAccounts] = useState([]);
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
     const locale = useLocale();
+
+    useEffect(() => {
+        if (open && defaultAccountId) {
+            setSelectedAccountId(defaultAccountId);
+        }
+    }, [open, defaultAccountId]);
 
     const fetchAccounts = useCallback(async () => {
         try {

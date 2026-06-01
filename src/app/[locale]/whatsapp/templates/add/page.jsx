@@ -851,7 +851,8 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                                     <SelectValue placeholder="اختر اللغة" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="en">الإنجليزية (en)</SelectItem>
+                                                    <SelectItem value="en">الإنجليزية</SelectItem>
+                                                    <SelectItem value="en_US">الإنجليزية (US)</SelectItem>
                                                     <SelectItem value="ar">العربية (ar)</SelectItem>
                                                 </SelectContent>
                                             </Select>

@@ -34,6 +34,7 @@ export default function TemplateMessageModal() {
     const t = useTranslations("chats");
     const locale = useLocale();
     const {
+        selectedAccount,
         showTemplateModal,
         setShowTemplateModal,
         templateMessage,
@@ -79,6 +80,7 @@ export default function TemplateMessageModal() {
 
         setTemplateMessage({
             templateId: template.id,
+            accountId: template.accountId,
             language: template?.language,
             templateName: template.name,
             templateData: config,
@@ -131,10 +133,11 @@ export default function TemplateMessageModal() {
         const lang = templateMessage.language;
 
         handleSendMessage({
+            accountId: templateMessage.accountId,
             type: "template",
             template: {
                 name: templateMessage.templateName,
-                language: { code: lang ? lang === 'en' ? 'en_US' : lang : "en_US" },
+                language: { code: lang },
                 components: [
                     ...(headerVars.length > 0 ? [{
                         type: "header",
@@ -175,6 +178,7 @@ export default function TemplateMessageModal() {
         setShowTemplateModal(false);
         setTemplateMessage({
             templateId: null,
+            accountId: null,
             templateName: "",
             templateData: null,
             headerVariables: {},
@@ -360,6 +364,7 @@ export default function TemplateMessageModal() {
                 open={isTemplateDialogOpen}
                 onOpenChange={setIsTemplateDialogOpen}
                 onSelectTemplate={handleSelectTemplate}
+                defaultAccountId={selectedAccount?.id}
             />
         </Dialog>
     );

@@ -4,12 +4,16 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import api from "@/utils/api";
 import { useSocket } from "@/context/SocketContext";
 import toast from "react-hot-toast";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
 
 const ConversationContext = createContext();
 
 export const useConversation = () => useContext(ConversationContext);
 
 export const ConversationProvider = ({ children }) => {
+    const { settings } = useOrdersSettings();
+    const [selectedAccount, setSelectedAccount] = useState(null);
+    const [accounts, setAccounts] = useState([]);
     const [replyTo, setReplyTo] = useState(null);
     const { subscribe } = useSocket();
     const [selectedConversation, setSelectedConversation] = useState(null);
@@ -72,6 +76,28 @@ export const ConversationProvider = ({ children }) => {
     const [messageAccount, setMessageAccount] = useState("all");
     const MESSAGES_LIMIT = 50;
     const previousConversationId = useRef(null);
+
+    const fetchAccounts = useCallback(async () => {
+        try {
+            const res = await api.get("/whatsapp-accounts", { params: { limit: 200, page: 1 } });
+            const values = Array.isArray(res.data?.records) ? res.data.records : []
+            setAccounts(values);
+        } catch (e) {
+            console.error("Failed to fetch accounts:", e);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchAccounts();
+    }, [fetchAccounts]);
+
+    useEffect(() => {
+        if (accounts.length > 0 && !selectedAccount) {
+            const defaultId = settings?.defaultWhatsAppAccountId;
+            const defaultAcc = accounts.find(a => a.id === defaultId) || accounts[0];
+            setSelectedAccount(defaultAcc);
+        }
+    }, [accounts, settings?.defaultWhatsAppAccountId, selectedAccount]);
 
     const markAsRead = useCallback(async (conversationId, onFailIncreaseOne = false) => {
         if (!conversationId) return;
@@ -334,7 +360,7 @@ export const ConversationProvider = ({ children }) => {
             createdAt: new Date().toISOString(),
             status: "pending", // Initial status for optimistic UI
             conversationId: selectedConversation.id,
-            accountId: msg.accountId,
+            accountId: msg.accountId || selectedAccount?.id,
             metadata: { localId, ...metadata },
             replyTo: repMsg,
         };
@@ -371,7 +397,7 @@ export const ConversationProvider = ({ children }) => {
 
             await api.post("/whatsapp/messages/send", payload, {
                 params: {
-                    accountId: msg.accountId,
+                    accountId: msg.accountId || selectedAccount?.id,
                     localId: localId
                 }
             });
@@ -450,7 +476,7 @@ export const ConversationProvider = ({ children }) => {
 
             await api.post("/whatsapp/messages/send", payload, {
                 params: {
-                    accountId: targetMsg.accountId,
+                    accountId: targetMsg.accountId || selectedAccount?.id,
                     localId: localId
                 }
             });
@@ -472,6 +498,9 @@ export const ConversationProvider = ({ children }) => {
         <ConversationContext.Provider value={{
             selectedConversation,
             setSelectedConversation,
+            selectedAccount,
+            setSelectedAccount,
+            accounts,
             showDetails,
             setShowDetails,
             toggleDetails,

@@ -40,6 +40,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
     const t = useTranslations("chats");
     const scrollRef = useRef(null);
     const {
+        selectedAccount,
         selectedConversation,
         setSelectedConversation,
         messages,
@@ -151,7 +152,7 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
             <ContactModal />
             <LocationModal />
             <ListMessageModal />
-            <TemplateMessageModal />
+            <TemplateMessageModal selectedAccount={selectedAccount} />
 
             {/* Filter Bar (Animated) */}
             {isFilterOpen && (

@@ -85,8 +85,8 @@ export default function WhatsAppMessageBodyBuilder({
 
       <Textarea
         ref={(el) => {
-          textareaRef.current = el;
-          ref.current = el;
+          if (textareaRef) textareaRef.current = el;
+          if (ref) ref.current = el;
         }}
         placeholder={placeholder}
         className={cn(

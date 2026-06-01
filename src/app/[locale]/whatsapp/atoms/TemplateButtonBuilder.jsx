@@ -36,7 +36,7 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { PHONE_CODES } from "../../auth/tabs/Signup";
 
 // --- Constants & Types ---
@@ -60,19 +60,8 @@ const BUTTON_LIMITS = {
     WHATSAPP_CALL: 1,
 };
 
-const BUTTON_TYPES = [
-    { id: "CUSTOM", label: "مخصص (رد سريع)", icon: MessageSquare, limit: null },
-    { id: "VISIT_WEBSITE", label: "زيارة موقع ويب", icon: Globe, limit: BUTTON_LIMITS.URL },
-    { id: "PHONE_NUMBER", label: "اتصال برقم هاتف", icon: Phone, limit: BUTTON_LIMITS.PHONE_NUMBER },
-    { id: "WHATSAPP_CALL", label: "اتصال عبر واتساب", icon: MessageSquare, limit: BUTTON_LIMITS.WHATSAPP_CALL },
-];
-
-const URL_TYPES = [
-    { id: "Static", label: "ثابت" },
-    { id: "Dynamic", label: "ديناميكي" },
-];
-
 /** Align legacy / API values with form schema (Static | Dynamic). */
+
 function normalizeUrlTypeForUi(urlType) {
     if (urlType === "STATIC" || urlType === "Static") return "Static";
     if (urlType === "DYNAMIC" || urlType === "Dynamic") return "Dynamic";
@@ -191,6 +180,20 @@ function SortableButtonCard({
  * Main TemplateButtonBuilder Component
  */
 export default function TemplateButtonBuilder({ value = [], onChange, errors }) {
+    const t = useTranslations("whatsApp.templates.form.buttonsBuilder");
+
+    const BUTTON_TYPES = useMemo(() => [
+        { id: "CUSTOM", label: t("types.CUSTOM"), icon: MessageSquare, limit: null },
+        { id: "VISIT_WEBSITE", label: t("types.VISIT_WEBSITE"), icon: Globe, limit: BUTTON_LIMITS.URL },
+        { id: "PHONE_NUMBER", label: t("types.PHONE_NUMBER"), icon: Phone, limit: BUTTON_LIMITS.PHONE_NUMBER },
+        { id: "WHATSAPP_CALL", label: t("types.WHATSAPP_CALL"), icon: MessageSquare, limit: BUTTON_LIMITS.WHATSAPP_CALL },
+    ], [t]);
+
+    const URL_TYPES = useMemo(() => [
+        { id: "Static", label: t("urlTypes.Static") },
+        { id: "Dynamic", label: t("urlTypes.Dynamic") },
+    ], [t]);
+
     const sensors = useSensors(
         useSensor(PointerSensor),
         useSensor(KeyboardSensor, {
@@ -269,7 +272,7 @@ export default function TemplateButtonBuilder({ value = [], onChange, errors }) 
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                 {/* 1. Type Display (Read-only for now or selector) */}
                 <div className="md:col-span-3 space-y-1.5">
-                    <Label className="text-[11px] text-slate-400">نوع الإجراء</Label>
+                    <Label className="text-[11px] text-slate-400">{t("type")}</Label>
                     <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-medium">
                         {(() => {
                             const typeInfo = BUTTON_TYPES.find(t => t.id === type);
@@ -286,10 +289,10 @@ export default function TemplateButtonBuilder({ value = [], onChange, errors }) 
 
                 {/* 2. Button Text */}
                 <div className="md:col-span-3 space-y-1.5">
-                    <Label className="text-[11px] text-slate-400 ">نص الزر</Label>
+                    <Label className="text-[11px] text-slate-400 ">{t("text")}</Label>
                     <div className="relative ">
                         <Input
-                            placeholder="أدخل نص الزر..."
+                            placeholder={t("textPlaceholder")}
                             maxLength={25}
                             value={btn.text}
                             onChange={(e) => handleUpdate(btn.id, { text: e.target.value })}
@@ -307,7 +310,7 @@ export default function TemplateButtonBuilder({ value = [], onChange, errors }) 
                 {type === "VISIT_WEBSITE" && (
                     <>
                         <div className="md:col-span-2 space-y-1.5">
-                            <Label className="text-[11px] text-slate-400">نوع الرابط</Label>
+                            <Label className="text-[11px] text-slate-400">{t("urlType")}</Label>
                             <Select
                                 value={urlTypeUi}
                                 onValueChange={(val) => handleUpdate(btn.id, { urlType: val })}
@@ -324,9 +327,9 @@ export default function TemplateButtonBuilder({ value = [], onChange, errors }) 
                             {fe.urlType ? <p className="text-[11px] text-red-500 mt-1">{fe.urlType}</p> : null}
                         </div>
                         <div className="md:col-span-4 space-y-1.5">
-                            <Label className="text-[11px] text-slate-400">رابط الموقع</Label>
+                            <Label className="text-[11px] text-slate-400">{t("url")}</Label>
                             <Input
-                                placeholder={urlTypeUi === "Dynamic" ? "https://example.com/{{1}}" : "https://example.com"}
+                                placeholder={urlTypeUi === "Dynamic" ? `${t("urlPlaceholder")}/{{1}}` : t("urlPlaceholder")}
                                 value={btn.url}
                                 onChange={(e) => handleUpdate(btn.id, { url: e.target.value })}
                                 className={cn(
@@ -337,7 +340,7 @@ export default function TemplateButtonBuilder({ value = [], onChange, errors }) 
                             />
                             {fe.url ? <p className="text-[11px] text-red-500 mt-1">{fe.url}</p> : null}
                             {urlTypeUi === "Dynamic" && !btn.url.includes("{{1}}") && (
-                                <p className="text-[10px] text-amber-600 font-medium">يجب أن يتضمن الرابط المتغير {"{{1}}"}</p>
+                                <p className="text-[10px] text-amber-600 font-medium">{t("dynamicUrlError")}</p>
                             )}
                         </div>
 
@@ -346,17 +349,17 @@ export default function TemplateButtonBuilder({ value = [], onChange, errors }) 
                                 <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-3">
                                     <div className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-200">
                                         <Info size={14} className="text-primary" />
-                                        إضافة رابط عينة
+                                        {t("urlExample")}
                                     </div>
                                     <p className="text-[11px] text-slate-500 leading-relaxed">
-                                        لمساعدتنا في مراجعة قالب رسالتك، يرجى إضافة مثال لرابط الموقع. لا تستخدم معلومات حقيقية للعملاء.
+                                        {t("urlExampleInfo")}
                                     </p>
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-xs font-mono text-slate-400 shrink-0">
                                             {"{{1}}"}
                                         </div>
                                         <Input
-                                            placeholder="أدخل الرابط الكامل مع المثال..."
+                                            placeholder={t("urlExamplePlaceholder")}
                                             value={btn.urlExample}
                                             onChange={(e) => handleUpdate(btn.id, { urlExample: e.target.value })}
                                             className={cn(
@@ -368,7 +371,7 @@ export default function TemplateButtonBuilder({ value = [], onChange, errors }) 
                                     {fe.urlExample ? (
                                         <p className="text-[11px] text-red-500 font-medium">{fe.urlExample}</p>
                                     ) : !btn.urlExample ? (
-                                        <p className="text-[10px] text-red-500 font-medium">يرجى إدخال رابط موقع ويب صالح</p>
+                                        <p className="text-[10px] text-red-500 font-medium">{t("urlExampleRequired")}</p>
                                     ) : null}
                                 </div>
                             </div>
@@ -379,7 +382,7 @@ export default function TemplateButtonBuilder({ value = [], onChange, errors }) 
                 {type === "PHONE_NUMBER" && (
                     <>
                         <div className="md:col-span-2 space-y-1.5">
-                            <Label className="text-[11px] text-slate-400">الدولة</Label>
+                            <Label className="text-[11px] text-slate-400">{t("country")}</Label>
                             <Select
                                 value={btn.countryCode}
                                 onValueChange={(val) => handleUpdate(btn.id, { countryCode: val })}
@@ -388,14 +391,14 @@ export default function TemplateButtonBuilder({ value = [], onChange, errors }) 
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                {PHONE_CODES.map((code) => (
-                                    <SelectItem key={code.key} value={code.code}>{code.flag} {code.code}</SelectItem>
-                                ))}
+                                    {PHONE_CODES.map((code) => (
+                                        <SelectItem key={code.key} value={code.code}>{code.flag} {code.code}</SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="md:col-span-4 space-y-1.5">
-                            <Label className="text-[11px] text-slate-400">رقم الهاتف</Label>
+                            <Label className="text-[11px] text-slate-400">{t("phone")}</Label>
                             <Input
                                 placeholder="000 000 000"
                                 value={btn.phoneNumber}
@@ -405,7 +408,7 @@ export default function TemplateButtonBuilder({ value = [], onChange, errors }) 
                             {fe.phone ? (
                                 <p className="text-[11px] text-red-500 mt-1">{fe.phone}</p>
                             ) : !btn.phoneNumber ? (
-                                <p className="text-[10px] text-red-500">تحتاج لإدخال رقم هاتف. يرجى إضافة رقم هاتف صالح.</p>
+                                <p className="text-[10px] text-red-500">{t("phoneRequired")}</p>
                             ) : null}
                         </div>
                     </>
@@ -415,7 +418,7 @@ export default function TemplateButtonBuilder({ value = [], onChange, errors }) 
                     <>
                         <div className="md:col-span-6 space-y-1.5">
                             <Label className="text-[11px] text-slate-400 flex items-center gap-1">
-                                نشط لمدة
+                                {t("callDays")}
                                 <Info size={12} className="text-slate-400" />
                             </Label>
                             <Select
@@ -427,24 +430,12 @@ export default function TemplateButtonBuilder({ value = [], onChange, errors }) 
                                 </SelectTrigger>
                                 <SelectContent>
                                     {[...Array(30)].map((_, i) => (
-                                        <SelectItem key={i + 1} value={String(i + 1)}>{i + 1} أيام</SelectItem>
+                                        <SelectItem key={i + 1} value={String(i + 1)}>{i + 1} {i + 1 === 1 ? t("day") : t("days")}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
                             {fe.callDays ? <p className="text-[11px] text-red-500 mt-1">{fe.callDays}</p> : null}
                         </div>
-                        {/* <div className="md:col-span-12 mt-2">
-                            <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 rounded-xl flex gap-3">
-                                <Info size={18} className="text-blue-500 shrink-0 mt-0.5" />
-                                <p className="text-[11px] text-blue-800 dark:text-blue-200 leading-relaxed">
-                                    قم بتشغيل المكالمات في بوابة WhatsApp Manager. بدلاً من ذلك، يمكنك استخدام Phone Number Settings API.
-                                    <a href="#" className="inline-flex items-center gap-1 text-blue-600 font-bold hover:underline mx-1">
-                                        حول الاتصال على واتساب
-                                        <ExternalLink size={10} />
-                                    </a>
-                                </p>
-                            </div>
-                        </div> */}
                     </>
                 )}
             </div>
@@ -452,11 +443,11 @@ export default function TemplateButtonBuilder({ value = [], onChange, errors }) 
     };
 
     return (
-        <div className="space-y-6" dir="rtl">
+        <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h3 className="text-sm font-bold text-slate-800 dark:text-white">أزرار الاستجابة (Call to Action)</h3>
-                    <p className="text-xs text-slate-500 mt-1">أضف حتى {BUTTON_LIMITS.TOTAL} أزرار لمساعدة العملاء على اتخاذ إجراءات.</p>
+                    <h3 className="text-sm font-bold text-slate-800 dark:text-white">{t("title")}</h3>
+                    <p className="text-xs text-slate-500 mt-1">{t("limitDesc", { total: BUTTON_LIMITS.TOTAL })}</p>
                 </div>
                 <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full">
                     <span className={cn(

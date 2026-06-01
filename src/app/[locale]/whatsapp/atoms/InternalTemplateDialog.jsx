@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Search, Globe, Tag, Layout, Check, Loader2, Phone } from "lucide-react";
 import { cn } from "@/utils/cn";
 import TemplatePreview from "./TemplatePreview";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useConversation } from "./chats/ConversationContext";
 import {
     Select,
@@ -20,22 +20,10 @@ import api from "@/utils/api";
 import { toast } from "react-hot-toast";
 import { useDebounce } from "@/hook/useDebounce";
 
-const INTERNAL_CONFIG = {
-    CATEGORIES: [
-        { id: "marketing", label: "تسويق (Marketing)" },
-        { id: "utility", label: "خدمة (Utility)" },
-        { id: "authentication", label: "مصادقة (Authentication)" }
-    ],
-    LANGUAGES: [
-        { id: "all", label: "كل" },
-        { id: "ar", label: "العربية (Arabic)" },
-        { id: "en", label: "English" },
-        { id: "en_US", label: "English (US)" }
-    ]
-};
-
-
-export function InternalTemplateDialog({ open, onOpenChange, defaultAccountId, onSelectTemplate, library }) {
+export function InternalTemplateDialog({ title, open, onOpenChange, defaultAccountId, onSelectTemplate, library }) {
+    const tCats = useTranslations("whatsApp.templates.categories");
+    const tCommon = useTranslations("common");
+    const t = useTranslations("whatsApp.templates.dialog");
     const [searchTerm, setSearchTerm] = useState("");
     const { debouncedValue: debouncedSearchTerm } = useDebounce({ value: searchTerm });
     const [selectedCategory, setSelectedCategory] = useState("all");
@@ -46,6 +34,20 @@ export function InternalTemplateDialog({ open, onOpenChange, defaultAccountId, o
     const [loading, setLoading] = useState(true);
     const locale = useLocale();
 
+    const internalConfig = useMemo(() => ({
+        CATEGORIES: [
+            { id: "marketing", label: tCats("marketing") },
+            { id: "utility", label: tCats("utility") },
+            { id: "authentication", label: tCats("authentication") }
+        ],
+        LANGUAGES: [
+            { id: "all", label: tCommon("all") },
+            { id: "ar", label: tCommon("languages.ar") },
+            { id: "en", label: tCommon("languages.en") },
+            { id: "en_US", label: tCommon("languages.en_US") }
+        ]
+    }), [tCats, tCommon]);
+
     useEffect(() => {
         if (open && defaultAccountId) {
             setSelectedAccountId(defaultAccountId);
@@ -54,7 +56,7 @@ export function InternalTemplateDialog({ open, onOpenChange, defaultAccountId, o
 
     const fetchAccounts = useCallback(async () => {
         try {
-            const res = await api.get("/whatsapp-accounts", { params: { limit: 200 } });
+            const res = await api.get("/whatsapp-accounts", { params: { limit: 200, isActive: "true" } });
             setAccounts(Array.isArray(res.data?.records) ? res.data.records : []);
         } catch (e) {
             console.error(e);
@@ -78,11 +80,11 @@ export function InternalTemplateDialog({ open, onOpenChange, defaultAccountId, o
             setTemplates(Array.isArray(res.data?.records) ? res.data.records : []);
         } catch (e) {
             console.error(e);
-            toast.error("فشل في جلب القوالب");
+            toast.error(t("fetchError"));
         } finally {
             setLoading(false);
         }
-    }, [open, debouncedSearchTerm, selectedLanguage, selectedCategory, selectedAccountId]);
+    }, [open, debouncedSearchTerm, selectedLanguage, selectedCategory, selectedAccountId, library, t]);
 
     useEffect(() => {
         if (open) {
@@ -95,9 +97,9 @@ export function InternalTemplateDialog({ open, onOpenChange, defaultAccountId, o
     }, [fetchTemplates]);
 
     const categories = useMemo(() => [
-        { id: "all", label: "الكل" },
-        ...INTERNAL_CONFIG.CATEGORIES
-    ], []);
+        { id: "all", label: tCommon("all") },
+        ...internalConfig.CATEGORIES
+    ], [tCommon, internalConfig.CATEGORIES]);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -105,14 +107,14 @@ export function InternalTemplateDialog({ open, onOpenChange, defaultAccountId, o
                 <DialogHeader className="p-6 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f1117] flex-shrink-0 space-y-4">
                     <DialogTitle className="text-xl font-bold flex items-center gap-2 text-foreground">
                         <Layout className="w-6 h-6 text-primary" />
-                        قوالب الواتساب المعتمدة
+                        {title || t("title")}
                     </DialogTitle>
 
                     <div className="flex flex-wrap gap-4 items-center">
                         <div className="relative flex-1 min-w-[200px]">
-                            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                            <Search className={cn("absolute top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4", locale === "ar" ? "right-3" : "left-3")} />
                             <Input
-                                placeholder="ابحث باسم القالب..."
+                                placeholder={t("searchPlaceholder")}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="rounded-xl h-[50px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20"
@@ -125,11 +127,11 @@ export function InternalTemplateDialog({ open, onOpenChange, defaultAccountId, o
                                 <SelectTrigger className="w-[220px] h-[50px] rounded-xl bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700">
                                     <div className="flex items-center gap-2">
                                         <Phone className="w-4 h-4 text-slate-400" />
-                                        <SelectValue placeholder="تصفية حسب الحساب" />
+                                        <SelectValue placeholder={t("filterByAccount")} />
                                     </div>
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">جميع الحسابات</SelectItem>
+                                    <SelectItem value="all">{t("allAccounts")}</SelectItem>
                                     {accounts.map(acc => (
                                         <SelectItem key={acc.id} value={acc.id}>
                                             {acc.name} ({acc.mobileNumber})
@@ -144,11 +146,11 @@ export function InternalTemplateDialog({ open, onOpenChange, defaultAccountId, o
                                 <SelectTrigger className="w-[180px] h-[50px] rounded-xl bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700">
                                     <div className="flex items-center gap-2">
                                         <Globe className="w-4 h-4 text-slate-400" />
-                                        <SelectValue placeholder="اختر اللغة" />
+                                        <SelectValue placeholder={t("selectLanguage")} />
                                     </div>
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {INTERNAL_CONFIG.LANGUAGES.map(lang => (
+                                    {internalConfig.LANGUAGES.map(lang => (
                                         <SelectItem key={lang.id} value={lang.id}>{lang.label}</SelectItem>
                                     ))}
                                 </SelectContent>
@@ -184,7 +186,7 @@ export function InternalTemplateDialog({ open, onOpenChange, defaultAccountId, o
                         : templates.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-full text-slate-400">
                                 <Tag className="w-12 h-12 mb-4 opacity-20" />
-                                <p>لا توجد قوالب تطابق معايير البحث.</p>
+                                <p>{t("noTemplatesFound")}</p>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -213,7 +215,7 @@ export function InternalTemplateDialog({ open, onOpenChange, defaultAccountId, o
                                                 }}
                                                 className="rounded-xl bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 shrink-0"
                                             >
-                                                استخدام
+                                                {tCommon("use")}
                                             </Button>
                                         </div>
                                     </div>

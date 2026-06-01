@@ -436,7 +436,7 @@
     "readMore": "Read More",
     "viewAll": "View All",
     "markAsRead": "Mark as Read",
-    "brand": "Talabaty Tech",
+    "brand": "Madar",
     "fullscreen": "Fullscreen",
     "theme": "Toggle Theme",
     "notifications": "Notifications",
@@ -4464,6 +4464,18 @@
     }
   },
   "common": {
+    "use": "Use",
+    "optional": "Optional",
+    "seconds": "seconds",
+    "minute": "minute",
+    "minutes": "minutes",
+    "hour": "hour",
+    "hours": "hours",
+    "languages": {
+      "ar": "Arabic",
+      "en": "English",
+      "en_US": "English (US)"
+    },
     "api": {
       "error": "Request failed",
       "exportStarted": "Export started",
@@ -6797,7 +6809,7 @@
         "label": "User Permissions"
       }
     ],
-    "benefitsLabel": "Why Talabaty Tech?",
+    "benefitsLabel": "Why Madar?",
     "benefits": [
       {
         "label": "Smooth User Experience",
@@ -6944,7 +6956,7 @@
       "suffix": ""
     },
     "subheading": "Track shipments, delivery statuses, and collections in real time from inside the platform.",
-    "centerLabel": "Talabaty Tech",
+    "centerLabel": "Madar",
     "companies": {
       "smsa": "SMSA",
       "aramex": "Aramex",
@@ -7117,7 +7129,7 @@
     "dashboardAlt": "Platform Dashboard"
   },
   "footer": {
-    "logo": "Talabaty Tech",
+    "logo": "Madar",
     "nav": {
       "home": "Home",
       "services": "Services",
@@ -7315,7 +7327,7 @@
     }
   },
   "onboarding": {
-    "brand": "Talabaty Tech",
+    "brand": "Madar",
     "progress": "Progress",
     "steps": {
       "welcome": {
@@ -7408,7 +7420,7 @@
       "finish_success": "Setup completed! Welcome 🎉",
       "finish_error": "An error occurred while finishing setup"
     },
-    "welcome_title": "Welcome to Talabaty Tech! 🎉",
+    "welcome_title": "Welcome to Madar! 🎉",
     "welcome_sub": "We’ll only need a few minutes to set up your system",
     "welcome_desc": "We’ll help you choose the right plan, add your company details, and connect your store and shipping company so you can start receiving orders right away.",
     "welcome_btn": "Let’s get started",
@@ -7518,7 +7530,7 @@
       "placeholders": {
         "select_country": "Select country",
         "select_currency": "Select currency",
-        "name": "Example: Talabaty Tech Company",
+        "name": "Example: Madar Company",
         "optional": "Optional",
         "address": "Full address (optional)"
       },
@@ -7639,7 +7651,7 @@
     },
     "finished": {
       "loading": "Finalizing setup...",
-      "success": "Setup completed successfully! Welcome to Talabaty Tech 🎉",
+      "success": "Setup completed successfully! Welcome to Madar 🎉",
       "title": "Setup completed! 🚀",
       "desc": "Your system is now fully ready to receive orders, track shipments, and manage your business efficiently.",
       "goBtn": "Go to dashboard",
@@ -8075,6 +8087,11 @@
       "appearance": {
         "label": "Appearance",
         "description": "Theme and display"
+      },
+      "whatsappTab": {
+        "accountSettings": "Account Settings",
+        "defaultAccountDescription": "Select the default number for sending operations",
+        "defaultAccountLabel": "Default Number for Sending"
       }
     },
     "company": {
@@ -9264,6 +9281,9 @@
   "whatsApp": {
     "accounts": {
       "title": "WhatsApp Accounts",
+      "selectPlaceholder": "Select phone number",
+      "allAccounts": "All Accounts",
+      "defaultAccountLabel": "Default Sending Account",
       "breadcrumb": {
         "home": "Home",
         "whatsapp": "WhatsApp",
@@ -9367,6 +9387,15 @@
       }
     },
     "templates": {
+      "dialog": {
+        "title": "Approved WhatsApp Templates",
+        "searchPlaceholder": "Search by template name...",
+        "filterByAccount": "Filter by Account",
+        "allAccounts": "All Accounts",
+        "selectLanguage": "Select Language",
+        "fetchError": "Failed to fetch templates",
+        "noTemplatesFound": "No templates match your search criteria."
+      },
       "title": "WhatsApp Templates",
       "breadcrumb": {
         "home": "Home",
@@ -9374,6 +9403,9 @@
         "templates": "Templates"
       },
       "preview": {
+        "allOptions": "All Options",
+        "actionButtonPlaceholder": "Action Button...",
+        "quickReplyPlaceholder": "Quick Reply...",
         "title": "Template preview",
         "showExamples": "Show Examples",
         "showTemplate": "Show Template",
@@ -9415,7 +9447,73 @@
       "categories": {
         "authentication": "Authentication",
         "marketing": "Marketing",
-        "utility": "Utility"
+        "utility": "Utility",
+        "all": "All (All)"
+      },
+      "subcategories": {
+        "MARKETING_DEFAULT": {
+          "label": "Default",
+          "description": "Send messages with media and custom buttons to engage your customers.",
+          "goodFor": "Welcome messages, promotions, coupons, newsletters, announcements",
+          "customize": "Media, header, body, footer, buttons"
+        },
+        "MARKETING_CALL_PERMISSIONS": {
+          "label": "Call Permissions Request",
+          "description": "Ask customers if you can call them on WhatsApp",
+          "goodFor": "Consent management, phone support requests",
+          "customize": "Body, footer, buttons"
+        },
+        "UTILITY_DEFAULT": {
+          "label": "Default",
+          "description": "Send messages about an existing order or account.",
+          "goodFor": "Order updates, account alerts, shipping notifications, feedback requests",
+          "customize": "Header, body, footer, buttons"
+        },
+        "UTILITY_CALL_PERMISSIONS": {
+          "label": "Call Permissions Request",
+          "description": "Ask customers if you can call them on WhatsApp",
+          "goodFor": "Consent management, support availability",
+          "customize": "Body, footer, buttons"
+        },
+        "AUTHENTICATION_OTP": {
+          "label": "Verification Code (OTP)",
+          "description": "Send codes to verify a purchase or login.",
+          "goodFor": "Verification codes, security alerts, login attempts",
+          "customize": "Body (fixed format), footer"
+        }
+      },
+      "industries": {
+        "title": "Industries",
+        "E_COMMERCE": "E-Commerce",
+        "FINANCIAL_SERVICES": "Financial Services"
+      },
+      "usecases": {
+        "ORDER_CONFIRMATION": "Order Confirmation",
+        "DELIVERY_CONFIRMATION": "Delivery Confirmation",
+        "DELIVERY_UPDATE": "Delivery Update",
+        "DELIVERY_FAILED": "Delivery Failed",
+        "SHIPMENT_CONFIRMATION": "Shipment Confirmation",
+        "ORDER_PICK_UP": "Order Pick-up",
+        "ORDER_DELAY": "Order Delay",
+        "ORDER_ACTION_NEEDED": "Action Needed",
+        "RETURN_CONFIRMATION": "Return Confirmation",
+        "CUSTOMER_FEEDBACK": "Customer Feedback",
+        "FEEDBACK_SURVEY": "Feedback Survey",
+        "PAYMENT_CONFIRMATION": "Payment Confirmation",
+        "PAYMENT_ACTION_REQUIRED": "Payment Action Required",
+        "PAYMENT_DUE_REMINDER": "Payment Due",
+        "PAYMENT_OVERDUE": "Payment Overdue",
+        "PAYMENT_REJECT_FAIL": "Payment Rejected",
+        "PAYMENT_SCHEDULED": "Payment Scheduled",
+        "AUTO_PAY_REMINDER": "Auto-pay Reminder",
+        "LOW_BALANCE_WARNING": "Low Balance",
+        "TRANSACTION_ALERT": "Transaction Alert",
+        "FRAUD_ALERT": "Fraud Alert",
+        "STATEMENT_AVAILABLE": "Statement Available",
+        "STATEMENT_ATTACHMENT": "Statement Attachment",
+        "RECEIPT_ATTACHMENT": "Receipt Attachment",
+        "ACCOUNT_CREATION_CONFIRMATION": "Account Creation",
+        "ORDER_OR_TRANSACTION_CANCEL": "Transaction Cancelled"
       },
       "statuses": {
         "pending": "Pending",
@@ -9451,6 +9549,120 @@
         "language": "Language"
       },
       "form": {
+        "title": "Create WhatsApp Template",
+        "editTitle": "Edit WhatsApp Template",
+        "templateName": "Template Name",
+        "templateNamePlaceholder": "Enter template name (e.g. order_confirmation)",
+        "language": "Language",
+        "category": "Category",
+        "subcategory": "Sub-category",
+        "header": "Header",
+        "body": "Body",
+        "footer": "Footer",
+        "buttons": "Buttons",
+        "save": "Save Template",
+        "submit": "Submit to Meta",
+        "cancel": "Cancel",
+        "headerType": "Header Type",
+        "headerText": "Header Text",
+        "headerTextPlaceholder": "Enter header text...",
+        "headerTypes": {
+          "text": "Text",
+          "image": "Image",
+          "video": "Video",
+          "document": "Document",
+          "location": "Location"
+        },
+        "footerText": "Footer Text",
+        "footerTextPlaceholder": "Enter footer text (optional)...",
+        "bodyPlaceholder": "Enter message body...",
+        "variable": "Variable",
+        "addVariable": "Add Variable",
+        "variableSample": "Sample for {var}",
+        "variableSamplePlaceholder": "Enter sample value...",
+        "otpCopyButtonText": "Copy Code Button Text",
+        "otpCopyButtonTextPlaceholder": "e.g. Copy Code",
+        "validityPeriod": "Validity Period",
+        "useCustomValidity": "Set a custom validity period for your message",
+        "addSecurityRecommendation": "Add Security Recommendation",
+        "authExpirationTime": "Add Code Expiration Time",
+        "authOtpBody": "{{1}} is your verification code.",
+        "authOtpSecurity": " For your security, do not share this code.",
+        "authOtpFooter": "Code expires in {minutes} minutes.",
+        "bodyPlaceholderPreview": "Your message text will appear here...",
+        "expirationLabel": "Expiration Time (Minutes)",
+        "minutesRange": "From 1 to 90 minutes",
+        "authMethod": "Authentication Method",
+        "authDeliverySetup": "Auth Delivery Setup",
+        "copyCode": "Copy Code",
+        "copyCodeDesc": "Basic authentication with fast setup. Your customers copy the code and paste it into your app.",
+        "authContent": "Auth Message Content",
+        "authContentDesc": "Authentication message template content cannot be modified. You can add additional content from the options below.",
+        "validityTitle": "Message Validity Period",
+        "validityDesc": "It is recommended to set a custom validity period during which your authentication message should be delivered before it expires. If the message is not delivered within this time frame, you will not be charged and your customer will not see the message.",
+        "standardValidity": "If you do not set a custom validity period, the standard WhatsApp message validity of 10 minutes will apply.",
+        "livePreview": "Live Preview",
+        "goodFor": "This template is good for:",
+        "canCustomize": "Template areas you can customize:",
+        "variableSamples": "Variable Samples",
+        "variableSamplesDesc": "Include samples for all variables in your message to help Meta review your template. Remember not to include any real customer information to protect their privacy.",
+        "enterSample": "Enter content for {{num}}",
+        "optional": "Optional",
+        "none": "None",
+        "goodForLabel": "Good for:",
+        "customize": "Customize:",
+        "chooseCategory": "Choose Category",
+        "sections": {
+          "basics": "Category & Basics",
+          "content": "Template Content"
+        },
+        "mediaUpload": {
+          "title": "Upload {type}",
+          "dragAndDrop": "Drag and drop {type} or choose a file",
+          "maxSize": "Max file size: 50MB",
+          "uploadButton": "Upload {type}",
+          "policyNote": "Please ensure the {type} you send complies with our Terms of Service policy.",
+          "types": {
+            "image": "image",
+            "video": "video",
+            "document": "document",
+            "file": "file"
+          }
+        },
+        "buttonsBuilder": {
+          "title": "Buttons",
+          "add": "Add Button",
+          "limitReached": "Limit reached for this type",
+          "type": "Action Type",
+          "text": "Button Text",
+          "textPlaceholder": "Enter button text...",
+          "urlType": "URL Type",
+          "url": "URL",
+          "urlPlaceholder": "https://example.com",
+          "urlExample": "URL Example",
+          "urlExampleInfo": "To help us review your message template, please add an example website link. Do not use real customer information.",
+          "urlExamplePlaceholder": "Enter full URL with example...",
+          "dynamicUrlError": "The URL must include the variable {{1}}",
+          "phone": "Phone Number",
+          "phonePlaceholder": "Enter phone number...",
+          "phoneRequired": "You need to enter a phone number. Please add a valid phone number.",
+          "country": "Country",
+          "callDays": "Active for (Days)",
+          "day": "day",
+          "days": "days",
+          "limitDesc": "Add up to {total} buttons to help customers take action.",
+          "types": {
+            "CUSTOM": "Custom (Quick Reply)",
+            "VISIT_WEBSITE": "Visit Website",
+            "PHONE_NUMBER": "Call Phone Number",
+            "WHATSAPP_CALL": "Call via WhatsApp"
+          },
+          "urlTypes": {
+            "Static": "Static",
+            "Dynamic": "Dynamic"
+          },
+          "urlExampleRequired": "Please enter a valid website link"
+        },
         "breadcrumbs": {
           "create": "Create template",
           "edit": "Edit template"
@@ -9498,6 +9710,11 @@
         }
       },
       "messages": {
+            "createSuccess": "Template created successfully",
+        "createSuccessSuper": "Template created (SuperAdmin)",
+        "updateSuccess": "Template updated successfully",
+        "updateSuccessSuper": "Template updated (SuperAdmin)",
+        "fetchError": "Failed to fetch templates",
         "exportStarted": "Exporting templates data...",
         "exportSuccess": "File downloaded successfully",
         "deleteSuccess": "Template deleted successfully",
@@ -9507,6 +9724,16 @@
         "saveError": "Could not save the template",
         "loadingTemplate": "Loading template…",
         "templateNotFound": "Template not found"
+      },
+      "metaDialog": {
+        "title": "Choose a ready-made template from Meta",
+        "searchPlaceholder": "Search by template name...",
+        "selectLanguage": "Choose language",
+        "loading": "Synchronizing active templates...",
+        "error": "An error occurred while fetching the template catalog: {error}",
+        "retry": "Retry",
+        "noTemplates": "There are no templates available that match the current filtering criteria.",
+        "matchNote": "Make sure the use case matches the chosen top category."
       }
     },
     "automations": {
@@ -9899,6 +10126,7 @@
     "body": "Body Text",
     "noResults": "There are no conversations",
     "noMessagesFound": "No messages found",
-    "noResultsFound": "No results found matching your filters"
+    "noResultsFound": "No results found matching your filters",
+    "noPreviewAvailable": "No Preview"
   }
 }

@@ -4,6 +4,7 @@ import React, { useRef } from "react";
 import { UploadCloud, Trash2, FileText, Info } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { avatarSrc } from "@/components/atoms/UserSelect";
+import { useTranslations } from "next-intl";
 
 /**
  * Reusable Media Upload component for WhatsApp Template creation
@@ -14,6 +15,7 @@ export default function MediaUpload({
     onUrlChange,
     onFileChange
 }) {
+    const t = useTranslations("whatsApp.templates.form.mediaUpload");
     const fileInputRef = useRef(null);
 
     const handleUploadClick = () => {
@@ -37,10 +39,10 @@ export default function MediaUpload({
     };
     const getTypeName = () => {
         switch (type) {
-            case "IMAGE": return "صورة";
-            case "VIDEO": return "فيديو";
-            case "DOCUMENT": return "مستند";
-            default: return "ملف";
+            case "IMAGE": return t("types.image");
+            case "VIDEO": return t("types.video");
+            case "DOCUMENT": return t("types.document");
+            default: return t("types.file");
         }
     };
 
@@ -74,7 +76,6 @@ export default function MediaUpload({
                                 type="button"
                                 onClick={() => onUrlChange("")}
                                 className="p-2 bg-white dark:bg-slate-900 shadow-lg rounded-full text-red-500 hover:text-red-600 transition-colors"
-                                title="حذف"
                             >
                                 <Trash2 size={16} />
                             </button>
@@ -89,10 +90,10 @@ export default function MediaUpload({
                             <UploadCloud size={24} />
                         </div>
                         <p className="text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">
-                            اسحب ال{getTypeName()} وأفلته أو اختر ملفًا
+                            {t("dragAndDrop", { type: getTypeName() })}
                         </p>
                         <p className="text-xs text-slate-500 mb-6">
-                            أقصى حجم للملف: 50 ميجابايت
+                            {t("maxSize")}
                         </p>
 
                         <div className="flex gap-3">
@@ -101,7 +102,7 @@ export default function MediaUpload({
                                 className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
                             >
                                 <UploadCloud size={16} />
-                                رفع {getTypeName()}
+                                {t("uploadButton", { type: getTypeName() })}
                             </button>
                         </div>
                     </div>
@@ -119,7 +120,7 @@ export default function MediaUpload({
             <div className="flex items-start gap-2 text-[11px] text-slate-500 bg-slate-50 dark:bg-slate-950/50 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
                 <Info size={14} className="shrink-0 mt-0.5 text-primary" />
                 <p className="leading-relaxed">
-                    يرجى التأكد من أن ال{getTypeName()} التي ترسلها تتوافق مع سياسة شروط الخدمة الخاصة بنا.
+                    {t("policyNote", { type: getTypeName() })}
                 </p>
             </div>
         </div>

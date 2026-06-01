@@ -364,12 +364,12 @@ export default function WhatsAppAccountsPage() {
                 variant: row.isActive ? "orange" : "emerald",
                 permission: "whatsapp.update_account",
               },
-              {
-                icon: <Trash2 size={16} />,
-                tooltip: t("actions.delete"),
-                onClick: () => setDeleteState({ open: true, id: row.id }),
-                variant: "red",
-              },
+              // {
+              //   icon: <Trash2 size={16} />,
+              //   tooltip: t("actions.delete"),
+              //   onClick: () => setDeleteState({ open: true, id: row.id }),
+              //   variant: "red",
+              // },
             ]}
           />
         ),

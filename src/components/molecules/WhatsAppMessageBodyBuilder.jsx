@@ -8,20 +8,25 @@ import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
+import { useTranslations } from "next-intl";
 
 export default function WhatsAppMessageBodyBuilder({
   ref,
   value = "",
   onChange,
-  label = "Body",
-  placeholder = "Enter message body...",
+  label,
+  placeholder,
   maxLength = 1024,
   allowVariables = false,
   onInsertVariable,
   error,
   className,
 }) {
+  const t = useTranslations("whatsApp.templates.form");
   const textareaRef = useRef(null);
+
+  const displayLabel = label || t("body");
+  const displayPlaceholder = placeholder || t("bodyPlaceholder");
 
   const insertText = (type) => {
 
@@ -71,9 +76,9 @@ export default function WhatsAppMessageBodyBuilder({
   return (
     <div className={cn("space-y-3", className)}>
       <div className="flex justify-between items-center">
-        <Label className="text-base font-bold">{label} <span className="text-red-500">*</span></Label>
+        <Label className="text-base font-bold">{displayLabel} <span className="text-red-500">*</span></Label>
         <div className="flex items-center gap-3">
-          {allowVariables && <span className="text-xs text-slate-400">Add variables like {'{{1}}'}</span>}
+          {allowVariables && <span className="text-xs text-slate-400">{t("addVariable")} like {'{{1}}'}</span>}
           <span className={cn(
             "text-xs font-mono px-2 py-0.5 rounded-full",
             value.length > maxLength * 0.9 ? "bg-red-50 text-red-500" : "bg-slate-100 text-slate-500"
@@ -88,7 +93,7 @@ export default function WhatsAppMessageBodyBuilder({
           if (textareaRef) textareaRef.current = el;
           if (ref) ref.current = el;
         }}
-        placeholder={placeholder}
+        placeholder={displayPlaceholder}
         className={cn(
           "min-h-[140px] resize-y bg-white dark:bg-slate-950 border-slate-200 focus:ring-primary/20",
           error && "border-red-500 focus:ring-red-500"
@@ -127,7 +132,7 @@ export default function WhatsAppMessageBodyBuilder({
                 className="flex items-center gap-1.5 px-2 py-1 hover:bg-primary/10 text-primary rounded-md transition-colors text-xs font-bold"
               >
                 <PlusCircle size={16} />
-                Add Variable
+                {t("addVariable")}
               </button>
             </>
           )}

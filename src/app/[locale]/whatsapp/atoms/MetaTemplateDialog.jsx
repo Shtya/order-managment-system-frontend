@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Search, Globe, Tag, ChevronDown, Wand2, Loader2 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import TemplatePreview from "./TemplatePreview";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import {
     Select,
@@ -20,65 +20,66 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { AnimatePresence, motion } from "framer-motion";
 import api from "@/utils/api";
 
-// ─── STATIC STRUCTURE (Source of Truth) ───
-// replace with E_COMMERCE
-// FINANCIAL_SERVICES
-
-export const STATIC_CATEGORIES = [
-    { id: "ALL", label: "الكل (All)" },
-    { id: "E_COMMERCE", label: "التجارة الإلكترونية" },
-    { id: "FINANCIAL_SERVICES", label: "الخدمات المالية" }
-];
-
-export const STATIC_LANGUAGES = [
-    { id: "ar", label: "العربية (Arabic)" },
-    { id: "en", label: "English" },
-    { id: "en_US", label: "English (US)" }
-];
-
-export const STATIC_INDUSTRIES = [
-    {
-        id: "E_COMMERCE",
-        label: "التجارة الإلكترونية (E-Commerce)",
-        usecases: [
-            { id: "ORDER_CONFIRMATION", label: "تأكيد الطلب (Order Confirmation)" },
-            { id: "DELIVERY_CONFIRMATION", label: "تأكيد التوصيل (Delivery Confirmation)" },
-            { id: "DELIVERY_UPDATE", label: "تحديث التوصيل (Delivery Update)" },
-            { id: "DELIVERY_FAILED", label: "فشل التوصيل (Delivery Failed)" },
-            { id: "SHIPMENT_CONFIRMATION", label: "تأكيد الشحن (Shipment Confirmation)" },
-            { id: "ORDER_PICK_UP", label: "استلام الطلب (Order Pick-up)" },
-            { id: "ORDER_DELAY", label: "تأخير الطلب (Order Delay)" },
-            { id: "ORDER_ACTION_NEEDED", label: "إجراء مطلوب للطلب (Action Needed)" },
-            { id: "RETURN_CONFIRMATION", label: "تأكيد الإرجاع (Return Confirmation)" },
-            { id: "CUSTOMER_FEEDBACK", label: "آراء العملاء (Customer Feedback)" },
-            { id: "FEEDBACK_SURVEY", label: "استبيان رضا العملاء (Feedback Survey)" }
-        ]
-    },
-    {
-        id: "FINANCIAL_SERVICES",
-        label: "الخدمات المالية (Financial Services)",
-        usecases: [
-            { id: "PAYMENT_CONFIRMATION", label: "تأكيد الدفع (Payment Confirmation)" },
-            { id: "PAYMENT_ACTION_REQUIRED", label: "دفع مطلوب (Payment Action Required)" },
-            { id: "PAYMENT_DUE_REMINDER", label: "تذكير بموعد الدفع (Payment Due)" },
-            { id: "PAYMENT_OVERDUE", label: "تأخر السداد (Payment Overdue)" },
-            { id: "PAYMENT_REJECT_FAIL", label: "فشل/رفض الدفع (Payment Rejected)" },
-            { id: "PAYMENT_SCHEDULED", label: "جدولة الدفع (Payment Scheduled)" },
-            { id: "AUTO_PAY_REMINDER", label: "تذكير بالدفع التلقائي (Auto-pay Reminder)" },
-            { id: "LOW_BALANCE_WARNING", label: "تحذير انخفاض الرصيد (Low Balance)" },
-            { id: "TRANSACTION_ALERT", label: "تنبيه المعاملات (Transaction Alert)" },
-            { id: "FRAUD_ALERT", label: "تنبيه احتيال (Fraud Alert)" },
-            { id: "STATEMENT_AVAILABLE", label: "كشف الحساب متاح (Statement Available)" },
-            { id: "STATEMENT_ATTACHMENT", label: "مرفق كشف الحساب (Statement Attachment)" },
-            { id: "RECEIPT_ATTACHMENT", label: "مرفق الإيصال (Receipt Attachment)" },
-            { id: "ACCOUNT_CREATION_CONFIRMATION", label: "تأكيد إنشاء الحساب (Account Creation)" },
-            { id: "ORDER_OR_TRANSACTION_CANCEL", label: "إلغاء المعاملة (Transaction Cancelled)" }
-        ]
-    }
-];
-
 export default function MetaTemplateDialog({ open, onOpenChange, onSelectTemplate }) {
     const locale = useLocale();
+    const tCats = useTranslations("whatsApp.templates.categories");
+    const tInd = useTranslations("whatsApp.templates.industries");
+    const tUc = useTranslations("whatsApp.templates.usecases");
+    const tCommon = useTranslations("common");
+    const t = useTranslations("whatsApp.templates.metaDialog");
+
+    const STATIC_CATEGORIES = useMemo(() => [
+        { id: "ALL", label: tCats("all") },
+        { id: "E_COMMERCE", label: tInd("E_COMMERCE") },
+        { id: "FINANCIAL_SERVICES", label: tInd("FINANCIAL_SERVICES") }
+    ], [tCats, tInd]);
+
+    const STATIC_LANGUAGES = useMemo(() => [
+        { id: "ar", label: tCommon("languages.ar") },
+        { id: "en", label: tCommon("languages.en") },
+        { id: "en_US", label: tCommon("languages.en_US") }
+    ], [tCommon]);
+
+    const STATIC_INDUSTRIES = useMemo(() => [
+        {
+            id: "E_COMMERCE",
+            label: tInd("E_COMMERCE"),
+            usecases: [
+                { id: "ORDER_CONFIRMATION", label: tUc("ORDER_CONFIRMATION") },
+                { id: "DELIVERY_CONFIRMATION", label: tUc("DELIVERY_CONFIRMATION") },
+                { id: "DELIVERY_UPDATE", label: tUc("DELIVERY_UPDATE") },
+                { id: "DELIVERY_FAILED", label: tUc("DELIVERY_FAILED") },
+                { id: "SHIPMENT_CONFIRMATION", label: tUc("SHIPMENT_CONFIRMATION") },
+                { id: "ORDER_PICK_UP", label: tUc("ORDER_PICK_UP") },
+                { id: "ORDER_DELAY", label: tUc("ORDER_DELAY") },
+                { id: "ORDER_ACTION_NEEDED", label: tUc("ORDER_ACTION_NEEDED") },
+                { id: "RETURN_CONFIRMATION", label: tUc("RETURN_CONFIRMATION") },
+                { id: "CUSTOMER_FEEDBACK", label: tUc("CUSTOMER_FEEDBACK") },
+                { id: "FEEDBACK_SURVEY", label: tUc("FEEDBACK_SURVEY") }
+            ]
+        },
+        {
+            id: "FINANCIAL_SERVICES",
+            label: tInd("FINANCIAL_SERVICES"),
+            usecases: [
+                { id: "PAYMENT_CONFIRMATION", label: tUc("PAYMENT_CONFIRMATION") },
+                { id: "PAYMENT_ACTION_REQUIRED", label: tUc("PAYMENT_ACTION_REQUIRED") },
+                { id: "PAYMENT_DUE_REMINDER", label: tUc("PAYMENT_DUE_REMINDER") },
+                { id: "PAYMENT_OVERDUE", label: tUc("PAYMENT_OVERDUE") },
+                { id: "PAYMENT_REJECT_FAIL", label: tUc("PAYMENT_REJECT_FAIL") },
+                { id: "PAYMENT_SCHEDULED", label: tUc("PAYMENT_SCHEDULED") },
+                { id: "AUTO_PAY_REMINDER", label: tUc("AUTO_PAY_REMINDER") },
+                { id: "LOW_BALANCE_WARNING", label: tUc("LOW_BALANCE_WARNING") },
+                { id: "TRANSACTION_ALERT", label: tUc("TRANSACTION_ALERT") },
+                { id: "FRAUD_ALERT", label: tUc("FRAUD_ALERT") },
+                { id: "STATEMENT_AVAILABLE", label: tUc("STATEMENT_AVAILABLE") },
+                { id: "STATEMENT_ATTACHMENT", label: tUc("STATEMENT_ATTACHMENT") },
+                { id: "RECEIPT_ATTACHMENT", label: tUc("RECEIPT_ATTACHMENT") },
+                { id: "ACCOUNT_CREATION_CONFIRMATION", label: tUc("ACCOUNT_CREATION_CONFIRMATION") },
+                { id: "ORDER_OR_TRANSACTION_CANCEL", label: tUc("ORDER_OR_TRANSACTION_CANCEL") }
+            ]
+        }
+    ], [tInd, tUc]);
 
     // Filter & UI States
     const [searchTerm, setSearchTerm] = useState("");
@@ -217,15 +218,15 @@ export default function MetaTemplateDialog({ open, onOpenChange, onSelectTemplat
                 <DialogHeader className="p-6 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f1117] flex-shrink-0 space-y-4">
                     <DialogTitle className="text-xl font-bold flex items-center gap-2 text-foreground">
                         <Wand2 className="w-6 h-6 text-primary" />
-                        اختر قالب جاهز من Meta
+                        {t("title")}
                     </DialogTitle>
 
                     <div className="flex flex-wrap md:flex-nowrap gap-4 items-center">
                         {/* Search Input */}
                         <div className="relative flex-1 min-w-[200px]">
-                            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                            <Search className={cn("absolute top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4", locale === "ar" ? "right-3" : "left-3")} />
                             <Input
-                                placeholder="ابحث باسم القالب..."
+                                placeholder={t("searchPlaceholder")}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="rounded-xl h-[50px] bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20"
@@ -239,7 +240,7 @@ export default function MetaTemplateDialog({ open, onOpenChange, onSelectTemplat
                                 <SelectTrigger className="w-[180px] h-[50px] rounded-xl bg-[#fafafa] dark:bg-slate-800/50 border-gray-200 dark:border-slate-700">
                                     <div className="flex items-center gap-2">
                                         <Globe className="w-4 h-4 text-slate-400" />
-                                        <SelectValue placeholder="اختر اللغة" />
+                                        <SelectValue placeholder={t("selectLanguage")} />
                                     </div>
                                 </SelectTrigger>
                                 <SelectContent>
@@ -277,7 +278,7 @@ export default function MetaTemplateDialog({ open, onOpenChange, onSelectTemplat
 
                     {/* SIDEBAR: Static Industries Accordions */}
                     <div className="w-80 border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f1117] flex-shrink-0 overflow-y-auto p-4 flex flex-col gap-2">
-                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2">قطاعات الصناعة (Industries)</h4>
+                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2">{tInd("title")}</h4>
 
                         {STATIC_INDUSTRIES.map(industry => {
                             const isExpanded = expandedGroups[industry.id];
@@ -358,20 +359,20 @@ export default function MetaTemplateDialog({ open, onOpenChange, onSelectTemplat
                         {isLoading ? (
                             <div className="flex flex-col items-center justify-center h-full text-slate-400">
                                 <Loader2 className="w-12 h-12 mb-4 animate-spin text-primary opacity-80" />
-                                <p>جاري مزامنة القوالب الفعّالة...</p>
+                                <p>{t("loading")}</p>
                             </div>
                         ) : error ? (
                             <div className="flex flex-col items-center justify-center h-full text-red-400 p-4 text-center">
-                                <p>حدث خطأ أثناء جلب كتالوج القوالب: {error}</p>
+                                <p>{t("error", { error })}</p>
                                 <Button variant="outline" className="mt-4 rounded-xl border-red-200" onClick={() => setSearchTerm(searchTerm)}>
-                                    إعادة المحاولة
+                                    {t("retry")}
                                 </Button>
                             </div>
                         ) : displayTemplates.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-full text-slate-400 text-center">
                                 <Tag className="w-12 h-12 mb-4 opacity-20" />
-                                <p className="font-medium">لا توجد قوالب متاحة تطابق معايير الفلترة الحالية.</p>
-                                <p className="text-xs text-slate-400 mt-1">تأكد من مطابقة حالة الاستخدام مع الفئة العلوية المختارة.</p>
+                                <p className="font-medium">{t("noTemplates")}</p>
+                                <p className="text-xs text-slate-400 mt-1">{t("matchNote")}</p>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -401,9 +402,6 @@ export default function MetaTemplateDialog({ open, onOpenChange, onSelectTemplat
                                                     <span className="text-[10px] uppercase font-bold text-primary bg-primary/5 px-2 py-0.5 rounded">
                                                         {template.category}
                                                     </span>
-                                                    {/* <span className="text-[10px] text-slate-400 truncate">
-                                                        {template.usecase?.replace(/_/g, ' ')}
-                                                    </span> */}
                                                 </div>
                                             </div>
                                             <Button
@@ -413,7 +411,7 @@ export default function MetaTemplateDialog({ open, onOpenChange, onSelectTemplat
                                                 }}
                                                 className="rounded-xl bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/10 flex-shrink-0"
                                             >
-                                                استخدام
+                                                {tCommon("use")}
                                             </Button>
                                         </div>
                                     </div>

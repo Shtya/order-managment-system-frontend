@@ -79,7 +79,7 @@ export const ConversationProvider = ({ children }) => {
 
     const fetchAccounts = useCallback(async () => {
         try {
-            const res = await api.get("/whatsapp-accounts", { params: { limit: 200, page: 1 } });
+            const res = await api.get("/whatsapp-accounts", { params: { limit: 200, page: 1, isActive: "true" } });
             const values = Array.isArray(res.data?.records) ? res.data.records : []
             setAccounts(values);
         } catch (e) {
@@ -323,7 +323,7 @@ export const ConversationProvider = ({ children }) => {
 
         let content = {};
         const isMedia = ["image", "video", "document"].includes(msg.type);
-
+        const isDoc = msg.type === "document";
         switch (msg.type) {
             case "text":
                 content = { text: { body: msg.text } };
@@ -420,7 +420,7 @@ export const ConversationProvider = ({ children }) => {
                 [msg.type]: msg.type === "text"
                     ? { body: msg.text }
                     : isMedia
-                        ? { id: mediaId, caption: msg.caption }
+                        ? { id: mediaId, caption: msg.caption, ...(isDoc ? { filename: msg.file?.name } : {}) }
                         : content[msg.type],
                 context: replyToWamid ? { message_id: replyToWamid } : undefined
             };

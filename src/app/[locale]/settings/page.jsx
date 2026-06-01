@@ -605,6 +605,7 @@ function TTLInput({ label, description, defaultValue, min, max }) {
 
 export function WhatsAppTab({ hideAccount = false, onSave }) {
   const tSettings = useTranslations("settings");
+  const t = useTranslations("settings.whatsappTab");
   const {
     settings,
     patch,
@@ -625,13 +626,13 @@ export function WhatsAppTab({ hideAccount = false, onSave }) {
             <Phone size={20} />
           </div>
           <div>
-            <h3 className="text-base font-bold">إعدادات الحساب</h3>
-            <p className="text-xs text-slate-400">تحديد الرقم الافتراضي لعمليات الإرسال</p>
+            <h3 className="text-base font-bold">{t("accountSettings")}</h3>
+            <p className="text-xs text-slate-400">{t("defaultAccountDescription")}</p>
           </div>
         </div>
 
         <WhatsAppAccountSelect
-          label="الرقم الافتراضي للإرسال"
+          label={t("defaultAccountLabel")}
           value={settings?.defaultWhatsAppAccountId}
           onChange={(val) => patch({ defaultWhatsAppAccountId: val })}
         />

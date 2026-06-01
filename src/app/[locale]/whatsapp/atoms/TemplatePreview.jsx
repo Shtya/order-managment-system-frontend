@@ -37,15 +37,19 @@ export function WhatsAppButtonMenu({
     buttons = [],
     locale = "en",
     type = "BUTTONS", // "BUTTONS" | "RADIO" | "LIST"
-    title = "All Options",
+    title,
     subtitle = "",
     radioOptions = [],
     sections = [],
-    seeAllOptionsLabel = "See all options",
+    seeAllOptionsLabel,
 }) {
+    const t = useTranslations("whatsApp.templates.preview");
     const [selectedIndex, setSelectedIndex] = useState(0);
 
     if (!isOpen) return null;
+
+    const displayTitle = title || t("allOptions");
+    const displaySeeAllOptionsLabel = seeAllOptionsLabel || t("seeAllOptions");
 
     const actionButtons = buttons.filter(btn => btn.type !== "CUSTOM");
     const customButtons = buttons.filter(btn => btn.type === "CUSTOM");
@@ -65,7 +69,7 @@ export function WhatsAppButtonMenu({
                         <X size={20} className="text-slate-500" />
                     </button>
                     <div className="flex-1 px-4 text-center">
-                        <h3 className="font-bold text-slate-800 dark:text-slate-200 text-[15px] leading-tight">{title}</h3>
+                        <h3 className="font-bold text-slate-800 dark:text-slate-200 text-[15px] leading-tight">{displayTitle}</h3>
                         {subtitle && <p className="text-[12.5px] text-slate-500 dark:text-slate-400 mt-1 leading-tight">{subtitle}</p>}
                     </div>
                     <div className="w-8" /> {/* Spacer */}
@@ -105,7 +109,7 @@ export function WhatsAppButtonMenu({
                                         {btn.type === "VISIT_WEBSITE" && <ExternalLink size={18} />}
                                         {btn.type === "WHATSAPP_CALL" && <Phone size={18} />}
                                     </div>
-                                    <span className="text-[14px] text-slate-700 dark:text-slate-300 font-medium">{btn.text || "زر إجراء..."}</span>
+                                    <span className="text-[14px] text-slate-700 dark:text-slate-300 font-medium">{btn.text || t("actionButtonPlaceholder")}</span>
                                 </div>
                             ))}
 
@@ -120,7 +124,7 @@ export function WhatsAppButtonMenu({
                                     <div className="text-slate-500 group-hover:text-[#00a884]">
                                         <Reply size={18} className={cn(locale === "ar" ? "scale-x-[-1]" : "")} />
                                     </div>
-                                    <span className="text-[14px] text-slate-700 dark:text-slate-300 font-medium">{btn.text || "رد سريع..."}</span>
+                                    <span className="text-[14px] text-slate-700 dark:text-slate-300 font-medium">{btn.text || t("quickReplyPlaceholder")}</span>
                                 </div>
                             ))}
                         </>

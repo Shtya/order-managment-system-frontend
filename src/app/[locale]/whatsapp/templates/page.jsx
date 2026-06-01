@@ -160,7 +160,7 @@ export default function WhatsAppTemplatesPage() {
 
   const fetchAccounts = useCallback(async () => {
     try {
-      const res = await api.get("/whatsapp-accounts", { params: { limit: 200, page: 1 } });
+      const res = await api.get("/whatsapp-accounts", { params: { limit: 200, page: 1, isActive: "true" } });
       const records = res.data?.records ?? [];
       setAccounts(Array.isArray(records) ? records : []);
     } catch (e) {

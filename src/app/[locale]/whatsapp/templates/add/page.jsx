@@ -102,8 +102,75 @@ const hasTooManyVariablesForText = (text = "") => {
     return words < (3 * varCount) + 1;
 };
 
+const CATEGORIES_STATIC = (tTpl) => [
+    {
+        id: "MARKETING",
+        label: tTpl("categories.marketing"),
+        icon: Megaphone,
+        color: "text-purple-600 bg-purple-50 dark:bg-purple-500/10 dark:text-purple-400",
+        subcategories: [
+            {
+                id: "MARKETING_DEFAULT",
+                label: tTpl("subcategories.MARKETING_DEFAULT.label"),
+                description: tTpl("subcategories.MARKETING_DEFAULT.description"),
+                goodFor: tTpl("subcategories.MARKETING_DEFAULT.goodFor"),
+                customize: tTpl("subcategories.MARKETING_DEFAULT.customize"),
+                sections: ["header", "body", "footer", "buttons"]
+            },
+            {
+                id: "MARKETING_CALL_PERMISSIONS",
+                label: tTpl("subcategories.MARKETING_CALL_PERMISSIONS.label"),
+                description: tTpl("subcategories.MARKETING_CALL_PERMISSIONS.description"),
+                goodFor: tTpl("subcategories.MARKETING_CALL_PERMISSIONS.goodFor"),
+                customize: tTpl("subcategories.MARKETING_CALL_PERMISSIONS.customize"),
+                sections: ["header_text_only", "body", "footer"] // Meta fixed buttons
+            }
+        ]
+    },
+    {
+        id: "UTILITY",
+        label: tTpl("categories.utility"),
+        icon: Bell,
+        color: "text-blue-600 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400",
+        subcategories: [
+            {
+                id: "UTILITY_DEFAULT",
+                label: tTpl("subcategories.UTILITY_DEFAULT.label"),
+                description: tTpl("subcategories.UTILITY_DEFAULT.description"),
+                goodFor: tTpl("subcategories.UTILITY_DEFAULT.goodFor"),
+                customize: tTpl("subcategories.UTILITY_DEFAULT.customize"),
+                sections: ["header", "body", "footer", "buttons", "validity_period"]
+            },
+            {
+                id: "UTILITY_CALL_PERMISSIONS",
+                label: tTpl("subcategories.UTILITY_CALL_PERMISSIONS.label"),
+                description: tTpl("subcategories.UTILITY_CALL_PERMISSIONS.description"),
+                goodFor: tTpl("subcategories.UTILITY_CALL_PERMISSIONS.goodFor"),
+                customize: tTpl("subcategories.UTILITY_CALL_PERMISSIONS.customize"),
+                sections: ["header_text_only", "body", "footer", "validity_period"] // Meta fixed buttons
+            }
+        ]
+    },
+    {
+        id: "AUTHENTICATION",
+        label: tTpl("categories.authentication"),
+        icon: KeyRound,
+        color: "text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400",
+        subcategories: [
+            {
+                id: "AUTHENTICATION_OTP",
+                label: tTpl("subcategories.AUTHENTICATION_OTP.label"),
+                description: tTpl("subcategories.AUTHENTICATION_OTP.description"),
+                goodFor: tTpl("subcategories.AUTHENTICATION_OTP.goodFor"),
+                customize: tTpl("subcategories.AUTHENTICATION_OTP.customize"),
+                sections: ["auth_setup", "auth_content", "validity_period"]
+            }
+        ]
+    }
+];
+
 // دالة خاصة مساعدة لمعالجة وتحويل الفئات الفرعية القادمة من Meta إلى المعرفات المحلية
-const mapMetaSubCategory = (category, subCategory) => {
+const mapMetaSubCategory = (category, subCategory, categories) => {
     const normalizedCat = String(category || "").toUpperCase();
     const normalizedSub = String(subCategory || "").toUpperCase();
 
@@ -118,7 +185,7 @@ const mapMetaSubCategory = (category, subCategory) => {
     }
 
     // 2. الفحص التلقائي العادي للتأكد من مطابقة المعرف المحلي
-    const categoryObj = CATEGORIES.find(
+    const categoryObj = categories.find(
         (c) => c.id?.toLowerCase() === category?.toLowerCase()
     );
 
@@ -129,74 +196,6 @@ const mapMetaSubCategory = (category, subCategory) => {
     // إذا كانت الفئة الفرعية مدعومة محلياً نرسلها كما هي، وإلا نأخذ أول فئة فرعية افتراضية كـ Fallback
     return subExists ? subCategory : categoryObj?.subcategories[0]?.id;
 };
-
-
-const CATEGORIES = [
-    {
-        id: "MARKETING",
-        label: "تسويق",
-        icon: Megaphone,
-        color: "text-purple-600 bg-purple-50 dark:bg-purple-500/10 dark:text-purple-400",
-        subcategories: [
-            {
-                id: "MARKETING_DEFAULT",
-                label: "افتراضي",
-                description: "أرسل رسائل تحتوي على وسائط وأزرار مخصصة لإشراك عملائك.",
-                goodFor: "رسائل الترحيب، العروض الترويجية، الكوبونات، النشرات الإخبارية، الإعلانات",
-                customize: "الوسائط، الرأس، النص، التذييل، الأزرار",
-                sections: ["header", "body", "footer", "buttons"]
-            },
-            {
-                id: "MARKETING_CALL_PERMISSIONS",
-                label: "طلب أذونات الاتصال",
-                description: "اسأل العملاء عما إذا كان يمكنك الاتصال بهم على واتساب",
-                goodFor: "إدارة الموافقة، طلبات الدعم الهاتفي",
-                customize: "النص، التذييل، الأزرار",
-                sections: ["header_text_only", "body", "footer"] // Meta fixed buttons
-            }
-        ]
-    },
-    {
-        id: "UTILITY",
-        label: "مرافق (Utility)",
-        icon: Bell,
-        color: "text-blue-600 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400",
-        subcategories: [
-            {
-                id: "UTILITY_DEFAULT",
-                label: "افتراضي",
-                description: "أرسل رسائل حول طلب موجود أو حساب.",
-                goodFor: "تحديثات الطلب، تنبيهات الحساب، إشعارات الشحن، طلبات التقييم",
-                customize: "الرأس، النص، التذييل، الأزرار",
-                sections: ["header", "body", "footer", "buttons", "validity_period"]
-            },
-            {
-                id: "UTILITY_CALL_PERMISSIONS",
-                label: "طلب أذونات الاتصال",
-                description: "اسأل العملاء عما إذا كان يمكنك الاتصال بهم على واتساب",
-                goodFor: "إدارة الموافقة، توفر الدعم",
-                customize: "النص، التذييل، الأزرار",
-                sections: ["header_text_only", "body", "footer", "validity_period"] // Meta fixed buttons
-            }
-        ]
-    },
-    {
-        id: "AUTHENTICATION",
-        label: "مصادقة",
-        icon: KeyRound,
-        color: "text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400",
-        subcategories: [
-            {
-                id: "AUTHENTICATION_OTP",
-                label: "رمز التحقق (OTP)",
-                description: "أرسل رموزًا للتحقق من عملية شراء أو تسجيل دخول.",
-                goodFor: "رموز التحقق، تنبيهات الأمان، محاولات تسجيل الدخول",
-                customize: "النص (تنسيق ثابت)، التذييل",
-                sections: ["auth_setup", "auth_content", "validity_period"]
-            }
-        ]
-    }
-];
 
 /*
 ⚠ ⚠ ⚠ To access Authentication Message templates, businesses must satisfy the following two requirements:
@@ -214,6 +213,10 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
     const tMsg = useTranslations("whatsApp.templates.messages");
     const tTpl = useTranslations("whatsApp.templates");
     const tForm = useTranslations("whatsApp.templates.form");
+    const tCommon = useTranslations("common");
+
+    const categories = useMemo(() => CATEGORIES_STATIC(tTpl), [tTpl]);
+
     const { settings } = useOrdersSettings();
     const defaultWhatsAppAccountId = settings?.defaultWhatsAppAccountId || "";
     const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
@@ -506,24 +509,24 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
 
 
     // Helper to get active category and subcategory objects
-    const activeCategory = CATEGORIES.find(c => c.id === templateData.category);
+    const activeCategory = categories.find(c => c.id === templateData.category);
     const activeSubcategory = activeCategory?.subcategories.find(s => s.id === templateData.subcategory);
 
     // Derived Body Text for Preview (especially for Authentication)
     const getPreviewBody = () => {
         if (templateData.subcategory === "AUTHENTICATION_OTP") {
-            let body = "{{1}} هو رمز التحقق الخاص بك.";
+            let body = tForm("authOtpBody");
             if (templateData.addSecurityRecommendation) {
-                body += " لحمايتك، لا تشارك هذا الرمز.";
+                body += tForm("authOtpSecurity");
             }
             return body;
         }
-        return templateData.bodyText || "سيظهر نص رسالتك هنا...";
+        return templateData.bodyText || tForm("bodyPlaceholderPreview");
     };
 
     const getPreviewFooter = () => {
         if (templateData.subcategory === "AUTHENTICATION_OTP" && templateData.addExpirationTime) {
-            return `تنتهي صلاحية الرمز خلال ${templateData.expirationMinutes} دقائق.`;
+            return tForm("authOtpFooter", { minutes: templateData.expirationMinutes });
         }
         return templateData.footerText;
     };
@@ -609,7 +612,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                     headers: { "Content-Type": "multipart/form-data" }
                 });
 
-                toast.success(superAdmin ? "تم تحديث القالب" : tMsg("updateSuccess"));
+                toast.success(superAdmin ? tMsg("updateSuccessSuper") : tMsg("updateSuccess"));
             } else {
                 // منطق الإنشاء (Create) كما هو بدون تغيير
                 const fd = new FormData();
@@ -641,7 +644,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                     headers: { "Content-Type": "multipart/form-data" }
                 });
 
-                toast.success(superAdmin ? "تم إنشاء القالب" : tMsg("createSuccess"));
+                toast.success(superAdmin ? tMsg("createSuccessSuper") : tMsg("createSuccess"));
             }
 
             router.push(superAdmin ? "/dashboard/whatsapp/templates" : "/whatsapp/templates");
@@ -673,7 +676,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
     };
 
     const handleCategoryChange = (catId) => {
-        const cat = CATEGORIES.find(c => c.id === catId);
+        const cat = categories.find(c => c.id === catId);
         setValue("category", catId);
         if (cat?.subcategories.length > 0) {
             handleSubcategoryChange(cat.subcategories[0].id);
@@ -708,7 +711,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
         setValue("category", category?.toUpperCase());
 
         // Map subcategory if it matches our internal IDs, otherwise fallback to default
-        const mappedSubCategory = mapMetaSubCategory(category, subCategory);
+        const mappedSubCategory = mapMetaSubCategory(category, subCategory, categories);
         setValue("subcategory", mappedSubCategory);
         setValue("headerType", tplData?.headerType || "TEXT");
         setValue("headerText", tplData?.headerText || "");
@@ -752,7 +755,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                     console.log('Script has loaded!')
                 }}
             />
-            <div className="min-h-screen p-5 space-y-6" dir="rtl">
+            <div className="min-h-screen p-5 space-y-6">
                 <PageHeader
                     stacky
                     breadcrumbs={[
@@ -807,7 +810,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold">1</div>
-                                <h2 className="text-lg font-bold text-slate-800 dark:text-white">الفئة والأساسيات</h2>
+                                <h2 className="text-lg font-bold text-slate-800 dark:text-white">{tForm("sections.basics")}</h2>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
@@ -830,9 +833,9 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                     </div>
                                 )}
                                 <div className="space-y-1.5">
-                                    <Label>اسم القالب</Label>
+                                    <Label>{tForm("templateName")}</Label>
                                     <Input
-                                        placeholder="مثال: order_confirmation_v1"
+                                        placeholder={tForm("templateNamePlaceholder")}
                                         className="lowercase"
                                         disabled={isEdit && !superAdmin}
                                         onChange={(e) => setValue("name", e.target.value.replace(/[^a-z0-9_]/g, '_'))}
@@ -841,19 +844,19 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                     {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label>اللغة</Label>
+                                    <Label>{tForm("language")}</Label>
                                     <Controller
                                         name="language"
                                         control={control}
                                         render={({ field }) => (
                                             <Select onValueChange={field.onChange} value={field.value} disabled={isEdit && !superAdmin}>
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder="اختر اللغة" />
+                                                    <SelectValue placeholder={tForm("selectLanguage")} />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="en">الإنجليزية</SelectItem>
-                                                    <SelectItem value="en_US">الإنجليزية (US)</SelectItem>
-                                                    <SelectItem value="ar">العربية (ar)</SelectItem>
+                                                    <SelectItem value="en">{tCommon("languages.en")}</SelectItem>
+                                                    <SelectItem value="en_US">{tCommon("languages.en_US")}</SelectItem>
+                                                    <SelectItem value="ar">{tCommon("languages.ar")}</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         )}
@@ -863,9 +866,9 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
 
                             <div className="flex flex-col gap-2">
 
-                                <Label className="mb-3 block text-base mb-1.5">اختر الفئة</Label>
+                                <Label className="mb-3 block text-base mb-1.5">{tForm("chooseCategory")}</Label>
                                 <div className={cn("flex gap-2 p-1 bg-slate-100 dark:bg-slate-950 rounded-xl mb-6", isEdit && !superAdmin && "opacity-60 pointer-events-none")}>
-                                    {CATEGORIES.map((cat) => {
+                                    {categories.map((cat) => {
                                         const isSelected = templateData.category === cat.id;
                                         return (
                                             <button
@@ -911,7 +914,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                             )}>
                                                 {isSubSelected && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
                                             </div>
-                                            <div className="flex-1 text-right">
+                                            <div className="flex-1">
                                                 <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm">{sub.label}</h4>
                                                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                                                     {sub.description}
@@ -931,13 +934,13 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
                                 <div className="flex items-center gap-3 mb-6">
                                     <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold">2</div>
-                                    <h2 className="text-lg font-bold text-slate-800 dark:text-white">محتوى القالب</h2>
+                                    <h2 className="text-lg font-bold text-slate-800 dark:text-white">{tForm("sections.content")}</h2>
                                 </div>
 
                                 {/* Header Settings */}
                                 {activeSubcategory?.sections.includes("header") && (
                                     <div className="space-y-4 mb-8">
-                                        <Label className="text-base">الرأس <span className="text-slate-400 text-sm font-normal">(اختياري)</span></Label>
+                                        <Label className="text-base">{tForm("header")} <span className="text-slate-400 text-sm font-normal">({tCommon("optional")})</span></Label>
                                         <div className="flex gap-2">
                                             {["NONE", "TEXT", "IMAGE", "VIDEO", "DOCUMENT", "LOCATION"].map((type) => (
                                                 <button
@@ -951,7 +954,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                                             : "bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
                                                     )}
                                                 >
-                                                    {type === "NONE" ? "بلا" : type === "TEXT" ? "نص" : type === "IMAGE" ? "صورة" : type === "VIDEO" ? "فيديو" : type === "DOCUMENT" ? "مستند" : "موقع"}
+                                                    {type === "NONE" ? tCommon("none") : type === "TEXT" ? tForm("headerTypes.text") : type === "IMAGE" ? tForm("headerTypes.image") : type === "VIDEO" ? tForm("headerTypes.video") : type === "DOCUMENT" ? tForm("headerTypes.document") : tForm("headerTypes.location")}
                                                 </button>
                                             ))}
                                         </div>
@@ -959,7 +962,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                         {templateData.headerType === "TEXT" && (
                                             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="pt-2 space-y-2">
                                                 <div className="flex justify-between items-center mb-1">
-                                                    <span className="text-[11px] text-slate-400">نص الرأس</span>
+                                                    <span className="text-[11px] text-slate-400">{tForm("headerText")}</span>
                                                     <button
                                                         type="button"
                                                         disabled={headerHasVariable}
@@ -972,12 +975,12 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                                         )}
                                                     >
                                                         <PlusCircle size={12} />
-                                                        إضافة متغير
+                                                        {tForm("addVariable")}
                                                     </button>
                                                 </div>
                                                 <Input
                                                     id="header-text-input"
-                                                    placeholder="أدخل نص الرأس (بحد أقصى 60 حرفًا)"
+                                                    placeholder={tForm("headerTextPlaceholder")}
                                                     maxLength={60}
                                                     onChange={handleHeaderTextChange}
                                                     value={templateData.headerText}
@@ -1021,9 +1024,9 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
 
                                 {activeSubcategory?.sections.includes("header_text_only") && (
                                     <div className="space-y-4 mb-8">
-                                        <Label className="text-base">الرأس <span className="text-slate-400 text-sm font-normal">(اختياري)</span></Label>
+                                        <Label className="text-base">{tForm("header")} <span className="text-slate-400 text-sm font-normal">({tCommon("optional")})</span></Label>
                                         <Input
-                                            placeholder="أدخل نص الرأس (بحد أقصى 60 حرفًا)"
+                                            placeholder={tForm("headerTextPlaceholder")}
                                             maxLength={60}
                                             onChange={(e) => {
                                                 setValue("headerType", "TEXT");
@@ -1043,8 +1046,8 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                             ref={textareaRef}
                                             value={templateData.bodyText}
                                             onChange={handleBodyChange}
-                                            label="النص"
-                                            placeholder="أدخل نص الرسالة الرئيسي..."
+                                            label={tForm("body")}
+                                            placeholder={tForm("bodyPlaceholder")}
                                             allowVariables={true}
                                             onInsertVariable={() => insertText("variable")}
                                             error={errors.bodyText?.message}
@@ -1075,9 +1078,9 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                 {/* Footer Settings */}
                                 {activeSubcategory?.sections.includes("footer") && (
                                     <div className="space-y-3 mb-2">
-                                        <Label className="text-base">التذييل <span className="text-slate-400 text-sm font-normal">(اختياري)</span></Label>
+                                        <Label className="text-base">{tForm("footer")} <span className="text-slate-400 text-sm font-normal">({tCommon("optional")})</span></Label>
                                         <Input
-                                            placeholder="أدخل نصًا صغيرًا في الأسفل (بحد أقصى 60 حرفًا)"
+                                            placeholder={tForm("footerTextPlaceholder")}
                                             maxLength={60}
                                             onChange={(e) => setValue("footerText", e.target.value)}
                                             value={templateData.footerText}
@@ -1092,7 +1095,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
                                 <div className="flex items-center gap-3 mb-6">
                                     <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold">3</div>
-                                    <h2 className="text-lg font-bold text-slate-800 dark:text-white">إعداد تسليم الرمز</h2>
+                                    <h2 className="text-lg font-bold text-slate-800 dark:text-white">{tForm("authDeliverySetup")}</h2>
                                 </div>
 
                                 <div className="space-y-4">
@@ -1110,45 +1113,12 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                             <div>
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <Copy size={16} className="text-slate-500" />
-                                                    <h4 className="font-bold text-sm">نسخ الرمز</h4>
+                                                    <h4 className="font-bold text-sm">{tForm("copyCode")}</h4>
                                                 </div>
-                                                <p className="text-xs text-slate-500">مصادقة أساسية مع إعداد سريع. يقوم عملاؤك بنسخ الرمز ولصقه في تطبيقك.</p>
-                                                {/* {templateData.authMethod === "COPY_CODE" && (
-                                                    <div className="mt-3 space-y-1.5">
-                                                        <Label className="text-[11px] text-slate-500">نص زر النسخ (اختياري)</Label>
-                                                        <Input
-                                                            placeholder="Copy code — افتراضي واتساب"
-                                                            maxLength={25}
-                                                            value={templateData.otpCopyButtonText || ""}
-                                                            onChange={(e) => setValue("otpCopyButtonText", e.target.value)}
-                                                            className="text-sm max-w-md"
-                                                        />
-                                                    </div>
-                                                )} */}
+                                                <p className="text-xs text-slate-500">{tForm("copyCodeDesc")}</p>
                                             </div>
                                         </div>
                                     </div>
-
-                                    {/* <div
-                                        onClick={() => setValue("authMethod", "NO_ACTION")}
-                                        className={cn(
-                                            "cursor-pointer p-4 border-2 rounded-xl transition-all",
-                                            templateData.authMethod === "NO_ACTION" ? "border-primary bg-primary/5" : "border-slate-100 dark:border-slate-800"
-                                        )}
-                                    >
-                                        <div className="flex items-start gap-3">
-                                            <div className={cn("mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center", templateData.authMethod === "NO_ACTION" ? "border-primary" : "border-slate-300")}>
-                                                {templateData.authMethod === "NO_ACTION" && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
-                                            </div>
-                                            <div>
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <Ban size={16} className="text-slate-500" />
-                                                    <h4 className="font-bold text-sm">لا يتطلب إجراء</h4>
-                                                </div>
-                                                <p className="text-xs text-slate-500">أرسل الرمز إلى عملائك في محتوى الرسالة. لا توجد إجراءات أخرى مطلوبة.</p>
-                                            </div>
-                                        </div>
-                                    </div> */}
                                 </div>
                             </div>
                         )}
@@ -1157,18 +1127,18 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
                                 <div className="flex items-center gap-3 mb-6">
                                     <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold">4</div>
-                                    <h2 className="text-lg font-bold text-slate-800 dark:text-white">محتوى رسالة المصادقة</h2>
+                                    <h2 className="text-lg font-bold text-slate-800 dark:text-white">{tForm("authContent")}</h2>
                                 </div>
 
                                 <div className="bg-slate-50 dark:bg-slate-950/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 mb-6 text-sm text-slate-600 dark:text-slate-400">
-                                    لا يمكن تعديل محتوى قوالب رسائل المصادقة. يمكنك إضافة محتوى إضافي من الخيارات أدناه.
+                                    {tForm("authContentDesc")}
                                 </div>
 
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl">
                                         <div className="flex items-center gap-3">
                                             <ShieldCheck size={18} className="text-slate-400" />
-                                            <span className="text-sm font-medium">إضافة توصية أمنية</span>
+                                            <span className="text-sm font-medium">{tForm("addSecurityRecommendation")}</span>
                                         </div>
                                         <button
                                             type="button"
@@ -1183,7 +1153,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-3">
                                                 <Clock size={18} className="text-slate-400" />
-                                                <span className="text-sm font-medium">إضافة وقت انتهاء صلاحية الرمز</span>
+                                                <span className="text-sm font-medium">{tForm("addExpirationTime")}</span>
                                             </div>
                                             <button
                                                 type="button"
@@ -1196,7 +1166,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
 
                                         {templateData.addExpirationTime && (
                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="pt-2 border-t border-slate-50 dark:border-slate-900 space-y-2">
-                                                <Label className="text-xs text-slate-500 mb-2 block">وقت انتهاء الصلاحية (بالدقائق)</Label>
+                                                <Label className="text-xs text-slate-500 mb-2 block">{tForm("expirationLabel")}</Label>
                                                 <div className="flex items-center gap-3">
                                                     <Input
                                                         type="number"
@@ -1206,7 +1176,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                                         onChange={(e) => setValue("expirationMinutes", e.target.value)}
                                                         className="w-24"
                                                     />
-                                                    <span className="text-xs text-slate-400">من 1 إلى 90 دقيقة</span>
+                                                    <span className="text-xs text-slate-400">{tForm("minutesRange")}</span>
                                                 </div>
                                             </motion.div>
                                         )}
@@ -1221,16 +1191,16 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                     <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold">
                                         {activeSubcategory.id === "AUTHENTICATION_OTP" ? "5" : "3"}
                                     </div>
-                                    <h2 className="text-lg font-bold text-slate-800 dark:text-white">فترة صلاحية الرسالة</h2>
+                                    <h2 className="text-lg font-bold text-slate-800 dark:text-white">{tForm("validityTitle")}</h2>
                                 </div>
 
                                 <div className="space-y-4">
                                     <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-xl border border-blue-100 dark:border-blue-900/50 text-xs text-blue-800 dark:text-blue-200 leading-relaxed">
-                                        يوصى بتعيين فترة صلاحية مخصصة يجب تسليم رسالة المصادقة الخاصة بك خلالها قبل انتهاء صلاحيتها. إذا لم يتم تسليم الرسالة خلال هذا الإطار الزمني، فلن يتم محاسبتك ولن يرى عميلك الرسالة.
+                                        {tForm("validityDesc")}
                                     </div>
 
                                     <div className="flex items-center justify-between">
-                                        <Label className="font-bold">تعيين فترة صلاحية مخصصة لرسالتك</Label>
+                                        <Label className="font-bold">{tForm("useCustomValidity")}</Label>
                                         <button
                                             type="button"
                                             onClick={() => setValue("useCustomValidity", !templateData.useCustomValidity)}
@@ -1242,33 +1212,33 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
 
                                     {templateData.useCustomValidity ? (
                                         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-                                            <Label className="text-xs text-slate-500">فترة الصلاحية</Label>
+                                            <Label className="text-xs text-slate-500">{tForm("validityPeriod")}</Label>
                                             <Select value={templateData.validityPeriod} onValueChange={(v) => setValue("validityPeriod", v)}>
                                                 <SelectTrigger>
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="30s">30 ثانية</SelectItem>
-                                                    <SelectItem value="1m">1 دقيقة</SelectItem>
-                                                    <SelectItem value="2m">2 دقيقة</SelectItem>
-                                                    <SelectItem value="3m">3 دقائق</SelectItem>
-                                                    <SelectItem value="5m">5 دقائق</SelectItem>
-                                                    <SelectItem value="10m">10 دقائق</SelectItem>
-                                                    <SelectItem value="15m">15 دقيقة</SelectItem>
+                                                    <SelectItem value="30s">30 {tCommon("seconds")}</SelectItem>
+                                                    <SelectItem value="1m">1 {tCommon("minute")}</SelectItem>
+                                                    <SelectItem value="2m">2 {tCommon("minutes")}</SelectItem>
+                                                    <SelectItem value="3m">3 {tCommon("minutes")}</SelectItem>
+                                                    <SelectItem value="5m">5 {tCommon("minutes")}</SelectItem>
+                                                    <SelectItem value="10m">10 {tCommon("minutes")}</SelectItem>
+                                                    <SelectItem value="15m">15 {tCommon("minutes")}</SelectItem>
                                                     {templateData.category?.toLowerCase() !== "authentication" && (
                                                         <>
-                                                            <SelectItem value="30m">30 دقيقة</SelectItem>
-                                                            <SelectItem value="1h">1 ساعة</SelectItem>
-                                                            <SelectItem value="3h">3 ساعات</SelectItem>
-                                                            <SelectItem value="6h">6 ساعات</SelectItem>
-                                                            <SelectItem value="12h">12 ساعة</SelectItem>
+                                                            <SelectItem value="30m">30 {tCommon("minutes")}</SelectItem>
+                                                            <SelectItem value="1h">1 {tCommon("hour")}</SelectItem>
+                                                            <SelectItem value="3h">3 {tCommon("hours")}</SelectItem>
+                                                            <SelectItem value="6h">6 {tCommon("hours")}</SelectItem>
+                                                            <SelectItem value="12h">12 {tCommon("hours")}</SelectItem>
                                                         </>
                                                     )}
                                                 </SelectContent>
                                             </Select>
                                         </motion.div>
                                     ) : (
-                                        <p className="text-xs text-slate-500 italic">إذا لم تقم بتعيين فترة صلاحية مخصصة، فسيتم تطبيق فترة صلاحية رسائل واتساب القياسية البالغة 10 دقائق.</p>
+                                        <p className="text-xs text-slate-500 italic">{tForm("standardValidity")}</p>
                                     )}
                                 </div>
                             </div>
@@ -1281,7 +1251,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                     <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold">
                                         {activeSubcategory.id === "UTILITY_DEFAULT" ? "4" : "3"}
                                     </div>
-                                    <h2 className="text-lg font-bold text-slate-800 dark:text-white">الأزرار</h2>
+                                    <h2 className="text-lg font-bold text-slate-800 dark:text-white">{tForm("buttons")}</h2>
                                 </div>
 
                                 <Controller
@@ -1306,7 +1276,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
 
                             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm flex flex-col">
                                 <h3 className="font-bold text-slate-800 dark:text-white mb-6 flex items-center justify-between">
-                                    معاينة حية
+                                    {tForm("livePreview")}
                                     <span className="text-xs font-normal px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-md text-slate-500">
                                         {activeSubcategory?.label || templateData.category}
                                     </span>
@@ -1343,16 +1313,16 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                     <motion.div
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-right"
+                                        className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800"
                                     >
                                         <div>
-                                            <h4 className="text-sm font-bold tracking-wider mb-2">هذا القالب جيد لـ</h4>
+                                            <h4 className="text-sm font-bold tracking-wider mb-2">{tForm("goodFor")}</h4>
                                             <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
                                                 {activeSubcategory.goodFor}
                                             </p>
                                         </div>
                                         <div>
-                                            <h4 className="text-sm font-bold tracking-wider mb-2">مناطق القالب التي يمكنك تخصيصها</h4>
+                                            <h4 className="text-sm font-bold tracking-wider mb-2">{tForm("canCustomize")}</h4>
                                             <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
                                                 {activeSubcategory.customize}
                                             </p>
@@ -1371,6 +1341,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                 />
 
                 <InternalTemplateDialog
+                    title={tForm("internalTemplates")}
                     open={isInternalDialogOpen}
                     onOpenChange={setIsInternalDialogOpen}
                     onSelectTemplate={handleMetaTemplateSelect}
@@ -1399,6 +1370,8 @@ function ToolbarButton({ icon, onClick, tooltip }) {
 
 // Sub-component for Variable Samples
 function VariableSamplesSection({ type, samples, onSampleChange }) {
+    const tCommon = useTranslations("common");
+    const t = useTranslations("whatsApp.templates.form");
     const varKeys = Object.keys(samples).sort((a, b) => Number(a) - Number(b));
 
     if (varKeys.length === 0) return null;
@@ -1410,14 +1383,14 @@ function VariableSamplesSection({ type, samples, onSampleChange }) {
             className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 space-y-4"
         >
             <div>
-                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-1">عينات المتغيرات</h4>
+                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-1">{t("variableSamples")}</h4>
                 <p className="text-xs text-slate-500 leading-relaxed">
-                    قم بتضمين عينات لجميع المتغيرات في رسالتك لمساعدة Meta في مراجعة قالبك. تذكر عدم تضمين أي معلومات حقيقية للعملاء لحماية خصوصيتهم.
+                    {t("variableSamplesDesc")}
                 </p>
             </div>
 
             <div className="space-y-3">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{type === 'header' ? 'الرأس' : 'النص'}</p>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{type === 'header' ? t("header") : t("body")}</p>
                 {varKeys.map((num) => (
                     <div key={num} className="flex gap-3 items-start group">
                         <div className="w-[80px] h-10 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-xs font-mono text-slate-400 shrink-0">
@@ -1425,7 +1398,7 @@ function VariableSamplesSection({ type, samples, onSampleChange }) {
                         </div>
                         <div className="flex-1 space-y-1">
                             <Input
-                                placeholder={`أدخل محتوى لـ {{${num}}}`}
+                                placeholder={t("enterSample", { num })}
                                 value={samples[num]}
                                 onChange={(e) => onSampleChange(num, e.target.value)}
                                 className="h-10 border-slate-200 focus:border-primary group-hover:border-slate-300 transition-colors"

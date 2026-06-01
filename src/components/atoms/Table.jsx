@@ -86,7 +86,7 @@ export function FilterField({ label, children, className, lableClass, icon: Fiel
     <div className={cn("space-y-1.5", className)}>
       {label && (
         <label className={`flex items-center gap-1.5  text-[10px] font-black uppercase tracking-widest text-muted-foreground/80  ${lableClass}`}>
-           {FieldIcon && <FieldIcon size={10} className={iconClass} />}
+          {FieldIcon && <FieldIcon size={10} className={iconClass} />}
           {label}
         </label>
       )}
@@ -791,7 +791,7 @@ function FloatingSearchInput({ searchValue, onSearchChange, onKeyDown, searchPla
           placeholder=""
           className={cn(
             "absolute inset-0 w-full h-full bg-transparent !outline-none",
-            "text-sm pr-9 pl-4 pt-0.5",
+            "text-sm ps-9 pe-4 pt-0.5",
             "rounded-xl text-foreground",
             "[&:-webkit-autofill]:bg-transparent"
           )}

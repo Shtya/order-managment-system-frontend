@@ -436,7 +436,7 @@
     "readMore": "قراءة المزيد",
     "viewAll": "عرض الكل",
     "markAsRead": "تعيين كمقروء",
-    "brand": "طلباتي تك",
+    "brand": "مدار",
     "fullscreen": "ملء الشاشة",
     "theme": "تبديل المظهر",
     "notifications": "الإشعارات",
@@ -4500,6 +4500,18 @@
     }
   },
   "common": {
+    "use": "استخدام",
+    "optional": "اختياري",
+    "seconds": "ثانية",
+    "minute": "دقيقة",
+    "minutes": "دقائق",
+    "hour": "ساعة",
+    "hours": "ساعات",
+    "languages": {
+      "ar": "العربية (Arabic)",
+      "en": "الإنجليزية (English)",
+      "en_US": "الإنجليزية (US)"
+    },
     "api": {
       "error": "فشل الطلب",
       "exportStarted": "بدأ التصدير",
@@ -6833,7 +6845,7 @@
         "label": "صلاحيات المستخدمين"
       }
     ],
-    "benefitsLabel": "لماذا طلباتي تك؟",
+    "benefitsLabel": "لماذا مدار؟",
     "benefits": [
       {
         "label": "تجربة استخدام سلسة",
@@ -6980,7 +6992,7 @@
       "suffix": ""
     },
     "subheading": "تابع الشحنات، حالات التسليم، والتحصيل لحظة بلحظة من داخل المنصة.",
-    "centerLabel": "طلباتي تك",
+    "centerLabel": "مدار",
     "companies": {
       "smsa": "SMSA",
       "aramex": "Aramex",
@@ -7153,7 +7165,7 @@
     "dashboardAlt": "لوحة تحكم المنصة"
   },
   "footer": {
-    "logo": "طلباتي تك",
+    "logo": "مدار",
     "nav": {
       "home": "الرئيسية",
       "services": "الخدمات",
@@ -7351,7 +7363,7 @@
     }
   },
   "onboarding": {
-    "brand": "طلباتي تك",
+    "brand": "مدار",
     "progress": "التقدم",
     "steps": {
       "welcome": {
@@ -7444,7 +7456,7 @@
       "finish_success": "اكتمل الإعداد! مرحباً بك 🎉",
       "finish_error": "حدث خطأ أثناء إنهاء الإعداد"
     },
-    "welcome_title": "مرحباً بك في طلباتي تك! 🎉",
+    "welcome_title": "مرحباً بك في مدار! 🎉",
     "welcome_sub": "سنأخذ منك دقائق قليلة لإعداد نظامك",
     "welcome_desc": "سنساعدك في اختيار الخطة المناسبة، وإضافة بيانات شركتك، وربط متجرك وشركة الشحن لتبدأ الاستقبال فوراً.",
     "welcome_btn": "لنبدأ الإعداد",
@@ -7554,7 +7566,7 @@
       "placeholders": {
         "select_country": "اختر الدولة",
         "select_currency": "اختر العملة",
-        "name": "مثال: شركة طلباتي تك",
+        "name": "مثال: شركة مدار",
         "optional": "اختياري",
         "address": "العنوان بالتفصيل (اختياري)"
       },
@@ -7675,7 +7687,7 @@
     },
     "finished": {
       "loading": "جارٍ إنهاء الإعداد...",
-      "success": "اكتمل الإعداد بنجاح! مرحباً بك في طلباتي تك 🎉",
+      "success": "اكتمل الإعداد بنجاح! مرحباً بك في مدار 🎉",
       "title": "اكتمل الإعداد! 🚀",
       "desc": "نظامك الآن جاهز تماماً لاستقبال الطلبات، تتبع الشحنات، وإدارة عملك بكفاءة عالية.",
       "goBtn": "الذهاب للوحة التحكم",
@@ -8112,6 +8124,11 @@
       "appearance": {
         "label": "المظهر",
         "description": "السمة والعرض"
+      },
+      "whatsappTab": {
+        "accountSettings": "إعدادات الحساب",
+        "defaultAccountDescription": "تحديد الرقم الافتراضي لعمليات الإرسال",
+        "defaultAccountLabel": "الرقم الافتراضي للإرسال"
       }
     },
     "company": {
@@ -9302,6 +9319,9 @@
   "whatsApp": {
     "accounts": {
       "title": "حسابات الواتساب",
+      "selectPlaceholder": "اختر رقم الهاتف",
+      "allAccounts": "جميع الحسابات",
+      "defaultAccountLabel": "الرقم الافتراضي للإرسال",
       "breadcrumb": {
         "home": "الرئيسية",
         "whatsapp": "واتساب",
@@ -9405,6 +9425,16 @@
       }
     },
     "templates": {
+      "dialog": {
+        "title": "قوالب الواتساب المعتمدة",
+        "searchPlaceholder": "ابحث باسم القالب...",
+        "filterByAccount": "تصفية حسب الحساب",
+        "allAccounts": "جميع الحسابات",
+        "selectLanguage": "اختر اللغة",
+        "fetchError": "فشل في جلب القوالب",
+        "noTemplatesFound": "لا توجد قوالب تطابق معايير البحث."
+      },
+
       "title": "قوالب الواتساب",
       "breadcrumb": {
         "home": "الرئيسية",
@@ -9412,6 +9442,9 @@
         "templates": "القوالب"
       },
       "preview": {
+        "allOptions": "كل الخيارات",
+        "actionButtonPlaceholder": "زر إجراء...",
+        "quickReplyPlaceholder": "رد سريع...",
         "title": "معاينة القالب",
         "showExamples": "عرض الأمثلة",
         "showTemplate": "عرض القالب",
@@ -9453,7 +9486,73 @@
       "categories": {
         "authentication": "المصادقة",
         "marketing": "التسويق",
-        "utility": "الخدمات"
+        "utility": "الخدمات",
+        "all": "الكل"
+      },
+      "subcategories": {
+        "MARKETING_DEFAULT": {
+          "label": "افتراضي",
+          "description": "أرسل رسائل تحتوي على وسائط وأزرار مخصصة لإشراك عملائك.",
+          "goodFor": "رسائل الترحيب، العروض الترويجية، الكوبونات، النشرات الإخبارية، الإعلانات",
+          "customize": "الوسائط، الرأس، النص، التذييل، الأزرار"
+        },
+        "MARKETING_CALL_PERMISSIONS": {
+          "label": "طلب أذونات الاتصال",
+          "description": "اسأل العملاء عما إذا كان يمكنك الاتصال بهم على واتساب",
+          "goodFor": "إدارة الموافقة، طلبات الدعم الهاتفي",
+          "customize": "النص، التذييل، الأزرار"
+        },
+        "UTILITY_DEFAULT": {
+          "label": "افتراضي",
+          "description": "أرسل رسائل حول طلب موجود أو حساب.",
+          "goodFor": "تحديثات الطلب، تنبيهات الحساب، إشعارات الشحن، طلبات التقييم",
+          "customize": "الرأس، النص، التذييل، الأزرار"
+        },
+        "UTILITY_CALL_PERMISSIONS": {
+          "label": "طلب أذونات الاتصال",
+          "description": "اسأل العملاء عما إذا كان يمكنك الاتصال بهم على واتساب",
+          "goodFor": "إدارة الموافقة، توفر الدعم",
+          "customize": "النص، التذييل، الأزرار"
+        },
+        "AUTHENTICATION_OTP": {
+          "label": "رمز التحقق (OTP)",
+          "description": "أرسل رموزًا للتحقق من عملية شراء أو تسجيل دخول.",
+          "goodFor": "رموز التحقق، تنبيهات الأمان، محاولات تسجيل الدخول",
+          "customize": "النص (تنسيق ثابت)، التذييل"
+        }
+      },
+      "industries": {
+        "title": "قطاعات الصناعة (Industries)",
+        "E_COMMERCE": "التجارة الإلكترونية",
+        "FINANCIAL_SERVICES": "الخدمات المالية"
+      },
+      "usecases": {
+        "ORDER_CONFIRMATION": "تأكيد الطلب",
+        "DELIVERY_CONFIRMATION": "تأكيد التوصيل",
+        "DELIVERY_UPDATE": "تحديث التوصيل",
+        "DELIVERY_FAILED": "فشل التوصيل",
+        "SHIPMENT_CONFIRMATION": "تأكيد الشحن",
+        "ORDER_PICK_UP": "استلام الطلب",
+        "ORDER_DELAY": "تأخير الطلب",
+        "ORDER_ACTION_NEEDED": "إجراء مطلوب للطلب",
+        "RETURN_CONFIRMATION": "تأكيد الإرجاع",
+        "CUSTOMER_FEEDBACK": "آراء العملاء",
+        "FEEDBACK_SURVEY": "استبيان رضا العملاء",
+        "PAYMENT_CONFIRMATION": "تأكيد الدفع",
+        "PAYMENT_ACTION_REQUIRED": "دفع مطلوب",
+        "PAYMENT_DUE_REMINDER": "تذكير بموعد الدفع",
+        "PAYMENT_OVERDUE": "تأخر السداد",
+        "PAYMENT_REJECT_FAIL": "فشل/رفض الدفع",
+        "PAYMENT_SCHEDULED": "جدولة الدفع",
+        "AUTO_PAY_REMINDER": "تذكير بالدفع التلقائي",
+        "LOW_BALANCE_WARNING": "تحذير انخفاض الرصيد",
+        "TRANSACTION_ALERT": "تنبيه المعاملات",
+        "FRAUD_ALERT": "تنبيه احتيال",
+        "STATEMENT_AVAILABLE": "كشف الحساب متاح",
+        "STATEMENT_ATTACHMENT": "مرفق كشف الحساب",
+        "RECEIPT_ATTACHMENT": "مرفق الإيصال",
+        "ACCOUNT_CREATION_CONFIRMATION": "تأكيد إنشاء الحساب",
+        "ORDER_OR_TRANSACTION_CANCEL": "إلغاء المعاملة"
       },
       "statuses": {
         "pending": "قيد الانتظار",
@@ -9489,6 +9588,120 @@
         "language": "اللغة"
       },
       "form": {
+        "title": "إنشاء قالب واتساب",
+        "editTitle": "تعديل قالب واتساب",
+        "templateName": "اسم القالب",
+        "templateNamePlaceholder": "أدخل اسم القالب (مثلاً order_confirmation)",
+        "language": "اللغة",
+        "category": "الفئة",
+        "subcategory": "الفئة الفرعية",
+        "header": "الرأس",
+        "body": "النص الأساسي",
+        "footer": "التذييل",
+        "buttons": "الأزرار",
+        "save": "حفظ القالب",
+        "submit": "إرسال للمراجعة (Meta)",
+        "cancel": "إلغاء",
+        "headerType": "نوع الرأس",
+        "headerText": "نص الرأس",
+        "headerTextPlaceholder": "أدخل نص الرأس...",
+        "headerTypes": {
+          "text": "نص",
+          "image": "صورة",
+          "video": "فيديو",
+          "document": "مستند",
+          "location": "موقع"
+        },
+        "footerText": "نص التذييل",
+        "footerTextPlaceholder": "أدخل نص التذييل (اختياري)...",
+        "bodyPlaceholder": "أدخل نص الرسالة...",
+        "variable": "متغير",
+        "addVariable": "إضافة متغير",
+        "variableSample": "مثال للمتغير {var}",
+        "variableSamplePlaceholder": "أدخل قيمة تجريبية...",
+        "otpCopyButtonText": "نص زر نسخ الرمز",
+        "otpCopyButtonTextPlaceholder": "مثلاً: نسخ الرمز",
+        "validityPeriod": "فترة الصلاحية",
+        "useCustomValidity": "تعيين فترة صلاحية مخصصة لرسالتك",
+        "addSecurityRecommendation": "إضافة توصية أمنية",
+        "authExpirationTime": "إضافة وقت انتهاء صلاحية الرمز",
+        "authOtpBody": "{{1}} هو رمز التحقق الخاص بك.",
+        "authOtpSecurity": " لحمايتك، لا تشارك هذا الرمز.",
+        "authOtpFooter": "تنتهي صلاحية الرمز خلال {minutes} دقائق.",
+        "bodyPlaceholderPreview": "سيظهر نص رسالتك هنا...",
+        "expirationLabel": "وقت انتهاء الصلاحية (بالدقائق)",
+        "minutesRange": "من 1 إلى 90 دقيقة",
+        "authMethod": "طريقة المصادقة",
+        "authDeliverySetup": "إعداد تسليم الرمز",
+        "copyCode": "نسخ الرمز",
+        "copyCodeDesc": "مصادقة أساسية مع إعداد سريع. يقوم عملاؤك بنسخ الرمز ولصقه في تطبيقك.",
+        "authContent": "محتوى رسالة المصادقة",
+        "authContentDesc": "لا يمكن تعديل محتوى قوالب رسائل المصادقة. يمكنك إضافة محتوى إضافي من الخيارات أدناه.",
+        "validityTitle": "فترة صلاحية الرسالة",
+        "validityDesc": "يوصى بتعيين فترة صلاحية مخصصة يجب تسليم رسالة المصادقة الخاصة بك خلالها قبل انتهاء صلاحيتها. إذا لم يتم تسليم الرسالة خلال هذا الإطار الزمني، فلن يتم محاسبتك ولن يرى عميلك الرسالة.",
+        "standardValidity": "إذا لم تقم بتعيين فترة صلاحية مخصصة، فسيتم تطبيق فترة صلاحية رسائل واتساب القياسية البالغة 10 دقائق.",
+        "livePreview": "معاينة حية",
+        "goodFor": "هذا القالب جيد لـ",
+        "canCustomize": "مناطق القالب التي يمكنك تخصيصها",
+        "variableSamples": "عينات المتغيرات",
+        "variableSamplesDesc": "قم بتضمين عينات لجميع المتغيرات في رسالتك لمساعدة Meta في مراجعة قالبك. تذكر عدم تضمين أي معلومات حقيقية للعملاء لحماية خصوصيتهم.",
+        "enterSample": "أدخل محتوى لـ {{num}}",
+        "optional": "اختياري",
+        "none": "بلا",
+        "goodForLabel": "مناسب لـ:",
+        "customize": "تخصيص:",
+        "chooseCategory": "اختر الفئة",
+        "sections": {
+          "basics": "الفئة والأساسيات",
+          "content": "محتوى القالب"
+        },
+        "mediaUpload": {
+          "title": "رفع {type}",
+          "dragAndDrop": "اسحب ال{type} وأفلته أو اختر ملفًا",
+          "maxSize": "أقصى حجم للملف: 50 ميجابايت",
+          "uploadButton": "رفع {type}",
+          "policyNote": "يرجى التأكد من أن ال{type} التي ترسلها تتوافق مع سياسة شروط الخدمة الخاصة بنا.",
+          "types": {
+            "image": "صورة",
+            "video": "فيديو",
+            "document": "مستند",
+            "file": "ملف"
+          }
+        },
+        "buttonsBuilder": {
+          "title": "الأزرار",
+          "add": "إضافة زر",
+          "limitReached": "تم الوصول للحد الأقصى لهذا النوع",
+          "type": "نوع الإجراء",
+          "text": "نص الزر",
+          "textPlaceholder": "أدخل نص الزر...",
+          "urlType": "نوع الرابط",
+          "url": "الرابط",
+          "urlPlaceholder": "https://example.com",
+          "urlExample": "إضافة رابط عينة",
+          "urlExampleInfo": "لمساعدتنا في مراجعة قالب رسالتك، يرجى إضافة مثال لرابط الموقع. لا تستخدم معلومات حقيقية للعملاء.",
+          "urlExamplePlaceholder": "أدخل الرابط الكامل مع المثال...",
+          "dynamicUrlError": "يجب أن يتضمن الرابط المتغير {{1}}",
+          "phone": "رقم الهاتف",
+          "phonePlaceholder": "أدخل رقم الهاتف...",
+          "phoneRequired": "تحتاج لإدخال رقم هاتف. يرجى إضافة رقم هاتف صالح.",
+          "country": "الدولة",
+          "callDays": "نشط لمدة (أيام)",
+          "day": "يوم",
+          "days": "أيام",
+          "limitDesc": "أضف حتى {total} أزرار لمساعدة العملاء على اتخاذ إجراءات.",
+          "types": {
+            "CUSTOM": "مخصص (رد سريع)",
+            "VISIT_WEBSITE": "زيارة موقع ويب",
+            "PHONE_NUMBER": "اتصال برقم هاتف",
+            "WHATSAPP_CALL": "اتصال عبر واتساب"
+          },
+          "urlTypes": {
+            "Static": "ثابت",
+            "Dynamic": "ديناميكي"
+          },
+          "urlExampleRequired": "يرجى إدخال رابط موقع ويب صالح"
+        },
         "breadcrumbs": {
           "create": "إنشاء قالب",
           "edit": "تعديل قالب"
@@ -9536,6 +9749,11 @@
         }
       },
       "messages": {
+          "createSuccess": "تم إنشاء القالب بنجاح",
+        "createSuccessSuper": "تم إنشاء القالب (مدير النظام)",
+        "updateSuccess": "تم تحديث القالب بنجاح",
+        "updateSuccessSuper": "تم تحديث القالب (مدير النظام)",
+        "fetchError": "فشل في جلب القوالب",
         "exportStarted": "جاري تصدير القوالب...",
         "exportSuccess": "تم تنزيل الملف بنجاح",
         "deleteSuccess": "تم حذف القالب بنجاح",
@@ -9545,6 +9763,16 @@
         "saveError": "تعذر حفظ القالب",
         "loadingTemplate": "جاري تحميل القالب…",
         "templateNotFound": "القالب غير موجود"
+      },
+      "metaDialog": {
+        "title": "  اختر قالب جاهز من Meta",
+        "searchPlaceholder": "ابحث باسم القالب...",
+        "selectLanguage": "اختر اللغة",
+        "loading": "جاري مزامنة القوالب الفعّالة...",
+        "error": "حدث خطأ أثناء جلب كتالوج القوالب: {error}",
+        "retry": " إعادة المحاولة",
+        "noTemplates": "لا توجد قوالب متاحة تطابق معايير الفلترة الحالية.",
+        "matchNote": "تأكد من مطابقة حالة الاستخدام مع الفئة العلوية المختارة."
       }
     },
     "automations": {
@@ -9939,6 +10167,7 @@
     "body": "نص الرسالة",
     "noResults": "لا توجد محادثات",
     "noMessagesFound": "لم يتم العثور على رسائل",
-    "noResultsFound": "لا توجد نتائج تطابق عوامل التصفية"
+    "noResultsFound": "لا توجد نتائج تطابق عوامل التصفية",
+    "noPreviewAvailable": "لا توجد معاينة"
   }
 }

@@ -422,7 +422,8 @@ export const ConversationProvider = ({ children }) => {
                     : isMedia
                         ? { id: mediaId, caption: msg.caption, ...(isDoc ? { filename: msg.file?.name } : {}) }
                         : content[msg.type],
-                context: replyToWamid ? { message_id: replyToWamid } : undefined
+                context: replyToWamid ? { message_id: replyToWamid } : undefined,
+                metadata: {  ...metadata }
             };
 
             await api.post("/whatsapp/messages/send", payload, {

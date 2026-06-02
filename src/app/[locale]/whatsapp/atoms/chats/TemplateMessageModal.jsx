@@ -29,6 +29,7 @@ import { Input } from "@/components/ui/input";
 import { extractVariableNames } from "@/utils/whatsapp-healper";
 import { cn } from "@/utils/cn";
 import { InternalTemplateDialog } from "../InternalTemplateDialog";
+import { avatarSrc } from "@/components/atoms/UserSelect";
 
 export default function TemplateMessageModal() {
     const t = useTranslations("chats");
@@ -145,6 +146,15 @@ export default function TemplateMessageModal() {
                             type: "text",
                             text: templateMessage.headerVariables[num].value
                         }))
+                    }] : []),
+                    ...(templateMessage.templateData?.headerType === 'IMAGE' || templateMessage.templateData?.headerType === 'VIDEO' || templateMessage.templateData?.headerType === 'DOCUMENT' ? [{
+                        type: "header",
+                        parameters: [{
+                            type: templateMessage.templateData.headerType.toLowerCase(),
+                            [templateMessage.templateData.headerType.toLowerCase()]: {
+                                link: avatarSrc(templateMessage.templateData.headerUrl)
+                            }
+                        }]
                     }] : []),
                     {
                         type: "body",

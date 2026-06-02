@@ -73,7 +73,7 @@ const IntegrationProgressModal = ({ isOpen, onClose, steps }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={!isCompleted && !isFailed ? undefined : onClose}>
-      <DialogContent className="sm:max-w-[450px]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Loader2 className={cn("w-5 h-5 animate-spin text-primary", (isCompleted || isFailed) && "hidden")} />
@@ -87,6 +87,7 @@ const IntegrationProgressModal = ({ isOpen, onClose, steps }) => {
         <div className="space-y-4 py-4">
           {stepKeys.map((key) => {
             const step = steps[key] || { status: 'pending' };
+
             return (
               <div key={key} className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 flex-1 min-w-0">

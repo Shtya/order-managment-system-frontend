@@ -260,12 +260,21 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
         if (isEdit) return;
         setValue("accountId", defaultWhatsAppAccountId);
     }, [defaultWhatsAppAccountId]);
+    const templateData = watch();
+    // Helper to get active category and subcategory objects
+    const activeCategory = categories.find(c => c.id === templateData.category);
+
+    const selectedCategory = activeCategory?.subcategories.find(s => s.id === templateData.subcategory);
+
+    const activeSubcategory = selectedCategory || activeCategory?.subcategories?.[0];
+
     useEffect(() => {
+
         if (!isEdit || !initialTemplate) return;
         const tpl = initialTemplate;
         const cfg = tpl.templateConfig || {};
         const uiCat = apiCategoryToUi(tpl.category);
-        const uiSub = apiSubToUiSub(tpl.subCategory, tpl.category, cfg);
+        const uiSub = apiSubToUiSub(tpl.subCategory, tpl.category, cfg) || activeSubcategory?.id;
         const body = cfg.bodyText || "";
         const bodyMatches = getVariableMatches(body);
         const headerMatches = getVariableMatches(cfg.headerText || "");
@@ -285,6 +294,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
             ...btn,
             id: btn.id || `btn-${i}-${Math.random().toString(36).slice(2, 9)}`,
         }));
+
         reset({
             accountId: tpl.accountId || "",
             name: tpl.name || "",
@@ -306,9 +316,9 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
             otpCopyButtonText: cfg.otpCopyButtonText ?? "",
         });
         setHeaderMediaFile(null);
-    }, [isEdit, initialTemplate, reset]);
+    }, [isEdit, initialTemplate, reset, activeSubcategory]);
 
-    const templateData = watch();
+
 
     const previewHeaderUrl = useMemo(() => {
         const u = templateData.headerUrl;
@@ -508,9 +518,7 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
     };
 
 
-    // Helper to get active category and subcategory objects
-    const activeCategory = categories.find(c => c.id === templateData.category);
-    const activeSubcategory = activeCategory?.subcategories.find(s => s.id === templateData.subcategory);
+
 
     // Derived Body Text for Preview (especially for Authentication)
     const getPreviewBody = () => {

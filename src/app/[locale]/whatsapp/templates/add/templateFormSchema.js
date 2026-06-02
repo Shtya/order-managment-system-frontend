@@ -31,7 +31,7 @@ export function apiCategoryToUi(apiCat) {
     utility: "UTILITY",
     authentication: "AUTHENTICATION",
   };
-  return m[String(apiCat || "").toLowerCase()] || "MARKETING";
+  return m[String(apiCat || "").toLowerCase()] || "UTILITY";
 }
 
 export function apiSubToUiSub(apiSub, apiCategory, templateConfig) {
@@ -46,15 +46,17 @@ export function apiSubToUiSub(apiSub, apiCategory, templateConfig) {
   if (cat === "utility" && (sub === "order_status" || sub === "order_details")) {
     return "UTILITY_DEFAULT";
   }
+
+
   const map = {
     order_details: "MARKETING_DEFAULT",
     rich_order_status: "MARKETING_DEFAULT",
     order_status: "UTILITY_DEFAULT",
     fraud_alert: "AUTHENTICATION_OTP",
-    booking_status: "MARKETING_DEFAULT",
+    booking_status: "UTILITY_DEFAULT",
     flight_delay_and_gate_change_alert: "UTILITY_DEFAULT",
   };
-  return map[sub] || "MARKETING_DEFAULT";
+  return map[sub];
 }
 
 export function mapUiCategoryToApi(ui) {

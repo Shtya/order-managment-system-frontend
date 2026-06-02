@@ -348,11 +348,17 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
 
                 // Map actual values from components to examples for the preview
                 const dynamicExamples = {};
+                let headerMediaUrl = templateConfig.headerUrl;
+
                 if (content.template?.components) {
                     content.template.components.forEach(comp => {
                         if (comp.type === "header" && comp.parameters) {
                             comp.parameters.forEach((param, idx) => {
-                                dynamicExamples[idx + 1] = param.text;
+                                if (param.type === "text") {
+                                    dynamicExamples[idx + 1] = param.text;
+                                } else if (["image", "video", "document"].includes(param.type?.toLowerCase())) {
+                                    headerMediaUrl = param[param.type]?.link || headerMediaUrl;
+                                }
                             });
                         } else if (comp.type === "body" && comp.parameters) {
                             comp.parameters.forEach((param, idx) => {
@@ -371,6 +377,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                             hasHeader={false}
                             template={{
                                 ...templateConfig,
+                                headerUrl: headerMediaUrl,
                                 language: templateMetadata.language || "en",
                                 subCategory: templateMetadata.subCategory,
                                 examples: dynamicExamples // Use the actual sent values as "examples"

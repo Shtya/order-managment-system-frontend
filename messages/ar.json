@@ -9434,7 +9434,6 @@
         "fetchError": "فشل في جلب القوالب",
         "noTemplatesFound": "لا توجد قوالب تطابق معايير البحث."
       },
-
       "title": "قوالب الواتساب",
       "breadcrumb": {
         "home": "الرئيسية",
@@ -9645,7 +9644,7 @@
         "canCustomize": "مناطق القالب التي يمكنك تخصيصها",
         "variableSamples": "عينات المتغيرات",
         "variableSamplesDesc": "قم بتضمين عينات لجميع المتغيرات في رسالتك لمساعدة Meta في مراجعة قالبك. تذكر عدم تضمين أي معلومات حقيقية للعملاء لحماية خصوصيتهم.",
-        "enterSample": "أدخل محتوى لـ {{num}}",
+        "enterSample": "أدخل محتوى لـ {num}",
         "optional": "اختياري",
         "none": "بلا",
         "goodForLabel": "مناسب لـ:",
@@ -9749,7 +9748,7 @@
         }
       },
       "messages": {
-          "createSuccess": "تم إنشاء القالب بنجاح",
+        "createSuccess": "تم إنشاء القالب وإرساله للمراجعة",
         "createSuccessSuper": "تم إنشاء القالب (مدير النظام)",
         "updateSuccess": "تم تحديث القالب بنجاح",
         "updateSuccessSuper": "تم تحديث القالب (مدير النظام)",
@@ -9758,8 +9757,6 @@
         "exportSuccess": "تم تنزيل الملف بنجاح",
         "deleteSuccess": "تم حذف القالب بنجاح",
         "fetchFailed": "فشل تحميل القوالب",
-        "createSuccess": "تم إنشاء القالب وإرساله للمراجعة",
-        "updateSuccess": "تم تحديث القالب بنجاح",
         "saveError": "تعذر حفظ القالب",
         "loadingTemplate": "جاري تحميل القالب…",
         "templateNotFound": "القالب غير موجود"

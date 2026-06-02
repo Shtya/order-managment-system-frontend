@@ -9606,7 +9606,7 @@
         "canCustomize": "Template areas you can customize:",
         "variableSamples": "Variable Samples",
         "variableSamplesDesc": "Include samples for all variables in your message to help Meta review your template. Remember not to include any real customer information to protect their privacy.",
-        "enterSample": "Enter content for {{num}}",
+        "enterSample": "Enter content for {num}",
         "optional": "Optional",
         "none": "None",
         "goodForLabel": "Good for:",
@@ -9710,7 +9710,7 @@
         }
       },
       "messages": {
-            "createSuccess": "Template created successfully",
+        "createSuccess": "Template created and sent for review",
         "createSuccessSuper": "Template created (SuperAdmin)",
         "updateSuccess": "Template updated successfully",
         "updateSuccessSuper": "Template updated (SuperAdmin)",
@@ -9719,8 +9719,6 @@
         "exportSuccess": "File downloaded successfully",
         "deleteSuccess": "Template deleted successfully",
         "fetchFailed": "Failed to load templates",
-        "createSuccess": "Template created and sent for review",
-        "updateSuccess": "Template updated successfully",
         "saveError": "Could not save the template",
         "loadingTemplate": "Loading template…",
         "templateNotFound": "Template not found"

@@ -484,6 +484,14 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                     </div>
                 );
 
+            case "button":
+                return (
+                    <p className="text-sm whitespace-pre-wrap">
+                        {content.button?.text || "Button Clicked"}
+                    </p>
+
+                );
+
             default:
                 return (
                     <div className="flex items-center gap-2 italic text-gray-400 text-xs">

@@ -18,6 +18,7 @@ import { BannerSkeleton, Bone } from "@/components/atoms/BannerSkeleton";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import ActionButtons from "@/components/atoms/Actions";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import BarcodeCell from "@/components/atoms/BarcodeCell";
@@ -108,6 +109,7 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 	const t = useTranslations("products");
 	const requestIdRef = useRef(0);
 	const { formatCurrency } = usePlatformSettings();
+	const { reservedEnabled, calculateAvailableStock } = useOrdersSettings();
 
 	const [loading, setLoading] = useState(false);
 	const [pager, setPager] = useState({
@@ -340,7 +342,7 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 					</Badge>
 				},
 			},
-			{
+			...(reservedEnabled ? [{
 				key: "reservedItems",
 				header: t("stats.reservedItems"),
 				className: "min-w-[120px]",
@@ -357,7 +359,7 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 						{resv}
 					</Badge>
 				},
-			},
+			}] : []),
 			{
 				key: "remainingStock",
 				header: t("stats.remaingStock"),
@@ -523,7 +525,7 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 				className: "min-w-[120px]",
 				cell: (row) => (
 					<div className="inline-flex items-center gap-2 text-gray-500 dark:text-slate-300 text-sm">
-						<CalendarDays size={14} className="text-gray-400 dark:text-slate-500" />	
+						<CalendarDays size={14} className="text-gray-400 dark:text-slate-500" />
 						{row.created_at ? new Date(row.created_at).toLocaleDateString("en-US") : na}
 					</div>
 				)
@@ -601,7 +603,7 @@ export default function useProductsTab({ setExternalModal, searchDebounced, filt
 				)
 			}
 		];
-	}, [router, t, onAskDelete, onOpenView, formatCurrency, activetab, pager.per_page, selectedProducts, openProductOrders]);
+	}, [reservedEnabled, router, t, onAskDelete, onOpenView, formatCurrency, activetab, pager.per_page, selectedProducts, openProductOrders]);
 
 	return { loading, pager, columns, fetchData, buildQueryParams, printModal, setPrintModal, productOrdersModal, setProductOrdersModal };
 }
@@ -894,6 +896,7 @@ function toAbsUrl(url) {
 
 export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 	const t = useTranslations("products");
+	const { calculateAvailableStock, reservedEnabled } = useOrdersSettings();
 	const na = t("common.na");
 	const { formatCurrency } = usePlatformSettings();
 	const images = Array.isArray(product?.images) ? product.images : [];
@@ -1073,12 +1076,12 @@ export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 								</div>
 
 								<div className="flex flex-wrap gap-2">
-									<Badge className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+									{reservedEnabled && <Badge className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
 										{t("common.onHand")}: {totalStock}
-									</Badge>
-									<Badge className="rounded-full bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-200">
+									</Badge>}
+									{reservedEnabled && <Badge className="rounded-full bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-200">
 										{t("common.reserved")}: {totalReserved}
-									</Badge>
+									</Badge>}
 									<Badge className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200">
 										{t("common.available")}: {totalAvailable}
 									</Badge>
@@ -1110,7 +1113,7 @@ export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 											<div className="divide-y">
 												{skus.map((s) => {
 													const attrs = s?.attributes ? Object.entries(s.attributes) : [];
-													const avail = s?.available ?? Math.max(0, (s?.stockOnHand ?? 0) - (s?.reserved ?? 0));
+													const avail = s?.available ?? calculateAvailableStock(s?.stockOnHand, s?.reserved);
 													return (
 														<div key={s.id} className="grid grid-cols-12 px-4 py-3 text-sm bg-white dark:bg-slate-900 items-center">
 
@@ -1164,12 +1167,12 @@ export function ProductViewModal({ open, onOpenChange, product, viewLoading }) {
 															{/* Stock info */}
 															{/* 3. تغيير flex-wrap إلى flex-nowrap لضمان بقائها في سطر واحد */}
 															<div className="col-span-3 flex items-center justify-center gap-2 flex-nowrap">
-																<Badge className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap shrink-0">
+																{reservedEnabled && <Badge className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap shrink-0">
 																	{t("common.onHand")}: {s.stockOnHand ?? 0}
-																</Badge>
-																<Badge className="rounded-full bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-200 whitespace-nowrap shrink-0">
+																</Badge>}
+																{reservedEnabled && <Badge className="rounded-full bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-200 whitespace-nowrap shrink-0">
 																	{t("common.reserved")}: {s.reserved ?? 0}
-																</Badge>
+																</Badge>}
 																<Badge className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200 whitespace-nowrap shrink-0">
 																	{t("common.available")}: {avail}
 																</Badge>

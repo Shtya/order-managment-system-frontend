@@ -78,7 +78,7 @@ export default function TemplateMessageModal() {
                 };
             }
         });
-
+        
         setTemplateMessage({
             templateId: template.id,
             accountId: template.accountId,

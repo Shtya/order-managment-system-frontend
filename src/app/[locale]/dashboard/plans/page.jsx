@@ -70,6 +70,7 @@ import PageHeader from "@/components/atoms/Pageheader";
 import { Checkbox } from "@/components/ui/checkbox";
 import FeaturesTab from "./tabs/FeaturesTab";
 import UserFeaturesTab from "./tabs/UserFeaturesTab";
+import { dollorSign } from "@/utils/healpers";
 
 /** =========================
  * Tiny Spinner
@@ -1090,7 +1091,7 @@ function EditablePlanCard({
 											{t("manageSubscription.fields.notAllowed")}
 										</span>
 									) : (
-										`${plan.extraOrderFee} ${t("planCard.currency")}`
+										`${plan.extraOrderFee} ${dollorSign}`
 									)}
 								</span>
 							</div>

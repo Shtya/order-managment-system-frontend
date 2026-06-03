@@ -28,6 +28,7 @@ export function OrdersSettingsProvider({ children }) {
     notifyLowStock: false,
     notifyMarketing: false,
     stockDeductionStrategy: "on_shipment",
+    reservedEnabled: false,
     workingHours: { enabled: true, start: "09:00", end: "18:00" },
     orderFlowPath: "warehouse", // Options: 'warehouse' or 'shipping'
     storeOrderSkuFallback: true,
@@ -92,6 +93,8 @@ export function OrdersSettingsProvider({ children }) {
           notifyMarketing: data.notifyMarketing ?? prev.notifyMarketing,
           stockDeductionStrategy:
             data.stockDeductionStrategy ?? prev.stockDeductionStrategy,
+          reservedEnabled:
+            data.reservedEnabled ?? prev.reservedEnabled ?? false,
           orderFlowPath: data.orderFlowPath ?? prev.orderFlowPath,
           storeOrderSkuFallback:
             data.storeOrderSkuFallback ?? prev.storeOrderSkuFallback ?? true,
@@ -238,11 +241,21 @@ export function OrdersSettingsProvider({ children }) {
     }
   };
   const isDirectShippingEnabled = savedSettings?.orderFlowPath === "shipping";
+
+  const calculateAvailableStock = (stockOnHand, reserved) => {
+    const isReservedEnabled = settings?.reservedEnabled ?? false;
+    if (isReservedEnabled) {
+      return Math.max(0, (Number(stockOnHand) ?? 0) - (Number(reserved) ?? 0));
+    }
+    return Math.max(0, Number(stockOnHand) ?? 0);
+  };
+
   // القيم التي سيتم مشاركتها
   const value = {
     settings,
     isDirectShippingEnabled,
     staticSettings: savedSettings,
+    reservedEnabled: settings?.reservedEnabled ?? false,
     loading,
     saving,
     patch,
@@ -250,6 +263,7 @@ export function OrdersSettingsProvider({ children }) {
     handleSave,
     saveSetting,
     toggleCode,
+    calculateAvailableStock,
   };
 
   return (

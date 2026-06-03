@@ -14,6 +14,7 @@ import { useRouter } from "@/i18n/navigation";
 import toast from "react-hot-toast";
 import { Textarea } from "@/components/ui/textarea";
 import api from "@/utils/api";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { ProductSkuSearchPopover } from "@/components/molecules/ProductSkuSearchPopover";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -372,6 +373,7 @@ function logOrderChanges(originalOrder, editedOrder) {
 // ─── PAGE ROOT ─────────────────────────────────────────────────────────────
 export default function OrderConfirmationWorkPage() {
   const t = useTranslations("orders-work");
+  const { calculateAvailableStock } = useOrdersSettings();
   const router = useRouter();
   const locale = useLocale();
   const isRtl = locale?.startsWith("ar");
@@ -483,7 +485,7 @@ export default function OrderConfirmationWorkPage() {
     setEditedOrder(prev => recalc({
       ...prev, items: prev.items.map(i => {
         if (i.id ? i.id === item.id : i.variantId === item.variantId) {
-          const stock = (i.variant?.stockOnHand ?? 0) - (i.variant?.reserved ?? 0);
+          const stock = calculateAvailableStock(i.variant?.stockOnHand, i.variant?.reserved);
           const currentQty = i.quantity || 0;
           let nextQty = currentQty + delta;
           if (nextQty < 1) nextQty = 1;
@@ -873,7 +875,7 @@ function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAddi
                       {items.map((item, idx) => {
                         const prod = item.variant?.product;
                         const attrs = item.variant?.attributes || {};
-                        const stock = (item.variant?.stockOnHand ?? 0) - (item.variant?.reserved ?? 0);
+                        const stock = calculateAvailableStock(item.variant?.stockOnHand, item.variant?.reserved);
                         const low = stock < 5;
                         return (
                           <motion.tr key={item.id || idx} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: idx * .035 }}>
@@ -1485,6 +1487,7 @@ function ActionBar({ order, allowedStatuses, changingStatus, selStatusId, isLock
 // ─── UPSELL MODAL ──────────────────────────────────────────────────────────
 export function UpsellModal({ isOpen, onClose, product: upProduct, handleSelectSku, selectedSkus, isRtl }) {
   const [product, setProduct] = useState(null);
+  const { calculateAvailableStock, reservedEnabled } = useOrdersSettings();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { formatCurrency } = usePlatformSettings();
@@ -1591,7 +1594,7 @@ export function UpsellModal({ isOpen, onClose, product: upProduct, handleSelectS
                         <tbody className="divide-y">
                           {skus.map((s) => {
                             const attrs = s?.attributes ? Object.entries(s.attributes) : [];
-                            const avail = Math.max(0, (s?.stockOnHand ?? 0) - (s?.reserved ?? 0));
+                            const avail = calculateAvailableStock(s?.stockOnHand, s?.reserved);
                             const isAdded = selectedSkus.some(sel => sel.id === s.id);
 
                             return (
@@ -1633,7 +1636,7 @@ export function UpsellModal({ isOpen, onClose, product: upProduct, handleSelectS
                                     <span className={cn("text-xs font-bold", avail > 0 ? "text-emerald-600" : "text-red-600")}>
                                       {avail} {t("items")}
                                     </span>
-                                    {s.reserved > 0 && <span className="text-[10px] text-orange-500 font-medium">({s.reserved} {isRtl ? "محجوز" : "Reserved"})</span>}
+                                    {s.reserved > 0 && reservedEnabled && <span className="text-[10px] text-orange-500 font-medium">({s.reserved} {isRtl ? "محجوز" : "Reserved"})</span>}
                                   </div>
                                 </td>
                                 <td className="px-4 py-3 text-end">

@@ -30,6 +30,7 @@ import { usePathname, useRouter } from "@/i18n/navigation";
 import SubscriptionsTab from "../dashboard/plans/tabs/subscriptionsTab";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { useAuth } from "@/context/AuthContext";
+import { dollorSign } from "@/utils/healpers";
 
 /* ─────────────────────────────────────────────────────────
    DESIGN TOKENS
@@ -424,7 +425,7 @@ function PlanCard({
               <div className="flex items-center justify-between p-3 rounded-xl border transition-colors bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-800">
                 <span className="text-[12px] font-bold text-slate-500 dark:text-slate-400">{t("limits.extraFee")}</span>
                 <span className="text-[12px] font-black text-primary">
-                  {plan.extraOrderFee} {t("card.currency")}
+                  {plan.extraOrderFee} {dollorSign}
                 </span>
               </div>
             ) : (

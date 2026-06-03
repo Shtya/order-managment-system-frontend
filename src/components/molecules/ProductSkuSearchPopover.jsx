@@ -195,7 +195,6 @@ function SkuRow({ sku, idx, isSelected, debounced, onSelect, t }) {
           <StockPill
             available={sku.available ?? 0}
             stockOnHand={sku.stockOnHand ?? 0}
-            reserved={sku.reserved ?? 0}
             t={t}
           />
 

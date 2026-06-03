@@ -836,6 +836,12 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       roles: ["SUPER_ADMIN"],
     },
     {
+      icon: FileText,
+      labelKey: "orders",
+      href: "/dashboard/orders",
+      roles: ["SUPER_ADMIN"]
+    },
+    {
       icon: Globe,
       labelKey: "platformSettings",
       href: "/dashboard/settings",

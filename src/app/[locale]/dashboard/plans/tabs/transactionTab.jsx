@@ -202,7 +202,7 @@ export default function TransactionTab({ defaultPurpose, allowedPurposes, showRe
                 );
             },
         },
-      ...(showRelations ? [{
+        ...(showRelations ? [{
             key: "subscription",
             header: t("columns.subscription"),
             cell: (row) => (
@@ -230,7 +230,7 @@ export default function TransactionTab({ defaultPurpose, allowedPurposes, showRe
             header: t("columns.amount"),
             cell: (row) => (
                 <span className="font-semibold text-blue-600 dark:text-blue-400 tabular-nums">
-                    {formatCurrency(row.amount, platformCurrency)}
+                    {formatCurrency(row.amount, row.currency || platformCurrency)}
                 </span>
             ),
         },
@@ -308,6 +308,16 @@ export default function TransactionTab({ defaultPurpose, allowedPurposes, showRe
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Calendar size={12} />
                     {formatDate(row.updatedAt)}
+                </div>
+            ),
+
+        },
+        {
+            key: "notes",
+            header: t("columns.notes"),
+            cell: (row) => (
+                <div className="text-sm text-muted-foreground">
+                    {row.notes || "—"}
                 </div>
             ),
         }

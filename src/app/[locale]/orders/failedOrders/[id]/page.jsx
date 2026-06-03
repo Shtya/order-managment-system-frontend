@@ -37,6 +37,7 @@ import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
 import api from "@/utils/api";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -224,6 +225,7 @@ export function ExternalProductModal({ isOpen, onClose, remoteId, provider, cach
 // ─────────────────────────────────────────────────────────────────────────────
 function SkuSelectorModal({ isOpen, onClose, product, loading, error, currentKey, onSelect }) {
     const t = useTranslations('orders.failedOrders');
+    const { calculateAvailableStock, reservedEnabled } = useOrdersSettings();
     const { formatCurrency } = usePlatformSettings();
     const na = t('common.na');
 
@@ -301,7 +303,7 @@ function SkuSelectorModal({ isOpen, onClose, product, loading, error, currentKey
                                                 <tbody className="divide-y">
                                                     {skus.map((s) => {
                                                         const attrs = s?.attributes ? Object.entries(s.attributes) : [];
-                                                        const avail = s?.available ?? Math.max(0, (s?.stockOnHand ?? 0) - (s?.reserved ?? 0));
+                                                        const avail = s?.available ?? calculateAvailableStock(s?.stockOnHand, s?.reserved);
                                                         const isCurrent = s.key === currentKey;
 
                                                         return (
@@ -343,7 +345,7 @@ function SkuSelectorModal({ isOpen, onClose, product, loading, error, currentKey
                                                                         <span className={cn("text-xs font-bold", avail > 0 ? "text-emerald-600" : "text-red-600")}>
                                                                             {avail} {t('common.items')}
                                                                         </span>
-                                                                        {s.reserved > 0 && <span className="text-[10px] text-orange-500 font-medium">({s.reserved} {t('common.reserved')})</span>}
+                                                                        {s.reserved > 0 && reservedEnabled && <span className="text-[10px] text-orange-500 font-medium">({s.reserved} {t('common.reserved')})</span>}
                                                                     </div>
                                                                 </td>
                                                                 <td className="px-4 py-3 text-end">

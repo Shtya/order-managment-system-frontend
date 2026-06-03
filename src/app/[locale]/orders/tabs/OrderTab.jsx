@@ -94,6 +94,9 @@ import StoreFilter from "@/components/atoms/StoreFilter";
 import ShippingCompanyFilter from "@/components/atoms/ShippingCompanyFilter";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import { useClipboard } from "@/hook/useClipboard";
+import { useAuth } from "@/context/AuthContext";
+
+import AdminFilter from "@/components/atoms/AdminFilter";
 
 //order status flow
 // New => Confirmed => Distrebuted (Assed to shipment company) =>  Printed (Waybills printed) =>  preparing (scanign its items for preparation)
@@ -133,14 +136,20 @@ export const OrderStatus = {
 
 // Main Orders Page Component
 export default function OrdersTab({
-  stats, fetchStats, statsLoading,
-  readOnlyStatus = false, restrictedStatuses = [],
+  stats = [], fetchStats, statsLoading,
+  readOnlyStatus = false,
+  readOnlyShipmentStatus = false,
+  restrictedStatuses = [],
   restrictedSelectStatuses = [],
   showTopActions = true, showBulkUpload = true, showCustom = true,
-  label = "" }) {
+  label = "",
+  adminId,
+  setAdminId
+}) {
+
   const t = useTranslations("orders");
   const { formatCurrency } = usePlatformSettings();
-
+  const { user, isSuperAdmin } = useAuth();
   const restrictedSet = useMemo(() => {
     return new Set(restrictedStatuses || []);
   }, [restrictedStatuses]);
@@ -270,7 +279,7 @@ export default function OrdersTab({
   // ── Fetch on search / filter change ──
   useEffect(() => {
     handlePageChange(1, pager.per_page);
-  }, [debouncedSearch]);
+  }, [debouncedSearch, adminId]);
 
   useEffect(() => {
     if (filters.status !== OrderStatus.POSTPONED) {
@@ -317,6 +326,10 @@ export default function OrdersTab({
     if (filters.employee && filters.employee !== "all")
       params.userId = filters.employee;
 
+    if (adminId && adminId !== "all") {
+      params.adminId = adminId;
+    }
+
     return params;
   };
 
@@ -359,7 +372,7 @@ export default function OrdersTab({
   };
 
   const statsCards = useMemo(() => {
-    const final = readOnlyStatus ? filteredStats : stats;
+    const final = (readOnlyStatus ? filteredStats : stats) || [];
     if (!final.length) return [];
 
     return final
@@ -558,6 +571,21 @@ export default function OrdersTab({
           </span>
         ),
       },
+      // Admin details (for super admin)
+      ...(isSuperAdmin ? [{
+        key: "admin",
+        header: t("common.admin") || "Admin",
+        cell: (row) => (
+          <div className="flex flex-col">
+            <span className="text-sm font-semibold text-foreground">
+              {row.admin?.name || "—"}
+            </span>
+            <span className="text-[10px] text-muted-foreground">
+              {row.admin?.email || "—"}
+            </span>
+          </div>
+        ),
+      }] : []),
       {
         key: "orderNumber",
         header: t("table.orderNumber"),
@@ -755,6 +783,14 @@ export default function OrdersTab({
             );
           }
 
+          if (readOnlyShipmentStatus) {
+            return (
+              <Badge variant="outline" className="rounded-xl border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-blue-400">
+                {currentUnified ? t(`trackingStatus.${currentUnified}`) : "—"}
+              </Badge>
+            );
+          }
+
           return (
             <div className="flex items-center gap-2">
               <Select
@@ -947,7 +983,7 @@ export default function OrdersTab({
                 onClick: () => router.push(`/warehouse?tab=distribution&subtab=unassigned`),
                 variant: "primary",
                 permission: "orders.update",
-                hidden: row?.status?.code !== OrderStatus.CONFIRMED,
+                hidden: isSuperAdmin || row?.status?.code !== OrderStatus.CONFIRMED,
               },
               {
                 icon: <Printer size={18} />,
@@ -955,7 +991,7 @@ export default function OrdersTab({
                 onClick: () => router.push(`/warehouse?tab=print`),
                 variant: "primary",
                 permission: "orders.update",
-                hidden: row?.status?.code !== OrderStatus.DISTRIBUTED,
+                hidden: isSuperAdmin || row?.status?.code !== OrderStatus.DISTRIBUTED,
               },
               {
                 icon: <ScanBarcode size={18} />,
@@ -963,7 +999,7 @@ export default function OrdersTab({
                 onClick: (r) => router.push(`/warehouse?tab=preparation&subtab=scanning&order=${r.id}`),
                 variant: "primary",
                 permission: "orders.update",
-                hidden: row?.status?.code !== OrderStatus.PRINTED,
+                hidden: isSuperAdmin || row?.status?.code !== OrderStatus.PRINTED,
               },
               {
                 icon: <ScanLine size={18} />,
@@ -971,7 +1007,7 @@ export default function OrdersTab({
                 onClick: (r) => router.push(`/warehouse?tab=preparation&subtab=scanning&order=${r.id}`),
                 variant: "primary",
                 permission: "orders.update",
-                hidden: row?.status?.code !== OrderStatus.PREPARING,
+                hidden: isSuperAdmin || row?.status?.code !== OrderStatus.PREPARING,
               },
               {
                 icon: <Send size={18} />,
@@ -979,7 +1015,7 @@ export default function OrdersTab({
                 onClick: (r) => router.push(`/warehouse?tab=outgoing&subtab=scan&order=${r.orderNumber}`),
                 variant: "primary",
                 permission: "orders.update",
-                hidden: row?.status?.code !== OrderStatus.READY,
+                hidden: isSuperAdmin || row?.status?.code !== OrderStatus.READY,
               },
               {
                 icon: <ClipboardList size={18} />,
@@ -987,7 +1023,7 @@ export default function OrdersTab({
                 onClick: () => router.push(`/warehouse?tab=outgoing&subtab=scan&manifest=open`),
                 variant: "primary",
                 permission: "orders.update",
-                hidden: row?.status?.code !== OrderStatus.PACKED,
+                hidden: isSuperAdmin || row?.status?.code !== OrderStatus.PACKED,
               },
               {
                 icon: <Undo2 size={18} />,
@@ -995,7 +1031,7 @@ export default function OrdersTab({
                 onClick: () => router.push(`/warehouse?tab=returns&subtab=scan&manifest=open`),
                 variant: "primary",
                 permission: "orders.update",
-                hidden: row?.status?.code !== OrderStatus.RETURN_PREPARING,
+                hidden: isSuperAdmin || row?.status?.code !== OrderStatus.RETURN_PREPARING,
               },
               {
                 icon: <Truck />,
@@ -1023,7 +1059,13 @@ export default function OrdersTab({
               {
                 icon: <Eye />,
                 tooltip: t("actions.view"),
-                onClick: (r) => router.push(`/orders/details/${r.id}`),
+                onClick: (r) => {
+                  if (isSuperAdmin) {
+                    router.push(`/dashboard/orders/details/${r.id}`);
+                  } else {
+                    router.push(`/orders/details/${r.id}`);
+                  }
+                },
                 variant: "primary",
                 permission: "orders.read",
               },
@@ -1033,6 +1075,7 @@ export default function OrdersTab({
                 onClick: (r) => router.push(`/orders/new?from=${r.id}`),
                 variant: "primary",
                 permission: "orders.create",
+                hidden: isSuperAdmin
               },
               {
                 icon: <Edit2 />,
@@ -1041,6 +1084,7 @@ export default function OrdersTab({
                 disabled: row?.status?.code === OrderStatus.SHIPPED || row?.status?.code === OrderStatus.DELIVERED,
                 variant: "primary",
                 permission: "orders.update",
+                hidden: isSuperAdmin
               },
 
               {
@@ -1052,9 +1096,10 @@ export default function OrdersTab({
                 },
                 variant: "red",
                 permission: "orders.delete",
-                hidden: readOnlyStatus
+                hidden: isSuperAdmin || readOnlyStatus
               },
-            ]}
+            ]
+            }
           />
         ),
       },
@@ -1082,24 +1127,37 @@ export default function OrdersTab({
           { name: label ? label : t("tabs.orders") },
         ]}
         buttons={
-          showTopActions ? <>
-            <Button_
-              href="/orders/new"
-              size="sm"
-              label={t("actions.createOrder")}
-              variant="solid"
-              icon={<Plus size={18} />}
-              permission="orders.create"
-            />
-            <Button_
-              size="sm"
-              label={t("actions.settings")}
-              variant="outline"
-              onClick={() => setRetrySettingsOpen(true)}
-              icon={<Settings size={18} />}
-              permission="order.updateSettings"
-            />
-          </> : null
+          <>
+            {isSuperAdmin && (
+              <div className="min-w-[200px]">
+                <AdminFilter
+                  value={adminId}
+                  onChange={setAdminId}
+                  showAllOption={true}
+                />
+              </div>
+            )}
+            {showTopActions && (
+              <>
+                <Button_
+                  href="/orders/new"
+                  size="sm"
+                  label={t("actions.createOrder")}
+                  variant="solid"
+                  icon={<Plus size={18} />}
+                  permission="orders.create"
+                />
+                <Button_
+                  size="sm"
+                  label={t("actions.settings")}
+                  variant="outline"
+                  onClick={() => setRetrySettingsOpen(true)}
+                  icon={<Settings size={18} />}
+                  permission="order.updateSettings"
+                />
+              </>
+            )}
+          </>
         }
         statsLoading={statsLoading}
         statsCount={12}

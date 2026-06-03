@@ -2239,7 +2239,13 @@
           "system": "Warehouse Management System (WMS)"
         }
       },
-      "currency": "EGP"
+      "currency": "EGP",
+      "field": {
+        "actions": "Actions"
+      },
+      "tooltip": {
+        "details": "View details"
+      }
     },
     "returns": {
       "breadcrumbs": {
@@ -4533,7 +4539,9 @@
     "loadMore": "Load More",
     "purchase": {
       "addNewSupplier": "Add Supplier"
-    }
+    },
+    "searchPlaceholder": "Find an admin...",
+    "admin": "Admin"
   },
   "orders": {
     "shipmentStatuses": {
@@ -4957,7 +4965,8 @@
       "save": "Save",
       "loading": "Loading...",
       "close": "Close",
-      "call": "Call Customer"
+      "call": "Call Customer",
+      "admin": "Admin"
     },
     "empty": "No data to display",
     "messages": {
@@ -5403,7 +5412,9 @@
         "deductionStrategy": "Stock Deduction Strategy",
         "deductionStrategyDesc": "Choose the exact point in the order lifecycle when items should be removed from available stock",
         "onConfirmation": "On Order Confirmation",
-        "onShipment": "Upon shipment"
+        "onShipment": "Upon shipment",
+        "reservedEnabled": "Enable Reserved Stock",
+        "reservedEnabledDesc": "When enabled, items in new orders are reserved (held) and subtracted from 'Available Stock' to prevent over-selling. This is a virtual hold and not a physical deduction from 'Stock on Hand'. If the order is canceled or returned, the reserved items are automatically released."
       },
       "notifyEmployee": "Notify Assigned Employee",
       "notifyEmployeeDesc": "The assigned employee receives a notification every time the system tries to contact the customer",
@@ -5432,7 +5443,9 @@
       "storeAddress": "Store Address",
       "orderNumber": "Order Number",
       "providerShipmentId": "Provider Shipment ID",
-      "notes": "Notes"
+      "notes": "Notes",
+      "adminName": "the name",
+      "adminEmail": "Email"
     },
     "retry": {
       "locked": "Locked"
@@ -9421,7 +9434,8 @@
         "callPermissionNotNow": "Not now",
         "callBubbleHeading": "Can this business call you?",
         "callBubbleBody": "You can update your preference anytime in the business profile.",
-        "callBubbleChoose": "Choose preference"
+        "callBubbleChoose": "Choose preference",
+        "uploading": "Uploading..."
       },
       "stats": {
         "total": "Total Templates",

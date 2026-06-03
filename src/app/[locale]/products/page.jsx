@@ -36,6 +36,7 @@ import { DialogDescription, DialogTitle } from "@radix-ui/react-dialog";
 import { Badge } from "@/components/ui/badge";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { ExternalProductModal } from "../orders/failedOrders/[id]/page";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
 
 function normalizeAxiosError(err) {
 	const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -89,7 +90,8 @@ export default function ProductsPage() {
 
 	const [selectedProducts, setSelectedProducts] = useState([]);
 	const [exportToStoreModal, setExportToStoreModal] = useState(false);
-
+	const { reservedEnabled } = useOrdersSettings();
+	console.log(reservedEnabled)
 	const exportBuilderRef = useRef(null);
 
 	const hasActiveFilters = useMemo(() => {
@@ -207,13 +209,13 @@ export default function ProductsPage() {
 				icon: CheckCircle,
 				color: "#F59E0B",
 			},
-			{
+			...(reservedEnabled ? [{
 				// ✅ Updated to show Reserved Items
 				name: t("stats.reservedItems"),
 				value: summary.inventory.reserved.toString(),
 				icon: Boxes, // ✅ Correct Lucide icon
 				color: "#3B82F6",
-			},
+			}] : []),
 			{
 				// ✅ Updated to show Reserved Items
 				name: t("stats.remaingStock"),
@@ -222,7 +224,7 @@ export default function ProductsPage() {
 				color: "#3B82F6",
 			},
 		];
-	}, [summary, t]);
+	}, [summary, t, reservedEnabled]);
 	useEffect(() => {
 		const tId = setTimeout(() => setSearchDebounced(search), 400);
 		return () => clearTimeout(tId);

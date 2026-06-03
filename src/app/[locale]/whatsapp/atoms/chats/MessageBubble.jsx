@@ -375,6 +375,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                             bgTransparent
                             hideToggleAction
                             hasHeader={false}
+                            isUploading={message.status === "uploading"}
                             template={{
                                 ...templateConfig,
                                 headerUrl: headerMediaUrl,

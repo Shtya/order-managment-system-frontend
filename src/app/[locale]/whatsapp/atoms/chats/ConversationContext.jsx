@@ -353,6 +353,22 @@ export const ConversationProvider = ({ children }) => {
             repMsg = messages.find(m => m.id === replyTo.id);
             replyToWamid = repMsg?.messageId || repMsg?.id;
         }
+
+        // Detect if template media upload is needed
+        let needsTemplateMediaUpload = false;
+        if (msg.type === "template" && msg.template?.components) {
+            const headerComponent = msg.template?.components?.find(c => c.type === "header");
+            const param = headerComponent?.parameters?.[0];
+            const mediaType = param?.type;
+
+            if (headerComponent && ["image", "video", "document"].includes(mediaType) && param) {
+                const mediaObj = param[mediaType];
+                if (mediaObj && mediaObj.link && !mediaObj.id) {
+                    needsTemplateMediaUpload = true;
+                }
+            }
+        }
+
         const localId = `local-${Date.now()}`;
         const newMessage = {
             id: localId,
@@ -360,7 +376,7 @@ export const ConversationProvider = ({ children }) => {
             messageType: msg.type,
             content,
             createdAt: new Date().toISOString(),
-            status: isMedia && msg.file ? "uploading" : "pending", // Initial status for optimistic UI
+            status: (isMedia && msg.file) || needsTemplateMediaUpload ? "uploading" : "pending", // Initial status for optimistic UI
             conversationId: selectedConversation.id,
             accountId: msg.accountId || selectedAccount?.id,
             metadata: { localId, ...metadata },
@@ -388,7 +404,52 @@ export const ConversationProvider = ({ children }) => {
             let mediaId = null;
             const currentAccountId = msg.accountId || selectedAccount?.id;
 
-            // Handle Media Upload if file is provided
+            // Handle Template Media Auto-Upload (from URL)
+            if (needsTemplateMediaUpload) {
+                const headerComponent = msg.template.components.find(c => c.type === "header");
+                const param = headerComponent?.parameters?.[0];
+                const mediaType = param?.type;
+                const mediaObj = param?.[mediaType];
+
+                try {
+                    // Upload via URL
+                    const uploadRes = await api.post("/whatsapp/messages/upload-media", {
+                        url: mediaObj.link
+                    }, {
+                        params: { accountId: currentAccountId }
+                    });
+
+
+                    if (uploadRes.data?.id) {
+                        const newId = uploadRes.data.id;
+                        // Update the local message content so UI reflects the change (no more link, now has id)
+                        setMessages(prev => prev.map(m => {
+                            if (m.id === localId) {
+                                const newContent = JSON.parse(JSON.stringify(m.content));
+                                const h = newContent.template?.components?.find(c => c.type === "header");
+                                const p = h?.parameters?.[0];
+
+                                p[mediaType].id = newId;
+                                delete p[mediaType].link;
+                                return { ...m, content: newContent, status: "pending" };
+                            }
+                            return m;
+                        }));
+
+                        // Update our local payload object for the final API call
+                        mediaObj.id = newId;
+                        delete mediaObj.link;
+                    }
+                } catch (err) {
+                    console.error("Failed to auto-upload template media:", err);
+                    // Even if upload fails, we proceed with the link or let it fail at Meta
+                    setMessages(prev => prev.map(m =>
+                        m.id === localId ? { ...m, status: "pending" } : m
+                    ));
+                }
+            }
+
+            // Handle Direct Media Upload if file is provided
             if (isMedia && msg.file) {
                 const formData = new FormData();
                 formData.append("file", msg.file);
@@ -423,8 +484,9 @@ export const ConversationProvider = ({ children }) => {
                         ? { id: mediaId, caption: msg.caption, ...(isDoc ? { filename: msg.file?.name } : {}) }
                         : content[msg.type],
                 context: replyToWamid ? { message_id: replyToWamid } : undefined,
-                metadata: {  ...metadata }
+                metadata: { ...metadata }
             };
+
 
             await api.post("/whatsapp/messages/send", payload, {
                 params: {

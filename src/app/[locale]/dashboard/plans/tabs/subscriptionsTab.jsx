@@ -43,7 +43,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
-import { platformCurrency } from "@/utils/healpers";
+import { dollorSign, platformCurrency } from "@/utils/healpers";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 
 
@@ -370,7 +370,7 @@ export default function SubscriptionsTab() {
                 </span>
               ) : Number(row.extraOrderFee) > 0 ? (
                 <span className="text-muted-foreground">
-                  +{row.extraOrderFee} {t("status_labels.per_extra_order")}
+                  +{row.extraOrderFee} {dollorSign} {t("status_labels.per_extra_order")}
                 </span>
               ) : (
                 <span className="text-green-600 font-medium">

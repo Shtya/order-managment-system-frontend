@@ -35,6 +35,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import api from "@/utils/api";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import InteractiveMessageBuilder from "@/components/molecules/InteractiveMessageBuilder";
@@ -42,6 +43,7 @@ import TemplatePreview from "@/app/[locale]/whatsapp/atoms/TemplatePreview";
 
 // ─── UPSELL SKU SELECTOR MODAL ──────────────────────────────────────────────
 function SkuSelectorModal({ isOpen, onClose, product, onSelect, selectedSkus = [], isRtl, formatCurrency, shouldHaveStock = true }) {
+  const { calculateAvailableStock } = useOrdersSettings();
   if (!product) return null;
   const skus = Array.isArray(product.skus) ? product.skus.filter(s => s.isActive) : [];
 
@@ -96,8 +98,9 @@ function SkuSelectorModal({ isOpen, onClose, product, onSelect, selectedSkus = [
                   <tbody className="divide-y">
                     {skus.map((s) => {
                       const attrs = s?.attributes ? Object.entries(s.attributes) : [];
-                      const shouldEnable = !shouldHaveStock || Math.max(0, (s?.stockOnHand ?? 0) - (s?.reserved ?? 0));
-                      const avail = Math.max(0, (s?.stockOnHand ?? 0) - (s?.reserved ?? 0));
+                      const avail = calculateAvailableStock(s?.stockOnHand, s?.reserved);
+                      const shouldEnable = !shouldHaveStock || avail > 0;
+
                       const isSelected = selectedSkus.some(sel => sel.id === s.id);
 
                       return (

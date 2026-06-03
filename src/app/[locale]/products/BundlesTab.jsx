@@ -17,6 +17,7 @@ import { Bone } from "@/components/atoms/BannerSkeleton";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import ActionButtons from "@/components/atoms/Actions";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
 
 function normalizeAxiosError(err) {
   const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -281,6 +282,7 @@ function formatDate(d, na) {
 
 export function BundleViewModal({ open, onOpenChange, bundle, viewLoading }) {
   const t = useTranslations("products");
+  const { calculateAvailableStock } = useOrdersSettings();
   const na = t("common.na");
 
   const items = bundle?.items ?? [];
@@ -405,7 +407,7 @@ export function BundleViewModal({ open, onOpenChange, bundle, viewLoading }) {
                       <div className="divide-y">
                         {items.map((it) => {
                           const v = it.variant;
-                          const available = Math.max(0, (v?.stockOnHand ?? 0) - (v?.reserved ?? 0));
+                          const available = calculateAvailableStock(v?.stockOnHand, v?.reserved);
                           const attrs = v?.attributes ? Object.entries(v.attributes) : [];
 
                           return (

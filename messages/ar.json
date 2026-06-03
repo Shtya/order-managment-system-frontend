@@ -2274,7 +2274,13 @@
           "system": "نظام إدارة المستودعات"
         }
       },
-      "currency": "EGP"
+      "currency": "EGP",
+      "field": {
+        "actions": "الإجراءات"
+      },
+      "tooltip": {
+        "details": "عرض التفاصيل"
+      }
     },
     "returns": {
       "breadcrumbs": {
@@ -4569,7 +4575,9 @@
     "loadMore": "تحميل المزيد",
     "purchase": {
       "addNewSupplier": "إضافة مورد"
-    }
+    },
+    "searchPlaceholder": "إبحث عن الادمن...",
+    "admin": "الأدمن"
   },
   "orders": {
     "shipmentStatuses": {
@@ -5008,7 +5016,8 @@
       "save": "حفظ",
       "loading": "جاري التحميل...",
       "close": "إغلاق",
-      "call": "اتصال بالعميل"
+      "call": "اتصال بالعميل",
+      "admin": "الادمن"
     },
     "empty": "لا توجد بيانات للعرض",
     "messages": {
@@ -5437,7 +5446,9 @@
         "deductionStrategy": "استراتيجية خصم المخزون",
         "deductionStrategyDesc": "اختر المرحلة الدقيقة في دورة حياة الطلب التي يجب عندها خصم المنتجات من المخزون المتاح",
         "onConfirmation": "عند تأكيد الطلب",
-        "onShipment": "عند خروج الشحنة"
+        "onShipment": "عند خروج الشحنة",
+        "reservedEnabled": "تفعيل حجز المخزون",
+        "reservedEnabledDesc": "عند التفعيل، يتم حجز المنتجات في الطلبات الجديدة وخصمها من «المخزون المتاح» لمنع البيع الزائد. هذا حجز مؤقت وليس خصماً فعلياً من «المخزون اليدوي». في حال إلغاء الطلب أو إرجاعه، يتم تحرير الكميات المحجوزة تلقائياً."
       },
       "notifyEmployee": "إشعار الموظف المسؤول",
       "notifyEmployeeDesc": "يصل إشعار للموظف المعيّن على الطلب في كل مرة يحاول فيها النظام التواصل مع العميل",
@@ -5466,7 +5477,9 @@
       "storeAddress": "عنوان المتجر",
       "orderNumber": "رقم الطلب",
       "providerShipmentId": "رقم الشحنة لدى المزود",
-      "notes": "ملاحظات"
+      "notes": "ملاحظات",
+      "adminName": "الاسم",
+      "adminEmail": "الايميل"
     },
     "retry": {
       "locked": "مقفل"
@@ -6362,7 +6375,8 @@
       "lastUpdate": "آخر تحديث",
       "feature": "الميزة المشتراة",
       "subscription": "باقة الاشتراك",
-      "amountInDollar": "اللمبلغ بالدولار"
+      "amountInDollar": "اللمبلغ بالدولار",
+      "notes": "الملاحظات"
     },
     "purposes": {
       "wallet_top_up": "شحن محفظة",
@@ -9459,7 +9473,8 @@
         "callPermissionNotNow": "ليس الآن",
         "callBubbleHeading": "هل يمكن لهذا النشاط الاتصال بك؟",
         "callBubbleBody": "يمكنك تغيير تفضيلك في أي وقت من ملف النشاط التجاري.",
-        "callBubbleChoose": "اختر التفضيل"
+        "callBubbleChoose": "اختر التفضيل",
+        "uploading": "جاري الرفع..."
       },
       "stats": {
         "total": "إجمالي القوالب",

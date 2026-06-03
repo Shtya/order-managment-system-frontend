@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { useRouter } from "@/i18n/navigation";
 import { useSubscriptionsApi } from "../../../app/[locale]/plans/page";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { dollor, dollorSign } from "@/utils/healpers";
 
 /* ─── Check icon ─── */
 function Check({ color = "#6d28d9" }) {
@@ -391,7 +392,7 @@ export default function PricingSection() {
       }
 
       if (plan.extraOrderFee !== null && plan.extraOrderFee > 0) {
-        features.push(tWel("limits.extraFee", { fee: formatCurrency(plan.extraOrderFee), currency: tWel("currency") || "EGP" }));
+        features.push(tWel("limits.extraFee", { fee: formatCurrency(plan.extraOrderFee, dollor, dollorSign), currency: tWel("currency") || dollorSign }));
       }
 
       if (plan.bulkUploadPerMonth > 0) {

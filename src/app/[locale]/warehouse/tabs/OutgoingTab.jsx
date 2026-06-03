@@ -51,6 +51,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useSearchParams } from "next/navigation";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { playBeep } from "./PreparationTab";
+import { OrderDetailModal } from "./DistributionTab";
 // ─────────────────────────────────────────────
 // ─────────────────────────────────────────────────────────────
 // DESIGN TOKENS
@@ -2051,7 +2052,7 @@ export function ScanOutgoingSubtab({
 	const [scanFeedback, setScanFeedback] = useState(null);
 	const [soundEnabled, setSoundEnabled] = useState(true);
 	const scanRef = useRef(null);
-
+	const [detailModal, setDetailModal] = useState(null);
 	// Table State
 	const [search, setSearch] = useState("");
 	const { debouncedValue: debouncedSearch } = useDebounce({ value: search, delay: 350 });
@@ -2305,7 +2306,25 @@ export function ScanOutgoingSubtab({
 			header: t("scan.table.date"),
 			key: "created_at",
 			cell: (row) => new Date(row.created_at).toLocaleDateString()
-		}
+		},
+		{
+			key: "actions",
+			header: t("field.actions"),
+			cell: (row) => (
+				<ActionButtons
+					row={row}
+					actions={[
+						{
+							icon: <Info />,
+							tooltip: t("tooltip.details"),
+							onClick: (r) => setDetailModal(r),
+							variant: "primary",
+							permission: "orders.read",
+						},
+					]}
+				/>
+			),
+		},
 	];
 
 	return (
@@ -2462,6 +2481,13 @@ export function ScanOutgoingSubtab({
 					]}
 				/>
 			</Panel>
+
+			<OrderDetailModal
+				t={t}
+				open={!!detailModal}
+				onClose={() => setDetailModal(null)}
+				order={detailModal}
+			/>
 		</div>
 	);
 }

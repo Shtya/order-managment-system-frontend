@@ -16,6 +16,7 @@ import { cn } from "@/utils/cn";
 import { useLocale, useTranslations } from "next-intl";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
+import { useOrdersSettings } from "@/hook/useOrdersSettings";
 
 import { ProductSkuSearchPopover } from "../../../../components/molecules/ProductSkuSearchPopover";
 import SafeSelect from "@/components/molecules/SafeSelect";
@@ -28,6 +29,7 @@ import { avatarSrc } from "@/components/atoms/UserSelect";
 
 export function PurchaseInvoiceForm({ editedPurchase }) {
 	const isEdit = editedPurchase?.id !== undefined;
+	const { calculateAvailableStock } = useOrdersSettings();
 	const id = editedPurchase?.id;
 	const isEditable = !isEdit || (editedPurchase?.status === "draft" && !editedPurchase?.closingId);
 
@@ -117,7 +119,7 @@ export function PurchaseInvoiceForm({ editedPurchase }) {
 				quantity: item.quantity,
 				purchaseCost: item?.purchaseCost,
 				sku: item?.variant?.sku || "",
-				availableQuantity: Number(item?.variant?.stockOnHand || 0) - Number(item?.variant?.reserved || 0),
+				availableQuantity: calculateAvailableStock(item?.variant?.stockOnHand, item?.variant?.reserved),
 				productName: item?.variant?.product?.name || "",
 				price: item?.variant?.unitCost,
 				attributes: {},
@@ -224,7 +226,7 @@ export function PurchaseInvoiceForm({ editedPurchase }) {
 		console.log(newUniqueSkus)
 		// 3. تحديث قائمة الـ Skus المختارة (للعرض)
 		setSelectSku((prev) => [...prev, ...newUniqueSkus]);
-		
+
 		// 4. تحويل الـ Skus الجديدة إلى تنسيق Items الخاص بالنموذج
 		const newItems = newUniqueSkus.map((sku) => ({
 			variantId: sku.id,

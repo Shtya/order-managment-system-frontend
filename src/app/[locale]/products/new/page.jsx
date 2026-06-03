@@ -52,6 +52,7 @@ import SafeSelect from '@/components/molecules/SafeSelect';
 import SupplierSelect from '@/components/molecules/SupplierSelect';
 import ProductFilter from '@/components/atoms/ProductFilter';
 import { InvoiceSummary, ReceiptImageUpload } from '../../purchases/new/page';
+import { useOrdersSettings } from '@/hook/useOrdersSettings';
 
 const MAX_RECEIPT_MB = 5;
 const ALLOWED_RECEIPT_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
@@ -288,7 +289,7 @@ const makeSchema = (t, tValidation) =>
 			safeId: yup.string().optional(),
 			notes: yup.string().optional(),
 			wholesalePrice: yup.number()
-			.transform((value, originalValue) => {
+				.transform((value, originalValue) => {
 					if (originalValue === "" || originalValue === null || originalValue === undefined) return 0;
 					const n = Number(originalValue);
 					return Number.isFinite(n) ? n : 0;
@@ -625,7 +626,7 @@ const inputClass = "h-[46px] rounded-xl bg-slate-50 dark:bg-slate-800/60 border-
 
 export default function AddProductPage({ isEditMode = false, existingProduct = null, productId = null, defaultValues = null }) {
 	const remoteId = defaultValues?.remoteId;
-
+	const { reservedEnabled, calculateAvailableStock } = useOrdersSettings();
 	const combinationsSectionRef = useRef(null);
 	const tPurchase = useTranslations("purchaseInvoice");
 	const tValidation = useTranslations('validation');
@@ -1586,7 +1587,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 														<th className="text-right px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 font-[Inter]">SKU</th>
 														<th className="text-center px-2 py-3 font-semibold text-slate-500 dark:text-slate-400 w-[100px]">{t('combinations.isActive')}</th>
 														<th className="text-center px-2 py-3 font-semibold text-slate-500 dark:text-slate-400 w-[80px]">{t('combinations.onHand')}</th>
-														<th className="text-center px-2 py-3 font-semibold text-slate-500 dark:text-slate-400 w-[80px]">{t('combinations.reserved')}</th>
+														{reservedEnabled && <th className="text-center px-2 py-3 font-semibold text-slate-500 dark:text-slate-400 w-[80px]">{t('combinations.reserved')}</th>}
 														<th className="text-center px-2 py-3 font-semibold text-slate-500 dark:text-slate-400 w-[80px]">{t('combinations.available')}</th>
 														<th className="text-center text-nowrap px-2 py-3 font-semibold text-slate-500 dark:text-slate-400 w-[80px]">{t('combinations.unitCost')}</th>
 														<th className="text-right text-nowrap px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 w-[130px]">
@@ -1608,7 +1609,7 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 														const unitCost = current?.unitCost ?? 0;
 														const reserved = current?.reserved || 0;
 
-														const available = Math.max(0, onHand - reserved);
+														const available = calculateAvailableStock(onHand, reserved);
 														const isDefaultVariant = current?.key === 'default';
 														const isDefaultOnly = comboFields.length === 1 && isDefaultVariant;
 
@@ -1680,9 +1681,9 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 																		<span className="font-medium text-slate-700 dark:text-slate-300">{onHand}</span>
 																	)}
 																</td>
-																<td className="px-2 py-3 text-center">
+																{reservedEnabled && <td className="px-2 py-3 text-center">
 																	<span className="text-amber-600 dark:text-amber-400 font-medium">{reserved}</span>
-																</td>
+																</td>}
 																<td className="px-2 py-3 text-center">
 																	<span className={cn(
 																		"px-2 py-1 rounded-md font-bold",
@@ -1745,14 +1746,14 @@ export default function AddProductPage({ isEditMode = false, existingProduct = n
 											<Field label={t('combinations.onHand')}>
 												<Input value={String(combinationsWatch?.[0]?.stockOnHand || 0)} disabled />
 											</Field>
-											<Field label={t('combinations.reserved')}>
+											{reservedEnabled && <Field label={t('combinations.reserved')}>
 												<Input value={String(combinationsWatch?.[0]?.reserved || 0)} disabled />
-											</Field>
+											</Field>}
 											<Field label={t('combinations.available')}>
-												<Input value={String(Math.max(0, Number(combinationsWatch?.[0]?.stockOnHand || 0) - Number(combinationsWatch?.[0]?.reserved || 0)))} disabled />
+												<Input value={calculateAvailableStock(combinationsWatch?.[0]?.stockOnHand || 0, combinationsWatch?.[0]?.reserved || 0)} disabled />
 											</Field>
 											<Field label={t('combinations.unitCost')}>
-												<Input value={String(Math.max(0, Number(combinationsWatch?.[0]?.unitCost || 0) - Number(combinationsWatch?.[0]?.reserved || 0)))} disabled />
+												<Input value={String(Math.max(0, Number(combinationsWatch?.[0]?.unitCost || 0)))} disabled />
 											</Field>
 										</div>)}
 								</Card>

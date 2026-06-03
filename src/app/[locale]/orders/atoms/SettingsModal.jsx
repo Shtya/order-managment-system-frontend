@@ -911,7 +911,7 @@ export function AutomationTab({ settings, statuses, patch, toggleCode, t }) {
 // ────────────────────────────────────────────────────────────────────────────
 // SHIPPING TAB
 // ────────────────────────────────────────────────────────────────────────────
-export function ShippingTab({ settings, statuses, patchShipping, patch, t }) {
+export function ShippingTab({ settings, patch, t }) {
   const { shippingCompanies } = usePlatformSettings();
   const hasMoreCompanies = shippingCompanies.length > 0;
   const isShipment = settings?.orderFlowPath === "shipping";
@@ -974,286 +974,9 @@ export function ShippingTab({ settings, statuses, patchShipping, patch, t }) {
             </div>
           </div>
         </SectionCard>
-        {/* <div
-          className="p-4 flex items-center gap-4"
-          style={
-            isShipment
-              ? { background: rgba("var(--primary)", 0.03) }
-              : {}
-          }
-        >
-          <div
-            className={cn(
-              "w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
-              isShipment
-                ? "bg-gradient-to-br from-[var(--primary)] to-[var(--third,var(--secondary))] dark:from-[#5b4bff] dark:to-[#3be7ff] shadow-[0_4px_12px_rgba(var(--primary-shadow))]"
-                : "bg-muted border border-border",
-            )}
-          >
-            <Truck
-              size={18}
-              className={
-                isShipment
-                  ? "text-white"
-                  : "text-muted-foreground"
-              }
-            />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-black text-foreground">
-              {t("retrySettings.shipping.autoSend")}
-            </p>
-            <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-              {t("retrySettings.shipping.autoSendDesc")}
-            </p>
-          </div>
-          <Switch
-            checked={isShipment}
-            onCheckedChange={(v) => patchShipping({ autoSendToShipping: v })}
-            className="shrink-0 ms-auto"
-          />
-        </div> */}
+
       </div>
 
-      {/* Expanded shipping config */}
-      {/* <AnimatePresence>
-        {isShipment && (
-          <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.22 }}
-            className="space-y-4"
-          >
-            {/* Card: Routing 
-            <SectionCard
-              icon={Truck}
-              iconColor="var(--primary)"
-              title={t("retrySettings.shipping.routing")}
-              subtitle={t("retrySettings.shipping.routingDesc")}
-            >
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <FieldSubLabel>
-                    {t("retrySettings.shipping.company")}
-                  </FieldSubLabel>
-                  <ShippingCompanyFilter
-                    value={String(settings.shipping.shippingCompanyId)}
-                    onChange={(v) => patchShipping({ shippingCompanyId: v })}
-                    showAll={false}
-                    showNone={false}
-                    hideLabel={true}
-                    autoSelectIfSingle={true}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <FieldSubLabel>
-                    {t("retrySettings.shipping.triggerStatus")}
-                  </FieldSubLabel>
-                  <Select
-                    value={settings.shipping.triggerStatus}
-                    onValueChange={(v) => patchShipping({ triggerStatus: v })}
-                  >
-                    <SelectTrigger className="h-10 rounded-xl text-sm">
-                      <SelectValue
-                        placeholder={t("retrySettings.shipping.selectTrigger")}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {statuses.map((s) => (
-                        <SelectItem
-                          key={s.code || s.id}
-                          value={s.code || String(s.id)}
-                        >
-                          <span className="flex items-center gap-2">
-                            <span
-                              className="w-2 h-2 rounded-full shrink-0"
-                              style={{ backgroundColor: s.color || "#6366f1" }}
-                            />
-                            {s.system ? t(`statuses.${s.code}`) : s.name}
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <p className="text-[11px] text-muted-foreground pt-0.5">
-                {t("retrySettings.shipping.triggerStatusDesc")}
-              </p>
-            </SectionCard>
-
-            {/* Card: Payment 
-            <SectionCard
-              icon={Shield}
-              iconColor="#10b981"
-              title={t("retrySettings.shipping.paymentOptions")}
-              subtitle={t("retrySettings.shipping.paymentOptionsDesc")}
-            >
-              <InlineToggle
-                label={t("retrySettings.shipping.requireFullPayment")}
-                description={t("retrySettings.shipping.requireFullPaymentDesc")}
-                checked={settings.shipping.requireFullPayment}
-                onCheckedChange={(v) =>
-                  patchShipping({ requireFullPayment: v })
-                }
-              />
-
-              <AnimatePresence>
-                {!settings.shipping.requireFullPayment && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.18 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="mt-3 pt-3 border-t border-border/60">
-                      <div className="flex items-end gap-3">
-                        <div className="flex-1 space-y-1.5">
-                          <FieldSubLabel>
-                            {t("retrySettings.shipping.partialThreshold")}
-                          </FieldSubLabel>
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="number"
-                              min={0}
-                              max={100}
-                              value={settings.shipping.partialPaymentThreshold}
-                              onChange={(e) => {
-                                let val = parseInt(e.target.value) || 0;
-                                if (val > 100) val = 100;
-                                if (val < 0) val = 0;
-                                patchShipping({
-                                  partialPaymentThreshold: val,
-                                });
-                              }}
-                              className="h-10 rounded-xl flex-1 text-sm"
-                            />
-                            <span className="text-xs text-muted-foreground shrink-0 font-semibold">
-                              %
-                            </span>
-                          </div>
-                        </div>
-                        <div
-                          className="mb-0.5 px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/30
-                            border border-emerald-200 dark:border-emerald-800"
-                        >
-                          <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-400">
-                            {settings.shipping.partialPaymentThreshold === 0
-                              ? t("retrySettings.shipping.anyDeposit")
-                              : `${settings.shipping.partialPaymentThreshold}%`}
-                          </p>
-                        </div>
-                      </div>
-                      <p className="mt-1.5 text-[11px] text-muted-foreground">
-                        {t("retrySettings.shipping.partialThresholdDesc")}
-                      </p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <div className="h-px bg-border/60" />
-
-              {/* <InlineToggle
-                label={t("retrySettings.shipping.requirePaymentConfirm")}
-                description={t(
-                  "retrySettings.shipping.requirePaymentConfirmDesc",
-                )}
-                checked={settings.shipping.requirePaymentConfirm}
-                onCheckedChange={(v) =>
-                  patchShipping({ requirePaymentConfirm: v })
-                }
-              /> 
-            </SectionCard>
-
-          </motion.div>
-        )}
-      </AnimatePresence> */}
-
-      {!isShipment && <>
-        {/* Card: Warehouse Automation */}
-        {/* {hasMoreCompanies && <SectionCard
-          icon={Truck}
-          iconColor="#3b82f6"
-          title={t("retrySettings.shipping.autoShip")}
-        subtitle={t("retrySettings.shipping.autoShipAfterWarehouseDesc")}
-        >
-          <InlineToggle
-            label={t("retrySettings.shipping.autoShipAfterWarehouse")}
-            description={t("retrySettings.shipping.autoShipAfterWarehouseDesc")}
-            checked={settings.shipping.autoShipAfterWarehouse}
-            onCheckedChange={(v) => patchShipping({ autoShipAfterWarehouse: v })}
-          />
-
-          <AnimatePresence>
-            {settings.shipping.autoShipAfterWarehouse && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.18 }}
-                className="overflow-hidden"
-              >
-                <div className="mt-3 pt-3 border-t border-border/60">
-                  <div className="space-y-1.5">
-                    <FieldSubLabel>
-                      {t("retrySettings.shipping.warehouseDefaultCompany")}
-                    </FieldSubLabel>
-                    <ShippingCompanyFilter
-                      value={String(settings.shipping.warehouseDefaultShippingCompanyId)}
-                      onChange={(v) => patchShipping({ warehouseDefaultShippingCompanyId: v })}
-                      showAll={false}
-                      showNone={false}
-                      hideLabel={true}
-                      autoSelectIfSingle={true}
-                    />
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </SectionCard>} */}
-
-        {/* Card: Automation Options */}
-        {/* <SectionCard
-          icon={Zap}
-          iconColor="#f59e0b"
-          title={t("retrySettings.shipping.otherOptions")}
-          subtitle={t("retrySettings.shipping.otherOptionsDesc")}
-        >
-          {[
-            {
-              key: "autoGenerateLabel",
-              labelKey: "retrySettings.shipping.autoLabel",
-              descKey: "retrySettings.shipping.autoLabelDesc",
-            },
-            // {
-            //   key: "notifyOnShipment",
-            //   labelKey: "retrySettings.shipping.notifyOnShipment",
-            //   descKey: "retrySettings.shipping.notifyOnShipmentDesc",
-            // },
-            // {
-            //   key: "allowReturnCreation",
-            //   labelKey: "retrySettings.shipping.allowReturn",
-            //   descKey: "retrySettings.shipping.allowReturnDesc",
-            // },
-          ].map((opt, i, arr) => (
-            <div key={opt.key}>
-              <InlineToggle
-                label={t(opt.labelKey)}
-                description={t(opt.descKey)}
-                checked={settings.shipping[opt.key]}
-                onCheckedChange={(v) => patchShipping({ [opt.key]: v })}
-              />
-              {i < arr.length - 1 && (
-                <div className="h-px bg-border/60 mt-3" />
-              )}
-            </div>
-          ))}
-        </SectionCard> */}
-      </>}
       {/* Card: Stock Management */}
       <SectionCard
         icon={Archive}
@@ -1286,6 +1009,15 @@ export function ShippingTab({ settings, statuses, patchShipping, patch, t }) {
               </SelectItem>
             </SelectContent>
           </Select>
+        </div>
+
+        <div className="mt-5 pt-5 border-t border-border/60">
+          <ToggleRow
+            label={t("retrySettings.stock.reservedEnabled")}
+            description={t("retrySettings.stock.reservedEnabledDesc")}
+            checked={settings.reservedEnabled !== false}
+            onCheckedChange={(v) => patch({ reservedEnabled: v })}
+          />
         </div>
       </SectionCard>
       {/* Disabled hint */}

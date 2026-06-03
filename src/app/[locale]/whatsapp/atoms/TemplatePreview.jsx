@@ -13,6 +13,8 @@ import {
     X,
     ChevronDown,
     Copy,
+    Loader2,
+    AlertCircle,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useLocale, useTranslations } from "next-intl";
@@ -222,7 +224,9 @@ export default function TemplatePreview({
     hideToggleAction = false,
     bgTransparent = false,
     isChatBubble = false,
+    isUploading = false,
 }) {
+
     const t = useTranslations("whatsApp.templates");
     const [showExamples, setShowExamples] = useState(forceShowExamples || isChatBubble);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -318,12 +322,20 @@ export default function TemplatePreview({
     }, [bodyText, examples, t]);
 
     const renderHeader = () => {
-        const mediaClass = "aspect-video w-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center rounded-sm overflow-hidden border-b border-slate-100 dark:border-slate-800 mb-2";
+        const mediaClass = "aspect-video w-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center rounded-sm overflow-hidden border-b border-slate-100 dark:border-slate-800 mb-2 relative";
+
+        const uploadOverlay = isUploading && (
+            <div className="absolute inset-0 bg-black/10 flex flex-col items-center justify-center z-10 backdrop-blur-[2px]">
+                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                <span className="text-[10px] text-gray-500 font-bold mt-2 uppercase tracking-widest">{t("preview.uploading")}</span>
+            </div>
+        );
 
         switch (headerType) {
             case "IMAGE":
                 return (
                     <div className={mediaClass}>
+                        {uploadOverlay}
                         {headerUrl ? (
                             <img src={avatarSrc(headerUrl)} alt="Header" className="w-full h-full object-cover" />
                         ) : (
@@ -334,6 +346,7 @@ export default function TemplatePreview({
             case "VIDEO":
                 return (
                     <div className={mediaClass}>
+                        {uploadOverlay}
                         {headerUrl ? (
                             <video src={avatarSrc(headerUrl)} className="w-full h-full object-cover" controls
                                 preload="metadata"
@@ -351,6 +364,7 @@ export default function TemplatePreview({
                         rel="noopener noreferrer"
                         className={mediaClass}
                     >
+                        {uploadOverlay}
                         <div className="flex flex-col items-center gap-2 cursor-pointer">
                             <FileIcon size={40} className="text-slate-300" />
 

@@ -15,6 +15,7 @@ import {
   Store,
   FileText,
   History,
+  Shield,
   Edit,
   Printer,
   Download,
@@ -59,6 +60,7 @@ import { avatarSrc } from "@/components/atoms/UserSelect";
 import Button_ from "@/components/atoms/Button";
 import PageHeader from "@/components/atoms/Pageheader";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
+import { useAuth } from "@/context/AuthContext";
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const P = "var(--primary)";
@@ -254,6 +256,7 @@ export default function OrderDetailsPageWrapper() {
 // MAIN PAGE
 // ──────────────────────────────────────────────────────────────────────────────
 export function OrderDetailsPage({ order, loading }) {
+  const { isSuperAdmin } = useAuth();
   const t = useTranslations("orders");
   const router = useRouter();
 
@@ -299,12 +302,12 @@ export function OrderDetailsPage({ order, loading }) {
     <div className="p-4 md:p-6 bg-background min-h-screen">
       <PageHeader
         breadcrumbs={[
-          { name: t("breadcrumb.home"), href: "/dashboard" },
-          { name: t("breadcrumb.orders"), href: "/orders" },
+          { name: t("breadcrumb.home"), href: isSuperAdmin ? "/users" : "/dashboard" },
+          { name: t("breadcrumb.orders"), href: isSuperAdmin ? "/dashboard/orders" : "/orders" },
           { name: order.orderNumber },
         ]}
         buttons={
-          <Button_
+          !isSuperAdmin && <Button_
             onClick={() => router.push(`/orders/edit/${order.id}`)}
             size="sm"
             icon={<Edit size={18} />}
@@ -814,6 +817,24 @@ export function OrderDetailsPage({ order, loading }) {
             </SideCard>
           )}
 
+          {/* Admin Info (Super Admin only) */}
+          {isSuperAdmin && order.admin && (
+            <SideCard title={t("common.admin") || "Admin"} icon={Shield} delay={0.09}>
+              <div className="space-y-0">
+                <InfoRow
+                  icon={User}
+                  label={t("fields.adminName") || "Name"}
+                  value={order.admin.name}
+                />
+                <InfoRow
+                  icon={FileText}
+                  label={t("fields.adminEmail") || "Email"}
+                  value={order.admin.email}
+                />
+              </div>
+            </SideCard>
+          )}
+
           {/* Store Info */}
           {order.store && (
             <SideCard title={t("details.storeInfo")} icon={Store} delay={0.11}>
@@ -959,7 +980,7 @@ export function OrderDetailsPage({ order, loading }) {
                                 ? t(`statuses.${history.fromStatus.code}`)
                                 : history.fromStatus?.name}
                             </span>
-                            <ArrowRight size={10}  className="rtl:scale-[-1]"/>
+                            <ArrowRight size={10} className="rtl:scale-[-1]" />
                             <span>
 
                               {history.toStatus?.system

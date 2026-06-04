@@ -570,6 +570,7 @@ export default function CreateOrderPageComplete({
 						sku: item.variant?.sku || item.sku || "",
 						attributes: item.variant?.attributes || item.attributes || {},
 						quantity: item.quantity || 1,
+						availableQuantity: item.quantity || 0,
 						unitPrice: item.unitPrice || 0,
 						unitCost: item.unitCost || item.unitPrice || 0,
 					})) || [],
@@ -1498,6 +1499,7 @@ export default function CreateOrderPageComplete({
 											{watchedItems.map((product, index) => {
 												const unitPrice = parseFloat(product.unitPrice) || 0;
 												const quantity = parseFloat(product.quantity) || 0;
+
 												return (
 													<tr
 														key={index}

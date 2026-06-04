@@ -21,6 +21,7 @@ import {
   Layers,
   Archive,
   Mail,
+  Copy,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
@@ -735,6 +736,38 @@ function FieldSubLabel({ children }) {
 export function GeneralTab({ settings, patch, t }) {
   return (
     <div className="space-y-5">
+      {/* Duplicate detection settings */}
+      <SectionCard
+        icon={Copy}
+        iconColor="#3b82f6"
+        title={t("retrySettings.duplicates.title")}
+        subtitle={t("retrySettings.duplicates.subtitle")}
+      >
+        <div className="space-y-4">
+          <div className="grid sm:grid-cols-2 gap-4">
+            <NumberField
+              label={t("retrySettings.duplicates.window")}
+              description={t("retrySettings.duplicates.windowDesc")}
+              value={settings.duplicateWindowHours}
+              onChange={(e) =>
+                patch({ duplicateWindowHours: parseInt(e.target.value) || 1 })
+              }
+              min={1}
+              max={168}
+              suffix={t("retrySettings.hours")}
+            />
+          </div>
+          <div className="pt-2 border-t border-border/50">
+            <ToggleRow
+              label={t("retrySettings.duplicates.autoCancel")}
+              description={t("retrySettings.duplicates.autoCancelDesc")}
+              checked={settings.autoCancelDuplicates}
+              onCheckedChange={(v) => patch({ autoCancelDuplicates: v })}
+            />
+          </div>
+        </div>
+      </SectionCard>
+
       {/* Master on/off */}
       <ToggleRow
         label={t("retrySettings.enableRetry")}

@@ -71,10 +71,10 @@ export default function TemplateMessageModal() {
         config.buttons?.forEach((btn, idx) => {
             if (btn.type === 'VISIT_WEBSITE' && btn.urlType === 'Dynamic') {
                 buttonVariables[String(idx)] = {
-                    type: 'direct',
+                    type: 'Dynamic',
                     value: '',
                     label: btn.text || '',
-                    example: btn.urlExample || ''
+                    example: btn.url || ''
                 };
             }
         });
@@ -119,7 +119,7 @@ export default function TemplateMessageModal() {
             .map((btn, idx) => (btn.type === 'VISIT_WEBSITE' && btn.urlType === 'Dynamic' ? String(idx) : null))
             .filter(Boolean);
     }, [templateMessage.templateData?.buttons]);
-
+    
     const isAllFilled = useMemo(() => {
         if (!templateMessage.templateId) return false;
 
@@ -163,15 +163,15 @@ export default function TemplateMessageModal() {
                             text: templateMessage.bodyVariables[num].value
                         }))
                     },
-                    ...(buttonVarsIndices.length > 0 ? [{
+                 ...buttonVarsIndices.map(idx => ({
                         type: "button",
                         sub_type: "url",
-                        index: 0, // WhatsApp usually expects 0 for the first dynamic URL button
-                        parameters: buttonVarsIndices.map(idx => ({
+                        index: Number(idx),
+                        parameters: [{
                             type: "text",
                             text: templateMessage.buttonVariables[idx].value
-                        }))
-                    }] : [])
+                        }]
+                    }))
                 ]
             }
 
@@ -196,7 +196,8 @@ export default function TemplateMessageModal() {
             buttonVariables: {}
         });
     };
-
+    console.log(buttonVarsIndices,templateMessage.buttonVariables);
+    
     const renderVariableInput = (type, num, buttonLabel) => {
         const varData = (
             type === 'header' ? templateMessage.headerVariables :
@@ -207,6 +208,10 @@ export default function TemplateMessageModal() {
         const badgeLabel = type === 'header' ? t("header") : type === 'body' ? t("body") : buttonLabel || `${t("button")} ${num}`;
         const isButtonType = type === 'button';
 
+        const placeholder = varData.example
+            ? t("enterValueFor", {  example: varData.example })
+            : t("enterValue");
+
         return (
             <div key={`${type}-${num}`} className="flex gap-3 items-start group">
                 <div className="w-[60px] h-10 text-center rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 flex items-center justify-center text-xs font-black text-slate-400 shrink-0 shadow-sm">
@@ -214,12 +219,22 @@ export default function TemplateMessageModal() {
                 </div>
                 <div className="flex-1">
                     <Input
-                        placeholder={varData.example ? (isButtonType ? varData.example : `${t("example")}: ${varData.example}`) : t("enterValue")}
+                        placeholder={placeholder}
                         value={varData.value || ""}
-                        onChange={(e) => handleVariableChange(type, num, { value: e.target.value })}
+                        onChange={(e) => {
+                            let val = e.target.value;
+                            if (isButtonType) {
+                                val = val.replace(/\s/g, '_');
+                            }
+                            handleVariableChange(type, num, { value: val });
+                        }}
                         className="h-10 rounded-xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 px-4 text-sm"
                     />
-                    {isButtonType && <p className="text-[10px] text-slate-400 mt-1 px-1 font-medium">{badgeLabel}</p>}
+                    {isButtonType && (
+                        <div className="space-y-1 mt-1 px-1">
+                            <p className="text-[10px] text-slate-400 font-medium">{`${badgeLabel} - ${varData.example}`}</p>
+                        </div>
+                    )}
                 </div>
             </div>
         );

@@ -590,9 +590,22 @@ export default function OrdersTab({
         key: "orderNumber",
         header: t("table.orderNumber"),
         cell: (row) => (
-          <span className="text-primary font-bold font-mono">
-            {row.orderNumber}
-          </span>
+          <div className="flex flex-col gap-0.5">
+            <span className="text-primary font-bold font-mono">
+              {row.orderNumber}
+            </span>
+            {row.duplicateCount > 0 && (
+              <Badge variant="destructive" className="w-fit text-[9px] px-1.5 py-0.5 h-auto uppercase font-bold  flex  items-center justify-center leading-none gap-0.5">
+                <span>{t("table.duplicate") || "Duplicate"} ({row.duplicateCount + 1})</span>
+                <span>{t('table.from')}</span>
+                {row.originalOrderNumber && (
+                  <span className="text-[12px] opacity-90  font-bold">
+                    {row.originalOrderNumber}
+                  </span>
+                )}
+              </Badge>
+            )}
+          </div>
         ),
       },
       {

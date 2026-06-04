@@ -5194,6 +5194,8 @@
     "table": {
       "barcode": "Barcode",
       "orderNumber": "Order Number",
+      "duplicate": "Duplicate",
+      "from": "From",
       "assignedEmployee": "Assigned Employee",
       "notAssigned": "Not Assigned",
       "customerName": "Customer Name",
@@ -5316,6 +5318,15 @@
     "retrySettings": {
       "globalTitle": "Retry Settings",
       "globalDescription": "Control the automatic customer contact flow and route orders after the response timeout ends",
+      "hours": "Hours",
+      "duplicates": {
+        "title": "Duplicate Detection",
+        "subtitle": "Configure how the system identifies and handles duplicate orders",
+        "window": "Detection Window",
+        "windowDesc": "The timeframe (in hours) to look back for orders with the same phone and items",
+        "autoCancel": "Auto-Cancel Duplicates",
+        "autoCancelDesc": "If enabled, detected duplicate orders will be automatically marked as CANCELLED"
+      },
       "tabs": {
         "general": "General",
         "automation": "Automation",
@@ -10124,6 +10135,7 @@
     "templateMessage": "Template Message",
     "templateDescription": "Choose a pre-approved WhatsApp template and fill in variables.",
     "chooseTemplate": "Choose Template",
+    "buttonVariableHint": "Enter only the variable part (e.g., '123') as seen in the URL above.",
     "changeTemplate": "Change Template",
     "noTemplateSelected": "No Template Selected",
     "selectTemplateToStart": "Select a pre-approved WhatsApp template to start.",
@@ -10132,6 +10144,7 @@
     "enterValuesManual": "Enter the values for the template variables below.",
     "example": "Example",
     "enterValue": "Enter value...",
+    "enterValueFor": "Enter variable value at example: {example}",
     "dynamicButtons": "Dynamic Buttons",
     "button": "Button",
     "header": "Header",

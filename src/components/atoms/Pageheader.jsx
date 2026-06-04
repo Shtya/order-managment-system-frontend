@@ -11,16 +11,27 @@ import { ArrowUpRight, ArrowDownRight, Edit3, Trash2, AlertCircle } from "lucide
 	 ANIMATED COUNTER
 ══════════════════════════════════════════════════════════════ */
 function AnimatedCounter({ value, delay = 0 }) {
-	const raw = parseFloat(String(value).replace(/[^0-9.]/g, ""));
-	const prefix = String(value).match(/^[^0-9]*/)?.[0] || "";
-	const suffix = String(value).replace(/^[^0-9]*[0-9,.]+/, "");
+	const strValue = String(value);
+
+	// Detect if the value is a "simple" number with optional prefix/suffix
+	// Simple means: [optional non-digits] [number with commas/dots] [optional non-digits]
+	// If it has multiple numbers or complex text (like "12 (1,500 EGP)"), we don't animate.
+	const simpleNumberRegex = /^([^0-9]*)(\d+(?:[,.]\d+)*)([^0-9]*)$/;
+	const match = strValue.trim().match(simpleNumberRegex);
+
 	const [display, setDisplay] = useState(0);
 	const [started, setStarted] = useState(false);
 
+	const isSimple = !!match;
+	const raw = isSimple ? parseFloat(match[2].replace(/,/g, "")) : NaN;
+	const prefix = isSimple ? match[1] : "";
+	const suffix = isSimple ? match[3] : "";
+
 	useEffect(() => {
+		if (!isSimple) return;
 		const t = setTimeout(() => setStarted(true), delay);
 		return () => clearTimeout(t);
-	}, [delay]);
+	}, [delay, isSimple]);
 
 	useEffect(() => {
 		if (!started || isNaN(raw)) return;
@@ -37,10 +48,13 @@ function AnimatedCounter({ value, delay = 0 }) {
 		requestAnimationFrame(raf);
 	}, [started, raw]);
 
-	if (isNaN(raw)) return <span>{value}</span>;
+	if (!isSimple || isNaN(raw)) return <span>{value}</span>;
+
 	return (
 		<span style={{ fontVariantNumeric: "tabular-nums" }}>
-			{prefix}{display.toLocaleString()}{suffix}
+			{prefix}
+			{display.toLocaleString()}
+			{suffix}
 		</span>
 	);
 }
@@ -58,7 +72,7 @@ function InfoCard({
 	const t = useTranslations("orders");
 	const [hov, setHov] = useState(false);
 	const Icon = icon;
-
+	
 	const accent = "var(--primary)";
 	const iconBg = "color-mix(in oklab, var(--primary) 12%, transparent)";
 	const iconBorder = "1px solid color-mix(in oklab, var(--primary) 18%, transparent)";

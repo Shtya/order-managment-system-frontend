@@ -4545,8 +4545,9 @@
   },
   "orders": {
     "shipmentStatuses": {
-      "created": "Created",
-      "submitted": "Submitted",
+      "created": "Dispatched",
+      "submitted": "Draft",
+      "returned": "Returned",
       "in_transit": "In Transit",
       "delivered": "Delivered",
       "failed": "Delivery Failed",
@@ -4577,7 +4578,10 @@
       "damaged": "Damaged",
       "on_hold": "On Hold",
       "action_required": "Action Required",
-      "archived": "Archived"
+      "archived": "Archived",
+      "created": "Dispatched",
+      "submitted": "Draft",
+      "failed": "Failed"
     },
     "trackShipment": {
       "title": "Shipment Tracking",
@@ -6071,7 +6075,9 @@
       "collectOrder": "Collect order",
       "collect": "Collect",
       "export": "Export",
-      "howToUse": "How to Use"
+      "howToUse": "How to Use",
+      "viewHistory": "View History",
+      "viewDetails": "View Details"
     },
     "stats": {
       "notCollected": "Not Collected",
@@ -6089,7 +6095,8 @@
       "collectionStatus": "Collection Status",
       "delayDays": "Number of delay days",
       "lastCollectionDate": "Last Collection Date",
-      "totalAmount": "Total Amount"
+      "totalAmount": "Total Amount",
+      "collectibleAmount": "Collectible Amount"
     },
     "collectionStatus": {
       "pending": "Pending",
@@ -6146,6 +6153,17 @@
     "errors": {
       "fetchFailed": "Failed to load orders",
       "fetchStatsFailed": "Failed to load statistics"
+    },
+    "modal": {
+      "historyTitle": "Collection History - Order {orderNumber}",
+      "orderDetails": "Order Details",
+      "collections": "Collections",
+      "noCollections": "No collections found for this order",
+      "date": "Date",
+      "amount": "Amount",
+      "method": "Method",
+      "shippingCompany": "Shipping Company",
+      "notes": "Notes"
     }
   },
   "collectOrder": {
@@ -6184,7 +6202,9 @@
       "customer": "Customer Name",
       "phone": "Phone Number",
       "city": "City",
-      "delivered": "Delivery Date"
+      "delivered": "Delivery Date",
+      "createdAt": "Order Date",
+      "shippingCompany": "Shipping Company"
     },
     "timeline": {
       "placed": "Order Placed",

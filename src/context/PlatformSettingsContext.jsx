@@ -56,7 +56,7 @@ export function PlatformSettingsProvider({ children }) {
         : Array.isArray(res.data)
           ? res.data
           : [];
-
+      
       setShippingCompanies(integrations);
     } catch (error) {
       console.error("Shipping Lookup Error:", error);

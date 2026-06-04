@@ -516,7 +516,8 @@ export default function Table({
   emptyState, striped = false, compact = false, hoverable = true,
   pagination = null, onPageChange,
   pageParamName = "page", limitParamName = "limit",
-  perPageOptions = DEFAULT_PER_PAGE_OPTIONS, className = "", flat = false
+  perPageOptions = DEFAULT_PER_PAGE_OPTIONS, className = "", flat = false,
+  rowClassName = () => ""
 }) {
   const isRTL = useIsRTL();
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -656,6 +657,7 @@ export default function Table({
                         "group border-b border-border/35 transition-colors duration-150",
                         hoverable && "hover:bg-[color-mix(in_oklab,var(--primary)_3%,transparent)]",
                         striped && i % 2 === 1 && "bg-[color-mix(in_oklab,var(--muted)_45%,transparent)]",
+                        typeof rowClassName === "function" ? rowClassName(row, i) : rowClassName
                       )}
                     >
                       {columns.map((col, idx) => {

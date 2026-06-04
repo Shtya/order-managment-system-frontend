@@ -9,7 +9,15 @@ import { useLocale } from "next-intl";
 // RTL locales list — add yours here
 const RTL_LOCALES = ["ar", "he", "fa", "ur"];
 
-function Switch({ className, checked, defaultChecked, onCheckedChange, ...props }) {
+function Switch({
+	className,
+	checked,
+	defaultChecked,
+	onCheckedChange,
+	size = "default",
+	activeColor = "var(--primary)",
+	...props
+}) {
 	const locale = useLocale();
 	const isRTL = RTL_LOCALES.includes(locale);
 
@@ -28,9 +36,24 @@ function Switch({ className, checked, defaultChecked, onCheckedChange, ...props 
 		onCheckedChange?.(val);
 	};
 
-	// Thumb travel: track 44px − 2×padding 2px − thumb 20px = 20px
-	const TRAVEL = 20;
-	const thumbX = isChecked ? (isRTL ? -TRAVEL : TRAVEL) : 0;
+	// ── Sizes ──────────────────────────────────────────────────────────────────
+	const SIZES = {
+		default: {
+			track: "h-[27px] w-[48px] p-[2px]",
+			thumb: "h-5 w-5",
+			travel: 20,
+			ripple: 20,
+		},
+		sm: {
+			track: "h-[18px] w-[32px] p-[2px]",
+			thumb: "h-3 w-3",
+			travel: 14,
+			ripple: 12,
+		},
+	};
+
+	const currentSize = SIZES[size] || SIZES.default;
+	const thumbX = isChecked ? (isRTL ? -currentSize.travel : currentSize.travel) : 0;
 
 	return (
 		<SwitchPrimitive.Root
@@ -39,10 +62,10 @@ function Switch({ className, checked, defaultChecked, onCheckedChange, ...props 
 			onCheckedChange={handleCheckedChange}
 			className={cn(
 				"peer relative inline-flex shrink-0 cursor-pointer items-center rounded-full",
-				"border border-transparent outline-none",
-				"h-[27px] w-[48px] p-[2px]",
+				"border border-transparent outline-none transition-all",
 				"focus-visible:ring-4 focus-visible:ring-ring/30",
 				"disabled:cursor-not-allowed disabled:opacity-50",
+				currentSize.track,
 				className
 			)}
 			{...props}
@@ -52,12 +75,10 @@ function Switch({ className, checked, defaultChecked, onCheckedChange, ...props 
 				aria-hidden="true"
 				className="absolute inset-0 rounded-full"
 				animate={{
-					backgroundColor: isChecked
-						? "var(--primary)"
-						: "var(--input)",
+					backgroundColor: isChecked ? activeColor : "var(--input)",
 					boxShadow: isChecked
-						? "0 0 14px 3px var(--primary / 0.35)"
-						: "0 0 0px 0px var(--primary / 0)",
+						? `0 0 14px 3px ${activeColor.includes("var") ? activeColor.replace(")", " / 0.35)") : `${activeColor}59`}`
+						: `0 0 0px 0px ${activeColor.includes("var") ? activeColor.replace(")", " / 0)") : `${activeColor}00`}`,
 				}}
 				transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
 			/>
@@ -94,10 +115,10 @@ function Switch({ className, checked, defaultChecked, onCheckedChange, ...props 
 						aria-hidden="true"
 						className="absolute top-1/2 rounded-full pointer-events-none"
 						style={{
-							width: 20,
-							height: 20,
-							marginTop: -10,
-							backgroundColor: "var(--primary / 0.35)",
+							width: currentSize.ripple,
+							height: currentSize.ripple,
+							marginTop: -(currentSize.ripple / 2),
+							backgroundColor: activeColor.includes("var") ? activeColor.replace(")", " / 0.35)") : `${activeColor}59`,
 							...(isRTL
 								? { left: 2, right: "auto" }
 								: { right: 2, left: "auto" }),
@@ -114,15 +135,16 @@ function Switch({ className, checked, defaultChecked, onCheckedChange, ...props 
 				<motion.span
 					data-slot="switch-thumb"
 					className={cn(
-						"pointer-events-none relative block h-5 w-5 rounded-full bg-background",
+						"pointer-events-none relative block rounded-full bg-background shadow-md",
+						currentSize.thumb,
 						// Subtle inner highlight
-						"after:absolute after:inset-[2px] after:rounded-full",
+						"after:absolute after:inset-[1px] after:rounded-full",
 						"after:bg-gradient-to-br after:from-white/60 after:to-transparent"
 					)}
 					animate={{
 						x: thumbX,
 						boxShadow: isChecked
-							? "0 2px 8px rgba(0,0,0,0.22), 0 0 6px var(--primary / 0.45)"
+							? `0 2px 8px rgba(0,0,0,0.22), 0 0 6px ${activeColor.includes("var") ? activeColor.replace(")", " / 0.45)") : `${activeColor}73`}`
 							: "0 1px 4px rgba(0,0,0,0.18)",
 					}}
 					whileTap={{

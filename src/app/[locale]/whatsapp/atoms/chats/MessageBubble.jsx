@@ -2,7 +2,7 @@
 
 import { cn } from "@/utils/cn";
 import { format } from "date-fns";
-import { Check, CheckCheck, Reply, Smile, Play, Pause, Mic, FileText, Clock, AlertCircle, Loader2, RotateCcw } from "lucide-react";
+import { Check, CheckCheck, Reply, Smile, Play, Pause, Mic, FileText, Clock, AlertCircle, Loader2, RotateCcw, List } from "lucide-react";
 import { useState, useRef, useEffect, useMemo } from "react";
 import data from '@emoji-mart/data'
 import Picker from '@emoji-mart/react'

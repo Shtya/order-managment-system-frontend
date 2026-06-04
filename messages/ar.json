@@ -4581,19 +4581,22 @@
   },
   "orders": {
     "shipmentStatuses": {
-      "created": "تم الإنشاء",
-      "submitted": "تم التقديم",
-      "in_transit": "قيد النقل",
+      "created": "تم الإرسال",
+      "submitted": "طلب مبدئي",
+      "returned": "تم الإرجاع",
+      "in_transit": "خرج للتوصيل",
       "delivered": "تم التوصيل",
       "failed": "فشل التوصيل",
+      "on_hold": "معلق",
       "cancelled": "تم الإلغاء"
     },
     "trackingStatus": {
       "new": "جديد",
+
       "in_progress": "قيد التنفيذ",
       "picked_up": "تم الاستلام",
-      "in_transit": "قيد الشحن",
-      "delivered": "تم التسليم",
+      "in_transit":  "خرج للتوصيل",
+      "delivered": "تم التوصيل",
       "returned": "تم الإرجاع",
       "exception": "استثناء",
       "cancelled": "ملغي",
@@ -4602,7 +4605,10 @@
       "damaged": "تالف",
       "on_hold": "معلق",
       "action_required": "يتطلب إجراء",
-      "archived": "مؤرشف"
+      "archived": "مؤرشف",
+      "created": "تم الإرسال",
+      "submitted": "طلب مبدئي",
+      "failed": "فشل التوصيل"
     },
     "trackShipment": {
       "title": "تتبع الشحنة",
@@ -6106,7 +6112,9 @@
       "collectOrder": "تحصيل طلب",
       "collect": "تحصيل",
       "export": "تصدير",
-      "howToUse": "شرح الاستخدام"
+      "howToUse": "شرح الاستخدام",
+      "viewHistory": "سجل التحصيل",
+      "viewDetails": "تفاصيل الطلب"
     },
     "stats": {
       "notCollected": "غير محصلة",
@@ -6124,7 +6132,8 @@
       "collectionStatus": "حالة التحصيل",
       "delayDays": "عدد أيام التأخير",
       "lastCollectionDate": "آخر تاريخ تحصيل",
-      "totalAmount": "المبلغ الكلي"
+      "totalAmount": "المبلغ الكلي",
+      "collectibleAmount": "المبلغ المستحق للتحصيل"
     },
     "collectionStatus": {
       "pending": "بانتظار التحصيل",
@@ -6181,6 +6190,17 @@
     "errors": {
       "fetchFailed": "فشل في تحميل الطلبات",
       "fetchStatsFailed": "فشل في تحميل الإحصائيات"
+    },
+    "modal": {
+      "historyTitle": "سجل التحصيل - طلب رقم {orderNumber}",
+      "orderDetails": "تفاصيل الطلب",
+      "collections": "عمليات التحصيل",
+      "noCollections": "لا يوجد عمليات تحصيل لهذا الطلب",
+      "date": "التاريخ",
+      "amount": "المبلغ",
+      "method": "الطريقة",
+      "shippingCompany": "شركة الشحن",
+      "notes": "ملاحظات"
     }
   },
   "collectOrder": {
@@ -6219,7 +6239,9 @@
       "customer": "اسم العميل",
       "phone": "رقم الهاتف",
       "city": "المدينة",
-      "delivered": "تاريخ التسليم"
+      "delivered": "تاريخ التسليم",
+      "createdAt": "تاريخ الطلب",
+      "shippingCompany": "شركة الشحن"
     },
     "timeline": {
       "placed": "تم الطلب",

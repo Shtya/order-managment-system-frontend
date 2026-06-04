@@ -97,6 +97,7 @@ import { useClipboard } from "@/hook/useClipboard";
 import { useAuth } from "@/context/AuthContext";
 
 import AdminFilter from "@/components/atoms/AdminFilter";
+import { Switch } from "@/components/ui/switch";
 
 //order status flow
 // New => Confirmed => Distrebuted (Assed to shipment company) =>  Printed (Waybills printed) =>  preparing (scanign its items for preparation)
@@ -138,7 +139,6 @@ export const OrderStatus = {
 export default function OrdersTab({
   stats = [], fetchStats, statsLoading,
   readOnlyStatus = false,
-  readOnlyShipmentStatus = false,
   restrictedStatuses = [],
   restrictedSelectStatuses = [],
   showTopActions = true, showBulkUpload = true, showCustom = true,
@@ -590,20 +590,37 @@ export default function OrdersTab({
         key: "orderNumber",
         header: t("table.orderNumber"),
         cell: (row) => (
-          <div className="flex flex-col gap-0.5">
-            <span className="text-primary font-bold font-mono">
-              {row.orderNumber}
-            </span>
+          <span className="text-primary font-bold font-mono">
+            {row.orderNumber}
+          </span>
+        ),
+      },
+      {
+        key: "duplicate",
+        header: t("table.duplicate") || "Duplicate",
+        cell: (row) => (
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={row.duplicateCount > 0}
+              disabled
+              size="sm"
+              activeColor="#b91c1c"
+            />
+
             {row.duplicateCount > 0 && (
-              <Badge variant="destructive" className="w-fit text-[9px] px-1.5 py-0.5 h-auto uppercase font-bold  flex  items-center justify-center leading-none gap-0.5">
-                <span>{t("table.duplicate") || "Duplicate"} ({row.duplicateCount + 1})</span>
-                <span>{t('table.from')}</span>
-                {row.originalOrderNumber && (
-                  <span className="text-[12px] opacity-90  font-bold">
-                    {row.originalOrderNumber}
+              <div className="flex items-center gap-2">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-red-600 leading-tight">
+                    {t("table.duplicate") || "Duplicate"} ({row.duplicateCount + 1})
                   </span>
-                )}
-              </Badge>
+
+                  {row.originalOrderNumber && (
+                    <span className="text-[9px] text-red-500/80 font-medium leading-tight">
+                      {t("table.from")}: {row.originalOrderNumber}
+                    </span>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         ),
@@ -786,9 +803,9 @@ export default function OrdersTab({
         header: t("table.shipmentStatus"),
         cell: (row) => {
           const ship = row.shipments?.[0];
-          const currentUnified = ship?.unifiedStatus || "";
-          const isDelivered =
-            currentUnified === "delivered" || ship?.status === "delivered";
+
+          const currentStatus = ship?.status || "";
+          const isDelivered = currentStatus === "delivered";
 
           if (!ship?.id) {
             return (
@@ -796,20 +813,12 @@ export default function OrdersTab({
             );
           }
 
-          if (readOnlyShipmentStatus) {
-            return (
-              <Badge variant="outline" className="rounded-xl border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-blue-400">
-                {currentUnified ? t(`trackingStatus.${currentUnified}`) : "—"}
-              </Badge>
-            );
-          }
-
           return (
             <div className="flex items-center gap-2">
               <Select
-                value={currentUnified || undefined}
+                value={currentStatus || undefined}
                 onValueChange={async (val) => {
-                  if (!val || val === currentUnified) return;
+                  return;
                   const toastId = toast.loading(t("messages.shipmentStatusUpdating"));
                   try {
                     setShipmentUpdating(row.id, true);
@@ -841,8 +850,7 @@ export default function OrdersTab({
                                 ? {
                                   ...s,
                                   ...newShipment,
-                                  unifiedStatus:
-                                    newShipment.unifiedStatus || val,
+                                  status: newShipment.status || val,
                                 }
                                 : s
                             ),
@@ -861,17 +869,14 @@ export default function OrdersTab({
                     setShipmentUpdating(row.id, false);
                   }
                 }}
-                disabled={
-                  isDelivered ||
-                  updatingShipments.includes(row.id)
-                }
+                disabled={updatingShipments.includes(row.id)}
               >
                 <SelectTrigger className="w-[170px] h-8">
                   <SelectValue placeholder="—" />
                 </SelectTrigger>
                 <SelectContent>
                   {(unifiedShipmentStatuses || []).map((code) => (
-                    <SelectItem key={code} value={code}>
+                    <SelectItem key={code} value={code} className="cursor-default!">
                       {t(`trackingStatus.${code}`)}
                     </SelectItem>
                   ))}
@@ -1199,6 +1204,12 @@ export default function OrdersTab({
       />
 
       <Table
+        // ── Row Styling ───────────────────────────────────────────────────────
+        rowClassName={(row) =>
+          row.duplicateCount > 0
+            ? "bg-red-50 dark:bg-red-950/30 border-red-100/60"
+            : ""
+        }
         // ── Search (always visible) ───────────────────────────────────────────
         searchValue={search}
         onSearchChange={setSearch}

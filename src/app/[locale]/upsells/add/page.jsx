@@ -342,7 +342,7 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
             <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
               <h3 className="font-bold text-lg mb-6 border-b pb-4">{isRtl ? "إعدادات العرض  (Upsell Settings)" : "Upsell Settings"}</h3>
 
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <Controller
                     name="triggerProductId"
@@ -429,7 +429,7 @@ export default function UpsellsAddPage({ mode = "add", upsellId = null, initialU
                   )}
                 </div>
 
-                <div className="space-y-4 pt-2">
+                <div className="flex flex-col md:flex-row items-center gap-4 pt-2">
                   <div className="flex items-center gap-3">
                     <Controller
                       name="expireTimeEnabled"

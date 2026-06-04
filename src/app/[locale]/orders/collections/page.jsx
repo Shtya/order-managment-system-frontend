@@ -14,6 +14,10 @@ import {
 	Plus,
 	HandCoins,
 	Info,
+	History,
+	Eye,
+	ExternalLink,
+	Boxes,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -35,6 +39,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import ActionButtons from "@/components/atoms/Actions";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 
@@ -73,12 +78,109 @@ function getCollectionStatusBadge(status, t) {
 	);
 }
 
+function CollectionHistoryModal({ isOpen, onClose, order, formatCurrency, t }) {
+	if (!order) return null;
+
+	const collections = order.collections || [];
+
+	return (
+		<Dialog open={isOpen} onOpenChange={onClose}>
+			<DialogContent className="max-w-4xl! max-h-[85vh] overflow-hidden p-0 bg-white dark:bg-slate-950">
+				<DialogHeader className="px-6 pt-6 pb-4 border-b">
+					<DialogTitle className="flex items-center gap-2 text-xl font-bold">
+						<History className="text-primary" size={20} />
+						{t("modal.historyTitle", { orderNumber: order.orderNumber })}
+					</DialogTitle>
+				</DialogHeader>
+
+				<div className="p-6 overflow-y-auto max-h-[calc(85vh-80px)] space-y-6">
+					<div className="rounded-xl border p-4 shadow-sm bg-muted/10">
+						<div className="flex justify-between items-center">
+							<div>
+								<h4 className="text-lg font-bold">{t("modal.orderDetails")}</h4>
+								<div className="mt-2 flex flex-wrap gap-2">
+									<Badge variant="outline" className="text-[10px]">{t("columns.orderNumber")}: {order.orderNumber}</Badge>
+									<Badge variant="outline" className="text-[10px]">{t("columns.finalTotal")}: {formatCurrency(order.finalTotal)}</Badge>
+									<Badge variant="secondary" className="text-[10px]">{t("columns.collectedAmount")}: {formatCurrency(order.collectedAmount)}</Badge>
+								</div>
+							</div>
+							<div className="text-right">
+								<div className="text-xs text-muted-foreground">{t("columns.remainingBalance")}</div>
+								<div className="text-lg font-bold text-red-600">{formatCurrency(order.remainingBalance)}</div>
+							</div>
+						</div>
+					</div>
+
+					<div className="space-y-3">
+						<h5 className="text-sm font-semibold flex items-center gap-2">
+							<DollarSign size={16} className="text-primary" />
+							{t("modal.collections")} ({collections.length})
+						</h5>
+
+						{collections.length === 0 ? (
+							<div className="text-sm text-muted-foreground py-10 text-center border rounded-lg border-dashed">
+								{t("modal.noCollections")}
+							</div>
+						) : (
+							<div className="border rounded-xl overflow-hidden shadow-sm">
+								<div className="overflow-x-auto">
+									<table className="w-full text-sm">
+										<thead className="bg-muted/50 border-b">
+											<tr>
+												<th className="px-4 py-3 text-start font-bold">{t("modal.date")}</th>
+												<th className="px-4 py-3 text-center font-bold">{t("modal.amount")}</th>
+												<th className="px-4 py-3 text-center font-bold">{t("modal.method")}</th>
+												<th className="px-4 py-3 text-center font-bold">{t("modal.shippingCompany")}</th>
+												<th className="px-4 py-3 text-start font-bold">{t("modal.notes")}</th>
+											</tr>
+										</thead>
+										<tbody className="divide-y">
+											{collections.map((col) => (
+												<tr key={col.id} className="hover:bg-muted/30 transition-colors">
+													<td className="px-4 py-3 whitespace-nowrap">
+														<div className="flex items-center gap-2">
+															<Calendar size={14} className="text-muted-foreground" />
+															{formatDate(col.collectedAt)}
+														</div>
+													</td>
+													<td className="px-4 py-3 text-center font-bold text-emerald-600">
+														{formatCurrency(col.amount)}
+													</td>
+													<td className="px-4 py-3 text-center">
+														<Badge variant="outline" className="text-[10px]">
+															{t(`collectionMethods.${col.source}`)}
+														</Badge>
+													</td>
+													<td className="px-4 py-3 text-center">
+														<div className="flex items-center justify-center gap-1.5">
+															<Truck size={12} className="text-muted-foreground" />
+															<span className="text-xs font-medium">{col.shippingCompany?.name || col.colShipping?.name || "—"}</span>
+														</div>
+													</td>
+													<td className="px-4 py-3 text-start text-muted-foreground italic">
+														{col.notes || "—"}
+													</td>
+												</tr>
+											))}
+										</tbody>
+									</table>
+								</div>
+							</div>
+						)}
+					</div>
+				</div>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
 // ── Stats Configuration ───────────────────────────────────────────────────────
 
 const COLLECTION_STATS_NOT_COLLECTED = [
 	{
 		id: 1,
-		code: "notCollectedCount",
+		countCode: "notCollectedCount",
+		amountCode: "totalNonCollectedMoney",
 		nameKey: "stats.notCollected",
 		color: "#ef4444",
 		icon: AlertCircle,
@@ -86,7 +188,8 @@ const COLLECTION_STATS_NOT_COLLECTED = [
 	},
 	{
 		id: 2,
-		code: "partialCollectedCount",
+		countCode: "partialCollectedCount",
+		amountCode: "totalPartialCollectedMoney",
 		nameKey: "stats.partialCollected",
 		color: "#3b82f6",
 		icon: Clock,
@@ -97,7 +200,8 @@ const COLLECTION_STATS_NOT_COLLECTED = [
 const COLLECTION_STATS_COLLECTED = [
 	{
 		id: 1,
-		code: "fullyCollectedCount",
+		countCode: "totalCollectedOrders",
+		amountCode: "totalCollectedMoney",
 		nameKey: "stats.fullyCollected",
 		color: "#10b981",
 		icon: CheckCircle2,
@@ -119,12 +223,17 @@ export default function OrderCollectionPage() {
 	const [search, setSearch] = useState("");
 	const [debouncedSearch, setDebouncedSearch] = useState("");
 
+	const [historyModal, setHistoryModal] = useState({ open: false, order: null });
+
 	const { formatCurrency, shippingCompanies } = usePlatformSettings();
 
 	const [statsData, setStatsData] = useState({
 		notCollectedCount: 0,
 		partialCollectedCount: 0,
 		fullyCollectedCount: 0,
+		totalCollectedOrders: 0,
+		totalCollectedMoney: 0,
+		totalNonCollectedMoney: 0,
 		shippingBreakdown: [],
 	});
 
@@ -222,6 +331,10 @@ export default function OrderCollectionPage() {
 				notCollectedCount: data.notCollectedCount ?? 0,
 				partialCollectedCount: data.partialCollectedCount ?? 0,
 				fullyCollectedCount: data.fullyCollectedCount ?? 0,
+				totalPartialCollectedMoney: data.totalPartialCollectedMoney ?? 0,
+				totalCollectedOrders: data.totalCollectedOrders ?? 0,
+				totalCollectedMoney: data.totalCollectedMoney ?? 0,
+				totalNonCollectedMoney: data.totalNonCollectedMoney ?? 0,
 				shippingBreakdown: data.shippingBreakdown ?? [],
 			});
 		} catch (e) {
@@ -310,27 +423,45 @@ export default function OrderCollectionPage() {
 		const statsConfig =
 			activeTab === "not_collected" ? COLLECTION_STATS_NOT_COLLECTED : COLLECTION_STATS_COLLECTED;
 
-		return statsConfig.map((stat) => ({
-			id: stat.id,
-			name: t(stat.nameKey),
-			value: String(statsData[stat.code] ?? 0),
-			icon: stat.icon,
-			color: stat.color,
-			sortOrder: stat.sortOrder,
-		}));
-	}, [activeTab, statsData, t]);
+		return statsConfig.map((stat) => {
+			const count = statsData[stat.countCode] ?? 0;
+
+			const amount = stat.amountCode ? statsData[stat.amountCode] : null;
+			let displayValue = String(count);
+			if (amount !== null) {
+				displayValue = `${count} (${formatCurrency(amount)})`;
+			}
+
+
+			return {
+				id: stat.id,
+				name: t(stat.nameKey),
+				value: displayValue,
+				icon: stat.icon,
+				color: stat.color,
+				sortOrder: stat.sortOrder,
+			};
+		});
+	}, [activeTab, statsData, t, formatCurrency]);
 
 	// ── Shipping Breakdown Stats ──────────────────────────────────────────────
 	const shippingBreakdownStats = useMemo(() => {
-		return statsData.shippingBreakdown.map((shipping, idx) => ({
-			id: `shipping_${idx}`,
-			name: shipping.name,
-			value: formatCurrency(shipping.amount),
-			icon: Truck,
-			color: "#06b6d4",
-			sortOrder: 100 + idx,
-		}));
-	}, [statsData.shippingBreakdown]);
+		const isNotCollected = activeTab === "not_collected";
+
+		return statsData.shippingBreakdown.map((shipping, idx) => {
+			const count = isNotCollected ? shipping.nonCollectedOrdersCount : shipping.collectedOrdersCount;
+			const amount = isNotCollected ? shipping.totalNonCollectedMoney : shipping.totalCollectedMoney;
+
+			return {
+				id: `shipping_${idx}`,
+				name: shipping.name,
+				value: `${count} (${formatCurrency(amount)})`,
+				icon: Truck,
+				color: "#06b6d4",
+				sortOrder: 100 + idx,
+			};
+		});
+	}, [statsData.shippingBreakdown, activeTab, formatCurrency]);
 
 	// ── Combined Stats ────────────────────────────────────────────────────────
 	const allStats = useMemo(() => {
@@ -352,9 +483,31 @@ export default function OrderCollectionPage() {
 				header: t("columns.shippingCompany"),
 				cell: (row) => (
 					<div className="flex items-center gap-1.5">
+						<span className="text-sm font-medium">{row.shippingCompany?.name ?? "—"}</span>
 						<Truck size={12} className="text-muted-foreground" />
-						<span className="text-sm font-medium">{row.shippingCompany?.name}</span>
 					</div>
+				),
+			},
+
+			{
+				key: "shippingCost",
+				header: t("columns.shippingCost"),
+				cell: (row) => (
+					<span className="font-medium tabular-nums">{formatCurrency(row.shippingCost)}</span>
+				),
+			},
+			{
+				key: "finalTotal",
+				header: t("columns.totalAmount"),
+				cell: (row) => (
+					<span className="font-bold text-foreground tabular-nums">{formatCurrency(row.finalTotal)}</span>
+				),
+			},
+			{
+				key: "collectibleAmount",
+				header: t("columns.collectibleAmount"),
+				cell: (row) => (
+					<span className="font-bold text-foreground tabular-nums">{formatCurrency(row.collectibleAmount)}</span>
 				),
 			},
 			{
@@ -375,13 +528,7 @@ export default function OrderCollectionPage() {
 					</span>
 				),
 			},
-			{
-				key: "shippingCost",
-				header: t("columns.shippingCost"),
-				cell: (row) => (
-					<span className="font-medium tabular-nums">{formatCurrency(row.shippingCost)}</span>
-				),
-			},
+
 			{
 				key: "collectionMethod",
 				header: t("columns.collectionMethod"),
@@ -430,7 +577,7 @@ export default function OrderCollectionPage() {
 				key: "collectionStatus",
 				header: t("columns.collectionStatus"),
 				cell: (row) => {
-					const status = row.remainingBalance > 0 ? "pending" : "fully_collected";
+					const status = row.remainingBalance > 0 ? row.collectedAmount > 0 ? "partial" : "pending" : "fully_collected";
 					return getCollectionStatusBadge(status, t);
 				},
 			},
@@ -448,12 +595,25 @@ export default function OrderCollectionPage() {
 								variant: "primary",
 								permission: "orders-collect.create",
 							},
+							{
+								icon: <History />,
+								tooltip: t("actions.viewHistory"),
+								disabled: row.collections?.length === 0,
+								onClick: (r) => setHistoryModal({ open: true, order: r }),
+								variant: "secondary",
+							},
+							{
+								icon: <Eye />,
+								tooltip: t("actions.viewDetails"),
+								onClick: (r) => router.push(`/orders/details/${r.orderId}`),
+								variant: "ghost",
+							},
 						]}
 					/>
 				),
 			},
 		],
-		[t, formatCurrency]
+		[t, formatCurrency, router]
 	);
 
 	// ── Table Columns: Collected ──────────────────────────────────────────────
@@ -471,8 +631,8 @@ export default function OrderCollectionPage() {
 				header: t("columns.shippingCompany"),
 				cell: (row) => (
 					<div className="flex items-center gap-1.5">
+						<span className="text-sm font-medium">{row.shippingCompany?.name ?? "—"}</span>
 						<Truck size={12} className="text-muted-foreground" />
-						<span className="text-sm font-medium">{row.shippingCompany?.name}</span>
 					</div>
 				),
 			},
@@ -508,7 +668,7 @@ export default function OrderCollectionPage() {
 				header: t("columns.collectedAmount"),
 				cell: (row) => (
 					<span className="font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
-						{formatCurrency(row.collectedAmount)}
+						{formatCurrency(row.collections?.reduce((acc, col) => acc + Number(col.amount), 0))}
 					</span>
 				),
 			},
@@ -526,8 +686,31 @@ export default function OrderCollectionPage() {
 				header: t("columns.collectionStatus"),
 				cell: (row) => getCollectionStatusBadge("fully_collected", t),
 			},
+			{
+				key: "actions",
+				header: t("table.actions"),
+				cell: (row) => (
+					<ActionButtons
+						row={row}
+						actions={[
+							{
+								icon: <History />,
+								tooltip: t("actions.viewHistory"),
+								onClick: (r) => setHistoryModal({ open: true, order: r }),
+								variant: "secondary",
+							},
+							{
+								icon: <Eye />,
+								tooltip: t("actions.viewDetails"),
+								onClick: (r) => router.push(`/orders/details/${r.orderId}`),
+								variant: "ghost",
+							},
+						]}
+					/>
+				),
+			},
 		],
-		[t, formatCurrency]
+		[t, formatCurrency, router]
 	);
 
 	// ── Current Columns ───────────────────────────────────────────────────────
@@ -542,9 +725,9 @@ export default function OrderCollectionPage() {
 					{ name: activeTab === "not_collected" ? t('breadcrumb.notCollected') : t("breadcrumb.fullyCollected") },
 				]}
 				buttons={
-					
-						<Button_ size="sm" label={t("actions.howToUse")} variant="ghost" icon={<Info size={18} />} />
-					
+
+					<Button_ size="sm" label={t("actions.howToUse")} variant="ghost" icon={<Info size={18} />} />
+
 				}
 				stats={allStats}
 			>
@@ -586,7 +769,7 @@ export default function OrderCollectionPage() {
 						{/* Shipping Company */}
 						<FilterField label={t("filters.shippingCompany")}>
 							<Select
-								value={filters.shippingCompanyId}
+								value={filters.shippingCompanyId || undefined}
 								onValueChange={(v) => setFilters((f) => ({ ...f, shippingCompanyId: v }))}
 							>
 								<SelectTrigger
@@ -639,6 +822,14 @@ export default function OrderCollectionPage() {
 					per_page: pager.per_page,
 				}}
 				onPageChange={({ page, per_page }) => fetchOrders(page, per_page)}
+			/>
+
+			<CollectionHistoryModal
+				isOpen={historyModal.open}
+				onClose={() => setHistoryModal({ open: false, order: null })}
+				order={historyModal.order}
+				formatCurrency={formatCurrency}
+				t={t}
 			/>
 		</div>
 	);

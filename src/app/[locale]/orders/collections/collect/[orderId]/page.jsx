@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Save,
@@ -206,9 +206,11 @@ function PaymentSourcePicker({ value, onChange, tCollect }) {
 
 // ── Order Timeline ────────────────────────────────────────────────────────────
 
-function OrderTimeline({ deliveredAt, t }) {
+function OrderTimeline({ deliveredAt,createdAt, t }) {
   const steps = [
-    { labelKey: "timeline.placed", done: true, icon: Package, active: false },
+    { labelKey: "timeline.placed", done: true, icon: Package, active: false,
+      sub: createdAt ? formatDate(createdAt) : t("timeline.pending"),
+    },
     {
       labelKey: "timeline.delivered",
       done: !!deliveredAt,
@@ -223,6 +225,8 @@ function OrderTimeline({ deliveredAt, t }) {
       active: true,
     },
   ];
+
+
   return (
     <div className="flex items-center mt-5">
       {steps.map((step, i) => {
@@ -305,6 +309,16 @@ function OrderHeroCard({ order, t }) {
       icon: Calendar,
       labelKey: "info.delivered",
       value: formatDate(order.deliveredAt),
+    },
+    {
+      icon: Calendar,
+      labelKey: "info.createdAt",
+      value: formatDate(order.created_at),
+    },
+    {
+      icon: Truck,
+      labelKey: "info.shippingCompany",
+      value: order.shippingCompany?.name || "_",
     },
   ];
 
@@ -402,7 +416,7 @@ function OrderHeroCard({ order, t }) {
         </div>
       )}
 
-      <OrderTimeline deliveredAt={order.deliveredAt} t={t} />
+      <OrderTimeline deliveredAt={order.deliveredAt} createdAt={order.created_at} t={t} />
     </motion.div>
   );
 }
@@ -417,7 +431,7 @@ export default function CollectOrderPage() {
   const params = useParams();
   const orderId = params?.orderId;
   const { formatCurrency, shippingCompanies, isShippingLoading, currency } = usePlatformSettings();
-  const locale = useLocale();
+
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [order, setOrder] = useState(null);
@@ -455,6 +469,7 @@ export default function CollectOrderPage() {
 
   const watchedSafeId = watch("safeId");
   const watchedAmount = watch("amount");
+  const shippingCompanyId = watch("shippingCompanyId");
 
   const { selectedAccount: selectedSafe, commissionAmount } = useSafeAmountWithCommission({
     safeId: watchedSafeId,
@@ -480,11 +495,11 @@ export default function CollectOrderPage() {
         const orderData = orderRes.data;
         setOrder(orderData);
 
-        const remaining = (orderData.finalTotal || 0) - (orderData.collectedAmount || 0);
+        const collectibleAmount = (orderData.finalTotal || 0) - (orderData.shippingCost || 0);
+        const remaining = collectibleAmount - (orderData.collectedAmount || 0);
         if (remaining > 0) {
           setValue("amount", remaining);
         }
-
       } catch (error) {
         toast.error(t("errors.fetchFailed"));
         router.push("/orders/collections");
@@ -494,26 +509,42 @@ export default function CollectOrderPage() {
     })();
   }, [orderId, router, t, setValue]);
 
-
   useEffect(() => {
-    if (!order || isShippingLoading || shippingCompanies.length === 0) return;
+    if (!order?.shippingCompanyId || isShippingLoading || shippingCompanies.length === 0) return;
 
-    if (order.shippingCompany?.id) {
+    const orderShippingId =
+      order?.shippingCompanyId;
 
-      setValue("shippingCompanyId", String(order.shippingCompany.id));
-    } else if (shippingCompanies.length === 1) {
+    const matchedCompany = shippingCompanies.find(
+      (c) =>
+        String(c.providerId) === String(orderShippingId)
+    );
 
-      const defaultId = shippingCompanies[0].providerId || shippingCompanies[0].id;
-      setValue("shippingCompanyId", String(defaultId));
+    if (matchedCompany) {
+      const nextValue = String(matchedCompany.providerId ?? matchedCompany.id);
+
+      if (watch("shippingCompanyId") !== nextValue) {
+        setValue("shippingCompanyId", nextValue, {
+          shouldDirty: false,
+          shouldTouch: false,
+          shouldValidate: false,
+        });
+      }
+    } else if (watch("shippingCompanyId") == null) {
+      setValue("shippingCompanyId", "", {
+        shouldDirty: false,
+        shouldTouch: false,
+        shouldValidate: false,
+      });
     }
-  }, [order, shippingCompanies, isShippingLoading, setValue]);
+  }, [order?.shippingCompanyId, shippingCompanies, isShippingLoading, setValue, watch]);
 
   const onSubmit = async (data) => {
     try {
       setLoading(true);
       await api.post("/collections", {
         orderId: orderId,
-        shippingCompanyId: data.shippingCompanyId !== 'none' ? data.shippingCompanyId : undefined,
+        shippingCompanyId: data.shippingCompanyId && data.shippingCompanyId !== "none" ? data.shippingCompanyId : undefined,
         source: data.source,
         safeId: data.safeId,
         amount: Number(data.amount),
@@ -563,41 +594,51 @@ export default function CollectOrderPage() {
       </div>
     );
 
-  const remaining = (order.finalTotal || 0) - (order.collectedAmount || 0);
+  const collectibleAmount = (order.finalTotal || 0) - (order.shippingCost || 0);
+  const remaining = collectibleAmount - (order.collectedAmount || 0);
 
   // ── Stats for PageHeader ──────────────────────────────────────────────────
   const pageStats = [
     {
       id: 1,
-      name: t("fields.orderTotal"),
-      value: formatCurrency(order.finalTotal),
-      icon: Wallet,
-      color: "var(--primary)",
-      sortOrder: 1,
-    },
-    {
-      id: 2,
-      name: t("fields.collectedAmount"),
-      value: formatCurrency(order.collectedAmount),
-      icon: CircleDollarSign,
-      color: "#10b981",
-      sortOrder: 2,
-    },
-    {
-      id: 3,
       name: t("fields.shippingCost"),
       value: formatCurrency(order.shippingCost),
       icon: Truck,
       color: "var(--secondary)",
+      sortOrder: 1,
+    },
+    {
+      id: 2,
+      name: t("fields.orderTotal"),
+      value: formatCurrency(order.finalTotal),
+      icon: Wallet,
+      color: "var(--primary)",
+      sortOrder: 2,
+    },
+    {
+      id: 3,
+      name: tCollect("columns.collectibleAmount"),
+      value: formatCurrency(collectibleAmount),
+      icon: CheckCircle2,
+      color: "var(--primary)",
       sortOrder: 3,
     },
     {
       id: 4,
+      name: t("fields.collectedAmount"),
+      value: formatCurrency(order.collectedAmount),
+      icon: CircleDollarSign,
+      color: "#10b981",
+      sortOrder: 4,
+    },
+
+    {
+      id: 5,
       name: t("stats.remainingBalance"),
       value: formatCurrency(remaining),
       icon: Banknote,
       color: remaining > 0 ? "var(--primary)" : "#10b981",
-      sortOrder: 4,
+      sortOrder: 5,
     },
   ];
 
@@ -708,8 +749,8 @@ export default function CollectOrderPage() {
                       control={control}
                       render={({ field }) => (
                         <Select
-                          value={String(field.value)}
-                          onValueChange={(v) => field.onChange(v)}
+                          value={field.value || ""}
+                          onValueChange={field.onChange}
                         >
                           <SelectTrigger className={FIELD_CLS}>
                             <SelectValue
@@ -742,13 +783,13 @@ export default function CollectOrderPage() {
                       name="collectionDate"
                       control={control}
                       render={({ field }) => (
+
                         <DateRangePicker
                           mode="single"
                           value={field.value}
+                          taticShow={true}
                           onChange={(date) => field.onChange(date)}
-                          staticShow={true}
                           dataSize="default"
-                          className={cn("theme-field w-full! pl-9", errors.collectionDate && "border-red-500")}
                         />
                       )}
                     />
@@ -777,35 +818,7 @@ export default function CollectOrderPage() {
 
                 {/* Currency + Amount */}
                 <div className="grid grid-cols-1 gap-3">
-                  {/* <div className="col-span-1">
-                    <FieldGroup
-                      label={t("fields.currency")}
-                      required
-                      error={errors.currency?.message}
-                    >
-                      <Controller
-                        name="currency"
-                        control={control}
-                        render={({ field }) => (
-                          <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {currencies.map((c) => (
-                                <SelectItem key={c} value={c}>
-                                  {c}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                    </FieldGroup>
-                  </div> */}
+    
                   <div className="col-span-1">
                     <FieldGroup
                       label={t("fields.amount")}
@@ -864,7 +877,7 @@ export default function CollectOrderPage() {
                               : "var(--primary)",
                         }}
                       >
-                        {formatCurrency(Math.max(0, remaining - watchedAmount))}{" "}
+                        {formatCurrency( remaining - watchedAmount)}{" "}
                         {t("hints.remaining")}
                       </span>
                     </motion.div>

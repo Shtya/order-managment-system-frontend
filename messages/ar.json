@@ -5245,6 +5245,8 @@
     "table": {
       "barcode": "باركود",
       "orderNumber": "رقم الطلب",
+      "duplicate": "مكرر",
+      "from": "من",
       "assignedEmployee": "الموظف المسؤول",
       "notAssigned": "غير محدد",
       "customerName": "اسم العميل",
@@ -5350,6 +5352,15 @@
     "retrySettings": {
       "globalTitle": "إعدادات إعادة المحاولة",
       "globalDescription": "تحكّم في آلية التواصل التلقائي مع العملاء وتوجيه الطلبات بعد انتهاء مهلة الرد",
+      "hours": "ساعة",
+      "duplicates": {
+        "title": "كشف الطلبات المكررة",
+        "subtitle": "تهيئة كيفية كشف النظام للطلبات المكررة والتعامل معها",
+        "window": "نافذة الكشف",
+        "windowDesc": "الفترة الزمنية (بالساعات) للبحث عن طلبات سابقة بنفس الهاتف والمنتجات",
+        "autoCancel": "إلغاء تلقائي للمكرر",
+        "autoCancelDesc": "عند التفعيل، سيتم تحويل حالة الطلبات المكررة المكتشفة تلقائياً إلى «ملغي»"
+      },
       "tabs": {
         "general": "عام",
         "automation": "الأتمتة",
@@ -5497,7 +5508,8 @@
       "noConnectedStores": "لا يوجد متاجر متصله"
     },
     "other": "اخري",
-    "unknown": "غير معروف"
+    "unknown": "غير معروف",
+    "from": "من"
   },
   "callCenter": {
     "breadcrumb": {
@@ -10165,6 +10177,7 @@
     "templateMessage": "رسالة قالب",
     "templateDescription": "اختر قالب واتساب معتمد مسبقاً وقم بتعبئة المتغيرات.",
     "chooseTemplate": "اختيار قالب",
+    "buttonVariableHint": "أدخل فقط الجزء المتغير (مثل '123') كما هو موضح في الرابط أعلاه.",
     "changeTemplate": "تغيير القالب",
     "noTemplateSelected": "لم يتم اختيار قالب",
     "selectTemplateToStart": "اختر قالب واتساب معتمد مسبقاً للبدء.",
@@ -10173,6 +10186,7 @@
     "enterValuesManual": "أدخل قيم متغيرات القالب أدناه.",
     "example": "مثال",
     "enterValue": "أدخل القيمة...",
+    "enterValueFor": "أدخل قيمة المتغير في المثال: {example}",
     "dynamicButtons": "أزرار ديناميكية",
     "button": "زر",
     "header": "رأس الرسالة",

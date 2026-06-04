@@ -29,6 +29,8 @@ export function OrdersSettingsProvider({ children }) {
     notifyMarketing: false,
     stockDeductionStrategy: "on_shipment",
     reservedEnabled: false,
+    duplicateWindowHours: 24,
+    autoCancelDuplicates: false,
     workingHours: { enabled: true, start: "09:00", end: "18:00" },
     orderFlowPath: "warehouse", // Options: 'warehouse' or 'shipping'
     storeOrderSkuFallback: true,
@@ -95,6 +97,10 @@ export function OrdersSettingsProvider({ children }) {
             data.stockDeductionStrategy ?? prev.stockDeductionStrategy,
           reservedEnabled:
             data.reservedEnabled ?? prev.reservedEnabled ?? false,
+          duplicateWindowHours:
+            data.duplicateWindowHours ?? prev.duplicateWindowHours ?? 24,
+          autoCancelDuplicates:
+            data.autoCancelDuplicates ?? prev.autoCancelDuplicates ?? false,
           orderFlowPath: data.orderFlowPath ?? prev.orderFlowPath,
           storeOrderSkuFallback:
             data.storeOrderSkuFallback ?? prev.storeOrderSkuFallback ?? true,

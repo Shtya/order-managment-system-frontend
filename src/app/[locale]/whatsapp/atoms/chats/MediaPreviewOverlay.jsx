@@ -73,13 +73,13 @@ export default function MediaPreviewOverlay() {
     };
 
     return (
-        <div className="absolute inset-0 z-[100] bg-white/95 dark:bg-background/98 flex flex-col animate-in fade-in duration-200">
+        <div className="absolute inset-0 z-[100] bg-background/95 dark:bg-background/98 flex flex-col animate-in fade-in duration-200">
             {/* Header */}
-            <div className="h-16 flex items-center justify-between px-6 bg-gray-50/50 dark:bg-card/50 backdrop-blur-sm border-b border-border text-foreground">
+            <div className="h-16 flex items-center justify-between px-6 bg-muted/50 dark:bg-card/50 backdrop-blur-sm border-b border-border text-foreground">
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setPendingMedia(null)}
-                        className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors"
+                        className="p-2 hover:bg-accent/50 rounded-full transition-colors"
                     >
                         <X size={24} />
                     </button>
@@ -93,9 +93,9 @@ export default function MediaPreviewOverlay() {
             </div>
 
             {/* Footer / Caption Input */}
-            <div className="p-6 bg-gray-100/80 dark:bg-card/80 backdrop-blur-md border-t border-border">
+            <div className="p-6 bg-muted/80 dark:bg-card/80 backdrop-blur-md border-t border-border">
                 <div className="max-w-4xl mx-auto flex items-end gap-4">
-                    <div className="flex-1 bg-white dark:bg-input/50 rounded-xl border border-border px-4 py-3 flex items-center">
+                    <div className="flex-1 bg-card dark:bg-input/50 rounded-xl border border-border px-4 py-3 flex items-center">
                         <input
                             autoFocus
                             type="text"
@@ -112,7 +112,7 @@ export default function MediaPreviewOverlay() {
                     </div>
                     <button
                         onClick={handleSend}
-                        className="w-12 h-12 bg-green-600 hover:bg-green-700 text-white rounded-full flex items-center justify-center transition-all shadow-lg active:scale-95"
+                        className="w-12 h-12 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full flex items-center justify-center transition-all shadow-lg active:scale-95"
                     >
                         <Send size={24} />
                     </button>

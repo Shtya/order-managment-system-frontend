@@ -1884,7 +1884,13 @@
         "productName": "Product Name",
         "productNamePlaceholder": "Search by product name...",
         "status": "Status",
-        "allStatuses": "All Statuses"
+        "allStatuses": "All Statuses",
+        "uploading": "Uploading...",
+        "failedToLoadImage": "Failed to load image",
+        "failedToLoadVideo": "Failed to load video",
+        "document": "Document",
+        "messageFailedToSend": "Message failed to send",
+        "retrySending": "Retry Sending"
       },
       "common": {
         "close": "Close",
@@ -4871,7 +4877,7 @@
         "total": "Total Amount"
       },
       "table": {
-         "expense": "Cost",
+        "expense": "Cost",
         "product": "Product Name",
         "sku": "SKU / Variant",
         "quantity": "Quantity",
@@ -4888,9 +4894,9 @@
         "city": "City",
         "area": "Area",
         "deposit": "Deposit",
-   "expense": "Cost",
-   "variations": "Variations",
-"productId": "Product ID",
+        "expense": "Cost",
+        "variations": "Variations",
+        "productId": "Product ID",
         "failureReason": "Failure Reason",
         "attempts": "Attempts",
         "name": "Name",
@@ -10748,6 +10754,10 @@
     "addContact": "Add Contact",
     "contactInfo": "Contact Information",
     "contactDescription": "Share a contact card with the customer.",
+    "noConversationSelected": "No Conversation Selected",
+    "selectChatToStart": "Select a chat from the sidebar to start messaging your customers.",
+    "clearFilters": "Clear all filters",
+    "allStatuses": "All Statuses",
     "firstName": "First Name",
     "lastName": "Last Name",
     "formattedName": "Formatted Name",
@@ -10816,6 +10826,15 @@
     "noMessagesFound": "No messages found",
     "noResultsFound": "No results found matching your filters",
     "noPreviewAvailable": "No Preview",
-    "locationHeader": "the site"
-  }
+    "locationHeader": "the site",
+    "uploading": "Uploading...",
+    "failedToLoadImage": "Failed to load image",
+    "failedToLoadVideo": "Failed to load video",
+    "messageFailedToSend": "Message failed to send",
+    "retrySending": "Retry Sending"
+  },
+  "failedToLoadImage": "Failed to load image",
+  "failedToLoadVideo": "Failed to load video",
+  "uploading": "Loading...",
+  "document": "Document"
 }

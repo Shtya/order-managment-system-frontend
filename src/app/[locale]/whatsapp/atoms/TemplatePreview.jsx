@@ -458,15 +458,10 @@ export default function TemplatePreview({
             <div
                 className={cn(
                     "relative flex-1 transition-all duration-300",
+                    !isChatBubble && "whatsapp-wallpaper",
                     isChatBubble ? "p-0" : "p-6",
                     isMenuOpen ? "min-h-[500px]!" : (isChatBubble ? "min-h-0" : "min-h-[300px]!")
                 )}
-                style={!isChatBubble ? {
-                    backgroundColor: "#efeae2",
-                    backgroundImage: "url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')",
-                    backgroundRepeat: "repeat",
-                    backgroundSize: "400px"
-                } : {}}
             >
                 <div className={cn(
                     "relative group tempalte-message",

@@ -1186,3 +1186,15 @@ html[dir="ltr"] .date-field {
   direction: ltr;
   text-align: left;
 }
+
+
+.whatsapp-wallpaper {
+  background-image: url(/whatsapp/light.png);
+  background-repeat: "repeat";
+   background-size: "400px"
+}
+
+
+.dark .whatsapp-wallpaper {
+  background-image: url(/whatsapp/dark.jpg);
+}

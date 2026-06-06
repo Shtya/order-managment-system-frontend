@@ -159,15 +159,15 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                             (mediaLoading || mediaError) && "md:min-w-[150px] md:min-h-[150px]"
                         )}>
                             {(mediaLoading || message.status === "uploading") && !mediaError && (
-                                <div className="absolute bg-black/5 inset-0 flex flex-col items-center justify-center z-10 backdrop-blur-[2px]">
-                                    <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-                                    {message.status === "uploading" && <span className="text-[10px] text-gray-500 font-bold mt-2 uppercase tracking-widest">Uploading...</span>}
+                                <div className="absolute bg-muted/30 inset-0 flex flex-col items-center justify-center z-10 backdrop-blur-[2px]">
+                                    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground/60" />
+                                    {message.status === "uploading" && <span className="text-[10px] text-muted-foreground font-bold mt-2 uppercase tracking-widest">{t("uploading")}</span>}
                                 </div>
                             )}
                             {mediaError ? (
-                                <div className="flex flex-col bg-black/5 items-center gap-2 p-6 text-gray-400">
+                                <div className="flex flex-col bg-muted/30 items-center gap-2 p-6 text-muted-foreground/60">
                                     <AlertCircle size={32} />
-                                    <span className="text-xs font-medium">Failed to load image</span>
+                                    <span className="text-xs font-medium">{t("failedToLoadImage")}</span>
                                 </div>
                             ) : (
                                 <img
@@ -187,24 +187,24 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                                 />
                             )}
                         </div>
-                        {!isHeader && caption && <p className="text-sm whitespace-pre-wrap">{caption}</p>}
+                        {!isHeader && caption && <p className="text-sm text-foreground whitespace-pre-wrap">{caption}</p>}
                     </div>
                 );
 
             case "video":
                 return (
                     <div className={cn("space-y-2", !isHeader && "max-w-sm")}>
-                        <div className="relative w-full min-h-[180px] flex items-center justify-center bg-black/5 rounded-lg overflow-hidden group/media">
+                        <div className="relative w-full min-h-[180px] flex items-center justify-center bg-muted/30 rounded-lg overflow-hidden group/media">
                             {(mediaLoading || message.status === "uploading") && !mediaError && (
                                 <div className="absolute inset-0 flex flex-col items-center justify-center z-10 backdrop-blur-[2px]">
-                                    <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-                                    {message.status === "uploading" && <span className="text-[10px] text-gray-500 font-bold mt-2 uppercase tracking-widest">Uploading...</span>}
+                                    <Loader2 className="w-8 h-8 animate-spin text-muted-foreground/60" />
+                                    {message.status === "uploading" && <span className="text-[10px] text-muted-foreground font-bold mt-2 uppercase tracking-widest">{t("uploading")}</span>}
                                 </div>
                             )}
                             {mediaError ? (
-                                <div className="flex flex-col items-center gap-2 p-6 text-gray-400">
+                                <div className="flex flex-col items-center gap-2 p-6 text-muted-foreground/60">
                                     <AlertCircle size={32} />
-                                    <span className="text-xs font-medium">Failed to load video</span>
+                                    <span className="text-xs font-medium">{t("failedToLoadVideo")}</span>
                                 </div>
                             ) : (
                                 <video
@@ -222,7 +222,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                                 />
                             )}
                         </div>
-                        {!isHeader && caption && <p className="text-sm whitespace-pre-wrap">{caption}</p>}
+                        {!isHeader && caption && <p className="text-sm text-foreground whitespace-pre-wrap">{caption}</p>}
                     </div>
                 );
 
@@ -231,12 +231,12 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                     <div className="space-y-2">
                         <div className={cn(
                             "flex items-center gap-3 p-3 rounded-lg border relative overflow-hidden",
-                            isOutbound ? "bg-black/5 border-black/10" : "bg-gray-50 border-gray-100"
+                            isOutbound ? "bg-muted/40 border-border/50" : "bg-muted/30 border-border"
                         )}>
                             {message.status === "uploading" && (
-                                <div className="absolute inset-0 bg-white/60 dark:bg-black/40 flex items-center justify-center z-10 backdrop-blur-[1px]">
+                                <div className="absolute inset-0 bg-card/60 dark:bg-black/40 flex items-center justify-center z-10 backdrop-blur-[1px]">
                                     <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                                    <span className="text-[10px] font-bold ms-2 text-primary">UPLOADING...</span>
+                                    <span className="text-[10px] font-bold ms-2 text-primary">{t("uploading").toUpperCase()}</span>
                                 </div>
                             )}
                             <div
@@ -245,8 +245,8 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                             >
                                 <FileText size={32} className="text-blue-500" />
                                 <div className="min-w-0">
-                                    <p className="text-sm font-medium truncate">{mediaContent.document?.filename || mediaContent.document?.name || "Document"}</p>
-                                    <p className="text-[10px] opacity-60 uppercase">{mediaContent.document?.mime_type || "PDF"}</p>
+                                    <p className="text-sm font-medium text-foreground truncate">{mediaContent.document?.filename || mediaContent.document?.name || t("document")}</p>
+                                    <p className="text-[10px] text-muted-foreground uppercase">{mediaContent.document?.mime_type || "PDF"}</p>
                                 </div>
                             </div>
                         </div>
@@ -264,12 +264,12 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
 
     // Status icons mapping
     const StatusIcon = ({ status }) => {
-        if (status === "uploading") return <Loader2 className="w-3 h-3 text-gray-400 animate-spin" />;
-        if (status === "pending") return <Clock className="w-3 h-3 text-gray-400 animate-pulse" />;
-        if (status === "failed") return <AlertCircle className="w-3.5 h-3.5 text-red-500" />;
+        if (status === "uploading") return <Loader2 className="w-3 h-3 text-muted-foreground/60 animate-spin" />;
+        if (status === "pending") return <Clock className="w-3 h-3 text-muted-foreground/60 animate-pulse" />;
+        if (status === "failed") return <AlertCircle className="w-3.5 h-3.5 text-destructive" />;
         if (status === "read" || status === "played") return <CheckCheck className="w-3.5 h-3.5 text-blue-500" />;
-        if (status === "delivered") return <CheckCheck className="w-3.5 h-3.5 text-gray-400" />;
-        return <Check className="w-3.5 h-3.5 text-gray-400" />;
+        if (status === "delivered") return <CheckCheck className="w-3.5 h-3.5 text-muted-foreground/60" />;
+        return <Check className="w-3.5 h-3.5 text-muted-foreground/60" />;
     };
 
     const renderContent = () => {
@@ -308,9 +308,9 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                             disabled={audioLoading || audioError}
                             className={cn(
                                 "w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors relative",
-                                isOutbound ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-100 text-gray-600 hover:bg-gray-200",
+                                isOutbound ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-muted text-foreground hover:bg-muted/80",
                                 (audioLoading || audioError) && "opacity-80 cursor-not-allowed",
-                                audioError && "bg-red-50 text-red-500 hover:bg-red-50"
+                                audioError && "bg-destructive/10 text-destructive hover:bg-destructive/20"
                             )}
                         >
                             {audioLoading ? (
@@ -318,7 +318,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                             ) : audioError ? (
                                 <AlertCircle size={20} />
                             ) : (
-                                isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />
+                                isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className={cn(locale === 'ar' ? "mr-1" : "ml-1")} />
                             )}
                         </button>
 
@@ -327,33 +327,33 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                                 ref={progressRef}
                                 onClick={(!audioLoading && !audioError) ? handleSeek : undefined}
                                 className={cn(
-                                    "relative h-2 bg-black/10 rounded-full group/progress",
+                                    "relative h-2 bg-muted/50 rounded-full group/progress",
                                     (!audioLoading && !audioError) ? "cursor-pointer" : "cursor-not-allowed opacity-50"
                                 )}
                             >
                                 <div
                                     className={cn(
                                         "absolute top-0 left-0 h-full transition-all duration-100 rounded-full",
-                                        isOutbound ? "bg-green-600" : "bg-gray-400",
-                                        audioError && "bg-red-400"
+                                        isOutbound ? "bg-primary" : "bg-muted-foreground/60",
+                                        audioError && "bg-destructive"
                                     )}
                                     style={{ width: `${audioProgress}%` }}
                                 />
                                 {!audioLoading && !audioError && (
                                     <div
                                         className={cn(
-                                            "absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 rounded-full opacity-0 group-hover/progress:opacity-100 transition-opacity shadow-sm",
-                                            isOutbound ? "border-green-600" : "border-gray-400"
+                                            "absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-card border-2 rounded-full opacity-0 group-hover/progress:opacity-100 transition-opacity shadow-sm",
+                                            isOutbound ? "border-primary" : "border-muted-foreground"
                                         )}
                                         style={{ left: `calc(${audioProgress}% - 6px)` }}
                                     />
                                 )}
                             </div>
                             <div className="flex items-center justify-between">
-                                <span className="text-[10px] opacity-60 font-medium">
+                                <span className="text-[10px] text-muted-foreground/70 font-medium">
                                     {audioLoading ? "Loading..." : audioError ? "Failed to load audio" : formatAudioTime(isPlaying ? currentTime : (content.audio?.duration || 0))}
                                 </span>
-                                <Mic size={12} className={cn(isOutbound ? "text-green-600" : "text-gray-400", audioError && "text-red-400")} />
+                                <Mic size={12} className={cn(isOutbound ? "text-primary" : "text-muted-foreground/60", audioError && "text-destructive")} />
                             </div>
                         </div>
                     </div>
@@ -412,20 +412,20 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                 return (
                     <div className="space-y-2 min-w-[240px]">
                         <div
-                            className="h-32 rounded-lg overflow-hidden relative cursor-pointer group"
                             onClick={() => window.open(`https://www.google.com/maps?q=${content.location.latitude},${content.location.longitude}`, "_blank")}
+                            className="h-32 rounded-lg overflow-hidden relative cursor-pointer group"
                         >
                             <img
                                 src={`https://static-maps.yandex.ru/1.x/?lang=en_US&ll=${content.location.longitude},${content.location.latitude}&z=13&l=map&size=300,150`}
                                 alt="map"
                                 className="w-full h-full object-cover"
                             />
-                            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                                <MapPin size={32} className="text-red-500 drop-shadow-md" />
+                            <div className="absolute inset-0 bg-muted/30 group-hover:bg-muted/40 transition-colors flex items-center justify-center">
+                                <MapPin size={32} className="text-destructive drop-shadow-md" />
                             </div>
                         </div>
                         <div className="min-w-0 px-1 pb-1">
-                            <p className="text-sm font-bold truncate">{content.location.name}</p>
+                            <p className="text-sm font-bold text-foreground truncate">{content.location.name}</p>
                             <p className="text-[11px] text-muted-foreground line-clamp-1">{content.location.address}</p>
                         </div>
                     </div>
@@ -435,12 +435,12 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                 const contact = content.contacts?.[0];
                 return (
                     <div className="space-y-3 min-w-[240px]">
-                        <div className="flex items-center gap-3 border-b pb-3">
-                            <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                        <div className="flex items-center gap-3 border-b border-border pb-3">
+                            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground/60">
                                 <User size={24} />
                             </div>
                             <div className="min-w-0">
-                                <p className="text-sm font-bold truncate">
+                                <p className="text-sm font-bold text-foreground truncate">
                                     {contact?.name?.formatted_name || contact?.name?.first_name}
                                 </p>
                                 <p className="text-[11px] text-muted-foreground">
@@ -448,7 +448,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                                 </p>
                             </div>
                         </div>
-                        <button className="w-full py-2 text-sm font-bold text-primary hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors">
+                        <button className="w-full py-2 text-sm font-bold text-primary hover:bg-muted rounded-lg transition-colors">
                             Message
                         </button>
                     </div>
@@ -459,10 +459,10 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                     return (
                         <div className="space-y-3">
                             {content.interactive.header && (
-                                <div className="font-bold text-sm">{content.interactive.header.text}</div>
+                                <div className="font-bold text-sm text-foreground">{content.interactive.header.text}</div>
                             )}
-                            <p className="text-sm">{content.interactive.body?.text}</p>
-                            <button className="w-full py-2.5 px-3 flex items-center justify-center gap-2 text-[#00a884] font-medium text-[13px] hover:bg-black/5 dark:hover:bg-white/5 border-t border-black/5 dark:border-white/5 transition-colors">
+                            <p className="text-sm text-foreground">{content.interactive.body?.text}</p>
+                            <button className="w-full py-2.5 px-3 flex items-center justify-center gap-2 text-primary font-medium text-[13px] hover:bg-muted border-t border-border transition-colors">
                                 <List size={14} />
                                 {content.interactive.action?.button || "View Options"}
                             </button>
@@ -472,7 +472,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
 
                 if (content.interactive?.type === "button_reply") {
                     return (
-                        <p className="text-sm whitespace-pre-wrap">
+                        <p className="text-sm text-foreground whitespace-pre-wrap">
                             {content.interactive.button_reply?.title}
                         </p>
                     );
@@ -483,7 +483,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                         {content.interactive?.header && (
                             renderMedia(content.interactive.header.type, content.interactive.header, true)
                         )}
-                        <p className="text-sm">{content.interactive?.body?.text}</p>
+                        <p className="text-sm text-foreground">{content.interactive?.body?.text}</p>
                         {content.interactive?.action?.buttons && (
                             <div className="flex flex-col gap-2 pt-1">
                                 {content.interactive.action.buttons.map((btn, idx) => (
@@ -492,17 +492,17 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                                         className={cn(
                                             "w-full py-2.5 px-4 rounded-xl text-start text-xs font-medium transition-all flex items-center gap-3 border group/btn",
                                             isOutbound
-                                                ? "bg-white/10 border-white/20 hover:bg-white/20 text-green-900"
-                                                : "bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-700"
+                                                ? "bg-card/50 border-border/50 hover:bg-card/80 text-foreground"
+                                                : "bg-muted border-border hover:bg-accent/50 text-foreground"
                                         )}
                                     >
                                         <div className={cn(
                                             "w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0",
-                                            isOutbound ? "border-green-600/50" : "border-gray-300"
+                                            isOutbound ? "border-primary/50" : "border-muted-foreground/30"
                                         )}>
                                             <div className={cn(
                                                 "w-2 h-2 rounded-full transition-all scale-0 opacity-0 group-hover/btn:scale-100 group-hover/btn:opacity-100",
-                                                isOutbound ? "bg-green-600" : "bg-blue-500"
+                                                isOutbound ? "bg-primary" : "bg-blue-500"
                                             )} />
                                         </div>
                                         {btn.reply?.title}
@@ -546,7 +546,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                     )}>
                         <button
                             onClick={() => onReply && onReply(message)}
-                            className="p-1.5 hover:bg-black/5 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
+                            className="p-1.5 hover:bg-accent/50 rounded-full text-muted-foreground/60 hover:text-foreground transition-colors"
                             title="Reply"
                         >
                             <Reply className="w-3.5 h-3.5" />
@@ -555,7 +555,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                         <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                             <PopoverTrigger asChild>
                                 <button
-                                    className="p-1.5 hover:bg-black/5 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
+                                    className="p-1.5 hover:bg-accent/50 rounded-full text-muted-foreground/60 hover:text-foreground transition-colors"
                                     title="React"
                                 >
                                     <Smile className="w-3.5 h-3.5" />
@@ -573,7 +573,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                                             onReaction && onReaction(message.id, emoji.native);
                                             setIsPopoverOpen(false);
                                         }}
-                                        theme="light"
+                                        theme="auto"
                                         set="native"
                                         previewPosition="none"
                                         skinTonePosition="none"
@@ -586,23 +586,23 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                 <div className={cn(
                     "max-w-[450px] px-4 py-2.5 rounded-2xl relative shadow-sm transition-all duration-500",
                     isOutbound
-                        ? "bg-green-100 text-green-900rtl:rounded-tr-none ltr:rounded-tl-none "
-                        : "bg-white text-gray-800 rtl:rounded-tl-none ltr:rounded-tr-none  border border-gray-100",
-                    isHighlighted && (isOutbound ? "bg-green-200 ring-4 ring-green-400/20" : "bg-blue-50 ring-4 ring-blue-400/20")
+                        ? "bg-green-100 dark:bg-[#1f2c33] text-foreground rtl:rounded-tr-none ltr:rounded-tl-none "
+                        : "bg-card text-foreground rtl:rounded-tl-none ltr:rounded-tr-none border border-border",
+                    isHighlighted && (isOutbound ? "bg-primary/20 ring-4 ring-primary/20" : "bg-muted/50 ring-4 ring-muted/50")
                 )}>
                     {/* Reply Preview */}
                     {message.replyTo && (
                         <div
                             onClick={() => message.replyTo && window.dispatchEvent(new CustomEvent("whatsapp:scroll-to-message", { detail: { id: message.replyTo.id } }))}
                             className={cn(
-                                "mb-2 p-2 rounded-lg border-s-4 bg-black/5 cursor-pointer hover:bg-black/10 transition-colors",
-                                isOutbound ? "border-green-500" : "border-blue-500"
+                                "mb-2 p-2 rounded-lg border-s-4 bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors",
+                                isOutbound ? "border-primary" : "border-blue-500"
                             )}
                         >
-                            <p className="text-[10px] font-bold opacity-60 uppercase mb-0.5">
+                            <p className="text-[10px] font-bold text-muted-foreground/60 uppercase mb-0.5">
                                 {message.replyTo.direction === "inbound" ? "Customer" : "You"}
                             </p>
-                            <p className="text-xs italic line-clamp-2 opacity-80">
+                            <p className="text-xs italic line-clamp-2 text-muted-foreground italic">
                                 {message.replyTo.messageType === "text"
                                     ? (message.replyTo.content?.text?.body || message.replyTo.content?.body)
                                     : `[${message.replyTo.messageType.toUpperCase()}]`}
@@ -615,20 +615,20 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                     {/* Error Display for Failed Messages */}
                     {message.status === "failed" && (
                         <div className="mt-2 space-y-2 animate-in fade-in slide-in-from-top-1 duration-300">
-                            <div className="flex items-start gap-2 p-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
+                            <div className="flex items-start gap-2 p-2 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive">
                                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-[11px] font-bold uppercase tracking-wider mb-0.5">Message failed to send</p>
+                                    <p className="text-[11px] font-bold uppercase tracking-wider mb-0.5">{t("messageFailedToSend")}</p>
                                     <p className="text-xs opacity-90 line-clamp-2">{message.error || "Unknown error occurred"}</p>
                                 </div>
                             </div>
                             {onRetry && (
                                 <button
                                     onClick={() => onRetry(message)}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-red-200 text-red-600 rounded-lg text-xs font-bold hover:bg-red-50 transition-colors shadow-sm w-full justify-center"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-card border border-destructive/20 text-destructive rounded-lg text-xs font-bold hover:bg-destructive/5 transition-colors shadow-sm w-full justify-center"
                                 >
                                     <RotateCcw className="w-3.5 h-3.5" />
-                                    Retry Sending
+                                    {t("retrySending")}
                                 </button>
                             )}
                         </div>
@@ -636,7 +636,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
 
                     <div className={cn(
                         "flex items-center gap-1 justify-end mt-1",
-                        isOutbound ? "text-green-600/60" : "text-gray-400"
+                        isOutbound ? "text-primary/60" : "text-muted-foreground/60"
                     )}>
                         <span className="text-[10px]">{time}</span>
                         {isOutbound && <StatusIcon status={message.status} />}
@@ -647,7 +647,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                         <Popover>
                             <PopoverTrigger asChild>
                                 <button className={cn(
-                                    "absolute -bottom-3 flex items-center gap-1 bg-white border border-gray-100 rounded-full shadow-sm px-1.5 py-0.5 z-10 hover:bg-gray-50 transition-colors cursor-pointer",
+                                    "absolute -bottom-3 flex items-center gap-1 bg-card border border-border rounded-full shadow-sm px-1.5 py-0.5 z-10 hover:bg-muted transition-colors cursor-pointer",
                                     isOutbound ? "start-2" : "end-2"
                                 )}>
                                     {message.reactions.map((r, idx) => (
@@ -657,16 +657,16 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                                     ))}
                                 </button>
                             </PopoverTrigger>
-                            <PopoverContent side="top" align="center" className="w-auto p-2 bg-white/95 backdrop-blur shadow-lg border border-gray-100 rounded-xl animate-in zoom-in-95 duration-200">
+                            <PopoverContent side="top" align="center" className="w-auto p-2 bg-card/95 backdrop-blur shadow-lg border border-border rounded-xl animate-in zoom-in-95 duration-200">
                                 <div className="space-y-1.5">
                                     {message.reactions.map((r, idx) => (
-                                        <div key={r.id || idx} className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-black/5 transition-colors">
+                                        <div key={r.id || idx} className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-muted transition-colors">
                                             <span className="text-lg">{r.content?.reaction?.emoji || r.reaction}</span>
                                             <div className="flex flex-col">
-                                                <span className="text-xs font-bold text-gray-900">
+                                                <span className="text-xs font-bold text-foreground">
                                                     {r.direction === "outbound" ? "You" : "Customer"}
                                                 </span>
-                                                <span className="text-[10px] text-gray-400">
+                                                <span className="text-[10px] text-muted-foreground">
                                                     {r.createdAt ? format(new Date(r.createdAt), "hh:mm a") : "Just now"}
                                                 </span>
                                             </div>

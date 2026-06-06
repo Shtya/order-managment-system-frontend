@@ -128,10 +128,10 @@ export default function CustomerModal({ open, onOpenChange, customer, onSave }) 
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px] overflow-hidden">
-                <DialogHeader className="pb-4">
-                    <DialogTitle className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300">
+            <DialogContent className="sm:max-w-[425px] overflow-hidden bg-card">
+                <DialogHeader className="pb-4 border-b border-border">
+                    <DialogTitle className="flex items-center gap-3 text-foreground">
+                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
                             {customer ? <UserCog size={20} /> : <UserPlus size={20} />}
                         </div>
                         {customer ? t("editClient") : t("addCustomer")}
@@ -147,16 +147,16 @@ export default function CustomerModal({ open, onOpenChange, customer, onSave }) 
                             accept="image/*"
                             onChange={handleFileChange}
                         />
-                        <Avatar className="w-24 h-24 border-4 border-white shadow-lg">
+                        <Avatar className="w-24 h-24 border-4 border-card shadow-lg">
                             <AvatarImage src={avatarSrc(previewImage)} alt="Preview" />
-                            <AvatarFallback className="bg-slate-100 text-slate-400">
+                            <AvatarFallback className="bg-muted text-muted-foreground/60">
                                 <User size={48} strokeWidth={1.5} />
                             </AvatarFallback>
                         </Avatar>
                         <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className="absolute bottom-0 right-0 p-1.5 bg-green-600 rounded-full text-white shadow-md border-2 border-white cursor-pointer hover:bg-green-700 transition-colors focus:outline-none"
+                            className="absolute bottom-0 right-0 p-1.5 bg-primary rounded-full text-primary-foreground shadow-md border-2 border-card cursor-pointer hover:bg-primary/90 transition-colors focus:outline-none"
                         >
                             <Camera size={14} />
                         </button>
@@ -241,7 +241,7 @@ export default function CustomerModal({ open, onOpenChange, customer, onSave }) 
                         )}
                     </div>
 
-                    <DialogFooter className="gap-2 pt-4">
+                    <DialogFooter className="gap-2 pt-6 border-t border-border mt-6">
                         <Button_
                             type="button"
                             variant="outline"
@@ -251,7 +251,7 @@ export default function CustomerModal({ open, onOpenChange, customer, onSave }) 
                         />
                         <Button_
                             type="submit"
-                            className="bg-green-600 hover:bg-green-700 text-white min-w-[80px]"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground min-w-[80px]"
                             disabled={isSaving}
                             label={isSaving ? (
                                 <div className="flex items-center gap-2">

@@ -10748,6 +10748,10 @@
     "addContact": "إضافة جهة اتصال",
     "contactInfo": "بيانات الاتصال",
     "contactDescription": "شارك بطاقة جهة اتصال مع العميل.",
+    "noConversationSelected": "لا توجد محادثة مختارة",
+    "selectChatToStart": "اختر محادثة من القائمة الجانبية للبدء في مراسلة عملائك.",
+    "clearFilters": "مسح كل الفلاتر",
+    "allStatuses": "كل الحالات",
     "firstName": "الاسم الأول",
     "lastName": "اسم العائلة",
     "formattedName": "الاسم بالكامل",
@@ -10816,6 +10820,15 @@
     "noMessagesFound": "لم يتم العثور على رسائل",
     "noResultsFound": "لا توجد نتائج تطابق عوامل التصفية",
     "noPreviewAvailable": "لا توجد معاينة",
-    "locationHeader": "الموقع"
-  }
+    "locationHeader": "الموقع",
+    "uploading": "جاري الرفع...",
+    "failedToLoadImage": "فشل تحميل الصورة",
+    "failedToLoadVideo": "فشل تحميل الفيديو",
+    "messageFailedToSend": "فشل إرسال الرسالة",
+    "retrySending": "إعادة المحاولة"
+  },
+  "failedToLoadImage": "فشل تحميل الصورة",
+  "failedToLoadVideo": " فشل تحميل الفيديو",
+  "uploading": "جاري التحميل...",
+  "document": "ملف"
 }

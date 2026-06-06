@@ -69,22 +69,22 @@ export default function ListMessageModal() {
 
     return (
         <Dialog open={showListModal} onOpenChange={setShowListModal}>
-            <DialogContent className="sm:max-w-[900px] w-full h-[90vh] flex flex-col p-0 overflow-hidden bg-slate-50 dark:bg-slate-950">
-                <DialogHeader className="px-6 py-4 border-b bg-white dark:bg-slate-900 shrink-0">
-                    <DialogTitle className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300">
+            <DialogContent className="sm:max-w-[900px] w-full h-[90vh] flex flex-col p-0 overflow-hidden bg-muted/30">
+                <DialogHeader className="px-6 py-4 border-b border-border bg-card shrink-0">
+                    <DialogTitle className="flex items-center gap-3 text-foreground">
+                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
                             <List size={20} />
                         </div>
                         {t("listMessage")}
                     </DialogTitle>
-                    <DialogDescription className="ps-[52px] -mt-2">
+                    <DialogDescription className="ps-[52px] -mt-2 text-muted-foreground/60">
                         {t("listDescription")}
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="flex-1 flex overflow-hidden">
                     {/* Builder Section */}
-                    <div className="flex-1 overflow-y-auto p-6 custom-scrollbar border-e bg-white dark:bg-slate-900">
+                    <div className="flex-1 overflow-y-auto p-6 custom-scrollbar border-e border-border bg-card">
                         <ListMessageBuilder
                             value={listMessage}
                             onChange={setListMessage}
@@ -93,9 +93,9 @@ export default function ListMessageModal() {
                     </div>
 
                     {/* Preview Section */}
-                    <div className="w-[300px] bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6 shrink-0 overflow-y-auto border-s">
+                    <div className="w-[300px] bg-muted/30 flex flex-col items-center justify-center p-6 shrink-0 overflow-y-auto border-s border-border">
                         <div className="sticky top-0 w-full flex flex-col items-center">
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">
+                            <p className="text-xs font-bold text-muted-foreground/40 uppercase tracking-widest mb-6">
                                 {t("preview")}
                             </p>
                             <div className="scale-90 origin-top transform-gpu">
@@ -118,7 +118,7 @@ export default function ListMessageModal() {
                     </div>
                 </div>
 
-                <DialogFooter className="px-6 py-4 border-t bg-white dark:bg-slate-900 shrink-0 gap-2">
+                <DialogFooter className="px-6 py-4 border-t border-border bg-card shrink-0 gap-2">
                     <Button_
                         type="button"
                         variant="outline"
@@ -134,7 +134,7 @@ export default function ListMessageModal() {
                             listMessage.sections.some(s => !s.title || s.rows.length === 0)
                         }
                         onClick={handleSend}
-                        className="bg-green-600 hover:bg-green-700 text-white"
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground"
                         label={t("sendMessage")}
                     />
                 </DialogFooter>

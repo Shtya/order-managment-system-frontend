@@ -68,7 +68,8 @@ export const AUTOMATION_CONFIG = {
                         icon: MessageSquare,
                         type: 'action',
                         configComponent: 'SendWhatsappTemplateConfig',
-                        className: 'max-w-2xl!'
+                        className: 'max-w-4xl!',
+                        hasCustom: true    
                     },
                     {
                         id: "send_upsell",

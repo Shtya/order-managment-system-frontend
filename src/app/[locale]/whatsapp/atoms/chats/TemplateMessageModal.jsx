@@ -30,6 +30,9 @@ import { extractVariableNames } from "@/utils/whatsapp-healper";
 import { cn } from "@/utils/cn";
 import { InternalTemplateDialog } from "../InternalTemplateDialog";
 import { avatarSrc } from "@/components/atoms/UserSelect";
+import LocationFields from "./LocationFields";
+import MapLocationPicker from "@/components/atoms/MapLocationPicker";
+import { MapPin } from "lucide-react";
 
 export default function TemplateMessageModal() {
     const t = useTranslations("chats");
@@ -78,7 +81,7 @@ export default function TemplateMessageModal() {
                 };
             }
         });
-        
+
         setTemplateMessage({
             templateId: template.id,
             accountId: template.accountId,
@@ -89,9 +92,41 @@ export default function TemplateMessageModal() {
             subCategory: template.subCategory,
             headerVariables,
             bodyVariables,
-            buttonVariables
+            buttonVariables,
+            locationData: config.headerType === 'LOCATION' ? {
+                latitude: 30.0444,
+                longitude: 31.2357,
+                name: '',
+                address: ''
+            } : null
         });
         setIsTemplateDialogOpen(false);
+    };
+
+    const handleLocationSelect = async (newLat, newLng) => {
+        setTemplateMessage(prev => ({
+            ...prev,
+            locationData: {
+                ...prev.locationData,
+                latitude: newLat,
+                longitude: newLng
+            }
+        }));
+
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${newLat}&lon=${newLng}&accept-language=ar`);
+            const data = await res.json();
+            setTemplateMessage(prev => ({
+                ...prev,
+                locationData: {
+                    ...prev.locationData,
+                    address: data.display_name,
+                    name: data.name || data.display_name.split(',')[0]
+                }
+            }));
+        } catch (error) {
+            console.error("Geocoding error:", error);
+        }
     };
 
     const handleVariableChange = (type, num, updates) => {
@@ -119,7 +154,7 @@ export default function TemplateMessageModal() {
             .map((btn, idx) => (btn.type === 'VISIT_WEBSITE' && btn.urlType === 'Dynamic' ? String(idx) : null))
             .filter(Boolean);
     }, [templateMessage.templateData?.buttons]);
-    
+
     const isAllFilled = useMemo(() => {
         if (!templateMessage.templateId) return false;
 
@@ -127,7 +162,13 @@ export default function TemplateMessageModal() {
         const bFilled = bodyVars.every(num => templateMessage.bodyVariables[num]?.value?.trim());
         const btnFilled = buttonVarsIndices.every(idx => templateMessage.buttonVariables[idx]?.value?.trim());
 
-        return hFilled && bFilled && btnFilled;
+        let locationFilled = true;
+        if (templateMessage.templateData?.headerType === 'LOCATION') {
+            const loc = templateMessage.locationData;
+            locationFilled = !!(loc?.name?.trim() && loc?.address?.trim() && loc?.latitude && loc?.longitude);
+        }
+
+        return hFilled && bFilled && btnFilled && locationFilled;
     }, [templateMessage, headerVars, bodyVars, buttonVarsIndices]);
 
     const handleSend = () => {
@@ -156,6 +197,18 @@ export default function TemplateMessageModal() {
                             }
                         }]
                     }] : []),
+                    ...(templateMessage.templateData?.headerType === 'LOCATION' ? [{
+                        type: "header",
+                        parameters: [{
+                            type: "location",
+                            location: {
+                                latitude: templateMessage.locationData.latitude.toString(),
+                                longitude: templateMessage.locationData.longitude.toString(),
+                                name: templateMessage.locationData.name,
+                                address: templateMessage.locationData.address
+                            }
+                        }]
+                    }] : []),
                     {
                         type: "body",
                         parameters: bodyVars.map(num => ({
@@ -163,7 +216,7 @@ export default function TemplateMessageModal() {
                             text: templateMessage.bodyVariables[num].value
                         }))
                     },
-                 ...buttonVarsIndices.map(idx => ({
+                    ...buttonVarsIndices.map(idx => ({
                         type: "button",
                         sub_type: "url",
                         index: Number(idx),
@@ -196,8 +249,8 @@ export default function TemplateMessageModal() {
             buttonVariables: {}
         });
     };
-    console.log(buttonVarsIndices,templateMessage.buttonVariables);
     
+
     const renderVariableInput = (type, num, buttonLabel) => {
         const varData = (
             type === 'header' ? templateMessage.headerVariables :
@@ -207,9 +260,9 @@ export default function TemplateMessageModal() {
 
         const badgeLabel = type === 'header' ? t("header") : type === 'body' ? t("body") : buttonLabel || `${t("button")} ${num}`;
         const isButtonType = type === 'button';
-
+        
         const placeholder = varData.example
-            ? t("enterValueFor", {  example: varData.example })
+            ? isButtonType ? varData.example : t("enterValueFor", { example: varData.example })
             : t("enterValue");
 
         return (
@@ -297,12 +350,42 @@ export default function TemplateMessageModal() {
                                 </div>
 
                                 {/* Variables Filling Section */}
-                                {(headerVars.length > 0 || bodyVars.length > 0 || buttonVarsIndices.length > 0) && (
+                                {(headerVars.length > 0 || bodyVars.length > 0 || buttonVarsIndices.length > 0 || templateMessage.templateData?.headerType === 'LOCATION') && (
                                     <div className="space-y-6 p-6 rounded-3xl bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800">
                                         <div>
                                             <h4 className="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest mb-1">{t("fillVariables") || "Fill Variables"}</h4>
                                             <p className="text-[10px] text-slate-400 font-bold">{t("enterValuesManual") || "Enter the values for the template variables below."}</p>
                                         </div>
+
+                                        {templateMessage.templateData?.headerType === 'LOCATION' && (
+                                            <div className="space-y-4">
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                    <MapPin size={12} /> {t("locationHeader") || "Location Header"}
+                                                </p>
+                                                <div className="flex flex-col gap-6">
+                                                    <div className="w-full  aspect-video rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 relative bg-slate-100 dark:bg-slate-900">
+                                                        <MapLocationPicker
+                                                            initialLocation={{
+                                                                lat: templateMessage.locationData?.latitude || 30.0444,
+                                                                lng: templateMessage.locationData?.longitude || 31.2357
+                                                            }}
+                                                            onLocationSelect={handleLocationSelect}
+                                                            height="100%"
+                                                            width="100%"
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <LocationFields
+                                                            values={templateMessage.locationData || {}}
+                                                            onChange={(updates) => setTemplateMessage(prev => ({
+                                                                ...prev,
+                                                                locationData: { ...prev.locationData, ...updates }
+                                                            }))}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
 
                                         {headerVars.length > 0 && (
                                             <div className="space-y-4">

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/FloatingSelect";
 import { Button } from "@/components/ui/button";
-import { Search, MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, AlertCircle, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database, Link } from "lucide-react";
+import { MessageSquare, Plus, Trash2, GitBranch, Layout, Check, ExternalLink, RefreshCw, Loader2, DollarSign, CreditCard, CheckCircle, Truck, Store, Hash, Package, Tag, Activity, PackageOpen, HelpCircle, ChevronLeft, GripVertical, Info, X, Database, Link, MessageSquareQuote, LayoutDashboard, MapPin, LinkIcon } from "lucide-react";
 import { cn } from "@/utils/cn";
 import TemplatePreview from "../../whatsapp/atoms/TemplatePreview";
 import { InternalTemplateDialog } from "../../whatsapp/atoms/InternalTemplateDialog";
@@ -14,11 +14,11 @@ import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
-import Button_ from "@/components/atoms/Button";
 import { useFlowStore } from "@/hook/useFlowStore";
 import { extractVariableNames } from "@/utils/whatsapp-healper";
 import { useAuth } from "@/context/AuthContext";
-import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import MapLocationPicker from "@/components/atoms/MapLocationPicker";
 
 function normalizeAxiosError(err) {
     const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? "Unexpected error";
@@ -261,53 +261,49 @@ export function UpdateOrderStatusConfig({ value, onChange, errors, setDisabled }
 /**
  * Action: Send Whatsapp Template
  */
-export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, setDisabled }) {
+export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, flowData, setDisabled, onClose, mode }) {
     const { isSuperAdmin } = useAuth();
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
     const [isOrderSelectorOpen, setIsOrderSelectorOpen] = useState(false);
     const [activeVar, setActiveVar] = useState(null); // { type: 'header' | 'body', num: string }
-
+ const t = useTranslations("chats");
     const nodes = useFlowStore((s) => s.nodes);
     const triggerNode = nodes.find(n => n.type === 'trigger');
     const isOrderTrigger = triggerNode?.data?.type?.startsWith('order_');
 
+    const [tempValue, setTempValue] = useState(value || {});
+    
     useEffect(() => {
-        // Prevent save until a template is selected and all variables are filled
-        const hasTemplate = !!value.templateId;
-        const headerVars = extractVariables(value.templateData?.headerText);
-        const bodyVars = extractVariables(value.templateData?.bodyText);
+        setTempValue(value || {});
+    }, [value, isOpen]);
 
-        const headerVarsSafe = Array.isArray(headerVars) ? headerVars : [];
-        const bodyVarsSafe = Array.isArray(bodyVars) ? bodyVars : [];
-        const dynamicButtonIndexesSafe = value?.templateData?.buttons
+    // Check if all variables are filled to enable save
+    const isAllFilled = useMemo(() => {
+        if (!tempValue.templateId) return false;
+        
+        const config = tempValue.templateData || {};
+        const headerVars = extractVariableNames(config.headerText || '', 'number');
+        const bodyVars = extractVariableNames(config.bodyText || '', 'number');
+        const dynamicButtonIndexes = config.buttons
             ?.map((btn, idx) => btn.type === 'VISIT_WEBSITE' && btn.urlType === 'Dynamic' ? String(idx) : null)
             .filter(Boolean) || [];
 
-        const allVarsFilled = [
-            ...(headerVarsSafe || [])?.map(n => (value.headerVariables || {})?.[n]),
-            ...(bodyVarsSafe || [])?.map(n => (value.bodyVariables || {})?.[n]),
-            ...(dynamicButtonIndexesSafe || [])?.map(idx => (value.buttonVariables || {})?.[idx])
+        return [
+            ...headerVars.map(n => tempValue.headerVariables?.[n]),
+            ...bodyVars.map(n => tempValue.bodyVariables?.[n]),
+            ...dynamicButtonIndexes.map(idx => tempValue.buttonVariables?.[idx])
         ].every(v => v?.value || v?.variablePath);
+    }, [tempValue]);
 
-
-
-        setDisabled(!hasTemplate || !allVarsFilled);
-    }, [value.templateId, value.headerVariables, value.bodyVariables, value.buttonVariables, value.templateData, setDisabled]);
-
-    // 1. تثبيت دالة استخراج المتغيرات لمنع إعادة تعريفها مع كل Re-render
-    const extractVariables = useCallback((text) => {
-        if (!text) return [];
-        const matches = extractVariableNames(text, 'number');
-        return [...new Set(matches)].sort((a, b) => Number(a) - Number(b));
-    }, []);
+    useEffect(() => {
+        if (setDisabled) setDisabled(!isAllFilled);
+    }, [isAllFilled, setDisabled]);
 
     const handleSelectTemplate = (template) => {
         const config = template.templateConfig || {};
+        const headerVars = extractVariableNames(config.headerText || '', 'number');
+        const bodyVars = extractVariableNames(config.bodyText || '', 'number');
 
-        const headerVars = extractVariables(config.headerText);
-        const bodyVars = extractVariables(config.bodyText);
-
-        // Initialize variables with examples if available
         const headerVariables = {};
         headerVars.forEach(num => {
             headerVariables[num] = { type: 'direct', value: '', label: '', example: config.headerVariables?.[num] || '' };
@@ -322,24 +318,27 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
         config.buttons?.forEach((btn, idx) => {
             if (btn.type === 'VISIT_WEBSITE' && btn.urlType === 'Dynamic') {
                 buttonVariables[String(idx)] = {
-                    type: 'direct',
-                    value: '',
-                    label: '',
-                    example: `أدخل قيمة {{1}} ل ${btn.url}`
+                    type: 'direct', value: '', label: btn.text || '', example: btn.url || '', url: btn.url
                 };
             }
         });
+        
+        const locationData = config.headerType === 'LOCATION' ? {
+            name: { type: 'direct', value: '', label: '', example: 'اسم الموقع' },
+            address: { type: 'direct', value: '', label: '', example: 'عنوان الموقع بالتفصيل' },
+            latitude: 30.0444,
+            longitude: 31.2357
+        } : null;
 
-        onChange({
-            ...value,
+        setTempValue({
+            ...tempValue,
             templateId: template.id,
             templateName: template.name,
             templateData: config,
             headerVariables,
             bodyVariables,
             buttonVariables,
-            //only reply buttons
-            // Automatically detect buttons for branching
+            locationData,
             branches: config.buttons?.filter(btn => btn.type === 'CUSTOM')?.map((btn, i) => ({
                 id: `btn_${i}`,
                 label: btn.text,
@@ -347,17 +346,39 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
                 condition: `button_click_${i}`
             })) || []
         });
-        setIsDialogOpen(false);
+        setIsTemplateDialogOpen(false);
     };
 
     const handleVariableChange = (type, num, updates) => {
-        // 🚀 إضافة خيار الـ button لتحديد المسار الصحيح للمغير داخل كائن الحفظ
-        const key = type === 'header' ? 'headerVariables' : type === 'body' ? 'bodyVariables' : 'buttonVariables';
-        onChange({
-            ...value,
+        const key = type === 'header' ? 'headerVariables' : type === 'body' ? 'bodyVariables' : type === 'location' ? 'locationData' : 'buttonVariables';
+        console.log(key, num, updates)
+        if (type === 'location') {
+            setTempValue({
+                ...tempValue,
+                locationData: {
+                    ...tempValue.locationData,
+                    [num]: { ...tempValue.locationData?.[num], ...updates }
+                }
+            });
+            return;
+        }
+
+        setTempValue({
+            ...tempValue,
             [key]: {
-                ...value?.[key],
-                [num]: { ...value?.[key]?.[num], ...updates }
+                ...tempValue?.[key],
+                [num]: { ...tempValue?.[key]?.[num], ...updates }
+            }
+        });
+    };
+
+    const handleLocationCoordChange = (lat, lng) => {
+        setTempValue({
+            ...tempValue,
+            locationData: {
+                ...tempValue.locationData,
+                latitude: lat,
+                longitude: lng
             }
         });
     };
@@ -380,25 +401,34 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
         setActiveVar(null);
     };
 
-    const renderVariableInput = (type, num, buttonLabel) => {
+    const handleSave = () => {
+        
+        onChange(tempValue);
+        onClose(tempValue);
+    };
 
+    const renderVariableInput = (type, num, buttonLabel) => {
         const varData = (
-            type === 'header' ? value.headerVariables :
-                type === 'body' ? value.bodyVariables :
-                    value.buttonVariables
+            type === 'header' ? tempValue.headerVariables :
+                type === 'body' ? tempValue.bodyVariables :
+                    type === 'location' ? tempValue.locationData :
+                        tempValue.buttonVariables
         )?.[num] || {};
         const isDynamic = varData.type === 'variable';
-
+        
         const badgeLabel = type === 'header' ? 'عنوان' : type === 'body' ? 'متن الرسالة' : buttonLabel || `رابط الزر ${num}`;
         const isButtonType = type === 'button';
+        
+         const placeholder = isButtonType ? t("enterValueFor", { example: varData.url }) : t("enterValue");
+        
+
         return (
-            <div key={num} className="flex gap-3 items-start group">
-                <div className="w-[60px] h-12 text-center rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 flex items-center justify-center text-xs font-black text-slate-400 shrink-0 shadow-sm">
-                    {isButtonType ? buttonLabel : `{{${num}}}`}
+            <div key={`${type}-${num}`} className="flex gap-3 items-start group">
+                <div className="w-[60px] h-10 text-center rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 flex items-center justify-center text-xs font-black text-slate-400 shrink-0 shadow-sm">
+                    {isButtonType ? <LinkIcon size={14} /> : `{{${num}}}`}
                 </div>
-                <div className="flex-1 flex gap-2">
-                    <div className="flex-1 relative">
-                        {isDynamic ? (
+                <div className="flex-1">
+                     {isDynamic ? (
                             <div className="h-12 rounded-2xl bg-primary/5 border border-primary/20 px-4 flex items-center justify-between group/var">
                                 <div className="flex flex-col min-w-0">
                                     <span className="text-[10px] font-black text-primary uppercase tracking-widest">متغير ديناميكي ({badgeLabel})</span>
@@ -411,16 +441,26 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
                                     <Trash2 size={14} />
                                 </button>
                             </div>
-                        ) : (
-                            <Input
-                                placeholder={varData.example ? isButtonType ? varData.example : `مثال: ${varData.example}` : "أدخل قيمة ثابتة..."}
-                                value={varData.value || ""}
-                                onChange={(e) => handleVariableChange(type, num, { value: e.target.value, type: 'direct' })}
-                                className="h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none px-4 text-sm"
-                            />
-                        )}
-                    </div>
-                    {isOrderTrigger && (
+                        ) : (<Input
+                        placeholder={placeholder}
+                        value={varData.value || ""}
+                        onChange={(e) => {
+                            let val = e.target.value;
+                            if (isButtonType) {
+                                val = val.replace(/\s/g, '_');
+                            }
+                            handleVariableChange(type, num, { value: val });
+                        }}
+                        className="h-10 rounded-xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 px-4 text-sm"
+                    />)}
+                    {isButtonType && (
+                        <div className="space-y-1 mt-1 px-1">
+                            <p className="text-[10px] text-slate-400 font-medium">{`${badgeLabel} - ${varData.url}`}</p>
+                        </div>
+                    )}
+                    
+                </div>
+                   {isOrderTrigger && (
                         <Button
                             variant="outline"
                             onClick={() => openOrderSelector(type, num)}
@@ -433,151 +473,227 @@ export function SendWhatsappTemplateConfig({ value, onChange, errors, flowData, 
                             <Database size={18} />
                         </Button>
                     )}
-                </div>
+                
             </div>
         );
     };
 
-
-    // 2. Memoize متغيرات رأس الرسالة (Header Variables)
-    const headerVars = useMemo(() => {
-        return extractVariables(value.templateData?.headerText);
-    }, [value.templateData?.headerText, extractVariables]);
-
-    // 3. Memoize متغيرات متن الرسالة (Body Variables)
-    const bodyVars = useMemo(() => {
-        return extractVariables(value.templateData?.bodyText);
-    }, [value.templateData?.bodyText, extractVariables]);
-
-    // 4. Memoize وتعديل بناء ماب متغيرات الأزرار (Button Dynamic Variables Map)
-    // الآن أصبحت عبارة عن Map (Object) جاهزة للاستخدام المباشر في الـ Loop وفي الـ React State
-    const buttonVarsMap = useMemo(() => {
-        const buttons = value.templateData?.buttons || value.buttons || [];
-
-        return buttons.reduce((acc, btn, idx) => {
-            if (btn.type === 'VISIT_WEBSITE' && btn.urlType === 'Dynamic') {
-                acc[String(idx)] = {
-                    type: 'direct',
-                    value: '',
-                    label: btn.text || '',
-                    example: btn.urlExample || 'كود التتبع / التوثيق'
-                };
-            }
-            return acc;
-        }, {});
-    }, [value.templateData?.buttons, value.buttons]);
-
+    const headerVars = useMemo(() => extractVariableNames(tempValue.templateData?.headerText || '', 'number'), [tempValue.templateData?.headerText]);
+    const bodyVars = useMemo(() => extractVariableNames(tempValue.templateData?.bodyText || '', 'number'), [tempValue.templateData?.bodyText]);
+    const buttonVarsIndices = useMemo(() => {
+        return tempValue.templateData?.buttons
+        ?.map((btn, idx) => btn.type === 'VISIT_WEBSITE' && btn.urlType === 'Dynamic' ? String(idx) : null)
+        .filter(Boolean) || [];
+    }, [tempValue.templateData?.buttons]);
+    
+    
     return (
-        <div className="space-y-8">
-            <FormGroup label="رقم المستلم" description="الرقم الذي سيتم إرسال الرسالة إليه">
-                <Input
-                    placeholder="أدخل الرقم أو اترك فارغاً لاستخدام رقم العميل من الطلب"
-                    value={value.recipientNumber || ""}
-                    onChange={(e) => onChange({ ...value, recipientNumber: e.target.value })}
-                    className="h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none px-6"
-                />
-            </FormGroup>
-
-            <FormGroup label="قالب الواتساب" description="اختر القالب المراد إرساله من قوالب النظام" error={errors.templateId}>
-                {!value.templateId ? (
-                    <button
-                        onClick={() => setIsDialogOpen(true)}
-                        className="w-full h-32 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center gap-3 hover:border-primary/50 hover:bg-primary/5 transition-all group"
-                    >
-                        <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors">
-                            <Layout size={24} />
-                        </div>
-                        <span className="text-xs font-bold text-slate-500 group-hover:text-primary">اضغط لاختيار قالب...</span>
-                    </button>
-                ) : (
-                    <div className="space-y-6">
-                        <div className="flex items-center justify-between p-4 rounded-2xl border border-primary/20 bg-primary/5">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
-                                    <Check size={20} />
-                                </div>
-                                <div>
-                                    <h4 className="text-sm font-black text-slate-800 dark:text-slate-100">{value.templateName}</h4>
-                                    <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-0.5">تم اختيار القالب</p>
-                                </div>
+        <Dialog open={isOpen} onOpenChange={() => onClose(null)}>
+            <DialogContent className="sm:max-w-[950px] w-full h-[90vh] flex flex-col p-0 overflow-hidden bg-slate-50 dark:bg-slate-950 rounded-[30px] border-none shadow-2xl">
+                <DialogHeader className="px-8 py-6 border-b bg-white dark:bg-slate-900 shrink-0">
+                    <div className="flex items-center justify-between">
+                        <DialogTitle className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm">
+                                <MessageSquareQuote size={24} />
                             </div>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setIsDialogOpen(true)}
-                                className="rounded-xl text-primary hover:bg-primary/10 font-bold text-xs gap-2"
-                            >
-                                <RefreshCw size={14} />
-                                تغيير القالب
-                            </Button>
-                        </div>
+                            <div className="text-right">
+                                <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">إرسال قالب واتساب</h3>
+                                <p className="text-xs font-bold text-slate-400 mt-0.5">اختر القالب وقم بتعبئة المتغيرات المطلوبة</p>
+                            </div>
+                        </DialogTitle>
+                    </div>
+                </DialogHeader>
 
-                        {/* Variables Section */}
-                        {(headerVars.length > 0 || bodyVars.length > 0) && (
-                            <div className="space-y-6 p-6 rounded-3xl bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800">
-                                <div>
-                                    <h4 className="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest mb-1">تعبئة المتغيرات</h4>
-                                    <p className="text-[10px] text-slate-400 font-bold">أدخل قيم ثابتة أو اختر حقول ديناميكية من الطلب</p>
-                                </div>
+                <div className="flex-1 flex overflow-hidden">
+                    {/* Main Content Side */}
+                    <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-white dark:bg-slate-900">
+                        <div className="space-y-8">
+                            {/* Recipient Number */}
+                            <FormGroup label="رقم المستلم" description="الرقم الذي سيتم إرسال الرسالة إليه">
+                                <Input
+                                    placeholder="أدخل الرقم أو اترك فارغاً لاستخدام رقم العميل من الطلب"
+                                    value={tempValue.recipientNumber || ""}
+                                    onChange={(e) => setTempValue({ ...tempValue, recipientNumber: e.target.value })}
+                                    className="h-14 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none px-6 text-sm"
+                                />
+                            </FormGroup>
 
-                                {headerVars.length > 0 && (
-                                    <div className="space-y-4">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                            <Layout size={12} /> رأس الرسالة
-                                        </p>
-                                        {headerVars.map(num => renderVariableInput('header', num))}
-                                    </div>
-                                )}
+                            {/* Template Selection */}
+                            <FormGroup label="قالب الواتساب" error={errors.templateId}>
+                                {!tempValue.templateId ? (
+                                    <button
+                                        onClick={() => setIsTemplateDialogOpen(true)}
+                                        className="w-full h-40 rounded-[32px] border-2 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center gap-4 hover:border-primary/50 hover:bg-primary/5 transition-all group"
+                                    >
+                                        <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors shadow-sm">
+                                            <LayoutDashboard size={28} />
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-sm font-black text-slate-700 dark:text-slate-200">اضغط لاختيار قالب</p>
+                                            <p className="text-[11px] text-slate-400 font-bold mt-1">يجب اختيار قالب معتمد من Meta</p>
+                                        </div>
+                                    </button>
+                                ) : (
+                                    <div className="space-y-6">
+                                        <div className="flex items-center justify-between p-5 rounded-[24px] border border-primary/20 bg-primary/5 shadow-sm">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
+                                                    <Check size={24} />
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-base font-black text-slate-800 dark:text-slate-100">{tempValue.templateName}</h4>
+                                                    <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-0.5">تم اختيار القالب بنجاح</p>
+                                                </div>
+                                            </div>
+                                            <Button
+                                                variant="ghost"
+                                                onClick={() => setIsTemplateDialogOpen(true)}
+                                                className="rounded-xl text-primary hover:bg-primary/10 font-black text-xs h-10 px-4 gap-2"
+                                            >
+                                                <RefreshCw size={14} />
+                                                تغيير القالب
+                                            </Button>
+                                        </div>
 
-                                {bodyVars.length > 0 && (
-                                    <div className="space-y-4">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                            <MessageSquare size={12} /> نص الرسالة
-                                        </p>
-                                        {bodyVars.map(num => renderVariableInput('body', num))}
-                                    </div>
-                                )}
-                                {Object.keys(buttonVarsMap).length > 0 && (
-                                    <div className="space-y-4">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                            <Link size={12} /> أزرار الروابط المتغيرة
-                                        </p>
-                                        {Object.keys(buttonVarsMap).map((buttonIndex) =>
-                                            renderVariableInput('button', buttonIndex, buttonVarsMap[buttonIndex]?.label)
+                                        {/* Variables Section */}
+                                        {(headerVars.length > 0 || bodyVars.length > 0 || buttonVarsIndices.length > 0) && (
+                                            <div className="space-y-8 p-8 rounded-[32px] bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800">
+                                                <div>
+                                                    <h4 className="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest mb-1">تعبئة المتغيرات</h4>
+                                                    <p className="text-[10px] text-slate-400 font-bold">أدخل قيم ثابتة أو اختر حقول ديناميكية من الطلب</p>
+                                                </div>
+
+                                                {tempValue.templateData?.headerType === 'LOCATION' && (
+                                            <div className="space-y-4">
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                    <MapPin size={12} /> ترويسة الموقع
+                                                </p>
+                                                <div className="flex flex-col gap-6">
+                                                    <div className="w-full aspect-video rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 relative bg-slate-100 dark:bg-slate-900">
+                                                        <MapLocationPicker
+                                                            initialLocation={{
+                                                                lat: tempValue.locationData?.latitude || 30.0444,
+                                                                lng: tempValue.locationData?.longitude || 31.2357
+                                                            }}
+                                                            onLocationSelect={handleLocationCoordChange}
+                                                            height="100%"
+                                                            width="100%"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-4">
+                                                        {renderVariableInput('location', 'name', 'اسم الموقع')}
+                                                        {renderVariableInput('location', 'address', 'عنوان الموقع')}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {headerVars.length > 0 && (
+                                                    <div className="space-y-4">
+                                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                            <Layout size={12} /> رأس الرسالة
+                                                        </p>
+                                                        {headerVars.map(num => renderVariableInput('header', num))}
+                                                    </div>
+                                                )}
+
+                                                {bodyVars.length > 0 && (
+                                                    <div className="space-y-4">
+                                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                            <MessageSquare size={12} /> نص الرسالة
+                                                        </p>
+                                                        {bodyVars.map(num => renderVariableInput('body', num))}
+                                                    </div>
+                                                )}
+
+                                                {buttonVarsIndices.length > 0 && (
+                                                    <div className="space-y-4">
+                                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                            <Link size={12} /> أزرار الروابط
+                                                        </p>
+                                                        {buttonVarsIndices.map(idx => renderVariableInput('button', idx, tempValue.templateData.buttons[idx]?.text))}
+                                                    </div>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
                                 )}
-                            </div>
-                        )}
-
-                        {value.templateData && (
-                            <div className="p-6 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 relative group">
-                                <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
-                                    <ExternalLink size={12} />
-                                    معاينة القالب المختار
-                                </h4>
-                                <div className="max-w-[300px] mx-auto scale-90 origin-top">
-                                    <TemplatePreview template={value.templateData} flat />
-                                </div>
-                            </div>
-                        )}
+                            </FormGroup>
+                        </div>
                     </div>
-                )}
 
-                {isDialogOpen && (<InternalTemplateDialog
-                    library={isSuperAdmin}
-                    open={isDialogOpen}
-                    onOpenChange={setIsDialogOpen}
-                    onSelectTemplate={handleSelectTemplate}
-                />)}
+                    {/* Preview Side */}
+                    <div className="w-[340px] bg-slate-50 dark:bg-slate-950 flex flex-col p-8 shrink-0 overflow-y-auto border-r dark:border-slate-800">
+                        <div className="sticky top-0 w-full flex flex-col items-center">
+                            <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-8 flex items-center gap-2 w-full">
+                                <ExternalLink size={12} />
+                                معاينة الرسالة الحية
+                            </h4>
+                            
+                            {tempValue.templateData ? (
+                                <div className="scale-95 origin-top transform-gpu w-full">
+                                    <TemplatePreview
+                                        template={{
+                                            ...tempValue.templateData,
+                                            preview: {
+                                                ...tempValue.templateData,
+                                                examples: {
+                                                    ...Object.keys(tempValue.headerVariables || {}).reduce((acc, k) => ({ ...acc, [k]: tempValue.headerVariables[k].value || (tempValue.headerVariables[k].type === 'variable' ? `[${tempValue.headerVariables[k].label}]` : '') }), {}),
+                                                    ...Object.keys(tempValue.bodyVariables || {}).reduce((acc, k) => ({ ...acc, [k]: tempValue.bodyVariables[k].value || (tempValue.bodyVariables[k].type === 'variable' ? `[${tempValue.bodyVariables[k].label}]` : '') }), {}),
+                                                }
+                                            }
+                                        }}
+                                        flat
+                                        forceShowExamples={true}
+                                    />
+                                </div>
+                            ) : (
+                                <div className="w-full aspect-[3/4] rounded-[32px] border-2 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center p-8 text-center gap-3">
+                                    <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-slate-300">
+                                        <Info size={24} />
+                                    </div>
+                                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">المعاينة غير متاحة</p>
+                                    <p className="text-[10px] text-slate-400 font-bold">اختر قالباً لمشاهدة المعاينة هنا</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
 
-                <OrderPropertySelector
-                    open={isOrderSelectorOpen}
-                    onOpenChange={setIsOrderSelectorOpen}
-                    onSelect={handleOrderPropSelect}
-                />
-            </FormGroup>
-        </div>
+                {/* Footer */}
+                <DialogFooter className="px-8 py-6 border-t bg-white dark:bg-slate-900 shrink-0">
+                    <div className="flex w-full justify-between items-center">
+                        <Button
+                            variant="ghost"
+                            onClick={() => onClose(null)}
+                            className="px-8 h-12 rounded-2xl text-slate-600 dark:text-slate-300 text-sm font-black hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                        >
+                            إلغاء
+                        </Button>
+                        <Button
+                            disabled={!isAllFilled}
+                            onClick={handleSave}
+                            className="px-10 h-12 rounded-2xl bg-primary text-white text-sm font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50"
+                        >
+                            {mode === "create" ? "إضافة الخطوة" : "حفظ التغييرات"}
+                        </Button>
+                    </div>
+                </DialogFooter>
+            </DialogContent>
+
+            <InternalTemplateDialog
+                library={isSuperAdmin}
+                open={isTemplateDialogOpen}
+                onOpenChange={setIsTemplateDialogOpen}
+                onSelectTemplate={handleSelectTemplate}
+            />
+
+            <OrderPropertySelector
+                open={isOrderSelectorOpen}
+                onOpenChange={setIsOrderSelectorOpen}
+                onSelect={handleOrderPropSelect}
+            />
+        </Dialog>
     );
 }
 

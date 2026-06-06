@@ -5998,6 +5998,17 @@
     "common": {
       "noData": "No data available",
       "noOperations": "No operations were recorded in this time range",
+      "noComparisonData": "No comparison data",
+      "comparison": {
+        "today": "vs Yesterday",
+        "yesterday": "vs Day before yesterday",
+        "this_week": "vs Previous week",
+        "last_week": "vs Week before last",
+        "this_month": "vs Previous month",
+        "last_month": "vs Month before last",
+        "this_year": "vs Previous year",
+        "custom": "vs Previous period"
+      },
       "refresh": "Refresh",
       "export": "Export"
     },
@@ -9369,29 +9380,29 @@
         "automation": "Automation Performance"
       },
       "heatmap": {
-         "days": {
-           "mon": "Monday",
-           "tue": "Tuesday",
-           "wed": "Wednesday",
-           "thu": "Thursday",
-           "fri": "Friday",
-           "sat": "Saturday",
-           "sun": "Sunday"
-         },
-         "hours": {
-           "12am": "12 AM",
-           "4am": "4 AM",
-           "8am": "8 AM",
-           "12pm": "12 PM",
-           "4pm": "4 PM",
-           "8pm": "8 PM"
-         },
-         "low": "Low",
-         "high": "High"
-       },
-       "messages": {
-         "fetchError": "Failed to fetch statistics data"
-       },
+        "days": {
+          "mon": "Monday",
+          "tue": "Tuesday",
+          "wed": "Wednesday",
+          "thu": "Thursday",
+          "fri": "Friday",
+          "sat": "Saturday",
+          "sun": "Sunday"
+        },
+        "hours": {
+          "12am": "12 AM",
+          "4am": "4 AM",
+          "8am": "8 AM",
+          "12pm": "12 PM",
+          "4pm": "4 PM",
+          "8pm": "8 PM"
+        },
+        "low": "Low",
+        "high": "High"
+      },
+      "messages": {
+        "fetchError": "Failed to fetch statistics data"
+      },
       "common": {
         "viewAll": "View All",
         "apply": "Apply",
@@ -10279,6 +10290,7 @@
     "noResults": "There are no conversations",
     "noMessagesFound": "No messages found",
     "noResultsFound": "No results found matching your filters",
-    "noPreviewAvailable": "No Preview"
+    "noPreviewAvailable": "No Preview",
+    "locationHeader": "the site"
   }
 }

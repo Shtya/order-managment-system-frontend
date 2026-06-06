@@ -440,7 +440,7 @@ export default function TemplatePreview({
 
     const otpPreviewLabel =
         (otpCopyButtonText && String(otpCopyButtonText).trim()) ||
-        (locale === "ar" ? "انسخ الرمز" : "Copy code");
+        t("preview.copyCode");
 
     return (
         <div className={cn(
@@ -553,7 +553,7 @@ export default function TemplatePreview({
 
                         {useCustomValidity && validityPeriod && (
                             <div className="text-[10px] text-[#00000073] dark:text-[#8696a0] px-2 pb-1 text-center leading-tight">
-                                {locale === "ar" ? "نافذة التسليم:" : "Send TTL:"}{" "}
+                                {t("preview.sendTtl")}{" "}
                                 {validityPeriod}
                             </div>
                         )}
@@ -596,7 +596,7 @@ export default function TemplatePreview({
                                                     />}
 
                                                     {btn.text || (
-                                                        <span className="opacity-40 italic">زر الإجراء...</span>
+                                                        <span className="opacity-40 italic">{t("preview.actionButtonPlaceholder")}</span>
                                                     )}
                                                 </div>
                                             ))}
@@ -645,7 +645,7 @@ export default function TemplatePreview({
                             buttons={buttons}
                             sections={template.sections || []}
                             type={isList ? "LIST" : "BUTTONS"}
-                            title={seeAllOptionsLabel || (isList ? "Select an option" : "All Options")}
+                            title={seeAllOptionsLabel || (isList ? t("preview.selectAnOption") : t("preview.allOptions"))}
                             locale={locale}
                             seeAllOptionsLabel={seeAllOptionsLabel || t("preview.seeAllOptions")}
                         />

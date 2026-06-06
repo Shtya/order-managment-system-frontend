@@ -341,7 +341,6 @@ export default function ShippingSection() {
           }}>
             {t('heading.highlight')}
           </span>{' '}
-          {t('heading.suffix')}
         </h2>
         <p style={{
           color: 'rgba(148,163,184,0.8)', fontSize: 14, direction: 'rtl',

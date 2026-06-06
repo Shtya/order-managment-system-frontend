@@ -612,6 +612,19 @@
       "employees": "الموظفين",
       "addEmployee": "إضافة موظف"
     },
+    "whatsapp": {
+      "title": "إرسال عبر واتساب",
+      "subtitle": "اختر الدولة وأدخل رقم الواتساب",
+      "phone": "رقم الواتساب",
+      "includePassword": "إدراج كلمة المرور داخل الرسالة",
+      "preview": "معاينة الرسالة",
+      "note": "تنبيه: كلمة المرور تظهر فقط عند الإنشاء/إعادة التعيين. إذا أغلقت هذه الشاشة لن تستطيع قراءتها مرة أخرى.",
+      "accountDetails": "تفاصيل الحساب:",
+      "nameLabel": "الاسم: {name}",
+      "emailLabel": "البريد الإلكتروني: {email}",
+      "passwordLabel": "كلمة المرور: {password}",
+      "loginInstructions": "يرجى تسجيل الدخول وتغيير كلمة المرور الخاصة بك بعد أول تسجيل دخول."
+    },
     "sections": {
       "employeeType": "نوع الموظف",
       "employeeInfo": "بيانات الموظف",
@@ -679,14 +692,6 @@
     },
     "credentials": {
       "password": "كلمة المرور"
-    },
-    "whatsapp": {
-      "title": "إرسال عبر واتساب",
-      "subtitle": "اختر الدولة وأدخل رقم الواتساب",
-      "phone": "رقم الواتساب",
-      "includePassword": "إدراج كلمة المرور داخل الرسالة",
-      "preview": "معاينة الرسالة",
-      "note": "تنبيه: كلمة المرور تظهر فقط عند الإنشاء/إعادة التعيين. إذا أغلقت هذه الشاشة لن تستطيع قراءتها مرة أخرى."
     }
   },
   "addSupplier": {
@@ -1200,6 +1205,16 @@
     "US": "الولايات المتحدة"
   },
   "roles-client": {
+    "toasts": {
+      "fetchRolesError": "فشل في جلب الأدوار",
+      "fetchPermissionsError": "فشل في جلب الصلاحيات",
+      "createRoleSuccess": "تم إنشاء الدور بنجاح",
+      "createRoleError": "فشل في إنشاء الدور",
+      "updateRoleSuccess": "تم تحديث الدور بنجاح",
+      "updateRoleError": "فشل في تحديث الدور",
+      "deleteRoleSuccess": "تم حذف الدور بنجاح",
+      "deleteRoleError": "فشل في حذف الدور"
+    },
     "permissionsItems": {
       "admin-settings_read": "عرض إعدادات الإدارة",
       "admin-settings_update": "تعديل إعدادات الإدارة",
@@ -1631,7 +1646,13 @@
         "productName": "اسم المنتج",
         "date": "التاريخ",
         "distributedAt": "تاريخ التوزيع",
-        "status": "الحالة"
+        "status": "الحالة",
+        "orderNumber": "رقم الطلب",
+        "address": "العنوان",
+        "email": "الايميل",
+        "zone": "المنطقة",
+        "orderSize": "حجم الطلب\t",
+        "district": "الحي"
       },
       "section": {
         "products": "المنتجات",
@@ -1771,7 +1792,7 @@
         "printed": "تم الطباعة",
         "inPreparation": "قيد التحضير"
       },
-      "field": {
+      "fields": {
         "orderCode": "رقم الطلب",
         "customer": "العميل",
         "phone": "الهاتف",
@@ -3083,7 +3104,9 @@
       "cancel": "إلغاء",
       "success": "تم حذف المورد بنجاح"
     },
-    "empty": "لا يوجد موردين"
+    "empty": "لا يوجد موردين",
+    "copied": "تم النسخ!",
+    "copy": "نسخ"
   },
   "supplierCategories": {
     "breadcrumb": {
@@ -3455,7 +3478,8 @@
       "summary": "ملخص الشراء",
       "quantityDistribution": "توزيع الكمية تلقائياً بين المتغيرات",
       "quantity": "الكمية",
-      "addNewSupplier": "إضافة مورد"
+      "addNewSupplier": "إضافة مورد",
+      "noSupplier": "لا يوجد مورد"
     },
     "breadcrumb": {
       "home": "الرئيسية",
@@ -3947,7 +3971,8 @@
     "status": {
       "accepted": "مقبولة",
       "pending": "معلقة",
-      "rejected": "مرفوضة"
+      "rejected": "مرفوضة",
+      "draft": "مسودة"
     },
     "actions": {
       "print": "طباعة",
@@ -4506,6 +4531,10 @@
     }
   },
   "common": {
+    "year": "السنة",
+    "month": "الشهر",
+    "allowPopups": "يرجى السماح بالنوافذ المنبثقة (Pop-ups) للطباعة",
+    "printReport": "طباعة التقرير",
     "use": "استخدام",
     "optional": "اختياري",
     "seconds": "ثانية",
@@ -4538,6 +4567,7 @@
       "inactive": "غير نشط"
     },
     "refresh": "تحديث",
+    "to": "إلى",
     "total": "الإجمالي",
     "apply": "تطبيق",
     "notSpecified": "غير محدد",
@@ -4888,7 +4918,8 @@
         "orderStatus": "حالة الطلب",
         "description": "الوصف",
         "sku": "SKU",
-        "selectVariant": "اختر النوع"
+        "selectVariant": "اختر النوع",
+        "product": "إسم المنتج"
       },
       "actions": {
         "viewExternalProductDetails": "عرض تفاصيل المنتج الخارجي",
@@ -5302,6 +5333,23 @@
       "moreErrors": "و {count} أخطاء أخرى"
     },
     "distribution": {
+      "fields": {
+        "orderNumber": "رقم الطلب",
+        "customerName": "اسم العميل",
+        "phoneNumber": "رقم الهاتف",
+        "address": "العنوان",
+        "city": "المدينة",
+        "zone": "المنطقة",
+        "district": "الحي"
+      },
+      "placeholders": {
+        "customerName": "أدخل اسم العميل...",
+        "phoneNumber": "01023459658",
+        "address": "أدخل عنوان الشارع بالكامل...",
+        "city": "اختر المدينة",
+        "zone": "اختر المنطقة",
+        "district": "اختر الحي"
+      },
       "title": "توزيع الطلبات",
       "normalTitle": "توزيع يدوي",
       "normalDescription": "توزيع الطلبات على موظف محدد",
@@ -5973,6 +6021,7 @@
       "this_year": "السنة الحالية"
     },
     "filters": {
+      "title": "الفلاتر",
       "apply": "تطبيق",
       "dateRange": "المدة الزمنية",
       "dateRangePlaceholder": "اختر نطاق التاريخ",
@@ -6034,6 +6083,8 @@
     "common": {
       "noData": "لا توجد بيانات متاحة",
       "noComparisonData": "لا توجد بيانات للمقارنة",
+      "totalLabel": "الإجمالي",
+      "orderLabel": "طلب",
       "comparison": {
         "today": "مقارنة بأمس",
         "yesterday": "مقارنة بأول أمس",
@@ -6057,7 +6108,8 @@
       "dateRange": "المدة الزمنية",
       "dateRangePlaceholder": "اختر نطاق التاريخ",
       "store": "المتجر",
-      "allStores": "كل المتاجر"
+      "allStores": "كل المتاجر",
+      "title": "الفلاتر"
     },
     "kpi": {
       "totalSales": "إجمالي المبيعات",
@@ -6334,7 +6386,8 @@
         "customOverride": "تخصيص القيم",
         "notAllowed": "غير مسموح",
         "noExceed": "تم تعطيل تجاوز الحد",
-        "bulkUploadLimit": "حد الرفع الشهري"
+        "bulkUploadLimit": "حد الرفع الشهري",
+        "paidAmount": "المبلغ المدفوع"
       },
       "tooltips": {
         "unlimited": "تعيين كغير محدود",
@@ -6363,7 +6416,9 @@
         "invalidUserId": "معرف المستخدم غير صحيح",
         "fetchUserFailed": "فشل في تحميل بيانات المستخدم",
         "fetchSubscriptionFailed": "فشل في تحميل بيانات الاشتراك",
+        "fetchFailed": "فشل في تحميل البيانات",
         "saveFailed": "فشل في حفظ الاشتراك",
+        "errorSaving": "خطأ في حفظ الاشتراك",
         "userNotFound": "المستخدم غير موجود"
       }
     },
@@ -7812,7 +7867,8 @@
       "fetchWalletFailed": "فشل في تحميل بيانات المحفظة",
       "depositFailed": "فشل في بدء عملية الشحن",
       "noCheckoutUrl": "لم يتم توفير رابط الدفع",
-      "withdrawFailed": "فشل في عملية السحب"
+      "withdrawFailed": "فشل في عملية السحب",
+      "adjustBalanceFailed": "فشل تحديث الرصيد"
     },
     "messages": {
       "depositSuccess": "تم بدء عملية الشحن بنجاح",
@@ -7834,7 +7890,8 @@
       "amountLabel": "القيمة (موجب للإضافة / سالب للخصم)",
       "noteLabel": "ملاحظات التعديل",
       "submit": "تحديث الرصيد",
-      "success": "تم تحديث المحفظة بنجاح"
+      "success": "تم تحديث المحفظة بنجاح",
+      "amountPlaceholder": "مثال: 100 أو -50"
     },
     "stats": {
       "walletBalance": "رصيد المحفظة",
@@ -7908,7 +7965,8 @@
       "required": "هذا الحقل مطلوب",
       "validAmount": "أدخل مبلغاً صحيحاً",
       "validEmail": "أدخل بريداً إلكترونياً صحيحاً",
-      "maxAmount": "الحد الأقصى"
+      "maxAmount": "الحد الأقصى",
+      "invalidAmount": "يرجي إدخال رقم صحيح"
     },
     "toasts": {
       "depositSuccess": "تم إيداع {amount} جنيه بنجاح!",
@@ -8183,10 +8241,28 @@
         "label": "المظهر",
         "description": "السمة والعرض"
       },
+      "whatsapp": {
+        "label": "إعدادات واتساب",
+        "description": "إعدادات الأرقام الافتراضية وصلاحية القوالب"
+      },
+      "automations": {
+        "label": "إعدادات التشغيل التلقائي",
+        "description": "تهيئة كيفية تعامل التشغيل التلقائي"
+      },
       "whatsappTab": {
         "accountSettings": "إعدادات الحساب",
         "defaultAccountDescription": "تحديد الرقم الافتراضي لعمليات الإرسال",
         "defaultAccountLabel": "الرقم الافتراضي للإرسال"
+      }
+    },
+    "ttlInput": {
+      "allowed": "المسموح: {min} - {max}",
+      "outOfRange": "خارج النطاق",
+      "units": {
+        "seconds": "ثانية",
+        "minutes": "دقيقة",
+        "hours": "ساعة",
+        "days": "يوم"
       }
     },
     "company": {
@@ -9171,6 +9247,20 @@
         "closed": "مغلق",
         "pending": "لم يغلق"
       },
+      "successClosing": "تم تقفيل الشهر بنجاح",
+      "errorClosing": "حدث خطأ أثناء التقفيل",
+      "alreadyClosed": "هذا الشهر تم تقفيله مسبقاً!",
+      "fetchPreviewError": "تعذر جلب التقرير المبدئي",
+      "compareError": "حدث خطأ أثناء جلب بيانات المقارنة",
+      "compareDescription": "قارن الأداء المالي بين فترتين مختلفتين",
+      "periodA": "الفترة الأولى (A)",
+      "periodB": "الفترة الثانية (B)",
+      "metric": "المقياس",
+      "periodALabel": "الفترة A",
+      "periodBLabel": "الفترة B",
+      "change": "التغير",
+      "periodResult": "نتيجة الفترة",
+      "detailedExcelReport": "تقرير Excel مفصل",
       "fetchError": "حدث خطأ أثناء جلب البيانات",
       "netResult": "صافي الربح التقديري",
       "profit": "ربح",
@@ -9227,6 +9317,15 @@
     },
     "supplierAccounts": {
       "title": "حسابات الموردين",
+      "noData": "لا توجد بيانات متاحة",
+      "notClosed": "لم يتم التقفيل",
+      "noPurchasesPeriod": "لا توجد فواتير مشتريات في هذه الفترة",
+      "noReturnsPeriod": "لا توجد فواتير مرتجعات في هذه الفترة",
+      "noPurchases": "لا توجد فواتير مشتريات",
+      "noReturns": "لا توجد فواتير مرتجعات",
+      "successClosing": "تم التقفيل بنجاح",
+      "fetchError": "حدث خطأ أثناء جلب بيانات الموردين",
+      "fetchInvoicesError": "حدث خطأ أثناء جلب الفواتير",
       "loading": {
         "message": "جاري تحميل بيانات المورد...",
         "notFound": "المورد غير موجود"
@@ -9283,7 +9382,9 @@
       "filters": {
         "selectYear": "إختر السنة...",
         "year": "السنة"
-      }
+      },
+      "failedToFetchSupplier": "فشل تحميل المورد",
+      "failedToLoadDetails": "فشل تحميل المورد"
     },
     "history": "التقفيلات السابقة",
     "confirm": "تأكيد",
@@ -9600,7 +9701,10 @@
       },
       "preview": {
         "allOptions": "كل الخيارات",
-        "actionButtonPlaceholder": "زر إجراء...",
+        "selectAnOption": "اختر خياراً",
+        "sendTtl": "نافذة التسليم:",
+        "copyCode": "نسخ الرمز",
+        "actionButtonPlaceholder": "زر الإجراء...",
         "quickReplyPlaceholder": "رد سريع...",
         "title": "معاينة القالب",
         "showExamples": "عرض الأمثلة",
@@ -9867,6 +9971,8 @@
         },
         "submitCreate": "إرسال للمراجعة",
         "submitUpdate": "حفظ التغييرات",
+        "create": "إنشاء",
+        "update": "تحديث",
         "accountLabel": "حساب واتساب",
         "accountPlaceholder": "اختر الحساب",
         "internalTemplates": "قوالب النظام",
@@ -9980,6 +10086,360 @@
         "paused": "متوقف",
         "archived": "مؤرشف"
       },
+      "builder": {
+        "triggerTypes": {
+          "order_created": "إنشاء طلب جديد",
+          "order_updated": "تحديث حالة الطلب"
+        },
+        "actionTypes": {
+          "send_whatsapp_template": "إرسال قالب واتساب",
+          "update_order_status": "تحديث حالة الطلب",
+          "send_upsell": "إرسال عرض"
+        },
+        "conditionTypes": {
+          "order_check": "فحص بيانات الطلب",
+          "quick_order_status": "فحص سريع للحالة"
+        },
+        "operators": {
+          "equal": "يساوي",
+          "notEqual": "لا يساوي",
+          "greaterThan": "أكبر من",
+          "lessThan": "أصغر من",
+          "greaterThanOrEqual": "أكبر من أو يساوي",
+          "lessThanOrEqual": "أصغر من أو يساوي",
+          "contains": "يحتوي على",
+          "notContains": "لا يحتوي على",
+          "startsWith": "يبدأ بـ"
+        },
+        "nodes": {
+          "trigger": {
+            "subtitle": "نقطة البداية",
+            "unknown": "محفز غير معروف",
+            "onStatusChange": "عند تغيير الحالة إلي"
+          },
+          "action": {
+            "subtitle": "المراسلة",
+            "management": "إدارة الطلبات",
+            "upsell": "العروض الإضافية"
+          },
+          "condition": {
+            "subtitle": "التحقق المنطقي"
+          },
+          "loading": "جاري التحقق...",
+          "noTemplate": "لم يتم اختيار قالب",
+          "recipient": "المستلم",
+          "changeStatusTo": "تغيير الحالة الي",
+          "sendOffers": "إرسال العروض",
+          "proposedForOrder": "المقترحة للطلب",
+          "yes": "نعم",
+          "no": "لا",
+          "noConditions": "لا توجد شروط",
+          "otherConditions": "+ {count} شروط أخرى"
+        },
+        "sidebar": {
+          "title": "بناء المسارات",
+          "subtitle": "اسحب العناصر لبناء مسار عملك",
+          "namePlaceholder": "اسم الأتمتة...",
+          "addFirst": "ابدأ بإضافة محفز للمسار أولاً",
+          "clickPlus": "اضغط على + أسفل الخطوة",
+          "chooseAction": "اختر الإجراء المناسب",
+          "help": "مساعدة",
+          "noResults": "لم يتم العثور على نتائج",
+          "triggers": "المحفزات",
+          "actions": "الإجراءات",
+          "conditions": "الشروط",
+          "internalSystem": "نظام داخلي",
+          "logic": "منطق",
+          "addStepTip": "اضغط على علامة {plus} أسفل الكارد لإضافة إجراء جديد"
+        },
+        "toolbar": {
+          "save": "حفظ",
+          "saving": "جاري الحفظ...",
+          "clear": "مسح",
+          "preview": "معاينة",
+          "test": "اختبار",
+          "run": "تشغيل",
+          "back": "رجوع",
+          "reorder": "ترتيب",
+          "stepInfo": "معلومات الخطوة",
+          "errorName": "يرجى إدخال اسم الأتمتة",
+          "previewEnded": "انتهت جلسة المعاينة",
+          "resolveErrors": "يرجى حل جميع أخطاء العقد قبل الحفظ.",
+          "minNodes": "يجب أن يحتوي سير العمل على عقدتين على الأقل.",
+          "exactlyOneTrigger": "يجب أن يحتوي سير العمل على محفز واحد بالضبط.",
+          "publishedSuccess": "تم نشر الأتمتة بنجاح!",
+          "savedSuccess": "تم حفظ الأتمتة بنجاح!",
+          "saveFailed": "فشل في حفظ الأتمتة.",
+          "editAutomation": "تعديل الأتمتة",
+          "saveAndPublish": "حفظ ونشر",
+          "clearAll": "مسح الكل",
+          "previewPath": "معاينة المسار",
+          "saveDraft": "حفظ مسودة",
+          "stepAddedSuccess": "تمت إضافة الخطوة بنجاح",
+          "stepUpdatedSuccess": "تم تحديث الخطوة بنجاح",
+          "workspace": "مساحة العمل",
+          "disconnectOnly": "قطع الاتصال فقط",
+          "deletePathAndAfter": "حذف المسار وما بعده",
+          "addNextStep": "إضافة خطوة تالية",
+          "chooseThisBranch": "اختر هذا الفرع",
+          "viewAutomationVersion": "عرض الأتمتة إصدار {version}",
+          "viewAutomationLatest": "عرض الأتمتة أحدث إصدار",
+          "editAutomationVersion": "تعديل الأتمتة إصدار {version}",
+          "editAutomationLatest": "تعديل الأتمتة أحدث إصدار",
+          "loadingFlowData": "جاري تحميل بيانات المسار...",
+          "failedToLoadData": "فشل في تحميل بيانات الأتمتة.",
+          "errorOccurred": "عذراً، حدث خطأ ما",
+          "retry": "إعادة المحاولة"
+        },
+        "indicators": {
+          "updated_automatically": "تم تحديث البيانات تلقائياً"
+        },
+        "status": {
+          "completed": "مكتمل",
+          "failed": "فشل"
+        },
+        "config": {
+          "modalTitle": {
+            "create": "قم بتهيئة إعدادات الخطوة الجديدة",
+            "edit": "تعديل إعدادات الخطوة"
+          },
+          "noSettings": "هذه الخطوة لا تتطلب إعدادات إضافية",
+          "addStep": "إضافة الخطوة",
+          "saveChanges": "حفظ التغييرات",
+          "store": "المتجر",
+          "storeDesc": "اختر المتجر الذي سيتم مراقبة الطلبات فيه",
+          "selectStore": "اختر المتجر...",
+          "allStores": "جميع المتاجر",
+          "loading": "جاري التحميل...",
+          "status": "الحالة",
+          "statusDesc": "اختر الحالة التي سيتم مراقبتها",
+          "selectStatus": "اختر الحالة...",
+          "newStatus": "الحالة الجديدة",
+          "newStatusDesc": "اختر الحالة التي سيتم نقل الطلب إليها",
+          "template": "القالب",
+          "templateDesc": "اختر قالب الرسالة الذي سيتم إرساله",
+          "selectTemplate": "اختر القالب...",
+          "recipientNumber": "رقم المستلم",
+          "recipientNumberDesc": "رقم الهاتف الذي سيتم إرسال الرسالة إليه (اتركه فارغاً لاستخدام رقم الطلب)",
+          "variables": "المتغيرات",
+          "variablesDesc": "اربط متغيرات القالب ببيانات الطلب",
+          "checks": "الفحوصات",
+          "addCheck": "إضافة فحص",
+          "operator": "العملية",
+          "value": "القيمة",
+          "targetStatus": "الحالة المستهدفة",
+          "targetStatusDesc": "تفعيل الأتمتة عند تغيير الطلب إلى هذه الحالة",
+          "whatsappAccount": "حساب الواتساب",
+          "whatsappAccountDesc": "اختر الحساب الذي سيستقبل الرسائل",
+          "selectAccount": "اختر الحساب...",
+          "changeStatusToDesc": "الحالة الجديدة التي سيتم تعيينها للطلب",
+          "selectNewStatus": "اختر الحالة الجديدة...",
+          "whatsappTemplateTitle": "إرسال قالب واتساب",
+          "whatsappTemplateDesc": "اختر القالب وقم بتعبئة المتغيرات المطلوبة",
+          "recipientNumberDesc2": "الرقم الذي سيتم إرسال الرسالة إليه",
+          "recipientNumberPlaceholder": "أدخل الرقم أو اترك فارغاً لاستخدام رقم العميل من الطلب",
+          "whatsappTemplate": "قالب الواتساب",
+          "clickToSelectTemplate": "اضغط لاختيار قالب",
+          "metaTemplateRequired": "يجب اختيار قالب معتمد من Meta",
+          "templateSelectedSuccess": "تم اختيار القالب بنجاح",
+          "changeTemplate": "تغيير القالب",
+          "fillVariables": "تعبئة المتغيرات",
+          "fillVariablesDesc": "أدخل قيم ثابتة أو اختر حقول ديناميكية من الطلب",
+          "locationHeader": "ترويسة الموقع",
+          "locationName": "اسم الموقع",
+          "locationAddress": "عنوان الموقع",
+          "messageHeader": "رأس الرسالة",
+          "messageBody": "نص الرسالة",
+          "linkButtons": "أزرار الروابط",
+          "livePreview": "معاينة الرسالة الحية",
+          "previewUnavailable": "المعاينة غير متاحة",
+          "chooseTemplateToPreview": "اختر قالباً لمشاهدة المعاينة هنا",
+          "dynamicVariable": "متغير ديناميكي ({type})",
+          "selectFromOrderData": "اختيار من بيانات الطلب",
+          "enterValue": "أدخل القيمة",
+          "enterValueFor": "أدخل قيمة لـ {example}",
+          "orderCheckTitle": "فحص بيانات الطلب",
+          "orderCheckDesc": "قم بتهيئة إعدادات الخطوة الجديدة",
+          "conditionsCount": "{count} / 20 شروط",
+          "addNewCondition": "إضافة شرط جديد",
+          "preview": "معاينة:",
+          "backToMain": "الرجوع للرئيسية",
+          "loadingData": "جاري تحميل البيانات...",
+          "maxConditionsError": "لا يمكن إضافة أكثر من 20 تحقق",
+          "yes": "نعم",
+          "no": "لا",
+          "field": "الحقل",
+          "condition": "الشرط",
+          "chooseField": "اختر الحقل من بيانات الطلب",
+          "chooseOperator": "اختر المعامل (الشرط)",
+          "enterValuePlaceholder": "أدخل القيمة المطلوبة...",
+          "selectValue": "اختر القيمة...",
+          "quickCheckTitle": "التحقق من الحالة",
+          "quickCheckDesc": "توجيه التدفق بناءً على حالة الطلب الحالية",
+          "accounts": {
+            "sales": "حساب المبيعات الرئيسي",
+            "support": "حساب الدعم الفني"
+          },
+          "upsell": {
+            "none": "لا يوجد",
+            "system_reject": "السستم رفض",
+            "accept": "قبول",
+            "client_reject": "العميل رفض"
+          },
+          "noConditionsDesc": "ابدأ بإضافة أول شرط لفحص بيانات الطلب",
+          "addCondition": " إضافة الشرط"
+        },
+        "orderProperties": {
+          "title": "اختيار حقل من الطلب",
+          "orderNumber": "رقم الطلب",
+          "customerName": "اسم العميل",
+          "phoneNumber": "رقم الجوال",
+          "secondPhoneNumber": "رقم الجوال الثاني",
+          "address": "العنوان",
+          "city": "المدينة",
+          "area": "الحي",
+          "landmark": "العلامة المميزة",
+          "deposit": "المدفوع",
+          "productsTotal": "إجمالي المنتجات",
+          "shippingCost": "تكلفة الشحن",
+          "discount": "الخصم",
+          "finalTotal": "الإجمالي النهائي",
+          "status": "حالة الطلب",
+          "store": "المتجر",
+          "shippingCompany": "شركة الشحن",
+          "paymentMethod": "طريقة الدفع",
+          "paymentStatus": "حالة الدفع",
+          "trackingNumber": "رقم التتبع",
+          "shippedAt": "تاريخ الشحن",
+          "deliveredAt": "تاريخ التوصيل",
+          "created_at": "تاريخ إنشاء الطلب",
+          "allowOpenPackage": "السماح بفتح الطلب",
+          "items": "المنتجات",
+          "productName": "اسم المنتج",
+          "sku": "رمز المنتج (SKU)",
+          "quantity": "الكمية",
+          "price": "السعر",
+          "unitCost": "سعر الجملة",
+          "lineTotal": "الإجمالي",
+          "searchPlaceholder": "بحث في الحقول...",
+          "noResults": "لم يتم العثور على نتائج",
+          "examples": {
+            "orderNumber": "ORD-123",
+            "customerName": "أحمد محمد",
+            "phoneNumber": "01023459658",
+            "secondPhoneNumber": "01245234569",
+            "address": "شارع الملك فهد، الرياض",
+            "city": "الرياض",
+            "area": "حي الملقا",
+            "landmark": "بجاني مسجد النور",
+            "deposit": "100",
+            "productsTotal": "500",
+            "shippingCost": "30",
+            "discount": "50",
+            "finalTotal": "480",
+            "status": "قيد التنفيذ",
+            "store": "Shopify",
+            "shippingCompany": "Turbo",
+            "paymentMethod": "الدفع بالكارت",
+            "paymentStatus": "تم الدفع",
+            "trackingNumber": "1234567890",
+            "shippedAt": "2023-12-12",
+            "deliveredAt": "2023-12-12",
+            "created_at": "2023-12-12",
+            "allowOpenPackage": "نعم",
+            "productName": "ساعة ذكية",
+            "sku": "SKU-001",
+            "quantity": "2",
+            "price": "250",
+            "unitCost": "250",
+            "lineTotal": "500"
+          }
+        },
+        "runPanel": {
+          "title": "معلومات التشغيل",
+          "status": "حالة التشغيل",
+          "currentNode": "الخطوة الحالية",
+          "duration": "المدة",
+          "stopPreview": "إيقاف المعاينة",
+          "daysCount": "{count, plural, =1 {يوم} =2 {يومان} other {# أيام}}",
+          "hoursCount": "{count, plural, =1 {ساعة} =2 {ساعتان} other {# ساعات}}",
+          "minutesCount": "{count, plural, =1 {دقيقة} =2 {دقيقتان} other {# دقائق}}",
+          "secondsCount": "{count, plural, =1 {ثانية} =2 {ثانيتان} other {# ثوانٍ}}",
+          "and": " و ",
+          "flowAndVersion": "المسار والنسخة",
+          "version": "النسخة",
+          "executionStatus": "حالة التنفيذ",
+          "completedSteps": "الخطوات المكتملة",
+          "stepsCount": "{count} خطوة",
+          "timing": "التوقيت",
+          "startTime": "وقت البدء",
+          "endTime": "وقت الانتهاء",
+          "running": "جاري...",
+          "additionalInfo": "معلومات إضافية",
+          "triggerEntity": "الكيان المحفز",
+          "failureDetails": "تفاصيل الفشل",
+          "entities": {
+            "order": "طلب",
+            "whatsapp": "واتساب"
+          }
+        },
+        "dialogs": {
+          "delete": {
+            "title": {
+              "clear": "مسح مسار العمل",
+              "stepWithDownstream": "حذف الخطوة والفروع التابعة",
+              "step": "حذف الخطوة"
+            },
+            "description": {
+              "clear": "هل أنت متأكد من مسح جميع الخطوات؟ لا يمكن التراجع عن هذا الإجراء.",
+              "stepWithDownstream": "سيؤدي هذا الإجراء إلى حذف هذه الخطوة و {count} خطوة تالية مرتبطة بها.",
+              "step": "هل أنت متأكد من حذف هذه الخطوة؟",
+              "confirm": "هل أنت متأكد؟"
+            },
+            "dontAskAgain": "لا تسألني مرة أخرى عند الحذف",
+            "successClear": "تم مسح مسار العمل بنجاح",
+            "successDelete": "تم حذف الخطوات بنجاح"
+          }
+        },
+        "stepInfo": {
+          "title": "تفاصيل تنفيذ الخطوة",
+          "input": "مدخلات الخطوة",
+          "output": "مخرجات الخطوة",
+          "searchPlaceholder": "البحث في البيانات...",
+          "tree": "شجرة",
+          "treeView": "عرض شجري",
+          "raw": "خام (JSON)",
+          "rawJson": "JSON خام",
+          "expandAll": "توسيع الكل",
+          "collapseAll": "طي الكل",
+          "noData": "لا توجد بيانات",
+          "noResults": "لم يتم العثور على نتائج تطابق \"{term}\"",
+          "root": "الجذر",
+          "searchResults": "نتائج البحث",
+          "itemsCount": "{count} عناصر",
+          "keysCount": "{count} مفاتيح",
+          "errorMessage": "رسالة الخطأ",
+          "syncWithOrder": "مزامنة مع الطلب الحالي"
+        },
+        "previewSidebar": {
+          "title": "معاينة المسار",
+          "noOrderRequired": "هذا المحفز لا يتطلب اختيار طلب",
+          "chooseOrder": "اختر طلب للمعاينة",
+          "orderDescription": "الطلبات التجريبية في الأعلى ثم الطلبات الحقيقية",
+          "searchPlaceholder": "البحث بالاسم أو الهاتف...",
+          "generateMock": "توليد طلب تجريبي",
+          "addNewMock": "إضافة طلب تجريبي جديد",
+          "mockOrders": "الطلبات التجريبية",
+          "realOrders": "الطلبات الحقيقية",
+          "noOrders": "لا توجد طلبات",
+          "use": "استخدام",
+          "undefined": "غير محدد",
+          "real": "حقيقي",
+          "mock": "تجريبي",
+          "items": "{count} منتجات"
+        },
+        "failedToLoadData": "فشل في تحميل بيانات الأتمتة."
+      },
       "messages": {
         "updateSuccess": "تم تحديث الحالة بنجاح",
         "deleteSuccess": "تم حذف الأتمتة بنجاح",
@@ -9992,6 +10452,27 @@
       }
     },
     "automationLogs": {
+      "title": "تشغيل المسارات",
+      "subtitle": "مراقبة العمليات الجارية",
+      "reorder": "إعادة ترتيب",
+      "editVersion": "تعديل النسخة",
+      "retryNow": "إعادة المحاولة الآن",
+      "restarting": "جار إعادة التشغيل...",
+      "restartSuccess": "تم إرسال طلب إعادة التشغيل بنجاح",
+      "restartFailed": "فشل في طلب إعادة التشغيل",
+      "refreshSuccess": "تم تحديث البيانات",
+      "reorderSuccess": "تمت إعادة ترتيب المسار",
+      "selectRunToContinue": "اختر عملية تشغيل للمتابعة",
+      "allRuns": "جميع عمليات التشغيل",
+      "refresh": "تحديث",
+      "searchPlaceholder": "البحث بالطلب أو المسار...",
+      "loading": "جاري التحميل...",
+      "noRuns": "لا توجد عمليات",
+      "stepsCompleted": "{count} خطوة مكتملة",
+      "noData": "لا توجد بيانات",
+      "errorFetchingRuns": "حدث خطأ أثناء تحميل المسارات",
+      "errorFetchingDetails": "حدث خطأ أثناء تحميل التفاصيل",
+      "loadingExecutionDetails": "جاري تحميل تفاصيل التنفيذ...",
       "breadcrumb": {
         "logs": "سجلات التنفيذ"
       },
@@ -10031,7 +10512,9 @@
       "actions": {
         "view": "عرض التنفيذ"
       },
-      "refreshed": "تم تحديث البيانات"
+      "refreshed": "تم تحديث البيانات",
+      "errorOccurred": "عذراً، حدث خطأ ما",
+      "retry": "   إعادة المحاولة"
     }
   },
   "systemErrors": {

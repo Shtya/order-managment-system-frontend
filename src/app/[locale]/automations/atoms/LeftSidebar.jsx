@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import {
     ChevronDown, Play,
     GitBranch, Zap, Search, Info, Plus,
@@ -12,6 +13,7 @@ import { useRouter } from '@/i18n/navigation';
 
 
 export function LeftSidebar({ onSelectStep }) {
+    const t = useTranslations("whatsApp.automations.builder");
     const router = useRouter();
     const [search, setSearch] = useState('');
     const nodes = useFlowStore((s) => s.nodes);
@@ -30,28 +32,47 @@ export function LeftSidebar({ onSelectStep }) {
 
     const hiddenSidebar = hasTrigger && !pendingConnection;
 
+    const getTranslatedLabel = (item) => {
+        if (item.type === 'trigger') return t(`triggerTypes.${item.id}`);
+        if (item.type === 'action') return t(`actionTypes.${item.id}`);
+        if (item.type === 'condition') return t(`conditionTypes.${item.id}`);
+        return item.label;
+    };
+
+    const getCategoryLabel = (catId) => {
+        if (catId === 'INTERNAL') return t('sidebar.internalSystem');
+        if (catId === 'LOGIC') return t('sidebar.logic');
+        return catId;
+    };
+
     const filteredConfig = useMemo(() => {
         const sections = !hasTrigger
             ? { TRIGGERS: AUTOMATION_CONFIG.TRIGGERS }
             : { ACTIONS: AUTOMATION_CONFIG.ACTIONS, CONDITIONS: AUTOMATION_CONFIG.CONDITIONS };
 
-        if (!search) return sections;
-
         const result = {};
         Object.entries(sections).forEach(([key, section]) => {
             const filteredCategories = section.categories.map(cat => ({
                 ...cat,
-                items: cat.items.filter(item =>
-                    item.label.toLowerCase().includes(search.toLowerCase())
+                label: getCategoryLabel(cat.id),
+                items: cat.items.map(item => ({
+                    ...item,
+                    label: getTranslatedLabel(item)
+                })).filter(item =>
+                    !search || item.label.toLowerCase().includes(search.toLowerCase())
                 )
             })).filter(cat => cat.items.length > 0);
 
             if (filteredCategories.length > 0) {
-                result[key] = { ...section, categories: filteredCategories };
+                result[key] = { 
+                    ...section, 
+                    label: t(`sidebar.${key.toLowerCase()}`),
+                    categories: filteredCategories 
+                };
             }
         });
         return result;
-    }, [hasTrigger, search]);
+    }, [hasTrigger, search, t]);
 
     return (
         <aside
@@ -65,11 +86,11 @@ export function LeftSidebar({ onSelectStep }) {
             <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950">
                 <div className="flex items-center justify-between mb-1">
                     <h2 className="text-[16px] font-black text-slate-900 dark:text-slate-100 tracking-tight">
-                        بناء المسارات
+                        {t('sidebar.title')}
                     </h2>
                 </div>
                 <p className="text-[11px] text-slate-400 font-medium">
-                    اسحب العناصر لبناء مسار عملك
+                    {t('sidebar.subtitle')}
                 </p>
             </div>
 
@@ -85,7 +106,7 @@ export function LeftSidebar({ onSelectStep }) {
                         onClick={() => router.back()}
                         className="h-6 w-6 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-all"
                     >
-                        <ChevronRight size={14} />
+                        {isRTL ? <ChevronRight size={14} /> : <ChevronRight size={14} className="rotate-180" />}
                     </button>
                     <div className="w-[1px] h-4 bg-slate-200 dark:bg-slate-800" />
                     <input
@@ -94,7 +115,7 @@ export function LeftSidebar({ onSelectStep }) {
                         onChange={(e) => setName(e.target.value)}
                         disabled={isEditMode}
                         maxLength={300}
-                        placeholder="اسم الأتمتة..."
+                        placeholder={t('sidebar.namePlaceholder')}
                         className={cn(
                             "text-xs bg-transparent border-none outline-none font-bold px-1.5 min-w-[200px] focus:outline-none focus:ring-0 focus-visible:outline-none! focus-visible:ring-0",
                             isEditMode ? "text-slate-400 cursor-not-allowed" : "text-slate-700 dark:text-slate-200"
@@ -116,7 +137,9 @@ export function LeftSidebar({ onSelectStep }) {
                                 <Plus size={20} />
                             </div>
                             <p className="text-[11px] font-bold text-slate-600 dark:text-slate-300 leading-relaxed">
-                                اضغط على علامة <span className="text-primary">+</span> أسفل الكارد لإضافة إجراء جديد
+                                {t.rich('sidebar.addStepTip', {
+                                    plus: (chunks) => <span className="text-primary">+</span>
+                                })}
                             </p>
                         </div>
                     </div>
@@ -148,7 +171,7 @@ export function LeftSidebar({ onSelectStep }) {
                         <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center mb-3 border border-slate-100 dark:border-slate-800">
                             <Search size={20} className="text-slate-200" />
                         </div>
-                        <p className="text-[11px] text-slate-400 font-bold">لم يتم العثور على نتائج</p>
+                        <p className="text-[11px] text-slate-400 font-bold">{t('sidebar.noResults')}</p>
                     </div>
                 )}
             </div>
@@ -160,13 +183,13 @@ export function LeftSidebar({ onSelectStep }) {
                         <Info size={16} />
                     </div>
                     <div>
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">مساعدة</p>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t('sidebar.help')}</p>
                         <p className="text-[11px] font-bold text-slate-600 dark:text-slate-300 leading-tight mt-0.5">
                             {!hasTrigger
-                                ? "ابدأ بإضافة محفز للمسار أولاً"
+                                ? t('sidebar.addFirst')
                                 : !pendingConnection
-                                    ? "اضغط على + أسفل الخطوة"
-                                    : "اختر الإجراء المناسب"}
+                                    ? t('sidebar.clickPlus')
+                                    : t('sidebar.chooseAction')}
                         </p>
                     </div>
                 </div>

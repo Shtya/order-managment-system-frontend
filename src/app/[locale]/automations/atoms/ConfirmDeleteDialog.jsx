@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -16,6 +17,8 @@ import { Label } from "@/components/ui/label";
 import toast from 'react-hot-toast';
 
 export function ConfirmDeleteDialog() {
+    const tCommon = useTranslations("common");
+    const t = useTranslations("whatsApp.automations.builder");
     const deleteConfirm = useFlowStore((s) => s.deleteConfirm);
     const setDeleteConfirm = useFlowStore((s) => s.setDeleteConfirm);
     const confirmDelete = useFlowStore((s) => s.confirmDelete);
@@ -32,7 +35,7 @@ export function ConfirmDeleteDialog() {
         }
         confirmDelete();
         toast.success(
-            type === 'clear' ? "تم مسح مسار العمل بنجاح" : "تم حذف الخطوات بنجاح",
+            type === 'clear' ? t('dialogs.delete.successClear') : t('dialogs.delete.successDelete'),
         );
     };
 
@@ -50,31 +53,31 @@ export function ConfirmDeleteDialog() {
                 <AlertDialogHeader>
                     <AlertDialogTitle>
                         {type === 'clear'
-                            ? 'مسح مسار العمل'
+                            ? t('dialogs.delete.title.clear')
                             : downstreamCount > 0
-                                ? 'حذف الخطوة والفروع التابعة'
-                                : 'حذف الخطوة'}
+                                ? t('dialogs.delete.title.stepWithDownstream')
+                                : t('dialogs.delete.title.step')}
                     </AlertDialogTitle>
 
                     <AlertDialogDescription>
                         {type === 'clear' ? (
                             <>
                                 <div className="mt-2 text-sm">
-                                    هل أنت متأكد من مسح جميع الخطوات؟ لا يمكن التراجع عن هذا الإجراء.
+                                    {t('dialogs.delete.description.clear')}
                                 </div>
                             </>
                         ) : downstreamCount > 0 ? (
                             <>
                                 <div className="mt-2 text-sm">
-                                    سيؤدي هذا الإجراء إلى حذف هذه الخطوة و{' '}
-                                    <span className="text-rose-500 font-bold">{downstreamCount}</span>{' '}
-                                    خطوة تالية مرتبطة بها.
+                                    {t.rich('dialogs.delete.description.stepWithDownstream', {
+                                        count: (chunks) => <span className="text-rose-500 font-bold">{downstreamCount}</span>
+                                    })}
                                 </div>
-                                <div className="mt-2 text-sm">هل أنت متأكد؟</div>
+                                <div className="mt-2 text-sm">{t('dialogs.delete.description.confirm')}</div>
                             </>
                         ) : (
                             <div className="mt-2 text-sm">
-                                هل أنت متأكد من حذف هذه الخطوة؟
+                                {t('dialogs.delete.description.step')}
                             </div>
                         )}
                     </AlertDialogDescription>
@@ -91,7 +94,7 @@ export function ConfirmDeleteDialog() {
                             htmlFor="dont-ask-again"
                             className="text-xs font-medium text-slate-500 cursor-pointer select-none"
                         >
-                            لا تسألني مرة أخرى عند الحذف
+                            {t('dialogs.delete.dontAskAgain')}
                         </Label>
                     </div>
                 )}
@@ -104,7 +107,7 @@ export function ConfirmDeleteDialog() {
                             setDontAskAgain(false);
                         }}
                     >
-                        إلغاء
+                        {tCommon('cancel')}
                     </AlertDialogCancel>
 
                     <AlertDialogAction
@@ -113,7 +116,7 @@ export function ConfirmDeleteDialog() {
                     >
                         <span className="flex items-center gap-2">
                             <Trash2 size={18} />
-                            تأكيد الحذف
+                            {tCommon('confirm')}
                         </span>
                     </AlertDialogAction>
                 </div>

@@ -2,11 +2,13 @@
 import React from 'react';
 import { Handle, Connection, HandleProps } from '@xyflow/react';
 import { Plus, Play } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/utils/cn';
 import { useFlowStore } from '@/hook/useFlowStore';
 import api from '@/utils/api';
 
 export function CustomHandle({ isConnected, position, noOffset, className, nodeId, ...props }) {
+    const t = useTranslations("whatsApp.automations.builder.toolbar");
     const setPendingConnection = useFlowStore((s) => s.setPendingConnection);
     const pendingConnection = useFlowStore((s) => s.pendingConnection);
     const mode = useFlowStore((s) => s.mode);
@@ -55,7 +57,7 @@ export function CustomHandle({ isConnected, position, noOffset, className, nodeI
                         "absolute flex h-6 w-6 items-center justify-center rounded-full border bg-white shadow-sm transition-all hover:scale-110 hover:shadow-md dark:bg-slate-800 z-10",
                         isHandlePending ? "border-primary text-primary ring-4 ring-primary/10 scale-110 shadow-md" : "border-slate-200 text-slate-400 dark:border-slate-700"
                     )}
-                    title="إضافة خطوة تالية"
+                    title={t("addNextStep")}
                 >
                     <Plus size={14} strokeWidth={3} />
                 </button>
@@ -80,11 +82,11 @@ export function CustomHandle({ isConnected, position, noOffset, className, nodeI
                     }}
                     disabled={previewResumeLoading}
                     className={cn(
-                        "absolute flex h-6 w-6 items-center justify-center rounded-full border bg-white shadow-sm transition-all hover:scale-110 hover:shadow-md dark:bg-slate-800 z-10",
+                        "absolute flex h-6 w-6 items-center justify-center rounded-full border bg-white shadow-sm transition-all hover:scale-110 hover:shadow-md dark:bg-slate-950 z-10",
                         "border-emerald-500 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10",
                         previewResumeLoading && "opacity-50 cursor-not-allowed"
                     )}
-                    title="اختر هذا الفرع"
+                    title={t("chooseThisBranch")}
                 >
                     {previewResumeLoading ? (
                         <div className="animate-spin h-3 w-3 border-2 border-emerald-500 border-t-transparent rounded-full" />

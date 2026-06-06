@@ -20,6 +20,7 @@ import { AUTOMATION_CONFIG } from "@/app/[locale]/automations/atoms/automation-c
 import { useReactFlow, ReactFlow, Background, Controls, MiniMap, Panel } from "@xyflow/react";
 import { useRef, useCallback } from "react";
 import { TopToolbar } from "@/app/[locale]/automations/atoms/TopToolbar";
+import { useTranslations } from "next-intl";
 
 const nodeTypes = {
   trigger: TriggerNode,
@@ -41,6 +42,7 @@ const getMiniMapNodeColor = (node) => {
 };
 
 function BuilderCanvas({ version }) {
+  const t = useTranslations("whatsApp.automations.builder");
   const reactFlowWrapper = useRef(null);
   const { setViewport } = useReactFlow();
 
@@ -148,7 +150,7 @@ function BuilderCanvas({ version }) {
         <Panel position="top-right" className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm">
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
             {
-              version ? `تعديل الأتمتة إصدار ${version}` : 'تعديل الأتمتة أحدث إصدار'
+              version ? t("toolbar.editAutomationVersion", { version }) : t("toolbar.editAutomationLatest")
             }
           </span>
         </Panel>
@@ -206,8 +208,8 @@ export default function EditAutomationPage() {
         setError(null);
       } catch (err) {
         console.error("Failed to fetch automation:", err);
-        setError("فشل في تحميل بيانات الأتمتة.");
-        toast.error("فشل في تحميل بيانات الأتمتة.");
+        setError(t("toolbar.failedToLoadData"));
+        toast.error(t("toolbar.failedToLoadData"));
       } finally {
         setLoading(false);
       }
@@ -217,7 +219,7 @@ export default function EditAutomationPage() {
 
     // Cleanup store on unmount if needed, or just let it be
     // return () => resetFlow();
-  }, [automationId, setFlowData]);
+  }, [automationId, setFlowData, t, version]);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   if (loading) {
     return (
@@ -228,7 +230,7 @@ export default function EditAutomationPage() {
           </div>
           <div className="absolute -inset-4 border-2 border-primary/20 border-dashed rounded-full animate-[spin_8s_linear_infinite]" />
         </div>
-        <p className="mt-8 text-sm font-black text-slate-500 animate-pulse">جاري تحميل بيانات المسار...</p>
+        <p className="mt-8 text-sm font-black text-slate-500 animate-pulse">{t("toolbar.loadingFlowData")}</p>
       </div>
     );
   }
@@ -239,13 +241,13 @@ export default function EditAutomationPage() {
         <div className="w-16 h-16 rounded-2xl bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center text-rose-500 mb-6">
           <Layout size={32} />
         </div>
-        <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">عذراً، حدث خطأ ما</h2>
+        <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">{t("toolbar.errorOccurred")}</h2>
         <p className="text-sm text-slate-500 font-medium mb-8 max-w-xs">{error}</p>
         <button
           onClick={() => window.location.reload()}
           className="h-12 px-8 rounded-2xl bg-primary text-white font-black text-xs shadow-lg shadow-primary/20 transition-all hover:scale-105"
         >
-          إعادة المحاولة
+          {t("toolbar.retry")}
         </button>
       </div>
     );

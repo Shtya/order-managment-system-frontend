@@ -4,45 +4,49 @@ import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ChevronRight, ChevronDown, Database, Hash, User, Phone, MapPin, DollarSign, Package, Tag, Activity, Store } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { useTranslations } from "next-intl";
 
-export const ORDER_PROPERTIES = [
-    { id: "orderNumber", label: "رقم الطلب", icon: Hash, example: "ORD-123", path: "orderNumber" },
-    { id: "customerName", label: "اسم العميل", icon: User, example: "أحمد محمد", path: "customerName" },
-    { id: "phoneNumber", label: "رقم الجوال", icon: Phone, example: "01023459658", path: "phoneNumber" },
-    { id: "secondPhoneNumber", label: "رقم الجوال الثاني", icon: Phone, example: "01245234569", path: "phoneNumber" },
-    { id: "address", label: "العنوان", icon: MapPin, example: "شارع الملك فهد، الرياض", path: "address" },
-    { id: "city", label: "المدينة", icon: Activity, example: "الرياض", path: "city" },
-    { id: "area", label: "الحي", icon: MapPin, example: "حي الملقا", path: "area" },
-    { id: "landmark", label: "العلامة المميزة", icon: Database, example: "بجاني مسجد النور", path: "landmark" },
-    { id: "deposit", label: "المدفوع", icon: DollarSign, example: "100", path: "deposit" },
-    { id: "productsTotal", label: "إجمالي المنتجات", icon: DollarSign, example: "500", path: "productsTotal" },
-    { id: "shippingCost", label: "تكلفة الشحن", icon: DollarSign, example: "30", path: "shippingCost" },
-    { id: "discount", label: "الخصم", icon: Tag, example: "50", path: "discount" },
-    { id: "finalTotal", label: "الإجمالي النهائي", icon: DollarSign, example: "480", path: "finalTotal" },
-    { id: "status.name", label: "حالة الطلب", icon: Activity, example: "قيد التنفيذ", path: "status.name" },
-    { id: "store.name", label: "المتجر", icon: Store, example: "Shopify", path: "store.name" },
-    { id: "shippingCompany.name", label: "شركة الشحن", icon: Store, example: "Turbo", path: "shippingCompany.name" },
-    { id: "paymentMethod", label: "طريقة الدفع", icon: Tag, example: "الدفع بالكارت", path: "paymentMethod" },
-    { id: "paymentStatus", label: "حالة الدفع", icon: Activity, example: "تم الدفع", path: "paymentStatus" },
-    { id: "trackingNumber", label: "رقم التتبع", icon: Hash, example: "1234567890", path: "trackingNumber" },
-    { id: "shippedAt", label: "تاريخ الشحن", icon: Activity, example: "2023-12-12", path: "shippedAt" },
-    { id: "deliveredAt", label: "تاريخ التوصيل", icon: Activity, example: "2023-12-12", path: "deliveredAt" },
-    { id: "created_at", label: "تاريخ إنشاء الطلب", icon: Activity, example: "2023-12-12", path: "created_at" },
-    { id: "allowOpenPackage", label: "السماح بفتح الطلب", icon: Activity, example: "نعم", path: "allowOpenPackage" },
-    {
-        id: "items", label: "المنتجات", icon: Package, children: [
-            { id: "items[0].productName", label: "اسم المنتج", icon: Package, example: "ساعة ذكية", path: "items[0].productName" },
-            { id: "items[0].sku", label: "رمز المنتج (SKU)", icon: Hash, example: "SKU-001", path: "items[0].sku" },
-            { id: "items[0].quantity", label: "الكمية", icon: Package, example: "2", path: "items[0].quantity" },
-            { id: "items[0].price", label: "السعر", icon: DollarSign, example: "250", path: "items[0].price" },
-            { id: "items[0].unitCost", label: "سعر الجملة", icon: DollarSign, example: "250", path: "items[0].unitCost" },
-            { id: "items[0].lineTotal", label: "الإجمالي", icon: DollarSign, example: "500", path: "items[0].lineTotal" }
-        ]
-    }
-];
 
 export function OrderPropertySelector({ open, onOpenChange, onSelect }) {
     const [expanded, setExpanded] = useState({ items: true, status: true, store: true });
+     const t = useTranslations("whatsApp.automations.builder.orderProperties");
+
+     const ORDER_PROPERTIES = [
+    { id: "orderNumber", label: t("orderNumber"), icon: Hash, example: t("examples.orderNumber"), path: "orderNumber" },
+    { id: "customerName", label: t("customerName"), icon: User, example: t("examples.customerName"), path: "customerName" },
+    { id: "phoneNumber", label: t("phoneNumber"), icon: Phone, example: t("examples.phoneNumber"), path: "phoneNumber" },
+    { id: "secondPhoneNumber", label: t("secondPhoneNumber"), icon: Phone, example: t("examples.secondPhoneNumber"), path: "phoneNumber" },
+    { id: "address", label: t("address"), icon: MapPin, example: t("examples.address"), path: "address" },
+    { id: "city", label: t("city"), icon: Activity, example: t("examples.city"), path: "city" },
+    { id: "area", label: t("area"), icon: MapPin, example: t("examples.area"), path: "area" },
+    { id: "landmark", label: t("landmark"), icon: Database, example: t("examples.landmark"), path: "landmark" },
+    { id: "deposit", label: t("deposit"), icon: DollarSign, example: t("examples.deposit"), path: "deposit" },
+    { id: "productsTotal", label: t("productsTotal"), icon: DollarSign, example: t("examples.productsTotal"), path: "productsTotal" },
+    { id: "shippingCost", label: t("shippingCost"), icon: DollarSign, example: t("examples.shippingCost"), path: "shippingCost" },
+    { id: "discount", label: t("discount"), icon: Tag, example: t("examples.discount"), path: "discount" },
+    { id: "finalTotal", label: t("finalTotal"), icon: DollarSign, example: t("examples.finalTotal"), path: "finalTotal" },
+    { id: "status.name", label: t("status"), icon: Activity, example: t("examples.status"), path: "status.name" },
+    { id: "store.name", label: t("store"), icon: Store, example: t("examples.store"), path: "store.name" },
+    { id: "shippingCompany.name", label: t("shippingCompany"), icon: Store, example: t("examples.shippingCompany"), path: "shippingCompany.name" },
+    { id: "paymentMethod", label: t("paymentMethod"), icon: Tag, example: t("examples.paymentMethod"), path: "paymentMethod" },
+    { id: "paymentStatus", label: t("paymentStatus"), icon: Activity, example: t("examples.paymentStatus"), path: "paymentStatus" },
+    { id: "trackingNumber", label: t("trackingNumber"), icon: Hash, example: t("examples.trackingNumber"), path: "trackingNumber" },
+    { id: "shippedAt", label: t("shippedAt"), icon: Activity, example: t("examples.shippedAt"), path: "shippedAt" },
+    { id: "deliveredAt", label: t("deliveredAt"), icon: Activity, example: t("examples.deliveredAt"), path: "deliveredAt" },
+    { id: "created_at", label: t("created_at"), icon: Activity, example: t("examples.created_at"), path: "created_at" },
+    { id: "allowOpenPackage", label: t("allowOpenPackage"), icon: Activity, example: t("examples.allowOpenPackage"), path: "allowOpenPackage" },
+    {
+        id: "items", label: t("items"), icon: Package, children: [
+            { id: "items[0].productName", label: t("productName"), icon: Package, example: t("examples.productName"), path: "items[0].productName" },
+            { id: "items[0].sku", label: t("sku"), icon: Hash, example: t("examples.sku"), path: "items[0].sku" },
+            { id: "items[0].quantity", label: t("quantity"), icon: Package, example: t("examples.quantity"), path: "items[0].quantity" },
+            { id: "items[0].price", label: t("price"), icon: DollarSign, example: t("examples.price"), path: "items[0].price" },
+            { id: "items[0].unitCost", label: t("unitCost"), icon: DollarSign, example: t("examples.unitCost"), path: "items[0].unitCost" },
+            { id: "items[0].lineTotal", label: t("lineTotal"), icon: DollarSign, example: t("examples.lineTotal"), path: "items[0].lineTotal" }
+        ]
+    }
+]; 
+
 
     const toggleExpand = (id) => {
         setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
@@ -95,7 +99,7 @@ export function OrderPropertySelector({ open, onOpenChange, onSelect }) {
                 <DialogHeader className="p-6 border-b dark:border-slate-800">
                     <DialogTitle className="text-xl font-bold flex items-center gap-2">
                         <Database className="text-primary" size={24} />
-                        اختيار حقل من الطلب
+                         {t('title')}
                     </DialogTitle>
                 </DialogHeader>
                 <div className="p-4 max-h-[60vh] overflow-y-auto custom-scrollbar">

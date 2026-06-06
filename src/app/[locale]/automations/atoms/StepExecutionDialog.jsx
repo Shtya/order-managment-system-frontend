@@ -15,6 +15,7 @@ import {
   Ban,
   Check
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button"; // Adjust based on your path
@@ -56,7 +57,7 @@ function ToggleIcon({ expanded }) {
 }
 
 // --- Recursive Node ---
-const JsonNode = ({ label, value, isLast, depth = 0, toggleId, forceExpand }) => {
+const JsonNode = ({ label, value, isLast, depth = 0, toggleId, forceExpand, t }) => {
   const [isExpanded, setIsExpanded] = useState(depth < 2 || forceExpand);
 
   // Listen for global expand/collapse
@@ -128,7 +129,7 @@ const JsonNode = ({ label, value, isLast, depth = 0, toggleId, forceExpand }) =>
           
           {!isExpanded && !isEmpty && (
             <span className="ml-2 text-[10px] text-slate-400 italic font-sans bg-slate-100 dark:bg-slate-800 px-1.5 rounded">
-              {isArray ? `${keys.length} items` : `${keys.length} keys`}
+              {isArray ? t('itemsCount', { count: keys.length }) : t('keysCount', { count: keys.length })}
             </span>
           )}
         </div>
@@ -147,6 +148,7 @@ const JsonNode = ({ label, value, isLast, depth = 0, toggleId, forceExpand }) =>
               depth={depth + 1}
               toggleId={toggleId}
               forceExpand={forceExpand}
+              t={t}
             />
           ))}
         </div>
@@ -191,25 +193,26 @@ const filterJsonData = (data, term) => {
 };
 
 // --- Main Tree Wrapper ---
-const JsonViewer = ({ data, searchTerm, toggleId, forceExpand }) => {
+const JsonViewer = ({ data, searchTerm, toggleId, forceExpand, t }) => {
   const filteredData = useMemo(() => filterJsonData(data, searchTerm), [data, searchTerm]);
 
   if (data === undefined || data === null) {
-    return <div className="p-4 text-[12px] text-slate-400 font-mono text-center">لا توجد بيانات</div>;
+    return <div className="p-4 text-[12px] text-slate-400 font-mono text-center">{t('noData')}</div>;
   }
 
   if (searchTerm && filteredData === undefined) {
-    return <div className="p-8 text-[12px] text-slate-500 text-center font-semibold bg-slate-50 dark:bg-slate-800/50 rounded-xl">لم يتم العثور على نتائج تطابق "{searchTerm}"</div>;
+    return <div className="p-8 text-[12px] text-slate-500 text-center font-semibold bg-slate-50 dark:bg-slate-800/50 rounded-xl">{t('noResults', { term: searchTerm })}</div>;
   }
 
   return (
     <div className="text-left w-full h-full" dir="ltr">
       <JsonNode 
-        label={searchTerm ? "Search Results" : "root"} 
+        label={searchTerm ? t('searchResults') : t('root')} 
         value={filteredData} 
         isLast={true} 
         toggleId={toggleId}
         forceExpand={searchTerm ? true : forceExpand} // Auto-expand when searching
+        t={t}
       />
     </div>
   );
@@ -229,7 +232,7 @@ function DataCard({ title, data, icon: TitleIcon, searchTerm, toggleId, forceExp
       <div className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-auto custom-scrollbar p-4 shadow-sm">
         {viewMode === "raw" ? (
           <pre dir="ltr" className="text-[11px] font-mono leading-relaxed text-left text-slate-600 dark:text-slate-300">
-             {data ? JSON.stringify(data, null, 2) : "لا توجد بيانات"}
+             {data ? JSON.stringify(data, null, 2) : t('noData')}
           </pre>
         ) : (
           <JsonViewer 
@@ -246,6 +249,8 @@ function DataCard({ title, data, icon: TitleIcon, searchTerm, toggleId, forceExp
 
 // --- Main Dialog Component ---
 export default function StepExecutionDialog({ stepInfo, onClose }) {
+  const tCommon = useTranslations("common");
+  const t = useTranslations("whatsApp.automations.builder.stepInfo");
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState("tree"); // "tree" | "raw"
   
@@ -277,7 +282,7 @@ export default function StepExecutionDialog({ stepInfo, onClose }) {
         <DialogHeader className="flex flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 shrink-0 space-y-0">
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Info className="text-primary" />
-            تفاصيل تنفيذ الخطوة
+            {t('title')}
           </DialogTitle>
           
           {/* Top Control Bar */}
@@ -287,7 +292,7 @@ export default function StepExecutionDialog({ stepInfo, onClose }) {
               searchValue={searchTerm}
               disabled={ viewMode === 'raw'}
               onSearchChange={setSearchTerm}
-              searchPlaceholder="البحث في البيانات..."
+              searchPlaceholder={tCommon('search')}
             />
 
             <div className="flex items-center gap-3 ml-auto">
@@ -302,7 +307,7 @@ export default function StepExecutionDialog({ stepInfo, onClose }) {
                   )}
                 >
                   <Network size={14} />
-                  <span>عرض شجري</span>
+                  <span>{t('treeView')}</span>
                 </button>
                 <button 
                   onClick={() => setViewMode("raw")}
@@ -314,7 +319,7 @@ export default function StepExecutionDialog({ stepInfo, onClose }) {
                   )}
                 >
                   <Code size={14} />
-                  <span>JSON خام</span>
+                  <span>{t('rawJson')}</span>
                 </button>
               </div>
 
@@ -323,19 +328,19 @@ export default function StepExecutionDialog({ stepInfo, onClose }) {
                   <button
                     onClick={handleCollapseAll}
                     className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all"
-                    title="طي الكل"
+                    title={t('collapseAll')}
                   >
                     <Minimize2 size={14}/>
-                    <span className="sr-only">طي الكل</span>
+                    <span className="sr-only">{t('collapseAll')}</span>
                   </button>
                   <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1" />
                   <button
                     onClick={handleExpandAll}
                     className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all"
-                    title="توسيع الكل"
+                    title={t('expandAll')}
                   >
                     <Maximize2 size={14}/>
-                    <span className="sr-only">توسيع الكل</span>
+                    <span className="sr-only">{t('expandAll')}</span>
                   </button>
                 </div>
               )}
@@ -345,7 +350,7 @@ export default function StepExecutionDialog({ stepInfo, onClose }) {
         {/* Error State */}
         {stepInfo?.executionState?.error && (
           <div className="mt-4 p-4 bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 rounded-2xl shrink-0">
-            <h4 className="text-[12px] font-black text-rose-600 mb-1">رسالة الخطأ</h4>
+            <h4 className="text-[12px] font-black text-rose-600 mb-1">{t('errorMessage')}</h4>
             <p className="text-[12px] font-bold text-rose-500">{stepInfo.executionState.error}</p>
           </div>
         )}
@@ -354,7 +359,7 @@ export default function StepExecutionDialog({ stepInfo, onClose }) {
         <div className="flex-1 overflow-hidden py-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
             <DataCard 
-               title="بيانات المخرجات (Output)" 
+               title={t('output')}
                icon={Code} // Or ArrowDownRight
                data={stepInfo?.executionState?.output} 
                searchTerm={searchTerm}
@@ -363,7 +368,7 @@ export default function StepExecutionDialog({ stepInfo, onClose }) {
                viewMode={viewMode}
             />
             <DataCard 
-               title="بيانات المدخلات (Input)" 
+               title={t('input')}
                icon={Box} // Or ArrowUpRight
                data={stepInfo?.executionState?.input} 
                searchTerm={searchTerm}
@@ -392,7 +397,7 @@ export default function StepExecutionDialog({ stepInfo, onClose }) {
                 onClick={onClose}
                 className="flex-1 sm:flex-none px-4 sm:px-8 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold border-2"
               >
-                إغلاق
+                {tCommon('close')}
               </Button>
               
               {showSyncButton && (
@@ -407,7 +412,7 @@ export default function StepExecutionDialog({ stepInfo, onClose }) {
                   )}
                 >
                   <RefreshCcw size={16} className="ltr:mr-2 rtl:ml-2" />
-                  مزامنة مع الطلب الحالي
+                  {t('syncWithOrder')}
                 </Button>
               )}
             </div>

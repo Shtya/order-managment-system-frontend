@@ -18,7 +18,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { cn } from '@/utils/cn';
 
-const formatDuration = (start, end) => {
+const formatDuration = (start, end, t) => {
   if (!end) return "-";
 
   const diffMs = new Date(end).getTime() - new Date(start).getTime();
@@ -31,13 +31,12 @@ const formatDuration = (start, end) => {
   const seconds = totalSeconds % 60;
 
   const parts = [];
+  if (days) parts.push(t('daysCount', { count: days }));
+  if (hours) parts.push(t('hoursCount', { count: hours }));
+  if (minutes) parts.push(t('minutesCount', { count: minutes }));
+  if (seconds || parts.length === 0) parts.push(t('secondsCount', { count: seconds || 0 }));
 
-  if (days) parts.push(`${days} يوم`);
-  if (hours) parts.push(`${hours} ساعة`);
-  if (minutes) parts.push(`${minutes} دقيقة`);
-  if (seconds || parts.length === 0) parts.push(`${seconds || 0} ثانية`);
-
-  return parts.join(" و ");
+  return parts.join(t('and'));
 };
 
 
@@ -48,16 +47,24 @@ export default function RunDetailsPanel({
   selectedRun,
   onStopPreview
 }) {
+  const tRunPanel = useTranslations("whatsApp.automations.builder.runPanel");
+  const tLogs = useTranslations("whatsApp.automationLogs");
+  const tBuilder = useTranslations("whatsApp.automations.builder");
+  const tOrderProps = useTranslations("whatsApp.automations.builder.orderProperties");
+  const router = useRouter();
 
   const currentNodeLabel = useMemo(() => {
     if (!selectedRun) return "—";
     const node = selectedRun.version?.flow?.nodes?.find(n => n.id === selectedRun.currentNodeId);
-    return node?.data?.label || selectedRun.currentNodeId || "—";
-  }, [selectedRun]);
-
-  const t = useTranslations("whatsApp.automationLogs");
-  const tAutomations = useTranslations("whatsApp.automations");
-  const router = useRouter();
+    if (!node) return selectedRun.currentNodeId || "—";
+    
+    // Use translated label if available
+    if (node.type === 'trigger') return tBuilder(`triggerTypes.${node.data.type}`);
+    if (node.type === 'action') return tBuilder(`actionTypes.${node.data.type}`);
+    if (node.type === 'condition') return tBuilder(`conditionTypes.${node.data.type}`);
+    
+    return node.data?.label || node.id || "—";
+  }, [selectedRun, tBuilder]);
 
   return (
     <AnimatePresence>
@@ -73,21 +80,21 @@ export default function RunDetailsPanel({
               <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl">
                 <Layout size={18} className="text-slate-500" />
               </div>
-              <h2 className="text-[13px] font-black">معلومات التشغيل</h2>
+              <h2 className="text-[13px] font-black">{tRunPanel('title')}</h2>
             </div>
             <div className="flex items-center gap-2">
               {onStopPreview && (
                 <button
                   onClick={onStopPreview}
                   className="text-rose-500 hover:text-rose-600 bg-rose-50 dark:bg-rose-500/10 rounded-xl p-2 border border-rose-100 dark:border-rose-500/20 transition-all active:scale-95"
-                  title="إيقاف المعاينة"
+                  title={tRunPanel('stopPreview')}
                 >
                   <X size={18} />
                 </button>
               )}
               <button
                 onClick={() => setRightPanelCollapsed(true)}
-                className="text-slate-400 hover:text-slate-600 bg-white dark:bg-slate-800 rounded-xl p-2 border border-slate-100 dark:border-slate-800 transition-all active:scale-95"
+                className="text-slate-400 hover:text-slate-600 bg-white dark:bg-slate-900 rounded-xl p-2 border border-slate-100 dark:border-slate-800 transition-all active:scale-95"
               >
                 <ChevronRight size={18} />
               </button>
@@ -96,39 +103,39 @@ export default function RunDetailsPanel({
 
           <div className="flex-1 overflow-y-auto p-6 space-y-8">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">حالة التشغيل</span>
-              <StatusRunBadge status={selectedRun.status} t={t} />
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{tRunPanel('status')}</span>
+              <StatusRunBadge status={selectedRun.status} t={tLogs} />
             </div>
 
-            <InfoSection title="المسار والنسخة" icon={<Zap size={14} />}>
-              <InfoItem label="المسار" value={selectedRun.automationFlow?.name} />
-              <InfoItem label="النسخة" value={`v${selectedRun.version?.versionString || selectedRun.versionString}`} />
-              <InfoItem label="المحفز" value={tAutomations(`triggers.${selectedRun.automationFlow?.triggerType || selectedRun?.executionState?.trigger?.type}`)} />
+            <InfoSection title={tRunPanel('flowAndVersion')} icon={<Zap size={14} />}>
+              <InfoItem label={tBuilder('sidebar.title')} value={selectedRun.automationFlow?.name} />
+              <InfoItem label={tRunPanel('version')} value={`v${selectedRun.version?.versionString || selectedRun.versionString}`} />
+              <InfoItem label={tBuilder('sidebar.triggers')} value={selectedRun.automationFlow?.triggerType ? tBuilder(`triggerTypes.${selectedRun.automationFlow.triggerType}`) : (selectedRun?.executionState?.trigger?.type ? tBuilder(`triggerTypes.${selectedRun.executionState.trigger.type}`) : "—")} />
             </InfoSection>
 
-            <InfoSection title="حالة التنفيذ" icon={<Activity size={14} />}>
+            <InfoSection title={tRunPanel('executionStatus')} icon={<Activity size={14} />}>
               <InfoItem
-                label="الخطوة الحالية"
+                label={tRunPanel('currentNode')}
                 value={currentNodeLabel}
               />
               <InfoItem
-                label="الخطوات المكتملة"
-                value={`${selectedRun.completedNodeIds?.length || 0} خطوة`}
+                label={tRunPanel('completedSteps')}
+                value={tRunPanel('stepsCount', { count: selectedRun.completedNodeIds?.length || 0 })}
               />
             </InfoSection>
 
-            <InfoSection title="التوقيت" icon={<Clock size={14} />}>
-              <InfoItem label="وقت البدء" value={new Date(selectedRun.startedAt).toLocaleString()} />
+            <InfoSection title={tRunPanel('timing')} icon={<Clock size={14} />}>
+              <InfoItem label={tRunPanel('startTime')} value={new Date(selectedRun.startedAt).toLocaleString()} />
               {selectedRun.completedAt && (
-                <InfoItem label="وقت الانتهاء" value={new Date(selectedRun.completedAt).toLocaleString()} />
+                <InfoItem label={tRunPanel('endTime')} value={new Date(selectedRun.completedAt).toLocaleString()} />
               )}
-              <InfoItem label="المدة الكلية" value={selectedRun.completedAt ? `${formatDuration(selectedRun.startedAt, new Date())}` : "جاري..."} />
+              <InfoItem label={tRunPanel('duration')} value={selectedRun.completedAt ? `${formatDuration(selectedRun.startedAt, selectedRun.completedAt, tRunPanel)}` : tRunPanel('running')} />
             </InfoSection>
 
-            <InfoSection title="معلومات إضافية" icon={<Box size={14} />}>
-              <InfoItem label="الكيان المخفز" value={selectedRun.triggerEntityType} />
+            <InfoSection title={tRunPanel('additionalInfo')} icon={<Box size={14} />}>
+              <InfoItem label={tRunPanel('triggerEntity')} value={selectedRun.triggerEntityType ? tRunPanel(`entities.${selectedRun.triggerEntityType}`) : "—"} />
               {selectedRun.triggerEntityId && <InfoItem
-                label="الطلب"
+                label={tOrderProps('orderNumber')}
                 value={`#${selectedRun.triggerEntityId}`}
                 onClick={selectedRun.triggerEntityType === 'order' ? () => {
                   router.push(`/orders/details/${selectedRun.triggerEntityId}`)
@@ -140,7 +147,7 @@ export default function RunDetailsPanel({
               <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-500/5 border border-rose-100 dark:border-rose-500/20">
                 <div className="flex items-center gap-2 text-rose-600 mb-2">
                   <XCircle size={14} />
-                  <span className="text-[11px] font-black">تفاصيل الفشل</span>
+                  <span className="text-[11px] font-black">{tRunPanel('failureDetails')}</span>
                 </div>
                 <p className="text-[10px] font-bold text-rose-500 leading-relaxed">{selectedRun.errorMessage}</p>
               </div>

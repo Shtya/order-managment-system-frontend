@@ -17,6 +17,7 @@ import CustomEdge from "../../atoms/CustomEdge";
 import { ConfirmDeleteDialog } from "../../atoms/ConfirmDeleteDialog";
 import { ReactFlow, Background, Controls, MiniMap, Panel } from "@xyflow/react";
 import { useRef, useCallback } from "react";
+import { useTranslations } from "next-intl";
 
 const nodeTypes = {
   trigger: TriggerNode,
@@ -39,6 +40,7 @@ const getMiniMapNodeColor = (node) => {
 };
 
 function BuilderCanvas({ version }) {
+  const t = useTranslations("whatsApp.automations.builder");
   const reactFlowWrapper = useRef(null);
   const nodes = useFlowStore((s) => s.nodes);
   const edges = useFlowStore((s) => s.edges);
@@ -73,10 +75,10 @@ function BuilderCanvas({ version }) {
         <Background color="#94a3b8" variant="dots" gap={20} size={1} />
         <Controls position="bottom-right" className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl shadow-lg" />
         <MiniMap nodeColor={getMiniMapNodeColor} className="!rounded-lg !border-slate-200 dark:!border-slate-800 !shadow-lg" nodeStrokeWidth={3} zoomable pannable />
-        <Panel position="top-right" className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm">
+        <Panel position="top-end" className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm">
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
             {
-              version ? `عرض الأتمتة إصدار ${version}` : 'عرض الأتمتة أحدث إصدار'
+              version ? t("toolbar.viewAutomationVersion", { version }) : t("toolbar.viewAutomationLatest")
             }
           </span>
         </Panel>
@@ -88,6 +90,7 @@ function BuilderCanvas({ version }) {
 }
 
 export default function ViewAutomationPage() {
+  const t = useTranslations("whatsApp.automations.builder");
   const params = useParams();
   const searchParams = useSearchParams();
   const version = searchParams.get('v');
@@ -126,15 +129,15 @@ export default function ViewAutomationPage() {
         setError(null);
       } catch (err) {
         console.error("Failed to fetch automation:", err);
-        setError("فشل في تحميل بيانات الأتمتة.");
-        toast.error("فشل في تحميل بيانات الأتمتة.");
+        setError(t("toolbar.failedToLoadData"));
+        toast.error(t("toolbar.failedToLoadData"));
       } finally {
         setLoading(false);
       }
     };
 
     fetchAutomation();
-  }, [automationId, setFlowData]);
+  }, [automationId, setFlowData, t, version]);
 
   if (loading) {
     return (
@@ -145,7 +148,7 @@ export default function ViewAutomationPage() {
           </div>
           <div className="absolute -inset-4 border-2 border-primary/20 border-dashed rounded-full animate-[spin_8s_linear_infinite]" />
         </div>
-        <p className="mt-8 text-sm font-black text-slate-500 animate-pulse">جاري تحميل بيانات المسار...</p>
+        <p className="mt-8 text-sm font-black text-slate-500 animate-pulse">{t("toolbar.loadingFlowData")}</p>
       </div>
     );
   }
@@ -156,13 +159,13 @@ export default function ViewAutomationPage() {
         <div className="w-16 h-16 rounded-2xl bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center text-rose-500 mb-6">
           <Layout size={32} />
         </div>
-        <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">عذراً، حدث خطأ ما</h2>
+        <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">{t("toolbar.errorOccurred")}</h2>
         <p className="text-sm text-slate-500 font-medium mb-8 max-w-xs">{error}</p>
         <button
           onClick={() => window.location.reload()}
           className="h-12 px-8 rounded-2xl bg-primary text-white font-black text-xs shadow-lg shadow-primary/20 transition-all hover:scale-105"
         >
-          إعادة المحاولة
+          {t("toolbar.retry")}
         </button>
       </div>
     );

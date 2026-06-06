@@ -560,22 +560,22 @@ function NotPrintedSubtab({ resetToken, fetchStats }) {
       className: "w-[48px]",
       cell: (row) => (<div className="flex items-center justify-center"><Checkbox checked={selectedOrders.includes(row.orderNumber)} onCheckedChange={() => toggleOrder(row.orderNumber)} /></div>),
     },
-    { key: "code", header: t("field.orderCode"), cell: (row) => <span className="font-mono font-bold text-[var(--primary)]">{row.orderNumber}</span> },
-    { key: "customer", header: t("field.customer"), cell: (row) => <span className="font-semibold">{row.customerName}</span> },
-    { key: "phone", header: t("field.phone"), cell: (row) => <span className="font-mono text-slate-500 text-sm" dir="ltr">{row.phoneNumber}</span> },
-    { key: "city", header: t("field.city") },
-    { key: "area", header: t("field.area") },
-    { key: "carrier", header: t("field.carrier"), cell: (row) => <CarrierPill carrier={row.shippingCompany?.name} /> },
+    { key: "code", header: t("fields.orderCode"), cell: (row) => <span className="font-mono font-bold text-[var(--primary)]">{row.orderNumber}</span> },
+    { key: "customer", header: t("fields.customer"), cell: (row) => <span className="font-semibold">{row.customerName}</span> },
+    { key: "phone", header: t("fields.phone"), cell: (row) => <span className="font-mono text-slate-500 text-sm" dir="ltr">{row.phoneNumber}</span> },
+    { key: "city", header: t("fields.city") },
+    { key: "area", header: t("fields.area") },
+    { key: "carrier", header: t("fields.carrier"), cell: (row) => <CarrierPill carrier={row.shippingCompany?.name} /> },
     {
-      key: "trackingCode", header: t("field.trackingCode"),
+      key: "trackingCode", header: t("fields.trackingCode"),
       cell: (row) => row.trackingNumber
         ? <span className="font-mono text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">{row.trackingNumber}</span>
         : <span className="text-slate-400">{t("common.none")}</span>,
     },
-    { key: "total", header: t("field.total"), cell: (row) => <span className="font-bold text-emerald-700 dark:text-emerald-400">{formatCurrency(row.finalTotal)}</span> },
-    { key: "orderDate", header: t("field.orderDate"), cell: (row) => <span className="text-sm text-slate-500">{new Date(row.created_at).toLocaleDateString("en-US")}</span> },
+    { key: "total", header: t("fields.total"), cell: (row) => <span className="font-bold text-emerald-700 dark:text-emerald-400">{formatCurrency(row.finalTotal)}</span> },
+    { key: "orderDate", header: t("fields.orderDate"), cell: (row) => <span className="text-sm text-slate-500">{new Date(row.created_at).toLocaleDateString("en-US")}</span> },
     {
-      key: "actions", header: t("field.actions"),
+      key: "actions", header: t("fields.actions"),
       cell: (row) => (
         <ActionButtons
           row={row}
@@ -625,7 +625,6 @@ function NotPrintedSubtab({ resetToken, fetchStats }) {
 
 // ── PRINTED SUBTAB ────────────────────────────────────────────────────────────
 function PrintedSubtab({ resetToken, fetchStats }) {
-  const tCommon = useTranslations("common");
   const t = useTranslations("warehouse.print");
   const { formatCurrency } = usePlatformSettings()
   const [search, setSearch] = useState("");
@@ -725,15 +724,15 @@ function PrintedSubtab({ resetToken, fetchStats }) {
       className: "w-[48px]",
       cell: (row) => (<div className="flex items-center justify-center"><Checkbox checked={selectedOrders.includes(row.orderNumber)} onCheckedChange={() => toggleOrder(row.orderNumber)} /></div>),
     },
-    { key: "code", header: t("field.orderCode"), cell: (row) => <span className="font-mono font-bold text-[var(--primary)]">{row.orderNumber}</span> },
-    { key: "customer", header: t("field.customer"), cell: (row) => <span className="font-semibold">{row.customerName}</span> },
-    { key: "phone", header: t("field.phone"), cell: (row) => <span className="font-mono text-slate-500 text-sm" dir="ltr">{row.phoneNumber}</span> },
-    { key: "city", header: t("field.city") },
-    { key: "carrier", header: t("field.carrier"), cell: (row) => <CarrierPill carrier={row.shippingCompany?.name} /> },
-    { key: "printedAt", header: t("field.printedAt"), cell: (row) => <span className="text-sm text-slate-500">{row.labelPrinted ? new Date(row.labelPrinted).toLocaleString() : "—"}</span> },
-    { key: "total", header: t("field.total"), cell: (row) => <span className="font-bold text-emerald-700 dark:text-emerald-400">{formatCurrency(row.finalTotal)}</span> },
+    { key: "code", header: t("fields.orderCode"), cell: (row) => <span className="font-mono font-bold text-[var(--primary)]">{row.orderNumber}</span> },
+    { key: "customer", header: t("fields.customer"), cell: (row) => <span className="font-semibold">{row.customerName}</span> },
+    { key: "phone", header: t("fields.phone"), cell: (row) => <span className="font-mono text-slate-500 text-sm" dir="ltr">{row.phoneNumber}</span> },
+    { key: "city", header: t("fields.city") },
+    { key: "carrier", header: t("fields.carrier"), cell: (row) => <CarrierPill carrier={row.shippingCompany?.name} /> },
+    { key: "printedAt", header: t("fields.printedAt"), cell: (row) => <span className="text-sm text-slate-500">{row.labelPrinted ? new Date(row.labelPrinted).toLocaleString() : "—"}</span> },
+    { key: "total", header: t("fields.total"), cell: (row) => <span className="font-bold text-emerald-700 dark:text-emerald-400">{formatCurrency(row.finalTotal)}</span> },
     {
-      key: "actions", header: t("field.actions"),
+      key: "actions", header: t("fields.actions"),
       cell: (row) => (
         <ActionButtons
           row={row}

@@ -24,7 +24,7 @@ import { TriggerNode } from "@/app/[locale]/automations/atoms/TriggerNode";
 import { StepConfigModal } from "@/app/[locale]/automations/atoms/StepConfigModal";
 import { ConfirmDeleteDialog } from "@/app/[locale]/automations/atoms/ConfirmDeleteDialog";
 import { AUTOMATION_CONFIG } from "@/app/[locale]/automations/atoms/automation-config";
-import RunDetailsPanel, { StatusRunBadge } from "@/app/[locale]/automations/atoms/RunDetailsPanel";
+import { useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 
 const nodeTypes = {
@@ -51,6 +51,7 @@ const getMiniMapNodeColor = (node) => {
 };
 
 function BuilderCanvas() {
+  const t = useTranslations("whatsApp.automations.builder");
   const reactFlowWrapper = useRef(null);
 
   const nodes = useFlowStore((s) => s.nodes);
@@ -127,10 +128,10 @@ function BuilderCanvas() {
       };
 
       addNode(newNode);
-      toast.success("تمت إضافة الخطوة بنجاح");
+      toast.success(t("toolbar.stepAddedSuccess"));
     } else {
       updateNodeData(configModal.nodeId, { config });
-      toast.success("تم تحديث الخطوة بنجاح");
+      toast.success(t("toolbar.stepUpdatedSuccess"));
     }
 
     setConfigModal({ open: false, step: null, mode: 'create', initialData: null });
@@ -187,7 +188,7 @@ function BuilderCanvas() {
           pannable
         />
         <Panel position="top-right" className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm">
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">مساحة العمل v1.0</span>
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t("toolbar.workspace")} v1.0</span>
         </Panel>
       </ReactFlow>
 

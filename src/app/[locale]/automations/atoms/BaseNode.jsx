@@ -56,7 +56,7 @@ export function BaseNode({
             return currentRun?.executionState?.trigger;
         }
         if (!isRunMode || !currentRun?.executionState?.steps) return null;
-        return currentRun.executionState.steps[id];
+        return currentRun.executionState?.steps[id];
     }, [isRunMode, currentRun, id, nodeType]);
     const currentNodeId = currentRun?.currentNodeId;
     const runStatus = currentRun?.status;
@@ -67,8 +67,10 @@ export function BaseNode({
         if (nodeType === 'trigger') return '';
         if (currentNodeId === id && runStatus === 'running') return 'running';
         if (currentNodeId === id && runStatus === 'paused') return 'paused';
-        return executionState.success ? 'success' : 'failed';
+        return executionState?.success ? 'success' : 'failed';
     }, [isRunMode, executionState, nodeType, currentNodeId, runStatus]);
+
+    
     const { isSuperAdmin } = useAuth();
     const t = useTranslations("whatsApp.automations.builder");
     const locale = useLocale();
@@ -153,16 +155,16 @@ export function BaseNode({
             animate={{ opacity: 1, scale: 1 }}
             dir={isRtl ? 'rtl' : 'ltr'}
             className={cn(
-                "relative min-w-[260px] max-w-[320px] rounded-[24px] border bg-white shadow-sm transition-all duration-300 dark:bg-slate-900",
+                "relative min-w-[260px] max-w-[320px] rounded-[24px] border bg-card shadow-sm transition-all duration-300",
                 isRtl ? "text-right" : "text-left",
-                selected ? "border-primary ring-[4px] ring-primary/5 shadow-lg scale-[1.01]" : "border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-md",
+                selected ? "border-primary ring-[4px] ring-primary/5 shadow-lg scale-[1.01]" : "border-border hover:border-border/80 hover:shadow-md",
                 isInvalid && "border-rose-500 ring-[4px] ring-rose-500/5 shadow-rose-500/10",
                 !isInvalid && changes.length > 0 && "border-emerald-500 ring-[4px] ring-emerald-500/5",
-                status === 'success' && "border-emerald-500 ring-[4px] ring-emerald-500/10 bg-emerald-200/50 dark:bg-emerald-200/5",
-                status === 'failed' && "border-rose-500 ring-[4px] ring-rose-500/10 bg-rose-200/50 dark:bg-rose-200/5",
-                status === 'running' && "border-blue-500 ring-[4px] ring-blue-500/10 bg-blue-200/50 dark:bg-blue-200/5",
-                status === 'paused' && "border-yellow-500 ring-[4px] ring-yellow-500/10 bg-yellow-200/50 dark:bg-yellow-200/5",
-                status == 'not_reached' && nodeType !== 'trigger' && "opacity-60 grayscale-[0.5] bg-gray-200 dark:bg-gray-200/50",
+                status === 'success' && "border-emerald-500 ring-[4px] ring-emerald-500/10 bg-emerald-500/10 dark:bg-emerald-950/40",
+                status === 'failed' && "border-rose-500 ring-[4px] ring-rose-500/10 bg-rose-500/10 dark:bg-rose-950/40",
+                status === 'running' && "border-blue-500 ring-[4px] ring-blue-500/10 bg-blue-500/10 dark:bg-blue-950/40",
+                status === 'paused' && "border-yellow-500 ring-[4px] ring-yellow-500/10 bg-yellow-500/10 dark:bg-yellow-950/40",
+                status == 'not_reached' && nodeType !== 'trigger' && "opacity-60 grayscale-[0.5] bg-muted dark:bg-muted/50",
                 className
             )}
         >
@@ -178,21 +180,21 @@ export function BaseNode({
 
             {/* Change Indicators */}
             {!isInvalid && changes.length > 0 && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg z-10 whitespace-nowrap uppercase tracking-widest border-2 border-white dark:border-slate-900">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg z-10 whitespace-nowrap uppercase tracking-widest border-2 border-card">
                     {t('indicators.updated_automatically')}
                 </div>
             )}
 
             {/* Header */}
             <div className="p-4">
-                <div className="flex items-center justify-between mb-3 pb-3 border-b border-slate-50 dark:border-slate-800/50">
+                <div className="flex items-center justify-between mb-3 pb-3 border-b border-border/50">
                     <div className="flex items-center gap-3 ">
                         <div className={cn("flex h-10 w-10 items-center justify-center rounded-[14px] transition-colors shadow-sm", bgClass)}>
                             <Icon className={cn("h-5 w-5", colorClass)} />
                         </div>
                         <div>
-                            <h3 className="text-[13px] font-black text-slate-900 dark:text-slate-100 leading-tight">{title}</h3>
-                            <p className="text-[9px] uppercase font-black tracking-[1px] text-slate-400 mt-0.5">{subtitle}</p>
+                            <h3 className="text-[13px] font-black text-foreground leading-tight">{title}</h3>
+                            <p className="text-[9px] uppercase font-black tracking-[1px] text-muted-foreground/60 mt-0.5">{subtitle}</p>
                         </div>
                     </div>
 
@@ -242,7 +244,7 @@ export function BaseNode({
                     <div className="mb-3 flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
                         <CheckCircle2 className="h-4 w-4" />
                         <span className="text-[10px] font-bold uppercase tracking-wider">{t('status.completed')}</span>
-                        <span className="text-[9px] text-muted-foreground ml-auto">{new Date(executionState.executedAt).toLocaleTimeString()}</span>
+                        <span className="text-[9px] text-muted-foreground ml-auto">{new Date(executionState?.executedAt).toLocaleTimeString()}</span>
                     </div>
                 )}
 
@@ -251,10 +253,10 @@ export function BaseNode({
                         <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
                             <XCircle className="h-4 w-4" />
                             <span className="text-[10px] font-bold uppercase tracking-wider">{t('status.failed')}</span>
-                            <span className="text-[9px] text-muted-foreground ml-auto">{new Date(executionState.executedAt).toLocaleTimeString()}</span>
+                            <span className="text-[9px] text-muted-foreground ml-auto">{new Date(executionState?.executedAt).toLocaleTimeString()}</span>
                         </div>
                         <p className="text-[9px] font-bold text-rose-500 leading-tight bg-rose-50 dark:bg-rose-500/10 p-2 rounded-lg border border-rose-100 dark:border-rose-500/20">
-                            {executionState.error}
+                            {executionState?.error}
                         </p>
                     </div>
                 )}

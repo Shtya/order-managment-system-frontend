@@ -34,6 +34,185 @@ const TYPE_CONFIG = {
   null:    { label: "null",   icon: Info,        className: "bg-slate-100 text-slate-500 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700" },
 };
 
+// --- Main Dialog Component ---
+export default function StepExecutionDialog({ stepInfo, onClose }) {
+  const tCommon = useTranslations("common");
+  const t = useTranslations("whatsApp.automations.builder.stepInfo");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [viewMode, setViewMode] = useState("tree"); // "tree" | "raw"
+  
+  // Toggles for Expand/Collapse All
+  const [toggleId, setToggleId] = useState(0);
+  const [forceExpand, setForceExpand] = useState(true);
+
+  const handleExpandAll = () => {
+    setForceExpand(true);
+    setToggleId(prev => prev + 1);
+  };
+
+  const handleCollapseAll = () => {
+    setForceExpand(false);
+    setToggleId(prev => prev + 1);
+  };
+
+  // Sync button logic visibility
+  const isTrigger = stepInfo?.nodeType === "trigger";
+  const execType = stepInfo?.executionState?.type;
+  // const showSyncButton = isTrigger && (execType === "order_updated" || execType === "order_created");
+  const showSyncButton = false;
+
+  return (
+    <Dialog open={!!stepInfo} onOpenChange={onClose}>
+      <DialogContent className="max-w-7xl! rounded-3xl w-[98vw] h-[95vh] flex flex-col p-6 overflow-hidden">
+        
+        {/* Header Section */}
+        <DialogHeader className="flex flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 shrink-0 space-y-0">
+          <DialogTitle className="flex items-center gap-2 text-xl">
+            <Info className="text-primary" />
+            {t('title')}
+          </DialogTitle>
+          
+          {/* Top Control Bar */}
+        </DialogHeader>
+          <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap mt-4">
+            <FloatingSearchInput 
+              searchValue={searchTerm}
+              disabled={ viewMode === 'raw'}
+              onSearchChange={setSearchTerm}
+              searchPlaceholder={tCommon('search')}
+            />
+
+            <div className="flex items-center gap-3 ml-auto">
+              <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+                <button 
+                  onClick={() => setViewMode("tree")}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-1.5 text-xs font-bold rounded-lg transition-all",
+                    viewMode === "tree" 
+                      ? "bg-white dark:bg-slate-700 shadow-sm text-primary" 
+                      : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                  )}
+                >
+                  <Network size={14} />
+                  <span>{t('treeView')}</span>
+                </button>
+                <button 
+                  onClick={() => setViewMode("raw")}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-1.5 text-xs font-bold rounded-lg transition-all",
+                    viewMode === "raw" 
+                      ? "bg-white dark:bg-slate-700 shadow-sm text-primary" 
+                      : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                  )}
+                >
+                  <Code size={14} />
+                  <span>{t('rawJson')}</span>
+                </button>
+              </div>
+
+              {viewMode === "tree" && (
+                <div className="flex items-center bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+                  <button
+                    onClick={handleCollapseAll}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all"
+                    title={t('collapseAll')}
+                  >
+                    <Minimize2 size={14}/>
+                    <span className="sr-only">{t('collapseAll')}</span>
+                  </button>
+                  <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1" />
+                  <button
+                    onClick={handleExpandAll}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all"
+                    title={t('expandAll')}
+                  >
+                    <Maximize2 size={14}/>
+                    <span className="sr-only">{t('expandAll')}</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+        {/* Error State */}
+        {stepInfo?.executionState?.error && (
+          <div className="mt-4 p-4 bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 rounded-2xl shrink-0">
+            <h4 className="text-[12px] font-black text-rose-600 mb-1">{t('errorMessage')}</h4>
+            <p className="text-[12px] font-bold text-rose-500">{stepInfo.executionState.error}</p>
+          </div>
+        )}
+
+        {/* Main Content Area */}
+        <div className="flex-1 overflow-hidden py-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+            <DataCard 
+               title={t('output')}
+               icon={Code} // Or ArrowDownRight
+               data={stepInfo?.executionState?.output} 
+               searchTerm={searchTerm}
+               toggleId={toggleId}
+               forceExpand={forceExpand}
+               viewMode={viewMode}
+               t={t}
+            />
+            <DataCard 
+               title={t('input')}
+               icon={Box} // Or ArrowUpRight
+               data={stepInfo?.executionState?.input} 
+               searchTerm={searchTerm}
+               toggleId={toggleId}
+               forceExpand={forceExpand}
+               viewMode={viewMode}
+               t={t}
+            />
+          </div>
+        </div>
+
+        {/* Conditional Footer matches user provided theme format */}
+        <DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t-2 border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50">
+          <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4 sm:gap-0">
+            <div className="text-[10px] sm:text-xs text-gray-500 dark:text-slate-400 order-2 sm:order-1">
+              {/* Optional: Add some info here if needed, like step type or status */}
+              {/* <span className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-green-500 animate-pulse"></div>
+                <span className="font-semibold">جاهز للمراجعة</span>
+              </span> */}
+            </div>
+            
+            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto order-1 sm:order-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                className="flex-1 sm:flex-none px-4 sm:px-8 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold border-2"
+              >
+                {tCommon('close')}
+              </Button>
+              
+              {showSyncButton && (
+                <Button
+                  type="button"
+                  onClick={() => {
+                    // Add your actual sync logic here
+                    console.log("Sync requested!");
+                  }}
+                  className={cn(
+                    "flex-1 sm:flex-none px-4 sm:px-10 py-2 sm:py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs sm:text-sm font-bold shadow-lg shadow-primary/30 transition-all transform hover:scale-105 active:scale-95"
+                  )}
+                >
+                  <RefreshCcw size={16} className="ltr:mr-2 rtl:ml-2" />
+                  {t('syncWithOrder')}
+                </Button>
+              )}
+            </div>
+          </div>
+        </DialogFooter>
+
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function TypeBadge({ type }) {
   const config = TYPE_CONFIG[type] ?? TYPE_CONFIG.null;
   return (
@@ -219,7 +398,7 @@ const JsonViewer = ({ data, searchTerm, toggleId, forceExpand, t }) => {
 };
 
 // --- Data Card Container ---
-function DataCard({ title, data, icon: TitleIcon, searchTerm, toggleId, forceExpand, viewMode }) {
+function DataCard({ title, data, icon: TitleIcon, searchTerm, toggleId, forceExpand, viewMode, t }) {
   return (
     <div className="flex flex-col gap-3 min-w-0 h-[60vh] md:h-[65vh]">
       <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 px-3 py-2.5 rounded-lg border border-slate-100 dark:border-slate-800 w-max">
@@ -240,6 +419,7 @@ function DataCard({ title, data, icon: TitleIcon, searchTerm, toggleId, forceExp
              searchTerm={searchTerm} 
              toggleId={toggleId} 
              forceExpand={forceExpand} 
+             t={t}
           />
         )}
       </div>
@@ -247,179 +427,3 @@ function DataCard({ title, data, icon: TitleIcon, searchTerm, toggleId, forceExp
   );
 }
 
-// --- Main Dialog Component ---
-export default function StepExecutionDialog({ stepInfo, onClose }) {
-  const tCommon = useTranslations("common");
-  const t = useTranslations("whatsApp.automations.builder.stepInfo");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [viewMode, setViewMode] = useState("tree"); // "tree" | "raw"
-  
-  // Toggles for Expand/Collapse All
-  const [toggleId, setToggleId] = useState(0);
-  const [forceExpand, setForceExpand] = useState(true);
-
-  const handleExpandAll = () => {
-    setForceExpand(true);
-    setToggleId(prev => prev + 1);
-  };
-
-  const handleCollapseAll = () => {
-    setForceExpand(false);
-    setToggleId(prev => prev + 1);
-  };
-
-  // Sync button logic visibility
-  const isTrigger = stepInfo?.nodeType === "trigger";
-  const execType = stepInfo?.executionState?.type;
-  // const showSyncButton = isTrigger && (execType === "order_updated" || execType === "order_created");
-  const showSyncButton = false;
-
-  return (
-    <Dialog open={!!stepInfo} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl! rounded-3xl w-[98vw] h-[95vh] flex flex-col p-6 overflow-hidden">
-        
-        {/* Header Section */}
-        <DialogHeader className="flex flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 shrink-0 space-y-0">
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <Info className="text-primary" />
-            {t('title')}
-          </DialogTitle>
-          
-          {/* Top Control Bar */}
-        </DialogHeader>
-          <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap mt-4">
-            <FloatingSearchInput 
-              searchValue={searchTerm}
-              disabled={ viewMode === 'raw'}
-              onSearchChange={setSearchTerm}
-              searchPlaceholder={tCommon('search')}
-            />
-
-            <div className="flex items-center gap-3 ml-auto">
-              <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
-                <button 
-                  onClick={() => setViewMode("tree")}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-1.5 text-xs font-bold rounded-lg transition-all",
-                    viewMode === "tree" 
-                      ? "bg-white dark:bg-slate-700 shadow-sm text-primary" 
-                      : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                  )}
-                >
-                  <Network size={14} />
-                  <span>{t('treeView')}</span>
-                </button>
-                <button 
-                  onClick={() => setViewMode("raw")}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-1.5 text-xs font-bold rounded-lg transition-all",
-                    viewMode === "raw" 
-                      ? "bg-white dark:bg-slate-700 shadow-sm text-primary" 
-                      : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                  )}
-                >
-                  <Code size={14} />
-                  <span>{t('rawJson')}</span>
-                </button>
-              </div>
-
-              {viewMode === "tree" && (
-                <div className="flex items-center bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
-                  <button
-                    onClick={handleCollapseAll}
-                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all"
-                    title={t('collapseAll')}
-                  >
-                    <Minimize2 size={14}/>
-                    <span className="sr-only">{t('collapseAll')}</span>
-                  </button>
-                  <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1" />
-                  <button
-                    onClick={handleExpandAll}
-                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all"
-                    title={t('expandAll')}
-                  >
-                    <Maximize2 size={14}/>
-                    <span className="sr-only">{t('expandAll')}</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-        {/* Error State */}
-        {stepInfo?.executionState?.error && (
-          <div className="mt-4 p-4 bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 rounded-2xl shrink-0">
-            <h4 className="text-[12px] font-black text-rose-600 mb-1">{t('errorMessage')}</h4>
-            <p className="text-[12px] font-bold text-rose-500">{stepInfo.executionState.error}</p>
-          </div>
-        )}
-
-        {/* Main Content Area */}
-        <div className="flex-1 overflow-hidden py-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
-            <DataCard 
-               title={t('output')}
-               icon={Code} // Or ArrowDownRight
-               data={stepInfo?.executionState?.output} 
-               searchTerm={searchTerm}
-               toggleId={toggleId}
-               forceExpand={forceExpand}
-               viewMode={viewMode}
-            />
-            <DataCard 
-               title={t('input')}
-               icon={Box} // Or ArrowUpRight
-               data={stepInfo?.executionState?.input} 
-               searchTerm={searchTerm}
-               toggleId={toggleId}
-               forceExpand={forceExpand}
-               viewMode={viewMode}
-            />
-          </div>
-        </div>
-
-        {/* Conditional Footer matches user provided theme format */}
-        <DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t-2 border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50">
-          <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4 sm:gap-0">
-            <div className="text-[10px] sm:text-xs text-gray-500 dark:text-slate-400 order-2 sm:order-1">
-              {/* Optional: Add some info here if needed, like step type or status */}
-              {/* <span className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-green-500 animate-pulse"></div>
-                <span className="font-semibold">جاهز للمراجعة</span>
-              </span> */}
-            </div>
-            
-            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto order-1 sm:order-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                className="flex-1 sm:flex-none px-4 sm:px-8 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold border-2"
-              >
-                {tCommon('close')}
-              </Button>
-              
-              {showSyncButton && (
-                <Button
-                  type="button"
-                  onClick={() => {
-                    // Add your actual sync logic here
-                    console.log("Sync requested!");
-                  }}
-                  className={cn(
-                    "flex-1 sm:flex-none px-4 sm:px-10 py-2 sm:py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs sm:text-sm font-bold shadow-lg shadow-primary/30 transition-all transform hover:scale-105 active:scale-95"
-                  )}
-                >
-                  <RefreshCcw size={16} className="ltr:mr-2 rtl:ml-2" />
-                  {t('syncWithOrder')}
-                </Button>
-              )}
-            </div>
-          </div>
-        </DialogFooter>
-
-      </DialogContent>
-    </Dialog>
-  );
-}

@@ -94,25 +94,25 @@ export default function ContactModal() {
 
     return (
         <Dialog open={showContactModal} onOpenChange={setShowContactModal}>
-            <DialogContent className="sm:max-w-2xl w-full max-h-[90vh] flex flex-col p-0 overflow-hidden bg-slate-50 dark:bg-slate-950">
-                <DialogHeader className="px-6 py-4 border-b bg-white dark:bg-slate-900 shrink-0">
+            <DialogContent className="sm:max-w-2xl w-full max-h-[90vh] flex flex-col p-0 overflow-hidden bg-muted/30">
+                <DialogHeader className="px-6 py-4 border-b border-border bg-card shrink-0">
                     <DialogTitle className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300">
+                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
                             <UserPlus size={20} />
                         </div>
                         {t("addContact")}
                     </DialogTitle>
-                    <DialogDescription className="ps-[52px] -mt-2">
+                    <DialogDescription className="ps-[52px] -mt-2 text-muted-foreground/60">
                         {t("contactDescription")}
                     </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-white dark:bg-slate-900">
+                <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-card">
                     <div className="grid grid-cols-2 gap-4">
                         {/* Name Section */}
-                        <div className="col-span-2 flex items-center gap-2 mb-2 border-b pb-2">
+                        <div className="col-span-2 flex items-center gap-2 mb-2 border-b border-border pb-2">
                             <UserCircle size={18} className="text-primary" />
-                            <h4 className="font-bold text-sm">{t("contactInfo")}</h4>
+                            <h4 className="font-bold text-sm text-foreground">{t("contactInfo")}</h4>
                         </div>
 
                         <div className="space-y-2">
@@ -187,8 +187,8 @@ export default function ContactModal() {
                         </div>
 
                         {/* Address Section */}
-                        <div className="col-span-2 flex items-center gap-2 mt-4 mb-2 border-b pb-2">
-                            <h4 className="font-bold text-sm">{t("address")}</h4>
+                        <div className="col-span-2 flex items-center gap-2 mt-4 mb-2 border-b border-border pb-2">
+                            <h4 className="font-bold text-sm text-foreground">{t("address")}</h4>
                         </div>
 
                         <div className="space-y-2">
@@ -247,7 +247,7 @@ export default function ContactModal() {
                         </div>
                     </div>
 
-                    <DialogFooter className="mt-8 gap-2">
+                    <DialogFooter className="mt-8 gap-2 border-t border-border pt-6">
                         <Button_
                             type="button"
                             variant="outline"
@@ -259,7 +259,7 @@ export default function ContactModal() {
                         />
                         <Button_
                             type="submit"
-                            className="bg-green-600 hover:bg-green-700 text-white"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground"
                             label={t("sendMessage")}
                         />
                     </DialogFooter>

@@ -344,7 +344,7 @@ function SwitcherTabs({ items, activeId, onChange, variant = "default" }) {
 	return (
 		<div
 			// Removed w-full, changed to flex items-center
-			className="flex items-center w-full border-t border-border bg-slate-50/50 dark:bg-slate-900/40 px-2"
+			className="flex items-center w-full border-t border-border bg-slate-50/50 dark:bg-slate-900/40 px-2 overflow-y-auto"
 			style={{ ...scrollbarHideStyle }}
 		>
 			<div className="flex items-stretch">

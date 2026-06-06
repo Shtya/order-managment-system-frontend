@@ -208,18 +208,18 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
     ];
 
     return (
-        <div className="p-4 border-t bg-white relative">
+        <div className="flex-shrink-0 bg-card border-t border-border p-4 relative">
             {/* Reply Preview */}
             {replyTo && (
                 <div
                     onClick={() => onScrollToMessage && onScrollToMessage(replyTo.id)}
-                    className="mx-auto mb-2 p-3 bg-gray-50 border-l-4 border-green-500 rounded-lg flex items-center justify-between animate-in slide-in-from-bottom-2 cursor-pointer hover:bg-gray-100 transition-colors"
+                    className="mx-auto mb-3 p-3 bg-muted/30 border-s-4 border-primary rounded-xl flex items-center justify-between animate-in slide-in-from-bottom-2 cursor-pointer hover:bg-muted/50 transition-colors"
                 >
                     <div className="flex items-center gap-3 overflow-hidden">
-                        <Reply className="w-4 h-4 text-green-600 shrink-0" />
+                        <Reply className="w-4 h-4 text-primary shrink-0" />
                         <div className="min-w-0">
-                            <p className="text-[10px] font-bold text-green-600 uppercase">Replying to message</p>
-                            <p className="text-xs text-gray-500 truncate italic">
+                            <p className="text-[10px] font-bold text-primary uppercase">Replying to message</p>
+                            <p className="text-xs text-muted-foreground truncate italic">
                                 {replyTo.content?.text?.body || replyTo.lastMessagePreview || "..."}
                             </p>
                         </div>
@@ -230,9 +230,9 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                             onCancelReply();
                             textareaRef.current?.focus();
                         }}
-                        className="p-1 hover:bg-gray-200 rounded-full"
+                        className="p-1.5 hover:bg-accent/50 rounded-full text-muted-foreground transition-colors shrink-0 ms-4"
                     >
-                        <X className="w-4 h-4 text-gray-400" />
+                        <X className="w-4 h-4" />
                     </button>
                 </div>
             )}
@@ -245,7 +245,7 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                             data={data}
                             onEmojiSelect={addEmoji}
                             onClickOutside={() => setShowEmoji(false)}
-                            theme="light"
+                            theme="auto"
                             set="native"
                         />
                     </div>
@@ -262,27 +262,27 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                             />
                             <button
                                 onClick={() => setShowEmoji(!showEmoji)}
-                                className={cn("p-2 hover:bg-gray-100 rounded-full transition-colors", showEmoji && "text-green-600 bg-gray-100")}
+                                className={cn("p-2 hover:bg-accent/50 rounded-full transition-colors", showEmoji && "text-primary bg-muted")}
                             >
-                                <Smile className="w-6 h-6 text-gray-400" />
+                                <Smile className="w-6 h-6 text-muted-foreground/60" />
                             </button>
 
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <button className="p-2 hover:bg-gray-100 rounded-full transition-colors group">
-                                        <Plus className="w-6 h-6 text-gray-400 transition-transform group-data-[state=open]:rotate-45 group-data-[state=open]:text-green-600" />
+                                    <button className="p-2 hover:bg-accent/50 rounded-full transition-colors group">
+                                        <Plus className="w-6 h-6 text-muted-foreground/60 transition-transform group-data-[state=open]:rotate-45 group-data-[state=open]:text-primary" />
                                     </button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start" side="top" className="w-64 mb-2 rounded-xl! p-2 shadow-xl border">
+                                <DropdownMenuContent align="start" side="top" className="w-64 mb-2 rounded-xl! p-2 shadow-xl border border-border bg-card">
                                     <div className="grid grid-cols-1 gap-1">
                                         {actions.map((action, idx) => (
                                             <DropdownMenuItem
                                                 key={idx}
                                                 onClick={() => handleActionClick(action.type)}
-                                                className="flex items-center gap-3 w-full p-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
+                                                className="flex items-center gap-3 w-full p-2 hover:bg-accent/50 rounded-lg transition-colors cursor-pointer"
                                             >
                                                 <action.icon className={cn("w-5 h-5", action.color)} />
-                                                <span className="text-sm font-medium text-gray-700">{action.label}</span>
+                                                <span className="text-sm font-medium text-foreground">{action.label}</span>
                                             </DropdownMenuItem>
                                         ))}
                                     </div>
@@ -293,7 +293,7 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                     {isRecording && (
                         <button
                             onClick={cancelRecording}
-                            className="p-2 hover:bg-red-50 text-red-500 rounded-full transition-colors"
+                            className="p-2 hover:bg-destructive/10 text-destructive rounded-full transition-colors"
                         >
                             <Trash2 className="w-6 h-6" />
                         </button>
@@ -301,16 +301,16 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                 </div>
 
                 <div className={cn(
-                    "flex-1 bg-gray-50 rounded-2xl border px-4 py-2 flex items-center min-h-[48px] transition-all",
-                    isRecording && "bg-red-50 border-red-100"
+                    "flex-1 bg-muted/50 rounded-2xl border border-border px-4 py-2 flex items-center min-h-[48px] transition-all",
+                    isRecording && "bg-destructive/5 border-destructive/20"
                 )}>
                     {isRecording ? (
                         <div className="flex items-center justify-between w-full px-2">
                             <div className="flex items-center gap-3">
-                                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                                <span className="text-sm font-medium text-red-600">{formatTime(recordingTime)}</span>
+                                <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+                                <span className="text-sm font-medium text-destructive">{formatTime(recordingTime)}</span>
                             </div>
-                            <span className="text-xs text-red-400 animate-pulse">Recording...</span>
+                            <span className="text-xs text-destructive/60 animate-pulse">Recording...</span>
                         </div>
                     ) : (
                         <textarea
@@ -320,7 +320,7 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                             autoFocus
                             onChange={(e) => setText(e.target.value)}
                             placeholder={t("typeMessage")}
-                            className="w-full bg-transparent border-none focus:ring-0 resize-none text-sm max-h-32 py-1 outline-none focus-visible:outline-none!"
+                            className="w-full bg-transparent border-none focus:ring-0 resize-none text-sm max-h-32 py-1 outline-none focus-visible:outline-none! text-foreground placeholder:text-muted-foreground/50"
                             onKeyDown={(e) => {
                                 if (e.key === "Enter" && !e.shiftKey) {
                                     e.preventDefault();
@@ -334,7 +334,7 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                 <div className="flex items-center mb-1 shrink-0">
                     <div className={cn(
                         "flex rounded-lg transition-colors overflow-hidden h-10 shadow-sm",
-                        (text.trim() || isRecording) ? "bg-green-600" : "bg-gray-200"
+                        (text.trim() || isRecording) ? "bg-green-600 dark:bg-green-700" : "bg-gray-200 dark:bg-gray-300"
                     )}>
                         <button
                             // onClick={text.trim() || isRecording ? handleSend : startRecording}
@@ -347,11 +347,11 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                         >
                             <div className="flex flex-col items-center">
                                 <div className="flex items-center">
-                                    <span className="text-white text-sm font-medium mr-2">{t("send")}</span>
-                                    <Send className="w-4 h-4 text-white" />
+                                    <span className="text-primary-foreground text-sm font-medium mr-2">{t("send")}</span>
+                                    <Send className="w-4 h-4 text-primary-foreground" />
                                 </div>
                                 {selectedAccount && (
-                                    <span className="text-[10px] text-white/80 font-bold truncate max-w-[100px]">
+                                    <span className="text-[10px] text-primary-foreground/80 font-bold truncate max-w-[100px]">
                                         {selectedAccount.name}
                                     </span>
                                 )}
@@ -362,20 +362,20 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                                 <DropdownMenuTrigger asChild>
                                     <button className={cn(
                                         "px-2 transition-colors flex items-center justify-center",
-                                        text.trim() ? "hover:bg-green-700" : "hover:bg-gray-300"
+                                        text.trim() ? "hover:bg-primary/90" : "hover:bg-muted/80"
                                     )}>
-                                        <ChevronDown className={cn("w-4 h-4", text.trim() ? "text-white" : "text-gray-500")} />
+                                        <ChevronDown className={cn("w-4 h-4", text.trim() ? "text-primary-foreground" : "text-muted-foreground/60")} />
                                     </button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-50 rounded-md!">
+                                <DropdownMenuContent align="end" className="w-50 rounded-md! bg-card border-border">
                                     {accounts.map((acc) => (
                                         <DropdownMenuItem
                                             key={acc.id}
                                             onClick={() => setSelectedAccount(acc)}
-                                            className={cn("flex flex-col items-start gap-0.5 cursor-pointer", selectedAccount?.id === acc.id && "bg-green-50 text-green-600")}
+                                            className={cn("flex flex-col items-start gap-0.5 cursor-pointer", selectedAccount?.id === acc.id && "bg-primary/5 text-primary")}
                                         >
-                                            <span className="font-bold text-sm break-all">{acc.name}</span>
-                                            <span className="text-[10px] opacity-70">{acc.mobileNumber}</span>
+                                            <span className="font-bold text-sm break-all text-foreground">{acc.name}</span>
+                                            <span className="text-[10px] text-muted-foreground/70">{acc.mobileNumber}</span>
                                         </DropdownMenuItem>
                                     ))}
                                 </DropdownMenuContent>

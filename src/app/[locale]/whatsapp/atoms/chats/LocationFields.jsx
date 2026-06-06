@@ -39,12 +39,12 @@ export default function LocationFields({ values, onChange, reverse = false, erro
 
             <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
-                    <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t("latitude")}</Label>
-                    <Input value={(values.latitude || 0).toFixed(6)} readOnly className="h-8 text-xs bg-slate-50 dark:bg-slate-800" />
+                    <Label className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-wider">{t("latitude")}</Label>
+                    <Input value={(values.latitude || 0).toFixed(6)} readOnly className="h-8 text-xs bg-muted border-border" />
                 </div>
                 <div className="space-y-1">
-                    <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t("longitude")}</Label>
-                    <Input value={(values.longitude || 0).toFixed(6)} readOnly className="h-8 text-xs bg-slate-50 dark:bg-slate-800" />
+                    <Label className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-wider">{t("longitude")}</Label>
+                    <Input value={(values.longitude || 0).toFixed(6)} readOnly className="h-8 text-xs bg-muted border-border" />
                 </div>
             </div>
         </div>

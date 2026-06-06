@@ -612,6 +612,19 @@
       "employees": "Employees",
       "addEmployee": "Add Employee"
     },
+    "whatsapp": {
+      "title": "Send via WhatsApp",
+      "subtitle": "Choose the country and enter the WhatsApp number",
+      "phone": "WhatsApp Number",
+      "includePassword": "Include the password in the message",
+      "preview": "Message Preview",
+      "note": "Notice: The password is shown only when created/reset. If you close this screen, you will not be able to read it again.",
+      "accountDetails": "Account details:",
+      "nameLabel": "Name: {name}",
+      "emailLabel": "Email: {email}",
+      "passwordLabel": "Password: {password}",
+      "loginInstructions": "Please login and change your password after first login."
+    },
     "sections": {
       "employeeType": "Employee Type",
       "employeeInfo": "Employee Information",
@@ -679,14 +692,6 @@
     },
     "credentials": {
       "password": "Password"
-    },
-    "whatsapp": {
-      "title": "Send via WhatsApp",
-      "subtitle": "Choose the country and enter the WhatsApp number",
-      "phone": "WhatsApp Number",
-      "includePassword": "Include the password in the message",
-      "preview": "Message Preview",
-      "note": "Notice: The password is shown only when created/reset. If you close this screen, you will not be able to read it again."
     }
   },
   "addSupplier": {
@@ -1200,6 +1205,16 @@
     "US": "USA"
   },
   "roles-client": {
+    "toasts": {
+      "fetchRolesError": "Failed to fetch roles",
+      "fetchPermissionsError": "Failed to fetch permissions",
+      "createRoleSuccess": "Role created successfully",
+      "createRoleError": "Failed to create role",
+      "updateRoleSuccess": "Role updated successfully",
+      "updateRoleError": "Failed to update role",
+      "deleteRoleSuccess": "Role deleted successfully",
+      "deleteRoleError": "Failed to delete role"
+    },
     "permissionsItems": {
       "admin-settings_read": "View admin settings",
       "*": "All Permissions",
@@ -1588,7 +1603,40 @@
         "date": "Date",
         "distributedAt": "Distribution Date",
         "status": "Status",
-        "orderSize": "Order Size"
+        "orderSize": "Order Size",
+        "email": "Email"
+      },
+      "fields": {
+        "orderNumber": "Order Number",
+        "customerName": "Customer Name",
+        "phoneNumber": "Phone Number",
+        "address": "Address",
+        "city": "City",
+        "zone": "Zone",
+        "district": "District",
+        "orderSize": "Order Size",
+        "returnOrder": "Return Pickup",
+        "area": "Area",
+        "store": "Store",
+        "carrier": "Shipping Carrier",
+        "trackingCode": "Tracking Number",
+        "paymentType": "Payment Type",
+        "total": "Total",
+        "shippingCost": "Shipping Cost",
+        "allowOpenPackage": "Allow Package Opening",
+        "allowReturn": "Allow Returns",
+        "customer": "Customer",
+        "phone": "Phone",
+        "payment": "Payment",
+        "orderDate": "Order Date",
+        "actions": "Actions",
+        "orderCode": "Order Code",
+        "region": "Region",
+        "productName": "Product Name",
+        "date": "Date",
+        "distributedAt": "Distribution Date",
+        "status": "Status",
+        "email": "Email"
       },
       "orderSizes": {
         "SMALL": "SMALL",
@@ -1705,7 +1753,13 @@
       },
       "loading": "Loading...",
       "placeholders": {
-        "email": "Enter an email"
+        "customerName": "Enter customer name...",
+        "phoneNumber": "+1 XXX XXX XXXX",
+        "address": "Enter detailed address...",
+        "city": "Select a city",
+        "zone": "Select a zone",
+        "district": "Select a district",
+        "email": "Enter email address"
       }
     },
     "print": {
@@ -1846,7 +1900,8 @@
         "reprint": "Reprint",
         "openPreparation": "Open Preparation",
         "errorWaybill": "Failed to fetch waybill",
-        "printBostaWaybill": "Print Bosta Waybill"
+        "printBostaWaybill": "Print Bosta Waybill",
+        "ReprintBostaWaybill": "Reprint a post office policy"
       },
       "messages": {
         "printSuccess": "Labels marked as printed successfully",
@@ -2174,7 +2229,8 @@
         "ordersOutgingBtn": "Ready Orders for Shipping ({count})",
         "createManifest": "Create Manifest",
         "readyToManifest": "Ready for create manifest",
-        "carrierOrdersRemoved": "Orders for this carrier have been removed from selection"
+        "carrierOrdersRemoved": "Orders for this carrier have been removed from selection",
+        "noOrdersSelected": "There are no orders selected"
       },
       "files": {
         "searchPlaceholder": "Search delivery files...",
@@ -3048,7 +3104,9 @@
       "cancel": "Cancel",
       "success": "Supplier deleted successfully"
     },
-    "empty": "No suppliers found"
+    "empty": "No suppliers found",
+    "copied": "Copied!",
+    "copy": "copies"
   },
   "supplierCategories": {
     "breadcrumb": {
@@ -3142,7 +3200,8 @@
       "supplier": "Supplier",
       "supplierPlaceholder": "Select supplier",
       "apply": "Apply",
-      "all": "All"
+      "all": "All",
+      "noSupplier": "Without Supplier"
     },
     "table": {
       "returnNumber": "Return Number",
@@ -3984,7 +4043,8 @@
     "returnNumberRequired": "Return number is required",
     "returnTypeRequired": "Return type is required",
     "taxRateRange": "Tax rate must be between 0 and 100",
-    "invalidFileType": "Invalid file type"
+    "invalidFileType": "Invalid file type",
+    "imageOrPDF": "Only image or PDF files are allowed"
   },
   "purchases": {
     "breadcrumb": {
@@ -4044,7 +4104,8 @@
     "status": {
       "accepted": "Accepted",
       "pending": "Pending",
-      "rejected": "Rejected"
+      "rejected": "Rejected",
+      "draft": "draft"
     },
     "actions": {
       "loading": "Loading...",
@@ -4470,6 +4531,10 @@
     }
   },
   "common": {
+    "year": "Year",
+    "month": "Month",
+    "allowPopups": "Please allow pop-ups for printing",
+    "printReport": "Print Report",
     "use": "Use",
     "optional": "Optional",
     "seconds": "seconds",
@@ -4502,6 +4567,7 @@
       "inactive": "Inactive"
     },
     "refresh": "Refresh",
+    "to": "to",
     "total": "Total",
     "apply": "Apply",
     "notSpecified": "Not Specified",
@@ -4551,7 +4617,8 @@
       "in_transit": "In Transit",
       "delivered": "Delivered",
       "failed": "Delivery Failed",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "on_hold": "hanging"
     },
     "postponed": {
       "date": "Postponed Date",
@@ -4804,6 +4871,7 @@
         "total": "Total Amount"
       },
       "table": {
+         "expense": "Cost",
         "product": "Product Name",
         "sku": "SKU / Variant",
         "quantity": "Quantity",
@@ -4816,6 +4884,13 @@
         "price": "Price"
       },
       "labels": {
+        "product": "Product Name",
+        "city": "City",
+        "area": "Area",
+        "deposit": "Deposit",
+   "expense": "Cost",
+   "variations": "Variations",
+"productId": "Product ID",
         "failureReason": "Failure Reason",
         "attempts": "Attempts",
         "name": "Name",
@@ -4841,7 +4916,10 @@
         "id": "ID",
         "price": "Price",
         "quantity": "Quantity",
-        "categories": "Categories"
+        "categories": "Categories",
+        "variantKey": "Type key",
+        "requestedVariant": "Required type",
+        "additionalImages": "Additional photos"
       },
       "actions": {
         "retryOrder": "Retry & Save Order",
@@ -4863,7 +4941,9 @@
         "restored": "Product Reactivated Successfully",
         "chooseDifferentSku": "Choose different SKU",
         "select": "Select",
-        "selected": "Selected"
+        "selected": "Selected",
+        "viewExternalProductDetails": "View external product details",
+        "createProductFromExternal": "Create a product from external data"
       },
       "messages": {
         "fetchFailed": "Failed to load orders, please try again",
@@ -4891,7 +4971,9 @@
         "externalFetchFailed": "Could not fetch data from the provider.",
         "failedToLoadData": "Failed to load product data.",
         "noSkusSelected": "Please select at least one SKU to create a purchase order.",
-        "fetchProductFailed": "Failed to load request"
+        "fetchProductFailed": "Failed to load request",
+        "skuNotFoundInSystem": "This type does not exist in the system",
+        "failedToLoadProductDetails": "Failed to load product details"
       },
       "common": {
         "loading": "Loading",
@@ -4899,7 +4981,8 @@
         "close": "Cancel",
         "items": "Items",
         "reserved": "Reserved",
-        "na": "N/A"
+        "na": "N/A",
+        "loadingProductDetails": "Loading product details"
       },
       "searchPlaceholder": "Search by store, customer name, or order number...",
       "stats": {
@@ -5478,7 +5561,8 @@
       "noConnectedStores": "There are no online stores"
     },
     "other": "Other",
-    "unknown": "unknown"
+    "unknown": "unknown",
+    "from": "from"
   },
   "callCenter": {
     "breadcrumb": {
@@ -5937,6 +6021,7 @@
       "this_year": "This Year"
     },
     "filters": {
+      "title": "Filters",
       "apply": "Apply",
       "dateRange": "Time Range",
       "dateRangePlaceholder": "Select date range",
@@ -6010,7 +6095,9 @@
         "custom": "vs Previous period"
       },
       "refresh": "Refresh",
-      "export": "Export"
+      "export": "Export",
+      "orderLabel": "to request",
+      "totalLabel": "Total"
     },
     "breadcrumb": {
       "home": "Home",
@@ -6021,7 +6108,8 @@
       "dateRange": "Time Range",
       "dateRangePlaceholder": "Select date range",
       "store": "Store",
-      "allStores": "All Stores"
+      "allStores": "All Stores",
+      "title": "Filters"
     },
     "kpi": {
       "totalSales": "Total Sales",
@@ -6298,7 +6386,8 @@
         "customOverride": "Custom values",
         "notAllowed": "Not allowed",
         "noExceed": "Exceeding the limit has been disabled",
-        "bulkUploadLimit": "Monthly Upload Limit"
+        "bulkUploadLimit": "Monthly Upload Limit",
+        "paidAmount": "Paid Amount"
       },
       "tooltips": {
         "unlimited": "Set as unlimited",
@@ -6327,7 +6416,9 @@
         "invalidUserId": "Invalid user ID",
         "fetchUserFailed": "Failed to load user data",
         "fetchSubscriptionFailed": "Failed to load subscription data",
+        "fetchFailed": "Failed to load data",
         "saveFailed": "Failed to save subscription",
+        "errorSaving": "Error saving subscription",
         "userNotFound": "User not found"
       }
     },
@@ -6383,7 +6474,8 @@
       "lastUpdate": "Last Update",
       "feature": "Purchased feature",
       "subscription": "Subscription",
-      "amountInDollar": "The amount is in dollars"
+      "amountInDollar": "The amount is in dollars",
+      "notes": "Notes"
     },
     "purposes": {
       "wallet_top_up": "Wallet top-up",
@@ -6396,7 +6488,9 @@
       "howToUse": "How to Use",
       "view": "View",
       "save": "Save",
-      "saving": "Saving..."
+      "saving": "Saving...",
+      "image": "Section image",
+      "imageUpload": "Upload a photo"
     },
     "validation": {
       "planRequired": "Plan is required",
@@ -7773,7 +7867,8 @@
       "fetchWalletFailed": "Failed to load wallet data",
       "depositFailed": "Failed to start deposit",
       "noCheckoutUrl": "No payment link was provided",
-      "withdrawFailed": "Withdrawal failed"
+      "withdrawFailed": "Withdrawal failed",
+      "adjustBalanceFailed": "Error adjusting balance"
     },
     "messages": {
       "depositSuccess": "Deposit started successfully",
@@ -7793,6 +7888,7 @@
       "totalWithdrawn": "Total withdrawn",
       "adjustTitle": "Adjust balance",
       "amountLabel": "Amount (positive to add / negative to deduct)",
+      "amountPlaceholder": "Example: 100 or -50",
       "noteLabel": "Adjustment notes",
       "submit": "Update balance",
       "success": "Wallet updated successfully"
@@ -7869,7 +7965,8 @@
       "required": "This field is required",
       "validAmount": "Enter a valid amount",
       "validEmail": "Enter a valid email address",
-      "maxAmount": "Maximum amount"
+      "maxAmount": "Maximum amount",
+      "invalidAmount": "Please enter a valid amount"
     },
     "toasts": {
       "depositSuccess": "{amount} EGP deposited successfully!",
@@ -7986,7 +8083,8 @@
       "processing": "Processing",
       "failed": "Failed",
       "on_hold": "On Hold",
-      "out_for_delivery": "Out for Delivery"
+      "out_for_delivery": "Out for Delivery",
+      "failed_delivery": "Connection failed"
     },
     "workPage": {
       "changeStatus": "Update Order Status",
@@ -8143,10 +8241,28 @@
         "label": "Appearance",
         "description": "Theme and display"
       },
+      "whatsapp": {
+        "label": "WhatsApp Settings",
+        "description": "Default numbers and template validity settings"
+      },
+      "automations": {
+        "label": "Automation Settings",
+        "description": "Configure how automation behaves"
+      },
       "whatsappTab": {
         "accountSettings": "Account Settings",
         "defaultAccountDescription": "Select the default number for sending operations",
         "defaultAccountLabel": "Default Number for Sending"
+      }
+    },
+    "ttlInput": {
+      "allowed": "Allowed: {min} - {max}",
+      "outOfRange": "Out of range",
+      "units": {
+        "seconds": "seconds",
+        "minutes": "minutes",
+        "hours": "hours",
+        "days": "days"
       }
     },
     "company": {
@@ -8515,7 +8631,8 @@
         "compact": "Compact Mode",
         "compactDesc": "Reduce spacing in the interface (for smaller screens / higher density)"
       }
-    }
+    },
+    "invalidURL": "The site link is invalid"
   },
   "paymentSuccess": {
     "title": "Payment Successful!",
@@ -9130,6 +9247,20 @@
         "closed": "Closed",
         "pending": "Not Closed"
       },
+      "successClosing": "Month closed successfully",
+      "errorClosing": "An error occurred during closing",
+      "alreadyClosed": "This month has already been closed!",
+      "fetchPreviewError": "Could not fetch the initial report",
+      "compareError": "An error occurred while fetching comparison data",
+      "compareDescription": "Compare financial performance between two different periods",
+      "periodA": "First Period (A)",
+      "periodB": "Second Period (B)",
+      "metric": "Metric",
+      "periodALabel": "Period A",
+      "periodBLabel": "Period B",
+      "change": "Change",
+      "periodResult": "Period Result",
+      "detailedExcelReport": "Detailed Excel Report",
       "fetchError": "An error occurred while fetching data",
       "netResult": "Estimated Net Profit",
       "profit": "Profit",
@@ -9186,6 +9317,15 @@
     },
     "supplierAccounts": {
       "title": "Supplier Accounts",
+      "noData": "No data available",
+      "notClosed": "Not closed",
+      "noPurchasesPeriod": "No purchase invoices in this period",
+      "noReturnsPeriod": "No return invoices in this period",
+      "noPurchases": "No purchase invoices",
+      "noReturns": "No return invoices",
+      "successClosing": "Closing successful",
+      "fetchError": "Error fetching suppliers data",
+      "fetchInvoicesError": "Error fetching invoices",
       "loading": {
         "message": "Loading supplier data...",
         "notFound": "Supplier not found"
@@ -9242,7 +9382,9 @@
       "filters": {
         "selectYear": "Choose the year...",
         "year": "Year"
-      }
+      },
+      "failedToFetchSupplier": "Failed to load resource",
+      "failedToLoadDetails": "Failed to load resource"
     },
     "history": "Previous Closes",
     "confirm": "Confirm",
@@ -9559,6 +9701,9 @@
       },
       "preview": {
         "allOptions": "All Options",
+        "selectAnOption": "Select an option",
+        "sendTtl": "Send TTL:",
+        "copyCode": "Copy Code",
         "actionButtonPlaceholder": "Action Button...",
         "quickReplyPlaceholder": "Quick Reply...",
         "title": "Template preview",
@@ -9826,6 +9971,8 @@
         },
         "submitCreate": "Submit for review",
         "submitUpdate": "Save changes",
+        "create": "Create",
+        "update": "Update",
         "accountLabel": "WhatsApp account",
         "accountPlaceholder": "Select an account",
         "internalTemplates": "System templates",
@@ -9939,6 +10086,360 @@
         "paused": "Paused",
         "archived": "Archived"
       },
+      "builder": {
+        "triggerTypes": {
+          "order_created": "New Order Created",
+          "order_updated": "Order Status Updated"
+        },
+        "actionTypes": {
+          "send_whatsapp_template": "Send WhatsApp Template",
+          "update_order_status": "Update Order Status",
+          "send_upsell": "Send Upsell"
+        },
+        "conditionTypes": {
+          "order_check": "Check Order Data",
+          "quick_order_status": "Quick Status Check"
+        },
+        "operators": {
+          "equal": "Equal",
+          "notEqual": "Not Equal",
+          "greaterThan": "Greater Than",
+          "lessThan": "Less Than",
+          "greaterThanOrEqual": "Greater Than or Equal",
+          "lessThanOrEqual": "Less Than or Equal",
+          "contains": "Contains",
+          "notContains": "Does Not Contain",
+          "startsWith": "Starts With"
+        },
+        "nodes": {
+          "trigger": {
+            "subtitle": "Starting Point",
+            "unknown": "Unknown Trigger",
+            "onStatusChange": "When the status changes to"
+          },
+          "action": {
+            "subtitle": "Messaging",
+            "management": "Order Management",
+            "upsell": "Upsells"
+          },
+          "condition": {
+            "subtitle": "Logical Check"
+          },
+          "loading": "Checking...",
+          "noTemplate": "No template selected",
+          "recipient": "Recipient",
+          "changeStatusTo": "Change status to",
+          "sendOffers": "Send Offers",
+          "proposedForOrder": "Proposed for order",
+          "yes": "Yes",
+          "no": "No",
+          "noConditions": "No conditions",
+          "otherConditions": "+ {count} other conditions"
+        },
+        "sidebar": {
+          "title": "Build Workflows",
+          "subtitle": "Drag elements to build your workflow",
+          "namePlaceholder": "Automation name...",
+          "addFirst": "Start by adding a trigger first",
+          "clickPlus": "Click + below the step",
+          "chooseAction": "Choose appropriate action",
+          "help": "Help",
+          "noResults": "No results found",
+          "triggers": "Triggers",
+          "actions": "Actions",
+          "conditions": "Conditions",
+          "internalSystem": "Internal System",
+          "logic": "Logic",
+          "addStepTip": "Click the {plus} icon below the card to add a new action"
+        },
+        "toolbar": {
+          "save": "Save",
+          "saving": "Saving...",
+          "clear": "Clear",
+          "preview": "Preview",
+          "test": "Test",
+          "run": "Run",
+          "back": "Back",
+          "reorder": "Reorder",
+          "stepInfo": "Step Information",
+          "errorName": "Please enter automation name",
+          "previewEnded": "Preview session ended",
+          "resolveErrors": "Please resolve all node errors before saving.",
+          "minNodes": "Workflow must contain at least two nodes.",
+          "exactlyOneTrigger": "Workflow must contain exactly one trigger.",
+          "publishedSuccess": "Automation published successfully!",
+          "savedSuccess": "Automation saved successfully!",
+          "saveFailed": "Failed to save automation.",
+          "editAutomation": "Edit Automation",
+          "saveAndPublish": "Save and Publish",
+          "clearAll": "Clear All",
+          "previewPath": "Preview Path",
+          "saveDraft": "Save Draft",
+          "stepAddedSuccess": "Step added successfully",
+          "stepUpdatedSuccess": "Step updated successfully",
+          "workspace": "Workspace",
+          "disconnectOnly": "Disconnect Only",
+          "deletePathAndAfter": "Delete path and after",
+          "addNextStep": "Add next step",
+          "chooseThisBranch": "Choose this branch",
+          "viewAutomationVersion": "View Automation Version {version}",
+          "viewAutomationLatest": "View Latest Automation Version",
+          "editAutomationVersion": "Edit Automation Version {version}",
+          "editAutomationLatest": "Edit Latest Automation Version",
+          "loadingFlowData": "Loading flow data...",
+          "failedToLoadData": "Failed to load automation data.",
+          "errorOccurred": "Sorry, an error occurred",
+          "retry": "Retry"
+        },
+        "indicators": {
+          "updated_automatically": "Data updated automatically"
+        },
+        "status": {
+          "completed": "Completed",
+          "failed": "Failed"
+        },
+        "config": {
+          "modalTitle": {
+            "create": "Configure new step settings",
+            "edit": "Edit step settings"
+          },
+          "noSettings": "This step requires no additional settings",
+          "addStep": "Add Step",
+          "saveChanges": "Save Changes",
+          "store": "Store",
+          "storeDesc": "Choose the store to monitor orders in",
+          "selectStore": "Select store...",
+          "allStores": "All Stores",
+          "loading": "Loading...",
+          "status": "Status",
+          "statusDesc": "Choose the status to monitor",
+          "selectStatus": "Select status...",
+          "newStatus": "New Status",
+          "newStatusDesc": "Choose the status to move the order to",
+          "template": "Template",
+          "templateDesc": "Choose the message template to send",
+          "selectTemplate": "Select template...",
+          "recipientNumber": "Recipient Number",
+          "recipientNumberDesc": "Phone number to send message to (leave empty to use order number)",
+          "variables": "Variables",
+          "variablesDesc": "Map template variables to order data",
+          "checks": "Checks",
+          "addCheck": "Add Check",
+          "operator": "Operator",
+          "value": "Value",
+          "targetStatus": "Target Status",
+          "targetStatusDesc": "Trigger automation when order changes to this status",
+          "whatsappAccount": "WhatsApp Account",
+          "whatsappAccountDesc": "Choose the account that will receive messages",
+          "selectAccount": "Select account...",
+          "changeStatusToDesc": "The new status to be assigned to the order",
+          "selectNewStatus": "Select new status...",
+          "whatsappTemplateTitle": "Send WhatsApp Template",
+          "whatsappTemplateDesc": "Choose the template and fill in the required variables",
+          "recipientNumberDesc2": "The number to which the message will be sent",
+          "recipientNumberPlaceholder": "Enter the number or leave empty to use the customer's number from the order",
+          "whatsappTemplate": "WhatsApp Template",
+          "clickToSelectTemplate": "Click to select a template",
+          "metaTemplateRequired": "A Meta-approved template must be selected",
+          "templateSelectedSuccess": "Template selected successfully",
+          "changeTemplate": "Change Template",
+          "fillVariables": "Fill Variables",
+          "fillVariablesDesc": "Enter static values or choose dynamic fields from the order",
+          "locationHeader": "Location Header",
+          "locationName": "Location Name",
+          "locationAddress": "Location Address",
+          "messageHeader": "Message Header",
+          "messageBody": "Message Body",
+          "linkButtons": "Link Buttons",
+          "livePreview": "Live Message Preview",
+          "previewUnavailable": "Preview Unavailable",
+          "chooseTemplateToPreview": "Choose a template to see the preview here",
+          "dynamicVariable": "Dynamic Variable ({type})",
+          "selectFromOrderData": "Select from order data",
+          "enterValue": "Enter value",
+          "enterValueFor": "Enter value for {example}",
+          "orderCheckTitle": "Check Order Data",
+          "orderCheckDesc": "Configure new step settings",
+          "conditionsCount": "{count} / 20 conditions",
+          "addNewCondition": "Add new condition",
+          "preview": "Preview:",
+          "backToMain": "Back to Main",
+          "loadingData": "Loading data...",
+          "maxConditionsError": "Cannot add more than 20 checks",
+          "yes": "Yes",
+          "no": "No",
+          "field": "Field",
+          "condition": "Condition",
+          "chooseField": "Choose field from order data",
+          "chooseOperator": "Choose operator (condition)",
+          "enterValuePlaceholder": "Enter required value...",
+          "selectValue": "Select value...",
+          "quickCheckTitle": "Status Check",
+          "quickCheckDesc": "Route flow based on current order status",
+          "accounts": {
+            "sales": "Main Sales Account",
+            "support": "Technical Support Account"
+          },
+          "upsell": {
+            "none": "None",
+            "system_reject": "System Rejected",
+            "accept": "Accept",
+            "client_reject": "Client Rejected"
+          },
+          "noConditionsDesc": "Start by adding the first condition to inspect the request data",
+          "addCondition": "Add condition"
+        },
+        "orderProperties": {
+          "title": "Select field from order",
+          "orderNumber": "Order Number",
+          "customerName": "Customer Name",
+          "phoneNumber": "Phone Number",
+          "secondPhoneNumber": "Second Phone Number",
+          "address": "Address",
+          "city": "City",
+          "area": "Area",
+          "landmark": "Landmark",
+          "deposit": "Deposit",
+          "productsTotal": "Products Total",
+          "shippingCost": "Shipping Cost",
+          "discount": "Discount",
+          "finalTotal": "Final Total",
+          "status": "Order Status",
+          "store": "Store",
+          "shippingCompany": "Shipping Company",
+          "paymentMethod": "Payment Method",
+          "paymentStatus": "Payment Status",
+          "trackingNumber": "Tracking Number",
+          "shippedAt": "Shipped At",
+          "deliveredAt": "Delivered At",
+          "created_at": "Order Created At",
+          "allowOpenPackage": "Allow Open Package",
+          "items": "Products",
+          "productName": "Product Name",
+          "sku": "SKU",
+          "quantity": "Quantity",
+          "price": "Price",
+          "unitCost": "Unit Cost",
+          "lineTotal": "Line Total",
+          "searchPlaceholder": "Search fields...",
+          "noResults": "No results found",
+          "examples": {
+            "orderNumber": "ORD-123",
+            "customerName": "John Doe",
+            "phoneNumber": "+123456789",
+            "secondPhoneNumber": "+987654321",
+            "address": "123 Main St, London",
+            "city": "London",
+            "area": "Westminster",
+            "landmark": "Near Big Ben",
+            "deposit": "100",
+            "productsTotal": "500",
+            "shippingCost": "30",
+            "discount": "50",
+            "finalTotal": "480",
+            "status": "Processing",
+            "store": "Shopify",
+            "shippingCompany": "FedEx",
+            "paymentMethod": "Credit Card",
+            "paymentStatus": "Paid",
+            "trackingNumber": "1234567890",
+            "shippedAt": "2023-12-12",
+            "deliveredAt": "2023-12-12",
+            "created_at": "2023-12-12",
+            "allowOpenPackage": "Yes",
+            "productName": "Smart Watch",
+            "sku": "SKU-001",
+            "quantity": "2",
+            "price": "250",
+            "unitCost": "250",
+            "lineTotal": "500"
+          }
+        },
+        "runPanel": {
+          "title": "Run Information",
+          "status": "Run Status",
+          "currentNode": "Current Step",
+          "duration": "Duration",
+          "stopPreview": "Stop Preview",
+          "daysCount": "{count, plural, =1 {day} other {# days}}",
+          "hoursCount": "{count, plural, =1 {hour} other {# hours}}",
+          "minutesCount": "{count, plural, =1 {minute} other {# minutes}}",
+          "secondsCount": "{count, plural, =1 {second} other {# seconds}}",
+          "and": " and ",
+          "flowAndVersion": "Flow and Version",
+          "version": "Version",
+          "executionStatus": "Execution Status",
+          "completedSteps": "Completed Steps",
+          "stepsCount": "{count} steps",
+          "timing": "Timing",
+          "startTime": "Start Time",
+          "endTime": "End Time",
+          "running": "Running...",
+          "additionalInfo": "Additional Info",
+          "triggerEntity": "Trigger Entity",
+          "failureDetails": "Failure Details",
+          "entities": {
+            "order": "Order",
+            "whatsapp": "WhatsApp"
+          }
+        },
+        "dialogs": {
+          "delete": {
+            "title": {
+              "clear": "Clear Workflow",
+              "stepWithDownstream": "Delete step and downstream branches",
+              "step": "Delete Step"
+            },
+            "description": {
+              "clear": "Are you sure you want to clear all steps? This action cannot be undone.",
+              "stepWithDownstream": "This will delete this step and {count} subsequent steps.",
+              "step": "Are you sure you want to delete this step?",
+              "confirm": "Are you sure?"
+            },
+            "dontAskAgain": "Don't ask me again when deleting",
+            "successClear": "Workflow cleared successfully",
+            "successDelete": "Steps deleted successfully"
+          }
+        },
+        "stepInfo": {
+          "title": "Step Execution Details",
+          "input": "Step Input",
+          "output": "Step Output",
+          "searchPlaceholder": "Search data...",
+          "tree": "Tree",
+          "treeView": "Tree View",
+          "raw": "Raw (JSON)",
+          "rawJson": "Raw JSON",
+          "expandAll": "Expand All",
+          "collapseAll": "Collapse All",
+          "noData": "No data available",
+          "noResults": "No results found for \"{term}\"",
+          "root": "Root",
+          "searchResults": "Search Results",
+          "itemsCount": "{count} items",
+          "keysCount": "{count} keys",
+          "errorMessage": "Error Message",
+          "syncWithOrder": "Sync with current order"
+        },
+        "previewSidebar": {
+          "title": "Preview Flow",
+          "noOrderRequired": "This trigger does not require selecting an order",
+          "chooseOrder": "Choose an order for preview",
+          "orderDescription": "Mock orders at the top, followed by real orders",
+          "searchPlaceholder": "Search by name or phone...",
+          "generateMock": "Generate mock order",
+          "addNewMock": "Add new mock order",
+          "mockOrders": "Mock Orders",
+          "realOrders": "Real Orders",
+          "noOrders": "No orders found",
+          "use": "Use",
+          "undefined": "Undefined",
+          "real": "Real",
+          "mock": "Mock",
+          "items": "{count} items"
+        },
+        "failedToLoadData": "Failed to load automation data."
+      },
       "messages": {
         "updateSuccess": "Status updated successfully",
         "deleteSuccess": "Automation deleted successfully",
@@ -9951,6 +10452,27 @@
       }
     },
     "automationLogs": {
+      "title": "Running Automations",
+      "subtitle": "Monitor ongoing operations",
+      "reorder": "Reorder",
+      "editVersion": "Edit Version",
+      "retryNow": "Retry Now",
+      "restarting": "Restarting...",
+      "restartSuccess": "Restart request sent successfully",
+      "restartFailed": "Failed to request restart",
+      "refreshSuccess": "Data updated",
+      "reorderSuccess": "Flow reordered",
+      "selectRunToContinue": "Select a run to continue",
+      "allRuns": "All Runs",
+      "refresh": "Refresh",
+      "searchPlaceholder": "Search by order or path...",
+      "loading": "Loading...",
+      "noRuns": "No operations found",
+      "stepsCompleted": "{count} steps completed",
+      "noData": "No data",
+      "errorFetchingRuns": "Error loading paths",
+      "errorFetchingDetails": "Error loading details",
+      "loadingExecutionDetails": "Loading execution details...",
       "breadcrumb": {
         "logs": "Execution Logs"
       },
@@ -9977,7 +10499,8 @@
       },
       "filters": {
         "status": "Run Status",
-        "startDate": "Start Date"
+        "startDate": "Start Date",
+        "datePlaceholder": "the date"
       },
       "statuses": {
         "pending": "Pending",
@@ -9989,7 +10512,9 @@
       "actions": {
         "view": "View Execution"
       },
-      "refreshed": "Data has been updated"
+      "refreshed": "Data has been updated",
+      "errorOccurred": "Sorry, something went wrong",
+      "retry": "Retry"
     }
   },
   "systemErrors": {

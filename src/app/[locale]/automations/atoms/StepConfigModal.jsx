@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Settings2, AlertCircle } from "lucide-react";
@@ -8,6 +9,8 @@ import * as Configs from "./step-configs";
 import { useFlowStore } from "@/hook/useFlowStore";
 
 export function StepConfigModal({ isOpen, onClose, step, mode = "create", initialData = null }) {
+    const tCommon = useTranslations("common");
+    const t = useTranslations("whatsApp.automations.builder");
     const [config, setConfig] = useState(initialData || {});
     const [errors, setErrors] = useState({});
     const { nodes, edges } = useFlowStore();
@@ -59,7 +62,7 @@ export function StepConfigModal({ isOpen, onClose, step, mode = "create", initia
                         <div>
                             <DialogTitle className="text-xl font-bold">{step.label}</DialogTitle>
                             <DialogDescription className="text-xs text-slate-400 mt-1">
-                                {mode === "create" ? "قم بتهيئة إعدادات الخطوة الجديدة" : "تعديل إعدادات الخطوة"}
+                                {mode === "create" ? t('config.modalTitle.create') : t('config.modalTitle.edit')}
                             </DialogDescription>
                         </div>
                     </div>
@@ -80,7 +83,7 @@ export function StepConfigModal({ isOpen, onClose, step, mode = "create", initia
                     ) : (
                         <div className="flex flex-col items-center justify-center py-12 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
                             <AlertCircle size={32} className="text-slate-300 mb-4" />
-                            <p className="text-sm text-slate-500 font-medium">هذه الخطوة لا تتطلب إعدادات إضافية</p>
+                            <p className="text-sm text-slate-500 font-medium">{t('config.noSettings')}</p>
                         </div>
                     )}
                 </div>
@@ -88,10 +91,10 @@ export function StepConfigModal({ isOpen, onClose, step, mode = "create", initia
                 <DialogFooter className="p-6 bg-slate-50 dark:bg-slate-800/50 border-t dark:border-slate-800">
                     <div className="flex w-full justify-between items-center">
                         <Button variant="ghost" onClick={() => onClose(null)} className="rounded-xl px-6">
-                            إلغاء
+                            {tCommon('cancel')}
                         </Button>
                         <Button disabled={disabled} onClick={handleSave} className="rounded-xl px-8 bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20">
-                            {mode === "create" ? "إضافة الخطوة" : "حفظ التغييرات"}
+                            {mode === "create" ? t('config.addStep') : t('config.saveChanges')}
                         </Button>
                     </div>
                 </DialogFooter>

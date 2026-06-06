@@ -839,6 +839,7 @@ export function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess }) 
 }
 
 function CopyButton({ text }) {
+	const t = useTranslations("suppliers");
 	const [copied, setCopied] = useState(false);
 
 	const handleCopy = async () => {
@@ -861,7 +862,7 @@ function CopyButton({ text }) {
 					{copied ? <Check size={14} className="text-green-600" /> : <Copy size={14} className="text-slate-400" />}
 				</button>
 			</TooltipTrigger>
-			<TooltipContent>{copied ? "تم النسخ!" : "نسخ"}</TooltipContent>
+			<TooltipContent>{copied ? t("copied") : t("copy")}</TooltipContent>
 		</Tooltip>
 	);
 }

@@ -731,14 +731,14 @@ function WhatsappDialog({ t, open, onOpenChange, user, credentials }) {
 
 	const message = useMemo(() => {
 		const lines = [];
-		lines.push("Account details:");
-		if (user?.name) lines.push(`Name: ${user.name}`);
-		if (email) lines.push(`Email: ${email}`);
-		if (includePassword && password) lines.push(`Password: ${password}`);
+		lines.push(t("whatsapp.accountDetails"));
+		if (user?.name) lines.push(t("whatsapp.nameLabel", { name: user.name }));
+		if (email) lines.push(t("whatsapp.emailLabel", { email }));
+		if (includePassword && password) lines.push(t("whatsapp.passwordLabel", { password }));
 		lines.push("");
-		lines.push("Please login and change your password after first login.");
+		lines.push(t("whatsapp.loginInstructions"));
 		return lines.join("\n");
-	}, [user, email, password, includePassword]);
+	}, [user, email, password, includePassword, t]);
 
 	const isValidPhone = useMemo(() => !validatePhone(phoneNumber, selectedCountry, tPhone), [phoneNumber, selectedCountry, tPhone]);
 

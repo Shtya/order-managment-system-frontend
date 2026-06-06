@@ -1225,57 +1225,7 @@ function WelcomeStep({ onNext, open, nextLoading }) {
   );
 }
 
-/* ─── Step 1: Plan ────────────────────────────────────────── */
-const PLANS = [
-  {
-    id: 1,
-    key: "starter",
-    name: "أساسية",
-    tier: "Starter",
-    dotColor: "#4ade80",
-    priceMonthly: 199,
-    priceYearly: 149,
-    badge: null,
-    featured: false,
-    features: ["٥٠٠ طلب / شهر", "١ مستخدم", "١ متجر", "دعم بريد إلكتروني"],
-  },
-  {
-    id: 2,
-    key: "pro",
-    name: "احترافية",
-    tier: "Pro",
-    dotColor: "#818cf8",
-    priceMonthly: 499,
-    priceYearly: 399,
-    badge: "الأكثر طلبًا",
-    featured: true,
-    features: [
-      "طلبات غير محدودة",
-      "٥ مستخدمين",
-      "٣ متاجر",
-      "دعم أولوية ٢٤/٧",
-      "تقارير تفصيلية",
-      "API كامل",
-    ],
-  },
-  {
-    id: 3,
-    key: "enterprise",
-    name: "مؤسسية",
-    tier: "Enterprise",
-    dotColor: "#a855f7",
-    priceMonthly: 999,
-    priceYearly: 799,
-    badge: "للشركات",
-    featured: false,
-    features: [
-      "كل شيء غير محدود",
-      "مستخدمون غير محدودون",
-      "API مخصص",
-      "مدير حساب مخصص",
-    ],
-  },
-];
+
 
 function PlanSkeleton() {
   return (
@@ -3069,7 +3019,7 @@ function ShippingStep({ onNext, onBack, open, nextLoading }) {
   const ts = useTranslations("onboarding.shipping");
   const t = useTranslations("shipping");
   const locale = useLocale();
-
+  const isArabic = locale === "ar";
   const [integrationStatuses, setStatuses] = useState({});
   const [statusLoading, setStatusLoading] = useState(true);
 

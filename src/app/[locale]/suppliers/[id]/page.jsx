@@ -102,7 +102,8 @@ export default function SupplierDetailsPage() {
             const res = await api.get(`/suppliers/${id}`);
             setSupplier(res.data);
         } catch (error) {
-            toast.error(error?.response?.data?.message || "Failed to fetch supplier");
+            //ar => فشل تحميل المورد
+            toast.error(error?.response?.data?.message || t("failedToFetchSupplier"));
         } finally {
             setLoading(false);
         }
@@ -221,7 +222,9 @@ export default function SupplierDetailsPage() {
             const res = await api.get(`/purchases/${row.id}`);
             setPurchaseModal({ isOpen: true, invoice: res.data, loading: false });
         } catch (error) {
-            toast.error("Failed to load details");
+            //ar => فشل تحميل المورد
+            toast.error(error?.response?.data?.message || t("failedToLoadDetails"));
+        } finally {
             setPurchaseModal({ isOpen: false, invoice: null, loading: false });
         }
     };
@@ -232,7 +235,7 @@ export default function SupplierDetailsPage() {
             const res = await api.get(`/purchases-return/${row.id}`);
             setReturnModal({ isOpen: true, invoice: res.data, loading: false });
         } catch (error) {
-            toast.error("Failed to load details");
+            toast.error(t("failedToLoadDetails"));
             setReturnModal({ isOpen: false, invoice: null, loading: false });
         }
     };

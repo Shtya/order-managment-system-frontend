@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import {
     Activity,
     Clock,
@@ -556,6 +557,7 @@ function PreviewOrderCard({
     onView,
     onUse,
 }) {
+    const t = useTranslations("whatsApp.automations.builder.previewSidebar");
     return (
         <div
             onClick={() => onSelect(order)}
@@ -575,11 +577,11 @@ function PreviewOrderCard({
                     {isMock ? (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black bg-purple-50 text-purple-700 dark:bg-purple-500/10 dark:text-purple-300">
                             <Sparkles size={9} />
-                            Mock
+                            {t('mock')}
                         </span>
                     ) : (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                            Real
+                            {t('real')}
                         </span>
                     )}
                 </div>
@@ -606,10 +608,10 @@ function PreviewOrderCard({
                             onUse(order, e);
                         }}
                         className="flex items-center justify-center gap-1 px-3 py-2 text-[11px] font-black text-white bg-primary hover:bg-primary/90 rounded-xl transition-all"
-                        title="استخدام في المعاينة"
+                        title={t('use')}
                     >
                         <Sparkles size={14} />
-                        استخدام
+                        {t('use')}
                     </button>
                 </div>
             </div>
@@ -623,14 +625,14 @@ function PreviewOrderCard({
                 <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
                     <Activity size={10} className="text-slate-500" />
                     <span className="text-[10px]">
-                        {order.status?.name || 'غير محدد'}
+                        {order.status?.name || t('undefined')}
                     </span>
                 </div>
 
                 <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
                     <Store size={10} className="text-slate-500" />
                     <span className="text-[10px]">
-                        {order.store?.name || 'غير محدد'}
+                        {order.store?.name || t('undefined')}
                     </span>
                 </div>
             </div>
@@ -647,7 +649,7 @@ function PreviewOrderCard({
 
                 <div className="flex items-center gap-1">
                     <Package size={10} />
-                    <span>{Array.isArray(order.items) ? order.items.length : 0} items</span>
+                    <span>{t('items', { count: Array.isArray(order.items) ? order.items.length : 0 })}</span>
                 </div>
             </div>
         </div>
@@ -655,6 +657,8 @@ function PreviewOrderCard({
 }
 
 export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
+    const tCommon = useTranslations("common");
+    const t = useTranslations("whatsApp.automations.builder.previewSidebar");
     const [orders, setOrders] = useState([]);
     const [stores, setStores] = useState([]);
     const [statuses, setStatuses] = useState([]);
@@ -924,14 +928,14 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
                     className="fixed top-0 end-0 h-full w-[320px] bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 z-50 shadow-2xl"
                 >
                     <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                        <h2 className="text-[13px] font-black">معاينة المسار</h2>
+                        <h2 className="text-[13px] font-black">{t('title')}</h2>
                         <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
                             <X size={20} />
                         </button>
                     </div>
 
                     <div className="p-6 text-center text-slate-400 text-[12px]">
-                        هذا المحفز لا يتطلب اختيار طلب
+                        {t('noOrderRequired')}
                     </div>
                 </motion.div>
             </>
@@ -957,9 +961,9 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
             >
                 <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-4">
                     <div>
-                        <h2 className="text-[13px] font-black">اختر طلب للمعاينة</h2>
+                        <h2 className="text-[13px] font-black">{t('chooseOrder')}</h2>
                         <p className="text-[10px] text-slate-400 mt-1">
-                            الطلبات التجريبية في الأعلى ثم الطلبات الحقيقية
+                            {t('orderDescription')}
                         </p>
                     </div>
 
@@ -968,7 +972,7 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
                             onClick={fetchOrders}
                             disabled={loading}
                             className="text-slate-400 hover:text-primary bg-white dark:bg-slate-800 rounded-xl p-2 border border-slate-100 dark:border-slate-800 transition-all hover:scale-110 disabled:opacity-50"
-                            title="تحديث"
+                            title={tCommon('refresh')}
                         >
                             <RefreshCw size={18} className={cn(loading && 'animate-spin')} />
                         </button>
@@ -983,7 +987,7 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
                         <input
                             type="text"
-                            placeholder="البحث بالاسم أو الهاتف..."
+                            placeholder={t('searchPlaceholder')}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl py-2 pl-9 pr-4 text-[11px] focus:ring-2 focus:ring-primary/20 transition-all"
@@ -993,7 +997,7 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
                     <div className="rounded-2xl border border-slate-100 dark:border-slate-800 p-3 bg-slate-50/70 dark:bg-slate-800/30">
                         <div className="flex items-center gap-2 mb-3">
                             <Plus size={14} className="text-primary" />
-                            <span className="text-[11px] font-black">توليد طلب تجريبي</span>
+                            <span className="text-[11px] font-black">{t('generateMock')}</span>
                         </div>
 
                         <div className="grid grid-cols-1 gap-2">
@@ -1052,7 +1056,7 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
                                 className="w-full rounded-xl bg-primary hover:bg-primary/90 text-white text-[11px] font-black py-2.5 flex items-center justify-center gap-2"
                             >
                                 <Sparkles size={14} />
-                                إضافة طلب تجريبي جديد
+                                {t('addNewMock')}
                             </button>
                         </div>
                     </div>
@@ -1063,7 +1067,7 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
                         <div className="flex flex-col items-center justify-center py-20 gap-3">
                             <Loader2 className="w-8 h-8 animate-spin text-primary/40" />
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                جاري التحميل...
+                                {tCommon('loading')}
                             </p>
                         </div>
                     ) : (
@@ -1074,7 +1078,7 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
                                         <div className="flex items-center gap-2">
                                             <Sparkles size={14} className="text-purple-500" />
                                             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                                                الطلبات التجريبية
+                                                {t('mockOrders')}
                                             </span>
                                         </div>
                                         <span className="text-[10px] text-slate-400">
@@ -1102,7 +1106,7 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
                                         <div className="flex items-center gap-2">
                                             <Layout size={14} className="text-slate-500" />
                                             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                                                الطلبات الحقيقية
+                                                {t('realOrders')}
                                             </span>
                                         </div>
                                         <span className="text-[10px] text-slate-400">
@@ -1128,7 +1132,7 @@ export default function PreviewSidebar({ nodes, onClose, onSelectOrder }) {
                                 <div className="flex flex-col items-center justify-center py-20 gap-3">
                                     <Layout className="w-8 h-8 text-slate-200" />
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                        لا توجد طلبات
+                                        {t('noOrders')}
                                     </p>
                                 </div>
                             ) : null}

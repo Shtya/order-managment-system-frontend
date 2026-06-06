@@ -369,13 +369,14 @@ const createCategorySchema = (t) => yup.object({
       t("categories.validation.slugInvalid")
     ),
 });
+
 const createAccountSchema = (t) => yup.object({
-  name: yup.string().trim().required(t("account.validation.nameRequired")),
+  name: yup.string().trim().required(t("validation.nameRequired")),
   email: yup
     .string()
     .trim()
-    .email(t("account.validation.emailInvalid"))
-    .required(t("account.validation.emailRequired")),
+    .email(t("validation.emailInvalid"))
+    .required(t("validation.emailRequired")),
   employeeType: yup.string().trim().nullable(),
 });
 
@@ -449,15 +450,15 @@ export default function SettingsPage() {
     { id: "notifications", label: t("tabs.notifications.label"), icon: Bell },
     {
       id: "whatsapp",
-      label: "إعدادات واتساب", // WhatsApp Settings
+      label: t("tabs.whatsapp.label"),
       icon: <MessageSquare size={18} />,
-      description: "إعدادات الأرقام الافتراضية وصلاحية القوالب"
+      description: t("tabs.whatsapp.description")
     },
     {
       id: "automations",
-      label: "إعدادات التشغيل التلقائي", // Automation Settings
+      label: t("tabs.automations.label"),
       icon: <Zap size={18} />,
-      description: "تهيئة كيفية تعامل التشغيل التلقائي"
+      description: t("tabs.automations.description")
     },
   ];
 
@@ -520,6 +521,7 @@ export default function SettingsPage() {
 }
 
 function TTLInput({ label, description, defaultValue, min, max }) {
+  const t = useTranslations("settings.ttlInput");
   const [value, setValue] = useState(defaultValue);
   const [unit, setUnit] = useState(() => {
     if (defaultValue >= 86400 && defaultValue % 86400 === 0) return "days";
@@ -529,10 +531,10 @@ function TTLInput({ label, description, defaultValue, min, max }) {
   });
 
   const units = [
-    { label: "ثانية", value: "seconds", factor: 1 },
-    { label: "دقيقة", value: "minutes", factor: 60 },
-    { label: "ساعة", value: "hours", factor: 3600 },
-    { label: "يوم", value: "days", factor: 86400 },
+    { label: t("units.seconds"), value: "seconds", factor: 1 },
+    { label: t("units.minutes"), value: "minutes", factor: 60 },
+    { label: t("units.hours"), value: "hours", factor: 3600 },
+    { label: t("units.days"), value: "days", factor: 86400 },
   ];
 
   const currentFactor = units.find((u) => u.value === unit).factor;
@@ -550,10 +552,10 @@ function TTLInput({ label, description, defaultValue, min, max }) {
   };
 
   const formatSeconds = (s) => {
-    if (s >= 86400) return `${(s / 86400).toFixed(1)} يوم`;
-    if (s >= 3600) return `${(s / 3600).toFixed(1)} ساعة`;
-    if (s >= 60) return `${(s / 60).toFixed(1)} دقيقة`;
-    return `${s} ثانية`;
+    if (s >= 86400) return `${(s / 86400).toFixed(1)} ${t("units.days")}`;
+    if (s >= 3600) return `${(s / 3600).toFixed(1)} ${t("units.hours")}`;
+    if (s >= 60) return `${(s / 60).toFixed(1)} ${t("units.minutes")}`;
+    return `${s} ${t("units.seconds")}`;
   };
 
   return (
@@ -593,10 +595,10 @@ function TTLInput({ label, description, defaultValue, min, max }) {
       </div>
       <div className="flex justify-between items-center px-1">
         <p className="text-[9px] text-slate-400">
-          المسموح: {formatSeconds(min)} - {formatSeconds(max)}
+          {t("allowed", { min: formatSeconds(min), max: formatSeconds(max) })}
         </p>
         {value < min || value > max ? (
-          <p className="text-[9px] text-rose-500 font-bold">خارج النطاق</p>
+          <p className="text-[9px] text-rose-500 font-bold">{t("outOfRange")}</p>
         ) : null}
       </div>
     </div>
@@ -605,7 +607,7 @@ function TTLInput({ label, description, defaultValue, min, max }) {
 
 export function WhatsAppTab({ hideAccount = false, onSave }) {
   const tSettings = useTranslations("settings");
-  const t = useTranslations("settings.whatsappTab");
+  const t = useTranslations("settings.tabs.whatsappTab");
   const {
     settings,
     patch,
@@ -1701,7 +1703,7 @@ function AccountTab() {
       : "";
     setPhoneError(phoneMsg);
     if (phoneMsg) {
-      toast.error(t("account.phone.invalid"));
+      toast.error(phoneMsg);
       return;
     }
     setSaving(true);

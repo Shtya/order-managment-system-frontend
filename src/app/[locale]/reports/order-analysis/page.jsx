@@ -233,7 +233,7 @@ export function RangeTabs({ value, onChange }) {
 export function StatusDonut({
   data,
   loading,
-  label = "طلب",
+  label,
   config = {
     key: "count",
     imageKey: "image",
@@ -243,6 +243,7 @@ export function StatusDonut({
   allowImage = false,
 }) {
   const t = useTranslations("dashboard");
+  const displayLabel = label || t("common.orderLabel");
   const BRAND_COLORS = [PRIMARY, "#3b82f6", "#89D8F0", "#4682D4", "#FDD512"];
   const hasData = data && data.length > 0;
   const total = hasData
@@ -330,7 +331,7 @@ export function StatusDonut({
             {total}
           </span>
           <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest mt-1">
-            الإجمالي
+            {t("common.totalLabel")}
           </span>
         </div>
       </div>
@@ -373,7 +374,7 @@ export function StatusDonut({
                     {item[config.label]}
                   </p>
                   <p className="text-[10px] text-slate-400">
-                    {item[config.key]} {label}
+                    {item[config.key]} {displayLabel}
                   </p>
                 </div>
               </div>
@@ -654,8 +655,11 @@ export const TableFilters = memo(function TableFilters({
   children,
   onApply,
   onRefresh,
-  applyLabel = "تطبيق",
+  applyLabel,
 }) {
+
+  const t = useTranslations("dashboard");
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: -8 }}
@@ -668,7 +672,7 @@ export const TableFilters = memo(function TableFilters({
           <Filter size={12} className="text-primary" />
         </div>
         <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-          الفلاتر
+          {t("filters.title")}
         </span>
       </div>
 
@@ -692,7 +696,7 @@ export const TableFilters = memo(function TableFilters({
               )}
             >
               <RefreshCw size={12} />
-              تحديث
+              {t("common.refresh")}
             </motion.button>
 
             {onApply && (
@@ -708,7 +712,7 @@ export const TableFilters = memo(function TableFilters({
                 }}
               >
                 <Filter size={12} />
-                {applyLabel}
+                {applyLabel || t("filters.apply")}
               </motion.button>
             )}
           </div>

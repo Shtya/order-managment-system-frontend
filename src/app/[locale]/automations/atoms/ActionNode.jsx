@@ -1,18 +1,21 @@
 import React, { useEffect, useMemo } from 'react';
 import { Position, useUpdateNodeInternals } from '@xyflow/react';
 import { MessageSquare, RefreshCw, Send, Loader2, Zap } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { BaseNode } from './BaseNode';
 import { CustomHandle } from './CustomHandle';
 import { useFlowStore } from '@/hook/useFlowStore';
 import { AUTOMATION_CONFIG } from './automation-config';
 
-const ACTION_TYPES = {
-    'send_whatsapp_template': { label: 'إرسال قالب واتساب', subtitle: 'المراسلة', icon: MessageSquare, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
-    'update_order_status': { label: 'تحديث حالة الطلب', subtitle: 'إدارة الطلبات', icon: RefreshCw, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
-    'send_upsell': { label: 'إرسال عرض', subtitle: 'العروض الإضافية', icon: Zap, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
-};
-
 export function ActionNode({ id, data, selected }) {
+    const t = useTranslations("whatsApp.automations.builder");
+    
+    const ACTION_TYPES = useMemo(() => ({
+        'send_whatsapp_template': { label: t('actionTypes.send_whatsapp_template'), subtitle: t('nodes.action.subtitle'), icon: MessageSquare, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+        'update_order_status': { label: t('actionTypes.update_order_status'), subtitle: t('nodes.action.management'), icon: RefreshCw, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+        'send_upsell': { label: t('actionTypes.send_upsell'), subtitle: t('nodes.action.upsell'), icon: Zap, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+    }), [t]);
+
     const updateNodeInternals = useUpdateNodeInternals();
     const action = ACTION_TYPES[data.type] || ACTION_TYPES['send_whatsapp_template'];
     const Icon = action.icon;
@@ -51,11 +54,11 @@ export function ActionNode({ id, data, selected }) {
             onEdit={() => window.dispatchEvent(new CustomEvent('edit-automation-step', { detail: { id, data } }))}
             className="border-t-[6px] border-t-blue-500"
         >
-            <div className="text-[10px] text-slate-600 dark:text-slate-400 bg-blue-50/20 dark:bg-blue-500/5 p-3 rounded-xl border border-blue-100/30 dark:border-blue-500/10 text-right rtl min-h-[50px] flex flex-col justify-center">
+            <div className="text-[10px] text-slate-600 dark:text-slate-400 bg-blue-50/20 dark:bg-blue-500/5 p-3 rounded-xl border border-blue-100/30 dark:border-blue-500/10 min-h-[50px] flex flex-col justify-center">
                 {loading ? (
                     <div className="flex items-center justify-center gap-2 py-1">
                         <Loader2 size={12} className="animate-spin text-blue-500" />
-                        <span className="font-bold opacity-50">جاري التحقق...</span>
+                        <span className="font-bold opacity-50">{t('nodes.loading')}</span>
                     </div>
                 ) : (
                     <>
@@ -63,26 +66,26 @@ export function ActionNode({ id, data, selected }) {
                             <div className="flex flex-col gap-1.5">
                                 <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400 font-bold">
                                     <Send size={10} />
-                                    <span className="truncate">{data.config?.templateName || 'لم يتم اختيار قالب'}</span>
+                                    <span className="truncate">{data.config?.templateName || t('nodes.noTemplate')}</span>
                                 </div>
                                 {data.config?.recipientNumber && (
                                     <div className="flex items-center justify-between border-t border-blue-100/30 pt-1.5 mt-0.5">
+                                        <span className="opacity-50 text-[9px]">{t('nodes.recipient')}</span>
                                         <span className="font-mono font-bold text-blue-600 dark:text-blue-400">{data.config.recipientNumber}</span>
-                                        <span className="opacity-50 text-[9px]">المستلم</span>
                                     </div>
                                 )}
                             </div>
                         )}
                         {data.type === 'update_order_status' && (
                             <div className="flex items-center justify-between">
+                                <span className="opacity-50 font-bold">{t('nodes.changeStatusTo')}</span>
                                 <span className="font-black text-blue-700 dark:text-blue-400 uppercase tracking-tight">{data.config?.newStatus || '—'}</span>
-                                <span className="opacity-50 font-bold">تغيير الحالة الي</span>
                             </div>
                         )}
                         {data.type === 'send_upsell' && (
                             <div className="flex items-center justify-between">
-                                <span className="font-black text-blue-700 dark:text-blue-400 uppercase tracking-tight">المقترحة للطلب</span>
-                                <span className="opacity-50 font-bold">إرسال العروض</span>
+                                <span className="opacity-50 font-bold">{t('nodes.sendOffers')}</span>
+                                <span className="font-black text-blue-700 dark:text-blue-400 uppercase tracking-tight">{t('nodes.proposedForOrder')}</span>
                             </div>
                         )}
                     </>

@@ -38,6 +38,7 @@ import { useAuth } from "@/context/AuthContext";
 	 DATA HOOK — unchanged logic, same API
 ═══════════════════════════════════════════════════════════════ */
 export function useRolesApi() {
+	const t = useTranslations("roles-client");
 	const [loading, setLoading] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 	const [roles, setRoles] = useState([]);
@@ -51,13 +52,13 @@ export function useRolesApi() {
 			setRoles(data);
 			return data;
 		} catch (err) {
-			toast.error(err.response?.data?.message || "Failed to fetch roles");
+			toast.error(err.response?.data?.message || t("toasts.fetchRolesError"));
 			throw err;
 		} finally {
 			setLoading(false);
 			setTimeout(() => setIsLoading(false), 100);
 		}
-	}, []);
+	}, [t]);
 
 	const fetchPermissions = useCallback(async () => {
 		try {
@@ -65,45 +66,45 @@ export function useRolesApi() {
 			setPermissions(data.map(p => p.name));
 			return data;
 		} catch (err) {
-			toast.error(err.response?.data?.message || "Failed to fetch permissions");
+			toast.error(err.response?.data?.message || t("toasts.fetchPermissionsError"));
 			throw err;
 		}
-	}, []);
+	}, [t]);
 
 	const createRole = useCallback(async (roleData, adminId) => {
 		try {
 			setLoading(true);
 			const { data } = await api.post("/roles", { ...roleData, adminId, global: false });
-			toast.success("Role created successfully");
+			toast.success(t("toasts.createRoleSuccess"));
 			return data;
 		} catch (err) {
-			toast.error(err.response?.data?.message || "Failed to create role");
+			toast.error(err.response?.data?.message || t("toasts.createRoleError"));
 			throw err;
 		} finally { setLoading(false); }
-	}, []);
+	}, [t]);
 
 	const updateRole = useCallback(async (id, roleData) => {
 		try {
 			setLoading(true);
 			const { data } = await api.patch(`/roles/${id}`, roleData);
-			toast.success("Role updated successfully");
+			toast.success(t("toasts.updateRoleSuccess"));
 			return data;
 		} catch (err) {
-			toast.error(err.response?.data?.message || "Failed to update role");
+			toast.error(err.response?.data?.message || t("toasts.updateRoleError"));
 			throw err;
 		} finally { setLoading(false); }
-	}, []);
+	}, [t]);
 
 	const deleteRole = useCallback(async (id) => {
 		try {
 			setLoading(true);
 			await api.delete(`/roles/${id}`);
-			toast.success("Role deleted successfully");
+			toast.success(t("toasts.deleteRoleSuccess"));
 		} catch (err) {
-			toast.error(err.response?.data?.message || "Failed to delete role");
+			toast.error(err.response?.data?.message || t("toasts.deleteRoleError"));
 			throw err;
 		} finally { setLoading(false); }
-	}, []);
+	}, [t]);
 
 	return { isLoading, loading, roles, permissions, fetchRoles, fetchPermissions, createRole, updateRole, deleteRole };
 }

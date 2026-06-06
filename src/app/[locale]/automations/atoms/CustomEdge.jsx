@@ -3,10 +3,12 @@ import { BaseEdge, EdgeLabelRenderer, getBezierPath } from '@xyflow/react';
 import { Trash2, Link2Off } from 'lucide-react';
 import { useFlowStore } from '@/hook/useFlowStore';
 import { cn } from '@/utils/cn';
+import { useTranslations } from 'next-intl';
 
 export default function CustomEdge({
     id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style = {}, markerEnd, selected
 }) {
+    const t = useTranslations("whatsApp.automations.builder.toolbar");
     const deleteEdge = useFlowStore((s) => s.deleteEdge);
     const disconnectEdge = useFlowStore((s) => s.disconnectEdge);
     const mode = useFlowStore((s) => s.mode);
@@ -68,7 +70,7 @@ export default function CustomEdge({
                                     "w-7 h-7 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-full flex items-center justify-center text-slate-400 hover:text-amber-500 hover:border-amber-200 hover:bg-amber-50 transition-all shadow-lg",
                                     (isHovered || selected) ? "opacity-100 scale-110" : "opacity-0 scale-50"
                                 )}
-                                title="قطع الاتصال فقط"
+                                title={t("disconnectOnly")}
                             >
                                 <Link2Off size={14} strokeWidth={2.5} />
                             </button>
@@ -80,7 +82,7 @@ export default function CustomEdge({
                                     "w-7 h-7 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50 transition-all shadow-lg",
                                     (isHovered || selected) ? "opacity-100 scale-110" : "opacity-0 scale-50"
                                 )}
-                                title="حذف المسار وما بعده"
+                                title={t("deletePathAndAfter")}
                             >
                                 <Trash2 size={14} strokeWidth={2.5} />
                             </button>

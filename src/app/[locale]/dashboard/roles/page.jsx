@@ -376,7 +376,8 @@ export default function RolesPermissionsPage() {
 	);
 }
 
-export function useRolesApi() {
+export function useRoles() {
+	const t = useTranslations('roles-client.toasts');
 	const [loading, setLoading] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 
@@ -412,7 +413,7 @@ export function useRolesApi() {
 		} catch (error) {
 			toast.error(error.response?.data?.message || 'Failed to fetch permissions');
 			throw error;
-		}
+		}t
 	}, []);
 
 
@@ -423,7 +424,7 @@ export function useRolesApi() {
 				...roleData,
 				global: true,
 			});
-			toast.success('Role created successfully');
+			toast.success(t("createRoleSuccess"));
 			return data;
 		} catch (error) {
 			toast.error(error.response?.data?.message || 'Failed to create role');
@@ -438,7 +439,7 @@ export function useRolesApi() {
 		try {
 			setLoading(true);
 			const { data } = await api.patch(`/roles/${id}`, roleData);
-			toast.success('Role updated successfully');
+			toast.success(t("updateRoleSuccess"));
 			return data;
 		} catch (error) {
 			toast.error(error.response?.data?.message || 'Failed to update role');
@@ -453,7 +454,7 @@ export function useRolesApi() {
 		try {
 			setLoading(true);
 			await api.delete(`/roles/${id}`);
-			toast.success('Role deleted successfully');
+			toast.success(t("deleteRoleSuccess"));
 		} catch (error) {
 			toast.error(error.response?.data?.message || 'Failed to delete role');
 			throw error;

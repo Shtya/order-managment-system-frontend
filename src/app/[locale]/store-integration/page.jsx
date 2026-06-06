@@ -286,7 +286,8 @@ function StoreCard({
   const isSyncing = store?.syncStatus === "syncing";
   const isActive = store?.isActive ?? false;
   const isIntegrated = store?.isIntegrated ?? false;
-
+  const locale = useLocale();
+  const isArabic = locale === "ar";
   const [toggling, setToggling] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
@@ -482,7 +483,7 @@ function StoreCard({
 
         {/* Description */}
         <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2">
-          {config.description}
+          {isArabic ? config.description.ar : config.description.en}
         </p>
 
         {/* Status Badge — configured keeps original emerald; not-configured uses provider accent */}

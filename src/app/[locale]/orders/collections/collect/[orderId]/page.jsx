@@ -787,7 +787,7 @@ export default function CollectOrderPage() {
                         <DateRangePicker
                           mode="single"
                           value={field.value}
-                          taticShow={true}
+                          
                           onChange={(date) => field.onChange(date)}
                           dataSize="default"
                         />

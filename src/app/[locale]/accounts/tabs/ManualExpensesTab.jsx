@@ -70,6 +70,7 @@ import { avatarSrc } from "@/components/atoms/UserSelect";
 import DateRangePicker from "@/components/atoms/DateRangePicker";
 import { useDebounce } from "@/hook/useDebounce";
 import { useSafeAmountWithCommission } from "@/hook/useSafeAmountWithCommission";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 // Category configuration
 export const CATEGORY_CONFIG = {
@@ -482,6 +483,7 @@ export default function ManualExpensesTab({
 }) {
   const tOrders = useTranslations("orders");
   const t = useTranslations("accounts");
+  const {currency} = usePlatformSettings();
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -809,7 +811,7 @@ export default function ManualExpensesTab({
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-muted/30 rounded-2xl border border-border flex flex-col items-center justify-center gap-1">
                   <span className="text-[10px] font-black uppercase tracking-wider text-red-400">{t("manualExpenses.columns.amount")}</span>
-                  <span className="text-2xl font-black text-red-600">-{Number(selectedExpense.amount).toLocaleString()}ج</span>
+                  <span className="text-2xl font-black text-red-600">-{Number(selectedExpense.amount).toLocaleString()} {currency}</span>
                 </div>
                 <div className="p-4 bg-muted/30 rounded-2xl border border-border flex flex-col items-center justify-center gap-1">
                   <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">{t("manualExpenses.columns.date")}</span>

@@ -136,8 +136,8 @@ function RunningCanvas({ selectedRun }) {
 }
 
 function RunningAutomationsContent() {
-  const t = useTranslations("whatsApp.automationLogs");
   const tAutomations = useTranslations("whatsApp.automations");
+  const t = useTranslations("whatsApp.automationLogs");
   const searchParams = useSearchParams();
   const router = useRouter();
   const targetId = searchParams.get("id");
@@ -191,7 +191,7 @@ function RunningAutomationsContent() {
         per_page: res.data?.per_page || per_page,
       });
     } catch (e) {
-      toast.error("حدث خطأ أثناء تحميل المسارات");
+      toast.error(t("errorFetchingRuns"));
       console.error(e);
     } finally {
       setLoading(false);
@@ -230,8 +230,8 @@ function RunningAutomationsContent() {
       setError(null);
     } catch (e) {
       setSidebarCollapsed(false);
-      toast.error("حدث خطأ أثناء تحميل التفاصيل");
-      setError("حدث خطأ أثناء تحميل التفاصيل");
+      toast.error(t("errorFetchingDetails"));
+      setError(t("errorFetchingDetails"));
       console.error(e);
     } finally {
       setDetailLoading(false);
@@ -295,13 +295,13 @@ function RunningAutomationsContent() {
 
   const handleRestart = async () => {
     if (!selectedRun) return;
-    const toastId = toast.loading("جار إعادة التشغيل...");
+    const toastId = toast.loading(t("restarting"));
     try {
       await api.post(`/automation/runs/${selectedRun.id}/retry`);
-      toast.success("تم إرسال طلب إعادة التشغيل بنجاح", { id: toastId });
+      toast.success(t("restartSuccess"), { id: toastId });
       loadRunDetail(selectedRun.id);
     } catch (error) {
-      toast.error("فشل في طلب إعادة التشغيل", { id: toastId });
+      toast.error(t("restartFailed"), { id: toastId });
       console.error(error);
     }
   };
@@ -311,12 +311,12 @@ function RunningAutomationsContent() {
     // if (selectedRun) {
     //   await loadRunDetail(selectedRun.id);
     // }
-    toast.success("تم تحديث البيانات");
+    toast.success(t("refreshSuccess"));
   };
 
   const handleReorder = () => {
     reorderFlow();
-    toast.success("تمت إعادة ترتيب المسار");
+    toast.success(t("reorderSuccess"));
   };
 
   const totalPages = useMemo(() => {
@@ -343,49 +343,37 @@ function RunningAutomationsContent() {
   const version = selectedRun?.version?.versionString || "";
 
   return (
-    <div className="h-screen flex-col overflow-hidden bg-slate-50 dark:bg-[#050505]">
-      {/* Header */}
-      <div className="h-16 border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between px-6 z-20">
-        <div className="flex items-center gap-4">
-          <div className="p-2 bg-primary/10 rounded-xl text-primary">
-            <Activity size={20} />
-          </div>
-          <div>
-            <h1 className="text-sm font-black text-slate-900 dark:text-slate-100">تشغيل المسارات</h1>
-            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">مراقبة العمليات الجارية</p>
-          </div>
+    <div className="flex-1 flex flex-col min-w-0 bg-slate-50 dark:bg-[#050505] transition-all duration-500 overflow-hidden relative">
+      <header className="h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 flex items-center justify-between px-8 shrink-0 z-20">
+        <div className="flex flex-col">
+          <h1 className="text-sm font-black text-slate-900 dark:text-slate-100">{t("title")}</h1>
+          <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">{t("subtitle")}</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button
             onClick={handleReorder}
             className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-[11px] font-black hover:bg-slate-50 transition-all shadow-sm"
           >
             <Layout size={14} />
-            إعادة ترتيب
+            {t("reorder")}
           </button>
           <button
             onClick={() => router.push(`/automations/edit/${selectedRun.automationFlowId}?${version ? `v=${version}` : ''}`)}
             className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-[11px] font-black hover:bg-slate-50 transition-all shadow-sm"
           >
             <Pencil size={14} />
-            تعديل النسخة
+            {t("editVersion")}
           </button>
           <button
             onClick={handleRestart}
-            disabled={selectedRun?.status !== 'failed' || detailLoading}
-            className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-black transition-all shadow-md",
-              selectedRun?.status === 'failed' && !detailLoading
-                ? "bg-primary text-white hover:bg-primary/90 shadow-primary/20"
-                : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none border border-slate-200"
-            )}
+            className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-xl text-[11px] font-black hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
           >
-            <RotateCcw size={14} />
-            إعادة المحاولة الآن
+            <RefreshCw size={14} />
+            {t("retryNow")}
           </button>
         </div>
-      </div>
+      </header>
 
       <div className="flex h-screen flex-1 overflow-hidden relative">
         {/* Right Sidebar: Run Info */}
@@ -405,30 +393,30 @@ function RunningAutomationsContent() {
                 </div>
                 <div className="absolute -inset-4 border-2 border-primary/20 border-dashed rounded-full animate-[spin_8s_linear_infinite]" />
               </div>
-              <p className="mt-8 text-[11px] font-black text-slate-500 uppercase tracking-widest animate-pulse">جاري تحميل بيانات التنفيذ...</p>
+              <p className="mt-8 text-[11px] font-black text-slate-500 uppercase tracking-widest animate-pulse">{t("loadingExecutionDetails")}</p>
             </div>
           ) : error ? (
             <div className="h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-[#050505] p-6 text-center">
               <div className="w-16 h-16 rounded-2xl bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center text-rose-500 mb-6">
                 <Layout size={32} />
               </div>
-              <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">عذراً، حدث خطأ ما</h2>
+              <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">{t("errorOccurred")}</h2>
               <p className="text-sm text-slate-500 font-medium mb-8 max-w-xs">{error}</p>
               <button
                 onClick={() => window.location.reload()}
                 className="h-12 px-8 rounded-2xl bg-primary text-white font-black text-xs shadow-lg shadow-primary/20 transition-all hover:scale-105"
               >
-                إعادة المحاولة
+                {t("retry")}
               </button>
             </div>
           ) : selectedRun ? (
             <RunningCanvas selectedRun={selectedRun} />
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-4">
-              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-3xl flex items-center justify-center">
-                <Layout size={32} />
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 flex flex-col items-center justify-center text-slate-300">
+              <div className="w-20 h-20 rounded-[30px] bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center mb-6">
+                <Activity size={40} />
               </div>
-              <p className="text-[13px] font-black uppercase tracking-widest">اختر عملية تشغيل للمتابعة</p>
+              <p className="text-[13px] font-black uppercase tracking-widest">{t("selectRunToContinue")}</p>
             </div>
           )}
         </div>
@@ -448,7 +436,7 @@ function RunningAutomationsContent() {
                   {/* <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl">
                     <Zap size={18} className="text-slate-500" />
                   </div> */}
-                  <h2 className="text-[13px] font-black">جميع عمليات التشغيل</h2>
+                  <h2 className="text-[13px] font-black">{t("allRuns")}</h2>
                   <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-[10px] font-black">{pager.total_records}</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -456,7 +444,7 @@ function RunningAutomationsContent() {
                     onClick={handleRefresh}
                     disabled={loading}
                     className="text-slate-400 hover:text-primary bg-white dark:bg-slate-800 rounded-xl p-2 border border-slate-100 dark:border-slate-800 transition-all hover:scale-110 disabled:opacity-50"
-                    title="تحديث"
+                    title={t("refresh")}
                   >
                     <RefreshCw size={18} className={cn(loading && "animate-spin")} />
                   </button>
@@ -471,7 +459,7 @@ function RunningAutomationsContent() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
               <input
                 type="text"
-                placeholder="البحث بالطلب أو المسار..."
+                placeholder={t("searchPlaceholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl py-2 pl-9 pr-4 text-[11px] focus:ring-2 focus:ring-primary/20 transition-all"
@@ -483,12 +471,12 @@ function RunningAutomationsContent() {
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20 gap-3">
                 <Loader2 className="w-8 h-8 animate-spin text-primary/40" />
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">جاري التحميل...</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t("loading")}</p>
               </div>
             ) : runs.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 gap-3">
                 <Layout className="w-8 h-8 text-slate-200" />
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">لا توجد عمليات</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t("noRuns")}</p>
               </div>
             ) : (
               runs.map((run) => (
@@ -515,7 +503,7 @@ function RunningAutomationsContent() {
                     </div>
                     <div className="flex items-center gap-2 text-[9px] text-slate-400">
                       <Activity size={10} className="text-slate-400" />
-                      <span>{run.completedNodeIds?.length || 0} خطوة مكتملة</span>
+                      <span>{t("stepsCompleted", { count: run.completedNodeIds?.length || 0 })}</span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between text-[9px] text-slate-400">
@@ -588,6 +576,7 @@ function RunningAutomationsContent() {
 
 
 function DataCard({ title, data }) {
+  const t = useTranslations("whatsApp.automationLogs");
   return (
     <div className="flex flex-col gap-2">
       <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-widest">{title}</h4>
@@ -596,7 +585,7 @@ function DataCard({ title, data }) {
           dir="ltr"
           className="text-[10px] font-mono leading-relaxed text-left overflow-auto"
         >
-          {data ? JSON.stringify(data, null, 2) : "لا توجد بيانات"}
+          {data ? JSON.stringify(data, null, 2) : t("noData")}
         </pre>
       </div>
     </div>

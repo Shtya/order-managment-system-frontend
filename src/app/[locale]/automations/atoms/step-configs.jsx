@@ -43,6 +43,7 @@ function FormGroup({ label, description, children, error }) {
  * Trigger: Order Created
  */
 export function OrderCreatedConfig({ value, onChange, errors, setDisabled, onClose }) {
+    const t = useTranslations("whatsApp.automations.builder.config");
     const [stores, setStores] = useState([]);
     const [loading, setLoading] = useState(true);
     const { isSuperAdmin } = useAuth();
@@ -85,20 +86,20 @@ export function OrderCreatedConfig({ value, onChange, errors, setDisabled, onClo
 
     return (
         <div className="space-y-4">
-            <FormGroup label="المتجر" description="اختر المتجر الذي سيتم مراقبة الطلبات فيه" error={errors.store}>
+            <FormGroup label={t('store')} description={t('storeDesc')} error={errors.store}>
                 <Select value={value.storeId || (value.store === "all" ? "all" : "")} onValueChange={handleStoreChange}>
                     <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
                         {loading && !isSuperAdmin ? (
                             <div className="flex items-center gap-2">
                                 <Loader2 className="h-4 w-4 animate-spin" />
-                                <span>جاري التحميل...</span>
+                                <span>{t('loading')}</span>
                             </div>
                         ) : (
-                            <SelectValue placeholder="اختر المتجر..." />
+                            <SelectValue placeholder={t('selectStore')} />
                         )}
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all">جميع المتاجر</SelectItem>
+                        <SelectItem value="all">{t('allStores')}</SelectItem>
                         {stores.map(store => (
                             <SelectItem key={store.id} value={store.id}>{store.name}</SelectItem>
                         ))}
@@ -115,7 +116,9 @@ export function OrderCreatedConfig({ value, onChange, errors, setDisabled, onClo
 export function OrderStatusUpdatedConfig({ value, onChange, errors, setDisabled }) {
     const [statuses, setStatuses] = useState([]);
     const [loading, setLoading] = useState(true);
-    const t = useTranslations("orders");
+    const tOrders = useTranslations("orders");
+    const tConfig = useTranslations("whatsApp.automations.builder.config");
+
     useEffect(() => {
         const fetchStatuses = async () => {
             try {
@@ -145,21 +148,21 @@ export function OrderStatusUpdatedConfig({ value, onChange, errors, setDisabled 
 
     return (
         <div className="space-y-4">
-            <FormGroup label="الحالة المستهدفة" description="تفعيل الأتمتة عند تغيير الطلب إلى هذه الحالة" error={errors.status}>
+            <FormGroup label={tConfig('targetStatus')} description={tConfig('targetStatusDesc')} error={errors.status}>
                 <Select value={value.statusId?.toString() || ""} onValueChange={handleStatusChange}>
                     <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
                         {loading ? (
                             <div className="flex items-center gap-2">
                                 <Loader2 className="h-4 w-4 animate-spin" />
-                                <span>جاري التحميل...</span>
+                                <span>{tConfig('loading')}</span>
                             </div>
                         ) : (
-                            <SelectValue placeholder="اختر الحالة..." />
+                            <SelectValue placeholder={tConfig('selectStatus')} />
                         )}
                     </SelectTrigger>
                     <SelectContent>
                         {statuses.map(status => (
-                            <SelectItem key={status.id} value={status.id.toString()}>  {status.system ? t(`statuses.${status.code}`) : status.name}</SelectItem>
+                            <SelectItem key={status.id} value={status.id.toString()}>  {status.system ? tOrders(`statuses.${status.code}`) : status.name}</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
@@ -172,16 +175,17 @@ export function OrderStatusUpdatedConfig({ value, onChange, errors, setDisabled 
  * Trigger: Whatsapp Incoming Message
  */
 export function WhatsappIncomingConfig({ value, onChange, errors, setDisabled }) {
+    const t = useTranslations("whatsApp.automations.builder.config");
     return (
         <div className="space-y-4">
-            <FormGroup label="حساب الواتساب" description="اختر الحساب الذي سيستقبل الرسائل" error={errors.account}>
+            <FormGroup label={t('whatsappAccount')} description={t('whatsappAccountDesc')} error={errors.account}>
                 <Select value={value.accountId || ""} onValueChange={(v) => onChange({ ...value, accountId: v })}>
                     <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
-                        <SelectValue placeholder="اختر الحساب..." />
+                        <SelectValue placeholder={t('selectAccount')} />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="acc_1">حساب المبيعات الرئيسي</SelectItem>
-                        <SelectItem value="acc_2">حساب الدعم الفني</SelectItem>
+                        <SelectItem value="acc_1">{t('accounts.sales')}</SelectItem>
+                        <SelectItem value="acc_2">{t('accounts.support')}</SelectItem>
                     </SelectContent>
                 </Select>
             </FormGroup>
@@ -195,7 +199,8 @@ export function WhatsappIncomingConfig({ value, onChange, errors, setDisabled })
 export function UpdateOrderStatusConfig({ value, onChange, errors, setDisabled }) {
     const [statuses, setStatuses] = useState([]);
     const [loading, setLoading] = useState(true);
-    const t = useTranslations("orders");
+    const tOrders = useTranslations("orders");
+    const tConfig = useTranslations("whatsApp.automations.builder.config");
 
     useEffect(() => {
         const fetchStatuses = async () => {
@@ -230,22 +235,22 @@ export function UpdateOrderStatusConfig({ value, onChange, errors, setDisabled }
 
     return (
         <div className="space-y-4">
-            <FormGroup label="تغيير الحالة إلى" description="الحالة الجديدة التي سيتم تعيينها للطلب" error={errors.newStatus}>
+            <FormGroup label={tConfig('newStatus')} description={tConfig('changeStatusToDesc')} error={errors.newStatus}>
                 <Select value={value.newStatusId?.toString() || ""} onValueChange={handleStatusChange}>
                     <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none">
                         {loading ? (
                             <div className="flex items-center gap-2">
                                 <Loader2 className="h-4 w-4 animate-spin" />
-                                <span>جاري التحميل...</span>
+                                <span>{tConfig('loading')}</span>
                             </div>
                         ) : (
-                            <SelectValue placeholder="اختر الحالة الجديدة..." />
+                            <SelectValue placeholder={tConfig('selectNewStatus')} />
                         )}
                     </SelectTrigger>
                     <SelectContent>
                         {statuses.map(status => (
                             <SelectItem key={status.id} value={status.id.toString()}>
-                                {status.system ? t(`statuses.${status.code}`) : status.name}
+                                {status.system ? tOrders(`statuses.${status.code}`) : status.name}
                             </SelectItem>
                         ))}
                     </SelectContent>
@@ -266,7 +271,9 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
     const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
     const [isOrderSelectorOpen, setIsOrderSelectorOpen] = useState(false);
     const [activeVar, setActiveVar] = useState(null); // { type: 'header' | 'body', num: string }
- const t = useTranslations("chats");
+    const tChats = useTranslations("chats");
+    const tConfig = useTranslations("whatsApp.automations.builder.config");
+    const tCommon = useTranslations("common");
     const nodes = useFlowStore((s) => s.nodes);
     const triggerNode = nodes.find(n => n.type === 'trigger');
     const isOrderTrigger = triggerNode?.data?.type?.startsWith('order_');
@@ -324,8 +331,8 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
         });
         
         const locationData = config.headerType === 'LOCATION' ? {
-            name: { type: 'direct', value: '', label: '', example: 'اسم الموقع' },
-            address: { type: 'direct', value: '', label: '', example: 'عنوان الموقع بالتفصيل' },
+            name: { type: 'direct', value: '', label: '', example: tConfig('locationName') },
+            address: { type: 'direct', value: '', label: '', example: tConfig('locationAddress') },
             latitude: 30.0444,
             longitude: 31.2357
         } : null;
@@ -351,7 +358,6 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
 
     const handleVariableChange = (type, num, updates) => {
         const key = type === 'header' ? 'headerVariables' : type === 'body' ? 'bodyVariables' : type === 'location' ? 'locationData' : 'buttonVariables';
-        console.log(key, num, updates)
         if (type === 'location') {
             setTempValue({
                 ...tempValue,
@@ -392,7 +398,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
         if (activeVar) {
             handleVariableChange(activeVar.type, activeVar.num, {
                 type: 'variable',
-                variablePath: prop.path,
+                variablePath: prop.id,
                 label: prop.label,
                 example: prop.example
             });
@@ -402,7 +408,6 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
     };
 
     const handleSave = () => {
-        
         onChange(tempValue);
         onClose(tempValue);
     };
@@ -416,11 +421,10 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
         )?.[num] || {};
         const isDynamic = varData.type === 'variable';
         
-        const badgeLabel = type === 'header' ? 'عنوان' : type === 'body' ? 'متن الرسالة' : buttonLabel || `رابط الزر ${num}`;
+        const badgeLabel = type === 'header' ? tConfig('messageHeader') : type === 'body' ? tConfig('messageBody') : buttonLabel || `${tConfig('linkButtons')} ${num}`;
         const isButtonType = type === 'button';
         
-         const placeholder = isButtonType ? t("enterValueFor", { example: varData.url }) : t("enterValue");
-        
+        const placeholder = isButtonType ? tChats("enterValueFor", { example: varData.url }) : tConfig("enterValue");
 
         return (
             <div key={`${type}-${num}`} className="flex gap-3 items-start group">
@@ -431,7 +435,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                      {isDynamic ? (
                             <div className="h-12 rounded-2xl bg-primary/5 border border-primary/20 px-4 flex items-center justify-between group/var">
                                 <div className="flex flex-col min-w-0">
-                                    <span className="text-[10px] font-black text-primary uppercase tracking-widest">متغير ديناميكي ({badgeLabel})</span>
+                                    <span className="text-[10px] font-black text-primary uppercase tracking-widest">{tConfig('dynamicVariable', { type: badgeLabel })}</span>
                                     <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{varData.label}</span>
                                 </div>
                                 <button
@@ -468,7 +472,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                                 "h-12 w-12 rounded-2xl p-0 shrink-0 transition-all",
                                 isDynamic ? "border-primary text-primary bg-primary/5" : "border-slate-200 text-slate-400 hover:text-primary hover:border-primary/50"
                             )}
-                            title="اختيار من بيانات الطلب"
+                            title={tConfig('selectFromOrderData')}
                         >
                             <Database size={18} />
                         </Button>
@@ -497,8 +501,8 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                                 <MessageSquareQuote size={24} />
                             </div>
                             <div className="text-right">
-                                <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">إرسال قالب واتساب</h3>
-                                <p className="text-xs font-bold text-slate-400 mt-0.5">اختر القالب وقم بتعبئة المتغيرات المطلوبة</p>
+                                <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">{tConfig('whatsappTemplateTitle')}</h3>
+                                <p className="text-xs font-bold text-slate-400 mt-0.5">{tConfig('whatsappTemplateDesc')}</p>
                             </div>
                         </DialogTitle>
                     </div>
@@ -509,9 +513,9 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                     <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-white dark:bg-slate-900">
                         <div className="space-y-8">
                             {/* Recipient Number */}
-                            <FormGroup label="رقم المستلم" description="الرقم الذي سيتم إرسال الرسالة إليه">
+                            <FormGroup label={tConfig('recipientNumber')} description={tConfig('recipientNumberDesc2')}>
                                 <Input
-                                    placeholder="أدخل الرقم أو اترك فارغاً لاستخدام رقم العميل من الطلب"
+                                    placeholder={tConfig('recipientNumberPlaceholder')}
                                     value={tempValue.recipientNumber || ""}
                                     onChange={(e) => setTempValue({ ...tempValue, recipientNumber: e.target.value })}
                                     className="h-14 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none px-6 text-sm"
@@ -519,7 +523,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                             </FormGroup>
 
                             {/* Template Selection */}
-                            <FormGroup label="قالب الواتساب" error={errors.templateId}>
+                            <FormGroup label={tConfig('whatsappTemplate')} error={errors.templateId}>
                                 {!tempValue.templateId ? (
                                     <button
                                         onClick={() => setIsTemplateDialogOpen(true)}
@@ -529,8 +533,8 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                                             <LayoutDashboard size={28} />
                                         </div>
                                         <div className="text-center">
-                                            <p className="text-sm font-black text-slate-700 dark:text-slate-200">اضغط لاختيار قالب</p>
-                                            <p className="text-[11px] text-slate-400 font-bold mt-1">يجب اختيار قالب معتمد من Meta</p>
+                                            <p className="text-sm font-black text-slate-700 dark:text-slate-200">{tConfig('clickToSelectTemplate')}</p>
+                                            <p className="text-[11px] text-slate-400 font-bold mt-1">{tConfig('metaTemplateRequired')}</p>
                                         </div>
                                     </button>
                                 ) : (
@@ -542,7 +546,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                                                 </div>
                                                 <div>
                                                     <h4 className="text-base font-black text-slate-800 dark:text-slate-100">{tempValue.templateName}</h4>
-                                                    <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-0.5">تم اختيار القالب بنجاح</p>
+                                                    <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-0.5">{tConfig('templateSelectedSuccess')}</p>
                                                 </div>
                                             </div>
                                             <Button
@@ -551,7 +555,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                                                 className="rounded-xl text-primary hover:bg-primary/10 font-black text-xs h-10 px-4 gap-2"
                                             >
                                                 <RefreshCw size={14} />
-                                                تغيير القالب
+                                                {tConfig('changeTemplate')}
                                             </Button>
                                         </div>
 
@@ -559,14 +563,14 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                                         {(headerVars.length > 0 || bodyVars.length > 0 || buttonVarsIndices.length > 0) && (
                                             <div className="space-y-8 p-8 rounded-[32px] bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800">
                                                 <div>
-                                                    <h4 className="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest mb-1">تعبئة المتغيرات</h4>
-                                                    <p className="text-[10px] text-slate-400 font-bold">أدخل قيم ثابتة أو اختر حقول ديناميكية من الطلب</p>
+                                                    <h4 className="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest mb-1">{tConfig('fillVariables')}</h4>
+                                                    <p className="text-[10px] text-slate-400 font-bold">{tConfig('fillVariablesDesc')}</p>
                                                 </div>
 
                                                 {tempValue.templateData?.headerType === 'LOCATION' && (
                                             <div className="space-y-4">
                                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                                    <MapPin size={12} /> ترويسة الموقع
+                                                    <MapPin size={12} /> {tConfig('locationHeader')}
                                                 </p>
                                                 <div className="flex flex-col gap-6">
                                                     <div className="w-full aspect-video rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 relative bg-slate-100 dark:bg-slate-900">
@@ -581,8 +585,8 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                                                         />
                                                     </div>
                                                     <div className="space-y-4">
-                                                        {renderVariableInput('location', 'name', 'اسم الموقع')}
-                                                        {renderVariableInput('location', 'address', 'عنوان الموقع')}
+                                                        {renderVariableInput('location', 'name', tConfig('locationName'))}
+                                                        {renderVariableInput('location', 'address', tConfig('locationAddress'))}
                                                     </div>
                                                 </div>
                                             </div>
@@ -591,7 +595,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                                         {headerVars.length > 0 && (
                                                     <div className="space-y-4">
                                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                                            <Layout size={12} /> رأس الرسالة
+                                                            <Layout size={12} /> {tConfig('messageHeader')}
                                                         </p>
                                                         {headerVars.map(num => renderVariableInput('header', num))}
                                                     </div>
@@ -600,7 +604,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                                                 {bodyVars.length > 0 && (
                                                     <div className="space-y-4">
                                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                                            <MessageSquare size={12} /> نص الرسالة
+                                                            <MessageSquare size={12} /> {tConfig('messageBody')}
                                                         </p>
                                                         {bodyVars.map(num => renderVariableInput('body', num))}
                                                     </div>
@@ -609,7 +613,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                                                 {buttonVarsIndices.length > 0 && (
                                                     <div className="space-y-4">
                                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                                            <Link size={12} /> أزرار الروابط
+                                                            <Link size={12} /> {tConfig('linkButtons')}
                                                         </p>
                                                         {buttonVarsIndices.map(idx => renderVariableInput('button', idx, tempValue.templateData.buttons[idx]?.text))}
                                                     </div>
@@ -627,7 +631,7 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                         <div className="sticky top-0 w-full flex flex-col items-center">
                             <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-8 flex items-center gap-2 w-full">
                                 <ExternalLink size={12} />
-                                معاينة الرسالة الحية
+                                {tConfig('livePreview')}
                             </h4>
                             
                             {tempValue.templateData ? (
@@ -652,8 +656,8 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                                     <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-slate-300">
                                         <Info size={24} />
                                     </div>
-                                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">المعاينة غير متاحة</p>
-                                    <p className="text-[10px] text-slate-400 font-bold">اختر قالباً لمشاهدة المعاينة هنا</p>
+                                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{tConfig('previewUnavailable')}</p>
+                                    <p className="text-[10px] text-slate-400 font-bold">{tConfig('chooseTemplateToPreview')}</p>
                                 </div>
                             )}
                         </div>
@@ -668,14 +672,14 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
                             onClick={() => onClose(null)}
                             className="px-8 h-12 rounded-2xl text-slate-600 dark:text-slate-300 text-sm font-black hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
                         >
-                            إلغاء
+                            {tCommon('cancel')}
                         </Button>
                         <Button
                             disabled={!isAllFilled}
                             onClick={handleSave}
                             className="px-10 h-12 rounded-2xl bg-primary text-white text-sm font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50"
                         >
-                            {mode === "create" ? "إضافة الخطوة" : "حفظ التغييرات"}
+                            {mode === "create" ? tConfig('addStep') : tConfig('saveChanges')}
                         </Button>
                     </div>
                 </DialogFooter>
@@ -701,41 +705,42 @@ export function SendWhatsappTemplateConfig({ isOpen, value, onChange, errors, fl
  * Action: Send Upsell
  */
 export function SendUpsellConfig({ value, onChange, onClose }) {
+    const t = useTranslations("whatsApp.automations.builder.config.upsell");
     useEffect(() => {
         const branches = [
             {
                 id: "skipped",
-                label: "لا يوجد",
+                label: t("none"),
                 condition: "skipped"
             },
             {
                 id: "reject",
-                label: "السستم رفض",
+                label: t("system_reject"),
                 condition: "reject"
             },
             {
                 id: "accept",
-                label: "قبول",
+                label: t("accept"),
                 condition: "accept"
             },
             {
                 id: "client_reject",
-                label: "العميل رفض",
+                label: t("client_reject"),
                 condition: "client_reject"
             },
         ];
 
         // We only update if branches are not already set correctly to avoid infinite loops
-        const currentBranchIds = value.branches?.map(b => b.id).join(',');
-        const targetBranchIds = branches.map(b => b.id).join(',');
+        const currentBranchLabels = value.branches?.map(b => b.label).join(',');
+        const targetBranchLabels = branches.map(b => b.label).join(',');
 
-        if (currentBranchIds !== targetBranchIds) {
+        if (currentBranchLabels !== targetBranchLabels) {
             onClose({
                 ...value,
                 branches
             });
         }
-    }, [value, onClose]);
+    }, [value, onClose, t]);
 
     return null; // This component doesn't render any UI, it just sets the branches
 }
@@ -746,12 +751,15 @@ export function SendUpsellConfig({ value, onChange, onClose }) {
  */
 export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled, onClose, context }) {
     const { shippingCompanies } = usePlatformSettings();
+     const tCommon = useTranslations("common");
     const [stores, setStores] = useState([]);
     const [statuses, setStatuses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeIndex, setActiveIndex] = useState(null);
     const [search, setSearch] = useState('');
-    const t = useTranslations("orders");
+    const tOrders = useTranslations("orders");
+    const tConfig = useTranslations("whatsApp.automations.builder.config");
+    const tBuilder = useTranslations("whatsApp.automations.builder");
     const [checks, setChecks] = useState(Array.isArray(value?.checks) ? value.checks : []);
     const { mode } = context || {};
 
@@ -789,60 +797,60 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
     }, [isOpen]);
 
     const fields = [
-        { id: "orderNumber", label: "رقم الطلب", type: "string", icon: Hash, color: "text-blue-500", bg: "bg-blue-50" },
-        { id: "shippingCompany", label: "شركة الشحن", type: "select", icon: Truck, color: "text-orange-500", bg: "bg-orange-50", options: shippingCompanies.map(c => ({ id: c.providerId, label: c.name })) },
+        { id: "orderNumber", label: tBuilder('orderProperties.orderNumber'), type: "string", icon: Hash, color: "text-blue-500", bg: "bg-blue-50" },
+        { id: "shippingCompany", label: tBuilder('orderProperties.shippingCompany'), type: "select", icon: Truck, color: "text-orange-500", bg: "bg-orange-50", options: shippingCompanies.map(c => ({ id: c.providerId, label: c.name })) },
         {
-            id: "paymentStatus", label: "حالة الدفع", type: "select", icon: CreditCard, color: "text-purple-500", bg: "bg-purple-50", options: [
-                { id: "pending", label: "قيد الانتظار" },
-                { id: "paid", label: "مدفوع" },
-                { id: "partial", label: "مدفوع جزئياً" },
-                { id: "refunded", label: "مرتجع" },
-                { id: "partially_refunded", label: "مرتجع جزئياً" },
+            id: "paymentStatus", label: tBuilder('orderProperties.paymentStatus'), type: "select", icon: CreditCard, color: "text-purple-500", bg: "bg-purple-50", options: [
+                { id: "pending", label: tOrders("paymentStatuses.pending") },
+                { id: "paid", label: tOrders("paymentStatuses.paid") },
+                { id: "partial", label: tOrders("paymentStatuses.partial") },
+                { id: "refunded", label: tOrders("paymentStatuses.refunded") },
+                { id: "partially_refunded", label: tOrders("paymentStatuses.partially_refunded") },
             ]
         },
-        { id: "productsTotal", label: "إجمالي الطلب", type: "number", icon: DollarSign, color: "text-green-500", bg: "bg-green-50" },
-        { id: "items_count", label: "عدد المنتجات", type: "number", icon: Package, color: "text-amber-500", bg: "bg-amber-50" },
+        { id: "productsTotal", label: tBuilder('orderProperties.productsTotal'), type: "number", icon: DollarSign, color: "text-green-500", bg: "bg-green-50" },
+        { id: "items_count", label: tBuilder('orderProperties.items'), type: "number", icon: Package, color: "text-amber-500", bg: "bg-amber-50" },
         {
-            id: "paymentMethod", label: "طريقة الدفع", type: "select", icon: CreditCard, color: "text-indigo-500", bg: "bg-indigo-50", options: [
-                { id: "cash", label: "نقدي" },
-                { id: "card", label: "بطاقة" },
-                { id: "bank_transfer", label: "تحويل بنكي" },
-                { id: "cod", label: "دفع عند الاستلام" },
-                { id: "wallet", label: "محفظة" },
-                { id: "other", label: t("other") },
-                { id: "unknown", label: t("unknown") },
+            id: "paymentMethod", label: tBuilder('orderProperties.paymentMethod'), type: "select", icon: CreditCard, color: "text-indigo-500", bg: "bg-indigo-50", options: [
+                { id: "cash", label: tOrders("paymentMethods.cash") },
+                { id: "card", label: tOrders("paymentMethods.card") },
+                { id: "bank_transfer", label: tOrders("paymentMethods.bank_transfer") },
+                { id: "cod", label: tOrders("paymentMethods.cod") },
+                { id: "wallet", label: tOrders("paymentMethods.wallet") },
+                { id: "other", label: tOrders("other") },
+                { id: "unknown", label: tOrders("unknown") },
             ]
         },
-        { id: "city", label: "المدينة", type: "string", icon: Activity, color: "text-rose-500", bg: "bg-rose-50" },
-        { id: "discount", label: "كود الخصم", type: "string", icon: Tag, color: "text-pink-500", bg: "bg-pink-50" },
-        { id: "status", label: "حالة الطلب", type: "select", icon: Activity, color: "text-cyan-500", bg: "bg-cyan-50", options: statuses.map(s => ({ id: s.id, label: s.system ? t(`statuses.${s.code}`) : s.name })) },
-        { id: "allowOpenPackage", label: "فتح الشحنة", type: "boolean", icon: PackageOpen, color: "text-slate-500", bg: "bg-slate-50" },
-        { id: "deposit", label: "العربون", type: "number", icon: DollarSign, color: "text-yellow-500", bg: "bg-yellow-50" },
+        { id: "city", label: tBuilder('orderProperties.city'), type: "string", icon: Activity, color: "text-rose-500", bg: "bg-rose-50" },
+        { id: "discount", label: tBuilder('orderProperties.discount'), type: "string", icon: Tag, color: "text-pink-500", bg: "bg-pink-50" },
+        { id: "status", label: tBuilder('orderProperties.status'), type: "select", icon: Activity, color: "text-cyan-500", bg: "bg-cyan-50", options: statuses.map(s => ({ id: s.id, label: s.system ? tOrders(`statuses.${s.code}`) : s.name })) },
+        { id: "allowOpenPackage", label: tBuilder('orderProperties.allowOpenPackage'), type: "boolean", icon: PackageOpen, color: "text-slate-500", bg: "bg-slate-50" },
+        { id: "deposit", label: tBuilder('orderProperties.deposit'), type: "number", icon: DollarSign, color: "text-yellow-500", bg: "bg-yellow-50" },
     ];
 
     const operatorsByType = {
         number: [
-            { id: "==", label: "يساوي" },
-            { id: "!=", label: "لا يساوي" },
-            { id: ">", label: "أكبر من" },
-            { id: "<", label: "أصغر من" },
-            { id: ">=", label: "أكبر من أو يساوي" },
-            { id: "<=", label: "أصغر من أو يساوي" },
+            { id: "==", label: tBuilder("operators.equal") },
+            { id: "!=", label: tBuilder("operators.notEqual") },
+            { id: ">", label: tBuilder("operators.greaterThan") },
+            { id: "<", label: tBuilder("operators.lessThan") },
+            { id: ">=", label: tBuilder("operators.greaterThanOrEqual") },
+            { id: "<=", label: tBuilder("operators.lessThanOrEqual") },
         ],
         string: [
-            { id: "==", label: "يساوي" },
-            { id: "!=", label: "لا يساوي" },
-            { id: "contains", label: "يحتوي على" },
-            { id: "not_contains", label: "لا يحتوي على" },
-            { id: "starts_with", label: "يبدأ بـ" },
+            { id: "==", label: tBuilder("operators.equal") },
+            { id: "!=", label: tBuilder("operators.notEqual") },
+            { id: "contains", label: tBuilder("operators.contains") },
+            { id: "not_contains", label: tBuilder("operators.notContains") },
+            { id: "starts_with", label: tBuilder("operators.startsWith") },
         ],
         boolean: [
-            { id: "==", label: "يساوي" },
-            { id: "!=", label: "لا يساوي" },
+            { id: "==", label: tBuilder("operators.equal") },
+            { id: "!=", label: tBuilder("operators.notEqual") },
         ],
         select: [
-            { id: "==", label: "يساوي" },
-            { id: "!=", label: "لا يساوي" },
+            { id: "==", label: tBuilder("operators.equal") },
+            { id: "!=", label: tBuilder("operators.notEqual") },
         ],
     };
 
@@ -859,7 +867,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
             setChecks(newChecks);
             setActiveIndex(newChecks.length - 1);
         } else {
-            toast.error("لا يمكن إضافة أكثر من 20 تحقق");
+            toast.error(tConfig("maxConditionsError"));
         }
     };
 
@@ -883,7 +891,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
             const fieldDef = fields.find(f => f.id === updates.field);
             currentCheck.fieldLabel = fieldDef?.label;
             currentCheck.operator = operatorsByType[fieldDef?.type][0].id;
-            currentCheck.targetLabel = fieldDef?.type === "boolean" ? "نعم" : "";
+            currentCheck.targetLabel = fieldDef?.type === "boolean" ? tConfig("yes") : "";
         }
 
         newChecks[index] = currentCheck;
@@ -927,7 +935,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                 <div className="flex justify-between flex-1">
                                     <div className="px-6">
                                         <div className="flex items-center justify-end gap-3">
-                                            <span className="text-[13px] font-black text-slate-900 dark:text-slate-100 ml-2">معاينة:</span>
+                                            <span className="text-[13px] font-black text-slate-900 dark:text-slate-100 ml-2">{tConfig("preview")}</span>
                                             <div className="px-4 py-2 rounded-xl bg-primary/10 text-primary text-[12px] font-black border border-primary/20 shadow-sm">
                                                 {fieldDef?.label}
                                             </div>
@@ -944,7 +952,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                         className="px-4 h-10 flex items-center gap-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 transition-all shrink-0"
                                     >
                                         <X size={20} />
-                                        <span className="text-[12px] font-black">الرجوع للرئيسية</span>
+                                        <span className="text-[12px] font-black">{tConfig("backToMain")}</span>
                                     </button>
                                     {/* <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
                                         <GitBranch size={20} />
@@ -953,22 +961,22 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                             ) : (
                                 <>
                                     <div className="text-right flex-1 px-4">
-                                        <h2 className="text-[17px] font-black text-slate-900 dark:text-slate-100">فحص بيانات الطلب</h2>
-                                        <p className="text-[11px] text-slate-400 font-bold mt-0.5">قم بتهيئة إعدادات الخطوة الجديدة</p>
+                                        <h2 className="text-[17px] font-black text-slate-900 dark:text-slate-100">{tConfig("orderCheckTitle")}</h2>
+                                        <p className="text-[11px] text-slate-400 font-bold mt-0.5">{tConfig("orderCheckDesc")}</p>
                                     </div>
                                     {/* <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                                         <GitBranch size={20} />
                                     </div> */}
                                     <div className="flex items-center gap-3">
                                         <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2.5 rounded-xl text-[11px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 dark:border-slate-700">
-                                            {checks.length} / 20 شروط
+                                            {tConfig("conditionsCount", { count: checks.length })}
                                         </div>
                                         <button
                                             onClick={handleAddCheck}
                                             className="text-sm px-4 py-2.5 flex items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95"
                                         >
                                             <Plus size={20} />
-                                            <span className="text-[12px] font-black">إضافة شرط جديد</span>
+                                            <span className="text-[12px] font-black">{tConfig("addNewCondition")}</span>
                                         </button>
                                     </div>
                                 </>
@@ -981,7 +989,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                         {loading ? (
                             <div className="flex flex-col items-center justify-center py-20 gap-3">
                                 <Loader2 className="w-10 h-10 animate-spin text-primary" />
-                                <p className="text-sm text-slate-400 font-bold">جاري تحميل البيانات...</p>
+                                <p className="text-sm text-slate-400 font-bold">{tConfig("loadingData")}</p>
                             </div>
                         ) : (
                             <>
@@ -1017,7 +1025,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
 
                                                             <div className="flex items-center gap-2 p-3 rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800">
                                                                 <div className="flex-1 text-right">
-                                                                    <p className="text-[10px] text-slate-400 font-black mb-1 uppercase tracking-tighter">الشرط</p>
+                                                                    <p className="text-[10px] text-slate-400 font-black mb-1 uppercase tracking-tighter">{tConfig("condition")}</p>
                                                                     <p className="text-[11px] font-black text-slate-700 dark:text-slate-200">
                                                                         {operatorsByType[f.type]?.find(o => o.id === check.operator)?.label} {check.targetLabel || check.targetValue || '—'}
                                                                     </p>
@@ -1035,8 +1043,8 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                                 <div className="w-20 h-20 rounded-3xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300 mb-6">
                                                     <GitBranch size={40} />
                                                 </div>
-                                                <h3 className="text-lg font-black text-slate-700 dark:text-slate-200">لا توجد شروط محددة</h3>
-                                                <p className="text-sm text-slate-400 font-bold mt-2">ابدأ بإضافة أول شرط لفحص بيانات الطلب</p>
+                                                <h3 className="text-lg font-black text-slate-700 dark:text-slate-200">{tBuilder("nodes.noConditions")}</h3>
+                                                <p className="text-sm text-slate-400 font-bold mt-2">{tConfig("noConditionsDesc")}</p>
                                             </div>
                                         )}
                                     </div>
@@ -1049,7 +1057,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                                 <div className="w-0.5 flex-1 bg-slate-100 dark:bg-slate-800 rounded-full"></div>
                                             </div>
                                             <div className="flex-1 pb-8">
-                                                <h4 className="text-[15px] font-black text-slate-800 dark:text-slate-100 mb-4">اختر الحقل من بيانات الطلب</h4>
+                                                <h4 className="text-[15px] font-black text-slate-800 dark:text-slate-100 mb-4">{tConfig("chooseField")}</h4>
                                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                                     {fields.map(f => {
                                                         const isSelected = currentCheck?.field === f?.id;
@@ -1082,7 +1090,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                                 <div className="w-0.5 flex-1 bg-slate-100 dark:bg-slate-800 rounded-full"></div>
                                             </div>
                                             <div className="flex-1 pb-8">
-                                                <h4 className="text-[15px] font-black text-slate-800 dark:text-slate-100 mb-4">اختر المعامل (الشرط)</h4>
+                                                <h4 className="text-[15px] font-black text-slate-800 dark:text-slate-100 mb-4">{tConfig("chooseOperator")}</h4>
                                                 <div className="flex flex-wrap gap-2">
                                                     {operators.map(o => {
                                                         const isSelected = currentCheck?.operator === o.id;
@@ -1111,27 +1119,27 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                                 <div className="w-10 h-10 rounded-2xl bg-primary text-white flex items-center justify-center text-sm font-black shadow-lg shadow-primary/20">3</div>
                                             </div>
                                             <div className="flex-1">
-                                                <h4 className="text-[15px] font-black text-slate-800 dark:text-slate-100 mb-4">أدخل القيمة</h4>
+                                                <h4 className="text-[15px] font-black text-slate-800 dark:text-slate-100 mb-4">{tConfig("enterValue")}</h4>
                                                 <div className="max-w-xl">
                                                     {fieldDef?.type === "select" || fieldDef?.type === "boolean" ? (
                                                         <Select
                                                             value={String(currentCheck?.targetValue)}
                                                             onValueChange={(v) => {
                                                                 const options = fieldDef?.type === "boolean" ? [
-                                                                    { id: "true", label: "نعم" },
-                                                                    { id: "false", label: "لا" }
+                                                                    { id: "true", label: tConfig("yes") },
+                                                                    { id: "false", label: tConfig("no") }
                                                                 ] : fieldDef?.options;
                                                                 const label = options.find(o => String(o.id) === v)?.label;
                                                                 handleUpdateCheck(activeIndex, { targetValue: v, targetLabel: label });
                                                             }}
                                                         >
                                                             <SelectTrigger className="h-14 rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-sm px-6 shadow-sm">
-                                                                <SelectValue placeholder="اختر القيمة..." />
+                                                                <SelectValue placeholder={tConfig("selectValue")} />
                                                             </SelectTrigger>
                                                             <SelectContent>
                                                                 {(fieldDef?.type === "boolean" ? [
-                                                                    { id: "true", label: "نعم" },
-                                                                    { id: "false", label: "لا" }
+                                                                    { id: "true", label: tConfig("yes") },
+                                                                    { id: "false", label: tConfig("no") }
                                                                 ] : fieldDef?.options).map(opt => (
                                                                     <SelectItem key={opt.id} value={String(opt.id)}>{opt.label}</SelectItem>
                                                                 ))}
@@ -1144,7 +1152,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                                             value={currentCheck?.targetValue || ""}
                                                             maxLength={300}
                                                             onChange={(e) => handleUpdateCheck(activeIndex, { targetValue: e.target.value, targetLabel: e.target.value })}
-                                                            placeholder="أدخل القيمة المطلوبة..."
+                                                            placeholder={tConfig("enterValuePlaceholder")}
                                                         />
                                                     )}
                                                 </div>
@@ -1165,7 +1173,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                 onClick={() => activeIndex !== null ? setActiveIndex(null) : onClose(null)}
                                 className="px-8 h-12 rounded-2xl text-slate-600 dark:text-slate-300 text-sm font-black hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
                             >
-                                إلغاء
+                                {tCommon("cancel")}
                             </Button>
                             {activeIndex !== null ? (
                                 <Button
@@ -1173,7 +1181,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                     onClick={handleConfirm}
                                     className="px-8 h-12 rounded-2xl bg-primary text-white text-sm font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50"
                                 >
-                                    إضافة الشرط
+                                    {tConfig("addCondition")}
                                 </Button>
                             ) : (
                                 <Button
@@ -1181,7 +1189,7 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
                                     onClick={handleSaveAll}
                                     className="px-8 h-12 rounded-2xl bg-primary text-white text-sm font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50"
                                 >
-                                    {mode === "create" ? "إضافة الخطوة" : "حفظ التغييرات"}
+                                    {mode === "create" ? tConfig("addStep") : tConfig("saveChanges")}
                                 </Button>
                             )}
                         </div>
@@ -1198,7 +1206,8 @@ export function OrderCheckConfig({ isOpen, value, onChange, errors, setDisabled,
 export function QuickOrderStatusConfig({ value, onChange, errors, setDisabled }) {
     const [statuses, setStatuses] = useState([]);
     const [loading, setLoading] = useState(true);
-    const t = useTranslations("orders");
+    const tOrders = useTranslations("orders");
+    const tConfig = useTranslations("whatsApp.automations.builder.config");
 
     useEffect(() => {
         const fetchStatuses = async () => {
@@ -1233,22 +1242,22 @@ export function QuickOrderStatusConfig({ value, onChange, errors, setDisabled })
 
     return (
         <div className="space-y-4">
-            <FormGroup label="التحقق من الحالة" description="توجيه التدفق بناءً على حالة الطلب الحالية" error={errors.status}>
+            <FormGroup label={tConfig("quickCheckTitle")} description={tConfig("quickCheckDesc")} error={errors.status}>
                 <Select value={value.statusId?.toString() || ""} onValueChange={handleStatusChange}>
                     <SelectTrigger className="w-full h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-none px-6">
                         {loading ? (
                             <div className="flex items-center gap-2">
                                 <Loader2 className="h-4 w-4 animate-spin" />
-                                <span>جاري التحميل...</span>
+                                <span>{tConfig("loading")}</span>
                             </div>
                         ) : (
-                            <SelectValue placeholder="اختر الحالة..." />
+                            <SelectValue placeholder={tConfig("selectStatus")} />
                         )}
                     </SelectTrigger>
                     <SelectContent>
                         {statuses.map(status => (
                             <SelectItem key={status.id} value={status.id.toString()}>
-                                {status.system ? t(`statuses.${status.code}`) : status.name}
+                                {status.system ? tOrders(`statuses.${status.code}`) : status.name}
                             </SelectItem>
                         ))}
                     </SelectContent>

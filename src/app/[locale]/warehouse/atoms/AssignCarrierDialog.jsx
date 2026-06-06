@@ -671,50 +671,50 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                                                 <thead className="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 border-b">
                                                     <tr>
                                                         <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">
-                                                            {t("fields.orderNumber")}
+                                                            {t("field.orderNumber")}
                                                         </th>
                                                         <th className="text-nowrap px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 min-w-[150px] bg-slate-100/50 dark:bg-slate-800/50">
-                                                            {t("fields.address")} ({t("common.original")})
+                                                            {t("field.address")} ({t("common.original")})
                                                         </th>
                                                         <th className="text-nowrap px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 min-w-[100px] bg-slate-100/50 dark:bg-slate-800/50">
-                                                            {t("fields.city")} ({t("common.original")})
+                                                            {t("field.city")} ({t("common.original")})
                                                         </th>
                                                         <th className="text-nowrap px-4 py-3 font-semibold text-slate-500 dark:text-slate-400 min-w-[100px] bg-slate-100/50 dark:bg-slate-800/50">
-                                                            {t("fields.area")} ({t("common.original")})
+                                                            {t("field.area")} ({t("common.original")})
                                                         </th>
                                                         <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 min-w-[150px]">
-                                                            {t("fields.customerName")}
+                                                            {t("field.customerName")}
                                                         </th>
                                                         <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 min-w-[140px]">
-                                                            {t("fields.phoneNumber")}
+                                                            {t("field.phoneNumber")}
                                                         </th>
                                                         {CARRIER_CONFIG[carrier]?.requires.includes("email") && (
                                                             <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 min-w-[200px]">
-                                                                {t("fields.email")}
+                                                                {t("field.email")}
                                                             </th>
                                                         )}
                                                         {CARRIER_CONFIG[carrier]?.requires.includes("firstLine") && (
                                                             <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 min-w-[200px]">
-                                                                {t("fields.address")}
+                                                                {t("field.address")}
                                                             </th>
                                                         )}
                                                         {CARRIER_CONFIG[carrier]?.requires.includes("cityId") && (
                                                             <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 min-w-[150px]">
-                                                                {t("fields.city")}
+                                                                {t("field.city")}
                                                             </th>
                                                         )}
                                                         {CARRIER_CONFIG[carrier]?.hasZone && (
                                                             <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 min-w-[150px]">
-                                                                {t("fields.zone")}
+                                                                {t("field.zone")}
                                                             </th>
                                                         )}
                                                         {CARRIER_CONFIG[carrier]?.hasDistrict && (
                                                             <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 min-w-[150px]">
-                                                                {t("fields.district")}
+                                                                {t("field.district")}
                                                             </th>
                                                         )}
                                                         {CARRIER_CONFIG[carrier]?.requires.includes("orderSize") && <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 min-w-[150px]">
-                                                            {t("fields.orderSize")}
+                                                            {t("field.orderSize")}
                                                         </th>}
                                                     </tr>
                                                 </thead>
@@ -851,7 +851,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                                                                                 { id: "Heavy Bulky", name: t("orderSizes.Heavy Bulky") },
                                                                             ]}
                                                                             onChange={(val) => handleFixChange(order.id, 'orderSize', val)}
-                                                                            placeholder={t("fields.orderSize")}
+                                                                            placeholder={t("field.orderSize")}
                                                                         />
                                                                     </td>
                                                                 )}

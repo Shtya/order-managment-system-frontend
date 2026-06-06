@@ -68,7 +68,7 @@ export default function DateRangePicker({
       options={options}
       placeholder={placeholder || (mode === "single" ? t("filters.datePlaceholder") : t("filters.dateRangePlaceholder"))}
       data-size={dataSize}
-      className={className}
+      className={"hidden " + className}
     />
   );
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import {
     Save,
     Play,
@@ -35,6 +36,7 @@ import RunDetailsPanel from './RunDetailsPanel';
 import StepExecutionDialog from './StepExecutionDialog';
 
 export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setIsPreviewMode: setExternalIsPreviewMode }) {
+    const t = useTranslations("whatsApp.automations.builder");
     const { isSuperAdmin, user } = useAuth();
     const edges = useFlowStore((s) => s.edges);
     const nodes = useFlowStore((s) => s.nodes);
@@ -217,7 +219,7 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
             try {
                 const response = await api.post(`/automation/preview/${previewId}/heartbeat`);
                 if (response.data?.extended === false) {
-                    toast.error("انتهت جلسة المعاينة");
+                    toast.error(t('toolbar.previewEnded'));
                     handleSwitchToPreview();
                 }
             } catch (error) {
@@ -226,29 +228,29 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
         }, 5000);
 
         return () => clearInterval(heartbeatInterval);
-    }, [isPreviewMode, previewId]);
+    }, [isPreviewMode, previewId, t]);
 
     const validateFlow = () => {
         const hasNodeErrors = Object.values(nodeErrors).some(err => !!err);
         if (hasNodeErrors) {
-            toast.error("يرجى حل جميع أخطاء العقد قبل الحفظ.");
+            toast.error(t('toolbar.resolveErrors'));
             return false;
         }
 
         if (!name || name.trim() === '') {
-            setNameError("يرجى إدخال اسم للأتمتة.");
+            setNameError(t('toolbar.errorName'));
             // toast.error("يرجى إدخال اسم للأتمتة.");
             return false;
         }
 
         if (nodes.length < 2) {
-            toast.error("يجب أن يحتوي سير العمل على عقدتين على الأقل.");
+            toast.error(t('toolbar.minNodes'));
             return false;
         }
 
         const triggerNodes = nodes.filter(n => n.type === 'trigger');
         if (triggerNodes.length !== 1) {
-            toast.error("يجب أن يحتوي سير العمل على محفز واحد بالضبط.");
+            toast.error(t('toolbar.exactlyOneTrigger'));
             return false;
         }
 
@@ -295,11 +297,11 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
                 await api.post('/automation', payload);
             }
             resetFlow();
-            toast.success(publish ? "تم نشر الأتمتة بنجاح!" : "تم حفظ الأتمتة بنجاح!");
+            toast.success(publish ? t('toolbar.publishedSuccess') : t('toolbar.savedSuccess'));
             router.push(isSuperAdmin ? '/dashboard/automations' : '/automations');
         } catch (error) {
             const message = error.response?.data?.message;
-            toast.error(Array.isArray(message) ? message[0] : (message || "فشل في حفظ الأتمتة."));
+            toast.error(Array.isArray(message) ? message[0] : (message || t('toolbar.saveFailed')));
         } finally {
             setSaving(false);
         }
@@ -342,14 +344,14 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
                 <div className="flex items-center gap-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl pointer-events-auto">
                     <ToolbarButton
                         icon={<Layout size={18} />}
-                        label="إعادة ترتيب"
+                        label={t('toolbar.reorder')}
                         onClick={reorderFlow}
                     />
                     <div className="w-[1px] h-6 bg-slate-200 dark:bg-slate-800 mx-1" />
                     {isViewMode ? (
                         <ToolbarButton
                             icon={<Edit3 size={18} />}
-                            label="تعديل الأتمتة"
+                            label={t('toolbar.editAutomation')}
                             onClick={() => router.push(isSuperAdmin ? `/dashboard/automations/edit/${automationId}?${version ? `v=${version}` : ''}` : `/automations/edit/${automationId}?${version ? `v=${version}` : ''}`)}
                             primary
                         />
@@ -357,7 +359,7 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
                         <>
                             <ToolbarButton
                                 icon={isPreviewMode ? <X size={18} /> : <Play size={18} />}
-                                label={isPreviewMode ? "إيقاف المعاينة" : "معاينة المسار"}
+                                label={isPreviewMode ? t('runPanel.stopPreview') : t('toolbar.previewPath')}
                                 disabled={!isPreviewMode && nodes.length < 2}
                                 onClick={handleSwitchToPreview}
                                 danger={isPreviewMode}
@@ -366,7 +368,7 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
                             {!isEditMode && (
                                 <ToolbarButton
                                     icon={<Save size={18} />}
-                                    label="حفظ مسودة"
+                                    label={t('toolbar.saveDraft')}
                                     onClick={() => handleSave(false)}
                                     disabled={saving}
                                 />
@@ -374,14 +376,14 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
 
                             <ToolbarButton
                                 icon={<Trash2 size={18} />}
-                                label="مسح الكل"
+                                label={t('toolbar.clearAll')}
                                 onClick={handleClear}
                                 danger
                             />
                             <div className="w-[1px] h-6 bg-slate-200 dark:bg-slate-800 mx-1" />
                             <ToolbarButton
                                 icon={<Rocket size={18} />}
-                                label="حفظ ونشر"
+                                label={t('toolbar.saveAndPublish')}
                                 onClick={() => handleSave(true)}
                                 primary
                                 disabled={saving}

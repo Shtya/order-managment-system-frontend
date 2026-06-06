@@ -121,7 +121,7 @@ export default function ManageSubscription({ userId, subscriptionId, onSaved }) 
                 if (sub.includedOrders !== null) setShowCustomLimits(true);
             }
         } catch (error) {
-            toast.error("Failed to load data");
+            toast.error(t("manageSubscription.errors.fetchFailed"));
         } finally {
             setInitialLoading(false);
         }
@@ -168,7 +168,7 @@ export default function ManageSubscription({ userId, subscriptionId, onSaved }) 
             onSaved();
         } catch (error) {
             console.error("Submission error:", error);
-            toast.error(error?.response?.data?.message || "Error saving subscription");
+            toast.error(error?.response?.data?.message || t("manageSubscription.errors.errorSaving"));
         } finally {
             setLoading(false);
         }
@@ -286,7 +286,7 @@ export default function ManageSubscription({ userId, subscriptionId, onSaved }) 
                         </div>
 
                         <div className="space-y-2">
-                            <Label>{t("manageSubscription.fields.price")} (Paid Amount)</Label>
+                            <Label>{t("manageSubscription.fields.price")} ({t("manageSubscription.fields.paidAmount")})</Label>
                             <Controller
                                 name="price"
                                 control={control}

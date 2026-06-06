@@ -31,7 +31,7 @@ export default function ManageWalletModal({ isOpen, onClose, user, onRefresh }) 
             const res = await api.get(`/wallet/admin/user-wallet/${user.id}`);
             setWallet(res.data);
         } catch (error) {
-            toast.error("Failed to load wallet information");
+            toast.error(t("errors.fetchWalletFailed"));
         } finally {
             setLoading(false);
         }
@@ -39,7 +39,7 @@ export default function ManageWalletModal({ isOpen, onClose, user, onRefresh }) 
 
     const handleAdjust = async () => {
         if (!form.amount || isNaN(form.amount)) {
-            return toast.error("Please enter a valid amount");
+            return toast.error(t("validation.invalidAmount"));
         }
         try {
             setSaving(true);
@@ -53,7 +53,7 @@ export default function ManageWalletModal({ isOpen, onClose, user, onRefresh }) 
             onClose();
             setForm({ amount: "", note: "" });
         } catch (error) {
-            toast.error(error?.response?.data?.message || "Error adjusting balance");
+            toast.error(error?.response?.data?.message || t("errors.adjustBalanceFailed"));
         } finally {
             setSaving(false);
         }
@@ -106,7 +106,7 @@ export default function ManageWalletModal({ isOpen, onClose, user, onRefresh }) 
                         <Label className="text-xs text-gray-500">{t("controlModal.amountLabel").trim()}</Label>
                         <Input
                             type="number"
-                            placeholder="مثال: 100 أو -50"
+                            placeholder={t("controlModal.amountPlaceholder")}
                             value={form.amount}
                             onChange={(e) => setForm(p => ({ ...p, amount: e.target.value }))}
                             className="rounded-full h-[48px] bg-[#fafafa] dark:bg-slate-800/50 text-left font-en"

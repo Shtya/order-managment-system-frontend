@@ -40,7 +40,7 @@ import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 export default function MonthClosingTab() {
   const tCommon = useTranslations("common");
   const t = useTranslations("accounts.monthClosing");
-  const { formatCurrency } = usePlatformSettings();
+  const { formatCurrency,currency } = usePlatformSettings();
 
   // State
   const [search, setSearch] = useState("");
@@ -77,7 +77,7 @@ export default function MonthClosingTab() {
       });
     } catch (err) {
       console.error("Error fetching closings:", err);
-      toast.error(t("fetchError") || "حدث خطأ أثناء جلب البيانات");
+      toast.error(t("fetchError"));
     } finally {
       setLoading(false);
     }
@@ -114,28 +114,28 @@ export default function MonthClosingTab() {
     },
     {
       key: "revenue",
-      header: t("columns.totalSelling") || "الإيرادات",
+      header: t("columns.totalSelling"),
       cell: (row) => <span className="text-sm font-bold text-emerald-600 tabular-nums">{Number(row.revenue)?.toLocaleString()}</span>
     },
     {
       key: "productCost",
-      header: t("columns.productCost") || "تكلفة البضاعة",
+      header: t("columns.productCost"),
       cell: (row) => <span className="text-sm font-medium text-orange-600 tabular-nums">-{Number(row.productCost)?.toLocaleString()}</span>
     },
     {
       key: "operationalExpenses",
-      header: t("columns.operationalExpenses") || "المصاريف",
+      header: t("columns.operationalExpenses"),
       cell: (row) => <span className="text-sm font-medium text-red-600 tabular-nums">-{Number(row.operationalExpenses)?.toLocaleString()}</span>
     },
     {
       key: "returnsCost",
-      header: t("columns.totalReturn") || "المرتجعات",
-      cell: (row) => <span className="text-sm font-medium text-purple-600 tabular-nums">-{Number(row.returnsCost)?.toLocaleString()}ج</span>
+      header: t("columns.totalReturn"),
+      cell: (row) => <span className="text-sm font-medium text-purple-600 tabular-nums">-{Number(row.returnsCost)?.toLocaleString()} {currency}</span>
     },
     {
       key: "netProfit",
-      header: t("columns.finalBalance") || "صافي الربح",
-      cell: (row) => <span className="text-sm font-black text-primary tabular-nums">{Number(row.netProfit)?.toLocaleString()}ج</span>
+      header: t("columns.finalBalance"),
+      cell: (row) => <span className="text-sm font-black text-primary tabular-nums">{Number(row.netProfit)?.toLocaleString()} {currency}</span>
     },
     {
       key: "actions",
@@ -154,7 +154,7 @@ export default function MonthClosingTab() {
         />
       )
     }
-  ], [t]);
+  ], [t, currency]);
 
   return (
     <div className="space-y-6">
@@ -168,7 +168,7 @@ export default function MonthClosingTab() {
         actions={[
           {
             key: "compare",
-            label: t("actions.compare") || "مقارنة الفترات",
+            label: t("actions.compare"),
             icon: <Scale size={14} />,
             color: "primary",
             onClick: () => setCompareOpen(true),
@@ -267,11 +267,11 @@ function NewClosingModal({ open, onClose, onSuccess, t, tCommon, formatCurrency 
       setPreview(res.data);
     } catch (err) {
       console.error("Error fetching preview:", err);
-      toast.error(err?.response?.data?.message || "تعذر جلب التقرير المبدئي");
+      toast.error(err?.response?.data?.message || t("fetchPreviewError"));
     } finally {
       setLoading(false);
     }
-  }, [year, month]);
+  }, [year, month, t]);
 
   useEffect(() => {
     if (open) fetchPreview();
@@ -284,13 +284,13 @@ function NewClosingModal({ open, onClose, onSuccess, t, tCommon, formatCurrency 
         year: Number(year),
         month: Number(month)
       });
-      toast.success("تم تقفيل الشهر بنجاح");
+      toast.success(t("successClosing"));
       onSuccess?.();
       onClose();
     } catch (err) {
       console.error("Error closing month:", err);
       // Backend throws specific invoice arrays, display them nicely
-      toast.error(err?.response?.data?.message || "حدث خطأ أثناء التقفيل", { duration: 5000 });
+      toast.error(err?.response?.data?.message || t("errorClosing"), { duration: 5000 });
     } finally {
       setClosingLoading(false);
     }
@@ -311,14 +311,14 @@ function NewClosingModal({ open, onClose, onSuccess, t, tCommon, formatCurrency 
 
         <div className="space-y-6 py-4">
           <div className="p-4 border border-border bg-muted/10 rounded-2xl flex items-center gap-4">
-            <FilterField label="السنة" icon={Calendar} className="flex-1">
+            <FilterField label={tCommon("year")} icon={Calendar} className="flex-1">
               <Select value={year} onValueChange={setYear}>
                 <SelectTrigger className="theme-field h-10 w-full mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
               </Select>
             </FilterField>
 
-            <FilterField label="الشهر" icon={Calendar} className="flex-1">
+            <FilterField label={tCommon("month")} icon={Calendar} className="flex-1">
               <Select value={month} onValueChange={setMonth}>
                 <SelectTrigger className="theme-field h-10 w-full mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>{months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
@@ -335,7 +335,7 @@ function NewClosingModal({ open, onClose, onSuccess, t, tCommon, formatCurrency 
               {preview.isClosed && (
                 <div className="p-6 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-center font-bold flex flex-col items-center gap-2">
                   <Ban size={32} className="opacity-50" />
-                  هذا الشهر تم تقفيله مسبقاً!
+                  {t("alreadyClosed")}
                 </div>
               )}
               <ClosingReportView
@@ -345,7 +345,7 @@ function NewClosingModal({ open, onClose, onSuccess, t, tCommon, formatCurrency 
                 formatCurrency={formatCurrency}
                 extraActions={
                   <Button_
-                    label={t("details.confirmClosing") || "تأكيد التقفيل"}
+                    label={t("details.confirmClosing")}
                     tone="primary"
                     variant="solid"
                     size="sm"
@@ -355,7 +355,6 @@ function NewClosingModal({ open, onClose, onSuccess, t, tCommon, formatCurrency 
                   />
                 }
               />
-
             </>
           ) : null}
 
@@ -375,7 +374,7 @@ function ClosingDetailsModal({ closing, onClose, t, tCommon, formatCurrency }) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="text-primary" size={20} />
-            {t("details.title") || "تفاصيل التقفيل"}
+            {t("details.title")}
           </DialogTitle>
           <DialogDescription className="mt-1">
             {closing?.month} / {closing?.year}
@@ -401,13 +400,13 @@ function ClosingDetailsModal({ closing, onClose, t, tCommon, formatCurrency }) {
 // Shared Summary View mapped to Backend fields
 // ─────────────────────────────────────────────────────────────────────────
 
-const handlePrintClosing = (closing, formatCurrency) => {
+const handlePrintClosing = (closing, formatCurrency, t, tCommon) => {
   if (!closing) return;
 
   const printContent = `
     <html dir="rtl" lang="ar">
       <head>
-        <title>تقفيل شهر ${closing.month} / ${closing.year}</title>
+        <title>${t("details.title")} ${closing.month} / ${closing.year}</title>
         <style>
           body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; color: #111827; direction: rtl; }
           .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; }
@@ -435,30 +434,30 @@ const handlePrintClosing = (closing, formatCurrency) => {
       </head>
       <body>
         <div class="header">
-          <h1>تقرير تقفيل الشهر الأرباح</h1>
-          <p>الفترة: ${closing.month} / ${closing.year}</p>
-          <p>تم التقفيل في: ${new Date(closing.createdAt || new Date()).toLocaleDateString()}</p>
+          <h1>${t("details.title")}</h1>
+          <p>${t("columns.period")}: ${closing.month} / ${closing.year}</p>
+          <p>${t("columns.closedAt")}: ${new Date(closing.createdAt || new Date()).toLocaleDateString()}</p>
         </div>
 
         <div class="summary-grid">
           <div class="summary-box positive">
-            <span class="title">الرباح</span>
+            <span class="title">${t("columns.totalSelling")}</span>
             <span class="value">${formatCurrency(closing.revenue || 0)}</span>
           </div>
           <div class="summary-box negative">
-            <span class="title"> البضاعة المباعة</s</span>
+            <span class="title">${t("columns.productCost")}</span>
             <span class="value">-${formatCurrency(closing.productCost || 0)}</span>
           </div>
           <div class="summary-box negative">
-            <span class="title">المصاريف التشغيلية</span>
+            <span class="title">${t("columns.operationalExpenses")}</span>
             <span class="value">-${formatCurrency(closing.operationalExpenses || 0)}</span>
           </div>
           <div class="summary-box negative">
-            <span class="title">تكلفة المرتجعات</span>
+            <span class="title">${t("columns.totalReturn")}</span>
             <span class="value">-${formatCurrency(closing.returnsCost || 0)}</span>
           </div>
           <div class="summary-box final-box">
-            <span class="title">صافي الربح النهائي</span>
+            <span class="title">${t("columns.finalBalance")}</span>
             <span class="value">${formatCurrency(closing.netProfit || 0)}</span>
           </div>
         </div>
@@ -476,37 +475,38 @@ const handlePrintClosing = (closing, formatCurrency) => {
       printWindow.print();
     };
   } else {
-    toast.error("يرجى السماح بالنوافذ المنبثقة (Pop-ups) للطباعة");
+    toast.error(tCommon("allowPopups"));
   }
 };
 
 function ClosingSummaryView({ summary, t, formatCurrency }) {
+  const {currency} = usePlatformSettings();
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4">
         <MiniSummaryCard
-          title={t("columns.totalSelling") || "الإيرادات"}
+          title={t("columns.totalSelling")}
           value={summary.revenue}
           icon={TrendingUp}
           formatCurrency={formatCurrency}
           color="emerald"
         />
         <MiniSummaryCard
-          title={t("columns.productCost") || "تكلفة البضاعة"}
+          title={t("columns.productCost")}
           value={summary.productCost}
           icon={Package}
           formatCurrency={formatCurrency}
           color="orange"
         />
         <MiniSummaryCard
-          title={t("columns.operationalExpenses") || "المصاريف التشغيلية"}
+          title={t("columns.operationalExpenses")}
           value={summary.operationalExpenses}
           icon={Settings}
           formatCurrency={formatCurrency}
           color="purple"
         />
         <MiniSummaryCard
-          title={t("columns.totalReturn") || "المرتجعات"}
+          title={t("columns.totalReturn")}
           value={summary.returnsCost}
           icon={RefreshCw}
           formatCurrency={formatCurrency}
@@ -520,14 +520,14 @@ function ClosingSummaryView({ summary, t, formatCurrency }) {
             <DollarSign size={120} className="text-primary" />
           </div>
           <span className="text-xs font-black uppercase tracking-[2px] text-primary/60 mb-2">
-            {t("columns.finalBalance") || "صافي الربح"}
+            {t("columns.finalBalance")}
           </span>
           <span className="text-4xl font-black text-primary tabular-nums tracking-tighter">
-            {Number(summary.netProfit)?.toLocaleString()}ج
+            {Number(summary.netProfit)?.toLocaleString()} {currency}
           </span>
           <div className="mt-4 flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold">
             <CheckCircle2 size={12} />
-            نتيجة الفترة
+            {t("periodResult")}
           </div>
         </div>
       </div>
@@ -553,7 +553,7 @@ function ClosingReportView({ closing, t, tCommon, formatCurrency, extraActions }
         <div>
           <h3 className="text-lg font-bold flex items-center gap-2">
             <FileText className="text-primary" size={20} />
-            {t("details.title") || "تفاصيل التقفيل"}
+            {t("details.title")}
           </h3>
           <p className="text-sm text-muted-foreground mt-1">
             {closing?.month} / {closing?.year}
@@ -564,7 +564,7 @@ function ClosingReportView({ closing, t, tCommon, formatCurrency, extraActions }
           <Button_
             size="sm"
             variant="outline"
-            label={exportLoading ? "جاري التحميل..." : "تقرير Excel مفصل"}
+            label={exportLoading ? tCommon("loading") : t("detailedExcelReport")}
             icon={exportLoading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
             onClick={onExportDetailed}
             disabled={exportLoading}
@@ -572,9 +572,9 @@ function ClosingReportView({ closing, t, tCommon, formatCurrency, extraActions }
           <Button_
             size="sm"
             variant="outline"
-            label="طباعة التقرير"
+            label={tCommon("printReport")}
             icon={<Download size={14} />}
-            onClick={() => handlePrintClosing(closing, formatCurrency)}
+            onClick={() => handlePrintClosing(closing, formatCurrency, t, tCommon)}
           />
           {extraActions}
         </div>
@@ -619,11 +619,11 @@ function CompareMonthsModal({ open, onClose, t, tCommon, formatCurrency }) {
       setDataB(resB.data);
     } catch (err) {
       console.error("Error fetching comparison data:", err);
-      toast.error("حدث خطأ أثناء جلب بيانات المقارنة");
+      toast.error(t("compareError"));
     } finally {
       setLoading(false);
     }
-  }, [periodA, periodB]);
+  }, [periodA, periodB, t]);
 
   useEffect(() => {
     if (open) fetchData();
@@ -660,10 +660,10 @@ function CompareMonthsModal({ open, onClose, t, tCommon, formatCurrency }) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary">
             <Scale size={20} />
-            {t("actions.compare") || "مقارنة الفترات"}
+            {t("actions.compare")}
           </DialogTitle>
           <DialogDescription>
-            قارن الأداء المالي بين فترتين مختلفتين
+            {t("compareDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -671,7 +671,7 @@ function CompareMonthsModal({ open, onClose, t, tCommon, formatCurrency }) {
           {/* Selectors */}
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 border border-border bg-muted/5 rounded-2xl space-y-3">
-              <span className="text-xs font-black uppercase text-primary/60 tracking-wider">الفترة الأولى (A)</span>
+              <span className="text-xs font-black uppercase text-primary/60 tracking-wider">{t("periodA")}</span>
               <div className="flex gap-2">
                 <Select value={periodA.year} onValueChange={(v) => setPeriodA(p => ({ ...p, year: v }))}>
                   <SelectTrigger className="theme-field h-9 flex-1"><SelectValue /></SelectTrigger>
@@ -685,7 +685,7 @@ function CompareMonthsModal({ open, onClose, t, tCommon, formatCurrency }) {
             </div>
 
             <div className="p-4 border border-border bg-muted/5 rounded-2xl space-y-3">
-              <span className="text-xs font-black uppercase text-muted-foreground tracking-wider">الفترة الثانية (B)</span>
+              <span className="text-xs font-black uppercase text-muted-foreground tracking-wider">{t("periodB")}</span>
               <div className="flex gap-2">
                 <Select value={periodB.year} onValueChange={(v) => setPeriodB(p => ({ ...p, year: v }))}>
                   <SelectTrigger className="theme-field h-9 flex-1"><SelectValue /></SelectTrigger>
@@ -708,42 +708,42 @@ function CompareMonthsModal({ open, onClose, t, tCommon, formatCurrency }) {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/30 border-b border-border">
-                    <th className="px-6 py-4 text-right font-bold text-muted-foreground">المقياس</th>
-                    <th className="px-6 py-4 text-center font-black text-primary bg-primary/5">الفترة A</th>
-                    <th className="px-6 py-4 text-center font-bold text-muted-foreground">الفترة B</th>
-                    <th className="px-6 py-4 text-center font-bold text-muted-foreground">التغير</th>
+                    <th className="px-6 py-4 text-right font-bold text-muted-foreground">{t("metric")}</th>
+                    <th className="px-6 py-4 text-center font-black text-primary bg-primary/5">{t("periodALabel")}</th>
+                    <th className="px-6 py-4 text-center font-bold text-muted-foreground">{t("periodBLabel")}</th>
+                    <th className="px-6 py-4 text-center font-bold text-muted-foreground">{t("change")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   <CompareRow
-                    label="الإيرادات"
+                    label={t("columns.totalSelling")}
                     valA={dataA.revenue}
                     valB={dataB.revenue}
                     formatCurrency={formatCurrency}
                   />
                   <CompareRow
-                    label="تكلفة البضاعة"
+                    label={t("columns.productCost")}
                     valA={dataA.cogs}
                     valB={dataB.cogs}
                     formatCurrency={formatCurrency}
                     inverse
                   />
                   <CompareRow
-                    label="المصاريف"
+                    label={t("columns.operationalExpenses")}
                     valA={dataA.operationalExpenses}
                     valB={dataB.operationalExpenses}
                     formatCurrency={formatCurrency}
                     inverse
                   />
                   <CompareRow
-                    label="المرتجعات"
+                    label={t("columns.totalReturn")}
                     valA={dataA.returnsCost}
                     valB={dataB.returnsCost}
                     formatCurrency={formatCurrency}
                     inverse
                   />
                   <tr className="bg-primary/5">
-                    <td className="px-6 py-5 text-right font-black text-primary">صافي الربح</td>
+                    <td className="px-6 py-5 text-right font-black text-primary">{t("columns.finalBalance")}</td>
                     <td className="px-6 py-5 text-center font-black text-primary text-lg">
                       {formatCurrency(dataA.netProfit)}
                     </td>
@@ -863,7 +863,7 @@ function DetailRow_({ label, value, iconColor }) {
         <span className="text-xs text-muted-foreground font-medium">{label}</span>
       </div>
       <span className={cn("text-xs font-bold tabular-nums", value < 0 ? "text-red-600" : "text-foreground")}>
-        {value?.toLocaleString()}ج
+        {value?.toLocaleString()} {currency}
       </span>
     </div>
   );

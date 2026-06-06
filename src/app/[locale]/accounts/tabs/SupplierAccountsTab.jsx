@@ -35,50 +35,17 @@ import {
   DialogTitle,
   DialogFooter
 } from "@/components/ui/dialog";
+import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Small Helper Components
 // ─────────────────────────────────────────────────────────────────────────
 
 
-function MiniTable({ columns, data, maxH = "auto" }) {
-  return (
-    <div className="overflow-auto" style={{ maxHeight: maxH }}>
-      <table className="w-full text-right border-separate border-spacing-y-2">
-        <thead>
-          <tr>
-            {columns.map((col, idx) => (
-              <th key={idx} className="text-[10px] font-black uppercase tracking-wider text-muted-foreground px-2 py-1">
-                {col.header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((row, idx) => (
-            <tr key={idx} className="bg-muted/30 hover:bg-muted/50 transition-colors">
-              {columns.map((col, colIn) => (
-                <td key={colIn} className="px-2 py-2 first:rounded-r-xl last:rounded-l-xl border-y border-border/50 first:border-r last:border-l">
-                  {col.cell ? col.cell(row) : row[col.key]}
-                </td>
-              ))}
-            </tr>
-          ))}
-          {data.length === 0 && (
-            <tr>
-              <td colSpan={columns.length} className="text-center py-8 text-xs text-muted-foreground italic">
-                لا توجد بيانات متاحة
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
-  );
-}
 
 export default function SupplierAccountsTab() {
-  const tCommon = useTranslations("accounts");
+  const tCommon = useTranslations("common");
+  const tAccounts = useTranslations("accounts");
   const tOrders = useTranslations("orders");
   const t = useTranslations("accounts");
   const router = useRouter();
@@ -121,7 +88,7 @@ export default function SupplierAccountsTab() {
       });
     } catch (err) {
       console.error("Error fetching suppliers:", err);
-      toast.error(tCommon("manualExpenses.messages.fetchError"));
+      toast.error(t("supplierAccounts.fetchError"));
     } finally {
       setLoading(false)
     }
@@ -159,7 +126,7 @@ export default function SupplierAccountsTab() {
       header: t("supplierAccounts.columns.lastClosing"),
       cell: (row) => (
         <span className="text-xs font-medium text-muted-foreground tabular-nums">
-          {row.lastClosingEndDate ? new Date(row.lastClosingEndDate).toLocaleDateString() : "لم يتم التقفيل"}
+          {row.lastClosingEndDate ? new Date(row.lastClosingEndDate).toLocaleDateString() : t("supplierAccounts.notClosed")}
         </span>
       )
     },
@@ -219,10 +186,10 @@ export default function SupplierAccountsTab() {
         searchValue={search}
         onSearchChange={setSearch}
         labels={{
-          searchPlaceholder: tCommon("toolbar.searchPlaceholder"),
-          apply: tOrders("filters.apply"),
-          total: tOrders("pagination.total"),
-          limit: tOrders("pagination.limit"),
+          searchPlaceholder: tCommon("search"),
+          apply: tCommon("apply"),
+          total: tCommon("total"),
+          limit: tCommon("limit"),
           emptyTitle: tOrders("empty"),
           emptySubtitle: tOrders("emptySubtitle"),
         }}
@@ -256,6 +223,7 @@ export default function SupplierAccountsTab() {
         supplier={statementSupplier}
         onClose={() => setStatementSupplier(null)}
         t={t}
+        tCommon={tCommon}
         router={router}
       />
 
@@ -272,7 +240,44 @@ export default function SupplierAccountsTab() {
         supplier={historySupplier}
         onClose={() => setHistorySupplier(null)}
         t={t}
+        tCommon={tCommon}
       />
+    </div>
+  );
+}
+
+function MiniTable({ columns, data, maxH = "auto", t }) {
+  return (
+    <div className="overflow-auto" style={{ maxHeight: maxH }}>
+      <table className="w-full text-right border-separate border-spacing-y-2">
+        <thead>
+          <tr>
+            {columns.map((col, idx) => (
+              <th key={idx} className="text-[10px] font-black uppercase tracking-wider text-muted-foreground px-2 py-1">
+                {col.header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((row, idx) => (
+            <tr key={idx} className="bg-muted/30 hover:bg-muted/50 transition-colors">
+              {columns.map((col, colIn) => (
+                <td key={colIn} className="px-2 py-2 first:rounded-r-xl last:rounded-l-xl border-y border-border/50 first:border-r last:border-l">
+                  {col.cell ? col.cell(row) : row[col.key]}
+                </td>
+              ))}
+            </tr>
+          ))}
+          {data.length === 0 && (
+            <tr>
+              <td colSpan={columns.length} className="text-center py-8 text-xs text-muted-foreground italic">
+                {t("supplierAccounts.noData")}
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -286,7 +291,7 @@ export default function SupplierAccountsTab() {
 // Shared Supplier Statement View & Print Logic
 // ─────────────────────────────────────────────────────────────────────────
 
-const handlePrintSupplierStatement = (data, supplier, filters, t) => {
+const handlePrintSupplierStatement = (data, supplier, filters, t, tCommon) => {
   if (!data || !supplier) return;
 
   // Generate rows for purchases
@@ -298,7 +303,7 @@ const handlePrintSupplierStatement = (data, supplier, filters, t) => {
           <td style="font-weight: bold;">${inv.amount.toLocaleString()} </td>
         </tr>
       `).join('')
-    : `<tr><td colspan="3" style="text-align:center; padding: 15px;">لا توجد فواتير مشتريات في هذه الفترة</td></tr>`;
+    : `<tr><td colspan="3" style="text-align:center; padding: 15px;">${t("supplierAccounts.noPurchasesPeriod")}</td></tr>`;
 
   // Generate rows for returns
   const returnRows = data.returnInvoices.length > 0
@@ -309,7 +314,7 @@ const handlePrintSupplierStatement = (data, supplier, filters, t) => {
           <td style="font-weight: bold; color: #ef4444;">${inv.amount.toLocaleString()}</td>
         </tr>
       `).join('')
-    : `<tr><td colspan="3" style="text-align:center; padding: 15px;">لا توجد فواتير مرتجعات في هذه الفترة</td></tr>`;
+    : `<tr><td colspan="3" style="text-align:center; padding: 15px;">${t("supplierAccounts.noReturnsPeriod")}</td></tr>`;
 
   const printContent = `
     <html dir="rtl" lang="ar">
@@ -347,7 +352,7 @@ const handlePrintSupplierStatement = (data, supplier, filters, t) => {
         <div class="header">
           <h1>${t("supplierAccounts.statement.title")} - ${supplier?.name}</h1>
           <p>${t("filters.dateRange")}: ${filters.startDate ? new Date(filters.startDate).toLocaleDateString() : ''} 
-             إلى 
+             ${tCommon("to")} 
              ${filters.endDate ? new Date(filters.endDate).toLocaleDateString() : ''}</p>
         </div>
 
@@ -415,11 +420,12 @@ const handlePrintSupplierStatement = (data, supplier, filters, t) => {
       printWindow.print();
     };
   } else {
-    toast.error("يرجى السماح بالنوافذ المنبثقة لطباعة التقرير");
+    toast.error(tCommon("allowPopups"));
   }
 };
 
-function SupplierStatementReportView({ data, supplier, filters, onChangeDate, loading, t, router, extraActions }) {
+function SupplierStatementReportView({ data, supplier, filters, onChangeDate, loading, t, tCommon, router, extraActions }) {
+  const { currency } = usePlatformSettings();
   const miniInvoiceColumns = [
     { key: "ref", header: t("supplierAccounts.statement.invoiceRef"), cell: (row) => <span className="font-mono text-xs">{row.ref}</span> },
     { key: "date", header: t("supplierAccounts.statement.date"), cell: (row) => <span className="tabular-nums text-[11px]">{row.date}</span> },
@@ -461,7 +467,7 @@ function SupplierStatementReportView({ data, supplier, filters, onChangeDate, lo
             label={t("supplierAccounts.actions.printPdf")}
             icon={<Download size={14} />}
             className="text-blue-600 border-blue-200 hover:bg-blue-50"
-            onClick={() => handlePrintSupplierStatement(data, supplier, filters, t)}
+            onClick={() => handlePrintSupplierStatement(data, supplier, filters, t, tCommon)}
             disabled={loading || !data}
           />
           {extraActions}
@@ -475,18 +481,18 @@ function SupplierStatementReportView({ data, supplier, filters, onChangeDate, lo
       ) : data && (
         <div className="space-y-6 py-2">
           <div className="grid grid-cols-4 gap-3">
-            <MiniSummary title={t("supplierAccounts.statement.totalPurchases")} value={data.summary.totalPurchases} icon={Package} color="purple" />
-            <MiniSummary title={t("supplierAccounts.statement.totalReturns")} value={data.summary.totalReturns} icon={RefreshCw} color="red" />
-            <MiniSummary title={t("supplierAccounts.statement.totalPaid")} value={data.summary.totalPaid} icon={DollarSign} color="emerald" />
-            <MiniSummary title={t("supplierAccounts.statement.netBalance")} value={data.summary.finalBalance} icon={CheckCircle2} color="red" isFinal />
+            <MiniSummary currency={currency} title={t("supplierAccounts.statement.totalPurchases")} value={data.summary.totalPurchases} icon={Package} color="purple" />
+            <MiniSummary currency={currency} title={t("supplierAccounts.statement.totalReturns")} value={data.summary.totalReturns} icon={RefreshCw} color="red" />
+            <MiniSummary currency={currency} title={t("supplierAccounts.statement.totalPaid")} value={data.summary.totalPaid} icon={DollarSign} color="emerald" />
+            <MiniSummary currency={currency} title={t("supplierAccounts.statement.netBalance")} value={data.summary.finalBalance} icon={CheckCircle2} color="red" isFinal />
           </div>
 
           <div className="grid grid-cols-2 gap-4 mt-6">
             <Card title={t("supplierAccounts.statement.detailedPurchases")} icon={Package}>
-              <MiniTable columns={miniInvoiceColumns} data={data.purchaseInvoices} maxH="300px" />
+              <MiniTable columns={miniInvoiceColumns} data={data.purchaseInvoices} maxH="300px" t={t} />
             </Card>
             <Card title={t("supplierAccounts.statement.detailedReturns")} icon={RefreshCw} color="red">
-              <MiniTable columns={miniInvoiceColumns} data={data.returnInvoices} maxH="300px" />
+              <MiniTable columns={miniInvoiceColumns} data={data.returnInvoices} maxH="300px" t={t} />
             </Card>
           </div>
         </div>
@@ -496,7 +502,7 @@ function SupplierStatementReportView({ data, supplier, filters, onChangeDate, lo
 }
 
 // MODALS FOR SUPPLIER ACCOUNTS
-function AccountStatementModal({ supplier, onClose, t, router }) {
+function AccountStatementModal({ supplier, onClose, t, tCommon, router }) {
   const [filters, setFilters] = useState({
     startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     endDate: new Date(),
@@ -541,7 +547,7 @@ function AccountStatementModal({ supplier, onClose, t, router }) {
       });
     } catch (err) {
       console.error("Error fetching statement:", err);
-      toast.error(t("manualExpenses.messages.fetchError"));
+      toast.error(t("supplierAccounts.fetchInvoicesError"));
     } finally {
       setLoading(false);
     }
@@ -568,6 +574,7 @@ function AccountStatementModal({ supplier, onClose, t, router }) {
           loading={loading}
           onChangeDate={(newDates) => setFilters(f => ({ ...f, ...newDates }))}
           t={t}
+          tCommon={tCommon}
           router={router}
         />
       </DialogContent>
@@ -622,7 +629,7 @@ function CloseAccountPeriodModal({ supplier, onClose, onSuccess, t, tCommon, rou
       });
     } catch (err) {
       console.error("Error fetching closing preview:", err);
-      toast.error(t("manualExpenses.messages.fetchError"));
+      toast.error(t("supplierAccounts.fetchInvoicesError"));
     } finally {
       setLoading(false);
     }
@@ -641,12 +648,12 @@ function CloseAccountPeriodModal({ supplier, onClose, onSuccess, t, tCommon, rou
         endDate: filters.endDate,
       };
       await api.post("/accounting/supplier-closings/close", payload);
-      toast.success(t("manualExpenses.messages.categoryUpdated") || "تم التقفيل بنجاح");
+      toast.success(t("supplierAccounts.successClosing"));
       onSuccess?.();
       onClose();
     } catch (err) {
       console.error("Error closing period:", err);
-      toast.error(err?.response?.data?.message || t("manualExpenses.messages.error"));
+      toast.error(err?.response?.data?.message || tCommon("error"));
     } finally {
       setClosingLoading(false);
     }
@@ -677,6 +684,7 @@ function CloseAccountPeriodModal({ supplier, onClose, onSuccess, t, tCommon, rou
               onChangeDate={(newDates) => setFilters(f => ({ ...f, ...newDates }))}
               loading={loading}
               t={t}
+              tCommon={tCommon}
               router={router}
               extraActions={
                 <Button_
@@ -692,7 +700,7 @@ function CloseAccountPeriodModal({ supplier, onClose, onSuccess, t, tCommon, rou
             />
 
             <div className="pt-4 border-t border-dashed border-border flex items-center justify-end gap-3 mt-4">
-              <Button_ label={tCommon("common.cancel")} variant="ghost" size="sm" onClick={onClose} />
+              <Button_ label={tCommon("cancel")} variant="ghost" size="sm" onClick={onClose} />
             </div>
           </div>
         )}
@@ -702,11 +710,12 @@ function CloseAccountPeriodModal({ supplier, onClose, onSuccess, t, tCommon, rou
 }
 
 
-function ClosingHistoryModal({ supplier, onClose, t }) {
+function ClosingHistoryModal({ supplier, onClose, t, tCommon }) {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear.toString());
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]);
+  const { currency } = usePlatformSettings();
 
   // Track which specific closing record is currently fetching for print
   const [printingId, setPrintingId] = useState(null);
@@ -725,7 +734,7 @@ function ClosingHistoryModal({ supplier, onClose, t }) {
       setHistory(res.data.records || []);
     } catch (err) {
       console.error("Error fetching closing history:", err);
-      toast.error(t("manualExpenses.messages.fetchError"));
+      toast.error(t("supplierAccounts.fetchError"));
     } finally {
       setLoading(false);
     }
@@ -759,7 +768,7 @@ function ClosingHistoryModal({ supplier, onClose, t }) {
               <td style="font-weight: bold;">${Number(inv.total).toLocaleString()} </td>
             </tr>
           `).join('')
-        : `<tr><td colspan="3" style="text-align:center; padding: 15px;">لا توجد فواتير مشتريات</td></tr>`;
+        : `<tr><td colspan="3" style="text-align:center; padding: 15px;">${t("supplierAccounts.noPurchases")}</td></tr>`;
 
       const returnRows = returns.length > 0
         ? returns.map(inv => `
@@ -769,7 +778,7 @@ function ClosingHistoryModal({ supplier, onClose, t }) {
               <td style="font-weight: bold; color: #ef4444;">${Number(inv.totalReturn).toLocaleString()} </td>
             </tr>
           `).join('')
-        : `<tr><td colspan="3" style="text-align:center; padding: 15px;">لا توجد فواتير مرتجعات</td></tr>`;
+        : `<tr><td colspan="3" style="text-align:center; padding: 15px;">${t("supplierAccounts.noReturns")}</td></tr>`;
 
       // 3. Build Print HTML Document
       const printContent = `
@@ -807,8 +816,8 @@ function ClosingHistoryModal({ supplier, onClose, t }) {
           <body>
             <div class="header">
               <h1>${t("supplierAccounts.history.title")} - ${supplier?.name}</h1>
-              <p>الفترة: ${new Date(closingRow.startDate).toLocaleDateString()} إلى ${new Date(closingRow.endDate).toLocaleDateString()}</p>
-              <p>تم التقفيل في: ${new Date(closingRow.createdAt).toLocaleDateString()}</p>
+              <p>${t("supplierAccounts.history.period")}: ${new Date(closingRow.startDate).toLocaleDateString()} ${tCommon("to")} ${new Date(closingRow.endDate).toLocaleDateString()}</p>
+              <p>${t("supplierAccounts.history.closedAt")}: ${new Date(closingRow.createdAt).toLocaleDateString()}</p>
             </div>
 
             <div class="summary-grid">
@@ -876,11 +885,11 @@ function ClosingHistoryModal({ supplier, onClose, t }) {
           printWindow.print();
         };
       } else {
-        toast.error("يرجى السماح بالنوافذ المنبثقة للطباعة");
+        toast.error(tCommon("allowPopups"));
       }
     } catch (err) {
       console.error("Error fetching closing details:", err);
-      toast.error("حدث خطأ أثناء جلب الفواتير");
+      toast.error(t("supplierAccounts.fetchInvoicesError"));
     } finally {
       setPrintingId(null);
     }
@@ -900,19 +909,19 @@ function ClosingHistoryModal({ supplier, onClose, t }) {
     {
       key: "totalPurchases",
       header: t("supplierAccounts.close.totalPurchases"),
-      cell: (row) => <span className="tabular-nums text-xs text-purple-600">{Number(row.totalPurchases).toLocaleString()}ج</span>
+      cell: (row) => <span className="tabular-nums text-xs text-purple-600">{Number(row.totalPurchases).toLocaleString()} {currency}</span>
     },
     {
       key: "totalReturns",
       header: t("supplierAccounts.close.totalReturns"),
-      cell: (row) => <span className="tabular-nums text-xs text-red-600">{(Number(row.totalReturns) * -1).toLocaleString()}ج</span>
+      cell: (row) => <span className="tabular-nums text-xs text-red-600">{(Number(row.totalReturns) * -1).toLocaleString()} {currency}</span>
     },
     {
       key: "totalPaid",
       header: t("supplierAccounts.close.totalPayments"),
-      cell: (row) => <span className="tabular-nums text-xs text-emerald-600">{(Number(row.totalPaid) * -1).toLocaleString()}ج</span>
+      cell: (row) => <span className="tabular-nums text-xs text-emerald-600">{(Number(row.totalPaid) * -1).toLocaleString()} {currency}</span>
     },
-    { key: "finalBalance", header: t("supplierAccounts.history.balance"), cell: (row) => <span className="font-black text-xs text-red-600 tabular-nums">{Number(row.finalBalance).toLocaleString()}ج</span> },
+    { key: "finalBalance", header: t("supplierAccounts.history.balance"), cell: (row) => <span className="font-black text-xs text-red-600 tabular-nums">{Number(row.finalBalance).toLocaleString()} {currency}</span> },
     {
       key: "actions",
       header: "",
@@ -921,7 +930,7 @@ function ClosingHistoryModal({ supplier, onClose, t }) {
           onClick={() => handlePrintClosing(row)}
           disabled={printingId === row.id}
           className="p-1 hover:bg-muted rounded-md transition-colors text-muted-foreground disabled:opacity-50"
-          title="طباعة التقرير"
+          title={tCommon("printReport")}
         >
           {printingId === row.id ? (
             <Loader2 size={14} className="animate-spin" />
@@ -964,7 +973,7 @@ function ClosingHistoryModal({ supplier, onClose, t }) {
               <Loader2 className="animate-spin text-primary" size={32} />
             </div>
           ) : (
-            <MiniTable columns={miniHistoryColumns} data={history} />
+            <MiniTable columns={miniHistoryColumns} data={history} t={t} />
           )}
         </div>
       </DialogContent>
@@ -1000,7 +1009,7 @@ function Card({ title, icon: Icon, children, color = "orange", maxH = "auto" }) 
   );
 }
 
-function MiniSummary({ title, value, icon: Icon, color, isFinal = false }) {
+function MiniSummary({ title, value, icon: Icon, color, isFinal = false, currency }) {
   const bgColor = color === 'purple' ? 'bg-purple-50 text-purple-600 border-purple-100' :
     color === 'red' ? 'bg-red-50 text-red-600 border-red-100' :
       color === 'emerald' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
@@ -1012,7 +1021,7 @@ function MiniSummary({ title, value, icon: Icon, color, isFinal = false }) {
         <Icon size={14} className="opacity-60" />
         <span className="text-[10px] font-black uppercase tracking-wider opacity-70 truncate">{title}</span>
       </div>
-      <span className={cn("tabular-nums font-black", isFinal ? "text-lg" : "text-sm")}>{value.toLocaleString()}ج</span>
+      <span className={cn("tabular-nums font-black", isFinal ? "text-lg" : "text-sm")}>{value.toLocaleString()} {currency}</span>
     </div>
   );
 }

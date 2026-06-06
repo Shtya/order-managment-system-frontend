@@ -2,6 +2,7 @@ import { Position } from '@xyflow/react';
 import { motion } from 'framer-motion';
 import { Trash2, AlertCircle, Edit3, Info, CheckCircle2, XCircle } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { cn } from '@/utils/cn';
 import { useFlowStore } from '@/hook/useFlowStore';
@@ -69,6 +70,10 @@ export function BaseNode({
         return executionState.success ? 'success' : 'failed';
     }, [isRunMode, executionState, nodeType, currentNodeId, runStatus]);
     const { isSuperAdmin } = useAuth();
+    const t = useTranslations("whatsApp.automations.builder");
+    const locale = useLocale();
+    const isRtl = locale === 'ar';
+
     useEffect(() => {
         if (isRunMode) return; // Skip hydration in run mode
 
@@ -146,8 +151,10 @@ export function BaseNode({
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
+            dir={isRtl ? 'rtl' : 'ltr'}
             className={cn(
                 "relative min-w-[260px] max-w-[320px] rounded-[24px] border bg-white shadow-sm transition-all duration-300 dark:bg-slate-900",
+                isRtl ? "text-right" : "text-left",
                 selected ? "border-primary ring-[4px] ring-primary/5 shadow-lg scale-[1.01]" : "border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-md",
                 isInvalid && "border-rose-500 ring-[4px] ring-rose-500/5 shadow-rose-500/10",
                 !isInvalid && changes.length > 0 && "border-emerald-500 ring-[4px] ring-emerald-500/5",
@@ -172,14 +179,14 @@ export function BaseNode({
             {/* Change Indicators */}
             {!isInvalid && changes.length > 0 && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg z-10 whitespace-nowrap uppercase tracking-widest border-2 border-white dark:border-slate-900">
-                    تم تحديث البيانات تلقائياً
+                    {t('indicators.updated_automatically')}
                 </div>
             )}
 
             {/* Header */}
             <div className="p-4">
                 <div className="flex items-center justify-between mb-3 pb-3 border-b border-slate-50 dark:border-slate-800/50">
-                    <div className="flex items-center gap-3 text-right rtl">
+                    <div className="flex items-center gap-3 ">
                         <div className={cn("flex h-10 w-10 items-center justify-center rounded-[14px] transition-colors shadow-sm", bgClass)}>
                             <Icon className={cn("h-5 w-5", colorClass)} />
                         </div>
@@ -197,7 +204,7 @@ export function BaseNode({
                                     onEdit?.();
                                 }}
                                 className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-                                title="تعديل"
+                                title={t('toolbar.reorder')}
                             >
                                 <Edit3 className="h-4 w-4" />
                             </button>}
@@ -208,7 +215,7 @@ export function BaseNode({
                                         deleteNode(id);
                                     }}
                                     className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all"
-                                    title="حذف"
+                                    title={t('dialogs.delete.title.step')}
                                 >
                                     <Trash2 className="h-4 w-4" />
                                 </button>
@@ -223,7 +230,7 @@ export function BaseNode({
                                 window.dispatchEvent(new CustomEvent('show-step-info', { detail: { id, executionState,nodeType  } }));
                             }}
                             className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-                            title="معلومات الخطوة"
+                            title={t('toolbar.stepInfo')}
                         >
                             <Info className="h-4 w-4" />
                         </button>
@@ -234,7 +241,7 @@ export function BaseNode({
                 {isRunMode && status === 'success' && (
                     <div className="mb-3 flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
                         <CheckCircle2 className="h-4 w-4" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider">مكتمل</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider">{t('status.completed')}</span>
                         <span className="text-[9px] text-muted-foreground ml-auto">{new Date(executionState.executedAt).toLocaleTimeString()}</span>
                     </div>
                 )}
@@ -243,7 +250,7 @@ export function BaseNode({
                     <div className="mb-3 flex flex-col gap-1.5">
                         <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
                             <XCircle className="h-4 w-4" />
-                            <span className="text-[10px] font-bold uppercase tracking-wider">فشل</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider">{t('status.failed')}</span>
                             <span className="text-[9px] text-muted-foreground ml-auto">{new Date(executionState.executedAt).toLocaleTimeString()}</span>
                         </div>
                         <p className="text-[9px] font-bold text-rose-500 leading-tight bg-rose-50 dark:bg-rose-500/10 p-2 rounded-lg border border-rose-100 dark:border-rose-500/20">

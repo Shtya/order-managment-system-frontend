@@ -797,9 +797,9 @@ export default function WhatsAppTemplateFormPage({ mode = "create", templateId, 
                                 </>
                             )}
                             <Button_
-                                size="sm"
-                                label={superAdmin ? (isEdit ? "تحديث" : "إنشاء") : (isEdit ? tForm("submitUpdate") : tForm("submitCreate"))}
-                                tone="primary"
+                                        size="sm"
+                                        label={superAdmin ? (isEdit ? tForm("update") : tForm("create")) : (isEdit ? tForm("submitUpdate") : tForm("submitCreate"))}
+                                        tone="primary"
                                 variant="solid"
                                 disabled={isSubmitting}
                                 onClick={handleSubmit(onSubmit)}

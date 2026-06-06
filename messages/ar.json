@@ -4592,10 +4592,9 @@
     },
     "trackingStatus": {
       "new": "جديد",
-
       "in_progress": "قيد التنفيذ",
       "picked_up": "تم الاستلام",
-      "in_transit":  "خرج للتوصيل",
+      "in_transit": "خرج للتوصيل",
       "delivered": "تم التوصيل",
       "returned": "تم الإرجاع",
       "exception": "استثناء",
@@ -9365,6 +9364,104 @@
     "oldPrice": "السعر القديم"
   },
   "whatsApp": {
+    "overview": {
+      "title": "إحصائيات واتساب",
+      "howToUse": "كيفية الاستخدام",
+      "breadcrumb": {
+        "home": "الرئيسية",
+        "statistics": "إحصائيات واتساب"
+      },
+      "stats": {
+        "prefixes": {
+          "messages": "الرسائل: ",
+          "accounts": "الحسابات: ",
+          "templates": "القوالب: ",
+          "upsells": "العروض: "
+        },
+        "names": {
+          "sent": "المرسلة",
+          "delivered": "تم التسليم",
+          "read": "تمت القراءة",
+          "clicks": "النقر (أزرار)",
+          "failed": "فشل الإرسال",
+          "totalAccounts": "العدد الكلي",
+          "total": "العدد الكلي",
+          "approved": "المعتمدة",
+          "rejected": "المرفوضة",
+          "lowQuality": "جودة منخفضة",
+          "upsellSent": "المرسلة",
+          "upsellAccepted": "المقبولة",
+          "upsellRejected": "المرفوضة",
+          "upsellNoAnswer": "لم يتم الرد",
+          "upsellExpired": "منتهية الصلاحية",
+          "upsellNonEligible": "غير مؤهلة",
+          "upsellFailed": "فشل الإضافة",
+          "upsellDelivered": "تم التسليم",
+          "upsellPending": "قيد الانتظار"
+        }
+      },
+      "cards": {
+        "funnel": "تحليل التدفق",
+        "trend": "الرسائل بمرور الوقت",
+        "buttons": "أفضل نقرات الأزرار",
+        "heatmap": "خريطة حرارية للنشاط",
+        "type": "الرسائل حسب النوع",
+        "templates": "أفضل القوالب",
+        "automation": "أداء التشغيل التلقائي"
+      },
+      "heatmap": {
+         "days": {
+           "mon": "الاثنين",
+           "tue": "الثلاثاء",
+           "wed": "الأربعاء",
+           "thu": "الخميس",
+           "fri": "الجمعة",
+           "sat": "السبت",
+           "sun": "الأحد"
+         },
+         "hours": {
+           "12am": "12 ص",
+           "4am": "4 ص",
+           "8am": "8 ص",
+           "12pm": "12 م",
+           "4pm": "4 م",
+           "8pm": "8 م"
+         },
+         "low": "منخفض",
+         "high": "مرتفع"
+       },
+       "messages": {
+         "fetchError": "فشل في جلب بيانات الإحصائيات"
+       },
+      "common": {
+        "viewAll": "عرض الكل",
+        "apply": "تطبيق",
+        "dateRange": "نطاق التاريخ",
+        "selectAccount": "إختر الحساب",
+        "chooseDateRange": "اختر نطاق التاريخ",
+        "messageLabel": "رسالة"
+      },
+      "tables": {
+        "templates": {
+          "name": "القالب",
+          "category": "الفئة",
+          "sent": "المرسلة",
+          "read": "القراءة",
+          "clickRate": "معدل النقر"
+        },
+        "automation": {
+          "name": "التشغيل التلقائي",
+          "active": "المفعّل",
+          "completed": "المكتمل",
+          "failed": "الفاشل",
+          "successRate": "معدل النجاح"
+        },
+        "buttons": {
+          "button": "الزر",
+          "clicks": "النقرات"
+        }
+      }
+    },
     "accounts": {
       "title": "حسابات الواتساب",
       "selectPlaceholder": "اختر رقم الهاتف",
@@ -9382,7 +9479,9 @@
         "conversionRate": "معدل التحويل",
         "avgResponseTime": "متوسط وقت الاستجابة",
         "blockRate": "معدل الحظر / الشكاوى",
-        "totalAccounts": "إجمالي الحسابات"
+        "totalAccounts": "إجمالي الحسابات",
+        "newConversations": "محادثات جديده (آخر 48 ساعة)",
+        "failureRate": "معدل فشل الرسائل"
       },
       "toolbar": {
         "searchPlaceholder": "بحث بالاسم أو الرقم أو معرف WABA أو معرف رقم الهاتف...",
@@ -9513,9 +9612,10 @@
       "stats": {
         "total": "إجمالي القوالب",
         "approved": "المعتمدة",
+        "rejected": "المرفوضة",
         "lowQuality": "جودة منخفضة",
         "usedLast48": "استخدمت (آخر 48 ساعة)",
-        "errorsLast48": "أخطاء (آخر 48 ساعة)"
+        "errorsLast48": "فشل الإرسال (آخر 48 ساعة)"
       },
       "toolbar": {
         "searchPlaceholder": "بحث في القوالب...",
@@ -9833,12 +9933,11 @@
         "searchPlaceholder": "البحث بالاسم..."
       },
       "stats": {
-        "executing": "قيد التنفيذ",
         "published": "منشورة",
-        "paused": "متوقفة (مشاكل)",
-        "done": "مكتملة",
-        "pausedAll": "متوقفة",
-        "all": "العدد الكلي"
+        "paused": "متوقفة",
+        "draft": "مسودة",
+        "archived": "مؤرشفة",
+        "total": "العدد الكلي"
       },
       "filters": {
         "status": "الحالة",
@@ -9886,10 +9985,12 @@
         "logs": "سجلات التنفيذ"
       },
       "stats": {
-        "running": "قيد التنفيذ حالياً",
+        "running": "جاري التنفيذ",
         "problems": "بها مشاكل",
-        "completed": "عدد المكتملة",
-        "total": "إجمالي المحاولات"
+        "completed": "مكتملة",
+        "total": "إجمالي التنفيذ",
+        "pending": "قيد الانتظار",
+        "paused": "متوقف مؤقتاً"
       },
       "toolbar": {
         "searchPlaceholder": "البحث بمعرف الكيان..."
@@ -9918,7 +10019,8 @@
       },
       "actions": {
         "view": "عرض التنفيذ"
-      }
+      },
+      "refreshed": "تم تحديث البيانات"
     }
   },
   "systemErrors": {
@@ -10034,8 +10136,11 @@
       "sent": "العروض المرسلة",
       "accepted": "المقبولة",
       "rejected": "المرفوضة",
-      "noAnswer": "بدون رد",
-      "acceptedAfterTime": "مقبولة بعد انتهاء العرض"
+      "noAnswer": "لم يتم الرد بعد",
+      "expired": "مقبولة بعد انتهاء العرض",
+      "acceptedNonEligible": "مقبولة ولكن غير مؤهلة",
+      "failedToAdd": "فشل الإضافة",
+      "delivered": "تم التسليم"
     },
     "table": {
       "triggerProduct": "المنتج المحفز",

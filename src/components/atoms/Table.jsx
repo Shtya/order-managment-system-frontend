@@ -731,7 +731,7 @@ export default function Table({
 /* ══════════════════════════════════════════════════════════════
    FLOATING SEARCH INPUT
 ══════════════════════════════════════════════════════════════ */
-function FloatingSearchInput({ searchValue, onSearchChange, onKeyDown, searchPlaceholder }) {
+export function FloatingSearchInput({ searchValue, onSearchChange, onKeyDown, searchPlaceholder, disabled }) {
   const [focused, setFocused] = useState(false);
   const inputRef = useRef(null);
   const isFloating = focused || (searchValue && searchValue.length > 0);
@@ -791,6 +791,7 @@ function FloatingSearchInput({ searchValue, onSearchChange, onKeyDown, searchPla
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           placeholder=""
+          disabled={disabled}
           className={cn(
             "absolute inset-0 w-full h-full bg-transparent !outline-none",
             "text-sm ps-9 pe-4 pt-0.5",

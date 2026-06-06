@@ -79,7 +79,7 @@ const MOCK_STATS = {
   executing: 12,
   published: 45,
   paused: 3,
-  done: 1560,
+  active: 1560,
 };
 
 function buildListQuery({ page, per_page, search, filters }) {
@@ -114,6 +114,14 @@ export default function AutomationsPage() {
     triggerType: "all",
   });
 
+  const [stats, setStats] = useState({
+    total: 0,
+    published: 0,
+    draft: 0,
+    paused: 0,
+    archived: 0,
+  });
+
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedAutomation, setSelectedAutomation] = useState(null);
@@ -123,13 +131,23 @@ export default function AutomationsPage() {
 
   const statsCards = useMemo(
     () => [
-      { name: t("stats.executing"), value: MOCK_STATS.executing, icon: Play, color: "#3b82f6" },
-      { name: t("stats.published"), value: MOCK_STATS.published, icon: CheckCircle, color: "#10b981" },
-      { name: t("stats.paused"), value: MOCK_STATS.paused, icon: AlertCircle, color: "#ef4444" },
-      { name: t("stats.done"), value: MOCK_STATS.done, icon: Clock, color: "#8b5cf6" },
+      { name: t("stats.total"), value: stats.total, icon: Clock, color: "#8b5cf6" },
+      { name: t("stats.published"), value: stats.published, icon: CheckCircle, color: "#10b981" },
+      { name: t("stats.paused"), value: stats.paused, icon: Pause, color: "#ef4444" },
+      { name: t("stats.archived"), value: stats.archived, icon: Trash2, color: "#f44336" },
+      { name: t("stats.draft"), value: stats.draft, icon: Pencil, color: "#3b82f6" },
     ],
-    [t]
+    [t, stats]
   );
+
+  const fetchStats = async () => {
+    try {
+      const res = await api.get("/automation/stats");
+      setStats(res.data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const fetchAutomations = async ({ page = 1, per_page = 12 } = {}) => {
     setLoading(true);
@@ -148,6 +166,11 @@ export default function AutomationsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     fetchAutomations({ page: 1, per_page: pager.per_page });
@@ -172,6 +195,7 @@ export default function AutomationsPage() {
       await api.post(`/automation/${row.id}/${nextStatus}`);
       toast.success(t("messages.updateSuccess"), { id: toastId });
       fetchAutomations({ page: pager.current_page, per_page: pager.per_page });
+      fetchStats();
     } catch (error) {
       toast.error(normalizeAxiosError(error), { id: toastId });
     }
@@ -195,6 +219,7 @@ export default function AutomationsPage() {
       toast.success(t("messages.deleteSuccess"), { id: toastId });
       setDeleteOpen(false);
       fetchAutomations();
+      fetchStats();
     } catch (err) {
       toast.error(normalizeAxiosError(err), { id: toastId });
     } finally {
@@ -333,7 +358,7 @@ export default function AutomationsPage() {
             />
           </>
         }
-      // stats={statsCards}
+        stats={statsCards}
       />
 
       <Table

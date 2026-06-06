@@ -188,22 +188,28 @@ export default function WhatsAppAccountsPage() {
 
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  const MOCK_STATS = {
-    deliveryRate: "98.5%",
-    readRate: "85.2%",
-    responseRate: "72.4%",
-    conversionRate: "12.8%",
-    avgResponseTime: "4m 20s",
-    blockRate: "0.2%"
-  };
+  const [stats, setStats] = useState({
+    deliveryRate: 0,
+    readRate: 0,
+    newConversations: 0,
+    failureRate: 0,
+  });
 
   const statsCards = useMemo(() => [
-    { name: t("stats.deliveryRate"), value: MOCK_STATS.deliveryRate, icon: CheckCircle2, color: "#10b981" },
-    { name: t("stats.readRate"), value: MOCK_STATS.readRate, icon: Eye, color: "#3b82f6" },
-    { name: t("stats.responseRate"), value: MOCK_STATS.responseRate, icon: MessageSquare, color: "#8b5cf6" },
-    { name: t("stats.conversionRate"), value: MOCK_STATS.conversionRate, icon: BarChart3, color: "#f59e0b" },
-    { name: t("stats.avgResponseTime"), value: MOCK_STATS.avgResponseTime, icon: Clock, color: "#6366f1" },
-  ], [t]);
+    { name: t("stats.deliveryRate"), value: `${stats.deliveryRate}%`, icon: CheckCircle2, color: "#10b981" },
+    { name: t("stats.readRate"), value: `${stats.readRate}%`, icon: Eye, color: "#3b82f6" },
+    { name: t("stats.newConversations"), value: stats.newConversations, icon: MessageSquare, color: "#8b5cf6" },
+    { name: t("stats.failureRate"), value: `${stats.failureRate}%`, icon: AlertCircle, color: "#f59e0b" },
+  ], [t, stats]);
+
+  const fetchStats = async () => {
+    try {
+      const res = await api.get("/whatsapp-accounts/stats");
+      setStats(res.data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const fetchAccounts = async ({ page = 1, per_page = 12 } = {}) => {
     setLoading(true);
@@ -222,6 +228,11 @@ export default function WhatsAppAccountsPage() {
       setLoading(false);
     }
   };
+
+    useEffect(() => {
+    fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     fetchAccounts({ page: 1, per_page: pager.per_page });
@@ -255,6 +266,7 @@ export default function WhatsAppAccountsPage() {
       setToggleState({ open: false, row: null });
       toast.success(t("messages.updateSuccess"));
       await fetchAccounts({ page: pager.current_page, per_page: pager.per_page });
+      fetchStats();
     } catch (e) {
       toast.error(normalizeAxiosError(e));
     } finally {
@@ -269,6 +281,7 @@ export default function WhatsAppAccountsPage() {
       setDeleteState({ open: false, id: null });
       toast.success(t("messages.deleteSuccess"));
       await fetchAccounts({ page: pager.current_page, per_page: pager.per_page });
+      fetchStats();
     } catch (e) {
       toast.error(normalizeAxiosError(e));
     } finally {
@@ -517,7 +530,7 @@ export default function WhatsAppAccountsPage() {
             />
           </>
         }
-      // stats={statsCards}
+      stats={statsCards}
       />
 
       <Table

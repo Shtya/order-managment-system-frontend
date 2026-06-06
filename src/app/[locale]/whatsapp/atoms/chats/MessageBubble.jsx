@@ -33,17 +33,12 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
         return formatText(body);
     }, [message.content?.text?.body, message.content?.body]);
 
-    const formattedImageCaption = useMemo(() => {
-        return formatText(message.content?.image?.caption || "");
-    }, [message.content?.image?.caption]);
+    const caption = message.content?.caption || message.content?.image?.caption || message.content?.video?.caption || message.content?.document?.caption || "";
+    const formattedCaption = useMemo(() => {
+        return formatText(caption || "");
+    }, [caption]);
 
-    const formattedVideoCaption = useMemo(() => {
-        return formatText(message.content?.video?.caption || "");
-    }, [message.content?.video?.caption]);
-
-    const formattedDocumentCaption = useMemo(() => {
-        return formatText(message.content?.document?.caption || "");
-    }, [message.content?.document?.caption]);
+  
 
     const getMediaUrl = (content, type) => {
         const media = content[type];
@@ -151,6 +146,122 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
         setAudioProgress(0);
     };
 
+    const renderMedia = (type, mediaContent, isHeader = false) => {
+        const caption = formattedCaption;
+        
+        switch (type) {
+            case "image":
+                
+                return (
+                    <div className={cn("space-y-2", !isHeader && "max-w-sm")}>
+                        <div className={cn(
+                            "relative w-full flex items-center justify-center rounded-lg overflow-hidden group/media",
+                            (mediaLoading || mediaError) && "md:min-w-[150px] md:min-h-[150px]"
+                        )}>
+                            {(mediaLoading || message.status === "uploading") && !mediaError && (
+                                <div className="absolute bg-black/5 inset-0 flex flex-col items-center justify-center z-10 backdrop-blur-[2px]">
+                                    <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                                    {message.status === "uploading" && <span className="text-[10px] text-gray-500 font-bold mt-2 uppercase tracking-widest">Uploading...</span>}
+                                </div>
+                            )}
+                            {mediaError ? (
+                                <div className="flex flex-col bg-black/5 items-center gap-2 p-6 text-gray-400">
+                                    <AlertCircle size={32} />
+                                    <span className="text-xs font-medium">Failed to load image</span>
+                                </div>
+                            ) : (
+                                <img
+                                    src={getMediaUrl(mediaContent, "image")}
+                                    alt="image"
+                                    className={cn(
+                                        "rounded-lg w-full h-auto cursor-pointer transition-opacity duration-300",
+                                        (mediaLoading && message.status !== "uploading") ? "opacity-0" : "opacity-100"
+                                    )}
+                                    loading="lazy"
+                                    onLoad={() => setMediaLoading(false)}
+                                    onError={() => {
+                                        setMediaLoading(false);
+                                        setMediaError(true);
+                                    }}
+                                    onClick={() => handleMediaClick("image", mediaContent)}
+                                />
+                            )}
+                        </div>
+                        {!isHeader && caption && <p className="text-sm whitespace-pre-wrap">{caption}</p>}
+                    </div>
+                );
+
+            case "video":
+                return (
+                    <div className={cn("space-y-2", !isHeader && "max-w-sm")}>
+                        <div className="relative w-full min-h-[180px] flex items-center justify-center bg-black/5 rounded-lg overflow-hidden group/media">
+                            {(mediaLoading || message.status === "uploading") && !mediaError && (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center z-10 backdrop-blur-[2px]">
+                                    <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                                    {message.status === "uploading" && <span className="text-[10px] text-gray-500 font-bold mt-2 uppercase tracking-widest">Uploading...</span>}
+                                </div>
+                            )}
+                            {mediaError ? (
+                                <div className="flex flex-col items-center gap-2 p-6 text-gray-400">
+                                    <AlertCircle size={32} />
+                                    <span className="text-xs font-medium">Failed to load video</span>
+                                </div>
+                            ) : (
+                                <video
+                                    src={getMediaUrl(mediaContent, "video")}
+                                    controls
+                                    className={cn(
+                                        "rounded-lg w-full h-auto transition-opacity duration-300",
+                                        (mediaLoading && message.status !== "uploading") ? "opacity-0" : "opacity-100"
+                                    )}
+                                    onLoadedData={() => setMediaLoading(false)}
+                                    onError={() => {
+                                        setMediaLoading(false);
+                                        setMediaError(true);
+                                    }}
+                                />
+                            )}
+                        </div>
+                        {!isHeader && caption && <p className="text-sm whitespace-pre-wrap">{caption}</p>}
+                    </div>
+                );
+
+            case "document":
+                return (
+                    <div className="space-y-2">
+                        <div className={cn(
+                            "flex items-center gap-3 p-3 rounded-lg border relative overflow-hidden",
+                            isOutbound ? "bg-black/5 border-black/10" : "bg-gray-50 border-gray-100"
+                        )}>
+                            {message.status === "uploading" && (
+                                <div className="absolute inset-0 bg-white/60 dark:bg-black/40 flex items-center justify-center z-10 backdrop-blur-[1px]">
+                                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                                    <span className="text-[10px] font-bold ms-2 text-primary">UPLOADING...</span>
+                                </div>
+                            )}
+                            <div
+                                onClick={() => handleMediaClick("document", mediaContent)}
+                                className="flex items-center gap-3 flex-1 cursor-pointer"
+                            >
+                                <FileText size={32} className="text-blue-500" />
+                                <div className="min-w-0">
+                                    <p className="text-sm font-medium truncate">{mediaContent.document?.filename || mediaContent.document?.name || "Document"}</p>
+                                    <p className="text-[10px] opacity-60 uppercase">{mediaContent.document?.mime_type || "PDF"}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {!isHeader && caption && <p className="text-sm whitespace-pre-wrap">{caption}</p>}
+                    </div>
+                );
+
+            case "text":
+                return <div className="font-bold text-sm">{mediaContent.text}</div>;
+
+            default:
+                return null;
+        }
+    };
+
     // Status icons mapping
     const StatusIcon = ({ status }) => {
         if (status === "uploading") return <Loader2 className="w-3 h-3 text-gray-400 animate-spin" />;
@@ -169,107 +280,13 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                 return <p className="text-sm whitespace-pre-wrap">{formattedBody}</p>;
 
             case "image":
-                return (
-                    <div className="space-y-2 max-w-sm">
-                        <div className={cn(
-                            "relative w-full flex items-center justify-center  rounded-lg overflow-hidden group/media",
-                            (mediaLoading || mediaError) && "md:min-w-[150px] md:min-h-[150px]"
-                        )}>
-                            {(mediaLoading || message.status === "uploading") && !mediaError && (
-                                <div className="absolute  bg-black/5 inset-0 flex flex-col items-center justify-center z-10 backdrop-blur-[2px]">
-                                    <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-                                    {message.status === "uploading" && <span className="text-[10px] text-gray-500 font-bold mt-2 uppercase tracking-widest">Uploading...</span>}
-                                </div>
-                            )}
-                            {mediaError ? (
-                                <div className="flex flex-col  bg-black/5  items-center gap-2 p-6 text-gray-400">
-                                    <AlertCircle size={32} />
-                                    <span className="text-xs font-medium">Failed to load image</span>
-                                </div>
-                            ) : (
-                                <img
-                                    src={getMediaUrl(content, "image")}
-                                    alt="image"
-                                    className={cn(
-                                        "rounded-lg w-full h-auto cursor-pointer transition-opacity duration-300",
-                                        (mediaLoading && message.status !== "uploading") ? "opacity-0" : "opacity-100"
-                                    )}
-                                    loading="lazy"
-                                    onLoad={() => setMediaLoading(false)}
-                                    onError={() => {
-                                        setMediaLoading(false);
-                                        setMediaError(true);
-                                    }}
-                                    onClick={() => handleMediaClick("image", content)}
-                                />
-                            )}
-                        </div>
-                        {content?.image?.caption && <p className="text-sm whitespace-pre-wrap">{formattedImageCaption}</p>}
-                    </div>
-                );
+                return renderMedia("image", content);
 
             case "video":
-                return (
-                    <div className="space-y-2 max-w-sm">
-                        <div className="relative w-full min-h-[180px] flex items-center justify-center bg-black/5 rounded-lg overflow-hidden group/media">
-                            {(mediaLoading || message.status === "uploading") && !mediaError && (
-                                <div className="absolute inset-0 flex flex-col items-center justify-center z-10 backdrop-blur-[2px]">
-                                    <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-                                    {message.status === "uploading" && <span className="text-[10px] text-gray-500 font-bold mt-2 uppercase tracking-widest">Uploading...</span>}
-                                </div>
-                            )}
-                            {mediaError ? (
-                                <div className="flex flex-col items-center gap-2 p-6 text-gray-400">
-                                    <AlertCircle size={32} />
-                                    <span className="text-xs font-medium">Failed to load video</span>
-                                </div>
-                            ) : (
-                                <video
-                                    src={getMediaUrl(content, "video")}
-                                    controls
-                                    className={cn(
-                                        "rounded-lg w-full h-auto transition-opacity duration-300",
-                                        (mediaLoading && message.status !== "uploading") ? "opacity-0" : "opacity-100"
-                                    )}
-                                    onLoadedData={() => setMediaLoading(false)}
-                                    onError={() => {
-                                        setMediaLoading(false);
-                                        setMediaError(true);
-                                    }}
-                                />
-                            )}
-                        </div>
-                        {content?.video?.caption && <p className="text-sm whitespace-pre-wrap">{formattedVideoCaption}</p>}
-                    </div>
-                );
+                return renderMedia("video", content);
 
             case "document":
-                return (
-                    <div className="space-y-2">
-                        <div className={cn(
-                            "flex items-center gap-3 p-3 rounded-lg border relative overflow-hidden",
-                            isOutbound ? "bg-black/5 border-black/10" : "bg-gray-50 border-gray-100"
-                        )}>
-                            {message.status === "uploading" && (
-                                <div className="absolute inset-0 bg-white/60 dark:bg-black/40 flex items-center justify-center z-10 backdrop-blur-[1px]">
-                                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                                    <span className="text-[10px] font-bold ms-2 text-primary">UPLOADING...</span>
-                                </div>
-                            )}
-                            <div
-                                onClick={() => handleMediaClick("document", content)}
-                                className="flex items-center gap-3 flex-1 cursor-pointer"
-                            >
-                                <FileText size={32} className="text-blue-500" />
-                                <div className="min-w-0">
-                                    <p className="text-sm font-medium truncate">{content.document?.filename || content.document?.name || "Document"}</p>
-                                    <p className="text-[10px] opacity-60 uppercase">{content.document?.mime_type || "PDF"}</p>
-                                </div>
-                            </div>
-                        </div>
-                        {content?.document?.caption && <p className="text-sm whitespace-pre-wrap">{formattedDocumentCaption}</p>}
-                    </div>
-                );
+                return renderMedia("document", content);
 
             case "audio":
                 return (
@@ -449,10 +466,18 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                     );
                 }
 
+                if (content.interactive?.type === "button_reply") {
+                    return (
+                        <p className="text-sm whitespace-pre-wrap">
+                            {content.interactive.button_reply?.title}
+                        </p>
+                    );
+                }
+
                 return (
                     <div className="space-y-3">
                         {content.interactive?.header && (
-                            <div className="font-bold text-sm">{content.interactive.header.text}</div>
+                            renderMedia(content.interactive.header.type, content.interactive.header, true)
                         )}
                         <p className="text-sm">{content.interactive?.body?.text}</p>
                         {content.interactive?.action?.buttons && (

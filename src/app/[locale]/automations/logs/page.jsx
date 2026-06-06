@@ -107,17 +107,37 @@ export default function AutomationLogsPage() {
         endDate: null
     });
 
+    const [stats, setStats] = useState({
+        total: 0,
+        pending: 0,
+        running: 0,
+        completed: 0,
+        failed: 0,
+        paused: 0,
+    });
+
     const { handleExport, exportLoading } = useExport();
 
     const statsCards = useMemo(
         () => [
-            { name: t("stats.running"), value: MOCK_STATS.running, icon: Play, color: "#3b82f6" },
-            { name: t("stats.problems"), value: MOCK_STATS.problems, icon: AlertCircle, color: "#ef4444" },
-            { name: t("stats.completed"), value: MOCK_STATS.completed, icon: CheckCircle, color: "#10b981" },
-            { name: t("stats.total"), value: MOCK_STATS.total, icon: Clock, color: "#8b5cf6" },
+            { name: t("stats.total"), value: stats.total, icon: Clock, color: "#8b5cf6" },
+            { name: t("stats.running"), value: stats.running, icon: Play, color: "#3b82f6" },
+            { name: t("stats.problems"), value: stats.failed, icon: AlertCircle, color: "#ef4444" },
+            { name: t("stats.completed"), value: stats.completed, icon: CheckCircle, color: "#10b981" },
+            { name: t("stats.pending"), value: stats.pending, icon: Activity, color: "#64748b" },
+            { name: t("stats.paused"), value: stats.paused, icon: RefreshCw, color: "#f59e0b" },
         ],
-        [t]
+        [t, stats]
     );
+
+    const fetchStats = async () => {
+        try {
+            const res = await api.get("/automation/runs/stats");
+            setStats(res.data);
+        } catch (e) {
+            console.error(e);
+        }
+    };
 
     const fetchLogs = async ({ page = 1, per_page = 12 } = {}) => {
         setLoading(true);
@@ -136,6 +156,11 @@ export default function AutomationLogsPage() {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchStats();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         fetchLogs({ page: 1, per_page: pager.per_page });
@@ -300,7 +325,8 @@ export default function AutomationLogsPage() {
 
     const handleRefresh = () => {
         fetchLogs({ page: pager.current_page, per_page: pager.per_page });
-        toast.success(tCommon("refreshed") || "Data refreshed");
+        fetchStats();
+        toast.success(t("refreshed") || "Data refreshed");
     };
 
     return (
@@ -331,7 +357,7 @@ export default function AutomationLogsPage() {
                         />
                     </div>
                 }
-            // stats={statsCards}
+                stats={statsCards}
             />
 
             <Table

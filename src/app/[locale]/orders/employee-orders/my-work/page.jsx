@@ -557,8 +557,15 @@ export default function OrderConfirmationWorkPage() {
     if (!originalOrder || isLocked || decided) return;
     try {
       setChangingStatus(true); setSelStatusId(statusId);
-      await api.put(`/orders/${originalOrder.id}/confirm-status`, { statusId, notes: notes.trim() || undefined });
-      toast.success(t("messages.statusUpdated")); setShowSuccess(true); setRefetching(true);
+      const res = await api.put(`/orders/${originalOrder.id}/confirm-status`, { statusId, notes: notes.trim() || undefined });
+      
+      if (res.data?.success === false) {
+        toast.error(res.data.message || t("messages.errorUpdatingStatus"));
+      } else {
+        toast.success(t("messages.statusUpdated"));
+      }
+      
+      setShowSuccess(true); setRefetching(true);
       const r = await api.get(`/orders/${originalOrder.id}`); initOrder(r.data);
       setDecided(true); setNotes(""); setSelStatusId(null);
     } catch (e) { toast.error(e.response?.data?.message || t("messages.errorUpdatingStatus")); setSelStatusId(null); setDecided(false); }

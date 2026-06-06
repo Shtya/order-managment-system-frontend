@@ -176,6 +176,7 @@ export default function DashboardPage() {
       title: t("kpi.costOfGoods"),
       icon: Briefcase,
       color: "#f59e0b",
+      isInverse: true,
     },
     {
       key: "totalProfit",
@@ -210,6 +211,7 @@ export default function DashboardPage() {
       icon: XCircle,
       color: "#ef4444",
       pct: true,
+      isInverse: true,
     },
     {
       key: "returned",
@@ -217,6 +219,7 @@ export default function DashboardPage() {
       icon: RotateCcw,
       color: "#607D8B",
       pct: true,
+      isInverse: true,
     },
     {
       key: "inDelivery",
@@ -261,22 +264,52 @@ export default function DashboardPage() {
   ];
 
   const statsData = useMemo(
-    () =>
-      KPI_CONFIG.map((card, i) => ({
-        id: card.key,
-        name: card.title,
-        value:
-          summary?.[card.key] == null
-            ? "0"
-            : card.pct
-              ? pct(summary[card.key])
-              : fmt(summary[card.key]),
-        icon: card.icon,
-        color: card.color,
-        sortOrder: i,
-        trend: { label: "خلال الشهر الماضي", isUp: i % 2 === 0 },
-      })),
-    [summary],
+    () => {
+      const comparisonLabel = quickRange
+        ? t(`common.comparison.${quickRange}`)
+        : t("common.comparison.custom");
+
+      return KPI_CONFIG.map((card) => {
+        const current = summary?.[card.key] ?? 0;
+        const previous = summary?.comparison?.[card.key]; // Assume API returns comparison data here
+        
+        let change = null;
+        if (previous !== undefined && previous !== null && previous !== 0) {
+          change = ((current - previous) / previous) * 100;
+        }
+
+        const hasComparison = change !== null;
+        const isPositiveChange = (change ?? 0) > 0;
+        const isNegativeChange = (change ?? 0) < 0;
+
+        // Determine if the change is "Good"
+        // For normal metrics, up is good. For isInverse metrics, down is good.
+        const isGood = card.isInverse
+          ? isNegativeChange
+          : isPositiveChange;
+
+        return {
+          id: card.key,
+          name: card.title,
+          value:
+            summary?.[card.key] == null
+              ? "0"
+              : card.pct
+                ? pct(summary[card.key])
+                : fmt(summary[card.key]),
+          icon: card.icon,
+          color: card.color,
+          trend: {
+            label: hasComparison ? comparisonLabel : t("common.noComparisonData"),
+            value: hasComparison ? `${Math.abs(Math.round(change))}%` : "",
+            isUp: isPositiveChange,
+            isGood: isGood,
+            showArrow: hasComparison && Math.round(change) !== 0,
+          },
+        };
+      });
+    },
+    [summary, quickRange, t],
   );
 
   // ── Profit table columns ────────────────────────────────────────────────────

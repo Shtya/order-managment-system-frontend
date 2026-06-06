@@ -52,6 +52,8 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
     const router = useRouter();
     const isEditMode = mode === 'edit';
     const isViewMode = mode === 'view';
+
+    
     const { subscribe } = useSocket();
     const adminId = user?.id;
     const [previewRun, setPreviewRun] = useState(null);

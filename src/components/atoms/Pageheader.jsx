@@ -67,12 +67,23 @@ function AnimatedCounter({ value, delay = 0 }) {
 function InfoCard({
 	title, value, icon, editable,
 	isAddCard, onEdit, onDelete, onClick,
-	trend, // trend: { value: number|string, label: string, isUp: false }
+	trend, // trend: { value: number|string, label: string, isUp: boolean, isGood: boolean, showArrow: boolean }
 }) {
 	const t = useTranslations("orders");
 	const [hov, setHov] = useState(false);
 	const Icon = icon;
-	
+
+	// Determine trend color
+	const isTrendEmpty = trend?.value === "—" || trend?.value === undefined;
+	const trendSuccessColor = "#10b981";
+	const trendDangerColor = "var(--destructive)";
+	const trendNeutralColor = "var(--muted-foreground)";
+
+	let trendColor = trendNeutralColor;
+	if (!isTrendEmpty) {
+		trendColor = trend.isGood ? trendSuccessColor : trendDangerColor;
+	}
+
 	const accent = "var(--primary)";
 	const iconBg = "color-mix(in oklab, var(--primary) 12%, transparent)";
 	const iconBorder = "1px solid color-mix(in oklab, var(--primary) 18%, transparent)";
@@ -243,7 +254,7 @@ function InfoCard({
 						display: "flex", alignItems: "center", gap: 6, marginTop: 8
 					}}>
 						{/* صندوق السهم */}
-						<div style={{
+						{trend?.showArrow && <div style={{
 							width: 18, height: 18, borderRadius: 5,
 							display: "flex", alignItems: "center", justifyContent: "center",
 							// استخدام color-mix ليعطي شفافية ناعمة من نفس لون الحالة
@@ -257,11 +268,10 @@ function InfoCard({
 							) : (
 								<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m7 7 10 10M17 7v10H7" /></svg>
 							)}
-						</div>
+						</div>}
 
 						{/* النص المصاحب */}
 						<span className="space-x-1" style={{ fontSize: 10, fontWeight: 600, color: "var(--muted-foreground)" }}>
-							{trend.label}
 							<span style={{
 								// تلوين النسبة فقط بلون الحالة لسهولة القراءة
 								color: trend.isUp ? "#10b981" : "var(--destructive)",
@@ -269,6 +279,7 @@ function InfoCard({
 							}}>
 								{trend.value !== undefined ? trend.value : ""}
 							</span>
+							<span>{trend.label}</span>
 						</span>
 					</div>
 				)}

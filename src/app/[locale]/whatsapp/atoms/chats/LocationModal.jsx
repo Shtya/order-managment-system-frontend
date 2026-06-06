@@ -19,6 +19,7 @@ import * as yup from "yup";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import MapLocationPicker from "@/components/atoms/MapLocationPicker";
+import LocationFields from "./LocationFields";
 
 const createSchema = (t) =>
     yup.object({
@@ -44,9 +45,10 @@ export default function LocationModal() {
         reset,
         setValue,
         watch,
-        formState: { errors },
+        formState: { errors, isValid, isSubmitting },
     } = useForm({
         resolver: yupResolver(schema),
+        mode: "onChange",
         defaultValues: {
             name: "",
             address: "",
@@ -54,9 +56,11 @@ export default function LocationModal() {
             longitude: 31.2357
         },
     });
-
-    const lat = watch("latitude");
-    const lng = watch("longitude");
+    
+    const name = watch("name");
+    const address = watch("address");
+    const latitude = watch("latitude");
+    const longitude = watch("longitude");
 
     const onSubmit = (data) => {
         handleSendMessage({
@@ -105,55 +109,23 @@ export default function LocationModal() {
                     {/* Form Section */}
                     <div className="w-1/3 overflow-y-auto p-6 custom-scrollbar bg-white dark:bg-slate-900 border-e">
                         <form id="location-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                            <div className="space-y-2">
-                                <Label className="text-xs font-bold">{t("locationName")} <span className="text-red-500">*</span></Label>
-                                <Controller
-                                    name="name"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <Input {...field} placeholder={t("locationName")} className={errors.name ? "border-red-500" : ""} />
-                                    )}
-                                />
-                                {errors.name && <p className="text-[10px] text-red-500">{errors.name.message}</p>}
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label className="text-xs font-bold">{t("locationAddress")} <span className="text-red-500">*</span></Label>
-                                <Controller
-                                    name="address"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <textarea
-                                            {...field}
-                                            rows={3}
-                                            placeholder={t("locationAddress")}
-                                            className={cn(
-                                                "w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-                                                errors.address ? "border-red-500" : ""
-                                            )}
-                                        />
-                                    )}
-                                />
-                                {errors.address && <p className="text-[10px] text-red-500">{errors.address.message}</p>}
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-2">
-                                <div className="space-y-1">
-                                    <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t("latitude")}</Label>
-                                    <Input value={lat.toFixed(6)} readOnly className="h-8 text-xs bg-slate-50 dark:bg-slate-800" />
-                                </div>
-                                <div className="space-y-1">
-                                    <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t("longitude")}</Label>
-                                    <Input value={lng.toFixed(6)} readOnly className="h-8 text-xs bg-slate-50 dark:bg-slate-800" />
-                                </div>
-                            </div>
+                            <LocationFields 
+                                values={{ name, address, latitude, longitude }}
+                                onChange={(updates) => {
+                                    Object.entries(updates).forEach(([key, val]) => setValue(key, val));
+                                }}
+                                errors={{
+                                    name: errors.name?.message,
+                                    address: errors.address?.message
+                                }}
+                            />
                         </form>
                     </div>
 
                     {/* Map Section */}
                     <div className="flex-1 relative bg-slate-100 dark:bg-slate-800 min-h-[600px]">
                         <MapLocationPicker
-                            initialLocation={{ lat, lng }}
+                            initialLocation={{ lat: latitude, lng: longitude }}
                             onLocationSelect={handleLocationSelect}
                             height="100%"
                             width="100%"
@@ -174,7 +146,9 @@ export default function LocationModal() {
                     <Button_
                         type="submit"
                         form="location-form"
-                        className="bg-green-600 hover:bg-green-700 text-white"
+                        disabled={!isValid || isSubmitting}
+                        loading={isSubmitting}
+                        className="bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
                         label={t("sendMessage")}
                     />
                 </DialogFooter>

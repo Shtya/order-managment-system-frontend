@@ -2,7 +2,7 @@
 
 import { cn } from "@/utils/cn";
 import { format } from "date-fns";
-import { Check, CheckCheck, Reply, Smile, Play, Pause, Mic, FileText, Clock, AlertCircle, Loader2, RotateCcw, List } from "lucide-react";
+import { Check, CheckCheck, Reply, Smile, Play, Pause, Mic, FileText, Clock, AlertCircle, Loader2, RotateCcw, List, MapPin } from "lucide-react";
 import { useState, useRef, useEffect, useMemo } from "react";
 import data from '@emoji-mart/data'
 import Picker from '@emoji-mart/react'
@@ -366,6 +366,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                 // Map actual values from components to examples for the preview
                 const dynamicExamples = {};
                 let headerMediaUrl = templateConfig.headerUrl;
+                let locationData = null;
 
                 if (content.template?.components) {
                     content.template.components.forEach(comp => {
@@ -375,6 +376,8 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                                     dynamicExamples[idx + 1] = param.text;
                                 } else if (["image", "video", "document"].includes(param.type?.toLowerCase())) {
                                     headerMediaUrl = param[param.type]?.link || headerMediaUrl;
+                                } else if (param.type === "location") {
+                                    locationData = param.location;
                                 }
                             });
                         } else if (comp.type === "body" && comp.parameters) {
@@ -384,7 +387,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                         }
                     });
                 }
-
+                
                 return (
                     <div className="space-y-2 min-w-[300px]">
                         <TemplatePreview
@@ -396,6 +399,7 @@ export default function MessageBubble({ id, message, isOutbound, onReply, onReac
                             template={{
                                 ...templateConfig,
                                 headerUrl: headerMediaUrl,
+                                locationData,
                                 language: templateMetadata.language || "en",
                                 subCategory: templateMetadata.subCategory,
                                 examples: dynamicExamples // Use the actual sent values as "examples"

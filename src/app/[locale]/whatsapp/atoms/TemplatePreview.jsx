@@ -261,6 +261,7 @@ export default function TemplatePreview({
         headerText = "",
         headerExample = "",
         headerUrl = "",
+        locationData = null,
         bodyText = "",
         footerText = "",
         buttons = [],
@@ -377,9 +378,36 @@ export default function TemplatePreview({
                     </a>
                 );
             case "LOCATION":
+                if (locationData) {
+                    return (
+                        <div className="space-y-2 mb-2">
+                            <div
+                                className="h-32 rounded-lg overflow-hidden relative cursor-pointer group"
+                                onClick={() => window.open(`https://www.google.com/maps?q=${locationData.latitude},${locationData.longitude}`, "_blank")}
+                            >
+                                <img
+                                    src={`https://static-maps.yandex.ru/1.x/?lang=en_US&ll=${locationData.longitude},${locationData.latitude}&z=13&l=map&size=300,150`}
+                                    alt="map"
+                                    className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                    <MapPin size={32} className="text-red-500 drop-shadow-md" />
+                                </div>
+                            </div>
+                            <div className="min-w-0 px-1 pb-1">
+                                <p className="text-[13px] font-bold truncate text-[#111b21] dark:text-white">{locationData.name}</p>
+                                <p className="text-[11px] text-muted-foreground line-clamp-1">{locationData.address}</p>
+                            </div>
+                        </div>
+                    );
+                }
                 return (
-                    <div className={mediaClass}>
-                        <MapPin size={48} className="text-slate-300" />
+                    <div className={cn(mediaClass, "flex-col gap-1")}>
+                        <MapPin size={48} className="text-slate-300 mt-auto" />
+                        <div className="text-center px-2 mt-auto ms-auto pb-1">
+                            <p className="text-[11px] text-slate-400 font-bold ">{"{{name}}"}</p>
+                            <p className="text-[10px] text-slate-400 line-clamp-1">{"{{address}}"}</p>
+                        </div>
                     </div>
                 );
             case "TEXT":

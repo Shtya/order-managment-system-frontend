@@ -649,11 +649,11 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       labelKey: "whatsapp",
       href: "/whatsapp",
       children: [
-        // {
-        //   labelKey: "overview",
-        //   href: "/whatsapp",
-        //   icon: FaChartPie, // أو أي أيقونة dashboard
-        // },
+        {
+          labelKey: "overview",
+          href: "/whatsapp",
+          icon: FaChartPie, // أو أي أيقونة dashboard
+        },
         {
           labelKey: "whatsAppAccounts",
           href: "/whatsapp/accounts",

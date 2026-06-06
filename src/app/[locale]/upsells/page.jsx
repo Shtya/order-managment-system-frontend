@@ -19,6 +19,9 @@ import {
   Timer,
   Power,
   PowerOff,
+  PackageCheck,
+  Ban,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
@@ -94,8 +97,11 @@ export default function UpsellsPage() {
     sent: 0,
     accepted: 0,
     rejected: 0,
-    noAnswer: 0,
-    acceptedAfterTime: 0,
+    pending: 0,
+    expired: 0,
+    acceptedNonEligible: 0,
+    failedToAdd: 0,
+    delivered: 0,
   });
 
   const [deleteState, setDeleteState] = useState({ open: false, id: null });
@@ -115,9 +121,12 @@ export default function UpsellsPage() {
     () => [
       { name: t("stats.sent"), value: stats.sent, icon: TrendingUp, color: "#8b5cf6" },
       { name: t("stats.accepted"), value: stats.accepted, icon: CheckCircle2, color: "#10b981" },
+      { name: t("stats.delivered"), value: stats.delivered, icon: PackageCheck, color: "#059669" },
       { name: t("stats.rejected"), value: stats.rejected, icon: XCircle, color: "#ef4444" },
-      { name: t("stats.noAnswer"), value: stats.noAnswer, icon: HelpCircle, color: "#3b82f6" },
-      { name: t("stats.acceptedAfterTime"), value: stats.acceptedAfterTime, icon: Timer, color: "#f59e0b" },
+      { name: t("stats.noAnswer"), value: stats.pending, icon: HelpCircle, color: "#3b82f6" },
+      { name: t("stats.expired"), value: stats.expired, icon: Timer, color: "#f59e0b" },
+      { name: t("stats.acceptedNonEligible"), value: stats.acceptedNonEligible, icon: Ban, color: "#64748b" },
+      { name: t("stats.failedToAdd"), value: stats.failedToAdd, icon: AlertTriangle, color: "#dc2626" },
     ],
     [t, stats]
   );
@@ -184,6 +193,7 @@ export default function UpsellsPage() {
       setDeleteState({ open: false, id: null });
       toast.success(t("messages.deleteSuccess"), { id: toastId });
       fetchUpsells({ page: pager.current_page, per_page: pager.per_page });
+      fetchStats();
     } catch (e) {
       toast.error(normalizeAxiosError(e), { id: toastId });
     } finally {
@@ -197,6 +207,7 @@ export default function UpsellsPage() {
       await api.patch(`/upsells/${row.id}/toggle-active`);
       toast.success(t("messages.statusUpdateSuccess"), { id: toastId });
       fetchUpsells({ page: pager.current_page, per_page: pager.per_page });
+      fetchStats();
     } catch (e) {
       toast.error(normalizeAxiosError(e), { id: toastId });
     }

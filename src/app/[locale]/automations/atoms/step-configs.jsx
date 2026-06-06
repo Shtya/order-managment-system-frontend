@@ -589,19 +589,24 @@ export function SendUpsellConfig({ value, onChange, onClose }) {
         const branches = [
             {
                 id: "skipped",
-                label: "لا يوجد عرض",
+                label: "لا يوجد",
                 condition: "skipped"
             },
             {
+                id: "reject",
+                label: "السستم رفض",
+                condition: "reject"
+            },
+            {
                 id: "accept",
-                label: "قبول أي عرض",
+                label: "قبول",
                 condition: "accept"
             },
             {
-                id: "reject",
-                label: "رفض أي عرض",
-                condition: "reject"
-            }
+                id: "client_reject",
+                label: "العميل رفض",
+                condition: "client_reject"
+            },
         ];
 
         // We only update if branches are not already set correctly to avoid infinite loops

@@ -438,6 +438,8 @@ export const ConversationProvider = ({ children }) => {
 
                         // Update our local payload object for the final API call
                         mediaObj.id = newId;
+                        if(mediaType?.toLowerCase() === 'document')
+                        mediaObj.filename = uploadRes.data?.filename;
                         delete mediaObj.link;
                     }
                 } catch (err) {

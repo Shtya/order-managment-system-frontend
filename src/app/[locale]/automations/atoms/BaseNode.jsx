@@ -48,7 +48,7 @@ export function BaseNode({
     const isRunMode = mode === 'run';
     const node = useFlowStore((s) => s.nodes.find(n => n.id === id));
     const nodeType = node?.type;
-
+    
     // Execution status for run mode
     const executionState = useMemo(() => {
         if (nodeType === 'trigger') {
@@ -220,7 +220,7 @@ export function BaseNode({
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                window.dispatchEvent(new CustomEvent('show-step-info', { detail: { id, executionState } }));
+                                window.dispatchEvent(new CustomEvent('show-step-info', { detail: { id, executionState,nodeType  } }));
                             }}
                             className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
                             title="معلومات الخطوة"

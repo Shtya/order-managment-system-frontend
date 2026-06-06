@@ -332,7 +332,7 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
         return () => window.removeEventListener('show-step-info', handleShowStepInfo);
     }, []);
 
-    console.log(isSuperAdmin, isSuperAdmin ? `/dashboard/automations/edit/${automationId}?${version ? `v=${version}` : ''}` : `/automations/edit/${automationId}?${version ? `v=${version}` : ''}`);
+    
 
     return (
         <>

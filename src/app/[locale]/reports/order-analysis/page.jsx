@@ -462,7 +462,7 @@ export function TrendChart({ data, loading, configs = [] }) {
     labels: data.map((d) => d.label),
     datasets,
   };
-
+  console.log(chartData);
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -578,7 +578,7 @@ export function MiniTable({ columns, data, loading }) {
           This ensures the table doesn't shrink smaller than this width, 
           which triggers the overflow scroll.
       */}
-      <table className="w-full text-sm min-w-[500px] border-collapse">
+      <table className="w-full text-sm min-w-[450px] border-collapse">
         <thead className="table-header">   <tr>
           {columns.map((c, idx) => (
             <th

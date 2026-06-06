@@ -9323,6 +9323,104 @@
     "oldPrice": "Old price"
   },
   "whatsApp": {
+    "overview": {
+      "title": "WhatsApp Statistics",
+      "howToUse": "How to Use",
+      "breadcrumb": {
+        "home": "Home",
+        "statistics": "WhatsApp Statistics"
+      },
+      "stats": {
+        "prefixes": {
+          "messages": "Messages: ",
+          "accounts": "Accounts: ",
+          "templates": "Templates: ",
+          "upsells": "Upsells: "
+        },
+        "names": {
+          "sent": "Sent",
+          "delivered": "Delivered",
+          "read": "Read",
+          "clicks": "Clicks (Buttons)",
+          "failed": "Failed to Send",
+          "totalAccounts": "Total Count",
+          "total": "Total Count",
+          "approved": "Approved",
+          "rejected": "Rejected",
+          "lowQuality": "Low Quality",
+          "upsellSent": "Sent",
+          "upsellAccepted": "Accepted",
+          "upsellRejected": "Rejected",
+          "upsellNoAnswer": "No Answer",
+          "upsellExpired": "Expired",
+          "upsellNonEligible": "Non Eligible",
+          "upsellFailed": "Failed to Add",
+          "upsellDelivered": "Delivered",
+          "upsellPending": "Pending"
+        }
+      },
+      "cards": {
+        "funnel": "Funnel Analysis",
+        "trend": "Messages Over Time",
+        "buttons": "Top Button Clicks",
+        "heatmap": "Activity Heatmap",
+        "type": "Messages by Type",
+        "templates": "Top Templates",
+        "automation": "Automation Performance"
+      },
+      "heatmap": {
+         "days": {
+           "mon": "Monday",
+           "tue": "Tuesday",
+           "wed": "Wednesday",
+           "thu": "Thursday",
+           "fri": "Friday",
+           "sat": "Saturday",
+           "sun": "Sunday"
+         },
+         "hours": {
+           "12am": "12 AM",
+           "4am": "4 AM",
+           "8am": "8 AM",
+           "12pm": "12 PM",
+           "4pm": "4 PM",
+           "8pm": "8 PM"
+         },
+         "low": "Low",
+         "high": "High"
+       },
+       "messages": {
+         "fetchError": "Failed to fetch statistics data"
+       },
+      "common": {
+        "viewAll": "View All",
+        "apply": "Apply",
+        "dateRange": "Date Range",
+        "selectAccount": "Select Account",
+        "chooseDateRange": "Choose Date Range",
+        "messageLabel": "Message"
+      },
+      "tables": {
+        "templates": {
+          "name": "Template",
+          "category": "Category",
+          "sent": "Sent",
+          "read": "Read",
+          "clickRate": "Click Rate"
+        },
+        "automation": {
+          "name": "Automation",
+          "active": "Active",
+          "completed": "Completed",
+          "failed": "Failed",
+          "successRate": "Success Rate"
+        },
+        "buttons": {
+          "button": "Button",
+          "clicks": "Clicks"
+        }
+      }
+    },
     "accounts": {
       "title": "WhatsApp Accounts",
       "selectPlaceholder": "Select phone number",
@@ -9340,7 +9438,9 @@
         "conversionRate": "Conversion Rate",
         "avgResponseTime": "Avg Response Time",
         "blockRate": "Block / Complaint Rate",
-        "totalAccounts": "Total accounts"
+        "totalAccounts": "Total accounts",
+        "newConversations": "New conversations (last 48 hours)",
+        "failureRate": "Message failure rate"
       },
       "toolbar": {
         "searchPlaceholder": "Search by name, number, WABA ID, or phone number ID...",
@@ -9471,9 +9571,10 @@
       "stats": {
         "total": "Total Templates",
         "approved": "Approved",
+        "rejected": "Rejected",
         "lowQuality": "Low Quality",
         "usedLast48": "Used (Last 48h)",
-        "errorsLast48": "Errors (Last 48h)"
+        "errorsLast48": "Failed to Send (Last 48h)"
       },
       "toolbar": {
         "searchPlaceholder": "Search templates...",
@@ -9791,11 +9892,11 @@
         "searchPlaceholder": "Search by name..."
       },
       "stats": {
-        "executing": "Executing",
         "published": "Published",
-        "paused": "Paused (Problems)",
-        "done": "Completed",
-        "pausedAll": "Stopped"
+        "paused": "Paused",
+        "draft": "Draft",
+        "archived": "Archived",
+        "total": "Total Flows"
       },
       "filters": {
         "status": "Status",
@@ -9843,10 +9944,12 @@
         "logs": "Execution Logs"
       },
       "stats": {
-        "running": "Currently Running",
-        "problems": "Has Problems",
-        "completed": "Completed Count",
-        "total": "Total Runs"
+        "running": "Running",
+        "problems": "Problems",
+        "completed": "Completed",
+        "total": "Total Runs",
+        "pending": "Pending",
+        "paused": "Paused"
       },
       "toolbar": {
         "searchPlaceholder": "Search by Entity ID..."
@@ -9874,7 +9977,8 @@
       },
       "actions": {
         "view": "View Execution"
-      }
+      },
+      "refreshed": "Data has been updated"
     }
   },
   "systemErrors": {
@@ -9991,7 +10095,10 @@
       "accepted": "Accepted",
       "rejected": "Rejected",
       "noAnswer": "No Answer",
-      "acceptedAfterTime": "Accepted after the offer ends"
+      "expired": "Accepted after the offer ends",
+      "acceptedNonEligible": "Accepted But Non-Eligible",
+      "failedToAdd": "Failed to Add",
+      "delivered": "Delivered"
     },
     "table": {
       "triggerProduct": "Trigger Product",

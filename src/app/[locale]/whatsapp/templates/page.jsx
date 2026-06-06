@@ -17,6 +17,7 @@ import {
   Tag,
   Globe,
   Loader2,
+  XCircle,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
@@ -139,6 +140,15 @@ export default function WhatsAppTemplatesPage() {
 
   const { handleExport, exportLoading } = useExport();
 
+  const [stats, setStats] = useState({
+    total: 0,
+    approved: 0,
+    rejected: 0,
+    lowQuality: 0,
+    usedLast48h: 0,
+    failedLast48h: 0,
+  });
+
   const [filters, setFilters] = useState({
     quality: "all",
     status: "all",
@@ -149,13 +159,14 @@ export default function WhatsAppTemplatesPage() {
 
   const statsCards = useMemo(
     () => [
-      { name: t("stats.total"), value: MOCK_STATS.total, icon: FileText, color: "#8b5cf6" },
-      { name: t("stats.approved"), value: MOCK_STATS.approved, icon: CheckCircle2, color: "#10b981" },
-      { name: t("stats.lowQuality"), value: MOCK_STATS.lowQuality, icon: AlertTriangle, color: "#ef4444" },
-      { name: t("stats.usedLast48"), value: MOCK_STATS.usedLast48, icon: History, color: "#3b82f6" },
-      { name: t("stats.errorsLast48"), value: MOCK_STATS.errorsLast48, icon: AlertCircle, color: "#f59e0b" },
+      { name: t("stats.total"), value: stats.total, icon: FileText, color: "#8b5cf6" },
+      { name: t("stats.approved"), value: stats.approved, icon: CheckCircle2, color: "#10b981" },
+      { name: t("stats.rejected"), value: stats.rejected, icon: XCircle, color: "#ef4444" },
+      { name: t("stats.lowQuality"), value: stats.lowQuality, icon: AlertTriangle, color: "#ef4444" },
+      { name: t("stats.usedLast48"), value: stats.usedLast48h, icon: History, color: "#3b82f6" },
+      { name: t("stats.errorsLast48"), value: stats.failedLast48h, icon: AlertCircle, color: "#f59e0b" },
     ],
-    [t]
+    [t, stats]
   );
 
   const fetchAccounts = useCallback(async () => {
@@ -171,6 +182,15 @@ export default function WhatsAppTemplatesPage() {
   useEffect(() => {
     fetchAccounts();
   }, [fetchAccounts]);
+
+  const fetchStats = async () => {
+    try {
+      const res = await api.get("/whatsapp-templates/stats");
+      setStats(res.data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const fetchTemplates = async ({ page = 1, per_page = 12 } = {}) => {
     setLoading(true);
@@ -189,6 +209,12 @@ export default function WhatsAppTemplatesPage() {
       setLoading(false);
     }
   };
+
+
+  useEffect(() => {
+    fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     fetchTemplates({ page: 1, per_page: pager.per_page });
@@ -219,6 +245,7 @@ export default function WhatsAppTemplatesPage() {
       setDeleteState({ open: false, id: null });
       toast.success(t("messages.deleteSuccess"));
       await fetchTemplates({ page: pager.current_page, per_page: pager.per_page });
+      fetchStats();
     } catch (e) {
       toast.error(normalizeAxiosError(e));
     } finally {
@@ -413,7 +440,7 @@ export default function WhatsAppTemplatesPage() {
             />
           </>
         }
-      // stats={statsCards}
+        stats={statsCards}
       />
 
       <Table

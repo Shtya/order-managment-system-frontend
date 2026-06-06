@@ -471,6 +471,7 @@ export default function WhatsAppAccountsPage() {
       wabaRef.current = null;
       setSearch("");
       await fetchAccounts({ page: 1, per_page: pager.per_page });
+      await fetchStats();
     } catch (err) {
       authRef.current = null;
       wabaRef.current = null;

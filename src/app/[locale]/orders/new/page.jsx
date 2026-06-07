@@ -1,10 +1,10 @@
 // app/[locale]/orders/new/page.jsx
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, Trash2, Plus, Minus, Loader2, Info, Save, Package } from "lucide-react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import toast from "react-hot-toast";
@@ -180,17 +180,15 @@ function AddressSection({
 	// Bosta geo
 	providerMeta,
 	onMetaChange,
-	providerCities,
+	cities,
 	providerZones,
 	providerDistricts,
 	providerLoading,
-	normalCities,
-	normalCitiesLoading,
+	isLoading,
 	// Bosta validation errors
 	providerErrors,
 }) {
 	const currentConfig = GEO_CONFIG[provider] || GEO_CONFIG.default;
-
 
 	const nameKey = locale === "ar" ? "nameAr" : "nameEn";
 	// Derived: districts filtered by selected zone (parentId === zoneId)
@@ -198,29 +196,31 @@ function AddressSection({
 		if (!currentConfig.showDistrict) return [];
 		return providerDistricts.filter((d) => d.parentId === providerMeta.zoneId);
 	}, [currentConfig.showDistrict, providerDistricts, providerMeta.zoneId]);
+
+	// Watch cityId from RHF for the Select value
+	const cityIdValue = useWatch({ control, name: "cityId" });
+
 	// When user picks a city/zone/district — auto-fill the hidden RHF fields
 	const handleCityChange = useCallback(
-		(cityId, resetArea = true) => {
-			const cities = provider ? providerCities : normalCities;
-			// If cityId is empty, it might be an auto-reset from the Select component during loading.
-			// We only want to process actual selections.
-			if (!cityId) return;
+		(selectedId, resetArea = true) => {
+			if (!selectedId) return;
 
-			// Prevent resetting children if the value hasn't changed (happens on initial load/re-render)
-			if (String(cityId) === String(providerMeta.cityId)) return;
+			// Find city by its unified UUID
+			const city = cities.find((c) => String(c.id) === String(selectedId));
 
-			const city = cities.find((c) => String(c.id) === cityId);
+			if (!city && (providerLoading.cities || isLoading)) return;
 
-			// If cities list is not yet loaded, don't trigger resets
-			if (!city && (providerLoading.cities || normalCitiesLoading)) return;
-
-			onMetaChange("cityId", cityId);
+			onMetaChange("cityId", city?.providerCityId || "");
 			onMetaChange("zoneId", "");
 			onMetaChange("districtId", "");
-			if (city) setValue("city", city[nameKey] || city.nameEn, { shouldValidate: true });
+
+			if (city) {
+				setValue("city", city[nameKey] || city.nameEn, { shouldValidate: true });
+				setValue("cityId", city.id, { shouldValidate: true });
+			}
 			if (resetArea) setValue("area", "", { shouldValidate: false });
 		},
-		[providerCities, normalCities, nameKey, onMetaChange, setValue, provider, providerMeta.cityId, providerLoading.cities, normalCitiesLoading]
+		[cities, nameKey, onMetaChange, setValue, providerLoading.cities, isLoading]
 	);
 
 	const handleZoneChange = useCallback(
@@ -287,9 +287,9 @@ function AddressSection({
 							label={t("bosta.city")}
 							required={config.fields.includes("cityId")}
 							nameKey={nameKey}
-							value={providerMeta.cityId}
+							value={cityIdValue}
 							onValueChange={handleCityChange}
-							items={providerCities.filter((c) => c.dropOff)}
+							items={cities.filter((c) => c.dropOff)}
 							isLoading={providerLoading.cities}
 							placeholder={t("bosta.selectCity")}
 						/>
@@ -399,10 +399,10 @@ function AddressSection({
 						label={t("fields.city")}
 						required
 						nameKey={nameKey}
-						value={providerMeta.cityId}
+						value={cityIdValue}
 						onValueChange={(cityId) => handleCityChange(cityId, false)}
-						items={normalCities ?? []}
-						isLoading={normalCitiesLoading}
+						items={cities ?? []}
+						isLoading={isLoading}
 						placeholder={t("placeholders.city")}
 					/>
 					{errors.city && <p className="text-xs text-red-500">{errors.city.message}</p>}
@@ -530,7 +530,7 @@ export default function CreateOrderPageComplete({
 
 	const [providerErrors, setProviderErrors] = useState({});
 
-	const [providerCities, setproviderCities] = useState([]);
+	const [providerCities, setProviderCities] = useState([]);
 	const [providerZones, setproviderZones] = useState([]);
 	const [providerDistricts, setproviderDistricts] = useState([]);
 	const [providerLocations, setproviderLocations] = useState([]);
@@ -607,12 +607,13 @@ export default function CreateOrderPageComplete({
 		watch,
 		setValue,
 		reset,
+		getValues,
 		formState: { errors },
 	} = useForm({
 		resolver: yupResolver(schema),
 		defaultValues: getDefaultValues(),
 	});
-	
+
 	const watchedItems = watch("items");
 	const watchedShippingCost = watch("shippingCost");
 	const watchedDiscount = watch("discount");
@@ -638,6 +639,8 @@ export default function CreateOrderPageComplete({
 		[shippingProvider]
 	);
 
+
+
 	// ── Edit/Duplicate mode pre-fill ──────────────────────────────────────────
 	useEffect(() => {
 		if ((isEditMode || fromId) && existingOrder) {
@@ -656,7 +659,7 @@ export default function CreateOrderPageComplete({
 				);
 			}
 			if (existingOrder.shippingMetadata) {
-				console.log("existingOrder.shippingMetadata", existingOrder.shippingMetadata);
+
 				setProviderMeta({
 					cityId: existingOrder.shippingMetadata.cityId ?? "",
 					zoneId: existingOrder.shippingMetadata.zoneId ?? "",
@@ -707,7 +710,7 @@ export default function CreateOrderPageComplete({
 		const getNormalCities = async () => {
 			setNormalCitiesLoading(true);
 			try {
-				const res = await api.get("/lookups/cities", { params: { limit: 500 } });
+				const res = await api.get("/cities", { params: { limit: 500 } });
 				const list = Array.isArray(res.data) ? res.data : Array.isArray(res.data?.records) ? res.data.records : [];
 				setNormalCities(list);
 			} catch (e) {
@@ -719,45 +722,75 @@ export default function CreateOrderPageComplete({
 		getNormalCities();
 	}, []);
 
+	// Fetch provider-specific pickup locations
 	useEffect(() => {
-		const initMeta = async () => {
-			if (!config.needsGeo) {
-				setproviderCities([]);
-				setproviderZones([]);
-				setproviderDistricts([]);
+		const fetchPickupLocations = async () => {
+			if (!config.needsGeo || !config.showLocation) {
 				setproviderLocations([]);
-				// setProviderMeta({ cityId: "", zoneId: "", districtId: "", locationId: "" });
-				// setValue("city", "");
-				// setValue("area", "");
 				return;
 			}
 
-			setproviderLoading((p) => ({ ...p, cities: true, locations: true }));
-
+			setproviderLoading((p) => ({ ...p, locations: true }));
 			try {
-				// Run both requests in parallel for better performance
-				const requests = [api.get(`/shipping/cities/${shippingProvider}`)];
-
-				// Only fetch pickup locations if the config requires it
-				if (config.showLocation) {
-					requests.push(api.get(`/shipping/pickup-locations/${shippingProvider}`));
-				}
-				const [citiesRes, locationsRes] = await Promise.all(requests);
-
-				setproviderCities(citiesRes.data?.records ?? []);
-				setproviderLocations(locationsRes.data?.records ?? []);
+				const res = await api.get(`/shipping/pickup-locations/${shippingProvider}`);
+				setproviderLocations(res.data?.records ?? []);
 			} catch (e) {
-				console.error(`Bosta Init Error: ${normalizeAxiosError(e)}`);
+				console.error(`Pickup locations error: ${normalizeAxiosError(e)}`);
 			} finally {
-				setproviderLoading((p) => ({ ...p, cities: false, locations: false }));
+				setproviderLoading((p) => ({ ...p, locations: false }));
 			}
 		};
 
-		initMeta();
-	}, [config.needsGeo, setValue, shippingProvider]);
+		fetchPickupLocations();
+	}, [config.needsGeo, config.showLocation, shippingProvider]);
+	const cityIdValue = useWatch({ control, name: "cityId" });
+	// Map unified cities to provider-specific data
+	useEffect(() => {
+		// Map unified cities to include provider-specific IDs and availability
+
+		const unifiedCities = normalCities ?? [];
+		const filteredCities = shippingProvider ? unifiedCities.filter(city => city.providerLocations?.length > 0 && city.providerLocations?.some(pl => pl.provider === shippingProvider)) : unifiedCities;
+		const mappedCities = filteredCities.map(city => {
+			const matched = shippingProvider ? city.providerLocations?.find(pl => pl.provider === shippingProvider) : null;
+
+			return {
+				id: city.id,
+				// Use providerCityId as the selector key so zones/districts fetch works
+				providerCityId: matched?.providerCityId,
+				nameEn: city.nameEn,
+				nameAr: city.nameAr,
+				dropOff: shippingProvider ? (matched?.dropOff ?? false) : true,
+				pickup: shippingProvider ? (matched?.pickup ?? false) : true,
+			};
+		});
+		
+		setProviderCities(mappedCities);
+		if (!config.needsGeo) {
+			setproviderZones([]);
+			setproviderDistricts([]);
+		}
+	}, [config.needsGeo, shippingProvider, normalCities, cityIdValue]);
+
+	useEffect(() => {
+		if (!providerCities || !providerCities?.length ||  initialLoading) return;
+		console.log("providerCities", providerCities, initialLoading);
+		const newProviderId = providerCities.find(city => city.id === cityIdValue)?.providerCityId || "";
+
+		setProviderMeta((prev) => {
+			if (newProviderId === prev.cityId) return prev;
+			return {
+				...prev,
+				cityId: newProviderId,
+				zoneId: "",
+				districtId: "",
+			}
+		});
+		setProviderCities(providerCities);
+	}, [providerCities, initialLoading]);
 
 	useEffect(() => {
 		const fetchGeography = async () => {
+
 			if (!config.needsGeo || !providerMeta.cityId) {
 				setproviderZones([]);
 				setproviderDistricts([]);
@@ -1287,7 +1320,10 @@ export default function CreateOrderPageComplete({
 										control={control}
 										name="shippingCompanyId"
 										render={({ field }) => (
-											<Select value={field.value || ""} onValueChange={field.onChange}>
+											<Select value={field.value || ""} onValueChange={(val) => {
+												field.onChange(val);
+
+											}}>
 												<SelectTrigger >
 													<SelectValue placeholder={t("placeholders.shippingCompany")} />
 												</SelectTrigger>
@@ -1429,12 +1465,11 @@ export default function CreateOrderPageComplete({
 								setValue={setValue}
 								providerMeta={providerMeta}
 								onMetaChange={handleMetaChange}
-								providerCities={providerCities}
+								cities={providerCities}
 								providerZones={providerZones}
 								providerDistricts={providerDistricts}
 								providerLoading={providerLoading}
-								normalCities={normalCities}
-								normalCitiesLoading={normalCitiesLoading}
+								isLoading={normalCitiesLoading}
 								providerErrors={providerErrors}
 							/>
 						</SectionCard>

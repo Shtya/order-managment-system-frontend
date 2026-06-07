@@ -799,6 +799,7 @@ function Hero({ order, t, isRtl }) {
 
 // ─── PRODUCT TABLE ─────────────────────────────────────────────────────────
 function ProdTable({ color, icon, title, eyebrow, items, onQty, onRemove, isAdditional, t, isRtl, handleSelectSku, selectedSkus }) {
+  const { calculateAvailableStock } = useOrdersSettings();
   const [open, setOpen] = useState(true);
   const [expandedDescs, setExpandedDescs] = useState({});
   const tableContainerRef = useRef(null);

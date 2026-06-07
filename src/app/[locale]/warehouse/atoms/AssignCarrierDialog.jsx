@@ -66,8 +66,9 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
     const [apiErrors, setApiErrors] = useState({}); // { orderId: "Reason" }
 
     const geoCache = useRef({
-        bosta: { cities: null, zones: {}, districts: {} },
-        turbo: { cities: null, zones: {}, districts: {} },
+        unifiedCities: null,
+        bosta: { zones: {}, districts: {} },
+        turbo: { zones: {}, districts: {} },
     });
 
 
@@ -153,7 +154,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
         // Check required fields
         const dataToCheck = {
             ...order,
-            cityId: meta.cityId,
+            cityId: order.cityId, // Use top-level cityId
             zoneId: meta.zoneId,
             districtId: meta.districtId,
             orderSize: meta.orderSize,
@@ -226,25 +227,37 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
 
     // --- Geography Data Fetching ---
     const fetchCities = useCallback(async (provider) => {
-        if (geoCache.current[provider].cities) {
-            setCities(geoCache.current[provider].cities);
-            return;
-        }
-
         setIsCitiesLoading(true);
         try {
-            const res = await api.get(`/shipping/cities/${provider}`);
-            geoCache.current[provider].cities = res.data?.records || [];
-            setCities(geoCache.current[provider].cities);
+            if (!geoCache.current.unifiedCities) {
+                const res = await api.get(`/cities`);
+                geoCache.current.unifiedCities = res.data || [];
+            }
+
+            const mappedCities = geoCache.current.unifiedCities
+                .map(city => {
+                    const matched = city.providerLocations?.find(pl => pl.provider.toLowerCase() === provider.toLowerCase());
+                    return {
+                        ...city,
+                        providerCityId: matched?.providerCityId,
+                        dropOff: matched?.dropOff ?? false,
+                        pickup: matched?.pickup ?? false,
+                    };
+                })
+                .filter(city => city.dropOff); // Exclude cities where dropOff is false
+
+            setCities(mappedCities);
+            return mappedCities;
         } catch (e) {
             console.error(e);
+            return [];
         } finally {
             setIsCitiesLoading(false);
         }
     }, [api]);
 
-    const fetchZonesAndDistricts = useCallback(async (provider, cityId, orderId, fetchDistricts = false) => {
-        if (!cityId) return;
+    const fetchZonesAndDistricts = useCallback(async (provider, providerCityId, orderId, fetchDistricts = false) => {
+        if (!providerCityId) return;
 
         // Set loading for this specific order
         setGeoLoading(prev => ({
@@ -254,20 +267,20 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
 
         const promises = [];
 
-        if (!geoCache.current[provider].zones[cityId]) {
+        if (!geoCache.current[provider].zones[providerCityId]) {
             promises.push(
-                api.get(`/shipping/zones/${provider}/${cityId}`)
+                api.get(`/shipping/zones/${provider}/${providerCityId}`)
                     .then(res => {
-                        geoCache.current[provider].zones[cityId] = res.data?.records || [];
+                        geoCache.current[provider].zones[providerCityId] = res.data?.records || [];
                     })
             );
         }
 
-        if (fetchDistricts && !geoCache.current[provider].districts[cityId]) {
+        if (fetchDistricts && !geoCache.current[provider].districts[providerCityId]) {
             promises.push(
-                api.get(`/shipping/districts/${provider}/${cityId}`)
+                api.get(`/shipping/districts/${provider}/${providerCityId}`)
                     .then(res => {
-                        geoCache.current[provider].districts[cityId] = res.data?.records || [];
+                        geoCache.current[provider].districts[providerCityId] = res.data?.records || [];
                     })
             );
         }
@@ -286,13 +299,13 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
             // Update Maps
             setZonesMap(prev => ({
                 ...prev,
-                [orderId]: geoCache.current[provider].zones[cityId] || []
+                [orderId]: geoCache.current[provider].zones[providerCityId] || []
             }));
 
             if (fetchDistricts) {
                 setDistrictsMap(prev => ({
                     ...prev,
-                    [orderId]: geoCache.current[provider].districts[cityId] || []
+                    [orderId]: geoCache.current[provider].districts[providerCityId] || []
                 }));
             }
         }
@@ -314,6 +327,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
             if (!carrier || carrier === "NONE") return;
 
             const config = CARRIER_CONFIG[carrier];
+            const latestCities = await fetchCities(config.provider);
 
             const newFixes = {};
             for (const order of needsFixOrders) {
@@ -325,11 +339,19 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                     phoneNumber: order.phoneNumber || "",
                     firstLine: order.firstLine || order.address || "",
                     email: order.email || "",
-                    cityId: meta.cityId || "",
+                    cityId: order.cityId || "",
                     zoneId: meta.zoneId || "",
                     districtId: meta.districtId || "",
                     orderSize: meta.orderSize || "MEDIUM",
                 };
+
+                // Trigger geo fetch for existing cityId
+                if (order.cityId) {
+                    const city = latestCities.find(c => String(c.id) === String(order.cityId));
+                    if (city?.providerCityId) {
+                        fetchZonesAndDistricts(config.provider, city.providerCityId, order.id, config.hasDistrict);
+                    }
+                }
             }
 
             setFixes(newFixes);
@@ -360,7 +382,12 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                 updatedOrderData.zoneId = "";
                 updatedOrderData.districtId = "";
                 const config = CARRIER_CONFIG[carrier];
-                fetchZonesAndDistricts(config.provider, value, orderId, config.hasDistrict);
+
+                // Find city to get its provider-specific ID
+                const city = cities.find(c => String(c.id) === String(value));
+                if (city?.providerCityId) {
+                    fetchZonesAndDistricts(config.provider, city.providerCityId, orderId, config.hasDistrict);
+                }
             }
             if (field === 'zoneId') {
                 updatedOrderData.districtId = "";
@@ -435,9 +462,9 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                     customerName: fixes[order.id].customerName,
                     phoneNumber: fixes[order.id].phoneNumber,
                     address: fixes[order.id].firstLine, // Backend expects "address"
+                    cityId: fixes[order.id].cityId,
                     // email: fixes[order.id].email || "",
                     shippingMetadata: {
-                        cityId: fixes[order.id].cityId,
                         zoneId: fixes[order.id].zoneId,
                         districtId: fixes[order.id].districtId,
                         orderSize: fixes[order.id].orderSize,
@@ -602,7 +629,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                                             >
                                                 <div
                                                     className={cn(
-                                                       className= "w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all",
+                                                       "w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all",
                                                         isChecked
                                                             ? "border-[var(--primary)] bg-[var(--primary)]"
                                                             : "border-slate-300 dark:border-slate-600",

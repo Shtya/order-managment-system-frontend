@@ -353,6 +353,7 @@ export default function AutomationLogsPage() {
                             label={tAutomations("runningAutomations") || "Running Automations"}
                             variant="outline"
                             onClick={() => router.push("/automations/running")}
+                            permission="automation.read"
                             icon={<Activity size={18} />}
                         />
                     </div>

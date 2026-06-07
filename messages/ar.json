@@ -1331,6 +1331,7 @@
       "wallet_update": "تعديل المحفظة",
       "whatsapp_delete_account": "حذف حساب الواتساب",
       "whatsapp_read": "عرض الواتساب",
+      "whatsapp_send": "إرسال رسائل",
       "whatsapp_templates_create": "إنشاء قوالب الواتساب",
       "whatsapp_templates_delete": "حذف قوالب الواتساب",
       "whatsapp_templates_read": "عرض قوالب الواتساب",
@@ -10761,6 +10762,7 @@
     "customerUpdated": "تم تحديث بيانات العميل بنجاح",
     "loadingMessages": "جاري تحميل الرسائل...",
     "typeMessage": "اكتب رسالة...",
+    "noPermissionToSend": "ليس لديك صلاحية لإرسال الرسائل",
     "send": "إرسال",
     "status": "الحالة",
     "assignedTo": "مخصص لـ",
@@ -10856,7 +10858,8 @@
     "failedToLoadImage": "فشل تحميل الصورة",
     "failedToLoadVideo": "فشل تحميل الفيديو",
     "messageFailedToSend": "فشل إرسال الرسالة",
-    "retrySending": "إعادة المحاولة"
+    "retrySending": "إعادة المحاولة",
+    "document": "ملف"
   },
   "failedToLoadImage": "فشل تحميل الصورة",
   "failedToLoadVideo": " فشل تحميل الفيديو",

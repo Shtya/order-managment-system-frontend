@@ -519,6 +519,7 @@ export default function WhatsAppAccountsPage() {
               size="sm"
               label={t("actions.openSettings")}
               variant="outline"
+              permission="whatsapp.manage"
               onClick={() => setSettingsOpen(true)}
               icon={<Settings size={18} />}
             />
@@ -526,6 +527,7 @@ export default function WhatsAppAccountsPage() {
               size="sm"
               label={t("toolbar.addAccount")}
               variant="solid"
+              permission="whatsapp.manage"
               icon={<Plus size={18} />}
               onClick={launchWhatsAppSignup}
             />

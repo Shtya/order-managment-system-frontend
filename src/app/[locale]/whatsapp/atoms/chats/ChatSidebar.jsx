@@ -2,12 +2,10 @@
 
 import { useTranslations } from "next-intl";
 import {
-    X, User, Mail, Globe, Languages,
-    Calendar, MoreHorizontal, Star,
-    Plus, Trash2, ShieldAlert
+    X,  Mail,
+    Calendar
 } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/utils/cn";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { useConversation } from "./ConversationContext";
 

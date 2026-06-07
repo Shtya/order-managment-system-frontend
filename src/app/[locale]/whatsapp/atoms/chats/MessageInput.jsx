@@ -21,9 +21,11 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useConversation } from "./ConversationContext";
+import { useAuth } from "@/context/AuthContext";
 
 export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollToMessage }) {
     const t = useTranslations("chats");
+    const { hasPermission } = useAuth();
     const {
         selectedConversation,
         selectedAccount,
@@ -263,31 +265,34 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                             <button
                                 onClick={() => setShowEmoji(!showEmoji)}
                                 className={cn("p-2 hover:bg-accent/50 rounded-full transition-colors", showEmoji && "text-primary bg-muted")}
+                                disabled={!hasPermission("whatsapp.send")}
                             >
                                 <Smile className="w-6 h-6 text-muted-foreground/60" />
                             </button>
 
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <button className="p-2 hover:bg-accent/50 rounded-full transition-colors group">
-                                        <Plus className="w-6 h-6 text-muted-foreground/60 transition-transform group-data-[state=open]:rotate-45 group-data-[state=open]:text-primary" />
-                                    </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start" side="top" className="w-64 mb-2 rounded-xl! p-2 shadow-xl border border-border bg-card">
-                                    <div className="grid grid-cols-1 gap-1">
-                                        {actions.map((action, idx) => (
-                                            <DropdownMenuItem
-                                                key={idx}
-                                                onClick={() => handleActionClick(action.type)}
-                                                className="flex items-center gap-3 w-full p-2 hover:bg-accent/50 rounded-lg transition-colors cursor-pointer"
-                                            >
-                                                <action.icon className={cn("w-5 h-5", action.color)} />
-                                                <span className="text-sm font-medium text-foreground">{action.label}</span>
-                                            </DropdownMenuItem>
-                                        ))}
-                                    </div>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            {hasPermission("whatsapp.send") && (
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <button className="p-2 hover:bg-accent/50 rounded-full transition-colors group">
+                                            <Plus className="w-6 h-6 text-muted-foreground/60 transition-transform group-data-[state=open]:rotate-45 group-data-[state=open]:text-primary" />
+                                        </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="start" side="top" className="w-64 mb-2 rounded-xl! p-2 shadow-xl border border-border bg-card">
+                                        <div className="grid grid-cols-1 gap-1">
+                                            {actions.map((action, idx) => (
+                                                <DropdownMenuItem
+                                                    key={idx}
+                                                    onClick={() => handleActionClick(action.type)}
+                                                    className="flex items-center gap-3 w-full p-2 hover:bg-accent/50 rounded-lg transition-colors cursor-pointer"
+                                                >
+                                                    <action.icon className={cn("w-5 h-5", action.color)} />
+                                                    <span className="text-sm font-medium text-foreground">{action.label}</span>
+                                                </DropdownMenuItem>
+                                            ))}
+                                        </div>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            )}
                         </>
                     )}
                     {isRecording && (
@@ -319,8 +324,9 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                             value={text}
                             autoFocus
                             onChange={(e) => setText(e.target.value)}
-                            placeholder={t("typeMessage")}
-                            className="w-full bg-transparent border-none focus:ring-0 resize-none text-sm max-h-32 py-1 outline-none focus-visible:outline-none! text-foreground placeholder:text-muted-foreground/50"
+                            placeholder={hasPermission("whatsapp.send") ? t("typeMessage") : t("noPermissionToSend")}
+                            disabled={!hasPermission("whatsapp.send")}
+                            className="w-full bg-transparent border-none focus:ring-0 resize-none text-sm max-h-32 py-1 outline-none focus-visible:outline-none! text-foreground placeholder:text-muted-foreground/50 disabled:opacity-50"
                             onKeyDown={(e) => {
                                 if (e.key === "Enter" && !e.shiftKey) {
                                     e.preventDefault();
@@ -331,7 +337,7 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                     )}
                 </div>
 
-                <div className="flex items-center mb-1 shrink-0">
+                <div className="flex items-center gap-2 mb-1 shrink-0">
                     <div className={cn(
                         "flex rounded-lg transition-colors overflow-hidden h-10 shadow-sm",
                         (text.trim() || isRecording) ? "bg-green-600 dark:bg-green-700" : "bg-gray-200 dark:bg-gray-300"
@@ -339,10 +345,12 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                         <button
                             // onClick={text.trim() || isRecording ? handleSend : startRecording}
                             onClick={handleSend}
+                            disabled={!hasPermission("whatsapp.send")}
                             className={cn(
                                 "px-4 flex items-center justify-center min-w-[80px] transition-colors",
                                 (text.trim() || isRecording) ? "hover:bg-green-700" : "hover:bg-gray-300",
-                                accounts.length > 1 && !isRecording && "border-e border-green-500/30"
+                                accounts.length > 1 && !isRecording && "border-e border-green-500/30",
+                                !hasPermission("whatsapp.send") && "opacity-50 cursor-not-allowed"
                             )}
                         >
                             <div className="flex flex-col items-center">
@@ -382,6 +390,23 @@ export default function MessageInput({ onSend, replyTo, onCancelReply, onScrollT
                             </DropdownMenu>
                         )}
                     </div>
+
+                    {/* <div className={cn(
+                        "flex rounded-lg transition-colors overflow-hidden h-10 shadow-sm",
+                        isRecording ? "bg-destructive" : "bg-gray-200 dark:bg-gray-300"
+                    )}>
+                        <button
+                            onClick={isRecording ? handleSend : startRecording}
+                            disabled={!hasPermission("whatsapp.send")}
+                            className={cn(
+                                "p-2 flex items-center justify-center transition-all duration-200",
+                                isRecording ? "bg-destructive text-white scale-110" : "hover:bg-accent/50 text-muted-foreground/60",
+                                !hasPermission("whatsapp.send") && "opacity-50 cursor-not-allowed"
+                            )}
+                        >
+                            {isRecording ? <StopCircle className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
+                        </button>
+                    </div> */}
                 </div>
             </div>
         </div>

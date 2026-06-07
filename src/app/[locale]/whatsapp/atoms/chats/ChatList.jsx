@@ -19,6 +19,7 @@ import { useDebounce } from "@/hook/useDebounce";
 import { avatarSrc } from "@/components/atoms/UserSelect";
 import { formatText } from "@/utils/whatsapp-healper";
 import { useMemo } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 const ChatListItem = ({ conv, activeId, onSelect }) => {
     const formattedPreview = useMemo(() => {
@@ -73,6 +74,7 @@ const ChatListItem = ({ conv, activeId, onSelect }) => {
 
 export default function ChatList() {
     const t = useTranslations("chats");
+    const { hasPermission } = useAuth();
     const {
         conversations,
         isLoading,
@@ -136,10 +138,12 @@ export default function ChatList() {
                                         </button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="rounded-md!">
-                                        <DropdownMenuItem onClick={() => setIsAddModalOpen(true)} className="gap-2 cursor-pointer">
-                                            <UserPlus className="w-4 h-4" />
-                                            {t("addCustomer")}
-                                        </DropdownMenuItem>
+                                        {hasPermission("conversation.create") && (
+                                            <DropdownMenuItem onClick={() => setIsAddModalOpen(true)} className="gap-2 cursor-pointer">
+                                                <UserPlus className="w-4 h-4" />
+                                                {t("addCustomer")}
+                                            </DropdownMenuItem>
+                                        )}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>

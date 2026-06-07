@@ -37,7 +37,7 @@ import StepExecutionDialog from './StepExecutionDialog';
 
 export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setIsPreviewMode: setExternalIsPreviewMode }) {
     const t = useTranslations("whatsApp.automations.builder");
-    const { isSuperAdmin, user } = useAuth();
+    const { isSuperAdmin, user, hasPermission } = useAuth();
     const edges = useFlowStore((s) => s.edges);
     const nodes = useFlowStore((s) => s.nodes);
     const name = useFlowStore((s) => s.name);
@@ -349,12 +349,14 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
                     />
                     <div className="w-[1px] h-6 bg-slate-200 dark:bg-slate-800 mx-1" />
                     {isViewMode ? (
-                        <ToolbarButton
-                            icon={<Edit3 size={18} />}
-                            label={t('toolbar.editAutomation')}
-                            onClick={() => router.push(isSuperAdmin ? `/dashboard/automations/edit/${automationId}?${version ? `v=${version}` : ''}` : `/automations/edit/${automationId}?${version ? `v=${version}` : ''}`)}
-                            primary
-                        />
+                        hasPermission("automation.update") && (
+                            <ToolbarButton
+                                icon={<Edit3 size={18} />}
+                                label={t('toolbar.editAutomation')}
+                                onClick={() => router.push(isSuperAdmin ? `/dashboard/automations/edit/${automationId}?${version ? `v=${version}` : ''}` : `/automations/edit/${automationId}?${version ? `v=${version}` : ''}`)}
+                                primary
+                            />
+                        )
                     ) : (
                         <>
                             <ToolbarButton

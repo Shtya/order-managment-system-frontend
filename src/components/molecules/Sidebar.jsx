@@ -548,6 +548,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
         icon: Truck,
         labelKey: "warehouseDistribution", // "توزيع الطلبات"
         href: "/warehouse?tab=distribution",
+        permission: "warehouses.read",
         children: [
           {
             icon: Truck,
@@ -676,6 +677,7 @@ const Sidebar = ({ isOpen, isRTL, onOpenSidebar, isMobile }) => {
       icon: FaBolt,
       labelKey: "automations",
       href: "/automations",
+      permission: "automations.read",
       children: [
         {
           labelKey: "automations",

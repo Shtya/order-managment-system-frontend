@@ -228,7 +228,9 @@ function RunningAutomationsContent() {
         useFlowStore.setState({ mode: 'run' });
         // setMode("run");
       }
-      setRightPanelCollapsed(false);
+      if (window.innerWidth >= 1024) {
+        setRightPanelCollapsed(false);
+      }
       setError(null);
     } catch (e) {
       setSidebarCollapsed(false);
@@ -299,9 +301,9 @@ function RunningAutomationsContent() {
     if (!selectedRun) return;
     const toastId = toast.loading(t("restarting"));
     try {
-      await api.post(`/automation/runs/${selectedRun.id}/retry`);
+      await api.post(`/automation/runs/${selectedRun?.id}/retry`);
       toast.success(t("restartSuccess"), { id: toastId });
-      loadRunDetail(selectedRun.id);
+      loadRunDetail(selectedRun?.id);
     } catch (error) {
       toast.error(t("restartFailed"), { id: toastId });
       console.error(error);
@@ -311,7 +313,7 @@ function RunningAutomationsContent() {
   const handleRefresh = async () => {
     await fetchRuns({ page: pager.current_page, per_page: pager.per_page, search: debouncedSearch });
     // if (selectedRun) {
-    //   await loadRunDetail(selectedRun.id);
+    //   await loadRunDetail(selectedRun?.id);
     // }
     toast.success(t("refreshSuccess"));
   };
@@ -345,7 +347,7 @@ function RunningAutomationsContent() {
   const version = selectedRun?.version?.versionString || "";
 
   return (
-    <div className="flex-1 flex flex-col min-w-0 bg-slate-50 dark:bg-[#050505] transition-all duration-500 overflow-hidden relative">
+    <div className="h-screen flex flex-col min-w-0 bg-slate-50 dark:bg-[#050505] transition-all duration-500 overflow-hidden relative">
       <header className="min-h-20 h-auto lg:h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 flex flex-col lg:flex-row items-start lg:items-center justify-between px-4 md:px-8 py-4 lg:py-0 shrink-0 z-20 gap-4">
         <div className="flex flex-col">
           <h1 className="text-sm font-black text-slate-900 dark:text-slate-100">{t("title")}</h1>
@@ -365,7 +367,7 @@ function RunningAutomationsContent() {
               {hasPermission("automation.update") && (
                 <>
                   <button
-                    onClick={() => router.push(`/automations/edit/${selectedRun.automationFlowId}?${version ? `v=${version}` : ''}`)}
+                    onClick={() => router.push(`/automations/edit/${selectedRun?.automationFlowId}?${version ? `v=${version}` : ''}`)}
                     className="flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-[11px] font-black hover:bg-slate-50 transition-all shadow-sm"
                   >
                     <Pencil size={14} />
@@ -385,7 +387,7 @@ function RunningAutomationsContent() {
         </div>
       </header>
 
-      <div className="flex h-screen flex-1 overflow-hidden relative">
+      <div className="flex flex-1 overflow-hidden relative">
         {/* Right Sidebar: Run Info */}
         <RunDetailsPanel
           rightPanelCollapsed={rightPanelCollapsed}
@@ -406,7 +408,7 @@ function RunningAutomationsContent() {
               <p className="mt-8 text-[11px] font-black text-slate-500 uppercase tracking-widest animate-pulse">{t("loadingExecutionDetails")}</p>
             </div>
           ) : error ? (
-            <div className="h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-[#050505] p-6 text-center">
+            <div className="h-full flex flex-col items-center justify-center bg-slate-50 dark:bg-[#050505] p-6 text-center">
               <div className="w-16 h-16 rounded-2xl bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center text-rose-500 mb-6">
                 <Layout size={32} />
               </div>
@@ -431,144 +433,152 @@ function RunningAutomationsContent() {
           )}
         </div>
 
-        <AnimatePresence>
-          {!sidebarCollapsed && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSidebarCollapsed(true)}
-              className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-[45] lg:hidden"
-            />
-          )}
-        </AnimatePresence>
-
-        <aside
-          className={cn(
-            "flex flex-col h-full bg-white dark:bg-slate-900 border-l dark:border-slate-800 overflow-hidden",
-            "transition-all duration-300 ease-out z-[56]",
-            "fixed inset-y-0 end-0 lg:relative",
-            sidebarCollapsed || (targetId && detailLoading)
-              ? "ltr:translate-x-full rtl:-translate-x-full lg:w-0 lg:border-none lg:opacity-0"
-              : "translate-x-0 w-[280px] sm:w-[320px] opacity-100 shadow-2xl lg:shadow-none"
-          )}
-        >
-          <div className="p-6 border-b border-slate-50 dark:border-slate-800/50 flex flex-col items-center justify-between gap-4">
-            <div className="w-full space-y-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex flex-1 items-center gap-3">
-                  {/* <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl">
-                    <Zap size={18} className="text-slate-500" />
-                  </div> */}
-                  <h2 className="text-[13px] font-black">{t("allRuns")}</h2>
-                  <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-[10px] font-black">{pager.total_records}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={handleRefresh}
-                    disabled={loading}
-                    className="text-slate-400 hover:text-primary bg-white dark:bg-slate-800 rounded-xl p-2 border border-slate-100 dark:border-slate-800 transition-all hover:scale-110 disabled:opacity-50"
-                    title={t("refresh")}
-                  >
-                    <RefreshCw size={18} className={cn(loading && "animate-spin")} />
-                  </button>
-                  <button onClick={() => setSidebarCollapsed(true)} className="text-slate-400 hover:text-slate-600 bg-white dark:bg-slate-800 rounded-xl p-2 border border-slate-100 dark:border-slate-800">
-                    <ChevronRight size={20} />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-              <input
-                type="text"
-                placeholder={t("searchPlaceholder")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl py-2 pl-9 pr-4 text-[11px] focus:ring-2 focus:ring-primary/20 transition-all"
+        <div className="contents">
+          <AnimatePresence>
+            {!sidebarCollapsed && (
+              <motion.div
+                key="all-runs-sidebar-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSidebarCollapsed(true)}
+                className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-[45] lg:hidden"
               />
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-2 space-y-2">
-            {loading ? (
-              <div className="flex flex-col items-center justify-center py-20 gap-3">
-                <Loader2 className="w-8 h-8 animate-spin text-primary/40" />
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t("loading")}</p>
-              </div>
-            ) : runs.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 gap-3">
-                <Layout className="w-8 h-8 text-slate-200" />
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t("noRuns")}</p>
-              </div>
-            ) : (
-              runs.map((run) => (
-                <button
-                  key={run.id}
-                  onClick={() => loadRunDetail(run.id)}
-                  className={cn(
-                    "w-full p-4 rounded-2xl text-right transition-all border border-transparent",
-                    selectedRun?.id === run.id
-                      ? "bg-primary/[0.03] border-primary/20 shadow-sm"
-                      : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
-                  )}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-black text-slate-900 dark:text-slate-100">
-                      {tAutomations(`triggers.${run.automationFlow?.triggerType}`)}
-                    </span>
-                    <StatusRunBadge status={run.status} t={t} />
-                  </div>
-                  <div className="flex flex-col gap-1 mb-2">
-                    <div className="flex items-center gap-2 text-slate-500">
-                      <Zap size={10} className="text-primary/60" />
-                      <span className="text-[10px] font-bold">{run.automationFlow?.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-[9px] text-slate-400">
-                      <Activity size={10} className="text-slate-400" />
-                      <span>{t("stepsCompleted", { count: run.completedNodeIds?.length || 0 })}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-[9px] text-slate-400">
-                    <div className="flex items-center gap-1">
-                      <Clock size={10} />
-                      <span>{new Date(run.startedAt).toLocaleTimeString()}</span>
-                    </div>
-                    {run.status === 'failed' && (
-                      <span className="text-rose-500 font-bold truncate max-w-[150px]">{run.errorMessage}</span>
-                    )}
-                  </div>
-                </button>
-              ))
             )}
-          </div>
+          </AnimatePresence>
 
+          <aside
+            className={cn(
+              "flex flex-col h-full bg-white dark:bg-slate-900 border-l dark:border-slate-800 overflow-hidden",
+              "transition-all duration-300 ease-out z-[56]",
+              "fixed inset-y-0 end-0 lg:relative",
+              "w-[280px] sm:w-[320px]",
+              sidebarCollapsed || (targetId && detailLoading)
+                ? "ltr:translate-x-full rtl:-translate-x-full lg:translate-x-0 lg:w-0 lg:border-none lg:opacity-0"
+                : "translate-x-0 lg:translate-x-0 opacity-100 shadow-2xl lg:shadow-none"
+            )}
+            
+          >
+            <div className="p-6 border-b border-slate-50 dark:border-slate-800/50 flex flex-col items-center justify-between gap-4">
+              <div className="w-full space-y-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex flex-1 items-center gap-3">
+                    {/* <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl">
+                      <Zap size={18} className="text-slate-500" />
+                    </div> */}
+                    <h2 className="text-[13px] font-black">{t("allRuns")}</h2>
+                    <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-[10px] font-black">{pager.total_records}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleRefresh}
+                      disabled={loading}
+                      className="text-slate-400 hover:text-primary bg-white dark:bg-slate-800 rounded-xl p-2 border border-slate-100 dark:border-slate-800 transition-all hover:scale-110 disabled:opacity-50"
+                      title={t("refresh")}
+                    >
+                      <RefreshCw size={18} className={cn(loading && "animate-spin")} />
+                    </button>
+                    <button onClick={() => setSidebarCollapsed(true)} className="text-slate-400 hover:text-slate-600 bg-white dark:bg-slate-800 rounded-xl p-2 border border-slate-100 dark:border-slate-800">
+                      <ChevronRight size="20" />
+                    </button>
+                  </div>
+                </div>
+              </div>
 
-          {!sidebarCollapsed && totalPages > 1 && (
-            <div className="p-4 border-t border-slate-50 dark:border-slate-800/50 flex items-center justify-center gap-1">
-              {pageItems.map((p, idx) => (
-                p === "…" ? (
-                  <span key={`dots-${idx}`} className="w-8 text-center text-slate-400 text-[10px]">···</span>
-                ) : (
+              <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                <input
+                  type="text"
+                  placeholder={t("searchPlaceholder")}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl py-2 pl-9 pr-4 text-[11px] focus:ring-2 focus:ring-primary/20 transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-2 space-y-2">
+              {loading ? (
+                <div className="flex flex-col items-center justify-center py-20 gap-3">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary/40" />
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t("loading")}</p>
+                </div>
+              ) : runs.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 gap-3">
+                  <Layout className="w-8 h-8 text-slate-200" />
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t("noRuns")}</p>
+                </div>
+              ) : (
+                runs.map((run) => (
                   <button
-                    key={p}
-                    onClick={() => fetchRuns({ page: p, per_page: pager.per_page })}
+                    key={run.id}
+                    onClick={() => {
+                      setSidebarCollapsed(true)
+                      loadRunDetail(run.id)
+                    }}
                     className={cn(
-                      "w-8 h-8 rounded-xl text-[10px] font-black transition-all",
-                      p === pager.current_page
-                        ? "bg-primary text-white shadow-md shadow-primary/20"
-                        : "bg-slate-50 dark:bg-slate-800 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"
+                      "w-full p-4 rounded-2xl text-right transition-all border border-transparent",
+                      selectedRun?.id === run.id
+                        ? "bg-primary/[0.03] border-primary/20 shadow-sm"
+                        : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
                     )}
                   >
-                    {p}
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-black text-slate-900 dark:text-slate-100">
+                        {tAutomations(`triggers.${run.automationFlow?.triggerType}`)}
+                      </span>
+                      <StatusRunBadge status={run.status} t={t} />
+                    </div>
+                    <div className="flex flex-col gap-1 mb-2">
+                      <div className="flex items-center gap-2 text-slate-500">
+                        <Zap size={10} className="text-primary/60" />
+                        <span className="text-[10px] font-bold">{run.automationFlow?.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[9px] text-slate-400">
+                        <Activity size={10} className="text-slate-400" />
+                        <span>{t("stepsCompleted", { count: run.completedNodeIds?.length || 0 })}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-[9px] text-slate-400">
+                      <div className="flex items-center gap-1">
+                        <Clock size={10} />
+                        <span>{new Date(run.startedAt).toLocaleTimeString()}</span>
+                      </div>
+                      {run.status === 'failed' && (
+                        <span className="text-rose-500 font-bold truncate max-w-[150px]">{run.errorMessage}</span>
+                      )}
+                    </div>
                   </button>
-                )
-              ))}
+                ))
+              )}
             </div>
-          )}
 
-        </aside>
+
+            {!sidebarCollapsed && totalPages > 1 && (
+              <div className="p-4 border-t border-slate-50 dark:border-slate-800/50 flex items-center justify-center gap-1">
+                {pageItems.map((p, idx) => (
+                  p === "…" ? (
+                    <span key={`dots-${idx}`} className="w-8 text-center text-slate-400 text-[10px]">···</span>
+                  ) : (
+                    <button
+                      key={p}
+                      onClick={() => fetchRuns({ page: p, per_page: pager.per_page })}
+                      className={cn(
+                        "w-8 h-8 rounded-xl text-[10px] font-black transition-all",
+                        p === pager.current_page
+                          ? "bg-primary text-white shadow-md shadow-primary/20"
+                          : "bg-slate-50 dark:bg-slate-800 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"
+                      )}
+                    >
+                      {p}
+                    </button>
+                  )
+                ))}
+              </div>
+            )}
+
+          </aside>
+        </div>
 
         {sidebarCollapsed && (
           <button

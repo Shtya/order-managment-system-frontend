@@ -36,10 +36,12 @@ import { useConversation } from "./ConversationContext";
 import { MESSAGE_STATUS_LIST } from "@/utils/whatsapp-healper";
 import { useDebounce } from "@/hook/useDebounce";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/context/AuthContext";
 
 
 export default function ChatWindow({ onSendMessage, onToggleDetails }) {
     const t = useTranslations("chats");
+    const { hasPermission } = useAuth();
     const scrollRef = useRef(null);
     const {
         selectedAccount,
@@ -266,10 +268,12 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                                 </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="rounded-md! bg-card border-border">
-                                <DropdownMenuItem onClick={() => setIsEditModalOpen(true)} className="gap-2 cursor-pointer">
-                                    <Edit className="w-4 h-4" />
-                                    {t("editClient")}
-                                </DropdownMenuItem>
+                                {hasPermission("customer.update") && (
+                                    <DropdownMenuItem onClick={() => setIsEditModalOpen(true)} className="gap-2 cursor-pointer">
+                                        <Edit className="w-4 h-4" />
+                                        {t("editClient")}
+                                    </DropdownMenuItem>
+                                )}
                                 {/* <DropdownMenuItem className="gap-2 text-red-600">
                                     <MessageCircleOff className="w-4 h-4" />
                                     {t("closeChat")}

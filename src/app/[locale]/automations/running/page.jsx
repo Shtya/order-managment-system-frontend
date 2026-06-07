@@ -37,6 +37,7 @@ import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDebounce } from "@/hook/useDebounce";
 import { useNotification } from "@/context/NotificationContext";
+import { useAuth } from "@/context/AuthContext";
 
 import PageHeader from "@/components/atoms/Pageheader";
 import { useFlowStore } from "@/hook/useFlowStore";
@@ -138,6 +139,7 @@ function RunningCanvas({ selectedRun }) {
 function RunningAutomationsContent() {
   const tAutomations = useTranslations("whatsApp.automations");
   const t = useTranslations("whatsApp.automationLogs");
+  const { hasPermission } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
   const targetId = searchParams.get("id");
@@ -360,20 +362,24 @@ function RunningAutomationsContent() {
           </button>
           {selectedRun && (
             <>
-              <button
-                onClick={() => router.push(`/automations/edit/${selectedRun.automationFlowId}?${version ? `v=${version}` : ''}`)}
-                className="flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-[11px] font-black hover:bg-slate-50 transition-all shadow-sm"
-              >
-                <Pencil size={14} />
-                <span className="truncate">{t("editVersion")}</span>
-              </button>
-              <button
-                onClick={handleRestart}
-                className="flex flex-1 sm:flex-none items-center justify-center gap-2 px-6 py-2 bg-primary text-white rounded-xl text-[11px] font-black hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
-              >
-                <RefreshCw size={14} />
-                <span className="truncate">{t("retryNow")}</span>
-              </button>
+              {hasPermission("automation.update") && (
+                <>
+                  <button
+                    onClick={() => router.push(`/automations/edit/${selectedRun.automationFlowId}?${version ? `v=${version}` : ''}`)}
+                    className="flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-[11px] font-black hover:bg-slate-50 transition-all shadow-sm"
+                  >
+                    <Pencil size={14} />
+                    <span className="truncate">{t("editVersion")}</span>
+                  </button>
+                  <button
+                    onClick={handleRestart}
+                    className="flex flex-1 sm:flex-none items-center justify-center gap-2 px-6 py-2 bg-primary text-white rounded-xl text-[11px] font-black hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+                  >
+                    <RefreshCw size={14} />
+                    <span className="truncate">{t("retryNow")}</span>
+                  </button>
+                </>
+              )}
             </>
           )}
         </div>

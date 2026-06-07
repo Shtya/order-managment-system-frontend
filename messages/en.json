@@ -10767,6 +10767,7 @@
     "customerUpdated": "Customer updated successfully",
     "loadingMessages": "Loading messages...",
     "typeMessage": "Type a message...",
+    "noPermissionToSend": "You don't have permission to send messages",
     "send": "Send",
     "status": "Status",
     "assignedTo": "Assigned To",
@@ -10862,7 +10863,8 @@
     "failedToLoadImage": "Failed to load image",
     "failedToLoadVideo": "Failed to load video",
     "messageFailedToSend": "Message failed to send",
-    "retrySending": "Retry Sending"
+    "retrySending": "Retry Sending",
+    "document": "file"
   },
   "failedToLoadImage": "Failed to load image",
   "failedToLoadVideo": "Failed to load video",

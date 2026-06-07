@@ -14,8 +14,10 @@ import {
 import { BASE_URL } from "@/utils/api";
 import TemplatePreview from "../TemplatePreview";
 import { formatText } from "@/utils/whatsapp-healper";
+import { useTranslations } from "next-intl";
 
 export default function MessageBubble({ id, message, isOutbound, onReply, onReaction, onRetry, isHighlighted }) {
+    const t = useTranslations("chats");
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const [audioProgress, setAudioProgress] = useState(0);

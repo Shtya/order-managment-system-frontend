@@ -76,10 +76,11 @@ export function LeftSidebar({ onSelectStep }) {
     }, [hasTrigger, search, t]);
 
     return (
-        <>
+        <div className="contents">
             <AnimatePresence>
                 {!collapsed && (
                     <motion.div
+                        key="left-sidebar-backdrop"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -181,6 +182,7 @@ export function LeftSidebar({ onSelectStep }) {
                                 {section.categories.map((cat) => (
                                     <CategoryGroup
                                         key={cat.id}
+                                        onToggle={onToggle}
                                         category={cat}
                                         onSelectStep={onSelectStep}
                                         disabled={hasTrigger && !pendingConnection}
@@ -219,11 +221,11 @@ export function LeftSidebar({ onSelectStep }) {
                     </div>
                 </div>
             </aside>
-        </>
+        </div>
     );
 }
 
-function CategoryGroup({ category, onSelectStep, disabled }) {
+function CategoryGroup({ category, onSelectStep, disabled, onToggle }) {
     return (
         <div className={cn("space-y-3 transition-opacity duration-300", disabled && "opacity-50 pointer-events-none")}>
 
@@ -232,7 +234,12 @@ function CategoryGroup({ category, onSelectStep, disabled }) {
                 {category.items.map((item, idx) => (
                     <button
                         key={idx}
-                        onClick={() => onSelectStep(item)}
+                        onClick={() => {
+                            if (window.innerWidth <= 1024) {
+                                onToggle(true);
+                            }
+                            onSelectStep(item);
+                        }}
                         disabled={disabled}
                         className={cn(
                             "group relative flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white p-3 transition-all text-center",

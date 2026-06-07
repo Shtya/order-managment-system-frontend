@@ -56,8 +56,8 @@ export default function RunDetailsPanel({
 
   const currentNodeLabel = useMemo(() => {
     if (!selectedRun) return "—";
-    const node = selectedRun.version?.flow?.nodes?.find(n => n.id === selectedRun.currentNodeId);
-    if (!node) return selectedRun.currentNodeId || "—";
+    const node = selectedRun?.version?.flow?.nodes?.find(n => n.id === selectedRun?.currentNodeId);
+    if (!node) return selectedRun?.currentNodeId || "—";
     
     // Use translated label if available
     if (node.type === 'trigger') return tBuilder(`triggerTypes.${node.data.type}`);
@@ -68,10 +68,11 @@ export default function RunDetailsPanel({
   }, [selectedRun, tBuilder]);
 
   return (
-    <>
+    <div className="contents">
       <AnimatePresence>
         {!rightPanelCollapsed && selectedRun && (
           <motion.div
+            key="run-details-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -86,9 +87,10 @@ export default function RunDetailsPanel({
           "flex flex-col h-full bg-white dark:bg-slate-900 border-r dark:border-slate-800 overflow-hidden",
           "transition-all duration-300 ease-out z-[56]",
           "fixed inset-y-0 start-0 lg:relative",
+          "w-[280px] sm:w-[340px]",
           rightPanelCollapsed || !selectedRun
-            ? "ltr:-translate-x-full rtl:translate-x-full lg:w-0 lg:border-none lg:opacity-0"
-            : "translate-x-0 w-[280px] sm:w-[340px] opacity-100 shadow-2xl lg:shadow-none"
+            ? "ltr:-translate-x-full rtl:translate-x-full lg:translate-x-0 lg:w-0 lg:border-none lg:opacity-0"
+            : "translate-x-0 lg:translate-x-0 opacity-100 shadow-2xl lg:shadow-none"
         )}
       >
         <div className="p-6 border-b border-slate-50 dark:border-slate-800/50 flex items-center justify-between">
@@ -120,13 +122,13 @@ export default function RunDetailsPanel({
           <div className="flex-1 overflow-y-auto p-6 space-y-8">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{tRunPanel('status')}</span>
-              <StatusRunBadge status={selectedRun.status} t={tLogs} />
+              <StatusRunBadge status={selectedRun?.status} t={tLogs} />
             </div>
 
             <InfoSection title={tRunPanel('flowAndVersion')} icon={<Zap size={14} />}>
-              <InfoItem label={tBuilder('sidebar.title')} value={selectedRun.automationFlow?.name} />
-              <InfoItem label={tRunPanel('version')} value={`v${selectedRun.version?.versionString || selectedRun.versionString}`} />
-              <InfoItem label={tBuilder('sidebar.triggers')} value={selectedRun.automationFlow?.triggerType ? tBuilder(`triggerTypes.${selectedRun.automationFlow.triggerType}`) : (selectedRun?.executionState?.trigger?.type ? tBuilder(`triggerTypes.${selectedRun.executionState.trigger.type}`) : "—")} />
+              <InfoItem label={tBuilder('sidebar.title')} value={selectedRun?.automationFlow?.name} />
+              <InfoItem label={tRunPanel('version')} value={`v${selectedRun?.version?.versionString || selectedRun?.versionString}`} />
+              <InfoItem label={tBuilder('sidebar.triggers')} value={selectedRun?.automationFlow?.triggerType ? tBuilder(`triggerTypes.${selectedRun?.automationFlow.triggerType}`) : (selectedRun?.executionState?.trigger?.type ? tBuilder(`triggerTypes.${selectedRun?.executionState.trigger.type}`) : "—")} />
             </InfoSection>
 
             <InfoSection title={tRunPanel('executionStatus')} icon={<Activity size={14} />}>
@@ -136,41 +138,41 @@ export default function RunDetailsPanel({
               />
               <InfoItem
                 label={tRunPanel('completedSteps')}
-                value={tRunPanel('stepsCount', { count: selectedRun.completedNodeIds?.length || 0 })}
+                value={tRunPanel('stepsCount', { count: selectedRun?.completedNodeIds?.length || 0 })}
               />
             </InfoSection>
 
             <InfoSection title={tRunPanel('timing')} icon={<Clock size={14} />}>
-              <InfoItem label={tRunPanel('startTime')} value={new Date(selectedRun.startedAt).toLocaleString()} />
-              {selectedRun.completedAt && (
-                <InfoItem label={tRunPanel('endTime')} value={new Date(selectedRun.completedAt).toLocaleString()} />
+              <InfoItem label={tRunPanel('startTime')} value={new Date(selectedRun?.startedAt).toLocaleString()} />
+              {selectedRun?.completedAt && (
+                <InfoItem label={tRunPanel('endTime')} value={new Date(selectedRun?.completedAt).toLocaleString()} />
               )}
-              <InfoItem label={tRunPanel('duration')} value={selectedRun.completedAt ? `${formatDuration(selectedRun.startedAt, selectedRun.completedAt, tRunPanel)}` : tRunPanel('running')} />
+              <InfoItem label={tRunPanel('duration')} value={selectedRun?.completedAt ? `${formatDuration(selectedRun?.startedAt, selectedRun?.completedAt, tRunPanel)}` : tRunPanel('running')} />
             </InfoSection>
 
             <InfoSection title={tRunPanel('additionalInfo')} icon={<Box size={14} />}>
-              <InfoItem label={tRunPanel('triggerEntity')} value={selectedRun.triggerEntityType ? tRunPanel(`entities.${selectedRun.triggerEntityType}`) : "—"} />
-              {selectedRun.triggerEntityId && <InfoItem
+              <InfoItem label={tRunPanel('triggerEntity')} value={selectedRun?.triggerEntityType ? tRunPanel(`entities.${selectedRun?.triggerEntityType}`) : "—"} />
+              {selectedRun?.triggerEntityId && <InfoItem
                 label={tOrderProps('orderNumber')}
-                value={`#${selectedRun.triggerEntityId}`}
-                onClick={selectedRun.triggerEntityType === 'order' ? () => {
-                  router.push(`/orders/details/${selectedRun.triggerEntityId}`)
+                value={`#${selectedRun?.triggerEntityId}`}
+                onClick={selectedRun?.triggerEntityType === 'order' ? () => {
+                  router.push(`/orders/details/${selectedRun?.triggerEntityId}`)
                 } : null}
               />}
             </InfoSection>
 
-            {selectedRun.status === 'failed' && (
+            {selectedRun?.status === 'failed' && (
               <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-500/5 border border-rose-100 dark:border-rose-500/20">
                 <div className="flex items-center gap-2 text-rose-600 mb-2">
                   <XCircle size={14} />
                   <span className="text-[11px] font-black">{tRunPanel('failureDetails')}</span>
                 </div>
-                <p className="text-[10px] font-bold text-rose-500 leading-relaxed">{selectedRun.errorMessage}</p>
+                <p className="text-[10px] font-bold text-rose-500 leading-relaxed">{selectedRun?.errorMessage}</p>
               </div>
             )}
           </div>
       </aside>
-    </>
+    </div>
   );
 }
 

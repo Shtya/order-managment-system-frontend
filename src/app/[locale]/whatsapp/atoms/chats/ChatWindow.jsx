@@ -184,7 +184,10 @@ export default function ChatWindow({ onSendMessage, onToggleDetails }) {
                                 allowAll={true}
                             />
                         </div>
-                        <div className="w-full md:w-40 flex flex-col">
+                        <div className="w-full md:w-40 flex flex-col gap-2">
+                            <Label className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                                    {t("status")}
+                            </Label>
                             <Select value={messageStatus} onValueChange={setMessageStatus}>
                                 <SelectTrigger className="h-10 bg-muted border-border rounded-lg text-sm text-foreground">
                                     <SelectValue placeholder={t("allStatuses")} />

@@ -30,6 +30,7 @@ import PageHeader from "@/components/atoms/Pageheader";
 import { cn } from "@/utils/cn";
 import { usePlatformSettings } from "@/context/PlatformSettingsContext";
 import { FaInfoCircle } from "react-icons/fa";
+import { GEO_CONFIG } from "@/utils/order-utils";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -145,32 +146,9 @@ function GeoSelect({ label, required, value, onValueChange, items, isLoading, pl
 // ─────────────────────────────────────────────────────────────────────────────
 // Address section — Bosta mode (selects) vs Normal mode (text inputs)
 // ─────────────────────────────────────────────────────────────────────────────
-const GEO_CONFIG = {
-	bosta: {
-		needsGeo: true,
-		showDistrict: true,
-		showLocation: false,
-		fields: ["cityId", "zoneId", "districtId"],
-		tPrefix: "bosta", // Namespace for translations
-	},
-	turbo: {
-		needsGeo: true,
-		showDistrict: false,
-		showLocation: false,
-		fields: ["cityId", "zoneId"],
-		tPrefix: "turbo",
-	},
-	// Default/Normal mode uses text inputs instead of dropdowns
-	default: {
-		needsGeo: false,
-		showDistrict: false,
-		showLocation: false,
-		fields: [],
-		tPrefix: "fields",
-	}
-};
-function AddressSection({
-	t,
+
+export function AddressSection({
+	
 	locale,
 	provider,
 	// react-hook-form
@@ -189,7 +167,7 @@ function AddressSection({
 	providerErrors,
 }) {
 	const currentConfig = GEO_CONFIG[provider] || GEO_CONFIG.default;
-
+	const t = useTranslations("createOrder");
 	const nameKey = locale === "ar" ? "nameAr" : "nameEn";
 	// Derived: districts filtered by selected zone (parentId === zoneId)
 	const filteredDistricts = useMemo(() => {
@@ -1457,7 +1435,6 @@ export default function CreateOrderPageComplete({
 							delay={0.3}
 						>
 							<AddressSection
-								t={t}
 								locale={locale}
 								provider={shippingProvider}
 								control={control}

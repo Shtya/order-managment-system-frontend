@@ -14,21 +14,9 @@ import api from "@/utils/api";
 import { OrderStatus } from "../../orders/tabs/OrderTab";
 //cityId - districtId - customerName - phoneNumber - address - packageType - size
 // --- Carrier Configuration ---    
-const CARRIER_CONFIG = {
-    BOSTA: {
-        provider: "bosta",
-        requires: ["customerName", "phoneNumber", "firstLine", "cityId", "districtId", "orderSize"],
-        hasDistrict: true,
-        hasZone: false,
-    },
-    TURBO: {
-        provider: "turbo",
-        requires: ["customerName", "phoneNumber", "cityId", "zoneId"],
-        hasDistrict: false,
-        hasZone: true,
-    },
-    NONE: { provider: "none", requires: [], hasDistrict: false, hasZone: false },
-};
+import { CARRIER_CONFIG } from "@/utils/order-utils";
+
+
 
 const EG_PHONE_REGEX = /^01[0125][0-9]{8}$/;
 

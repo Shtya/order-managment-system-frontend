@@ -340,7 +340,7 @@ export function TopToolbar({ version, isPreviewMode: externalIsPreviewMode, setI
 
     return (
         <>
-            <div className="absolute top-[15px] inset-x-[15px] z-50 flex items-center justify-end pointer-events-none">
+            <div className="absolute top-[15px] inset-x-[15px] z-40 flex items-center justify-end pointer-events-none">
                 <div className="flex items-center gap-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl pointer-events-auto">
                     <ToolbarButton
                         icon={<Layout size={18} />}

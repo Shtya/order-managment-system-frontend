@@ -17,6 +17,7 @@ export const ConversationProvider = ({ children }) => {
     const [replyTo, setReplyTo] = useState(null);
     const { subscribe } = useSocket();
     const [selectedConversation, setSelectedConversation] = useState(null);
+    const [mobileView, setMobileView] = useState("list"); // 'list', 'chat', 'details'
     const [showDetails, setShowDetails] = useState(false);
     const [activeTab, setActiveTab] = useState("all");
     const [conversations, setConversations] = useState([]);
@@ -586,12 +587,17 @@ export const ConversationProvider = ({ children }) => {
         }
     };
 
-    const toggleDetails = () => setShowDetails(!showDetails);
+    const toggleDetails = () => {
+        
+        setShowDetails(!showDetails)
+    };
 
     return (
         <ConversationContext.Provider value={{
             selectedConversation,
             setSelectedConversation,
+            mobileView,
+            setMobileView,
             selectedAccount,
             setSelectedAccount,
             accounts,

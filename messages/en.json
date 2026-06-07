@@ -4537,6 +4537,7 @@
     }
   },
   "common": {
+    "filters": "Filters",
     "year": "Year",
     "month": "Month",
     "allowPopups": "Please allow pop-ups for printing",

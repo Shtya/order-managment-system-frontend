@@ -9,20 +9,29 @@ import {
 import { format } from "date-fns";
 import { cn } from "@/utils/cn";
 import { avatarSrc } from "@/components/atoms/UserSelect";
+import { useConversation } from "./ConversationContext";
 
 export default function ChatSidebar({ conversation, onClose }) {
     const t = useTranslations("chats");
+    const { setMobileView } = useConversation();
     const customer = conversation?.customer;
 
     if (!conversation) return null;
 
+    const handleClose = () => {
+        onClose();
+        if (window.innerWidth < 768) {
+            setMobileView("chat");
+        }
+    };
+
     return (
-        <div className="w-80 border-s border-border bg-card flex flex-col h-full overflow-y-auto">
+        <div className="w-full md:w-80 border-s border-border bg-card flex flex-col h-full overflow-y-auto">
             {/* Header */}
             <div className="p-4 flex items-center justify-between border-b border-border sticky top-0 bg-card z-10">
                 <h2 className="font-semibold text-foreground">{t("customerDetails")}</h2>
                 <button
-                    onClick={onClose}
+                    onClick={handleClose}
                     className="p-1 hover:bg-accent/50 rounded-md transition-colors"
                 >
                     <X className="w-5 h-5 text-muted-foreground" />

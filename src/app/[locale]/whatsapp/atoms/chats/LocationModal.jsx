@@ -95,8 +95,8 @@ export default function LocationModal() {
 
     return (
         <Dialog open={showLocationModal} onOpenChange={setShowLocationModal}>
-            <DialogContent className="sm:max-w-4xl w-full max-h-[90vh] flex flex-col p-0 overflow-hidden bg-muted/30">
-                <DialogHeader className="px-6 py-4 border-b border-border bg-card shrink-0">
+            <DialogContent className="sm:max-w-4xl w-full h-[90vh] flex flex-col p-0 overflow-hidden bg-muted/30">
+                <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
                     <DialogTitle className="flex items-center gap-3 text-foreground">
                         <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
                             <MapPin size={20} />
@@ -105,9 +105,9 @@ export default function LocationModal() {
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="flex-1 flex overflow-hidden">
+                <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
                     {/* Form Section */}
-                    <div className="w-1/3 overflow-y-auto p-6 custom-scrollbar bg-card border-e border-border">
+                    <div className="w-full md:w-1/3 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card border-b md:border-b-0 md:border-e border-border order-2 md:order-1">
                         <form id="location-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                             <LocationFields 
                                 values={{ name, address, latitude, longitude }}
@@ -123,7 +123,7 @@ export default function LocationModal() {
                     </div>
 
                     {/* Map Section */}
-                    <div className="flex-1 relative bg-muted min-h-[600px]">
+                    <div className="flex-1 relative bg-muted min-h-[300px] md:min-h-[600px] order-1 md:order-2">
                         <MapLocationPicker
                             initialLocation={{ lat: latitude, lng: longitude }}
                             onLocationSelect={handleLocationSelect}
@@ -133,7 +133,7 @@ export default function LocationModal() {
                     </div>
                 </div>
 
-                <DialogFooter className="px-6 py-4 border-t border-border bg-card shrink-0 gap-2">
+                <DialogFooter className="px-4 md:px-6 py-4 border-t border-border bg-card shrink-0 gap-2 flex flex-col-reverse sm:flex-row">
                     <Button_
                         type="button"
                         variant="outline"
@@ -142,13 +142,14 @@ export default function LocationModal() {
                             reset();
                         }}
                         label={t("cancel")}
+                        className="w-full sm:w-auto"
                     />
                     <Button_
                         type="submit"
                         form="location-form"
                         disabled={!isValid || isSubmitting}
                         loading={isSubmitting}
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50"
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50 w-full sm:w-auto"
                         label={t("sendMessage")}
                     />
                 </DialogFooter>

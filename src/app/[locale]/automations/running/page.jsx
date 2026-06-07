@@ -344,34 +344,38 @@ function RunningAutomationsContent() {
 
   return (
     <div className="flex-1 flex flex-col min-w-0 bg-slate-50 dark:bg-[#050505] transition-all duration-500 overflow-hidden relative">
-      <header className="h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 flex items-center justify-between px-8 shrink-0 z-20">
+      <header className="min-h-20 h-auto lg:h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 flex flex-col lg:flex-row items-start lg:items-center justify-between px-4 md:px-8 py-4 lg:py-0 shrink-0 z-20 gap-4">
         <div className="flex flex-col">
           <h1 className="text-sm font-black text-slate-900 dark:text-slate-100">{t("title")}</h1>
           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">{t("subtitle")}</p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full lg:w-auto">
           <button
             onClick={handleReorder}
-            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-[11px] font-black hover:bg-slate-50 transition-all shadow-sm"
+            className="flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-[11px] font-black hover:bg-slate-50 transition-all shadow-sm"
           >
             <Layout size={14} />
-            {t("reorder")}
+            <span className="truncate">{t("reorder")}</span>
           </button>
-          <button
-            onClick={() => router.push(`/automations/edit/${selectedRun.automationFlowId}?${version ? `v=${version}` : ''}`)}
-            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-[11px] font-black hover:bg-slate-50 transition-all shadow-sm"
-          >
-            <Pencil size={14} />
-            {t("editVersion")}
-          </button>
-          <button
-            onClick={handleRestart}
-            className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-xl text-[11px] font-black hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
-          >
-            <RefreshCw size={14} />
-            {t("retryNow")}
-          </button>
+          {selectedRun && (
+            <>
+              <button
+                onClick={() => router.push(`/automations/edit/${selectedRun.automationFlowId}?${version ? `v=${version}` : ''}`)}
+                className="flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-[11px] font-black hover:bg-slate-50 transition-all shadow-sm"
+              >
+                <Pencil size={14} />
+                <span className="truncate">{t("editVersion")}</span>
+              </button>
+              <button
+                onClick={handleRestart}
+                className="flex flex-1 sm:flex-none items-center justify-center gap-2 px-6 py-2 bg-primary text-white rounded-xl text-[11px] font-black hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+              >
+                <RefreshCw size={14} />
+                <span className="truncate">{t("retryNow")}</span>
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -421,12 +425,26 @@ function RunningAutomationsContent() {
           )}
         </div>
 
-        <motion.div
-          initial={false}
-          animate={{ width: sidebarCollapsed || (targetId && detailLoading) ? 0 : 320 }}
+        <AnimatePresence>
+          {!sidebarCollapsed && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSidebarCollapsed(true)}
+              className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-[45] lg:hidden"
+            />
+          )}
+        </AnimatePresence>
+
+        <aside
           className={cn(
-            "h-full z-10 bg-white dark:bg-slate-900 border-l border-slate-100 dark:border-slate-800 flex flex-col relative overflow-hidden",
-            sidebarCollapsed && "border-none"
+            "flex flex-col h-full bg-white dark:bg-slate-900 border-l dark:border-slate-800 overflow-hidden",
+            "transition-all duration-300 ease-out z-[56]",
+            "fixed inset-y-0 end-0 lg:relative",
+            sidebarCollapsed || (targetId && detailLoading)
+              ? "ltr:translate-x-full rtl:-translate-x-full lg:w-0 lg:border-none lg:opacity-0"
+              : "translate-x-0 w-[280px] sm:w-[320px] opacity-100 shadow-2xl lg:shadow-none"
           )}
         >
           <div className="p-6 border-b border-slate-50 dark:border-slate-800/50 flex flex-col items-center justify-between gap-4">
@@ -449,7 +467,7 @@ function RunningAutomationsContent() {
                     <RefreshCw size={18} className={cn(loading && "animate-spin")} />
                   </button>
                   <button onClick={() => setSidebarCollapsed(true)} className="text-slate-400 hover:text-slate-600 bg-white dark:bg-slate-800 rounded-xl p-2 border border-slate-100 dark:border-slate-800">
-                    <ChevronLeft size={20} />
+                    <ChevronRight size={20} />
                   </button>
                 </div>
               </div>
@@ -544,22 +562,23 @@ function RunningAutomationsContent() {
             </div>
           )}
 
-        </motion.div>
+        </aside>
 
         {sidebarCollapsed && (
           <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="absolute top-[30px] end-4 h-10 w-10 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-full shadow-lg flex items-center justify-center z-20 hover:scale-110 transition-all"
+            onClick={() => setSidebarCollapsed(false)}
+            className="absolute top-[100px] end-4 h-10 w-10 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-full shadow-lg flex items-center justify-center z-50 hover:scale-110 transition-all"
           >
-            {sidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-          </button>)}
+            <ChevronLeft size={20} />
+          </button>
+        )}
         {/* Floating Toggle for Right Panel */}
         {rightPanelCollapsed && selectedRun && (
           <button
             onClick={() => setRightPanelCollapsed(false)}
-            className="absolute top-[30px] start-4 h-10 w-10 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-full shadow-lg flex items-center justify-center z-20 hover:scale-110 transition-all"
+            className="absolute top-[100px] start-4 h-10 w-10 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-full shadow-lg flex items-center justify-center z-50 hover:scale-110 transition-all"
           >
-            <ChevronLeft size={20} />
+            <ChevronRight size={20} />
           </button>
         )}
       </div>

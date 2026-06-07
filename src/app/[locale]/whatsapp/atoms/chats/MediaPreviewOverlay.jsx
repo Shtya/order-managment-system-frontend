@@ -75,27 +75,27 @@ export default function MediaPreviewOverlay() {
     return (
         <div className="absolute inset-0 z-[100] bg-background/95 dark:bg-background/98 flex flex-col animate-in fade-in duration-200">
             {/* Header */}
-            <div className="h-16 flex items-center justify-between px-6 bg-muted/50 dark:bg-card/50 backdrop-blur-sm border-b border-border text-foreground">
-                <div className="flex items-center gap-3">
+            <div className="h-14 md:h-16 flex items-center justify-between px-4 md:px-6 bg-muted/50 dark:bg-card/50 backdrop-blur-sm border-b border-border text-foreground">
+                <div className="flex items-center gap-2 md:gap-3">
                     <button
                         onClick={() => setPendingMedia(null)}
                         className="p-2 hover:bg-accent/50 rounded-full transition-colors"
                     >
-                        <X size={24} />
+                        <X className= "w-5 h-5 md:w-6 md:h-6" />
                     </button>
-                    <span className="font-medium text-sm truncate max-w-xs">{pendingMedia.file.name}</span>
+                    <span className="font-medium text-xs md:text-sm truncate max-w-[150px] md:max-w-xs">{pendingMedia.file.name}</span>
                 </div>
             </div>
 
             {/* Preview Area */}
-            <div className="flex-1 flex items-center justify-center p-8 overflow-hidden">
+            <div className="flex-1 flex items-center justify-center p-4 md:p-8 overflow-hidden">
                 {renderPreview()}
             </div>
 
             {/* Footer / Caption Input */}
-            <div className="p-6 bg-muted/80 dark:bg-card/80 backdrop-blur-md border-t border-border">
-                <div className="max-w-4xl mx-auto flex items-end gap-4">
-                    <div className="flex-1 bg-card dark:bg-input/50 rounded-xl border border-border px-4 py-3 flex items-center">
+            <div className="p-4 md:p-6 bg-muted/80 dark:bg-card/80 backdrop-blur-md border-t border-border">
+                <div className="max-w-4xl mx-auto flex items-end gap-3 md:gap-4">
+                    <div className="flex-1 bg-card dark:bg-input/50 rounded-xl border border-border px-3 md:px-4 py-2.5 md:py-3 flex items-center">
                         <input
                             autoFocus
                             type="text"
@@ -112,9 +112,9 @@ export default function MediaPreviewOverlay() {
                     </div>
                     <button
                         onClick={handleSend}
-                        className="w-12 h-12 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full flex items-center justify-center transition-all shadow-lg active:scale-95"
+                        className="w-10 h-10 md:w-12 md:h-12 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full flex items-center justify-center transition-all shadow-lg active:scale-95 shrink-0"
                     >
-                        <Send size={24} />
+                        <Send className= "w-5 h-5 md:w-6 md:h-6" />
                     </button>
                 </div>
             </div>

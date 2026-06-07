@@ -255,7 +255,7 @@ export default function EditAutomationPage() {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-slate-50 dark:bg-[#050505] relative">
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
         <TopToolbar version={version} isPreviewMode={isPreviewMode} setIsPreviewMode={setIsPreviewMode} />
         {!isPreviewMode && (
           <LeftSidebar onSelectStep={(step) => window.dispatchEvent(new CustomEvent('select-automation-step', { detail: step }))} />

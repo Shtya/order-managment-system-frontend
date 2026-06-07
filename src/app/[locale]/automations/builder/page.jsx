@@ -27,6 +27,7 @@ import { AUTOMATION_CONFIG } from "../atoms/automation-config";
 import RunDetailsPanel, { StatusRunBadge } from "../atoms/RunDetailsPanel";
 import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 
 const nodeTypes = {
   trigger: TriggerNode,
@@ -222,6 +223,7 @@ export default function AutomationBuilderPage() {
   const automationId = useFlowStore((s) => s.automationId);
   const resetFlow = useFlowStore((s) => s.resetFlow);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+ 
 
   useEffect(() => {
     if (automationId) {
@@ -231,14 +233,17 @@ export default function AutomationBuilderPage() {
 
   return (
     <div className="flex h-screen flex-col  overflow-hidden bg-slate-50 dark:bg-[#050505] relative">
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
       <TopToolbar
         isPreviewMode={isPreviewMode}
         setIsPreviewMode={setIsPreviewMode}
       />
         {!isPreviewMode && (
-          <LeftSidebar onSelectStep={(step) => window.dispatchEvent(new CustomEvent('select-automation-step', { detail: step }))} />
+          <LeftSidebar
+            onSelectStep={(step) => window.dispatchEvent(new CustomEvent('select-automation-step', { detail: step }))}
+          />
         )}
+
         <ReactFlowProvider>
           <BuilderCanvas />
         </ReactFlowProvider>

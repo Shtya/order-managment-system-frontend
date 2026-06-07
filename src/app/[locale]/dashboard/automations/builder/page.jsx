@@ -231,7 +231,7 @@ export default function AutomationBuilderPage() {
 
   return (
     <div className="flex h-screen flex-col  overflow-hidden bg-slate-50 dark:bg-[#050505] relative">
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
         <TopToolbar
           isPreviewMode={isPreviewMode}
           setIsPreviewMode={setIsPreviewMode}

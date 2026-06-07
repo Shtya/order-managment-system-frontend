@@ -9,7 +9,7 @@ import {
     DialogFooter,
     DialogDescription
 } from "@/components/ui/dialog";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useConversation } from "./ConversationContext";
 import { UserPlus, UserCircle } from "lucide-react";
 import Button_ from "@/components/atoms/Button";
@@ -43,7 +43,7 @@ export default function ContactModal() {
     } = useConversation();
 
     const schema = React.useMemo(() => createSchema(t), [t]);
-
+    const locale  = useLocale();
     const {
         control,
         handleSubmit,
@@ -94,23 +94,23 @@ export default function ContactModal() {
 
     return (
         <Dialog open={showContactModal} onOpenChange={setShowContactModal}>
-            <DialogContent className="sm:max-w-2xl w-full max-h-[90vh] flex flex-col p-0 overflow-hidden bg-muted/30">
-                <DialogHeader className="px-6 py-4 border-b border-border bg-card shrink-0">
+            <DialogContent className="sm:max-w-2xl w-full h-[90vh] md:h-auto md:max-h-[90vh] flex flex-col p-0 overflow-hidden bg-muted/30">
+                <DialogHeader className="px-4 md:px-6 py-4 border-b border-border bg-card shrink-0">
                     <DialogTitle className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
                             <UserPlus size={20} />
                         </div>
                         {t("addContact")}
                     </DialogTitle>
-                    <DialogDescription className="ps-[52px] -mt-2 text-muted-foreground/60">
+                    <DialogDescription className="ps-[52px] -mt-2 text-muted-foreground/60 text-xs md:text-sm">
                         {t("contactDescription")}
                     </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-card">
-                    <div className="grid grid-cols-2 gap-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-card">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {/* Name Section */}
-                        <div className="col-span-2 flex items-center gap-2 mb-2 border-b border-border pb-2">
+                        <div className="sm:col-span-2 flex items-center gap-2 mb-2 border-b border-border pb-2">
                             <UserCircle size={18} className="text-primary" />
                             <h4 className="font-bold text-sm text-foreground">{t("contactInfo")}</h4>
                         </div>
@@ -247,7 +247,7 @@ export default function ContactModal() {
                         </div>
                     </div>
 
-                    <DialogFooter className="mt-8 gap-2 border-t border-border pt-6">
+                    <DialogFooter className="mt-6 md:mt-8 gap-2 border-t border-border pt-6 flex flex-col-reverse sm:flex-row">
                         <Button_
                             type="button"
                             variant="outline"
@@ -256,10 +256,11 @@ export default function ContactModal() {
                                 reset();
                             }}
                             label={t("cancel")}
+                            className="w-full sm:w-auto"
                         />
                         <Button_
                             type="submit"
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
                             label={t("sendMessage")}
                         />
                     </DialogFooter>

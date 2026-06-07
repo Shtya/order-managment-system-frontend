@@ -602,7 +602,7 @@ export default function AssignCarrierDialog({ open, onClose, orders, selectedOrd
                                             >
                                                 <div
                                                     className={cn(
-                                                        "w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all",
+                                                       className= "w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all",
                                                         isChecked
                                                             ? "border-[var(--primary)] bg-[var(--primary)]"
                                                             : "border-slate-300 dark:border-slate-600",
